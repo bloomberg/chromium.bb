@@ -5,16 +5,23 @@
 #ifndef CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
 #define CHROME_BROWSER_OMNIBOX_OMNIBOX_FIELD_TRIAL_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
+#include "chrome/common/autocomplete_match_type.h"
 
 // This class manages the Omnibox field trials.
 class OmniboxFieldTrial {
  public:
+  // A mapping that contains multipliers indicating that matches of the
+  // specified type should have their relevance score multiplied by the
+  // given number.  Omitted types are assumed to have multipliers of 1.0.
+  typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
+
   // Creates the static field trial groups.
   // *** MUST NOT BE CALLED MORE THAN ONCE. ***
   static void ActivateStaticTrials();
@@ -117,6 +124,18 @@ class OmniboxFieldTrial {
   // suggestions from search history.
   static bool SearchHistoryDisable(
       AutocompleteInput::PageClassification current_page_classification);
+
+  // ---------------------------------------------------------
+  // For the DemoteByType experiment that's part of the bundled omnibox field
+  // trial.
+
+  // If the user is in an experiment group that, in the provided
+  // |current_page_classification| context, demotes the relevance scores
+  // of certain types of matches, populates the |demotions_by_type| map
+  // appropriately.  Otherwise, clears |demotions_by_type|.
+  static void GetDemotionsByType(
+      AutocompleteInput::PageClassification current_page_classification,
+      DemotionMultipliers* demotions_by_type);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(OmniboxFieldTrialTest, GetValueForRuleInContext);

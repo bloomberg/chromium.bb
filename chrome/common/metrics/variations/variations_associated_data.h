@@ -137,12 +137,14 @@ bool GetVariationParams(const std::string& trial_name,
 std::string GetVariationParamValue(const std::string& trial_name,
                                    const std::string& param_name);
 
-// Expose some functions for testing. These functions just wrap functionality
-// that is implemented above.
+// Expose some functions for testing.
 namespace testing {
 
 // Clears all of the mapped associations.
 void ClearAllVariationIDs();
+
+// Clears all of the associated params.
+void ClearAllVariationParams();
 
 }  // namespace testing
 

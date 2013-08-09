@@ -10,6 +10,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "url/gurl.h"
 
@@ -166,15 +167,18 @@ class AutocompleteResult {
   // Adds a single match. The match is inserted at the appropriate position
   // based on relevancy and display order. This is ONLY for use after
   // SortAndCull() has been invoked, and preserves default_match_.
-  void AddMatch(const AutocompleteMatch& match);
+  void AddMatch(AutocompleteInput::PageClassification page_classification,
+                const AutocompleteMatch& match);
 
   // Populates |provider_to_matches| from |matches_|.
   void BuildProviderToMatches(ProviderToMatches* provider_to_matches) const;
 
   // Copies matches into this result. |old_matches| gives the matches from the
   // last result, and |new_matches| the results from this result.
-  void MergeMatchesByProvider(const ACMatches& old_matches,
-                              const ACMatches& new_matches);
+  void MergeMatchesByProvider(
+      AutocompleteInput::PageClassification page_classification,
+      const ACMatches& old_matches,
+      const ACMatches& new_matches);
 
   ACMatches matches_;
 

@@ -80,12 +80,11 @@ bool SplitStringIntoKeyValues(
   return true;
 }
 
-bool SplitStringIntoKeyValuePairs(
-    const std::string& line,
-    char key_value_delimiter,
-    char key_value_pair_delimiter,
-    std::vector<std::pair<std::string, std::string> >* kv_pairs) {
-  kv_pairs->clear();
+bool SplitStringIntoKeyValuePairs(const std::string& line,
+                                  char key_value_delimiter,
+                                  char key_value_pair_delimiter,
+                                  StringPairs* key_value_pairs) {
+  key_value_pairs->clear();
 
   std::vector<std::string> pairs;
   SplitString(line, key_value_pair_delimiter, &pairs);
@@ -107,7 +106,7 @@ bool SplitStringIntoKeyValuePairs(
       success = false;
     }
     DCHECK_LE(value.size(), 1U);
-    kv_pairs->push_back(
+    key_value_pairs->push_back(
         make_pair(key, value.empty() ? std::string() : value[0]));
   }
   return success;

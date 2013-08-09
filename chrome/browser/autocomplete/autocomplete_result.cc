@@ -11,8 +11,59 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/autocomplete_match_type.h"
+
+namespace {
+
+// This class implements a special version of AutocompleteMatch::MoreRelevant
+// that allows matches of particular types to be demoted in AutocompleteResult.
+class CompareWithDemoteByType {
+ public:
+  CompareWithDemoteByType(
+      AutocompleteInput::PageClassification current_page_classification);
+
+  // Returns the relevance score of |match| demoted appropriately by
+  // |demotions_by_type_|.
+  int GetDemotedRelevance(const AutocompleteMatch& match);
+
+  // Comparison function.
+  bool operator()(const AutocompleteMatch& elem1,
+                  const AutocompleteMatch& elem2);
+
+ private:
+  OmniboxFieldTrial::DemotionMultipliers demotions_;
+};
+
+CompareWithDemoteByType::CompareWithDemoteByType(
+    AutocompleteInput::PageClassification current_page_classification) {
+  OmniboxFieldTrial::GetDemotionsByType(current_page_classification,
+                                        &demotions_);
+}
+
+int CompareWithDemoteByType::GetDemotedRelevance(
+    const AutocompleteMatch& match) {
+  OmniboxFieldTrial::DemotionMultipliers::const_iterator demotion_it =
+      demotions_.find(match.type);
+  return (demotion_it == demotions_.end()) ?
+      match.relevance : (match.relevance * demotion_it->second);
+}
+
+bool CompareWithDemoteByType::operator()(const AutocompleteMatch& elem1,
+                                         const AutocompleteMatch& elem2) {
+  // Compute demoted relevance scores for each match.
+  const int demoted_relevance1 = GetDemotedRelevance(elem1);
+  const int demoted_relevance2 = GetDemotedRelevance(elem2);
+  // For equal-relevance matches, we sort alphabetically, so that providers
+  // who return multiple elements at the same priority get a "stable" sort
+  // across multiple updates.
+  return (demoted_relevance1 == demoted_relevance2) ?
+      (elem1.contents < elem2.contents) :
+      (demoted_relevance1 > demoted_relevance2);
+}
+
+};  // namespace
 
 // static
 const size_t AutocompleteResult::kMaxMatches = 6;
@@ -70,7 +121,8 @@ void AutocompleteResult::CopyOldMatches(const AutocompleteInput& input,
   old_matches.BuildProviderToMatches(&old_matches_per_provider);
   for (ProviderToMatches::const_iterator i(old_matches_per_provider.begin());
        i != old_matches_per_provider.end(); ++i) {
-    MergeMatchesByProvider(i->second, matches_per_provider[i->first]);
+    MergeMatchesByProvider(input.current_page_classification(),
+                           i->second, matches_per_provider[i->first]);
   }
 
   SortAndCull(input, profile);
@@ -102,9 +154,16 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
                  matches_.end());
 
   // Sort and trim to the most relevant kMaxMatches matches.
-  const size_t num_matches = std::min(kMaxMatches, matches_.size());
-  std::partial_sort(matches_.begin(), matches_.begin() + num_matches,
-                    matches_.end(), &AutocompleteMatch::MoreRelevant);
+  size_t max_num_matches = std::min(kMaxMatches, matches_.size());
+  CompareWithDemoteByType comparing_object(input.current_page_classification());
+  std::partial_sort(matches_.begin(), matches_.begin() + max_num_matches,
+                    matches_.end(), comparing_object);
+  // In the process of trimming, drop all matches with a demoted relevance
+  // score of 0.
+  size_t num_matches;
+  for (num_matches = 0u; (num_matches < max_num_matches) &&
+       (comparing_object.GetDemotedRelevance(*match_at(num_matches)) > 0);
+       ++num_matches) {}
   matches_.resize(num_matches);
 
   default_match_ = begin();
@@ -221,13 +280,16 @@ void AutocompleteResult::CopyFrom(const AutocompleteResult& rhs) {
   alternate_nav_url_ = rhs.alternate_nav_url_;
 }
 
-void AutocompleteResult::AddMatch(const AutocompleteMatch& match) {
+void AutocompleteResult::AddMatch(
+    AutocompleteInput::PageClassification page_classification,
+    const AutocompleteMatch& match) {
   DCHECK(default_match_ != end());
   DCHECK_EQ(AutocompleteMatch::SanitizeString(match.contents), match.contents);
   DCHECK_EQ(AutocompleteMatch::SanitizeString(match.description),
             match.description);
+  CompareWithDemoteByType comparing_object(page_classification);
   ACMatches::iterator insertion_point =
-      std::upper_bound(begin(), end(), match, &AutocompleteMatch::MoreRelevant);
+      std::upper_bound(begin(), end(), match, comparing_object);
   matches_difference_type default_offset = default_match_ - begin();
   if ((insertion_point - begin()) <= default_offset)
     ++default_offset;
@@ -251,8 +313,10 @@ bool AutocompleteResult::HasMatchByDestination(const AutocompleteMatch& match,
   return false;
 }
 
-void AutocompleteResult::MergeMatchesByProvider(const ACMatches& old_matches,
-                                                const ACMatches& new_matches) {
+void AutocompleteResult::MergeMatchesByProvider(
+    AutocompleteInput::PageClassification page_classification,
+    const ACMatches& old_matches,
+    const ACMatches& new_matches) {
   if (new_matches.size() >= old_matches.size())
     return;
 
@@ -271,7 +335,7 @@ void AutocompleteResult::MergeMatchesByProvider(const ACMatches& old_matches,
       AutocompleteMatch match = *i;
       match.relevance = std::min(max_relevance, match.relevance);
       match.from_previous = true;
-      AddMatch(match);
+      AddMatch(page_classification, match);
       delta--;
     }
   }

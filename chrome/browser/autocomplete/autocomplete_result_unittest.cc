@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -13,6 +14,9 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/common/autocomplete_match_type.h"
+#include "chrome/common/metrics/entropy_provider.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -30,7 +34,14 @@ class AutocompleteResultTest : public testing::Test  {
     int relevance;
   };
 
-  AutocompleteResultTest() {}
+  AutocompleteResultTest() {
+    // Destroy the existing FieldTrialList before creating a new one to avoid
+    // a DCHECK.
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("foo")));
+    chrome_variations::testing::ClearAllVariationParams();
+  }
 
   virtual void SetUp() OVERRIDE {
 #if defined(OS_ANDROID)
@@ -69,6 +80,8 @@ class AutocompleteResultTest : public testing::Test  {
   TemplateURLServiceTestUtil test_util_;
 
  private:
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
+
   DISALLOW_COPY_AND_ASSIGN(AutocompleteResultTest);
 };
 
@@ -148,6 +161,7 @@ TEST_F(AutocompleteResultTest, Swap) {
   // Swap with a single match.
   ACMatches matches;
   AutocompleteMatch match;
+  match.relevance = 1;
   AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
@@ -291,4 +305,70 @@ TEST_F(AutocompleteResultTest, SortAndCullDuplicateSearchURLs) {
   EXPECT_EQ("http://www.foo.com/",
             result.match_at(2)->destination_url.spec());
   EXPECT_EQ(900, result.match_at(2)->relevance);
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
+  // Add some matches.
+  ACMatches matches;
+  {
+    AutocompleteMatch match;
+    match.destination_url = GURL("http://history-url/");
+    match.relevance = 1400;
+    match.type = AutocompleteMatchType::HISTORY_URL;
+    matches.push_back(match);
+  }
+  {
+    AutocompleteMatch match;
+    match.destination_url = GURL("http://search-what-you-typed/");
+    match.relevance = 1300;
+    match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+    matches.push_back(match);
+  }
+  {
+    AutocompleteMatch match;
+    match.destination_url = GURL("http://history-title/");
+    match.relevance = 1200;
+    match.type = AutocompleteMatchType::HISTORY_TITLE;
+    matches.push_back(match);
+  }
+  {
+    AutocompleteMatch match;
+    match.destination_url = GURL("http://search-history/");
+    match.relevance = 500;
+    match.type = AutocompleteMatchType::SEARCH_HISTORY;
+    matches.push_back(match);
+  }
+
+  // Add a rule demoting history-url and killing history-title.
+  // Must be the same as kBundledExperimentFieldTrialName
+  // defined in omnibox_field_trial.cc.
+  const std::string kTrialName = "OmniboxBundledExperimentV1";
+  // Must be the same as kDemoteByTypeRule defined in
+  // omnibox_field_trial.cc.
+  const std::string kRuleName = "DemoteByType";
+  {
+    std::map<std::string, std::string> params;
+    params[kRuleName + ":3"] = "1:50,7:100,2:0";  // 3 == HOMEPAGE
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        kTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
+
+  AutocompleteResult result;
+  result.AppendMatches(matches);
+  AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+                          AutocompleteInput::HOMEPAGE, false, false, false,
+                          AutocompleteInput::ALL_MATCHES);
+  result.SortAndCull(input, test_util_.profile());
+
+  // Check the new ordering.  The history-title results should be omitted.
+  // We cannot check relevance scores because the matches are sorted by
+  // demoted relevance but the actual relevance scores are not modified.
+  ASSERT_EQ(3u, result.size());
+  EXPECT_EQ("http://search-what-you-typed/",
+            result.match_at(0)->destination_url.spec());
+  EXPECT_EQ("http://history-url/",
+            result.match_at(1)->destination_url.spec());
+  EXPECT_EQ("http://search-history/",
+            result.match_at(2)->destination_url.spec());
 }

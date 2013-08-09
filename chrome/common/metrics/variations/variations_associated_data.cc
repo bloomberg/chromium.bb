@@ -132,6 +132,11 @@ class VariationsParamAssociator {
     return true;
   }
 
+  void ClearAllParamsForTesting() {
+    base::AutoLock scoped_lock(lock_);
+    variation_params_.clear();
+  }
+
  private:
   friend struct DefaultSingletonTraits<VariationsParamAssociator>;
 
@@ -220,6 +225,10 @@ namespace testing {
 
 void ClearAllVariationIDs() {
   GroupMapAccessor::GetInstance()->ClearAllMapsForTesting();
+}
+
+void ClearAllVariationParams() {
+  VariationsParamAssociator::GetInstance()->ClearAllParamsForTesting();
 }
 
 }  // namespace testing

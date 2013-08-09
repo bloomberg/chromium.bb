@@ -5,6 +5,7 @@
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string16.h"
 #include "chrome/common/metrics/entropy_provider.h"
@@ -13,24 +14,17 @@
 
 class OmniboxFieldTrialTest : public testing::Test {
  public:
-  OmniboxFieldTrialTest() {}
-
-  static void SetUpTestCase() {
+  OmniboxFieldTrialTest() {
     ResetFieldTrialList();
   }
 
-  static void TearDownTestCase() {
-    delete field_trial_list_;
-    field_trial_list_ = NULL;
-  }
-
-  static void ResetFieldTrialList() {
-    // It's important to delete the old pointer first which sets
-    // FieldTrialList::global_ to NULL.
-    if (field_trial_list_)
-      delete field_trial_list_;
-    field_trial_list_ = new base::FieldTrialList(
-        new metrics::SHA1EntropyProvider("foo"));
+  void ResetFieldTrialList() {
+    // Destroy the existing FieldTrialList before creating a new one to avoid
+    // a DCHECK.
+    field_trial_list_.reset();
+    field_trial_list_.reset(new base::FieldTrialList(
+        new metrics::SHA1EntropyProvider("foo")));
+    chrome_variations::testing::ClearAllVariationParams();
     OmniboxFieldTrial::ActivateDynamicTrials();
   }
 
@@ -43,15 +37,28 @@ class OmniboxFieldTrialTest : public testing::Test {
     return trial;
   }
 
+  // EXPECTS that demotions[match_type] exists with value expected_value.
+  static void VerifyDemotion(
+      const OmniboxFieldTrial::DemotionMultipliers& demotions,
+      AutocompleteMatchType::Type match_type,
+      float expected_value);
+
  private:
-  // Needed for Activate{Static/Dynamic}Trials().
-  static base::FieldTrialList* field_trial_list_;
+  scoped_ptr<base::FieldTrialList> field_trial_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxFieldTrialTest);
 };
 
 // static
-base::FieldTrialList* OmniboxFieldTrialTest::field_trial_list_ = NULL;
+void OmniboxFieldTrialTest::VerifyDemotion(
+    const OmniboxFieldTrial::DemotionMultipliers& demotions,
+    AutocompleteMatchType::Type match_type,
+    float expected_value) {
+  OmniboxFieldTrial::DemotionMultipliers::const_iterator demotion_it =
+      demotions.find(match_type);
+  ASSERT_TRUE(demotion_it != demotions.end());
+  EXPECT_FLOAT_EQ(expected_value, demotion_it->second);
+}
 
 // Test if GetDisabledProviderTypes() properly parses various field trial
 // group names.
@@ -129,6 +136,38 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     CreateTestTrial("AutocompleteDynamicTrial_3", "EnableZeroSuggest_URLs");
     EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
   }
+}
+
+TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
+  // Must be the same as kBundledExperimentFieldTrialName
+  // defined in omnibox_field_trial.cc.
+  const std::string kTrialName = "OmniboxBundledExperimentV1";
+  // Must be the same as kDemoteByTypeRule defined in
+  // omnibox_field_trial.cc.
+  const std::string kRuleName = "DemoteByType";
+  {
+    std::map<std::string, std::string> params;
+    params[kRuleName + ":1"] = "1:50,2:0";
+    params[kRuleName + ":3"] = "5:100";
+    params[kRuleName + ":*"] = "1:25";
+    ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+        kTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
+  OmniboxFieldTrial::DemotionMultipliers demotions_by_type;
+  OmniboxFieldTrial::GetDemotionsByType(
+      AutocompleteInput::NEW_TAB_PAGE, &demotions_by_type);
+  ASSERT_EQ(2u, demotions_by_type.size());
+  VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_URL, 0.5);
+  VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_TITLE, 0.0);
+  OmniboxFieldTrial::GetDemotionsByType(
+      AutocompleteInput::HOMEPAGE, &demotions_by_type);
+  ASSERT_EQ(1u, demotions_by_type.size());
+  VerifyDemotion(demotions_by_type, AutocompleteMatchType::NAVSUGGEST, 1.0);
+  OmniboxFieldTrial::GetDemotionsByType(
+      AutocompleteInput::BLANK, &demotions_by_type);
+  ASSERT_EQ(1u, demotions_by_type.size());
+  VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_URL, 0.25);
 }
 
 TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {

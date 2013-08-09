@@ -36,11 +36,13 @@ BASE_EXPORT bool SplitStringIntoKeyValues(const std::string& line,
                                           std::string* key,
                                           std::vector<std::string>* values);
 
+typedef std::vector<std::pair<std::string, std::string> > StringPairs;;
+
 BASE_EXPORT bool SplitStringIntoKeyValuePairs(
     const std::string& line,
     char key_value_delimiter,
     char key_value_pair_delimiter,
-    std::vector<std::pair<std::string, std::string> >* kv_pairs);
+    StringPairs* key_value_pairs);
 
 // The same as SplitString, but use a substring delimiter instead of a char.
 BASE_EXPORT void SplitStringUsingSubstr(const string16& str,

@@ -8,6 +8,7 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/metrics/metrics_util.h"
@@ -26,6 +27,7 @@ const char kBundledExperimentFieldTrialName[] = "OmniboxBundledExperimentV1";
 
 // Rule names used by the bundled experiment.
 const char kSearchHistoryRule[] = "SearchHistory";
+const char kDemoteByTypeRule[] = "DemoteByType";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -231,6 +233,35 @@ bool OmniboxFieldTrial::SearchHistoryDisable(
     AutocompleteInput::PageClassification current_page_classification) {
   return OmniboxFieldTrial::GetValueForRuleInContext(
       kSearchHistoryRule, current_page_classification) == "Disable";
+}
+
+void OmniboxFieldTrial::GetDemotionsByType(
+    AutocompleteInput::PageClassification current_page_classification,
+    DemotionMultipliers* demotions_by_type) {
+  demotions_by_type->clear();
+  const std::string demotion_rule =
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          kDemoteByTypeRule,
+          current_page_classification);
+  // The value of the DemoteByType rule is a comma-separated list of
+  // {ResultType + ":" + Number} where ResultType is an AutocompleteMatchType::
+  // Type enum represented as an integer and Number is an integer number
+  // between 0 and 100 inclusive.   Relevance scores of matches of that result
+  // type are multiplied by Number / 100.  100 means no change.
+  base::StringPairs kv_pairs;
+  if (base::SplitStringIntoKeyValuePairs(demotion_rule, ':', ',', &kv_pairs)) {
+    for (base::StringPairs::const_iterator it = kv_pairs.begin();
+         it != kv_pairs.end(); ++it) {
+      // This is a best-effort conversion; we trust the hand-crafted parameters
+      // downloaded from the server to be perfect.  There's no need for handle
+      // errors smartly.
+      int k, v;
+      base::StringToInt(it->first, &k);
+      base::StringToInt(it->second, &v);
+      (*demotions_by_type)[static_cast<AutocompleteMatchType::Type>(k)] =
+          static_cast<float>(v) / 100.0f;
+    }
+  }
 }
 
 // Background and implementation details:
