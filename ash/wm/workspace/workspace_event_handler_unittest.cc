@@ -16,7 +16,6 @@
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/screen.h"
 
