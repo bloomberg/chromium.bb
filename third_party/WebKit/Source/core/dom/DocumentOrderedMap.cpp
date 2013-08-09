@@ -103,7 +103,6 @@ void DocumentOrderedMap::remove(StringImpl* key, Element* element)
     ASSERT(key);
     ASSERT(element);
 
-    m_map.checkConsistency();
     Map::iterator cachedItem = m_map.find(key);
     if (cachedItem != m_map.end() && cachedItem->value == element)
         m_map.remove(cachedItem);
@@ -116,8 +115,6 @@ inline Element* DocumentOrderedMap::get(StringImpl* key, const TreeScope* scope)
 {
     ASSERT(key);
     ASSERT(scope);
-
-    m_map.checkConsistency();
 
     Element* element = m_map.get(key);
     if (element)

@@ -624,8 +624,6 @@ static const size_t kInitialVectorSize = 16;
 
         void reverse();
 
-        void checkConsistency();
-
     private:
         void expandCapacity(size_t newMinCapacity);
         const T* expandCapacity(size_t newMinCapacity, const T*);

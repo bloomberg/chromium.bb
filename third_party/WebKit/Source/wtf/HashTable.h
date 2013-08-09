@@ -31,25 +31,6 @@
 #define DUMP_HASHTABLE_STATS 0
 #define DUMP_HASHTABLE_STATS_PER_TABLE 0
 
-// Enables internal WTF consistency checks that are invoked automatically. Non-WTF callers can call checkTableConsistency() even if internal checks are disabled.
-#define CHECK_HASHTABLE_CONSISTENCY 0
-
-#ifdef NDEBUG
-#define CHECK_HASHTABLE_ITERATORS 0
-#define CHECK_HASHTABLE_USE_AFTER_DESTRUCTION 0
-#else
-#define CHECK_HASHTABLE_ITERATORS 1
-#define CHECK_HASHTABLE_USE_AFTER_DESTRUCTION 1
-#endif
-
-#if CHECK_HASHTABLE_ITERATORS
-// Required for CHECK_HASHTABLE_ITERATORS.
-#include "wtf/Atomics.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/ThreadingPrimitives.h"
-#endif
-
 #if DUMP_HASHTABLE_STATS_PER_TABLE
 #include "wtf/DataLog.h"
 #endif
@@ -83,24 +64,6 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
     class HashTableConstIterator;
 
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void addIterator(const HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>*,
-        HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>*);
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void removeIterator(HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>*);
-
-#if !CHECK_HASHTABLE_ITERATORS
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void addIterator(const HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>*,
-        HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>*) { }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void removeIterator(HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>*) { }
-
-#endif
-
     typedef enum { HashItemKnownGood } HashItemKnownGoodTag;
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
@@ -125,51 +88,21 @@ namespace WTF {
         HashTableConstIterator(const HashTableType* table, PointerType position, PointerType endPosition)
             : m_position(position), m_endPosition(endPosition)
         {
-            addIterator(table, this);
             skipEmptyBuckets();
         }
 
         HashTableConstIterator(const HashTableType* table, PointerType position, PointerType endPosition, HashItemKnownGoodTag)
             : m_position(position), m_endPosition(endPosition)
         {
-            addIterator(table, this);
         }
 
     public:
         HashTableConstIterator()
         {
-            addIterator(static_cast<const HashTableType*>(0), this);
         }
-
-        // default copy, assignment and destructor are OK if CHECK_HASHTABLE_ITERATORS is 0
-
-#if CHECK_HASHTABLE_ITERATORS
-        ~HashTableConstIterator()
-        {
-            removeIterator(this);
-        }
-
-        HashTableConstIterator(const const_iterator& other)
-            : m_position(other.m_position), m_endPosition(other.m_endPosition)
-        {
-            addIterator(other.m_table, this);
-        }
-
-        const_iterator& operator=(const const_iterator& other)
-        {
-            m_position = other.m_position;
-            m_endPosition = other.m_endPosition;
-
-            removeIterator(this);
-            addIterator(other.m_table, this);
-
-            return *this;
-        }
-#endif
 
         PointerType get() const
         {
-            checkValidity();
             return m_position;
         }
         ReferenceType operator*() const { return *get(); }
@@ -177,7 +110,6 @@ namespace WTF {
 
         const_iterator& operator++()
         {
-            checkValidity();
             ASSERT(m_position != m_endPosition);
             ++m_position;
             skipEmptyBuckets();
@@ -189,12 +121,10 @@ namespace WTF {
         // Comparison.
         bool operator==(const const_iterator& other) const
         {
-            checkValidity(other);
             return m_position == other.m_position;
         }
         bool operator!=(const const_iterator& other) const
         {
-            checkValidity(other);
             return m_position != other.m_position;
         }
         bool operator==(const iterator& other) const
@@ -207,36 +137,8 @@ namespace WTF {
         }
 
     private:
-        void checkValidity() const
-        {
-#if CHECK_HASHTABLE_ITERATORS
-            ASSERT(m_table);
-#endif
-        }
-
-
-#if CHECK_HASHTABLE_ITERATORS
-        void checkValidity(const const_iterator& other) const
-        {
-            ASSERT(m_table);
-            ASSERT_UNUSED(other, other.m_table);
-            ASSERT(m_table == other.m_table);
-        }
-#else
-        void checkValidity(const const_iterator&) const { }
-#endif
-
         PointerType m_position;
         PointerType m_endPosition;
-
-#if CHECK_HASHTABLE_ITERATORS
-    public:
-        // Any modifications of the m_next or m_previous of an iterator that is in a linked list of a HashTable::m_iterator,
-        // should be guarded with m_table->m_mutex.
-        mutable const HashTableType* m_table;
-        mutable const_iterator* m_next;
-        mutable const_iterator* m_previous;
-#endif
     };
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
@@ -369,12 +271,8 @@ namespace WTF {
         HashTable();
         ~HashTable()
         {
-            invalidateIterators();
             if (m_table)
                 deallocateTable(m_table, m_tableSize);
-#if CHECK_HASHTABLE_USE_AFTER_DESTRUCTION
-            m_table = (ValueType*)(uintptr_t)0xbbadbeef;
-#endif
         }
 
         HashTable(const HashTable&);
@@ -411,8 +309,7 @@ namespace WTF {
 
         void remove(const KeyType&);
         void remove(iterator);
-        void removeWithoutEntryConsistencyCheck(iterator);
-        void removeWithoutEntryConsistencyCheck(const_iterator);
+        void remove(const_iterator);
         void clear();
 
         static bool isEmptyBucket(const ValueType& value) { return isHashTraitsEmptyValue<KeyTraits>(Extractor::extract(value)); }
@@ -421,19 +318,6 @@ namespace WTF {
 
         ValueType* lookup(const Key& key) { return lookup<IdentityTranslatorType>(key); }
         template<typename HashTranslator, typename T> ValueType* lookup(const T&);
-
-#if !ASSERT_DISABLED
-        void checkTableConsistency() const;
-#else
-        static void checkTableConsistency() { }
-#endif
-#if CHECK_HASHTABLE_CONSISTENCY
-        void internalCheckTableConsistency() const { checkTableConsistency(); }
-        void internalCheckTableConsistencyExceptSize() const { checkTableConsistencyExceptSize(); }
-#else
-        static void internalCheckTableConsistencyExceptSize() { }
-        static void internalCheckTableConsistency() { }
-#endif
 
     private:
         static ValueType* allocateTable(int size);
@@ -446,10 +330,6 @@ namespace WTF {
         template<typename HashTranslator, typename T> FullLookupType fullLookupForWriting(const T&);
         template<typename HashTranslator, typename T> LookupType lookupForWriting(const T&);
 
-        template<typename HashTranslator, typename T> void checkKey(const T&);
-
-        void removeAndInvalidateWithoutEntryConsistencyCheck(ValueType*);
-        void removeAndInvalidate(ValueType*);
         void remove(ValueType*);
 
         bool shouldExpand() const { return (m_keyCount + m_deletedCount) * m_maxLoad >= m_tableSize; }
@@ -472,18 +352,6 @@ namespace WTF {
         iterator makeKnownGoodIterator(ValueType* pos) { return iterator(this, pos, m_table + m_tableSize, HashItemKnownGood); }
         const_iterator makeKnownGoodConstIterator(ValueType* pos) const { return const_iterator(this, pos, m_table + m_tableSize, HashItemKnownGood); }
 
-#if !ASSERT_DISABLED
-        void checkTableConsistencyExceptSize() const;
-#else
-        static void checkTableConsistencyExceptSize() { }
-#endif
-
-#if CHECK_HASHTABLE_ITERATORS
-        void invalidateIterators();
-#else
-        static void invalidateIterators() { }
-#endif
-
         static const int m_maxLoad = 2;
         static const int m_minLoad = 6;
 
@@ -492,14 +360,6 @@ namespace WTF {
         int m_tableSizeMask;
         int m_keyCount;
         int m_deletedCount;
-
-#if CHECK_HASHTABLE_ITERATORS
-    public:
-        // All access to m_iterators should be guarded with m_mutex.
-        mutable const_iterator* m_iterators;
-        // Use OwnPtr so HashTable can still be memmove'd or memcpy'ed.
-        mutable OwnPtr<Mutex> m_mutex;
-#endif
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
     public:
@@ -552,10 +412,6 @@ namespace WTF {
         , m_tableSizeMask(0)
         , m_keyCount(0)
         , m_deletedCount(0)
-#if CHECK_HASHTABLE_ITERATORS
-        , m_iterators(0)
-        , m_mutex(adoptPtr(new Mutex))
-#endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         , m_stats(adoptPtr(new Stats))
 #endif
@@ -572,38 +428,10 @@ namespace WTF {
         return key;
     }
 
-#if ASSERT_DISABLED
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    template<typename HashTranslator, typename T>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::checkKey(const T&)
-    {
-    }
-
-#else
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    template<typename HashTranslator, typename T>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::checkKey(const T& key)
-    {
-        if (!HashFunctions::safeToCompareToEmptyOrDeleted)
-            return;
-        ASSERT(!HashTranslator::equal(KeyTraits::emptyValue(), key));
-        AlignedBuffer<sizeof(ValueType), WTF_ALIGN_OF(ValueType)> deletedValueBuffer;
-        ValueType* deletedValuePtr = reinterpret_cast_ptr<ValueType*>(deletedValueBuffer.buffer);
-        ValueType& deletedValue = *deletedValuePtr;
-        Traits::constructDeletedValue(deletedValue);
-        ASSERT(!HashTranslator::equal(Extractor::extract(deletedValue), key));
-    }
-
-#endif
-
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
     template<typename HashTranslator, typename T>
     inline Value* HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::lookup(const T& key)
     {
-        checkKey<HashTranslator>(key);
-
         int k = 0;
         int sizeMask = m_tableSizeMask;
         ValueType* table = m_table;
@@ -661,7 +489,6 @@ namespace WTF {
     inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::LookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::lookupForWriting(const T& key)
     {
         ASSERT(m_table);
-        checkKey<HashTranslator>(key);
 
         int k = 0;
         ValueType* table = m_table;
@@ -724,7 +551,6 @@ namespace WTF {
     inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::FullLookupType HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::fullLookupForWriting(const T& key)
     {
         ASSERT(m_table);
-        checkKey<HashTranslator>(key);
 
         int k = 0;
         ValueType* table = m_table;
@@ -811,14 +637,8 @@ namespace WTF {
     template<typename HashTranslator, typename T, typename Extra>
     typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::add(const T& key, const Extra& extra)
     {
-        checkKey<HashTranslator>(key);
-
-        invalidateIterators();
-
         if (!m_table)
             expand();
-
-        internalCheckTableConsistency();
 
         ASSERT(m_table);
 
@@ -898,8 +718,6 @@ namespace WTF {
             return result;
         }
 
-        internalCheckTableConsistency();
-
         return AddResult(makeKnownGoodIterator(entry), true);
     }
 
@@ -907,14 +725,8 @@ namespace WTF {
     template<typename HashTranslator, typename T, typename Extra>
     typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::AddResult HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::addPassingHashCode(const T& key, const Extra& extra)
     {
-        checkKey<HashTranslator>(key);
-
-        invalidateIterators();
-
         if (!m_table)
             expand();
-
-        internalCheckTableConsistency();
 
         FullLookupType lookupResult = fullLookupForWriting<HashTranslator>(key);
 
@@ -942,8 +754,6 @@ namespace WTF {
             ASSERT(result.iterator != end());
             return result;
         }
-
-        internalCheckTableConsistency();
 
         return AddResult(makeKnownGoodIterator(entry), true);
     }
@@ -1003,21 +813,6 @@ namespace WTF {
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::removeAndInvalidateWithoutEntryConsistencyCheck(ValueType* pos)
-    {
-        invalidateIterators();
-        remove(pos);
-    }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::removeAndInvalidate(ValueType* pos)
-    {
-        invalidateIterators();
-        internalCheckTableConsistency();
-        remove(pos);
-    }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::remove(ValueType* pos)
     {
 #if DUMP_HASHTABLE_STATS
@@ -1033,8 +828,6 @@ namespace WTF {
 
         if (shouldShrink())
             shrink();
-
-        internalCheckTableConsistency();
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
@@ -1043,25 +836,16 @@ namespace WTF {
         if (it == end())
             return;
 
-        removeAndInvalidate(const_cast<ValueType*>(it.m_iterator.m_position));
+        remove(const_cast<ValueType*>(it.m_iterator.m_position));
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::removeWithoutEntryConsistencyCheck(iterator it)
+    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::remove(const_iterator it)
     {
         if (it == end())
             return;
 
-        removeAndInvalidateWithoutEntryConsistencyCheck(const_cast<ValueType*>(it.m_iterator.m_position));
-    }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    inline void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::removeWithoutEntryConsistencyCheck(const_iterator it)
-    {
-        if (it == end())
-            return;
-
-        removeAndInvalidateWithoutEntryConsistencyCheck(const_cast<ValueType*>(it.m_position));
+        remove(const_cast<ValueType*>(it.m_position));
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
@@ -1112,8 +896,6 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::rehash(int newTableSize)
     {
-        internalCheckTableConsistencyExceptSize();
-
         int oldTableSize = m_tableSize;
         ValueType* oldTable = m_table;
 
@@ -1138,14 +920,11 @@ namespace WTF {
         m_deletedCount = 0;
 
         deallocateTable(oldTable, oldTableSize);
-
-        internalCheckTableConsistency();
     }
 
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::clear()
     {
-        invalidateIterators();
         if (!m_table)
             return;
 
@@ -1163,10 +942,6 @@ namespace WTF {
         , m_tableSizeMask(0)
         , m_keyCount(0)
         , m_deletedCount(0)
-#if CHECK_HASHTABLE_ITERATORS
-        , m_iterators(0)
-        , m_mutex(adoptPtr(new Mutex))
-#endif
 #if DUMP_HASHTABLE_STATS_PER_TABLE
         , m_stats(adoptPtr(new Stats(*other.m_stats)))
 #endif
@@ -1181,9 +956,6 @@ namespace WTF {
     template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
     void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::swap(HashTable& other)
     {
-        invalidateIterators();
-        other.invalidateIterators();
-
         ValueType* tmp_table = m_table;
         m_table = other.m_table;
         other.m_table = tmp_table;
@@ -1216,119 +988,6 @@ namespace WTF {
         swap(tmp);
         return *this;
     }
-
-#if !ASSERT_DISABLED
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::checkTableConsistency() const
-    {
-        checkTableConsistencyExceptSize();
-        ASSERT(!m_table || !shouldExpand());
-        ASSERT(!shouldShrink());
-    }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::checkTableConsistencyExceptSize() const
-    {
-        if (!m_table)
-            return;
-
-        int count = 0;
-        int deletedCount = 0;
-        for (int j = 0; j < m_tableSize; ++j) {
-            ValueType* entry = m_table + j;
-            if (isEmptyBucket(*entry))
-                continue;
-
-            if (isDeletedBucket(*entry)) {
-                ++deletedCount;
-                continue;
-            }
-
-            const_iterator it = find(Extractor::extract(*entry));
-            ASSERT(entry == it.m_position);
-            ++count;
-        }
-
-        ASSERT(count == m_keyCount);
-        ASSERT(deletedCount == m_deletedCount);
-        ASSERT(m_tableSize >= KeyTraits::minimumTableSize);
-        ASSERT(m_tableSizeMask);
-        ASSERT(m_tableSize == m_tableSizeMask + 1);
-    }
-
-#endif // ASSERT_DISABLED
-
-#if CHECK_HASHTABLE_ITERATORS
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>::invalidateIterators()
-    {
-        MutexLocker lock(*m_mutex);
-        const_iterator* next;
-        for (const_iterator* p = m_iterators; p; p = next) {
-            next = p->m_next;
-            p->m_table = 0;
-            p->m_next = 0;
-            p->m_previous = 0;
-        }
-        m_iterators = 0;
-    }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void addIterator(const HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>* table,
-        HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>* it)
-    {
-        it->m_table = table;
-        it->m_previous = 0;
-
-        // Insert iterator at head of doubly-linked list of iterators.
-        if (!table) {
-            it->m_next = 0;
-        } else {
-            MutexLocker lock(*table->m_mutex);
-            ASSERT(table->m_iterators != it);
-            it->m_next = table->m_iterators;
-            table->m_iterators = it;
-            if (it->m_next) {
-                ASSERT(!it->m_next->m_previous);
-                it->m_next->m_previous = it;
-            }
-        }
-    }
-
-    template<typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits>
-    void removeIterator(HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits>* it)
-    {
-        typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> HashTableType;
-        typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits> const_iterator;
-
-        // Delete iterator from doubly-linked list of iterators.
-        if (!it->m_table) {
-            ASSERT(!it->m_next);
-            ASSERT(!it->m_previous);
-        } else {
-            MutexLocker lock(*it->m_table->m_mutex);
-            if (it->m_next) {
-                ASSERT(it->m_next->m_previous == it);
-                it->m_next->m_previous = it->m_previous;
-            }
-            if (it->m_previous) {
-                ASSERT(it->m_table->m_iterators != it);
-                ASSERT(it->m_previous->m_next == it);
-                it->m_previous->m_next = it->m_next;
-            } else {
-                ASSERT(it->m_table->m_iterators == it);
-                it->m_table->m_iterators = it->m_next;
-            }
-        }
-
-        it->m_table = 0;
-        it->m_next = 0;
-        it->m_previous = 0;
-    }
-
-#endif // CHECK_HASHTABLE_ITERATORS
 
     // iterator adapters
 

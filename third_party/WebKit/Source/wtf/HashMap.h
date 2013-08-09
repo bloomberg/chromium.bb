@@ -129,8 +129,6 @@ namespace WTF {
         //   static translate(ValueType&, const T&, unsigned hashCode);
         template<typename HashTranslator, typename T> AddResult add(const T&, MappedPassInType);
 
-        void checkConsistency() const;
-
         static bool isValidKey(const KeyType&);
 
     private:
@@ -382,10 +380,7 @@ namespace WTF {
     template<typename T, typename U, typename V, typename W, typename X>
     inline void HashMap<T, U, V, W, X>::remove(iterator it)
     {
-        if (it.m_impl == m_impl.end())
-            return;
-        m_impl.internalCheckTableConsistency();
-        m_impl.removeWithoutEntryConsistencyCheck(it.m_impl);
+        m_impl.remove(it.m_impl);
     }
 
     template<typename T, typename U, typename V, typename W, typename X>
@@ -410,12 +405,6 @@ namespace WTF {
         MappedPassOutType result = MappedTraits::passOut(it->value);
         remove(it);
         return result;
-    }
-
-    template<typename T, typename U, typename V, typename W, typename X>
-    inline void HashMap<T, U, V, W, X>::checkConsistency() const
-    {
-        m_impl.checkTableConsistency();
     }
 
     template<typename T, typename U, typename V, typename W, typename X>

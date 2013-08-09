@@ -21,7 +21,11 @@
 #include "config.h"
 #include "RefCountedLeakCounter.h"
 
+#ifndef NDEBUG
+#include "wtf/Assertions.h"
+#include "wtf/Atomics.h"
 #include "wtf/HashCountedSet.h"
+#endif
 
 namespace WTF {
 

@@ -228,7 +228,6 @@ HTMLInputElement* CheckedRadioButtons::checkedButtonForGroup(const AtomicString&
 {
     if (!m_nameToGroupMap)
         return 0;
-    m_nameToGroupMap->checkConsistency();
     RadioButtonGroup* group = m_nameToGroupMap->get(name.impl());
     return group ? group->checkedButton() : 0;
 }
@@ -252,7 +251,6 @@ void CheckedRadioButtons::removeButton(HTMLInputElement* element)
     if (!m_nameToGroupMap)
         return;
 
-    m_nameToGroupMap->checkConsistency();
     NameToGroupMap::iterator it = m_nameToGroupMap->find(element->name().impl());
     if (it == m_nameToGroupMap->end())
         return;

@@ -326,8 +326,6 @@ const StyleRuleKeyframes* ScopedStyleResolver::keyframeStylesForAnimation(const 
     if (m_keyframesRuleMap.isEmpty())
         return 0;
 
-    m_keyframesRuleMap.checkConsistency();
-
     KeyframesRuleMap::iterator it = m_keyframesRuleMap.find(animationName);
     if (it == m_keyframesRuleMap.end())
         return 0;

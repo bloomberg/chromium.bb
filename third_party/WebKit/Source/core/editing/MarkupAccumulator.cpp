@@ -262,8 +262,6 @@ bool MarkupAccumulator::shouldAddNamespaceElement(const Element* element)
 
 bool MarkupAccumulator::shouldAddNamespaceAttribute(const Attribute& attribute, Namespaces& namespaces)
 {
-    namespaces.checkConsistency();
-
     // Don't add namespace attributes twice
     if (attribute.name() == XMLNSNames::xmlnsAttr) {
         namespaces.set(emptyAtom.impl(), attribute.value().impl());
@@ -281,7 +279,6 @@ bool MarkupAccumulator::shouldAddNamespaceAttribute(const Attribute& attribute, 
 
 void MarkupAccumulator::appendNamespace(StringBuilder& result, const AtomicString& prefix, const AtomicString& namespaceURI, Namespaces& namespaces)
 {
-    namespaces.checkConsistency();
     if (namespaceURI.isEmpty())
         return;
 
@@ -483,9 +480,6 @@ void MarkupAccumulator::appendCDATASection(StringBuilder& result, const String& 
 
 void MarkupAccumulator::appendStartMarkup(StringBuilder& result, const Node* node, Namespaces* namespaces)
 {
-    if (namespaces)
-        namespaces->checkConsistency();
-
     switch (node->nodeType()) {
     case Node::TEXT_NODE:
         appendText(result, toText(const_cast<Node*>(node)));

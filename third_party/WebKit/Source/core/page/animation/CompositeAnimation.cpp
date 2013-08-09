@@ -61,7 +61,6 @@ void CompositeAnimation::clearRenderer()
         }
     }
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             KeyframeAnimation* anim = it->value.get();
@@ -194,8 +193,6 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
     if (m_keyframeAnimations.isEmpty() && !targetStyle->hasAnimations())
         return;
 
-    m_keyframeAnimations.checkConsistency();
-
     AnimationNameMap::const_iterator kfend = m_keyframeAnimations.end();
 
     if (currentStyle && currentStyle->hasAnimations() && targetStyle->hasAnimations() && *(currentStyle->animations()) == *(targetStyle->animations())) {
@@ -286,7 +283,6 @@ PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject* renderer, Rend
     // We don't do any transitions if we don't have a currentStyle (on startup).
     updateTransitions(renderer, currentStyle, targetStyle);
     updateKeyframeAnimations(renderer, currentStyle, targetStyle);
-    m_keyframeAnimations.checkConsistency();
 
     if (currentStyle) {
         // Now that we have transition objects ready, let them know about the new goal state.  We want them
@@ -320,8 +316,6 @@ PassRefPtr<RenderStyle> CompositeAnimation::getAnimatedStyle() const
             implicitAnimation->getAnimatedStyle(resultStyle);
     }
 
-    m_keyframeAnimations.checkConsistency();
-
     for (Vector<AtomicString>::const_iterator it = m_keyframeAnimationOrderList.begin(); it != m_keyframeAnimationOrderList.end(); ++it) {
         RefPtr<KeyframeAnimation> keyframeAnimation = m_keyframeAnimations.get(*it);
         ASSERT(keyframeAnimation);
@@ -349,7 +343,6 @@ double CompositeAnimation::timeToNextService() const
         }
     }
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             KeyframeAnimation* animation = it->value.get();
@@ -385,7 +378,6 @@ double CompositeAnimation::timeToNextEvent() const
         }
     }
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             KeyframeAnimation* animation = it->value.get();
@@ -410,7 +402,6 @@ PassRefPtr<KeyframeAnimation> CompositeAnimation::getAnimationForProperty(CSSPro
     // We want to send back the last animation with the property if there are multiples.
     // So we need to iterate through all animations
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             RefPtr<KeyframeAnimation> anim = it->value;
@@ -430,7 +421,6 @@ void CompositeAnimation::suspendAnimations()
     m_suspended = true;
 
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             if (KeyframeAnimation* anim = it->value.get())
@@ -455,7 +445,6 @@ void CompositeAnimation::resumeAnimations()
     m_suspended = false;
 
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             KeyframeAnimation* anim = it->value.get();
@@ -501,7 +490,6 @@ void CompositeAnimation::resumeOverriddenImplicitAnimations(CSSPropertyID proper
 bool CompositeAnimation::isAnimatingProperty(CSSPropertyID property, bool acceleratedOnly, bool isRunningNow) const
 {
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             KeyframeAnimation* anim = it->value.get();
@@ -523,8 +511,6 @@ bool CompositeAnimation::isAnimatingProperty(CSSPropertyID property, bool accele
 
 void CompositeAnimation::pauseAnimationsForTesting(double t)
 {
-    m_keyframeAnimations.checkConsistency();
-
     AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
     for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
         RefPtr<KeyframeAnimation> keyframeAnim = it->value;
@@ -553,7 +539,6 @@ unsigned CompositeAnimation::numberOfActiveAnimations() const
     unsigned count = 0;
 
     if (!m_keyframeAnimations.isEmpty()) {
-        m_keyframeAnimations.checkConsistency();
         AnimationNameMap::const_iterator animationsEnd = m_keyframeAnimations.end();
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != animationsEnd; ++it) {
             KeyframeAnimation* anim = it->value.get();
