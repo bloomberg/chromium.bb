@@ -1267,11 +1267,3 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
 crbug.com/270266 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Pass Failure ]
-
-# Below test case need to rebaseline after crrev.com/22415003
-# Image only
-crbug.com/252120 [ Linux Win ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
-crbug.com/252120 [ Linux ] tables/mozilla/core/bloomberg.html [ NeedsRebaseline ]
-# Image and Text both
-crbug.com/252120 [ Mac ] tables/mozilla/bugs/bug7714.html [ NeedsRebaseline ]
-crbug.com/252120 [ Win Mac ] tables/mozilla/core/bloomberg.html [ NeedsRebaseline ]
