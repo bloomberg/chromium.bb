@@ -70,6 +70,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Invoked when the sign-in status is changed to switch on/off sign-in view.
   void OnSigninStatusChanged();
 
+#if defined(OS_WIN)
+  HWND GetHWND() const;
+#endif
+
  private:
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;

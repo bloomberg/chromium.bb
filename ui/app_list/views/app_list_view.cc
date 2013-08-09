@@ -27,6 +27,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#include "ui/aura/root_window.h"
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #endif
@@ -181,6 +182,18 @@ void AppListView::OnSigninStatusChanged() {
   app_list_main_view_->SetVisible(!needs_signin);
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
+
+#if defined(OS_WIN)
+HWND AppListView::GetHWND() const {
+#if defined(USE_AURA)
+  gfx::NativeWindow window =
+      GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+  return window->GetRootWindow()->GetAcceleratedWidget();
+#else
+  return GetWidget()->GetTopLevelWidget()->GetNativeWindow();
+#endif
+}
+#endif
 
 views::View* AppListView::GetInitiallyFocusedView() {
   return app_list_main_view_->search_box_view()->search_box();

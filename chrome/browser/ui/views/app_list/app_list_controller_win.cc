@@ -336,6 +336,13 @@ class AppListController : public AppListServiceImpl {
   // |requested_profile|.
   void PopulateViewFromProfile(Profile* requested_profile);
 
+  // Creates an AppListView.
+  app_list::AppListView* CreateAppListView();
+
+  // Customizes the app list |hwnd| for Windows (eg: disable aero peek, set up
+  // restart params).
+  void SetWindowAttributes(HWND hwnd);
+
   // Utility methods for showing the app list.
   gfx::Point FindAnchorPoint(const gfx::Display& display,
                              const gfx::Point& cursor);
@@ -348,9 +355,6 @@ class AppListController : public AppListServiceImpl {
   // periodically whenever the app list does not have focus.
   void CheckTaskbarOrViewHasFocus();
 
-  // Returns the underlying HWND for the AppList.
-  HWND GetAppListHWND() const;
-
   // Utilities to manage browser process keep alive for the view itself. Note
   // keep alives are also used when asynchronously loading profiles.
   void EnsureHaveKeepAliveForView();
@@ -358,9 +362,6 @@ class AppListController : public AppListServiceImpl {
 
   // Weak pointer. The view manages its own lifetime.
   app_list::AppListView* current_view_;
-
-  // Weak pointer. The view owns the view delegate.
-  AppListViewDelegate* view_delegate_;
 
   // Timer used to check if the taskbar or app list is active. Using a timer
   // means we don't need to hook Windows, which is apparently not possible
@@ -482,7 +483,6 @@ void AppListControllerDelegateWin::LaunchApp(
 
 AppListController::AppListController()
     : current_view_(NULL),
-      view_delegate_(NULL),
       can_close_app_list_(true),
       regain_first_lost_focus_(false),
       preserving_focus_for_taskbar_menu_(false),
@@ -555,27 +555,38 @@ void AppListController::ShowAppListDuringModeSwitch(
 }
 
 void AppListController::PopulateViewFromProfile(Profile* requested_profile) {
+  // Aura has problems with layered windows and bubble delegates. The app
+  // launcher has a trick where it only hides the window when it is dismissed,
+  // reshowing it again later. This does not work with win aura for some
+  // reason. This change temporarily makes it always get recreated, only on win
+  // aura. See http://crbug.com/176186.
 #if !defined(USE_AURA)
   if (requested_profile == profile())
     return;
 #endif
 
   SetProfile(requested_profile);
+  current_view_ = CreateAppListView();
+}
 
+app_list::AppListView* AppListController::CreateAppListView() {
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
-  view_delegate_ = new AppListViewDelegate(CreateControllerDelegate(),
-                                           profile());
-  current_view_ = new app_list::AppListView(view_delegate_);
+  AppListViewDelegate* view_delegate =
+      new AppListViewDelegate(CreateControllerDelegate(), profile());
+  app_list::AppListView* view = new app_list::AppListView(view_delegate);
   gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  current_view_->InitAsBubble(NULL,
-                              &pagination_model_,
-                              NULL,
-                              cursor,
-                              views::BubbleBorder::FLOAT,
-                              false /* border_accepts_events */);
-  HWND hwnd = GetAppListHWND();
+  view->InitAsBubble(NULL,
+                     &pagination_model_,
+                     NULL,
+                     cursor,
+                     views::BubbleBorder::FLOAT,
+                     false /* border_accepts_events */);
+  SetWindowAttributes(view->GetHWND());
+  return view;
+}
 
+void AppListController::SetWindowAttributes(HWND hwnd) {
   // Vista and lower do not offer pinning to the taskbar, which makes any
   // presence on the taskbar useless. So, hide the window on the taskbar
   // for these versions of Windows.
@@ -617,7 +628,6 @@ void AppListController::DismissAppList() {
 void AppListController::AppListClosing() {
   FreeAnyKeepAliveForView();
   current_view_ = NULL;
-  view_delegate_ = NULL;
   SetProfile(NULL);
   timer_.Stop();
 }
@@ -763,7 +773,7 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
   HWND jump_list_hwnd = FindWindow(L"DV2ControlHost", NULL);
   HWND taskbar_hwnd = FindWindow(kTrayClassName, NULL);
 
-  HWND app_list_hwnd = GetAppListHWND();
+  HWND app_list_hwnd = current_view_->GetHWND();
 
   // This code is designed to hide the app launcher when it loses focus, except
   // for the cases necessary to allow the launcher to be pinned or closed via
@@ -827,16 +837,6 @@ void AppListController::CheckTaskbarOrViewHasFocus() {
   // If we get here, the focused window is not the taskbar, it's context menu,
   // or the app list, so close the app list.
   DismissAppList();
-}
-
-HWND AppListController::GetAppListHWND() const {
-#if defined(USE_AURA)
-  gfx::NativeWindow window =
-      current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-  return window->GetRootWindow()->GetAcceleratedWidget();
-#else
-  return current_view_->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
-#endif
 }
 
 void AppListController::EnsureHaveKeepAliveForView() {
