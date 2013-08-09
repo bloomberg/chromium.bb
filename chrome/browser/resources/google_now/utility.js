@@ -55,6 +55,9 @@ function buildServerRequest(handlerName, contentType) {
   return request;
 }
 
+// Partial mirror of chrome.* for all instrumented functions.
+var instrumented = {};
+
 /**
  * Builds the object to manage tasks (mutually exclusive chains of events).
  * @param {function(string, string): boolean} areConflicting Function that
@@ -296,37 +299,75 @@ function buildTaskManager(areConflicting) {
   }
 
   /**
-   * Instruments an API function to add error processing to its user
-   * code-provided callback.
-   * @param {Object} namespace Namespace of the API function.
-   * @param {string} functionName Name of the API function.
+   * Returns an instrumented function.
+   * @param {array} functionIdentifierParts Path to the chrome.* function.
+   * @param {string} functionName Name of the chrome API function.
    * @param {number} callbackParameter Index of the callback parameter to this
    *     API function.
+   * @return {function} An instrumented function.
    */
-  function instrumentApiFunction(namespace, functionName, callbackParameter) {
-    var originalFunction = namespace[functionName];
-
-    if (!originalFunction)
-      debugAlert('Cannot instrument ' + functionName);
-
-    namespace[functionName] = function() {
+  function createInstrumentedFunction(
+      functionIdentifierParts,
+      functionName,
+      callbackParameter) {
+    return function() {
       // This is the wrapper for the API function. Pass the wrapped callback to
       // the original function.
       var callback = arguments[callbackParameter];
       if (typeof callback != 'function') {
-        debugAlert('Argument ' + callbackParameter + ' of ' + functionName +
-              ' is not a function');
+        debugAlert('Argument ' + callbackParameter + ' of ' +
+                   functionIdentifierParts.join('.') + '.' + functionName +
+                   ' is not a function');
       }
       arguments[callbackParameter] = wrapCallback(
           callback, functionName == 'addListener');
-      return originalFunction.apply(namespace, arguments);
+
+      var chromeContainer = chrome;
+      functionIdentifierParts.map(function(fragment) {
+        chromeContainer = chromeContainer[fragment];
+      });
+      return chromeContainer[functionName].
+          apply(chromeContainer, arguments);
     };
   }
 
-  instrumentApiFunction(chrome.alarms, 'get', 1);
-  instrumentApiFunction(chrome.alarms.onAlarm, 'addListener', 0);
-  instrumentApiFunction(chrome.identity, 'getAuthToken', 1);
-  instrumentApiFunction(chrome.runtime.onSuspend, 'addListener', 0);
+  /**
+   * Instruments an API function to add error processing to its user
+   * code-provided callback.
+   * @param {string} functionIdentifier Full identifier of the function without
+   *     the 'chrome.' portion.
+   * @param {number} callbackParameter Index of the callback parameter to this
+   *     API function.
+   */
+  function instrumentChromeApiFunction(functionIdentifier, callbackParameter) {
+    var functionIdentifierParts = functionIdentifier.split('.');
+    var functionName = functionIdentifierParts.pop();
+    var chromeContainer = chrome;
+    var instrumentedContainer = instrumented;
+    functionIdentifierParts.map(function(fragment) {
+      chromeContainer = chromeContainer[fragment];
+      if (!(fragment in instrumentedContainer))
+        instrumentedContainer[fragment] = {};
+
+      instrumentedContainer = instrumentedContainer[fragment];
+    });
+
+    var targetFunction = chromeContainer[functionName];
+
+    if (!targetFunction)
+      debugAlert('Cannot instrument ' + functionName);
+
+    instrumentedContainer[functionName] = createInstrumentedFunction(
+        functionIdentifierParts,
+        functionName,
+        callbackParameter);
+  }
+
+  instrumentChromeApiFunction('alarms.get', 1);
+  instrumentChromeApiFunction('alarms.onAlarm.addListener', 0);
+  instrumentChromeApiFunction('identity.getAuthToken', 1);
+  instrumentChromeApiFunction('identity.removeCachedAuthToken', 1);
+  instrumentChromeApiFunction('runtime.onSuspend.addListener', 0);
 
   chrome.runtime.onSuspend.addListener(function() {
     var stringifiedPendingCallbacks = JSON.stringify(pendingCallbacks);
@@ -340,12 +381,10 @@ function buildTaskManager(areConflicting) {
   return {
     add: add,
     debugSetStepName: function() {},  // TODO(vadimt): remove
-    instrumentApiFunction: instrumentApiFunction,
+    instrumentChromeApiFunction: instrumentChromeApiFunction,
     wrapCallback: wrapCallback
   };
 }
-
-var storage = chrome.storage.local;
 
 /**
  * Builds an object to manage retrying activities with exponential backoff.
@@ -380,7 +419,7 @@ function buildAttemptManager(
    *     true if the attempt manager has started, false otherwise.
    */
   function isRunning(callback) {
-    chrome.alarms.get(alarmName, function(alarmInfo) {
+    instrumented.alarms.get(alarmName, function(alarmInfo) {
       callback(!!alarmInfo);
     });
   }
@@ -401,7 +440,7 @@ function buildAttemptManager(
 
     var items = {};
     items[currentDelayStorageKey] = newRetryDelaySeconds;
-    storage.set(items);
+    chrome.storage.local.set(items);
   }
 
   /**
@@ -413,7 +452,7 @@ function buildAttemptManager(
   function start(opt_firstDelaySeconds) {
     if (opt_firstDelaySeconds) {
       createAlarm(opt_firstDelaySeconds);
-      storage.remove(currentDelayStorageKey);
+      chrome.storage.local.remove(currentDelayStorageKey);
     } else {
       scheduleNextAttempt();
     }
@@ -424,7 +463,7 @@ function buildAttemptManager(
    */
   function stop() {
     chrome.alarms.clear(alarmName);
-    storage.remove(currentDelayStorageKey);
+    chrome.storage.local.remove(currentDelayStorageKey);
   }
 
   /**
@@ -433,14 +472,14 @@ function buildAttemptManager(
    *     the planning is done.
    */
   function planForNext(callback) {
-    storage.get(currentDelayStorageKey, function(items) {
+    instrumented.storage.local.get(currentDelayStorageKey, function(items) {
       console.log('planForNext-get-storage ' + JSON.stringify(items));
       scheduleNextAttempt(items[currentDelayStorageKey]);
       callback();
     });
   }
 
-  chrome.alarms.onAlarm.addListener(function(alarm) {
+  instrumented.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name == alarmName)
       isRunning(function(running) {
         if (running)
@@ -474,7 +513,7 @@ function buildAuthenticationManager() {
    *     If the user is signed in, the string contains the token.
    */
   function isSignedIn(callback) {
-    chrome.identity.getAuthToken({interactive: false}, function(token) {
+    instrumented.identity.getAuthToken({interactive: false}, function(token) {
       token = chrome.runtime.lastError ? undefined : token;
       callback(token);
       checkAndNotifyListeners(!!token);
@@ -487,7 +526,7 @@ function buildAuthenticationManager() {
    * @param {function} onSuccess Called on completion.
    */
   function removeToken(token, onSuccess) {
-    chrome.identity.removeCachedAuthToken({token: token}, function() {
+    instrumented.identity.removeCachedAuthToken({token: token}, function() {
       // Removing the token from the cache will change the sign in state.
       // Repoll now to check the state and notify listeners.
       // This also lets Chrome now about a possible problem with the token.
@@ -522,7 +561,7 @@ function buildAuthenticationManager() {
     lastReturnedSignedInState = currentSignedInState;
   }
 
-  chrome.alarms.onAlarm.addListener(function(alarm) {
+  instrumented.alarms.onAlarm.addListener(function(alarm) {
     if (alarm.name == alarmName)
       isSignedIn(function() {});
   });

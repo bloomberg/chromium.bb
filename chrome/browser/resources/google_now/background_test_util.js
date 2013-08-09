@@ -9,7 +9,7 @@ function emptyMock() {}
 function buildTaskManager() {
   return {
     debugSetStepName: emptyMock,
-    instrumentApiFunction: emptyMock,
+    instrumentChromeApiFunction: emptyMock,
   };
 }
 
@@ -23,21 +23,21 @@ var instrumentApiFunction = emptyMock;
 var buildAttemptManager = emptyMock;
 var buildCardSet = emptyMock;
 var emptyListener = {addListener: emptyMock};
-chrome['location'] = {onLocationUpdate: emptyListener};
-chrome['notifications'] = {
+var instrumented = {};
+instrumented['location'] = {onLocationUpdate: emptyListener};
+instrumented['notifications'] = {
   onButtonClicked: emptyListener,
   onClicked: emptyListener,
   onClosed: emptyListener
 };
-chrome['omnibox'] = {onInputEntered: emptyListener};
-chrome['preferencesPrivate'] = {
+instrumented['omnibox'] = {onInputEntered: emptyListener};
+instrumented['preferencesPrivate'] = {
   googleGeolocationAccessEnabled: {
     onChange: emptyListener
   }
 };
-chrome['runtime'] = {
+instrumented['runtime'] = {
   onInstalled: emptyListener,
   onStartup: emptyListener
 };
 
-var storage = {};

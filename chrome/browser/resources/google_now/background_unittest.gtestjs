@@ -61,10 +61,10 @@ function mockInitializeDependencies(fixture) {
   fixture.makeAndRegisterMockApis([
     'authenticationManager.isSignedIn',
     'chrome.location.clearWatch',
-    'chrome.notifications.getAll',
-    'chrome.preferencesPrivate.googleGeolocationAccessEnabled.get',
-    'storage.get',
-    'storage.set',
+    'chrome.storage.local.set',
+    'instrumented.notifications.getAll',
+    'instrumented.preferencesPrivate.googleGeolocationAccessEnabled.get',
+    'instrumented.storage.local.get',
     'tasks.add',
     'updateCardsAttempts.isRunning',
     'updateCardsAttempts.stop'
@@ -99,7 +99,7 @@ function expectStateMachineCalls(
 
   var googleGeolocationPrefGetSavedArgs = new SaveMockArguments();
   mockApisObj.expects(once()).
-      chrome_preferencesPrivate_googleGeolocationAccessEnabled_get(
+      instrumented_preferencesPrivate_googleGeolocationAccessEnabled_get(
           googleGeolocationPrefGetSavedArgs.match(eqJSON({})),
           googleGeolocationPrefGetSavedArgs.match(ANYTHING)).
       will(invokeCallback(
@@ -107,7 +107,7 @@ function expectStateMachineCalls(
 
   var storageGetSavedArgs = new SaveMockArguments();
   mockApisObj.expects(once()).
-      storage_get(
+      instrumented_storage_local_get(
           storageGetSavedArgs.match(eq('userRespondedToToast')),
           storageGetSavedArgs.match(ANYTHING)).
       will(invokeCallback(storageGetSavedArgs, 1, testUserRespondedToToast));
@@ -126,7 +126,7 @@ function expectInitialization(mockApisObj) {
   mockApisObj.expects(once()).
       updateCardsAttempts_stop();
   mockApisObj.expects(once()).
-      storage_set(eqJSON({notificationsData: {}}));
+      chrome_storage_local_set(eqJSON({notificationsData: {}}));
   var tasksAddSavedArgs = new SaveMockArguments();
   mockApisObj.expects(once()).
       tasks_add(
@@ -174,7 +174,7 @@ TEST_F(
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
       this.mockApis.expects(exactly(2)).
-          chrome_notifications_getAll(
+          instrumented_notifications_getAll(
               chromeNotificationGetAllSavedArgs.match(ANYTHING)).
           will(
               invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
@@ -218,7 +218,7 @@ TEST_F(
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
       this.mockApis.expects(exactly(2)).
-          chrome_notifications_getAll(
+          instrumented_notifications_getAll(
               chromeNotificationGetAllSavedArgs.match(ANYTHING)).
           will(
               invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
@@ -257,7 +257,7 @@ TEST_F(
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
       this.mockApis.expects(exactly(2)).
-          chrome_notifications_getAll(
+          instrumented_notifications_getAll(
               chromeNotificationGetAllSavedArgs.match(ANYTHING)).
           will(
               invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
@@ -294,7 +294,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
 
   var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
   this.mockApis.expects(exactly(2)).
-      chrome_notifications_getAll(
+      instrumented_notifications_getAll(
           chromeNotificationGetAllSavedArgs.match(ANYTHING)).
       will(
           invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
@@ -334,7 +334,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
 
   var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
   this.mockApis.expects(exactly(2)).
-      chrome_notifications_getAll(
+      instrumented_notifications_getAll(
           chromeNotificationGetAllSavedArgs.match(ANYTHING)).
       will(
           invokeCallback(chromeNotificationGetAllSavedArgs, 0, {}),
@@ -350,9 +350,9 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
  */
 function mockOnNotificationClickedDependencies(fixture) {
   fixture.makeAndRegisterMockApis([
-      'storage.get',
-      'chrome.tabs.create',
-      'chrome.windows.create']);
+      'chrome.windows.create',
+      'instrumented.storage.local.get',
+      'instrumented.tabs.create']);
 }
 
 TEST_F(
@@ -371,7 +371,7 @@ TEST_F(
 
       var storageGetSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
-          storage_get(
+          instrumented_storage_local_get(
               storageGetSavedArgs.match(eq('notificationsData')),
               storageGetSavedArgs.match(ANYTHING)).
           will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
@@ -401,7 +401,7 @@ TEST_F(
 
       var storageGetSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
-          storage_get(
+          instrumented_storage_local_get(
               storageGetSavedArgs.match(eq('notificationsData')),
               storageGetSavedArgs.match(ANYTHING)).
           will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
@@ -432,7 +432,7 @@ TEST_F(
 
       var storageGetSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
-          storage_get(
+          instrumented_storage_local_get(
               storageGetSavedArgs.match(eq('notificationsData')),
               storageGetSavedArgs.match(ANYTHING)).
           will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
@@ -464,7 +464,7 @@ TEST_F(
 
       var storageGetSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
-          storage_get(
+          instrumented_storage_local_get(
               storageGetSavedArgs.match(eq('notificationsData')),
               storageGetSavedArgs.match(ANYTHING)).
           will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
@@ -472,7 +472,7 @@ TEST_F(
           returnValue(testActionUrl));
       var chromeTabsCreateSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
-          chrome_tabs_create(
+          instrumented_tabs_create(
               chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
               chromeTabsCreateSavedArgs.match(ANYTHING)).
           will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
@@ -504,7 +504,7 @@ TEST_F(
 
       var storageGetSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
-          storage_get(
+          instrumented_storage_local_get(
               storageGetSavedArgs.match(eq('notificationsData')),
               storageGetSavedArgs.match(ANYTHING)).
           will(invokeCallback(storageGetSavedArgs, 1, testNotificationData));
@@ -512,7 +512,7 @@ TEST_F(
           returnValue(testActionUrl));
       var chromeTabsCreateSavedArgs = new SaveMockArguments();
       this.mockApis.expects(once()).
-          chrome_tabs_create(
+          instrumented_tabs_create(
               chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
               chromeTabsCreateSavedArgs.match(ANYTHING)).
           will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));

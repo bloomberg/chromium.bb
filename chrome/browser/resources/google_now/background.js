@@ -114,33 +114,28 @@ function areTasksConflicting(newTaskName, scheduledTaskName) {
   return false;
 }
 
-var googleGeolocationAccessEnabledPref =
-    chrome.preferencesPrivate.googleGeolocationAccessEnabled;
-
 var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
-tasks.instrumentApiFunction(chrome.location.onLocationUpdate, 'addListener', 0);
-tasks.instrumentApiFunction(chrome.notifications, 'create', 2);
-tasks.instrumentApiFunction(chrome.notifications, 'update', 2);
-tasks.instrumentApiFunction(chrome.notifications, 'getAll', 0);
-tasks.instrumentApiFunction(
-    chrome.notifications.onButtonClicked, 'addListener', 0);
-tasks.instrumentApiFunction(chrome.notifications.onClicked, 'addListener', 0);
-tasks.instrumentApiFunction(chrome.notifications.onClosed, 'addListener', 0);
-tasks.instrumentApiFunction(chrome.omnibox.onInputEntered, 'addListener', 0);
-tasks.instrumentApiFunction(
-    googleGeolocationAccessEnabledPref,
-    'get',
+tasks.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
+tasks.instrumentChromeApiFunction('notifications.create', 2);
+tasks.instrumentChromeApiFunction('notifications.update', 2);
+tasks.instrumentChromeApiFunction('notifications.getAll', 0);
+tasks.instrumentChromeApiFunction(
+    'notifications.onButtonClicked.addListener', 0);
+tasks.instrumentChromeApiFunction('notifications.onClicked.addListener', 0);
+tasks.instrumentChromeApiFunction('notifications.onClosed.addListener', 0);
+tasks.instrumentChromeApiFunction('omnibox.onInputEntered.addListener', 0);
+tasks.instrumentChromeApiFunction(
+    'preferencesPrivate.googleGeolocationAccessEnabled.get',
     1);
-tasks.instrumentApiFunction(
-    googleGeolocationAccessEnabledPref.onChange,
-    'addListener',
+tasks.instrumentChromeApiFunction(
+    'preferencesPrivate.googleGeolocationAccessEnabled.onChange.addListener',
     0);
-tasks.instrumentApiFunction(chrome.runtime.onInstalled, 'addListener', 0);
-tasks.instrumentApiFunction(chrome.runtime.onStartup, 'addListener', 0);
-tasks.instrumentApiFunction(chrome.tabs, 'create', 1);
-tasks.instrumentApiFunction(storage, 'get', 1);
+tasks.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
+tasks.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
+tasks.instrumentChromeApiFunction('tabs.create', 1);
+tasks.instrumentChromeApiFunction('storage.local.get', 1);
 
 var updateCardsAttempts = buildAttemptManager(
     'cards-update',
@@ -255,80 +250,84 @@ function parseAndShowNotificationCards(response, callback) {
   }
 
   tasks.debugSetStepName('parseAndShowNotificationCards-storage-get');
-  storage.get(['notificationsData', 'recentDismissals'], function(items) {
-    console.log('parseAndShowNotificationCards-get ' + JSON.stringify(items));
-    items.notificationsData = items.notificationsData || {};
-    items.recentDismissals = items.recentDismissals || {};
+  instrumented.storage.local.get(['notificationsData', 'recentDismissals'],
+      function(items) {
+        console.log('parseAndShowNotificationCards-get ' +
+            JSON.stringify(items));
+        items.notificationsData = items.notificationsData || {};
+        items.recentDismissals = items.recentDismissals || {};
 
-    tasks.debugSetStepName(
-        'parseAndShowNotificationCards-notifications-getAll');
-    chrome.notifications.getAll(function(notifications) {
-      console.log('parseAndShowNotificationCards-getAll ' +
-          JSON.stringify(notifications));
-      // TODO(vadimt): Figure out what to do when notifications are disabled for
-      // our extension.
-      notifications = notifications || {};
+        tasks.debugSetStepName(
+            'parseAndShowNotificationCards-notifications-getAll');
+        instrumented.notifications.getAll(function(notifications) {
+          console.log('parseAndShowNotificationCards-getAll ' +
+              JSON.stringify(notifications));
+          // TODO(vadimt): Figure out what to do when notifications are
+          // disabled for our extension.
+          notifications = notifications || {};
 
-      // Build a set of non-expired recent dismissals. It will be used for
-      // client-side filtering of cards.
-      var updatedRecentDismissals = {};
-      var currentTimeMs = Date.now();
-      for (var notificationId in items.recentDismissals) {
-        if (currentTimeMs - items.recentDismissals[notificationId] <
-            DISMISS_RETENTION_TIME_MS) {
-          updatedRecentDismissals[notificationId] =
-              items.recentDismissals[notificationId];
-        }
-      }
+          // Build a set of non-expired recent dismissals. It will be used for
+          // client-side filtering of cards.
+          var updatedRecentDismissals = {};
+          var currentTimeMs = Date.now();
+          for (var notificationId in items.recentDismissals) {
+            if (currentTimeMs - items.recentDismissals[notificationId] <
+                DISMISS_RETENTION_TIME_MS) {
+              updatedRecentDismissals[notificationId] =
+                  items.recentDismissals[notificationId];
+            }
+          }
 
-      // Mark existing notifications that received an update in this server
-      // response.
-      var updatedNotifications = {};
+          // Mark existing notifications that received an update in this server
+          // response.
+          var updatedNotifications = {};
 
-      for (var i = 0; i < cards.length; ++i) {
-        var notificationId = cards[i].notificationId;
-        if (!(notificationId in updatedRecentDismissals) &&
-            notificationId in notifications) {
-          updatedNotifications[notificationId] = true;
-        }
-      }
+          for (var i = 0; i < cards.length; ++i) {
+            var notificationId = cards[i].notificationId;
+            if (!(notificationId in updatedRecentDismissals) &&
+                notificationId in notifications) {
+              updatedNotifications[notificationId] = true;
+            }
+          }
 
-      // Delete notifications that didn't receive an update.
-      for (var notificationId in notifications) {
-        console.log('parseAndShowNotificationCards-delete-check ' +
-                    notificationId);
-        if (!(notificationId in updatedNotifications)) {
-          console.log('parseAndShowNotificationCards-delete ' + notificationId);
-          cardSet.clear(notificationId);
-        }
-      }
+          // Delete notifications that didn't receive an update.
+          for (var notificationId in notifications) {
+            console.log('parseAndShowNotificationCards-delete-check ' +
+                        notificationId);
+            if (!(notificationId in updatedNotifications)) {
+              console.log('parseAndShowNotificationCards-delete ' +
+                  notificationId);
+              cardSet.clear(notificationId);
+            }
+          }
 
-      recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
+          recordEvent(GoogleNowEvent.CARDS_PARSE_SUCCESS);
 
-      // Create/update notifications and store their new properties.
-      var newNotificationsData = {};
-      for (var i = 0; i < cards.length; ++i) {
-        var card = cards[i];
-        if (!(card.notificationId in updatedRecentDismissals)) {
-          var notificationData = items.notificationsData[card.notificationId];
-          var previousVersion = notifications[card.notificationId] &&
-                                notificationData &&
-                                notificationData.cardCreateInfo &&
-                                notificationData.cardCreateInfo.version;
-          newNotificationsData[card.notificationId] =
-              cardSet.update(card, previousVersion);
-        }
-      }
+          // Create/update notifications and store their new properties.
+          var newNotificationsData = {};
+          for (var i = 0; i < cards.length; ++i) {
+            var card = cards[i];
+            if (!(card.notificationId in updatedRecentDismissals)) {
+              var notificationData =
+                  items.notificationsData[card.notificationId];
+              var previousVersion = notifications[card.notificationId] &&
+                                    notificationData &&
+                                    notificationData.cardCreateInfo &&
+                                    notificationData.cardCreateInfo.version;
+              newNotificationsData[card.notificationId] =
+                  cardSet.update(card, previousVersion);
+            }
+          }
 
-      updateCardsAttempts.start(parsedResponse.next_poll_seconds);
+          updateCardsAttempts.start(parsedResponse.next_poll_seconds);
 
-      storage.set({
-        notificationsData: newNotificationsData,
-        recentDismissals: updatedRecentDismissals
+          chrome.storage.local.set({
+            notificationsData: newNotificationsData,
+            recentDismissals: updatedRecentDismissals
+          });
+          callback();
+        });
       });
-      callback();
-    });
-  });
 }
 
 /**
@@ -342,11 +341,11 @@ function removeAllCards() {
   // TODO(robliao): Once Google Now clears its own checkbox in the
   // notifications center and bug 260376 is fixed, the below clearing
   // code is no longer necessary.
-  chrome.notifications.getAll(function(notifications) {
+  instrumented.notifications.getAll(function(notifications) {
     for (var notificationId in notifications) {
       chrome.notifications.clear(notificationId, function() {});
     }
-    storage.set({notificationsData: {}});
+    chrome.storage.local.set({notificationsData: {}});
   });
 }
 
@@ -503,52 +502,53 @@ function requestCardDismissal(
  */
 function processPendingDismissals(callbackBoolean) {
   tasks.debugSetStepName('processPendingDismissals-storage-get');
-  storage.get(['pendingDismissals', 'recentDismissals'], function(items) {
-    console.log('processPendingDismissals-storage-get ' +
-                JSON.stringify(items));
-    items.pendingDismissals = items.pendingDismissals || [];
-    items.recentDismissals = items.recentDismissals || {};
+  instrumented.storage.local.get(['pendingDismissals', 'recentDismissals'],
+      function(items) {
+        console.log('processPendingDismissals-storage-get ' +
+                    JSON.stringify(items));
+        items.pendingDismissals = items.pendingDismissals || [];
+        items.recentDismissals = items.recentDismissals || {};
 
-    var dismissalsChanged = false;
+        var dismissalsChanged = false;
 
-    function onFinish(success) {
-      if (dismissalsChanged) {
-        storage.set({
-          pendingDismissals: items.pendingDismissals,
-          recentDismissals: items.recentDismissals
-        });
-      }
-      callbackBoolean(success);
-    }
+        function onFinish(success) {
+          if (dismissalsChanged) {
+            chrome.storage.local.set({
+              pendingDismissals: items.pendingDismissals,
+              recentDismissals: items.recentDismissals
+            });
+          }
+          callbackBoolean(success);
+        }
 
-    function doProcessDismissals() {
-      if (items.pendingDismissals.length == 0) {
-        dismissalAttempts.stop();
-        onFinish(true);
-        return;
-      }
+        function doProcessDismissals() {
+          if (items.pendingDismissals.length == 0) {
+            dismissalAttempts.stop();
+            onFinish(true);
+            return;
+          }
 
-      // Send dismissal for the first card, and if successful, repeat
-      // recursively with the rest.
-      var dismissal = items.pendingDismissals[0];
-      requestCardDismissal(
-          dismissal.notificationId,
-          dismissal.time,
-          dismissal.parameters,
-          function(done) {
-            if (done) {
-              dismissalsChanged = true;
-              items.pendingDismissals.splice(0, 1);
-              items.recentDismissals[dismissal.notificationId] = Date.now();
-              doProcessDismissals();
-            } else {
-              onFinish(false);
-            }
-          });
-    }
+          // Send dismissal for the first card, and if successful, repeat
+          // recursively with the rest.
+          var dismissal = items.pendingDismissals[0];
+          requestCardDismissal(
+              dismissal.notificationId,
+              dismissal.time,
+              dismissal.parameters,
+              function(done) {
+                if (done) {
+                  dismissalsChanged = true;
+                  items.pendingDismissals.splice(0, 1);
+                  items.recentDismissals[dismissal.notificationId] = Date.now();
+                  doProcessDismissals();
+                } else {
+                  onFinish(false);
+                }
+              });
+        }
 
-    doProcessDismissals();
-  });
+        doProcessDismissals();
+      });
 }
 
 /**
@@ -569,7 +569,7 @@ function retryPendingDismissals() {
  *     the clicked area from the button action URLs info.
  */
 function onNotificationClicked(notificationId, selector) {
-  storage.get('notificationsData', function(items) {
+  instrumented.storage.local.get('notificationsData', function(items) {
     items.notificationsData = items.notificationsData || {};
 
     var notificationData = items.notificationsData[notificationId];
@@ -590,7 +590,7 @@ function onNotificationClicked(notificationId, selector) {
     if (typeof url != 'string')
       return;
 
-    chrome.tabs.create({url: url}, function(tab) {
+    instrumented.tabs.create({url: url}, function(tab) {
       if (!tab)
         chrome.windows.create({url: url});
     });
@@ -602,11 +602,11 @@ function onNotificationClicked(notificationId, selector) {
  * @param {number} buttonIndex The index of the button which was clicked.
  */
 function onToastNotificationClicked(buttonIndex) {
-  storage.set({userRespondedToToast: true});
+  chrome.storage.local.set({userRespondedToToast: true});
 
   if (buttonIndex == ToastButtonIndex.YES) {
     chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastClickedYes');
-    googleGeolocationAccessEnabledPref.set({value: true});
+    chrome.preferencesPrivate.googleGeolocationAccessEnabled.set({value: true});
     // The googlegeolocationaccessenabled preference change callback
     // will take care of starting the poll for cards.
   } else {
@@ -628,7 +628,7 @@ function onNotificationClosed(notificationId, byUser) {
     // Even though they only closed the notification without clicking no, treat
     // it as though they clicked No anwyay, and don't show the toast again.
     chrome.metricsPrivate.recordUserAction('GoogleNow.WelcomeToastDismissed');
-    storage.set({userRespondedToToast: true});
+    chrome.storage.local.set({userRespondedToToast: true});
     return;
   }
 
@@ -643,21 +643,23 @@ function onNotificationClosed(notificationId, byUser) {
     cardSet.clear(notificationId);
 
     tasks.debugSetStepName('onNotificationClosed-storage-get');
-    storage.get(['pendingDismissals', 'notificationsData'], function(items) {
-      items.pendingDismissals = items.pendingDismissals || [];
-      items.notificationsData = items.notificationsData || {};
+    instrumented.storage.local.get(['pendingDismissals', 'notificationsData'],
+        function(items) {
+          items.pendingDismissals = items.pendingDismissals || [];
+          items.notificationsData = items.notificationsData || {};
 
-      var notificationData = items.notificationsData[notificationId];
+          var notificationData = items.notificationsData[notificationId];
 
-      var dismissal = {
-        notificationId: notificationId,
-        time: Date.now(),
-        parameters: notificationData && notificationData.dismissalParameters
-      };
-      items.pendingDismissals.push(dismissal);
-      storage.set({pendingDismissals: items.pendingDismissals});
-      processPendingDismissals(function(success) { callback(); });
-    });
+          var dismissal = {
+            notificationId: notificationId,
+            time: Date.now(),
+            parameters: notificationData && notificationData.dismissalParameters
+          };
+          items.pendingDismissals.push(dismissal);
+          chrome.storage.local.set(
+              {pendingDismissals: items.pendingDismissals});
+          processPendingDismissals(function(success) { callback(); });
+        });
   });
 }
 
@@ -731,7 +733,7 @@ function setShouldPollCards(shouldPollCardsRequest, callback) {
 function setToastVisible(visibleRequest, callback) {
   tasks.debugSetStepName(
       'setToastVisible-shouldSetToastVisible-getAllNotifications');
-  chrome.notifications.getAll(function(notifications) {
+  instrumented.notifications.getAll(function(notifications) {
     // TODO(vadimt): Figure out what to do when notifications are disabled for
     // our extension.
     notifications = notifications || {};
@@ -780,7 +782,7 @@ function updateRunningState(
         // If the user enabled geolocation independently of Google Now,
         // the user has implicitly responded to the toast.
         // We do not want to show it again.
-        storage.set({userRespondedToToast: true});
+        chrome.storage.local.set({userRespondedToToast: true});
       }
 
       shouldPollCards = true;
@@ -815,19 +817,24 @@ function onStateChange() {
       var signedIn = !!token && !!NOTIFICATION_CARDS_URL;
       tasks.debugSetStepName(
           'onStateChange-get-googleGeolocationAccessEnabledPref');
-      googleGeolocationAccessEnabledPref.get({}, function(prefValue) {
-        var geolocationEnabled = !!prefValue.value;
-        tasks.debugSetStepName(
-          'onStateChange-get-userRespondedToToast');
-        storage.get('userRespondedToToast', function(items) {
-          var userRespondedToToast = !!items.userRespondedToToast;
-          updateRunningState(
-              signedIn,
-              geolocationEnabled,
-              userRespondedToToast,
-              callback);
-        });
-      });
+      instrumented.
+          preferencesPrivate.
+          googleGeolocationAccessEnabled.
+          get({}, function(prefValue) {
+            var geolocationEnabled = !!prefValue.value;
+            tasks.debugSetStepName(
+              'onStateChange-get-userRespondedToToast');
+            instrumented.storage.local.get(
+                'userRespondedToToast',
+                function(items) {
+                  var userRespondedToToast = !!items.userRespondedToToast;
+                  updateRunningState(
+                      signedIn,
+                      geolocationEnabled,
+                      userRespondedToToast,
+                      callback);
+                });
+          });
     });
   });
 }
@@ -850,7 +857,7 @@ function showWelcomeToast() {
     priority: 2,
     buttons: buttons
   };
-  chrome.notifications.create(WELCOME_TOAST_NOTIFICATION_ID, options,
+  instrumented.notifications.create(WELCOME_TOAST_NOTIFICATION_ID, options,
       function(notificationId) {});
 }
 
@@ -863,21 +870,26 @@ function hideWelcomeToast() {
       function() {});
 }
 
-chrome.runtime.onInstalled.addListener(function(details) {
+instrumented.runtime.onInstalled.addListener(function(details) {
   console.log('onInstalled ' + JSON.stringify(details));
   if (details.reason != 'chrome_update') {
     initialize();
   }
 });
 
-chrome.runtime.onStartup.addListener(function() {
+instrumented.runtime.onStartup.addListener(function() {
   console.log('onStartup');
   initialize();
 });
 
-googleGeolocationAccessEnabledPref.onChange.addListener(function(prefValue) {
-  console.log('googleGeolocationAccessEnabledPref onChange ' + prefValue.value);
-  onStateChange();
+instrumented.
+    preferencesPrivate.
+    googleGeolocationAccessEnabled.
+    onChange.
+    addListener(function(prefValue) {
+      console.log('googleGeolocationAccessEnabled Pref onChange ' +
+          prefValue.value);
+      onStateChange();
 });
 
 authenticationManager.addListener(function() {
@@ -885,7 +897,7 @@ authenticationManager.addListener(function() {
   onStateChange();
 });
 
-chrome.notifications.onClicked.addListener(
+instrumented.notifications.onClicked.addListener(
     function(notificationId) {
       chrome.metricsPrivate.recordUserAction('GoogleNow.MessageClicked');
       onNotificationClicked(notificationId, function(actionUrls) {
@@ -893,7 +905,7 @@ chrome.notifications.onClicked.addListener(
       });
     });
 
-chrome.notifications.onButtonClicked.addListener(
+instrumented.notifications.onButtonClicked.addListener(
     function(notificationId, buttonIndex) {
       if (notificationId == WELCOME_TOAST_NOTIFICATION_ID) {
         onToastNotificationClicked(buttonIndex);
@@ -909,14 +921,14 @@ chrome.notifications.onButtonClicked.addListener(
       }
     });
 
-chrome.notifications.onClosed.addListener(onNotificationClosed);
+instrumented.notifications.onClosed.addListener(onNotificationClosed);
 
-chrome.location.onLocationUpdate.addListener(function(position) {
+instrumented.location.onLocationUpdate.addListener(function(position) {
   recordEvent(GoogleNowEvent.LOCATION_UPDATE);
   updateNotificationsCards(position);
 });
 
-chrome.omnibox.onInputEntered.addListener(function(text) {
+instrumented.omnibox.onInputEntered.addListener(function(text) {
   localStorage['server_url'] = NOTIFICATION_CARDS_URL = text;
   initialize();
 });

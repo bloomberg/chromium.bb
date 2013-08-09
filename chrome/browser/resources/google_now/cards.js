@@ -43,7 +43,7 @@ function buildCardSet() {
       try {
         // Delete a notification with the specified id if it already exists, and
         // then create a notification.
-        chrome.notifications.create(
+        instrumented.notifications.create(
             cardId,
             cardCreateInfo.notification,
             function(newNotificationId) {
@@ -63,7 +63,7 @@ function buildCardSet() {
     } else {
       try {
         // Update existing notification.
-        chrome.notifications.update(
+        instrumented.notifications.update(
             cardId,
             cardCreateInfo.notification,
             function(wasUpdated) {
@@ -147,13 +147,13 @@ function buildCardSet() {
     chrome.alarms.clear(cardHidePrefix + cardId);
   }
 
-  chrome.alarms.onAlarm.addListener(function(alarm) {
+  instrumented.alarms.onAlarm.addListener(function(alarm) {
     console.log('cardManager.onAlarm ' + JSON.stringify(alarm));
 
     if (alarm.name.indexOf(cardShowPrefix) == 0) {
       // Alarm to show the card.
       var cardId = alarm.name.substring(cardShowPrefix.length);
-      storage.get('notificationsData', function(items) {
+      instrumented.storage.local.get('notificationsData', function(items) {
         items.notificationsData = items.notificationsData || {};
         console.log('cardManager.onAlarm.get ' + JSON.stringify(items));
         var notificationData = items.notificationsData[cardId];
