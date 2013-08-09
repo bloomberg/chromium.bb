@@ -65,7 +65,7 @@ void ChromeNotifierDelegate::NavigateToUrl(const GURL& destination) const {
 
 void ChromeNotifierDelegate::Close(bool by_user) {
   if (by_user)
-    chrome_notifier_->MarkNotificationAsDismissed(notification_id_);
+    chrome_notifier_->MarkNotificationAsRead(notification_id_);
 }
 
 }  // namespace notifier

@@ -79,6 +79,7 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
 
   bool EqualsIgnoringReadState(const SyncedNotification& other) const;
 
+  void NotificationHasBeenRead();
   void NotificationHasBeenDismissed();
 
   // Fill up the queue of bitmaps to fetch.
@@ -98,6 +99,9 @@ class SyncedNotification : public NotificationBitmapFetcherDelegate {
   // This gets a pointer to the SyncedNotificationSpecifics part
   // of the sync data.
   sync_pb::EntitySpecifics GetEntitySpecifics() const;
+
+  // Write a notification to the console log.
+  void LogNotification();
 
  private:
   // Helper function to mark a notification as read or dismissed.

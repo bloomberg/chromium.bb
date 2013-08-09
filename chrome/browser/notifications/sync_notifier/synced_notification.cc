@@ -191,7 +191,7 @@ void SyncedNotification::Show(NotificationUIManager* notification_manager,
   if (SyncedNotification::kRead == GetReadState() ||
       SyncedNotification::kDismissed == GetReadState() ) {
     notification_manager->CancelById(GetKey());
-    DVLOG(2) << "Dismissed notification arrived"
+    DVLOG(2) << "Dismissed or read notification arrived"
              << GetHeading() << " " << GetText();
     return;
   }
@@ -376,6 +376,19 @@ bool SyncedNotification::EqualsIgnoringReadState(
   return false;
 }
 
+void SyncedNotification::LogNotification() {
+  std::string readStateString("Unread");
+  if (SyncedNotification::kRead == GetReadState())
+    readStateString = "Read";
+  else if (SyncedNotification::kDismissed == GetReadState())
+    readStateString = "Dismissed";
+
+  DVLOG(2) << " Notification: Heading is " << GetHeading()
+           << " description is " << GetDescription()
+           << " key is " << GetKey()
+           << " read state is " << readStateString;
+}
+
 // Set the read state on the notification, returns true for success.
 void SyncedNotification::SetReadState(const ReadState& read_state) {
 
@@ -391,6 +404,10 @@ void SyncedNotification::SetReadState(const ReadState& read_state) {
         sync_pb::CoalescedSyncedNotification_ReadState_READ);
   else
     NOTREACHED();
+}
+
+void SyncedNotification::NotificationHasBeenRead() {
+  SetReadState(kRead);
 }
 
 void SyncedNotification::NotificationHasBeenDismissed() {

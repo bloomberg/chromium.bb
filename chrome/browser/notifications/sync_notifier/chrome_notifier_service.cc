@@ -102,7 +102,12 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
           if (incoming->GetReadState() == SyncedNotification::kDismissed) {
             // If it is marked as read on the server, but not the client.
             found->NotificationHasBeenDismissed();
-            // Tell the Notification UI Manager to mark it read.
+            // Tell the Notification UI Manager to remove it.
+            notification_manager_->CancelById(found->GetKey());
+          } else if (incoming->GetReadState() == SyncedNotification::kRead) {
+            // If it is marked as read on the server, but not the client.
+            found->NotificationHasBeenRead();
+            // Tell the Notification UI Manager to remove it.
             notification_manager_->CancelById(found->GetKey());
           } else {
             // If it is marked as read on the client, but not the server.
@@ -225,11 +230,15 @@ scoped_ptr<SyncedNotification>
     return scoped_ptr<SyncedNotification>();
   }
 
-  // TODO(petewil): Is this the right set?  Should I add more?
   bool is_well_formed_unread_notification =
       (static_cast<SyncedNotification::ReadState>(
           specifics.coalesced_notification().read_state()) ==
        SyncedNotification::kUnread &&
+       specifics.coalesced_notification().has_render_info());
+  bool is_well_formed_read_notification =
+      (static_cast<SyncedNotification::ReadState>(
+          specifics.coalesced_notification().read_state()) ==
+       SyncedNotification::kRead &&
        specifics.coalesced_notification().has_render_info());
   bool is_well_formed_dismissed_notification =
       (static_cast<SyncedNotification::ReadState>(
@@ -238,12 +247,15 @@ scoped_ptr<SyncedNotification>
 
   // If the notification is poorly formed, return a null pointer.
   if (!is_well_formed_unread_notification &&
+      !is_well_formed_read_notification &&
       !is_well_formed_dismissed_notification) {
     DVLOG(1) << "Synced Notification is not well formed."
              << " unread well formed? "
              << is_well_formed_unread_notification
              << " dismissed well formed? "
-             << is_well_formed_dismissed_notification;
+             << is_well_formed_dismissed_notification
+             << " read well formed? "
+             << is_well_formed_read_notification;
     return scoped_ptr<SyncedNotification>();
   }
 
@@ -305,13 +317,13 @@ void ChromeNotifierService::GetSyncedNotificationServices(
   notifiers->push_back(notifier_service);
 }
 
-void ChromeNotifierService::MarkNotificationAsDismissed(
+void ChromeNotifierService::MarkNotificationAsRead(
     const std::string& key) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   SyncedNotification* notification = FindNotificationById(key);
   CHECK(notification != NULL);
 
-  notification->NotificationHasBeenDismissed();
+  notification->NotificationHasBeenRead();
   syncer::SyncChangeList new_changes;
 
   syncer::SyncData sync_data = CreateSyncDataFromNotification(*notification);
@@ -345,19 +357,21 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
 
 void ChromeNotifierService::AddForTest(
     scoped_ptr<notifier::SyncedNotification> notification) {
-    notification_data_.push_back(notification.release());
-  }
+  notification_data_.push_back(notification.release());
+}
 
 void ChromeNotifierService::Display(SyncedNotification* notification) {
   // If the feature is disabled, exit now.
   if (!notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
-          CommandLine::ForCurrentProcess()))
+      CommandLine::ForCurrentProcess()))
     return;
+
+  notification->LogNotification();
 
   // Set up to fetch the bitmaps.
   notification->QueueBitmapFetchJobs(notification_manager_,
-                                          this,
-                                          profile_);
+                                     this,
+                                     profile_);
 
   // Our tests cannot use the network for reliability reasons.
   if (avoid_bitmap_fetching_for_test_) {

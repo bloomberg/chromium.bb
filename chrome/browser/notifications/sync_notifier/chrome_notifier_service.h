@@ -67,7 +67,7 @@ class ChromeNotifierService : public syncer::SyncableService,
 
   // Called when we dismiss a notification.  This is virtual so that test
   // subclasses can override it.
-  virtual void MarkNotificationAsDismissed(const std::string& id);
+  virtual void MarkNotificationAsRead(const std::string& id);
 
   // Called when a notier is enabled or disabled.
   void OnSyncedNotificationServiceEnabled(

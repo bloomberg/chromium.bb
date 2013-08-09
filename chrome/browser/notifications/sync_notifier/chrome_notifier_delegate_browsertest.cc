@@ -34,8 +34,8 @@ class StubChromeNotifierService : public notifier::ChromeNotifierService {
 
   virtual ~StubChromeNotifierService() {}
 
-  virtual void MarkNotificationAsDismissed(const std::string& id) OVERRIDE {
-    dismissed_id_ = id;
+  virtual void MarkNotificationAsRead(const std::string& id) OVERRIDE {
+    read_id_ = id;
   }
 
   notifier::SyncedNotification* CreateNotification(
@@ -62,10 +62,10 @@ class StubChromeNotifierService : public notifier::ChromeNotifierService {
         kTitle1, kText1, kIconUrl1, kImageUrl1, kAppId1, kKey1, kUnread);
   }
 
-  const std::string& dismissed_id() { return dismissed_id_; }
+  const std::string& read_id() { return read_id_; }
 
  private:
-  std::string dismissed_id_;
+  std::string read_id_;
 };
 
 class ChromeNotifierDelegateBrowserTest : public InProcessBrowserTest {};
@@ -153,8 +153,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNotifierDelegateBrowserTest, CloseTest) {
       new notifier::ChromeNotifierDelegate(id, &notifier);
 
   delegate->Close(false);
-  ASSERT_EQ("", notifier.dismissed_id());
+  ASSERT_EQ("", notifier.read_id());
 
   delegate->Close(true);
-  ASSERT_EQ(kTestNotificationId, notifier.dismissed_id());
+  ASSERT_EQ(kTestNotificationId, notifier.read_id());
 }
