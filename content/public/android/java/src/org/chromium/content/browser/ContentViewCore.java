@@ -761,11 +761,6 @@ import java.util.Map;
         mContainerView.setFocusableInTouchMode(true);
         mContainerView.setClickable(true);
 
-        if (mContainerView.getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
-            mContainerView.setHorizontalScrollBarEnabled(false);
-            mContainerView.setVerticalScrollBarEnabled(false);
-        }
-
         mZoomManager = new ZoomManager(mContext, this);
         mContentViewGestureHandler = new ContentViewGestureHandler(mContext, this, mZoomManager,
                 inputEventDeliveryMode);

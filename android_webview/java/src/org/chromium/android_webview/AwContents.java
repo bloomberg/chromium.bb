@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Picture;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.http.SslCertificate;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -122,6 +123,11 @@ public class AwContents {
          * @see View#setMeasuredDimension(int, int)
          */
         void setMeasuredDimension(int measuredWidth, int measuredHeight);
+
+        /**
+         * @see View#getScrollBarStyle()
+         */
+        int super_getScrollBarStyle();
 
         /**
          * Requests a callback on the native DrawGL method (see getAwDrawGLFunction)
@@ -500,6 +506,7 @@ public class AwContents {
                 new OverScroller(mContainerView.getContext()));
 
         setOverScrollMode(mContainerView.getOverScrollMode());
+        setScrollBarStyle(mInternalAccessAdapter.super_getScrollBarStyle());
 
         setNewAwContents(nativeInit(browserContext));
     }
@@ -890,6 +897,54 @@ public class AwContents {
         } else {
             mOverScrollGlow = null;
         }
+    }
+
+    // TODO(mkosiba): In WebViewClassic these appear in some of the scroll extent calculation
+    // methods but toggling them has no visiual effect on the content (in other words the scrolling
+    // code behaves as if the scrollbar-related padding is in place but the onDraw code doesn't
+    // take that into consideration).
+    // http://crbug.com/269032
+    private boolean mOverlayHorizontalScrollbar = true;
+    private boolean mOverlayVerticalScrollbar = false;
+
+    /**
+     * @see View#setScrollBarStyle(int)
+     */
+    public void setScrollBarStyle(int style) {
+        if (style == View.SCROLLBARS_INSIDE_OVERLAY
+                || style == View.SCROLLBARS_OUTSIDE_OVERLAY) {
+            mOverlayHorizontalScrollbar = mOverlayVerticalScrollbar = true;
+        } else {
+            mOverlayHorizontalScrollbar = mOverlayVerticalScrollbar = false;
+        }
+    }
+
+    /**
+     * @see View#setHorizontalScrollbarOverlay(boolean)
+     */
+    public void setHorizontalScrollbarOverlay(boolean overlay) {
+        mOverlayHorizontalScrollbar = overlay;
+    }
+
+    /**
+     * @see View#setVerticalScrollbarOverlay(boolean)
+     */
+    public void setVerticalScrollbarOverlay(boolean overlay) {
+        mOverlayVerticalScrollbar = overlay;
+    }
+
+    /**
+     * @see View#overlayHorizontalScrollbar()
+     */
+    public boolean overlayHorizontalScrollbar() {
+        return mOverlayVerticalScrollbar;
+    }
+
+    /**
+     * @see View#overlayVerticalScrollbar()
+     */
+    public boolean overlayVerticalScrollbar() {
+        return mOverlayVerticalScrollbar;
     }
 
     /**

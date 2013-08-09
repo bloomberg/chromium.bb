@@ -219,6 +219,11 @@ public class AwTestContainerView extends FrameLayout {
         }
 
         @Override
+        public int super_getScrollBarStyle() {
+            return AwTestContainerView.super.getScrollBarStyle();
+        }
+
+        @Override
         public boolean requestDrawGL(Canvas canvas) {
             return false;
         }

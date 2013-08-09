@@ -96,6 +96,11 @@ public class ContentView extends FrameLayout
             AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
+        if (getScrollBarStyle() == View.SCROLLBARS_INSIDE_OVERLAY) {
+            setHorizontalScrollBarEnabled(false);
+            setVerticalScrollBarEnabled(false);
+        }
+
         mContentViewCore = new ContentViewCore(context);
         mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN ?
