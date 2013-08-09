@@ -22,9 +22,13 @@ namespace drive {
 
 namespace {
 
-const int kMaxThrottleCount = 5;
+const int kMaxThrottleCount = 4;
 
-const int kMaxRetryCount = kMaxThrottleCount - 1;
+// According to the API documentation, this should be the same as
+// kMaxThrottleCount (https://developers.google.com/drive/handle-errors).
+// But currently multiplied by 2 to ensure upload related jobs retried for a
+// sufficient number of times. crbug.com/269918
+const int kMaxRetryCount = 2*kMaxThrottleCount;
 
 // Parameter struct for RunUploadNewFile.
 struct UploadNewFileParams {
