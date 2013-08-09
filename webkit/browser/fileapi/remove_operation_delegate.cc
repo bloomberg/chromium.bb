@@ -16,20 +16,22 @@ RemoveOperationDelegate::RemoveOperationDelegate(
     const StatusCallback& callback)
     : RecursiveOperationDelegate(file_system_context),
       url_(url),
-      callback_(callback) {
+      callback_(callback),
+      weak_factory_(this) {
 }
 
 RemoveOperationDelegate::~RemoveOperationDelegate() {}
 
 void RemoveOperationDelegate::Run() {
   operation_runner()->RemoveFile(url_, base::Bind(
-      &RemoveOperationDelegate::DidTryRemoveFile, AsWeakPtr()));
+      &RemoveOperationDelegate::DidTryRemoveFile, weak_factory_.GetWeakPtr()));
 }
 
 void RemoveOperationDelegate::RunRecursively() {
   StartRecursiveOperation(
       url_,
-      base::Bind(&RemoveOperationDelegate::RemoveNextDirectory, AsWeakPtr()));
+      base::Bind(&RemoveOperationDelegate::RemoveNextDirectory,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,
@@ -40,7 +42,8 @@ void RemoveOperationDelegate::ProcessFile(const FileSystemURL& url,
     to_remove_directories_.pop();
   }
   operation_runner()->RemoveFile(url, base::Bind(
-      &RemoveOperationDelegate::DidRemoveFile, AsWeakPtr(), callback));
+      &RemoveOperationDelegate::DidRemoveFile,
+      weak_factory_.GetWeakPtr(), callback));
 }
 
 void RemoveOperationDelegate::ProcessDirectory(const FileSystemURL& url,
@@ -79,7 +82,7 @@ void RemoveOperationDelegate::RemoveNextDirectory(
   to_remove_directories_.pop();
   operation_runner()->RemoveDirectory(url, base::Bind(
       &RemoveOperationDelegate::RemoveNextDirectory,
-      AsWeakPtr()));
+      weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace fileapi

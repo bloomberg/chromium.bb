@@ -46,7 +46,8 @@ FileWriterDelegate::FileWriterDelegate(
       bytes_written_backlog_(0),
       bytes_written_(0),
       bytes_read_(0),
-      io_buffer_(new net::IOBufferWithSize(kReadBufSize)) {
+      io_buffer_(new net::IOBufferWithSize(kReadBufSize)),
+      weak_factory_(this) {
 }
 
 FileWriterDelegate::~FileWriterDelegate() {
@@ -67,7 +68,8 @@ void FileWriterDelegate::Cancel() {
   }
 
   const int status = file_stream_writer_->Cancel(
-      base::Bind(&FileWriterDelegate::OnWriteCancelled, AsWeakPtr()));
+      base::Bind(&FileWriterDelegate::OnWriteCancelled,
+                 weak_factory_.GetWeakPtr()));
   // Return true to finish immediately if we have no pending writes.
   // Otherwise we'll do the final cleanup in the Cancel callback.
   if (status != net::ERR_IO_PENDING) {
@@ -129,7 +131,7 @@ void FileWriterDelegate::Read() {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegate::OnDataReceived,
-                   AsWeakPtr(), bytes_read_));
+                   weak_factory_.GetWeakPtr(), bytes_read_));
   } else if (!request_->status().is_io_pending()) {
     OnError(base::PLATFORM_FILE_ERROR_FAILED);
   }
@@ -155,12 +157,12 @@ void FileWriterDelegate::Write() {
       file_stream_writer_->Write(cursor_.get(),
                                  static_cast<int>(bytes_to_write),
                                  base::Bind(&FileWriterDelegate::OnDataWritten,
-                                            AsWeakPtr()));
+                                            weak_factory_.GetWeakPtr()));
   if (write_response > 0) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,
         base::Bind(&FileWriterDelegate::OnDataWritten,
-                   AsWeakPtr(), write_response));
+                   weak_factory_.GetWeakPtr(), write_response));
   } else if (net::ERR_IO_PENDING != write_response) {
     OnError(NetErrorToPlatformFileError(write_response));
   }
@@ -230,7 +232,7 @@ void FileWriterDelegate::FlushForCompletion(
     int bytes_written,
     WriteProgressStatus progress_status) {
   int flush_error = file_stream_writer_->Flush(
-      base::Bind(&FileWriterDelegate::OnFlushed, AsWeakPtr(),
+      base::Bind(&FileWriterDelegate::OnFlushed, weak_factory_.GetWeakPtr(),
                  error, bytes_written, progress_status));
   if (flush_error != net::ERR_IO_PENDING)
     OnFlushed(error, bytes_written, progress_status, flush_error);

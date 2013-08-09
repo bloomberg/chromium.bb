@@ -48,15 +48,15 @@ void AssertStatusEq(base::PlatformFileError expected,
 }  // namespace
 
 class FileSystemOperationImplWriteTest
-    : public testing::Test,
-      public base::SupportsWeakPtr<FileSystemOperationImplWriteTest> {
+    : public testing::Test {
  public:
   FileSystemOperationImplWriteTest()
       : loop_(base::MessageLoop::TYPE_IO),
         status_(base::PLATFORM_FILE_OK),
         cancel_status_(base::PLATFORM_FILE_ERROR_FAILED),
         bytes_written_(0),
-        complete_(false) {
+        complete_(false),
+        weak_factory_(this) {
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
   }
 
@@ -118,12 +118,12 @@ class FileSystemOperationImplWriteTest
   // Callback function for recording test results.
   FileSystemOperation::WriteCallback RecordWriteCallback() {
     return base::Bind(&FileSystemOperationImplWriteTest::DidWrite,
-                      AsWeakPtr());
+                      weak_factory_.GetWeakPtr());
   }
 
   FileSystemOperation::StatusCallback RecordCancelCallback() {
     return base::Bind(&FileSystemOperationImplWriteTest::DidCancel,
-                      AsWeakPtr());
+                      weak_factory_.GetWeakPtr());
   }
 
   void DidWrite(base::PlatformFileError status, int64 bytes, bool complete) {
@@ -167,6 +167,8 @@ class FileSystemOperationImplWriteTest
 
   MockFileChangeObserver change_observer_;
   ChangeObserverList change_observers_;
+
+  base::WeakPtrFactory<FileSystemOperationImplWriteTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplWriteTest);
 };

@@ -47,11 +47,11 @@ void AssertFileErrorEq(const tracked_objects::Location& from_here,
 
 // Test class for FileSystemOperationImpl.
 class FileSystemOperationImplTest
-    : public testing::Test,
-      public base::SupportsWeakPtr<FileSystemOperationImplTest> {
+    : public testing::Test {
  public:
   FileSystemOperationImplTest()
-      : status_(kFileOperationStatusNotSet) {}
+      : status_(kFileOperationStatusNotSet),
+        weak_factory_(this) {}
 
  protected:
   virtual void SetUp() OVERRIDE {
@@ -165,23 +165,24 @@ class FileSystemOperationImplTest
 
   // Callbacks for recording test results.
   FileSystemOperation::StatusCallback RecordStatusCallback() {
-    return base::Bind(&FileSystemOperationImplTest::DidFinish, AsWeakPtr());
+    return base::Bind(&FileSystemOperationImplTest::DidFinish,
+                      weak_factory_.GetWeakPtr());
   }
 
   FileSystemOperation::ReadDirectoryCallback
   RecordReadDirectoryCallback() {
     return base::Bind(&FileSystemOperationImplTest::DidReadDirectory,
-                      AsWeakPtr());
+                      weak_factory_.GetWeakPtr());
   }
 
   FileSystemOperation::GetMetadataCallback RecordMetadataCallback() {
     return base::Bind(&FileSystemOperationImplTest::DidGetMetadata,
-                      AsWeakPtr());
+                      weak_factory_.GetWeakPtr());
   }
 
   FileSystemOperation::SnapshotFileCallback RecordSnapshotFileCallback() {
     return base::Bind(&FileSystemOperationImplTest::DidCreateSnapshotFile,
-                      AsWeakPtr());
+                      weak_factory_.GetWeakPtr());
   }
 
   void DidFinish(base::PlatformFileError status) {
@@ -286,6 +287,8 @@ class FileSystemOperationImplTest
 
   MockFileChangeObserver change_observer_;
   ChangeObserverList change_observers_;
+
+  base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplTest);
 };

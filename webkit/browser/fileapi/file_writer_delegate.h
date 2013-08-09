@@ -20,8 +20,7 @@ namespace fileapi {
 class FileStreamWriter;
 
 class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
-    : public net::URLRequest::Delegate,
-      public base::SupportsWeakPtr<FileWriterDelegate> {
+    : public net::URLRequest::Delegate {
  public:
   enum WriteProgressStatus {
     SUCCESS_IO_PENDING,
@@ -93,6 +92,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE FileWriterDelegate
   scoped_refptr<net::IOBufferWithSize> io_buffer_;
   scoped_refptr<net::DrainableIOBuffer> cursor_;
   scoped_ptr<net::URLRequest> request_;
+
+  base::WeakPtrFactory<FileWriterDelegate> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileWriterDelegate);
 };
 
 }  // namespace fileapi

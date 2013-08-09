@@ -26,7 +26,8 @@ CopyOrMoveOperationDelegate::CopyOrMoveOperationDelegate(
       src_root_(src_root),
       dest_root_(dest_root),
       operation_type_(operation_type),
-      callback_(callback) {
+      callback_(callback),
+      weak_factory_(this) {
   same_file_system_ = src_root_.IsInSameFileSystem(dest_root_);
 }
 
@@ -56,7 +57,7 @@ void CopyOrMoveOperationDelegate::RunRecursively() {
   // First try to copy/move it as a file.
   CopyOrMoveFile(URLPair(src_root_, dest_root_),
                  base::Bind(&CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile,
-                            AsWeakPtr()));
+                            weak_factory_.GetWeakPtr()));
 }
 
 void CopyOrMoveOperationDelegate::ProcessFile(const FileSystemURL& src_url,
@@ -90,7 +91,7 @@ void CopyOrMoveOperationDelegate::DidTryCopyOrMoveFile(
   operation_runner()->RemoveDirectory(
       dest_root_,
       base::Bind(&CopyOrMoveOperationDelegate::DidTryRemoveDestRoot,
-                 AsWeakPtr()));
+                 weak_factory_.GetWeakPtr()));
 }
 
 void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
@@ -112,7 +113,7 @@ void CopyOrMoveOperationDelegate::DidTryRemoveDestRoot(
   StartRecursiveOperation(
       src_root_,
       base::Bind(&CopyOrMoveOperationDelegate::DidFinishRecursiveCopyDir,
-                 AsWeakPtr(), src_root_, callback_));
+                 weak_factory_.GetWeakPtr(), src_root_, callback_));
 }
 
 void CopyOrMoveOperationDelegate::CopyOrMoveFile(
@@ -132,12 +133,12 @@ void CopyOrMoveOperationDelegate::CopyOrMoveFile(
   // Perform CreateSnapshotFile, CopyInForeignFile and then calls
   // copy_callback which removes the source file if operation_type == MOVE.
   StatusCallback copy_callback =
-      base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy, AsWeakPtr(),
-                 url_pair, callback);
+      base::Bind(&CopyOrMoveOperationDelegate::DidFinishCopy,
+                 weak_factory_.GetWeakPtr(), url_pair, callback);
   operation_runner()->CreateSnapshotFile(
       url_pair.src,
-      base::Bind(&CopyOrMoveOperationDelegate::DidCreateSnapshot, AsWeakPtr(),
-                 url_pair, copy_callback));
+      base::Bind(&CopyOrMoveOperationDelegate::DidCreateSnapshot,
+                 weak_factory_.GetWeakPtr(), url_pair, copy_callback));
 }
 
 void CopyOrMoveOperationDelegate::DidCreateSnapshot(
@@ -172,7 +173,8 @@ void CopyOrMoveOperationDelegate::DidCreateSnapshot(
   validator_.reset(
       factory->CreateCopyOrMoveFileValidator(url_pair.src, platform_path));
   validator_->StartPreWriteValidation(
-      base::Bind(&CopyOrMoveOperationDelegate::DidValidateFile, AsWeakPtr(),
+      base::Bind(&CopyOrMoveOperationDelegate::DidValidateFile,
+                 weak_factory_.GetWeakPtr(),
                  url_pair.dest, callback, file_info, platform_path));
 }
 
@@ -206,7 +208,7 @@ void CopyOrMoveOperationDelegate::DidFinishRecursiveCopyDir(
   operation_runner()->Remove(
       src, true /* recursive */,
       base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
-                 AsWeakPtr(), callback));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void CopyOrMoveOperationDelegate::DidFinishCopy(
@@ -231,7 +233,7 @@ void CopyOrMoveOperationDelegate::DidFinishCopy(
   operation_runner()->CreateSnapshotFile(
       url_pair.dest,
       base::Bind(&CopyOrMoveOperationDelegate::DoPostWriteValidation,
-                 AsWeakPtr(), url_pair, callback));
+                 weak_factory_.GetWeakPtr(), url_pair, callback));
 }
 
 void CopyOrMoveOperationDelegate::DoPostWriteValidation(
@@ -245,7 +247,7 @@ void CopyOrMoveOperationDelegate::DoPostWriteValidation(
     operation_runner()->Remove(
         url_pair.dest, true,
         base::Bind(&CopyOrMoveOperationDelegate::DidRemoveDestForError,
-                   AsWeakPtr(), error, callback));
+                   weak_factory_.GetWeakPtr(), error, callback));
     return;
   }
 
@@ -255,7 +257,7 @@ void CopyOrMoveOperationDelegate::DoPostWriteValidation(
   validator_->StartPostWriteValidation(
       platform_path,
       base::Bind(&CopyOrMoveOperationDelegate::DidPostWriteValidation,
-                 AsWeakPtr(), url_pair, callback, file_ref));
+                 weak_factory_.GetWeakPtr(), url_pair, callback, file_ref));
 }
 
 // |file_ref| is unused; it is passed here to make sure the reference is
@@ -269,7 +271,7 @@ void CopyOrMoveOperationDelegate::DidPostWriteValidation(
     operation_runner()->Remove(
         url_pair.dest, true,
         base::Bind(&CopyOrMoveOperationDelegate::DidRemoveDestForError,
-                   AsWeakPtr(), error, callback));
+                   weak_factory_.GetWeakPtr(), error, callback));
     return;
   }
 
@@ -284,7 +286,7 @@ void CopyOrMoveOperationDelegate::DidPostWriteValidation(
   operation_runner()->Remove(
       url_pair.src, true /* recursive */,
       base::Bind(&CopyOrMoveOperationDelegate::DidRemoveSourceForMove,
-                 AsWeakPtr(), callback));
+                 weak_factory_.GetWeakPtr(), callback));
 }
 
 void CopyOrMoveOperationDelegate::DidRemoveSourceForMove(
