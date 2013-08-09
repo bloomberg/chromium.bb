@@ -75,13 +75,13 @@ inline EventSource::EventSource(ScriptExecutionContext* context, const KURL& url
 PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, const String& url, const Dictionary& eventSourceInit, ExceptionState& es)
 {
     if (url.isEmpty()) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "Cannot open an EventSource to an empty URL.");
         return 0;
     }
 
     KURL fullURL = context->completeURL(url);
     if (!fullURL.isValid()) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "Cannot open an EventSource to '" + url + "'. The URL is invalid.");
         return 0;
     }
 
@@ -92,8 +92,7 @@ PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, con
         shouldBypassMainWorldContentSecurityPolicy = document->frame()->script()->shouldBypassMainWorldContentSecurityPolicy();
     }
     if (!shouldBypassMainWorldContentSecurityPolicy && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
-        // FIXME: Should this be throwing an exception?
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "Refused to connect to '" + fullURL.elidedString() + "' because it violates the document's Content Security Policy.");
         return 0;
     }
 
