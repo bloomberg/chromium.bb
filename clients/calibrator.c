@@ -163,6 +163,22 @@ button_handler(struct widget *widget,
 }
 
 static void
+touch_handler(struct widget *widget, uint32_t serial, uint32_t time,
+	      int32_t id, float x, float y, void *data)
+{
+	struct calibrator *calibrator = data;
+
+	calibrator->tests[calibrator->current_test].clicked_x = x;
+	calibrator->tests[calibrator->current_test].clicked_y = y;
+	calibrator->current_test--;
+
+	if (calibrator->current_test < 0)
+		  finish_calibration(calibrator);
+
+	widget_schedule_redraw(widget);
+}
+
+static void
 redraw_handler(struct widget *widget, void *data)
 {
 	struct calibrator *calibrator = data;
@@ -216,6 +232,7 @@ calibrator_create(struct display *display)
 	calibrator->current_test = ARRAY_LENGTH(test_ratios) - 1;
 
 	widget_set_button_handler(calibrator->widget, button_handler);
+	widget_set_touch_down_handler(calibrator->widget, touch_handler);
 	widget_set_redraw_handler(calibrator->widget, redraw_handler);
 
 	window_set_fullscreen(calibrator->window, 1);
