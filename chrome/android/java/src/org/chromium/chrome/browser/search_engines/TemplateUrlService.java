@@ -115,7 +115,10 @@ public class TemplateUrlService {
         }
     }
 
-    public int getSearchEngine() {
+    /**
+     * @return The default search engine index (e.g., 0, 1, 2,...).
+     */
+    public int getDefaultSearchEngineIndex() {
         ThreadUtils.assertOnUiThread();
         return nativeGetDefaultSearchProvider(mNativeTemplateUrlServiceAndroid);
     }
@@ -125,7 +128,7 @@ public class TemplateUrlService {
      */
     public TemplateUrl getDefaultSearchEngineTemplateUrl() {
         return nativeGetPrepopulatedTemplateUrlAt(
-                mNativeTemplateUrlServiceAndroid, getSearchEngine());
+                mNativeTemplateUrlServiceAndroid, getDefaultSearchEngineIndex());
     }
 
     public void setSearchEngine(int selectedIndex) {

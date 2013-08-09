@@ -66,7 +66,7 @@ public class TemplateUrlServiceTest extends ChromiumTestShellTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                searchEngineIndex.set(templateUrlService.getSearchEngine());
+                searchEngineIndex.set(templateUrlService.getDefaultSearchEngineIndex());
             }
         });
         assertEquals(0, searchEngineIndex.get());
@@ -80,7 +80,7 @@ public class TemplateUrlServiceTest extends ChromiumTestShellTestBase {
                 assertTrue("There must be more than one search engine to change searchEngines",
                         searchEngines.size() > 1);
                 templateUrlService.setSearchEngine(1);
-                searchEngineIndex.set(templateUrlService.getSearchEngine());
+                searchEngineIndex.set(templateUrlService.getDefaultSearchEngineIndex());
             }
         });
         assertEquals(1, searchEngineIndex.get());
