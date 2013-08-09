@@ -43,10 +43,6 @@ class AutofillType {
   static ServerFieldType GetEquivalentBillingFieldType(
       ServerFieldType field_type);
 
-  // TODO(isherman): This method is only used be a single test class.  Move the
-  // logic into there or something, eh?
-  static ServerFieldType StringToFieldType(const std::string& str);
-
  private:
   // The server-native field type, or UNKNOWN_TYPE if unset.
   ServerFieldType server_type_;

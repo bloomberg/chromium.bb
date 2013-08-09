@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -143,13 +144,22 @@ class AutofillMergeTest : public testing::Test,
   // sequentially, and fills |merged_profiles| with the serialized result.
   void MergeProfiles(const std::string& profiles, std::string* merged_profiles);
 
+  // Deserializes |str| into a field type.
+  ServerFieldType StringToFieldType(const std::string& str);
+
   PersonalDataManagerMock personal_data_;
 
  private:
+  std::map<std::string, ServerFieldType> string_to_field_type_map_;
+
   DISALLOW_COPY_AND_ASSIGN(AutofillMergeTest);
 };
 
 AutofillMergeTest::AutofillMergeTest() : DataDrivenTest(GetTestDataDir()) {
+  for (size_t i = NO_SERVER_DATA; i < MAX_VALID_FIELD_TYPE; ++i) {
+    ServerFieldType field_type = static_cast<ServerFieldType>(i);
+    string_to_field_type_map_[AutofillType(field_type).ToString()] = field_type;
+  }
 }
 
 AutofillMergeTest::~AutofillMergeTest() {
@@ -209,8 +219,7 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
         // into the field's name.
         AutofillField* field =
             const_cast<AutofillField*>(form_structure.field(i));
-        ServerFieldType type =
-            AutofillType::StringToFieldType(UTF16ToUTF8(field->name));
+        ServerFieldType type = StringToFieldType(UTF16ToUTF8(field->name));
         field->set_heuristic_type(type);
       }
 
@@ -225,6 +234,10 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
   }
 
   *merged_profiles = SerializeProfiles(personal_data_.web_profiles());
+}
+
+ServerFieldType AutofillMergeTest::StringToFieldType(const std::string& str) {
+  return string_to_field_type_map_[str];
 }
 
 TEST_F(AutofillMergeTest, DataDrivenMergeProfiles) {
