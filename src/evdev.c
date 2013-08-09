@@ -86,7 +86,7 @@ evdev_process_key(struct evdev_device *device, struct input_event *e, int time)
 
 	case BTN_TOUCH:
 		if (e->value == 0 && !device->is_mt)
-			notify_touch(device->seat, time, device->mt.slot, 0, 0,
+			notify_touch(device->seat, time, 0, 0, 0,
 				     WL_TOUCH_UP);
 		break;
 	default:
