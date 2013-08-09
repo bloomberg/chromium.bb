@@ -175,7 +175,7 @@
             '../ppapi/ppapi_internal.gyp:ppapi_shared',
             '../ppapi/ppapi_internal.gyp:ppapi_unittest_shared',
             '../third_party/WebKit/public/blink.gyp:blink',
-            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
+            '../third_party/WebKit/public/blink_test_runner.gyp:blink_test_runner',
             '../ui/surface/surface.gyp:surface',
             '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
             '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
