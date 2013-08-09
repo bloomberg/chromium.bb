@@ -184,6 +184,7 @@ content::WebUIDataSource* CreateHistoryUIHTMLSource(Profile* profile) {
   source->SetUseJsonJSFormatV2();
   source->DisableDenyXFrameOptions();
   source->AddBoolean("isManagedProfile", profile->IsManaged());
+  source->AddBoolean("showDeleteVisitUI", !profile->IsManaged());
 
   return source;
 }

@@ -468,6 +468,44 @@ WrenchMenuModel::WrenchMenuModel()
       tab_strip_model_(NULL) {
 }
 
+bool WrenchMenuModel::ShouldShowNewIncognitoWindowMenuItem() {
+  if (browser_->profile()->IsManaged())
+    return false;
+
+#if defined(OS_WIN)
+  if (win8::IsSingleWindowMetroMode() &&
+      browser_->profile()->HasOffTheRecordProfile()) {
+    return false;
+  }
+#endif
+
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kGuestSession)) {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
+bool WrenchMenuModel::ShouldShowNewWindowMenuItem() {
+#if defined(OS_WIN)
+  if (!win8::IsSingleWindowMetroMode())
+    return true;
+
+  // In Win8's single window Metro mode, we only show the New Window options
+  // if there isn't already a window of the requested type (incognito or not)
+  // that is available.
+  return browser_->profile()->IsOffTheRecord() &&
+      !chrome::FindBrowserWithProfile(
+          browser_->profile()->GetOriginalProfile(),
+          browser_->host_desktop_type());
+#else
+  return true;
+#endif
+}
+
 void WrenchMenuModel::Build(bool is_new_menu) {
 #if defined(OS_WIN)
   AddItem(IDC_VIEW_INCOMPATIBILITIES,
@@ -480,25 +518,13 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 #endif
 
   AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-#if defined(OS_WIN)
-  if (win8::IsSingleWindowMetroMode()) {
-    // In Win8's single window Metro mode, we only show the New Window options
-    // if there isn't already a window of the requested type (incognito or not)
-    // that is available.
-    if (browser_->profile()->IsOffTheRecord()) {
-      if (chrome::FindBrowserWithProfile(
-              browser_->profile()->GetOriginalProfile(),
-              browser_->host_desktop_type()) == NULL) {
-        AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-      }
-    } else if (!browser_->profile()->HasOffTheRecordProfile()) {
-      AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
-    }
-  } else {
-    AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
+  if (ShouldShowNewIncognitoWindowMenuItem())
     AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
-  }
-#if !defined(NDEBUG) && defined(USE_ASH)
+
+  if (ShouldShowNewWindowMenuItem())
+    AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
+
+#if defined(OS_WIN) && !defined(NDEBUG) && defined(USE_ASH)
   if (base::win::GetVersion() < base::win::VERSION_WIN8 &&
       chrome::HOST_DESKTOP_TYPE_NATIVE != chrome::HOST_DESKTOP_TYPE_ASH) {
     AddItemWithStringId(IDC_TOGGLE_ASH_DESKTOP,
@@ -506,17 +532,6 @@ void WrenchMenuModel::Build(bool is_new_menu) {
                                                     IDS_OPEN_ASH_DESKTOP);
   }
 #endif
-#else  // defined(OS_WIN)
-  AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-#if defined(OS_CHROMEOS)
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kGuestSession))
-    AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
-#else
-  AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW, IDS_NEW_INCOGNITO_WINDOW);
-#endif
-
-#endif  // else of defined(OS_WIN)
 
   bookmark_sub_menu_model_.reset(new BookmarkSubMenuModel(this, browser_));
   AddSubMenuWithStringId(IDC_BOOKMARKS_MENU, IDS_BOOKMARKS_MENU,

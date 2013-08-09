@@ -149,6 +149,9 @@ class WrenchMenuModel : public ui::SimpleMenuModel,
 
   void OnZoomLevelChanged(const content::HostZoomMap::ZoomLevelChange& change);
 
+  bool ShouldShowNewIncognitoWindowMenuItem();
+  bool ShouldShowNewWindowMenuItem();
+
   // Models for the special menu items with buttons.
   scoped_ptr<ui::ButtonMenuItemModel> edit_menu_item_model_;
   scoped_ptr<ui::ButtonMenuItemModel> zoom_menu_item_model_;

@@ -1336,15 +1336,18 @@ class AppControllerProfileObserver : public ProfileInfoCacheObserver {
   [item setEnabled:[self validateUserInterfaceItem:item]];
   [dockMenu addItem:item];
 
-  titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
-  item.reset(
-      [[NSMenuItem alloc] initWithTitle:titleStr
-                                 action:@selector(commandFromDock:)
-                          keyEquivalent:@""]);
-  [item setTarget:self];
-  [item setTag:IDC_NEW_INCOGNITO_WINDOW];
-  [item setEnabled:[self validateUserInterfaceItem:item]];
-  [dockMenu addItem:item];
+  // |profile| can be NULL during unit tests.
+  if (!profile || !profile->IsManaged()) {
+    titleStr = l10n_util::GetNSStringWithFixup(IDS_NEW_INCOGNITO_WINDOW_MAC);
+    item.reset(
+        [[NSMenuItem alloc] initWithTitle:titleStr
+                                   action:@selector(commandFromDock:)
+                            keyEquivalent:@""]);
+    [item setTarget:self];
+    [item setTag:IDC_NEW_INCOGNITO_WINDOW];
+    [item setEnabled:[self validateUserInterfaceItem:item]];
+    [dockMenu addItem:item];
+  }
 
   // TODO(rickcam): Mock out BackgroundApplicationListModel, then add unit
   // tests which use the mock in place of the profile-initialized model.

@@ -133,6 +133,8 @@ void ClearBrowserDataHandler::GetLocalizedValues(
     time_list->Append(option);
   }
   localized_strings->Set("clearBrowserDataTimeList", time_list);
+  localized_strings->SetBoolean("showDeleteBrowsingHistoryCheckboxes",
+                                !Profile::FromWebUI(web_ui())->IsManaged());
 }
 
 void ClearBrowserDataHandler::RegisterMessages() {

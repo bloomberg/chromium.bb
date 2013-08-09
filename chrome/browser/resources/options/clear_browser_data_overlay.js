@@ -59,6 +59,9 @@ cr.define('options', function() {
         ClearBrowserDataOverlay.setClearingState(true);
         chrome.send('performClearBrowserData');
       };
+
+      var show = loadTimeData.getBoolean('showDeleteBrowsingHistoryCheckboxes');
+      this.showDeleteHistoryCheckboxes_(show);
     },
 
     // Set the enabled state of the commit button.
@@ -77,6 +80,13 @@ cr.define('options', function() {
 
     setAllowDeletingHistory: function(allowed) {
       this.allowDeletingHistory_ = allowed;
+    },
+
+    showDeleteHistoryCheckboxes_: function(show) {
+      if (!show) {
+        $('delete-browsing-history-container').hidden = true;
+        $('delete-download-history-container').hidden = true;
+      }
     },
 
     /** @override */

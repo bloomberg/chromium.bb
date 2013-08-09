@@ -1508,6 +1508,9 @@ function load() {
     });
   }
 
+  if (!loadTimeData.getBoolean('showDeleteVisitUI'))
+    $('remove-visit').hidden = true;
+
   searchField.addEventListener('search', doSearch);
   $('search-button').addEventListener('click', doSearch);
 
