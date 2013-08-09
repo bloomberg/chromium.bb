@@ -317,12 +317,26 @@ ui::WindowShowState NativeAppWindowViews::GetRestoredState() const {
   // On Ash, restore fullscreen.
   if (IsFullscreen())
     return ui::SHOW_STATE_FULLSCREEN;
+
   // Use kRestoreShowStateKey in case a window is minimized/hidden.
   ui::WindowShowState restore_state =
       window_->GetNativeWindow()->GetProperty(
           aura::client::kRestoreShowStateKey);
-  if (restore_state != ui::SHOW_STATE_MINIMIZED)
-    return restore_state;
+  // Whitelist states to return so that invalid and transient states
+  // are not saved and used to restore windows when they are recreated.
+  switch (restore_state) {
+    case ui::SHOW_STATE_NORMAL:
+    case ui::SHOW_STATE_MAXIMIZED:
+    case ui::SHOW_STATE_FULLSCREEN:
+    case ui::SHOW_STATE_DETACHED:
+      return restore_state;
+
+    case ui::SHOW_STATE_DEFAULT:
+    case ui::SHOW_STATE_MINIMIZED:
+    case ui::SHOW_STATE_INACTIVE:
+    case ui::SHOW_STATE_END:
+      return ui::SHOW_STATE_NORMAL;
+  }
 #endif
   return ui::SHOW_STATE_NORMAL;
 }
