@@ -13610,7 +13610,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
       The following sites have been blocked from tracking your location on this page:
     </message>
     <message name="IDS_GEOLOCATION_BUBBLE_REQUIRE_RELOAD_TO_CLEAR" desc="Hint text for the geolocation bubble informing user they must reload the page for the Clear settings command to take effect.">
-      Settings will be cleared on next reload
+      Settings will be cleared on next reload.
     </message>
     <message name="IDS_GEOLOCATION_BUBBLE_CLEAR_LINK" desc="Link on the geolocation bubble that resets the list of allowed and blocked sites.">
       Clear these settings for future visits
@@ -13638,8 +13638,6 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MIDI_SYSEX_ASK_RADIO" desc="A radio button in Content Settings dialog to allow a site to query the permision to access MIDI devices with system exclusive messages.">
       Ask me when a site wants to use system exclusive messages to access MIDI devices (recommended)
     </message>
-
-    <!-- Web MIDI messages -->
     <message name="IDS_MIDI_SYSEX_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access MIDI devices with system exclusive messages.">
       <ph name="URL">
         $1<ex>www.google.com</ex>
@@ -13651,11 +13649,34 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_MIDI_SYSEX_DENY_BUTTON" desc="A button in MIDI access infobar for denying full access to MIDI devices for a given domain.">
       Deny
     </message>
+    <message name="IDS_MIDI_SYSEX_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use MIDI system exclusive messages.">
+      This page has full control of MIDI devices.
+    </message>
+    <message name="IDS_MIDI_SYSEX_BLOCKED_TOOLTIP" desc="Location bar icon tooltip text when a page is blocked from using MIDI system exclusive messages.">
+      This page has been blocked from having full control of MIDI devices.
+    </message>
+    <message name="IDS_MIDI_SYSEX_BUBBLE_ALLOWED" desc="Title of the MIDI bubble where system exclusive messages are allowed.">
+      This site has full control of MIDI devices.
+    </message>
+    <message name="IDS_MIDI_SYSEX_BUBBLE_DENIED" desc="Title of the MIDI bubble where system exclusive messages are blocked.">
+      This site has been blocked from having full control of MIDI devices.
+    </message>
+    <message name="IDS_MIDI_SYSEX_BUBBLE_REQUIRE_RELOAD_TO_CLEAR" desc="Hint text for the MIDI bubble informing user they must reload the page for the Clear settings command to take effect.">
+      Settings will be cleared on next reload.
+    </message>
+    <message name="IDS_MIDI_SYSEX_BUBBLE_CLEAR_LINK" desc="Link on the MIDI bubble that resets the list of allowed and blocked sites.">
+      Clear these settings for future visits
+    </message>
+    <message name="IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK" desc="Link on the MIDI bubble that opens up the Content Settings management dialog.">
+      Manage MIDI settings...
+    </message>
 
+    <!-- Protocol Handler -->
     <message name="IDS_REGISTER_PROTOCOL_HANDLER_TOOLTIP" desc="Location bar icon tooltip text when a page wants to use registerProtocolHandler.">
       This page wants to install a service handler.
     </message>
 
+    <!-- Media Stream -->
     <message name="IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK" desc="Link on the media (camera and microphone) bubble that opens up the Content Settings management dialog for media settings.">
       Manage media settings...
     </message>

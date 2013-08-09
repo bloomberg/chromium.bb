@@ -163,6 +163,7 @@ void ContentSettingTitleAndLinkModel::SetManageLink() {
     {CONTENT_SETTINGS_TYPE_MEDIASTREAM, IDS_MEDIASTREAM_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOADS_LINK},
+    {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK},
   };
   set_manage_link(l10n_util::GetStringUTF8(
       GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
@@ -1162,6 +1163,93 @@ void ContentSettingRPHBubbleModel::ClearOrSetPreviousHandler() {
   }
 }
 
+// TODO(toyoshim): Should share as many code with geolocation as possible.
+class ContentSettingMIDISysExBubbleModel
+    : public ContentSettingTitleAndLinkModel {
+ public:
+  ContentSettingMIDISysExBubbleModel(Delegate* delegate,
+                                     WebContents* web_contents,
+                                     Profile* profile,
+                                     ContentSettingsType content_type);
+  virtual ~ContentSettingMIDISysExBubbleModel() {}
+
+ private:
+  void MaybeAddDomainList(const std::set<std::string>& hosts, int title_id);
+  void SetDomainsAndCustomLink();
+  virtual void OnCustomLinkClicked() OVERRIDE;
+};
+
+ContentSettingMIDISysExBubbleModel::ContentSettingMIDISysExBubbleModel(
+    Delegate* delegate,
+    WebContents* web_contents,
+    Profile* profile,
+    ContentSettingsType content_type)
+    : ContentSettingTitleAndLinkModel(
+        delegate, web_contents, profile, content_type) {
+  DCHECK_EQ(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, content_type);
+  SetDomainsAndCustomLink();
+}
+
+void ContentSettingMIDISysExBubbleModel::MaybeAddDomainList(
+    const std::set<std::string>& hosts, int title_id) {
+  if (!hosts.empty()) {
+    DomainList domain_list;
+    domain_list.title = l10n_util::GetStringUTF8(title_id);
+    domain_list.hosts = hosts;
+    add_domain_list(domain_list);
+  }
+}
+
+void ContentSettingMIDISysExBubbleModel::SetDomainsAndCustomLink() {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  const ContentSettingsUsagesState& usages_state =
+      content_settings->midi_usages_state();
+  ContentSettingsUsagesState::FormattedHostsPerState formatted_hosts_per_state;
+  unsigned int tab_state_flags = 0;
+  usages_state.GetDetailedInfo(&formatted_hosts_per_state, &tab_state_flags);
+  // Divide the tab's current MIDI sysex users into sets according to their
+  // permission state.
+  MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_ALLOW],
+                     IDS_MIDI_SYSEX_BUBBLE_ALLOWED);
+
+  MaybeAddDomainList(formatted_hosts_per_state[CONTENT_SETTING_BLOCK],
+                     IDS_MIDI_SYSEX_BUBBLE_DENIED);
+
+  if (tab_state_flags & ContentSettingsUsagesState::TABSTATE_HAS_EXCEPTION) {
+    set_custom_link(l10n_util::GetStringUTF8(
+        IDS_MIDI_SYSEX_BUBBLE_CLEAR_LINK));
+    set_custom_link_enabled(true);
+  } else if (tab_state_flags &
+             ContentSettingsUsagesState::TABSTATE_HAS_CHANGED) {
+    set_custom_link(l10n_util::GetStringUTF8(
+        IDS_MIDI_SYSEX_BUBBLE_REQUIRE_RELOAD_TO_CLEAR));
+  }
+}
+
+void ContentSettingMIDISysExBubbleModel::OnCustomLinkClicked() {
+  if (!web_contents())
+    return;
+  // Reset this embedder's entry to default for each of the requesting
+  // origins currently on the page.
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  const ContentSettingsUsagesState::StateMap& state_map =
+      content_settings->midi_usages_state().state_map();
+  HostContentSettingsMap* settings_map =
+      profile()->GetHostContentSettingsMap();
+
+  for (ContentSettingsUsagesState::StateMap::const_iterator it =
+       state_map.begin(); it != state_map.end(); ++it) {
+    settings_map->SetContentSetting(
+        ContentSettingsPattern::FromURLNoWildcard(it->first),
+        ContentSettingsPattern::Wildcard(),
+        CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+        std::string(),
+        CONTENT_SETTING_DEFAULT);
+  }
+}
+
 // static
 ContentSettingBubbleModel*
     ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -1198,6 +1286,10 @@ ContentSettingBubbleModel*
         ProtocolHandlerRegistryFactory::GetForProfile(profile);
     return new ContentSettingRPHBubbleModel(delegate, web_contents, profile,
                                             registry, content_type);
+  }
+  if (content_type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+    return new ContentSettingMIDISysExBubbleModel(delegate, web_contents,
+                                                  profile, content_type);
   }
   return new ContentSettingSingleRadioGroup(delegate, web_contents, profile,
                                             content_type);

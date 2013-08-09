@@ -502,17 +502,13 @@ void TabSpecificContentSettings::OnCameraAccessBlocked() {
 void TabSpecificContentSettings::OnMIDISysExAccessed(
     const GURL& requesting_origin) {
   midi_usages_state_.OnPermissionSet(requesting_origin, true);
-  // TODO(toyoshim): Bubble icon for MIDI is disabled for now.
-  // http://crbug.com/257618
-  // OnContentAllowed(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
+  OnContentAllowed(CONTENT_SETTINGS_TYPE_MIDI_SYSEX);
 }
 
 void TabSpecificContentSettings::OnMIDISysExAccessBlocked(
     const GURL& requesting_origin) {
   midi_usages_state_.OnPermissionSet(requesting_origin, false);
-  // TODO(toyoshim): Bubble icon for MIDI is disabled for now.
-  // http://crbug.com/257618
-  // OnContentBlocked(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
+  OnContentBlocked(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string());
 }
 
 void TabSpecificContentSettings::ClearBlockedContentSettingsExceptForCookies() {

@@ -70,6 +70,18 @@ const int kMediaMenuTitleHorizontalPadding = 10;
 // The minimum width of the media menu buttons.
 const CGFloat kMinMediaMenuButtonWidth = 100;
 
+// Height of each of the labels in the MIDI bubble.
+const int kMIDISysExLabelHeight = 14;
+
+// Height of the "Clear" button in the MIDI bubble.
+const int kMIDISysExClearButtonHeight = 17;
+
+// General padding between elements in the MIDI bubble.
+const int kMIDISysExPadding = 8;
+
+// Padding between host names in the MIDI bubble.
+const int kMIDISysExHostPadding = 4;
+
 void SetControlSize(NSControl* control, NSControlSize controlSize) {
   CGFloat fontSize = [NSFont systemFontSizeForControlSize:controlSize];
   NSCell* cell = [control cell];
@@ -171,11 +183,13 @@ MediaMenuParts::~MediaMenuParts() {}
 - (void)initializePopupList;
 - (void)initializeGeoLists;
 - (void)initializeMediaMenus;
+- (void)initializeMIDISysExLists;
 - (void)sizeToFitLoadButton;
 - (void)initManageDoneButtons;
 - (void)removeInfoButton;
 - (void)popupLinkClicked:(id)sender;
 - (void)clearGeolocationForCurrentHost:(id)sender;
+- (void)clearMIDISysExForCurrentHost:(id)sender;
 @end
 
 @implementation ContentSettingBubbleController
@@ -221,6 +235,8 @@ MediaMenuParts::~MediaMenuParts() {}
       nibPath = @"ContentBlockedMedia"; break;
     case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
       nibPath = @"ContentBlockedDownloads"; break;
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      nibPath = @"ContentBlockedMIDISysEx"; break;
     // These content types have no bubble:
     case CONTENT_SETTINGS_TYPE_DEFAULT:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
@@ -229,7 +245,6 @@ MediaMenuParts::~MediaMenuParts() {}
     case CONTENT_SETTINGS_TYPE_MOUSELOCK:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
-    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
     case CONTENT_SETTINGS_NUM_TYPES:
       NOTREACHED();
   }
@@ -449,14 +464,10 @@ MediaMenuParts::~MediaMenuParts() {}
     frame.origin.y = NSMaxY([control frame]) + kGeoPadding;
   }
 
-  typedef
-      std::vector<ContentSettingBubbleModel::DomainList>::const_reverse_iterator
-      GeolocationGroupIterator;
-  for (GeolocationGroupIterator i = content.domain_lists.rbegin();
+  for (auto i = content.domain_lists.rbegin();
        i != content.domain_lists.rend(); ++i) {
     // Add all hosts in the current domain list.
-    for (std::set<std::string>::const_reverse_iterator j = i->hosts.rbegin();
-         j != i->hosts.rend(); ++j) {
+    for (auto j = i->hosts.rbegin(); j != i->hosts.rend(); ++j) {
       NSTextField* title = LabelWithFrame(base::SysUTF8ToNSString(*j), frame);
       SetControlSize(title, NSSmallControlSize);
       [contentsContainer_ addSubview:title];
@@ -579,6 +590,88 @@ MediaMenuParts::~MediaMenuParts() {}
   }
 }
 
+- (void)initializeMIDISysExLists {
+  const ContentSettingBubbleModel::BubbleContent& content =
+      contentSettingBubbleModel_->bubble_content();
+  NSRect containerFrame = [contentsContainer_ frame];
+  NSRect frame =
+      NSMakeRect(0, 0, NSWidth(containerFrame), kMIDISysExLabelHeight);
+
+  // "Clear" button / text field.
+  if (!content.custom_link.empty()) {
+    base::scoped_nsobject<NSControl> control;
+    if (content.custom_link_enabled) {
+      NSRect buttonFrame = NSMakeRect(0, 0,
+                                      NSWidth(containerFrame),
+                                      kMIDISysExClearButtonHeight);
+      NSButton* button = [[NSButton alloc] initWithFrame:buttonFrame];
+      control.reset(button);
+      [button setTitle:base::SysUTF8ToNSString(content.custom_link)];
+      [button setTarget:self];
+      [button setAction:@selector(clearMIDISysExForCurrentHost:)];
+      [button setBezelStyle:NSRoundRectBezelStyle];
+      SetControlSize(button, NSSmallControlSize);
+      [button sizeToFit];
+    } else {
+      // Add the notification that settings will be cleared on next reload.
+      control.reset([LabelWithFrame(
+          base::SysUTF8ToNSString(content.custom_link), frame) retain]);
+      SetControlSize(control.get(), NSSmallControlSize);
+    }
+
+    // If the new control is wider than the container, widen the window.
+    CGFloat controlWidth = NSWidth([control frame]);
+    if (controlWidth > NSWidth(containerFrame)) {
+      NSRect windowFrame = [[self window] frame];
+      windowFrame.size.width += controlWidth - NSWidth(containerFrame);
+      [[self window] setFrame:windowFrame display:NO];
+      // Fetch the updated sizes.
+      containerFrame = [contentsContainer_ frame];
+      frame = NSMakeRect(0, 0, NSWidth(containerFrame), kMIDISysExLabelHeight);
+    }
+
+    DCHECK(control);
+    [contentsContainer_ addSubview:control];
+    frame.origin.y = NSMaxY([control frame]) + kMIDISysExPadding;
+  }
+
+  for (auto i = content.domain_lists.rbegin();
+       i != content.domain_lists.rend(); ++i) {
+    // Add all hosts in the current domain list.
+    for (auto j = i->hosts.rbegin(); j != i->hosts.rend(); ++j) {
+      NSTextField* title = LabelWithFrame(base::SysUTF8ToNSString(*j), frame);
+      SetControlSize(title, NSSmallControlSize);
+      [contentsContainer_ addSubview:title];
+
+      frame.origin.y = NSMaxY(frame) + kMIDISysExHostPadding +
+          [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title];
+    }
+    if (!i->hosts.empty())
+      frame.origin.y += kMIDISysExPadding - kMIDISysExHostPadding;
+
+    // Add the domain list's title.
+    NSTextField* title =
+        LabelWithFrame(base::SysUTF8ToNSString(i->title), frame);
+    SetControlSize(title, NSSmallControlSize);
+    [contentsContainer_ addSubview:title];
+
+    frame.origin.y = NSMaxY(frame) + kMIDISysExPadding +
+        [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:title];
+  }
+
+  CGFloat containerHeight = frame.origin.y;
+  // Undo last padding.
+  if (!content.domain_lists.empty())
+    containerHeight -= kMIDISysExPadding;
+
+  // Resize container to fit its subviews, and window to fit the container.
+  NSRect windowFrame = [[self window] frame];
+  windowFrame.size.height += containerHeight - NSHeight(containerFrame);
+  [[self window] setFrame:windowFrame display:NO];
+  containerFrame.size.height = containerHeight;
+  [contentsContainer_ setFrame:containerFrame];
+}
+
 - (void)sizeToFitLoadButton {
   const ContentSettingBubbleModel::BubbleContent& content =
       contentSettingBubbleModel_->bubble_content();
@@ -640,6 +733,8 @@ MediaMenuParts::~MediaMenuParts() {}
     [self initializeGeoLists];
   if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM)
     [self initializeMediaMenus];
+  if (type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
+    [self initializeMIDISysExLists];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -657,6 +752,11 @@ MediaMenuParts::~MediaMenuParts() {}
 }
 
 - (void)clearGeolocationForCurrentHost:(id)sender {
+  contentSettingBubbleModel_->OnCustomLinkClicked();
+  [self close];
+}
+
+- (void)clearMIDISysExForCurrentHost:(id)sender {
   contentSettingBubbleModel_->OnCustomLinkClicked();
   [self close];
 }

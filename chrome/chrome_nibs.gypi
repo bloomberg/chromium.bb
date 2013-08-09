@@ -18,6 +18,7 @@
       'app/nibs/CollectedCookies.xib',
       'app/nibs/ContentBlockedCookies.xib',
       'app/nibs/ContentBlockedDownloads.xib',
+      'app/nibs/ContentBlockedMIDISysEx.xib',
       'app/nibs/ContentBlockedMedia.xib',
       'app/nibs/ContentBlockedMixedScript.xib',
       'app/nibs/ContentBlockedPlugins.xib',

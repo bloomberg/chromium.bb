@@ -52,6 +52,13 @@ class ContentSettingNotificationsImageModel : public ContentSettingImageModel {
   virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
 };
 
+class ContentSettingMIDISysExImageModel : public ContentSettingImageModel {
+ public:
+  ContentSettingMIDISysExImageModel();
+
+  virtual void UpdateFromWebContents(WebContents* web_contents) OVERRIDE;
+};
+
 namespace {
 
 struct ContentSettingsTypeIdEntry {
@@ -297,6 +304,36 @@ void ContentSettingNotificationsImageModel::UpdateFromWebContents(
   set_visible(false);
 }
 
+ContentSettingMIDISysExImageModel::ContentSettingMIDISysExImageModel()
+    : ContentSettingImageModel(CONTENT_SETTINGS_TYPE_MIDI_SYSEX) {
+}
+
+void ContentSettingMIDISysExImageModel::UpdateFromWebContents(
+    WebContents* web_contents) {
+  set_visible(false);
+  if (!web_contents)
+    return;
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (!content_settings)
+    return;
+  const ContentSettingsUsagesState& usages_state =
+      content_settings->midi_usages_state();
+  if (usages_state.state_map().empty())
+    return;
+  set_visible(true);
+
+  // If any embedded site has access the allowed icon takes priority over the
+  // blocked icon.
+  unsigned int state_flags = 0;
+  usages_state.GetDetailedInfo(NULL, &state_flags);
+  bool allowed =
+      !!(state_flags & ContentSettingsUsagesState::TABSTATE_HAS_ANY_ALLOWED);
+  set_icon(allowed ? IDR_ALLOWED_MIDI_SYSEX : IDR_BLOCKED_MIDI_SYSEX);
+  set_tooltip(l10n_util::GetStringUTF8(allowed ?
+      IDS_MIDI_SYSEX_ALLOWED_TOOLTIP : IDS_MIDI_SYSEX_BLOCKED_TOOLTIP));
+}
+
 ContentSettingImageModel::ContentSettingImageModel(
     ContentSettingsType content_settings_type)
     : content_settings_type_(content_settings_type),
@@ -320,6 +357,8 @@ ContentSettingImageModel*
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
     case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
       return new ContentSettingMediaImageModel(content_settings_type);
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+      return new ContentSettingMIDISysExImageModel();
     default:
       return new ContentSettingBlockedImageModel(content_settings_type);
   }
