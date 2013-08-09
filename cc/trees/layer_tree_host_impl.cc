@@ -2136,6 +2136,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   pinch_gesture_active_ = true;
   previous_pinch_anchor_ = gfx::Point();
   client_->RenewTreePriority();
+  active_tree_->SetCurrentlyScrollingLayer(RootScrollLayer());
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,

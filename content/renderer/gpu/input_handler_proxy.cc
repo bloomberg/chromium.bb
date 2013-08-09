@@ -173,10 +173,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     DCHECK(expect_scroll_update_end_);
     expect_scroll_update_end_ = false;
 #endif
+    input_handler_->ScrollEnd();
+
     if (!gesture_scroll_on_impl_thread_)
       return DID_NOT_HANDLE;
 
-    input_handler_->ScrollEnd();
     gesture_scroll_on_impl_thread_ = false;
     return DID_HANDLE;
   } else if (event.type == WebInputEvent::GesturePinchBegin) {

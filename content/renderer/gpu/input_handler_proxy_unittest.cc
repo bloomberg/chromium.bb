@@ -238,6 +238,7 @@ TEST_F(InputHandlerProxyTest, GestureScrollOnMainThread) {
 
   gesture_.type = WebInputEvent::GestureScrollEnd;
   gesture_.data.scrollUpdate.deltaY = 0;
+  EXPECT_CALL(mock_input_handler_, ScrollEnd()).WillOnce(testing::Return());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -246,7 +247,7 @@ TEST_F(InputHandlerProxyTest, GestureScrollIgnored) {
   // Instead, we should get a DROP_EVENT result, indicating
   // that we could determine that there's nothing that could scroll or otherwise
   // react to this gesture sequence and thus we should drop the whole gesture
-  // sequence on the floor.
+  // sequence on the floor, except for the ScrollEnd.
   expected_disposition_ = InputHandlerProxy::DROP_EVENT;
   VERIFY_AND_RESET_MOCKS();
 
@@ -254,6 +255,11 @@ TEST_F(InputHandlerProxyTest, GestureScrollIgnored) {
       .WillOnce(testing::Return(cc::InputHandler::ScrollIgnored));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
+  EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
+
+  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  gesture_.type = WebInputEvent::GestureScrollEnd;
+  EXPECT_CALL(mock_input_handler_, ScrollEnd()).WillOnce(testing::Return());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 
@@ -359,6 +365,8 @@ TEST_F(InputHandlerProxyTest, GesturePinchAfterScrollOnMainThread) {
 
   gesture_.type = WebInputEvent::GestureScrollEnd;
   gesture_.data.scrollUpdate.deltaY = 0;
+  EXPECT_CALL(mock_input_handler_, ScrollEnd())
+      .WillOnce(testing::Return());
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 }
 

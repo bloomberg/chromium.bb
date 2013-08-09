@@ -770,9 +770,10 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
-    host_impl_->PinchGestureBegin();
+    host_impl_->ScrollBegin(gfx::Point(50, 50), InputHandler::Gesture);
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
     host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_commit_);
 
@@ -794,9 +795,11 @@ TEST_F(LayerTreeHostImplTest, ImplPinchZoom) {
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
+    host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point());
     host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
 
     gfx::Vector2d scroll_delta(0, 10);
     EXPECT_EQ(InputHandler::ScrollStarted,
@@ -832,9 +835,11 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     scroll_layer->SetScrollDelta(gfx::Vector2d());
 
     float page_scale_delta = 2.f;
+    host_impl_->ScrollBegin(gfx::Point(50, 50), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
     host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
     EXPECT_TRUE(did_request_redraw_);
     EXPECT_TRUE(did_request_commit_);
 
@@ -851,9 +856,11 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     scroll_layer->SetScrollDelta(gfx::Vector2d());
     float page_scale_delta = 10.f;
 
+    host_impl_->ScrollBegin(gfx::Point(50, 50), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(50, 50));
     host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -869,9 +876,11 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     scroll_layer->SetScrollOffset(gfx::Vector2d(50, 50));
 
     float page_scale_delta = 0.1f;
+    host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point());
     host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -889,10 +898,12 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     scroll_layer->SetScrollOffset(gfx::Vector2d(20, 20));
 
     float page_scale_delta = 1.f;
+    host_impl_->ScrollBegin(gfx::Point(10, 10), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(10, 10));
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(20, 20));
     host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
 
     scoped_ptr<ScrollAndScaleSet> scroll_info =
         host_impl_->ProcessScrollDeltas();
@@ -909,7 +920,7 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
     scroll_layer->SetScrollOffset(gfx::Vector2d(20, 20));
 
     float page_scale_delta = 1.f;
-    host_impl_->ScrollBegin(gfx::Point(10, 10), InputHandler::Wheel);
+    host_impl_->ScrollBegin(gfx::Point(10, 10), InputHandler::Gesture);
     host_impl_->PinchGestureBegin();
     host_impl_->PinchGestureUpdate(page_scale_delta, gfx::Point(10, 10));
     host_impl_->ScrollBy(gfx::Point(10, 10), gfx::Vector2d(-10, -10));
@@ -921,6 +932,30 @@ TEST_F(LayerTreeHostImplTest, PinchGesture) {
         host_impl_->ProcessScrollDeltas();
     EXPECT_EQ(scroll_info->page_scale_delta, page_scale_delta);
     ExpectContains(*scroll_info, scroll_layer->id(), gfx::Vector2d(-10, -10));
+  }
+
+  // Two-finger panning should work when starting fully zoomed out.
+  {
+    host_impl_->active_tree()->SetPageScaleFactorAndLimits(0.5f,
+                                                           0.5f,
+                                                           4.f);
+    scroll_layer->SetScrollDelta(gfx::Vector2d());
+    scroll_layer->SetScrollOffset(gfx::Vector2d(0, 0));
+    host_impl_->active_tree()->UpdateMaxScrollOffset();
+
+    host_impl_->ScrollBegin(gfx::Point(0, 0), InputHandler::Gesture);
+    host_impl_->PinchGestureBegin();
+    host_impl_->PinchGestureUpdate(2.f, gfx::Point(0, 0));
+    host_impl_->PinchGestureUpdate(1.f, gfx::Point(0, 0));
+    host_impl_->ScrollBy(gfx::Point(0, 0), gfx::Vector2d(10, 10));
+    host_impl_->PinchGestureUpdate(1.f, gfx::Point(10, 10));
+    host_impl_->PinchGestureEnd();
+    host_impl_->ScrollEnd();
+
+    scoped_ptr<ScrollAndScaleSet> scroll_info =
+        host_impl_->ProcessScrollDeltas();
+    EXPECT_EQ(scroll_info->page_scale_delta, 2.f);
+    ExpectContains(*scroll_info, scroll_layer->id(), gfx::Vector2d(20, 20));
   }
 }
 
@@ -1184,9 +1219,11 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
   }
 
   // Page scale should update metadata correctly (shrinking only the viewport).
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
   host_impl_->PinchGestureBegin();
   host_impl_->PinchGestureUpdate(2.f, gfx::Point());
   host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
   {
     CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
@@ -1789,9 +1826,11 @@ TEST_F(LayerTreeHostImplTest, ScrollRootAndChangePageScaleOnImplThread) {
   host_impl_->ScrollEnd();
 
   // Set new page scale on impl thread by pinching.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
   host_impl_->PinchGestureBegin();
   host_impl_->PinchGestureUpdate(page_scale, gfx::Point());
   host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
   DrawOneFrame();
 
   // The scroll delta is not scaled because the main thread did not scale.
@@ -1826,9 +1865,11 @@ TEST_F(LayerTreeHostImplTest, PageScaleDeltaAppliedToRootScrollLayerOnly) {
   LayerImpl* grand_child = child->children()[0];
 
   // Set new page scale on impl thread by pinching.
+  host_impl_->ScrollBegin(gfx::Point(), InputHandler::Gesture);
   host_impl_->PinchGestureBegin();
   host_impl_->PinchGestureUpdate(new_page_scale, gfx::Point());
   host_impl_->PinchGestureEnd();
+  host_impl_->ScrollEnd();
   DrawOneFrame();
 
   EXPECT_EQ(1.f, root->contents_scale_x());
