@@ -27,7 +27,6 @@
 #define DragData_h
 
 #include "core/page/DragActions.h"
-#include "core/platform/chromium/DragDataRef.h"
 #include "core/platform/graphics/IntPoint.h"
 
 #include "wtf/Forward.h"
@@ -36,8 +35,9 @@
 
 namespace WebCore {
 
-class Frame;
+class ChromiumDataObject;
 class DocumentFragment;
+class Frame;
 class KURL;
 class Range;
 
@@ -54,12 +54,12 @@ public:
     enum FilenameConversionPolicy { DoNotConvertFilenames, ConvertFilenames };
 
     // clientPosition is taken to be the position of the drag event within the target window, with (0,0) at the top left
-    DragData(DragDataRef, const IntPoint& clientPosition, const IntPoint& globalPosition, DragOperation, DragApplicationFlags = DragApplicationNone);
+    DragData(ChromiumDataObject*, const IntPoint& clientPosition, const IntPoint& globalPosition, DragOperation, DragApplicationFlags = DragApplicationNone);
     DragData(const String& dragStorageName, const IntPoint& clientPosition, const IntPoint& globalPosition, DragOperation, DragApplicationFlags = DragApplicationNone);
     const IntPoint& clientPosition() const { return m_clientPosition; }
     const IntPoint& globalPosition() const { return m_globalPosition; }
     DragApplicationFlags flags() const { return m_applicationFlags; }
-    DragDataRef platformData() const { return m_platformDragData; }
+    ChromiumDataObject* platformData() const { return m_platformDragData; }
     DragOperation draggingSourceOperationMask() const { return m_draggingSourceOperationMask; }
     bool containsURL(Frame*, FilenameConversionPolicy filenamePolicy = ConvertFilenames) const;
     bool containsPlainText() const;
@@ -79,7 +79,7 @@ public:
 private:
     IntPoint m_clientPosition;
     IntPoint m_globalPosition;
-    DragDataRef m_platformDragData;
+    ChromiumDataObject* m_platformDragData;
     DragOperation m_draggingSourceOperationMask;
     DragApplicationFlags m_applicationFlags;
 };

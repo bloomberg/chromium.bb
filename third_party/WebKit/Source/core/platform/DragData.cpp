@@ -44,7 +44,7 @@
 
 namespace WebCore {
 
-DragData::DragData(DragDataRef data, const IntPoint& clientPosition, const IntPoint& globalPosition,
+DragData::DragData(ChromiumDataObject* data, const IntPoint& clientPosition, const IntPoint& globalPosition,
     DragOperation sourceOperationMask, DragApplicationFlags flags)
     : m_clientPosition(clientPosition)
     , m_globalPosition(globalPosition)

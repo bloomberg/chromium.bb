@@ -137,6 +137,7 @@
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/platform/Timer.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/chromium/support/WebActiveGestureAnimation.h"

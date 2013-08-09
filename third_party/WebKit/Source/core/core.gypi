@@ -2701,7 +2701,6 @@
             'platform/chromium/ClipboardMimeTypes.h',
             'platform/chromium/ClipboardUtilitiesChromium.cpp',
             'platform/chromium/ClipboardUtilitiesChromium.h',
-            'platform/chromium/DragDataRef.h',
             'platform/chromium/FileSystemChromium.cpp',
             'platform/chromium/FramelessScrollView.cpp',
             'platform/chromium/FramelessScrollView.h',
