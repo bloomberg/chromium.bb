@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <set>
 
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/chromeos/chromeos_version.h"
@@ -15,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -111,6 +111,15 @@ const char kUserDisplayEmail[] = "UserDisplayEmail";
 // A dictionary that maps usernames to OAuth token presence flag.
 const char kUserOAuthTokenStatus[] = "OAuthTokenStatus";
 
+// A string pref containing the ID of the last user who logged in if it was
+// a regular user or an empty string if it was another type of user (guest,
+// kiosk, public account, etc.).
+const char kLastLoggedInRegularUser[] = "LastLoggedInRegularUser";
+
+// Upper bound for a histogram metric reporting the amount of time between
+// one regular user logging out and a different regular user logging in.
+const int kLogoutToLoginDelayMaxSec = 1800;
+
 // Callback that is called after user removal is complete.
 void OnRemoveUserComplete(const std::string& user_email,
                           bool success,
@@ -189,6 +198,7 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
       kLocallyManagedUserCreationTransactionDisplayName, "");
   registry->RegisterStringPref(
       kLocallyManagedUserCreationTransactionUserId, "");
+  registry->RegisterStringPref(kLastLoggedInRegularUser, "");
   registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserDisplayEmail);
@@ -213,7 +223,8 @@ UserManagerImpl::UserManagerImpl()
       locally_managed_users_enabled_by_policy_(false),
       merge_session_state_(MERGE_STATUS_NOT_STARTED),
       observed_sync_service_(NULL),
-      user_image_manager_(new UserImageManagerImpl) {
+      user_image_manager_(new UserImageManagerImpl),
+      manager_creation_time_(base::TimeTicks::Now()) {
   // UserManager instance should be used only on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   registrar_.Add(this, chrome::NOTIFICATION_OWNERSHIP_STATUS_CHANGED,
@@ -317,10 +328,8 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
     User* user = FindUserInListAndModify(email);
     if (user && user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT) {
       PublicAccountUserLoggedIn(user);
-    } else if ((user &&
-                user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) ||
-               (!user &&
-                gaia::ExtractDomainName(email) ==
+    } else if ((user && user->GetType() == User::USER_TYPE_LOCALLY_MANAGED) ||
+               (!user && gaia::ExtractDomainName(email) ==
                     UserManager::kLocallyManagedUserDomain)) {
       LocallyManagedUserLoggedIn(email);
     } else if (browser_restart && email == g_browser_process->local_state()->
@@ -346,6 +355,14 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
   // Place user who just signed in to the top of the logged in users.
   logged_in_users_.insert(logged_in_users_.begin(), active_user_);
   SetLRUUser(active_user_);
+
+  UMA_HISTOGRAM_ENUMERATION("UserManager.LoginUserType",
+                            active_user_->GetType(), User::NUM_USER_TYPES);
+
+  if (active_user_->GetType() == User::USER_TYPE_REGULAR)
+    SendRegularUserLoginMetrics(email);
+  g_browser_process->local_state()->SetString(kLastLoggedInRegularUser,
+    (active_user_->GetType() == User::USER_TYPE_REGULAR) ? email : "");
 
   NotifyOnLogin();
 }
@@ -1064,7 +1081,7 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
 
   // If ephemeral users are enabled and we are on the login screen, take this
   // opportunity to clean up by removing all regular users except the owner.
-  if (ephemeral_users_enabled_  && !IsUserLoggedIn()) {
+  if (ephemeral_users_enabled_ && !IsUserLoggedIn()) {
     ListPrefUpdate prefs_users_update(g_browser_process->local_state(),
                                       kRegularUsers);
     prefs_users_update->Clear();
@@ -1773,6 +1790,22 @@ void UserManagerImpl::RestorePendingUserSessions() {
                                       this);
   } else {
     RestorePendingUserSessions();
+  }
+}
+
+void UserManagerImpl::SendRegularUserLoginMetrics(const std::string& email) {
+  // If this isn't the first time Chrome was run after the system booted,
+  // assume that Chrome was restarted because a previous session ended.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot)) {
+    const std::string last_email =
+        g_browser_process->local_state()->GetString(kLastLoggedInRegularUser);
+    const base::TimeDelta time_to_login =
+        base::TimeTicks::Now() - manager_creation_time_;
+    if (!last_email.empty() && email != last_email &&
+        time_to_login.InSeconds() <= kLogoutToLoginDelayMaxSec) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS("UserManager.LogoutToLoginDelay",
+          time_to_login.InSeconds(), 0, kLogoutToLoginDelayMaxSec, 50);
+    }
   }
 }
 

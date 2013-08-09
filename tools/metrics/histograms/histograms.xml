@@ -14608,6 +14608,21 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="UserManager.LoginUserType" enum="UserType">
+  <summary>
+    The number of users of different types that log in to the system (Chrome
+    OS).
+  </summary>
+</histogram>
+
+<histogram name="UserManager.LogoutToLoginDelay" units="seconds">
+  <summary>
+    The time between one regular user logging out and a different regular user
+    logging in (Chrome OS). Delays above thirty minutes or which span system
+    reboots or non-regular-user logins are not reported.
+  </summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <obsolete>
     Deprecated 1/2013. No longer tracked.
@@ -22336,6 +22351,15 @@ other types of suffix sets.
   <int value="8" label="kBlobURLScheme"/>
   <int value="9" label="kDataURLScheme"/>
   <int value="10" label="kFileSystemScheme"/>
+</enum>
+
+<enum name="UserType" type="int">
+  <int value="0" label="Regular"/>
+  <int value="1" label="Guest"/>
+  <int value="2" label="Retail Mode"/>
+  <int value="3" label="Public Account"/>
+  <int value="4" label="Locally Managed"/>
+  <int value="5" label="Kiosk App"/>
 </enum>
 
 <enum name="VariationsResourceRequestsAllowedState" type="int">

@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
@@ -301,6 +302,9 @@ class UserManagerImpl
   // Process continues till |pending_user_sessions_| map is not empty.
   void RestorePendingUserSessions();
 
+  // Sends metrics in response to a regular user logging in.
+  void SendRegularUserLoginMetrics(const std::string& email);
+
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
 
@@ -408,6 +412,9 @@ class UserManagerImpl
   // User sessions that have to be restored after browser crash.
   // [user_id] > [user_id_hash]
   SessionManagerClient::ActiveSessionsMap pending_user_sessions_;
+
+  // Time at which this object was created.
+  base::TimeTicks manager_creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerImpl);
 };
