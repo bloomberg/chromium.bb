@@ -33,6 +33,7 @@
 
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 #include "wtf/text/StringImpl.h"
 
 namespace WebCore {
@@ -47,35 +48,60 @@ public:
     void clear();
 
     bool contains(StringImpl*) const;
+    bool containsSingle(StringImpl*) const;
     bool containsMultiple(StringImpl*) const;
+
     // concrete instantiations of the get<>() method template
     Element* getElementById(StringImpl*, const TreeScope*) const;
+    Element* getElementByName(StringImpl*, const TreeScope*) const;
     Element* getElementByMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLowercasedMapName(StringImpl*, const TreeScope*) const;
     Element* getElementByLabelForAttribute(StringImpl*, const TreeScope*) const;
+
+    const Vector<Element*>* getAllElementsById(StringImpl*, const TreeScope*) const;
 
     void checkConsistency() const;
 
 private:
     template<bool keyMatches(StringImpl*, Element*)> Element* get(StringImpl*, const TreeScope*) const;
 
-    typedef HashMap<StringImpl*, Element*> Map;
+    struct MapEntry {
+        MapEntry()
+            : element(0)
+            , count(0)
+        {
+        }
+        explicit MapEntry(Element* firstElement)
+            : element(firstElement)
+            , count(1)
+        {
+        }
 
-    // We maintain the invariant that m_duplicateCounts is the count of all elements with a given key
-    // excluding the one referenced in m_map, if any. This means it one less than the total count
-    // when the first node with a given key is cached, otherwise the same as the total count.
+        Element* element;
+        unsigned count;
+        Vector<Element*> orderedList;
+    };
+
+    typedef HashMap<StringImpl*, MapEntry> Map;
+
     mutable Map m_map;
-    mutable HashCountedSet<StringImpl*> m_duplicateCounts;
 };
+
+inline bool DocumentOrderedMap::containsSingle(StringImpl* id) const
+{
+    Map::const_iterator it = m_map.find(id);
+    return it != m_map.end() && it->value.count == 1;
+}
 
 inline bool DocumentOrderedMap::contains(StringImpl* id) const
 {
-    return m_map.contains(id) || m_duplicateCounts.contains(id);
+    return m_map.contains(id);
 }
 
 inline bool DocumentOrderedMap::containsMultiple(StringImpl* id) const
 {
-    return m_duplicateCounts.contains(id);
+    Map::const_iterator it = m_map.find(id);
+    return it != m_map.end() && it->value.count > 1;
 }
 
 } // namespace WebCore
