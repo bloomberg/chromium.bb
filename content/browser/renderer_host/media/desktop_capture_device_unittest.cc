@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/media/screen_capture_device.h"
+#include "content/browser/renderer_host/media/desktop_capture_device.h"
 
 #include "base/basictypes.h"
 #include "base/sequenced_task_runner.h"
@@ -83,7 +83,7 @@ class FakeScreenCapturer : public webrtc::ScreenCapturer {
   int frame_index_;
 };
 
-class ScreenCaptureDeviceTest : public testing::Test {
+class DesktopCaptureDeviceTest : public testing::Test {
  public:
   virtual void SetUp() OVERRIDE {
     worker_pool_ = new base::SequencedWorkerPool(3, "TestCaptureThread");
@@ -103,9 +103,12 @@ class ScreenCaptureDeviceTest : public testing::Test {
 #else
 #define MAYBE_Capture Capture
 #endif
-TEST_F(ScreenCaptureDeviceTest, MAYBE_Capture) {
-  ScreenCaptureDevice capture_device(
-      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()));
+TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
+  scoped_ptr<webrtc::DesktopCapturer> capturer(
+      webrtc::ScreenCapturer::Create());
+  DesktopCaptureDevice capture_device(
+      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
+      capturer.Pass());
   media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
   int frame_size;
@@ -121,12 +124,7 @@ TEST_F(ScreenCaptureDeviceTest, MAYBE_Capture) {
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureCapability capture_format(
-      640,
-      480,
-      kFrameRate,
-      media::VideoCaptureCapability::kI420,
-      0,
-      false,
+      640, 480, kFrameRate, media::VideoCaptureCapability::kI420, 0, false,
       media::ConstantResolutionVideoCaptureDevice);
   capture_device.Allocate(capture_format, &frame_observer);
   capture_device.Start();
@@ -144,13 +142,12 @@ TEST_F(ScreenCaptureDeviceTest, MAYBE_Capture) {
 }
 
 // Test that screen capturer can handle resolution change without crashing.
-TEST_F(ScreenCaptureDeviceTest, ScreenResolutionChange) {
+TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChange) {
   FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
 
-  ScreenCaptureDevice capture_device(
-      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()));
-  capture_device.SetScreenCapturerForTest(
-      scoped_ptr<webrtc::ScreenCapturer>(mock_capturer));
+  DesktopCaptureDevice capture_device(
+      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
+      scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
 
   media::VideoCaptureCapability caps;
   base::WaitableEvent done_event(false, false);
