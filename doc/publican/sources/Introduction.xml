@@ -8,7 +8,7 @@
   <section id="sect-Motivation">
     <title>Motivation</title>
     <para>
-      Most of Linux and Unix-based systems rely on the X Window System (or
+      Most Linux and Unix-based systems rely on the X Window System (or
       simply <emphasis>X</emphasis>) as the low-level protocol for building
       bitmap graphics interfaces. On these systems, the X stack has grown to
       encompass functionality arguably belonging in client libraries,
