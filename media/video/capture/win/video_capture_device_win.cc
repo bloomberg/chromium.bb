@@ -7,9 +7,11 @@
 #include <algorithm>
 #include <list>
 
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_variant.h"
+#include "media/base/media_switches.h"
 #include "media/video/capture/win/video_capture_device_mf_win.h"
 
 using base::win::ScopedComPtr;
@@ -150,7 +152,9 @@ void DeleteMediaType(AM_MEDIA_TYPE* mt) {
 void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   Names::iterator it;
 
-  if (VideoCaptureDeviceMFWin::PlatformSupported()) {
+  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
+  if (VideoCaptureDeviceMFWin::PlatformSupported() &&
+      !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) {
     VideoCaptureDeviceMFWin::GetDeviceNames(device_names);
   }
   // Retrieve the devices with DirectShow (DS) interface. They might (partially)

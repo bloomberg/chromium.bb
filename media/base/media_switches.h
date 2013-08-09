@@ -39,6 +39,7 @@ MEDIA_EXPORT extern const char kDisableMainThreadAudio[];
 
 #if defined(OS_WIN)
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
+MEDIA_EXPORT extern const char kForceDirectShowVideoCapture[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
 #endif
