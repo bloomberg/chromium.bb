@@ -531,9 +531,16 @@ import java.util.Map;
                     lp.topMargin = topMargin;
                     view.setLayoutParams(lp);
                 } else if (mContainerView instanceof AbsoluteLayout) {
+                    // This fixes the offset due to a difference in
+                    // scrolling model of WebView vs. Chrome.
+                    // TODO(sgurun) fix this to use mContainerView.getScroll[X/Y]()
+                    // as it naturally accounts for scroll differences between
+                    // these models.
+                    leftMargin += mRenderCoordinates.getScrollXPixInt();
+                    topMargin += mRenderCoordinates.getScrollYPixInt();
                     android.widget.AbsoluteLayout.LayoutParams lp =
                             new android.widget.AbsoluteLayout.LayoutParams((int)width,
-                                    (int)height, leftMargin, topMargin);
+                                    (int)(height * scale), leftMargin, topMargin);
                     view.setLayoutParams(lp);
                 } else {
                     Log.e(TAG, "Unknown layout " + mContainerView.getClass().getName());
