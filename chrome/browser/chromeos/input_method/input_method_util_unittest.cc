@@ -413,6 +413,18 @@ TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Ru) {
   EXPECT_EQ("xkb:ru::rus", input_method_ids[1]);  // Russian keyboard.
 }
 
+// US keyboard + Traditional Chinese = US keyboard + chewing.
+TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_ZhTw) {
+  const InputMethodDescriptor* descriptor =
+      util_.GetInputMethodDescriptorFromId("xkb:us::eng");  // US keyboard.
+  ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
+  std::vector<std::string> input_method_ids;
+  util_.GetFirstLoginInputMethodIds("zh-TW", *descriptor, &input_method_ids);
+  ASSERT_EQ(2U, input_method_ids.size());
+  EXPECT_EQ("xkb:us::eng", input_method_ids[0]);
+  EXPECT_EQ(zhuyin_ime_id, input_method_ids[1]);  // Chewing.
+}
+
 // US keyboard + Thai = US keyboard + kesmanee.
 TEST_F(InputMethodUtilTest, TestGetFirstLoginInputMethodIds_Us_And_Th) {
   const InputMethodDescriptor* descriptor =

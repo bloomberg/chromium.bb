@@ -97,10 +97,6 @@ xkb:ch::ger	ch	de
 # a new Mozc Japanese IME for another keyboard layout is added.
 xkb:jp::jpn	jp	ja
 
-# Traditional Chinese
-mozc-chewing   us      zh-TW
-m17n:zh:quick  us      zh-TW
-
 # Russian
 xkb:ru::rus	ru	ru
 xkb:ru:phonetic:rus	ru(phonetic)	ru
