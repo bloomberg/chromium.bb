@@ -337,10 +337,11 @@ void RLZTracker::DelayedInit() {
 }
 
 void RLZTracker::ScheduleFinancialPing() {
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
       FROM_HERE,
-      base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)));
+      base::Bind(&RLZTracker::PingNowImpl, base::Unretained(this)),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
 
 void RLZTracker::PingNowImpl() {
@@ -436,11 +437,12 @@ bool RLZTracker::ScheduleRecordProductEvent(rlz_lib::Product product,
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
 
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&RLZTracker::RecordProductEvent),
-                 product, point, event_id));
+                 product, point, event_id),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   return true;
 }
@@ -465,11 +467,12 @@ void RLZTracker::RecordFirstSearch(rlz_lib::AccessPoint point) {
 bool RLZTracker::ScheduleRecordFirstSearch(rlz_lib::AccessPoint point) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
       FROM_HERE,
       base::Bind(&RLZTracker::RecordFirstSearch,
-                 base::Unretained(this), point));
+                 base::Unretained(this), point),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   return true;
 }
 
@@ -534,11 +537,12 @@ bool RLZTracker::ScheduleGetAccessPointRlz(rlz_lib::AccessPoint point) {
     return false;
 
   string16* not_used = NULL;
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
       FROM_HERE,
       base::Bind(base::IgnoreResult(&RLZTracker::GetAccessPointRlz), point,
-                 not_used));
+                 not_used),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   return true;
 }
 
@@ -558,11 +562,12 @@ bool RLZTracker::ScheduleClearRlzState() {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI))
     return false;
 
-  BrowserThread::GetBlockingPool()->PostSequencedWorkerTask(
+  BrowserThread::GetBlockingPool()->PostSequencedWorkerTaskWithShutdownBehavior(
       worker_pool_token_,
       FROM_HERE,
       base::Bind(&RLZTracker::ClearRlzStateImpl,
-                 base::Unretained(this)));
+                 base::Unretained(this)),
+      base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
   return true;
 }
 #endif
