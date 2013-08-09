@@ -26,13 +26,6 @@ namespace chromeos {
 // |size| is not empty. Otherwise the whole monitor is occupied.
 gfx::Rect CalculateScreenBounds(const gfx::Size& size);
 
-// Returns name of the currently connected network.
-// If there are no connected networks, returns name of the network
-// that is in the "connecting" state. Otherwise empty string is returned.
-// If there are multiple connected networks, network priority:
-// Ethernet > WiFi > Cellular. Same for connecting network.
-string16 GetCurrentNetworkName();
-
 // Returns the size of user image required for proper display under current DPI.
 int GetCurrentUserImageSize();
 
@@ -43,6 +36,29 @@ namespace login {
 // Maximum size of user image, in which it should be saved to be properly
 // displayed under all possible DPI values.
 const int kMaxUserImageSize = 512;
+
+// A helper class for easily mocking out Network*Handler calls for tests.
+class NetworkStateHelper {
+ public:
+  NetworkStateHelper();
+  virtual ~NetworkStateHelper();
+
+  // Returns name of the currently connected network.
+  // If there are no connected networks, returns name of the network
+  // that is in the "connecting" state. Otherwise empty string is returned.
+  // If there are multiple connected networks, network priority:
+  // Ethernet > WiFi > Cellular. Same for connecting network.
+  virtual string16 GetCurrentNetworkName() const;
+
+  // Returns true if the default network is in connected state.
+  virtual bool IsConnected() const;
+
+  // Returns true if the default network is in connecting state.
+  virtual bool IsConnecting() const;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NetworkStateHelper);
+};
 
 }  // namespace login
 

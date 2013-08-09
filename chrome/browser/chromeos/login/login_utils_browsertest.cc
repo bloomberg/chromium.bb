@@ -23,8 +23,6 @@
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
-#include "chrome/browser/chromeos/net/mock_connectivity_state_helper.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -217,9 +215,6 @@ class LoginUtilsTest : public testing::Test,
 
     CryptohomeLibrary::Initialize();
     LoginState::Initialize();
-    ConnectivityStateHelper::SetForTest(&mock_connectivity_state_helper_);
-    EXPECT_CALL(mock_connectivity_state_helper_, DefaultNetworkOnline())
-        .WillRepeatedly(Return(false));
 
     mock_input_method_manager_ = new input_method::MockInputMethodManager();
     input_method::InitializeForTesting(mock_input_method_manager_);
@@ -314,7 +309,6 @@ class LoginUtilsTest : public testing::Test,
     LoginUtils::Set(NULL);
 
     input_method::Shutdown();
-    ConnectivityStateHelper::SetForTest(NULL);
     LoginState::Shutdown();
     CryptohomeLibrary::Shutdown();
 
@@ -529,7 +523,6 @@ class LoginUtilsTest : public testing::Test,
   input_method::MockInputMethodManager* mock_input_method_manager_;
   disks::MockDiskMountManager mock_disk_mount_manager_;
   net::TestURLFetcherFactory test_url_fetcher_factory_;
-  MockConnectivityStateHelper mock_connectivity_state_helper_;
 
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
 

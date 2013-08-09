@@ -12,12 +12,16 @@
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
+#include "chromeos/network/network_state_handler_observer.h"
 
 namespace chromeos {
 
+namespace login {
+class NetworkStateHelper;
+}  // namespace login
+
 class NetworkScreen : public WizardScreen,
-                      public ConnectivityStateHelperObserver,
+                      public NetworkStateHandlerObserver,
                       public NetworkScreenActor::Delegate {
  public:
   NetworkScreen(ScreenObserver* screen_observer, NetworkScreenActor* actor);
@@ -29,9 +33,9 @@ class NetworkScreen : public WizardScreen,
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // ConnectivityStateHelperObserver implementation:
+  // NetworkStateHandlerObserver implementation:
   virtual void NetworkManagerChanged() OVERRIDE;
-  virtual void DefaultNetworkChanged() OVERRIDE;
+  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
   // NetworkScreenActor::Delegate implementation:
   virtual void OnActorDestroyed(NetworkScreenActor* actor) OVERRIDE;
@@ -45,7 +49,13 @@ class NetworkScreen : public WizardScreen,
   virtual void Refresh();
 
  private:
+  friend class NetworkScreenTest;
   FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, Timeout);
+  FRIEND_TEST_ALL_PREFIXES(NetworkScreenTest, CanConnect);
+
+  // Sets the NetworkStateHelper for use in tests. This
+  // class will take ownership of the pointed object.
+  void SetNetworkStateHelperForTest(login::NetworkStateHelper* helper);
 
   // Subscribes to network change notifications.
   void SubscribeNetworkNotification();
@@ -82,6 +92,7 @@ class NetworkScreen : public WizardScreen,
   base::OneShotTimer<NetworkScreen> connection_timer_;
 
   NetworkScreenActor* actor_;
+  scoped_ptr<login::NetworkStateHelper> network_state_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScreen);
 };

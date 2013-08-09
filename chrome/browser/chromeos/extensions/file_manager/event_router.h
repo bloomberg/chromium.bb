@@ -14,12 +14,16 @@
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_watcher.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chromeos/disks/disk_mount_manager.h"
+#include "chromeos/network/network_state_handler_observer.h"
 
 class PrefChangeRegistrar;
 class Profile;
+
+namespace chromeos {
+class NetworkState;
+}
 
 namespace file_manager {
 
@@ -30,7 +34,7 @@ class MountedDiskMonitor;
 // affecting File Manager. Dispatches appropriate File Browser events.
 class EventRouter
     : public chromeos::disks::DiskMountManager::Observer,
-      public chromeos::ConnectivityStateHelperObserver,
+      public chromeos::NetworkStateHandlerObserver,
       public drive::DriveIntegrationServiceObserver,
       public drive::FileSystemObserver,
       public drive::JobListObserver,
@@ -77,9 +81,10 @@ class EventRouter
       chromeos::FormatError error_code,
       const std::string& device_path) OVERRIDE;
 
-  // chromeos::ConnectivityStateHelperObserver override.
+  // chromeos::NetworkStateHandlerObserver overrides.
   virtual void NetworkManagerChanged() OVERRIDE;
-  virtual void DefaultNetworkChanged() OVERRIDE;
+  virtual void DefaultNetworkChanged(
+      const chromeos::NetworkState* network) OVERRIDE;
 
   // drive::JobListObserver overrides.
   virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE;

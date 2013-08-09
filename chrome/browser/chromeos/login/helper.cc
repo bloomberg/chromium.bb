@@ -6,7 +6,9 @@
 
 #include "ash/shell.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -26,31 +28,6 @@ gfx::Rect CalculateScreenBounds(const gfx::Size& size) {
   return bounds;
 }
 
-string16 GetCurrentNetworkName() {
-  ConnectivityStateHelper* csh =
-      ConnectivityStateHelper::Get();
-
-  if (csh->IsConnectedType(flimflam::kTypeEthernet)) {
-    return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  } else if (csh->IsConnectedType(flimflam::kTypeWifi)) {
-    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWifi));
-  } else if (csh->IsConnectedType(flimflam::kTypeCellular)) {
-    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeCellular));
-  } else if (csh->IsConnectedType(flimflam::kTypeWimax)) {
-    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWimax));
-  } else if (csh->IsConnectingType(flimflam::kTypeEthernet)) {
-    return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  } else if (csh->IsConnectingType(flimflam::kTypeWifi)) {
-    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWifi));
-  } else if (csh->IsConnectingType(flimflam::kTypeCellular)) {
-    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeCellular));
-  } else if (csh->IsConnectingType(flimflam::kTypeWimax)) {
-    return UTF8ToUTF16(csh->NetworkNameForType(flimflam::kTypeWimax));
-  } else {
-    return string16();
-  }
-}
-
 int GetCurrentUserImageSize() {
   // The biggest size that the profile picture is displayed at is currently
   // 220px, used for the big preview on OOBE and Change Picture options page.
@@ -61,5 +38,46 @@ int GetCurrentUserImageSize() {
   return kBaseUserImageSize *
       ui::GetScaleFactorScale(ui::GetMaxScaleFactor());
 }
+
+namespace login {
+
+NetworkStateHelper::NetworkStateHelper() {}
+NetworkStateHelper::~NetworkStateHelper() {}
+
+string16 NetworkStateHelper::GetCurrentNetworkName() const {
+  NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
+  const NetworkState* network = nsh->ConnectedNetworkByType(
+      NetworkStateHandler::kMatchTypeNonVirtual);
+  if (network) {
+    if (network->type() == flimflam::kTypeEthernet)
+      return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+    return UTF8ToUTF16(network->name());
+  }
+
+  network = nsh->ConnectingNetworkByType(
+      NetworkStateHandler::kMatchTypeNonVirtual);
+  if (network) {
+    if (network->type() == flimflam::kTypeEthernet)
+      return l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+    return UTF8ToUTF16(network->name());
+  }
+  return string16();
+}
+
+bool NetworkStateHelper::IsConnected() const {
+  chromeos::NetworkStateHandler* nsh =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  return nsh->ConnectedNetworkByType(
+      chromeos::NetworkStateHandler::kMatchTypeDefault) != NULL;
+}
+
+bool NetworkStateHelper::IsConnecting() const {
+  chromeos::NetworkStateHandler* nsh =
+      chromeos::NetworkHandler::Get()->network_state_handler();
+  return nsh->ConnectingNetworkByType(
+      chromeos::NetworkStateHandler::kMatchTypeDefault) != NULL;
+}
+
+}  // namespace login
 
 }  // namespace chromeos

@@ -21,7 +21,6 @@
 #include "chrome/browser/chromeos/extensions/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -30,12 +29,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/login/login_state.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 using chromeos::disks::DiskMountManager;
+using chromeos::NetworkHandler;
 using content::BrowserThread;
 using drive::DriveIntegrationService;
 using drive::DriveIntegrationServiceFactory;
@@ -254,9 +256,9 @@ void EventRouter::Shutdown() {
     integration_service->job_list()->RemoveObserver(this);
   }
 
-  if (chromeos::ConnectivityStateHelper::IsInitialized()) {
-    chromeos::ConnectivityStateHelper::Get()->
-        RemoveNetworkManagerObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
   }
   profile_ = NULL;
 }
@@ -288,9 +290,9 @@ void EventRouter::ObserveFileSystemEvents() {
     integration_service->job_list()->AddObserver(this);
   }
 
-  if (chromeos::ConnectivityStateHelper::IsInitialized()) {
-    chromeos::ConnectivityStateHelper::Get()->
-        AddNetworkManagerObserver(this);
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
+                                                                FROM_HERE);
   }
 
   mounted_disk_monitor_.reset(new MountedDiskMonitor());
@@ -476,7 +478,7 @@ void EventRouter::NetworkManagerChanged() {
       BroadcastEvent(event.Pass());
 }
 
-void EventRouter::DefaultNetworkChanged() {
+void EventRouter::DefaultNetworkChanged(const chromeos::NetworkState* network) {
   NetworkManagerChanged();
 }
 

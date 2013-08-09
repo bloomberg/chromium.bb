@@ -5,10 +5,12 @@
 #include "chrome/browser/chromeos/login/auth_prewarmer.h"
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/preconnect.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "url/gurl.h"
@@ -29,7 +31,8 @@ AuthPrewarmer::~AuthPrewarmer() {
         chrome::NOTIFICATION_PROFILE_URL_REQUEST_CONTEXT_GETTER_INITIALIZED,
         content::Source<Profile>(ProfileHelper::GetSigninProfile()));
   }
-  ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
+  NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                 FROM_HERE);
 }
 
 void AuthPrewarmer::PrewarmAuthentication(
@@ -45,7 +48,8 @@ void AuthPrewarmer::PrewarmAuthentication(
     return;
   }
   if (!IsNetworkConnected())
-    ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
+    NetworkHandler::Get()->network_state_handler()->AddObserver(this,
+                                                                FROM_HERE);
   if (!GetRequestContext()) {
     registrar_.Add(
         this,
@@ -56,13 +60,14 @@ void AuthPrewarmer::PrewarmAuthentication(
 
 void AuthPrewarmer::NetworkManagerChanged() {
   if (IsNetworkConnected()) {
-    ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(this,
+                                                                   FROM_HERE);
     if (GetRequestContext())
       DoPrewarm();
   }
 }
 
-void AuthPrewarmer::DefaultNetworkChanged() {
+void AuthPrewarmer::DefaultNetworkChanged(const NetworkState* network) {
   NetworkManagerChanged();
 }
 
@@ -106,7 +111,9 @@ void AuthPrewarmer::DoPrewarm() {
 }
 
 bool AuthPrewarmer::IsNetworkConnected() const {
-  return ConnectivityStateHelper::Get()->IsConnected();
+  NetworkStateHandler* nsh = NetworkHandler::Get()->network_state_handler();
+  return (nsh->ConnectedNetworkByType(NetworkStateHandler::kMatchTypeDefault) !=
+          NULL);
 }
 
 net::URLRequestContextGetter* AuthPrewarmer::GetRequestContext() const {

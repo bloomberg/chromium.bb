@@ -7,7 +7,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/captive_portal/captive_portal_detector.h"
 #include "chrome/browser/chromeos/login/captive_portal_window_proxy.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -47,8 +49,10 @@ ui::ModalType CaptivePortalView::GetModalType() const {
 
 string16 CaptivePortalView::GetWindowTitle() const {
   string16 network_name;
-  ConnectivityStateHelper* csh = ConnectivityStateHelper::Get();
-  std::string default_network_name = csh->DefaultNetworkName();
+  const NetworkState* default_network =
+      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  std::string default_network_name =
+      default_network ? default_network->name() : std::string();
   if (!default_network_name.empty()) {
     network_name = ASCIIToUTF16(default_network_name);
   } else {

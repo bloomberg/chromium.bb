@@ -32,6 +32,10 @@ namespace chromeos {
 class CrosSettings;
 class LoginDisplayHost;
 
+namespace login {
+class NetworkStateHelper;
+}
+
 // ExistingUserController is used to handle login when someone has
 // already logged into the machine.
 // To use ExistingUserController create an instance of it and invoke Init.
@@ -295,6 +299,8 @@ class ExistingUserController : public LoginDisplay::Delegate,
 
   // Timer for the interval to wait for the reboot after TPM error UI was shown.
   base::OneShotTimer<ExistingUserController> reboot_timer_;
+
+  scoped_ptr<login::NetworkStateHelper> network_state_helper_;
 
   FRIEND_TEST_ALL_PREFIXES(ExistingUserControllerTest, ExistingUserLogin);
 

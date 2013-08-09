@@ -32,7 +32,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -135,7 +134,8 @@ ExistingUserController::ExistingUserController(LoginDisplayHost* host)
       is_login_in_progress_(false),
       password_changed_(false),
       do_auto_enrollment_(false),
-      signin_screen_ready_(false) {
+      signin_screen_ready_(false),
+      network_state_helper_(new login::NetworkStateHelper) {
   DCHECK(current_controller_ == NULL);
   current_controller_ = this;
 
@@ -388,7 +388,7 @@ void ExistingUserController::CompleteLoginInternal(
 }
 
 string16 ExistingUserController::GetConnectedNetworkName() {
-  return GetCurrentNetworkName();
+  return network_state_helper_->GetCurrentNetworkName();
 }
 
 bool ExistingUserController::IsSigninInProgress() const {
@@ -736,7 +736,7 @@ void ExistingUserController::OnLoginFailure(const LoginFailure& failure) {
     // cached locally or the local admin account.
     bool is_known_user =
         UserManager::Get()->IsKnownUser(last_login_attempt_username_);
-    if (!ConnectivityStateHelper::Get()->IsConnected()) {
+    if (!network_state_helper_->IsConnected()) {
       if (is_known_user)
         ShowError(IDS_LOGIN_ERROR_AUTHENTICATING, error);
       else
@@ -1089,7 +1089,7 @@ void ExistingUserController::ShowError(int error_id,
   // for end users, developers can see details string in Chrome logs.
   VLOG(1) << details;
   HelpAppLauncher::HelpTopic help_topic_id;
-  bool is_offline = !ConnectivityStateHelper::Get()->IsConnected();
+  bool is_offline = !network_state_helper_->IsConnected();
   switch (login_performer_->error().state()) {
     case GoogleServiceAuthError::CONNECTION_FAILED:
       help_topic_id = HelpAppLauncher::HELP_CANT_ACCESS_ACCOUNT_OFFLINE;

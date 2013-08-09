@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
@@ -17,8 +17,10 @@ class URLRequestContextGetter;
 
 namespace chromeos {
 
+class NetworkState;
+
 // Class for prewarming authentication network connection.
-class AuthPrewarmer : public ConnectivityStateHelperObserver,
+class AuthPrewarmer : public NetworkStateHandlerObserver,
                       public content::NotificationObserver {
  public:
   AuthPrewarmer();
@@ -27,9 +29,9 @@ class AuthPrewarmer : public ConnectivityStateHelperObserver,
   void PrewarmAuthentication(const base::Closure& completion_callback);
 
  private:
-  // chromeos::ConnectivityStateHelperObserver overrides.
+  // chromeos::NetworkStateHandlerObserver overrides.
   virtual void NetworkManagerChanged() OVERRIDE;
-  virtual void DefaultNetworkChanged() OVERRIDE;
+  virtual void DefaultNetworkChanged(const NetworkState* network) OVERRIDE;
 
   // content::NotificationObserver overrides.
   virtual void Observe(int type,

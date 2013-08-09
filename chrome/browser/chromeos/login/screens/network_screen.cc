@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
 
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
@@ -12,7 +13,8 @@
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state_handler.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -36,7 +38,8 @@ NetworkScreen::NetworkScreen(ScreenObserver* screen_observer,
     : WizardScreen(screen_observer),
       is_network_subscribed_(false),
       continue_pressed_(false),
-      actor_(actor) {
+      actor_(actor),
+      network_state_helper_(new login::NetworkStateHelper) {
   DCHECK(actor_);
   if (actor_)
     actor_->SetDelegate(this);
@@ -73,13 +76,13 @@ std::string NetworkScreen::GetName() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, ConnectivityStateHelperObserver implementation:
+// NetworkScreen, NetworkStateHandlerObserver implementation:
 
 void NetworkScreen::NetworkManagerChanged() {
   UpdateStatus();
 }
 
-void NetworkScreen::DefaultNetworkChanged() {
+void NetworkScreen::DefaultNetworkChanged(const NetworkState* network) {
   NetworkManagerChanged();
 }
 
@@ -100,7 +103,7 @@ void NetworkScreen::OnActorDestroyed(NetworkScreenActor* actor) {
 }
 
 void NetworkScreen::OnContinuePressed() {
-  if (ConnectivityStateHelper::Get()->IsConnected()) {
+  if (network_state_helper_->IsConnected()) {
     NotifyOnConnection();
   } else {
     continue_pressed_ = true;
@@ -111,17 +114,24 @@ void NetworkScreen::OnContinuePressed() {
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkScreen, private:
 
+void NetworkScreen::SetNetworkStateHelperForTest(
+    login::NetworkStateHelper* helper) {
+  network_state_helper_.reset(helper);
+}
+
 void NetworkScreen::SubscribeNetworkNotification() {
   if (!is_network_subscribed_) {
     is_network_subscribed_ = true;
-    ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
+    NetworkHandler::Get()->network_state_handler()->AddObserver(
+        this, FROM_HERE);
   }
 }
 
 void NetworkScreen::UnsubscribeNetworkNotification() {
   if (is_network_subscribed_) {
     is_network_subscribed_ = false;
-    ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
   }
 }
 
@@ -134,7 +144,7 @@ void NetworkScreen::NotifyOnConnection() {
 
 void NetworkScreen::OnConnectionTimeout() {
   StopWaitingForConnection(network_id_);
-  if (!ConnectivityStateHelper::Get()->IsConnected() && actor_) {
+  if (!network_state_helper_->IsConnected() && actor_) {
     // Show error bubble.
     actor_->ShowError(
         l10n_util::GetStringFUTF16(
@@ -148,14 +158,14 @@ void NetworkScreen::UpdateStatus() {
   if (!actor_)
     return;
 
-  bool is_connected = ConnectivityStateHelper::Get()->IsConnected();
+  bool is_connected = network_state_helper_->IsConnected();
   if (is_connected)
     actor_->ClearErrors();
 
-  string16 network_name = GetCurrentNetworkName();
+  string16 network_name = network_state_helper_->GetCurrentNetworkName();
   if (is_connected) {
     StopWaitingForConnection(network_name);
-  } else if (ConnectivityStateHelper::Get()->IsConnecting()) {
+  } else if (network_state_helper_->IsConnecting()) {
     WaitForConnection(network_name);
   } else {
     StopWaitingForConnection(network_id_);
@@ -163,7 +173,7 @@ void NetworkScreen::UpdateStatus() {
 }
 
 void NetworkScreen::StopWaitingForConnection(const string16& network_id) {
-  bool is_connected = ConnectivityStateHelper::Get()->IsConnected();
+  bool is_connected = network_state_helper_->IsConnected();
   if (is_connected && continue_pressed_) {
     NotifyOnConnection();
     return;

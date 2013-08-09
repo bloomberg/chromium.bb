@@ -33,6 +33,10 @@ class ScreenLocker;
 class WebUILoginDisplay;
 struct UserContext;
 
+namespace login {
+class NetworkStateHelper;
+}
+
 namespace test {
 class WebUIScreenLockerTester;
 }
@@ -134,6 +138,8 @@ class WebUIScreenLocker : public WebUILoginView,
 
   // Time when lock was initiated, required for metrics.
   base::TimeTicks lock_time_;
+
+  scoped_ptr<login::NetworkStateHelper> network_state_helper_;
 
   base::WeakPtrFactory<WebUIScreenLocker> weak_factory_;
 

@@ -82,10 +82,6 @@ const char kEnableChromeAudioSwitching[] = "enable-chrome-audio-switching";
 const char kEnableChromeCaptivePortalDetector[] =
     "enable-chrome-captive-portal-detector";
 
-// Disables the new NetworkChangeNotifier which uses NetworkStateHandler.
-const char kDisableNewNetworkChangeNotifier[] =
-    "disable-new-network-change-notifier";
-
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
 
