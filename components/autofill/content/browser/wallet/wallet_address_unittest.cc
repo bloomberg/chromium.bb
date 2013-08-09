@@ -409,5 +409,28 @@ TEST_F(WalletAddressTest, FromAutofillProfile) {
   }
 }
 
+// Verifies that GetInfo() can correctly return both country codes and localized
+// country names via GetInfo().
+TEST_F(WalletAddressTest, GetCountryInfo) {
+  Address address("FR",
+                  ASCIIToUTF16("recipient_name"),
+                  ASCIIToUTF16("address_line_1"),
+                  ASCIIToUTF16("address_line_2"),
+                  ASCIIToUTF16("locality_name"),
+                  ASCIIToUTF16("administrative_area_name"),
+                  ASCIIToUTF16("postal_code_number"),
+                  ASCIIToUTF16("phone_number"),
+                  "id1");
+
+  AutofillType type = AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
+  EXPECT_EQ(ASCIIToUTF16("FR"), address.GetInfo(type, "en-US"));
+
+  type = AutofillType(HTML_TYPE_COUNTRY_NAME, HTML_MODE_NONE);
+  EXPECT_EQ(ASCIIToUTF16("France"), address.GetInfo(type, "en-US"));
+
+  type = AutofillType(ADDRESS_HOME_COUNTRY);
+  EXPECT_EQ(ASCIIToUTF16("France"), address.GetInfo(type, "en-US"));
+}
+
 }  // namespace wallet
 }  // namespace autofill

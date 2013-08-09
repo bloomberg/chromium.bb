@@ -42,13 +42,16 @@ class Address : public FormGroup {
   virtual void GetSupportedTypes(
       ServerFieldTypeSet* supported_types) const OVERRIDE;
 
-  // The address.
+  // The address, sans country info.
   base::string16 line1_;
   base::string16 line2_;
   base::string16 city_;
   base::string16 state_;
-  base::string16 country_code_;
   base::string16 zip_code_;
+
+  // The ISO 3166 2-letter country code, or an empty string if there is no
+  // country data specified for this address.
+  std::string country_code_;
 };
 
 }  // namespace autofill

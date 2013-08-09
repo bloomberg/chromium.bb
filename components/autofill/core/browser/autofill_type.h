@@ -20,6 +20,8 @@ class AutofillType {
   AutofillType(const AutofillType& autofill_type);
   AutofillType& operator=(const AutofillType& autofill_type);
 
+  HtmlFieldType html_type() const { return html_type_; }
+
   FieldTypeGroup group() const;
 
   // Returns true if both the |server_type_| and the |html_type_| are set to

@@ -29,7 +29,8 @@ class AddressTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AddressTest);
 };
 
-// Test that country codes are properly decoded as country names.
+// Test that country data can be properly returned as either a country code or a
+// localized country name.
 TEST_F(AddressTest, GetCountry) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
@@ -43,10 +44,22 @@ TEST_F(AddressTest, GetCountry) {
       AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("US"), "en-US");
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(ASCIIToUTF16("United States"), country);
+  country = address.GetInfo(
+      AutofillType(HTML_TYPE_COUNTRY_NAME, HTML_MODE_NONE), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("United States"), country);
+  country = address.GetInfo(
+      AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("US"), country);
 
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("CA"));
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(ASCIIToUTF16("Canada"), country);
+  country = address.GetInfo(
+      AutofillType(HTML_TYPE_COUNTRY_NAME, HTML_MODE_NONE), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("Canada"), country);
+  country = address.GetInfo(
+      AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("CA"), country);
 }
 
 // Test that we properly detect country codes appropriate for each country.
@@ -87,6 +100,27 @@ TEST_F(AddressTest, SetCountry) {
   // Test that we ignore unknown countries.
   address.SetInfo(
       AutofillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16("Unknown"), "en-US");
+  country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
+  EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(base::string16(), country);
+
+  // Test setting the country based on an HTML field type.
+  AutofillType html_type_country_code =
+      AutofillType(HTML_TYPE_COUNTRY_CODE, HTML_MODE_NONE);
+  address.SetInfo(html_type_country_code, ASCIIToUTF16("US"), "en-US");
+  country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("US"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(ASCIIToUTF16("United States"), country);
+
+  // Test case-insensitivity when setting the country based on an HTML field
+  // type.
+  address.SetInfo(html_type_country_code, ASCIIToUTF16("cA"), "en-US");
+  country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
+  EXPECT_EQ(ASCIIToUTF16("CA"), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
+  EXPECT_EQ(ASCIIToUTF16("Canada"), country);
+
+  // Test setting the country based on invalid data with an HTML field type.
+  address.SetInfo(html_type_country_code, ASCIIToUTF16("unknown"), "en-US");
   country = address.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), "en-US");
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
   EXPECT_EQ(base::string16(), country);

@@ -2159,7 +2159,7 @@ TEST_F(AutofillManagerTest, FillFormWithAuthorSpecifiedSections) {
     EXPECT_TRUE(response_data.user_submitted);
     ASSERT_EQ(11U, response_data.fields.size());
 
-    ExpectFilledField("", "country", "United States", "text",
+    ExpectFilledField("", "country", "US", "text",
                       response_data.fields[0]);
     ExpectFilledField("", "firstname", "", "text", response_data.fields[1]);
     ExpectFilledField("", "lastname", "", "text", response_data.fields[2]);
