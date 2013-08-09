@@ -341,4 +341,30 @@ TEST(KeyframeAnimationEffect, MultipleIterations)
     expectDoubleValue(2.0, effect->sample(2, 0.5)->begin()->value->compositeOnto(unknownAnimatableValue(0.0)));
 }
 
+TEST(KeyframeAnimationEffect, DependsOnUnderlyingValue)
+{
+    KeyframeAnimationEffect::KeyframeVector keyframes(3);
+    keyframes[0] = Keyframe::create();
+    keyframes[0]->setOffset(0.0);
+    keyframes[0]->setPropertyValue(CSSPropertyLeft, pixelAnimatableValue(1.0));
+    keyframes[0]->setComposite(AnimationEffect::CompositeAdd);
+    keyframes[1] = Keyframe::create();
+    keyframes[1]->setOffset(0.5);
+    keyframes[1]->setPropertyValue(CSSPropertyLeft, pixelAnimatableValue(1.0));
+    keyframes[2] = Keyframe::create();
+    keyframes[2]->setOffset(1.0);
+    keyframes[2]->setPropertyValue(CSSPropertyLeft, pixelAnimatableValue(1.0));
+
+    RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
+    EXPECT_TRUE(effect->sample(0, 0)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_TRUE(effect->sample(0, 0.1)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_TRUE(effect->sample(0, 0.25)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_TRUE(effect->sample(0, 0.4)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_FALSE(effect->sample(0, 0.5)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_FALSE(effect->sample(0, 0.6)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_FALSE(effect->sample(0, 0.75)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_FALSE(effect->sample(0, 0.8)->begin()->value->dependsOnUnderlyingValue());
+    EXPECT_FALSE(effect->sample(0, 1)->begin()->value->dependsOnUnderlyingValue());
+}
+
 } // namespace

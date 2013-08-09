@@ -44,6 +44,10 @@ public:
     {
         return adoptRef(new ReplaceCompositableValue(value));
     }
+    virtual bool dependsOnUnderlyingValue() const
+    {
+        return false;
+    }
     virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const
     {
         return PassRefPtr<AnimatableValue>(m_value);
@@ -61,6 +65,10 @@ public:
     static PassRefPtr<AddCompositableValue> create(const AnimatableValue* value)
     {
         return adoptRef(new AddCompositableValue(value));
+    }
+    virtual bool dependsOnUnderlyingValue() const
+    {
+        return true;
     }
     virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const
     {
@@ -80,6 +88,10 @@ public:
     {
         return adoptRef(new BlendedCompositableValue(before, after, fraction));
     }
+    virtual bool dependsOnUnderlyingValue() const
+    {
+        return m_dependsOnUnderlyingValue;
+    }
     virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue* underlyingValue) const
     {
         return AnimatableValue::interpolate(m_before->compositeOnto(underlyingValue).get(), m_after->compositeOnto(underlyingValue).get(), m_fraction);
@@ -89,10 +101,12 @@ private:
         : m_before(const_cast<AnimationEffect::CompositableValue*>(before))
         , m_after(const_cast<AnimationEffect::CompositableValue*>(after))
         , m_fraction(fraction)
+        , m_dependsOnUnderlyingValue(before->dependsOnUnderlyingValue() || after->dependsOnUnderlyingValue())
     { }
     RefPtr<AnimationEffect::CompositableValue> m_before;
     RefPtr<AnimationEffect::CompositableValue> m_after;
     double m_fraction;
+    bool m_dependsOnUnderlyingValue;
 };
 
 } // namespace

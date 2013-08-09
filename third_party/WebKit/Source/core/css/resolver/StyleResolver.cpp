@@ -1162,7 +1162,8 @@ void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ele
             CSSPropertyID property = iter->key;
             if (!isPropertyForPass<pass>(property))
                 continue;
-            RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(AnimatableValue::neutralValue());
+            RELEASE_ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Not yet implemented: An interface for compositing onto the underlying value.");
+            RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
             if (pass == HighPriorityProperties && property == CSSPropertyLineHeight)
                 state.setLineHeightValue(toAnimatableNumber(animatableValue.get())->toCSSValue().get());
             else

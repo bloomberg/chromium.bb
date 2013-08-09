@@ -52,6 +52,7 @@ public:
     class CompositableValue : public RefCounted<CompositableValue> {
     public:
         virtual ~CompositableValue() { }
+        virtual bool dependsOnUnderlyingValue() const = 0;
         virtual PassRefPtr<AnimatableValue> compositeOnto(const AnimatableValue*) const = 0;
     };
 
