@@ -71,6 +71,11 @@ void DeviceRequestMessageFilter::StreamGenerationFailed(
   NOTIMPLEMENTED();
 }
 
+void DeviceRequestMessageFilter::StopGeneratedStream(
+    const std::string& label) {
+  NOTIMPLEMENTED();
+}
+
 void DeviceRequestMessageFilter::DevicesEnumerated(
     const std::string& label,
     const StreamDeviceInfoArray& new_devices) {

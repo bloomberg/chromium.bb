@@ -376,6 +376,24 @@ void MediaStreamImpl::OnStreamGenerationFailed(int request_id) {
   DeleteUserMediaRequestInfo(request_info);
 }
 
+// Callback from MediaStreamDispatcher.
+// The user has requested to stop the media stream.
+void MediaStreamImpl::OnStopGeneratedStream(const std::string& label) {
+  DCHECK(CalledOnValidThread());
+  DVLOG(1) << "MediaStreamImpl::OnStopGeneratedStream(" << label << ")";
+
+  UserMediaRequestInfo* user_media_request = FindUserMediaRequestInfo(label);
+  if (user_media_request) {
+    // No need to call media_stream_dispatcher_->StopStream() because the
+    // request has come from the browser process.
+    StopLocalAudioTrack(user_media_request->web_stream);
+    DeleteUserMediaRequestInfo(user_media_request);
+  } else {
+    DVLOG(1) << "MediaStreamImpl::OnStopGeneratedStream: the stream has "
+             << "already been stopped.";
+  }
+}
+
 // Callback from MediaStreamDependencyFactory when the sources in |web_stream|
 // have been generated.
 void MediaStreamImpl::OnCreateNativeSourcesComplete(

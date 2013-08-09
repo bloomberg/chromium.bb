@@ -146,6 +146,7 @@ class CONTENT_EXPORT MediaStreamDispatcher
       const StreamDeviceInfoArray& audio_array,
       const StreamDeviceInfoArray& video_array);
   void OnStreamGenerationFailed(int request_id);
+  void OnStopGeneratedStream(const std::string& label);
   void OnDevicesEnumerated(
       int request_id,
       const std::string& label,

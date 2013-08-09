@@ -50,6 +50,10 @@ class MockMediaStreamDispatcherEventHandler
     request_id_ = request_id;
   }
 
+  virtual void OnStopGeneratedStream(const std::string& label) OVERRIDE {
+    label_ = label;
+  }
+
   virtual void OnDevicesEnumerated(
       int request_id,
       const StreamDeviceInfoArray& device_array) OVERRIDE {

@@ -52,6 +52,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                void(int routing_id, int request_id, int audio_array_size,
                     int video_array_size));
   MOCK_METHOD2(OnStreamGenerationFailed, void(int routing_id, int request_id));
+  MOCK_METHOD1(OnStopGeneratedStreamFromBrowser,
+               void(int routing_id));
 
   // Accessor to private functions.
   void OnGenerateStream(int page_request_id,
@@ -91,6 +93,8 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
       IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerated, OnStreamGenerated)
       IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
                           OnStreamGenerationFailed)
+      IPC_MESSAGE_HANDLER(MediaStreamMsg_StopGeneratedStream,
+                          OnStopGeneratedStreamFromBrowser)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
     EXPECT_TRUE(handled);
@@ -120,6 +124,15 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     if (!quit_closure_.is_null())
       message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure_));
     label_= "";
+  }
+
+  void OnStopGeneratedStreamFromBrowser(const IPC::Message& msg,
+                                        const std::string& label) {
+    OnStopGeneratedStreamFromBrowser(msg.routing_id());
+    // Notify that the event have occured.
+    if (!quit_closure_.is_null())
+      message_loop_->PostTask(FROM_HERE, base::ResetAndReturn(&quit_closure_));
+    label_ = "";
   }
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
@@ -323,8 +336,7 @@ TEST_F(MediaStreamDispatcherHostTest, CloseFromUI) {
   media_stream_manager_->UseFakeUI(stream_ui.PassAs<FakeMediaStreamUIProxy>());
 
   EXPECT_CALL(*host_.get(), OnStreamGenerated(kRenderId, kPageRequestId, 0, 1));
-  EXPECT_CALL(*host_.get(),
-              OnStreamGenerationFailed(kRenderId, kPageRequestId));
+  EXPECT_CALL(*host_.get(), OnStopGeneratedStreamFromBrowser(kRenderId));
   GenerateStreamAndWaitForResult(kPageRequestId, options);
 
   EXPECT_EQ(host_->audio_devices_.size(), 0u);

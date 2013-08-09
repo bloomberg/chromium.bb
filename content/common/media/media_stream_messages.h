@@ -49,6 +49,12 @@ IPC_MESSAGE_ROUTED4(MediaStreamMsg_StreamGenerated,
 IPC_MESSAGE_ROUTED1(MediaStreamMsg_StreamGenerationFailed,
                     int /* request id */)
 
+// The browser requests to stop streaming.
+// Note that this differs from MediaStreamHostMsg_StopGeneratedStream below
+// which is a request from the renderer.
+IPC_MESSAGE_ROUTED1(MediaStreamMsg_StopGeneratedStream,
+                    std::string /* label */)
+
 // The browser has enumerated devices successfully.
 // Used by Pepper.
 // TODO(vrk,wjia): Move this to pepper code.

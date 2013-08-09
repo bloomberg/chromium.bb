@@ -244,6 +244,8 @@ bool MediaStreamDispatcher::OnMessageReceived(const IPC::Message& message) {
                         OnStreamGenerated)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_StreamGenerationFailed,
                         OnStreamGenerationFailed)
+    IPC_MESSAGE_HANDLER(MediaStreamMsg_StopGeneratedStream,
+                        OnStopGeneratedStream)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerated,
                         OnDevicesEnumerated)
     IPC_MESSAGE_HANDLER(MediaStreamMsg_DevicesEnumerationFailed,
@@ -300,6 +302,20 @@ void MediaStreamDispatcher::OnStreamGenerationFailed(int request_id) {
       break;
     }
   }
+}
+
+void MediaStreamDispatcher::OnStopGeneratedStream(const std::string& label) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  LabelStreamMap::iterator it = label_stream_map_.find(label);
+  if (it == label_stream_map_.end())
+    return;
+
+  if (it->second.handler.get()) {
+    it->second.handler->OnStopGeneratedStream(label);
+    DVLOG(1) << "MediaStreamDispatcher::OnStopGeneratedStream("
+             << label << ")\n";
+  }
+  label_stream_map_.erase(it);
 }
 
 void MediaStreamDispatcher::OnDevicesEnumerated(

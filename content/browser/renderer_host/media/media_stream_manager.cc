@@ -988,7 +988,7 @@ void MediaStreamManager::StopStreamFromUI(const std::string& label) {
 
   // Notify renderers that the stream has been stopped.
   if (it->second->requester)
-    it->second->requester->StreamGenerationFailed(label);
+    it->second->requester->StopGeneratedStream(label);
 
   StopGeneratedStream(label);
 }

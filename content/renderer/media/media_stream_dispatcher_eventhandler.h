@@ -25,6 +25,9 @@ class CONTENT_EXPORT MediaStreamDispatcherEventHandler {
   // to the requested devices or no device is available.
   virtual void OnStreamGenerationFailed(int request_id) = 0;
 
+  // The user has requested to stop a media stream.
+  virtual void OnStopGeneratedStream(const std::string& label) = 0;
+
   // A new list of devices have been enumerated.
   virtual void OnDevicesEnumerated(
       int request_id,
