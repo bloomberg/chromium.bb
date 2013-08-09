@@ -29,8 +29,6 @@
 
 #include "core/platform/graphics/GraphicsContext3D.h"
 
-#include "GrContext.h"
-#include "GrGLInterface.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CheckedInt.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -40,6 +38,8 @@
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include "third_party/skia/include/gpu/GrContext.h"
+#include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "wtf/CPU.h"
 #include "wtf/OwnArrayPtr.h"
 #include "wtf/PassOwnArrayPtr.h"
