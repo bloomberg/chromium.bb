@@ -563,7 +563,7 @@ wl_display_connect_to_fd(int fd)
  * \return A \ref wl_display object or \c NULL on failure
  *
  * Connect to the Wayland display named \c name. If \c name is \c NULL,
- * its value will bee replaced with the WAYLAND_DISPLAY environment
+ * its value will be replaced with the WAYLAND_DISPLAY environment
  * variable if it is set, otherwise display "wayland-0" will be used.
  *
  * \memberof wl_display
@@ -1148,7 +1148,7 @@ wl_display_dispatch_queue(struct wl_display *display,
  *
  * Dispatch all incoming events for objects assigned to the given
  * event queue. On failure -1 is returned and errno set appropriately.
- * If there are no events queued, this functions return immediately.
+ * If there are no events queued, this function returns immediately.
  *
  * \memberof wl_display
  * \since 1.0.2
@@ -1241,12 +1241,12 @@ wl_display_dispatch_pending(struct wl_display *display)
 	return wl_display_dispatch_queue_pending(display, &display->queue);
 }
 
-/** Retrieve the last error occurred on a display
+/** Retrieve the last error that occurred on a display
  *
  * \param display The display context object
- * \return The last error occurred on \c display or 0 if no error occurred
+ * \return The last error that occurred on \c display or 0 if no error occurred
  *
- * Return the last error occurred on the display. This may be an error sent
+ * Return the last error that occurred on the display. This may be an error sent
  * by the server or caused by the local client.
  *
  * \note Errors are \b fatal. If this function returns non-zero the display
@@ -1271,7 +1271,7 @@ wl_display_get_error(struct wl_display *display)
 /** Send all buffered requests on the display to the server
  *
  * \param display The display context object
- * \return The number of bytes send on success or -1 on failure
+ * \return The number of bytes sent on success or -1 on failure
  *
  * Send all buffered data on the client side to the server. Clients
  * should call this function before blocking. On success, the number
