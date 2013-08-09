@@ -2784,8 +2784,6 @@
             'chrome_browser_jni_headers',
           ],
           'sources': [
-            'browser/ui/find_bar/find_match_rects_details.cc',
-            'browser/ui/find_bar/find_match_rects_details.h',
             'browser/ui/webui/ntp/android/bookmarks_handler.cc',
             'browser/ui/webui/ntp/android/bookmarks_handler.h',
             'browser/ui/webui/ntp/android/context_menu_handler.cc',

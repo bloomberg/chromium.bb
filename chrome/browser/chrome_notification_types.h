@@ -204,14 +204,6 @@ enum NotificationType {
   // match was found or not found.
   NOTIFICATION_FIND_RESULT_AVAILABLE,
 
-#if defined(OS_ANDROID)
-  // This notification is sent when the match rects of a find-in-page search
-  // are available. The source is a Source<WebContents>. Details encompass a
-  // FindMatchRectsDetails object that contains the result version and the
-  // rects information.
-  NOTIFICATION_FIND_MATCH_RECTS_AVAILABLE,
-#endif
-
   // BackgroundContents ------------------------------------------------------
 
   // A new background contents was opened by script. The source is the parent

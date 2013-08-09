@@ -9,7 +9,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
-#include "chrome/browser/ui/find_bar/find_match_rects_details.h"
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "content/public/browser/notification_details.h"
@@ -163,12 +162,6 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
     int version,
     const std::vector<gfx::RectF>& rects,
     const gfx::RectF& active_rect) {
-  FindMatchRectsDetails match_rects(version, rects, active_rect);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_FIND_MATCH_RECTS_AVAILABLE,
-      content::Source<WebContents>(web_contents),
-      content::Details<FindMatchRectsDetails>(&match_rects));
-
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
@@ -178,17 +171,17 @@ void ChromeWebContentsDelegateAndroid::FindMatchRectsReply(
   ScopedJavaLocalRef<jobject> details_object =
       Java_ChromeWebContentsDelegateAndroid_createFindMatchRectsDetails(
           env,
-          match_rects.version(),
-          match_rects.rects().size(),
-          CreateJavaRectF(env, match_rects.active_rect()).obj());
+          version,
+          rects.size(),
+          CreateJavaRectF(env, active_rect).obj());
 
   // Add the rects
-  for (size_t i = 0; i < match_rects.rects().size(); ++i) {
+  for (size_t i = 0; i < rects.size(); ++i) {
       Java_ChromeWebContentsDelegateAndroid_setMatchRectByIndex(
           env,
           details_object.obj(),
           i,
-          CreateJavaRectF(env, match_rects.rects()[i]).obj());
+          CreateJavaRectF(env, rects[i]).obj());
   }
 
   Java_ChromeWebContentsDelegateAndroid_onFindMatchRectsAvailable(
