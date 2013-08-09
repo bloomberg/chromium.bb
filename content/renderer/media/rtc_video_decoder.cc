@@ -95,11 +95,14 @@ RTCVideoDecoder::RTCVideoDecoder(
 
 RTCVideoDecoder::~RTCVideoDecoder() {
   DVLOG(2) << "~RTCVideoDecoder";
-  // Remove |this| from the observer if vda thread is alive.
-  if (vda_loop_proxy_->BelongsToCurrentThread())
+  // Destroy VDA and remove |this| from the observer if this is vda thread.
+  if (vda_loop_proxy_->BelongsToCurrentThread()) {
     base::MessageLoop::current()->RemoveDestructionObserver(this);
-  // VDA should have been destroyed.
-  DCHECK(!vda_);
+    DestroyVDA();
+  } else {
+    // VDA should have been destroyed in WillDestroyCurrentMessageLoop.
+    DCHECK(!vda_);
+  }
 
   // Delete all shared memories.
   STLDeleteElements(&available_shm_segments_);
@@ -231,19 +234,9 @@ int32_t RTCVideoDecoder::RegisterDecodeCompleteCallback(
 
 int32_t RTCVideoDecoder::Release() {
   DVLOG(2) << "Release";
-  base::AutoLock auto_lock(lock_);
-  if (state_ == UNINITIALIZED) {
-    LOG(ERROR) << "Decoder not initialized.";
-    return WEBRTC_VIDEO_CODEC_UNINITIALIZED;
-  }
-  if (next_bitstream_buffer_id_ != 0)
-    reset_bitstream_buffer_id_ = next_bitstream_buffer_id_ - 1;
-  else
-    reset_bitstream_buffer_id_ = ID_LAST;
-  factories_->Abort();
-  vda_loop_proxy_->PostTask(
-      FROM_HERE, base::Bind(&RTCVideoDecoder::DestroyVDA, weak_this_));
-  return WEBRTC_VIDEO_CODEC_OK;
+  // Do not destroy VDA because WebRTC can call InitDecode and start decoding
+  // again.
+  return Reset();
 }
 
 int32_t RTCVideoDecoder::Reset() {
@@ -367,7 +360,7 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
       width, height, width, (width + 1) / 2, (width + 1) / 2);
   decoded_image.set_timestamp(timestamp);
 
-  // Invoke decode callback. WebRTC expects no frame callback after Release.
+  // Invoke decode callback. WebRTC expects no callback after Reset or Release.
   {
     base::AutoLock auto_lock(lock_);
     DCHECK(decode_complete_callback_ != NULL);
@@ -659,6 +652,8 @@ void RTCVideoDecoder::DestroyVDA() {
   if (vda_)
     vda_.release()->Destroy();
   DestroyTextures();
+  base::AutoLock auto_lock(lock_);
+  state_ = UNINITIALIZED;
 }
 
 scoped_ptr<RTCVideoDecoder::SHMBuffer> RTCVideoDecoder::GetSHM_Locked(

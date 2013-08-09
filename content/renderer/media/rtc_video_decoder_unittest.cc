@@ -20,6 +20,7 @@ using ::testing::WithArgs;
 
 namespace content {
 
+// TODO(wuchengli): add MockSharedMemroy so more functions can be tested.
 class RTCVideoDecoderTest : public ::testing::Test,
                             webrtc::DecodedImageCallback {
  public:
@@ -53,8 +54,6 @@ class RTCVideoDecoderTest : public ::testing::Test,
   virtual void TearDown() OVERRIDE {
     VLOG(2) << "TearDown";
     if (vda_thread_.IsRunning()) {
-      if (rtc_decoder_)
-        rtc_decoder_->Release();
       RunUntilIdle();  // Wait until all callbascks complete.
       vda_loop_proxy_->DeleteSoon(FROM_HERE, rtc_decoder_.release());
       // Make sure the decoder is released before stopping the thread.
@@ -151,6 +150,17 @@ TEST_F(RTCVideoDecoderTest, ResetReturnsOk) {
 }
 
 TEST_F(RTCVideoDecoderTest, ReleaseReturnsOk) {
+  Initialize();
+  EXPECT_CALL(*mock_vda_, Reset())
+      .WillOnce(Invoke(this, &RTCVideoDecoderTest::NotifyResetDone));
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Release());
+}
+
+TEST_F(RTCVideoDecoderTest, InitDecodeAfterRelease) {
+  EXPECT_CALL(*mock_vda_, Reset())
+      .WillRepeatedly(Invoke(this, &RTCVideoDecoderTest::NotifyResetDone));
+  Initialize();
+  EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Release());
   Initialize();
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->Release());
 }
