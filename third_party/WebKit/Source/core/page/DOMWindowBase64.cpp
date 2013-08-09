@@ -47,7 +47,7 @@ String btoa(void*, const String& stringToEncode, ExceptionState& es)
         return String();
 
     if (!stringToEncode.containsOnlyLatin1()) {
-        es.throwDOMException(InvalidCharacterError);
+        es.throwDOMException(InvalidCharacterError, "'btoa' failed: The string to be encoded contains characters outside of the Latin1 range.");
         return String();
     }
 
@@ -60,13 +60,13 @@ String atob(void*, const String& encodedString, ExceptionState& es)
         return String();
 
     if (!encodedString.containsOnlyLatin1()) {
-        es.throwDOMException(InvalidCharacterError);
+        es.throwDOMException(InvalidCharacterError, "'atob' failed: The string to be decoded contains characters outside of the Latin1 range.");
         return String();
     }
 
     Vector<char> out;
     if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacter, Base64StrictPaddingValidation)) {
-        es.throwDOMException(InvalidCharacterError);
+        es.throwDOMException(InvalidCharacterError, "'atob' failed: The string to be decoded is not correctly encoded.");
         return String();
     }
 
