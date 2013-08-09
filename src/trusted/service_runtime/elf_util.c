@@ -90,6 +90,11 @@ static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
    */
   { PT_GNU_STACK, PF_R|PF_W, PCA_NONE, 0, 0, },
   /* ignored segments */
+  { PT_DYNAMIC, PF_R|PF_W, PCA_IGNORE, 0, 0},
+  /*
+   * PT_DYNAMIC with PF_R doesn't occur in practice, but leaving it here just
+   * in case it has been used.
+   */
   { PT_DYNAMIC, PF_R, PCA_IGNORE, 0, 0},
   { PT_INTERP, PF_R, PCA_IGNORE, 0, 0},
   { PT_NOTE, PF_R, PCA_IGNORE, 0, 0},
