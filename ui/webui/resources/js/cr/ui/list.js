@@ -515,13 +515,15 @@ cr.define('cr.ui', function() {
       // When the blur event happens we do not know who is getting focus so we
       // delay this a bit until we know if the new focus node is outside the
       // list.
+      // We need 51 msec delay because InlineEditableList sets focus after
+      // 50 msec.
       var list = this;
       var doc = e.target.ownerDocument;
       window.setTimeout(function() {
         var activeElement = doc.activeElement;
-        if (activeElement != doc.body && !list.contains(activeElement))
+        if (!list.contains(activeElement))
           list.hasElementFocus = false;
-      });
+      }, 51);
     },
 
     /**
