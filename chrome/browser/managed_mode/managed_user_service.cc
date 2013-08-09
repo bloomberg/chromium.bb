@@ -448,6 +448,16 @@ void ManagedUserService::UpdateSiteLists() {
   url_filter_context_.LoadWhitelists(GetActiveSiteLists());
 }
 
+bool ManagedUserService::AccessRequestsEnabled() {
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  GoogleServiceAuthError::State state = service->GetAuthError().state();
+  // We allow requesting access if Sync is working or has a transient error.
+  return (state == GoogleServiceAuthError::NONE ||
+          state == GoogleServiceAuthError::CONNECTION_FAILED ||
+          state == GoogleServiceAuthError::SERVICE_UNAVAILABLE);
+}
+
 void ManagedUserService::AddAccessRequest(const GURL& url) {
   // Normalize the URL.
   GURL normalized_url = ManagedModeURLFilter::Normalize(url);

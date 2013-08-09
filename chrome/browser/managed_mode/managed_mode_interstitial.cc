@@ -41,8 +41,8 @@ ManagedModeInterstitial::ManagedModeInterstitial(
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   languages_ = profile->GetPrefs()->GetString(prefs::kAcceptLanguages);
 
-  interstitial_page_ = content::InterstitialPage::Create(
-      web_contents, true, url_, this);
+  interstitial_page_ =
+      content::InterstitialPage::Create(web_contents, true, url_, this);
   interstitial_page_->Show();
 }
 
@@ -57,10 +57,18 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(profile);
+
+  bool allow_access_requests = managed_user_service->AccessRequestsEnabled();
+  strings.SetBoolean("allowAccessRequests", allow_access_requests);
+
   string16 custodian = UTF8ToUTF16(managed_user_service->GetCustodianName());
   strings.SetString(
       "blockPageMessage",
-      l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_MESSAGE, custodian));
+      allow_access_requests
+          ? l10n_util::GetStringFUTF16(IDS_BLOCK_INTERSTITIAL_MESSAGE,
+                                       custodian)
+          : l10n_util::GetStringUTF16(
+                IDS_BLOCK_INTERSTITIAL_MESSAGE_ACCESS_REQUESTS_DISABLED));
 
   strings.SetString("backButton", l10n_util::GetStringUTF16(IDS_BACK_BUTTON));
   strings.SetString(
@@ -74,9 +82,8 @@ std::string ManagedModeInterstitial::GetHTMLContents() {
 
   webui::SetFontAndTextDirection(&strings);
 
-  base::StringPiece html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_MANAGED_MODE_BLOCK_INTERSTITIAL_HTML));
+  base::StringPiece html(ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_MANAGED_MODE_BLOCK_INTERSTITIAL_HTML));
 
   webui::UseVersion2 version;
   return webui::GetI18nTemplateHtml(html, &strings);
@@ -118,15 +125,13 @@ void ManagedModeInterstitial::CommandReceived(const std::string& command) {
   NOTREACHED();
 }
 
-void ManagedModeInterstitial::OnProceed() {
-  NOTREACHED();
-}
+void ManagedModeInterstitial::OnProceed() { NOTREACHED(); }
 
 void ManagedModeInterstitial::OnDontProceed() {
   DispatchContinueRequest(false);
 }
 
 void ManagedModeInterstitial::DispatchContinueRequest(bool continue_request) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(callback_, continue_request));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE, base::Bind(callback_, continue_request));
 }

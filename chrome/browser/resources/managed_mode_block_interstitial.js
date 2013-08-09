@@ -8,10 +8,14 @@ function sendCommand(cmd) {
 }
 
 function initialize() {
-  $('request-access-button').onclick = function(event) {
-    updateAfterRequestSent();
-    sendCommand('request');
-  };
+  if (loadTimeData.getBoolean('allowAccessRequests')) {
+    $('request-access-button').onclick = function(event) {
+      updateAfterRequestSent();
+      sendCommand('request');
+    };
+  } else {
+    $('request-access-button').hidden = true;
+  }
   $('back-button').onclick = function(event) {
     sendCommand('back');
   };

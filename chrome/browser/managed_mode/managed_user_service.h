@@ -83,6 +83,9 @@ class ManagedUserService : public BrowserContextKeyedService,
   // be fast.
   void GetCategoryNames(CategoryList* list);
 
+  // Whether the user can request access to blocked URLs.
+  bool AccessRequestsEnabled();
+
   // Adds an access request for the given URL. The requests are stored using
   // a prefix followed by a URIEncoded version of the URL. Each entry contains
   // a dictionary which currently has the timestamp of the request in it.
