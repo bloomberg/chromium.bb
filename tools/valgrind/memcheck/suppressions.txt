@@ -6670,7 +6670,6 @@
    fun:_ZN7WebCore6V8Node23appendChildMethodCustomERKN2v820FunctionCallbackInfoINS1_5ValueEEE
    fun:_ZN7WebCore14NodeV8InternalL37appendChildMethodCallbackForMainWorldERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
-
 {
    bug_241932
    Memcheck:Leak
@@ -6991,16 +6990,25 @@
    fun:_ZN7content11ContentMainEiPPKcPNS_19ContentMainDelegateE
 }
 {
-   bug_252641
+   bug_252641_a
    Memcheck:Uninitialized
    fun:pthread_rwlock_init$UNIX2003
    fun:_ZN3re25MutexC2Ev
    fun:_ZN3re25MutexC1Ev
    ...
    fun:_ZN11leveldb_env19ParseMethodAndErrorEPKcPNS_8MethodIDEPi
-   fun:_ZN7contentL21HistogramLevelDBErrorERKSsRKN7leveldb6StatusE
-   fun:_ZN7content15LevelDBDatabase4OpenERKN4base8FilePathEPKNS_17LevelDBComparatorEPb
-   fun:_ZN7content12_GLOBAL__N_139LevelDBDatabaseTest_CorruptionTest_Test8TestBodyEv
+}
+{
+   bug_252641_b
+   Memcheck:Uninitialized
+   fun:pthread_rwlock_init$UNIX2003
+   fun:_ZN3re25MutexC2Ev
+   fun:_ZN3re25MutexC1Ev
+   ...
+   fun:_ZN11leveldb_env19ParseMethodAndErrorEPKcPNS_8MethodIDEPi
+   fun:_ZN7content23RecoveryCouldBeFruitfulEN7leveldb6StatusE
+   fun:_ZN7content21IndexedDBBackingStore4OpenERKSsRKN4base8FilePathES2_PN6WebKit15WebIDBCallbacks8DataLossEPNS_14LevelDBFactoryE
+   fun:_ZN12_GLOBAL__N_137IndexedDBIOErrorTest_CleanUpTest_Test8TestBodyEv
 }
 {
    bug_253797
@@ -7219,5 +7227,13 @@
    fun:_ZN14message_center22MessageCenterButtonBarC1EPNS_17MessageCenterViewEPNS_13MessageCenterEPNS_24NotifierSettingsProviderEb
    fun:_ZN14message_center17MessageCenterViewC1EPNS_13MessageCenterEPNS_17MessageCenterTrayEibb
    fun:_ZN14message_center21MessageCenterViewTest5SetUpEv
+}
+{
+   bug_270742
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN16sync_file_system13drive_backend12_GLOBAL__N_120ReadDatabaseContentsEPN7leveldb2DBEPNS0_16DatabaseContentsE
+   fun:_ZN16sync_file_system13drive_backend16MetadataDatabase22InitializeOnTaskRunnerERKN4base8FilePathE
+   fun:_ZN16sync_file_system13drive_backend16MetadataDatabase18CreateOnTaskRunnerEPN4base22SingleThreadTaskRunnerEPNS2_19SequencedTaskRunnerERKNS2_8FilePathERKNS2_8CallbackIFvNS_14SyncStatusCodeE10scoped_ptrIS1_NS2_14DefaultDeleterIS1_EEEEEE
 }
 
