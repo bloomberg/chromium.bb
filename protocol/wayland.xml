@@ -640,7 +640,7 @@
 
   <interface name="wl_data_device_manager" version="1">
     <description summary="data transfer interface">
-      The wl_data_device_manager is a a singleton global object that
+      The wl_data_device_manager is a singleton global object that
       provides access to inter-client data transfer mechanisms such as
       copy-and-paste and drag-and-drop.  These mechanisms are tied to
       a wl_seat and this interface lets a client get a wl_data_device
