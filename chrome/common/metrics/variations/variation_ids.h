@@ -227,10 +227,14 @@ enum VariationID {
   SHOW_APP_LAUNCHER_PROMO_UNTIL_DISMISSED = 3310366,
   SHOW_APP_LAUNCHER_PROMO_RESET_PREF = 3310367,
 
+  // CookieRetentionPriorityStudy field trial.
+  COOKIE_RETENTION_PRIORITY_STUDY_EXPERIMENT_OFF = 3310869,
+  COOKIE_RETENTION_PRIORITY_STUDY_EXPERIMENT_ON = 3310870,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310869,
+  NEXT_ID = 3310871,
 
   // USABLE IDs END HERE.
   //
