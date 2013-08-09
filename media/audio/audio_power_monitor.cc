@@ -84,7 +84,8 @@ void AudioPowerMonitor::Scan(const AudioBus& buffer, int num_frames) {
         (average_power_ < kInsignificantPower) ? 0.0f : average_power_;
     if (power != last_reported_power_ ||
         clipped_since_last_notification_ != last_reported_clipped_) {
-      const float power_dbfs = 10.0f * log10f(power);
+      const float power_dbfs =
+          power > 0.0f ? 10.0f * log10f(power) : zero_power();
       // Try to post a task to run the callback with the dBFS result.  The
       // posting of the task is guaranteed to be non-blocking, and therefore
       // could fail.  However, in the common case, failures should be rare (and
