@@ -57,6 +57,7 @@
 #include "core/page/ResourceTimingInfo.h"
 #include "core/page/Settings.h"
 #include "core/platform/Logging.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "weborigin/SecurityOrigin.h"
@@ -720,6 +721,7 @@ ResourcePtr<Resource> ResourceFetcher::revalidateResource(const FetchRequest& re
     memoryCache()->remove(resource);
     memoryCache()->add(newResource.get());
     storeResourceTimingInitiatorInformation(newResource, request);
+    TRACE_EVENT_ASYNC_BEGIN2("net", "Resource", newResource.get(), "url", newResource->url().string().ascii(), "priority", newResource->resourceRequest().priority());
     return newResource;
 }
 
@@ -734,6 +736,7 @@ ResourcePtr<Resource> ResourceFetcher::loadResource(Resource::Type type, FetchRe
 
     memoryCache()->add(resource.get());
     storeResourceTimingInitiatorInformation(resource, request);
+    TRACE_EVENT_ASYNC_BEGIN2("net", "Resource", resource.get(), "url", resource->url().string().ascii(), "priority", resource->resourceRequest().priority());
     return resource;
 }
 
@@ -1066,6 +1069,7 @@ void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request,
     ResourcePtr<Resource> resource = requestResource(type, request);
     if (!resource || (m_preloads && m_preloads->contains(resource.get())))
         return;
+    TRACE_EVENT_ASYNC_STEP0("net", "Resource", resource.get(), "Preload");
     resource->increasePreloadCount();
 
     if (!m_preloads)
@@ -1132,6 +1136,7 @@ inline FrameLoader* ResourceFetcher::frameLoader()
 
 void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTime, const ResourceLoaderOptions& options)
 {
+    TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
     if (options.sendLoadCallbacks != SendCallbacks)
         return;
     if (FrameLoader* loader = frameLoader())
@@ -1140,12 +1145,14 @@ void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTi
 
 void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority)
 {
+    TRACE_EVENT_ASYNC_STEP1("net", "Resource", resource, "ChangePriority", "priority", loadPriority);
     if (FrameLoader* loader = frameLoader())
         loader->client()->dispatchDidChangeResourcePriority(resource->identifier(), loadPriority);
 }
 
 void ResourceFetcher::didFailLoading(const Resource* resource, const ResourceError& error, const ResourceLoaderOptions& options)
 {
+    TRACE_EVENT_ASYNC_END0("net", "Resource", resource);
     if (options.sendLoadCallbacks != SendCallbacks)
         return;
     if (FrameLoader* loader = frameLoader())

@@ -33,6 +33,7 @@
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLTokenizer.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
@@ -126,6 +127,7 @@ public:
         if (!shouldPreload())
             return nullptr;
 
+        TRACE_EVENT_INSTANT1("net", "PreloadRequest", "url", m_urlToLoad.ascii());
         TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
         OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), position, m_urlToLoad, predictedBaseURL, resourceType(), m_mediaAttribute);
         request->setCrossOriginModeAllowsCookies(crossOriginModeAllowsCookies());
