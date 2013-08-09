@@ -866,20 +866,33 @@ TEST_F(WebFrameTest, targetDensityDpiHigh)
     registerMockedHttpURLLoad("viewport-target-densitydpi-high.html");
 
     FixedLayoutTestWebViewClient client;
-    client.m_screenInfo.deviceScaleFactor = 4.0f / 3.0f;
+    // high-dpi = 240
+    float targetDpi = 240.0f;
+    float deviceScaleFactors[] = { 1.0f, 4.0f / 3.0f, 2.0f };
     int viewportWidth = 640;
     int viewportHeight = 480;
 
-    m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-target-densitydpi-high.html", true, 0, &client);
-    m_webView->enableFixedLayoutMode(true);
-    m_webView->settings()->setViewportEnabled(true);
-    m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
-    m_webView->resize(WebSize(viewportWidth, viewportHeight));
+    for (size_t i = 0; i < ARRAY_SIZE(deviceScaleFactors); ++i) {
+        float deviceScaleFactor = deviceScaleFactors[i];
+        float deviceDpi = deviceScaleFactor * 160.0f;
+        client.m_screenInfo.deviceScaleFactor = deviceScaleFactor;
 
-    // high-dpi = 240, device-dpi = 160
-    EXPECT_NEAR(viewportWidth * (240.0f / 160.0f), m_webView->fixedLayoutSize().width, 1.0f);
-    EXPECT_NEAR(viewportHeight * (240.0f / 160.0f), m_webView->fixedLayoutSize().height, 1.0f);
-    EXPECT_NEAR(160.0f / 240.0f, m_webView->pageScaleFactor(), 0.01f);
+        m_webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "viewport-target-densitydpi-high.html", true, 0, &client);
+        m_webView->enableFixedLayoutMode(true);
+        m_webView->settings()->setViewportEnabled(true);
+        m_webView->settings()->setSupportDeprecatedTargetDensityDPI(true);
+        m_webView->resize(WebSize(viewportWidth, viewportHeight));
+
+        // We need to account for the fact that logical pixels are unconditionally multiplied by deviceScaleFactor to produce
+        // physical pixels.
+        float densityDpiScaleRatio = deviceScaleFactor * targetDpi / deviceDpi;
+        EXPECT_NEAR(viewportWidth * densityDpiScaleRatio, m_webView->fixedLayoutSize().width, 1.0f);
+        EXPECT_NEAR(viewportHeight * densityDpiScaleRatio, m_webView->fixedLayoutSize().height, 1.0f);
+        EXPECT_NEAR(1.0f / densityDpiScaleRatio, m_webView->pageScaleFactor(), 0.01f);
+
+        m_webView->close();
+        m_webView = 0;
+    }
 }
 
 TEST_F(WebFrameTest, targetDensityDpiDevice)
