@@ -11,7 +11,6 @@
       'dependencies': [
         # NOTE: New dependencies should generally be added in the OS!="ios"
         # dependencies block below, rather than here.
-        'app/policy/cloud_policy_codegen.gyp:policy_test_support',
         'browser',
         'chrome_resources.gyp:chrome_resources',
         'chrome_resources.gyp:chrome_strings',
@@ -33,7 +32,6 @@
         '../ui/message_center/message_center.gyp:message_center_test_support',
       ],
       'export_dependent_settings': [
-        'app/policy/cloud_policy_codegen.gyp:policy_test_support',
         '../base/base.gyp:test_support_base',
       ],
       'include_dirs': [
@@ -336,6 +334,14 @@
         ['configuration_policy==0', {
           'sources/': [
             ['exclude', '^browser/policy'],
+          ],
+        }],
+        ['configuration_policy==1', {
+          'dependencies': [
+            'app/policy/cloud_policy_codegen.gyp:policy_test_support',
+          ],
+          'export_dependent_settings': [
+            'app/policy/cloud_policy_codegen.gyp:policy_test_support',
           ],
         }],
         ['safe_browsing!=1', {

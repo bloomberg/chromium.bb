@@ -11,6 +11,7 @@ chromium_os_flag should be 1 if this is a Chromium OS build
 template is the path to a .json policy template file.'''
 
 from __future__ import with_statement
+import json
 from optparse import OptionParser
 import re
 import sys
@@ -55,25 +56,32 @@ class PolicyDetails:
 
     if is_chromium_os:
       expected_platform = 'chrome_os'
-      wildcard_platform = None
-    elif os == 'android':
-      expected_platform = 'android'
-      wildcard_platform = None
     else:
-      expected_platform = 'chrome.' + os.lower()
-      wildcard_platform = 'chrome.*'
-    is_supported = False
+      expected_platform = os.lower()
+
+    self.platforms = []
     for platform, version in [ p.split(':') for p in policy['supported_on'] ]:
-      if (platform == expected_platform or platform == wildcard_platform) and \
-          version.endswith('-'):
-        is_supported = True
-    self.is_supported = is_supported
+      if not version.endswith('-'):
+        continue
+
+      if platform.startswith('chrome.'):
+        platform_sub = platform[7:]
+        if platform_sub == '*':
+          self.platforms.extend(['win', 'mac', 'linux'])
+        else:
+          self.platforms.append(platform_sub)
+      else:
+        self.platforms.append(platform)
+
+    self.platforms.sort()
+    self.is_supported = expected_platform in self.platforms
 
     if not PolicyDetails.TYPE_MAP.has_key(policy['type']):
       raise NotImplementedError('Unknown policy type for %s: %s' %
                                 (policy['name'], policy['type']))
     self.policy_type, self.protobuf_type, self.policy_protobuf_type = \
         PolicyDetails.TYPE_MAP[policy['type']]
+    self.schema = policy['schema']
 
     self.desc = '\n'.join(
         map(str.strip,
@@ -397,6 +405,11 @@ def _WritePolicyProto(f, policy, fields):
     _OutputComment(f, '\nValid values:')
     for item in policy.items:
       _OutputComment(f, '  %s: %s' % (str(item.value), item.caption))
+  if policy.policy_type == 'TYPE_DICTIONARY':
+    _OutputComment(f, '\nValue schema:\n%s' %
+                   json.dumps(policy.schema, sort_keys=True, indent=4,
+                              separators=(',', ': ')))
+  _OutputComment(f, '\nSupported on: %s' % ', '.join(policy.platforms))
   f.write('message %sProto {\n' % policy.name)
   f.write('  optional PolicyOptions policy_options = 1;\n')
   f.write('  optional %s %s = 2;\n' % (policy.protobuf_type, policy.name))
