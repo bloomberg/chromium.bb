@@ -584,7 +584,7 @@
       <description summary="initiate drag-and-drop session">
 	This event is sent when an active drag-and-drop pointer enters
 	a surface owned by the client.  The position of the pointer at
-	enter time is provided by the x an y arguments, in surface
+	enter time is provided by the x and y arguments, in surface
 	local coordinates.
       </description>
 
@@ -607,7 +607,7 @@
       <description summary="drag-and-drop session motion">
 	This event is sent when the drag-and-drop pointer moves within
 	the currently focused surface. The new position of the pointer
-	is provided by the x an y arguments, in surface local
+	is provided by the x and y arguments, in surface local
 	coordinates.
       </description>
       <arg name="time" type="uint" summary="timestamp with millisecond granularity"/>
