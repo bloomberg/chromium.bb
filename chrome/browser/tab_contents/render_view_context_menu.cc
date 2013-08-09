@@ -1980,11 +1980,6 @@ void RenderViewContextMenu::MenuClosed(ui::SimpleMenuModel* source) {
     rvh->NotifyContextMenuClosed(params_.custom_context);
   }
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
-      content::Source<RenderViewContextMenu>(this),
-      content::NotificationService::NoDetails());
-
   if (!command_executed_) {
     FOR_EACH_OBSERVER(RenderViewContextMenuObserver,
                       observers_,

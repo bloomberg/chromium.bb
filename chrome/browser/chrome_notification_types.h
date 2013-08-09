@@ -1031,9 +1031,6 @@ enum NotificationType {
   // menu has been created and shown.
   NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_SHOWN,
 
-  // Send when a context menu is closed.
-  NOTIFICATION_RENDER_VIEW_CONTEXT_MENU_CLOSED,
-
   // Sent when the Instant Controller determines whether an Instant tab supports
   // the Instant API or not.
   NOTIFICATION_INSTANT_TAB_SUPPORT_DETERMINED,
