@@ -119,7 +119,9 @@ function forceOpusChanged() {
 /**
  * Updates the constraints in the getusermedia-constraints text box with a
  * MediaStreamConstraints string. This string is created based on the status of
- * the checkboxes for audio and video.
+ * the checkboxes for audio and video. Fetches the screen size using "screen"
+ * in Chrome as we need to pass a max resolution else it defaults to 640x480 in
+ * the constraints for screen capturing.
  */
 function updateGetUserMediaConstraints() {
   var constraints = {
@@ -129,7 +131,9 @@ function updateGetUserMediaConstraints() {
   if ($('screencapture').checked) {
     var constraints = {
       audio: $('audio').checked,
-      video: {mandatory: {chromeMediaSource: 'screen'}}
+      video: {mandatory: {chromeMediaSource: 'screen',
+                          maxWidth: screen.width,
+                          maxHeight: screen.height}}
     };
     if ($('audio').checked == true)
       debug('Audio for screencapture is not implemented as of M28, please ' +
