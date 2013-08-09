@@ -79,7 +79,7 @@ TEST_F(ExternalProviderImplTest, AppMode) {
   InitServiceWithExternalProviders();
 
   service_->CheckForExternalUpdates();
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(service_->GetInstalledExtension(kExternalAppId));
 }

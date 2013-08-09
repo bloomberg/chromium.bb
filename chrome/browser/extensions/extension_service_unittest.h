@@ -13,7 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -68,7 +68,7 @@ class ExtensionServiceTestBase : public testing::Test {
   void InitializeExtensionServiceHelper(bool autoupdate_enabled,
                                         bool is_first_run);
 
-  base::MessageLoop loop_;
+  content::TestBrowserThreadBundle thread_bundle_;
   base::ShadowingAtExitManager at_exit_manager_;
   base::ScopedTempDir temp_dir_;
   scoped_ptr<TestingProfile> profile_;
@@ -78,11 +78,6 @@ class ExtensionServiceTestBase : public testing::Test {
   ExtensionService* service_;
   extensions::ManagementPolicy* management_policy_;
   size_t expected_extensions_count_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread db_thread_;
-  content::TestBrowserThread file_thread_;
-  content::TestBrowserThread file_user_blocking_thread_;
-  content::TestBrowserThread io_thread_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

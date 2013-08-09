@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
@@ -160,7 +161,7 @@ TEST_F(AppsModelBuilderTest, Uninstall) {
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
             GetModelContent(model.get()));
 
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(AppsModelBuilderTest, UninstallTerminatedApp) {
@@ -180,7 +181,7 @@ TEST_F(AppsModelBuilderTest, UninstallTerminatedApp) {
   EXPECT_EQ(std::string("Packaged App 1,Hosted App"),
             GetModelContent(model.get()));
 
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(AppsModelBuilderTest, OrdinalPrefsChange) {

@@ -6,6 +6,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
@@ -104,7 +105,7 @@ TEST_F(AppSearchProviderTest, Uninstall) {
   EXPECT_EQ("", RunQuery("pa1"));
 
   // Let uninstall code to clean up.
-  loop_.RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace test
