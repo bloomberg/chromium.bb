@@ -68,6 +68,8 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
   // Overridden from UserObserver.
   virtual void OnUserUpdate() OVERRIDE;
 
+  void UpdateAvatarImage(user::LoginStatus status);
+
   // The user index to use.
   MultiProfileIndex multiprofile_index_;
 

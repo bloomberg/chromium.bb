@@ -1202,30 +1202,14 @@ void TrayUser::UpdateAfterLoginStatusChange(user::LoginStatus status) {
         bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_LOCALLY_MANAGED_LABEL));
   }
 
-  int icon_size = kUserIconSize;
   if (avatar_ && ash::switches::UseAlternateShelfLayout()) {
-    icon_size = kUserIconLargeSize;
     avatar_->SetCornerRadii(0,
                             kUserIconLargeCornerRadius,
                             kUserIconLargeCornerRadius,
                             0);
     avatar_->set_border(NULL);
   }
-  if (avatar_) {
-    if (status == user::LOGGED_IN_GUEST) {
-      int image_name = ash::switches::UseAlternateShelfLayout() ?
-          IDR_AURA_UBER_TRAY_GUEST_ICON_LARGE :
-          IDR_AURA_UBER_TRAY_GUEST_ICON;
-      avatar_->SetImage(*ui::ResourceBundle::GetSharedInstance().
-          GetImageNamed(image_name).ToImageSkia(),
-          gfx::Size(icon_size, icon_size));
-    } else {
-      avatar_->SetImage(
-          ash::Shell::GetInstance()->session_state_delegate()->GetUserImage(
-              multiprofile_index_),
-          gfx::Size(icon_size, icon_size));
-    }
-  }
+  UpdateAvatarImage(status);
 }
 
 void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
@@ -1281,10 +1265,25 @@ void TrayUser::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
 }
 
 void TrayUser::OnUserUpdate() {
-  // Check for null to avoid crbug.com/150944.
-  if (avatar_) {
-    int icon_size = ash::switches::UseAlternateShelfLayout() ?
-        kUserIconLargeSize : kUserIconSize;
+  UpdateAvatarImage(Shell::GetInstance()->system_tray_delegate()->
+      GetUserLoginStatus());
+}
+
+void TrayUser::UpdateAvatarImage(user::LoginStatus status) {
+  if (!avatar_)
+    return;
+
+  int icon_size = ash::switches::UseAlternateShelfLayout() ?
+      kUserIconLargeSize : kUserIconSize;
+
+  if (status == user::LOGGED_IN_GUEST) {
+    int image_name = ash::switches::UseAlternateShelfLayout() ?
+        IDR_AURA_UBER_TRAY_GUEST_ICON_LARGE :
+        IDR_AURA_UBER_TRAY_GUEST_ICON;
+    avatar_->SetImage(*ui::ResourceBundle::GetSharedInstance().
+        GetImageNamed(image_name).ToImageSkia(),
+        gfx::Size(icon_size, icon_size));
+  } else {
     avatar_->SetImage(
         ash::Shell::GetInstance()->session_state_delegate()->GetUserImage(
             multiprofile_index_),
