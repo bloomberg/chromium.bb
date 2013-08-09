@@ -77,37 +77,29 @@ const AlgorithmNameMapping algorithmNameMappings[] = {
 
 // What operations each algorithm supports, and what parameters it expects.
 const OperationParamsMapping operationParamsMappings[] = {
-    // AES-CBC (section 18.10.)
+    // AES-CBC
     {WebKit::WebCryptoAlgorithmIdAesCbc, Decrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {WebKit::WebCryptoAlgorithmIdAesCbc, Encrypt, WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams},
     {WebKit::WebCryptoAlgorithmIdAesCbc, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams},
     {WebKit::WebCryptoAlgorithmIdAesCbc, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
 
-    // HMAC (section 18.14.)
+    // HMAC
     {WebKit::WebCryptoAlgorithmIdHmac, Sign, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
     {WebKit::WebCryptoAlgorithmIdHmac, Verify, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
     {WebKit::WebCryptoAlgorithmIdHmac, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
     {WebKit::WebCryptoAlgorithmIdHmac, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
 
-    // RSASSA-PKCS1-v1_5 (section 18.4.)
+    // RSASSA-PKCS1-v1_5
     {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Sign, WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams},
     {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, Verify, WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams},
     {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams},
     {WebKit::WebCryptoAlgorithmIdRsaSsaPkcs1v1_5, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeNone},
 
-    // SHA-1 (section 18.16.)
+    // SHA-*
     {WebKit::WebCryptoAlgorithmIdSha1, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-
-    // SHA-224 (section 18.16.)
     {WebKit::WebCryptoAlgorithmIdSha224, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-
-    // SHA-256 (section 18.16.)
     {WebKit::WebCryptoAlgorithmIdSha256, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-
-    // SHA-384 (section 18.16.)
     {WebKit::WebCryptoAlgorithmIdSha384, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
-
-    // SHA-512 (section 18.16.)
     {WebKit::WebCryptoAlgorithmIdSha512, Digest, WebKit::WebCryptoAlgorithmParamsTypeNone},
 };
 
