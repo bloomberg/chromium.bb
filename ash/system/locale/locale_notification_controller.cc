@@ -63,10 +63,11 @@ void LocaleNotificationDelegate::Close(bool by_user) {
 }
 
 bool LocaleNotificationDelegate::HasClickedListener() {
-  return false;
+  return true;
 }
 
 void LocaleNotificationDelegate::Click() {
+  delegate_->AcceptLocaleChange();
 }
 
 void LocaleNotificationDelegate::ButtonClick(int button_index) {
