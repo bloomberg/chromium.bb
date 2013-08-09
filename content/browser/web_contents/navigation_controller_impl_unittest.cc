@@ -2611,6 +2611,52 @@ TEST_F(NavigationControllerTest, ReloadTransient) {
   EXPECT_EQ(controller.GetEntryAtIndex(1)->GetURL(), transient_url);
 }
 
+// Ensure that renderer initiated pending entries get replaced, so that we
+// don't show a stale virtual URL when a navigation commits.
+// See http://crbug.com/266922.
+TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
+  NavigationControllerImpl& controller = controller_impl();
+
+  const GURL url1("nonexistent:12121");
+  const GURL url1_fixed("http://nonexistent:12121/");
+  const GURL url2("http://foo");
+
+  // We create pending entries for renderer-initiated navigations so that we
+  // can show them in new tabs when it is safe.
+  contents()->DidStartProvisionalLoadForFrame(
+      test_rvh(), 1, -1, true, url1);
+
+  // Simulate what happens if a BrowserURLHandler rewrites the URL, causing
+  // the virtual URL to differ from the URL.
+  controller.GetPendingEntry()->SetURL(url1_fixed);
+  controller.GetPendingEntry()->SetVirtualURL(url1);
+
+  EXPECT_EQ(url1_fixed, controller.GetPendingEntry()->GetURL());
+  EXPECT_EQ(url1, controller.GetPendingEntry()->GetVirtualURL());
+  EXPECT_TRUE(
+      NavigationEntryImpl::FromNavigationEntry(controller.GetPendingEntry())->
+          is_renderer_initiated());
+
+  // If the user clicks another link, we should replace the pending entry.
+  contents()->DidStartProvisionalLoadForFrame(
+      test_rvh(), 1, -1, true, url2);
+  EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetPendingEntry()->GetVirtualURL());
+
+  // Once it commits, the URL and virtual URL should reflect the actual page.
+  test_rvh()->SendNavigate(0, url2);
+  EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetVirtualURL());
+
+  // We should not replace the pending entry for an error URL.
+  contents()->DidStartProvisionalLoadForFrame(
+      test_rvh(), 1, -1, true, url1);
+  EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
+  contents()->DidStartProvisionalLoadForFrame(
+      test_rvh(), 1, -1, true, GURL(kUnreachableWebDataURL));
+  EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
+}
+
 // Tests that the URLs for renderer-initiated navigations are not displayed to
 // the user until the navigation commits, to prevent URL spoof attacks.
 // See http://crbug.com/99016.

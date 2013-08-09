@@ -2133,24 +2133,31 @@ void WebContentsImpl::DidStartProvisionalLoadForFrame(
       render_view_host->GetProcess();
   RenderViewHost::FilterURL(render_process_host, false, &validated_url);
 
-  if (is_main_frame)
+  if (is_main_frame) {
     DidChangeLoadProgress(0);
 
-  // Create a pending entry for this provisional load (if none exists) using the
-  // current SiteInstance, and ensure the address bar updates accordingly.
-  // We don't know the referrer or extra headers at this point, but the referrer
-  // will be set properly upon commit.
-  if (is_main_frame && !controller_.GetPendingEntry()) {
-    NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
-        controller_.CreateNavigationEntry(validated_url,
-                                          content::Referrer(),
-                                          content::PAGE_TRANSITION_LINK,
-                                          true /* is_renderer_initiated */,
-                                          std::string(), GetBrowserContext()));
-    entry->set_site_instance(
-        static_cast<SiteInstanceImpl*>(GetSiteInstance()));
-    controller_.SetPendingEntry(entry);
-    NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
+    // If there is no browser-initiated pending entry for this navigation and it
+    // is not for the error URL, create a pending entry using the current
+    // SiteInstance, and ensure the address bar updates accordingly.  We don't
+    // know the referrer or extra headers at this point, but the referrer will
+    // be set properly upon commit.
+    NavigationEntry* pending_entry = controller_.GetPendingEntry();
+    bool has_browser_initiated_pending_entry = pending_entry &&
+        !NavigationEntryImpl::FromNavigationEntry(pending_entry)->
+            is_renderer_initiated();
+    if (!has_browser_initiated_pending_entry && !is_error_page) {
+      NavigationEntryImpl* entry = NavigationEntryImpl::FromNavigationEntry(
+          controller_.CreateNavigationEntry(validated_url,
+                                            content::Referrer(),
+                                            content::PAGE_TRANSITION_LINK,
+                                            true /* is_renderer_initiated */,
+                                            std::string(),
+                                            GetBrowserContext()));
+      entry->set_site_instance(
+          static_cast<SiteInstanceImpl*>(GetSiteInstance()));
+      controller_.SetPendingEntry(entry);
+      NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
+    }
   }
 
   // Notify observers about the start of the provisional load.
