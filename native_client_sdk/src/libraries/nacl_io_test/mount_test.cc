@@ -322,7 +322,7 @@ TEST(MountTest, DevTty) {
 
   // Now let's try sending some data over.
   // First we create the message.
-  std::string content("hello, how are you?");
+  std::string content("hello, how are you?\n");
   std::string message = prefix.append(content);
   struct tioc_nacl_input_string packaged_message;
   packaged_message.length = message.size();

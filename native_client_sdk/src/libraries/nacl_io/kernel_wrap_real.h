@@ -5,6 +5,7 @@
 #ifndef LIBRARIES_NACL_IO_KERNEL_WRAP_REAL_H_
 #define LIBRARIES_NACL_IO_KERNEL_WRAP_REAL_H_
 
+#include "nacl_io/osstat.h"
 #include "nacl_io/ostypes.h"
 #include "sdk_util/macros.h"
 

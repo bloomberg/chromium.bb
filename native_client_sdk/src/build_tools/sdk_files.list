@@ -330,10 +330,12 @@ include/nacl_io/mount_html5fs.h
 include/nacl_io/mount_http.h
 include/nacl_io/mount_mem.h
 include/nacl_io/mount_node.h
+include/nacl_io/mount_node_char.h
 include/nacl_io/mount_node_dir.h
 include/nacl_io/mount_node_html5fs.h
 include/nacl_io/mount_node_http.h
 include/nacl_io/mount_node_mem.h
+include/nacl_io/mount_node_tty.h
 include/nacl_io/mount_passthrough.h
 include/nacl_io/nacl_io.h
 include/nacl_io/osdirent.h
@@ -356,6 +358,7 @@ include/nacl_io/typed_mount_factory.h
 include/newlib/arpa/inet.h
 include/newlib/netdb.h
 include/newlib/netinet/in.h
+include/newlib/netinet/tcp.h
 include/newlib/netinet6/in6.h
 include/newlib/poll.h
 include/newlib/sys/select.h
@@ -365,6 +368,7 @@ include/newlib/sys/utsname.h
 include/pnacl/arpa/inet.h
 include/pnacl/netdb.h
 include/pnacl/netinet/in.h
+include/pnacl/netinet/tcp.h
 include/pnacl/netinet6/in6.h
 include/pnacl/poll.h
 include/pnacl/sys/select.h
@@ -856,6 +860,7 @@ src/nacl_io/mount_node_dir.cc
 src/nacl_io/mount_node_html5fs.cc
 src/nacl_io/mount_node_http.cc
 src/nacl_io/mount_node_mem.cc
+src/nacl_io/mount_node_tty.cc
 src/nacl_io/mount_passthrough.cc
 src/nacl_io/nacl_io.cc
 src/nacl_io/path.cc

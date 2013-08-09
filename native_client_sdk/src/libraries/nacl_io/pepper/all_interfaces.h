@@ -64,6 +64,7 @@ BEGIN_INTERFACE(MessagingInterface, PPB_Messaging, PPB_MESSAGING_INTERFACE_1_0)
 END_INTERFACE(MessagingInterface, PPB_Messaging)
 
 BEGIN_INTERFACE(VarInterface, PPB_Var, PPB_VAR_INTERFACE_1_1)
+  METHOD1(VarInterface, void, Release, struct PP_Var)
   METHOD2(VarInterface, struct PP_Var, VarFromUtf8, const char *, uint32_t)
   METHOD2(VarInterface, const char*, VarToUtf8, PP_Var, uint32_t*)
 END_INTERFACE(VarInterface, PPB_Var)
