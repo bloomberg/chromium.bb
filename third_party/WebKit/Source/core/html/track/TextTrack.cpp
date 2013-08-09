@@ -339,7 +339,7 @@ void TextTrack::addRegion(PassRefPtr<TextTrackRegion> prpRegion)
     regionList->add(region);
 }
 
-void TextTrack::removeRegion(TextTrackRegion* region, ExceptionCode &es)
+void TextTrack::removeRegion(TextTrackRegion* region, ExceptionState &es)
 {
     if (!region)
         return;
