@@ -26,15 +26,13 @@
 
   <!-- tools location -->
   <property name="sdk.dir" location="${ANDROID_SDK_ROOT}"/>
-  <property name="target" value="android-${ANDROID_SDK_VERSION}"/>
-  <property name="android.tools.dir" location="${sdk.dir}/tools" />
-  <property name="android.platform.tools.dir" location="${sdk.dir}/platform-tools" />
-  <property name="aapt" location="${android.platform.tools.dir}/aapt" />
+  <property name="android.sdk.tools.dir" location="${ANDROID_SDK_TOOLS}" />
+  <property name="aapt" location="${android.sdk.tools.dir}/aapt" />
   <property name="project.target.android.jar" location="${ANDROID_SDK_JAR}" />
 
   <!-- jar file from where the tasks are loaded -->
   <path id="android.antlibs">
-      <pathelement path="${sdk.dir}/tools/lib/anttasks.jar" />
+      <pathelement path="${sdk.dir}/tools/lib/ant-tasks.jar" />
   </path>
 
   <!-- Custom tasks -->

@@ -14,7 +14,7 @@ from util import md5_check
 
 
 def DoDex(options, paths):
-  dx_binary = os.path.join(options.android_sdk_root, 'platform-tools', 'dx')
+  dx_binary = os.path.join(options.android_sdk_tools, 'dx')
   dex_cmd = [dx_binary, '--dex', '--output', options.dex_path] + paths
 
   record_path = '%s.md5.stamp' % options.dex_path
@@ -29,7 +29,8 @@ def DoDex(options, paths):
 
 def main(argv):
   parser = optparse.OptionParser()
-  parser.add_option('--android-sdk-root', help='Android sdk root directory.')
+  parser.add_option('--android-sdk-tools',
+                    help='Android sdk build tools directory.')
   parser.add_option('--dex-path', help='Dex output path.')
   parser.add_option('--configuration-name',
       help='The build CONFIGURATION_NAME.')

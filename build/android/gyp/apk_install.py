@@ -54,8 +54,6 @@ def RecordInstallMetadata(device, apk_package, metadata_path):
 
 def main(argv):
   parser = optparse.OptionParser()
-  parser.add_option('--android-sdk-tools',
-      help='Path to Android SDK tools.')
   parser.add_option('--apk-path',
       help='Path to .apk to install.')
   parser.add_option('--install-record',

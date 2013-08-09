@@ -88,9 +88,6 @@ the one you want."
   echo "${CHROME_SRC}"
 fi
 
-# Android sdk platform version to use
-export ANDROID_SDK_VERSION=17
-
 if [[ "${ANDROID_SDK_BUILD}" -eq 1 ]]; then
   if [[ -z "${TARGET_ARCH}" ]]; then
     return 1

@@ -1227,12 +1227,15 @@
              'android_sdk_root%': '<!(cd <(DEPTH) && pwd -P)/third_party/android_tools/sdk/',
              'android_host_arch%': '<!(uname -m)',
              # Android API-level of the SDK used for compilation.
-             'android_sdk_version%': '17',
+             'android_sdk_version%': '<!(/bin/echo -n ${ANDROID_SDK_VERSION})',
+             # Android SDK build tools (e.g. dx, aapt, aidl)
+             'android_sdk_tools%': '<!(/bin/echo -n ${ANDROID_SDK_TOOLS})',
           },
           # Copy conditionally-set variables out one scope.
           'android_ndk_root%': '<(android_ndk_root)',
           'android_sdk_root%': '<(android_sdk_root)',
           'android_sdk_version%': '<(android_sdk_version)',
+          'android_sdk_tools%': '<(android_sdk_tools)',
           'android_stlport_root': '<(android_ndk_root)/sources/cxx-stl/stlport',
 
           'android_sdk%': '<(android_sdk_root)/platforms/android-<(android_sdk_version)',
@@ -1278,7 +1281,7 @@
 
         'android_ndk_include': '<(android_ndk_sysroot)/usr/include',
         'android_ndk_lib': '<(android_ndk_sysroot)/usr/lib',
-        'android_sdk_tools%': '<(android_sdk_root)/platform-tools',
+        'android_sdk_tools%': '<(android_sdk_tools)',
         'android_sdk%': '<(android_sdk)',
         'android_sdk_jar%': '<(android_sdk)/android.jar',
 

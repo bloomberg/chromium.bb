@@ -46,7 +46,7 @@
       'action': [
         'python', '<(DEPTH)/build/android/gyp/dex.py',
         '--dex-path=<(dex_path)',
-        '--android-sdk-root=<(android_sdk_root)',
+        '--android-sdk-tools=<(android_sdk_tools)',
 
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
         '--ignore=>!(echo \'>(_inputs)\' | md5sum)',

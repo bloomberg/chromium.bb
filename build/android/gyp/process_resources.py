@@ -21,7 +21,7 @@ def ParseArgs():
   parser = optparse.OptionParser()
   parser.add_option('--android-sdk', help='path to the Android SDK folder')
   parser.add_option('--android-sdk-tools',
-                    help='path to the Android SDK platform tools folder')
+                    help='path to the Android SDK build tools folder')
   parser.add_option('--R-dir', help='directory to hold generated R.java')
   parser.add_option('--res-dirs',
                     help='directories containing resources to be packaged')
@@ -43,8 +43,8 @@ def ParseArgs():
     parser.error('No positional arguments should be given.')
 
   # Check that required options have been provided.
-  required_options = ('android_sdk', 'android_sdk_tools', 'R_dir', 'res_dirs',
-                      'crunch_input_dir', 'crunch_output_dir')
+  required_options = ('android_sdk', 'android_sdk_tools', 'R_dir',
+                      'res_dirs', 'crunch_input_dir', 'crunch_output_dir')
   build_utils.CheckOptions(options, parser, required=required_options)
 
   return options

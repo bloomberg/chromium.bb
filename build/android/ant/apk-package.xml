@@ -24,7 +24,7 @@
 
   <!-- jar file from where the tasks are loaded -->
   <path id="android.antlibs">
-    <pathelement path="${sdk.dir}/tools/lib/anttasks.jar" />
+    <pathelement path="${sdk.dir}/tools/lib/ant-tasks.jar" />
   </path>
 
   <!-- Custom tasks -->

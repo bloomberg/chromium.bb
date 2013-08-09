@@ -62,6 +62,8 @@ common_vars_defines() {
   export PATH=$PATH:${ANDROID_NDK_ROOT}
   export PATH=$PATH:${ANDROID_SDK_ROOT}/tools
   export PATH=$PATH:${ANDROID_SDK_ROOT}/platform-tools
+  export PATH=$PATH:${ANDROID_SDK_ROOT}/build-tools/\
+${ANDROID_SDK_BUILD_TOOLS_VERSION}
 
   # This must be set before ANDROID_TOOLCHAIN, so that clang could find the
   # gold linker.
@@ -216,6 +218,9 @@ process_options() {
 #  > make
 ################################################################################
 sdk_build_init() {
+  export ANDROID_SDK_VERSION=18
+  export ANDROID_SDK_BUILD_TOOLS_VERSION=18.0.1
+
   # If ANDROID_NDK_ROOT is set when envsetup is run, use the ndk pointed to by
   # the environment variable.  Otherwise, use the default ndk from the tree.
   if [[ -z "${ANDROID_NDK_ROOT}" || ! -d "${ANDROID_NDK_ROOT}" ]]; then
@@ -252,6 +257,9 @@ sdk_build_init() {
     return 1
   fi
 
+  # Directory containing build-tools: aapt, aidl, dx
+  export ANDROID_SDK_TOOLS="${ANDROID_SDK_ROOT}/build-tools/\
+${ANDROID_SDK_BUILD_TOOLS_VERSION}"
 }
 
 ################################################################################
@@ -260,6 +268,9 @@ sdk_build_init() {
 # settings specified there.
 #############################################################################
 webview_build_init() {
+  # Use the latest API in the AOSP prebuilts directory (change with AOSP roll).
+  export ANDROID_SDK_VERSION=17
+
   # For the WebView build we always use the NDK and SDK in the Android tree,
   # and we don't touch ANDROID_TOOLCHAIN which is already set by Android.
   export ANDROID_NDK_ROOT=${ANDROID_BUILD_TOP}/prebuilts/ndk/8
