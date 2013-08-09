@@ -45,6 +45,11 @@ void WebUserGestureToken::setOutOfProcess()
     m_token->setOutOfProcess();
 }
 
+void WebUserGestureToken::setJavascriptPrompt()
+{
+    m_token->setJavascriptPrompt();
+}
+
 WebUserGestureToken::WebUserGestureToken(PassRefPtr<WebCore::UserGestureToken> token)
 {
     m_token = token;

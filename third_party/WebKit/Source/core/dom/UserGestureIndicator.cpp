@@ -44,7 +44,8 @@ public:
     virtual ~GestureToken() { }
     virtual bool hasGestures() const OVERRIDE
     {
-        if (m_consumableGestures < 1 || WTF::currentTime() - m_timestamp > (m_outOfProcess ? userGestureOutOfProcessTimeout : userGestureTimeout))
+        // Do not enforce timeouts for gestures which spawned javascript prompts.
+        if (m_consumableGestures < 1 || (WTF::currentTime() - m_timestamp > (m_outOfProcess ? userGestureOutOfProcessTimeout : userGestureTimeout) && !m_javascriptPrompt))
             return false;
         return true;
     }
@@ -52,6 +53,11 @@ public:
     void addGesture()
     {
         m_consumableGestures++;
+        m_timestamp = WTF::currentTime();
+    }
+
+    void resetTimestamp()
+    {
         m_timestamp = WTF::currentTime();
     }
 
@@ -71,17 +77,27 @@ public:
             m_outOfProcess = true;
     }
 
+    virtual void setJavascriptPrompt() OVERRIDE
+    {
+        if (WTF::currentTime() - m_timestamp > userGestureTimeout)
+            return;
+        if (hasGestures())
+            m_javascriptPrompt = true;
+    }
+
 private:
     GestureToken()
         : m_consumableGestures(0),
         m_timestamp(0),
-        m_outOfProcess(false)
+        m_outOfProcess(false),
+        m_javascriptPrompt(false)
     {
     }
 
     size_t m_consumableGestures;
     double m_timestamp;
     bool m_outOfProcess;
+    bool m_javascriptPrompt;
 };
 
 }
@@ -117,16 +133,19 @@ UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
 UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
     : m_previousState(s_state)
 {
-    if (token && static_cast<GestureToken*>(token.get())->hasGestures()) {
-        if (!s_topmostIndicator) {
-            s_topmostIndicator = this;
-            m_token = token;
-        } else {
-            m_token = s_topmostIndicator->currentToken();
-            static_cast<GestureToken*>(m_token.get())->addGesture();
-            static_cast<GestureToken*>(token.get())->consumeGesture();
+    if (token) {
+        static_cast<GestureToken*>(token.get())->resetTimestamp();
+        if (static_cast<GestureToken*>(token.get())->hasGestures()) {
+            if (!s_topmostIndicator) {
+                s_topmostIndicator = this;
+                m_token = token;
+            } else {
+                m_token = s_topmostIndicator->currentToken();
+                static_cast<GestureToken*>(m_token.get())->addGesture();
+                static_cast<GestureToken*>(token.get())->consumeGesture();
+            }
+            s_state = DefinitelyProcessingUserGesture;
         }
-        s_state = DefinitelyProcessingUserGesture;
     }
 
     ASSERT(isDefinite(s_state));

@@ -62,6 +62,8 @@
 #include "WebSettings.h"
 #include "WebSettingsImpl.h"
 #include "WebTextDirection.h"
+#include "WebUserGestureIndicator.h"
+#include "WebUserGestureToken.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWindowFeatures.h"
@@ -417,6 +419,8 @@ void ChromeClientImpl::closeWindowSoon()
 void ChromeClientImpl::runJavaScriptAlert(Frame* frame, const String& message)
 {
     if (m_webView->client()) {
+        if (WebUserGestureIndicator::isProcessingUserGesture())
+            WebUserGestureIndicator::currentUserGestureToken().setJavascriptPrompt();
         m_webView->client()->runModalAlertDialog(
             WebFrameImpl::fromFrame(frame), message);
     }
@@ -426,6 +430,8 @@ void ChromeClientImpl::runJavaScriptAlert(Frame* frame, const String& message)
 bool ChromeClientImpl::runJavaScriptConfirm(Frame* frame, const String& message)
 {
     if (m_webView->client()) {
+        if (WebUserGestureIndicator::isProcessingUserGesture())
+            WebUserGestureIndicator::currentUserGestureToken().setJavascriptPrompt();
         return m_webView->client()->runModalConfirmDialog(
             WebFrameImpl::fromFrame(frame), message);
     }
@@ -439,6 +445,8 @@ bool ChromeClientImpl::runJavaScriptPrompt(Frame* frame,
                                            String& result)
 {
     if (m_webView->client()) {
+        if (WebUserGestureIndicator::isProcessingUserGesture())
+            WebUserGestureIndicator::currentUserGestureToken().setJavascriptPrompt();
         WebString actualValue;
         bool ok = m_webView->client()->runModalPromptDialog(
             WebFrameImpl::fromFrame(frame),

@@ -55,6 +55,7 @@ public:
 
     WEBKIT_EXPORT bool hasGestures() const;
     WEBKIT_EXPORT void setOutOfProcess();
+    WEBKIT_EXPORT void setJavascriptPrompt();
     bool isNull() const { return m_token.isNull(); }
 
 #if WEBKIT_IMPLEMENTATION
