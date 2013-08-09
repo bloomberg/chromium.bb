@@ -1420,9 +1420,12 @@ void LauncherView::PointerReleasedOnButton(views::View* view,
     CancelDrag(-1);
   } else if (drag_pointer_ == pointer) {
     drag_pointer_ = NONE;
-    drag_view_ = NULL;
     AnimateToIdealBounds();
   }
+  // If the drag pointer is NONE, no drag operation is going on and the
+  // drag_view can be released.
+  if (drag_pointer_ == NONE)
+    drag_view_ = NULL;
 }
 
 void LauncherView::MouseMovedOverButton(views::View* view) {

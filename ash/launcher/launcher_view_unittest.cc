@@ -333,17 +333,33 @@ class LauncherViewTest : public AshTestBase {
     }
   }
 
-  views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
-                            int button_index,
-                            int destination_index) {
+  views::View* SimulateButtonPressed(
+      internal::LauncherButtonHost::Pointer pointer,
+      int button_index) {
     internal::LauncherButtonHost* button_host = launcher_view_;
-
-    // Mouse down.
     views::View* button = test_api_->GetButton(button_index);
     ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED,
                                button->bounds().origin(),
                                button->bounds().origin(), 0);
     button_host->PointerPressedOnButton(button, pointer, click_event);
+    return button;
+  }
+
+  views::View* SimulateClick(internal::LauncherButtonHost::Pointer pointer,
+                             int button_index) {
+    internal::LauncherButtonHost* button_host = launcher_view_;
+    views::View* button = SimulateButtonPressed(pointer, button_index);
+    button_host->PointerReleasedOnButton(button,
+                                         internal::LauncherButtonHost::MOUSE,
+                                         false);
+    return button;
+  }
+
+  views::View* SimulateDrag(internal::LauncherButtonHost::Pointer pointer,
+                            int button_index,
+                            int destination_index) {
+    internal::LauncherButtonHost* button_host = launcher_view_;
+    views::View* button = SimulateButtonPressed(pointer, button_index);
 
     // Drag.
     views::View* destination = test_api_->GetButton(destination_index);
@@ -751,6 +767,31 @@ TEST_F(LauncherViewTest, SimultaneousDrag) {
                                        internal::LauncherButtonHost::TOUCH,
                                        false);
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+}
+
+// Check that clicking first on one item and then dragging another works as
+// expected.
+TEST_F(LauncherViewTest, ClickOneDragAnother) {
+  internal::LauncherButtonHost* button_host = launcher_view_;
+
+  std::vector<std::pair<LauncherID, views::View*> > id_map;
+  SetupForDragTest(&id_map);
+
+  // A click on item 1 is simulated.
+  SimulateClick(internal::LauncherButtonHost::MOUSE, 1);
+
+  // Dragging browser index at 0 should change the model order correctly.
+  EXPECT_TRUE(model_->items()[0].type == TYPE_BROWSER_SHORTCUT);
+  views::View* dragged_button = SimulateDrag(
+      internal::LauncherButtonHost::MOUSE, 0, 2);
+  std::rotate(id_map.begin(),
+              id_map.begin() + 1,
+              id_map.begin() + 3);
+  ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
+  button_host->PointerReleasedOnButton(dragged_button,
+                                       internal::LauncherButtonHost::MOUSE,
+                                       false);
+  EXPECT_TRUE(model_->items()[2].type == TYPE_BROWSER_SHORTCUT);
 }
 
 // Confirm that item status changes are reflected in the buttons.
