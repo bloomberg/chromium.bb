@@ -43,7 +43,7 @@ class StylePendingImage : public StyleImage {
 public:
     static PassRefPtr<StylePendingImage> create(CSSValue* value) { return adoptRef(new StylePendingImage(value)); }
 
-    virtual WrappedImagePtr data() const { return toCSSImageValue(m_value); }
+    virtual WrappedImagePtr data() const { return m_value; }
 
     virtual PassRefPtr<CSSValue> cssValue() const { return m_value; }
     CSSImageValue* cssImageValue() const { return m_value->isImageValue() ? toCSSImageValue(m_value) : 0; }
