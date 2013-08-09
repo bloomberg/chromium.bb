@@ -24,6 +24,8 @@ class BookmarkSpecifics;
 class ClientConfigParams;
 class ClientToServerMessage;
 class ClientToServerResponse;
+class CoalescedSyncedNotification;
+class CollapsedInfo;
 class DatatypeAssociationStats;
 class DebugEventInfo;
 class DebugInfo;
@@ -53,7 +55,9 @@ class SessionHeader;
 class SessionSpecifics;
 class SessionTab;
 class SessionWindow;
+class SimpleCollapsedLayout;
 class SyncCycleCompletedEventInfo;
+class SyncedNotificationRenderInfo;
 class SyncedNotificationSpecifics;
 class TabNavigation;
 class ThemeSpecifics;
@@ -119,6 +123,20 @@ base::DictionaryValue* TimeRangeDirectiveToValue(
 
 base::DictionaryValue* KeystoreEncryptionToValue(
     const sync_pb::KeystoreEncryptionFlagsSpecifics& proto);
+
+// Sub protocols of SyncedNotifications.
+
+base::DictionaryValue* SimpleCollapsedLayoutToValue(
+    const sync_pb::SimpleCollapsedLayout& proto);
+
+base::DictionaryValue* CollapsedInfoToValue(
+    const sync_pb::CollapsedInfo& proto);
+
+base::DictionaryValue* RenderInfoToValue(
+    const sync_pb::SyncedNotificationRenderInfo& proto);
+
+base::DictionaryValue* CoalescedNotificationToValue(
+    const sync_pb::CoalescedSyncedNotification& proto);
 
 // Main *SpecificsToValue functions.
 

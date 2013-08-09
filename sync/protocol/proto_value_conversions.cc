@@ -240,8 +240,36 @@ base::DictionaryValue* TimeRangeDirectiveToValue(
   return value;
 }
 
-// TODO(petewil): I will need new functions here for the SyncedNotifications
-// subtypes.
+base::DictionaryValue* SimpleCollapsedLayoutToValue(
+    const sync_pb::SimpleCollapsedLayout& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(heading);
+  SET_STR(description);
+  return value;
+}
+
+base::DictionaryValue* CollapsedInfoToValue(
+    const sync_pb::CollapsedInfo& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET(simple_collapsed_layout, SimpleCollapsedLayoutToValue);
+  return value;
+}
+
+base::DictionaryValue* RenderInfoToValue(
+    const sync_pb::SyncedNotificationRenderInfo& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET(collapsed_info, CollapsedInfoToValue);
+  return value;
+}
+
+base::DictionaryValue* CoalescedNotificationToValue(
+    const sync_pb::CoalescedSyncedNotification& proto) {
+  base::DictionaryValue* value = new base::DictionaryValue();
+  SET_STR(key);
+  SET_INT32(read_state);
+  SET(render_info, RenderInfoToValue);
+  return value;
+}
 
 base::DictionaryValue* AppNotificationToValue(
     const sync_pb::AppNotification& proto) {
@@ -488,8 +516,11 @@ base::DictionaryValue* PriorityPreferenceSpecificsToValue(
 
 base::DictionaryValue* SyncedNotificationSpecificsToValue(
     const sync_pb::SyncedNotificationSpecifics& proto) {
+  // There is a lot of data, for now just use heading, description, key, and
+  // the read state.
+  // TODO(petewil): Eventually add more data here.
   base::DictionaryValue* value = new base::DictionaryValue();
-  // TODO(petewil): Adjust this once we add actual types in protobuf.
+  SET(coalesced_notification, CoalescedNotificationToValue);
   return value;
 }
 
