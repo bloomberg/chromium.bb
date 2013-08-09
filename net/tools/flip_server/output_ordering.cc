@@ -99,14 +99,14 @@ void OutputOrdering::AddToOutputOrder(const MemCacheIter& mci) {
 
   double think_time_in_s = server_think_time_in_s_;
   std::string x_server_latency =
-    mci.file_data->headers->GetHeader("X-Server-Latency").as_string();
+      mci.file_data->headers()->GetHeader("X-Server-Latency").as_string();
   if (!x_server_latency.empty()) {
     char* endp;
     double tmp_think_time_in_s = strtod(x_server_latency.c_str(), &endp);
     if (endp != x_server_latency.c_str() + x_server_latency.size()) {
       LOG(ERROR) << "Unable to understand X-Server-Latency of: "
                  << x_server_latency << " for resource: "
-                 <<  mci.file_data->filename.c_str();
+                 <<  mci.file_data->filename().c_str();
     } else {
       think_time_in_s = tmp_think_time_in_s;
     }

@@ -332,13 +332,13 @@ void HttpSM::GetOutput() {
   }
   if (!mci->transformed_header) {
     mci->bytes_sent = SendSynReply(mci->stream_id,
-                                   *(mci->file_data->headers));
+                                   *(mci->file_data->headers()));
     mci->transformed_header = true;
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: GetOutput transformed "
             << "header stream_id: [" << mci->stream_id << "]";
     return;
   }
-  if (mci->body_bytes_consumed >= mci->file_data->body.size()) {
+  if (mci->body_bytes_consumed >= mci->file_data->body().size()) {
     SendEOF(mci->stream_id);
     output_ordering_.RemoveStreamId(mci->stream_id);
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "GetOutput remove_stream_id: ["
@@ -346,12 +346,12 @@ void HttpSM::GetOutput() {
     return;
   }
   size_t num_to_write =
-    mci->file_data->body.size() - mci->body_bytes_consumed;
+      mci->file_data->body().size() - mci->body_bytes_consumed;
   if (num_to_write > mci->max_segment_size)
     num_to_write = mci->max_segment_size;
 
   SendDataFrame(mci->stream_id,
-                mci->file_data->body.data() + mci->body_bytes_consumed,
+                mci->file_data->body().data() + mci->body_bytes_consumed,
                 num_to_write, 0, true);
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: GetOutput SendDataFrame["
           << mci->stream_id << "]: " << num_to_write;
@@ -360,4 +360,3 @@ void HttpSM::GetOutput() {
 }
 
 }  // namespace net
-

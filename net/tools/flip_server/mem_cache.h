@@ -7,9 +7,9 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/tools/flip_server/balsa_headers.h"
 #include "net/tools/flip_server/balsa_visitor_interface.h"
 #include "net/tools/flip_server/constants.h"
@@ -61,18 +61,26 @@ class StoreBodyAndHeadersVisitor: public BalsaVisitorInterface {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-
-struct FileData {
+class FileData {
+ public:
   FileData();
-  FileData(BalsaHeaders* h, const std::string& b);
+  FileData(const BalsaHeaders* headers,
+           const std::string& filename,
+           const std::string& body);
   ~FileData();
-  void CopyFrom(const FileData& file_data);
 
-  BalsaHeaders* headers;
-  std::string filename;
-  // priority, filename
-  std::vector< std::pair<int, std::string> > related_files;
-  std::string body;
+  BalsaHeaders* headers() { return headers_.get(); }
+  const BalsaHeaders* headers() const { return headers_.get(); }
+
+  const std::string& filename() { return filename_; }
+  const std::string& body() { return body_; }
+
+ private:
+  scoped_ptr<BalsaHeaders> headers_;
+  std::string filename_;
+  std::string body_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileData);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -108,23 +116,27 @@ class MemCacheIter {
 
 class MemoryCache {
  public:
-  typedef std::map<std::string, FileData> Files;
+  typedef std::map<std::string, FileData*> Files;
 
  public:
   MemoryCache();
-  ~MemoryCache();
+  virtual ~MemoryCache();
 
   void CloneFrom(const MemoryCache& mc);
 
   void AddFiles();
 
-  void ReadToString(const char* filename, std::string* output);
+  // virtual for unittests
+  virtual void ReadToString(const char* filename, std::string* output);
 
   void ReadAndStoreFileContents(const char* filename);
 
   FileData* GetFileData(const std::string& filename);
 
   bool AssignFileData(const std::string& filename, MemCacheIter* mci);
+
+ private:
+  void ClearFiles();
 
   Files files_;
   std::string cwd_;
@@ -139,4 +151,3 @@ class NotifierInterface {
 }  // namespace net
 
 #endif  // NET_TOOLS_FLIP_SERVER_MEM_CACHE_H_
-

@@ -521,43 +521,43 @@ void SpdySM::GetOutput() {
         // this is a server initiated stream.
         // Ideally, we'd do a 'syn-push' here, instead of a syn-reply.
         BalsaHeaders headers;
-        headers.CopyFrom(*(mci->file_data->headers));
+        headers.CopyFrom(*(mci->file_data->headers()));
         headers.ReplaceOrAppendHeader("status", "200");
         headers.ReplaceOrAppendHeader("version", "http/1.1");
         headers.SetRequestFirstlineFromStringPieces("PUSH",
-                                                    mci->file_data->filename,
+                                                    mci->file_data->filename(),
                                                     "");
         mci->bytes_sent = SendSynStream(mci->stream_id, headers);
       } else {
         BalsaHeaders headers;
-        headers.CopyFrom(*(mci->file_data->headers));
+        headers.CopyFrom(*(mci->file_data->headers()));
         mci->bytes_sent = SendSynReply(mci->stream_id, headers);
       }
       return;
     }
-    if (mci->body_bytes_consumed >= mci->file_data->body.size()) {
+    if (mci->body_bytes_consumed >= mci->file_data->body().size()) {
       VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: GetOutput "
               << "remove_stream_id: [" << mci->stream_id << "]";
       SendEOF(mci->stream_id);
       return;
     }
     size_t num_to_write =
-      mci->file_data->body.size() - mci->body_bytes_consumed;
+        mci->file_data->body().size() - mci->body_bytes_consumed;
     if (num_to_write > mci->max_segment_size)
       num_to_write = mci->max_segment_size;
 
     bool should_compress = false;
-    if (!mci->file_data->headers->HasHeader("content-encoding")) {
-      if (mci->file_data->headers->HasHeader("content-type")) {
+    if (!mci->file_data->headers()->HasHeader("content-encoding")) {
+      if (mci->file_data->headers()->HasHeader("content-type")) {
         std::string content_type =
-            mci->file_data->headers->GetHeader("content-type").as_string();
+            mci->file_data->headers()->GetHeader("content-type").as_string();
         if (content_type.find("image") == content_type.npos)
           should_compress = true;
       }
     }
 
     SendDataFrame(mci->stream_id,
-                  mci->file_data->body.data() + mci->body_bytes_consumed,
+                  mci->file_data->body().data() + mci->body_bytes_consumed,
                   num_to_write, 0, should_compress);
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: GetOutput SendDataFrame["
             << mci->stream_id << "]: " << num_to_write;
