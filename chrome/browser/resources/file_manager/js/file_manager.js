@@ -2000,10 +2000,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
   FileManager.prototype.isDriveEnabled = function() {
     // Auto resolving to local path does not work for folders (e.g., dialog for
-    // loading unpacked extensions) and saving.
-    // TODO(kinaba): make it work for the save dialog http://crbug.com/140425
+    // loading unpacked extensions).
     var noLocalPathResolution =
-      this.params_.type == DialogType.SELECT_SAVEAS_FILE ||
       this.params_.type == DialogType.SELECT_FOLDER ||
       this.params_.type == DialogType.SELECT_UPLOAD_FOLDER;
     if (noLocalPathResolution && this.params_.shouldReturnLocalPath)
