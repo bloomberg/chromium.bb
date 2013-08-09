@@ -17,12 +17,12 @@ class PPB_X509Certificate_Fields;
 namespace content {
 
 class PPB_X509Certificate_Private_Impl :
-    public ::ppapi::PPB_X509Certificate_Private_Shared {
+    public ppapi::PPB_X509Certificate_Private_Shared {
  public:
   PPB_X509Certificate_Private_Impl(PP_Instance instance);
   static PP_Resource CreateResource(PP_Instance instance);
   virtual bool ParseDER(const std::vector<char>& der,
-                        ::ppapi::PPB_X509Certificate_Fields* result) OVERRIDE;
+                        ppapi::PPB_X509Certificate_Fields* result) OVERRIDE;
 
  private:
   virtual ~PPB_X509Certificate_Private_Impl();

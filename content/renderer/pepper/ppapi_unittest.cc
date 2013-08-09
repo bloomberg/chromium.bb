@@ -79,8 +79,8 @@ void PpapiUnittest::SetUp() {
 
   // Initialize the mock module.
   module_ = new PluginModule("Mock plugin", base::FilePath(),
-                             ::ppapi::PpapiPermissions());
-  ::ppapi::PpapiGlobals::Get()->ResetMainThreadMessageLoopForTesting();
+                             ppapi::PpapiPermissions());
+  ppapi::PpapiGlobals::Get()->ResetMainThreadMessageLoopForTesting();
   PepperPluginInfo::EntryPoints entry_points;
   entry_points.get_interface = &MockGetInterface;
   entry_points.initialize_module = &MockInitializeModule;

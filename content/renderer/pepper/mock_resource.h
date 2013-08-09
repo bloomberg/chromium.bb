@@ -12,10 +12,10 @@ namespace content {
 // Tests can derive from this to implement special test-specific resources.
 // It's assumed that a test will only need one mock resource, so it can
 // static_cast to get its own implementation.
-class MockResource : public ::ppapi::Resource {
+class MockResource : public ppapi::Resource {
  public:
   MockResource(PP_Instance instance)
-      : Resource(::ppapi::OBJECT_IS_IMPL, instance) {}
+      : Resource(ppapi::OBJECT_IS_IMPL, instance) {}
 
  private:
   virtual ~MockResource() {}

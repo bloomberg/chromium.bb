@@ -14,13 +14,13 @@
 namespace content {
 
 class PPB_Flash_MessageLoop_Impl
-    : public ::ppapi::Resource,
-      public ::ppapi::thunk::PPB_Flash_MessageLoop_API {
+    : public ppapi::Resource,
+      public ppapi::thunk::PPB_Flash_MessageLoop_API {
  public:
   static PP_Resource Create(PP_Instance instance);
 
   // Resource.
-  virtual ::ppapi::thunk::PPB_Flash_MessageLoop_API*
+  virtual ppapi::thunk::PPB_Flash_MessageLoop_API*
       AsPPB_Flash_MessageLoop_API() OVERRIDE;
 
   // PPB_Flash_MessageLoop_API implementation.

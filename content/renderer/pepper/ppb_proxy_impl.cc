@@ -25,7 +25,7 @@ void PluginCrashed(PP_Module module) {
 }
 
 PP_Instance GetInstanceForResource(PP_Resource resource) {
-  ::ppapi::Resource* obj =
+  ppapi::Resource* obj =
       PpapiGlobals::Get()->GetResourceTracker()->GetResource(resource);
   if (!obj)
     return 0;

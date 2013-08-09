@@ -28,18 +28,17 @@ namespace content {
 // The generated events will be filled into the given vector. On failure, no
 // events will ge generated and the vector will be empty.
 void CreateInputEventData(const WebKit::WebInputEvent& event,
-                          std::vector< ::ppapi::InputEventData >* pp_events);
+                          std::vector<ppapi::InputEventData >* pp_events);
 
 // Creates a WebInputEvent from the given PP_InputEvent.  If it fails, returns
 // NULL.  The caller owns the created object on success.
-WebKit::WebInputEvent* CreateWebInputEvent(
-    const ::ppapi::InputEventData& event);
+WebKit::WebInputEvent* CreateWebInputEvent(const ppapi::InputEventData& event);
 
 // Creates an array of WebInputEvents to make the given event look like a user
 // input event on all platforms. |plugin_x| and |plugin_y| should be the
 // coordinates of a point within the plugin's area on the page.
 std::vector<linked_ptr<WebKit::WebInputEvent> > CreateSimulatedWebInputEvents(
-    const ::ppapi::InputEventData& event,
+    const ppapi::InputEventData& event,
     int plugin_x,
     int plugin_y);
 

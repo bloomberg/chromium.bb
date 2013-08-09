@@ -120,8 +120,8 @@ TEST_F(HostVarTrackerTest, ReuseVar) {
   }
 
   // Remove both of the refs we made above.
-  ::ppapi::VarTracker* var_tracker =
-      ::ppapi::PpapiGlobals::Get()->GetVarTracker();
+  ppapi::VarTracker* var_tracker =
+      ppapi::PpapiGlobals::Get()->GetVarTracker();
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object2.value.as_id));
   var_tracker->ReleaseVar(static_cast<int32_t>(pp_object1.value.as_id));
 

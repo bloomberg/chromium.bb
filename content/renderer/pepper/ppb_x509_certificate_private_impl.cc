@@ -11,7 +11,7 @@ namespace content {
 
 PPB_X509Certificate_Private_Impl::PPB_X509Certificate_Private_Impl(
     PP_Instance instance) :
-  PPB_X509Certificate_Private_Shared(::ppapi::OBJECT_IS_IMPL, instance) {
+  PPB_X509Certificate_Private_Shared(ppapi::OBJECT_IS_IMPL, instance) {
 }
 
 // static
@@ -22,7 +22,7 @@ PP_Resource PPB_X509Certificate_Private_Impl::CreateResource(
 
 bool PPB_X509Certificate_Private_Impl::ParseDER(
     const std::vector<char>& der,
-    ::ppapi::PPB_X509Certificate_Fields* result) {
+    ppapi::PPB_X509Certificate_Fields* result) {
   bool succeeded = false;
   RenderThreadImpl::current()->Send(
       new PpapiHostMsg_PPBX509Certificate_ParseDER(der, &succeeded, result));

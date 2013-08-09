@@ -13,7 +13,7 @@
 
 namespace content {
 
-class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl,
+class PPB_TCPSocket_Private_Impl : public ppapi::TCPSocketPrivateImpl,
                                    public IPC::Listener {
  public:
   static PP_Resource CreateResource(PP_Instance instance);
@@ -30,7 +30,7 @@ class PPB_TCPSocket_Private_Impl : public ::ppapi::TCPSocketPrivateImpl,
   virtual void SendWrite(const std::string& buffer) OVERRIDE;
   virtual void SendDisconnect() OVERRIDE;
   virtual void SendSetOption(PP_TCPSocket_Option name,
-                             const ::ppapi::SocketOptionData& value) OVERRIDE;
+                             const ppapi::SocketOptionData& value) OVERRIDE;
 
  private:
   PPB_TCPSocket_Private_Impl(PP_Instance instance,

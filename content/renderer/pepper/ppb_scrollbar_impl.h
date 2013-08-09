@@ -19,7 +19,7 @@
 namespace content {
 
 class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
-                           public ::ppapi::thunk::PPB_Scrollbar_API,
+                           public ppapi::thunk::PPB_Scrollbar_API,
                            public WebKit::WebPluginScrollbarClient {
  public:
   static PP_Resource Create(PP_Instance instance, bool vertical);
@@ -47,7 +47,7 @@ class PPB_Scrollbar_Impl : public PPB_Widget_Impl,
   virtual PP_Bool PaintInternal(const gfx::Rect& rect,
                                 PPB_ImageData_Impl* image) OVERRIDE;
   virtual PP_Bool HandleEventInternal(
-      const ::ppapi::InputEventData& data) OVERRIDE;
+      const ppapi::InputEventData& data) OVERRIDE;
   virtual void SetLocationInternal(const PP_Rect* location) OVERRIDE;
 
   // WebKit::WebPluginScrollbarClient implementation.

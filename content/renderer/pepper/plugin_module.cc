@@ -305,7 +305,7 @@ const void* InternalGetInterface(const char* name) {
   // TODO(brettw) put these in a hash map for better performance.
   #define UNPROXIED_IFACE(api_name, iface_str, iface_struct) \
       if (strcmp(name, iface_str) == 0) \
-        return ::ppapi::thunk::Get##iface_struct##_Thunk();
+        return ppapi::thunk::Get##iface_struct##_Thunk();
   #define PROXIED_IFACE(api_name, iface_str, iface_struct) \
       UNPROXIED_IFACE(api_name, iface_str, iface_struct)
 
@@ -402,8 +402,8 @@ void CreateHostForInProcessModule(RenderViewImpl* render_view,
 
 PluginModule::PluginModule(const std::string& name,
                            const base::FilePath& path,
-                           const ::ppapi::PpapiPermissions& perms)
-    : callback_tracker_(new ::ppapi::CallbackTracker),
+                           const ppapi::PpapiPermissions& perms)
+    : callback_tracker_(new ppapi::CallbackTracker),
       is_in_destructor_(false),
       is_crashed_(false),
       broker_(NULL),
@@ -589,7 +589,7 @@ void PluginModule::InstanceDeleted(PepperPluginInstanceImpl* instance) {
   instances_.erase(instance);
 }
 
-scoped_refptr< ::ppapi::CallbackTracker> PluginModule::GetCallbackTracker() {
+scoped_refptr<ppapi::CallbackTracker> PluginModule::GetCallbackTracker() {
   return callback_tracker_;
 }
 

@@ -64,7 +64,7 @@ class URLRequestInfoTest : public RenderViewTest {
     test_globals_.GetResourceTracker()->DidCreateInstance(pp_instance_);
 
     // This resource doesn't do IPC, so a null connection is fine.
-    info_ = new URLRequestInfoResource(::ppapi::proxy::Connection(),
+    info_ = new URLRequestInfoResource(ppapi::proxy::Connection(),
                                        pp_instance_,
                                        URLRequestInfoData());
   }
@@ -116,14 +116,14 @@ class URLRequestInfoTest : public RenderViewTest {
   PP_Instance pp_instance_;
 
   // Needs to be alive for resource tracking to work.
-  ::ppapi::TestGlobals test_globals_;
+  ppapi::TestGlobals test_globals_;
 
   scoped_refptr<URLRequestInfoResource> info_;
 };
 
 TEST_F(URLRequestInfoTest, GetInterface) {
   const PPB_URLRequestInfo* request_info =
-      ::ppapi::thunk::GetPPB_URLRequestInfo_1_0_Thunk();
+      ppapi::thunk::GetPPB_URLRequestInfo_1_0_Thunk();
   EXPECT_TRUE(request_info);
   EXPECT_TRUE(request_info->Create);
   EXPECT_TRUE(request_info->IsURLRequestInfo);

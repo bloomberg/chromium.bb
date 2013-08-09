@@ -100,7 +100,7 @@ void PlatformFileInfoToPPFileInfo(
     PP_FileSystemType file_system_type,
     PP_FileInfo* info) {
   DCHECK(info);
-  ::ppapi::PlatformFileInfoToPepperFileInfo(file_info, file_system_type, info);
+  ppapi::PlatformFileInfoToPepperFileInfo(file_info, file_system_type, info);
 }
 
 void GetFileInfoCallback(
@@ -116,7 +116,7 @@ void GetFileInfoCallback(
   if (!TrackedCallback::IsPending(callback))
     return;
 
-  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
   if (pp_error != PP_OK) {
     callback->Run(pp_error);
     return;
@@ -136,7 +136,7 @@ void QueryCallback(scoped_refptr<base::TaskRunner> task_runner,
   if (!TrackedCallback::IsPending(callback))
     return;
 
-  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
   if (pp_error != PP_OK) {
     callback->Run(pp_error);
     return;
@@ -155,7 +155,7 @@ void QueryCallback(scoped_refptr<base::TaskRunner> task_runner,
 }
 
 void DidReadMetadata(
-    scoped_refptr< ::ppapi::TrackedCallback> callback,
+    scoped_refptr<ppapi::TrackedCallback> callback,
     linked_ptr<PP_FileInfo> info,
     PP_FileSystemType file_system_type,
     const base::PlatformFileInfo& file_info) {
@@ -167,9 +167,9 @@ void DidReadMetadata(
 }
 
 void DidReadDirectory(
-    scoped_refptr< ::ppapi::TrackedCallback> callback,
+    scoped_refptr<ppapi::TrackedCallback> callback,
     PPB_FileRef_Impl* dir_ref,
-    linked_ptr<std::vector< ::ppapi::PPB_FileRef_CreateInfo> > dir_files,
+    linked_ptr<std::vector<ppapi::PPB_FileRef_CreateInfo> > dir_files,
     linked_ptr<std::vector<PP_FileType> > dir_file_types,
     const std::vector<fileapi::DirectoryEntry>& entries,
     bool has_more) {
@@ -205,18 +205,18 @@ void DidReadDirectory(
 }
 
 void DidFinishFileOperation(
-    scoped_refptr< ::ppapi::TrackedCallback> callback,
+    scoped_refptr<ppapi::TrackedCallback> callback,
     base::PlatformFileError error_code) {
   if (callback->completed())
     return;
-  callback->Run(::ppapi::PlatformFileErrorToPepperError(error_code));
+  callback->Run(ppapi::PlatformFileErrorToPepperError(error_code));
 }
 
 }  // namespace
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
                                    PP_Resource file_system)
-    : PPB_FileRef_Shared(::ppapi::OBJECT_IS_IMPL, info),
+    : PPB_FileRef_Shared(ppapi::OBJECT_IS_IMPL, info),
       file_system_(file_system),
       external_file_system_path_(),
       routing_id_(MSG_ROUTING_NONE) {
@@ -228,7 +228,7 @@ PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
 
 PPB_FileRef_Impl::PPB_FileRef_Impl(const PPB_FileRef_CreateInfo& info,
                                    const base::FilePath& external_file_path)
-    : PPB_FileRef_Shared(::ppapi::OBJECT_IS_IMPL, info),
+    : PPB_FileRef_Shared(ppapi::OBJECT_IS_IMPL, info),
       file_system_(),
       external_file_system_path_(external_file_path),
       routing_id_(MSG_ROUTING_NONE) {
@@ -517,7 +517,7 @@ int32_t PPB_FileRef_Impl::ReadDirectoryEntries(
 }
 
 int32_t PPB_FileRef_Impl::ReadDirectoryEntriesInHost(
-    linked_ptr<std::vector< ::ppapi::PPB_FileRef_CreateInfo> > files,
+    linked_ptr<std::vector<ppapi::PPB_FileRef_CreateInfo> > files,
     linked_ptr<std::vector<PP_FileType> > file_types,
     scoped_refptr<TrackedCallback> callback) {
   if (!IsValidNonExternalFileSystem())

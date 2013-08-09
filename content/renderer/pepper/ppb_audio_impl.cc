@@ -29,7 +29,7 @@ namespace content {
 // PPB_Audio_Impl --------------------------------------------------------------
 
 PPB_Audio_Impl::PPB_Audio_Impl(PP_Instance instance)
-    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
+    : Resource(ppapi::OBJECT_IS_IMPL, instance),
       audio_(NULL),
       sample_frame_count_(0) {
 }

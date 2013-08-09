@@ -45,7 +45,7 @@ typedef base::hash_map<int64_t, v8::Handle<v8::Value> > VarHandleMap;
 bool Equals(const PP_Var& var,
             v8::Handle<v8::Value> val,
             VarHandleMap* visited_ids) {
-  if (::ppapi::VarTracker::IsVarTypeRefcounted(var.type)) {
+  if (ppapi::VarTracker::IsVarTypeRefcounted(var.type)) {
     VarHandleMap::iterator it = visited_ids->find(var.value.as_id);
     if (it != visited_ids->end())
       return it->second == val;

@@ -14,8 +14,8 @@
 
 namespace content {
 
-class PPB_Buffer_Impl : public ::ppapi::Resource,
-                        public ::ppapi::thunk::PPB_Buffer_API {
+class PPB_Buffer_Impl : public ppapi::Resource,
+                        public ppapi::thunk::PPB_Buffer_API {
  public:
   static PP_Resource Create(PP_Instance instance, uint32_t size);
   static scoped_refptr<PPB_Buffer_Impl> CreateResource(PP_Instance instance,
@@ -27,7 +27,7 @@ class PPB_Buffer_Impl : public ::ppapi::Resource,
   uint32_t size() const { return size_; }
 
   // Resource overrides.
-  virtual ::ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Buffer_API* AsPPB_Buffer_API() OVERRIDE;
 
   // PPB_Buffer_API implementation.
   virtual PP_Bool Describe(uint32_t* size_in_bytes) OVERRIDE;
@@ -55,7 +55,7 @@ class PPB_Buffer_Impl : public ::ppapi::Resource,
 // mapped state in the destructor.
 class BufferAutoMapper {
  public:
-  explicit BufferAutoMapper(::ppapi::thunk::PPB_Buffer_API* api);
+  explicit BufferAutoMapper(ppapi::thunk::PPB_Buffer_API* api);
   ~BufferAutoMapper();
 
   // Will be NULL on failure to map.
@@ -63,7 +63,7 @@ class BufferAutoMapper {
   uint32_t size() { return size_; }
 
  private:
-  ::ppapi::thunk::PPB_Buffer_API* api_;
+  ppapi::thunk::PPB_Buffer_API* api_;
 
   bool needs_unmap_;
 

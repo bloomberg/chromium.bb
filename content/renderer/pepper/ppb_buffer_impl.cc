@@ -15,12 +15,12 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_resource.h"
 
-using ::ppapi::thunk::PPB_Buffer_API;
+using ppapi::thunk::PPB_Buffer_API;
 
 namespace content {
 
 PPB_Buffer_Impl::PPB_Buffer_Impl(PP_Instance instance)
-    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
+    : Resource(ppapi::OBJECT_IS_IMPL, instance),
       size_(0),
       map_count_(0) {
 }

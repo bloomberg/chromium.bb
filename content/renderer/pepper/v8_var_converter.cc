@@ -85,7 +85,7 @@ bool GetOrCreateV8Value(const PP_Var& var,
                         ParentVarSet* parent_ids) {
   *did_create = false;
 
-  if (::ppapi::VarTracker::IsVarTypeRefcounted(var.type)) {
+  if (ppapi::VarTracker::IsVarTypeRefcounted(var.type)) {
     if (parent_ids->count(var.value.as_id) != 0)
       return false;
     VarHandleMap::iterator it = visited_ids->find(var.value.as_id);
@@ -151,7 +151,7 @@ bool GetOrCreateV8Value(const PP_Var& var,
   }
 
   *did_create = true;
-  if (::ppapi::VarTracker::IsVarTypeRefcounted(var.type))
+  if (ppapi::VarTracker::IsVarTypeRefcounted(var.type))
     (*visited_ids)[var.value.as_id] = *result;
   return true;
 }

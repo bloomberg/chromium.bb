@@ -23,8 +23,8 @@ class PepperPlatformAudioOutput;
 
 // Some of the backend functionality of this class is implemented by the
 // PPB_Audio_Shared so it can be shared with the proxy.
-class PPB_Audio_Impl : public ::ppapi::Resource,
-                       public ::ppapi::PPB_Audio_Shared,
+class PPB_Audio_Impl : public ppapi::Resource,
+                       public ppapi::PPB_Audio_Shared,
                        public AudioHelper {
  public:
   // Trusted initialization. You must call Init after this.
@@ -46,7 +46,7 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
             void* user_data);
 
   // Resource overrides.
-  virtual ::ppapi::thunk::PPB_Audio_API* AsPPB_Audio_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Audio_API* AsPPB_Audio_API() OVERRIDE;
 
   // PPB_Audio_API implementation.
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
@@ -54,7 +54,7 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
   virtual PP_Bool StopPlayback() OVERRIDE;
   virtual int32_t Open(
       PP_Resource config_id,
-      scoped_refptr< ::ppapi::TrackedCallback> create_callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
   virtual int32_t GetSharedMemory(int* shm_handle, uint32_t* shm_size) OVERRIDE;
 
@@ -67,7 +67,7 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
                                base::SyncSocket::Handle socket) OVERRIDE;
 
   // AudioConfig used for creating this Audio object. We own a ref.
-  ::ppapi::ScopedPPResource config_;
+  ppapi::ScopedPPResource config_;
 
   // PluginDelegate audio object that we delegate audio IPC through. We don't
   // own this pointer but are responsible for calling Shutdown on it.

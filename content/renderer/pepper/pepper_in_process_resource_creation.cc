@@ -127,7 +127,7 @@ PP_Resource PepperInProcessResourceCreation::CreateURLRequestInfo(
     PP_Instance instance) {
   return (new ppapi::proxy::URLRequestInfoResource(
       host_impl_->in_process_router()->GetPluginConnection(instance),
-      instance, ::ppapi::URLRequestInfoData()))->GetReference();
+      instance, ppapi::URLRequestInfoData()))->GetReference();
 }
 
 PP_Resource PepperInProcessResourceCreation::CreateWebSocket(

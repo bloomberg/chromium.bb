@@ -29,7 +29,7 @@ namespace content {
 class PlatformContext3D;
 class PlatformVideoDecoder;
 
-class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
+class PPB_VideoDecoder_Impl : public ppapi::PPB_VideoDecoder_Shared,
                               public media::VideoDecodeAccelerator::Client {
  public:
   // See PPB_VideoDecoder_Dev::Create.  Returns 0 on failure to create &
@@ -41,14 +41,14 @@ class PPB_VideoDecoder_Impl : public ::ppapi::PPB_VideoDecoder_Shared,
   // PPB_VideoDecoder_API implementation.
   virtual int32_t Decode(
       const PP_VideoBitstreamBuffer_Dev* bitstream_buffer,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual void AssignPictureBuffers(
       uint32_t no_of_buffers, const PP_PictureBuffer_Dev* buffers) OVERRIDE;
   virtual void ReusePictureBuffer(int32_t picture_buffer_id) OVERRIDE;
   virtual int32_t Flush(
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t Reset(
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual void Destroy() OVERRIDE;
 
   // media::VideoDecodeAccelerator::Client implementation.

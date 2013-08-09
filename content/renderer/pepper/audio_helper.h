@@ -27,7 +27,7 @@ class AudioHelper {
                      base::SyncSocket::Handle socket);
 
   void SetCreateCallback(
-      scoped_refptr< ::ppapi::TrackedCallback> create_callback);
+      scoped_refptr<ppapi::TrackedCallback> create_callback);
 
  protected:
   // TODO(viettrungluu): This is all very poorly thought out. Refactor.
@@ -42,7 +42,7 @@ class AudioHelper {
                                base::SyncSocket::Handle socket_handle) = 0;
 
  private:
-  scoped_refptr< ::ppapi::TrackedCallback> create_callback_;
+  scoped_refptr<ppapi::TrackedCallback> create_callback_;
 
   // When a create callback is being issued, these will save the info for
   // querying from the callback. The proxy uses this to get the handles to the

@@ -79,7 +79,7 @@ void AudioHelper::StreamCreated(
 }
 
 void AudioHelper::SetCreateCallback(
-    scoped_refptr< ::ppapi::TrackedCallback> create_callback) {
+    scoped_refptr<ppapi::TrackedCallback> create_callback) {
   DCHECK(!TrackedCallback::IsPending(create_callback_));
   create_callback_ = create_callback;
 }

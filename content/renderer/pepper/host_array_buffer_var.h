@@ -14,7 +14,7 @@
 namespace content {
 
 // Represents a host-side ArrayBufferVar.
-class HostArrayBufferVar : public ::ppapi::ArrayBufferVar {
+class HostArrayBufferVar : public ppapi::ArrayBufferVar {
  public:
   explicit HostArrayBufferVar(uint32 size_in_bytes);
   explicit HostArrayBufferVar(const WebKit::WebArrayBuffer& buffer);

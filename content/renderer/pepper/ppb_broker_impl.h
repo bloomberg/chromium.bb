@@ -25,19 +25,19 @@ struct ChannelHandle;
 namespace content {
 class PepperBroker;
 
-class PPB_Broker_Impl : public ::ppapi::Resource,
-                        public ::ppapi::thunk::PPB_Broker_API,
+class PPB_Broker_Impl : public ppapi::Resource,
+                        public ppapi::thunk::PPB_Broker_API,
                         public IPC::Listener,
                         public base::SupportsWeakPtr<PPB_Broker_Impl> {
  public:
   explicit PPB_Broker_Impl(PP_Instance instance);
 
   // Resource override.
-  virtual ::ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Broker_API* AsPPB_Broker_API() OVERRIDE;
 
   // PPB_BrokerTrusted implementation.
   virtual int32_t Connect(
-      scoped_refptr< ::ppapi::TrackedCallback> connect_callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> connect_callback) OVERRIDE;
   virtual int32_t GetHandle(int32_t* handle) OVERRIDE;
 
   // Returns the URL of the document this plug-in runs in. This is necessary to
@@ -61,7 +61,7 @@ class PPB_Broker_Impl : public ::ppapi::Resource,
   PepperBroker* broker_;
 
   // Callback invoked from BrokerConnected.
-  scoped_refptr< ::ppapi::TrackedCallback> connect_callback_;
+  scoped_refptr<ppapi::TrackedCallback> connect_callback_;
 
   // Pipe handle for the plugin instance to use to communicate with the broker.
   // Never owned by this object.

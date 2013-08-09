@@ -114,7 +114,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
     : public base::RefCounted<PepperPluginInstanceImpl>,
       public base::SupportsWeakPtr<PepperPluginInstanceImpl>,
       public NON_EXPORTED_BASE(PepperPluginInstance),
-      public ::ppapi::PPB_Instance_Shared {
+      public ppapi::PPB_Instance_Shared {
  public:
   // Create and return a PepperPluginInstanceImpl object which supports the most
   // recent version of PPP_Instance possible by querying the given
@@ -135,7 +135,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // nonzero.
   PP_Instance pp_instance() const { return pp_instance_; }
 
-  ::ppapi::thunk::ResourceCreationAPI& resource_creation() {
+  ppapi::thunk::ResourceCreationAPI& resource_creation() {
     return *resource_creation_.get();
   }
 
@@ -170,7 +170,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // PPB_Instance and PPB_Instance_Private implementation.
   bool full_frame() const { return full_frame_; }
-  const ::ppapi::ViewData& view_data() const { return view_data_; }
+  const ppapi::ViewData& view_data() const { return view_data_; }
 
   // PPP_Instance and PPP_Instance_Private.
   bool Initialize(const std::vector<std::string>& arg_names,
@@ -320,13 +320,13 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Simulates an input event to the plugin by passing it down to WebKit,
   // which sends it back up to the plugin as if it came from the user.
-  void SimulateInputEvent(const ::ppapi::InputEventData& input_event);
+  void SimulateInputEvent(const ppapi::InputEventData& input_event);
 
   // Simulates an IME event at the level of RenderView which sends it back up to
   // the plugin as if it came from the user.
-  bool SimulateIMEEvent(const ::ppapi::InputEventData& input_event);
+  bool SimulateIMEEvent(const ppapi::InputEventData& input_event);
   void SimulateImeSetCompositionEvent(
-      const ::ppapi::InputEventData& input_event);
+      const ppapi::InputEventData& input_event);
 
   // The document loader is valid when the plugin is "full-frame" and in this
   // case is non-NULL as long as the corresponding loader resource is alive.
@@ -344,7 +344,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // PluginInstance implementation
   virtual RenderView* GetRenderView() OVERRIDE;
   virtual WebKit::WebPluginContainer* GetContainer() OVERRIDE;
-  virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
+  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
   virtual const GURL& GetPluginURL() OVERRIDE;
   virtual base::FilePath GetModulePath() OVERRIDE;
   virtual PP_Resource CreateExternalFileReference(
@@ -353,7 +353,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                   float scale) OVERRIDE;
   virtual PP_ExternalPluginResult SwitchToOutOfProcessProxy(
       const base::FilePath& file_path,
-      ::ppapi::PpapiPermissions permissions,
+      ppapi::PpapiPermissions permissions,
       const IPC::ChannelHandle& channel_handle,
       base::ProcessId plugin_pid,
       int plugin_child_id) OVERRIDE;
@@ -361,7 +361,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual bool IsFullPagePlugin() OVERRIDE;
   virtual void FlashSetFullscreen(bool fullscreen, bool delay_report) OVERRIDE;
   virtual bool IsRectTopmost(const gfx::Rect& rect) OVERRIDE;
-  virtual int32_t Navigate(const ::ppapi::URLRequestInfoData& request,
+  virtual int32_t Navigate(const ppapi::URLRequestInfoData& request,
                            const char* target,
                            bool from_user_action) OVERRIDE;
 
@@ -369,7 +369,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   virtual PP_Bool BindGraphics(PP_Instance instance,
                                PP_Resource device) OVERRIDE;
   virtual PP_Bool IsFullFrame(PP_Instance instance) OVERRIDE;
-  virtual const ::ppapi::ViewData* GetViewData(PP_Instance instance) OVERRIDE;
+  virtual const ppapi::ViewData* GetViewData(PP_Instance instance) OVERRIDE;
   virtual PP_Bool FlashIsFullscreen(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetWindowObject(PP_Instance instance) OVERRIDE;
   virtual PP_Var GetOwnerElementObject(PP_Instance instance) OVERRIDE;
@@ -391,8 +391,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                                 PP_Bool fullscreen) OVERRIDE;
   virtual PP_Bool GetScreenSize(PP_Instance instance, PP_Size* size)
       OVERRIDE;
-  virtual ::ppapi::Resource* GetSingletonResource(PP_Instance instance,
-      ::ppapi::SingletonResourceID id) OVERRIDE;
+  virtual ppapi::Resource* GetSingletonResource(PP_Instance instance,
+      ppapi::SingletonResourceID id) OVERRIDE;
   virtual int32_t RequestInputEvents(PP_Instance instance,
                                      uint32_t event_classes) OVERRIDE;
   virtual int32_t RequestFilteringInputEvents(PP_Instance instance,
@@ -410,7 +410,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
                             const PP_Point* hot_spot) OVERRIDE;
   virtual int32_t LockMouse(
       PP_Instance instance,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual void UnlockMouse(PP_Instance instance) OVERRIDE;
   virtual void SetTextInputType(PP_Instance instance,
                                 PP_TextInput_Type type) OVERRIDE;
@@ -530,12 +530,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // Implements PPB_Gamepad_API. This is just to avoid having an excessive
   // number of interfaces implemented by PepperPluginInstanceImpl.
-  class GamepadImpl : public ::ppapi::thunk::PPB_Gamepad_API,
-                      public ::ppapi::Resource {
+  class GamepadImpl : public ppapi::thunk::PPB_Gamepad_API,
+                      public ppapi::Resource {
    public:
     GamepadImpl();
     // Resource implementation.
-    virtual ::ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
+    virtual ppapi::thunk::PPB_Gamepad_API* AsPPB_Gamepad_API() OVERRIDE;
     virtual void Sample(PP_Instance instance,
                         PP_GamepadsSampleData* data) OVERRIDE;
    private:
@@ -548,7 +548,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // for member initialization.
   PepperPluginInstanceImpl(RenderViewImpl* render_view,
                            PluginModule* module,
-                           ::ppapi::PPP_Instance_Combined* instance_interface,
+                           ppapi::PPP_Instance_Combined* instance_interface,
                            WebKit::WebPluginContainer* container,
                            const GURL& plugin_url);
 
@@ -644,12 +644,12 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   RenderViewImpl* render_view_;
   scoped_refptr<PluginModule> module_;
-  scoped_ptr< ::ppapi::PPP_Instance_Combined> instance_interface_;
+  scoped_ptr<ppapi::PPP_Instance_Combined> instance_interface_;
   // If this is the NaCl plugin, we create a new module when we switch to the
   // IPC-based PPAPI proxy. Store the original module and instance interface
   // so we can shut down properly.
   scoped_refptr<PluginModule> original_module_;
-  scoped_ptr< ::ppapi::PPP_Instance_Combined> original_instance_interface_;
+  scoped_ptr<ppapi::PPP_Instance_Combined> original_instance_interface_;
 
   PP_Instance pp_instance_;
 
@@ -667,10 +667,10 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool full_frame_;
 
   // Stores the current state of the plugin view.
-  ::ppapi::ViewData view_data_;
+  ppapi::ViewData view_data_;
   // The last state sent to the plugin. It is only valid after
   // |sent_initial_did_change_view_| is set to true.
-  ::ppapi::ViewData last_sent_view_data_;
+  ppapi::ViewData last_sent_view_data_;
 
   // Indicates if we've ever sent a didChangeView to the plugin. This ensures we
   // always send an initial notification, even if the position and clip are the
@@ -699,7 +699,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   int find_identifier_;
 
   // Helper object that creates resources.
-  scoped_ptr< ::ppapi::thunk::ResourceCreationAPI> resource_creation_;
+  scoped_ptr<ppapi::thunk::ResourceCreationAPI> resource_creation_;
 
   // The plugin-provided interfaces.
   // When adding PPP interfaces, make sure to reset them in ResetAsProxied.
@@ -742,7 +742,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // An array of page ranges.
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 
-  scoped_refptr< ::ppapi::Resource> gamepad_impl_;
+  scoped_refptr<ppapi::Resource> gamepad_impl_;
 
   // The plugin print interface.
   const PPP_Printing_Dev* plugin_print_interface_;
@@ -816,7 +816,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   size_t selection_caret_;
   size_t selection_anchor_;
 
-  scoped_refptr< ::ppapi::TrackedCallback> lock_mouse_callback_;
+  scoped_refptr<ppapi::TrackedCallback> lock_mouse_callback_;
 
   // Track pending user gestures so out-of-process plugins can respond to
   // a user gesture after it has been processed.

@@ -122,7 +122,7 @@ void HostVarTracker::DidDeleteInstance(PP_Instance instance) {
   instance_map_.erase(found_instance);
 }
 
-void HostVarTracker::ForceReleaseNPObject(::ppapi::NPObjectVar* object_var) {
+void HostVarTracker::ForceReleaseNPObject(ppapi::NPObjectVar* object_var) {
   object_var->InstanceDeleted();
   VarMap::iterator iter = live_vars_.find(object_var->GetExistingVarID());
   if (iter == live_vars_.end()) {

@@ -214,7 +214,7 @@ bool WrapperClass_Enumerate(NPObject* object, NPIdentifier** values,
 
   // Release the PP_Var that the plugin allocated. On success, they will all
   // be converted to NPVariants, and on failure, we want them to just go away.
-  ::ppapi::VarTracker* var_tracker = PpapiGlobals::Get()->GetVarTracker();
+  ppapi::VarTracker* var_tracker = PpapiGlobals::Get()->GetVarTracker();
   for (uint32_t i = 0; i < property_count; ++i)
     var_tracker->ReleaseVar(properties[i]);
   free(properties);

@@ -419,7 +419,7 @@ void PepperPluginInstanceImpl::NaClDocumentLoader::didFail(
 }
 
 PepperPluginInstanceImpl::GamepadImpl::GamepadImpl()
-    : Resource(::ppapi::Resource::Untracked()) {
+    : Resource(ppapi::Resource::Untracked()) {
 }
 
 PepperPluginInstanceImpl::GamepadImpl::~GamepadImpl() {
@@ -435,13 +435,13 @@ void PepperPluginInstanceImpl::GamepadImpl::Sample(
   WebKit::WebGamepads webkit_data;
   RenderThreadImpl::current()->SampleGamepads(&webkit_data);
   ConvertWebKitGamepadData(
-      *reinterpret_cast<const ::ppapi::WebKitGamepads*>(&webkit_data), data);
+      *reinterpret_cast<const ppapi::WebKitGamepads*>(&webkit_data), data);
 }
 
 PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     RenderViewImpl* render_view,
     PluginModule* module,
-    ::ppapi::PPP_Instance_Combined* instance_interface,
+    ppapi::PPP_Instance_Combined* instance_interface,
     WebPluginContainer* container,
     const GURL& plugin_url)
     : render_view_(render_view),
@@ -671,7 +671,7 @@ void PepperPluginInstanceImpl::InstanceCrashed() {
   UnSetAndDeleteLockTargetAdapter();
 }
 
-static void SetGPUHistogram(const ::ppapi::Preferences& prefs,
+static void SetGPUHistogram(const ppapi::Preferences& prefs,
                             const std::vector<std::string>& arg_names,
                             const std::vector<std::string>& arg_values) {
   // Calculate a histogram to let us determine how likely people are to try to
@@ -809,9 +809,9 @@ bool PepperPluginInstanceImpl::
       !(input_event_mask_ & event_class))
     return false;
 
-  ::ppapi::InputEventData event;
+  ppapi::InputEventData event;
   event.event_type = type;
-  event.event_time_stamp = ::ppapi::TimeTicksToPPTimeTicks(
+  event.event_time_stamp = ppapi::TimeTicksToPPTimeTicks(
       base::TimeTicks::Now());
 
   // Convert UTF16 text to UTF8 with offset conversion.
@@ -862,7 +862,7 @@ bool PepperPluginInstanceImpl::
   else
     handled = true;  // Unfiltered events are assumed to be handled.
   scoped_refptr<PPB_InputEvent_Shared> event_resource(
-      new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL, pp_instance(), event));
+      new PPB_InputEvent_Shared(ppapi::OBJECT_IS_IMPL, pp_instance(), event));
   handled |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
       pp_instance(), event_resource->pp_resource()));
   return handled;
@@ -963,7 +963,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
     if ((filtered_input_event_mask_ & event_class) ||
         (input_event_mask_ & event_class)) {
       // Actually send the event.
-      std::vector< ::ppapi::InputEventData > events;
+      std::vector< ppapi::InputEventData > events;
       CreateInputEventData(event, &events);
 
       // Allow the user gesture to be pending after the plugin handles the
@@ -971,7 +971,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
       // gesture after processing has finished here.
       if (WebUserGestureIndicator::isProcessingUserGesture()) {
         pending_user_gesture_ =
-            ::ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
+            ppapi::EventTimeToPPTimeTicks(event.timeStampSeconds);
         pending_user_gesture_token_ =
             WebUserGestureIndicator::currentUserGestureToken();
         pending_user_gesture_token_.setOutOfProcess();
@@ -984,7 +984,7 @@ bool PepperPluginInstanceImpl::HandleInputEvent(
         else
           rv = true;  // Unfiltered events are assumed to be handled.
         scoped_refptr<PPB_InputEvent_Shared> event_resource(
-            new PPB_InputEvent_Shared(::ppapi::OBJECT_IS_IMPL,
+            new PPB_InputEvent_Shared(ppapi::OBJECT_IS_IMPL,
                                       pp_instance(), events[i]));
 
         rv |= PP_ToBool(plugin_input_event_interface_->HandleInputEvent(
@@ -1327,7 +1327,7 @@ bool PepperPluginInstanceImpl::LoadPdfInterface() {
 
 bool PepperPluginInstanceImpl::LoadPrintInterface() {
   // Only check for the interface if the plugin has dev permission.
-  if (!module_->permissions().HasPermission(::ppapi::PERMISSION_DEV))
+  if (!module_->permissions().HasPermission(ppapi::PERMISSION_DEV))
     return false;
   if (!plugin_print_interface_) {
     plugin_print_interface_ = static_cast<const PPP_Printing_Dev*>(
@@ -1338,7 +1338,7 @@ bool PepperPluginInstanceImpl::LoadPrintInterface() {
 
 bool PepperPluginInstanceImpl::LoadPrivateInterface() {
   // Only check for the interface if the plugin has private permission.
-  if (!module_->permissions().HasPermission(::ppapi::PERMISSION_PRIVATE))
+  if (!module_->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
     return false;
   if (!plugin_private_interface_) {
     plugin_private_interface_ = static_cast<const PPP_Instance_Private*>(
@@ -1447,7 +1447,7 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
   last_sent_view_data_ = view_data_;
   ScopedPPResource resource(
       ScopedPPResource::PassRef(),
-      (new PPB_View_Shared(::ppapi::OBJECT_IS_IMPL,
+      (new PPB_View_Shared(ppapi::OBJECT_IS_IMPL,
                            pp_instance(), view_data_))->GetReference());
 
   instance_interface_->DidChangeView(pp_instance(), resource,
@@ -1670,7 +1670,7 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
   if (is_mouselock_pending && !IsMouseLocked()) {
     if (!IsProcessingUserGesture() &&
         !module_->permissions().HasPermission(
-            ::ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
+            ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
       lock_mouse_callback_->Run(PP_ERROR_NO_USER_GESTURE);
     } else {
       // Open a user gesture here so the Webkit user gesture checks will succeed
@@ -1703,7 +1703,7 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
 bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
                                               WebKit::WebCanvas* canvas) {
 #if defined(ENABLE_PRINTING)
-  ::ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
+  ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
   if (enter.failed())
     return false;
 
@@ -1850,8 +1850,7 @@ void PepperPluginInstanceImpl::RemovePluginObject(PluginObject* plugin_object) {
 }
 
 bool PepperPluginInstanceImpl::IsProcessingUserGesture() {
-  PP_TimeTicks now =
-      ::ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
+  PP_TimeTicks now = ppapi::TimeTicksToPPTimeTicks(base::TimeTicks::Now());
   // Give a lot of slack so tests won't be flaky.
   const PP_TimeTicks kUserGestureDurationInSeconds = 10.0;
   return pending_user_gesture_token_.hasGestures() &&
@@ -1973,7 +1972,7 @@ PP_Bool PepperPluginInstanceImpl::BindGraphics(PP_Instance instance,
   TRACE_EVENT0("ppapi", "PepperPluginInstanceImpl::BindGraphics");
   // The Graphics3D instance can't be destroyed until we call
   // UpdateLayer().
-  scoped_refptr< ::ppapi::Resource> old_graphics = bound_graphics_3d_.get();
+  scoped_refptr<ppapi::Resource> old_graphics = bound_graphics_3d_.get();
   if (bound_graphics_3d_.get()) {
     bound_graphics_3d_->BindToInstance(false);
     bound_graphics_3d_ = NULL;
@@ -2242,25 +2241,25 @@ PP_Bool PepperPluginInstanceImpl::GetScreenSize(PP_Instance instance,
   return PP_TRUE;
 }
 
-::ppapi::Resource* PepperPluginInstanceImpl::GetSingletonResource(
+ppapi::Resource* PepperPluginInstanceImpl::GetSingletonResource(
     PP_Instance instance,
-    ::ppapi::SingletonResourceID id) {
+    ppapi::SingletonResourceID id) {
   // Flash APIs and some others aren't implemented in-process.
   switch (id) {
-    case ::ppapi::BROKER_SINGLETON_ID:
-    case ::ppapi::BROWSER_FONT_SINGLETON_ID:
-    case ::ppapi::CRX_FILESYSTEM_SINGLETON_ID:
-    case ::ppapi::EXTENSIONS_COMMON_SINGLETON_ID:
-    case ::ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
-    case ::ppapi::FLASH_FILE_SINGLETON_ID:
-    case ::ppapi::FLASH_FULLSCREEN_SINGLETON_ID:
-    case ::ppapi::FLASH_SINGLETON_ID:
-    case ::ppapi::NETWORK_PROXY_SINGLETON_ID:
-    case ::ppapi::PDF_SINGLETON_ID:
-    case ::ppapi::TRUETYPE_FONT_SINGLETON_ID:
+    case ppapi::BROKER_SINGLETON_ID:
+    case ppapi::BROWSER_FONT_SINGLETON_ID:
+    case ppapi::CRX_FILESYSTEM_SINGLETON_ID:
+    case ppapi::EXTENSIONS_COMMON_SINGLETON_ID:
+    case ppapi::FLASH_CLIPBOARD_SINGLETON_ID:
+    case ppapi::FLASH_FILE_SINGLETON_ID:
+    case ppapi::FLASH_FULLSCREEN_SINGLETON_ID:
+    case ppapi::FLASH_SINGLETON_ID:
+    case ppapi::NETWORK_PROXY_SINGLETON_ID:
+    case ppapi::PDF_SINGLETON_ID:
+    case ppapi::TRUETYPE_FONT_SINGLETON_ID:
       NOTIMPLEMENTED();
       return NULL;
-    case ::ppapi::GAMEPAD_SINGLETON_ID:
+    case ppapi::GAMEPAD_SINGLETON_ID:
       return gamepad_impl_.get();
   }
 
@@ -2450,7 +2449,7 @@ PP_Var PepperPluginInstanceImpl::ResolveRelativeToDocument(
 
   WebElement plugin_element = container()->element();
   GURL document_url = plugin_element.document().baseURL();
-  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
+  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
       document_url.Resolve(relative_string->value()),
       components);
 }
@@ -2490,15 +2489,15 @@ PP_Var PepperPluginInstanceImpl::GetDocumentURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
   WebKit::WebDocument document = container()->element().document();
-  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(document.url(),
-                                                        components);
+  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(document.url(),
+                                                      components);
 }
 
 PP_Var PepperPluginInstanceImpl::GetPluginInstanceURL(
     PP_Instance instance,
     PP_URLComponents_Dev* components) {
-  return ::ppapi::PPB_URLUtil_Shared::GenerateURLReturn(plugin_url_,
-                                                        components);
+  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(plugin_url_,
+                                                      components);
 }
 
 PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(
@@ -2598,7 +2597,7 @@ WebKit::WebPluginContainer* PepperPluginInstanceImpl::GetContainer() {
   return container_;
 }
 
-::ppapi::VarTracker* PepperPluginInstanceImpl::GetVarTracker() {
+ppapi::VarTracker* PepperPluginInstanceImpl::GetVarTracker() {
   return HostGlobals::Get()->GetVarTracker();
 }
 
@@ -2651,7 +2650,7 @@ PP_Resource PepperPluginInstanceImpl::CreateImage(gfx::ImageSkia* source_image,
 
 PP_ExternalPluginResult PepperPluginInstanceImpl::SwitchToOutOfProcessProxy(
     const base::FilePath& file_path,
-    ::ppapi::PpapiPermissions permissions,
+    ppapi::PpapiPermissions permissions,
     const IPC::ChannelHandle& channel_handle,
     base::ProcessId plugin_pid,
     int plugin_child_id) {
@@ -2739,7 +2738,7 @@ bool PepperPluginInstanceImpl::IsRectTopmost(const gfx::Rect& rect) {
 }
 
 int32_t PepperPluginInstanceImpl::Navigate(
-    const ::ppapi::URLRequestInfoData& request,
+    const ppapi::URLRequestInfoData& request,
     const char* target,
     bool from_user_action) {
   if (!container_)
@@ -2750,7 +2749,7 @@ int32_t PepperPluginInstanceImpl::Navigate(
   if (!frame)
     return PP_ERROR_FAILED;
 
-  ::ppapi::URLRequestInfoData completed_request = request;
+  ppapi::URLRequestInfoData completed_request = request;
 
   WebURLRequest web_request;
   if (!CreateWebURLRequest(&completed_request, frame, &web_request))

@@ -292,7 +292,7 @@ PPVarArrayFromNPVariantArray::PPVarArrayFromNPVariantArray(
 }
 
 PPVarArrayFromNPVariantArray::~PPVarArrayFromNPVariantArray() {
-  ::ppapi::VarTracker* var_tracker = PpapiGlobals::Get()->GetVarTracker();
+  ppapi::VarTracker* var_tracker = PpapiGlobals::Get()->GetVarTracker();
   for (size_t i = 0; i < size_; i++)
     var_tracker->ReleaseVar(array_[i]);
 }
@@ -343,7 +343,7 @@ void TryCatch::SetException(const char* message) {
   if (!has_exception()) {
     has_exception_ = true;
     if (exception_) {
-      *exception_ = ::ppapi::StringVar::StringToPPVar(message, strlen(message));
+      *exception_ = ppapi::StringVar::StringToPPVar(message, strlen(message));
     }
   }
 }

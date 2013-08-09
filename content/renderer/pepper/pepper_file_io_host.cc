@@ -235,8 +235,8 @@ int32_t PepperFileIOHost::OnHostMsgOpen(
   // FileSystemDispatcher so it can handle doing the security check.
   int platform_file_flags = 0;
   open_flags_ = open_flags;
-  if (!::ppapi::PepperFileOpenFlagsToPlatformFileFlags(open_flags,
-                                                       &platform_file_flags)) {
+  if (!ppapi::PepperFileOpenFlagsToPlatformFileFlags(open_flags,
+                                                     &platform_file_flags)) {
     return PP_ERROR_BADARGUMENT;
   }
 
@@ -564,7 +564,7 @@ void PepperFileIOHost::ExecutePlatformGeneralCallback(
     ppapi::host::ReplyMessageContext reply_context,
     base::PlatformFileError error_code) {
   reply_context.params.set_result(
-      ::ppapi::PlatformFileErrorToPepperError(error_code));
+      ppapi::PlatformFileErrorToPepperError(error_code));
   host()->SendReply(reply_context, PpapiPluginMsg_FileIO_GeneralReply());
   state_manager_.SetOperationFinished();
 }
@@ -573,7 +573,7 @@ void PepperFileIOHost::ExecutePlatformOpenFileCallback(
     ppapi::host::ReplyMessageContext reply_context,
     base::PlatformFileError error_code,
     base::PassPlatformFile file) {
-  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
   if (pp_error == PP_OK)
     state_manager_.SetOpenSucceed();
 
@@ -628,7 +628,7 @@ void PepperFileIOHost::ExecutePlatformQueryCallback(
   ppapi::PlatformFileInfoToPepperFileInfo(file_info, file_system_type_,
                                           &pp_info);
 
-  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
   reply_context.params.set_result(pp_error);
   host()->SendReply(reply_context,
                     PpapiPluginMsg_FileIO_QueryReply(pp_info));
@@ -639,7 +639,7 @@ void PepperFileIOHost::ExecutePlatformReadCallback(
     ppapi::host::ReplyMessageContext reply_context,
     base::PlatformFileError error_code,
     const char* data, int bytes_read) {
-  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
 
   // Only send the amount of data in the string that was actually read.
   std::string buffer;
@@ -657,7 +657,7 @@ void PepperFileIOHost::ExecutePlatformWriteCallback(
   // On the plugin side, the callback expects a parameter with different meaning
   // depends on whether is negative or not. It is the result here. We translate
   // for the callback.
-  int32_t pp_error = ::ppapi::PlatformFileErrorToPepperError(error_code);
+  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
   reply_context.params.set_result(ErrorOrByteNumber(pp_error, bytes_written));
   host()->SendReply(reply_context, PpapiPluginMsg_FileIO_GeneralReply());
   state_manager_.SetOperationFinished();

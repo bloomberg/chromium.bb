@@ -84,7 +84,7 @@ bool AppendFileRefToBody(
 // Checks that the request data is valid. Returns false on failure. Note that
 // method and header validation is done by the URL loader when the request is
 // opened, and any access errors are returned asynchronously.
-bool ValidateURLRequestData(const ::ppapi::URLRequestInfoData& data) {
+bool ValidateURLRequestData(const ppapi::URLRequestInfoData& data) {
   if (data.prefetch_buffer_lower_threshold < 0 ||
       data.prefetch_buffer_upper_threshold < 0 ||
       data.prefetch_buffer_upper_threshold <=
@@ -96,7 +96,7 @@ bool ValidateURLRequestData(const ::ppapi::URLRequestInfoData& data) {
 
 // Ensures that the file_ref members of the given request info data are
 // populated from the resource IDs. Returns true on success.
-bool EnsureFileRefObjectsPopulated(::ppapi::URLRequestInfoData* data) {
+bool EnsureFileRefObjectsPopulated(ppapi::URLRequestInfoData* data) {
   // Get the Resource objects for any file refs with only host resource (this
   // is the state of the request as it comes off IPC).
   for (size_t i = 0; i < data->body.size(); ++i) {
@@ -114,7 +114,7 @@ bool EnsureFileRefObjectsPopulated(::ppapi::URLRequestInfoData* data) {
 
 }  // namespace
 
-bool CreateWebURLRequest(::ppapi::URLRequestInfoData* data,
+bool CreateWebURLRequest(ppapi::URLRequestInfoData* data,
                          WebFrame* frame,
                          WebURLRequest* dest) {
   // In the out-of-process case, we've received the URLRequestInfoData
@@ -190,8 +190,7 @@ bool CreateWebURLRequest(::ppapi::URLRequestInfoData* data,
   return true;
 }
 
-bool URLRequestRequiresUniversalAccess(
-    const ::ppapi::URLRequestInfoData& data) {
+bool URLRequestRequiresUniversalAccess(const ppapi::URLRequestInfoData& data) {
   return
       data.has_custom_referrer_url ||
       data.has_custom_content_transfer_encoding ||

@@ -31,7 +31,7 @@ namespace content {
 
 // Adds NPObject var tracking to the standard PPAPI VarTracker for use in the
 // renderer.
-class HostVarTracker : public ::ppapi::VarTracker {
+class HostVarTracker : public ppapi::VarTracker {
  public:
   HostVarTracker();
   virtual ~HostVarTracker();
@@ -40,14 +40,14 @@ class HostVarTracker : public ::ppapi::VarTracker {
   // NPObject and get the NPObjectVar corresponding to it. This Add/Remove
   // function is called by the NPObjectVar when it is created and
   // destroyed.
-  void AddNPObjectVar(::ppapi::NPObjectVar* object_var);
-  void RemoveNPObjectVar(::ppapi::NPObjectVar* object_var);
+  void AddNPObjectVar(ppapi::NPObjectVar* object_var);
+  void RemoveNPObjectVar(ppapi::NPObjectVar* object_var);
 
   // Looks up a previously registered NPObjectVar for the given NPObject and
   // instance. Returns NULL if there is no NPObjectVar corresponding to the
   // given NPObject for the given instance. See AddNPObjectVar above.
-  ::ppapi::NPObjectVar* NPObjectVarForNPObject(PP_Instance instance,
-                                               NPObject* np_object);
+  ppapi::NPObjectVar* NPObjectVarForNPObject(PP_Instance instance,
+                                             NPObject* np_object);
 
   // Returns the number of NPObjectVar's associated with the given instance.
   // Returns 0 if the instance isn't known.
@@ -67,17 +67,16 @@ class HostVarTracker : public ::ppapi::VarTracker {
 
  private:
   // VarTracker private implementation.
-  virtual ::ppapi::ArrayBufferVar* CreateArrayBuffer(
+  virtual ppapi::ArrayBufferVar* CreateArrayBuffer(
       uint32 size_in_bytes) OVERRIDE;
-  virtual ::ppapi::ArrayBufferVar* CreateShmArrayBuffer(
+  virtual ppapi::ArrayBufferVar* CreateShmArrayBuffer(
       uint32 size_in_bytes, base::SharedMemoryHandle handle) OVERRIDE;
 
   // Clear the reference count of the given object and remove it from
   // live_vars_.
-  void ForceReleaseNPObject(::ppapi::NPObjectVar* object_var);
+  void ForceReleaseNPObject(ppapi::NPObjectVar* object_var);
 
-  typedef std::map<NPObject*, ::ppapi::NPObjectVar*>
-      NPObjectToNPObjectVarMap;
+  typedef std::map<NPObject*, ppapi::NPObjectVar*> NPObjectToNPObjectVarMap;
 
   // Lists all known NPObjects, first indexed by the corresponding instance,
   // then by the NPObject*. This allows us to look up an NPObjectVar given

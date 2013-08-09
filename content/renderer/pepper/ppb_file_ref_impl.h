@@ -30,16 +30,16 @@ class ResourceHost;
 
 namespace content {
 
-using ::ppapi::StringVar;
+using ppapi::StringVar;
 
 class PepperFileSystemHost;
 
-class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared,
+class PPB_FileRef_Impl : public ppapi::PPB_FileRef_Shared,
                          public IPC::Listener {
  public:
-  PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
+  PPB_FileRef_Impl(const ppapi::PPB_FileRef_CreateInfo& info,
                    PP_Resource file_system);
-  PPB_FileRef_Impl(const ::ppapi::PPB_FileRef_CreateInfo& info,
+  PPB_FileRef_Impl(const ppapi::PPB_FileRef_CreateInfo& info,
                    const base::FilePath& external_file_path);
 
   // The returned object will have a refcount of 0 (just like "new").
@@ -57,29 +57,29 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared,
   virtual PP_Resource GetParent() OVERRIDE;
   virtual int32_t MakeDirectory(
       PP_Bool make_ancestors,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t Touch(
       PP_Time last_access_time,
       PP_Time last_modified_time,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t Delete(
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t Rename(
       PP_Resource new_file_ref,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t Query(
       PP_FileInfo* info,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t ReadDirectoryEntries(
       const PP_ArrayOutput& output,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t QueryInHost(
       linked_ptr<PP_FileInfo> info,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual int32_t ReadDirectoryEntriesInHost(
-      linked_ptr<std::vector< ::ppapi::PPB_FileRef_CreateInfo> > files,
+      linked_ptr<std::vector<ppapi::PPB_FileRef_CreateInfo> > files,
       linked_ptr<std::vector<PP_FileType> > file_types,
-      scoped_refptr< ::ppapi::TrackedCallback> callback) OVERRIDE;
+      scoped_refptr<ppapi::TrackedCallback> callback) OVERRIDE;
   virtual PP_Var GetAbsolutePath() OVERRIDE;
 
   PP_Resource file_system_resource() const { return file_system_; }
@@ -131,7 +131,7 @@ class PPB_FileRef_Impl : public ::ppapi::PPB_FileRef_Shared,
   // process (since PPB_FileRef_Proxy takes care of out-of-process case).
   // Also note that this workaround will be no longer needed after FileRef
   // refactoring.
-  ::ppapi::ScopedPPResource file_system_ref_;
+  ppapi::ScopedPPResource file_system_ref_;
 
   // Used only for external filesystems.
   base::FilePath external_file_system_path_;

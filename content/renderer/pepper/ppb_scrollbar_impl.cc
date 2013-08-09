@@ -151,7 +151,7 @@ PP_Bool PPB_Scrollbar_Impl::PaintInternal(const gfx::Rect& rect,
 }
 
 PP_Bool PPB_Scrollbar_Impl::HandleEventInternal(
-    const ::ppapi::InputEventData& data) {
+    const ppapi::InputEventData& data) {
   scoped_ptr<WebInputEvent> web_input_event(CreateWebInputEvent(data));
   if (!web_input_event.get() || !scrollbar_)
     return PP_FALSE;

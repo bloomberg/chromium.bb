@@ -15,15 +15,15 @@
 namespace content {
 
 class PPB_NetworkMonitor_Private_Impl
-    : public ::ppapi::Resource,
-      public ::ppapi::thunk::PPB_NetworkMonitor_Private_API,
+    : public ppapi::Resource,
+      public ppapi::thunk::PPB_NetworkMonitor_Private_API,
       public content::NetworkListObserver {
  public:
   static PP_Resource Create(PP_Instance instance,
                             PPB_NetworkMonitor_Callback callback,
                             void* user_data);
 
-  virtual ::ppapi::thunk::PPB_NetworkMonitor_Private_API*
+  virtual ppapi::thunk::PPB_NetworkMonitor_Private_API*
       AsPPB_NetworkMonitor_Private_API() OVERRIDE;
 
   // NetworkListObserver interface.

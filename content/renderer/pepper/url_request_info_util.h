@@ -23,13 +23,13 @@ namespace content {
 // on success, false if the request is invalid (in which case *dest may be
 // partially initialized). Any upload files with only resource IDs (no file ref
 // pointers) will be populated by this function on success.
-CONTENT_EXPORT bool CreateWebURLRequest(::ppapi::URLRequestInfoData* data,
+CONTENT_EXPORT bool CreateWebURLRequest(ppapi::URLRequestInfoData* data,
                                         WebKit::WebFrame* frame,
                                         WebKit::WebURLRequest* dest);
 
 // Returns true if universal access is required to use the given request.
 CONTENT_EXPORT bool URLRequestRequiresUniversalAccess(
-    const ::ppapi::URLRequestInfoData& data);
+    const ppapi::URLRequestInfoData& data);
 
 }  // namespace content
 

@@ -17,7 +17,7 @@ PPB_TCPSocket_Private_Impl::PPB_TCPSocket_Private_Impl(
     PP_Instance instance,
     uint32 socket_id,
     int routing_id)
-    : ::ppapi::TCPSocketPrivateImpl(instance, socket_id),
+    : ppapi::TCPSocketPrivateImpl(instance, socket_id),
       routing_id_(routing_id) {
   ChildThread::current()->AddRoute(routing_id, this);
 }
@@ -79,7 +79,7 @@ void PPB_TCPSocket_Private_Impl::SendDisconnect() {
 
 void PPB_TCPSocket_Private_Impl::SendSetOption(
     PP_TCPSocket_Option name,
-    const ::ppapi::SocketOptionData& value) {
+    const ppapi::SocketOptionData& value) {
   RenderThreadImpl::current()->Send(
       new PpapiHostMsg_PPBTCPSocket_SetOption(socket_id_, name, value));
 }

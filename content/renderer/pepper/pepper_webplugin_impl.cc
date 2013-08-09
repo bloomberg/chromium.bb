@@ -120,7 +120,7 @@ void PepperWebPluginImpl::destroy() {
     container_->clearScriptObjects();
 
   if (instance_.get()) {
-    ::ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
+    ppapi::PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(instance_object_);
     instance_object_ = PP_MakeUndefined();
     instance_->Delete();
     instance_ = NULL;

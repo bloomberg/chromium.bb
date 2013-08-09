@@ -22,13 +22,13 @@ namespace content {
 
 class PPB_ImageData_Impl;
 
-class PPB_Widget_Impl : public ::ppapi::Resource,
-                        public ::ppapi::thunk::PPB_Widget_API {
+class PPB_Widget_Impl : public ppapi::Resource,
+                        public ppapi::thunk::PPB_Widget_API {
  public:
   explicit PPB_Widget_Impl(PP_Instance instance);
 
   // Resource overrides.
-  virtual ::ppapi::thunk::PPB_Widget_API* AsPPB_Widget_API() OVERRIDE;
+  virtual ppapi::thunk::PPB_Widget_API* AsPPB_Widget_API() OVERRIDE;
 
   // PPB_WidgetAPI implementation.
   virtual PP_Bool Paint(const PP_Rect* rect, PP_Resource ) OVERRIDE;
@@ -45,7 +45,7 @@ class PPB_Widget_Impl : public ::ppapi::Resource,
 
   virtual PP_Bool PaintInternal(const gfx::Rect& rect,
                                 PPB_ImageData_Impl* image) = 0;
-  virtual PP_Bool HandleEventInternal(const ::ppapi::InputEventData& data) = 0;
+  virtual PP_Bool HandleEventInternal(const ppapi::InputEventData& data) = 0;
   virtual void SetLocationInternal(const PP_Rect* location) = 0;
 
   PP_Rect location() const { return location_; }

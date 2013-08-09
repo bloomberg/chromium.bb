@@ -17,10 +17,10 @@ namespace content {
 class PepperPluginInstanceImpl;
 class PluginModule;
 
-class HostGlobals : public ::ppapi::PpapiGlobals {
+class HostGlobals : public ppapi::PpapiGlobals {
  public:
   HostGlobals();
-  explicit HostGlobals(::ppapi::PpapiGlobals::PerThreadForTest);
+  explicit HostGlobals(ppapi::PpapiGlobals::PerThreadForTest);
   virtual ~HostGlobals();
 
   // Getter for the global singleton. Generally, you should use
@@ -32,13 +32,13 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
   }
 
   // PpapiGlobals implementation.
-  virtual ::ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
-  virtual ::ppapi::VarTracker* GetVarTracker() OVERRIDE;
-  virtual ::ppapi::CallbackTracker* GetCallbackTrackerForInstance(
+  virtual ppapi::ResourceTracker* GetResourceTracker() OVERRIDE;
+  virtual ppapi::VarTracker* GetVarTracker() OVERRIDE;
+  virtual ppapi::CallbackTracker* GetCallbackTrackerForInstance(
       PP_Instance instance) OVERRIDE;
-  virtual ::ppapi::thunk::PPB_Instance_API* GetInstanceAPI(
+  virtual ppapi::thunk::PPB_Instance_API* GetInstanceAPI(
       PP_Instance instance) OVERRIDE;
-  virtual ::ppapi::thunk::ResourceCreationAPI* GetResourceCreationAPI(
+  virtual ppapi::thunk::ResourceCreationAPI* GetResourceCreationAPI(
       PP_Instance instance) OVERRIDE;
   virtual PP_Module GetModuleForInstance(PP_Instance instance) OVERRIDE;
   virtual std::string GetCmdLine() OVERRIDE;
@@ -52,7 +52,7 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
                                       PP_LogLevel level,
                                       const std::string& source,
                                       const std::string& value) OVERRIDE;
-  virtual ::ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
+  virtual ppapi::MessageLoopShared* GetCurrentMessageLoop() OVERRIDE;
   virtual base::TaskRunner* GetFileTaskRunner(PP_Instance instance) OVERRIDE;
 
   HostVarTracker* host_var_tracker() {
@@ -96,7 +96,7 @@ class HostGlobals : public ::ppapi::PpapiGlobals {
 
   static HostGlobals* host_globals_;
 
-  ::ppapi::ResourceTracker resource_tracker_;
+  ppapi::ResourceTracker resource_tracker_;
   HostVarTracker host_var_tracker_;
 
   // Tracks all live instances and their associated object.

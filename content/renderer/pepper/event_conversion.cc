@@ -609,7 +609,7 @@ WebInputEvent* CreateWebInputEvent(const InputEventData& event) {
 // Generate a coherent sequence of input events to simulate a user event.
 // From src/third_party/WebKit/Tools/DumpRenderTree/chromium/EventSender.cpp.
 std::vector<linked_ptr<WebInputEvent> > CreateSimulatedWebInputEvents(
-    const ::ppapi::InputEventData& event,
+    const ppapi::InputEventData& event,
     int plugin_x,
     int plugin_y) {
   std::vector<linked_ptr<WebInputEvent> > events;

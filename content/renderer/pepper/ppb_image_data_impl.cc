@@ -21,13 +21,13 @@
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "ui/surface/transport_dib.h"
 
-using ::ppapi::thunk::PPB_ImageData_API;
+using ppapi::thunk::PPB_ImageData_API;
 
 namespace content {
 
 PPB_ImageData_Impl::PPB_ImageData_Impl(PP_Instance instance,
                                        PPB_ImageData_Shared::ImageDataType type)
-    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
+    : Resource(ppapi::OBJECT_IS_IMPL, instance),
       format_(PP_IMAGEDATAFORMAT_BGRA_PREMUL),
       width_(0),
       height_(0) {

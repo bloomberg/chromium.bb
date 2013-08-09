@@ -12,7 +12,7 @@
 namespace content {
 class PlatformContext3D;
 
-class PPB_Graphics3D_Impl : public ::ppapi::PPB_Graphics3D_Shared {
+class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
  public:
   static PP_Resource Create(PP_Instance instance,
                             PP_Resource share_context,

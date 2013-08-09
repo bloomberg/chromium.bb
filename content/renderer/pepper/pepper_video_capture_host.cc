@@ -176,7 +176,7 @@ void PepperVideoCaptureHost::OnDeviceInfoReceived(
   // for sending below.
   std::vector<HostResource> buffer_host_resources;
   buffers_.reserve(buffer_count_hint_);
-  ::ppapi::ResourceTracker* tracker =
+  ppapi::ResourceTracker* tracker =
       HostGlobals::Get()->GetResourceTracker();
   ppapi::proxy::HostDispatcher* dispatcher =
       ppapi::proxy::HostDispatcher::GetForInstance(pp_instance());
@@ -330,7 +330,7 @@ int32_t PepperVideoCaptureHost::Close() {
 }
 
 void PepperVideoCaptureHost::ReleaseBuffers() {
-  ::ppapi::ResourceTracker* tracker = HostGlobals::Get()->GetResourceTracker();
+  ppapi::ResourceTracker* tracker = HostGlobals::Get()->GetResourceTracker();
   for (size_t i = 0; i < buffers_.size(); ++i) {
     buffers_[i].buffer->Unmap();
     tracker->ReleaseResource(buffers_[i].buffer->pp_resource());

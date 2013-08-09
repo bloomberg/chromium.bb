@@ -412,10 +412,10 @@ PP_Var CreateObjectWithModuleDeprecated(PP_Module pp_module,
 // static
 const PPB_Var_Deprecated* PPB_Var_Deprecated_Impl::GetVarDeprecatedInterface() {
   static const PPB_Var_Deprecated var_deprecated_interface = {
-    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->AddRef,
-    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->Release,
-    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarFromUtf8,
-    ::ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarToUtf8,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->AddRef,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->Release,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarFromUtf8,
+    ppapi::PPB_Var_Shared::GetVarInterface1_0()->VarToUtf8,
     &HasPropertyDeprecated,
     &HasMethodDeprecated,
     &GetProperty,

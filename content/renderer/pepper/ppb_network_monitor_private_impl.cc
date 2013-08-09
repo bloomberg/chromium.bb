@@ -44,7 +44,7 @@ PPB_NetworkMonitor_Private_Impl::PPB_NetworkMonitor_Private_Impl(
     PP_Instance instance,
     PPB_NetworkMonitor_Callback callback,
     void* user_data)
-    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
+    : Resource(ppapi::OBJECT_IS_IMPL, instance),
       callback_(callback),
       user_data_(user_data),
       started_(false) {
@@ -66,7 +66,7 @@ PP_Resource PPB_NetworkMonitor_Private_Impl::Create(
   return result->GetReference();
 }
 
-::ppapi::thunk::PPB_NetworkMonitor_Private_API*
+ppapi::thunk::PPB_NetworkMonitor_Private_API*
 PPB_NetworkMonitor_Private_Impl::AsPPB_NetworkMonitor_Private_API() {
   return this;
 }
@@ -78,14 +78,14 @@ bool PPB_NetworkMonitor_Private_Impl::Start() {
 
 void PPB_NetworkMonitor_Private_Impl::OnNetworkListChanged(
     const net::NetworkInterfaceList& list) {
-  ::ppapi::NetworkList list_copy(list.size());
+  ppapi::NetworkList list_copy(list.size());
   for (size_t i = 0; i < list.size(); ++i) {
-    ::ppapi::NetworkInfo& network = list_copy.at(i);
+    ppapi::NetworkInfo& network = list_copy.at(i);
     network.name = list[i].name;
 
     network.addresses.resize(
-        1, ::ppapi::NetAddressPrivateImpl::kInvalidNetAddress);
-    bool result = ::ppapi::NetAddressPrivateImpl::IPEndPointToNetAddress(
+        1, ppapi::NetAddressPrivateImpl::kInvalidNetAddress);
+    bool result = ppapi::NetAddressPrivateImpl::IPEndPointToNetAddress(
         list[i].address, 0, &(network.addresses[0]));
     DCHECK(result);
 
@@ -97,11 +97,11 @@ void PPB_NetworkMonitor_Private_Impl::OnNetworkListChanged(
     network.display_name = list[i].name;
     network.mtu = 0;
   }
-  scoped_refptr< ::ppapi::NetworkListStorage> list_storage(
-      new ::ppapi::NetworkListStorage(list_copy));
+  scoped_refptr<ppapi::NetworkListStorage> list_storage(
+      new ppapi::NetworkListStorage(list_copy));
   PP_Resource list_resource =
-      ::ppapi::PPB_NetworkList_Private_Shared::Create(
-          ::ppapi::OBJECT_IS_IMPL, pp_instance(), list_storage);
+      ppapi::PPB_NetworkList_Private_Shared::Create(
+          ppapi::OBJECT_IS_IMPL, pp_instance(), list_storage);
   callback_(user_data_, list_resource);
 }
 

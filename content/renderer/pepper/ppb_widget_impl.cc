@@ -21,7 +21,7 @@ using ppapi::thunk::PPB_Widget_API;
 namespace content {
 
 PPB_Widget_Impl::PPB_Widget_Impl(PP_Instance instance)
-    : Resource(::ppapi::OBJECT_IS_IMPL, instance),
+    : Resource(ppapi::OBJECT_IS_IMPL, instance),
       scale_(1.0f) {
   memset(&location_, 0, sizeof(location_));
 }

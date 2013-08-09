@@ -68,7 +68,7 @@ class RendererPpapiHostImpl : public RendererPpapiHost {
   // host impl should outlive the returned pointer. Since the resource
   // creation object is associated with the instance, this will generally
   // happen automatically.
-  scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
+  scoped_ptr<ppapi::thunk::ResourceCreationAPI>
       CreateInProcessResourceCreationAPI(PepperPluginInstanceImpl* instance);
 
   PepperPluginInstanceImpl* GetPluginInstanceImpl(PP_Instance instance) const;

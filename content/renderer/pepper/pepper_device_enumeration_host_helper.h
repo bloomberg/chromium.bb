@@ -43,7 +43,7 @@ class CONTENT_EXPORT PepperDeviceEnumerationHostHelper {
     typedef base::Callback<
         void (int /* request_id */,
               bool /* succeeded */,
-              const std::vector< ::ppapi::DeviceRefData>& /* devices */)>
+              const std::vector<ppapi::DeviceRefData>& /* devices */)>
         EnumerateDevicesCallback;
 
     // Enumerates devices of the specified type. The request ID passed into the

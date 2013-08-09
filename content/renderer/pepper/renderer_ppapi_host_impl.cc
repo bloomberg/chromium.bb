@@ -114,10 +114,10 @@ RendererPpapiHostImpl* RendererPpapiHostImpl::GetForPPInstance(
   return instance->module()->renderer_ppapi_host();
 }
 
-scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>
+scoped_ptr<ppapi::thunk::ResourceCreationAPI>
 RendererPpapiHostImpl::CreateInProcessResourceCreationAPI(
     PepperPluginInstanceImpl* instance) {
-  return scoped_ptr< ::ppapi::thunk::ResourceCreationAPI>(
+  return scoped_ptr<ppapi::thunk::ResourceCreationAPI>(
       new PepperInProcessResourceCreation(this, instance));
 }
 

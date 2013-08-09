@@ -77,15 +77,15 @@ WebConsoleMessage MakeLogMessage(PP_LogLevel level,
 HostGlobals* HostGlobals::host_globals_ = NULL;
 
 HostGlobals::HostGlobals()
-    : ::ppapi::PpapiGlobals(),
+    : ppapi::PpapiGlobals(),
       resource_tracker_(ResourceTracker::SINGLE_THREADED) {
   DCHECK(!host_globals_);
   host_globals_ = this;
 }
 
 HostGlobals::HostGlobals(
-    ::ppapi::PpapiGlobals::PerThreadForTest per_thread_for_test)
-    : ::ppapi::PpapiGlobals(per_thread_for_test),
+    ppapi::PpapiGlobals::PerThreadForTest per_thread_for_test)
+    : ppapi::PpapiGlobals(per_thread_for_test),
       resource_tracker_(ResourceTracker::SINGLE_THREADED) {
   DCHECK(!host_globals_);
 }
@@ -95,15 +95,15 @@ HostGlobals::~HostGlobals() {
   host_globals_ = NULL;
 }
 
-::ppapi::ResourceTracker* HostGlobals::GetResourceTracker() {
+ppapi::ResourceTracker* HostGlobals::GetResourceTracker() {
   return &resource_tracker_;
 }
 
-::ppapi::VarTracker* HostGlobals::GetVarTracker() {
+ppapi::VarTracker* HostGlobals::GetVarTracker() {
   return &host_var_tracker_;
 }
 
-::ppapi::CallbackTracker* HostGlobals::GetCallbackTrackerForInstance(
+ppapi::CallbackTracker* HostGlobals::GetCallbackTrackerForInstance(
     PP_Instance instance) {
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
@@ -111,13 +111,13 @@ HostGlobals::~HostGlobals() {
   return found->second->module()->GetCallbackTracker().get();
 }
 
-::ppapi::thunk::PPB_Instance_API* HostGlobals::GetInstanceAPI(
+ppapi::thunk::PPB_Instance_API* HostGlobals::GetInstanceAPI(
     PP_Instance instance) {
   // The InstanceAPI is just implemented by the PluginInstance object.
   return GetInstance(instance);
 }
 
-::ppapi::thunk::ResourceCreationAPI* HostGlobals::GetResourceCreationAPI(
+ppapi::thunk::ResourceCreationAPI* HostGlobals::GetResourceCreationAPI(
     PP_Instance pp_instance) {
   PepperPluginInstanceImpl* instance = GetInstance(pp_instance);
   if (!instance)
@@ -189,7 +189,7 @@ base::TaskRunner* HostGlobals::GetFileTaskRunner(PP_Instance instance) {
   return RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get();
 }
 
-::ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {
+ppapi::MessageLoopShared* HostGlobals::GetCurrentMessageLoop() {
   return NULL;
 }
 
@@ -205,7 +205,7 @@ PP_Module HostGlobals::AddModule(PluginModule* module) {
   PP_Module new_module;
   do {
     new_module = MakeTypedId(static_cast<PP_Module>(base::RandUint64()),
-                             ::ppapi::PP_ID_TYPE_MODULE);
+                             ppapi::PP_ID_TYPE_MODULE);
   } while (!new_module ||
            module_map_.find(new_module) != module_map_.end());
   module_map_[new_module] = module;
@@ -213,7 +213,7 @@ PP_Module HostGlobals::AddModule(PluginModule* module) {
 }
 
 void HostGlobals::ModuleDeleted(PP_Module module) {
-  DLOG_IF(ERROR, !CheckIdType(module, ::ppapi::PP_ID_TYPE_MODULE))
+  DLOG_IF(ERROR, !CheckIdType(module, ppapi::PP_ID_TYPE_MODULE))
       << module << " is not a PP_Module.";
   ModuleMap::iterator found = module_map_.find(module);
   if (found == module_map_.end()) {
@@ -224,7 +224,7 @@ void HostGlobals::ModuleDeleted(PP_Module module) {
 }
 
 PluginModule* HostGlobals::GetModule(PP_Module module) {
-  DLOG_IF(ERROR, !CheckIdType(module, ::ppapi::PP_ID_TYPE_MODULE))
+  DLOG_IF(ERROR, !CheckIdType(module, ppapi::PP_ID_TYPE_MODULE))
       << module << " is not a PP_Module.";
   ModuleMap::iterator found = module_map_.find(module);
   if (found == module_map_.end())
@@ -242,7 +242,7 @@ PP_Instance HostGlobals::AddInstance(PepperPluginInstanceImpl* instance) {
   PP_Instance new_instance;
   do {
     new_instance = MakeTypedId(static_cast<PP_Instance>(base::RandUint64()),
-                               ::ppapi::PP_ID_TYPE_INSTANCE);
+                               ppapi::PP_ID_TYPE_INSTANCE);
   } while (!new_instance ||
            instance_map_.find(new_instance) != instance_map_.end() ||
            !instance->module()->ReserveInstanceID(new_instance));
@@ -265,7 +265,7 @@ void HostGlobals::InstanceCrashed(PP_Instance instance) {
 }
 
 PepperPluginInstanceImpl* HostGlobals::GetInstance(PP_Instance instance) {
-  DLOG_IF(ERROR, !CheckIdType(instance, ::ppapi::PP_ID_TYPE_INSTANCE))
+  DLOG_IF(ERROR, !CheckIdType(instance, ppapi::PP_ID_TYPE_INSTANCE))
       << instance << " is not a PP_Instance.";
   InstanceMap::iterator found = instance_map_.find(instance);
   if (found == instance_map_.end())
