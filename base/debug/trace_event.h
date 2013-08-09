@@ -17,13 +17,14 @@
 // Events are issued against categories. Whereas LOG's
 // categories are statically defined, TRACE categories are created
 // implicitly with a string. For example:
-//   TRACE_EVENT_INSTANT0("MY_SUBSYSTEM", "SomeImportantEvent")
+//   TRACE_EVENT_INSTANT0("MY_SUBSYSTEM", "SomeImportantEvent",
+//                        TRACE_EVENT_SCOPE_THREAD)
 //
 // It is often the case that one trace may belong in multiple categories at the
 // same time. The first argument to the trace can be a comma-separated list of
 // categories, forming a category group, like:
 //
-// TRACE_EVENT_INSTANT0("input,views", "OnMouseOver")
+// TRACE_EVENT_INSTANT0("input,views", "OnMouseOver", TRACE_EVENT_SCOPE_THREAD)
 //
 // We can enable/disable tracing of OnMouseOver by enabling/disabling either
 // category.
@@ -97,7 +98,7 @@
 // This indicates to the tracing UI that these counters should be displayed
 // in a single graph, as a summed area chart.
 //
-// Since counters are in a global namespace, you may want to disembiguate with a
+// Since counters are in a global namespace, you may want to disambiguate with a
 // unique ID, by using the TRACE_COUNTER_ID* variations.
 //
 // By default, trace collection is compiled in, but turned off at runtime.
@@ -132,7 +133,7 @@
 //                  "arg1", std::string("string will be copied"));
 //
 //
-// Convertable notes:
+// Convertible notes:
 // Converting a large data type to a string can be costly. To help with this,
 // the trace framework provides an interface ConvertableToTraceFormat. If you
 // inherit from it and implement the AppendAsTraceFormat method the trace
@@ -183,7 +184,7 @@
 // again under lock.
 //
 // Without the use of these static category pointers and enabled flags all
-// trace points would carry a significant performance cost of aquiring a lock
+// trace points would carry a significant performance cost of acquiring a lock
 // and resolving the category.
 
 #ifndef BASE_DEBUG_TRACE_EVENT_H_
@@ -688,7 +689,7 @@
         category_group, name, id, TRACE_EVENT_FLAG_COPY, \
         arg1_name, arg1_val, arg2_name, arg2_val)
 
-// Macros to track the life time and value of arbitratry client objects.
+// Macros to track the life time and value of arbitrary client objects.
 // See also TraceTrackableObject.
 #define TRACE_EVENT_OBJECT_CREATED_WITH_ID(category_group, name, id) \
     INTERNAL_TRACE_EVENT_ADD_WITH_ID(TRACE_EVENT_PHASE_CREATE_OBJECT, \
@@ -803,7 +804,7 @@ TRACE_EVENT_API_CLASS_EXPORT extern \
 
 // Implementation detail: trace event macros create temporary variables
 // to keep instrumentation overhead low. These macros give each temporary
-// variable a unique name based on the line number to prevent name collissions.
+// variable a unique name based on the line number to prevent name collisions.
 #define INTERNAL_TRACE_EVENT_UID3(a,b) \
     trace_event_unique_##a##b
 #define INTERNAL_TRACE_EVENT_UID2(a,b) \

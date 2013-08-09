@@ -55,7 +55,7 @@ class ConvertableToTraceFormat {
   virtual ~ConvertableToTraceFormat() {}
 
   // Append the class info to the provided |out| string. The appended
-  // data must be a valid JSON object. Strings must be propertly quoted, and
+  // data must be a valid JSON object. Strings must be properly quoted, and
   // escaped. There is no processing applied to the content after it is
   // appended.
   virtual void AppendAsTraceFormat(std::string* out) const = 0;
@@ -65,7 +65,7 @@ const int kTraceMaxNumArgs = 2;
 
 // Output records are "Events" and can be obtained via the
 // OutputCallback whenever the tracing system decides to flush. This
-// can happen at any time, on any thread, or you can programatically
+// can happen at any time, on any thread, or you can programmatically
 // force it to happen.
 class BASE_EXPORT TraceEvent {
  public:
@@ -291,7 +291,7 @@ class BASE_EXPORT TraceLog {
     // Enable the sampling profiler.
     ENABLE_SAMPLING = 1 << 2,
 
-    // Echo to console. Events are discared.
+    // Echo to console. Events are discarded.
     ECHO_TO_CONSOLE = 1 << 3
   };
 
@@ -357,8 +357,8 @@ class BASE_EXPORT TraceLog {
   typedef base::Callback<void(int)> NotificationCallback;
   void SetNotificationCallback(const NotificationCallback& cb);
 
-  // Not using base::Callback because of its limited by 7 parameteters.
-  // Also, using primitive type allows directly passsing callback from WebCore.
+  // Not using base::Callback because of its limited by 7 parameters.
+  // Also, using primitive type allows directly passing callback from WebCore.
   // WARNING: It is possible for the previously set callback to be called
   // after a call to SetEventCallback() that replaces or clears the callback.
   // This callback may be invoked on any thread.
@@ -511,7 +511,7 @@ class BASE_EXPORT TraceLog {
     inline ~NotificationHelper();
 
     // Called only while TraceLog::lock_ is held. This ORs the given
-    // notification with any existing notifcations.
+    // notification with any existing notifications.
     inline void AddNotificationWhileLocked(int notification);
 
     // Called only while TraceLog::lock_ is NOT held. If there are any pending
