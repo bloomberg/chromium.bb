@@ -92,6 +92,8 @@ private:
     const char* m_characters;
 };
 
+// You can find documentation about this class in this doc:
+// https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT String {
 public:
     // Construct a null string, distinguishable from an empty string.

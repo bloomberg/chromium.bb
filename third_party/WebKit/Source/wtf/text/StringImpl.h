@@ -100,6 +100,8 @@ void removeStringForStats(StringImpl*);
 #define STRING_STATS_REMOVE_STRING(string) ((void)0)
 #endif
 
+// You can find documentation about this class in this doc:
+// https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT StringImpl {
     WTF_MAKE_NONCOPYABLE(StringImpl);
     WTF_MAKE_FAST_ALLOCATED;
