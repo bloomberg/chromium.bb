@@ -185,6 +185,15 @@ class MetadataDatabaseTest : public testing::Test {
     return "file_id_" + base::Int64ToString(next_file_id_number_++);
   }
 
+  int64 GetTrackerIDByFileID(const std::string& file_id) {
+    TrackerSet trackers;
+    if (metadata_database_->FindTrackersByFileID(file_id, &trackers)) {
+      EXPECT_FALSE(trackers.empty());
+      return (*trackers.begin())->tracker_id();
+    }
+    return 0;
+  }
+
   SyncStatusCode InitializeMetadataDatabase() {
     SyncStatusCode status = SYNC_STATUS_UNKNOWN;
     MetadataDatabase::Create(base::MessageLoopProxy::current(),
@@ -291,6 +300,68 @@ class MetadataDatabaseTest : public testing::Test {
     tracker.set_needs_folder_listing(false);
     *tracker.mutable_synced_details() = file.details();
     return tracker;
+  }
+
+  scoped_ptr<google_apis::ChangeResource> CreateChangeResourceFromMetadata(
+      const FileMetadata& file) {
+    scoped_ptr<google_apis::ChangeResource> change(
+        new google_apis::ChangeResource);
+    change->set_change_id(file.details().change_id());
+    change->set_file_id(file.file_id());
+    change->set_deleted(file.details().deleted());
+    if (change->is_deleted())
+      return change.Pass();
+
+    scoped_ptr<google_apis::FileResource> file_resource(
+        new google_apis::FileResource);
+    ScopedVector<google_apis::ParentReference> parents;
+    for (int i = 0; i < file.details().parent_folder_ids_size(); ++i) {
+      scoped_ptr<google_apis::ParentReference> parent(
+          new google_apis::ParentReference);
+      parent->set_file_id(file.details().parent_folder_ids(i));
+      parents.push_back(parent.release());
+    }
+
+    file_resource->set_file_id(file.file_id());
+    file_resource->set_parents(&parents);
+    file_resource->set_title(file.details().title());
+    if (file.details().kind() == KIND_FOLDER)
+      file_resource->set_mime_type("application/vnd.google-apps.folder");
+    else if (file.details().kind() == KIND_FILE)
+      file_resource->set_mime_type("text/plain");
+    else
+      file_resource->set_mime_type("application/vnd.google-apps.document");
+    file_resource->set_md5_checksum(file.details().md5());
+    file_resource->set_etag(file.details().etag());
+    file_resource->set_created_date(base::Time::FromInternalValue(
+        file.details().creation_time()));
+    file_resource->set_modified_date(base::Time::FromInternalValue(
+        file.details().modification_time()));
+
+    change->set_file(file_resource.Pass());
+    return change.Pass();
+  }
+
+  void ApplyRenameChangeToMetadata(const std::string& new_title,
+                                   FileMetadata* file) {
+    FileDetails* details = file->mutable_details();
+    details->set_title(new_title);
+    details->set_change_id(next_change_id_++);
+  }
+
+  void ApplyReorganizeChangeToMetadata(const std::string& new_parent,
+                                       FileMetadata* file) {
+    FileDetails* details = file->mutable_details();
+    details->clear_parent_folder_ids();
+    details->add_parent_folder_ids(new_parent);
+    details->set_change_id(next_change_id_++);
+  }
+
+  void ApplyContentChangeToMetadata(FileMetadata* file) {
+    FileDetails* details = file->mutable_details();
+    details->set_md5(
+        "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
+    details->set_change_id(next_change_id_++);
   }
 
   void PushToChangeList(scoped_ptr<google_apis::ChangeResource> change,
@@ -594,6 +665,169 @@ TEST_F(MetadataDatabaseTest, AppManagementTest) {
   EXPECT_FALSE(metadata_database()->FindFileByFileID(file.file_id(), NULL));
   EXPECT_FALSE(metadata_database()->FindTrackerByTrackerID(
       file_tracker.tracker_id(), NULL));
+  VerifyReloadConsistency();
+}
+
+TEST_F(MetadataDatabaseTest, BuildPathTest) {
+  FileMetadata sync_root(CreateSyncRootMetadata());
+  FileTracker sync_root_tracker(CreateSyncRootTracker(sync_root));
+
+  FileMetadata app_root(CreateFolderMetadata(sync_root, "app_id"));
+  FileTracker app_root_tracker(
+      CreateTracker(sync_root_tracker, app_root));
+  app_root_tracker.set_app_id(app_root.details().title());
+  app_root_tracker.set_is_app_root(true);
+
+  FileMetadata folder(CreateFolderMetadata(app_root, "folder"));
+  FileTracker folder_tracker(CreateTracker(app_root_tracker, folder));
+
+  FileMetadata file(CreateFolderMetadata(folder, "file"));
+  FileTracker file_tracker(CreateTracker(folder_tracker, file));
+
+  FileMetadata inactive_folder(CreateFolderMetadata(app_root, "folder"));
+  FileTracker inactive_folder_tracker(CreateTracker(app_root_tracker,
+                                                          inactive_folder));
+  inactive_folder_tracker.set_active(false);
+
+  {
+    scoped_ptr<leveldb::DB> db = InitializeLevelDB();
+    ASSERT_TRUE(db);
+
+    EXPECT_TRUE(PutFileToDB(db.get(), sync_root).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), sync_root_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), app_root).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), app_root_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), folder).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), folder_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), file).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), file_tracker).ok());
+  }
+
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+
+  base::FilePath path;
+  EXPECT_FALSE(metadata_database()->BuildPathForTracker(
+      sync_root_tracker.tracker_id(), &path));
+  EXPECT_TRUE(metadata_database()->BuildPathForTracker(
+      app_root_tracker.tracker_id(), &path));
+  EXPECT_EQ(base::FilePath(FPL("/")).NormalizePathSeparators(), path);
+  EXPECT_TRUE(metadata_database()->BuildPathForTracker(
+      file_tracker.tracker_id(), &path));
+  EXPECT_EQ(base::FilePath(FPL("/folder/file")).NormalizePathSeparators(),
+            path);
+}
+
+TEST_F(MetadataDatabaseTest, UpdateByChangeListTest) {
+  FileMetadata sync_root(CreateSyncRootMetadata());
+  FileTracker sync_root_tracker(CreateSyncRootTracker(sync_root));
+
+  FileMetadata app_root(CreateFolderMetadata(sync_root, "app_id"));
+  FileTracker app_root_tracker(
+      CreateTracker(sync_root_tracker, app_root));
+
+  FileMetadata disabled_app_root(
+      CreateFolderMetadata(sync_root, "disabled_app"));
+  FileTracker disabled_app_root_tracker(
+      CreateTracker(sync_root_tracker, disabled_app_root));
+
+  FileMetadata file(CreateFileMetadata(app_root, "file"));
+  FileTracker file_tracker(CreateTracker(app_root_tracker, file));
+
+  FileMetadata renamed_file(CreateFileMetadata(app_root, "to be renamed"));
+  FileTracker renamed_file_tracker(
+      CreateTracker(app_root_tracker, renamed_file));
+
+  FileMetadata folder(CreateFolderMetadata(app_root, "folder"));
+  FileTracker folder_tracker(CreateTracker(app_root_tracker, folder));
+
+  FileMetadata reorganized_file(
+      CreateFileMetadata(app_root, "to be reorganized"));
+  FileTracker reorganized_file_tracker(
+      CreateTracker(app_root_tracker, reorganized_file));
+
+  FileMetadata updated_file(CreateFileMetadata(app_root, "to be updated"));
+  FileTracker updated_file_tracker(
+      CreateTracker(app_root_tracker, updated_file));
+
+  FileMetadata noop_file(CreateFileMetadata(app_root, "have noop change"));
+  FileTracker noop_file_tracker(
+      CreateTracker(app_root_tracker, noop_file));
+
+  FileMetadata new_file(CreateFileMetadata(app_root, "to be added later"));
+
+  {
+    scoped_ptr<leveldb::DB> db = InitializeLevelDB();
+    ASSERT_TRUE(db);
+
+    EXPECT_TRUE(PutFileToDB(db.get(), sync_root).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), sync_root_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), app_root).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), app_root_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), disabled_app_root).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), disabled_app_root_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), file).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), file_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), renamed_file).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), renamed_file_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), folder).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), folder_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), reorganized_file).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), reorganized_file_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), updated_file).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), updated_file_tracker).ok());
+    EXPECT_TRUE(PutFileToDB(db.get(), noop_file).ok());
+    EXPECT_TRUE(PutTrackerToDB(db.get(), noop_file_tracker).ok());
+  }
+
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+
+  ApplyRenameChangeToMetadata("renamed", &renamed_file);
+  ApplyReorganizeChangeToMetadata(folder.file_id(), &reorganized_file);
+  ApplyContentChangeToMetadata(&updated_file);
+
+  ScopedVector<google_apis::ChangeResource> changes;
+  PushToChangeList(CreateChangeResourceFromMetadata(renamed_file), &changes);
+  PushToChangeList(CreateChangeResourceFromMetadata(
+      reorganized_file), &changes);
+  PushToChangeList(CreateChangeResourceFromMetadata(updated_file), &changes);
+  PushToChangeList(CreateChangeResourceFromMetadata(noop_file), &changes);
+  PushToChangeList(CreateChangeResourceFromMetadata(new_file), &changes);
+
+  renamed_file_tracker.set_dirty(true);
+  reorganized_file_tracker.set_dirty(true);
+  updated_file_tracker.set_dirty(true);
+  noop_file_tracker.set_dirty(true);
+
+  EXPECT_EQ(SYNC_STATUS_OK, UpdateByChangeList(changes.Pass()));
+
+  FileTracker new_file_tracker(CreateTracker(app_root_tracker, new_file));
+  new_file_tracker.set_tracker_id(GetTrackerIDByFileID(new_file.file_id()));
+  new_file_tracker.clear_synced_details();
+  new_file_tracker.set_active(false);
+  new_file_tracker.set_dirty(true);
+  EXPECT_NE(0, new_file_tracker.tracker_id());
+
+  VerifyFile(sync_root);
+  VerifyTracker(sync_root_tracker);
+  VerifyFile(app_root);
+  VerifyTracker(app_root_tracker);
+  VerifyFile(disabled_app_root);
+  VerifyTracker(disabled_app_root_tracker);
+  VerifyFile(file);
+  VerifyTracker(file_tracker);
+  VerifyFile(renamed_file);
+  VerifyTracker(renamed_file_tracker);
+  VerifyFile(folder);
+  VerifyTracker(folder_tracker);
+  VerifyFile(reorganized_file);
+  VerifyTracker(reorganized_file_tracker);
+  VerifyFile(updated_file);
+  VerifyTracker(updated_file_tracker);
+  VerifyFile(noop_file);
+  VerifyTracker(noop_file_tracker);
+  VerifyFile(new_file);
+  VerifyTracker(new_file_tracker);
+
   VerifyReloadConsistency();
 }
 

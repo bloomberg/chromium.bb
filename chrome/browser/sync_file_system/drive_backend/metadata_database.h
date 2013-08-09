@@ -42,21 +42,41 @@ class FileTracker;
 class ServiceMetadata;
 struct DatabaseContents;
 
-// MetadataDatabase instance holds and maintains database and its indexes.  The
-// database holds metadata of the server-side files/folders as
-// DriveFileMetadata instances.
+// MetadataDatabase holds and maintains a LevelDB instance and its indexes,
+// which holds 1)ServiceMetadata, 2)FileMetadata and 3)FileTracker.
+// 1) ServiceMetadata is a singleton in the database which holds information for
+//    the backend.
+// 2) FileMetadata represents a remote-side file and holds latest known
+//    metadata of the remote file.
+// 3) FileTracker represents a synced or to-be-synced file and maintains
+//    the local-side folder tree.
+//
 // The term "file" includes files, folders and other resources on Drive.
+//
+// FileTrackers form a tree structure on the database, which represents the
+// FileSystem trees of SyncFileSystem.  The tree has a FileTracker named
+// sync-root as its root node, and a set of FileTracker named app-root.  An
+// app-root represents a remote folder for an installed Chrome App and holds all
+// synced contents for the App.
+//
+// One FileMetadata is created for each tracked remote file, which is identified
+// by FileID.
+// One FileTracker is created for every different {parent tracker, FileID} pair,
+// excluding non-app-root inactive parent trackers. Multiple trackers may be
+// associated to one FileID when the file has multiple parents. Multiple
+// trackers may have the same {parent tracker, title} pair when the associated
+// remote files have the same title.
 //
 // Files have following state:
 //   - Unknown file
-//     - Is initial state of the files, only file_id and parent_folder_id field
+//     - Has a dirty inactive tracker and empty synced_details.
+//     - Is initial state of a tracker, only file_id and parent_tracker_id field
 //       are known.
-//     - Has empty synced_details, must be active and dirty.
 //   - Folder
 //     - Is either one of sync-root folder, app-root folder or a regular folder.
 //     - Sync-root folder holds app-root folders as its direct children, and
-//       holds entire SyncFileSystem files as its descentants.  Its file_id is
-//       stored in ServiceMetadata.
+//       holds entire SyncFileSystem files as its descentants.  Its tracker
+//       should be stored in ServiceMetadata by its tracker_id.
 //     - App-root folder holds all files for an application as its descendants.
 //   - File
 //   - Unsupported file
@@ -64,16 +84,21 @@ struct DatabaseContents;
 //       inactive.
 //
 // Invariants:
-//   - Any file in the database must either:
+//   - Any tracker in the database must either:
 //     - be sync-root,
-//     - have an app-root as its parent folder, or
-//     - have an active folder as its parent.
-//   That is, all files must be reachable from sync-root via app-root folders
-//   and active folders.
+//     - have an app-root as its parent tracker, or
+//     - have an active tracker as its parent.
+//   That is, all trackers must be reachable from sync-root via app-root folders
+//   and active trackers.
 //
-//   - Any active folder must either:
-//     - have needs_folder_listing flag and dirty flag, or
-//     - have all children at the stored largest change id.
+//   - Any active tracker must either:
+//     - have |needs_folder_listing| flag and dirty flag, or
+//     - have all children at the stored largest change ID.
+//
+//   - If multiple trackers have the same parent tracker and same title, they
+//     must not have same |file_id|, and at most one of them may be active.
+//   - If multiple trackers have the same |file_id|, at most one of them may be
+//     active.
 //
 class MetadataDatabase {
  public:
@@ -125,17 +150,15 @@ class MetadataDatabase {
                           FileTracker* tracker) const;
 
   // Finds the file identified by |file_id|.  Returns true if the file is found.
-  // Copies the FileMetadata instance identified by |file_id| into
-  // |file| if exists and |file| is non-NULL.
-  bool FindFileByFileID(const std::string& file_id,
-                        FileMetadata* file) const;
+  // Copies the metadata identified by |file_id| into |file| if exists and
+  // |file| is non-NULL.
+  bool FindFileByFileID(const std::string& file_id, FileMetadata* file) const;
 
   // Finds the tracker identified by |tracker_id|.  Returns true if the tracker
   // is found.
-  // Copies the Tracker instance identified by |tracker_id| into |tracker| if
-  // exists and |tracker| is non-NULL.
-  bool FindTrackerByTrackerID(int64 tracker_id,
-                              FileTracker* tracker) const;
+  // Copies the tracker identified by |tracker_id| into |tracker| if exists and
+  // |tracker| is non-NULL.
+  bool FindTrackerByTrackerID(int64 tracker_id, FileTracker* tracker) const;
 
   // Finds the trackers tracking |file_id|.  Returns true if the trackers are
   // found.
@@ -144,16 +167,20 @@ class MetadataDatabase {
 
   // Finds the set of trackers whose parent's tracker ID is |parent_tracker_id|,
   // and who has |title| as its title in the synced_details.
-  // Copies the TrackerSet instance to |trackers| if it is non-NULL.
+  // Copies the tracker set to |trackers| if it is non-NULL.
   size_t FindTrackersByParentAndTitle(
       int64 parent_tracker_id,
       const std::string& title,
       TrackerSet* trackers) const;
 
+  // Builds the file path for the given tracker.  Returns true on success.
+  // |path| can be NULL.
+  // The file path is relative to app-root and have a leading path separator.
+  bool BuildPathForTracker(int64 tracker_id, base::FilePath* path) const;
+
   // Updates database by |changes|.
-  // Marks dirty for each changed file if the file has the metadata in the
-  // database.  Adds new metadata to track the file if the file doesn't have
-  // the metadata and its parent folder has the active metadata.
+  // Marks each tracker for modified file as dirty and adds new trackers if
+  // needed.
   void UpdateByChangeList(ScopedVector<google_apis::ChangeResource> changes,
                           const SyncStatusCallback& callback);
 
@@ -189,8 +216,14 @@ class MetadataDatabase {
                                   leveldb::WriteBatch* batch);
   void RemoveAllDescendantTrackers(int64 root_tracker_id,
                                    leveldb::WriteBatch* batch);
+
+  void CreateTrackerForParentAndFileID(const FileTracker& parent_tracker,
+                                       const std::string& file_id,
+                                       leveldb::WriteBatch* batch);
   void RemoveTrackerIgnoringSiblings(int64 tracker_id,
                                      leveldb::WriteBatch* batch);
+  void MaybeAddTrackersForNewFile(const FileMetadata& file,
+                                  leveldb::WriteBatch* batch);
 
   void MarkTrackerSetDirty(TrackerSet* trackers,
                            leveldb::WriteBatch* batch);
@@ -205,6 +238,8 @@ class MetadataDatabase {
   void EraseTrackerFromPathIndex(FileTracker* tracker);
   void EraseFileFromDatabase(const std::string& file_id,
                              leveldb::WriteBatch* batch);
+
+  int64 GetNextTrackerID(leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);

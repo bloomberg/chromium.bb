@@ -39,6 +39,7 @@ class TrackerSet {
   iterator end() { return tracker_set_.end(); }
   const_iterator begin() const { return tracker_set_.begin(); }
   const_iterator end() const { return tracker_set_.end(); }
+  bool empty() const { return tracker_set_.empty(); }
 
  private:
   FileTracker* active_tracker_;
