@@ -26,9 +26,8 @@
 #ifndef CString_h
 #define CString_h
 
-#include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/Vector.h"
+#include "wtf/RefPtr.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
@@ -37,7 +36,7 @@ namespace WTF {
 // The data is implicitly allocated 1 character longer than length(), as it is zero-terminated.
 class CStringBuffer : public RefCounted<CStringBuffer> {
 public:
-    const char* data() { return m_data; }
+    const char* data() { return mutableData(); }
     size_t length() const { return m_length; }
 
 private:
@@ -46,10 +45,9 @@ private:
     static PassRefPtr<CStringBuffer> createUninitialized(size_t length);
 
     CStringBuffer(size_t length) : m_length(length) { }
-    char* mutableData() { return m_data; }
+    char* mutableData() { return reinterpret_cast<char*>(this + 1); }
 
     const unsigned m_length;
-    char m_data[1];
 };
 
 // A container for a null-terminated char array supporting copy-on-write

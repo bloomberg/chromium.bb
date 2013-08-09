@@ -34,6 +34,7 @@
 
 #include "public/platform/WebString.h"
 #include "wtf/text/CString.h"
+#include <string.h>
 
 namespace WebKit {
 

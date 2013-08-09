@@ -27,17 +27,18 @@
 #include "config.h"
 #include "CString.h"
 
+#include <string.h>
+
 using namespace std;
 
 namespace WTF {
 
 PassRefPtr<CStringBuffer> CStringBuffer::createUninitialized(size_t length)
 {
-    RELEASE_ASSERT(length <= (numeric_limits<unsigned>::max() - sizeof(CStringBuffer)));
+    RELEASE_ASSERT(length < (numeric_limits<unsigned>::max() - sizeof(CStringBuffer)));
 
-    // CStringBuffer already has space for one character, we do not need to add +1 to the length
-    // to store the terminating zero.
-    size_t size = sizeof(CStringBuffer) + length;
+    // The +1 is for the terminating NUL character.
+    size_t size = sizeof(CStringBuffer) + length + 1;
     CStringBuffer* stringBuffer = static_cast<CStringBuffer*>(fastMalloc(size));
     return adoptRef(new (NotNull, stringBuffer) CStringBuffer(length));
 }
