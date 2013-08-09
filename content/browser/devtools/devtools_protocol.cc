@@ -132,7 +132,11 @@ DevToolsProtocol::Response::Response(int id, base::DictionaryValue* result)
 DevToolsProtocol::Response::Response(int id,
                                      int error_code,
                                      const std::string& error_message)
-    : id_(id), error_code_(error_code), error_message_(error_message) {}
+    : id_(id),
+      error_code_(error_code),
+      error_message_(error_message),
+      is_async_promise_(false) {
+}
 
 DevToolsProtocol::Notification::Notification(const std::string& method,
                                              base::DictionaryValue* params)
