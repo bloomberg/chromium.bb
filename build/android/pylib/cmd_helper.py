@@ -100,7 +100,8 @@ def GetCmdStatusAndOutput(args, cwd=None, shell=False):
 
 
 class OutDirectory(object):
-  _out_directory = os.path.join(constants.DIR_SOURCE_ROOT, 'out')
+  _out_directory = os.path.join(constants.DIR_SOURCE_ROOT,
+      os.environ.get('CHROMIUM_OUT_DIR','out'))
   @staticmethod
   def set(out_directory):
     OutDirectory._out_directory = out_directory
