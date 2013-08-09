@@ -26,7 +26,7 @@
 #include "core/platform/graphics/TextRun.h"
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/RenderText.h" // so textRenderer() can be inline
-#include "wtf/text/StringBuilder.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 
@@ -35,11 +35,6 @@ class DocumentMarker;
 
 const unsigned short cNoTruncation = USHRT_MAX;
 const unsigned short cFullTruncation = USHRT_MAX - 1;
-
-class BufferForAppendingHyphen : public StringBuilder {
-public:
-    BufferForAppendingHyphen() { reserveCapacity(256); }
-};
 
 // Helper functions shared by InlineTextBox / SVGRootInlineBox
 void updateGraphicsContext(GraphicsContext*, const Color& fillColor, const Color& strokeColor, float strokeThickness, ColorSpace);
@@ -107,8 +102,9 @@ private:
     LayoutUnit selectionBottom();
     LayoutUnit selectionHeight();
 
-    TextRun constructTextRun(RenderStyle*, const Font&, BufferForAppendingHyphen* = 0) const;
-    TextRun constructTextRun(RenderStyle*, const Font&, StringView, int maximumLength, BufferForAppendingHyphen* = 0) const;
+    // charactersWithHyphen, if provided, must not be destroyed before the TextRun.
+    TextRun constructTextRun(RenderStyle*, const Font&, StringBuilder* charactersWithHyphen = 0) const;
+    TextRun constructTextRun(RenderStyle*, const Font&, StringView, int maximumLength, StringBuilder* charactersWithHyphen = 0) const;
 
 public:
     virtual FloatRect calculateBoundaries() const { return FloatRect(x(), y(), width(), height()); }
