@@ -330,7 +330,8 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       NOTREACHED();
   }
 
-  message_center_bubble->SetMaxHeight(std::max(0, max_height - kTraySpacing));
+  message_center_bubble->SetMaxHeight(std::max(0,
+                                               max_height - GetTraySpacing()));
   if (show_settings)
     message_center_bubble->SetSettingsVisible();
   message_center_bubble_.reset(

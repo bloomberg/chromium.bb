@@ -72,6 +72,9 @@ const int kNotificationBubbleGapHeight = 6;
 // the auto hidden shelf when the shelf is on the boundary between displays.
 const int kMaxAutoHideShowShelfRegionSize = 10;
 
+// Const inset from the edget of the shelf to the edget of the status area.
+const int kStatusAreaInset = 3;
+
 ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
@@ -747,6 +750,9 @@ void ShelfLayoutManager::CalculateTargetBounds(
   int status_inset = std::max(0, GetPreferredShelfSize() -
       PrimaryAxisValue(status_size.height(), status_size.width()));
 
+  if (ash::switches::UseAlternateShelfLayout())
+    status_inset = kStatusAreaInset;
+
   target_bounds->status_bounds_in_shelf = SelectValueForShelfAlignment(
       gfx::Rect(base::i18n::IsRTL() ? 0 : shelf_width - status_size.width(),
                     status_inset, status_size.width(), status_size.height()),
@@ -855,12 +861,16 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
           available_bounds.bottom() - shelf_height);
     }
 
-    // The statusbar should be in the center of the shelf.
-    gfx::Rect status_y = target_bounds->shelf_bounds_in_root;
-    status_y.set_y(0);
-    status_y.ClampToCenteredSize(
-        target_bounds->status_bounds_in_shelf.size());
-    target_bounds->status_bounds_in_shelf.set_y(status_y.y());
+    if (ash::switches::UseAlternateShelfLayout()) {
+      target_bounds->status_bounds_in_shelf.set_y(kStatusAreaInset);
+    } else {
+      // The statusbar should be in the center of the shelf.
+      gfx::Rect status_y = target_bounds->shelf_bounds_in_root;
+      status_y.set_y(0);
+      status_y.ClampToCenteredSize(
+          target_bounds->status_bounds_in_shelf.size());
+      target_bounds->status_bounds_in_shelf.set_y(status_y.y());
+    }
   } else {
     // Move and size the launcher with the gesture.
     int shelf_width = target_bounds->shelf_bounds_in_root.width();
@@ -875,12 +885,21 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
           available_bounds.right() - shelf_width);
     }
 
-    // The statusbar should be in the center of the shelf.
-    gfx::Rect status_x = target_bounds->shelf_bounds_in_root;
-    status_x.set_x(0);
-    status_x.ClampToCenteredSize(
-        target_bounds->status_bounds_in_shelf.size());
-    target_bounds->status_bounds_in_shelf.set_x(status_x.x());
+    if (ash::switches::UseAlternateShelfLayout()) {
+      if (alignment_ == SHELF_ALIGNMENT_RIGHT) {
+        target_bounds->shelf_bounds_in_root.set_x(
+            available_bounds.right() - shelf_width + kStatusAreaInset);
+      } else {
+        target_bounds->shelf_bounds_in_root.set_x(kStatusAreaInset);
+      }
+    } else {
+      // The statusbar should be in the center of the shelf.
+      gfx::Rect status_x = target_bounds->shelf_bounds_in_root;
+      status_x.set_x(0);
+      status_x.ClampToCenteredSize(
+          target_bounds->status_bounds_in_shelf.size());
+      target_bounds->status_bounds_in_shelf.set_x(status_x.x());
+    }
   }
 }
 

@@ -43,9 +43,6 @@ class AlternateAppListButton : public views::ImageButton {
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
-  // ui::EventHandler overrides:
-  virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-
  private:
   LauncherButtonHost* host_;
   // Reference to the shelf widget containing this button, owned by the

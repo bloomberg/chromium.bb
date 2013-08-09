@@ -5,6 +5,7 @@
 #ifndef ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
 #define ASH_TEST_LAUNCHER_VIEW_TEST_API_H_
 
+#include "ash/launcher/launcher_types.h"
 #include "base/basictypes.h"
 
 namespace gfx {
@@ -53,6 +54,9 @@ class LauncherViewTestAPI {
 
   // An accessor for |launcher_view|.
   internal::LauncherView* launcher_view() { return launcher_view_; }
+
+  // Wrapper for LauncherView::SameDragType.
+  bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
 
  private:
   internal::LauncherView* launcher_view_;

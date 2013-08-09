@@ -146,26 +146,5 @@ void AlternateAppListButton::GetAccessibleState(
   state->name = host_->GetAccessibleName(this);
 }
 
-void AlternateAppListButton::OnGestureEvent(ui::GestureEvent* event) {
-  switch (event->type()) {
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      host_->PointerPressedOnButton(this, LauncherButtonHost::TOUCH, *event);
-      event->SetHandled();
-      return;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      host_->PointerDraggedOnButton(this, LauncherButtonHost::TOUCH, *event);
-      event->SetHandled();
-      return;
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_SCROLL_FLING_START:
-      host_->PointerReleasedOnButton(this, LauncherButtonHost::TOUCH, false);
-      event->SetHandled();
-      return;
-    default:
-      ImageButton::OnGestureEvent(event);
-      return;
-  }
-}
-
 }  // namespace internal
 }  // namespace ash

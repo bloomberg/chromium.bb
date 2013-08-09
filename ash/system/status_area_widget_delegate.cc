@@ -5,6 +5,7 @@
 #include "ash/system/status_area_widget_delegate.h"
 
 #include "ash/ash_export.h"
+#include "ash/ash_switches.h"
 #include "ash/focus_cycler.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -98,7 +99,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
       if (!child->visible())
         continue;
       if (!is_first_visible_child)
-        columns->AddPaddingColumn(0, kTraySpacing);
+        columns->AddPaddingColumn(0, GetTraySpacing());
       is_first_visible_child = false;
       columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::FILL,
                          0, /* resize percent */
@@ -124,7 +125,7 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
       if (!child->visible())
         continue;
       if (!is_first_visible_child)
-        layout->AddPaddingRow(0, kTraySpacing);
+        layout->AddPaddingRow(0, GetTraySpacing());
       is_first_visible_child = false;
       layout->StartRow(0, 0);
       layout->AddView(child);

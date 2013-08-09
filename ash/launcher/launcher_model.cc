@@ -14,18 +14,34 @@ namespace ash {
 namespace {
 
 int LauncherItemTypeToWeight(LauncherItemType type) {
-  switch (type) {
-    case TYPE_BROWSER_SHORTCUT:
-    case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
-      return 0;
-    case TYPE_TABBED:
-    case TYPE_PLATFORM_APP:
-      return 1;
-    case TYPE_APP_LIST:
-      return ash::switches::UseAlternateShelfLayout() ? 0 : 2;
-    case TYPE_APP_PANEL:
-      return 3;
+  if (ash::switches::UseAlternateShelfLayout()) {
+    switch (type) {
+      case TYPE_APP_LIST:
+        return 0;
+      case TYPE_BROWSER_SHORTCUT:
+      case TYPE_APP_SHORTCUT:
+      case TYPE_WINDOWED_APP:
+        return 1;
+      case TYPE_TABBED:
+      case TYPE_PLATFORM_APP:
+        return 2;
+      case TYPE_APP_PANEL:
+        return 3;
+    }
+  } else {
+    switch (type) {
+      case TYPE_BROWSER_SHORTCUT:
+      case TYPE_APP_SHORTCUT:
+      case TYPE_WINDOWED_APP:
+        return 0;
+      case TYPE_TABBED:
+      case TYPE_PLATFORM_APP:
+        return 1;
+      case TYPE_APP_LIST:
+        return 2;
+      case TYPE_APP_PANEL:
+        return 3;
+    }
   }
 
   NOTREACHED() << "Invalid type " << type;

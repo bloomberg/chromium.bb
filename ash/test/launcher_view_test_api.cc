@@ -95,5 +95,10 @@ void LauncherViewTestAPI::RunMessageLoopUntilAnimationsDone() {
   launcher_view_->bounds_animator_->RemoveObserver(observer.get());
 }
 
+bool LauncherViewTestAPI::SameDragType(LauncherItemType typea,
+                                       LauncherItemType typeb) const {
+  return launcher_view_->SameDragType(typea, typeb);
+}
+
 }  // namespace test
 }  // namespace ash

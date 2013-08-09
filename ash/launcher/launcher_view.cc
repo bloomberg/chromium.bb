@@ -65,6 +65,10 @@ const int kMinimumDragDistance = 8;
 
 // Size between the buttons.
 const int kButtonSpacing = 4;
+const int kAlternateButtonSpacing = 10;
+
+// Size allocated to for each button.
+const int kButtonSize = 44;
 
 // Additional spacing for the left and right side of icons.
 const int kHorizontalIconSpacing = 2;
@@ -685,28 +689,22 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     return;
 
   int first_panel_index = model_->FirstPanelIndex();
-  // TODO(harrym): if alternate shelf layout stays, rename app_list_index.
-  int app_list_index = first_panel_index - 1;
+  int last_button_index = first_panel_index - 1;
 
   // Initial x,y values account both leading_inset in primary
   // coordinate and secondary coordinate based on the dynamic edge of the
   // launcher (eg top edge on bottom-aligned launcher).
-  int x = shelf->SelectValueForShelfAlignment(
-      leading_inset(),
-      0,
-      0,
-      leading_inset());
-  int y = shelf->SelectValueForShelfAlignment(
-      0,
-      leading_inset(),
-      leading_inset(),
-      0);
+  int inset = ash::switches::UseAlternateShelfLayout() ? 0 : leading_inset();
+  int x = shelf->SelectValueForShelfAlignment(inset, 0, 0, inset);
+  int y = shelf->SelectValueForShelfAlignment(0, inset, inset, 0);
 
-  int shelf_size = ash::switches::UseAlternateShelfLayout() ?
-      ShelfLayoutManager::kShelfSize : kLauncherPreferredSize;
+  int button_size = ash::switches::UseAlternateShelfLayout() ?
+      kButtonSize : kLauncherPreferredSize;
+  int button_spacing = ash::switches::UseAlternateShelfLayout() ?
+      kAlternateButtonSpacing : kButtonSpacing;
 
-  int w = shelf->PrimaryAxisValue(shelf_size, width());
-  int h = shelf->PrimaryAxisValue(height(), shelf_size);
+  int w = shelf->PrimaryAxisValue(button_size, width());
+  int h = shelf->PrimaryAxisValue(height(), button_size);
   for (int i = 0; i < view_model_->view_size(); ++i) {
     if (i < first_visible_index_) {
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, 0, 0));
@@ -714,39 +712,42 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
     }
 
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
-    if (i != app_list_index) {
-      x = shelf->PrimaryAxisValue(x + w + kButtonSpacing, x);
-      y = shelf->PrimaryAxisValue(y, y + h + kButtonSpacing);
+    if (i != last_button_index) {
+      x = shelf->PrimaryAxisValue(x + w + button_spacing, x);
+      y = shelf->PrimaryAxisValue(y, y + h + button_spacing);
     }
   }
 
   if (is_overflow_mode()) {
     DCHECK_LT(last_visible_index_, view_model_->view_size());
     for (int i = 0; i < view_model_->view_size(); ++i) {
-      view_model_->view_at(i)->SetVisible(
-          i >= first_visible_index_ &&
-          i != app_list_index &&
-          i <= last_visible_index_);
+      bool visible = i >= first_visible_index_ &&
+          i <= last_visible_index_;
+      if (!ash::switches::UseAlternateShelfLayout())
+        visible &= i != last_button_index;
+      view_model_->view_at(i)->SetVisible(visible);
     }
     return;
   }
 
   // To address Fitt's law, we make the first launcher button include the
   // leading inset (if there is one).
-  if (view_model_->view_size() > 0) {
-    view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
-        shelf->PrimaryAxisValue(leading_inset() + w, w),
-        shelf->PrimaryAxisValue(h, leading_inset() + h))));
+  if (!ash::switches::UseAlternateShelfLayout()) {
+    if (view_model_->view_size() > 0) {
+      view_model_->set_ideal_bounds(0, gfx::Rect(gfx::Size(
+          shelf->PrimaryAxisValue(inset + w, w),
+          shelf->PrimaryAxisValue(h, inset + h))));
+    }
   }
 
   // Right aligned icons.
-  int end_position = available_size - kButtonSpacing;
+  int end_position = available_size - button_spacing;
   x = shelf->PrimaryAxisValue(end_position, 0);
   y = shelf->PrimaryAxisValue(0, end_position);
   for (int i = view_model_->view_size() - 1;
        i >= first_panel_index; --i) {
-    x = shelf->PrimaryAxisValue(x - w - kButtonSpacing, x);
-    y = shelf->PrimaryAxisValue(y, y - h - kButtonSpacing);
+    x = shelf->PrimaryAxisValue(x - w - button_spacing, x);
+    y = shelf->PrimaryAxisValue(y, y - h - button_spacing);
     view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
     end_position = shelf->PrimaryAxisValue(x, y);
   }
@@ -754,9 +755,11 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   // Icons on the left / top are guaranteed up to kLeftIconProportion of
   // the available space.
   int last_icon_position = shelf->PrimaryAxisValue(
-      view_model_->ideal_bounds(first_panel_index - 1).right(),
-      view_model_->ideal_bounds(first_panel_index - 1).bottom()) +
-      2 * kLauncherPreferredSize + leading_inset();
+      view_model_->ideal_bounds(last_button_index).right(),
+      view_model_->ideal_bounds(last_button_index).bottom())
+      + button_size + inset;
+  if (!ash::switches::UseAlternateShelfLayout())
+      last_icon_position += button_size;
   int reserved_icon_space = available_size * kReservedNonPanelIconProportion;
   if (last_icon_position < reserved_icon_space)
     end_position = last_icon_position;
@@ -766,34 +769,38 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
   bounds->overflow_bounds.set_size(gfx::Size(
       shelf->PrimaryAxisValue(w, width()),
       shelf->PrimaryAxisValue(height(), h)));
-  last_visible_index_ = DetermineLastVisibleIndex(
-      end_position - leading_inset() - 2 * kLauncherPreferredSize);
+  if (ash::switches::UseAlternateShelfLayout())
+    last_visible_index_ = DetermineLastVisibleIndex(
+        end_position - button_size);
+  else
+    last_visible_index_ = DetermineLastVisibleIndex(
+        end_position - inset - 2 * button_size);
   last_hidden_index_ = DetermineFirstVisiblePanelIndex(end_position) - 1;
-  bool show_overflow = (last_visible_index_ + 1 < app_list_index ||
-                        last_hidden_index_ >= first_panel_index);
+  bool show_overflow =
+      ((ash::switches::UseAlternateShelfLayout() ? 0 : 1) +
+      last_visible_index_ < last_button_index ||
+      last_hidden_index_ >= first_panel_index);
 
+  // Create Space for the overflow button
+  if (show_overflow && ash::switches::UseAlternateShelfLayout()) {
+    DCHECK(last_visible_index_ > 0);
+    --last_visible_index_;
+  }
   for (int i = 0; i < view_model_->view_size(); ++i) {
-    view_model_->view_at(i)->SetVisible(
-        i <= last_visible_index_ ||
-        i == app_list_index ||
-        i > last_hidden_index_);
+    bool visible = i <= last_visible_index_ || i > last_hidden_index_;
+    // Always show the app list.
+    if (!ash::switches::UseAlternateShelfLayout())
+      visible |= (i == last_button_index);
+    view_model_->view_at(i)->SetVisible(visible);
   }
 
   overflow_button_->SetVisible(show_overflow);
   if (show_overflow) {
     DCHECK_NE(0, view_model_->view_size());
     if (last_visible_index_ == -1) {
-      x = shelf->SelectValueForShelfAlignment(
-          leading_inset(),
-          0,
-          0,
-          leading_inset());
-      y = shelf->SelectValueForShelfAlignment(
-          0,
-          leading_inset(),
-          leading_inset(),
-          0);
-    } else if (last_visible_index_ == app_list_index) {
+      x = shelf->SelectValueForShelfAlignment(inset, 0, 0, inset);
+      y = shelf->SelectValueForShelfAlignment(0, inset, inset, 0);
+    } else if (last_visible_index_ == last_button_index) {
       x = view_model_->ideal_bounds(last_visible_index_).x();
       y = view_model_->ideal_bounds(last_visible_index_).y();
     } else {
@@ -804,20 +811,22 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
           view_model_->ideal_bounds(last_visible_index_).y(),
           view_model_->ideal_bounds(last_visible_index_).bottom());
     }
-    gfx::Rect app_list_bounds = view_model_->ideal_bounds(app_list_index);
-    bounds->overflow_bounds.set_x(x);
-    bounds->overflow_bounds.set_y(y);
-
     // Set all hidden panel icon positions to be on the overflow button.
     for (int i = first_panel_index; i <= last_hidden_index_; ++i)
       view_model_->set_ideal_bounds(i, gfx::Rect(x, y, w, h));
 
-    x = shelf->PrimaryAxisValue(x + w + kButtonSpacing, x);
-    y = shelf->PrimaryAxisValue(y, y + h + kButtonSpacing);
-    app_list_bounds.set_x(x);
-    app_list_bounds.set_y(y);
-    view_model_->set_ideal_bounds(app_list_index, app_list_bounds);
+    bounds->overflow_bounds.set_x(x);
+    bounds->overflow_bounds.set_y(y);
+    if (!ash::switches::UseAlternateShelfLayout()) {
+      // Position app list after overflow button.
+      gfx::Rect app_list_bounds = view_model_->ideal_bounds(last_button_index);
 
+      x = shelf->PrimaryAxisValue(x + w + button_spacing, x);
+      y = shelf->PrimaryAxisValue(y, y + h + button_spacing);
+      app_list_bounds.set_x(x);
+      app_list_bounds.set_y(y);
+      view_model_->set_ideal_bounds(last_button_index, app_list_bounds);
+    }
     if (overflow_bubble_.get() && overflow_bubble_->IsShowing())
       UpdateOverflowRange(overflow_bubble_->launcher_view());
   } else {
@@ -1035,36 +1044,17 @@ void LauncherView::ContinueDrag(const ui::LocatedEvent& event) {
 
 bool LauncherView::SameDragType(LauncherItemType typea,
                                 LauncherItemType typeb) const {
-  if (ash::switches::UseAlternateShelfLayout()) {
-    // TODO(harrym): Allow app list to be repositionable, if this goes live
-    // (no flag) the pref file has to be updated so the changes persist.
-    switch (typea) {
-     case TYPE_TABBED:
-     case TYPE_PLATFORM_APP:
+  switch (typea) {
+    case TYPE_TABBED:
+    case TYPE_PLATFORM_APP:
       return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
-     case TYPE_APP_SHORTCUT:
-     case TYPE_APP_LIST:
-     case TYPE_BROWSER_SHORTCUT:
-      return (typeb == TYPE_APP_SHORTCUT ||
-              typeb == TYPE_APP_LIST ||
-              typeb == TYPE_BROWSER_SHORTCUT);
-     case TYPE_WINDOWED_APP:
-     case TYPE_APP_PANEL:
-       return typeb == typea;
-    }
-  } else {
-    switch (typea) {
-      case TYPE_TABBED:
-      case TYPE_PLATFORM_APP:
-        return (typeb == TYPE_TABBED || typeb == TYPE_PLATFORM_APP);
-      case TYPE_APP_SHORTCUT:
-      case TYPE_BROWSER_SHORTCUT:
-        return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
-      case TYPE_WINDOWED_APP:
-      case TYPE_APP_LIST:
-      case TYPE_APP_PANEL:
-        return typeb == typea;
-    }
+    case TYPE_APP_SHORTCUT:
+    case TYPE_BROWSER_SHORTCUT:
+      return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
+    case TYPE_WINDOWED_APP:
+    case TYPE_APP_LIST:
+    case TYPE_APP_PANEL:
+      return typeb == typea;
   }
   NOTREACHED();
   return false;
@@ -1110,6 +1100,9 @@ void LauncherView::ToggleOverflowBubble() {
 }
 
 void LauncherView::UpdateFirstButtonPadding() {
+  if (ash::switches::UseAlternateShelfLayout())
+    return;
+
   ShelfLayoutManager* shelf = tooltip_->shelf_layout_manager();
 
   // Creates an empty border for first launcher button to make included leading

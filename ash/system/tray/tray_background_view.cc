@@ -288,8 +288,8 @@ void TrayBackgroundView::TrayContainer::UpdateLayout() {
     set_border(views::Border::CreateEmptyBorder(
         vertical_padding,
         horizontal_padding,
-        horizontal_padding,
-        vertical_padding));
+        vertical_padding,
+        horizontal_padding));
 
     views::BoxLayout* layout =
         new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
