@@ -258,8 +258,6 @@ void StartSync(const StartSyncArgs& args,
               one_click_signin::HISTOGRAM_AUTO_WITH_DEFAULTS :
               one_click_signin::HISTOGRAM_AUTO_WITH_ADVANCED;
       break;
-      action = one_click_signin::HISTOGRAM_AUTO_WITH_DEFAULTS;
-      break;
     case OneClickSigninHelper::AUTO_ACCEPT_CONFIGURE:
       DCHECK(start_mode == OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
       action = one_click_signin::HISTOGRAM_AUTO_WITH_ADVANCED;
