@@ -182,9 +182,6 @@ readonly PNACL_SIZE="${BINUTILS_INSTALL_DIR}/bin/${REAL_CROSS_TARGET}-size"
 readonly PNACL_STRIP="${INSTALL_NEWLIB_BIN}/pnacl-strip"
 readonly ILLEGAL_TOOL="${INSTALL_NEWLIB_BIN}"/pnacl-illegal
 
-# ELF -> PSO stub generator.
-readonly PSO_STUB_GEN="${LLVM_INSTALL_DIR}/bin/pso-stub"
-
 # PNACL_CC_NEUTRAL is pnacl-cc without LibC bias (newlib vs. glibc)
 # This should only be used in conjunction with -E, -c, or -S.
 readonly PNACL_CC_NEUTRAL="${INSTALL_NEWLIB_BIN}/pnacl-clang -nodefaultlibs"
@@ -907,24 +904,6 @@ make-glibc-link() {
   done
 }
 
-#+ make-glibc-pso-stubs <src_native_basename> <dest_stub_basename> -
-#+     Create a pso-stub for GLibC bitcode lib directory based on the native
-#+     .so files in the translator lib directory.
-make-glibc-pso-stubs() {
-  local src_lib=$1
-  local target_lib=$2
-
-  local dest_dir="${INSTALL_LIB_GLIBC}"
-  # For now, pick x86-64 .so as the baseline for our .pso files.
-  local neutral_arch="x86-64"
-  local src_dir="${INSTALL_LIB_NATIVE}${neutral_arch}"
-
-  mkdir -p "${dest_dir}"
-  RunWithLog "glibc.pso_stub_gen" \
-    "${PSO_STUB_GEN}" "${src_dir}/${src_lib}" -o "${dest_dir}/${target_lib}"
-}
-
-
 #@ all                   - Alias for 'everything'
 all() {
   everything
@@ -1039,23 +1018,49 @@ prune-host() {
   echo "removing unused clang shared lib"
   rm -rf "${LLVM_INSTALL_DIR}/${SO_DIR}/${SO_PREFIX}clang${SO_EXT}"
 
-  echo "removing llvm's tblgen binaries which are not needed"
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/*-tblgen
+  echo "removing unused binutils binaries"
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/le32-nacl-elfedit
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/le32-nacl-gprof
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/le32-nacl-objcopy
 
   echo "removing unused LLVM/Clang binaries"
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-config
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/bc-wrap
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/bugpoint
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/c-index-test
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/clang-*
   rm -rf "${LLVM_INSTALL_DIR}"/bin/llc
   rm -rf "${LLVM_INSTALL_DIR}"/bin/lli
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/bugpoint
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/clang-*
-  rm -rf "${LLVM_INSTALL_DIR}"/bin/c-index-test
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-ar
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-bcanalyzer
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-config
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-cov
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-diff
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-dwarfdump
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-extract
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-mcmarkup
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-prof
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-ranlib
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-readobj
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-rtdyld
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-size
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-stress
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/llvm-symbolizer
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/macho-dump
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/pso-stub
+  rm -rf "${LLVM_INSTALL_DIR}"/bin/*-tblgen
 
-  echo "removing llvm headers"
-  rm -rf "${LLVM_INSTALL_DIR}"/include/llvm*
+  echo "removing llvm & clang headers"
+  rm -rf "${LLVM_INSTALL_DIR}"/include
 
-  echo "removing llvm static libs"
+  echo "removing docs/ and share/"
+  rm -rf "${LLVM_INSTALL_DIR}"/docs
+  rm -rf "${LLVM_INSTALL_DIR}"/share
+
+  echo "removing unused libs"
   rm -rf "${LLVM_INSTALL_DIR}"/lib/*.a
-
+  rm -rf "${LLVM_INSTALL_DIR}"/lib/bfd-plugins
+  rm -rf "${LLVM_INSTALL_DIR}"/lib/BugpointPasses.so
+  rm -rf "${LLVM_INSTALL_DIR}"/lib/LLVMHello.so
 }
 
 #+ prune                 - Prune toolchain
