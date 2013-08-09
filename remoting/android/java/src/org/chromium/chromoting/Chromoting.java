@@ -69,6 +69,9 @@ public class Chromoting extends Activity {
     /** List of hosts. */
     private JSONArray mHosts;
 
+    /** Refresh button. */
+    private MenuItem mRefreshButton;
+
     /** Account switcher. */
     private MenuItem mAccountSwitcher;
 
@@ -139,8 +142,21 @@ public class Chromoting extends Activity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.chromoting_actionbar, menu);
+        mRefreshButton = menu.findItem(R.id.actionbar_directoryrefresh);
         mAccountSwitcher = menu.findItem(R.id.actionbar_accountswitcher);
-        if (mAccount != null) {
+
+        Account[] usableAccounts = AccountManager.get(this).getAccountsByType(ACCOUNT_TYPE);
+        if (usableAccounts.length == 1 && mAccount.equals(usableAccounts[0])) {
+            // If we're using the only available account, don't offer account switching.
+            // (If there are *no* accounts available, clicking this allows you to add a new one.)
+            mAccountSwitcher.setEnabled(false);
+        }
+
+        if (mAccount == null) {
+            // If no account has been chosen, don't allow the user to refresh the listing.
+            mRefreshButton.setEnabled(false);
+        } else {
+            // If the user has picked an account, show its name directly on the account switcher.
             mAccountSwitcher.setTitle(mAccount.name);
         }
 
@@ -150,17 +166,25 @@ public class Chromoting extends Activity {
     /** Called whenever an action bar button is pressed. */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // The only button is the account switcher, so defer to the android accounts system now.
-        AccountManager.get(this).getAuthTokenByFeatures(
-                ACCOUNT_TYPE,
-                TOKEN_SCOPE,
-                null,
-                this,
-                null,
-                null,
-                new HostListDirectoryGrabber(this),
-                mNetwork
-            );
+        if (item == mAccountSwitcher) {
+            // The account switcher triggers a listing of all available accounts.
+            AccountManager.get(this).getAuthTokenByFeatures(
+                    ACCOUNT_TYPE,
+                    TOKEN_SCOPE,
+                    null,
+                    this,
+                    null,
+                    null,
+                    new HostListDirectoryGrabber(this),
+                    mNetwork
+                );
+        }
+        else {
+            // The refresh button simply makes use of the currently-chosen account.
+            AccountManager.get(this).getAuthToken(mAccount, TOKEN_SCOPE, null, this,
+                    new HostListDirectoryGrabber(this), mNetwork);
+        }
+
         return true;
     }
 
@@ -235,23 +259,31 @@ public class Chromoting extends Activity {
                 } else if (ex instanceof AuthenticatorException) {
                     explanation = getString(R.string.error_no_accounts);
                 } else if (ex instanceof IOException) {
-                    if (!mAlreadyTried) {  // This was our first connection attempt.
-                        Log.w("auth", "Unable to authenticate with (expired?) token");
+                    if (!mAlreadyTried) {
+                        // This was our first connection attempt.
 
-                        // Ask system to renew the auth token in case it expired.
-                        AccountManager authenticator = AccountManager.get(mUi);
                         synchronized (mUi) {
-                            authenticator.invalidateAuthToken(mAccount.type, mToken);
-                            mToken = null;
-                            Log.i("auth", "Requesting auth token renewal");
-                            authenticator.getAuthToken(
-                                    mAccount, TOKEN_SCOPE, null, mUi, this, mNetwork);
+                            if (mAccount != null) {
+                                // We got an account, but couldn't log into it. We'll retry in case
+                                // the system's cached authentication token had already expired.
+                                AccountManager authenticator = AccountManager.get(mUi);
+                                mAlreadyTried = true;
+
+                                Log.w("auth", "Requesting renewal of rejected auth token");
+                                authenticator.invalidateAuthToken(mAccount.type, mToken);
+                                mToken = null;
+                                authenticator.getAuthToken(
+                                        mAccount, TOKEN_SCOPE, null, mUi, this, mNetwork);
+
+                                // We're not in an error state *yet*.
+                                return;
+                            }
                         }
 
-                        // We're not in an error state *yet*.
-                        mAlreadyTried = true;
-                        return;
-                    } else {  // Authentication truly failed.
+                        // We didn't even get an account, so the auth server is likely unreachable.
+                        explanation = getString(R.string.error_bad_connection);
+                    } else {
+                        // Authentication truly failed.
                         Log.e("auth", "Fresh auth token was also rejected");
                         explanation = getString(R.string.error_auth_failed);
                     }
@@ -287,7 +319,10 @@ public class Chromoting extends Activity {
         @Override
         public void run() {
             synchronized (mUi) {
-                mAccountSwitcher.setTitle(mAccount.name);
+                mRefreshButton.setEnabled(mAccount != null);
+                if (mAccount != null) {
+                    mAccountSwitcher.setTitle(mAccount.name);
+                }
             }
 
             if (mHosts == null) {

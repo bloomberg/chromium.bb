@@ -132,8 +132,7 @@ void ChromotingJniInstance::PerformKeyboardAction(int key_code, bool key_down) {
     action.set_usb_keycode(usb_code);
     action.set_pressed(key_down);
     connection_->input_stub()->InjectKeyEvent(action);
-  }
-  else {
+  } else {
     LOG(WARNING) << "Ignoring unknown keycode: " << key_code;
   }
 }

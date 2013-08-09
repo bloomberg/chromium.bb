@@ -13,12 +13,15 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Looper;
+import android.text.InputType;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
 import org.chromium.chromoting.jni.JniInterface;
 
@@ -81,6 +84,10 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
 
     public DesktopView(Activity context) {
         super(context);
+
+        // Give this view keyboard focus, allowing us to customize the soft keyboard's settings.
+        setFocusableInTouchMode(true);
+
         mActionBar = context.getActionBar();
 
         getHolder().addCallback(this);
@@ -263,6 +270,24 @@ public class DesktopView extends SurfaceView implements Runnable, SurfaceHolder.
 
         // Stop this canvas from being redrawn.
         JniInterface.provideRedrawCallback(null);
+    }
+
+    /** Called when a software keyboard is requested, and specifies its options. */
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        // Disables rich input support and instead requests simple key events.
+        outAttrs.inputType = InputType.TYPE_NULL;
+
+        // Prevents most third-party IMEs from ignoring our Activity's adjustResize preference.
+        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_FULLSCREEN;
+
+        // Ensures that keyboards will not decide to hide the remote desktop on small displays.
+        outAttrs.imeOptions |= EditorInfo.IME_FLAG_NO_EXTRACT_UI;
+
+        // Stops software keyboards from closing as soon as the enter key is pressed.
+        outAttrs.imeOptions |= EditorInfo.IME_MASK_ACTION | EditorInfo.IME_FLAG_NO_ENTER_ACTION;
+
+        return null;
     }
 
     /** Called when a mouse action is made. */

@@ -18,6 +18,7 @@
     <string name="pin_entry_cancel">Cancel</string>
 
     <!--Action bar buttons-->
+    <string name="actionbar_directoryrefresh">Refresh</string>
     <string name="actionbar_accountswitcher">Accounts</string>
     <string name="actionbar_hide">Hide</string>
     <string name="actionbar_keyboard">Keyboard</string>
@@ -31,6 +32,7 @@
     <string name="error_auth_canceled">Authentication prompt canceled by user</string>
     <string name="error_no_accounts">Device not linked to any Google accounts</string>
     <string name="error_auth_failed">Authentication with specified account failed</string>
+    <string name="error_bad_connection">No network connection</string>
     <string name="error_cataloging_hosts">Unable to display host list</string>
     <string name="error_displaying_host">Unable to display host entry</string>
     <string name="error_unexpected_response">Account has no remote desktop hosts registered</string>

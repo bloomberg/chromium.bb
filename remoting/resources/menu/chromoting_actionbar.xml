@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--Action bar buttons for the Android app's host listing-->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/actionbar_directoryrefresh"
+            android:title="@string/actionbar_directoryrefresh"
+            android:icon="@android:drawable/ic_popup_sync"
+            android:showAsAction="ifRoom"/>
     <item android:id="@+id/actionbar_accountswitcher"
             android:title="@string/actionbar_accountswitcher"
             android:icon="@android:drawable/ic_menu_more"

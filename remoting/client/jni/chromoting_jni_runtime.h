@@ -6,6 +6,7 @@
 #define REMOTING_CLIENT_JNI_CHROMOTING_JNI_RUNTIME_H_
 
 #include <jni.h>
+#include <string>
 
 #include "base/at_exit.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -93,6 +94,9 @@ class ChromotingJniRuntime {
   // after all connections have terminated, it is safe to make unretained
   // cross-thread calls on the class.
   virtual ~ChromotingJniRuntime();
+
+  // Detaches JVM from the current thread, then signals. Doesn't own |waiter|.
+  void DetachFromVmAndSignal(base::WaitableEvent* waiter);
 
   // Reference to the Java class into which we make JNI calls.
   jclass class_;

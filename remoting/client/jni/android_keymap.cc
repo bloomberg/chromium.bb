@@ -199,12 +199,15 @@ const uint32 usb_keycodes[] = {
   0x0700b7,  // NUMPAD_RIGHT_PAREN
 };
 
-}
+}  // namespace
 
 namespace remoting {
 
 uint32 AndroidKeycodeToUsbKeycode(size_t android) {
-  DCHECK_LT(android, sizeof (usb_keycodes) / sizeof (uint32));
+  if (android >= sizeof (usb_keycodes) / sizeof (uint32)) {
+    LOG(WARNING) << "Attempted to decode out-of-range Android keycode";
+    return 0;
+  }
 
   return usb_keycodes[android];
 }

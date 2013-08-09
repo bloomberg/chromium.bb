@@ -7,6 +7,7 @@
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
 #include "base/memory/singleton.h"
+#include "base/synchronization/waitable_event.h"
 #include "media/base/yuv_convert.h"
 #include "net/android/net_jni_registrar.h"
 #include "remoting/base/url_request_context.h"
@@ -68,8 +69,19 @@ ChromotingJniRuntime::~ChromotingJniRuntime() {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   env->DeleteGlobalRef(class_);
-  // TODO(solb): Detach all threads from JVM here.
-  // crbug.com/259594
+
+  base::WaitableEvent done_event(false, false);
+  network_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &ChromotingJniRuntime::DetachFromVmAndSignal,
+      base::Unretained(this),
+      &done_event));
+  done_event.Wait();
+  display_task_runner_->PostTask(FROM_HERE, base::Bind(
+      &ChromotingJniRuntime::DetachFromVmAndSignal,
+      base::Unretained(this),
+      &done_event));
+  done_event.Wait();
+  base::android::DetachFromVM();
 }
 
 void ChromotingJniRuntime::ConnectToHost(const char* username,
@@ -176,6 +188,11 @@ void ChromotingJniRuntime::RedrawCanvas() {
   env->CallStaticVoidMethod(
       class_,
       env->GetStaticMethodID(class_, "redrawGraphicsInternal", "()V"));
+}
+
+void ChromotingJniRuntime::DetachFromVmAndSignal(base::WaitableEvent* waiter) {
+  base::android::DetachFromVM();
+  waiter->Signal();
 }
 
 }  // namespace remoting

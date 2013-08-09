@@ -96,12 +96,6 @@ public class Desktop extends Activity {
             default:
                 // We try to send all other key codes to the host directly.
                 JniInterface.keyboardAction(event.getKeyCode(), depressed);
-
-                if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER ||
-                        event.getKeyCode() == KeyEvent.KEYCODE_NUMPAD_ENTER) {
-                    // We stop this key from propagating to prevent the keyboard from closing.
-                    return true;
-                }
         }
 
         return super.dispatchKeyEvent(event);
