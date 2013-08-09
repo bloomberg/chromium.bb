@@ -459,6 +459,18 @@
   listFrame.origin.y += NSHeight(frame);
   progressBarFrame.origin.y += NSHeight(frame);
 
+  // Make sure that there is a minimum amount of spacing below the icon and
+  // the edge of the frame.
+  CGFloat bottomDelta = NSHeight(rootFrame) - NSHeight([icon_ frame]);
+  if (bottomDelta > 0 && bottomDelta < message_center::kIconBottomPadding) {
+    CGFloat bottomAdjust = message_center::kIconBottomPadding - bottomDelta;
+    rootFrame.size.height += bottomAdjust;
+    titleFrame.origin.y += bottomAdjust;
+    messageFrame.origin.y += bottomAdjust;
+    listFrame.origin.y += bottomAdjust;
+    progressBarFrame.origin.y += bottomAdjust;
+  }
+
   [[self view] setFrame:rootFrame];
   [title_ setFrame:titleFrame];
   [message_ setFrame:messageFrame];

@@ -35,7 +35,6 @@ namespace {
 // Dimensions.
 const int kIconSize = message_center::kNotificationIconSize;
 const int kLegacyIconSize = 40;
-const int kIconBottomPadding = 16;
 const int kTextLeftPadding = kIconSize + message_center::kIconToTextPadding;
 const int kTextBottomPadding = 12;
 const int kTextRightPadding = 23;
@@ -607,7 +606,8 @@ int NotificationView::GetHeightForWidth(int width) {
   // Adjust the height to make sure there is at least 16px of space below the
   // icon if there is any space there (<http://crbug.com/232966>).
   if (content_height > kIconSize)
-    content_height = std::max(content_height, kIconSize + kIconBottomPadding);
+    content_height = std::max(content_height,
+                              kIconSize + message_center::kIconBottomPadding);
 
   return content_height + GetInsets().height();
 }

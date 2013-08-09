@@ -31,6 +31,7 @@ const int kControlButtonSize = 29;
 const int kNotificationWidth = 360;
 const int kIconToTextPadding = 16;
 const int kTextTopPadding = 12;
+const int kIconBottomPadding = 16;
 
 // Text sizes.
 const int kTitleFontSize = 14;
