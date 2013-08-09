@@ -4,12 +4,15 @@
 
 #include "ash/wm/toplevel_window_event_handler.h"
 
+#include "ash/ash_constants.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/lock_state_controller_impl2.h"
 #include "ash/wm/property_util.h"
+#include "ash/wm/resize_shadow.h"
+#include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/snap_sizer.h"
 #include "ash/wm/workspace_controller.h"
@@ -42,29 +45,16 @@ namespace {
 // requested and applies a minimum size constraint if there is one.
 class TestWindowDelegate : public aura::test::TestWindowDelegate {
  public:
-  explicit TestWindowDelegate(int hittest_code)
-      : hittest_code_(hittest_code) {
+  explicit TestWindowDelegate(int hittest_code) {
+    set_window_component(hittest_code);
   }
   virtual ~TestWindowDelegate() {}
 
-  void set_min_size(const gfx::Size& size) {
-    min_size_ = size;
-  }
-
  private:
   // Overridden from aura::Test::TestWindowDelegate:
-  virtual gfx::Size GetMinimumSize() const OVERRIDE {
-    return min_size_;
-  }
-  virtual int GetNonClientComponent(const gfx::Point& point) const OVERRIDE {
-    return hittest_code_;
-  }
   virtual void OnWindowDestroyed() OVERRIDE {
     delete this;
   }
-
-  int hittest_code_;
-  gfx::Size min_size_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowDelegate);
 };
@@ -137,8 +127,8 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomRight) {
 TEST_F(ToplevelWindowEventHandlerTest, GrowBox) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTGROWBOX));
   TestWindowDelegate* window_delegate =
-    static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(40, 40));
+      static_cast<TestWindowDelegate*>(w1->delegate());
+  window_delegate->set_minimum_size(gfx::Size(40, 40));
 
   gfx::Point position = w1->bounds().origin();
   aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
@@ -239,7 +229,7 @@ TEST_F(ToplevelWindowEventHandlerTest, LeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(40, 40));
+  window_delegate->set_minimum_size(gfx::Size(40, 40));
 
   // Simulate a large left-to-right drag.  Window width should be clamped to
   // minimum and position change should be limited as well.
@@ -252,7 +242,7 @@ TEST_F(ToplevelWindowEventHandlerTest, RightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(40, 40));
+  window_delegate->set_minimum_size(gfx::Size(40, 40));
   gfx::Point position = w1->bounds().origin();
 
   // Simulate a large right-to-left drag.  Window width should be clamped to
@@ -266,7 +256,7 @@ TEST_F(ToplevelWindowEventHandlerTest, TopLeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(40, 40));
+  window_delegate->set_minimum_size(gfx::Size(40, 40));
 
   // Simulate a large top-left to bottom-right drag.  Window width should be
   // clamped to minimum and position should be limited.
@@ -279,7 +269,7 @@ TEST_F(ToplevelWindowEventHandlerTest, TopRightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTTOPRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(40, 40));
+  window_delegate->set_minimum_size(gfx::Size(40, 40));
 
   // Simulate a large top-right to bottom-left drag.  Window size should be
   // clamped to minimum, x position should not change, and y position should
@@ -293,7 +283,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomLeftPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMLEFT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(40, 40));
+  window_delegate->set_minimum_size(gfx::Size(40, 40));
 
   // Simulate a large bottom-left to top-right drag.  Window size should be
   // clamped to minimum, x position should be clamped, and y position should
@@ -307,7 +297,7 @@ TEST_F(ToplevelWindowEventHandlerTest, BottomRightPastMinimum) {
   scoped_ptr<aura::Window> w1(CreateWindow(HTBOTTOMRIGHT));
   TestWindowDelegate* window_delegate =
       static_cast<TestWindowDelegate*>(w1->delegate());
-  window_delegate->set_min_size(gfx::Size(40, 40));
+  window_delegate->set_minimum_size(gfx::Size(40, 40));
   gfx::Point position = w1->bounds().origin();
 
   // Simulate a large bottom-right to top-left drag.  Window size should be
@@ -694,6 +684,132 @@ TEST_F(ToplevelWindowEventHandlerTest, MAYBE_MinimizeMaximizeCompletes) {
     RunAllPendingInMessageLoop();
     EXPECT_EQ("10,11 100x100", target->bounds().ToString());
   }
+}
+
+// Test class for mouse and touch resize shadow tests.
+class ToplevelWindowEventHandlerResizeTest
+    : public ToplevelWindowEventHandlerTest {
+ public:
+  ToplevelWindowEventHandlerResizeTest() : delegate_(NULL) {}
+  virtual ~ToplevelWindowEventHandlerResizeTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    ToplevelWindowEventHandlerTest::SetUp();
+
+    delegate_ = new TestWindowDelegate(HTNOWHERE);
+    target_.reset(CreateTestWindowInShellWithDelegate(
+        delegate_, 0, gfx::Rect(0, 0, 100, 100)));
+
+    gfx::Insets mouse_insets = gfx::Insets(-ash::kResizeOutsideBoundsSize,
+                                           -ash::kResizeOutsideBoundsSize,
+                                           -ash::kResizeOutsideBoundsSize,
+                                           -ash::kResizeOutsideBoundsSize);
+    gfx::Insets touch_insets =
+        mouse_insets.Scale(ash::kResizeOutsideBoundsScaleForTouch);
+    target_->SetHitTestBoundsOverrideOuter(mouse_insets, touch_insets);
+    target_->set_hit_test_bounds_override_inner(mouse_insets);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    target_.reset();
+    ToplevelWindowEventHandlerTest::TearDown();
+  }
+
+  // Called on each scroll event. Checks if the correct resize shadow is shown.
+  void ProcessEvent(ui::EventType type, const gfx::Vector2dF& delta) {
+    if (type == ui::ET_GESTURE_SCROLL_END) {
+      // After gesture scroll ends, there should be no resize shadow.
+      EXPECT_FALSE(HasResizeShadow());
+    } else {
+      // Check if there is a resize shadow under the correct border.
+      ASSERT_TRUE(HasResizeShadow());
+      EXPECT_EQ(HTBOTTOMRIGHT, ResizeShadowLastHitTest());
+    }
+  }
+
+ protected:
+  void SetHittestCode(int hittest_code) {
+    delegate_->set_window_component(hittest_code);
+  }
+
+  aura::Window* target() { return target_.get(); }
+
+  bool HasResizeShadow() const {
+    // There is no shadow if no ResizeShadow object is associated with the
+    // window or there is one but its hit test is set to HTNOWHERE. Since we
+    // don't want to tie tests to that implementation detail, both cases are
+    // considered here.
+    return ResizeShadow() && ResizeShadowLastHitTest() != HTNOWHERE;
+  }
+
+  int ResizeShadowLastHitTest() const {
+    return ResizeShadow()->GetLastHitTestForTest();
+  }
+
+ private:
+  internal::ResizeShadow* ResizeShadow() const {
+    return Shell::GetInstance()->resize_shadow_controller()->
+        GetShadowForWindowForTest(target_.get());
+  }
+
+  TestWindowDelegate* delegate_;
+  scoped_ptr<aura::Window> target_;
+
+  DISALLOW_COPY_AND_ASSIGN(ToplevelWindowEventHandlerResizeTest);
+};
+
+// Tests resize shadows for touch resizing.
+TEST_F(ToplevelWindowEventHandlerResizeTest, TouchResizeShadows) {
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), target());
+
+  // Drag bottom right border of the window and check for the resize shadows.
+  // Shadows are checked in the callback function.
+  SetHittestCode(HTBOTTOMRIGHT);
+  generator.GestureScrollSequenceWithCallback(
+      gfx::Point(105, 105),
+      gfx::Point(150, 150),
+      base::TimeDelta::FromMilliseconds(100),
+      3,
+      base::Bind(&ToplevelWindowEventHandlerResizeTest::ProcessEvent,
+                 base::Unretained(this)));
+  RunAllPendingInMessageLoop();
+}
+
+// Tests resize shadows for mouse resizing.
+TEST_F(ToplevelWindowEventHandlerResizeTest, MouseResizeShadows) {
+  aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), target());
+
+  // There should be no shadow at the beginning.
+  EXPECT_FALSE(HasResizeShadow());
+
+  // Move mouse over the right border. Shadows should appear.
+  SetHittestCode(HTRIGHT);
+  generator.MoveMouseTo(gfx::Point(100, 50));
+  ASSERT_TRUE(HasResizeShadow());
+  EXPECT_EQ(HTRIGHT, ResizeShadowLastHitTest());
+
+  // Move mouse over the bottom right border. Shadows should stay.
+  SetHittestCode(HTBOTTOMRIGHT);
+  generator.MoveMouseTo(100, 100);
+  ASSERT_TRUE(HasResizeShadow());
+  EXPECT_EQ(HTBOTTOMRIGHT, ResizeShadowLastHitTest());
+
+  // Move mouse into the window. Shadows should disappear.
+  SetHittestCode(HTCLIENT);
+  generator.MoveMouseTo(50, 50);
+  EXPECT_FALSE(HasResizeShadow());
+
+  // Move mouse over the bottom order. Shadows should reappear.
+  SetHittestCode(HTBOTTOM);
+  generator.MoveMouseTo(50, 100);
+  ASSERT_TRUE(HasResizeShadow());
+  EXPECT_EQ(HTBOTTOM, ResizeShadowLastHitTest());
+
+  // Move mouse out of the window. Shadows should disappear.
+  generator.MoveMouseTo(150, 150);
+  EXPECT_FALSE(HasResizeShadow());
+
+  RunAllPendingInMessageLoop();
 }
 
 }  // namespace test

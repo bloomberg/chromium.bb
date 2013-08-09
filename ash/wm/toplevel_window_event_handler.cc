@@ -215,6 +215,25 @@ void ToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event) {
     return;
 
   switch (event->type()) {
+    case ui::ET_GESTURE_TAP_DOWN: {
+      int component =
+          target->delegate()->GetNonClientComponent(event->location());
+      if (!(WindowResizer::GetBoundsChangeForWindowComponent(component) &
+            WindowResizer::kBoundsChange_Resizes))
+        return;
+      internal::ResizeShadowController* controller =
+          Shell::GetInstance()->resize_shadow_controller();
+      if (controller)
+        controller->ShowShadow(target, component);
+      return;
+    }
+    case ui::ET_GESTURE_END: {
+      internal::ResizeShadowController* controller =
+          Shell::GetInstance()->resize_shadow_controller();
+      if (controller)
+        controller->HideShadow(target);
+      return;
+    }
     case ui::ET_GESTURE_SCROLL_BEGIN: {
       if (in_gesture_drag_)
         return;
@@ -481,7 +500,7 @@ void ToplevelWindowEventHandler::HandleMouseMoved(
     if (event->flags() & ui::EF_IS_NON_CLIENT) {
       int component =
           target->delegate()->GetNonClientComponent(event->location());
-        controller->ShowShadow(target, component);
+      controller->ShowShadow(target, component);
     } else {
       controller->HideShadow(target);
     }
