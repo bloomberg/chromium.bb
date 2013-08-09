@@ -144,21 +144,15 @@ scoped_refptr<media::VideoFrame> VideoCaptureBufferPool::ReserveI420VideoFrame(
 
   Buffer* buffer = buffers_[buffer_id];
   // Wrap the buffer in a VideoFrame container.
-  uint8* base_ptr = static_cast<uint8*>(buffer->shared_memory.memory());
-  size_t u_offset = size.GetArea();
-  size_t v_offset = u_offset + u_offset / 4;
   scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalYuvData(
-          media::VideoFrame::YV12,  // Actually it's I420, but equivalent here.
-          size, gfx::Rect(size), size,
-          size.width(),             // y stride
-          size.width() / 2,         // u stride
-          size.width() / 2,         // v stride
-          base_ptr,                 // y address
-          base_ptr + u_offset,      // u address
-          base_ptr + v_offset,      // v address
-          base::TimeDelta(),        // timestamp (unused).
+      media::VideoFrame::WrapExternalSharedMemory(
+          media::VideoFrame::I420,
+          size,
+          gfx::Rect(size),
+          size,
+          static_cast<uint8*>(buffer->shared_memory.memory()),
           buffer->shared_memory.handle(),
+          base::TimeDelta(),
           disposal_handler);
 
   if (buffer->rotation != rotation) {

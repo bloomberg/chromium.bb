@@ -648,7 +648,7 @@ void RenderVideoFrame(const SkBitmap& input,
   }
 
   // Sanity-check the output buffer.
-  if (output->format() != media::VideoFrame::YV12) {
+  if (output->format() != media::VideoFrame::I420) {
     NOTREACHED();
     return;
   }

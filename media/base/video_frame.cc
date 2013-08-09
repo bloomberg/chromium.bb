@@ -34,6 +34,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     case VideoFrame::YV12:
     case VideoFrame::YV12A:
     case VideoFrame::YV16:
+    case VideoFrame::I420:
       frame->AllocateYUV();
       break;
     default:
@@ -117,20 +118,52 @@ void VideoFrame::ReadPixelsFromNativeTexture(const SkBitmap& pixels) {
 }
 
 // static
+scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
+    Format format,
+    const gfx::Size& coded_size,
+    const gfx::Rect& visible_rect,
+    const gfx::Size& natural_size,
+    uint8* data,
+    base::SharedMemoryHandle handle,
+    base::TimeDelta timestamp,
+    const base::Closure& no_longer_needed_cb) {
+  switch (format) {
+    case I420: {
+      scoped_refptr<VideoFrame> frame(new VideoFrame(
+          format, coded_size, visible_rect, natural_size, timestamp));
+      frame->shared_memory_handle_ = handle;
+      frame->strides_[kYPlane] = coded_size.width();
+      frame->strides_[kUPlane] = coded_size.width() / 2;
+      frame->strides_[kVPlane] = coded_size.width() / 2;
+      frame->data_[kYPlane] = data;
+      frame->data_[kUPlane] = data + coded_size.GetArea();
+      frame->data_[kVPlane] = data + (coded_size.GetArea() * 5 / 4);
+      frame->no_longer_needed_cb_ = no_longer_needed_cb;
+      return frame;
+    }
+    default:
+      NOTIMPLEMENTED();
+      return NULL;
+  }
+}
+
+// static
 scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     Format format,
     const gfx::Size& coded_size,
     const gfx::Rect& visible_rect,
     const gfx::Size& natural_size,
-    int32 y_stride, int32 u_stride, int32 v_stride,
-    uint8* y_data, uint8* u_data, uint8* v_data,
+    int32 y_stride,
+    int32 u_stride,
+    int32 v_stride,
+    uint8* y_data,
+    uint8* u_data,
+    uint8* v_data,
     base::TimeDelta timestamp,
-    base::SharedMemoryHandle shm_handle,
     const base::Closure& no_longer_needed_cb) {
   DCHECK(format == YV12 || format == YV16 || format == I420) << format;
   scoped_refptr<VideoFrame> frame(new VideoFrame(
       format, coded_size, visible_rect, natural_size, timestamp));
-  frame->shared_memory_handle_ = shm_handle;
   frame->strides_[kYPlane] = y_stride;
   frame->strides_[kUPlane] = u_stride;
   frame->strides_[kVPlane] = v_stride;
@@ -198,11 +231,11 @@ size_t VideoFrame::NumPlanes(Format format) {
       return 1;
     case VideoFrame::YV12:
     case VideoFrame::YV16:
+    case VideoFrame::I420:
       return 3;
     case VideoFrame::YV12A:
       return 4;
     case VideoFrame::EMPTY:
-    case VideoFrame::I420:
     case VideoFrame::INVALID:
       break;
   }
@@ -239,7 +272,7 @@ void VideoFrame::AllocateRGB(size_t bytes_per_pixel) {
 
 void VideoFrame::AllocateYUV() {
   DCHECK(format_ == VideoFrame::YV12 || format_ == VideoFrame::YV16 ||
-         format_ == VideoFrame::YV12A);
+         format_ == VideoFrame::YV12A || format_ == VideoFrame::I420);
   // Align Y rows at least at 16 byte boundaries.  The stride for both
   // YV12 and YV16 is 1/2 of the stride of Y.  For YV12, every row of bytes for
   // U and V applies to two rows of Y (one byte of UV for 4 bytes of Y), so in
@@ -259,9 +292,11 @@ void VideoFrame::AllocateYUV() {
   // and then the size needs to be a multiple of two macroblocks (vertically).
   // See libavcodec/utils.c:avcodec_align_dimensions2().
   size_t y_height = RoundUp(coded_size_.height(), kFrameSizeAlignment * 2);
-  size_t uv_height = (format_ == VideoFrame::YV12 ||
-                      format_ == VideoFrame::YV12A) ?
-                              y_height / 2 : y_height;
+  size_t uv_height =
+      (format_ == VideoFrame::YV12 || format_ == VideoFrame::YV12A ||
+       format_ == VideoFrame::I420)
+          ? y_height / 2
+          : y_height;
   size_t y_bytes = y_height * y_stride;
   size_t uv_bytes = uv_height * uv_stride;
   size_t a_bytes = format_ == VideoFrame::YV12A ? y_bytes : 0;
@@ -327,10 +362,14 @@ int VideoFrame::row_bytes(size_t plane) const {
       return width * 4;
 
     // Planar, 8bpp.
+    case YV12A:
+      if (plane == kAPlane)
+        return width;
+    // Fallthrough.
     case YV12:
     case YV16:
-    case YV12A:
-      if (plane == kYPlane || plane == kAPlane)
+    case I420:
+      if (plane == kYPlane)
         return width;
       return RoundUp(width, 2) / 2;
 
@@ -351,9 +390,13 @@ int VideoFrame::rows(size_t plane) const {
     case YV16:
       return height;
 
-    case YV12:
     case YV12A:
-      if (plane == kYPlane || plane == kAPlane)
+      if (plane == kAPlane)
+        return height;
+    // Fallthrough.
+    case YV12:
+    case I420:
+      if (plane == kYPlane)
         return height;
       return RoundUp(height, 2) / 2;
 

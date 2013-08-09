@@ -36,18 +36,17 @@ class VideoResourceUpdaterTest : public testing::Test {
 
     return media::VideoFrame::WrapExternalYuvData(
         media::VideoFrame::YV16,  // format
-        size,  // coded_size
-        gfx::Rect(size),  // visible_rect
-        size,  // natural_size
-        size.width(),  // y_stride
-        size.width() / 2,  // u_stride
-        size.width() / 2,  // v_stride
-        y_data,  // y_data
-        u_data,  // u_data
-        v_data,  // v_data
-        base::TimeDelta(),  // timestamp,
-        base::SharedMemory::NULLHandle(),  // shm_handle
-        base::Closure());  // no_longer_needed_cb
+        size,                     // coded_size
+        gfx::Rect(size),          // visible_rect
+        size,                     // natural_size
+        size.width(),             // y_stride
+        size.width() / 2,         // u_stride
+        size.width() / 2,         // v_stride
+        y_data,                   // y_data
+        u_data,                   // u_data
+        v_data,                   // v_data
+        base::TimeDelta(),        // timestamp,
+        base::Closure());         // no_longer_needed_cb
   }
 
   TestWebGraphicsContext3D* context3d_;

@@ -823,7 +823,9 @@ void ContentDecryptorDelegate::DeliverFrame(
   scoped_refptr<media::VideoFrame> decoded_frame =
       media::VideoFrame::WrapExternalYuvData(
           media::VideoFrame::YV12,
-          frame_size, gfx::Rect(frame_size), natural_size_,
+          frame_size,
+          gfx::Rect(frame_size),
+          natural_size_,
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_Y],
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_U],
           frame_info->strides[PP_DECRYPTEDFRAMEPLANES_V],
@@ -832,10 +834,10 @@ void ContentDecryptorDelegate::DeliverFrame(
           frame_data + frame_info->plane_offsets[PP_DECRYPTEDFRAMEPLANES_V],
           base::TimeDelta::FromMicroseconds(
               frame_info->tracking_info.timestamp),
-          ppb_buffer->shared_memory()->handle(),
           media::BindToLoop(
               base::MessageLoopProxy::current(),
-              base::Bind(&BufferNoLongerNeeded, ppb_buffer,
+              base::Bind(&BufferNoLongerNeeded,
+                         ppb_buffer,
                          base::Bind(&ContentDecryptorDelegate::FreeBuffer,
                                     weak_this_,
                                     frame_info->tracking_info.buffer_id))));

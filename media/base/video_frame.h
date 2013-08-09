@@ -137,9 +137,26 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // least as large as 4*visible_rect().width()*visible_rect().height().
   void ReadPixelsFromNativeTexture(const SkBitmap& pixels);
 
+  // Wraps image data in a buffer backed by a base::SharedMemoryHandle with a
+  // VideoFrame.  The image data resides in |data| and is assumed to be packed
+  // tightly in a buffer of logical dimensions |coded_size| with the appropriate
+  // bit depth and plane count as given by |format|.  When the frame is
+  // destroyed |no_longer_needed_cb.Run()| will be called.
+  static scoped_refptr<VideoFrame> WrapExternalSharedMemory(
+      Format format,
+      const gfx::Size& coded_size,
+      const gfx::Rect& visible_rect,
+      const gfx::Size& natural_size,
+      uint8* data,
+      base::SharedMemoryHandle handle,
+      base::TimeDelta timestamp,
+      const base::Closure& no_longer_needed_cb);
+
   // Wraps external YUV data of the given parameters with a VideoFrame.
   // The returned VideoFrame does not own the data passed in. When the frame
   // is destroyed |no_longer_needed_cb.Run()| will be called.
+  // TODO(sheu): merge this into WrapExternalSharedMemory().
+  // http://crbug.com/270217
   static scoped_refptr<VideoFrame> WrapExternalYuvData(
       Format format,
       const gfx::Size& coded_size,
@@ -152,7 +169,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       uint8* u_data,
       uint8* v_data,
       base::TimeDelta timestamp,
-      base::SharedMemoryHandle shm_handle,  // may be NULLHandle()
       const base::Closure& no_longer_needed_cb);
 
   // Creates a frame with format equals to VideoFrame::EMPTY, width, height,

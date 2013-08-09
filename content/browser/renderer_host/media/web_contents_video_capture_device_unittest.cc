@@ -374,7 +374,7 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
       const scoped_refptr<media::VideoFrame>& frame,
       base::Time timestamp) OVERRIDE {
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
-    EXPECT_EQ(media::VideoFrame::YV12, frame->format());
+    EXPECT_EQ(media::VideoFrame::I420, frame->format());
     EXPECT_LE(
         0,
         buffer_pool_->RecognizeReservedBuffer(frame->shared_memory_handle()));
