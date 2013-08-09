@@ -30,9 +30,7 @@
   },
   "dom_perf": {
     "description": "Performance of DOM operations.",
-    "code": [
-      "chrome/src/tools/perf/benchmarks/dom_perf.py"
-    ]
+    "code": ["chrome/src/tools/perf/benchmarks/dom_perf.py"]
   },
   "dromaeo_domcoreattr": {
     "description": "Setting and getting DOM node attributes.",
@@ -143,7 +141,7 @@
     "description": "Milliseconds to decode a large image of various formats (gif, jpg, png, webp).",
     "code": [
       "chrome/src/tools/perf/measurements/image_decoding.py",
-      "chrome/src/chrome/test/data/image_decoding/"
+      "chrome/src/tools/perf/page_sets/image_decoding_measurement.json"
     ]
   },
   "indexeddb": {
@@ -204,7 +202,10 @@
   },
   "memory_measurement": {
     "description": "Use (recorded versions of) real world web sites and measure memory consumption.",
-    "code": ["chrome/src/tools/perf/measurements/memory.py"]
+    "code": [
+      "chrome/src/tools/perf/measurements/memory.py",
+      "chrome/src/tools/perf/page_sets/top_25.json"
+    ]
   },
   "memory_test": {
     "description": "Loads a number of URLs across tabs and windows and measures the memory usage.",
@@ -246,7 +247,10 @@
   },
   "smoothness_measurement": {
     "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks).",
-    "code": ["chrome/src/tools/perf/measurements/smoothness.py"]
+    "code": [
+      "chrome/src/tools/perf/measurements/smoothness.py",
+      "chrome/src/tools/perf/page_sets/top_25.json"
+    ]
   },
   "spaceport": {
     "description": "Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS.",
@@ -254,7 +258,10 @@
   },
   "startup_measurement": {
     "description": "Measures startup time under various scenarios. This is a port of our old startup_test target to Telemetry.",
-    "code": ["chrome/src/tools/perf/measurements/startup.py"]
+    "code": [
+      "chrome/src/tools/perf/measurements/startup.py",
+      "src/tools/perf/page_sets/blank_page.json"
+    ]
   },
   "startup_test": {
     "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles. These tests are in the process of being ported to Telemetry - see the startup_measurement test.",
