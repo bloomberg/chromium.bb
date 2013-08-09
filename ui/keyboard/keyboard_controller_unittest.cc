@@ -170,6 +170,7 @@ class KeyboardControllerTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    focus_controller_.reset();
     aura_test_helper_->TearDown();
   }
 
