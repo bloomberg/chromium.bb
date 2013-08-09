@@ -68,6 +68,16 @@ from idl_parser.idl_parser import ParseFile as parse_file
 
 from blink_idl_lexer import BlinkIDLLexer
 
+
+# Explicitly set starting symbol to rule defined only in base parser.
+# BEWARE that the starting symbol should NOT be defined in both the base parser
+# and the derived one, as otherwise which is used depends on which line number
+# is lower, which is fragile. Instead, either use one in base parser or
+# create a new symbol, so that this is unambiguous.
+# FIXME: unfortunately, this doesn't work in PLY 3.4, so need to duplicate the
+# rule below.
+STARTING_SYMBOL = 'Definitions'
+
 # We ignore comments (and hence don't need 'Top') but base parser preserves them
 # FIXME: Upstream: comments should be removed in base parser
 REMOVED_RULES = ['Top',  # [0]
@@ -77,6 +87,19 @@ REMOVED_RULES = ['Top',  # [0]
 
 
 class BlinkIDLParser(IDLParser):
+    # [1]
+    # FIXME: Need to duplicate rule for starting symbol here, with line number
+    # *lower* than in the base parser (idl_parser.py).
+    # This is a bug in PLY: it determines starting symbol by lowest line number.
+    # This can be overridden by the 'start' parameter, but as of PLY 3.4 this
+    # doesn't work correctly.
+    def p_Definitions(self, p):
+        """Definitions : ExtendedAttributeList Definition Definitions
+                       | """
+        if len(p) > 1:
+            p[2].AddChildren(p[1])
+            p[0] = ListFromConcat(p[2], p[3])
+
     # Below are grammar rules used by yacc, given by functions named p_<RULE>.
     # * The docstring is the production rule in BNF (grammar).
     # * The body is the yacc action (semantics).
@@ -168,13 +191,6 @@ class BlinkIDLParser(IDLParser):
     # [b1.1] for Blink IDL additions, auxiliary rules for [b1]
     # Numbers are as per Candidate Recommendation 19 April 2012:
     # http://www.w3.org/TR/2012/CR-WebIDL-20120419/
-
-    # [0] Override grammar, since we strip comments
-    # (not in Web IDL)
-    # FIXME: Upstream
-    def p_Top(self, p):
-        """Top : Definitions"""
-        p[0] = p[1]
 
     # [3] Override action, since we distinguish callbacks
     # FIXME: Upstream
@@ -370,8 +386,8 @@ class BlinkIDLParser(IDLParser):
         self.tokens = lexer.KnownTokens()
         # Using SLR (instead of LALR) generates the table faster,
         # but produces the same output. This is ok b/c Web IDL (and Blink IDL)
-        # is an LL(1) grammar, so SLR can parse it.
-        self.yaccobj = yacc.yacc(module=self, debug=debug, method='SLR', outputdir=outputdir)
+        # is an SLR grammar (as is often the case for simple LL(1) grammars).
+        self.yaccobj = yacc.yacc(module=self, start=STARTING_SYMBOL, method='SLR', debug=debug, outputdir=outputdir)
         self.parse_debug = debug
         self.verbose = verbose
         self.mute_error = mute_error
