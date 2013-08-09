@@ -1452,7 +1452,7 @@
         'browser/media/webrtc_browsertest_base.h',
         'browser/media/webrtc_browsertest_common.cc',
         'browser/media_galleries/fileapi/itunes_finder_win_browsertest.cc',
-        'browser/media_galleries/fileapi/media_file_validator_unittest.cc',
+        'browser/media_galleries/fileapi/media_file_validator_browsertest.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.cc',
         'browser/media_galleries/media_galleries_dialog_controller_mock.h',
         'browser/metrics/metrics_service_browsertest.cc',

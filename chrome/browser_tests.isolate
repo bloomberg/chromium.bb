@@ -39,6 +39,9 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
+          '../media/test/data/bear-320x240-multitrack.webm',
+          '../media/test/data/no_streams.webm',
+          '../media/test/data/sfx.ogg',
           '../ppapi/tests/test_case.html',
           '../ppapi/tests/test_page.css',
           '../tools/swarm_client/run_isolated.py',

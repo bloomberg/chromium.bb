@@ -6,6 +6,7 @@
 
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
+#include "chrome/browser/media_galleries/fileapi/supported_audio_video_checker.h"
 #include "chrome/browser/media_galleries/fileapi/supported_image_type_validator.h"
 #include "webkit/browser/fileapi/copy_or_move_file_validator.h"
 #include "webkit/browser/fileapi/file_system_url.h"
@@ -50,7 +51,8 @@ MediaFileValidatorFactory::CreateCopyOrMoveFileValidator(
   base::FilePath src_path = src.virtual_path();
   if (SupportedImageTypeValidator::SupportsFileType(src_path))
     return new SupportedImageTypeValidator(platform_path);
-  // TODO(vandebo): Support other file types.
+  if (SupportedAudioVideoChecker::SupportsFileType(src_path))
+    return new SupportedAudioVideoChecker(platform_path);
 
   return new InvalidFileValidator();
 }

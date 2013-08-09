@@ -9,6 +9,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/path_service.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
@@ -32,7 +33,7 @@ const char kValidImage[] = "RIFF0\0\0\0WEBPVP8 $\0\0\0\xB2\x02\0\x9D\x01\x2A"
                            "\x01\0\x01\0\x2F\x9D\xCE\xE7s\xA8((((\x01\x9CK(\0"
                            "\x05\xCE\xB3l\0\0\xFE\xD8\x80\0\0";
 
-const char kInvalidImage[] = "Not an image";
+const char kInvalidMediaFile[] = "Not a media file";
 
 const int64 kNoFileSize = -1;
 
@@ -55,6 +56,13 @@ void HandleCheckFileResult(int64 expected_size,
   callback.Run(false);
 }
 
+base::FilePath GetMediaTestDir() {
+  base::FilePath test_file;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &test_file))
+    return base::FilePath();
+  return test_file.AppendASCII("media").AppendASCII("test").AppendASCII("data");
+}
+
 }  // namespace
 
 namespace chrome {
@@ -74,6 +82,19 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
         FROM_HERE,
         base::Bind(&MediaFileValidatorTest::SetupOnFileThread,
                    base::Unretained(this), filename, content, expected_result));
+    loop_runner_ = new content::MessageLoopRunner;
+    loop_runner_->Run();
+  }
+
+  // Write |source| into |filename| in a test file system and try to move it
+  // into a media file system.  The result is compared to |expected_result|.
+  void MoveTestFromFile(const std::string& filename,
+                        const base::FilePath& source, bool expected_result) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::FILE,
+        FROM_HERE,
+        base::Bind(&MediaFileValidatorTest::SetupFromFileOnFileThread,
+                   base::Unretained(this), filename, source, expected_result));
     loop_runner_ = new content::MessageLoopRunner;
     loop_runner_->Run();
   }
@@ -127,6 +148,14 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
                    base::Unretained(this), true,
                    base::Bind(&MediaFileValidatorTest::OnTestFilesReady,
                               base::Unretained(this), expected_result)));
+  }
+
+  void SetupFromFileOnFileThread(const std::string& filename,
+                                 const base::FilePath& source,
+                                 bool expected_result) {
+    std::string content;
+    ASSERT_TRUE(file_util::ReadFileToString(source, &content));
+    SetupOnFileThread(filename, content, expected_result);
   }
 
   // Check that exactly one of |move_src_| and |move_dest_| exists.
@@ -212,17 +241,43 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MediaFileValidatorTest);
 };
 
+IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, UnsupportedExtension) {
+  MoveTest("a.txt", std::string(kValidImage, arraysize(kValidImage)), false);
+}
+
 IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, ValidImage) {
   MoveTest("a.webp", std::string(kValidImage, arraysize(kValidImage)), true);
 }
 
 IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, InvalidImage) {
-  MoveTest("a.webp", std::string(kInvalidImage, arraysize(kInvalidImage)),
-           false);
+  MoveTest("a.webp", std::string(kInvalidMediaFile,
+           arraysize(kInvalidMediaFile)), false);
 }
 
-IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, UnsupportedExtension) {
-  MoveTest("a.txt", std::string(kValidImage, arraysize(kValidImage)), false);
+IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, InvalidAudio) {
+  MoveTest("a.ogg", std::string(kInvalidMediaFile,
+           arraysize(kInvalidMediaFile)), false);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, ValidAudio) {
+  base::FilePath test_file = GetMediaTestDir();
+  ASSERT_FALSE(test_file.empty());
+  test_file = test_file.AppendASCII("sfx.ogg");
+  MoveTestFromFile("sfx.ogg", test_file, true);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, InvalidVideo) {
+  base::FilePath test_file = GetMediaTestDir();
+  ASSERT_FALSE(test_file.empty());
+  test_file = test_file.AppendASCII("no_streams.webm");
+  MoveTestFromFile("no_streams.webm", test_file, false);
+}
+
+IN_PROC_BROWSER_TEST_F(MediaFileValidatorTest, ValidVideo) {
+  base::FilePath test_file = GetMediaTestDir();
+  ASSERT_FALSE(test_file.empty());
+  test_file = test_file.AppendASCII("bear-320x240-multitrack.webm");
+  MoveTestFromFile("multitrack.webm", test_file, true);
 }
 
 }  // namespace chrome
