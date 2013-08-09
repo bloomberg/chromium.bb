@@ -1194,6 +1194,8 @@ crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 crbug.com/260655 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 
 crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout ]
+# Assertion failure in try bots.
+crbug.com/250970 [ Release ] fast/events/simulated-key-state.html [ Crash Pass ]
 
 crbug.com/254332 [ Linux ] fast/forms/button/button-reset-focus-by-mouse-then-keydown.html [ ImageOnlyFailure Pass ]
 crbug.com/254332 [ Linux Win ] fast/forms/button/button-reset-focus-by-mouse.html [ ImageOnlyFailure Pass ]
