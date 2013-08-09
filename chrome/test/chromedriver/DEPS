@@ -5,7 +5,6 @@ include_rules = [
 
   "+chrome/test/chromedriver",
 
-  "+third_party/mongoose",
   "+third_party/webdriver",
   "+third_party/zlib",
 ]

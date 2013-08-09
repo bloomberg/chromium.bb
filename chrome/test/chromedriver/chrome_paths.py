@@ -12,7 +12,8 @@ _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 def GetSrc():
   """Returns the path to the root src directory."""
-  return os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir)
+  return os.path.abspath(os.path.join(_THIS_DIR, os.pardir, os.pardir,
+                                      os.pardir))
 
 
 def GetTestData():

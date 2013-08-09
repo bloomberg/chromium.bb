@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -16,6 +16,9 @@ import os
 import shutil
 import sys
 import xml.dom.minidom as minidom
+
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
 
 import chrome_paths
 import test_environment
@@ -279,8 +282,14 @@ def main():
                                       'java_tests')
     if (not os.path.exists(java_tests_src_dir) or
         not os.listdir(java_tests_src_dir)):
-      print ('"%s" is empty or it doesn\'t exist.' % java_tests_src_dir +
-             'Should add deps/third_party/webdriver to source checkout config')
+      java_tests_url = ('http://src.chromium.org/svn/trunk/deps/third_party'
+                        '/webdriver')
+      print ('"%s" is empty or it doesn\'t exist. ' % java_tests_src_dir +
+             'Need to map <chrome-svn>/trunk/deps/third_party/webdriver to '
+             'chrome/test/chromedriver/third_party/java_tests in .gclient.\n'
+             'Alternatively, do:\n'
+             '  $ cd chrome/test/chromedriver/third_party\n'
+             '  $ svn co %s java_tests' % java_tests_url)
       return 1
 
     results = []

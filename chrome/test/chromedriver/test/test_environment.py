@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,13 +11,13 @@ tests in various environments.
 import os
 import sys
 
+import chrome_paths
 import util
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 if util.IsLinux():
-  sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
-                                  'build', 'android'))
+  sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
   from pylib import android_commands
   from pylib import forwarder
   from pylib import valgrind_tools

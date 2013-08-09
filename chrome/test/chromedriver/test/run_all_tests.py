@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -10,11 +10,12 @@ import os
 import platform
 import sys
 
+_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
+
 import archive
 import chrome_paths
 import util
-
-_THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 def _AppendEnvironmentPath(env_name, path):
@@ -153,7 +154,8 @@ def main():
     _AddToolsToSystemPathForWindows()
 
   if options.android_package:
-    os.environ['PATH'] += os.pathsep + os.path.join(_THIS_DIR, 'chrome')
+    os.environ['PATH'] += os.pathsep + os.path.join(
+        _THIS_DIR, os.pardir, 'chrome')
     code1 = RunPythonTests(chromedriver,
                            ref_chromedriver,
                            android_package=options.android_package)

@@ -202,7 +202,7 @@ def main():
 
   cmd = [
       sys.executable,
-      os.path.join(_THIS_DIR, 'run_all_tests.py'),
+      os.path.join(_THIS_DIR, 'test', 'run_all_tests.py'),
   ]
   if options.android_package:
     cmd.append('--android-package=' + options.android_package)

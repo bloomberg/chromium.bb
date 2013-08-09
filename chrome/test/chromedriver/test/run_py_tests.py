@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -14,8 +14,9 @@ import time
 import unittest
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, 'client'))
-sys.path.insert(0, os.path.join(_THIS_DIR, 'server'))
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'client'))
+sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'server'))
 
 import chrome_paths
 import chromedriver
@@ -25,11 +26,10 @@ import server
 from webelement import WebElement
 import webserver
 
-_TEST_DATA_DIR = os.path.join(_THIS_DIR, os.pardir, 'data', 'chromedriver')
+_TEST_DATA_DIR = os.path.join(chrome_paths.GetTestData(), 'chromedriver')
 
 if util.IsLinux():
-  sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, os.pardir, os.pardir,
-                                  'build', 'android'))
+  sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
   from pylib import android_commands
   from pylib import forwarder
   from pylib import valgrind_tools

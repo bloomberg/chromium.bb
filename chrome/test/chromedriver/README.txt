@@ -49,34 +49,39 @@ which will execute on the dedicated session thread synchronously. When a
 command is finished, it will invoke a callback, which will eventually make its
 way back to the IO thread as a HTTP response for the server to send.
 
-=====Code structure=====
-1) chrome/test/chromedriver
+=====Code structure (relative to this file)=====
+1) .
 Implements chromedriver commands.
 
-2) chrome/test/chromedriver/chrome
-A basic interface for controlling Chrome via DevTools. Should not have
-knowledge about WebDriver, and thus not depend on chrome/test/chromedriver.
+2) chrome/
+A basic interface for controlling Chrome. Should not depend on or reference
+WebDriver-related code or concepts.
 
-3) chrome/test/chromedriver/js
+3) js/
 Javascript helper scripts.
 
-4) chrome/test/chromedriver/net
+4) net/
 Code to deal with network communication, such as connection to DevTools.
 
-5) chrome/test/chromedriver/client
+5) client/
 Code for a python client.
 
-6) chrome/test/chromedriver/server
+6) server/
 Code for the chromedriver server.
 A python wrapper to the chromedriver server.
 
-7) chrome/test/chromedriver/extension
+7) extension/
 An extension used for automating the desktop browser.
 
-8) chrome/test/chromedriver/third_party
+8) test/
+Integration tests.
+
+9) third_party/
 Third party libraries used by chromedriver.
 
 =====Testing=====
+See the ChromeDriver waterfall at:
+    http://build.chromium.org/p/chromium.chromedriver/waterfall
 There are 4 test suites for verifying ChromeDriver's correctness:
 
 1) chromedriver2_unittests (chrome/chrome_tests.gypi)
@@ -88,15 +93,14 @@ default. Tests should take a few milliseconds and be very stable.
 This is a collection of C++ medium sized tests which can be run optionally
 on the trybots.
 
-3) python tests
-These are integration tests which can be found in run_py_tests.py. They are
-run on the chromium QA bots:
-    http://build.chromium.org/p/chromium.pyauto/waterfall
+3) python integration tests
+Run test/run_py_tests.py --help for more info. These are only run on the
+ChromeDriver waterfall.
 
 4) WebDriver Java acceptance tests
 These are integration tests from the WebDriver open source project which can
-be run via run_java_tests.py. They are also run on the chromium QA bots.
-See http://src.chromium.org/viewvc/chrome/trunk/deps/third_party/webdriver
+be run via test/run_java_tests.py. They are only run on the ChromeDriver
+bots. Run with --help for more info.
 
 =====Contributing=====
 Find an open issue and submit a patch for review by an individual listed in
