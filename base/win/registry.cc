@@ -39,6 +39,11 @@ RegKey::RegKey()
       watch_event_(0) {
 }
 
+RegKey::RegKey(HKEY key)
+    : key_(key),
+      watch_event_(0) {
+}
+
 RegKey::RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access)
     : key_(NULL),
       watch_event_(0) {
@@ -110,6 +115,20 @@ void RegKey::Close() {
     ::RegCloseKey(key_);
     key_ = NULL;
   }
+}
+
+void RegKey::Set(HKEY key) {
+  if (key_ != key) {
+    Close();
+    key_ = key;
+  }
+}
+
+HKEY RegKey::Take() {
+  StopWatching();
+  HKEY key = key_;
+  key_ = NULL;
+  return key;
 }
 
 bool RegKey::HasValue(const wchar_t* name) const {

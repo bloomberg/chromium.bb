@@ -17,8 +17,8 @@
 #include "base/time/time.h"
 
 namespace base {
+class DictionaryValue;
 class ListValue;
-class Value;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -49,9 +49,9 @@ class PairingRegistry : public base::RefCountedThreadSafe<PairingRegistry> {
     ~Pairing();
 
     static Pairing Create(const std::string& client_name);
-    static Pairing CreateFromValue(const base::Value& pairing_json);
+    static Pairing CreateFromValue(const base::DictionaryValue& pairing);
 
-    scoped_ptr<base::Value> ToValue() const;
+    scoped_ptr<base::DictionaryValue> ToValue() const;
 
     bool operator==(const Pairing& other) const;
 

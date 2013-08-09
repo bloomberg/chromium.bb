@@ -63,8 +63,8 @@ TEST_F(PairingRegistryDelegateLinuxTest, SaveAndLoad) {
   // Verify that the only value that left is |pairing2|.
   EXPECT_EQ(delegate->LoadAll()->GetSize(), 1u);
   scoped_ptr<base::ListValue> pairings = delegate->LoadAll();
-  base::Value* json;
-  EXPECT_TRUE(pairings->Get(0, &json));
+  base::DictionaryValue* json;
+  EXPECT_TRUE(pairings->GetDictionary(0, &json));
   EXPECT_EQ(PairingRegistry::Pairing::CreateFromValue(*json), pairing2);
 
   // Delete the rest and verify.

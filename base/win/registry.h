@@ -26,6 +26,7 @@ namespace win {
 class BASE_EXPORT RegKey {
  public:
   RegKey();
+  explicit RegKey(HKEY key);
   RegKey(HKEY rootkey, const wchar_t* subkey, REGSAM access);
   ~RegKey();
 
@@ -45,6 +46,12 @@ class BASE_EXPORT RegKey {
 
   // Closes this reg key.
   void Close();
+
+  // Replaces the handle of the registry key and takes ownership of the handle.
+  void Set(HKEY key);
+
+  // Transfers ownership away from this object.
+  HKEY Take();
 
   // Returns false if this key does not have the specified value, of if an error
   // occurrs while attempting to access it.

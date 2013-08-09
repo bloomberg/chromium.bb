@@ -10,7 +10,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "remoting/base/scoped_reg_key_win.h"
+#include "base/win/registry.h"
 #include "remoting/protocol/pairing_registry.h"
 
 namespace base {
@@ -49,8 +49,8 @@ class PairingRegistryDelegateWin
   virtual bool Delete(const std::string& client_id) OVERRIDE;
 
  private:
-  ScopedRegKey privileged_;
-  ScopedRegKey unprivileged_;
+  base::win::RegKey privileged_;
+  base::win::RegKey unprivileged_;
 
   DISALLOW_COPY_AND_ASSIGN(PairingRegistryDelegateWin);
 };

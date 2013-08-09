@@ -2418,7 +2418,6 @@
         'base/rsa_key_pair.h',
         'base/running_average.cc',
         'base/running_average.h',
-        'base/scoped_reg_key_win.h',
         'base/scoped_sc_handle_win.h',
         'base/socket_reader.cc',
         'base/socket_reader.h',
