@@ -37,6 +37,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
+#include "core/editing/InputMethodController.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/TypingCommand.h"
@@ -262,7 +263,7 @@ void FrameSelection::setSelection(const VisibleSelection& newSelection, SetSelec
 
     if (m_selection == s) {
         // Even if selection was not changed, selection offsets may have been changed.
-        m_frame->editor()->cancelCompositionIfSelectionIsInvalid();
+        m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
         notifyRendererOfSelectionChange(userTriggered);
         return;
     }

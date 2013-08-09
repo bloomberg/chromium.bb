@@ -31,11 +31,9 @@
 #include "config.h"
 #include "core/html/ime/InputMethodContext.h"
 
-#include "core/editing/Editor.h"
+#include "core/editing/InputMethodController.h"
 #include "core/html/ime/Composition.h"
-#include "core/page/EditorClient.h"
 #include "core/page/Frame.h"
-#include "core/page/Page.h"
 
 namespace WebCore {
 
@@ -78,27 +76,12 @@ void InputMethodContext::confirmComposition()
     Frame* frame = m_element->document()->frame();
     if (!frame)
         return;
-    Editor* editor = frame->editor();
-    if (!editor->hasComposition())
-        return;
 
     const Element* element = frame->document()->focusedElement();
     if (!element || !element->isHTMLElement() || m_element != toHTMLElement(element))
         return;
 
-    // We should verify the parent node of this IME composition node are
-    // editable because JavaScript may delete a parent node of the composition
-    // node. In this case, WebKit crashes while deleting texts from the parent
-    // node, which doesn't exist any longer.
-    RefPtr<Range> range = editor->compositionRange();
-    if (range) {
-        Node* node = range->startContainer();
-        if (!node || !node->isContentEditable())
-            return;
-    }
-
-    // This resets input method and the composition string is committed.
-    editor->client()->willSetInputMethodState();
+    frame->inputMethodController().confirmCompositionAndResetState();
 }
 
 void InputMethodContext::setCaretRectangle(Node* anchor, int x, int y, int w, int h)

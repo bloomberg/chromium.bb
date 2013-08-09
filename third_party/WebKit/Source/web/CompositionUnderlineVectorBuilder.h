@@ -32,7 +32,7 @@
 #define CompositionUnderlineVectorBuilder_h
 
 #include "WebCompositionUnderline.h"
-#include "core/editing/Editor.h"
+#include "core/editing/CompositionUnderline.h"
 #include "public/platform/WebVector.h"
 #include "wtf/Vector.h"
 

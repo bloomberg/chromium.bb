@@ -54,6 +54,7 @@ namespace WebCore {
     class FrameView;
     class HTMLFrameOwnerElement;
     class HTMLTableCellElement;
+    class InputMethodController;
     class IntPoint;
     class Node;
     class Range;
@@ -100,6 +101,7 @@ namespace WebCore {
         FrameSelection* selection() const;
         FrameTree* tree() const;
         AnimationController* animation() const;
+        InputMethodController& inputMethodController() const;
         ScriptController* script();
 
         RenderView* contentRenderer() const; // Root of the render tree for the document contained in this frame.
@@ -185,6 +187,7 @@ namespace WebCore {
         OwnPtr<FrameSelection> m_selection;
         OwnPtr<EventHandler> m_eventHandler;
         OwnPtr<AnimationController> m_animationController;
+        OwnPtr<InputMethodController> m_inputMethodController;
 
         float m_pageZoomFactor;
         float m_textZoomFactor;
@@ -239,6 +242,11 @@ namespace WebCore {
     inline AnimationController* Frame::animation() const
     {
         return m_animationController.get();
+    }
+
+    inline InputMethodController& Frame::inputMethodController() const
+    {
+        return *m_inputMethodController;
     }
 
     inline HTMLFrameOwnerElement* Frame::ownerElement() const

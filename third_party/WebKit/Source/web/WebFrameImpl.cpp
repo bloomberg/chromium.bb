@@ -122,6 +122,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/InputMethodController.h"
 #include "core/editing/SpellChecker.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextIterator.h"
@@ -1086,8 +1087,8 @@ void WebFrameImpl::replaceSelection(const WebString& text)
 
 void WebFrameImpl::insertText(const WebString& text)
 {
-    if (frame()->editor()->hasComposition())
-        frame()->editor()->confirmComposition(text);
+    if (frame()->inputMethodController().hasComposition())
+        frame()->inputMethodController().confirmComposition(text);
     else
         frame()->editor()->insertText(text, 0);
 }
@@ -1095,22 +1096,22 @@ void WebFrameImpl::insertText(const WebString& text)
 void WebFrameImpl::setMarkedText(const WebString& text, unsigned location, unsigned length)
 {
     Vector<CompositionUnderline> decorations;
-    frame()->editor()->setComposition(text, decorations, location, length);
+    frame()->inputMethodController().setComposition(text, decorations, location, length);
 }
 
 void WebFrameImpl::unmarkText()
 {
-    frame()->editor()->cancelComposition();
+    frame()->inputMethodController().cancelComposition();
 }
 
 bool WebFrameImpl::hasMarkedText() const
 {
-    return frame()->editor()->hasComposition();
+    return frame()->inputMethodController().hasComposition();
 }
 
 WebRange WebFrameImpl::markedRange() const
 {
-    return frame()->editor()->compositionRange();
+    return frame()->inputMethodController().compositionRange();
 }
 
 bool WebFrameImpl::firstRectForCharacterRange(unsigned location, unsigned length, WebRect& rect) const

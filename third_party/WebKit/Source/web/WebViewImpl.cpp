@@ -99,6 +99,7 @@
 #include "core/dom/WheelEvent.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/InputMethodController.h"
 #include "core/editing/TextIterator.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
@@ -1983,12 +1984,11 @@ void WebViewImpl::setFocus(bool enable)
         RefPtr<Frame> focusedFrame = m_page->focusController()->focusedFrame();
         if (focusedFrame) {
             // Finish an ongoing composition to delete the composition node.
-            Editor* editor = focusedFrame->editor();
-            if (editor && editor->hasComposition()) {
+            if (focusedFrame->inputMethodController().hasComposition()) {
                 if (m_autofillClient)
                     m_autofillClient->setIgnoreTextChanges(true);
 
-                editor->confirmComposition();
+                focusedFrame->inputMethodController().confirmComposition();
 
                 if (m_autofillClient)
                     m_autofillClient->setIgnoreTextChanges(false);
@@ -2014,14 +2014,15 @@ bool WebViewImpl::setComposition(
     // The input focus has been moved to another WebWidget object.
     // We should use this |editor| object only to complete the ongoing
     // composition.
-    if (!editor->canEdit() && !editor->hasComposition())
+    InputMethodController& inputMethodController = focused->inputMethodController();
+    if (!editor->canEdit() && !inputMethodController.hasComposition())
         return false;
 
     // We should verify the parent node of this IME composition node are
     // editable because JavaScript may delete a parent node of the composition
     // node. In this case, WebKit crashes while deleting texts from the parent
     // node, which doesn't exist any longer.
-    RefPtr<Range> range = editor->compositionRange();
+    RefPtr<Range> range = inputMethodController.compositionRange();
     if (range) {
         Node* node = range->startContainer();
         if (!node || !node->isContentEditable())
@@ -2037,7 +2038,7 @@ bool WebViewImpl::setComposition(
         // composition string with an empty string and complete it.
         String emptyString;
         Vector<CompositionUnderline> emptyUnderlines;
-        editor->setComposition(emptyString, emptyUnderlines, 0, 0);
+        inputMethodController.setComposition(emptyString, emptyUnderlines, 0, 0);
         return text.isEmpty();
     }
 
@@ -2045,11 +2046,11 @@ bool WebViewImpl::setComposition(
     // selectionStart and selectionEnd, WebKit somehow won't paint the selection
     // at all (see InlineTextBox::paint() function in InlineTextBox.cpp).
     // But the selection range actually takes effect.
-    editor->setComposition(String(text),
+    inputMethodController.setComposition(String(text),
                            CompositionUnderlineVectorBuilder(underlines),
                            selectionStart, selectionEnd);
 
-    return editor->hasComposition();
+    return inputMethodController.hasComposition();
 }
 
 bool WebViewImpl::confirmComposition()
@@ -2073,29 +2074,30 @@ bool WebViewImpl::confirmComposition(const WebString& text, ConfirmCompositionBe
     if (!focused || !m_imeAcceptEvents)
         return false;
     Editor* editor = focused->editor();
-    if (!editor || (!editor->hasComposition() && !text.length()))
+    InputMethodController& inputMethodController = focused->inputMethodController();
+    if (!editor || (!inputMethodController.hasComposition() && !text.length()))
         return false;
 
     // We should verify the parent node of this IME composition node are
     // editable because JavaScript may delete a parent node of the composition
     // node. In this case, WebKit crashes while deleting texts from the parent
     // node, which doesn't exist any longer.
-    RefPtr<Range> range = editor->compositionRange();
+    RefPtr<Range> range = inputMethodController.compositionRange();
     if (range) {
         Node* node = range->startContainer();
         if (!node || !node->isContentEditable())
             return false;
     }
 
-    if (editor->hasComposition()) {
+    if (inputMethodController.hasComposition()) {
         if (text.length()) {
-            editor->confirmComposition(String(text));
+            inputMethodController.confirmComposition(String(text));
         } else {
             size_t location;
             size_t length;
             caretOrSelectionRange(&location, &length);
 
-            editor->confirmComposition();
+            inputMethodController.confirmComposition();
             if (selectionBehavior == KeepSelection)
                 editor->setSelectionOffsets(location, location + length);
         }
@@ -2110,11 +2112,8 @@ bool WebViewImpl::compositionRange(size_t* location, size_t* length)
     Frame* focused = focusedWebCoreFrame();
     if (!focused || !focused->selection() || !m_imeAcceptEvents)
         return false;
-    Editor* editor = focused->editor();
-    if (!editor || !editor->hasComposition())
-        return false;
 
-    RefPtr<Range> range = editor->compositionRange();
+    RefPtr<Range> range = focused->inputMethodController().compositionRange();
     if (!range)
         return false;
 
@@ -2161,7 +2160,7 @@ WebTextInputInfo WebViewImpl::textInputInfo()
         info.selectionStart = location;
         info.selectionEnd = location + length;
     }
-    range = editor->compositionRange();
+    range = focused->inputMethodController().compositionRange();
     if (range && TextIterator::getLocationAndLengthFromRange(selection->rootEditableElement(), range.get(), location, length)) {
         info.compositionStart = location;
         info.compositionEnd = location + length;
@@ -2341,7 +2340,8 @@ bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compo
     if (!editor || !editor->canEdit())
         return false;
 
-    editor->cancelComposition();
+    InputMethodController& inputMethodController = focused->inputMethodController();
+    inputMethodController.cancelComposition();
 
     if (compositionStart == compositionEnd)
         return true;
@@ -2349,14 +2349,11 @@ bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compo
     size_t location;
     size_t length;
     caretOrSelectionRange(&location, &length);
-    editor->setIgnoreCompositionSelectionChange(true);
+    Editor::RevealSelectionScope revealSelectionScope(editor);
     editor->setSelectionOffsets(compositionStart, compositionEnd);
     String text = focused->selectedText();
-    editor->setComposition(text, CompositionUnderlineVectorBuilder(underlines), 0, 0);
-    // Need to set setIgnoreCompositionSelectionChange(true) again because setComposition resets it to false.
-    editor->setIgnoreCompositionSelectionChange(true);
+    inputMethodController.setComposition(text, CompositionUnderlineVectorBuilder(underlines), 0, 0);
     editor->setSelectionOffsets(location, location + length);
-    editor->setIgnoreCompositionSelectionChange(false);
 
     return true;
 }

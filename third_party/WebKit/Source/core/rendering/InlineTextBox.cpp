@@ -28,6 +28,7 @@
 #include "core/dom/RenderedDocumentMarker.h"
 #include "core/dom/Text.h"
 #include "core/editing/Editor.h"
+#include "core/editing/InputMethodController.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
@@ -545,8 +546,8 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         context->concatCTM(rotation(boxRect, Clockwise));
 
     // Determine whether or not we have composition underlines to draw.
-    bool containsComposition = renderer()->node() && renderer()->frame()->editor()->compositionNode() == renderer()->node();
-    bool useCustomUnderlines = containsComposition && renderer()->frame()->editor()->compositionUsesCustomUnderlines();
+    bool containsComposition = renderer()->node() && renderer()->frame()->inputMethodController().compositionNode() == renderer()->node();
+    bool useCustomUnderlines = containsComposition && renderer()->frame()->inputMethodController().compositionUsesCustomUnderlines();
 
     // Determine the text colors and selection colors.
     Color textFillColor;
@@ -650,10 +651,11 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
     // and composition underlines.
     if (paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && !isPrinting) {
 
-        if (containsComposition && !useCustomUnderlines)
+        if (containsComposition && !useCustomUnderlines) {
             paintCompositionBackground(context, boxOrigin, styleToUse, font,
-                renderer()->frame()->editor()->compositionStart(),
-                renderer()->frame()->editor()->compositionEnd());
+                renderer()->frame()->inputMethodController().compositionStart(),
+                renderer()->frame()->inputMethodController().compositionEnd());
+        }
 
         paintDocumentMarkers(context, boxOrigin, styleToUse, font, true);
 
@@ -780,7 +782,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         paintDocumentMarkers(context, boxOrigin, styleToUse, font, false);
 
         if (useCustomUnderlines) {
-            const Vector<CompositionUnderline>& underlines = renderer()->frame()->editor()->customCompositionUnderlines();
+            const Vector<CompositionUnderline>& underlines = renderer()->frame()->inputMethodController().customCompositionUnderlines();
             size_t numUnderlines = underlines.size();
 
             for (size_t index = 0; index < numUnderlines; ++index) {

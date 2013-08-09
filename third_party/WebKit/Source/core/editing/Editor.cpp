@@ -35,7 +35,6 @@
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Clipboard.h"
 #include "core/dom/ClipboardEvent.h"
-#include "core/dom/CompositionEvent.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentMarkerController.h"
 #include "core/dom/EventNames.h"
@@ -44,10 +43,10 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
 #include "core/dom/TextEvent.h"
-#include "core/dom/UserTypingGestureIndicator.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/DeleteSelectionCommand.h"
 #include "core/editing/IndentOutdentCommand.h"
+#include "core/editing/InputMethodController.h"
 #include "core/editing/InsertListCommand.h"
 #include "core/editing/ModifySelectionListLevel.h"
 #include "core/editing/RemoveFormatCommand.h"
@@ -87,6 +86,20 @@ using namespace std;
 using namespace HTMLNames;
 using namespace WTF;
 using namespace Unicode;
+
+Editor::RevealSelectionScope::RevealSelectionScope(Editor* editor)
+    : m_editor(editor)
+{
+    ++m_editor->m_preventRevealSelection;
+}
+
+Editor::RevealSelectionScope::~RevealSelectionScope()
+{
+    ASSERT(m_editor->m_preventRevealSelection);
+    --m_editor->m_preventRevealSelection;
+    if (!m_editor->m_preventRevealSelection)
+        m_editor->m_frame->selection()->revealSelection(ScrollAlignment::alignToEdgeIfNeeded, RevealExtent);
+}
 
 namespace {
 
@@ -784,7 +797,7 @@ void Editor::reappliedEditing(PassRefPtr<EditCommandComposition> cmd)
 
 Editor::Editor(Frame* frame)
     : FrameDestructionObserver(frame)
-    , m_ignoreCompositionSelectionChange(false)
+    , m_preventRevealSelection(0)
     , m_shouldStartNewKillRingSequence(false)
     // This is off by default, since most editors want this behavior (this matches IE but not FF).
     , m_shouldStyleWithCSS(false)
@@ -802,8 +815,7 @@ Editor::~Editor()
 
 void Editor::clear()
 {
-    m_compositionNode = 0;
-    m_customCompositionUnderlines.clear();
+    m_frame->inputMethodController().clear();
     m_shouldStyleWithCSS = false;
     m_defaultParagraphSeparator = EditorParagraphSeparatorIsDiv;
 }
@@ -811,11 +823,6 @@ void Editor::clear()
 bool Editor::insertText(const String& text, Event* triggeringEvent)
 {
     return m_frame->eventHandler()->handleTextInputEvent(text, triggeringEvent);
-}
-
-bool Editor::insertTextForConfirmedComposition(const String& text)
-{
-    return m_frame->eventHandler()->handleTextInputEvent(text, 0, TextEventInputComposition);
 }
 
 bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectInsertedText, TextEvent* triggeringEvent)
@@ -1121,194 +1128,6 @@ WritingDirection Editor::baseWritingDirectionForSelectionStart() const
     }
 
     return result;
-}
-
-void Editor::selectComposition()
-{
-    RefPtr<Range> range = compositionRange();
-    if (!range)
-        return;
-
-    // The composition can start inside a composed character sequence, so we have to override checks.
-    // See <http://bugs.webkit.org/show_bug.cgi?id=15781>
-    VisibleSelection selection;
-    selection.setWithoutValidation(range->startPosition(), range->endPosition());
-    m_frame->selection()->setSelection(selection, 0);
-}
-
-void Editor::confirmComposition()
-{
-    if (!m_compositionNode)
-        return;
-    finishComposition(m_compositionNode->data().substring(m_compositionStart, m_compositionEnd - m_compositionStart), ConfirmComposition);
-}
-
-void Editor::confirmComposition(const String& text)
-{
-    finishComposition(text, ConfirmComposition);
-}
-
-void Editor::cancelComposition()
-{
-    if (!m_compositionNode)
-        return;
-    finishComposition(emptyString(), CancelComposition);
-}
-
-void Editor::cancelCompositionIfSelectionIsInvalid()
-{
-    if (!hasComposition() || ignoreCompositionSelectionChange())
-        return;
-
-    // Check if selection start and selection end are valid.
-    Position start = m_frame->selection()->start();
-    Position end = m_frame->selection()->end();
-    if (start.containerNode() == m_compositionNode
-        && end.containerNode() == m_compositionNode
-        && static_cast<unsigned>(start.computeOffsetInContainerNode()) > m_compositionStart
-        && static_cast<unsigned>(end.computeOffsetInContainerNode()) < m_compositionEnd)
-        return;
-
-    cancelComposition();
-    if (client())
-        client()->didCancelCompositionOnSelectionChange();
-}
-
-void Editor::finishComposition(const String& text, FinishCompositionMode mode)
-{
-    ASSERT(mode == ConfirmComposition || mode == CancelComposition);
-    UserTypingGestureIndicator typingGestureIndicator(m_frame);
-
-    setIgnoreCompositionSelectionChange(true);
-
-    if (mode == CancelComposition)
-        ASSERT(text == emptyString());
-    else
-        selectComposition();
-
-    if (m_frame->selection()->isNone()) {
-        setIgnoreCompositionSelectionChange(false);
-        return;
-    }
-
-    // Dispatch a compositionend event to the focused node.
-    // We should send this event before sending a TextEvent as written in Section 6.2.2 and 6.2.3 of
-    // the DOM Event specification.
-    if (Element* target = m_frame->document()->focusedElement()) {
-        RefPtr<CompositionEvent> event = CompositionEvent::create(eventNames().compositionendEvent, m_frame->domWindow(), text);
-        target->dispatchEvent(event, IGNORE_EXCEPTION);
-    }
-
-    // If text is empty, then delete the old composition here.  If text is non-empty, InsertTextCommand::input
-    // will delete the old composition with an optimized replace operation.
-    if (text.isEmpty() && mode != CancelComposition)
-        TypingCommand::deleteSelection(m_frame->document(), 0);
-
-    m_compositionNode = 0;
-    m_customCompositionUnderlines.clear();
-
-    insertTextForConfirmedComposition(text);
-
-    if (mode == CancelComposition) {
-        // An open typing command that disagrees about current selection would cause issues with typing later on.
-        TypingCommand::closeTyping(m_frame);
-    }
-
-    setIgnoreCompositionSelectionChange(false);
-}
-
-void Editor::setComposition(const String& text, const Vector<CompositionUnderline>& underlines, unsigned selectionStart, unsigned selectionEnd)
-{
-    UserTypingGestureIndicator typingGestureIndicator(m_frame);
-
-    setIgnoreCompositionSelectionChange(true);
-
-    // Updates styles before setting selection for composition to prevent
-    // inserting the previous composition text into text nodes oddly.
-    // See https://bugs.webkit.org/show_bug.cgi?id=46868
-    m_frame->document()->updateStyleIfNeeded();
-
-    selectComposition();
-
-    if (m_frame->selection()->isNone()) {
-        setIgnoreCompositionSelectionChange(false);
-        return;
-    }
-
-    if (Element* target = m_frame->document()->focusedElement()) {
-        // Dispatch an appropriate composition event to the focused node.
-        // We check the composition status and choose an appropriate composition event since this
-        // function is used for three purposes:
-        // 1. Starting a new composition.
-        //    Send a compositionstart and a compositionupdate event when this function creates
-        //    a new composition node, i.e.
-        //    m_compositionNode == 0 && !text.isEmpty().
-        //    Sending a compositionupdate event at this time ensures that at least one
-        //    compositionupdate event is dispatched.
-        // 2. Updating the existing composition node.
-        //    Send a compositionupdate event when this function updates the existing composition
-        //    node, i.e. m_compositionNode != 0 && !text.isEmpty().
-        // 3. Canceling the ongoing composition.
-        //    Send a compositionend event when function deletes the existing composition node, i.e.
-        //    m_compositionNode != 0 && test.isEmpty().
-        RefPtr<CompositionEvent> event;
-        if (!m_compositionNode) {
-            // We should send a compositionstart event only when the given text is not empty because this
-            // function doesn't create a composition node when the text is empty.
-            if (!text.isEmpty()) {
-                target->dispatchEvent(CompositionEvent::create(eventNames().compositionstartEvent, m_frame->domWindow(), m_frame->selectedText()));
-                event = CompositionEvent::create(eventNames().compositionupdateEvent, m_frame->domWindow(), text);
-            }
-        } else {
-            if (!text.isEmpty())
-                event = CompositionEvent::create(eventNames().compositionupdateEvent, m_frame->domWindow(), text);
-            else
-                event = CompositionEvent::create(eventNames().compositionendEvent, m_frame->domWindow(), text);
-        }
-        if (event.get())
-            target->dispatchEvent(event, IGNORE_EXCEPTION);
-    }
-
-    // If text is empty, then delete the old composition here.  If text is non-empty, InsertTextCommand::input
-    // will delete the old composition with an optimized replace operation.
-    if (text.isEmpty())
-        TypingCommand::deleteSelection(m_frame->document(), TypingCommand::PreventSpellChecking);
-
-    m_compositionNode = 0;
-    m_customCompositionUnderlines.clear();
-
-    if (!text.isEmpty()) {
-        TypingCommand::insertText(m_frame->document(), text, TypingCommand::SelectInsertedText | TypingCommand::PreventSpellChecking, TypingCommand::TextCompositionUpdate);
-
-        // Find out what node has the composition now.
-        Position base = m_frame->selection()->base().downstream();
-        Position extent = m_frame->selection()->extent();
-        Node* baseNode = base.deprecatedNode();
-        unsigned baseOffset = base.deprecatedEditingOffset();
-        Node* extentNode = extent.deprecatedNode();
-        unsigned extentOffset = extent.deprecatedEditingOffset();
-
-        if (baseNode && baseNode == extentNode && baseNode->isTextNode() && baseOffset + text.length() == extentOffset) {
-            m_compositionNode = toText(baseNode);
-            m_compositionStart = baseOffset;
-            m_compositionEnd = extentOffset;
-            m_customCompositionUnderlines = underlines;
-            size_t numUnderlines = m_customCompositionUnderlines.size();
-            for (size_t i = 0; i < numUnderlines; ++i) {
-                m_customCompositionUnderlines[i].startOffset += baseOffset;
-                m_customCompositionUnderlines[i].endOffset += baseOffset;
-            }
-            if (baseNode->renderer())
-                baseNode->renderer()->repaint();
-
-            unsigned start = min(baseOffset + selectionStart, extentOffset);
-            unsigned end = min(max(start, baseOffset + selectionEnd), extentOffset);
-            RefPtr<Range> selectedRange = Range::create(baseNode->document(), baseNode, start, baseNode, end);
-            m_frame->selection()->setSelectedRange(selectedRange.get(), DOWNSTREAM, false);
-        }
-    }
-
-    setIgnoreCompositionSelectionChange(false);
 }
 
 void Editor::ignoreSpelling()
@@ -1887,32 +1706,10 @@ PassRefPtr<Range> Editor::rangeForPoint(const IntPoint& windowPoint)
 
 void Editor::revealSelectionAfterEditingOperation(const ScrollAlignment& alignment, RevealExtentOption revealExtentOption)
 {
-    if (m_ignoreCompositionSelectionChange)
+    if (m_preventRevealSelection)
         return;
 
     m_frame->selection()->revealSelection(alignment, revealExtentOption);
-}
-
-void Editor::setIgnoreCompositionSelectionChange(bool ignore)
-{
-    if (m_ignoreCompositionSelectionChange == ignore)
-        return;
-
-    m_ignoreCompositionSelectionChange = ignore;
-    if (!ignore)
-        revealSelectionAfterEditingOperation(ScrollAlignment::alignToEdgeIfNeeded, RevealExtent);
-}
-
-PassRefPtr<Range> Editor::compositionRange() const
-{
-    if (!m_compositionNode)
-        return 0;
-    unsigned length = m_compositionNode->length();
-    unsigned start = min(m_compositionStart, length);
-    unsigned end = min(max(start, m_compositionEnd), length);
-    if (start >= end)
-        return 0;
-    return Range::create(m_compositionNode->document(), m_compositionNode.get(), start, m_compositionNode.get(), end);
 }
 
 bool Editor::setSelectionOffsets(int selectionStart, int selectionEnd)
@@ -2292,7 +2089,7 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
     if (!isContinuousGrammarCheckingEnabled)
         m_frame->document()->markers()->removeMarkers(DocumentMarker::Grammar);
 
-    cancelCompositionIfSelectionIsInvalid();
+    m_frame->inputMethodController().cancelCompositionIfSelectionIsInvalid();
 
     notifyComponentsOnChangedSelection(oldSelection, options);
 }

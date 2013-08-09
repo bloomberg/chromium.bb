@@ -37,7 +37,6 @@
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
 #include "core/page/FrameDestructionObserver.h"
-#include "core/platform/graphics/Color.h"
 #include "core/platform/text/TextChecking.h"
 
 namespace WebCore {
@@ -62,17 +61,6 @@ class Text;
 class TextCheckerClient;
 class TextEvent;
 struct TextCheckingResult;
-
-struct CompositionUnderline {
-    CompositionUnderline()
-        : startOffset(0), endOffset(0), thick(false) { }
-    CompositionUnderline(unsigned s, unsigned e, const Color& c, bool t)
-        : startOffset(s), endOffset(e), color(c), thick(t) { }
-    unsigned startOffset;
-    unsigned endOffset;
-    Color color;
-    bool thick;
-};
 
 enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM, CommandFromDOMWithUserInterface };
 enum EditorParagraphSeparator { EditorParagraphSeparatorIsDiv, EditorParagraphSeparatorIsP };
@@ -192,7 +180,6 @@ public:
     static bool commandIsSupportedFromMenuOrKeyBinding(const String& commandName); // Works without a frame.
 
     bool insertText(const String&, Event* triggeringEvent);
-    bool insertTextForConfirmedComposition(const String& text);
     bool insertTextWithoutSendingTextEvent(const String&, bool selectInsertedText, TextEvent* triggeringEvent);
     bool insertLineBreak();
     bool insertParagraphSeparator();
@@ -237,29 +224,9 @@ public:
     bool smartInsertDeleteEnabled();
     bool isSelectTrailingWhitespaceEnabled();
 
-    // international text input composition
-    bool hasComposition() const { return m_compositionNode; }
-    void setComposition(const String&, const Vector<CompositionUnderline>&, unsigned selectionStart, unsigned selectionEnd);
-    // Inserts the text that is being composed as a regular text.
-    // This method does nothing if composition node is not present.
-    void confirmComposition();
-    // Inserts the given text string in the place of the existing composition, or replaces the selection if composition is not present.
-    void confirmComposition(const String& text);
-    // Deletes the existing composition text.
-    void cancelComposition();
-    void cancelCompositionIfSelectionIsInvalid();
-    PassRefPtr<Range> compositionRange() const;
     bool setSelectionOffsets(int selectionStart, int selectionEnd);
 
-    // getting international text input composition state (for use by InlineTextBox)
-    Text* compositionNode() const { return m_compositionNode.get(); }
-    unsigned compositionStart() const { return m_compositionStart; }
-    unsigned compositionEnd() const { return m_compositionEnd; }
-    bool compositionUsesCustomUnderlines() const { return !m_customCompositionUnderlines.isEmpty(); }
-    const Vector<CompositionUnderline>& customCompositionUnderlines() const { return m_customCompositionUnderlines; }
-
-    void setIgnoreCompositionSelectionChange(bool);
-    bool ignoreCompositionSelectionChange() const { return m_ignoreCompositionSelectionChange; }
+    bool preventRevealSelection() const { return m_preventRevealSelection; }
 
     void setStartNewKillRingSequence(bool);
 
@@ -287,7 +254,7 @@ public:
     void clearMisspellingsAndBadGrammar(const VisibleSelection&);
     void markMisspellingsAndBadGrammar(const VisibleSelection&);
 
-    Node* findEventTargetFrom(const VisibleSelection& selection) const;
+    Node* findEventTargetFrom(const VisibleSelection&) const;
 
     bool findString(const String&, FindOptions);
     // FIXME: Switch callers over to the FindOptions version and retire this one.
@@ -332,14 +299,20 @@ public:
     EditorParagraphSeparator defaultParagraphSeparator() const { return m_defaultParagraphSeparator; }
     void setDefaultParagraphSeparator(EditorParagraphSeparator separator) { m_defaultParagraphSeparator = separator; }
 
+    class RevealSelectionScope {
+        WTF_MAKE_NONCOPYABLE(RevealSelectionScope);
+    public:
+        RevealSelectionScope(Editor*);
+        ~RevealSelectionScope();
+    private:
+        Editor* m_editor;
+    };
+    friend class RevealSelectionScope;
+
 private:
     RefPtr<CompositeEditCommand> m_lastEditCommand;
     RefPtr<Node> m_removedAnchor;
-    RefPtr<Text> m_compositionNode;
-    unsigned m_compositionStart;
-    unsigned m_compositionEnd;
-    Vector<CompositionUnderline> m_customCompositionUnderlines;
-    bool m_ignoreCompositionSelectionChange;
+    int m_preventRevealSelection;
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;
     OwnPtr<KillRing> m_killRing;
@@ -358,10 +331,6 @@ private:
     void revealSelectionAfterEditingOperation(const ScrollAlignment& = ScrollAlignment::alignCenterIfNeeded, RevealExtentOption = DoNotRevealExtent);
     void markMisspellingsOrBadGrammar(const VisibleSelection&, bool checkSpelling, RefPtr<Range>& firstMisspellingRange);
     TextCheckingTypeMask resolveTextCheckingTypeMask(TextCheckingTypeMask);
-
-    void selectComposition();
-    enum FinishCompositionMode { ConfirmComposition, CancelComposition };
-    void finishComposition(const String&, FinishCompositionMode);
 
     void changeSelectionAfterCommand(const VisibleSelection& newSelection, FrameSelection::SetSelectionOptions);
     void notifyComponentsOnChangedSelection(const VisibleSelection& oldSelection, FrameSelection::SetSelectionOptions);
