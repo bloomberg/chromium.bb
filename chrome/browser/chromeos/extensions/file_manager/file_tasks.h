@@ -175,15 +175,14 @@ bool CrackTaskID(const std::string& task_id,
 
 // This generates a list of default tasks (tasks set as default by the user in
 // prefs) from the |common_tasks|.
-void FindDefaultTasks(Profile* profile,
-                      const std::vector<base::FilePath>& files_list,
-                      const FileBrowserHandlerList& common_tasks,
-                      FileBrowserHandlerList* default_tasks);
+FileBrowserHandlerList FindDefaultTasks(
+    Profile* profile,
+    const std::vector<base::FilePath>& files_list,
+    const FileBrowserHandlerList& common_tasks);
 
 // This generates list of tasks common for all files in |file_list|.
-bool FindCommonTasks(Profile* profile,
-                     const std::vector<GURL>& files_list,
-                     FileBrowserHandlerList* common_tasks);
+FileBrowserHandlerList FindCommonTasks(Profile* profile,
+                                       const std::vector<GURL>& files_list);
 
 // Finds a task for a file whose URL is |url| and whose path is |path|.
 // Returns default task if one is defined (The default task is the task that is

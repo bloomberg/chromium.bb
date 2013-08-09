@@ -101,18 +101,19 @@ std::string EscapedUtf8ToLower(const std::string& str) {
       false /* do not replace space with plus */);
 }
 
-bool GetFileBrowserHandlers(Profile* profile,
-                            const GURL& selected_file_url,
-                            FileBrowserHandlerList* results) {
+FileBrowserHandlerList GetFileBrowserHandlers(Profile* profile,
+                                              const GURL& selected_file_url) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
+  // In unit-tests, we may not have an ExtensionService.
   if (!service)
-    return false;  // In unit-tests, we may not have an ExtensionService.
+    return FileBrowserHandlerList();
 
   // We need case-insensitive matching, and pattern in the handler is already
   // in lower case.
   const GURL lowercase_url(EscapedUtf8ToLower(selected_file_url.spec()));
 
+  FileBrowserHandlerList results;
   for (ExtensionSet::const_iterator iter = service->extensions()->begin();
        iter != service->extensions()->end();
        ++iter) {
@@ -133,10 +134,10 @@ bool GetFileBrowserHandlers(Profile* profile,
       if (!action->MatchesURL(lowercase_url))
         continue;
 
-      results->push_back(action_iter->get());
+      results.push_back(action_iter->get());
     }
   }
-  return true;
+  return results;
 }
 
 fileapi::FileSystemContext* GetFileSystemContextForExtension(
@@ -624,12 +625,11 @@ bool CrackTaskID(const std::string& task_id,
 
 // Given the list of selected files, returns array of file action tasks
 // that are shared between them.
-void FindDefaultTasks(Profile* profile,
-                      const std::vector<base::FilePath>& files_list,
-                      const FileBrowserHandlerList& common_tasks,
-                      FileBrowserHandlerList* default_tasks) {
-  DCHECK(default_tasks);
-  default_tasks->clear();
+FileBrowserHandlerList FindDefaultTasks(
+    Profile* profile,
+    const std::vector<base::FilePath>& files_list,
+    const FileBrowserHandlerList& common_tasks) {
+  FileBrowserHandlerList default_tasks;
 
   std::set<std::string> default_ids;
   for (std::vector<base::FilePath>::const_iterator it = files_list.begin();
@@ -649,7 +649,7 @@ void FindDefaultTasks(Profile* profile,
                                      (*task_iter)->id());
     std::set<std::string>::iterator default_iter = default_ids.find(task_id);
     if (default_iter != default_ids.end()) {
-      default_tasks->push_back(*task_iter);
+      default_tasks.push_back(*task_iter);
       continue;
     }
 
@@ -659,28 +659,24 @@ void FindDefaultTasks(Profile* profile,
   }
 
   // If there are no default tasks found, use fallback as default.
-  if (fallback_task && default_tasks->empty())
-    default_tasks->push_back(fallback_task);
+  if (fallback_task && default_tasks.empty())
+    default_tasks.push_back(fallback_task);
+
+  return default_tasks;
 }
 
 // Given the list of selected files, returns array of context menu tasks
 // that are shared
-bool FindCommonTasks(Profile* profile,
-                     const std::vector<GURL>& files_list,
-                     FileBrowserHandlerList* common_tasks) {
-  DCHECK(common_tasks);
-  common_tasks->clear();
-
+FileBrowserHandlerList FindCommonTasks(Profile* profile,
+                                       const std::vector<GURL>& files_list) {
   FileBrowserHandlerList common_task_list;
   for (std::vector<GURL>::const_iterator it = files_list.begin();
        it != files_list.end(); ++it) {
-    FileBrowserHandlerList file_actions;
-    if (!GetFileBrowserHandlers(profile, *it, &file_actions))
-      return false;
+    FileBrowserHandlerList file_actions = GetFileBrowserHandlers(profile, *it);
     // If there is nothing to do for one file, the intersection of tasks for all
-    // files will be empty at the end, and so will the default tasks.
+    // files will be empty at the end, so no need to check further.
     if (file_actions.empty())
-      return true;
+      return FileBrowserHandlerList();
 
     // For the very first file, just copy all the elements.
     if (it == files_list.begin()) {
@@ -694,7 +690,7 @@ bool FindCommonTasks(Profile* profile,
                             std::back_inserter(intersection));
       common_task_list = intersection;
       if (common_task_list.empty())
-        return true;
+        return FileBrowserHandlerList();
     }
   }
 
@@ -714,8 +710,7 @@ bool FindCommonTasks(Profile* profile,
       common_task_list.erase(watch_iter);
   }
 
-  common_tasks->swap(common_task_list);
-  return true;
+  return common_task_list;
 }
 
 bool GetTaskForURLAndPath(Profile* profile,
@@ -725,18 +720,15 @@ bool GetTaskForURLAndPath(Profile* profile,
   std::vector<GURL> file_urls;
   file_urls.push_back(url);
 
-  FileBrowserHandlerList default_tasks;
-  FileBrowserHandlerList common_tasks;
-  if (!FindCommonTasks(profile, file_urls, &common_tasks))
-    return false;
-
+  FileBrowserHandlerList common_tasks = FindCommonTasks(profile, file_urls);
   if (common_tasks.empty())
     return false;
 
   std::vector<base::FilePath> file_paths;
   file_paths.push_back(file_path);
 
-  FindDefaultTasks(profile, file_paths, common_tasks, &default_tasks);
+  FileBrowserHandlerList default_tasks =
+      FindDefaultTasks(profile, file_paths, common_tasks);
 
   // If there's none, or more than one, then we don't have a canonical default.
   if (!default_tasks.empty()) {
