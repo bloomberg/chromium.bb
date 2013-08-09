@@ -22,6 +22,8 @@ GCLIENT_SPEC_DATA = [
                               "chrome/data/page_cycler/.git",
       "src/data/dom_perf": "https://chrome-internal.googlesource.com/"
                            "chrome/data/dom_perf/.git",
+      "src/data/mach_ports": "https://chrome-internal.googlesource.com/"
+                           "chrome/data/mach_ports/.git",
       "src/tools/perf/data": "https://chrome-internal.googlesource.com/"
                              "chrome/tools/perf/data/.git",
       "src/third_party/adobe/flash/binaries/ppapi/linux":
