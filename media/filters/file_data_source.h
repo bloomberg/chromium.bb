@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/platform_file.h"
 #include "media/base/data_source.h"
 
 namespace media {
@@ -21,6 +22,7 @@ class MEDIA_EXPORT FileDataSource : public DataSource {
   virtual ~FileDataSource();
 
   bool Initialize(const base::FilePath& file_path);
+  bool InitializeFromPlatformFile(const base::PlatformFile& file);
 
   // Implementation of DataSource.
   virtual void set_host(DataSourceHost* host) OVERRIDE;

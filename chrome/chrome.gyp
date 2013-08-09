@@ -252,6 +252,7 @@
           'dependencies': [
             '../base/base.gyp:base',
             '../content/content.gyp:content_utility',
+            '../media/media.gyp:media',
             '../skia/skia.gyp:skia',
             '../third_party/libxml/libxml.gyp:libxml',
             'common',

@@ -25,6 +25,17 @@ bool FileDataSource::Initialize(const base::FilePath& file_path) {
   return true;
 }
 
+bool FileDataSource::InitializeFromPlatformFile(
+    const base::PlatformFile& file) {
+  DCHECK(!file_.IsValid());
+
+  if (!file_.Initialize(file))
+    return false;
+
+  UpdateHostBytes();
+  return true;
+}
+
 void FileDataSource::set_host(DataSourceHost* host) {
   DataSource::set_host(host);
   UpdateHostBytes();

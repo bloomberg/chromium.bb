@@ -7,9 +7,12 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/path_service.h"
+#include "base/time/time.h"
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension.h"
@@ -22,7 +25,10 @@
 #include "chrome/utility/profile_import_handler.h"
 #include "chrome/utility/web_resource_unpacker.h"
 #include "content/public/child/image_decoder_utils.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/utility/utility_thread.h"
+#include "media/base/media.h"
+#include "media/base/media_file_checker.h"
 #include "printing/page_range.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/zlib/google/zip.h"
@@ -124,6 +130,10 @@ bool ChromeContentUtilityClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_AnalyzeZipFileForDownloadProtection,
                         OnAnalyzeZipFileForDownloadProtection)
 
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CheckMediaFile, OnCheckMediaFile)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
+
 #if defined(OS_CHROMEOS)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_CreateZipFile, OnCreateZipFile)
 #endif  // defined(OS_CHROMEOS)
@@ -151,10 +161,17 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   return handled;
 }
 
+// static
 void ChromeContentUtilityClient::PreSandboxStartup() {
 #if defined(ENABLE_MDNS)
   local_discovery::ServiceDiscoveryMessageHandler::PreSandboxStartup();
 #endif  // ENABLE_MDNS
+
+  // Load media libraries for media file validation.
+  base::FilePath media_path;
+  PathService::Get(content::DIR_MEDIA_LIBS, &media_path);
+  if (!media_path.empty())
+    media::InitializeMediaLibrary(media_path);
 }
 
 void ChromeContentUtilityClient::OnUnpackExtension(
@@ -505,7 +522,7 @@ void ChromeContentUtilityClient::OnStartupPing() {
 }
 
 void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
-    IPC::PlatformFileForTransit zip_file) {
+    const IPC::PlatformFileForTransit& zip_file) {
   safe_browsing::zip_analyzer::Results results;
   safe_browsing::zip_analyzer::AnalyzeZipFile(
       IPC::PlatformFileForTransitToPlatformFile(zip_file), &results);
@@ -513,6 +530,19 @@ void ChromeContentUtilityClient::OnAnalyzeZipFileForDownloadProtection(
       results));
   ReleaseProcessIfNeeded();
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void ChromeContentUtilityClient::OnCheckMediaFile(
+    int64 milliseconds_of_decoding,
+    const IPC::PlatformFileForTransit& media_file) {
+  media::MediaFileChecker
+      checker(IPC::PlatformFileForTransitToPlatformFile(media_file));
+  const bool check_success = checker.Start(
+      base::TimeDelta::FromMilliseconds(milliseconds_of_decoding));
+  Send(new ChromeUtilityHostMsg_CheckMediaFile_Finished(check_success));
+  ReleaseProcessIfNeeded();
+}
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_WIN)
 void ChromeContentUtilityClient::OnParseITunesPrefXml(
@@ -526,7 +556,7 @@ void ChromeContentUtilityClient::OnParseITunesPrefXml(
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 void ChromeContentUtilityClient::OnParseITunesLibraryXmlFile(
-    IPC::PlatformFileForTransit itunes_library_file) {
+    const IPC::PlatformFileForTransit& itunes_library_file) {
   itunes::ITunesLibraryParser parser;
   base::PlatformFile file =
       IPC::PlatformFileForTransitToPlatformFile(itunes_library_file);

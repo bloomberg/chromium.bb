@@ -1,10 +1,10 @@
 include_rules = [
   "+content/public/child",
   "+content/public/utility",
-  "+webkit/glue",
 
   # For generated headers.
   "+grit",
 
   "+skia/ext",
+  "+media",
 ]

@@ -81,7 +81,11 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
   void OnGetPrinterCapsAndDefaults(const std::string& printer_name);
   void OnStartupPing();
   void OnAnalyzeZipFileForDownloadProtection(
-      IPC::PlatformFileForTransit zip_file);
+      const IPC::PlatformFileForTransit& zip_file);
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+  void OnCheckMediaFile(int64 milliseconds_of_decoding,
+                        const IPC::PlatformFileForTransit& media_file);
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_WIN)
   void OnParseITunesPrefXml(const std::string& itunes_xml_data);
@@ -89,7 +93,7 @@ class ChromeContentUtilityClient : public content::ContentUtilityClient {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   void OnParseITunesLibraryXmlFile(
-      IPC::PlatformFileForTransit itunes_library_file);
+      const IPC::PlatformFileForTransit& itunes_library_file);
 
   void OnParsePicasaPMPDatabase(
       const picasa::AlbumTableFilesForTransit& album_table_files);
