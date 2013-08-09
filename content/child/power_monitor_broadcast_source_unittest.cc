@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
-#include "base/test/power_monitor_test_base.h"
+#include "base/power_monitor/power_monitor_test_base.h"
 #include "content/child/power_monitor_broadcast_source.h"
 #include "content/common/power_monitor_messages.h"
 #include "testing/gtest/include/gtest/gtest.h"
