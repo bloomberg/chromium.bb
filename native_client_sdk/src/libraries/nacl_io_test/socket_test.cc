@@ -268,6 +268,26 @@ TEST_F(SocketTest, Socketpair) {
 // implementations of these functions).
 #if !defined(__GLIBC__)
 
+TEST(SocketUtilityFunctions, Htonl) {
+  uint32_t host_long = 0x44332211;
+  uint32_t network_long = htonl(host_long);
+  uint8_t network_bytes[4];
+  memcpy(network_bytes, &network_long, 4);
+  EXPECT_EQ(network_bytes[0], 0x44);
+  EXPECT_EQ(network_bytes[1], 0x33);
+  EXPECT_EQ(network_bytes[2], 0x22);
+  EXPECT_EQ(network_bytes[3], 0x11);
+}
+
+TEST(SocketUtilityFunctions, Htons) {
+  uint16_t host_short = 0x2211;
+  uint16_t network_short = htons(host_short);
+  uint8_t network_bytes[2];
+  memcpy(network_bytes, &network_short, 2);
+  EXPECT_EQ(network_bytes[0], 0x22);
+  EXPECT_EQ(network_bytes[1], 0x11);
+}
+
 static struct in_addr generate_ipv4_addr(int tuple1, int tuple2,
                                          int tuple3, int tuple4) {
   unsigned char addr[4];
@@ -275,8 +295,9 @@ static struct in_addr generate_ipv4_addr(int tuple1, int tuple2,
   addr[1] = static_cast<unsigned char>(tuple2);
   addr[2] = static_cast<unsigned char>(tuple3);
   addr[3] = static_cast<unsigned char>(tuple4);
-  struct in_addr* real_addr = reinterpret_cast<struct in_addr*>(addr);
-  return *real_addr;
+  struct in_addr real_addr;
+  memcpy(&real_addr, addr, 4);
+  return real_addr;
 }
 
 static struct in6_addr generate_ipv6_addr(int* tuples) {
@@ -285,8 +306,9 @@ static struct in6_addr generate_ipv6_addr(int* tuples) {
     addr[2*i] = (tuples[i] >> 8) & 0xFF;
     addr[2*i+1] = tuples[i] & 0xFF;
   }
-  struct in6_addr* real_addr = reinterpret_cast<struct in6_addr*>(addr);
-  return *real_addr;
+  struct in6_addr real_addr;
+  memcpy(&real_addr, addr, 16);
+  return real_addr;
 }
 
 TEST(SocketUtilityFunctions, Inet_ntoa) {
@@ -370,6 +392,22 @@ TEST(SocketUtilityFunctions, Inet_ntop_failure) {
   EXPECT_TRUE(NULL == inet_ntop(AF_INET6, &ipv6_addr,
                                 addr_name, INET6_ADDRSTRLEN - 1));
   EXPECT_EQ(errno, ENOSPC);
+}
+
+TEST(SocketUtilityFunctions, Ntohs) {
+  uint8_t network_bytes[2] = { 0x22, 0x11 };
+  uint16_t network_short;
+  memcpy(&network_short, network_bytes, 2);
+  uint16_t host_short = ntohs(network_short);
+  EXPECT_EQ(host_short, 0x2211);
+}
+
+TEST(SocketUtilityFunctions, Ntohl) {
+  uint8_t network_bytes[4] = { 0x44, 0x33, 0x22, 0x11 };
+  uint32_t network_long;
+  memcpy(&network_long, network_bytes, 4);
+  uint32_t host_long = ntohl(network_long);
+  EXPECT_EQ(host_long, 0x44332211);
 }
 
 #endif  // !defined(__GLIBC__)

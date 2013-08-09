@@ -562,4 +562,11 @@ char	*inet_ntoa_r(struct in_addr ina, char *buf); /* in libkern */
 #include <netinet6/in6.h>
 #undef __KAME_NETINET_IN_H_INCLUDED_
 
+__BEGIN_DECLS
+uint32_t         htonl(uint32_t hostlong);
+uint16_t         htons(uint16_t hostshort);
+uint32_t         ntohl(uint32_t networklong);
+uint16_t         ntohs(uint16_t networkshort);
+__END_DECLS
+
 #endif /* !_NETINET_IN_H_*/

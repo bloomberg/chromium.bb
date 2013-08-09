@@ -880,6 +880,8 @@ src/nacl_io/syscalls/getsockopt.c
 src/nacl_io/syscalls/getwd.c
 src/nacl_io/syscalls/herror.c
 src/nacl_io/syscalls/hstrerror.c
+src/nacl_io/syscalls/htonl.c
+src/nacl_io/syscalls/htons.c
 src/nacl_io/syscalls/inet_ntoa.cc
 src/nacl_io/syscalls/inet_ntop.cc
 src/nacl_io/syscalls/ioctl.c
@@ -889,6 +891,8 @@ src/nacl_io/syscalls/link.c
 src/nacl_io/syscalls/listen.c
 src/nacl_io/syscalls/mkdir.c
 src/nacl_io/syscalls/mount.c
+src/nacl_io/syscalls/ntohl.c
+src/nacl_io/syscalls/ntohs.c
 src/nacl_io/syscalls/poll.c
 src/nacl_io/syscalls/recv.c
 src/nacl_io/syscalls/recvfrom.c
