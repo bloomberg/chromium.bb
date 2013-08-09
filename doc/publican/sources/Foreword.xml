@@ -9,15 +9,14 @@
   <title>Preface</title>
 
   <para>
-  This document concerns the (i) Wayland architecture, (ii) Wayland model of
-  operation and (iii) its library API. Wayland protocol specification is shown
-  also in the Appendix. The document here is aimed at Wayland developers and
-  who is looking for information how to program with it, but it is not meant
-  primarily for applications developers.
+  This document describes the (i) Wayland architecture, (ii) Wayland model of
+  operation and (iii) its library API. Also, the Wayland protocol specification is shown
+  in the Appendix. This document is aimed primarily at Wayland developers and
+  those looking to program with it; it does not cover application development.
   </para>
   <para>
-  There have been many contributors to this document and, while this is the
-  first edition only, many errors are expected to be found. We appreciate
+  There have been many contributors to this document and since this is only the
+  first edition many errors are expected to be found. We appreciate
   corrections.
   </para>
   <literallayout>
