@@ -959,6 +959,10 @@ ui::TextInputType NativeTextfieldViews::GetTextInputType() const {
   return textfield_->GetTextInputType();
 }
 
+ui::TextInputMode NativeTextfieldViews::GetTextInputMode() const {
+  return ui::TEXT_INPUT_MODE_DEFAULT;
+}
+
 bool NativeTextfieldViews::CanComposeInline() const {
   return true;
 }

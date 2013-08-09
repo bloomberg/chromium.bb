@@ -1042,6 +1042,14 @@ ui::TextInputType RenderWidgetHostViewWin::GetTextInputType() const {
   return text_input_type_;
 }
 
+ui::TextInputMode RenderWidgetHostViewWin::GetTextInputMode() const {
+  if (!base::win::IsTSFAwareRequired()) {
+    NOTREACHED();
+    return ui::TEXT_INPUT_MODE_DEFAULT;
+  }
+  return ui::TEXT_INPUT_MODE_DEFAULT;
+}
+
 bool RenderWidgetHostViewWin::CanComposeInline() const {
   if (!base::win::IsTSFAwareRequired()) {
     NOTREACHED();

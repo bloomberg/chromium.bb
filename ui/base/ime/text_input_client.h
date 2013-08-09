@@ -9,6 +9,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/base/range/range.h"
 #include "ui/base/ui_export.h"
@@ -62,6 +63,10 @@ class UI_EXPORT TextInputClient {
   // Returns current text input type. It could be changed and even becomes
   // TEXT_INPUT_TYPE_NONE at runtime.
   virtual ui::TextInputType GetTextInputType() const = 0;
+
+  // Returns current text input mode. It could be changed and even becomes
+  // TEXT_INPUT_MODE_DEFAULT at runtime.
+  virtual ui::TextInputMode GetTextInputMode() const = 0;
 
   // Returns if the client supports inline composition currently.
   virtual bool CanComposeInline() const = 0;

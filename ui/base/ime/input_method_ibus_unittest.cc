@@ -402,6 +402,9 @@ class InputMethodIBusTest : public internal::InputMethodDelegate,
   virtual TextInputType GetTextInputType() const OVERRIDE {
     return input_type_;
   }
+  virtual TextInputMode GetTextInputMode() const OVERRIDE {
+    return TEXT_INPUT_MODE_DEFAULT;
+  }
   virtual bool CanComposeInline() const OVERRIDE {
     return can_compose_inline_;
   }

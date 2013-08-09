@@ -123,6 +123,9 @@ class TestTextInputClient : public ui::TextInputClient {
   virtual ui::TextInputType GetTextInputType() const OVERRIDE {
     return type_;
   }
+  virtual ui::TextInputMode GetTextInputMode() const OVERRIDE {
+    return ui::TEXT_INPUT_MODE_DEFAULT;
+  }
   virtual bool CanComposeInline() const OVERRIDE { return false; }
   virtual gfx::Rect GetCaretBounds() OVERRIDE { return gfx::Rect(); }
 

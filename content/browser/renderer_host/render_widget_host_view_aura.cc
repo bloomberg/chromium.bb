@@ -2165,6 +2165,10 @@ ui::TextInputType RenderWidgetHostViewAura::GetTextInputType() const {
   return text_input_type_;
 }
 
+ui::TextInputMode RenderWidgetHostViewAura::GetTextInputMode() const {
+  return ui::TEXT_INPUT_MODE_DEFAULT;
+}
+
 bool RenderWidgetHostViewAura::CanComposeInline() const {
   return can_compose_inline_;
 }

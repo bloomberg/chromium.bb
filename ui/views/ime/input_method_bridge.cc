@@ -147,6 +147,11 @@ ui::TextInputType InputMethodBridge::GetTextInputType() const {
   return client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 }
 
+ui::TextInputMode InputMethodBridge::GetTextInputMode() const {
+  TextInputClient* client = GetTextInputClient();
+  return client ? client->GetTextInputMode() : ui::TEXT_INPUT_MODE_DEFAULT;
+}
+
 bool InputMethodBridge::CanComposeInline() const {
   TextInputClient* client = GetTextInputClient();
   return client ? client->CanComposeInline() : true;
