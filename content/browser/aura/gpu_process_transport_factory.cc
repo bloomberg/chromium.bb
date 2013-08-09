@@ -232,6 +232,11 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
         CreateContextCommon(data->swap_client->AsWeakPtr(), data->surface_id);
   }
   if (!context) {
+    if (ui::Compositor::WasInitializedWithThread()) {
+      LOG(FATAL) << "Failed to create UI context, but can't use software "
+                 " compositing with browser threaded compositing. Aborting.";
+    }
+
     scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface =
         SoftwareBrowserCompositorOutputSurface::Create(
             CreateSoftwareOutputDevice(compositor));
