@@ -909,9 +909,9 @@
 	Set a class for the surface.
 
 	The surface class identifies the general class of applications
-	to which the surface belongs. A common convention is to use
-	the file name (full path if non-standard location) of the
-	applications .desktop file as the class.
+	to which the surface belongs. A common convention is to use the
+	file name (or the full path if it is a non-standard location) of
+	the application's .desktop file as the class.
       </description>
       <arg name="class_" type="string"/>
     </request>
