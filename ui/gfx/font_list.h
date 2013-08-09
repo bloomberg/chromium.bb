@@ -41,6 +41,11 @@ class UI_EXPORT FontList {
   // size.
   explicit FontList(const std::string& font_description_string);
 
+  // Creates a font list from font names, styles and size.
+  FontList(const std::vector<std::string>& font_names,
+           int font_style,
+           int font_size);
+
   // Creates a font list from a Font vector.
   // All fonts in this vector should have the same style and size.
   explicit FontList(const std::vector<Font>& fonts);
@@ -57,6 +62,17 @@ class UI_EXPORT FontList {
   // given font |size| in pixels.
   FontList DeriveFontListWithSize(int size) const;
 
+  // Returns a new FontList with the same font names and style but resized.
+  // |size_delta| is the size in pixels to add to the current font size.
+  FontList DeriveFontListWithSizeDelta(int size_delta) const;
+
+  // Returns a new FontList with the same font names but resized and the given
+  // style. |size_delta| is the size in pixels to add to the current font size.
+  // |font_style| specifies the new style, which is a bitmask of the values:
+  // Font::BOLD, Font::ITALIC and Font::UNDERLINE.
+  FontList DeriveFontListWithSizeDeltaAndStyle(int size_delta,
+                                               int font_style) const;
+
   // Returns the height of this font list, which is max(ascent) + max(descent)
   // for all the fonts in the font list.
   int GetHeight() const;
@@ -64,6 +80,14 @@ class UI_EXPORT FontList {
   // Returns the baseline of this font list, which is max(baseline) for all the
   // fonts in the font list.
   int GetBaseline() const;
+
+  // Returns the number of horizontal pixels needed to display |text|.
+  int GetStringWidth(const base::string16& text) const;
+
+  // Returns the expected number of horizontal pixels needed to display the
+  // specified length of characters. Call GetStringWidth() to retrieve the
+  // actual number.
+  int GetExpectedTextWidth(int length) const;
 
   // Returns the |gfx::Font::FontStyle| style flags for this font list.
   int GetFontStyle() const;
@@ -83,6 +107,13 @@ class UI_EXPORT FontList {
   const Font& GetPrimaryFont() const;
 
  private:
+  // Extracts common font height and baseline into |common_height_| and
+  // |common_baseline_|.
+  void CacheCommonFontHeightAndBaseline() const;
+
+  // Extracts font style and size into |font_style_| and |font_size_|.
+  void CacheFontStyleAndSize() const;
+
   // A vector of Font. If FontList is constructed with font description string,
   // |fonts_| is not initialized during construction. Instead, it is computed
   // lazily when user asked to get the font vector.
@@ -99,6 +130,10 @@ class UI_EXPORT FontList {
   // The cached common height and baseline of the fonts in the font list.
   mutable int common_height_;
   mutable int common_baseline_;
+
+  // Cached font style and size.
+  mutable int font_style_;
+  mutable int font_size_;
 };
 
 }  // namespace gfx
