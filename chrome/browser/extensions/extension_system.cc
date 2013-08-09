@@ -40,7 +40,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
@@ -62,8 +62,8 @@ namespace extensions {
 
 ExtensionSystem::ExtensionSystem() {
   // Only set if it hasn't already been set (e.g. by a test).
-  if (Feature::GetCurrentChannel() == Feature::GetDefaultChannel())
-    Feature::SetCurrentChannel(chrome::VersionInfo::GetChannel());
+  if (GetCurrentChannel() == GetDefaultChannel())
+    SetCurrentChannel(chrome::VersionInfo::GetChannel());
 }
 
 ExtensionSystem::~ExtensionSystem() {

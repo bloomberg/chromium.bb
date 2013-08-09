@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -144,7 +144,7 @@ class NativeMessagingTest : public ::testing::Test,
 
   // Force the channel to be dev.
   base::ScopedTempDir temp_dir_;
-  Feature::ScopedCurrentChannel current_channel_;
+  ScopedCurrentChannel current_channel_;
   scoped_ptr<NativeMessageProcessHost> native_message_process_host_;
   base::FilePath user_data_dir_;
   scoped_ptr<base::RunLoop> read_message_run_loop_;

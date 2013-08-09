@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "net/dns/mock_host_resolver.h"
@@ -36,7 +36,7 @@ class ScriptBadgeApiTest : public ExtensionApiTest {
   }
 
  private:
-  extensions::Feature::ScopedCurrentChannel trunk_;
+  extensions::ScopedCurrentChannel trunk_;
 };
 
 IN_PROC_BROWSER_TEST_F(ScriptBadgeApiTest, Basics) {

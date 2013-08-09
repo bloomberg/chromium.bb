@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 
 using chrome::VersionInfo;
 
@@ -306,7 +307,7 @@ Feature::Availability SimpleFeature::IsAvailableToManifest(
   if (max_manifest_version_ != 0 && manifest_version > max_manifest_version_)
     return CreateAvailability(INVALID_MAX_MANIFEST_VERSION, type);
 
-  if (channel_has_been_set_ && channel_ < Feature::GetCurrentChannel())
+  if (channel_has_been_set_ && channel_ < GetCurrentChannel())
     return CreateAvailability(UNSUPPORTED_CHANNEL, type);
 
   return CreateAvailability(IS_AVAILABLE, type);

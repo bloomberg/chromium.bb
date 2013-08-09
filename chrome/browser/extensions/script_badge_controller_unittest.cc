@@ -19,7 +19,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -105,7 +105,7 @@ class ScriptBadgeControllerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   FeatureSwitch::ScopedOverride feature_override_;
-  Feature::ScopedCurrentChannel current_channel_;
+  ScopedCurrentChannel current_channel_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;

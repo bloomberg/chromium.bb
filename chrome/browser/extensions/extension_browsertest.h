@@ -16,7 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_details.h"
@@ -297,7 +297,7 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest,
   int target_visible_page_action_count_;
 
   // Make the current channel "dev" for the duration of the test.
-  extensions::Feature::ScopedCurrentChannel current_channel_;
+  extensions::ScopedCurrentChannel current_channel_;
 
   // Disable external install UI.
   extensions::FeatureSwitch::ScopedOverride

@@ -242,6 +242,8 @@
         'common/extensions/features/complex_feature.h',
         'common/extensions/features/feature.cc',
         'common/extensions/features/feature.h',
+        'common/extensions/features/feature_channel.cc',
+        'common/extensions/features/feature_channel.h',
         'common/extensions/features/feature_provider.h',
         'common/extensions/features/manifest_feature.cc',
         'common/extensions/features/manifest_feature.h',

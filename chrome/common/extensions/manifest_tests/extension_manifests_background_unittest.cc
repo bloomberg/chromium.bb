@@ -10,8 +10,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/features/base_feature_provider.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,8 +88,7 @@ TEST_F(ExtensionManifestBackgroundTest, BackgroundAllowNoJsAccess) {
 }
 
 TEST_F(ExtensionManifestBackgroundTest, BackgroundPageWebRequest) {
-  Feature::ScopedCurrentChannel current_channel(
-      chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel current_channel(chrome::VersionInfo::CHANNEL_DEV);
 
   std::string error;
   scoped_ptr<base::DictionaryValue> manifest(

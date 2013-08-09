@@ -25,6 +25,7 @@
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
@@ -507,7 +508,7 @@ void Dispatcher::OnSetSystemFont(const std::string& font_family,
 }
 
 void Dispatcher::OnSetChannel(int channel) {
-  Feature::SetCurrentChannel(
+  extensions::SetCurrentChannel(
       static_cast<chrome::VersionInfo::Channel>(channel));
 }
 
@@ -1084,7 +1085,7 @@ void Dispatcher::DidCreateScriptContext(
 
   if (context_type == Feature::BLESSED_EXTENSION_CONTEXT &&
       is_within_platform_app &&
-      Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
+      GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV &&
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableAppWindowControls)) {
     module_system->Require("windowControls");
@@ -1100,7 +1101,7 @@ void Dispatcher::DidCreateScriptContext(
     if (extension->HasAPIPermission(APIPermission::kWebView)) {
       module_system->Require("webView");
       bool includeExperimental =
-          Feature::GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
+          GetCurrentChannel() <= chrome::VersionInfo::CHANNEL_DEV ||
           extension->id() == extension_misc::kIdentityApiUiAppId;
       if (!includeExperimental) {
         // TODO(asargent) We need a whitelist for webview experimental.

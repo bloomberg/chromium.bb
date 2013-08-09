@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,7 +67,7 @@ class StorageSchemaManifestHandlerTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  Feature::ScopedCurrentChannel scoped_channel_;
+  ScopedCurrentChannel scoped_channel_;
   base::DictionaryValue manifest_;
 };
 

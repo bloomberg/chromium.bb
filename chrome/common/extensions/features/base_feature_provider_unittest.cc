@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/features/base_feature_provider.h"
 
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/features/permission_feature.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -164,7 +165,7 @@ TEST(BaseFeatureProviderTest, ComplexFeatures) {
 
   // Make sure both rules are applied correctly.
   {
-    Feature::ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
+    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
     EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "1",
         Manifest::TYPE_EXTENSION,
@@ -177,7 +178,7 @@ TEST(BaseFeatureProviderTest, ComplexFeatures) {
         Feature::UNSPECIFIED_PLATFORM).result());
   }
   {
-    Feature::ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_STABLE);
+    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_STABLE);
     EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "1",
         Manifest::TYPE_EXTENSION,

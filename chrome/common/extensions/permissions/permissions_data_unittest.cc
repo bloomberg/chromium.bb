@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
@@ -117,8 +117,7 @@ TEST(ExtensionPermissionsTest, EffectiveHostPermissions) {
 
 TEST(ExtensionPermissionsTest, SocketPermissions) {
   // Set feature current channel to appropriate value.
-  Feature::ScopedCurrentChannel scoped_channel(
-      chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel scoped_channel(chrome::VersionInfo::CHANNEL_DEV);
   scoped_refptr<Extension> extension;
   std::string error;
 

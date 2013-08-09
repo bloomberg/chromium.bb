@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/features/complex_feature.h"
 
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -14,6 +15,7 @@ using extensions::DictionaryBuilder;
 using extensions::Feature;
 using extensions::ListBuilder;
 using extensions::Manifest;
+using extensions::ScopedCurrentChannel;
 using extensions::SimpleFeature;
 
 namespace {
@@ -25,7 +27,7 @@ class ExtensionComplexFeatureTest : public testing::Test {
   virtual ~ExtensionComplexFeatureTest() {}
 
  private:
-  Feature::ScopedCurrentChannel current_channel_;
+  ScopedCurrentChannel current_channel_;
 };
 
 TEST_F(ExtensionComplexFeatureTest, MultipleRulesWhitelist) {
@@ -108,7 +110,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
 
   // Test match 1st rule.
   {
-    Feature::ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_UNKNOWN);
+    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_UNKNOWN);
     EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "1",
         Manifest::TYPE_EXTENSION,
@@ -119,7 +121,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
 
   // Test match 2nd rule.
   {
-    Feature::ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
+    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
     EXPECT_EQ(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "2",
         Manifest::TYPE_LEGACY_PACKAGED_APP,
@@ -130,7 +132,7 @@ TEST_F(ExtensionComplexFeatureTest, MultipleRulesChannels) {
 
   // Test feature not available to extensions above channel unknown.
   {
-    Feature::ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
+    ScopedCurrentChannel current_channel(VersionInfo::CHANNEL_BETA);
     EXPECT_NE(Feature::IS_AVAILABLE, feature->IsAvailableToManifest(
         "1",
         Manifest::TYPE_EXTENSION,

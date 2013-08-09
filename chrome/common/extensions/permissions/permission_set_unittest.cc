@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_test_util.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/extensions/permissions/permissions_info.h"
@@ -835,7 +835,7 @@ TEST(PermissionsTest, GetWarningMessages_Serial) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
-  Feature::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_any_host.json");
@@ -849,7 +849,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_AnyHost) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
-  Feature::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_one_domain_two_hostnames.json");
@@ -875,7 +875,7 @@ TEST(PermissionsTest, GetWarningMessages_Socket_OneDomainTwoHostnames) {
 }
 
 TEST(PermissionsTest, GetWarningMessages_Socket_TwoDomainsOneHostname) {
-  Feature::ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
+  ScopedCurrentChannel channel(chrome::VersionInfo::CHANNEL_DEV);
 
   scoped_refptr<Extension> extension =
       LoadManifest("permissions", "socket_two_domains_one_hostname.json");

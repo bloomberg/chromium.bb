@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
@@ -30,7 +30,7 @@ class ExternallyConnectableTest : public ExtensionManifestTest {
   }
 
  private:
-  Feature::ScopedCurrentChannel channel_;
+  ScopedCurrentChannel channel_;
 };
 
 TEST_F(ExternallyConnectableTest, IDsAndMatches) {

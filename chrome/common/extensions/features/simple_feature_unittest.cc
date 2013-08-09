@@ -4,6 +4,7 @@
 
 #include "chrome/common/extensions/features/simple_feature.h"
 
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,6 +14,7 @@ using extensions::Extension;
 using extensions::Feature;
 using extensions::ListBuilder;
 using extensions::Manifest;
+using extensions::ScopedCurrentChannel;
 using extensions::SimpleFeature;
 
 namespace {
@@ -33,7 +35,7 @@ class ExtensionSimpleFeatureTest : public testing::Test {
   virtual ~ExtensionSimpleFeatureTest() {}
 
  private:
-  Feature::ScopedCurrentChannel current_channel_;
+  ScopedCurrentChannel current_channel_;
 };
 
 TEST_F(ExtensionSimpleFeatureTest, IsAvailableNullCase) {
@@ -534,7 +536,7 @@ TEST_F(ExtensionSimpleFeatureTest, Equals) {
 
 Feature::AvailabilityResult IsAvailableInChannel(
     const std::string& channel, VersionInfo::Channel channel_for_testing) {
-  Feature::ScopedCurrentChannel current_channel(channel_for_testing);
+  ScopedCurrentChannel current_channel(channel_for_testing);
 
   SimpleFeature feature;
   if (!channel.empty()) {

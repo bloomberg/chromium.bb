@@ -80,7 +80,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/feature_switch.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
@@ -2819,7 +2819,7 @@ void ExtensionService::Observe(int type,
 
       // Extensions need to know the channel for API restrictions.
       process->Send(new ExtensionMsg_SetChannel(
-          extensions::Feature::GetCurrentChannel()));
+          extensions::GetCurrentChannel()));
 
       // Platform apps need to know the system font.
       scoped_ptr<base::DictionaryValue> fonts(new base::DictionaryValue);

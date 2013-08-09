@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
 
@@ -94,34 +93,6 @@ class Feature {
   // Used by ChromeV8Context until the feature system is fully functional.
   static Availability CreateAvailability(AvailabilityResult result,
                                          const std::string& message);
-
-  // Gets the current channel as seen by the Feature system.
-  static chrome::VersionInfo::Channel GetCurrentChannel();
-
-  // Sets the current channel as seen by the Feature system. In the browser
-  // process this should be chrome::VersionInfo::GetChannel(), and in the
-  // renderer this will need to come from an IPC.
-  static void SetCurrentChannel(chrome::VersionInfo::Channel channel);
-
-  // Gets the default channel as seen by the Feature system.
-  static chrome::VersionInfo::Channel GetDefaultChannel();
-
-  // Scoped channel setter. Use for tests.
-  class ScopedCurrentChannel {
-   public:
-    explicit ScopedCurrentChannel(chrome::VersionInfo::Channel channel)
-        : original_channel_(chrome::VersionInfo::CHANNEL_UNKNOWN) {
-      original_channel_ = GetCurrentChannel();
-      SetCurrentChannel(channel);
-    }
-
-    ~ScopedCurrentChannel() {
-      SetCurrentChannel(original_channel_);
-    }
-
-   private:
-    chrome::VersionInfo::Channel original_channel_;
-  };
 
   const std::string& name() const { return name_; }
   void set_name(const std::string& name) { name_ = name; }

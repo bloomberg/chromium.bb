@@ -10,7 +10,7 @@
 #include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/common/extensions/api/app_current_window_internal.h"
 #include "chrome/common/extensions/api/app_window.h"
-#include "chrome/common/extensions/features/feature.h"
+#include "chrome/common/extensions/features/feature_channel.h"
 #include "extensions/common/switches.h"
 
 using apps::ShellWindow;
@@ -123,7 +123,7 @@ bool AppCurrentWindowInternalSetBoundsFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalSetIconFunction::RunWithWindow(
     ShellWindow* window) {
-  if (Feature::GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
+  if (GetCurrentChannel() > chrome::VersionInfo::CHANNEL_DEV &&
       GetExtension()->location() != extensions::Manifest::COMPONENT) {
     error_ = kDevChannelOnly;
     return false;
