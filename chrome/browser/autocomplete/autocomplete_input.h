@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 #include "url/url_parse.h"
@@ -221,6 +222,8 @@ class AutocompleteInput {
   void Clear();
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(AutocompleteProviderTest, GetDestinationURL);
+
   // NOTE: Whenever adding a new field here, please make sure to update Clear()
   // method.
   string16 text_;
