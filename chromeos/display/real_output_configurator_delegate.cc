@@ -138,7 +138,7 @@ RealOutputConfiguratorDelegate::GetOutputs(
         XRRCrtcInfo* crtc_info = XRRGetCrtcInfo(
             display_, screen_, output_info->crtc);
         to_populate.current_mode = crtc_info->mode;
-        to_populate.height = crtc_info->height;
+        to_populate.x = crtc_info->x;
         to_populate.y = crtc_info->y;
         XRRFreeCrtcInfo(crtc_info);
       }
@@ -252,38 +252,37 @@ bool RealOutputConfiguratorDelegate::GetModeDetails(RRMode mode,
   return false;
 }
 
-void RealOutputConfiguratorDelegate::ConfigureCrtc(
-    OutputConfigurator::CrtcConfig* config) {
+bool RealOutputConfiguratorDelegate::ConfigureCrtc(
+    RRCrtc crtc,
+    RRMode mode,
+    RROutput output,
+    int x,
+    int y) {
   CHECK(screen_) << "Server not grabbed";
-  VLOG(1) << "ConfigureCrtc: crtc=" << config->crtc
-          << " mode=" << config->mode
-          << " output=" << config->output
-          << " x=" << config->x
-          << " y=" << config->y;
-
-  RROutput* outputs = NULL;
-  int num_outputs = 0;
-  if (config->output && config->mode) {
-    outputs = &config->output;
-    num_outputs = 1;
-  }
-
-  XRRSetCrtcConfig(display_,
-                   screen_,
-                   config->crtc,
-                   CurrentTime,
-                   config->x,
-                   config->y,
-                   config->mode,
-                   RR_Rotate_0,
-                   outputs,
-                   num_outputs);
+  VLOG(1) << "ConfigureCrtc: crtc=" << crtc
+          << " mode=" << mode
+          << " output=" << output
+          << " x=" << x
+          << " y=" << y;
+  // Xrandr.h is full of lies. XRRSetCrtcConfig() is defined as returning a
+  // Status, which is typically 0 for failure and 1 for success. In
+  // actuality it returns a RRCONFIGSTATUS, which uses 0 for success.
+  return XRRSetCrtcConfig(display_,
+                          screen_,
+                          crtc,
+                          CurrentTime,
+                          x,
+                          y,
+                          mode,
+                          RR_Rotate_0,
+                          (output && mode) ? &output : NULL,
+                          (output && mode) ? 1 : 0) == RRSetConfigSuccess;
 }
 
 void RealOutputConfiguratorDelegate::CreateFrameBuffer(
     int width,
     int height,
-    const std::vector<OutputConfigurator::CrtcConfig>& configs) {
+    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
   CHECK(screen_) << "Server not grabbed";
   int current_width = DisplayWidth(display_, DefaultScreen(display_));
   int current_height = DisplayHeight(display_, DefaultScreen(display_));
@@ -292,7 +291,7 @@ void RealOutputConfiguratorDelegate::CreateFrameBuffer(
   if (width ==  current_width && height == current_height)
     return;
 
-  DestroyUnusedCrtcs(configs);
+  DestroyUnusedCrtcs(outputs);
   int mm_width = width * kPixelsToMmScale;
   int mm_height = height * kPixelsToMmScale;
   XRRSetScreenSize(display_, window_, width, height, mm_width, mm_height);
@@ -345,7 +344,7 @@ void RealOutputConfiguratorDelegate::SendProjectingStateToPowerManager(
 }
 
 void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(
-    const std::vector<OutputConfigurator::CrtcConfig>& configs) {
+    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
   CHECK(screen_) << "Server not grabbed";
   // Setting the screen size will fail if any CRTC doesn't fit afterwards.
   // At the same time, turning CRTCs off and back on uses up a lot of time.
@@ -360,31 +359,32 @@ void RealOutputConfiguratorDelegate::DestroyUnusedCrtcs(
   // out of the way so we can rebuild the frame buffer.
   for (int i = 0; i < screen_->ncrtc; ++i) {
     // Default config is to disable the crtcs.
-    OutputConfigurator::CrtcConfig config(
-        screen_->crtcs[i], 0, 0, None, None);
-    for (std::vector<OutputConfigurator::CrtcConfig>::const_iterator it =
-         configs.begin(); it != configs.end(); ++it) {
-      if (config.crtc == it->crtc) {
-        config.mode = it->mode;
-        config.output = it->output;
+    RRCrtc crtc = screen_->crtcs[i];
+    RRMode mode = None;
+    RROutput output = None;
+    for (std::vector<OutputConfigurator::OutputSnapshot>::const_iterator it =
+         outputs.begin(); it != outputs.end(); ++it) {
+      if (crtc == it->crtc) {
+        mode = it->current_mode;
+        output = it->output;
         break;
       }
     }
 
-    if (config.mode != None) {
+    if (mode != None) {
       // In case our CRTC doesn't fit in our current framebuffer, disable it.
       // It'll get reenabled after we resize the framebuffer.
       int mode_width = 0, mode_height = 0;
-      CHECK(GetModeDetails(config.mode, &mode_width, &mode_height, NULL));
+      CHECK(GetModeDetails(mode, &mode_width, &mode_height, NULL));
       int current_width = DisplayWidth(display_, DefaultScreen(display_));
       int current_height = DisplayHeight(display_, DefaultScreen(display_));
       if (mode_width > current_width || mode_height > current_height) {
-        config.mode = None;
-        config.output = None;
+        mode = None;
+        output = None;
       }
     }
 
-    ConfigureCrtc(&config);
+    ConfigureCrtc(crtc, mode, output, 0, 0);
   }
 }
 

@@ -148,19 +148,23 @@ class TestDelegate : public OutputConfigurator::Delegate {
       *interlaced = it->second.interlaced;
     return true;
   }
-  virtual void ConfigureCrtc(OutputConfigurator::CrtcConfig* config) OVERRIDE {
-    AppendAction(GetCrtcAction(config->crtc, config->x, config->y, config->mode,
-                               config->output));
+  virtual bool ConfigureCrtc(RRCrtc crtc,
+                             RRMode mode,
+                             RROutput output,
+                             int x,
+                             int y) OVERRIDE {
+    AppendAction(GetCrtcAction(crtc, x, y, mode, output));
+    return true;
   }
   virtual void CreateFrameBuffer(
       int width,
       int height,
-      const std::vector<OutputConfigurator::CrtcConfig>& configs) OVERRIDE {
+      const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE {
     AppendAction(
         GetFramebufferAction(width,
                              height,
-                             configs.size() >= 1 ? configs[0].crtc : 0,
-                             configs.size() >= 2 ? configs[1].crtc : 0));
+                             outputs.size() >= 1 ? outputs[0].crtc : 0,
+                             outputs.size() >= 2 ? outputs[1].crtc : 0));
   }
   virtual void ConfigureCTM(
       int touch_device_id,
@@ -263,8 +267,8 @@ class OutputConfiguratorTest : public testing::Test {
     o->native_mode = kSmallModeId;
     o->selected_mode = kSmallModeId;
     o->mirror_mode = kSmallModeId;
+    o->x = 0;
     o->y = 0;
-    o->height = kSmallModeHeight;
     o->is_internal = true;
     o->is_aspect_preserving_scaling = true;
     o->touch_device_id = 0;
@@ -277,8 +281,8 @@ class OutputConfiguratorTest : public testing::Test {
     o->native_mode = kBigModeId;
     o->selected_mode = kBigModeId;
     o->mirror_mode = kSmallModeId;
+    o->x = 0;
     o->y = 0;
-    o->height = kBigModeHeight;
     o->is_internal = false;
     o->is_aspect_preserving_scaling = true;
     o->touch_device_id = 0;

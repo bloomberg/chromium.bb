@@ -42,36 +42,6 @@ class CHROMEOS_EXPORT OutputConfigurator
     : public base::MessageLoop::Dispatcher,
       public base::MessagePumpObserver {
  public:
-  // Information about an output's current state.
-  struct OutputSnapshot {
-    OutputSnapshot();
-
-    RROutput output;
-
-    // CRTC that should be used for this output.  Not necessarily the CRTC
-    // that XRandR reports is currently being used.
-    RRCrtc crtc;
-
-    RRMode current_mode;
-    RRMode native_mode;
-    RRMode mirror_mode;
-    RRMode selected_mode;
-
-    int y;
-    int height;
-
-    bool is_internal;
-    bool is_aspect_preserving_scaling;
-
-    // XInput device ID or 0 if this output isn't a touchscreen.
-    int touch_device_id;
-
-    // Display id for this output.
-    int64 display_id;
-
-    bool has_display_id;
-  };
-
   struct CoordinateTransformation {
     // Initialized to the identity transformation.
     CoordinateTransformation();
@@ -82,15 +52,44 @@ class CHROMEOS_EXPORT OutputConfigurator
     float y_offset;
   };
 
-  struct CrtcConfig {
-    CrtcConfig();
-    CrtcConfig(RRCrtc crtc, int x, int y, RRMode mode, RROutput output);
+  // Information about an output's current state.
+  struct OutputSnapshot {
+    OutputSnapshot();
 
+    RROutput output;
+
+    // CRTC that should be used for this output. Not necessarily the CRTC
+    // that XRandR reports is currently being used.
     RRCrtc crtc;
+
+    // Mode currently being used by the output.
+    RRMode current_mode;
+
+    // "Best" mode supported by the output.
+    RRMode native_mode;
+
+    // Mode used when displaying the same desktop on multiple outputs.
+    RRMode mirror_mode;
+
+    // User-selected mode for the output.
+    RRMode selected_mode;
+
+    // Output's origin on the framebuffer.
     int x;
     int y;
-    RRMode mode;
-    RROutput output;
+
+    bool is_internal;
+    bool is_aspect_preserving_scaling;
+
+    // XInput device ID or 0 if this output isn't a touchscreen.
+    int touch_device_id;
+
+    CoordinateTransformation transform;
+
+    // Display id for this output.
+    int64 display_id;
+
+    bool has_display_id;
   };
 
   class Observer {
@@ -176,16 +175,20 @@ class CHROMEOS_EXPORT OutputConfigurator
                                 int* height,
                                 bool* interlaced) = 0;
 
-    // Calls XRRSetCrtcConfig() with the given options but some of our
-    // default output count and rotation arguments.
-    virtual void ConfigureCrtc(CrtcConfig* config) = 0;
+    // Calls XRRSetCrtcConfig() with the given options but some of our default
+    // output count and rotation arguments. Returns true on success.
+    virtual bool ConfigureCrtc(RRCrtc crtc,
+                               RRMode mode,
+                               RROutput output,
+                               int x,
+                               int y) = 0;
 
     // Called to set the frame buffer (underlying XRR "screen") size.  Has
     // a side-effect of disabling all CRTCs.
     virtual void CreateFrameBuffer(
         int width,
         int height,
-        const std::vector<OutputConfigurator::CrtcConfig>& configs) = 0;
+        const std::vector<OutputConfigurator::OutputSnapshot>& outputs) = 0;
 
     // Configures XInput's Coordinate Transformation Matrix property.
     // |touch_device_id| the ID of the touchscreen device to configure.
@@ -325,15 +328,17 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Switches to the state specified in |output_state| and |power_state|.
   // If the hardware mirroring failed and |mirroring_controller_| is set,
   // it switches to |STATE_DUAL_EXTENDED| and calls |SetSoftwareMirroring()|
-  // to enable software based mirroing.
-  // On success, updates |output_state_| and |power_state_| and returns true.
+  // to enable software based mirroring.
+  // On success, updates |output_state_|, |power_state_|, and |cached_outputs_|
+  // and returns true.
   bool EnterStateOrFallBackToSoftwareMirroring(
       OutputState output_state,
       DisplayPowerState power_state,
       const std::vector<OutputSnapshot>& outputs);
 
   // Switches to the state specified in |output_state| and |power_state|.
-  // On success, updates |output_state_| and |power_state_| and returns true.
+  // On success, updates |output_state_|, |power_state_|, and
+  // |cached_outputs_| and returns true.
   bool EnterState(OutputState output_state,
                   DisplayPowerState power_state,
                   const std::vector<OutputSnapshot>& outputs);
@@ -382,6 +387,10 @@ class CHROMEOS_EXPORT OutputConfigurator
 
   // The current power state.
   DisplayPowerState power_state_;
+
+  // Most-recently-used output configuration. Note that the actual
+  // configuration changes asynchronously.
+  std::vector<OutputSnapshot> cached_outputs_;
 
   ObserverList<Observer> observers_;
 

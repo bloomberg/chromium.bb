@@ -98,6 +98,12 @@ bool IsProjecting(
 
 }  // namespace
 
+OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
+    : x_scale(1.0),
+      x_offset(0.0),
+      y_scale(1.0),
+      y_offset(0.0) {}
+
 OutputConfigurator::OutputSnapshot::OutputSnapshot()
     : output(None),
       crtc(None),
@@ -105,36 +111,13 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       native_mode(None),
       mirror_mode(None),
       selected_mode(None),
+      x(0),
       y(0),
-      height(0),
       is_internal(false),
       is_aspect_preserving_scaling(false),
       touch_device_id(0),
       display_id(0),
       has_display_id(false) {}
-
-OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
-  : x_scale(1.0),
-    x_offset(0.0),
-    y_scale(1.0),
-    y_offset(0.0) {}
-
-OutputConfigurator::CrtcConfig::CrtcConfig()
-    : crtc(None),
-      x(0),
-      y(0),
-      mode(None),
-      output(None) {}
-
-OutputConfigurator::CrtcConfig::CrtcConfig(RRCrtc crtc,
-                                           int x, int y,
-                                           RRMode mode,
-                                           RROutput output)
-    : crtc(crtc),
-      x(x),
-      y(y),
-      mode(mode),
-      output(output) {}
 
 bool OutputConfigurator::TestApi::SendOutputChangeEvents(bool connected) {
   XRRScreenChangeNotifyEvent screen_event;
@@ -418,7 +401,16 @@ bool OutputConfigurator::EnterState(
   int num_on_outputs = GetOutputPower(outputs, power_state, &output_power);
   VLOG(1) << "EnterState: output=" << OutputStateToString(output_state)
           << " power=" << DisplayPowerStateToString(power_state);
+
+  // Framebuffer dimensions.
+  int width = 0, height = 0;
+  std::vector<OutputSnapshot> updated_outputs = outputs;
+
   switch (output_state) {
+    case STATE_INVALID:
+      NOTREACHED() << "Ignoring request to enter invalid state with "
+                   << outputs.size() << " connected output(s)";
+      return false;
     case STATE_HEADLESS:
       if (outputs.size() != 0) {
         LOG(WARNING) << "Ignoring request to enter headless mode with "
@@ -435,28 +427,16 @@ bool OutputConfigurator::EnterState(
         return false;
       }
 
-      // Determine which output to use.
-      const OutputSnapshot& output = outputs.size() == 1 ? outputs[0] :
-          (output_power[0] ? outputs[0] : outputs[1]);
-      int width = 0, height = 0;
-      if (!delegate_->GetModeDetails(
-              output.selected_mode, &width, &height, NULL))
-        return false;
+      for (size_t i = 0; i < updated_outputs.size(); ++i) {
+        OutputSnapshot* output = &updated_outputs[i];
+        output->x = 0;
+        output->y = 0;
+        output->current_mode = output_power[i] ? output->selected_mode : None;
 
-      std::vector<CrtcConfig> configs(outputs.size());
-      for (size_t i = 0; i < outputs.size(); ++i) {
-        configs[i] = CrtcConfig(
-            outputs[i].crtc, 0, 0,
-            output_power[i] ? outputs[i].selected_mode : None,
-            outputs[i].output);
-      }
-      delegate_->CreateFrameBuffer(width, height, configs);
-
-      for (size_t i = 0; i < outputs.size(); ++i) {
-        delegate_->ConfigureCrtc(&configs[i]);
-        if (outputs[i].touch_device_id) {
-          delegate_->ConfigureCTM(outputs[i].touch_device_id,
-                                  CoordinateTransformation());
+        if (output_power[i] || outputs.size() == 1) {
+          if (!delegate_->GetModeDetails(
+                  output->selected_mode, &width, &height, NULL))
+            return false;
         }
       }
       break;
@@ -469,34 +449,24 @@ bool OutputConfigurator::EnterState(
         return false;
       }
 
-      int width = 0, height = 0;
       if (!delegate_->GetModeDetails(
-              outputs[0].mirror_mode, &width, &height, NULL)) {
+              outputs[0].mirror_mode, &width, &height, NULL))
         return false;
-      }
-
-      std::vector<CrtcConfig> configs(outputs.size());
-      for (size_t i = 0; i < outputs.size(); ++i) {
-        configs[i] = CrtcConfig(
-            outputs[i].crtc, 0, 0,
-            output_power[i] ? outputs[i].mirror_mode : None,
-            outputs[i].output);
-      }
-      delegate_->CreateFrameBuffer(width, height, configs);
 
       for (size_t i = 0; i < outputs.size(); ++i) {
-        delegate_->ConfigureCrtc(&configs[i]);
-        if (outputs[i].touch_device_id) {
-          CoordinateTransformation ctm;
+        OutputSnapshot* output = &updated_outputs[i];
+        output->x = 0;
+        output->y = 0;
+        output->current_mode = output_power[i] ? output->mirror_mode : None;
+        if (output->touch_device_id) {
           // CTM needs to be calculated if aspect preserving scaling is used.
           // Otherwise, assume it is full screen, and use identity CTM.
-          if (outputs[i].mirror_mode != outputs[i].native_mode &&
-              outputs[i].is_aspect_preserving_scaling) {
-            ctm = GetMirrorModeCTM(&outputs[i]);
-            mirrored_display_area_ratio_map_[outputs[i].touch_device_id] =
-              GetMirroredDisplayAreaRatio(&outputs[i]);
+          if (output->mirror_mode != output->native_mode &&
+              output->is_aspect_preserving_scaling) {
+            output->transform = GetMirrorModeCTM(output);
+            mirrored_display_area_ratio_map_[output->touch_device_id] =
+                GetMirroredDisplayAreaRatio(output);
           }
-          delegate_->ConfigureCTM(outputs[i].touch_device_id, ctm);
         }
       }
       break;
@@ -511,8 +481,6 @@ bool OutputConfigurator::EnterState(
 
       // Pairs are [width, height] corresponding to the given output's mode.
       std::vector<std::pair<int, int> > mode_sizes(outputs.size());
-      std::vector<CrtcConfig> configs(outputs.size());
-      int width = 0, height = 0;
 
       for (size_t i = 0; i < outputs.size(); ++i) {
         if (!delegate_->GetModeDetails(outputs[i].selected_mode,
@@ -520,10 +488,10 @@ bool OutputConfigurator::EnterState(
           return false;
         }
 
-        configs[i] = CrtcConfig(
-            outputs[i].crtc, 0, (height ? height + kVerticalGap : 0),
-            output_power[i] ? outputs[i].selected_mode : None,
-            outputs[i].output);
+        OutputSnapshot* output = &updated_outputs[i];
+        output->x = 0;
+        output->y = height ? height + kVerticalGap : 0;
+        output->current_mode = output_power[i] ? output->selected_mode : None;
 
         // Retain the full screen size even if all outputs are off so the
         // same desktop configuration can be restored when the outputs are
@@ -532,29 +500,44 @@ bool OutputConfigurator::EnterState(
         height += (height ? kVerticalGap : 0) + mode_sizes[i].second;
       }
 
-      delegate_->CreateFrameBuffer(width, height, configs);
-
       for (size_t i = 0; i < outputs.size(); ++i) {
-        delegate_->ConfigureCrtc(&configs[i]);
-        if (outputs[i].touch_device_id) {
-          CoordinateTransformation ctm;
-          ctm.x_scale = static_cast<float>(mode_sizes[i].first) / width;
-          ctm.x_offset = static_cast<float>(configs[i].x) / width;
-          ctm.y_scale = static_cast<float>(mode_sizes[i].second) / height;
-          ctm.y_offset = static_cast<float>(configs[i].y) / height;
-          delegate_->ConfigureCTM(outputs[i].touch_device_id, ctm);
+        OutputSnapshot* output = &updated_outputs[i];
+        if (output->touch_device_id) {
+          CoordinateTransformation* ctm = &(output->transform);
+          ctm->x_scale = static_cast<float>(mode_sizes[i].first) / width;
+          ctm->x_offset = static_cast<float>(output->x) / width;
+          ctm->y_scale = static_cast<float>(mode_sizes[i].second) / height;
+          ctm->y_offset = static_cast<float>(output->y) / height;
         }
       }
       break;
     }
-    default:
-      NOTREACHED() << "Got request to enter output state " << output_state
-                   << " with " << outputs.size() << " output(s)";
-      return false;
+  }
+
+  // Finally, apply the desired changes.
+  DCHECK_EQ(outputs.size(), updated_outputs.size());
+  if (!outputs.empty()) {
+    delegate_->CreateFrameBuffer(width, height, updated_outputs);
+    for (size_t i = 0; i < outputs.size(); ++i) {
+      const OutputSnapshot& output = updated_outputs[i];
+      if (delegate_->ConfigureCrtc(output.crtc, output.current_mode,
+                                   output.output, output.x, output.y)) {
+        if (output.touch_device_id)
+          delegate_->ConfigureCTM(output.touch_device_id, output.transform);
+      } else {
+        LOG(WARNING) << "Unable to configure CRTC " << output.crtc << ":"
+                     << " mode=" << output.current_mode
+                     << " output=" << output.output
+                     << " x=" << output.x
+                     << " y=" << output.y;
+        updated_outputs[i] = outputs[i];
+      }
+    }
   }
 
   output_state_ = output_state;
   power_state_ = power_state;
+  cached_outputs_ = updated_outputs;
   return true;
 }
 
