@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/page_navigator.h"
 
 class ExtensionEnableFlowDelegate;
@@ -27,7 +29,8 @@ class WebContents;
 // shown to user. The extension is enabled when user acknowledges it or the
 // flow is aborted when user declines it.
 class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
-                            public content::PageNavigator {
+                            public content::PageNavigator,
+                            public content::NotificationObserver {
  public:
   ExtensionEnableFlow(Profile* profile,
                       const std::string& extension_id,
@@ -45,14 +48,29 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   const std::string& extension_id() const { return extension_id_; }
 
  private:
-  // Runs the enable flow. Currently, it checks if there is permission
-  // escalation while the extension is disabled/terminated. If no, enables the
-  // extension and notify |delegate_| synchronously. Otherwise, creates an
-  // ExtensionInstallPrompt and asks user to confirm.
+  // Runs the enable flow. It starts by checking if the extension is loaded.
+  // If not, it tries to reload it. If the load is asynchronous, wait for the
+  // load to finish before continuing the flow. Otherwise, calls
+  // CheckPermissionAndMaybePromptUser finish the flow.
   void Run();
+
+  // Checks if there is permission escalation while the extension is
+  // disabled/terminated. If no, enables the extension and notify |delegate_|
+  // synchronously. Otherwise, creates an ExtensionInstallPrompt and asks user
+  // to confirm.
+  void CheckPermissionAndMaybePromptUser();
 
   // Creates an ExtensionInstallPrompt in |prompt_|.
   void CreatePrompt();
+
+  // Starts/stops observing extension load notifications.
+  void StartObserving();
+  void StopObserving();
+
+  // content::NotificationObserver overrides:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
   // ExtensionInstallPrompt::Delegate overrides:
   virtual void InstallUIProceed() OVERRIDE;
@@ -75,6 +93,7 @@ class ExtensionEnableFlow : public ExtensionInstallPrompt::Delegate,
   gfx::NativeWindow parent_window_;
 
   scoped_ptr<ExtensionInstallPrompt> prompt_;
+  content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionEnableFlow);
 };
