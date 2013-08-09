@@ -67,6 +67,7 @@ class ASH_EXPORT LauncherView : public views::View,
   void Init();
 
   void OnShelfAlignmentChanged();
+  void SchedulePaintForAllButtons();
 
   // Returns the ideal bounds of the specified item, or an empty rect if id
   // isn't know.

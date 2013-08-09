@@ -89,6 +89,8 @@ class ASH_EXPORT Launcher {
   void SetVisible(bool visible) const;
   bool IsVisible() const;
 
+  void SchedulePaint();
+
   views::View* GetAppListButtonView() const;
 
   // Launch a 0-indexed launcher item in the Launcher.
