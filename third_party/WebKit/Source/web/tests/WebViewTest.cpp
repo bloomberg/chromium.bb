@@ -240,7 +240,7 @@ TEST_F(WebViewTest, FocusIsInactive)
     EXPECT_FALSE(document->hasFocus());
     webView->setFocus(false);
     webView->setIsActive(true);
-    EXPECT_TRUE(document->hasFocus());
+    EXPECT_FALSE(document->hasFocus());
 
     webView->close();
 }
