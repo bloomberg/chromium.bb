@@ -498,21 +498,6 @@
     "dependencies": ["permission:system.storage"],
     "contexts": ["blessed_extension"]
   },
-  "system.storage.addAvailableCapacityWatch": {
-    "channel": "dev"
-  },
-  "system.storage.removeAvailableCapacityWatch": {
-    "channel": "dev"
-  },
-  "system.storage.getAllAvailableCapacityWatches": {
-    "channel": "dev"
-  },
-  "system.storage.removeAllAvailableCapacityWatches": {
-    "channel": "dev"
-  },
-  "system.storage.onAvailableCapacityChanged": {
-    "channel": "dev"
-  },
   "systemPrivate": {
     "dependencies": ["permission:systemPrivate"],
     "contexts": ["blessed_extension"]

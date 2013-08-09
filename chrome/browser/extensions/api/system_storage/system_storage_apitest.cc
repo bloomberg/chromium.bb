@@ -6,8 +6,8 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/system_storage/storage_api_test_util.h"
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
-#include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/storage_monitor/storage_info.h"
@@ -17,18 +17,14 @@
 namespace {
 
 using chrome::StorageMonitor;
-using extensions::api::system_storage::ParseStorageUnitType;
-using extensions::api::system_storage::StorageUnitInfo;
-using extensions::StorageInfoProvider;
 using extensions::StorageUnitInfoList;
 using extensions::test::TestStorageUnitInfo;
-using extensions::test::TestStorageInfoProvider;
 using extensions::test::kRemovableStorageData;
 
 const struct TestStorageUnitInfo kTestingData[] = {
-  {"dcim:device:001", "0xbeaf", 4098, 1000, 0},
-  {"path:device:002", "/home", 4098, 1000, 10},
-  {"path:device:003", "/data", 10000, 1000, 4097}
+  {"dcim:device:001", "0xbeaf", 4098, 1000},
+  {"path:device:002", "/home", 4098, 1000},
+  {"path:device:003", "/data", 10000, 1000}
 };
 
 }  // namespace
@@ -70,10 +66,6 @@ class SystemStorageApiTest : public ExtensionApiTest {
 
 IN_PROC_BROWSER_TEST_F(SystemStorageApiTest, Storage) {
   SetUpAllMockStorageDevices();
-  TestStorageInfoProvider* provider =
-      new TestStorageInfoProvider(kTestingData,
-                                  arraysize(kTestingData));
-  StorageInfoProvider::InitializeForTesting(provider);
   std::vector<linked_ptr<ExtensionTestMessageListener> > device_ids_listeners;
   for (size_t i = 0; i < arraysize(kTestingData); ++i) {
     linked_ptr<ExtensionTestMessageListener> listener(

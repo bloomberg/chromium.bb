@@ -486,7 +486,6 @@
         'browser/extensions/api/system_memory/memory_info_provider.h',
         'browser/extensions/api/system_memory/system_memory_api.cc',
         'browser/extensions/api/system_memory/system_memory_api.h',
-        'browser/extensions/api/system_storage/storage_free_space_observer.h',
         'browser/extensions/api/system_storage/storage_info_provider.cc',
         'browser/extensions/api/system_storage/storage_info_provider.h',
         'browser/extensions/api/system_storage/system_storage_api.cc',

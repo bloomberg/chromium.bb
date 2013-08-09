@@ -29,7 +29,6 @@
 
 namespace extensions {
 
-using api::system_storage::StorageFreeSpaceChangeInfo;
 using api::system_storage::StorageUnitInfo;
 using content::BrowserThread;
 
@@ -39,14 +38,9 @@ bool IsDisplayChangedEvent(const std::string& event_name) {
   return event_name == event_names::kOnDisplayChanged;
 }
 
-bool IsAvailableCapacityChangedEvent(const std::string& event_name) {
-  return event_name == event_names::kOnStorageAvailableCapacityChanged;
-}
-
 // Event router for systemInfo API. It is a singleton instance shared by
 // multiple profiles.
 class SystemInfoEventRouter : public gfx::DisplayObserver,
-                              public StorageFreeSpaceObserver,
                               public chrome::RemovableStorageObserver {
  public:
   static SystemInfoEventRouter* GetInstance();
@@ -59,11 +53,6 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   void RemoveEventListener(const std::string& event_name);
 
  private:
-  // StorageFreeSpaceObserver:
-  virtual void OnFreeSpaceChanged(const std::string& id,
-                                  double new_value,
-                                  double old_value) OVERRIDE;
-
   // gfx::DisplayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
@@ -79,11 +68,6 @@ class SystemInfoEventRouter : public gfx::DisplayObserver,
   // processes cross multiple profiles.
   void DispatchEvent(const std::string& event_name,
       scoped_ptr<base::ListValue> args);
-
-  // The callbacks of querying storage info to start and stop watching the
-  // storages. Called from UI thread.
-  void StartWatchingStorages(bool success);
-  void StopWatchingStorages(bool success);
 
   // Called to dispatch the systemInfo.display.onDisplayChanged event.
   void OnDisplayChanged();
@@ -103,31 +87,13 @@ SystemInfoEventRouter* SystemInfoEventRouter::GetInstance() {
 }
 
 SystemInfoEventRouter::SystemInfoEventRouter() {
-  StorageInfoProvider::Get()->AddObserver(this);
   chrome::StorageMonitor::GetInstance()->AddObserver(this);
 }
 
 SystemInfoEventRouter::~SystemInfoEventRouter() {
-  StorageInfoProvider::Get()->RemoveObserver(this);
   if (chrome::StorageMonitor* storage_monitor =
           chrome::StorageMonitor::GetInstance())
     storage_monitor->RemoveObserver(this);
-}
-
-void SystemInfoEventRouter::StartWatchingStorages(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!success)
-    return;
-
-  StorageInfoProvider::Get()->StartWatchingAllStorages();
-}
-
-void SystemInfoEventRouter::StopWatchingStorages(bool success) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (!success)
-    return;
-
-  StorageInfoProvider::Get()->StopWatchingAllStorages();
 }
 
 void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
@@ -136,15 +102,6 @@ void SystemInfoEventRouter::AddEventListener(const std::string& event_name) {
   watching_event_set_.insert(event_name);
   if (watching_event_set_.count(event_name) > 1)
     return;
-
-  // Start watching the |event_name| event if the first event listener arrives.
-  // For systemInfo.storage event.
-  if (IsAvailableCapacityChangedEvent(event_name)) {
-    StorageInfoProvider::Get()->StartQueryInfo(
-        base::Bind(&SystemInfoEventRouter::StartWatchingStorages,
-                   base::Unretained(this)));
-    return;
-  }
 
   // For systemInfo.display event.
   if (IsDisplayChangedEvent(event_name)) {
@@ -166,32 +123,11 @@ void SystemInfoEventRouter::RemoveEventListener(
   if (watching_event_set_.count(event_name) > 0)
     return;
 
-  // In case of the last event listener is removed, we need to stop watching
-  // it to avoid unnecessary overhead.
-  if (IsAvailableCapacityChangedEvent(event_name)) {
-    StorageInfoProvider::Get()->StartQueryInfo(
-        base::Bind(&SystemInfoEventRouter::StopWatchingStorages,
-                   base::Unretained(this)));
-  }
-
   if (IsDisplayChangedEvent(event_name)) {
 #if defined(USE_ASH)
     ash::Shell::GetScreen()->RemoveObserver(this);
 #endif
   }
-}
-
-// Called on UI thread since the observer is added from UI thread.
-void SystemInfoEventRouter::OnFreeSpaceChanged(
-    const std::string& transient_id, double new_value, double old_value) {
-  StorageFreeSpaceChangeInfo info;
-  info.id = transient_id;
-  info.available_capacity = static_cast<double>(new_value);
-
-  scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(info.ToValue().release());
-
-  DispatchEvent(event_names::kOnStorageAvailableCapacityChanged, args.Pass());
 }
 
 void SystemInfoEventRouter::OnRemovableStorageAttached(
@@ -247,8 +183,6 @@ ProfileKeyedAPIFactory<SystemInfoAPI>* SystemInfoAPI::GetFactoryInstance() {
 }
 
 SystemInfoAPI::SystemInfoAPI(Profile* profile) : profile_(profile) {
-  ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnStorageAvailableCapacityChanged);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
       this, event_names::kOnStorageAttached);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(

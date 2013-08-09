@@ -7,8 +7,8 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/api/system_storage/storage_api_test_util.h"
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
-#include "chrome/browser/extensions/api/system_storage/test_storage_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -23,7 +23,6 @@
 namespace {
 
 using extensions::test::TestStorageUnitInfo;
-using extensions::test::TestStorageInfoProvider;
 using extensions::test::kRemovableStorageData;
 
 }  // namespace

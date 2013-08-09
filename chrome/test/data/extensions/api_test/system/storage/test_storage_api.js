@@ -8,12 +8,9 @@
 // Testing data should be the same as |kTestingData| in
 // system_storage_apitest.cc.
 var testData = [
-  { id:"", name: "0xbeaf", type: "removable", capacity: 4098,
-    availableCapacity: 1000, step: 0 },
-  { id:"", name: "/home", type: "fixed", capacity: 4098,
-    availableCapacity: 1000, step: 10 },
-  { id:"", name: "/data", type: "fixed", capacity: 10000,
-    availableCapacity: 1000, step: 4097 }
+  { id:"", name: "0xbeaf", type: "removable", capacity: 4098 },
+  { id:"", name: "/home", type: "fixed", capacity: 4098 },
+  { id:"", name: "/data", type: "fixed", capacity: 10000 }
 ];
 
 chrome.test.runTests([
@@ -27,38 +24,5 @@ chrome.test.runTests([
         chrome.test.assertEq(testData[i].capacity, units[i].capacity);
       }
     }));
-  },
-
-  function testChangedEvent() {
-    var numOfChangedEvent = 0;
-    var callbackCompleted = chrome.test.callbackAdded();
-    chrome.system.storage.getInfo(function(units){
-      // Record the transient id of each storage device unit.
-      for (var i = 0; i < units.length; ++i) {
-        testData[i].id = units[i].id;
-      }
-      chrome.system.storage.onAvailableCapacityChanged.addListener(
-        function listener(changeInfo) {
-          for (var i = 0; i < testData.length; ++i) {
-            if (changeInfo.id == testData[i].id) {
-              chrome.test.assertEq(testData[i].availableCapacity,
-                                   changeInfo.availableCapacity);
-              // Increase its availableCapacity since it will be queried
-              // before triggering onChanged event.
-              testData[i].availableCapacity += testData[i].step;
-              break;
-            }
-          }
-
-          if (i >= testData.length)
-            chrome.test.fail("No matched storage id is found!");
-
-          if (++numOfChangedEvent > 10) {
-            chrome.system.storage.onAvailableCapacityChanged.removeListener(
-                listener);
-            setTimeout(callbackCompleted, 0);
-          }
-        });
-    });
   }
 ]);

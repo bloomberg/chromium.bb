@@ -1,6 +1,7 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
 
@@ -41,54 +42,6 @@ class SystemStorageEjectDeviceFunction
 
   // Eject device request handler.
   void HandleResponse(chrome::StorageMonitor::EjectStatus status);
-};
-
-class SystemStorageAddAvailableCapacityWatchFunction
-    : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("system.storage.addAvailableCapacityWatch",
-                             SYSTEM_STORAGE_ADDAVAILABLECAPACITYWATCH);
-  SystemStorageAddAvailableCapacityWatchFunction();
-
- private:
-  virtual ~SystemStorageAddAvailableCapacityWatchFunction();
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class SystemStorageRemoveAvailableCapacityWatchFunction
-    : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("system.storage.removeAvailableCapacityWatch",
-                             SYSTEM_STORAGE_REMOVEAVAILABLECAPACITYWATCH);
-  SystemStorageRemoveAvailableCapacityWatchFunction();
-
- private:
-  virtual ~SystemStorageRemoveAvailableCapacityWatchFunction();
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class SystemStorageGetAllAvailableCapacityWatchesFunction
-    : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("system.storage.getAllAvailableCapacityWatches",
-                             SYSTEM_STORAGE_GETALLAVAILABLECAPACITYWATCHES);
-  SystemStorageGetAllAvailableCapacityWatchesFunction();
-
- private:
-  virtual ~SystemStorageGetAllAvailableCapacityWatchesFunction();
-  virtual bool RunImpl() OVERRIDE;
-};
-
-class SystemStorageRemoveAllAvailableCapacityWatchesFunction
-    : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("system.storage.removeAllAvailableCapacityWatches",
-                             SYSTEM_STORAGE_REMOVEALLAVAILABLECAPACITYWATCHES);
-  SystemStorageRemoveAllAvailableCapacityWatchesFunction();
-
- private:
-  virtual ~SystemStorageRemoveAllAvailableCapacityWatchesFunction();
-  virtual bool RunImpl() OVERRIDE;
 };
 
 }  // namespace extensions

@@ -1337,6 +1337,8 @@
         'browser/extensions/api/system_display/system_display_apitest.cc',
         'browser/extensions/api/system_memory/system_memory_apitest.cc',
         'browser/extensions/api/system_private/system_private_apitest.cc',
+        'browser/extensions/api/system_storage/storage_api_test_util.cc',
+        'browser/extensions/api/system_storage/storage_api_test_util.h',
         'browser/extensions/api/system_storage/system_storage_apitest.cc',
         'browser/extensions/api/system_storage/system_storage_eject_apitest.cc',
         'browser/extensions/api/tab_capture/tab_capture_apitest.cc',

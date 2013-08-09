@@ -4,7 +4,7 @@
 
 // Use the <code>chrome.system.storage</code> API to query storage device
 // information and be notified when a removable storage device is attached and
-// detached or the available capacity changes.
+// detached.
 namespace system.storage {
 
   enum StorageUnitType {
@@ -30,20 +30,6 @@ namespace system.storage {
     double capacity;
   };
 
-  dictionary StorageFreeSpaceChangeInfo {
-    // The transient id of the storage unit already changed.
-    DOMString id;
-    // The new value of the available capacity.
-    double availableCapacity;
-  };
-
-  // A dictionary that describes the add particular storage device watch
-  // request results.
-  dictionary AddAvailableCapacityWatchResult {
-    DOMString id;
-    boolean success;
-  };
-
   [inline_doc] enum EjectDeviceResultCode {
     // The ejection command is successful -- the application can prompt the user
     // to remove the device.
@@ -58,12 +44,6 @@ namespace system.storage {
     failure
   };
 
-  callback AddAvailableCapacityWatchCallback = void (
-      AddAvailableCapacityWatchResult info);
-
-  callback GetAllAvailableCapacityWatchesCallback = void (
-      DOMString[] storageIds);
-
   callback EjectDeviceCallback = void (EjectDeviceResultCode result);
 
   callback StorageInfoCallback = void (StorageUnitInfo[] info);
@@ -75,21 +55,6 @@ namespace system.storage {
 
     // Ejects a removable storage device.
     static void ejectDevice(DOMString id, EjectDeviceCallback callback);
-
-    // Monitor a particular storage device available change capacity.
-    static void addAvailableCapacityWatch(
-        DOMString id,
-        AddAvailableCapacityWatchCallback callback);
-
-    // Remove the monitor of a particular device.
-    static void removeAvailableCapacityWatch(DOMString id);
-
-    // Get all the watched storage devices.
-    static void getAllAvailableCapacityWatches(
-        GetAllAvailableCapacityWatchesCallback callback);
-
-    // Remove all the storage devices monitors.
-    static void removeAllAvailableCapacityWatches();
   };
 
   interface Events {
@@ -98,10 +63,6 @@ namespace system.storage {
 
     // Fired when a removable storage is detached from the system.
     static void onDetached(DOMString id);
-
-    // Fired when the storage device available capacity is changed.
-    // |info|: The changed information for the specified storage unit.
-    static void onAvailableCapacityChanged(StorageFreeSpaceChangeInfo info);
   };
 
 };
