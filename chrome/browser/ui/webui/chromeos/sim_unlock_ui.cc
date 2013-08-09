@@ -151,7 +151,8 @@ class SimUnlockHandler : public WebUIMessageHandler,
   class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
    public:
     explicit TaskProxy(const base::WeakPtr<SimUnlockHandler>& handler)
-        : handler_(handler) {
+        : handler_(handler),
+          code_type_() {
     }
 
     TaskProxy(const base::WeakPtr<SimUnlockHandler>& handler,
