@@ -953,7 +953,7 @@
     <event name="popup_done">
       <description summary="popup interaction is done">
 	The popup_done event is sent out when a popup grab is broken,
-	that is, when the users clicks a surface that doesn't belong
+	that is, when the user clicks a surface that doesn't belong
 	to the client owning the popup surface.
       </description>
     </event>
