@@ -481,13 +481,15 @@ void RenderTableSection::updateBaselineForCell(RenderTableCell* cell, unsigned r
     if (!cell->isBaselineAligned())
         return;
 
-    LayoutUnit baselinePosition = cell->cellBaselinePosition();
-    if (baselinePosition > cell->borderBefore() + cell->paddingBefore()) {
+    // Ignoring the intrinsic padding as it depends on knowing the row's baseline, which won't be accurate
+    // until the end of this function.
+    LayoutUnit baselinePosition = cell->cellBaselinePosition() - cell->intrinsicPaddingBefore();
+    if (baselinePosition > cell->borderBefore() + (cell->paddingBefore() - cell->intrinsicPaddingBefore())) {
         m_grid[row].baseline = max(m_grid[row].baseline, baselinePosition);
 
         int cellStartRowBaselineDescent = 0;
         if (cell->rowSpan() == 1) {
-            baselineDescent = max(baselineDescent, cell->logicalHeightForRowSizing() - (baselinePosition - cell->intrinsicPaddingBefore()));
+            baselineDescent = max(baselineDescent, cell->logicalHeightForRowSizing() - baselinePosition);
             cellStartRowBaselineDescent = baselineDescent;
         }
         m_rowPos[row + 1] = max<int>(m_rowPos[row + 1], m_rowPos[row] + m_grid[row].baseline + cellStartRowBaselineDescent);
