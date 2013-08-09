@@ -1,11 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_PROVIDER_H_
-#define CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_PROVIDER_H_
+#ifndef EXTENSIONS_COMMON_FEATURES_FEATURE_PROVIDER_H_
+#define EXTENSIONS_COMMON_FEATURES_FEATURE_PROVIDER_H_
 
 #include <string>
+#include <vector>
 
 namespace extensions {
 
@@ -25,8 +26,11 @@ class FeatureProvider {
 
   // Returns all features described by this instance.
   virtual const std::vector<std::string>& GetAllFeatureNames() = 0;
+
+  // Gets a feature provider for a specific feature type, like "permission".
+  static FeatureProvider* GetByName(const std::string& name);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_FEATURES_FEATURE_PROVIDER_H_
+#endif  // EXTENSIONS_COMMON_FEATURES_FEATURE_PROVIDER_H_

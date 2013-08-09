@@ -9,12 +9,13 @@
 #include <string>
 
 #include "base/values.h"
-#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest.h"
 
 class GURL;
 
 namespace extensions {
+
+class Extension;
 
 // Represents a single feature accessible to an extension developer, such as a
 // top-level manifest key, a permission, or a programmatic API. A feature can

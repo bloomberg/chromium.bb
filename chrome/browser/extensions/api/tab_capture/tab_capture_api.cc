@@ -21,10 +21,10 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/features/base_feature_provider.h"
-#include "chrome/common/extensions/features/simple_feature.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "extensions/common/features/feature_provider.h"
 
 using extensions::api::tab_capture::MediaStreamConstraint;
 
@@ -80,7 +80,7 @@ bool TabCaptureCaptureFunction::RunImpl() {
           active_tab_permission_granter()->IsGranted(extension) &&
       CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWhitelistedExtensionID) != extension_id &&
-      !BaseFeatureProvider::GetPermissionFeatures()->GetFeature("tabCapture")->
+      !FeatureProvider::GetByName("permission")->GetFeature("tabCapture")->
           IsIdInWhitelist(extension_id)) {
     error_ = kGrantError;
     return false;

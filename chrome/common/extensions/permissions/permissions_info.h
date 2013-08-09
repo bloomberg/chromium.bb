@@ -14,6 +14,7 @@
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_message.h"
+#include "extensions/common/permissions/permissions_provider.h"
 
 namespace extensions {
 
@@ -21,34 +22,9 @@ namespace extensions {
 // methods for accessing them.
 class PermissionsInfo {
  public:
-  // An alias for a given permission |name|.
-  struct AliasInfo {
-    const char* name;
-    const char* alias;
-
-    AliasInfo(const char* name, const char* alias)
-        : name(name), alias(alias) {
-    }
-  };
-
-  // The delegate creates the APIPermissions instances. It is only
-  // needed at startup time.
-  class Delegate {
-   public:
-    // Returns all the known permissions. The caller, PermissionsInfo,
-    // takes ownership of the APIPermissionInfos.
-    virtual std::vector<APIPermissionInfo*> GetAllPermissions() const = 0;
-
-    // Returns all the known permission aliases.
-    virtual std::vector<AliasInfo> GetAllAliases() const = 0;
-  };
-
   static PermissionsInfo* GetInstance();
 
   virtual ~PermissionsInfo();
-
-  // Initializes the permissions from the delegate.
-  void InitializeWithDelegate(const Delegate& delegate);
 
   // Returns the permission with the given |id|, and NULL if it doesn't exist.
   const APIPermissionInfo* GetByID(APIPermission::ID id) const;
@@ -72,14 +48,12 @@ class PermissionsInfo {
   size_t get_permission_count() const { return permission_count_; }
 
  private:
-  friend class ScopedTestingPermissionsInfo;
   friend struct base::DefaultLazyInstanceTraits<PermissionsInfo>;
 
   PermissionsInfo();
 
-  // Overrides the global PermissionsInfo for unit tests. Should only be
-  // called from ScopedTestingPermissionsInfo.
-  static void SetForTesting(PermissionsInfo* info);
+  // Initializes the permissions from the provider.
+  void InitializeWithProvider(const PermissionsProvider& provider);
 
   // Registers an |alias| for a given permission |name|.
   void RegisterAlias(const char* name, const char* alias);
@@ -98,9 +72,6 @@ class PermissionsInfo {
 
   size_t hosted_app_permission_count_;
   size_t permission_count_;
-
-  // Set to true after the delegate has created the known permissions.
-  bool initialized_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionsInfo);
 };

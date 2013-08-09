@@ -4,8 +4,6 @@
 
 #include "chrome/common/extensions/features/complex_feature.h"
 
-#include "chrome/common/extensions/features/simple_feature.h"
-
 namespace extensions {
 
 ComplexFeature::ComplexFeature(scoped_ptr<FeatureList> features) {

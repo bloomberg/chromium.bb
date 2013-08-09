@@ -18,9 +18,8 @@
 #include "chrome/browser/extensions/webstore_startup_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/chrome_manifest_handlers.h"
+#include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ipc/ipc_message.h"
@@ -38,9 +37,7 @@ void PrintPackExtensionMessage(const std::string& message) {
 namespace extensions {
 
 StartupHelper::StartupHelper() : pack_job_succeeded_(false) {
-  PermissionsInfo::GetInstance()->InitializeWithDelegate(
-      ChromeAPIPermissions());
-  RegisterChromeManifestHandlers();
+  ExtensionsClient::Set(ChromeExtensionsClient::GetInstance());
 }
 
 void StartupHelper::OnPackSuccess(

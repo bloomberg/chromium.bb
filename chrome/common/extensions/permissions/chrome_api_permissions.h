@@ -7,15 +7,16 @@
 
 #include <vector>
 
-#include "chrome/common/extensions/permissions/permissions_info.h"
+#include "base/compiler_specific.h"
+#include "extensions/common/permissions/permissions_provider.h"
 
 namespace extensions {
 
 // Registers the permissions used in Chrome with the PermissionsInfo global.
-class ChromeAPIPermissions : public PermissionsInfo::Delegate {
+class ChromeAPIPermissions : public PermissionsProvider {
  public:
   virtual std::vector<APIPermissionInfo*> GetAllPermissions() const OVERRIDE;
-  virtual std::vector<PermissionsInfo::AliasInfo> GetAllAliases() const
+  virtual std::vector<PermissionsProvider::AliasInfo> GetAllAliases() const
       OVERRIDE;
 };
 

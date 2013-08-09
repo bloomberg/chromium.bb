@@ -189,8 +189,6 @@
         'common/extensions/extension_builder.h',
         'common/extensions/extension_test_util.cc',
         'common/extensions/extension_test_util.h',
-        'common/extensions/permissions/scoped_testing_permissions_info.cc',
-        'common/extensions/permissions/scoped_testing_permissions_info.h',
         'common/extensions/value_builder.cc',
         'common/extensions/value_builder.h',
         'renderer/chrome_mock_render_thread.cc',

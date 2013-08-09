@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
+#include "chrome/common/extensions/permissions/permissions_info.h"
 #include "chrome/common/extensions/permissions/usb_device_permission.h"
 #include "chrome/common/extensions/permissions/usb_device_permission_data.h"
 #include "ipc/ipc_message.h"

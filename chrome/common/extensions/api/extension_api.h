@@ -16,7 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chrome/common/extensions/features/feature.h"
-#include "chrome/common/extensions/features/feature_provider.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/url_pattern_set.h"
 
 namespace base {

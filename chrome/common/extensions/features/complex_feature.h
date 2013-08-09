@@ -14,8 +14,6 @@
 
 namespace extensions {
 
-class SimpleFeature;
-
 // A ComplexFeature is composed of one or many Features. A ComplexFeature
 // is available if any Feature (i.e. permission rule) that composes it is
 // available, but not if only some combination of Features is available.

@@ -11,8 +11,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/features/base_feature_provider.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/features/feature_provider.h"
 #include "extensions/common/install_warning.h"
 
 namespace errors = extension_manifest_errors;
@@ -141,7 +142,7 @@ bool Manifest::ValidateManifest(
   // TODO(aa): Consider having an error here in the case of strict error
   // checking to let developers know when they screw up.
 
-  FeatureProvider* provider = BaseFeatureProvider::GetByName("manifest");
+  FeatureProvider* provider = FeatureProvider::GetByName("manifest");
   const std::vector<std::string>& feature_names =
       provider->GetAllFeatureNames();
   for (std::vector<std::string>::const_iterator feature_name =
@@ -250,8 +251,7 @@ bool Manifest::CanAccessPath(const std::string& path) const {
 }
 
 bool Manifest::CanAccessKey(const std::string& key) const {
-  Feature* feature =
-      BaseFeatureProvider::GetByName("manifest")->GetFeature(key);
+  Feature* feature = FeatureProvider::GetByName("manifest")->GetFeature(key);
   if (!feature)
     return true;
 

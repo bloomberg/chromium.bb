@@ -9,13 +9,14 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/features/base_feature_provider.h"
+#include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/renderer/extensions/api_activity_logger.h"
 #include "chrome/renderer/extensions/chrome_v8_context.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/v8_value_converter.h"
+#include "extensions/common/features/feature_provider.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -67,7 +68,7 @@ void RuntimeCustomBindings::OpenChannelToNativeApp(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   // Verify that the extension has permission to use native messaging.
   Feature::Availability availability =
-      BaseFeatureProvider::GetByName("permission")->
+      FeatureProvider::GetByName("permission")->
           GetFeature("nativeMessaging")->IsAvailableToContext(
               GetExtensionForRenderView(),
               context()->context_type(),

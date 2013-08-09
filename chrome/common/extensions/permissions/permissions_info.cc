@@ -8,45 +8,20 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
+#include "extensions/common/extensions_client.h"
 
 namespace extensions {
 
 static base::LazyInstance<PermissionsInfo> g_permissions_info =
     LAZY_INSTANCE_INITIALIZER;
-// ScopedTestingPermissionsInfo can override the global instance for testing.
-static PermissionsInfo* g_permissions_info_override = NULL;
 
 // static
 PermissionsInfo* PermissionsInfo::GetInstance() {
-  if (!g_permissions_info_override)
-    g_permissions_info_override = g_permissions_info.Pointer();
-  return g_permissions_info_override;
-}
-
-// static
-void PermissionsInfo::SetForTesting(PermissionsInfo* info) {
-  g_permissions_info_override = info;
+  return g_permissions_info.Pointer();
 }
 
 PermissionsInfo::~PermissionsInfo() {
   STLDeleteContainerPairSecondPointers(id_map_.begin(), id_map_.end());
-}
-
-void PermissionsInfo::InitializeWithDelegate(
-    const PermissionsInfo::Delegate& delegate) {
-  // TODO(yoz): Change into a DCHECK once StartupHelper browser tests
-  // are changed to unit tests.
-  if (initialized_)
-    return;
-  std::vector<APIPermissionInfo*> permissions = delegate.GetAllPermissions();
-  std::vector<AliasInfo> aliases = delegate.GetAllAliases();
-
-  for (size_t i = 0; i < permissions.size(); ++i)
-    RegisterPermission(permissions[i]);
-  for (size_t i = 0; i < aliases.size(); ++i)
-    RegisterAlias(aliases[i].name, aliases[i].alias);
-
-  initialized_ = true;
 }
 
 const APIPermissionInfo* PermissionsInfo::GetByID(
@@ -88,8 +63,21 @@ bool PermissionsInfo::HasChildPermissions(const std::string& name) const {
 
 PermissionsInfo::PermissionsInfo()
     : hosted_app_permission_count_(0),
-      permission_count_(0),
-      initialized_(false) {
+      permission_count_(0) {
+  DCHECK(ExtensionsClient::Get());
+  InitializeWithProvider(ExtensionsClient::Get()->GetPermissionsProvider());
+}
+
+void PermissionsInfo::InitializeWithProvider(
+    const PermissionsProvider& provider) {
+  std::vector<APIPermissionInfo*> permissions = provider.GetAllPermissions();
+  std::vector<PermissionsProvider::AliasInfo> aliases =
+      provider.GetAllAliases();
+
+  for (size_t i = 0; i < permissions.size(); ++i)
+    RegisterPermission(permissions[i]);
+  for (size_t i = 0; i < aliases.size(); ++i)
+    RegisterAlias(aliases[i].name, aliases[i].alias);
 }
 
 void PermissionsInfo::RegisterAlias(

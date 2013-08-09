@@ -317,13 +317,13 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
   return permissions;
 }
 
-std::vector<PermissionsInfo::AliasInfo> ChromeAPIPermissions::GetAllAliases()
-    const {
+std::vector<PermissionsProvider::AliasInfo>
+ChromeAPIPermissions::GetAllAliases() const {
   // Register aliases.
-  std::vector<PermissionsInfo::AliasInfo> aliases;
-  aliases.push_back(PermissionsInfo::AliasInfo(
+  std::vector<PermissionsProvider::AliasInfo> aliases;
+  aliases.push_back(PermissionsProvider::AliasInfo(
       "unlimitedStorage", kOldUnlimitedStoragePermission));
-  aliases.push_back(PermissionsInfo::AliasInfo(
+  aliases.push_back(PermissionsProvider::AliasInfo(
       "tabs", kWindowsPermission));
   return aliases;
 }

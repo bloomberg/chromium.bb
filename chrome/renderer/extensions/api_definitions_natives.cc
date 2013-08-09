@@ -6,7 +6,8 @@
 
 #include <algorithm>
 
-#include "chrome/common/extensions/features/base_feature_provider.h"
+#include "chrome/common/extensions/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 
 namespace extensions {
 
@@ -22,7 +23,7 @@ ApiDefinitionsNatives::ApiDefinitionsNatives(Dispatcher* dispatcher,
 void ApiDefinitionsNatives::GetExtensionAPIDefinitionsForTest(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::vector<std::string> apis;
-  FeatureProvider* feature_provider = BaseFeatureProvider::GetByName("api");
+  FeatureProvider* feature_provider = FeatureProvider::GetByName("api");
   const std::vector<std::string>& feature_names =
       feature_provider->GetAllFeatureNames();
   for (std::vector<std::string>::const_iterator i = feature_names.begin();

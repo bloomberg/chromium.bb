@@ -14,11 +14,10 @@
 #include "base/path_service.h"
 #include "base/time/time.h"
 #include "chrome/common/chrome_utility_messages.h"
-#include "chrome/common/extensions/chrome_manifest_handlers.h"
+#include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/manifest.h"
-#include "chrome/common/extensions/permissions/chrome_api_permissions.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/safe_browsing/zip_analyzer.h"
 #include "chrome/utility/extensions/unpacker.h"
@@ -181,9 +180,8 @@ void ChromeContentUtilityClient::OnUnpackExtension(
     int creation_flags) {
   CHECK_GT(location, extensions::Manifest::INVALID_LOCATION);
   CHECK_LT(location, extensions::Manifest::NUM_LOCATIONS);
-  extensions::PermissionsInfo::GetInstance()->InitializeWithDelegate(
-      extensions::ChromeAPIPermissions());
-  extensions::RegisterChromeManifestHandlers();
+  extensions::ExtensionsClient::Set(
+      extensions::ChromeExtensionsClient::GetInstance());
   extensions::Unpacker unpacker(
       extension_path,
       extension_id,
