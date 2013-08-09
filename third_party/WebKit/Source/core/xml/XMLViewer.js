@@ -72,9 +72,6 @@ function sourceXMLLoaded()
     var sourceXML = document.getElementById('webkit-xml-viewer-source-xml');
     if (!sourceXML)
         return; // Stop if some XML tree extension is already processing this document
-    //var style = document.head.firstChild;
-    //document.head.removeChild(style);
-    //document.head.appendChild(style);
     var root = document.getElementById('tree');
 
     for (var child = sourceXML.firstChild; child; child = child.nextSibling)
