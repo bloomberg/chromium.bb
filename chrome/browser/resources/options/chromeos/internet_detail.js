@@ -820,7 +820,9 @@ cr.define('options.internet', function() {
     if (data.type != Constants.TYPE_ETHERNET)
       $('details-internet-disconnect').hidden = !data.connected;
 
-    if (data.type == Constants.TYPE_WIMAX)
+    if (data.type == Constants.TYPE_WIMAX ||
+        data.type == Constants.TYPE_WIFI ||
+        data.type == Constants.TYPE_VPN)
       $('details-internet-configure').hidden = false;
     else
       $('details-internet-configure').hidden = true;
@@ -879,7 +881,9 @@ cr.define('options.internet', function() {
       $('details-internet-disconnect').hidden = true;
     else
       $('details-internet-disconnect').hidden = !data.connected;
-    if (data.type == Constants.TYPE_WIMAX)
+    if (data.type == Constants.TYPE_WIMAX ||
+        data.type == Constants.TYPE_WIFI ||
+        data.type == Constants.TYPE_VPN)
       $('details-internet-configure').hidden = false;
     else
       $('details-internet-configure').hidden = true;
