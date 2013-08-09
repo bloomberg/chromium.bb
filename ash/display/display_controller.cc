@@ -404,6 +404,10 @@ void DisplayController::SetLayoutForCurrentDisplays(
     PreDisplayConfigurationChange();
     // TODO(oshima): Call UpdateDisplays instead.
     UpdateDisplayBoundsForLayout();
+    // Primary's bounds stay the same. Just notify bounds change
+    // on the secondary.
+    Shell::GetInstance()->screen()->NotifyBoundsChanged(
+        ScreenAsh::GetSecondaryDisplay());
     PostDisplayConfigurationChange();
   }
 }

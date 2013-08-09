@@ -33,34 +33,66 @@ namespace {
 
 const char kDesktopBackgroundView[] = "DesktopBackgroundView";
 
-class TestObserver : public DisplayController::Observer {
+class TestObserver : public DisplayController::Observer,
+                     public gfx::DisplayObserver {
  public:
-  TestObserver() : changing_count_(0), changed_count_(0) {
+  TestObserver()
+      : changing_count_(0),
+        changed_count_(0),
+        bounds_changed_count_(0),
+        changed_display_id_(0) {
     Shell::GetInstance()->display_controller()->AddObserver(this);
+    Shell::GetScreen()->AddObserver(this);
   }
 
   virtual ~TestObserver() {
     Shell::GetInstance()->display_controller()->RemoveObserver(this);
+    Shell::GetScreen()->RemoveObserver(this);
   }
 
+  // Overridden from DisplayController::Observer
   virtual void OnDisplayConfigurationChanging() OVERRIDE {
     ++changing_count_;
   }
-
   virtual void OnDisplayConfigurationChanged() OVERRIDE {
     ++changed_count_;
   }
 
+  // Overrideen from gfx::DisplayObserver
+  virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE {
+    changed_display_id_ = display.id();
+    bounds_changed_count_ ++;
+  }
+  virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE {
+  }
+  virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE {
+  }
+
   int CountAndReset() {
     EXPECT_EQ(changing_count_, changed_count_);
-    int c = changing_count_;
+    int count = changing_count_;
     changing_count_ = changed_count_ = 0;
-    return c;
+    return count;
+  }
+
+  int64 GetBoundsChangedCountAndReset() {
+    int count = bounds_changed_count_;
+    bounds_changed_count_ = 0;
+    return count;
+  }
+
+  int64 GetChangedDisplayIdAndReset() {
+    int64 id = changed_display_id_;
+    changed_display_id_ = 0;
+    return id;
   }
 
  private:
   int changing_count_;
   int changed_count_;
+
+  int bounds_changed_count_;
+  int64 changed_display_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
@@ -227,9 +259,11 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   TestObserver observer;
   UpdateDisplay("500x500,400x400");
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
   gfx::Insets insets(5, 5, 5, 5);
+  int64 secondary_display_id = ScreenAsh::GetSecondaryDisplay().id();
   Shell::GetInstance()->display_manager()->UpdateWorkAreaOfDisplay(
-      ScreenAsh::GetSecondaryDisplay().id(), insets);
+      secondary_display_id, insets);
 
   // Default layout is RIGHT.
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
@@ -239,6 +273,8 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   // Layout the secondary display to the bottom of the primary.
   SetSecondaryDisplayLayout(DisplayLayout::BOTTOM);
   EXPECT_EQ(1, observer.CountAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,500 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,505 390x390", GetSecondaryDisplay().work_area().ToString());
@@ -246,6 +282,8 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   // Layout the secondary display to the left of the primary.
   SetSecondaryDisplayLayout(DisplayLayout::LEFT);
   EXPECT_EQ(1, observer.CountAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("-400,0 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("-395,5 390x390", GetSecondaryDisplay().work_area().ToString());
@@ -253,6 +291,8 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   // Layout the secondary display to the top of the primary.
   SetSecondaryDisplayLayout(DisplayLayout::TOP);
   EXPECT_EQ(1, observer.CountAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("0,-400 400x400", GetSecondaryDisplay().bounds().ToString());
   EXPECT_EQ("5,-395 390x390", GetSecondaryDisplay().work_area().ToString());
@@ -260,34 +300,54 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   // Layout to the right with an offset.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 300);
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("500,300 400x400", GetSecondaryDisplay().bounds().ToString());
 
   // Keep the minimum 100.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, 490);
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("500,400 400x400", GetSecondaryDisplay().bounds().ToString());
 
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::RIGHT, -400);
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("500,-300 400x400", GetSecondaryDisplay().bounds().ToString());
 
   //  Layout to the bottom with an offset.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -200);
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("-200,500 400x400", GetSecondaryDisplay().bounds().ToString());
 
   // Keep the minimum 100.
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, 490);
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("400,500 400x400", GetSecondaryDisplay().bounds().ToString());
 
   SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -400);
+  EXPECT_EQ(secondary_display_id, observer.GetChangedDisplayIdAndReset());
+  EXPECT_EQ(1, observer.GetBoundsChangedCountAndReset());
   EXPECT_EQ(1, observer.CountAndReset());  // resize and add
+  EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
+  EXPECT_EQ("-300,500 400x400", GetSecondaryDisplay().bounds().ToString());
+
+  // Setting the same layout shouldn't invoke observers.
+  SetSecondaryDisplayLayoutAndOffset(DisplayLayout::BOTTOM, -400);
+  EXPECT_EQ(0, observer.GetChangedDisplayIdAndReset());
+  EXPECT_EQ(0, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(0, observer.CountAndReset());  // resize and add
   EXPECT_EQ("0,0 500x500", GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("-300,500 400x400", GetSecondaryDisplay().bounds().ToString());
 }
