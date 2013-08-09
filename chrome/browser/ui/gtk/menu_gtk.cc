@@ -322,7 +322,7 @@ void MenuGtk::ConnectSignalHandlers() {
 GtkWidget* MenuGtk::AppendMenuItemWithLabel(int command_id,
                                             const std::string& label) {
   std::string converted_label = ui::ConvertAcceleratorsFromWindowsStyle(label);
-  GtkWidget* menu_item = BuildMenuItemWithLabel(label, command_id);
+  GtkWidget* menu_item = BuildMenuItemWithLabel(converted_label, command_id);
   return AppendMenuItem(command_id, menu_item);
 }
 
