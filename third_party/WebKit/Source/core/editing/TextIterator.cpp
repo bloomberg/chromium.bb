@@ -48,7 +48,6 @@
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 #include <unicode/usearch.h>
 

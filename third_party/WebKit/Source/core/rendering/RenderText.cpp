@@ -41,7 +41,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/break_lines.h"
 #include "wtf/text/StringBuffer.h"
-#include "wtf/text/StringBuilder.h"
 #include "wtf/unicode/CharacterNames.h"
 
 using namespace std;

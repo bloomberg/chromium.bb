@@ -48,7 +48,6 @@
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include "wtf/Vector.h"
 #include "wtf/text/CString.h"
-#include "wtf/text/StringBuilder.h"
 
 using namespace std;
 
@@ -188,6 +187,16 @@ RenderObject::SelectionState InlineTextBox::selectionState()
     return state;
 }
 
+static void adjustCharactersAndLengthForHyphen(BufferForAppendingHyphen& charactersWithHyphen, RenderStyle* style, StringView& string, int& length)
+{
+    const AtomicString& hyphenString = style->hyphenString();
+    charactersWithHyphen.reserveCapacity(length + hyphenString.length());
+    charactersWithHyphen.append(string);
+    charactersWithHyphen.append(hyphenString);
+    string = charactersWithHyphen.toString().createView();
+    length += hyphenString.length();
+}
+
 LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
 {
     int sPos = max(startPos - m_start, 0);
@@ -204,7 +213,7 @@ LayoutRect InlineTextBox::localSelectionRect(int startPos, int endPos)
     RenderStyle* styleToUse = textObj->style(isFirstLineStyle());
     const Font& font = styleToUse->font();
 
-    StringBuilder charactersWithHyphen;
+    BufferForAppendingHyphen charactersWithHyphen;
     bool respectHyphen = ePos == m_len && hasHyphen();
     TextRun textRun = constructTextRun(styleToUse, font, respectHyphen ? &charactersWithHyphen : 0);
     if (respectHyphen)
@@ -679,7 +688,7 @@ void InlineTextBox::paint(PaintInfo& paintInfo, const LayoutPoint& paintOffset, 
         maximumLength = length;
     }
 
-    StringBuilder charactersWithHyphen;
+    BufferForAppendingHyphen charactersWithHyphen;
     TextRun textRun = constructTextRun(styleToUse, font, string, maximumLength, hasHyphen() ? &charactersWithHyphen : 0);
     if (hasHyphen())
         length = textRun.length();
@@ -858,7 +867,7 @@ void InlineTextBox::paintSelection(GraphicsContext* context, const FloatPoint& b
     if (string.length() != static_cast<unsigned>(length) || m_start)
         string.narrow(m_start, length);
 
-    StringBuilder charactersWithHyphen;
+    BufferForAppendingHyphen charactersWithHyphen;
     bool respectHyphen = ePos == length && hasHyphen();
     TextRun textRun = constructTextRun(style, font, string, textRenderer()->textLength() - m_start, respectHyphen ? &charactersWithHyphen : 0);
     if (respectHyphen)
@@ -1487,7 +1496,7 @@ bool InlineTextBox::containsCaretOffset(int offset) const
     return true;
 }
 
-TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, BufferForAppendingHyphen* charactersWithHyphen) const
 {
     ASSERT(style);
 
@@ -1505,23 +1514,21 @@ TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, St
     return constructTextRun(style, font, string, textRenderer->textLength() - startPos, charactersWithHyphen);
 }
 
-TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, StringView string, int maximumLength, StringBuilder* charactersWithHyphen) const
+TextRun InlineTextBox::constructTextRun(RenderStyle* style, const Font& font, StringView string, int maximumLength, BufferForAppendingHyphen* charactersWithHyphen) const
 {
     ASSERT(style);
 
     RenderText* textRenderer = this->textRenderer();
     ASSERT(textRenderer);
 
+    int length = string.length();
+
     if (charactersWithHyphen) {
-        const AtomicString& hyphenString = style->hyphenString();
-        charactersWithHyphen->reserveCapacity(string.length() + hyphenString.length());
-        charactersWithHyphen->append(string);
-        charactersWithHyphen->append(hyphenString);
-        string = charactersWithHyphen->toString().createView();
-        maximumLength = string.length();
+        adjustCharactersAndLengthForHyphen(*charactersWithHyphen, style, string, length);
+        maximumLength = length;
     }
 
-    ASSERT(maximumLength >= string.length());
+    ASSERT(maximumLength >= length);
 
     TextRun run(string, textPos(), expansion(), expansionBehavior(), direction(), dirOverride() || style->rtlOrdering() == VisualOrder, !textRenderer->canUseSimpleFontCodePath());
     run.setTabSize(!style->collapseWhiteSpace(), style->tabSize());
