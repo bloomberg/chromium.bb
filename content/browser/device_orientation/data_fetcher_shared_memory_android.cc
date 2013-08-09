@@ -27,9 +27,9 @@ bool DataFetcherSharedMemory::StartFetchingDeviceMotionData(
     DeviceMotionHardwareBuffer* buffer) {
   DCHECK(buffer);
   device_motion_buffer_ = buffer;
-  return DataFetcherImplAndroid::GetInstance()->
+  started_ = DataFetcherImplAndroid::GetInstance()->
       StartFetchingDeviceMotionData(buffer);
-  started_ = true;
+  return started_;
 }
 
 void DataFetcherSharedMemory::StopFetchingDeviceMotionData() {
