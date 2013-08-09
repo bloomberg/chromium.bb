@@ -33,6 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLImportLoaderClient.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/ContentSecurityPolicyResponseHeaders.h"
@@ -85,12 +86,16 @@ void HTMLImportLoader::setState(State state)
             writer->end();
     }
 
-    if (m_state == StateReady || m_state == StateError)
-        dispose();
+    // Since DocumentWriter::end() let setState() reenter, we shouldn't refer to m_state here.
+    if (state == StateReady || state == StateError)
+        didFinish();
 }
 
-void HTMLImportLoader::dispose()
+void HTMLImportLoader::didFinish()
 {
+    for (size_t i = 0; i < m_clients.size(); ++i)
+        m_clients[i]->didFinish();
+
     if (m_resource) {
         m_resource->removeClient(this);
         m_resource = 0;
@@ -137,6 +142,20 @@ Document* HTMLImportLoader::importedDocument() const
     if (m_state == StateError)
         return 0;
     return m_importedDocument.get();
+}
+
+void HTMLImportLoader::addClient(HTMLImportLoaderClient* client)
+{
+    ASSERT(notFound == m_clients.find(client));
+    m_clients.append(client);
+    if (isDone())
+        client->didFinish();
+}
+
+void HTMLImportLoader::removeClient(HTMLImportLoaderClient* client)
+{
+    ASSERT(notFound != m_clients.find(client));
+    m_clients.remove(m_clients.find(client));
 }
 
 void HTMLImportLoader::importDestroyed()

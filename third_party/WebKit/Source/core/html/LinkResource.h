@@ -53,6 +53,7 @@ public:
     virtual Type type() const = 0;
     virtual void process() = 0;
     virtual void ownerRemoved() = 0;
+    virtual bool hasLoaded() const = 0;
 
 protected:
     HTMLLinkElement* m_owner;

@@ -65,6 +65,7 @@ public:
     virtual Type type() const OVERRIDE { return Style; }
     virtual void process() OVERRIDE;
     virtual void ownerRemoved() OVERRIDE;
+    virtual bool hasLoaded() const OVERRIDE { return m_loadedSheet; }
 
     void startLoadingDynamicSheet();
     void notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred);
@@ -75,7 +76,6 @@ public:
 
     bool styleSheetIsLoading() const;
     bool hasSheet() const { return m_sheet; }
-    bool hasLoadedSheet() const { return m_loadedSheet; }
     bool isDisabled() const { return m_disabledState == Disabled; }
     bool isEnabledViaScript() const { return m_disabledState == EnabledViaScript; }
     bool isUnset() const { return m_disabledState == Unset; }
@@ -149,6 +149,7 @@ public:
     DOMSettableTokenList* sizes() const;
 
     void dispatchPendingEvent(LinkEventSender*);
+    void scheduleEvent();
     static void dispatchPendingLoadEvents();
 
     // From LinkLoaderClient

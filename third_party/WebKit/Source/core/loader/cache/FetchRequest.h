@@ -47,6 +47,7 @@ public:
 
     ResourceRequest& mutableResourceRequest() { return m_resourceRequest; }
     const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
+    const KURL& url() const { return m_resourceRequest.url(); }
     const String& charset() const { return m_charset; }
     void setCharset(const String& charset) { m_charset = charset; }
     const ResourceLoaderOptions& options() const { return m_options; }

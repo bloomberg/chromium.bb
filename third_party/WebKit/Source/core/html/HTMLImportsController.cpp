@@ -33,6 +33,8 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLImportLoader.h"
+#include "core/html/HTMLImportLoaderClient.h"
+#include "core/loader/cache/ResourceFetcher.h"
 
 namespace WebCore {
 
@@ -64,10 +66,19 @@ void HTMLImportsController::clear()
     m_master = 0;
 }
 
-PassRefPtr<HTMLImportLoader> HTMLImportsController::createLoader(HTMLImport* parent, const KURL& url, const ResourcePtr<CachedRawResource>& resource)
+PassRefPtr<HTMLImportLoader> HTMLImportsController::createLoader(HTMLImport* parent, FetchRequest request)
 {
-    ASSERT(!url.isEmpty() && url.isValid());
-    RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(parent, url, resource));
+    ASSERT(!request.url().isEmpty() && request.url().isValid());
+
+    if (RefPtr<HTMLImportLoader> found = findLinkFor(request.url()))
+        return found.release();
+
+    request.setPotentiallyCrossOriginEnabled(securityOrigin(), DoNotAllowStoredCredentials);
+    ResourcePtr<CachedRawResource> resource = parent->document()->fetcher()->requestImport(request);
+    if (!resource)
+        return 0;
+
+    RefPtr<HTMLImportLoader> loader = adoptRef(new HTMLImportLoader(parent, request.url(), resource));
     parent->appendChild(loader.get());
     m_imports.append(loader);
     return loader.release();

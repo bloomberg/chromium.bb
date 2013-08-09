@@ -41,6 +41,7 @@
 namespace WebCore {
 
 class DocumentWriter;
+class HTMLImportLoaderClient;
 
 class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImport, public CachedRawResourceClient {
 public:
@@ -57,8 +58,11 @@ public:
     Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 
+    void addClient(HTMLImportLoaderClient*);
+    void removeClient(HTMLImportLoaderClient*);
     void importDestroyed();
     bool isDone() const { return m_state == StateReady || m_state == StateError; }
+    bool isLoaded() const { return m_state == StateReady; }
 
     // HTMLImport
     virtual HTMLImportRoot* root() OVERRIDE;
@@ -80,9 +84,10 @@ private:
     State finishParsing();
 
     void setState(State);
-    void dispose();
+    void didFinish();
 
     HTMLImport* m_parent;
+    Vector<HTMLImportLoaderClient*> m_clients;
     State m_state;
     KURL m_url;
     ResourcePtr<CachedRawResource> m_resource;

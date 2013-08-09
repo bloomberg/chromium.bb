@@ -36,7 +36,6 @@
 #include "core/html/HTMLImportsController.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/loader/CrossOriginAccessControl.h"
-#include "core/loader/cache/ResourceFetcher.h"
 
 namespace WebCore {
 
@@ -52,6 +51,7 @@ LinkImport::LinkImport(HTMLLinkElement* owner)
 
 LinkImport::~LinkImport()
 {
+    clear();
 }
 
 Document* LinkImport::importedDocument() const
@@ -67,12 +67,7 @@ void LinkImport::process()
         return;
     if (!m_owner)
         return;
-
     if (!m_owner->document()->frame() && !m_owner->document()->import())
-        return;
-
-    LinkRequestBuilder builder(m_owner);
-    if (!builder.isValid())
         return;
 
     if (!m_owner->document()->import()) {
@@ -80,26 +75,48 @@ void LinkImport::process()
         HTMLImportsController::provideTo(m_owner->document());
     }
 
-    HTMLImport* parent = m_owner->document()->import();
-    HTMLImportsController* controller = parent->controller();
-    if (RefPtr<HTMLImportLoader> found = controller->findLinkFor(builder.url())) {
-        m_loader = found;
+    LinkRequestBuilder builder(m_owner);
+    if (!builder.isValid()) {
+        didFinish();
         return;
     }
 
-    FetchRequest request = builder.build(true);
-    request.setPotentiallyCrossOriginEnabled(controller->securityOrigin(), DoNotAllowStoredCredentials);
-    ResourcePtr<CachedRawResource> resource = m_owner->document()->fetcher()->requestImport(request);
-    if (!resource)
+    HTMLImport* parent = m_owner->document()->import();
+    HTMLImportsController* controller = parent->controller();
+    m_loader = controller->createLoader(parent, builder.build(true));
+    if (!m_loader) {
+        didFinish();
         return;
+    }
 
-    m_loader = controller->createLoader(parent, builder.url(), resource);
+    m_loader->addClient(this);
+}
+
+void LinkImport::clear()
+{
+    m_owner = 0;
+
+    if (m_loader) {
+        m_loader->removeClient(this);
+        m_loader.clear();
+    }
 }
 
 void LinkImport::ownerRemoved()
 {
-    m_owner = 0;
-    m_loader.clear();
+    clear();
+}
+
+void LinkImport::didFinish()
+{
+    if (!m_owner)
+        return;
+    m_owner->scheduleEvent();
+}
+
+bool LinkImport::hasLoaded() const
+{
+    return m_loader && m_loader->isLoaded();
 }
 
 } // namespace WebCore

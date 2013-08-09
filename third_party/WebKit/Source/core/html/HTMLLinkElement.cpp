@@ -288,11 +288,16 @@ void HTMLLinkElement::dispatchPendingLoadEvents()
 void HTMLLinkElement::dispatchPendingEvent(LinkEventSender* eventSender)
 {
     ASSERT_UNUSED(eventSender, eventSender == &linkLoadEventSender());
-    ASSERT(linkStyle());
-    if (linkStyle()->hasLoadedSheet())
+    ASSERT(m_link);
+    if (m_link->hasLoaded())
         linkLoaded();
     else
         linkLoadingErrored();
+}
+
+void HTMLLinkElement::scheduleEvent()
+{
+    linkLoadEventSender().dispatchEventSoon(this);
 }
 
 void HTMLLinkElement::startLoadingDynamicSheet()
@@ -455,7 +460,8 @@ void LinkStyle::notifyLoadedSheetAndAllCriticalSubresources(bool errorOccurred)
     if (m_firedLoad)
         return;
     m_loadedSheet = !errorOccurred;
-    linkLoadEventSender().dispatchEventSoon(m_owner);
+    if (m_owner)
+        m_owner->scheduleEvent();
     m_firedLoad = true;
 }
 

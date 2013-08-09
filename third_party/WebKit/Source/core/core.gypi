@@ -2110,6 +2110,7 @@
             'html/HTMLImportsController.h',
             'html/HTMLImportLoader.cpp',
             'html/HTMLImportLoader.h',
+            'html/HTMLImportLoaderClient.h',
             'html/HTMLInputElement.cpp',
             'html/HTMLKeygenElement.cpp',
             'html/HTMLKeygenElement.h',

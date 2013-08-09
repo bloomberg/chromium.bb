@@ -42,9 +42,11 @@
 
 namespace WebCore {
 
+class FetchRequest;
 class ScriptExecutionContext;
 class ResourceFetcher;
 class HTMLImportLoader;
+class HTMLImportLoaderClient;
 
 class HTMLImportsController : public HTMLImportRoot, public Supplement<ScriptExecutionContext> {
     WTF_MAKE_FAST_ALLOCATED;
@@ -65,7 +67,7 @@ public:
     virtual void importWasDisposed() OVERRIDE;
     virtual HTMLImportsController* toController() { return this; }
 
-    PassRefPtr<HTMLImportLoader> createLoader(HTMLImport* parent, const KURL&, const ResourcePtr<CachedRawResource>&);
+    PassRefPtr<HTMLImportLoader> createLoader(HTMLImport* parent, FetchRequest);
     void showSecurityErrorMessage(const String&);
     PassRefPtr<HTMLImportLoader> findLinkFor(const KURL&) const;
     SecurityOrigin* securityOrigin() const;
