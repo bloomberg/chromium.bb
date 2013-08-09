@@ -1,3 +1,4 @@
+CONSOLE MESSAGE: console.markTimeline is deprecated. Please use the console.timeStamp instead.
 Tests the Timeline API mark feature
 
 TimeStamp Properties:

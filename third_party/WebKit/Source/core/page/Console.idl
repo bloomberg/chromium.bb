@@ -41,7 +41,7 @@
     [CallWith=ScriptArguments&ScriptState] void trace();
     [CallWith=ScriptArguments&ScriptState, ImplementedAs=assertCondition] void assert([Default=Undefined] optional boolean condition);
     [CallWith=ScriptArguments&ScriptState] void count();
-    [CallWith=ScriptArguments] void markTimeline();
+    [DeprecateAs=ConsoleMarkTimeline, CallWith=ScriptArguments] void markTimeline();
 
     [CallWith=ScriptState] void profile([Default=NullString] optional DOMString title);
     [CallWith=ScriptState] void profileEnd([Default=NullString] optional DOMString title);

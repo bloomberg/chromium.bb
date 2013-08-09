@@ -651,6 +651,9 @@ String UseCounter::deprecationMessage(Feature feature)
     case ReleaseEvents:
         return "releaseEvents() is deprecated. This method doesn't do anything.";
 
+    case ConsoleMarkTimeline:
+        return "console.markTimeline is deprecated. Please use the console.timeStamp instead.";
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
         return String();
