@@ -6,10 +6,12 @@
 #define ANDROID_WEBVIEW_BROWSER_BROWSER_VIEW_RENDERER_H_
 
 #include "base/android/scoped_java_ref.h"
+#include "skia/ext/refptr.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d_f.h"
 
+class SkPicture;
 struct AwDrawGLInfo;
 struct AwDrawSWFunctionTable;
 
@@ -84,7 +86,6 @@ class BrowserViewRenderer {
   // Global hookup methods.
   static void SetAwDrawSWFunctionTable(AwDrawSWFunctionTable* table);
   static AwDrawSWFunctionTable* GetAwDrawSWFunctionTable();
-  static bool IsSkiaVersionCompatible();
 
   // Rendering methods.
 
@@ -108,9 +109,7 @@ class BrowserViewRenderer {
   virtual void SetGlobalVisibleRect(const gfx::Rect& visible_rect) = 0;
 
   // CapturePicture API methods.
-  virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture(
-      int width,
-      int height) = 0;
+  virtual skia::RefPtr<SkPicture> CapturePicture(int width, int height) = 0;
   virtual void EnableOnNewPicture(bool enabled) = 0;
 
   // View update notifications.

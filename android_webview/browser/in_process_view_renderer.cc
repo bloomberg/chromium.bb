@@ -22,7 +22,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "gpu/command_buffer/service/in_process_command_buffer.h"
-#include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -64,13 +63,11 @@ class UserData : public content::WebContents::Data {
   InProcessViewRenderer* instance_;
 };
 
-typedef base::Callback<bool(SkCanvas*)> RenderMethod;
-
 bool RasterizeIntoBitmap(JNIEnv* env,
                          const JavaRef<jobject>& jbitmap,
                          int scroll_x,
                          int scroll_y,
-                         const RenderMethod& renderer) {
+                         const InProcessViewRenderer::RenderMethod& renderer) {
   DCHECK(jbitmap.obj());
 
   AndroidBitmapInfo bitmap_info;
@@ -123,13 +120,6 @@ bool HardwareEnabled() {
 // Allows preventing extra copies of data when rendering.
 AwDrawSWFunctionTable* g_sw_draw_functions = NULL;
 
-// Tells if the Skia library versions in Android and Chromium are compatible.
-// If they are then it's possible to pass Skia objects like SkPictures to the
-// Android glue layer via the SW rendering functions.
-// If they are not, then additional copies and rasterizations are required
-// as a fallback mechanism, which will have an important performance impact.
-bool g_is_skia_version_compatible = false;
-
 const int64 kFallbackTickTimeoutInMilliseconds = 20;
 
 class ScopedAllowGL {
@@ -180,11 +170,6 @@ static void ScheduleGpuWork() {
 void BrowserViewRenderer::SetAwDrawSWFunctionTable(
     AwDrawSWFunctionTable* table) {
   g_sw_draw_functions = table;
-  g_is_skia_version_compatible =
-      g_sw_draw_functions->is_skia_version_compatible(&SkGraphics::GetVersion);
-  LOG_IF(WARNING, !g_is_skia_version_compatible)
-      << "Skia versions are not compatible, rendering performance will suffer.";
-
   gpu::InProcessCommandBuffer::SetScheduleCallback(
       base::Bind(&ScheduleGpuWork));
 }
@@ -192,12 +177,6 @@ void BrowserViewRenderer::SetAwDrawSWFunctionTable(
 // static
 AwDrawSWFunctionTable* BrowserViewRenderer::GetAwDrawSWFunctionTable() {
   return g_sw_draw_functions;
-}
-
-// static
-bool BrowserViewRenderer::IsSkiaVersionCompatible() {
-  DCHECK(g_sw_draw_functions);
-  return g_is_skia_version_compatible;
 }
 
 InProcessViewRenderer::InProcessViewRenderer(
@@ -400,7 +379,6 @@ void InProcessViewRenderer::SetGlobalVisibleRect(
 
 bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
                                            const gfx::Rect& clip) {
-  TRACE_EVENT0("android_webview", "InProcessViewRenderer::DrawSW");
   fallback_tick_.Cancel();
 
   if (clip.IsEmpty()) {
@@ -415,17 +393,37 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
     return false;
   }
 
+  return RenderViaAuxilaryBitmapIfNeeded(
+      java_canvas,
+      java_helper_,
+      scroll_at_start_of_frame_,
+      clip,
+      base::Bind(&InProcessViewRenderer::CompositeSW,
+                 base::Unretained(this)),
+      web_contents_);
+}
+
+// static
+bool InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded(
+      jobject java_canvas,
+      BrowserViewRenderer::JavaHelper* java_helper,
+      const gfx::Vector2d& scroll_correction,
+      const gfx::Rect& clip,
+      InProcessViewRenderer::RenderMethod render_source,
+      void* owner_key) {
+  TRACE_EVENT0("android_webview",
+               "InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded");
   JNIEnv* env = AttachCurrentThread();
 
   AwDrawSWFunctionTable* sw_functions = GetAwDrawSWFunctionTable();
   AwPixelInfo* pixels = sw_functions ?
       sw_functions->access_pixels(env, java_canvas) : NULL;
-  // Render into an auxiliary bitmap if pixel info is not available.
-  ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
   if (pixels == NULL) {
+    // Render into an auxiliary bitmap if pixel info is not available.
+    ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
     TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
-    ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-        env, clip.width(), clip.height(), jcanvas, web_contents_));
+    ScopedJavaLocalRef<jobject> jbitmap(java_helper->CreateBitmap(
+        env, clip.width(), clip.height(), jcanvas, owner_key));
     if (!jbitmap.obj()) {
       TRACE_EVENT_INSTANT0("android_webview",
                            "EarlyOut_BitmapAllocFail",
@@ -434,18 +432,17 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
     }
 
     if (!RasterizeIntoBitmap(env, jbitmap,
-                             clip.x() - scroll_at_start_of_frame_.x(),
-                             clip.y() - scroll_at_start_of_frame_.y(),
-                             base::Bind(&InProcessViewRenderer::CompositeSW,
-                                        base::Unretained(this)))) {
+                             clip.x() - scroll_correction.x(),
+                             clip.y() - scroll_correction.y(),
+                             render_source)) {
       TRACE_EVENT_INSTANT0("android_webview",
                            "EarlyOut_RasterizeFail",
                            TRACE_EVENT_SCOPE_THREAD);
       return false;
     }
 
-    java_helper_->DrawBitmapIntoCanvas(env, jbitmap, jcanvas,
-                                       clip.x(), clip.y());
+    java_helper->DrawBitmapIntoCanvas(env, jbitmap, jcanvas,
+                                      clip.x(), clip.y());
     return true;
   }
 
@@ -473,29 +470,22 @@ bool InProcessViewRenderer::DrawSWInternal(jobject java_canvas,
     } else {
       canvas.clipRect(gfx::RectToSkRect(clip));
     }
-    canvas.translate(scroll_at_start_of_frame_.x(),
-                     scroll_at_start_of_frame_.y());
+    canvas.translate(scroll_correction.x(),
+                     scroll_correction.y());
 
-    succeeded = CompositeSW(&canvas);
+    succeeded = render_source.Run(&canvas);
   }
 
   sw_functions->release_pixels(pixels);
   return succeeded;
 }
 
-base::android::ScopedJavaLocalRef<jobject>
-InProcessViewRenderer::CapturePicture(int width, int height) {
-  if (!compositor_ || !GetAwDrawSWFunctionTable()) {
-    TRACE_EVENT_INSTANT0(
-        "android_webview", "EarlyOut_CapturePicture", TRACE_EVENT_SCOPE_THREAD);
-    return ScopedJavaLocalRef<jobject>();
-  }
-
+skia::RefPtr<SkPicture> InProcessViewRenderer::CapturePicture(int width,
+                                                              int height) {
   // Return empty Picture objects for empty SkPictures.
-  JNIEnv* env = AttachCurrentThread();
+  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   if (width <= 0 || height <= 0) {
-    return java_helper_->RecordBitmapIntoPicture(env,
-                                                 ScopedJavaLocalRef<jobject>());
+    return picture;
   }
 
   // Reset scroll back to the origin, will go back to the old
@@ -503,36 +493,11 @@ InProcessViewRenderer::CapturePicture(int width, int height) {
   base::AutoReset<gfx::Vector2dF> scroll_reset(&scroll_offset_css_,
                                                gfx::Vector2d());
 
-  skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   SkCanvas* rec_canvas = picture->beginRecording(width, height, 0);
-  if (!CompositeSW(rec_canvas))
-    return ScopedJavaLocalRef<jobject>();
+  if (compositor_)
+    CompositeSW(rec_canvas);
   picture->endRecording();
-
-  if (IsSkiaVersionCompatible()) {
-    // Add a reference that the create_picture() will take ownership of.
-    picture->ref();
-    return ScopedJavaLocalRef<jobject>(env,
-        GetAwDrawSWFunctionTable()->create_picture(env, picture.get()));
-  }
-
-  // If Skia versions are not compatible, workaround it by rasterizing the
-  // picture into a bitmap and drawing it into a new Java picture. Pass null
-  // for |canvas| as we don't have java canvas at this point (and it would be
-  // software anyway).
-  ScopedJavaLocalRef<jobject> jbitmap(java_helper_->CreateBitmap(
-      env, picture->width(), picture->height(), ScopedJavaLocalRef<jobject>(),
-      NULL));
-  if (!jbitmap.obj())
-    return ScopedJavaLocalRef<jobject>();
-
-  if (!RasterizeIntoBitmap(env, jbitmap, 0, 0,
-      base::Bind(&RenderPictureToCanvas,
-                 base::Unretained(picture.get())))) {
-    return ScopedJavaLocalRef<jobject>();
-  }
-
-  return java_helper_->RecordBitmapIntoPicture(env, jbitmap);
+  return picture;
 }
 
 void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {

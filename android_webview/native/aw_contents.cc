@@ -15,6 +15,7 @@
 #include "android_webview/native/aw_browser_dependency_factory.h"
 #include "android_webview/native/aw_contents_client_bridge.h"
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
+#include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_web_contents_delegate.h"
 #include "android_webview/native/java_browser_view_renderer_helper.h"
 #include "android_webview/native/state_serializer.h"
@@ -45,6 +46,7 @@
 #include "content/public/common/ssl_status.h"
 #include "jni/AwContents_jni.h"
 #include "net/cert/x509_certificate.h"
+#include "third_party/skia/include/core/SkPicture.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
@@ -84,9 +86,7 @@ namespace android_webview {
 namespace {
 
 JavaBrowserViewRendererHelper* java_renderer_helper() {
-  static JavaBrowserViewRendererHelper* g_instance
-      = new JavaBrowserViewRendererHelper;
-  return g_instance;
+  return JavaBrowserViewRendererHelper::GetInstance();
 }
 
 const void* kAwContentsUserDataKey = &kAwContentsUserDataKey;
@@ -758,11 +758,12 @@ void AwContents::OnWebLayoutPageScaleFactorChanged(float page_scale_factor) {
                                                          page_scale_factor);
 }
 
-ScopedJavaLocalRef<jobject> AwContents::CapturePicture(JNIEnv* env,
-                                                       jobject obj,
-                                                       int width,
-                                                       int height) {
-  return browser_view_renderer_->CapturePicture(width, height);
+jint AwContents::CapturePicture(JNIEnv* env,
+                                jobject obj,
+                                int width,
+                                int height) {
+  return reinterpret_cast<jint>(new AwPicture(
+      browser_view_renderer_->CapturePicture(width, height)));
 }
 
 void AwContents::EnableOnNewPicture(JNIEnv* env,

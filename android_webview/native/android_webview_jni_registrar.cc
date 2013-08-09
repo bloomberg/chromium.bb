@@ -11,6 +11,7 @@
 #include "android_webview/native/aw_contents_io_thread_client_impl.h"
 #include "android_webview/native/aw_form_database.h"
 #include "android_webview/native/aw_http_auth_handler.h"
+#include "android_webview/native/aw_picture.h"
 #include "android_webview/native/aw_quota_manager_bridge_impl.h"
 #include "android_webview/native/aw_resource.h"
 #include "android_webview/native/aw_settings.h"
@@ -31,8 +32,9 @@ static base::android::RegistrationMethod kWebViewRegisteredMethods[] = {
   { "AwAutofillManagerDelegate", RegisterAwAutofillManagerDelegate },
   { "AwContents", RegisterAwContents },
   { "AwContentsClientBridge", RegisterAwContentsClientBridge },
-  { "AwContentsIoThreadClientImpl", RegisterAwContentsIoThreadClientImpl},
-  { "AwFormDatabase", RegisterAwFormDatabase},
+  { "AwContentsIoThreadClientImpl", RegisterAwContentsIoThreadClientImpl },
+  { "AwFormDatabase", RegisterAwFormDatabase },
+  { "AwPicture", RegisterAwPicture },
   { "AwSettings", RegisterAwSettings },
   { "AwHttpAuthHandler", RegisterAwHttpAuthHandler },
   { "AwQuotaManagerBridge", RegisterAwQuotaManagerBridge },

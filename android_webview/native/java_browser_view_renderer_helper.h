@@ -18,6 +18,8 @@ class JavaBrowserViewRendererHelper : public BrowserViewRenderer::JavaHelper {
   JavaBrowserViewRendererHelper();
   virtual ~JavaBrowserViewRendererHelper();
 
+  static JavaBrowserViewRendererHelper* GetInstance();
+
   // BrowserViewRenderer::JavaHelper implementation.
   virtual base::android::ScopedJavaLocalRef<jobject> CreateBitmap(
       JNIEnv* env,

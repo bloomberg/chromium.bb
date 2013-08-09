@@ -18,6 +18,13 @@ JavaBrowserViewRendererHelper::JavaBrowserViewRendererHelper() {
 JavaBrowserViewRendererHelper::~JavaBrowserViewRendererHelper() {
 }
 
+// static
+JavaBrowserViewRendererHelper* JavaBrowserViewRendererHelper::GetInstance() {
+  static JavaBrowserViewRendererHelper* g_instance =
+      new JavaBrowserViewRendererHelper;
+  return g_instance;
+}
+
 ScopedJavaLocalRef<jobject> JavaBrowserViewRendererHelper::CreateBitmap(
     JNIEnv* env,
     int width,

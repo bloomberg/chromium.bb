@@ -38,6 +38,16 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   static InProcessViewRenderer* FromWebContents(
       content::WebContents* contents);
 
+  // TODO(joth): consider extracting this to its own utility class.
+  typedef base::Callback<bool(SkCanvas*)> RenderMethod;
+  static bool RenderViaAuxilaryBitmapIfNeeded(
+      jobject java_canvas,
+      JavaHelper* java_helper,
+      const gfx::Vector2d& scroll_correction,
+      const gfx::Rect& clip,
+      RenderMethod render_source,
+      void* owner_key);
+
   // BrowserViewRenderer overrides
   virtual bool OnDraw(jobject java_canvas,
                       bool is_hardware_canvas,
@@ -45,9 +55,8 @@ class InProcessViewRenderer : public BrowserViewRenderer,
                       const gfx::Rect& clip) OVERRIDE;
   virtual void DrawGL(AwDrawGLInfo* draw_info) OVERRIDE;
   virtual void SetGlobalVisibleRect(const gfx::Rect& visible_rect) OVERRIDE;
-  virtual base::android::ScopedJavaLocalRef<jobject> CapturePicture(
-      int width,
-      int height) OVERRIDE;
+  virtual skia::RefPtr<SkPicture> CapturePicture(int width,
+                                                 int height) OVERRIDE;
   virtual void EnableOnNewPicture(bool enabled) OVERRIDE;
   virtual void OnVisibilityChanged(bool visible) OVERRIDE;
   virtual void OnSizeChanged(int width, int height) OVERRIDE;

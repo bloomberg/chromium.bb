@@ -717,9 +717,9 @@ public class AwContents {
     }
 
     public Picture capturePicture() {
-        return nativeCapturePicture(mNativeAwContents,
-                mScrollOffsetManager.computeHorizontalScrollRange(),
-                mScrollOffsetManager.computeVerticalScrollRange());
+        return new AwPicture(nativeCapturePicture(mNativeAwContents,
+                    mScrollOffsetManager.computeHorizontalScrollRange(),
+                    mScrollOffsetManager.computeVerticalScrollRange()));
     }
 
     /**
@@ -1814,7 +1814,7 @@ public class AwContents {
     private native void nativeSetBackgroundColor(int nativeAwContents, int color);
 
     private native int nativeGetAwDrawGLViewContext(int nativeAwContents);
-    private native Picture nativeCapturePicture(int nativeAwContents, int width, int height);
+    private native int nativeCapturePicture(int nativeAwContents, int width, int height);
     private native void nativeEnableOnNewPicture(int nativeAwContents, boolean enabled);
 
     private native void nativeInvokeGeolocationCallback(
