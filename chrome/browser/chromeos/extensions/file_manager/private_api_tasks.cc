@@ -346,14 +346,17 @@ void GetFileTasksFunction::FindDriveAppTasks(
       task_info_map, default_tasks, result_list, default_already_set);
 }
 
-bool GetFileTasksFunction::FindAppTasks(
+void GetFileTasksFunction::FindFileHandlerTasks(
     const std::vector<base::FilePath>& file_paths,
     ListValue* result_list,
     bool* default_already_set) {
   DCHECK(!file_paths.empty());
+  DCHECK(result_list);
+  DCHECK(default_already_set);
+
   ExtensionService* service = profile_->GetExtensionService();
   if (!service)
-    return false;
+    return;
 
   PathAndMimeTypeSet files;
   GetMimeTypesForFileURLs(file_paths, &files);
@@ -411,8 +414,62 @@ bool GetFileTasksFunction::FindAppTasks(
       result_list->Append(task);
     }
   }
+}
 
-  return true;
+void GetFileTasksFunction::FindFileBrowserHandlerTasks(
+    const std::vector<GURL>& file_urls,
+    const std::vector<base::FilePath>& file_paths,
+    ListValue* result_list,
+    bool* default_already_set) {
+  DCHECK(!file_paths.empty());
+  DCHECK(!file_urls.empty());
+  DCHECK(result_list);
+  DCHECK(default_already_set);
+
+  file_tasks::FileBrowserHandlerList common_tasks;
+  file_tasks::FileBrowserHandlerList default_tasks;
+  if (!file_tasks::FindCommonTasks(profile_, file_urls, &common_tasks))
+    return;
+  file_tasks::FindDefaultTasks(profile_, file_paths,
+                               common_tasks, &default_tasks);
+
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  for (file_tasks::FileBrowserHandlerList::const_iterator iter =
+           common_tasks.begin();
+       iter != common_tasks.end();
+       ++iter) {
+    const FileBrowserHandler* handler = *iter;
+    const std::string extension_id = handler->extension_id();
+    const Extension* extension = service->GetExtensionById(extension_id, false);
+    CHECK(extension);
+    DictionaryValue* task = new DictionaryValue;
+    task->SetString("taskId", file_tasks::MakeTaskID(
+        extension_id, file_tasks::kTaskFile, handler->id()));
+    task->SetString("title", handler->title());
+    // TODO(zelidrag): Figure out how to expose icon URL that task defined in
+    // manifest instead of the default extension icon.
+    GURL icon = extensions::ExtensionIconSource::GetIconURL(
+        extension,
+        extension_misc::EXTENSION_ICON_BITTY,
+        ExtensionIconSet::MATCH_BIGGER,
+        false,  // grayscale
+        NULL);  // exists
+    task->SetString("iconUrl", icon.spec());
+    task->SetBoolean("driveApp", false);
+
+    // Only set the default if there isn't already a default set.
+    if (!*default_already_set &&
+        std::find(default_tasks.begin(), default_tasks.end(), *iter) !=
+        default_tasks.end()) {
+      task->SetBoolean("isDefault", true);
+      *default_already_set = true;
+    } else {
+      task->SetBoolean("isDefault", false);
+    }
+
+    result_list->Append(task);
+  }
 }
 
 bool GetFileTasksFunction::RunImpl() {
@@ -478,70 +535,25 @@ bool GetFileTasksFunction::RunImpl() {
   ListValue* result_list = new ListValue();
   SetResult(result_list);
 
-  // Find the Drive apps first, because we want them to take precedence
+  // Find the Drive app tasks first, because we want them to take precedence
   // when setting the default app.
   bool default_already_set = false;
   // Google document are not opened by drive apps but file manager.
   if (!has_google_document)
     FindDriveAppTasks(info_list, result_list, &default_already_set);
 
-  // Take the union of platform app file handlers, and all previous Drive
-  // and extension tasks. As above, we know there aren't duplicates because
-  // they're entirely different kinds of
+  // Find and append file handler tasks. We know there aren't duplicates
+  // because Drive apps and platform apps are entirely different kinds of
   // tasks.
-  if (!FindAppTasks(file_paths, result_list, &default_already_set))
-    return false;
+  FindFileHandlerTasks(file_paths, result_list, &default_already_set);
 
-  // Take the union of Drive and extension tasks: Because any Drive tasks we
-  // found must apply to all of the files (intersection), and because the same
-  // is true of the extensions, we simply take the union of two lists by adding
-  // the extension tasks to the Drive task list. We know there aren't duplicates
-  // because they're entirely different kinds of tasks, but there could be both
-  // kinds of tasks for a file type (an image file, for instance).
-  file_tasks::FileBrowserHandlerList common_tasks;
-  file_tasks::FileBrowserHandlerList default_tasks;
-  if (!file_tasks::FindCommonTasks(profile_, file_urls, &common_tasks))
-    return false;
-  file_tasks::FindDefaultTasks(profile_, file_paths,
-                                      common_tasks, &default_tasks);
-
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  for (file_tasks::FileBrowserHandlerList::const_iterator iter =
-           common_tasks.begin();
-       iter != common_tasks.end();
-       ++iter) {
-    const FileBrowserHandler* handler = *iter;
-    const std::string extension_id = handler->extension_id();
-    const Extension* extension = service->GetExtensionById(extension_id, false);
-    CHECK(extension);
-    DictionaryValue* task = new DictionaryValue;
-    task->SetString("taskId", file_tasks::MakeTaskID(
-        extension_id, file_tasks::kTaskFile, handler->id()));
-    task->SetString("title", handler->title());
-    // TODO(zelidrag): Figure out how to expose icon URL that task defined in
-    // manifest instead of the default extension icon.
-    GURL icon = extensions::ExtensionIconSource::GetIconURL(
-        extension,
-        extension_misc::EXTENSION_ICON_BITTY,
-        ExtensionIconSet::MATCH_BIGGER,
-        false,  // grayscale
-        NULL);  // exists
-    task->SetString("iconUrl", icon.spec());
-    task->SetBoolean("driveApp", false);
-
-    // Only set the default if there isn't already a default set.
-    if (!default_already_set &&
-        std::find(default_tasks.begin(), default_tasks.end(), *iter) !=
-        default_tasks.end()) {
-      task->SetBoolean("isDefault", true);
-      default_already_set = true;
-    } else {
-      task->SetBoolean("isDefault", false);
-    }
-
-    result_list->Append(task);
-  }
+  // Find and append file browser handler tasks. We know there aren't
+  // duplicates because "file_browser_handlers" and "file_handlers" shouldn't
+  // be used in the same manifest.json.
+  FindFileBrowserHandlerTasks(file_urls,
+                              file_paths,
+                              result_list,
+                              &default_already_set);
 
   SendResponse(true);
   return true;
