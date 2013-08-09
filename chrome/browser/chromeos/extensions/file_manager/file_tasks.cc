@@ -369,7 +369,6 @@ bool FindCommonTasks(Profile* profile,
   common_tasks->clear();
 
   FileBrowserHandlerList common_task_list;
-  std::set<std::string> default_task_ids;
   for (std::vector<GURL>::const_iterator it = files_list.begin();
        it != files_list.end(); ++it) {
     FileBrowserHandlerList file_actions;
