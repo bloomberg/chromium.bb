@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/render_thread_impl.h"
@@ -22,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebElement.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
-#include "webkit/plugins/plugin_switches.h"
 
 using ppapi::CheckIdType;
 using ppapi::MakeTypedId;

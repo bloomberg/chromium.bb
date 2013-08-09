@@ -34,7 +34,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_MACOSX)
 #include <ApplicationServices/ApplicationServices.h>

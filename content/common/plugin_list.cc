@@ -13,9 +13,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "net/base/mime_util.h"
 #include "url/gurl.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"

@@ -15,7 +15,6 @@
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "ui/gfx/rect.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"

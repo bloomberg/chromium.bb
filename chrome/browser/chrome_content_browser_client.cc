@@ -140,7 +140,6 @@
 #include "ui/message_center/message_center_util.h"
 #include "webkit/browser/fileapi/external_mount_points.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/chrome_browser_main_win.h"

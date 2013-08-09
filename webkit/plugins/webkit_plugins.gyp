@@ -26,8 +26,6 @@
       'sources': [
         '../plugins/plugin_constants.cc',
         '../plugins/plugin_constants.h',
-        '../plugins/plugin_switches.cc',
-        '../plugins/plugin_switches.h',
       ],
       'conditions': [
         ['toolkit_uses_gtk == 1', {

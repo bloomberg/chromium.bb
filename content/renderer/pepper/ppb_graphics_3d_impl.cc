@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/content_switches.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_platform_context_3d.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
@@ -23,7 +24,6 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/plugins/plugin_switches.h"
 
 using ppapi::thunk::EnterResourceNoLock;
 using ppapi::thunk::PPB_Graphics3D_API;
@@ -72,8 +72,7 @@ PPB_Graphics3D_Impl::~PPB_Graphics3D_Impl() {
 PP_Bool PPB_Graphics3D_Impl::IsGpuBlacklisted() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line)
-    return PP_FromBool(
-        command_line->HasSwitch(switches::kDisablePepper3d));
+    return PP_FromBool(command_line->HasSwitch(switches::kDisablePepper3d));
   return PP_TRUE;
 }
 

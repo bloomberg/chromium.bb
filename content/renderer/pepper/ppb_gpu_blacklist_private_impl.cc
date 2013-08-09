@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "webkit/plugins/plugin_switches.h"
+#include "content/public/common/content_switches.h"
 
 // todo(nfullagar): Remove this private interface when the SRPC proxy is
 // permanently disabled.

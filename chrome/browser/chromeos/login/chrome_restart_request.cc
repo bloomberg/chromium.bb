@@ -40,7 +40,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/views/corewm/corewm_switches.h"
 #include "url/gurl.h"
-#include "webkit/plugins/plugin_switches.h"
 
 using content::BrowserThread;
 

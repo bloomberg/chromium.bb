@@ -132,7 +132,6 @@
 #include "ui/gl/gl_switches.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/common/resource_type.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/vibration_message_filter.h"

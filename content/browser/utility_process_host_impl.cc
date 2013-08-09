@@ -27,7 +27,6 @@
 #include "content/utility/utility_thread_impl.h"
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN)
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
