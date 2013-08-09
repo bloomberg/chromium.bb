@@ -212,6 +212,7 @@ def AddAndroidActions(actions):
   actions.add('MobileContextMenuOpenLinkInIncognito')
   actions.add('MobileContextMenuOpenLinkInNewTab')
   actions.add('MobileContextMenuSaveImage')
+  actions.add('MobileContextMenuSearchByImage')
   actions.add('MobileContextMenuShareLink')
   actions.add('MobileContextMenuText')
   actions.add('MobileContextMenuViewImage')
