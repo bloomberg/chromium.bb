@@ -21,13 +21,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/net_util.h"
-#include "webkit/plugins/plugin_constants.h"
 
 using content::BrowserThread;
 
@@ -109,7 +109,7 @@ class ChromePluginTest : public InProcessBrowserTest {
     std::vector<content::WebPluginInfo> plugins = GetPlugins();
     for (std::vector<content::WebPluginInfo>::const_iterator it =
              plugins.begin(); it != plugins.end(); ++it) {
-      if (it->name == ASCIIToUTF16(kFlashPluginName))
+      if (it->name == ASCIIToUTF16(content::kFlashPluginName))
         paths->push_back(it->path);
     }
   }

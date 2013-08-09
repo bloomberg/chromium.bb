@@ -11,7 +11,6 @@
 #include "base/strings/string_util.h"
 #include "content/public/common/content_constants.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"
-#include "webkit/plugins/plugin_constants.h"
 
 namespace {
 
@@ -192,8 +191,8 @@ PluginUMAReporter::PluginType PluginUMAReporter::MimeTypeToPluginType(
   if (mime_type == content::kBrowserPluginMimeType)
     return BROWSER_PLUGIN;
 
-  if (mime_type == kFlashPluginSwfMimeType ||
-      mime_type == kFlashPluginSplMimeType) {
+  if (mime_type == content::kFlashPluginSwfMimeType ||
+      mime_type == content::kFlashPluginSplMimeType) {
     return SHOCKWAVE_FLASH;
   }
 

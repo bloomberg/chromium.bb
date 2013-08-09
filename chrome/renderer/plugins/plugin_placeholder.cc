@@ -16,6 +16,7 @@
 #include "chrome/renderer/chrome_content_renderer_client.h"
 #include "chrome/renderer/custom_menu_commands.h"
 #include "chrome/renderer/plugins/plugin_uma.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
@@ -38,10 +39,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/webui/jstemplate_builder.h"
-
-#if defined(ENABLE_MOBILE_YOUTUBE_PLUGIN)
-#include "webkit/plugins/plugin_constants.h"
-#endif
 
 using content::RenderThread;
 using content::RenderView;
@@ -624,6 +621,6 @@ bool PluginPlaceholder::IsYouTubeURL(const GURL& url,
       EndsWith(host, "youtube-nocookie.com", true);
 
   return is_youtube && IsValidYouTubeVideo(url.path()) &&
-      LowerCaseEqualsASCII(mime_type, kFlashPluginSwfMimeType);
+      LowerCaseEqualsASCII(mime_type, content::kFlashPluginSwfMimeType);
 }
 #endif

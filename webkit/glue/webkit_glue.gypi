@@ -31,7 +31,6 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
       ],
 
       'include_dirs': [
@@ -123,6 +122,7 @@
         'WEBKIT_GLUE_IMPLEMENTATION',
       ],
       'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
         '<(DEPTH)/base/base.gyp:base_i18n',
         '<(DEPTH)/base/base.gyp:base_static',
         '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
@@ -141,7 +141,6 @@
         '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
         '<(DEPTH)/webkit/common/user_agent/webkit_user_agent.gyp:user_agent',
         '<(DEPTH)/webkit/common/webkit_common.gyp:webkit_common',
-        '<(DEPTH)/webkit/plugins/webkit_plugins.gyp:plugins_common',
         '<(DEPTH)/webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
         '<(DEPTH)/webkit/storage_browser.gyp:webkit_storage_browser',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',

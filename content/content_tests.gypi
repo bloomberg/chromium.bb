@@ -586,14 +586,12 @@
             '../ui/gl/gl.gyp:gl',
             '../v8/tools/gyp/v8.gyp:v8',
             '../webkit/common/webkit_common.gyp:webkit_common',
-            '../webkit/plugins/webkit_plugins.gyp:plugins_common',
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
             '../webkit/storage_renderer.gyp:webkit_storage_renderer',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_child',
-            '../webkit/plugins/webkit_plugins.gyp:plugins_common',
           ],
         }],
         ['enable_plugins==0', {
@@ -775,7 +773,6 @@
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_child',
-            '../webkit/plugins/webkit_plugins.gyp:plugins_common',
           ],
           'include_dirs': [
             '..',

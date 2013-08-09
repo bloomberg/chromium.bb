@@ -33,6 +33,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/webplugininfo.h"
 #include "gpu/config/gpu_info.h"
 #include "grit/browser_resources.h"
@@ -41,7 +42,6 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -268,7 +268,7 @@ void FlashDOMHandler::MaybeRespondToPage() {
   // Obtain the version of the Flash plugins.
   std::vector<content::WebPluginInfo> info_array;
   PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), kFlashPluginSwfMimeType, false, &info_array, NULL);
+      GURL(), content::kFlashPluginSwfMimeType, false, &info_array, NULL);
   if (info_array.empty()) {
     AddPair(list, ASCIIToUTF16(kFlashPlugin), "Not installed");
   } else {

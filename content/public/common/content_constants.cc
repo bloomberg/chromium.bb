@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/common/content_constants.h"
+
 namespace content {
 
 const base::FilePath::CharType kAppCacheDirname[] =
@@ -11,6 +12,14 @@ const base::FilePath::CharType kPepperDataDirname[] =
     FILE_PATH_LITERAL("Pepper Data");
 
 const char kBrowserPluginMimeType[] = "application/browser-plugin";
+
+const char kFlashPluginName[] = "Shockwave Flash";
+const char kFlashPluginSwfMimeType[] = "application/x-shockwave-flash";
+const char kFlashPluginSwfExtension[] = "swf";
+const char kFlashPluginSwfDescription[] = "Shockwave Flash";
+const char kFlashPluginSplMimeType[] = "application/futuresplash";
+const char kFlashPluginSplExtension[] = "spl";
+const char kFlashPluginSplDescription[] = "FutureSplash Player";
 
 // This number used to be limited to 32 in the past (see b/535234).
 const size_t kMaxRendererProcessCount = 82;

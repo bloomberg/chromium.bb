@@ -14,10 +14,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_ui.h"
+#include "content/public/common/content_constants.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
-#include "webkit/plugins/plugin_constants.h"
 
 namespace {
 
@@ -133,7 +133,7 @@ void VersionHandler::OnGotPlugins(
   // Obtain the version of the first enabled Flash plugin.
   std::vector<content::WebPluginInfo> info_array;
   content::PluginService::GetInstance()->GetPluginInfoArray(
-      GURL(), kFlashPluginSwfMimeType, false, &info_array, NULL);
+      GURL(), content::kFlashPluginSwfMimeType, false, &info_array, NULL);
   string16 flash_version =
       l10n_util::GetStringUTF16(IDS_PLUGINS_DISABLED_PLUGIN);
   PluginPrefs* plugin_prefs =

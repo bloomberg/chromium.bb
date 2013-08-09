@@ -30,6 +30,7 @@
 #include "content/child/npapi/npobject_util.h"
 #include "content/child/npapi/webplugin.h"
 #include "content/child/plugin_messages.h"
+#include "content/common/content_constants_internal.h"
 #include "content/common/view_messages.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/npapi/plugin_channel_host.h"
@@ -52,7 +53,6 @@
 #include "ui/gfx/skia_util.h"
 #include "webkit/common/cursors/webcursor.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

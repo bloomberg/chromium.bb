@@ -22,6 +22,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/nacl/common/nacl_process_type.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/url_constants.h"
@@ -33,8 +34,6 @@
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/common/user_agent/user_agent_util.h"
-#include "webkit/plugins/plugin_constants.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
@@ -300,7 +299,7 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   // for testing purposes.
   plugin.is_out_of_process = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kPpapiFlashInProcess);
-  plugin.name = kFlashPluginName;
+  plugin.name = content::kFlashPluginName;
   plugin.path = path;
   plugin.permissions = kPepperFlashPermissions;
 
@@ -321,13 +320,13 @@ content::PepperPluginInfo CreatePepperFlashInfo(const base::FilePath& path,
   plugin.description = plugin.name + " " + flash_version_numbers[0] + "." +
       flash_version_numbers[1] + " r" + flash_version_numbers[2];
   plugin.version = JoinString(flash_version_numbers, '.');
-  content::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
-                                           kFlashPluginSwfExtension,
-                                           kFlashPluginSwfDescription);
+  content::WebPluginMimeType swf_mime_type(content::kFlashPluginSwfMimeType,
+                                           content::kFlashPluginSwfExtension,
+                                           content::kFlashPluginSwfDescription);
   plugin.mime_types.push_back(swf_mime_type);
-  content::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
-                                           kFlashPluginSplExtension,
-                                           kFlashPluginSplDescription);
+  content::WebPluginMimeType spl_mime_type(content::kFlashPluginSplMimeType,
+                                           content::kFlashPluginSplExtension,
+                                           content::kFlashPluginSplDescription);
   plugin.mime_types.push_back(spl_mime_type);
 
   return plugin;

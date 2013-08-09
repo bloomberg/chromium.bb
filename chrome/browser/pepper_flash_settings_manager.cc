@@ -29,7 +29,6 @@
 #include "ipc/ipc_listener.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "url/gurl.h"
-#include "webkit/plugins/plugin_constants.h"
 
 using content::BrowserThread;
 
@@ -955,7 +954,7 @@ bool PepperFlashSettingsManager::IsPepperFlashInUse(
       content::PluginService::GetInstance();
   std::vector<content::WebPluginInfo> plugins;
   plugin_service->GetPluginInfoArray(
-      GURL(), kFlashPluginSwfMimeType, false, &plugins, NULL);
+      GURL(), content::kFlashPluginSwfMimeType, false, &plugins, NULL);
 
   for (std::vector<content::WebPluginInfo>::iterator iter = plugins.begin();
        iter != plugins.end(); ++iter) {

@@ -26,10 +26,10 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
-#include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_WIN)
 #include "content/common/plugin_constants_win.h"

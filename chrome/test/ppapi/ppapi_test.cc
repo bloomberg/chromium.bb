@@ -36,7 +36,6 @@
 #include "net/base/test_data_directory.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "ui/gl/gl_switches.h"
-#include "webkit/plugins/plugin_switches.h"
 
 #if defined(OS_WIN) && defined(USE_ASH)
 #include "base/win/windows_version.h"

@@ -13,12 +13,12 @@
 #include "base/metrics/stats_counters.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/webplugin.h"
+#include "content/public/common/content_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/gtk/gtk_compat.h"
 #include "ui/gfx/blit.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/plugins/plugin_constants.h"
 
 #include "third_party/npapi/bindings/npapi_x11.h"
 

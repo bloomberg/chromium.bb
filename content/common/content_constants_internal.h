@@ -5,12 +5,19 @@
 #ifndef CONTENT_COMMON_CONTENT_CONSTANTS_INTERNAL_H_
 #define CONTENT_COMMON_CONTENT_CONSTANTS_INTERNAL_H_
 
+#include "base/basictypes.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
 // How long to wait before we consider a renderer hung.
 CONTENT_EXPORT extern const int kHungRendererDelayMs;
+
+// The maximum plugin width and height.
+extern const uint16 kMaxPluginSideLength;
+// The maximum plugin size, defined as the number of pixels occupied by the
+// plugin.
+extern const uint32 kMaxPluginSize;
 
 // Constants used to organize content processes in about:tracing.
 CONTENT_EXPORT extern const int kTraceEventBrowserProcessSortIndex;

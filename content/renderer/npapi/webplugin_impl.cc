@@ -17,6 +17,7 @@
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/webplugin_delegate_impl.h"
 #include "content/common/view_messages.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/npapi/webplugin_delegate_proxy.h"
 #include "content/renderer/render_process.h"
@@ -49,7 +50,6 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 #include "webkit/child/multipart_response_delegate.h"
-#include "webkit/plugins/plugin_constants.h"
 #include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 

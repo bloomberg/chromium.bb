@@ -94,6 +94,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/process_type.h"
@@ -120,7 +121,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
-#include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/accelerators/accelerator_controller.h"
@@ -358,7 +358,7 @@ const content::WebPluginInfo* GetFlashPlugin(
     const std::vector<content::WebPluginInfo>& plugins) {
   const content::WebPluginInfo* flash = NULL;
   for (size_t i = 0; i < plugins.size(); ++i) {
-    if (plugins[i].name == ASCIIToUTF16(kFlashPluginName)) {
+    if (plugins[i].name == ASCIIToUTF16(content::kFlashPluginName)) {
       flash = &plugins[i];
       break;
     }
@@ -1143,7 +1143,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, EnabledPlugins) {
   EXPECT_TRUE(SetPluginEnabled(plugin_prefs, flash, false));
   EXPECT_FALSE(plugin_prefs->IsPluginEnabled(*flash));
   base::ListValue plugin_list;
-  plugin_list.Append(base::Value::CreateStringValue(kFlashPluginName));
+  plugin_list.Append(base::Value::CreateStringValue(content::kFlashPluginName));
   PolicyMap policies;
   policies.Set(key::kEnabledPlugins, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, plugin_list.DeepCopy(), NULL);

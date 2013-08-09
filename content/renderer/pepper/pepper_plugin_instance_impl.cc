@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "cc/layers/texture_layer.h"
+#include "content/common/content_constants_internal.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/renderer/pepper/common.h"
@@ -111,7 +112,6 @@
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 #include "v8/include/v8.h"
-#include "webkit/plugins/plugin_constants.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
 #if defined(OS_MACOSX)

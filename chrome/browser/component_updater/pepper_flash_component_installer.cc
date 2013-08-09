@@ -33,10 +33,10 @@
 #include "chrome/common/pepper_flash.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
-#include "webkit/plugins/plugin_constants.h"
 
 #include "flapper_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -147,22 +147,22 @@ bool MakePepperFlashPluginInfo(const base::FilePath& flash_path,
   plugin_info->is_internal = false;
   plugin_info->is_out_of_process = out_of_process;
   plugin_info->path = flash_path;
-  plugin_info->name = kFlashPluginName;
+  plugin_info->name = content::kFlashPluginName;
   plugin_info->permissions = kPepperFlashPermissions;
 
   // The description is like "Shockwave Flash 10.2 r154".
   plugin_info->description = base::StringPrintf("%s %d.%d r%d",
-      kFlashPluginName, ver_nums[0], ver_nums[1], ver_nums[2]);
+      content::kFlashPluginName, ver_nums[0], ver_nums[1], ver_nums[2]);
 
   plugin_info->version = flash_version.GetString();
 
-  content::WebPluginMimeType swf_mime_type(kFlashPluginSwfMimeType,
-                                           kFlashPluginSwfExtension,
-                                           kFlashPluginName);
+  content::WebPluginMimeType swf_mime_type(content::kFlashPluginSwfMimeType,
+                                           content::kFlashPluginSwfExtension,
+                                           content::kFlashPluginName);
   plugin_info->mime_types.push_back(swf_mime_type);
-  content::WebPluginMimeType spl_mime_type(kFlashPluginSplMimeType,
-                                           kFlashPluginSplExtension,
-                                           kFlashPluginName);
+  content::WebPluginMimeType spl_mime_type(content::kFlashPluginSplMimeType,
+                                           content::kFlashPluginSplExtension,
+                                           content::kFlashPluginName);
   plugin_info->mime_types.push_back(spl_mime_type);
   return true;
 }

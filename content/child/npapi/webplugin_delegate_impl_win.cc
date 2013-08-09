@@ -28,12 +28,12 @@
 #include "content/child/npapi/webplugin.h"
 #include "content/child/npapi/webplugin_ime_win.h"
 #include "content/common/plugin_constants_win.h"
+#include "content/public/common/content_constants.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/base/win/dpi.h"
 #include "ui/base/win/hwnd_util.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/plugins/plugin_constants.h"
 
 using WebKit::WebKeyboardEvent;
 using WebKit::WebInputEvent;

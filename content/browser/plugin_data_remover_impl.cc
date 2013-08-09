@@ -19,9 +19,9 @@
 #include "content/common/plugin_process_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "webkit/plugins/plugin_constants.h"
 
 namespace content {
 

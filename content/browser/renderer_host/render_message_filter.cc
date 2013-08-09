@@ -43,6 +43,7 @@
 #include "content/public/browser/plugin_service_filter.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/url_constants.h"
@@ -65,7 +66,6 @@
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "third_party/WebKit/public/web/WebNotificationPresenter.h"
 #include "ui/gfx/color_profile.h"
-#include "webkit/plugins/plugin_constants.h"
 
 #if defined(OS_MACOSX)
 #include "content/common/mac/font_descriptor.h"
