@@ -13,7 +13,6 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/lazy_instance.h"
-#include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -238,35 +237,6 @@ string16 GetProgressStatusText(DownloadItem* download) {
   }
   return l10n_util::GetStringFUTF16(IDS_DOWNLOAD_TAB_PROGRESS_STATUS,
                                     speed_text, amount, time_remaining);
-}
-
-void RecordShelfClose(int size, int in_progress, bool autoclose) {
-  static const int kMaxShelfSize = 16;
-  if (autoclose) {
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnAutoClose",
-                              size,
-                              kMaxShelfSize);
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnAutoClose",
-                              in_progress,
-                              kMaxShelfSize);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfSizeOnUserClose",
-                              size,
-                              kMaxShelfSize);
-    UMA_HISTOGRAM_ENUMERATION("Download.ShelfInProgressSizeOnUserClose",
-                              in_progress,
-                              kMaxShelfSize);
-  }
-}
-
-void RecordDownloadCount(ChromeDownloadCountTypes type) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.CountsChrome", type, CHROME_DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
-}
-
-void RecordDownloadSource(ChromeDownloadSource source) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "Download.SourcesChrome", source, CHROME_DOWNLOAD_SOURCE_LAST_ENTRY);
 }
 
 }  // namespace download_util

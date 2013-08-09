@@ -36,6 +36,7 @@
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_shelf.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -1003,7 +1004,7 @@ bool DownloadsDownloadFunction::RunImpl() {
   DownloadManager* manager = BrowserContext::GetDownloadManager(
       current_profile);
   manager->DownloadUrl(download_params.Pass());
-  download_util::RecordDownloadSource(download_util::INITIATED_BY_EXTENSION);
+  RecordDownloadSource(DOWNLOAD_INITIATED_BY_EXTENSION);
   RecordApiFunctions(DOWNLOADS_FUNCTION_DOWNLOAD);
   return true;
 }

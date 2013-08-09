@@ -5,7 +5,7 @@
 #include "chrome/browser/download/download_resource_throttle.h"
 
 #include "base/bind.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_stats.h"
 #include "content/public/browser/resource_controller.h"
 
 DownloadResourceThrottle::DownloadResourceThrottle(
@@ -63,9 +63,9 @@ void DownloadResourceThrottle::ContinueDownload(bool allow) {
   if (allow) {
     // Presumes all downloads initiated by navigation use this throttle and
     // nothing else does.
-    download_util::RecordDownloadSource(download_util::INITIATED_BY_NAVIGATION);
+    RecordDownloadSource(DOWNLOAD_INITIATED_BY_NAVIGATION);
   } else {
-    download_util::RecordDownloadCount(download_util::BLOCKED_BY_THROTTLING);
+    RecordDownloadCount(CHROME_DOWNLOAD_COUNT_BLOCKED_BY_THROTTLING);
   }
 
   if (request_deferred_) {

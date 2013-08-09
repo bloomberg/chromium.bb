@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -209,7 +209,7 @@ void DownloadShelfGtk::DoClose(CloseReason reason) {
     if (download_items_[i]->download()->GetState() == DownloadItem::IN_PROGRESS)
       ++num_in_progress;
   }
-  download_util::RecordShelfClose(
+  RecordDownloadShelfClose(
       download_items_.size(), num_in_progress, reason == AUTOMATIC);
   SetCloseOnMouseOut(false);
 }

@@ -7,7 +7,7 @@
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -243,7 +243,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
       if (item->GetState() == DownloadItem::IN_PROGRESS)
         ++numInProgress;
     }
-    download_util::RecordShelfClose(
+    RecordDownloadShelfClose(
         [downloadItemControllers_ count], numInProgress, !isUserAction);
   }
 

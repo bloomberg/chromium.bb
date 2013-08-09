@@ -17,6 +17,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/install_tracker.h"
@@ -421,8 +422,7 @@ void WebstoreInstaller::StartDownload(const base::FilePath& file) {
   // The download url for the given extension is contained in |download_url_|.
   // We will navigate the current tab to this url to start the download. The
   // download system will then pass the crx to the CrxInstaller.
-  download_util::RecordDownloadSource(
-      download_util::INITIATED_BY_WEBSTORE_INSTALLER);
+  RecordDownloadSource(DOWNLOAD_INITIATED_BY_WEBSTORE_INSTALLER);
   int render_process_host_id =
     controller_->GetWebContents()->GetRenderProcessHost()->GetID();
   int render_view_host_routing_id =

@@ -10,7 +10,7 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -136,8 +136,7 @@ void PluginInstaller::StartInstalling(const GURL& plugin_url,
   FOR_EACH_OBSERVER(PluginInstallerObserver, observers_, DownloadStarted());
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  download_util::RecordDownloadSource(
-      download_util::INITIATED_BY_PLUGIN_INSTALLER);
+  RecordDownloadSource(DOWNLOAD_INITIATED_BY_PLUGIN_INSTALLER);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&BeginDownload,

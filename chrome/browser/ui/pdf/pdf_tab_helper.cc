@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
 
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -75,7 +75,7 @@ void PDFTabHelper::OnHasUnsupportedFeature() {
 
 void PDFTabHelper::OnSaveURLAs(const GURL& url,
                                const content::Referrer& referrer) {
-  download_util::RecordDownloadSource(download_util::INITIATED_BY_PDF_SAVE);
+  RecordDownloadSource(DOWNLOAD_INITIATED_BY_PDF_SAVE);
   web_contents()->SaveFrame(url, referrer);
 }
 
