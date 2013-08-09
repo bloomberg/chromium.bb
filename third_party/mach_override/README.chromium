@@ -16,4 +16,6 @@ This package is used to replace framework functions with different
 implementations at run time.
 
 
-Local Modifications: None
+Local Modifications:
+Ensure no rwx pages remain after mach_override_ptr:
+https://codereview.chromium.org/21208002/ 

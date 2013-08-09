@@ -156,7 +156,7 @@ mach_error_t makeIslandExecutable(void *address) {
 	mach_error_t err = err_none;
     uintptr_t page = (uintptr_t)address & ~(uintptr_t)(kPageSize-1);
     int e = err_none;
-    e |= mprotect((void *)page, kPageSize, PROT_EXEC | PROT_READ | PROT_WRITE);
+    e |= mprotect((void *)page, kPageSize, PROT_EXEC | PROT_READ);
     e |= msync((void *)page, kPageSize, MS_INVALIDATE );
     if (e) {
         err = err_cannot_override;
@@ -335,6 +335,12 @@ mach_override_ptr(
 #endif
 		if ( !err )
 			atomic_mov64((uint64_t *)originalFunctionPtr, jumpRelativeInstruction);
+
+		mach_error_t prot_err = err_none;	
+		prot_err = vm_protect( mach_task_self(),
+				       (vm_address_t) originalFunctionPtr, 8, false,
+				       (VM_PROT_READ | VM_PROT_EXECUTE) );
+		if (prot_err) fprintf(stderr, "err = %x %s:%d\n", prot_err, __FILE__, __LINE__);    
 	}
 #endif
 	
