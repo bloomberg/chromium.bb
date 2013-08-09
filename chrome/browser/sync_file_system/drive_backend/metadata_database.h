@@ -113,9 +113,42 @@ class MetadataDatabase {
                  const SyncStatusCallback& callback);
 
   // Unregisters the folder as the app-root for |app_id|.  If |app_id| does not
-  // exist, does nothing.  The folder is left as an inactive normal folder.
+  // exist, does nothing.  The folder is left as an inactive regular folder.
+  // Note that the inactivation drops all descendant files since they are no
+  // longer reachable from sync-root via active folder or app-root.
   void UnregisterApp(const std::string& app_id,
                      const SyncStatusCallback& callback);
+
+  // Finds the app-root folder for |app_id|.  Returns true if exists.
+  // Copies the result to |tracker| if it is non-NULL.
+  bool FindAppRootTracker(const std::string& app_id,
+                          FileTracker* tracker) const;
+
+  // Finds the file identified by |file_id|.  Returns true if the file is found.
+  // Copies the FileMetadata instance identified by |file_id| into
+  // |file| if exists and |file| is non-NULL.
+  bool FindFileByFileID(const std::string& file_id,
+                        FileMetadata* file) const;
+
+  // Finds the tracker identified by |tracker_id|.  Returns true if the tracker
+  // is found.
+  // Copies the Tracker instance identified by |tracker_id| into |tracker| if
+  // exists and |tracker| is non-NULL.
+  bool FindTrackerByTrackerID(int64 tracker_id,
+                              FileTracker* tracker) const;
+
+  // Finds the trackers tracking |file_id|.  Returns true if the trackers are
+  // found.
+  bool FindTrackersByFileID(const std::string& file_id,
+                            TrackerSet* trackers) const;
+
+  // Finds the set of trackers whose parent's tracker ID is |parent_tracker_id|,
+  // and who has |title| as its title in the synced_details.
+  // Copies the TrackerSet instance to |trackers| if it is non-NULL.
+  size_t FindTrackersByParentAndTitle(
+      int64 parent_tracker_id,
+      const std::string& title,
+      TrackerSet* trackers) const;
 
   // Updates database by |changes|.
   // Marks dirty for each changed file if the file has the metadata in the
@@ -144,6 +177,34 @@ class MetadataDatabase {
       scoped_ptr<MetadataDatabase>* metadata_database_out);
   SyncStatusCode InitializeOnTaskRunner(const base::FilePath& database_path);
   void BuildIndexes(DatabaseContents* contents);
+
+  // Database manipulation methods.
+  void RegisterTrackerAsAppRoot(const std::string& app_id,
+                                int64 tracker_id,
+                                leveldb::WriteBatch* batch);
+  void MakeTrackerActive(int64 tracker_id, leveldb::WriteBatch* batch);
+  void MakeTrackerInactive(int64 tracker_id, leveldb::WriteBatch* batch);
+
+  void UnregisterTrackerAsAppRoot(const std::string& app_id,
+                                  leveldb::WriteBatch* batch);
+  void RemoveAllDescendantTrackers(int64 root_tracker_id,
+                                   leveldb::WriteBatch* batch);
+  void RemoveTrackerIgnoringSiblings(int64 tracker_id,
+                                     leveldb::WriteBatch* batch);
+
+  void MarkTrackerSetDirty(TrackerSet* trackers,
+                           leveldb::WriteBatch* batch);
+  void MarkTrackersDirtyByFileID(const std::string& file_id,
+                                 leveldb::WriteBatch* batch);
+  void MarkTrackersDirtyByPath(int64 parent_tracker_id,
+                               const std::string& title,
+                               leveldb::WriteBatch* batch);
+
+  void EraseTrackerFromFileIDIndex(FileTracker* tracker,
+                                   leveldb::WriteBatch* batch);
+  void EraseTrackerFromPathIndex(FileTracker* tracker);
+  void EraseFileFromDatabase(const std::string& file_id,
+                             leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
