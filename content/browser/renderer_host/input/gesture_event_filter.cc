@@ -75,10 +75,10 @@ GestureEventFilter::GestureEventFilter(InputRouter* input_router)
 GestureEventFilter::~GestureEventFilter() { }
 
 bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
-    const GestureEventWithLatencyInfo& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) const {
   if (coalesced_gesture_events_.empty() && fling_in_progress_)
     return false;
-  GestureEventQueue::reverse_iterator it =
+  GestureEventQueue::const_reverse_iterator it =
       coalesced_gesture_events_.rbegin();
   while (it != coalesced_gesture_events_.rend()) {
     if (it->event.type == WebInputEvent::GestureFlingStart)
@@ -138,7 +138,7 @@ bool GestureEventFilter::ShouldForward(
 }
 
 bool GestureEventFilter::ShouldForwardForZeroVelocityFlingStart(
-    const GestureEventWithLatencyInfo& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) const {
   return gesture_event.event.type != WebInputEvent::GestureFlingStart ||
       gesture_event.event.sourceDevice != WebGestureEvent::Touchpad ||
       gesture_event.event.data.flingStart.velocityX != 0 ||
@@ -146,7 +146,7 @@ bool GestureEventFilter::ShouldForwardForZeroVelocityFlingStart(
 }
 
 bool GestureEventFilter::ShouldForwardForGFCFiltering(
-    const GestureEventWithLatencyInfo& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) const {
   return gesture_event.event.type != WebInputEvent::GestureFlingCancel ||
       !ShouldDiscardFlingCancelEvent(gesture_event);
 }
@@ -301,7 +301,7 @@ void GestureEventFilter::FlingHasBeenHalted() {
   fling_in_progress_ = false;
 }
 
-bool GestureEventFilter::ShouldHandleEventNow() {
+bool GestureEventFilter::ShouldHandleEventNow() const {
   return coalesced_gesture_events_.size() == 1;
 }
 
@@ -328,7 +328,7 @@ void GestureEventFilter::SendGestureTapDownNow() {
 
 void GestureEventFilter::SendScrollEndingEventsNow() {
   scrolling_in_progress_ = false;
-  for (GestureEventQueue::iterator it =
+  for (GestureEventQueue::const_iterator it =
       debouncing_deferral_queue_.begin();
       it != debouncing_deferral_queue_.end(); it++) {
     if (ShouldForwardForGFCFiltering(*it) &&
@@ -407,7 +407,7 @@ void GestureEventFilter::MergeOrInsertScrollAndPinchEvent(
 
 bool GestureEventFilter::ShouldTryMerging(
     const GestureEventWithLatencyInfo& new_event,
-    const GestureEventWithLatencyInfo& event_in_queue) {
+    const GestureEventWithLatencyInfo& event_in_queue) const {
   DLOG_IF(WARNING,
           new_event.event.timeStampSeconds <
           event_in_queue.event.timeStampSeconds)
@@ -418,7 +418,7 @@ bool GestureEventFilter::ShouldTryMerging(
 }
 
 gfx::Transform GestureEventFilter::GetTransformForEvent(
-    const GestureEventWithLatencyInfo& gesture_event) {
+    const GestureEventWithLatencyInfo& gesture_event) const {
   gfx::Transform gesture_transform = gfx::Transform();
   if (gesture_event.event.type == WebInputEvent::GestureScrollUpdate) {
     gesture_transform.Translate(gesture_event.event.data.scrollUpdate.deltaX,

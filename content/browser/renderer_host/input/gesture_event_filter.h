@@ -96,11 +96,11 @@ class GestureEventFilter {
   // Returns |true| if the given GestureFlingCancel should be discarded
   // as unnecessary.
   bool ShouldDiscardFlingCancelEvent(
-      const GestureEventWithLatencyInfo& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event) const;
 
   // Returns |true| if the only event in the queue is the current event and
   // hence that event should be handled now.
-  bool ShouldHandleEventNow();
+  bool ShouldHandleEventNow() const;
 
   // Merge or append a GestureScrollUpdate or GesturePinchUpdate into
   // the coalescing queue.
@@ -109,7 +109,7 @@ class GestureEventFilter {
 
   // Sub-filter for removing zero-velocity fling-starts from touchpad.
   bool ShouldForwardForZeroVelocityFlingStart(
-      const GestureEventWithLatencyInfo& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event) const;
 
   // Sub-filter for removing bounces from in-progress scrolls.
   bool ShouldForwardForBounceReduction(
@@ -117,7 +117,7 @@ class GestureEventFilter {
 
   // Sub-filter for removing unnecessary GestureFlingCancels.
   bool ShouldForwardForGFCFiltering(
-      const GestureEventWithLatencyInfo& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event) const;
 
   // Sub-filter for suppressing taps immediately after a GestureFlingCancel.
   bool ShouldForwardForTapSuppression(
@@ -136,14 +136,15 @@ class GestureEventFilter {
   // Whether the event_in_queue is GesturePinchUpdate or
   // GestureScrollUpdate and it has the same modifiers as the
   // new event.
-  bool ShouldTryMerging(const GestureEventWithLatencyInfo& new_event,
-                        const GestureEventWithLatencyInfo& event_in_queue);
+  bool ShouldTryMerging(
+      const GestureEventWithLatencyInfo& new_event,
+      const GestureEventWithLatencyInfo& event_in_queue)const;
 
   // Returns the transform matrix corresponding to the gesture event.
   // Assumes the gesture event sent is either GestureScrollUpdate or
   // GesturePinchUpdate. Returns the identity matrix otherwise.
   gfx::Transform GetTransformForEvent(
-      const GestureEventWithLatencyInfo& gesture_event);
+      const GestureEventWithLatencyInfo& gesture_event) const;
 
   // The receiver of all forwarded gesture events.
   InputRouter* input_router_;
