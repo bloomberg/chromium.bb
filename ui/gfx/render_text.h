@@ -300,8 +300,9 @@ class UI_EXPORT RenderText {
   // Draws a cursor at |position|.
   void DrawCursor(Canvas* canvas, const SelectionModel& position);
 
-  // Draw the selected text without a cursor or selection highlight.
-  void DrawSelectedText(Canvas* canvas);
+  // Draw the selected text without a cursor or selection highlight. Subpixel
+  // antialiasing is disabled and foreground color is forced to black.
+  void DrawSelectedTextForDrag(Canvas* canvas);
 
   // Gets the SelectionModel from a visual point in local coordinates.
   virtual SelectionModel FindCursorPosition(const Point& point) = 0;
