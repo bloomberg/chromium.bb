@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "StylePropertyShorthand.h"
+#include "RuntimeEnabledFeatures.h"
 
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
@@ -44,15 +45,19 @@ const StylePropertyShorthand& {{ property.camel_case_name }}Shorthand()
 // Returns an empty list if the property is not a shorthand
 const StylePropertyShorthand& shorthandForProperty(CSSPropertyID propertyID)
 {
+    DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
     switch (propertyID) {
 {%- for property_id, property in properties.items() %}
     {%- if property.camel_case_name not in ["width", "height", "marker"] %}
         case {{ property_id }}:
+        {%- if property.runtime_conditional_getter %}
+            if (!RuntimeEnabledFeatures::{{ property.runtime_conditional_getter }}())
+                return emptyShorthand;
+        {%- endif %}
             return {{ property.camel_case_name }}Shorthand();
     {%- endif %}
 {%- endfor %}
     default: {
-        DEFINE_STATIC_LOCAL(StylePropertyShorthand, emptyShorthand, ());
         return emptyShorthand;
     }
     }
