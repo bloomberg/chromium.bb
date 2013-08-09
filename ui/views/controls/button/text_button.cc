@@ -481,7 +481,7 @@ void TextButtonBase::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
 #if defined(OS_WIN)
       // TODO(erg): Either port DrawStringWithHalo to linux or find an
       // alternative here.
-      canvas->DrawStringWithHalo(text_, font_, text_color, color_highlight_,
+      canvas->DrawStringWithHalo(text_, font_, SK_ColorBLACK, SK_ColorWHITE,
           text_bounds.x(), text_bounds.y(), text_bounds.width(),
           text_bounds.height(), draw_string_flags);
 #else
