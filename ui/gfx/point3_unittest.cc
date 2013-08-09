@@ -30,6 +30,12 @@ TEST(Point3Test, VectorArithmetic) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i)
     EXPECT_EQ(tests[i].expected.ToString(),
               tests[i].actual.ToString());
+
+  a += v1;
+  EXPECT_EQ(Point3F(4.7f, 1.9f, 12.5f).ToString(), a.ToString());
+
+  a -= v2;
+  EXPECT_EQ(Point3F(12.8f, 0.7f, 9.2f).ToString(), a.ToString());
 }
 
 TEST(Point3Test, VectorFromPoints) {
@@ -38,6 +44,27 @@ TEST(Point3Test, VectorFromPoints) {
 
   gfx::Point3F b(a + v1);
   EXPECT_EQ((b - a).ToString(), v1.ToString());
+}
+
+TEST(Point3Test, Scale) {
+  EXPECT_EQ(Point3F().ToString(), ScalePoint(Point3F(), 2.f).ToString());
+  EXPECT_EQ(Point3F().ToString(),
+            ScalePoint(Point3F(), 2.f, 2.f, 2.f).ToString());
+
+  EXPECT_EQ(Point3F(2.f, -2.f, 4.f).ToString(),
+            ScalePoint(Point3F(1.f, -1.f, 2.f), 2.f).ToString());
+  EXPECT_EQ(Point3F(2.f, -3.f, 8.f).ToString(),
+            ScalePoint(Point3F(1.f, -1.f, 2.f), 2.f, 3.f, 4.f).ToString());
+
+  Point3F zero;
+  zero.Scale(2.f);
+  zero.Scale(6.f, 3.f, 1.5f);
+  EXPECT_EQ(Point3F().ToString(), zero.ToString());
+
+  Point3F point(1.f, -1.f, 2.f);
+  point.Scale(2.f);
+  point.Scale(6.f, 3.f, 1.5f);
+  EXPECT_EQ(Point3F(12.f, -6.f, 6.f).ToString(), point.ToString());
 }
 
 }  // namespace gfx

@@ -412,6 +412,8 @@
         'gfx/android/java_bitmap.h',
         'gfx/blit.cc',
         'gfx/blit.h',
+        'gfx/box_f.cc',
+        'gfx/box_f.h',
         'gfx/break_list.h',
         'gfx/canvas.cc',
         'gfx/canvas.h',

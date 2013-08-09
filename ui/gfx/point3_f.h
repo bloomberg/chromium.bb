@@ -24,6 +24,14 @@ class UI_EXPORT Point3F {
 
   ~Point3F() {}
 
+  void Scale(float scale) {
+    Scale(scale, scale, scale);
+  }
+
+  void Scale(float x_scale, float y_scale, float z_scale) {
+    SetPoint(x() * x_scale, y() * y_scale, z() * z_scale);
+  }
+
   float x() const { return x_; }
   float y() const { return y_; }
   float z() const { return z_; }
@@ -36,6 +44,20 @@ class UI_EXPORT Point3F {
     x_ = x;
     y_ = y;
     z_ = z;
+  }
+
+  // Offset the point by the given vector.
+  void operator+=(const Vector3dF& v) {
+    x_ += v.x();
+    y_ += v.y();
+    z_ += v.z();
+  }
+
+  // Offset the point by the given vector's inverse.
+  void operator-=(const Vector3dF& v) {
+    x_ -= v.x();
+    y_ -= v.y();
+    z_ -= v.z();
   }
 
   // Returns the squared euclidean distance between two points.
@@ -80,6 +102,17 @@ UI_EXPORT Vector3dF operator-(const Point3F& lhs, const Point3F& rhs);
 
 inline Point3F PointAtOffsetFromOrigin(const Vector3dF& offset) {
   return Point3F(offset.x(), offset.y(), offset.z());
+}
+
+inline Point3F ScalePoint(const Point3F& p,
+                          float x_scale,
+                          float y_scale,
+                          float z_scale) {
+  return Point3F(p.x() * x_scale, p.y() * y_scale, p.z() * z_scale);
+}
+
+inline Point3F ScalePoint(const Point3F& p, float scale) {
+  return ScalePoint(p, scale, scale, scale);
 }
 
 }  // namespace gfx

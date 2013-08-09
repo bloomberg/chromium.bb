@@ -108,6 +108,7 @@
         'base/resource/data_pack_unittest.cc',
         'base/resource/resource_bundle_unittest.cc',
         'base/text/text_elider_unittest.cc',
+        'gfx/box_unittest.cc',
         'gfx/codec/png_codec_unittest.cc',
         'gfx/color_utils_unittest.cc',
         'gfx/display_unittest.cc',

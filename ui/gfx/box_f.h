@@ -1,0 +1,142 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef UI_GFX_BOX_F_H_
+#define UI_GFX_BOX_F_H_
+
+#include "ui/gfx/point3_f.h"
+#include "ui/gfx/vector3d_f.h"
+
+namespace gfx {
+
+// A 3d version of gfx::RectF, with the positive z-axis pointed towards
+// the camera.
+class UI_EXPORT BoxF {
+ public:
+  BoxF()
+      : width_(0.f),
+        height_(0.f),
+        depth_(0.f) {}
+
+  BoxF(float width, float height, float depth)
+      : width_(width < 0 ? 0 : width),
+        height_(height < 0 ? 0 : height),
+        depth_(depth < 0 ? 0 : depth) {}
+
+  BoxF(float x, float y, float z, float width, float height, float depth)
+      : origin_(x, y, z),
+        width_(width < 0 ? 0 : width),
+        height_(height < 0 ? 0 : height),
+        depth_(depth < 0 ? 0 : depth) {}
+
+  BoxF(const Point3F& origin, float width, float height, float depth)
+      : origin_(origin),
+        width_(width < 0 ? 0 : width),
+        height_(height < 0 ? 0 : height),
+        depth_(depth < 0 ? 0 : depth) {}
+
+  ~BoxF() {}
+
+  // Scales all three axes by the given scale.
+  void Scale(float scale) {
+    Scale(scale, scale, scale);
+  }
+
+  // Scales each axis by the corresponding given scale.
+  void Scale(float x_scale, float y_scale, float z_scale) {
+    origin_.Scale(x_scale, y_scale, z_scale);
+    set_size(width_ * x_scale, height_ * y_scale, depth_ * z_scale);
+  }
+
+  // Moves the box by the specified distance in each dimension.
+  void operator+=(const Vector3dF& offset) {
+    origin_ += offset;
+  }
+
+  // Returns true if the box has no interior points.
+  bool IsEmpty() const;
+
+  // Computes the union of this box with the given box. The union is the
+  // smallest box that contains both boxes.
+  void Union(const BoxF& box);
+
+  std::string ToString() const;
+
+  float x() const { return origin_.x(); }
+  void set_x(float x) { origin_.set_x(x); }
+
+  float y() const { return origin_.y(); }
+  void set_y(float y) { origin_.set_y(y); }
+
+  float z() const { return origin_.z(); }
+  void set_z(float z) { origin_.set_z(z); }
+
+  float width() const { return width_; }
+  void set_width(float width) { width_ = width < 0 ? 0 : width; }
+
+  float height() const { return height_; }
+  void set_height(float height) { height_ = height < 0 ? 0 : height; }
+
+  float depth() const { return depth_; }
+  void set_depth(float depth) { depth_ = depth < 0 ? 0 : depth; }
+
+  float right() const { return x() + width(); }
+  float bottom() const { return y() + height(); }
+  float front() const { return z() + depth(); }
+
+  void set_size(float width, float height, float depth) {
+    width_ = width < 0 ? 0 : width;
+    height_ = height < 0 ? 0 : height;
+    depth_ = depth < 0 ? 0 : depth;
+  }
+
+  const Point3F& origin() const { return origin_; }
+  void set_origin(const Point3F& origin) { origin_ = origin; }
+
+ private:
+  Point3F origin_;
+  float width_;
+  float height_;
+  float depth_;
+};
+
+UI_EXPORT BoxF UnionBoxes(const BoxF& a, const BoxF& b);
+
+inline BoxF ScaleBox(const BoxF& b,
+                     float x_scale,
+                     float y_scale,
+                     float z_scale) {
+  return BoxF(b.x() * x_scale,
+              b.y() * y_scale,
+              b.z() * z_scale,
+              b.width() * x_scale,
+              b.height() * y_scale,
+              b.depth() * z_scale);
+}
+
+inline BoxF ScaleBox(const BoxF& b, float scale) {
+  return ScaleBox(b, scale, scale, scale);
+}
+
+inline bool operator==(const BoxF& a, const BoxF& b) {
+  return a.origin() == b.origin() && a.width() == b.width() &&
+         a.height() == b.height() && a.depth() == b.depth();
+}
+
+inline bool operator!=(const BoxF& a, const BoxF& b) {
+  return !(a == b);
+}
+
+inline BoxF operator+(const BoxF& b, const Vector3dF& v) {
+  return BoxF(b.x() + v.x(),
+              b.y() + v.y(),
+              b.z() + v.z(),
+              b.width(),
+              b.height(),
+              b.depth());
+}
+
+}  // namespace gfx
+
+#endif  // UI_GFX_BOX_F_H_
