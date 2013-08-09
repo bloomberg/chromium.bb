@@ -963,11 +963,6 @@
     # remaining.
     'win_third_party_warn_as_error%': 'true',
 
-    # This is the location of the sandbox binary. Chrome looks for this before
-    # running the zygote process. If found, and SUID, it will be used to
-    # sandbox the zygote process and, thus, all renderer processes.
-    'linux_sandbox_path%': '',
-
     # Clang stuff.
     'clang%': '<(clang)',
     'make_clang_dir%': 'third_party/llvm-build/Release+Asserts',
