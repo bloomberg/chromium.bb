@@ -9,8 +9,10 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/nacl_host/pnacl_translation_cache.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
@@ -44,6 +46,9 @@ class PnaclHostTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
     content::BrowserThread::GetBlockingPool()->FlushForTesting();
     base::RunLoop().RunUntilIdle();
+  }
+  int GetCacheSize() {
+    return host_->disk_cache_->Size();
   }
 
  public:  // Required for derived classes to bind this method
@@ -340,6 +345,29 @@ TEST_F(PnaclHostTest, IncognitoSecondOverlappedMiss) {
   FlushQueues();
   EXPECT_EQ(2, temp_callback_count_);
   EXPECT_EQ(0U, host_->pending_translations());
+}
+
+TEST_F(PnaclHostTest, ClearTranslationCache) {
+  nacl::PnaclCacheInfo info = GetTestCacheInfo();
+  // Add 2 entries in the cache
+  GET_NEXE_FD(0, 0, false, info, false);
+  info.abi_version = 222;
+  GET_NEXE_FD(0, 1, false, info, false);
+  FlushQueues();
+  EXPECT_EQ(2, temp_callback_count_);
+  host_->TranslationFinished(0, 0, true);
+  host_->TranslationFinished(0, 1, true);
+  FlushQueues();
+  EXPECT_EQ(0U, host_->pending_translations());
+  EXPECT_EQ(2, GetCacheSize());
+  net::TestCompletionCallback cb;
+  // Since we are using a memory backend, the clear should happen immediately.
+  host_->ClearTranslationCacheEntriesBetween(base::Time(), base::Time(),
+                                             base::Bind(cb.callback(), 0));
+  EXPECT_EQ(0, cb.GetResult(net::ERR_IO_PENDING));
+  // Check that the translation cache has been cleared
+  EXPECT_EQ(0, GetCacheSize());
+  host_->RendererClosing(0);
 }
 
 }  // namespace pnacl

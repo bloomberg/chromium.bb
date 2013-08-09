@@ -25,6 +25,7 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
+#include "chrome/browser/nacl_host/pnacl_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/password_manager/password_store.h"
@@ -169,6 +170,7 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
       waiting_for_clear_network_predictor_(false),
       waiting_for_clear_networking_history_(false),
       waiting_for_clear_plugin_data_(false),
+      waiting_for_clear_pnacl_cache_(false),
       waiting_for_clear_quota_managed_data_(false),
       waiting_for_clear_server_bound_certs_(false),
       waiting_for_clear_session_storage_(false),
@@ -530,6 +532,12 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
         BrowserThread::IO, FROM_HERE,
         base::Bind(&BrowsingDataRemover::ClearNaClCacheOnIOThread,
                    base::Unretained(this)));
+
+    waiting_for_clear_pnacl_cache_ = true;
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&BrowsingDataRemover::ClearPnaclCacheOnIOThread,
+                   base::Unretained(this), delete_begin_, delete_end_));
 #endif
 
     // The PrerenderManager may have a page actively being prerendered, which
@@ -636,6 +644,7 @@ bool BrowsingDataRemover::AllDone() {
          !waiting_for_clear_networking_history_ &&
          !waiting_for_clear_server_bound_certs_ &&
          !waiting_for_clear_plugin_data_ &&
+         !waiting_for_clear_pnacl_cache_ &&
          !waiting_for_clear_quota_managed_data_ &&
          !waiting_for_clear_content_licenses_ && !waiting_for_clear_form_ &&
          !waiting_for_clear_hostname_resolution_cache_ &&
@@ -891,6 +900,36 @@ void BrowsingDataRemover::ClearNaClCacheOnIOThread() {
 
   NaClBrowser::GetInstance()->ClearValidationCache(
       base::Bind(&BrowsingDataRemover::ClearedNaClCacheOnIOThread,
+                 base::Unretained(this)));
+}
+
+void BrowsingDataRemover::ClearedPnaclCache() {
+  // This function should be called on the UI thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  waiting_for_clear_pnacl_cache_ = false;
+
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearedPnaclCacheOnIOThread() {
+  // This function should be called on the IO thread.
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  // Notify the UI thread that we are done.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&BrowsingDataRemover::ClearedPnaclCache,
+                 base::Unretained(this)));
+}
+
+void BrowsingDataRemover::ClearPnaclCacheOnIOThread(base::Time begin,
+                                                    base::Time end) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  PnaclHost::GetInstance()->ClearTranslationCacheEntriesBetween(
+      begin, end,
+      base::Bind(&BrowsingDataRemover::ClearedPnaclCacheOnIOThread,
                  base::Unretained(this)));
 }
 #endif

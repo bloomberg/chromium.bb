@@ -155,10 +155,10 @@ void PnaclTranslationCacheEntry::Start() {
 // OpenEntry, CreateEntry, WriteEntry, ReadEntry and CloseEntry are only called
 // from DispatchNext, so they know that cache_ is still valid.
 void PnaclTranslationCacheEntry::OpenEntry() {
-  int rv = cache_->backend()
-      ->OpenEntry(key_,
-                  &entry_,
-                  base::Bind(&PnaclTranslationCacheEntry::DispatchNext, this));
+  int rv = cache_->backend()->OpenEntry(
+      key_,
+      &entry_,
+      base::Bind(&PnaclTranslationCacheEntry::DispatchNext, this));
   if (rv != net::ERR_IO_PENDING)
     DispatchNext(rv);
 }
@@ -425,4 +425,12 @@ std::string PnaclTranslationCache::GetKey(const nacl::PnaclCacheInfo& info) {
   retval += "etag:" + info.etag;
   return retval;
 }
+
+int PnaclTranslationCache::DoomEntriesBetween(
+    base::Time initial,
+    base::Time end,
+    const CompletionCallback& callback) {
+  return disk_cache_->DoomEntriesBetween(initial, end, callback);
+}
+
 }  // namespace pnacl

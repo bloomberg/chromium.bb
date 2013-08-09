@@ -478,12 +478,13 @@ void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
     // Write error on the temp file. Request a new file and start over.
     LOG(ERROR) << "PnaclHost::OnBufferCopiedToTempFile write error";
     BrowserThread::PostBlockingPoolTask(
-        FROM_HERE, base::Bind(base::IgnoreResult(base::ClosePlatformFile),
-                              entry->second.nexe_fd));
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(base::ClosePlatformFile),
+                   entry->second.nexe_fd));
     entry->second.got_nexe_fd = false;
-    CreateTemporaryFile(
-      base::Bind(&PnaclHost::OnTempFileReturn, weak_factory_.GetWeakPtr(),
-                 entry->first));
+    CreateTemporaryFile(base::Bind(&PnaclHost::OnTempFileReturn,
+                                   weak_factory_.GetWeakPtr(),
+                                   entry->first));
     return;
   }
   base::PlatformFile fd = entry->second.nexe_fd;
@@ -522,4 +523,40 @@ void PnaclHost::RendererClosing(int render_process_id) {
     // last renderer closes rather than on destruction.
     disk_cache_.reset();
   }
+}
+
+////////////////// Cache data removal
+void PnaclHost::ClearTranslationCacheEntriesBetween(
+    base::Time initial_time,
+    base::Time end_time,
+    const base::Closure& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (cache_state_ == CacheUninitialized) {
+    Init();
+  }
+  if (cache_state_ == CacheInitializing) {
+    // If the backend hasn't yet initialized, try the request again later.
+    BrowserThread::PostDelayedTask(
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&PnaclHost::ClearTranslationCacheEntriesBetween,
+                   weak_factory_.GetWeakPtr(),
+                   initial_time,
+                   end_time,
+                   callback),
+        base::TimeDelta::FromMilliseconds(
+            kTranslationCacheInitializationDelayMs));
+    return;
+  }
+  int rv = disk_cache_->DoomEntriesBetween(
+      initial_time,
+      end_time,
+      base::Bind(&PnaclHost::OnEntriesDoomed, callback));
+  if (rv != net::ERR_IO_PENDING)
+    OnEntriesDoomed(callback, rv);
+}
+
+// static
+void PnaclHost::OnEntriesDoomed(const base::Closure& callback, int net_error) {
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, callback);
 }

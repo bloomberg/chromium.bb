@@ -288,6 +288,16 @@ class BrowsingDataRemover : public content::NotificationObserver
 
   // Invoked on the IO thread to delete the NaCl cache.
   void ClearNaClCacheOnIOThread();
+
+  // Callback for when the PNaCl translation cache has been deleted. Invokes
+  // NotifyAndDeleteIfDone.
+  void ClearedPnaclCache();
+
+  // Invokes ClearedPnaclCacheOn on the UI thread.
+  void ClearedPnaclCacheOnIOThread();
+
+  // Invoked on the IO thread to delete entries in the PNaCl translation cache.
+  void ClearPnaclCacheOnIOThread(base::Time begin, base::Time end);
 #endif
 
   // Invoked on the UI thread to delete local storage.
@@ -424,6 +434,7 @@ class BrowsingDataRemover : public content::NotificationObserver
   bool waiting_for_clear_network_predictor_;
   bool waiting_for_clear_networking_history_;
   bool waiting_for_clear_plugin_data_;
+  bool waiting_for_clear_pnacl_cache_;
   bool waiting_for_clear_quota_managed_data_;
   bool waiting_for_clear_server_bound_certs_;
   bool waiting_for_clear_session_storage_;

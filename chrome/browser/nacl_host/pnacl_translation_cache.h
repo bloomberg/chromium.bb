@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "net/base/cache_type.h"
 
 namespace base {
@@ -70,6 +71,12 @@ class PnaclTranslationCache
 
   // Return the cache key for |info|
   static std::string GetKey(const nacl::PnaclCacheInfo& info);
+
+  // Doom all entries between |initial| and |end|. If the return value is
+  // net::ERR_IO_PENDING, |callback| will be invoked when the operation
+  // completes.
+  int DoomEntriesBetween(base::Time initial, base::Time end,
+                         const CompletionCallback& callback);
 
  private:
   friend class PnaclTranslationCacheEntry;

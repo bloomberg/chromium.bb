@@ -84,6 +84,14 @@ class PnaclHost {
   // more pending translations, the backend is freed, allowing it to flush.
   void RendererClosing(int render_process_id);
 
+  // Doom all entries between |initial_time| and |end_time|. Like disk_cache_,
+  // PnaclHost supports supports unbounded deletes in either direction by using
+  // null Time values for either argument. |callback| will be called on the UI
+  // thread when finished.
+  void ClearTranslationCacheEntriesBetween(base::Time initial_time,
+                                           base::Time end_time,
+                                           const base::Closure& callback);
+
   // Return the number of tracked translations or FD requests currently pending.
   size_t pending_translations() { return pending_translations_.size(); }
 
@@ -145,6 +153,8 @@ class PnaclHost {
   static int CopyBufferToFile(base::PlatformFile fd,
                               scoped_refptr<net::DrainableIOBuffer> buffer);
   void OnBufferCopiedToTempFile(const TranslationID& id, int file_error);
+
+  static void OnEntriesDoomed(const base::Closure& callback, int net_error);
 
   CacheState cache_state_;
   base::FilePath temp_dir_;
