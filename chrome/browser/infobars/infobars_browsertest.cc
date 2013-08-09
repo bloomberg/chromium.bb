@@ -41,10 +41,10 @@ class InfoBarsTest : public InProcessBrowserTest {
         chrome::NOTIFICATION_EXTENSION_LOADED,
         content::NotificationService::AllSources());
 
-    ExtensionInstallPrompt* client = new ExtensionInstallPrompt(
-        browser()->tab_strip_model()->GetActiveWebContents());
+    scoped_ptr<ExtensionInstallPrompt> client(new ExtensionInstallPrompt(
+        browser()->tab_strip_model()->GetActiveWebContents()));
     scoped_refptr<extensions::CrxInstaller> installer(
-        extensions::CrxInstaller::Create(service, client));
+        extensions::CrxInstaller::Create(service, client.Pass()));
     installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);
     installer->InstallCrx(path);
 

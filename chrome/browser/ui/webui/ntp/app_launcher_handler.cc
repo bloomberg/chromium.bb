@@ -719,7 +719,7 @@ void AppLauncherHandler::OnFaviconForApp(
   }
 
   scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::Create(extension_service_, NULL));
+      CrxInstaller::CreateSilent(extension_service_));
   installer->set_error_on_unsupported_requirements(true);
   installer->set_page_ordinal(install_info->page_ordinal);
   installer->InstallWebApp(*web_app);

@@ -693,7 +693,7 @@ class ExtensionServiceTest
   void StartCRXInstall(const base::FilePath& crx_path, int creation_flags) {
     ASSERT_TRUE(base::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
-    scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
+    scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
     installer->set_creation_flags(creation_flags);
     if (!(creation_flags & Extension::WAS_INSTALLED_BY_DEFAULT)) {
       installer->set_allow_silent_install(true);
@@ -779,7 +779,7 @@ class ExtensionServiceTest
     EXPECT_TRUE(base::PathExists(crx_path))
         << "Path does not exist: "<< crx_path.value().c_str();
     // no client (silent install)
-    scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
+    scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
     installer->set_install_source(install_location);
     installer->InstallCrx(crx_path);
 
@@ -1868,7 +1868,7 @@ TEST_F(ExtensionServiceTest, InstallUserScript) {
              .AppendASCII("user_script_basic.user.js");
 
   ASSERT_TRUE(base::PathExists(path));
-  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
   installer->set_allow_silent_install(true);
   installer->InstallUserScript(
       path,
@@ -1898,7 +1898,7 @@ TEST_F(ExtensionServiceTest, InstallExtensionDuringShutdown) {
   service_->set_browser_terminating_for_test(true);
 
   base::FilePath path = data_dir_.AppendASCII("good.crx");
-  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(service_, NULL));
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(service_));
   installer->set_allow_silent_install(true);
   installer->InstallCrx(path);
   base::RunLoop().RunUntilIdle();

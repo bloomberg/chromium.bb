@@ -96,9 +96,11 @@ void InstallExtensionHandler::HandleInstallMessage(const ListValue* args) {
 
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
+  scoped_ptr<ExtensionInstallPrompt> prompt(
+      new ExtensionInstallPrompt(web_ui()->GetWebContents()));
   scoped_refptr<CrxInstaller> crx_installer(CrxInstaller::Create(
       ExtensionSystem::Get(profile)->extension_service(),
-      new ExtensionInstallPrompt(web_ui()->GetWebContents())));
+      prompt.Pass()));
   crx_installer->set_error_on_unsupported_requirements(true);
   crx_installer->set_off_store_install_allow_reason(
       CrxInstaller::OffStoreInstallAllowedFromSettingsPage);

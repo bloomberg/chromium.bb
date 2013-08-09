@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -29,19 +30,54 @@ namespace extensions {
 
 namespace {
 
-// Observer waits for exactly one download to finish.
+class MockInstallPrompt;
+
+// This class holds information about things that happen with a
+// MockInstallPrompt. We create the MockInstallPrompt but need to pass
+// ownership of it to CrxInstaller, so it isn't safe to hang this data on
+// MockInstallPrompt itself becuase we can't guarantee it's lifetime.
+class MockPromptProxy :
+      public base::RefCountedThreadSafe<MockPromptProxy> {
+ public:
+  explicit MockPromptProxy(content::WebContents* web_contents);
+
+  bool did_succeed() const { return !extension_id_.empty(); }
+  const std::string& extension_id() { return extension_id_; }
+  bool confirmation_requested() const { return confirmation_requested_; }
+  const string16& error() const { return error_; }
+
+  // To have any effect, this should be called before CreatePrompt.
+  void set_record_oauth2_grant(bool record_oauth2_grant) {
+    record_oauth2_grant_.reset(new bool(record_oauth2_grant));
+  }
+
+  void set_extension_id(const std::string& id) { extension_id_ = id; }
+  void set_confirmation_requested() { confirmation_requested_ = true; }
+  void set_error(const string16& error) { error_ = error; }
+
+  scoped_ptr<ExtensionInstallPrompt> CreatePrompt();
+
+ private:
+  friend class base::RefCountedThreadSafe<MockPromptProxy>;
+  virtual ~MockPromptProxy();
+
+  // Data used to create a prompt.
+  content::WebContents* web_contents_;
+  scoped_ptr<bool> record_oauth2_grant_;
+
+  // Data reported back to us by the prompt we created.
+  bool confirmation_requested_;
+  std::string extension_id_;
+  string16 error_;
+};
 
 class MockInstallPrompt : public ExtensionInstallPrompt {
  public:
-  explicit MockInstallPrompt(content::WebContents* web_contents) :
+  MockInstallPrompt(content::WebContents* web_contents,
+                    MockPromptProxy* proxy) :
       ExtensionInstallPrompt(web_contents),
-      confirmation_requested_(false),
-      extension_(NULL) {}
+      proxy_(proxy) {}
 
-  bool did_succeed() const { return !!extension_; }
-  const Extension* extension() const { return extension_; }
-  bool confirmation_requested() const { return confirmation_requested_; }
-  const string16& error() const { return error_; }
   void set_record_oauth2_grant(bool record) { record_oauth2_grant_ = record; }
 
   // Overriding some of the ExtensionInstallUI API.
@@ -49,27 +85,43 @@ class MockInstallPrompt : public ExtensionInstallPrompt {
       Delegate* delegate,
       const Extension* extension,
       const ShowDialogCallback& show_dialog_callback) OVERRIDE {
-    confirmation_requested_ = true;
+    proxy_->set_confirmation_requested();
     delegate->InstallUIProceed();
   }
   virtual void OnInstallSuccess(const Extension* extension,
                                 SkBitmap* icon) OVERRIDE {
-    extension_ = extension;
+    proxy_->set_extension_id(extension->id());
     base::MessageLoopForUI::current()->Quit();
   }
   virtual void OnInstallFailure(const CrxInstallerError& error) OVERRIDE {
-    error_ = error.message();
+    proxy_->set_error(error.message());
     base::MessageLoopForUI::current()->Quit();
   }
 
  private:
-  bool confirmation_requested_;
-  string16 error_;
-  const Extension* extension_;
+  scoped_refptr<MockPromptProxy> proxy_;
 };
 
-MockInstallPrompt* CreateMockInstallPromptForBrowser(Browser* browser) {
-  return new MockInstallPrompt(
+
+MockPromptProxy::MockPromptProxy(content::WebContents* web_contents) :
+    web_contents_(web_contents),
+    confirmation_requested_(false) {
+}
+
+MockPromptProxy::~MockPromptProxy() {}
+
+scoped_ptr<ExtensionInstallPrompt> MockPromptProxy::CreatePrompt() {
+  scoped_ptr<MockInstallPrompt> prompt(
+      new MockInstallPrompt(web_contents_, this));
+  if (record_oauth2_grant_.get())
+    prompt->set_record_oauth2_grant(*record_oauth2_grant_.get());
+  return prompt.PassAs<ExtensionInstallPrompt>();
+}
+
+
+scoped_refptr<MockPromptProxy> CreateMockPromptProxyForBrowser(
+    Browser* browser) {
+  return new MockPromptProxy(
       browser->tab_strip_model()->GetActiveWebContents());
 }
 
@@ -82,7 +134,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
   scoped_refptr<CrxInstaller> InstallWithPrompt(
       const std::string& ext_relpath,
       const std::string& id,
-      MockInstallPrompt* mock_install_prompt) {
+      scoped_refptr<MockPromptProxy> mock_install_prompt) {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
     base::FilePath ext_path = test_data_dir_.AppendASCII(ext_relpath);
@@ -103,7 +155,7 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
 
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::Create(service,
-                             mock_install_prompt, /* ownership transferred */
+                             mock_install_prompt->CreatePrompt(),
                              approval.get()       /* keep ownership */));
     installer->set_allow_silent_install(true);
     installer->set_is_gallery_install(true);
@@ -124,15 +176,16 @@ class ExtensionCrxInstallerTest : public ExtensionBrowserTest {
     ExtensionService* service = extensions::ExtensionSystem::Get(
         browser()->profile())->extension_service();
 
-    MockInstallPrompt* mock_prompt =
-        CreateMockInstallPromptForBrowser(browser());
+    scoped_refptr<MockPromptProxy> mock_prompt =
+        CreateMockPromptProxyForBrowser(browser());
+
     mock_prompt->set_record_oauth2_grant(record_oauth2_grant);
     scoped_refptr<CrxInstaller> installer =
         InstallWithPrompt("browsertest/scopes", std::string(), mock_prompt);
 
     scoped_refptr<PermissionSet> permissions =
         service->extension_prefs()->GetGrantedPermissions(
-            mock_prompt->extension()->id());
+            mock_prompt->extension_id());
     ASSERT_TRUE(permissions.get());
   }
 
@@ -171,8 +224,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, MAYBE_Whitelisting) {
       browser()->profile())->extension_service();
 
   // Even whitelisted extensions with NPAPI should not prompt.
-  MockInstallPrompt* mock_prompt =
-      CreateMockInstallPromptForBrowser(browser());
+  scoped_refptr<MockPromptProxy> mock_prompt =
+      CreateMockPromptProxyForBrowser(browser());
   scoped_refptr<CrxInstaller> installer =
       InstallWithPrompt("uitest/plugins", id, mock_prompt);
   EXPECT_FALSE(mock_prompt->confirmation_requested());
@@ -225,9 +278,10 @@ IN_PROC_BROWSER_TEST_F(
   std::string crx_path_string(crx_path.value().begin(), crx_path.value().end());
   GURL url = GURL(std::string("file:///").append(crx_path_string));
 
-  MockInstallPrompt* mock_prompt =
-      CreateMockInstallPromptForBrowser(browser());
-  download_crx_util::SetMockInstallPromptForTesting(mock_prompt);
+  scoped_refptr<MockPromptProxy> mock_prompt =
+      CreateMockPromptProxyForBrowser(browser());
+  download_crx_util::SetMockInstallPromptForTesting(
+      mock_prompt->CreatePrompt());
 
   LOG(ERROR) << "PackAndInstallExtension: Getting download manager";
   content::DownloadManager* download_manager =
@@ -278,10 +332,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, DISABLED_AllowOffStore) {
   const bool kTestData[] = {false, true};
 
   for (size_t i = 0; i < arraysize(kTestData); ++i) {
-    MockInstallPrompt* mock_prompt =
-        CreateMockInstallPromptForBrowser(browser());
+    scoped_refptr<MockPromptProxy> mock_prompt =
+        CreateMockPromptProxyForBrowser(browser());
+
     scoped_refptr<CrxInstaller> crx_installer(
-        CrxInstaller::Create(service, mock_prompt));
+        CrxInstaller::Create(service, mock_prompt->CreatePrompt()));
     crx_installer->set_install_cause(
         extension_misc::INSTALL_CAUSE_USER_DOWNLOAD);
 

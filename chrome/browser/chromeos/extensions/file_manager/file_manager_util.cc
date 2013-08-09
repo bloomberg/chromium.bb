@@ -239,7 +239,8 @@ void InstallCRX(Browser* browser, const base::FilePath& path) {
   scoped_refptr<extensions::CrxInstaller> installer(
       extensions::CrxInstaller::Create(
           service,
-          new ExtensionInstallPrompt(browser->profile(), NULL, NULL)));
+          scoped_ptr<ExtensionInstallPrompt>(new ExtensionInstallPrompt(
+              browser->profile(), NULL, NULL))));
   installer->set_error_on_unsupported_requirements(true);
   installer->set_is_gallery_install(false);
   installer->set_allow_silent_install(false);

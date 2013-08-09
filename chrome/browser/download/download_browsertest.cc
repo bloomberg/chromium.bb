@@ -1067,8 +1067,9 @@ class DownloadTest : public InProcessBrowserTest {
   // A mock install prompt that simulates the user allowing an install request.
   void SetAllowMockInstallPrompt() {
     download_crx_util::SetMockInstallPromptForTesting(
-        new MockAutoConfirmExtensionInstallPrompt(
-            browser()->tab_strip_model()->GetActiveWebContents()));
+        scoped_ptr<ExtensionInstallPrompt>(
+            new MockAutoConfirmExtensionInstallPrompt(
+                browser()->tab_strip_model()->GetActiveWebContents())));
   }
 
   // This method:
@@ -2099,7 +2100,8 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, CrxInstallDenysPermissions) {
   // Install a mock install UI that simulates a user denying permission to
   // finish the install.
   download_crx_util::SetMockInstallPromptForTesting(
-      new MockAbortExtensionInstallPrompt());
+      scoped_ptr<ExtensionInstallPrompt>(
+          new MockAbortExtensionInstallPrompt()));
 
   scoped_ptr<content::DownloadTestObserver> observer(
       DangerousDownloadWaiter(

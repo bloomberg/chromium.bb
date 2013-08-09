@@ -76,18 +76,21 @@ class CrxInstaller
     NumOffStoreInstallAllowReasons
   };
 
-  // Extensions will be installed into service->install_directory(),
-  // then registered with |service|. Any install UI will be displayed
-  // using |client|. Pass NULL for |client| for silent install
+  // Extensions will be installed into service->install_directory(), then
+  // registered with |service|. This does a silent install - see below for
+  // other options.
+  static scoped_refptr<CrxInstaller> CreateSilent(ExtensionService* service);
+
+  // Same as above, but use |client| to generate a confirmation prompt.
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* service,
-      ExtensionInstallPrompt* client);
+      scoped_ptr<ExtensionInstallPrompt> client);
 
   // Same as the previous method, except use the |approval| to bypass the
   // prompt. Note that the caller retains ownership of |approval|.
   static scoped_refptr<CrxInstaller> Create(
       ExtensionService* service,
-      ExtensionInstallPrompt* client,
+      scoped_ptr<ExtensionInstallPrompt> client,
       const WebstoreInstaller::Approval* approval);
 
   // Install the crx in |source_file|.
@@ -199,7 +202,7 @@ class CrxInstaller
   friend class ExtensionCrxInstallerTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
-               ExtensionInstallPrompt* client,
+               scoped_ptr<ExtensionInstallPrompt> client,
                const WebstoreInstaller::Approval* approval);
   virtual ~CrxInstaller();
 

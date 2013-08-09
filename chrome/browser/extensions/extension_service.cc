@@ -626,11 +626,12 @@ bool ExtensionService::UpdateExtension(const std::string& id,
 
   // We want a silent install only for non-pending extensions and
   // pending extensions that have install_silently set.
-  ExtensionInstallPrompt* client = NULL;
+  scoped_ptr<ExtensionInstallPrompt> client;
   if (pending_extension_info && !pending_extension_info->install_silently())
-    client = ExtensionInstallUI::CreateInstallPromptWithProfile(profile_);
+    client.reset(ExtensionInstallUI::CreateInstallPromptWithProfile(profile_));
 
-  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, client));
+  scoped_refptr<CrxInstaller> installer(
+      CrxInstaller::Create(this, client.Pass()));
   installer->set_expected_id(id);
   if (pending_extension_info) {
     installer->set_install_source(pending_extension_info->install_source());
@@ -2728,7 +2729,7 @@ bool ExtensionService::OnExternalExtensionFileFound(
   }
 
   // no client (silent install)
-  scoped_refptr<CrxInstaller> installer(CrxInstaller::Create(this, NULL));
+  scoped_refptr<CrxInstaller> installer(CrxInstaller::CreateSilent(this));
   installer->set_install_source(location);
   installer->set_expected_id(id);
   installer->set_expected_version(*version);

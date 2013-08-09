@@ -27,7 +27,7 @@ public:
         content::NotificationService::AllSources());
 
     scoped_refptr<extensions::CrxInstaller> installer(
-        extensions::CrxInstaller::Create(service, NULL));
+        extensions::CrxInstaller::CreateSilent(service));
     installer->set_is_gallery_install(false);
     installer->set_allow_silent_install(true);
     installer->set_install_source(Manifest::INTERNAL);

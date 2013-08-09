@@ -406,15 +406,15 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
   size_t num_before = service->extensions()->size();
 
   {
-    ExtensionInstallPrompt* install_ui = NULL;
+    scoped_ptr<ExtensionInstallPrompt> install_ui;
     if (ui_type == INSTALL_UI_TYPE_CANCEL) {
-      install_ui = new MockAbortExtensionInstallPrompt();
+      install_ui.reset(new MockAbortExtensionInstallPrompt());
     } else if (ui_type == INSTALL_UI_TYPE_NORMAL) {
-      install_ui = new ExtensionInstallPrompt(
-          browser->tab_strip_model()->GetActiveWebContents());
+      install_ui.reset(new ExtensionInstallPrompt(
+          browser->tab_strip_model()->GetActiveWebContents()));
     } else if (ui_type == INSTALL_UI_TYPE_AUTO_CONFIRM) {
-      install_ui = new MockAutoConfirmExtensionInstallPrompt(
-          browser->tab_strip_model()->GetActiveWebContents());
+      install_ui.reset(new MockAutoConfirmExtensionInstallPrompt(
+          browser->tab_strip_model()->GetActiveWebContents()));
     }
 
     // TODO(tessamac): Update callers to always pass an unpacked extension
@@ -427,7 +427,7 @@ const Extension* ExtensionBrowserTest::InstallOrUpdateExtension(
       return NULL;
 
     scoped_refptr<extensions::CrxInstaller> installer(
-        extensions::CrxInstaller::Create(service, install_ui));
+        extensions::CrxInstaller::Create(service, install_ui.Pass()));
     installer->set_expected_id(id);
     installer->set_is_gallery_install(from_webstore);
     installer->set_install_source(install_source);

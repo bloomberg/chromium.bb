@@ -1218,9 +1218,9 @@ class ExtensionUpdaterTest : public testing::Test {
     extension_service->set_show_extensions_prompts(false);
 
     scoped_refptr<CrxInstaller> fake_crx1(
-        CrxInstaller::Create(extension_service, NULL));
+        CrxInstaller::CreateSilent(extension_service));
     scoped_refptr<CrxInstaller> fake_crx2(
-        CrxInstaller::Create(extension_service, NULL));
+        CrxInstaller::CreateSilent(extension_service));
 
     if (updates_start_running) {
       // Add fake CrxInstaller to be returned by service.UpdateExtension().

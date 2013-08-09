@@ -3500,11 +3500,10 @@ void TestingAutomationProvider::InstallExtension(
     // If the given path has a 'crx' extension, assume it is a packed extension
     // and install it. Otherwise load it as an unpacked extension.
     if (extension_path.MatchesExtension(FILE_PATH_LITERAL(".crx"))) {
-      ExtensionInstallPrompt* client = (with_ui ?
-          new ExtensionInstallPrompt(tab) :
-          NULL);
+      scoped_ptr<ExtensionInstallPrompt> client(
+          with_ui ? new ExtensionInstallPrompt(tab) : NULL);
       scoped_refptr<extensions::CrxInstaller> installer(
-          extensions::CrxInstaller::Create(service, client));
+          extensions::CrxInstaller::Create(service, client.Pass()));
       if (!with_ui)
         installer->set_allow_silent_install(true);
       installer->set_install_cause(extension_misc::INSTALL_CAUSE_AUTOMATION);

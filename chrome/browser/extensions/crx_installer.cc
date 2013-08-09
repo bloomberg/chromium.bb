@@ -72,23 +72,31 @@ enum OffStoreInstallDecision {
 }  // namespace
 
 // static
+scoped_refptr<CrxInstaller> CrxInstaller::CreateSilent(
+    ExtensionService* frontend) {
+  return new CrxInstaller(frontend->AsWeakPtr(),
+                          scoped_ptr<ExtensionInstallPrompt>(),
+                          NULL);
+}
+
+// static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* frontend,
-    ExtensionInstallPrompt* client) {
-  return new CrxInstaller(frontend->AsWeakPtr(), client, NULL);
+    scoped_ptr<ExtensionInstallPrompt> client) {
+  return new CrxInstaller(frontend->AsWeakPtr(), client.Pass(), NULL);
 }
 
 // static
 scoped_refptr<CrxInstaller> CrxInstaller::Create(
     ExtensionService* service,
-    ExtensionInstallPrompt* client,
+    scoped_ptr<ExtensionInstallPrompt> client,
     const WebstoreInstaller::Approval* approval) {
-  return new CrxInstaller(service->AsWeakPtr(), client, approval);
+  return new CrxInstaller(service->AsWeakPtr(), client.Pass(), approval);
 }
 
 CrxInstaller::CrxInstaller(
     base::WeakPtr<ExtensionService> service_weak,
-    ExtensionInstallPrompt* client,
+    scoped_ptr<ExtensionInstallPrompt> client,
     const WebstoreInstaller::Approval* approval)
     : install_directory_(service_weak->install_directory()),
       install_source_(Manifest::INTERNAL),
@@ -97,7 +105,8 @@ CrxInstaller::CrxInstaller(
       delete_source_(false),
       create_app_shortcut_(false),
       service_weak_(service_weak),
-      client_(client),
+      // See header file comment on |client_| for why we use a raw pointer here.
+      client_(client.release()),
       apps_require_extension_mime_type_(false),
       allow_silent_install_(false),
       install_cause_(extension_misc::INSTALL_CAUSE_UNSET),

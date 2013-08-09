@@ -23,7 +23,7 @@ scoped_refptr<extensions::CrxInstaller> OpenChromeExtension(
     const DownloadItem& download_item) {
   NOTIMPLEMENTED() << "CrxInstaller not implemented on Android";
   scoped_refptr<extensions::CrxInstaller> installer(
-      extensions::CrxInstaller::Create(NULL, NULL));
+      extensions::CrxInstaller::CreateSilent(NULL));
   return installer;
 }
 
