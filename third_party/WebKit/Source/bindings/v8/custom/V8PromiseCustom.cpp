@@ -52,6 +52,49 @@ namespace WebCore {
 
 namespace {
 
+v8::Local<v8::ObjectTemplate> cachedObjectTemplate(void* privateTemplateUniqueKey, int internalFieldCount, v8::Isolate* isolate)
+{
+    V8PerIsolateData* data = V8PerIsolateData::from(isolate);
+    WrapperWorldType currentWorldType = worldType(isolate);
+    v8::Handle<v8::FunctionTemplate> functionDescriptor = data->privateTemplateIfExists(currentWorldType, privateTemplateUniqueKey);
+    if (!functionDescriptor.IsEmpty())
+        return functionDescriptor->InstanceTemplate();
+
+    functionDescriptor = v8::FunctionTemplate::New();
+    v8::Local<v8::ObjectTemplate> instanceTemplate = functionDescriptor->InstanceTemplate();
+    instanceTemplate->SetInternalFieldCount(internalFieldCount);
+    data->setPrivateTemplate(currentWorldType, privateTemplateUniqueKey, functionDescriptor);
+    return instanceTemplate;
+}
+
+v8::Local<v8::ObjectTemplate> wrapperCallbackEnvironmentObjectTemplate(v8::Isolate* isolate)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey = 0;
+    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::WrapperCallbackEnvironmentFieldCount, isolate);
+}
+
+v8::Local<v8::ObjectTemplate> promiseEveryEnvironmentObjectTemplate(v8::Isolate* isolate)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey = 0;
+    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PromiseEveryEnvironmentFieldCount, isolate);
+}
+
+v8::Local<v8::ObjectTemplate> primitiveWrapperObjectTemplate(v8::Isolate* isolate)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey = 0;
+    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::PrimitiveWrapperFieldCount, isolate);
+}
+
+v8::Local<v8::ObjectTemplate> internalObjectTemplate(v8::Isolate* isolate)
+{
+    // This is only for getting a unique pointer which we can pass to privateTemplate.
+    static int privateTemplateUniqueKey = 0;
+    return cachedObjectTemplate(&privateTemplateUniqueKey, V8PromiseCustom::InternalFieldCount, isolate);
+}
+
 class PromiseTask : public ScriptExecutionContext::Task {
 public:
     PromiseTask(v8::Handle<v8::Function> callback, v8::Handle<v8::Object> receiver, v8::Handle<v8::Value> result)
@@ -129,11 +172,9 @@ void wrapperCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
     V8PromiseCustom::resolveResolver(resolver, result, V8PromiseCustom::Synchronous, isolate);
 }
 
-v8::Local<v8::Object> wrapperCallbackEnvironment(v8::Handle<v8::Object> promise, v8::Handle<v8::Object> resolver, v8::Handle<v8::Function> callback)
+v8::Local<v8::Object> wrapperCallbackEnvironment(v8::Handle<v8::Object> promise, v8::Handle<v8::Object> resolver, v8::Handle<v8::Function> callback, v8::Isolate* isolate)
 {
-    // FIXME: v8::ObjectTemplate::New should be cached.
-    v8::Local<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
-    objectTemplate->SetInternalFieldCount(V8PromiseCustom::WrapperCallbackEnvironmentFieldCount);
+    v8::Local<v8::ObjectTemplate> objectTemplate = wrapperCallbackEnvironmentObjectTemplate(isolate);
     v8::Local<v8::Object> environment = objectTemplate->NewInstance();
     environment->SetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentPromiseIndex, promise);
     environment->SetInternalField(V8PromiseCustom::WrapperCallbackEnvironmentPromiseResolverIndex, resolver);
@@ -236,9 +277,7 @@ void promiseSomeRejectCallback(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 v8::Local<v8::Object> promiseEveryEnvironment(v8::Handle<v8::Object> resolver, v8::Handle<v8::Object> countdownWrapper, int index, v8::Handle<v8::Array> results, v8::Isolate* isolate)
 {
-    // FIXME: v8::ObjectTemplate::New should be cached.
-    v8::Local<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
-    objectTemplate->SetInternalFieldCount(V8PromiseCustom::PromiseEveryEnvironmentFieldCount);
+    v8::Local<v8::ObjectTemplate> objectTemplate = promiseEveryEnvironmentObjectTemplate(isolate);
     v8::Local<v8::Object> environment = objectTemplate->NewInstance();
 
     environment->SetInternalField(V8PromiseCustom::PromiseEveryEnvironmentPromiseResolverIndex, resolver);
@@ -285,7 +324,7 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
             v8SetReturnValue(args, throwTypeError("fulfillCallback must be a function or undefined", isolate));
             return;
         }
-        fulfillWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, resolver, args[0].As<v8::Function>()));
+        fulfillWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, resolver, args[0].As<v8::Function>(), isolate));
     } else {
         fulfillWrapper = createClosure(promiseFulfillCallback, resolver);
     }
@@ -294,7 +333,7 @@ void V8Promise::thenMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
             v8SetReturnValue(args, throwTypeError("rejectCallback must be a function or undefined", isolate));
             return;
         }
-        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, resolver, args[1].As<v8::Function>()));
+        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, resolver, args[1].As<v8::Function>(), isolate));
     } else {
         rejectWrapper = createClosure(promiseRejectCallback, resolver);
     }
@@ -314,7 +353,7 @@ void V8Promise::catchMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
             v8SetReturnValue(args, throwTypeError("rejectCallback must be a function or undefined", isolate));
             return;
         }
-        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, resolver, args[0].As<v8::Function>()));
+        rejectWrapper = createClosure(wrapperCallback, wrapperCallbackEnvironment(promise, resolver, args[0].As<v8::Function>(), isolate));
     } else {
         rejectWrapper = createClosure(promiseRejectCallback, resolver);
     }
@@ -398,9 +437,7 @@ void V8Promise::everyMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& arg
         return;
     }
 
-    // FIXME: v8::ObjectTemplate::New should be cached.
-    v8::Local<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
-    objectTemplate->SetInternalFieldCount(V8PromiseCustom::PrimitiveWrapperFieldCount);
+    v8::Local<v8::ObjectTemplate> objectTemplate = primitiveWrapperObjectTemplate(isolate);
     v8::Local<v8::Object> countdownWrapper = objectTemplate->NewInstance();
     countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length()));
     v8::Local<v8::Array> results = v8::Array::New();
@@ -430,9 +467,7 @@ void V8Promise::someMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
     }
 
     // Promise.some also uses PromiseEveryEnvironment.
-    // FIXME: v8::ObjectTemplate::New should be cached.
-    v8::Local<v8::ObjectTemplate> objectTemplate = v8::ObjectTemplate::New();
-    objectTemplate->SetInternalFieldCount(V8PromiseCustom::PrimitiveWrapperFieldCount);
+    v8::Local<v8::ObjectTemplate> objectTemplate = primitiveWrapperObjectTemplate(isolate);
     v8::Local<v8::Object> countdownWrapper = objectTemplate->NewInstance();
     countdownWrapper->SetInternalField(V8PromiseCustom::PrimitiveWrapperPrimitiveIndex, v8::Integer::New(args.Length()));
     v8::Local<v8::Array> results = v8::Array::New();
@@ -453,9 +488,7 @@ void V8Promise::someMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args
 // -- V8PromiseCustom --
 void V8PromiseCustom::createPromise(v8::Handle<v8::Object> creationContext, v8::Local<v8::Object>* promise, v8::Local<v8::Object>* resolver, v8::Isolate* isolate)
 {
-    // FIXME: v8::ObjectTemplate::New should be cached.
-    v8::Local<v8::ObjectTemplate> internalTemplate = v8::ObjectTemplate::New();
-    internalTemplate->SetInternalFieldCount(InternalFieldCount);
+    v8::Local<v8::ObjectTemplate> internalTemplate = internalObjectTemplate(isolate);
     v8::Local<v8::Object> internal = internalTemplate->NewInstance();
     *promise = V8DOMWrapper::createWrapper(creationContext, &V8Promise::info, 0, isolate);
     *resolver = V8DOMWrapper::createWrapper(creationContext, &V8PromiseResolver::info, 0, isolate);
