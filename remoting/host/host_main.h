@@ -20,6 +20,7 @@ extern const char kProcessTypeController[];
 extern const char kProcessTypeDaemon[];
 extern const char kProcessTypeDesktop[];
 extern const char kProcessTypeHost[];
+extern const char kProcessTypeNativeMessagingHost[];
 extern const char kProcessTypeRdpDesktopSession[];
 
 // The common entry point exported from remoting_core.dll. It uses

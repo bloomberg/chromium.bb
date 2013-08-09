@@ -12,7 +12,6 @@ RELEASE = $(SRC)/out/Release
 INSTALL_DIR = $(DESTDIR)/opt/google/chrome-remote-desktop
 CHROME_MANIFEST_DIR = $(DESTDIR)/etc/opt/chrome/native-messaging-hosts
 MANIFEST = $(CHROME_MANIFEST_DIR)/com.google.chrome.remote_desktop.json
-NM_HOST_PATH = /opt/google/chrome-remote-desktop/native-messaging-host
 
 ME2ME_PROGNAME = $(RELEASE)/remoting_me2me_host
 ME2ME_DEBUGFILE = $(ME2ME_PROGNAME).debug
@@ -31,9 +30,8 @@ install:
 	  "$(INSTALL_DIR)/chrome-remote-desktop"
 	install "$(TOOLS)/is-remoting-session" "$(INSTALL_DIR)"
 
-	install -T "$(SRC)/remoting/host/setup/native_messaging_manifest.json" \
+	install -T "$(RELEASE)/remoting/native_messaging_manifest.json" \
 	  -m 0644 "$(MANIFEST)"
-	sed -i -e "s:NATIVE_MESSAGING_HOST_PATH:$(NM_HOST_PATH):g" "$(MANIFEST)"
 
 	eu-strip -f "$(ME2ME_DEBUGFILE)" "$(ME2ME_PROGNAME)"
 	install "$(ME2ME_PROGNAME)" \

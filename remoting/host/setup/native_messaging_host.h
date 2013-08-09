@@ -126,6 +126,10 @@ class NativeMessagingHost {
   DISALLOW_COPY_AND_ASSIGN(NativeMessagingHost);
 };
 
+// Creates a NativeMessagingHost instance, attaches it to stdin/stdout and runs
+// the message loop until NativeMessagingHost signals shutdown.
+int NativeMessagingHostMain();
+
 }  // namespace remoting
 
 #endif  // REMOTING_HOST_SETUP_NATIVE_MESSAGING_HOST_H_

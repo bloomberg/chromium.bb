@@ -11,13 +11,21 @@
 #include "base/callback.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/stringize_macros.h"
 #include "base/values.h"
 #include "net/base/net_util.h"
 #include "remoting/base/rsa_key_pair.h"
+#include "remoting/host/host_exit_codes.h"
+#include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/pairing_registry_delegate.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/protocol/pairing_registry.h"
+
+#if defined(OS_POSIX)
+#include <unistd.h>
+#endif
 
 namespace {
 
@@ -405,6 +413,31 @@ void NativeMessagingHost::SendBooleanResult(
     scoped_ptr<base::DictionaryValue> response, bool result) {
   response->SetBoolean("result", result);
   SendResponse(response.Pass());
+}
+
+int NativeMessagingHostMain() {
+#if defined(OS_WIN)
+  base::PlatformFile read_file = GetStdHandle(STD_INPUT_HANDLE);
+  base::PlatformFile write_file = GetStdHandle(STD_OUTPUT_HANDLE);
+#elif defined(OS_POSIX)
+  base::PlatformFile read_file = STDIN_FILENO;
+  base::PlatformFile write_file = STDOUT_FILENO;
+#else
+#error Not implemented.
+#endif
+
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
+  base::RunLoop run_loop;
+  scoped_refptr<protocol::PairingRegistry> pairing_registry =
+      CreatePairingRegistry(message_loop.message_loop_proxy());
+  remoting::NativeMessagingHost host(remoting::DaemonController::Create(),
+                                     pairing_registry,
+                                     read_file, write_file,
+                                     message_loop.message_loop_proxy(),
+                                     run_loop.QuitClosure());
+  host.Start();
+  run_loop.Run();
+  return kSuccessExitCode;
 }
 
 }  // namespace remoting

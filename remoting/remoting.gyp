@@ -840,31 +840,6 @@
             },
           ],
         },  # end of target 'remoting_infoplist_strings'
-
-        {
-          'target_name': 'remoting_native_messaging_host',
-          'type': 'executable',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            '../base/base.gyp:base',
-            'remoting_host',
-            'remoting_host_logging',
-            'remoting_host_setup_base',
-          ],
-          'defines': [
-            'VERSION=<(version_full)',
-          ],
-          'sources': [
-            'host/setup/native_messaging_host_main.cc',
-          ],
-          'conditions': [
-            ['OS=="linux" and linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        },  # end of target 'remoting_native_messaging_host'
       ],  # end of 'targets'
     }],  # 'enable_remoting_host==1'
 
@@ -957,6 +932,7 @@
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
+            'remoting_host_setup_base',
             'remoting_infoplist_strings',
             'remoting_jingle_glue',
             'remoting_me2me_host_static',
@@ -1035,7 +1011,31 @@
             }],  # OS=linux
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host'
-
+        {
+          'target_name': 'remoting_native_messaging_host',
+          'type': 'executable',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            '../base/base.gyp:base',
+            'remoting_host',
+            'remoting_host_logging',
+            'remoting_host_setup_base',
+            'remoting_native_messaging_manifest',
+          ],
+          'defines': [
+            'VERSION=<(version_full)',
+          ],
+          'sources': [
+            'host/setup/native_messaging_host_main.cc',
+          ],
+          'conditions': [
+            ['OS=="linux" and linux_use_tcmalloc==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        },  # end of target 'remoting_native_messaging_host'
       ],  # end of 'targets'
     }],  # 'OS!="win" and enable_remoting_host==1'
 
@@ -1511,13 +1511,13 @@
             '../ipc/ipc.gyp:ipc',
             '../net/net.gyp:net',
             '../third_party/webrtc/modules/modules.gyp:desktop_capture',
-            '../third_party/webrtc/modules/modules.gyp:desktop_capture',
             'remoting_base',
             'remoting_breakpad',
             'remoting_core_resources',
             'remoting_host',
             'remoting_host_event_logger',
             'remoting_host_logging',
+            'remoting_host_setup_base',
             'remoting_lib_idl',
             'remoting_lib_ps',
             'remoting_lib_rc',
@@ -1937,6 +1937,7 @@
             'remoting_core',
             'remoting_desktop',
             'remoting_host_exe',
+            'remoting_native_messaging_manifest',
           ],
           'compiled_inputs': [
             '<(PRODUCT_DIR)/remoting_core.dll',
@@ -1968,11 +1969,13 @@
           'generated_files': [
             '<@(_compiled_inputs)',
             '<(sas_dll_path)/sas.dll',
+            '<(PRODUCT_DIR)/remoting/native_messaging_manifest.json',
             'resources/chromoting.ico',
           ],
           'generated_files_dst': [
             '<@(_compiled_inputs_dst)',
             'files/sas.dll',
+            'files/native_messaging_manifest.json',
             'files/chromoting.ico',
           ],
           'zip_path': '<(PRODUCT_DIR)/remoting-me2me-host-<(OS).zip',
@@ -2282,6 +2285,53 @@
       ],
     }, # end of target 'remoting_webapp'
 
+    # Generates 'native_messaging_manifest.json' to be included in the
+    # installation.
+    {
+      'target_name': 'remoting_native_messaging_manifest',
+      'type': 'none',
+      'dependencies': [
+        'remoting_resources',
+      ],
+      'variables': {
+        'input': 'host/setup/native_messaging_manifest.json',
+        'output': '<(PRODUCT_DIR)/remoting/native_messaging_manifest.json',
+      },
+      'conditions': [
+        [ 'OS=="win"', {
+          'variables': {
+            'native_messaging_host_path': 'remoting_host.exe',
+          },
+        }, {
+          'variables': {
+            'native_messaging_host_path': '/opt/google/chrome-remote-desktop/native-messaging-host',
+          },
+        }],
+      ],
+      'actions': [
+        {
+          'action_name': 'generate_manifest',
+          'inputs': [
+            '<(remoting_localize_path)',
+            '<(input)',
+          ],
+          'outputs': [
+            '<(output)',
+          ],
+          'action': [
+            'python',
+            '<(remoting_localize_path)',
+            '--define', 'NATIVE_MESSAGING_HOST_PATH=<(native_messaging_host_path)',
+            '--locale_dir', '<(webapp_locale_dir)',
+            '--template', '<(input)',
+            '--locale_output',
+            '<(output)',
+            '--encoding', 'utf-8',
+            'en',
+          ],
+        },
+      ],
+    },  # end of target 'remoting_native_messaging_manifest'
     {
       'target_name': 'remoting_resources',
       'type': 'none',
