@@ -19,9 +19,10 @@ class ResettableSettingsSnapshot {
     HOMEPAGE = 1 << 2,
     HOMEPAGE_IS_NTP = 1 << 3,
     DSE_URL = 1 << 4,
+    EXTENSIONS = 1 << 5,
 
     ALL_FIELDS = STARTUP_URLS | STARTUP_TYPE | HOMEPAGE |
-                 HOMEPAGE_IS_NTP | DSE_URL,
+                 HOMEPAGE_IS_NTP | DSE_URL | EXTENSIONS,
   };
 
   explicit ResettableSettingsSnapshot(Profile* profile);
@@ -38,8 +39,14 @@ class ResettableSettingsSnapshot {
 
   const std::string& dse_url() const { return dse_url_; }
 
+  const std::vector<std::string>& enabled_extensions() const {
+    return enabled_extensions_;
+  }
+
   // Substitutes |startup_.urls| with |startup_.urls|\|snapshot.startup_.urls|.
-  void SubtractStartupURLs(const ResettableSettingsSnapshot& snapshot);
+  // Substitutes |enabled_extensions_| with
+  // |enabled_extensions_|\|snapshot.enabled_extensions_|.
+  void Subtract(const ResettableSettingsSnapshot& snapshot);
 
   // For each member 'm' compares |this->m| with |snapshot.m| and sets the
   // corresponding |ResetableSettingsSnapshot::Field| bit to 1 in case of
@@ -57,6 +64,9 @@ class ResettableSettingsSnapshot {
 
   // Default search engine.
   std::string dse_url_;
+
+  // Enabled extension ids. Always sorted.
+  std::vector<std::string> enabled_extensions_;
 
   DISALLOW_COPY_AND_ASSIGN(ResettableSettingsSnapshot);
 };

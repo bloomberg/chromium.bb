@@ -695,39 +695,46 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   ResettableSettingsSnapshot empty_snap(profile());
   EXPECT_EQ(0, empty_snap.FindDifferentFields(empty_snap));
 
+  scoped_refptr<Extension> ext = CreateExtension(
+      "example",
+      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
+      Manifest::INVALID_LOCATION,
+      extensions::Manifest::TYPE_EXTENSION,
+      false);
+  ASSERT_TRUE(ext);
+  service_->AddExtension(ext.get());
+
+  std::string master_prefs(kDistributionConfig);
+  std::string ext_id = ext->id();
+  ReplaceString(&master_prefs, "placeholder_for_id", ext_id);
+
   // Reset to non organic defaults.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
                ProfileResetter::HOMEPAGE |
-               ProfileResetter::STARTUP_PAGES, kDistributionConfig);
+               ProfileResetter::STARTUP_PAGES, master_prefs);
 
   ResettableSettingsSnapshot nonorganic_snap(profile());
-  EXPECT_EQ(ResettableSettingsSnapshot::STARTUP_URLS |
-            ResettableSettingsSnapshot::STARTUP_TYPE |
-            ResettableSettingsSnapshot::HOMEPAGE |
-            ResettableSettingsSnapshot::HOMEPAGE_IS_NTP |
-            ResettableSettingsSnapshot::DSE_URL,
+  EXPECT_EQ(ResettableSettingsSnapshot::ALL_FIELDS,
             empty_snap.FindDifferentFields(nonorganic_snap));
-  empty_snap.SubtractStartupURLs(nonorganic_snap);
+  empty_snap.Subtract(nonorganic_snap);
   EXPECT_TRUE(empty_snap.startup_urls().empty());
   EXPECT_EQ(SessionStartupPref::GetDefaultStartupType(),
             empty_snap.startup_type());
   EXPECT_TRUE(empty_snap.homepage().empty());
   EXPECT_TRUE(empty_snap.homepage_is_ntp());
   EXPECT_NE(std::string::npos, empty_snap.dse_url().find("{google:baseURL}"));
+  EXPECT_EQ(std::vector<std::string>(), empty_snap.enabled_extensions());
 
   // Reset to organic defaults.
   ResetAndWait(ProfileResetter::DEFAULT_SEARCH_ENGINE |
                ProfileResetter::HOMEPAGE |
-               ProfileResetter::STARTUP_PAGES);
+               ProfileResetter::STARTUP_PAGES |
+               ProfileResetter::EXTENSIONS);
 
   ResettableSettingsSnapshot organic_snap(profile());
-  EXPECT_EQ(ResettableSettingsSnapshot::STARTUP_URLS |
-            ResettableSettingsSnapshot::STARTUP_TYPE |
-            ResettableSettingsSnapshot::HOMEPAGE |
-            ResettableSettingsSnapshot::HOMEPAGE_IS_NTP |
-            ResettableSettingsSnapshot::DSE_URL,
+  EXPECT_EQ(ResettableSettingsSnapshot::ALL_FIELDS,
             nonorganic_snap.FindDifferentFields(organic_snap));
-  nonorganic_snap.SubtractStartupURLs(organic_snap);
+  nonorganic_snap.Subtract(organic_snap);
   const GURL urls[] = {GURL("http://foo.de"), GURL("http://goo.gl")};
   EXPECT_EQ(std::vector<GURL>(urls, urls + arraysize(urls)),
             nonorganic_snap.startup_urls());
@@ -735,6 +742,8 @@ TEST_F(ProfileResetterTest, CheckSnapshots) {
   EXPECT_EQ("http://www.foo.com", nonorganic_snap.homepage());
   EXPECT_FALSE(nonorganic_snap.homepage_is_ntp());
   EXPECT_EQ("http://www.foo.com/s?q={searchTerms}", nonorganic_snap.dse_url());
+  EXPECT_EQ(std::vector<std::string>(1, ext_id),
+            nonorganic_snap.enabled_extensions());
 }
 
 TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
@@ -743,9 +752,18 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
                ProfileResetter::HOMEPAGE |
                ProfileResetter::STARTUP_PAGES, kDistributionConfig);
 
+  scoped_refptr<Extension> ext = CreateExtension(
+      "example",
+      base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
+      Manifest::INVALID_LOCATION,
+      extensions::Manifest::TYPE_EXTENSION,
+      false);
+  ASSERT_TRUE(ext);
+  service_->AddExtension(ext.get());
+
   const ResettableSettingsSnapshot nonorganic_snap(profile());
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 63,
                  expand_this_test);
   for (int field_mask = 0; field_mask <= ResettableSettingsSnapshot::ALL_FIELDS;
        ++field_mask) {
@@ -764,6 +782,7 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
     std::string homepage;
     bool homepage_is_ntp = true;
     std::string default_search_engine;
+    ListValue* extensions;
 
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::STARTUP_URLS),
               dict->GetList("startup_urls", &startup_urls));
@@ -775,6 +794,8 @@ TEST_F(ProfileResetterTest, FeedbackSerializtionTest) {
               dict->GetBoolean("homepage_is_ntp", &homepage_is_ntp));
     EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::DSE_URL),
               dict->GetString("default_search_engine", &default_search_engine));
+    EXPECT_EQ(!!(field_mask & ResettableSettingsSnapshot::EXTENSIONS),
+              dict->GetList("enabled_extensions", &extensions));
   }
 }
 

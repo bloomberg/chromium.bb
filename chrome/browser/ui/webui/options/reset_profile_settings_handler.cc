@@ -95,7 +95,7 @@ void ResetProfileSettingsHandler::OnResetProfileSettingsDone() {
     ResettableSettingsSnapshot current_snapshot(profile);
     int difference = setting_snapshot_->FindDifferentFields(current_snapshot);
     if (difference) {
-      setting_snapshot_->SubtractStartupURLs(current_snapshot);
+      setting_snapshot_->Subtract(current_snapshot);
       std::string report = SerializeSettingsReport(*setting_snapshot_,
                                                    difference);
       SendSettingsFeedback(report, profile);

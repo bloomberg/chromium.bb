@@ -6,6 +6,7 @@
 
 #include "base/json/json_writer.h"
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/feedback_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@ const char kProfileResetFeedbackBucket[] = "ProfileResetReport";
 
 // Dictionary keys for feedback report.
 const char kDefaultSearchEnginePath[] = "default_search_engine";
+const char kEnabledExtensions[] = "enabled_extensions";
 const char kHomepageIsNewTabPage[] = "homepage_is_ntp";
 const char kHomepagePath[] = "homepage";
 const char kStartupTypePath[] = "startup_type";
@@ -43,11 +45,23 @@ ResettableSettingsSnapshot::ResettableSettingsSnapshot(Profile* profile)
   TemplateURL* dse = service->GetDefaultSearchProvider();
   if (dse)
     dse_url_ = dse->url();
+
+  ExtensionService* extension_service = profile->GetExtensionService();
+  DCHECK(extension_service);
+  const ExtensionSet* enabled_ext = extension_service->extensions();
+  enabled_extensions_.reserve(enabled_ext->size());
+
+  for (ExtensionSet::const_iterator it = enabled_ext->begin();
+       it != enabled_ext->end(); ++it)
+    enabled_extensions_.push_back((*it)->id());
+
+  // ExtensionSet is sorted but it seems to be an implementation detail.
+  std::sort(enabled_extensions_.begin(), enabled_extensions_.end());
 }
 
 ResettableSettingsSnapshot::~ResettableSettingsSnapshot() {}
 
-void ResettableSettingsSnapshot::SubtractStartupURLs(
+void ResettableSettingsSnapshot::Subtract(
     const ResettableSettingsSnapshot& snapshot) {
   std::vector<GURL> urls;
   std::set_difference(startup_.urls.begin(), startup_.urls.end(),
@@ -55,6 +69,13 @@ void ResettableSettingsSnapshot::SubtractStartupURLs(
                       snapshot.startup_.urls.end(),
                       std::back_inserter(urls));
   startup_.urls.swap(urls);
+
+  std::vector<std::string> extensions;
+  std::set_difference(enabled_extensions_.begin(), enabled_extensions_.end(),
+                      snapshot.enabled_extensions_.begin(),
+                      snapshot.enabled_extensions_.end(),
+                      std::back_inserter(extensions));
+  enabled_extensions_.swap(extensions);
 }
 
 int ResettableSettingsSnapshot::FindDifferentFields(
@@ -77,7 +98,10 @@ int ResettableSettingsSnapshot::FindDifferentFields(
   if (dse_url_ != snapshot.dse_url_)
     bit_mask |= DSE_URL;
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+  if (enabled_extensions_ != snapshot.enabled_extensions_)
+    bit_mask |= EXTENSIONS;
+
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 63,
                  add_new_field_here);
 
   return bit_mask;
@@ -108,7 +132,16 @@ std::string SerializeSettingsReport(const ResettableSettingsSnapshot& snapshot,
   if (field_mask & ResettableSettingsSnapshot::DSE_URL)
     dict.SetString(kDefaultSearchEnginePath, snapshot.dse_url());
 
-  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 31,
+  if (field_mask & ResettableSettingsSnapshot::EXTENSIONS) {
+    ListValue* list = new ListValue;
+    const std::vector<std::string>& extensions = snapshot.enabled_extensions();
+    for (std::vector<std::string>::const_iterator i = extensions.begin();
+         i != extensions.end(); ++i)
+      list->AppendString(*i);
+    dict.Set(kEnabledExtensions, list);
+  }
+
+  COMPILE_ASSERT(ResettableSettingsSnapshot::ALL_FIELDS == 63,
                  serialize_new_field_here);
 
   std::string json;
