@@ -859,8 +859,9 @@ void OmniboxEditModel::OnKillFocus() {
 }
 
 bool OmniboxEditModel::OnEscapeKeyPressed() {
+  const AutocompleteMatch& match = CurrentMatch(NULL);
   if (has_temporary_text_) {
-    if (CurrentMatch(NULL).destination_url != original_url_) {
+    if (match.destination_url != original_url_) {
       RevertTemporaryText(true);
       return true;
     }
@@ -878,7 +879,10 @@ bool OmniboxEditModel::OnEscapeKeyPressed() {
   // When the permanent text isn't all selected we still fall through to the
   // SelectAll() call below so users can arrow around in the text and then hit
   // <esc> to quickly replace all the text; this matches IE.
-  if (!user_input_in_progress_ && view_->IsSelectAll())
+  const bool has_zero_suggest_match = match.provider &&
+      (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST);
+  if (!has_zero_suggest_match && !user_input_in_progress_ &&
+      view_->IsSelectAll())
     return false;
 
   if (!user_text_.empty()) {
