@@ -118,7 +118,6 @@ void ParseSearchEnginesFromFirefoxXMLData(
 
   typedef std::map<std::string, TemplateURL*> SearchEnginesMap;
   SearchEnginesMap search_engine_for_url;
-  std::string content;
   FirefoxURLParameterFilter param_filter;
   // The first XML file represents the default search engine in Firefox 3, so we
   // need to keep it on top of the list.
