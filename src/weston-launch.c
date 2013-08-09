@@ -515,7 +515,8 @@ setup_session(struct weston_launch *wl)
 
 	term = getenv("TERM");
 	clearenv();
-	setenv("TERM", term, 1);
+	if (term)
+		setenv("TERM", term, 1);
 	setenv("USER", wl->pw->pw_name, 1);
 	setenv("LOGNAME", wl->pw->pw_name, 1);
 	setenv("HOME", wl->pw->pw_dir, 1);
