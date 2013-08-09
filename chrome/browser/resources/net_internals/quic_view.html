@@ -15,6 +15,7 @@
           <thead>
             <tr>
               <th>Host</th>
+              <th>Version</th>
               <th>Peer address</th>
               <th>GUID</th>
               <th>Active streams</th>
@@ -26,6 +27,7 @@
               <td><span jscontent="host_port_pair"></span>
                 <span jscontent="$this.aliases ? $this.aliases.join(' ') : ''"></span>
               </td>
+              <td jscontent="version"></td>
               <td jscontent="peer_address"></td>
               <td jscontent="guid"></td>
               <td jscontent="open_streams"></td>

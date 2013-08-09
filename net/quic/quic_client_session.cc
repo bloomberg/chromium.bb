@@ -321,6 +321,7 @@ void QuicClientSession::CloseSessionOnErrorInner(int error) {
 base::Value* QuicClientSession::GetInfoAsValue(const HostPortPair& pair) const {
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("host_port_pair", pair.ToString());
+  dict->SetString("version", QuicVersionToString(connection()->version()));
   dict->SetInteger("open_streams", GetNumOpenStreams());
   dict->SetInteger("total_streams", num_total_streams_);
   dict->SetString("peer_address", peer_address().ToString());
