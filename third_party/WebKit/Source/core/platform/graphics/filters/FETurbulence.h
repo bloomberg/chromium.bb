@@ -119,7 +119,7 @@ private:
 
     virtual void applySoftware() OVERRIDE;
     virtual bool applySkia() OVERRIDE;
-    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
     SkShader* createShader(const IntRect& filterRegion);
 
     inline void initPaint(PaintingData&);

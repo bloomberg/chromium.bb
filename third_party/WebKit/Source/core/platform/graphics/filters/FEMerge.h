@@ -33,7 +33,7 @@ class FEMerge : public FilterEffect {
 public:
     static PassRefPtr<FEMerge> create(Filter*);
 
-    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
 

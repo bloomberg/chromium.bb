@@ -27,6 +27,7 @@
 
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
 #include "wtf/Uint8ClampedArray.h"
 
 #if HAVE(ARM_NEON_INTRINSICS)
@@ -473,6 +474,11 @@ FloatRect FilterEffect::determineFilterPrimitiveSubregion()
 
     setMaxEffectRect(absoluteSubregion);
     return subregion;
+}
+
+PassRefPtr<SkImageFilter> FilterEffect::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    return 0;
 }
 
 } // namespace WebCore

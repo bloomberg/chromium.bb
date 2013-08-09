@@ -437,9 +437,10 @@ bool FETurbulence::applySkia()
     return true;
 }
 
-SkImageFilter* FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    return SkRectShaderImageFilter::Create(createShader(IntRect()), SkRect());
+    SkAutoTUnref<SkShader> shader(createShader(IntRect()));
+    return adoptRef(SkRectShaderImageFilter::Create(shader, SkRect()));
 }
 
 static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)

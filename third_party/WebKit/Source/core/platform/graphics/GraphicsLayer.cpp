@@ -1236,8 +1236,8 @@ bool GraphicsLayer::setFilters(const FilterOperations& filters)
             return false;
         }
         SkiaImageFilterBuilder builder;
-        SkAutoTUnref<SkImageFilter> imageFilter(builder.build(filters));
-        m_layer->layer()->setFilter(imageFilter);
+        RefPtr<SkImageFilter> imageFilter = builder.build(filters);
+        m_layer->layer()->setFilter(imageFilter.get());
     } else {
         OwnPtr<WebFilterOperations> webFilters = adoptPtr(Platform::current()->compositorSupport()->createFilterOperations());
         if (!copyWebCoreFilterOperationsToWebFilterOperations(filters, *webFilters)) {

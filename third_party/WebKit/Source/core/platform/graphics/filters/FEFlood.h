@@ -44,7 +44,7 @@ public:
     void setOperatingColorSpace(ColorSpace) OVERRIDE { }
     void setResultColorSpace(ColorSpace) OVERRIDE { }
 
-    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
 

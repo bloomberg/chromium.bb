@@ -267,14 +267,14 @@ bool FEMorphology::applySkia()
     return true;
 }
 
-SkImageFilter* FEMorphology::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEMorphology::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     SkScalar radiusX = SkFloatToScalar(filter()->applyHorizontalScale(m_radiusX));
     SkScalar radiusY = SkFloatToScalar(filter()->applyVerticalScale(m_radiusY));
     if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
-        return new SkDilateImageFilter(radiusX, radiusY, input);
-    return new SkErodeImageFilter(radiusX, radiusY, input);
+        return adoptRef(new SkDilateImageFilter(radiusX, radiusY, input.get()));
+    return adoptRef(new SkErodeImageFilter(radiusX, radiusY, input.get()));
 }
 
 static TextStream& operator<<(TextStream& ts, const MorphologyOperatorType& type)

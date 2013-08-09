@@ -242,12 +242,12 @@ bool FEBlend::applySkia()
     return true;
 }
 
-SkImageFilter* FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
-    SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
+    RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
     SkAutoTUnref<SkXfermode> mode(SkXfermode::Create(toSkiaMode(m_mode)));
-    return new SkXfermodeImageFilter(mode, background, foreground);
+    return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get()));
 }
 
 static TextStream& operator<<(TextStream& ts, const BlendModeType& type)

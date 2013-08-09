@@ -414,9 +414,9 @@ void FELighting::applySoftware()
     drawLighting(srcPixelArray, absolutePaintSize.width(), absolutePaintSize.height());
 }
 
-SkImageFilter* FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : 0);
+    RefPtr<SkImageFilter> input(builder ? builder->build(inputEffect(0), operatingColorSpace()) : 0);
     switch (m_lightSource->type()) {
     case LS_DISTANT: {
         DistantLightSource* distantLightSource = static_cast<DistantLightSource*>(m_lightSource.get());
@@ -426,18 +426,18 @@ SkImageFilter* FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
                            sinf(azimuthRad) * cosf(elevationRad),
                            sinf(elevationRad));
         if (m_specularConstant > 0)
-            return SkLightingImageFilter::CreateDistantLitSpecular(direction, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input);
+            return adoptRef(SkLightingImageFilter::CreateDistantLitSpecular(direction, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get()));
         else
-            return SkLightingImageFilter::CreateDistantLitDiffuse(direction, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input);
+            return adoptRef(SkLightingImageFilter::CreateDistantLitDiffuse(direction, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get()));
     }
     case LS_POINT: {
         PointLightSource* pointLightSource = static_cast<PointLightSource*>(m_lightSource.get());
         FloatPoint3D position = pointLightSource->position();
         SkPoint3 skPosition(position.x(), position.y(), position.z());
         if (m_specularConstant > 0)
-            return SkLightingImageFilter::CreatePointLitSpecular(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input);
+            return adoptRef(SkLightingImageFilter::CreatePointLitSpecular(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get()));
         else
-            return SkLightingImageFilter::CreatePointLitDiffuse(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input);
+            return adoptRef(SkLightingImageFilter::CreatePointLitDiffuse(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get()));
     }
     case LS_SPOT: {
         SpotLightSource* spotLightSource = static_cast<SpotLightSource*>(m_lightSource.get());
@@ -448,9 +448,9 @@ SkImageFilter* FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
         if (!limitingConeAngle || limitingConeAngle > 90 || limitingConeAngle < -90)
             limitingConeAngle = 90;
         if (m_specularConstant > 0)
-            return SkLightingImageFilter::CreateSpotLitSpecular(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input);
+            return adoptRef(SkLightingImageFilter::CreateSpotLitSpecular(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input.get()));
         else
-            return SkLightingImageFilter::CreateSpotLitDiffuse(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input);
+            return adoptRef(SkLightingImageFilter::CreateSpotLitDiffuse(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input.get()));
     }
     default:
         ASSERT_NOT_REACHED();
@@ -482,7 +482,8 @@ bool FELighting::applySkia()
     GraphicsContext* dstContext = resultImage->context();
 
     SkPaint paint;
-    paint.setImageFilter(createImageFilter(0))->unref();
+    RefPtr<SkImageFilter> filter = createImageFilter(0);
+    paint.setImageFilter(filter.get());
     dstContext->drawBitmap(nativeImage->bitmap(), drawingRegion.location().x(), drawingRegion.location().y(), &paint);
     return true;
 }

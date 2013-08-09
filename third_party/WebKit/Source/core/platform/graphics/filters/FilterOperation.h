@@ -30,7 +30,6 @@
 #include "core/platform/Length.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/filters/Filter.h"
-#include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/ReferenceFilter.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"

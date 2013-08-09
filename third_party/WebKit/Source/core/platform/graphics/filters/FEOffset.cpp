@@ -152,11 +152,11 @@ void FEOffset::applySoftware()
     resultImage->context()->drawImageBuffer(in->asImageBuffer(), drawingRegion);
 }
 
-SkImageFilter* FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     Filter* filter = this->filter();
-    return new OffsetImageFilter(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input);
+    return adoptRef(new OffsetImageFilter(SkFloatToScalar(filter->applyHorizontalScale(m_dx)), SkFloatToScalar(filter->applyVerticalScale(m_dy)), input.get()));
 }
 
 TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const

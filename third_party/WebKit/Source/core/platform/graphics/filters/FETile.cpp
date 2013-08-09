@@ -151,11 +151,11 @@ void FETile::applySoftware()
     filterContext->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()));
 }
 
-SkImageFilter* FETile::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FETile::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     FloatRect srcRect = inputEffect(0) ? inputEffect(0)->effectBoundaries() : FloatRect();
-    return new TileImageFilter(srcRect, effectBoundaries(), input);
+    return adoptRef(new TileImageFilter(srcRect, effectBoundaries(), input.get()));
 }
 
 TextStream& FETile::externalRepresentation(TextStream& ts, int indent) const

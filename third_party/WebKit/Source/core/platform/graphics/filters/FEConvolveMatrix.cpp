@@ -516,9 +516,9 @@ SkMatrixConvolutionImageFilter::TileMode toSkiaTileMode(WebCore::EdgeModeType ed
 
 namespace WebCore {
 
-SkImageFilter* FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
 
     SkISize kernelSize(SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
     int numElements = kernelSize.width() * kernelSize.height();
@@ -530,7 +530,7 @@ SkImageFilter* FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* build
     OwnArrayPtr<SkScalar> kernel = adoptArrayPtr(new SkScalar[numElements]);
     for (int i = 0; i < numElements; ++i)
         kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
-    return new SkMatrixConvolutionImageFilter(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, input);
+    return adoptRef(new SkMatrixConvolutionImageFilter(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, input.get()));
 }
 
 static TextStream& operator<<(TextStream& ts, const EdgeModeType& type)

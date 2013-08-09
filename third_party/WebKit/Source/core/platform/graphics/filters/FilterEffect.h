@@ -100,7 +100,7 @@ public:
     // Only the arithmetic composite filter ever needs to perform correction.
     virtual void correctFilterResultIfNeeded() { }
 
-    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*) { return 0; }
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*);
 
     virtual void determineAbsolutePaintRect();
 

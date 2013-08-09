@@ -281,11 +281,11 @@ bool FEColorMatrix::applySkia()
     return true;
 }
 
-SkImageFilter* FEColorMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEColorMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> input(builder->build(inputEffect(0), operatingColorSpace()));
     SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values.data()));
-    return SkColorFilterImageFilter::Create(filter, input);
+    return adoptRef(SkColorFilterImageFilter::Create(filter, input.get()));
 }
 
 static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type)

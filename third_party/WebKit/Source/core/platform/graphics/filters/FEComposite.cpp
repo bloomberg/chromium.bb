@@ -392,15 +392,15 @@ SkXfermode::Mode toXfermode(WebCore::CompositeOperationType mode)
     }
 }
 
-SkImageFilter* FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
-    SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
+    RefPtr<SkImageFilter> foreground(builder->build(inputEffect(0), operatingColorSpace()));
+    RefPtr<SkImageFilter> background(builder->build(inputEffect(1), operatingColorSpace()));
     if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC) {
         SkAutoTUnref<SkXfermode> mode(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4)));
-        return new SkXfermodeImageFilter(mode, background, foreground);
+        return adoptRef(new SkXfermodeImageFilter(mode, background.get(), foreground.get()));
     }
-    return new CompositeImageFilter(toXfermode(m_type), background, foreground);
+    return adoptRef(new CompositeImageFilter(toXfermode(m_type), background.get(), foreground.get()));
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)

@@ -215,15 +215,15 @@ bool FEDisplacementMap::applySkia()
     return true;
 }
 
-SkImageFilter* FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder* builder)
 {
-    SkImageFilter* color = builder->build(inputEffect(0), operatingColorSpace());
-    SkImageFilter* displ = builder->build(inputEffect(1), operatingColorSpace());
+    RefPtr<SkImageFilter> color = builder->build(inputEffect(0), operatingColorSpace());
+    RefPtr<SkImageFilter> displ = builder->build(inputEffect(1), operatingColorSpace());
     SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
     SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
     // FIXME : Only applyHorizontalScale is used and applyVerticalScale is ignored
     // This can be fixed by adding a 2nd scale parameter to SkDisplacementMapEffect
-    return new SkDisplacementMapEffect(typeX, typeY, SkFloatToScalar(filter()->applyHorizontalScale(m_scale)), displ, color);
+    return adoptRef(new SkDisplacementMapEffect(typeX, typeY, SkFloatToScalar(filter()->applyHorizontalScale(m_scale)), displ.get(), color.get()));
 }
 
 static TextStream& operator<<(TextStream& ts, const ChannelSelectorType& type)

@@ -60,17 +60,17 @@ void FEMerge::applySoftware()
     }
 }
 
-SkImageFilter* FEMerge::createImageFilter(SkiaImageFilterBuilder* builder)
+PassRefPtr<SkImageFilter> FEMerge::createImageFilter(SkiaImageFilterBuilder* builder)
 {
     unsigned size = numberOfEffectInputs();
 
-    OwnArrayPtr<SkAutoTUnref<SkImageFilter> > inputRefs = adoptArrayPtr(new SkAutoTUnref<SkImageFilter>[size]);
+    OwnArrayPtr<RefPtr<SkImageFilter> > inputRefs = adoptArrayPtr(new RefPtr<SkImageFilter>[size]);
     OwnArrayPtr<SkImageFilter*> inputs = adoptArrayPtr(new SkImageFilter*[size]);
     for (unsigned i = 0; i < size; ++i) {
-        inputRefs[i].reset(builder->build(inputEffect(i), operatingColorSpace()));
+        inputRefs[i] = builder->build(inputEffect(i), operatingColorSpace());
         inputs[i] = inputRefs[i].get();
     }
-    return new SkMergeImageFilter(inputs.get(), size);
+    return adoptRef(new SkMergeImageFilter(inputs.get(), size));
 }
 
 TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const

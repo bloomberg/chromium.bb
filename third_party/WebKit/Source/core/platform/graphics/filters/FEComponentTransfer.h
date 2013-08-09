@@ -78,7 +78,7 @@ public:
     ComponentTransferFunction alphaFunction() const;
     void setAlphaFunction(const ComponentTransferFunction&);
 
-    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
+    virtual PassRefPtr<SkImageFilter> createImageFilter(SkiaImageFilterBuilder*) OVERRIDE;
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
 

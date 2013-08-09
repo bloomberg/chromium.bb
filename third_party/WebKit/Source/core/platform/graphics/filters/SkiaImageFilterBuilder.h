@@ -40,14 +40,14 @@ public:
     SkiaImageFilterBuilder();
     ~SkiaImageFilterBuilder();
 
-    SkImageFilter* build(FilterEffect*, ColorSpace);
-    SkImageFilter* build(const FilterOperations&);
+    PassRefPtr<SkImageFilter> build(FilterEffect*, ColorSpace);
+    PassRefPtr<SkImageFilter> build(const FilterOperations&);
 
-    SkImageFilter* transformColorSpace(
+    PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
 private:
     typedef std::pair<FilterEffect*, ColorSpace> FilterColorSpacePair;
-    typedef HashMap<FilterColorSpacePair, SkImageFilter*> FilterBuilderHashMap;
+    typedef HashMap<FilterColorSpacePair, RefPtr<SkImageFilter> > FilterBuilderHashMap;
     FilterBuilderHashMap m_map;
 };
 
