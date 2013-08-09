@@ -69,7 +69,7 @@ function testInvalidAnchorAttributes() {
 
 function testAnchorTarget() {
   parseAndAssertNotThrows(
-      '<a href="https://google.com" target="blank_">Google</a>');
+      '<a href="https://google.com" target="_blank">Google</a>');
   parseAndAssertNotThrows(
       '<a href="https://google.com" target="foo">Google</a>');
 }
