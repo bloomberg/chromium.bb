@@ -58,11 +58,6 @@ struct WhitelistedComponentExtensionIME {
     "/usr/share/chromeos-assets/input_methods/cangjie",
   },
   {
-    // Google Chinese Input (wubi)
-    "jcffnbbngddhenhcnebafkbdomehdhpd",
-    "/usr/share/chromeos-assets/input_methods/wubi",
-  },
-  {
     // Google input tools.
     "gjaehgfemfahhmlgpdfknkhdnemmolop",
     "/usr/share/chromeos-assets/input_methods/input_tools",

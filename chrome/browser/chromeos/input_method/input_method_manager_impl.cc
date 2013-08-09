@@ -55,6 +55,8 @@ const struct MigrationInputMethodList {
     "_comp_ime_ekbifjdfhkmdeeajnolmgdlmkllopefizh-hant-t-i0-und "},
   { "m17n:zh:cangjie",
     "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-hant-t-i0-cangjie-1987" },
+  { "_comp_ime_jcffnbbngddhenhcnebafkbdomehdhpdzh-t-i0-wubi-1986",
+    "_comp_ime_gjhclobljhjhgoebiipblnmdodbmpdgdzh-t-i0-wubi-1986" },
   // TODO(nona): Remove following migration map in M31.
   { "m17n:ta:itrans",
     "_comp_ime_jhffeifommiaekmbkkjlpmilogcfdohpvkd_ta_itrans" },
