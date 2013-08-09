@@ -406,15 +406,24 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
 
         unsigned rowSpan = cell->rowSpan();
 
+        unsigned spanningCellEndIndex = rowIndex + rowSpan;
+        unsigned lastSpanningCellEndIndex = lastRowIndex + lastRowSpan;
+
         // Only heightest spanning cell will distribute it's extra height in row if more then one spanning cells
         // present at same level.
         if (rowIndex == lastRowIndex && rowSpan == lastRowSpan)
             continue;
 
-        int originalBeforePosition = m_rowPos[rowIndex + rowSpan];
+        int originalBeforePosition = m_rowPos[spanningCellEndIndex];
+
+        // When 2 spanning cells are ending at same row index then while extra height distribution of first spanning
+        // cell updates position of the last row so getting the original position of the last row in second spanning
+        // cell need to reduce the height changed by first spanning cell.
+        if (spanningCellEndIndex == lastSpanningCellEndIndex)
+            originalBeforePosition -= extraHeightToPropagate;
 
         if (extraHeightToPropagate) {
-            for (unsigned row = lastRowIndex + lastRowSpan; row <= rowIndex + rowSpan; row++)
+            for (unsigned row = lastSpanningCellEndIndex + 1; row <= spanningCellEndIndex; row++)
                 m_rowPos[row] += extraHeightToPropagate;
         }
 
@@ -436,7 +445,7 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
         // is distributing it's extra height in rows.
 
         // Calculate total percentage, total auto rows height and total rows height except percent rows.
-        for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
+        for (unsigned row = rowIndex; row < spanningCellEndIndex; row++) {
             if (m_grid[row].logicalHeight.isPercent()) {
                 totalPercent += m_grid[row].logicalHeight.percent();
                 totalRemainingRowsHeight -= spanningRowsHeight.rowHeight[row - rowIndex];
@@ -454,13 +463,12 @@ void RenderTableSection::distributeRowSpanHeightToRows(SpanningRenderTableCells&
         ASSERT(!extraRowSpanningHeight);
 
         // Getting total changed height in the table
-        extraHeightToPropagate = m_rowPos[rowIndex + rowSpan] - originalBeforePosition;
-        m_rowPos[rowIndex + rowSpan] -= extraHeightToPropagate;
+        extraHeightToPropagate = m_rowPos[spanningCellEndIndex] - originalBeforePosition;
     }
 
     if (extraHeightToPropagate) {
         // Apply changed height by rowSpan cells to rows present at the end of the table
-        for (unsigned row = lastRowIndex + lastRowSpan; row <= m_grid.size(); row++)
+        for (unsigned row = lastRowIndex + lastRowSpan + 1; row <= m_grid.size(); row++)
             m_rowPos[row] += extraHeightToPropagate;
     }
 }
