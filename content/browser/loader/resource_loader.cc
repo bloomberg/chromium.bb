@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/doomed_resource_handler.h"
@@ -560,6 +561,7 @@ void ResourceLoader::CompleteResponseStarted() {
           info->GetRequestID(), response.get(), &defer)) {
     Cancel();
   } else if (defer) {
+    read_deferral_start_time_ = base::TimeTicks::Now();
     deferred_stage_ = DEFERRED_READ;  // Read first chunk when resumed.
   }
 }
@@ -589,6 +591,11 @@ void ResourceLoader::StartReading(bool is_continuation) {
 void ResourceLoader::ResumeReading() {
   DCHECK(!is_deferred());
 
+  if (!read_deferral_start_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Net.ResourceLoader.ReadDeferral",
+                        base::TimeTicks::Now() - read_deferral_start_time_);
+    read_deferral_start_time_ = base::TimeTicks();
+  }
   if (request_->status().is_success()) {
     StartReading(false);  // Read the next chunk (OK to complete synchronously).
   } else {

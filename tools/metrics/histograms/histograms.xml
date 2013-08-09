@@ -7138,6 +7138,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.ResourceLoader.ReadDeferral" units="milliseconds">
+  <summary>
+    When starting a cross-site navigation, the time between reading the headers
+    and body of the response.
+  </summary>
+</histogram>
+
 <histogram name="Net.SocketIdleTimeBeforeNextUse_ReusedSocket">
   <summary>The time an already used socket sat idle before being used.</summary>
 </histogram>
