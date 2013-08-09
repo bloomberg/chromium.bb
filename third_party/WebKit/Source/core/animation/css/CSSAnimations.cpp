@@ -124,6 +124,8 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* ele
     if (display != NONE) {
         for (size_t i = 0; animationDataList && i < animationDataList->size(); ++i) {
             const CSSAnimationData* animationData = animationDataList->animation(i);
+            if (animationData->isNoneAnimation())
+                continue;
             ASSERT(animationData->isValidAnimation());
             AtomicString animationName(animationData->name());
 
@@ -168,6 +170,8 @@ void CSSAnimations::update(Element* element, const RenderStyle* style)
     if (style->display() != NONE) {
         for (size_t i = 0; animationDataList && i < animationDataList->size(); ++i) {
             const CSSAnimationData* animationData = animationDataList->animation(i);
+            if (animationData->isNoneAnimation())
+                continue;
             ASSERT(animationData->isValidAnimation());
             AtomicString animationName(animationData->name());
 
