@@ -447,8 +447,7 @@ public:
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot* ensureUserAgentShadowRoot();
     virtual bool supportsShadowElementForUserAgentShadow() const;
-    virtual const AtomicString& shadowPseudoId() const;
-    virtual const AtomicString& shadowPartId() const;
+    virtual const AtomicString& shadowPseudoId() const { return !part().isEmpty() ? part() : pseudo(); }
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
 
@@ -529,10 +528,8 @@ public:
 
     virtual String title() const { return String(); }
 
-    // FIXME: pseudo should be deprecated after all pseudo is replaced with ::part.
     const AtomicString& pseudo() const;
-    void setPseudo(const AtomicString&);
-    const AtomicString& part() const;
+    virtual const AtomicString& part() const;
     void setPart(const AtomicString&);
 
     LayoutSize minimumSizeForResizing() const;

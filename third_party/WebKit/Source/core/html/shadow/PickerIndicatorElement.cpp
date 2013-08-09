@@ -53,7 +53,7 @@ inline PickerIndicatorElement::PickerIndicatorElement(Document* document, Picker
 PassRefPtr<PickerIndicatorElement> PickerIndicatorElement::create(Document* document, PickerIndicatorOwner& pickerIndicatorOwner)
 {
     RefPtr<PickerIndicatorElement> element = adoptRef(new PickerIndicatorElement(document, pickerIndicatorOwner));
-    element->setPseudo(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
+    element->setPart(AtomicString("-webkit-calendar-picker-indicator", AtomicString::ConstructFromLiteral));
     element->setAttribute(idAttr, ShadowElementNames::pickerIndicator());
     return element.release();
 }

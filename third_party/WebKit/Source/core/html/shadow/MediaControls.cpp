@@ -331,7 +331,7 @@ void MediaControls::stopHideFullscreenControlsTimer()
     m_hideFullscreenControlsTimer.stop();
 }
 
-const AtomicString& MediaControls::shadowPseudoId() const
+const AtomicString& MediaControls::part() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, id, ("-webkit-media-controls"));
     return id;

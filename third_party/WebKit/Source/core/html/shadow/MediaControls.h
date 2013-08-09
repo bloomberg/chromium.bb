@@ -125,7 +125,7 @@ protected:
 private:
     virtual bool isMediaControls() const { return true; }
 
-    virtual const AtomicString& shadowPseudoId() const;
+    virtual const AtomicString& part() const;
 };
 
 inline MediaControls* toMediaControls(Node* node)

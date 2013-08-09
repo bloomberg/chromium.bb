@@ -77,14 +77,15 @@ static bool matchesCustomPseudoElement(const Element* element, const CSSSelector
         return false;
 
     if (selector->pseudoType() != CSSSelector::PseudoPart) {
-        if (element->shadowPseudoId() != selector->value())
+        const AtomicString& pseudoId = selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement ? element->shadowPseudoId() : element->pseudo();
+        if (pseudoId != selector->value())
             return false;
         if (selector->pseudoType() == CSSSelector::PseudoWebKitCustomElement && root->type() != ShadowRoot::UserAgentShadowRoot)
             return false;
         return true;
     }
 
-    if (element->shadowPartId() != selector->argument())
+    if (element->part() != selector->argument())
         return false;
     if (selector->isMatchUserAgentOnly() && root->type() != ShadowRoot::UserAgentShadowRoot)
         return false;

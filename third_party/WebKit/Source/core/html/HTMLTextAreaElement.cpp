@@ -541,7 +541,7 @@ void HTMLTextAreaElement::updatePlaceholderText()
     if (!m_placeholder) {
         RefPtr<HTMLDivElement> placeholder = HTMLDivElement::create(document());
         m_placeholder = placeholder.get();
-        m_placeholder->setPseudo(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
+        m_placeholder->setPart(AtomicString("-webkit-input-placeholder", AtomicString::ConstructFromLiteral));
         userAgentShadowRoot()->insertBefore(m_placeholder, innerTextElement()->nextSibling(), ASSERT_NO_EXCEPTION);
     }
     m_placeholder->setInnerText(placeholderText, ASSERT_NO_EXCEPTION);

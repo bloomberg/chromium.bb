@@ -46,7 +46,7 @@ inline ClearButtonElement::ClearButtonElement(Document* document, ClearButtonOwn
 PassRefPtr<ClearButtonElement> ClearButtonElement::create(Document* document, ClearButtonOwner& clearButtonOwner)
 {
     RefPtr<ClearButtonElement> element = adoptRef(new ClearButtonElement(document, clearButtonOwner));
-    element->setPseudo(AtomicString("-webkit-clear-button", AtomicString::ConstructFromLiteral));
+    element->setPart(AtomicString("-webkit-clear-button", AtomicString::ConstructFromLiteral));
     element->setAttribute(idAttr, ShadowElementNames::clearButton());
     return element.release();
 }

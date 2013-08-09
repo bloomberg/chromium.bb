@@ -25,8 +25,8 @@ var shadowRoot = internals.youngestShadowRoot($('time-with-tabindex20'));
 debug('Forword:');
 shouldBeEqualToString('eventSender.keyDown(tab); document.activeElement.id', 'tabindex20-1');
 shouldBeEqualToString('eventSender.keyDown(tab); document.activeElement.id', 'time-with-tabindex20');
-shouldBe('shadowRoot.activeElement.getAttribute("pseudo")', 'firstSubField');
-shouldBe('eventSender.keyDown(tab); eventSender.keyDown(tab); shadowRoot.activeElement.getAttribute("pseudo")', 'lastSubField');
+shouldBe('shadowRoot.activeElement.getAttribute("part")', 'firstSubField');
+shouldBe('eventSender.keyDown(tab); eventSender.keyDown(tab); shadowRoot.activeElement.getAttribute("part")', 'lastSubField');
 shouldBeEqualToString('eventSender.keyDown(tab); document.activeElement.id', 'tabindex20-3');
 shouldBeEqualToString('eventSender.keyDown(tab); document.activeElement.id', 'tabindex30');
 
@@ -34,8 +34,8 @@ debug('');
 debug('Backword:');
 shouldBeEqualToString('eventSender.keyDown(tab, shift); document.activeElement.id', 'tabindex20-3');
 shouldBeEqualToString('eventSender.keyDown(tab, shift); document.activeElement.id', 'time-with-tabindex20');
-shouldBe('shadowRoot.activeElement.getAttribute("pseudo")', 'lastSubField');
-shouldBe('eventSender.keyDown(tab, shift); eventSender.keyDown(tab, shift); shadowRoot.activeElement.getAttribute("pseudo")', 'firstSubField');
+shouldBe('shadowRoot.activeElement.getAttribute("part")', 'lastSubField');
+shouldBe('eventSender.keyDown(tab, shift); eventSender.keyDown(tab, shift); shadowRoot.activeElement.getAttribute("part")', 'firstSubField');
 shouldBeEqualToString('eventSender.keyDown(tab, shift); document.activeElement.id', 'tabindex20-1');
 
 

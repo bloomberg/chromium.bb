@@ -134,7 +134,7 @@ PassRefPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Do
     return adoptRef(new SearchFieldDecorationElement(document));
 }
 
-const AtomicString& SearchFieldDecorationElement::shadowPseudoId() const
+const AtomicString& SearchFieldDecorationElement::part() const
 {
     DEFINE_STATIC_LOCAL(AtomicString, resultsDecorationId, ("-webkit-search-results-decoration", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, decorationId, ("-webkit-search-decoration", AtomicString::ConstructFromLiteral));
@@ -180,7 +180,7 @@ inline SearchFieldCancelButtonElement::SearchFieldCancelButtonElement(Document* 
 PassRefPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::create(Document* document)
 {
     RefPtr<SearchFieldCancelButtonElement> element = adoptRef(new SearchFieldCancelButtonElement(document));
-    element->setPseudo(AtomicString("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
+    element->setPart(AtomicString("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
     return element.release();
 }
 
@@ -268,7 +268,7 @@ InputFieldSpeechButtonElement::~InputFieldSpeechButtonElement()
 PassRefPtr<InputFieldSpeechButtonElement> InputFieldSpeechButtonElement::create(Document* document)
 {
     RefPtr<InputFieldSpeechButtonElement> element = adoptRef(new InputFieldSpeechButtonElement(document));
-    element->setPseudo(AtomicString("-webkit-input-speech-button", AtomicString::ConstructFromLiteral));
+    element->setPart(AtomicString("-webkit-input-speech-button", AtomicString::ConstructFromLiteral));
     return element.release();
 }
 

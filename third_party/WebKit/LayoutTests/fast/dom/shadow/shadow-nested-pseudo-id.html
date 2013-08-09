@@ -29,7 +29,7 @@ function buildShadowWithOneChild(host, childTagName, childPseudoId)
     var shadow = host.createShadowRoot();
     var shadowChild = document.createElement(childTagName);
     shadow.appendChild(shadowChild);
-    internals.setShadowPseudoId(shadowChild, childPseudoId);
+    shadowChild.setAttribute("pseudo", childPseudoId);
     return { host: host, shadow: shadow, shadowChild: shadowChild };
 }
 

@@ -66,7 +66,7 @@ inline MeterInnerElement::MeterInnerElement(Document* document)
 PassRefPtr<MeterInnerElement> MeterInnerElement::create(Document* document)
 {
     RefPtr<MeterInnerElement> element = adoptRef(new MeterInnerElement(document));
-    element->setPseudo(AtomicString("-webkit-meter-inner-element", AtomicString::ConstructFromLiteral));
+    element->setPart(AtomicString("-webkit-meter-inner-element", AtomicString::ConstructFromLiteral));
     return element.release();
 }
 
@@ -92,7 +92,7 @@ inline MeterBarElement::MeterBarElement(Document* document)
 PassRefPtr<MeterBarElement> MeterBarElement::create(Document* document)
 {
     RefPtr<MeterBarElement> element = adoptRef(new MeterBarElement(document));
-    element->setPseudo(AtomicString("-webkit-meter-bar", AtomicString::ConstructFromLiteral));
+    element->setPart(AtomicString("-webkit-meter-bar", AtomicString::ConstructFromLiteral));
     return element.release();
 }
 

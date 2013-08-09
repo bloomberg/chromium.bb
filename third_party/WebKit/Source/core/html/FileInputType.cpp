@@ -259,7 +259,7 @@ void FileInputType::createShadowSubtree()
     RefPtr<HTMLInputElement> button = HTMLInputElement::create(inputTag, element()->document(), 0, false);
     button->setType(InputTypeNames::button());
     button->setAttribute(valueAttr, element()->multiple() ? fileButtonChooseMultipleFilesLabel() : fileButtonChooseFileLabel());
-    button->setPseudo(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));
+    button->setPart(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));
     element()->userAgentShadowRoot()->appendChild(button.release(), IGNORE_EXCEPTION);
 }
 

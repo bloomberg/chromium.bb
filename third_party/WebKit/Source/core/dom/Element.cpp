@@ -1630,17 +1630,6 @@ bool Element::supportsShadowElementForUserAgentShadow() const
     return true;
 }
 
-// FIXME: After replacing all internal shadowPseudoId with shadowPartId, remove this method.
-const AtomicString& Element::shadowPseudoId() const
-{
-    return pseudo();
-}
-
-const AtomicString& Element::shadowPartId() const
-{
-    return part();
-}
-
 bool Element::childTypeAllowed(NodeType type) const
 {
     switch (type) {
@@ -2175,15 +2164,10 @@ String Element::textFromChildren()
     return content.toString();
 }
 
-// FIXME: pseudo should be deprecated after all pseudo is replaced with ::part.
+// pseudo is used via shadowPseudoId.
 const AtomicString& Element::pseudo() const
 {
     return getAttribute(pseudoAttr);
-}
-
-void Element::setPseudo(const AtomicString& value)
-{
-    setAttribute(pseudoAttr, value);
 }
 
 const AtomicString& Element::part() const

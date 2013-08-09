@@ -404,23 +404,23 @@ HTMLInputElement* SliderThumbElement::hostInput() const
     return toHTMLInputElement(shadowHost());
 }
 
-static const AtomicString& sliderThumbShadowPseudoId()
+static const AtomicString& sliderThumbShadowPartId()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, sliderThumb, ("-webkit-slider-thumb", AtomicString::ConstructFromLiteral));
     return sliderThumb;
 }
 
-static const AtomicString& mediaSliderThumbShadowPseudoId()
+static const AtomicString& mediaSliderThumbShadowPartId()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderThumb, ("-webkit-media-slider-thumb", AtomicString::ConstructFromLiteral));
     return mediaSliderThumb;
 }
 
-const AtomicString& SliderThumbElement::shadowPseudoId() const
+const AtomicString& SliderThumbElement::part() const
 {
     HTMLInputElement* input = hostInput();
     if (!input)
-        return sliderThumbShadowPseudoId();
+        return sliderThumbShadowPartId();
 
     RenderStyle* sliderStyle = input->renderer()->style();
     switch (sliderStyle->appearance()) {
@@ -430,9 +430,9 @@ const AtomicString& SliderThumbElement::shadowPseudoId() const
     case MediaVolumeSliderThumbPart:
     case MediaFullScreenVolumeSliderPart:
     case MediaFullScreenVolumeSliderThumbPart:
-        return mediaSliderThumbShadowPseudoId();
+        return mediaSliderThumbShadowPartId();
     default:
-        return sliderThumbShadowPseudoId();
+        return sliderThumbShadowPartId();
     }
 }
 
@@ -453,7 +453,7 @@ RenderObject* SliderContainerElement::createRenderer(RenderStyle*)
     return new RenderSliderContainer(this);
 }
 
-const AtomicString& SliderContainerElement::shadowPseudoId() const
+const AtomicString& SliderContainerElement::part() const
 {
     DEFINE_STATIC_LOCAL(const AtomicString, mediaSliderContainer, ("-webkit-media-slider-container", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, sliderContainer, ("-webkit-slider-container", AtomicString::ConstructFromLiteral));

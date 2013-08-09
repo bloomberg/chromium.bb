@@ -124,8 +124,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     ASSERT(m_context.element());
 
     Element* element = m_context.element();
-    // FIXME: pseudo should be deprecated after all pseudo is replaced with ::part.
-    const AtomicString& pseudoId = !element->shadowPseudoId().isEmpty() ? element->shadowPseudoId() : element->shadowPartId();
+    const AtomicString& pseudoId = element->shadowPseudoId();
     if (!pseudoId.isEmpty()) {
         ASSERT(element->isStyledElement());
         collectMatchingRulesForList(matchRequest.ruleSet->shadowPseudoElementRules(pseudoId.impl()), cascadeScope, cascadeOrder, matchRequest, ruleRange);

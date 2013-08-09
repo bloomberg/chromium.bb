@@ -64,7 +64,7 @@ public:
         : ProgressShadowElement(document)
     {
         DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-progress-bar", AtomicString::ConstructFromLiteral));
-        setPseudo(pseudoId);
+        setPart(pseudoId);
     }
 
     static PassRefPtr<ProgressBarElement> create(Document*);
@@ -81,7 +81,7 @@ public:
         : ProgressShadowElement(document)
     {
         DEFINE_STATIC_LOCAL(AtomicString, pseudoId, ("-webkit-progress-value", AtomicString::ConstructFromLiteral));
-        setPseudo(pseudoId);
+        setPart(pseudoId);
     }
 
     static PassRefPtr<ProgressValueElement> create(Document*);
