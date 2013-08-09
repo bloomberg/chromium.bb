@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/history/web_history_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -59,8 +59,8 @@ WebHistoryServiceFactory::WebHistoryServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "WebHistoryServiceFactory",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(CookieSettings::Factory::GetInstance());
+  DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 
 WebHistoryServiceFactory::~WebHistoryServiceFactory() {
