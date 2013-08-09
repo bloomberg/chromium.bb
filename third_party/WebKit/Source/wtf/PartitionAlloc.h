@@ -191,12 +191,12 @@ ALWAYS_INLINE void* partitionBucketAlloc(PartitionBucket* bucket)
 
 ALWAYS_INLINE void* partitionAlloc(PartitionRoot* root, size_t size)
 {
-    size_t index = size >> kBucketShift;
-    ASSERT(index < kNumBuckets);
-    ASSERT(size == index << kBucketShift);
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
     return malloc(size);
 #else
+    size_t index = size >> kBucketShift;
+    ASSERT(index < kNumBuckets);
+    ASSERT(size == index << kBucketShift);
     PartitionBucket* bucket = &root->buckets[index];
     return partitionBucketAlloc(bucket);
 #endif
