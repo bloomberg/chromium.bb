@@ -16277,8 +16277,8 @@ other types of suffix sets.
   <int value="7" label="Cancelled"/>
   <int value="8" label="Started"/>
   <int value="9" label="Interrupted"/>
-  <int value="10" label="Calls to AppendDataToFile (Size)"/>
-  <int value="11" label="Calls to AppendDataToFile (Count)"/>
+  <int value="10" label="Calls to AppendDataToFile (Size) (Obsolete)"/>
+  <int value="11" label="Calls to AppendDataToFile (Count) (Obsolete)"/>
   <int value="12" label="Interrupted at End of Download"/>
   <int value="13" label="Attempt to Append to Detached File"/>
   <int value="14" label="File Missing After Successful Scan"/>

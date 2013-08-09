@@ -168,13 +168,11 @@ void RecordDangerousDownloadDiscard(DownloadDiscardReason reason,
 }
 
 void RecordDownloadWriteSize(size_t data_len) {
-  RecordDownloadCount(WRITE_SIZE_COUNT);
   int max = 1024 * 1024;  // One Megabyte.
   UMA_HISTOGRAM_CUSTOM_COUNTS("Download.WriteSize", data_len, 1, max, 256);
 }
 
 void RecordDownloadWriteLoopCount(int count) {
-  RecordDownloadCount(WRITE_LOOP_COUNT);
   UMA_HISTOGRAM_ENUMERATION("Download.WriteLoopCount", count, 20);
 }
 

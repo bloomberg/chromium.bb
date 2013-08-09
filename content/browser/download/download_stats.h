@@ -48,11 +48,14 @@ enum DownloadCountTypes {
   // Downloads that were interrupted by the OS.
   INTERRUPTED_COUNT,
 
-  // Write sizes for downloads.
-  WRITE_SIZE_COUNT,
+  // (Deprecated) Write sizes for downloads.
+  // This is equal to the number of samples in Download.WriteSize histogram.
+  DOWNLOAD_COUNT_UNUSED_10,
 
-  // Counts iterations of the BaseFile::AppendDataToFile() loop.
-  WRITE_LOOP_COUNT,
+  // (Deprecated) Counts iterations of the BaseFile::AppendDataToFile() loop.
+  // This is equal to the number of samples in Download.WriteLoopCount
+  // histogram.
+  DOWNLOAD_COUNT_UNUSED_11,
 
   // Counts interruptions that happened at the end of the download.
   INTERRUPTED_AT_END_COUNT,
