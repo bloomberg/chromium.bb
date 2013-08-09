@@ -20,6 +20,8 @@ HistoryFocusManager.prototype = {
 
   /** @override */
   getFocusParent: function() {
-    return document.querySelector('#overlay .showing') || $('history-page');
+    return document.querySelector('#overlay .showing') ||
+        document.querySelector('menu:not([hidden])') ||
+        $('history-page');
   },
 };
