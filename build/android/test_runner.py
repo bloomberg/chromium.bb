@@ -682,8 +682,7 @@ def main(argv):
       command_list=VALID_COMMANDS.keys())
 
   if len(argv) < 2 or argv[1] not in VALID_COMMANDS:
-    option_parser.print_help()
-    return 0
+    option_parser.error('Invalid command.')
   command = argv[1]
   VALID_COMMANDS[command].add_options_func(option_parser)
   options, args = option_parser.parse_args(argv)
