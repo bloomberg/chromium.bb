@@ -479,6 +479,8 @@ static void eventHandlerAttrAttrGetterCallback(v8::Local<v8::String> name, const
 static void eventHandlerAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
+    if (!value->IsNull() && !value->IsFunction())
+        value = v8::Null(info.GetIsolate());
     transferHiddenDependency(info.Holder(), imp->eventHandlerAttr(isolatedWorldForIsolate(info.GetIsolate())), value, V8TestObject::eventListenerCacheIndex, info.GetIsolate());
     imp->setEventHandlerAttr(V8EventListenerList::getEventListener(value, true, ListenerFindOrCreate), isolatedWorldForIsolate(info.GetIsolate()));
     return;

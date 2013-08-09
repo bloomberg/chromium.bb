@@ -43,6 +43,7 @@ function canGet(keyPath)
 }
 
 window.marker = { "foo": "bar", toString: function(){ return "window.marker.toString()"; } };
+window.callableMarker = function() { return "window.callableMarker.toString()"; };
 
 function canSet(keyPath)
 {
@@ -63,6 +64,18 @@ function canSetWithTypeConversion(keyPath)
     try {
         eval("window." + keyPath + " = " + valuePath);
         return eval("window." + keyPath) == eval("window." + valuePath);
+    } catch(e) {
+        return false;
+    }
+}
+
+function canSetWithCallable(keyPath)
+{
+    var valuePath = "window.callableMarker";
+
+    try {
+        eval("window." + keyPath + " = " + valuePath);
+        return eval("window." + keyPath) === eval("window." + valuePath);
     } catch(e) {
         return false;
     }
@@ -225,6 +238,22 @@ var windowFunctions = [
     "getSelection",
     "moveBy", 
     "moveTo", 
+    "open", 
+    "print", 
+    "prompt", 
+    "releaseEvents",
+    "removeEventListener", 
+    "resizeBy", 
+    "resizeTo", 
+    "scroll", 
+    "scrollBy", 
+    "scrollTo", 
+    "setInterval", 
+    "setTimeout", 
+    "stop"
+];
+
+var windowEventHandlers = [
     "onabort", 
     "onbeforeunload", 
     "onblur", 
@@ -249,20 +278,7 @@ var windowFunctions = [
     "onsearch", 
     "onselect", 
     "onsubmit", 
-    "onunload", 
-    "open", 
-    "print", 
-    "prompt", 
-    "releaseEvents",
-    "removeEventListener", 
-    "resizeBy", 
-    "resizeTo", 
-    "scroll", 
-    "scrollBy", 
-    "scrollTo", 
-    "setInterval", 
-    "setTimeout", 
-    "stop"
+    "onunload"
 ];
 
 window.onload = function()
@@ -272,7 +288,7 @@ window.onload = function()
 
     log("\n----- tests for getting/setting read-write properties -----\n");
 
-    for (var i = 0; i < windowReadWriteProperties.length; i++) { //>
+    for (var i = 0; i < windowReadWriteProperties.length; i++) {
         var property = windowReadWriteProperties[i];
         shouldBeTrue("canGet('" + property + "')");
         shouldBeTrue("canSet('" + property + "')");
@@ -280,14 +296,14 @@ window.onload = function()
 
     log("\n----- tests for getting/setting readonly properties -----\n");
 
-    for (var i = 0; i < windowReadOnlyProperties.length; i++) { //>
+    for (var i = 0; i < windowReadOnlyProperties.length; i++) {
         var property = windowReadOnlyProperties[i];
         shouldBeTrue("canGet('" + property + "')");
         shouldBeFalse("canSet('" + property + "')");
     }
 
     log("\n----- tests for getting/setting string properties -----\n");
-    for (var i = 0; i < windowReadWriteStringProperties.length; i++) { //>
+    for (var i = 0; i < windowReadWriteStringProperties.length; i++) {
         var property = windowReadWriteStringProperties[i];
         shouldBeTrue("canGet('" + property + "')");
         shouldBeTrue("canSetWithTypeConversion('" + property + "')");
@@ -296,10 +312,18 @@ window.onload = function()
 
     log("\n----- tests for getting/setting functions -----\n");
 
-    for (var i = 0; i < windowFunctions.length; i++) { //>
+    for (var i = 0; i < windowFunctions.length; i++) {
         var property = windowFunctions[i];
         shouldBeTrue("canGet('" + property + "')");
         shouldBeTrue("canSet('" + property + "')");
+    }
+
+    log("\n----- tests for getting/setting event handlers -----\n");
+
+    for (var i = 0; i < windowEventHandlers.length; i++) {
+        var property = windowEventHandlers[i];
+        shouldBeTrue("canGet('" + property + "')");
+        shouldBeTrue("canSetWithCallable('" + property + "')");
     }
 }
 </script>

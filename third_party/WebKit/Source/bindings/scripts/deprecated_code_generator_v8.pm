@@ -1852,6 +1852,9 @@ END
     if ($attribute->type eq "EventHandler") {
         my $implSetterFunctionName = FirstLetterToUpperCase($attrName);
         AddToImplIncludes("bindings/v8/V8AbstractEventListener.h");
+        # Non callable input should be treated as null
+        $code .= "    if (!value->IsNull() && !value->IsFunction())\n";
+        $code .= "        value = v8::Null(info.GetIsolate());\n";
         if (!InheritsInterface($interface, "Node")) {
             my $attrImplName = GetImplName($attribute);
             $code .= "    transferHiddenDependency(info.Holder(), imp->${attrImplName}(isolatedWorldForIsolate(info.GetIsolate())), value, ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());\n";

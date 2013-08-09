@@ -55,6 +55,7 @@ v8::Local<v8::Function> V8EventListener::getListenerFunction(ScriptExecutionCont
         return v8::Local<v8::Function>::Cast(listener);
 
     if (listener->IsObject()) {
+        ASSERT_WITH_MESSAGE(!isAttribute(), "EventHandler attributes should only accept JS Functions as input.");
         v8::Local<v8::Value> property = listener->Get(v8::String::NewSymbol("handleEvent"));
         // Check that no exceptions were thrown when getting the
         // handleEvent property and that the value is a function.

@@ -11,7 +11,7 @@ function loaded() {
     var o = {};
     o.__defineGetter__("handleEvent", function() { throw 42; });
     var div = document.getElementById("div");
-    div.onkeydown = o;
+    div.addEventListener('keydown', o);
     var event = document.createEvent("KeyboardEvent");
     event.initKeyboardEvent("keydown", true, true, null, "Enter", "");
     div.dispatchEvent(event);
