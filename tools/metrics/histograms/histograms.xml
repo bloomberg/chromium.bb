@@ -9653,6 +9653,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Platform.DiskUsage.NumUserHomeDirectories"
+    units="home directories">
+  <summary>
+    Number of users home directories on the device. Logged once a day.
+  </summary>
+</histogram>
+
 <histogram name="Platform.DiskUsage.OldestUserOnDevice">
   <summary>
     Days since last login of the least recently user on device. Logged once a
