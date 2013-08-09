@@ -69,6 +69,11 @@ void RecordDailyEventFrequency(
   }
 }
 
+bool HasAppListEnabledPreference() {
+  PrefService* local_state = g_browser_process->local_state();
+  return local_state->GetBoolean(apps::prefs::kAppLauncherHasBeenEnabled);
+}
+
 void SetAppListEnabledPreference(bool enabled) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled, enabled);
@@ -184,8 +189,11 @@ void AppListServiceImpl::Show() {
 }
 
 void AppListServiceImpl::EnableAppList(Profile* initial_profile) {
-  SetAppListEnabledPreference(true);
   SetProfilePath(initial_profile->GetPath());
+  if (HasAppListEnabledPreference())
+    return;
+
+  SetAppListEnabledPreference(true);
   CreateShortcut();
 }
 

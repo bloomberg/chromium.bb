@@ -877,6 +877,7 @@ void AppListController::Init(Profile* initial_profile) {
   if (enable_app_list_on_next_init_) {
     enable_app_list_on_next_init_ = false;
     EnableAppList(initial_profile);
+    CreateShortcut();
   }
 
   PrefService* prefs = g_browser_process->local_state();
@@ -906,6 +907,7 @@ void AppListController::Init(Profile* initial_profile) {
           chrome_launcher_support::USER_LEVEL_INSTALLATION);
     }
     EnableAppList(initial_profile);
+    CreateShortcut();
   }
 #endif
 
