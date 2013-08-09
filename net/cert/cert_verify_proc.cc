@@ -64,12 +64,12 @@ const char* CertTypeToString(int cert_type) {
 }
 
 void RecordPublicKeyHistogram(const char* chain_position,
-                              bool after_baseline_date,
+                              bool baseline_keysize_applies,
                               size_t size_bits,
                               X509Certificate::PublicKeyType cert_type) {
   std::string histogram_name =
-      base::StringPrintf("CertificateType.%s.%s.%s",
-                         after_baseline_date ? "BR" : "NonBR",
+      base::StringPrintf("CertificateType2.%s.%s.%s",
+                         baseline_keysize_applies ? "BR" : "NonBR",
                          chain_position,
                          CertTypeToString(cert_type));
   // Do not use UMA_HISTOGRAM_... macros here, as it caches the Histogram
@@ -118,18 +118,26 @@ bool IsWeakKey(X509Certificate::PublicKeyType type, size_t size_bits) {
 bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
                        bool should_histogram) {
   // The effective date of the CA/Browser Forum's Baseline Requirements -
-  // 2014-01-01 00:00:00 UTC.
+  // 2012-07-01 00:00:00 UTC.
   const base::Time kBaselineEffectiveDate =
+      base::Time::FromInternalValue(GG_INT64_C(12985574400000000));
+  // The effective date of the key size requirements from Appendix A, v1.1.5
+  // 2014-01-01 00:00:00 UTC.
+  const base::Time kBaselineKeysizeEffectiveDate =
       base::Time::FromInternalValue(GG_INT64_C(13033008000000000));
 
   size_t size_bits = 0;
   X509Certificate::PublicKeyType type = X509Certificate::kPublicKeyTypeUnknown;
   bool weak_key = false;
-  bool after_baseline_date = cert->valid_expiry() >= kBaselineEffectiveDate;
+  bool baseline_keysize_applies =
+      cert->valid_start() >= kBaselineEffectiveDate &&
+      cert->valid_expiry() >= kBaselineKeysizeEffectiveDate;
 
   X509Certificate::GetPublicKeyInfo(cert->os_cert_handle(), &size_bits, &type);
-  if (should_histogram)
-    RecordPublicKeyHistogram(kLeafCert, after_baseline_date, size_bits, type);
+  if (should_histogram) {
+    RecordPublicKeyHistogram(kLeafCert, baseline_keysize_applies, size_bits,
+                             type);
+  }
   if (IsWeakKey(type, size_bits))
     weak_key = true;
 
@@ -140,7 +148,7 @@ bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
     if (should_histogram) {
       RecordPublicKeyHistogram(
           (i < intermediates.size() - 1) ? kIntermediateCert : kRootCert,
-          after_baseline_date,
+          baseline_keysize_applies,
           size_bits,
           type);
     }

@@ -1140,10 +1140,27 @@ other types of suffix sets.
 </histogram>
 
 <histogram name="CertificateType">
+  <obsolete>
+    Deprecated as of 8/2013. This histogram only considered the leaf certificate
+    expiry date as a proxy for whether a certificate was in-scope for the BRs,
+    but did not consider the issuance date. As some CAs have issued long-lived
+    certs prior to the BRs, this disproportionately reported those certs as
+    being subject to the BRs, but non-compliant, when in reality they're not
+    subject.
+  </obsolete>
   <summary>
     Information about the certificate algorithms and sizes in use on the web, to
     examine compliance with the CA/Browser Forum requirements and security best
     practice.
+  </summary>
+</histogram>
+
+<histogram name="CertificateType2">
+  <summary>
+    Information about the certificate algorithms and sizes in use on the web, to
+    examine compliance with the CA/Browser Forum requirements and security best
+    practice. This histogram considers the notBefore as the issuance date, for
+    purposes of what requirements apply.
   </summary>
 </histogram>
 
@@ -22683,9 +22700,23 @@ other types of suffix sets.
   <affected-histogram name="CertificateType.NonBR.Intermediate"/>
   <affected-histogram name="CertificateType.NonBR.Leaf"/>
   <affected-histogram name="CertificateType.NonBR.Root"/>
+  <affected-histogram name="CertificateType2.BR.Intermediate"/>
+  <affected-histogram name="CertificateType2.BR.Leaf"/>
+  <affected-histogram name="CertificateType2.BR.Root"/>
+  <affected-histogram name="CertificateType2.NonBR.Intermediate"/>
+  <affected-histogram name="CertificateType2.NonBR.Leaf"/>
+  <affected-histogram name="CertificateType2.NonBR.Root"/>
 </fieldtrial>
 
 <fieldtrial name="CertificateTypeBRValidity" separator=".">
+  <obsolete>
+    Deprecated as of 8/2013. This histogram only considered the leaf certificate
+    expiry date as a proxy for whether a certificate was in-scope for the BRs,
+    but did not consider the issuance date. As some CAs have issued long-lived
+    certs prior to the BRs, this disproportionately reported those certs as
+    being subject to the BRs, but non-compliant, when in reality they're not
+    subject.
+  </obsolete>
   <group name="BR"
       label="The *leaf* certificate of the chain expires after 2013-12-31,
              meaning that it should be in scope for the Baseline
@@ -22696,12 +22727,26 @@ other types of suffix sets.
   <affected-histogram name="CertificateType"/>
 </fieldtrial>
 
+<fieldtrial name="CertificateTypeBRValidity2" separator=".">
+  <group name="BR"
+      label="The *leaf* certificate of the chain expires after 2013-12-31 and
+             was issued on or after 2012-07-01, as judged by the notBefore,
+             meaning that it should be in scope for the Baseline
+             Requirement's key size requirements"/>
+  <group name="NonBR"
+      label="The *leaf* certificate of the chain expires on or before
+             2013-12-31 or was issued before 2012-07-01"/>
+  <affected-histogram name="CertificateType2"/>
+</fieldtrial>
+
 <fieldtrial name="CertificateTypeChainPosition" separator=".">
   <group name="Intermediate" label="Intermediate's SPKI"/>
   <group name="Leaf" label="Leaf's SPKI"/>
   <group name="Root" label="Root's SPKI"/>
   <affected-histogram name="CertificateType.BR"/>
   <affected-histogram name="CertificateType.NonBR"/>
+  <affected-histogram name="CertificateType2.BR"/>
+  <affected-histogram name="CertificateType2.NonBR"/>
 </fieldtrial>
 
 <fieldtrial name="ConnCountImpact">
