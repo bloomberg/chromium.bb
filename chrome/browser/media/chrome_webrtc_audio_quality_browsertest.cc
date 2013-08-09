@@ -442,8 +442,8 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
   RunPesq(reference_file_in_test_dir, trimmed_recording, 16000, &raw_mos,
           &mos_lqo);
 
-  perf_test::PrintResult("raw_mos", "", "audio_pesq", raw_mos, "score", true);
-  perf_test::PrintResult("SSIM", "", "audio_pesq", mos_lqo, "score", true);
+  perf_test::PrintResult("audio_pesq", "", "raw_mos", raw_mos, "score", true);
+  perf_test::PrintResult("audio_pesq", "", "mos_lqo", mos_lqo, "score", true);
 
   EXPECT_TRUE(base::DeleteFile(recording, false));
   EXPECT_TRUE(base::DeleteFile(trimmed_recording, false));
