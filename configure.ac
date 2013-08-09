@@ -201,14 +201,35 @@ if test x$enable_rdp_compositor = xyes; then
   PKG_CHECK_MODULES(RDP_COMPOSITOR, [freerdp >= 1.1.0])
 fi
 
+AC_ARG_WITH(cairo,
+	    AS_HELP_STRING([--with-cairo=@<:@image|gl|glesv2@:>@]
+			   [Which Cairo renderer to use for the clients]),
+			   [],[with_cairo="image"])
+
+if test "x$with_cairo" = "ximage"; then
+	cairo_modules="cairo"
+else
+if test "x$with_cairo" = "xgl"; then
+	cairo_modules="cairo-gl"
+else
+if test "x$with_cairo" = "xglesv2"; then
+	cairo_modules="cairo-glesv2"
+else
+	AC_ERROR([Unknown cairo renderer requested])
+fi
+fi
+fi
+
+# Included for legacy compat
 AC_ARG_WITH(cairo-glesv2,
             AS_HELP_STRING([--with-cairo-glesv2],
-                           [Use GLESv2 cairo instead of full GL]))
+                           [Use GLESv2 cairo]))
 if test "x$with_cairo_glesv2" = "xyes"; then
   cairo_modules="cairo-glesv2"
-  AC_DEFINE([USE_CAIRO_GLESV2], [1], [Use the GLESv2 GL cairo backend])
-else
-  cairo_modules="cairo-gl"
+fi
+
+if test "x$cairo_modules" = "xcairo-glesv2"; then
+AC_DEFINE([USE_CAIRO_GLESV2], [1], [Use the GLESv2 GL cairo backend])
 fi
 
 PKG_CHECK_MODULES(PIXMAN, [pixman-1])
@@ -257,11 +278,15 @@ if test x$enable_clients = xyes; then
 
   PKG_CHECK_MODULES(POPPLER, [poppler-glib glib-2.0 gobject-2.0 gio-2.0 ],
 			     [have_poppler=yes], [have_poppler=no])
-  PKG_CHECK_MODULES(CAIRO_EGL, [wayland-egl egl >= 7.10 cairo-egl >= 1.11.3 $cairo_modules],
-		    [have_cairo_egl=yes], [have_cairo_egl=no])
-  AS_IF([test "x$have_cairo_egl" = "xyes"],
-        [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
-        [AC_MSG_WARN([clients will use cairo image, cairo-egl not used because $CAIRO_EGL_PKG_ERRORS])])
+
+  # Only check for cairo-egl if a GL or GLES renderer requested
+  AS_IF([test "x$cairo_modules" = "xcairo-gl" -o "x$cairo_modules" = "xcairo-glesv2"], [
+    PKG_CHECK_MODULES(CAIRO_EGL, [wayland-egl egl >= 7.10 cairo-egl >= 1.11.3 $cairo_modules],
+                      [have_cairo_egl=yes], [have_cairo_egl=no])
+    AS_IF([test "x$have_cairo_egl" = "xyes"],
+	  [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
+	  [AC_ERROR([cairo-egl not used because $CAIRO_EGL_PKG_ERRORS])])])
+
   PKG_CHECK_MODULES(PANGO, [pangocairo], [have_pango=yes], [have_pango=no])
 fi
 
