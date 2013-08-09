@@ -36,13 +36,13 @@
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/animation/AnimationBase.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleFetchedImage.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "wtf/Noncopyable.h"
 
@@ -251,7 +251,7 @@ static inline Vector<SVGLength> blendFunc(const AnimationBase*, const Vector<SVG
     return result;
 }
 
-static inline PassRefPtr<StyleImage> crossfadeBlend(const AnimationBase*, StyleCachedImage* fromStyleImage, StyleCachedImage* toStyleImage, double progress)
+static inline PassRefPtr<StyleImage> crossfadeBlend(const AnimationBase*, StyleFetchedImage* fromStyleImage, StyleFetchedImage* toStyleImage, double progress)
 {
     // If progress is at one of the extremes, we want getComputedStyle to show the image,
     // not a completed cross-fade, so we hand back one of the existing images.
@@ -260,11 +260,11 @@ static inline PassRefPtr<StyleImage> crossfadeBlend(const AnimationBase*, StyleC
     if (progress == 1)
         return toStyleImage;
 
-    CachedImage* fromCachedImage = static_cast<CachedImage*>(fromStyleImage->data());
-    CachedImage* toCachedImage = static_cast<CachedImage*>(toStyleImage->data());
+    ImageResource* fromImageResource = static_cast<ImageResource*>(fromStyleImage->data());
+    ImageResource* toImageResource = static_cast<ImageResource*>(toStyleImage->data());
 
-    RefPtr<CSSImageValue> fromImageValue = CSSImageValue::create(fromCachedImage->url(), fromStyleImage);
-    RefPtr<CSSImageValue> toImageValue = CSSImageValue::create(toCachedImage->url(), toStyleImage);
+    RefPtr<CSSImageValue> fromImageValue = CSSImageValue::create(fromImageResource->url(), fromStyleImage);
+    RefPtr<CSSImageValue> toImageValue = CSSImageValue::create(toImageResource->url(), toStyleImage);
     RefPtr<CSSCrossfadeValue> crossfadeValue = CSSCrossfadeValue::create(fromImageValue, toImageValue);
 
     crossfadeValue->setPercentage(CSSPrimitiveValue::create(progress, CSSPrimitiveValue::CSS_NUMBER));
@@ -277,8 +277,8 @@ static inline PassRefPtr<StyleImage> blendFunc(const AnimationBase* anim, StyleI
     if (!from || !to)
         return to;
 
-    if (from->isCachedImage() && to->isCachedImage())
-        return crossfadeBlend(anim, static_cast<StyleCachedImage*>(from), static_cast<StyleCachedImage*>(to), progress);
+    if (from->isImageResource() && to->isImageResource())
+        return crossfadeBlend(anim, static_cast<StyleFetchedImage*>(from), static_cast<StyleFetchedImage*>(to), progress);
 
     // FIXME: Support transitioning generated images as well. (gradients, etc.)
 

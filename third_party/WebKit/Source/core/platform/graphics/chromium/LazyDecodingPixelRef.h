@@ -76,7 +76,7 @@ private:
     SkISize m_scaledSize;
     SkIRect m_scaledSubset;
 
-    const ScaledImageFragment* m_lockedCachedImage;
+    const ScaledImageFragment* m_lockedImageResource;
 };
 
 } // namespace WebCore

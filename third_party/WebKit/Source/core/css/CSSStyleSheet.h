@@ -34,7 +34,7 @@ class CSSParser;
 class CSSRule;
 class CSSRuleList;
 class CSSStyleSheet;
-class CachedCSSStyleSheet;
+class CSSStyleSheetResource;
 class Document;
 class ExceptionState;
 class MediaQuerySet;

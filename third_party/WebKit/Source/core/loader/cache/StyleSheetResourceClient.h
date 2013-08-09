@@ -23,24 +23,24 @@
  pages from the web. It has a memory cache for these objects.
  */
 
-#ifndef CachedStyleSheetClient_h
-#define CachedStyleSheetClient_h
+#ifndef StyleSheetResourceClient_h
+#define StyleSheetResourceClient_h
 
 #include "core/loader/cache/ResourceClient.h"
 #include "weborigin/KURL.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
-class CachedCSSStyleSheet;
+class CSSStyleSheetResource;
 
-class CachedStyleSheetClient : public ResourceClient {
+class StyleSheetResourceClient : public ResourceClient {
 public:
-    virtual ~CachedStyleSheetClient() { }
+    virtual ~StyleSheetResourceClient() { }
     static ResourceClientType expectedType() { return StyleSheetType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
-    virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CachedCSSStyleSheet*) { }
+    virtual void setCSSStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* charset */, const CSSStyleSheetResource*) { }
     virtual void setXSLStyleSheet(const String& /* href */, const KURL& /* baseURL */, const String& /* sheet */) { }
 };
 }
 
-#endif // CachedStyleSheetClient_h
+#endif // StyleSheetResourceClient_h

@@ -265,7 +265,7 @@ NativeImageSkia::NativeImageSkia(const SkBitmap& other, float resolutionScale)
 {
 }
 
-NativeImageSkia::NativeImageSkia(const SkBitmap& image, float resolutionScale, const SkBitmap& resizedImage, const CachedImageInfo& cachedImageInfo, int resizeRequests)
+NativeImageSkia::NativeImageSkia(const SkBitmap& image, float resolutionScale, const SkBitmap& resizedImage, const ImageResourceInfo& cachedImageInfo, int resizeRequests)
     : m_image(image)
     , m_resolutionScale(resolutionScale)
     , m_resizedImage(resizedImage)
@@ -516,24 +516,24 @@ bool NativeImageSkia::shouldCacheResampling(const SkISize& scaledImageSize, cons
     return fragmentSize > fullSize / 4;
 }
 
-NativeImageSkia::CachedImageInfo::CachedImageInfo()
+NativeImageSkia::ImageResourceInfo::ImageResourceInfo()
 {
     scaledImageSize.setEmpty();
     scaledImageSubset.setEmpty();
 }
 
-bool NativeImageSkia::CachedImageInfo::isEqual(const SkISize& otherScaledImageSize, const SkIRect& otherScaledImageSubset) const
+bool NativeImageSkia::ImageResourceInfo::isEqual(const SkISize& otherScaledImageSize, const SkIRect& otherScaledImageSubset) const
 {
     return scaledImageSize == otherScaledImageSize && scaledImageSubset == otherScaledImageSubset;
 }
 
-void NativeImageSkia::CachedImageInfo::set(const SkISize& otherScaledImageSize, const SkIRect& otherScaledImageSubset)
+void NativeImageSkia::ImageResourceInfo::set(const SkISize& otherScaledImageSize, const SkIRect& otherScaledImageSubset)
 {
     scaledImageSize = otherScaledImageSize;
     scaledImageSubset = otherScaledImageSubset;
 }
 
-SkIRect NativeImageSkia::CachedImageInfo::rectInSubset(const SkIRect& otherScaledImageSubset)
+SkIRect NativeImageSkia::ImageResourceInfo::rectInSubset(const SkIRect& otherScaledImageSubset)
 {
     if (!scaledImageSubset.contains(otherScaledImageSubset))
         return SkIRect::MakeEmpty();

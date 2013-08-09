@@ -21,7 +21,7 @@
 #ifndef SVGFEImageElement_h
 #define SVGFEImageElement_h
 
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/svg/SVGAnimatedBoolean.h"
@@ -36,7 +36,7 @@ namespace WebCore {
 class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGURIReference,
                                 public SVGExternalResourcesRequired,
-                                public CachedImageClient {
+                                public ImageResourceClient {
 public:
     static PassRefPtr<SVGFEImageElement> create(const QualifiedName&, Document*);
 
@@ -66,7 +66,7 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 
-    ResourcePtr<CachedImage> m_cachedImage;
+    ResourcePtr<ImageResource> m_cachedImage;
 };
 
 } // namespace WebCore

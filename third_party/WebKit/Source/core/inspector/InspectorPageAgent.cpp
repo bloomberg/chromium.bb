@@ -54,13 +54,13 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/CSSStyleSheetResource.h"
 #include "core/loader/cache/FontResource.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/loader/cache/Resource.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/loader/cache/ScriptResource.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -195,14 +195,14 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
     if (cachedResource) {
         switch (cachedResource->type()) {
         case Resource::CSSStyleSheet:
-            *result = static_cast<CachedCSSStyleSheet*>(cachedResource)->sheetText(false);
+            *result = static_cast<CSSStyleSheetResource*>(cachedResource)->sheetText(false);
             return true;
         case Resource::Script:
-            *result = static_cast<CachedScript*>(cachedResource)->script();
+            *result = static_cast<WebCore::ScriptResource*>(cachedResource)->script();
             return true;
         case Resource::MainResource:
             return false;
-        case Resource::RawResource: {
+        case Resource::Raw: {
             SharedBuffer* buffer = cachedResource->resourceBuffer();
             if (!buffer)
                 return false;
@@ -287,7 +287,7 @@ TypeBuilder::Page::ResourceType::Enum InspectorPageAgent::resourceTypeJson(Inspe
 InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Resource& cachedResource)
 {
     switch (cachedResource.type()) {
-    case Resource::ImageResource:
+    case Resource::Image:
         return InspectorPageAgent::ImageResource;
     case Resource::Font:
         return InspectorPageAgent::Font;
@@ -297,7 +297,7 @@ InspectorPageAgent::ResourceType InspectorPageAgent::cachedResourceType(const Re
         return InspectorPageAgent::StylesheetResource;
     case Resource::Script:
         return InspectorPageAgent::ScriptResource;
-    case Resource::RawResource:
+    case Resource::Raw:
         return InspectorPageAgent::XHRResource;
     case Resource::MainResource:
         return InspectorPageAgent::DocumentResource;
@@ -494,9 +494,9 @@ static Vector<Resource*> cachedResourcesForFrame(Frame* frame)
         Resource* cachedResource = it->value.get();
 
         switch (cachedResource->type()) {
-        case Resource::ImageResource:
+        case Resource::Image:
             // Skip images that were not auto loaded (images disabled in the user agent).
-            if (static_cast<CachedImage*>(cachedResource)->stillNeedsLoad())
+            if (static_cast<ImageResource*>(cachedResource)->stillNeedsLoad())
                 continue;
             break;
         case Resource::Font:

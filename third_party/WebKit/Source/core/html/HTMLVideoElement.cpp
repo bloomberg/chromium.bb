@@ -79,7 +79,7 @@ void HTMLVideoElement::attach(const AttachContext& context)
             m_imageLoader = adoptPtr(new HTMLImageLoader(this));
         m_imageLoader->updateFromElement();
         if (renderer())
-            toRenderImage(renderer())->imageResource()->setCachedImage(m_imageLoader->image());
+            toRenderImage(renderer())->imageResource()->setImageResource(m_imageLoader->image());
     }
 }
 
@@ -112,7 +112,7 @@ void HTMLVideoElement::parseAttribute(const QualifiedName& name, const AtomicStr
             m_imageLoader->updateFromElementIgnoringPreviousError();
         } else {
             if (renderer())
-                toRenderImage(renderer())->imageResource()->setCachedImage(0);
+                toRenderImage(renderer())->imageResource()->setImageResource(0);
         }
     } else
         HTMLMediaElement::parseAttribute(name, value);

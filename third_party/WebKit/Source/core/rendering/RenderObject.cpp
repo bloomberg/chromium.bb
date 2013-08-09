@@ -223,7 +223,7 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
 DEFINE_DEBUG_ONLY_GLOBAL(WTF::RefCountedLeakCounter, renderObjectCounter, ("RenderObject"));
 
 RenderObject::RenderObject(Node* node)
-    : CachedImageClient()
+    : ImageResourceClient()
     , m_style(0)
     , m_node(node)
     , m_parent(0)
@@ -2994,7 +2994,7 @@ void RenderObject::collectAnnotatedRegions(Vector<AnnotatedRegionValue>& regions
         curr->collectAnnotatedRegions(regions);
 }
 
-bool RenderObject::willRenderImage(CachedImage*)
+bool RenderObject::willRenderImage(ImageResource*)
 {
     // Without visibility we won't render (and therefore don't care about animation).
     if (style()->visibility() != VISIBLE)
@@ -3072,7 +3072,7 @@ bool RenderObject::isInert() const
     return parentNode && toElement(parentNode)->isInert();
 }
 
-void RenderObject::imageChanged(CachedImage* image, const IntRect* rect)
+void RenderObject::imageChanged(ImageResource* image, const IntRect* rect)
 {
     imageChanged(static_cast<WrappedImagePtr>(image), rect);
 }

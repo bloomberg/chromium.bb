@@ -390,7 +390,7 @@ bool Resource::addClientToSet(ResourceClient* client)
     if (!hasClients() && inCache())
         memoryCache()->addToLiveResourcesSize(this);
 
-    if ((m_type == RawResource || m_type == MainResource) && !m_response.isNull() && !m_proxyResource) {
+    if ((m_type == Raw || m_type == MainResource) && !m_response.isNull() && !m_proxyResource) {
         // Certain resources (especially XHRs and main resources) do crazy things if an asynchronous load returns
         // synchronously (e.g., scripts may not have set all the state they need to handle the load).
         // Therefore, rather than immediately sending callbacks on a cache hit like other Resources,
@@ -443,7 +443,7 @@ void Resource::allClientsRemoved()
 {
     if (!m_loader)
         return;
-    if (m_type == MainResource || m_type == RawResource)
+    if (m_type == MainResource || m_type == Raw)
         cancelTimerFired(&m_cancelTimer);
     else if (!m_cancelTimer.isActive())
         m_cancelTimer.startOneShot(0);

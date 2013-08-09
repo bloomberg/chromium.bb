@@ -30,10 +30,10 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
-#include "core/rendering/style/StyleCachedImageSet.h"
+#include "core/rendering/style/StyleFetchedImageSet.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -48,8 +48,8 @@ CSSImageSetValue::CSSImageSetValue()
 
 CSSImageSetValue::~CSSImageSetValue()
 {
-    if (m_imageSet && m_imageSet->isCachedImageSet())
-        static_cast<StyleCachedImageSet*>(m_imageSet.get())->clearImageSetValue();
+    if (m_imageSet && m_imageSet->isImageResourceSet())
+        static_cast<StyleFetchedImageSet*>(m_imageSet.get())->clearImageSetValue();
 }
 
 void CSSImageSetValue::fillImageSet()
@@ -88,7 +88,7 @@ CSSImageSetValue::ImageWithScale CSSImageSetValue::bestImageForScaleFactor()
     return image;
 }
 
-StyleCachedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, float deviceScaleFactor)
+StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, float deviceScaleFactor)
 {
     ASSERT(loader);
 
@@ -104,14 +104,14 @@ StyleCachedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, f
         ImageWithScale image = bestImageForScaleFactor();
         if (Document* document = loader->document()) {
             FetchRequest request(ResourceRequest(document->completeURL(image.imageURL)), FetchInitiatorTypeNames::css);
-            if (ResourcePtr<CachedImage> cachedImage = loader->requestImage(request)) {
-                m_imageSet = StyleCachedImageSet::create(cachedImage.get(), image.scaleFactor, this);
+            if (ResourcePtr<ImageResource> cachedImage = loader->requestImage(request)) {
+                m_imageSet = StyleFetchedImageSet::create(cachedImage.get(), image.scaleFactor, this);
                 m_accessedBestFitImage = true;
             }
         }
     }
 
-    return (m_imageSet && m_imageSet->isCachedImageSet()) ? static_cast<StyleCachedImageSet*>(m_imageSet.get()) : 0;
+    return (m_imageSet && m_imageSet->isImageResourceSet()) ? static_cast<StyleFetchedImageSet*>(m_imageSet.get()) : 0;
 }
 
 StyleImage* CSSImageSetValue::cachedOrPendingImageSet(float deviceScaleFactor)
@@ -161,9 +161,9 @@ String CSSImageSetValue::customCssText() const
 
 bool CSSImageSetValue::hasFailedOrCanceledSubresources() const
 {
-    if (!m_imageSet || !m_imageSet->isCachedImageSet())
+    if (!m_imageSet || !m_imageSet->isImageResourceSet())
         return false;
-    Resource* cachedResource = static_cast<StyleCachedImageSet*>(m_imageSet.get())->cachedImage();
+    Resource* cachedResource = static_cast<StyleFetchedImageSet*>(m_imageSet.get())->cachedImage();
     if (!cachedResource)
         return true;
     return cachedResource->loadFailedOrCanceled();

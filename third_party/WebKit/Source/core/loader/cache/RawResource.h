@@ -20,22 +20,22 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef CachedRawResource_h
-#define CachedRawResource_h
+#ifndef RawResource_h
+#define RawResource_h
 
 #include "core/loader/cache/Resource.h"
 #include "core/loader/cache/ResourceClient.h"
 
 namespace WebCore {
-class CachedRawResourceCallback;
-class CachedRawResourceClient;
+class RawResourceCallback;
+class RawResourceClient;
 
-class CachedRawResource : public Resource {
+class RawResource : public Resource {
 public:
-    CachedRawResource(const ResourceRequest&, Type);
+    RawResource(const ResourceRequest&, Type);
 
     // FIXME: AssociatedURLLoader shouldn't be a DocumentThreadableLoader and therefore shouldn't
-    // use CachedRawResource. However, it is, and it needs to be able to defer loading.
+    // use RawResource. However, it is, and it needs to be able to defer loading.
     // This can be fixed by splitting CORS preflighting out of DocumentThreacableLoader.
     virtual void setDefersLoading(bool);
 
@@ -72,9 +72,9 @@ private:
 };
 
 
-class CachedRawResourceClient : public ResourceClient {
+class RawResourceClient : public ResourceClient {
 public:
-    virtual ~CachedRawResourceClient() { }
+    virtual ~RawResourceClient() { }
     static ResourceClientType expectedType() { return RawResourceType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
 
@@ -87,4 +87,4 @@ public:
 
 }
 
-#endif // CachedRawResource_h
+#endif // RawResource_h

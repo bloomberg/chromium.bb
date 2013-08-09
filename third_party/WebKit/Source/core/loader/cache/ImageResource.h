@@ -20,8 +20,8 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef CachedImage_h
-#define CachedImage_h
+#ifndef ImageResource_h
+#define ImageResource_h
 
 #include "core/loader/cache/Resource.h"
 #include "core/platform/graphics/ImageObserver.h"
@@ -33,34 +33,34 @@
 
 namespace WebCore {
 
-class CachedImageClient;
+class ImageResourceClient;
 class ResourceFetcher;
 class FloatSize;
 class MemoryCache;
 class RenderObject;
 struct Length;
 
-class CachedImage : public Resource, public ImageObserver {
+class ImageResource : public Resource, public ImageObserver {
     friend class MemoryCache;
 
 public:
-    CachedImage(const ResourceRequest&);
-    CachedImage(Image*);
-    virtual ~CachedImage();
+    ImageResource(const ResourceRequest&);
+    ImageResource(WebCore::Image*);
+    virtual ~ImageResource();
 
     virtual void load(ResourceFetcher*, const ResourceLoaderOptions&);
 
-    Image* image(); // Returns the nullImage() if the image is not available yet.
-    Image* imageForRenderer(const RenderObject*); // Returns the nullImage() if the image is not available yet.
+    WebCore::Image* image(); // Returns the nullImage() if the image is not available yet.
+    WebCore::Image* imageForRenderer(const RenderObject*); // Returns the nullImage() if the image is not available yet.
     bool hasImage() const { return m_image.get(); }
     bool currentFrameKnownToBeOpaque(const RenderObject*); // Side effect: ensures decoded image is in cache, therefore should only be called when about to draw the image.
 
-    std::pair<Image*, float> brokenImage(float deviceScaleFactor) const; // Returns an image and the image's resolution scale factor.
+    std::pair<WebCore::Image*, float> brokenImage(float deviceScaleFactor) const; // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
     bool canRender(const RenderObject* renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(renderer, multiplier).isEmpty(); }
 
-    void setContainerSizeForRenderer(const CachedImageClient*, const IntSize&, float);
+    void setContainerSizeForRenderer(const ImageResourceClient*, const IntSize&, float);
     bool usesImageContainerSize() const;
     bool imageHasRelativeWidth() const;
     bool imageHasRelativeHeight() const;
@@ -87,12 +87,12 @@ public:
     virtual bool stillNeedsLoad() const OVERRIDE { return !errorOccurred() && status() == Unknown && !isLoading(); }
 
     // ImageObserver
-    virtual void decodedSizeChanged(const Image* image, int delta);
-    virtual void didDraw(const Image*);
+    virtual void decodedSizeChanged(const WebCore::Image*, int delta);
+    virtual void didDraw(const WebCore::Image*);
 
-    virtual bool shouldPauseAnimation(const Image*);
-    virtual void animationAdvanced(const Image*);
-    virtual void changedInRect(const Image*, const IntRect&);
+    virtual bool shouldPauseAnimation(const WebCore::Image*);
+    virtual void animationAdvanced(const WebCore::Image*);
+    virtual void changedInRect(const WebCore::Image*, const IntRect&);
 
 private:
     void clear();
@@ -107,10 +107,10 @@ private:
     virtual void switchClientsToRevalidatedResource() OVERRIDE;
 
     typedef pair<IntSize, float> SizeAndZoom;
-    typedef HashMap<const CachedImageClient*, SizeAndZoom> ContainerSizeRequests;
+    typedef HashMap<const ImageResourceClient*, SizeAndZoom> ContainerSizeRequests;
     ContainerSizeRequests m_pendingContainerSizeRequests;
 
-    RefPtr<Image> m_image;
+    RefPtr<WebCore::Image> m_image;
     OwnPtr<SVGImageCache> m_svgImageCache;
     bool m_loadingMultipartContent;
 };

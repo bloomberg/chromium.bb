@@ -25,7 +25,7 @@
 */
 
 #include "config.h"
-#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/ScriptResource.h"
 
 #include "core/loader/TextResourceDecoder.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-CachedScript::CachedScript(const ResourceRequest& resourceRequest, const String& charset)
+ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
     : Resource(resourceRequest, Script)
     , m_decoder(TextResourceDecoder::create(ASCIILiteral("application/javascript"), charset))
 {
@@ -46,26 +46,26 @@ CachedScript::CachedScript(const ResourceRequest& resourceRequest, const String&
     setAccept(acceptScript);
 }
 
-CachedScript::~CachedScript()
+ScriptResource::~ScriptResource()
 {
 }
 
-void CachedScript::setEncoding(const String& chs)
+void ScriptResource::setEncoding(const String& chs)
 {
     m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
 }
 
-String CachedScript::encoding() const
+String ScriptResource::encoding() const
 {
     return m_decoder->encoding().name();
 }
 
-String CachedScript::mimeType() const
+String ScriptResource::mimeType() const
 {
     return extractMIMETypeFromMediaType(m_response.httpHeaderField("Content-Type")).lower();
 }
 
-const String& CachedScript::script()
+const String& ScriptResource::script()
 {
     ASSERT(!isPurgeable());
     ASSERT(isLoaded());
@@ -84,7 +84,7 @@ const String& CachedScript::script()
     return m_script.string();
 }
 
-bool CachedScript::mimeTypeAllowedByNosniff() const
+bool ScriptResource::mimeTypeAllowedByNosniff() const
 {
     return parseContentTypeOptionsHeader(m_response.httpHeaderField("X-Content-Type-Options")) != ContentTypeOptionsNosniff || MIMETypeRegistry::isSupportedJavaScriptMIMEType(mimeType());
 }

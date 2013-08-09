@@ -524,7 +524,7 @@ MemoryCache::Statistics MemoryCache::getStatistics()
     for (ResourceMap::iterator i = m_resources.begin(); i != e; ++i) {
         Resource* resource = i->value;
         switch (resource->type()) {
-        case Resource::ImageResource:
+        case Resource::Image:
             stats.images.addResource(resource);
             break;
         case Resource::CSSStyleSheet:

@@ -33,7 +33,7 @@
 
 #include "core/html/HTMLImport.h"
 #include "core/html/LinkResource.h"
-#include "core/loader/cache/CachedRawResource.h"
+#include "core/loader/cache/RawResource.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/Timer.h"
 #include "wtf/FastAllocBase.h"

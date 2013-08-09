@@ -44,9 +44,9 @@ public:
 
     RenderImageResource* imageResource() { return m_imageResource.get(); }
     const RenderImageResource* imageResource() const { return m_imageResource.get(); }
-    CachedImage* cachedImage() const { return m_imageResource ? m_imageResource->cachedImage() : 0; }
+    ImageResource* cachedImage() const { return m_imageResource ? m_imageResource->cachedImage() : 0; }
 
-    bool setImageSizeForAltText(CachedImage* newImage = 0);
+    bool setImageSizeForAltText(ImageResource* newImage = 0);
 
     void updateAltText();
 
@@ -98,7 +98,7 @@ private:
 
     virtual bool boxShadowShouldBeAppliedToBackground(BackgroundBleedAvoidance, InlineFlowBox*) const OVERRIDE FINAL;
 
-    IntSize imageSizeForError(CachedImage*) const;
+    IntSize imageSizeForError(ImageResource*) const;
     void imageDimensionsChanged(bool imageSizeChanged, const IntRect* = 0);
     bool updateIntrinsicSizeIfNeeded(const LayoutSize&, bool imageSizeChanged);
 

@@ -30,8 +30,8 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/CrossOriginAccessControl.h"
-#include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderImage.h"
@@ -102,7 +102,7 @@ ImageLoader::~ImageLoader()
         m_element->deref();
 }
 
-void ImageLoader::setImage(CachedImage* newImage)
+void ImageLoader::setImage(ImageResource* newImage)
 {
     setImageWithoutConsideringPendingLoadEvent(newImage);
 
@@ -111,10 +111,10 @@ void ImageLoader::setImage(CachedImage* newImage)
     updatedHasPendingEvent();
 }
 
-void ImageLoader::setImageWithoutConsideringPendingLoadEvent(CachedImage* newImage)
+void ImageLoader::setImageWithoutConsideringPendingLoadEvent(ImageResource* newImage)
 {
     ASSERT(m_failedLoadURL.isEmpty());
-    CachedImage* oldImage = m_image.get();
+    ImageResource* oldImage = m_image.get();
     if (newImage != oldImage) {
         sourceImageChanged();
         m_image = newImage;
@@ -156,7 +156,7 @@ void ImageLoader::updateFromElement()
 
     // Do not load any image if the 'src' attribute is missing or if it is
     // an empty string.
-    ResourcePtr<CachedImage> newImage = 0;
+    ResourcePtr<ImageResource> newImage = 0;
     if (!attr.isNull() && !stripLeadingAndTrailingHTMLSpaces(attr).isEmpty()) {
         FetchRequest request(ResourceRequest(document->completeURL(sourceURI(attr))), element()->localName());
 
@@ -169,7 +169,7 @@ void ImageLoader::updateFromElement()
         if (m_loadManually) {
             bool autoLoadOtherImages = document->fetcher()->autoLoadImages();
             document->fetcher()->setAutoLoadImages(false);
-            newImage = new CachedImage(request.resourceRequest());
+            newImage = new ImageResource(request.resourceRequest());
             newImage->setLoading(true);
             document->fetcher()->m_documentResources.set(newImage->url(), newImage.get());
             document->fetcher()->setAutoLoadImages(autoLoadOtherImages);
@@ -193,7 +193,7 @@ void ImageLoader::updateFromElement()
         errorEventSender().dispatchEventSoon(this);
     }
 
-    CachedImage* oldImage = m_image.get();
+    ImageResource* oldImage = m_image.get();
     if (newImage != oldImage) {
         sourceImageChanged();
 
@@ -329,9 +329,9 @@ void ImageLoader::updateRenderer()
     // Only update the renderer if it doesn't have an image or if what we have
     // is a complete image.  This prevents flickering in the case where a dynamic
     // change is happening between two images.
-    CachedImage* cachedImage = imageResource->cachedImage();
+    ImageResource* cachedImage = imageResource->cachedImage();
     if (m_image != cachedImage && (m_imageComplete || !cachedImage))
-        imageResource->setCachedImage(m_image.get());
+        imageResource->setImageResource(m_image.get());
 }
 
 void ImageLoader::updatedHasPendingEvent()

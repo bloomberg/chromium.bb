@@ -55,8 +55,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/loader/cache/ScriptResource.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/network/ResourceError.h"
@@ -1052,7 +1052,7 @@ void XMLDocumentParser::endElementNs()
         if (scriptLoader->readyToBeParserExecuted()) {
             scriptLoader->executeScript(ScriptSourceCode(scriptLoader->scriptContent(), document()->url(), m_scriptStartPosition));
         } else if (scriptLoader->willBeParserExecuted()) {
-            m_pendingScript = scriptLoader->cachedScript();
+            m_pendingScript = scriptLoader->resource();
             m_scriptElement = element;
             m_pendingScript->addClient(this);
 

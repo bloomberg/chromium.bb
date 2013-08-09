@@ -30,7 +30,7 @@
 
 namespace WebCore {
 
-class CachedImage;
+class ImageResource;
 class HTMLImageElement;
 
 class ImageDocument FINAL : public HTMLDocument {
@@ -40,7 +40,7 @@ public:
         return adoptRef(new ImageDocument(initializer));
     }
 
-    CachedImage* cachedImage();
+    ImageResource* cachedImage();
     HTMLImageElement* imageElement() const { return m_imageElement.get(); }
 
     void windowSizeChanged();

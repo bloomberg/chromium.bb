@@ -32,7 +32,7 @@
 #define HTMLImportLoader_h
 
 #include "core/html/HTMLImport.h"
-#include "core/loader/cache/CachedRawResource.h"
+#include "core/loader/cache/RawResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "weborigin/KURL.h"
 #include "wtf/RefCounted.h"
@@ -43,7 +43,7 @@ namespace WebCore {
 class DocumentWriter;
 class HTMLImportLoaderClient;
 
-class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImport, public CachedRawResourceClient {
+class HTMLImportLoader : public RefCounted<HTMLImportLoader>, public HTMLImport, public RawResourceClient {
 public:
     enum State {
         StateLoading,
@@ -52,7 +52,7 @@ public:
         StateReady
     };
 
-    HTMLImportLoader(HTMLImport*, const KURL&, const ResourcePtr<CachedRawResource>&);
+    HTMLImportLoader(HTMLImport*, const KURL&, const ResourcePtr<RawResource>&);
     virtual ~HTMLImportLoader();
 
     Document* importedDocument() const;
@@ -74,7 +74,7 @@ public:
 
 private:
 
-    // CachedRawResourceClient
+    // RawResourceClient
     virtual void responseReceived(Resource*, const ResourceResponse&) OVERRIDE;
     virtual void dataReceived(Resource*, const char* data, int length) OVERRIDE;
     virtual void notifyFinished(Resource*) OVERRIDE;
@@ -90,7 +90,7 @@ private:
     Vector<HTMLImportLoaderClient*> m_clients;
     State m_state;
     KURL m_url;
-    ResourcePtr<CachedRawResource> m_resource;
+    ResourcePtr<RawResource> m_resource;
     RefPtr<Document> m_importedDocument;
     RefPtr<DocumentWriter> m_writer;
 };

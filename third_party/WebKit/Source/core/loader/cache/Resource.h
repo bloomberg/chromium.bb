@@ -59,11 +59,11 @@ class Resource {
 public:
     enum Type {
         MainResource,
-        ImageResource,
+        Image,
         CSSStyleSheet,
         Script,
         Font,
-        RawResource,
+        Raw,
         SVGDocument,
         XSLStyleSheet,
         LinkPrefetch,
@@ -154,7 +154,7 @@ public:
         return type() == MainResource
             || type() == LinkPrefetch
             || type() == LinkSubresource
-            || type() == RawResource;
+            || type() == Raw;
     }
 
     void updateForAccess();

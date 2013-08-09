@@ -29,7 +29,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
 #include "core/dom/Position.h"
-#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/ImageResourceClient.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
@@ -135,7 +135,7 @@ const int showTreeCharacterOffset = 39;
 #endif
 
 // Base class for all rendering tree objects.
-class RenderObject : public CachedImageClient {
+class RenderObject : public ImageResourceClient {
     friend class RenderBlock;
     friend class RenderLayer;
     friend class RenderObjectChildList;
@@ -945,9 +945,9 @@ public:
     virtual int previousOffsetForBackwardDeletion(int current) const;
     virtual int nextOffset(int current) const;
 
-    virtual void imageChanged(CachedImage*, const IntRect* = 0);
+    virtual void imageChanged(ImageResource*, const IntRect* = 0);
     virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) { }
-    virtual bool willRenderImage(CachedImage*);
+    virtual bool willRenderImage(ImageResource*);
 
     void selectionStartEnd(int& spos, int& epos) const;
 

@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/rendering/RenderImageResource.h"
 
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderObject.h"
 
@@ -59,7 +59,7 @@ void RenderImageResource::shutdown()
         m_cachedImage->removeClient(m_renderer);
 }
 
-void RenderImageResource::setCachedImage(CachedImage* newImage)
+void RenderImageResource::setImageResource(ImageResource* newImage)
 {
     ASSERT(m_renderer);
 

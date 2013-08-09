@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/loader/cache/MemoryCache.h"
 
-#include "core/loader/cache/CachedRawResource.h"
-#include "core/loader/cache/MockCachedImageClient.h"
+#include "core/loader/cache/MockImageResourceClient.h"
+#include "core/loader/cache/RawResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "wtf/OwnPtr.h"
@@ -43,9 +43,9 @@ namespace WebCore {
 
 class MemoryCacheTest : public ::testing::Test {
 public:
-    class MockCachedImage : public WebCore::Resource {
+    class MockImageResource : public WebCore::Resource {
     public:
-        MockCachedImage(const ResourceRequest& request, Type type)
+        MockImageResource(const ResourceRequest& request, Type type)
             : Resource(request, type)
         {
         }
@@ -108,7 +108,7 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
     memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
 
     ResourcePtr<Resource> cachedResource =
-        new Resource(ResourceRequest(""), Resource::RawResource);
+        new Resource(ResourceRequest(""), Resource::Raw);
     const char data[5] = "abcd";
     cachedResource->appendData(data, 3);
     // The resource size has to be nonzero for this test to be meaningful, but
@@ -132,13 +132,13 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
 TEST_F(MemoryCacheTest, DecodeCacheOrder)
 {
     memoryCache()->setDelayBeforeLiveDecodedPrune(0);
-    ResourcePtr<MockCachedImage> cachedImageLowPriority =
-        new MockCachedImage(ResourceRequest(""), Resource::RawResource);
-    ResourcePtr<MockCachedImage> cachedImageHighPriority =
-        new MockCachedImage(ResourceRequest(""), Resource::RawResource);
+    ResourcePtr<MockImageResource> cachedImageLowPriority =
+        new MockImageResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<MockImageResource> cachedImageHighPriority =
+        new MockImageResource(ResourceRequest(""), Resource::Raw);
 
-    MockCachedImageClient clientLowPriority;
-    MockCachedImageClient clientHighPriority;
+    MockImageResourceClient clientLowPriority;
+    MockImageResourceClient clientHighPriority;
     cachedImageLowPriority->addClient(&clientLowPriority);
     cachedImageHighPriority->addClient(&clientHighPriority);
 

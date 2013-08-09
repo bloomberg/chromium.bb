@@ -30,7 +30,7 @@
 #include "core/dom/EventNames.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/rendering/RenderImage.h"
 
 using namespace std;
@@ -171,7 +171,7 @@ void HTMLImageElement::attach(const AttachContext& context)
         if (!m_imageLoader.image() && !renderImageResource->cachedImage())
             renderImage->setImageSizeForAltText();
         else
-            renderImageResource->setCachedImage(m_imageLoader.image());
+            renderImageResource->setImageResource(m_imageLoader.image());
 
     }
 }

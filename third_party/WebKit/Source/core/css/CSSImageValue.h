@@ -28,7 +28,7 @@
 namespace WebCore {
 
 class Element;
-class StyleCachedImage;
+class StyleFetchedImage;
 class StyleImage;
 class RenderObject;
 
@@ -38,9 +38,9 @@ public:
     static PassRefPtr<CSSImageValue> create(const String& url, StyleImage* image) { return adoptRef(new CSSImageValue(url, image)); }
     ~CSSImageValue();
 
-    StyleCachedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&);
-    StyleCachedImage* cachedImage(ResourceFetcher* loader) { return cachedImage(loader, ResourceFetcher::defaultResourceOptions()); }
-    // Returns a StyleCachedImage if the image is cached already, otherwise a StylePendingImage.
+    StyleFetchedImage* cachedImage(ResourceFetcher*, const ResourceLoaderOptions&);
+    StyleFetchedImage* cachedImage(ResourceFetcher* loader) { return cachedImage(loader, ResourceFetcher::defaultResourceOptions()); }
+    // Returns a StyleFetchedImage if the image is cached already, otherwise a StylePendingImage.
     StyleImage* cachedOrPendingImage();
 
     const String& url() { return m_url; }

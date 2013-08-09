@@ -28,9 +28,9 @@
 #include "config.h"
 #include "core/rendering/RenderImageResourceStyleImage.h"
 
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/rendering/RenderObject.h"
-#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleFetchedImage.h"
 
 namespace WebCore {
 
@@ -48,8 +48,8 @@ void RenderImageResourceStyleImage::initialize(RenderObject* renderer)
 {
     RenderImageResource::initialize(renderer);
 
-    if (m_styleImage->isCachedImage())
-        m_cachedImage = static_cast<StyleCachedImage*>(m_styleImage.get())->cachedImage();
+    if (m_styleImage->isImageResource())
+        m_cachedImage = static_cast<StyleFetchedImage*>(m_styleImage.get())->cachedImage();
 
     m_styleImage->addClient(m_renderer);
 }

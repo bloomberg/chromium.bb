@@ -23,44 +23,44 @@
     pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef CachedCSSStyleSheet_h
-#define CachedCSSStyleSheet_h
+#ifndef CSSStyleSheetResource_h
+#define CSSStyleSheetResource_h
 
 #include "core/loader/cache/Resource.h"
 
 namespace WebCore {
 
 class ResourceClient;
-    class StyleSheetContents;
-    class TextResourceDecoder;
-    struct CSSParserContext;
+class StyleSheetContents;
+class TextResourceDecoder;
+struct CSSParserContext;
 
-    class CachedCSSStyleSheet : public Resource {
-    public:
-        CachedCSSStyleSheet(const ResourceRequest&, const String& charset);
-        virtual ~CachedCSSStyleSheet();
+class CSSStyleSheetResource : public Resource {
+public:
+    CSSStyleSheetResource(const ResourceRequest&, const String& charset);
+    virtual ~CSSStyleSheetResource();
 
-        const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
+    const String sheetText(bool enforceMIMEType = true, bool* hasValidMIMEType = 0) const;
 
-        virtual void didAddClient(ResourceClient*);
-        virtual void setEncoding(const String&);
-        virtual String encoding() const;
-        virtual void destroyDecodedData() OVERRIDE;
+    virtual void didAddClient(ResourceClient*);
+    virtual void setEncoding(const String&);
+    virtual String encoding() const;
+    virtual void destroyDecodedData() OVERRIDE;
 
-        PassRefPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
-        void saveParsedStyleSheet(PassRefPtr<StyleSheetContents>);
+    PassRefPtr<StyleSheetContents> restoreParsedStyleSheet(const CSSParserContext&);
+    void saveParsedStyleSheet(PassRefPtr<StyleSheetContents>);
 
-    private:
-        bool canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const;
+private:
+    bool canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const;
 
-    protected:
-        virtual void checkNotify();
+protected:
+    virtual void checkNotify();
 
-        RefPtr<TextResourceDecoder> m_decoder;
-        String m_decodedSheetText;
+    RefPtr<TextResourceDecoder> m_decoder;
+    String m_decodedSheetText;
 
-        RefPtr<StyleSheetContents> m_parsedStyleSheetCache;
-    };
+    RefPtr<StyleSheetContents> m_parsedStyleSheetCache;
+};
 
 }
 

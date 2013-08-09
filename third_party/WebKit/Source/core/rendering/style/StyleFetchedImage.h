@@ -21,22 +21,22 @@
  *
  */
 
-#ifndef StyleCachedImage_h
-#define StyleCachedImage_h
+#ifndef StyleFetchedImage_h
+#define StyleFetchedImage_h
 
-#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/ImageResourceClient.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {
 
-class CachedImage;
+class ImageResource;
 
-class StyleCachedImage : public StyleImage, private CachedImageClient {
+class StyleFetchedImage : public StyleImage, private ImageResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<StyleCachedImage> create(CachedImage* image) { return adoptRef(new StyleCachedImage(image)); }
-    virtual ~StyleCachedImage();
+    static PassRefPtr<StyleFetchedImage> create(ImageResource* image) { return adoptRef(new StyleFetchedImage(image)); }
+    virtual ~StyleFetchedImage();
 
     virtual WrappedImagePtr data() const { return m_image.get(); }
 
@@ -55,12 +55,12 @@ public:
     virtual void removeClient(RenderObject*);
     virtual PassRefPtr<Image> image(RenderObject*, const IntSize&) const;
     virtual bool knownToBeOpaque(const RenderObject*) const OVERRIDE;
-    virtual CachedImage* cachedImage() const OVERRIDE { return m_image.get(); }
+    virtual ImageResource* cachedImage() const OVERRIDE { return m_image.get(); }
 
 private:
-    explicit StyleCachedImage(CachedImage*);
+    explicit StyleFetchedImage(ImageResource*);
 
-    ResourcePtr<CachedImage> m_image;
+    ResourcePtr<ImageResource> m_image;
 };
 
 }

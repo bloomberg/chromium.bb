@@ -35,7 +35,7 @@
 #include "core/loader/NavigationAction.h"
 #include "core/loader/ResourceLoaderOptions.h"
 #include "core/loader/SubstituteData.h"
-#include "core/loader/cache/CachedRawResource.h"
+#include "core/loader/cache/RawResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
@@ -65,7 +65,7 @@ namespace WebCore {
 
     typedef HashSet<RefPtr<ResourceLoader> > ResourceLoaderSet;
 
-    class DocumentLoader : public RefCounted<DocumentLoader>, private CachedRawResourceClient {
+    class DocumentLoader : public RefCounted<DocumentLoader>, private RawResourceClient {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static PassRefPtr<DocumentLoader> create(const ResourceRequest& request, const SubstituteData& data)
@@ -221,7 +221,7 @@ namespace WebCore {
         Frame* m_frame;
         RefPtr<ResourceFetcher> m_fetcher;
 
-        ResourcePtr<CachedRawResource> m_mainResource;
+        ResourcePtr<RawResource> m_mainResource;
         ResourceLoaderSet m_resourceLoaders;
         ResourceLoaderSet m_multipartResourceLoaders;
 

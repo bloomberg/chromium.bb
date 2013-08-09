@@ -29,7 +29,7 @@
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 
 namespace WebCore {
 
@@ -61,7 +61,7 @@ String HTMLImageLoader::sourceURI(const AtomicString& attr) const
 
 void HTMLImageLoader::notifyFinished(Resource*)
 {
-    CachedImage* cachedImage = image();
+    ImageResource* cachedImage = image();
 
     RefPtr<Element> element = this->element();
     ImageLoader::notifyFinished(cachedImage);

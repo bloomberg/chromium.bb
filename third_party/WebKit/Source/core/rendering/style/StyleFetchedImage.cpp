@@ -22,91 +22,91 @@
  */
 
 #include "config.h"
-#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleFetchedImage.h"
 
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 
-StyleCachedImage::StyleCachedImage(CachedImage* image)
+StyleFetchedImage::StyleFetchedImage(ImageResource* image)
     : m_image(image)
 {
-    m_isCachedImage = true;
+    m_isImageResource = true;
     m_image->addClient(this);
 }
 
-StyleCachedImage::~StyleCachedImage()
+StyleFetchedImage::~StyleFetchedImage()
 {
     m_image->removeClient(this);
 }
 
-PassRefPtr<CSSValue> StyleCachedImage::cssValue() const
+PassRefPtr<CSSValue> StyleFetchedImage::cssValue() const
 {
     return CSSPrimitiveValue::create(m_image->url().string(), CSSPrimitiveValue::CSS_URI);
 }
 
-bool StyleCachedImage::canRender(const RenderObject* renderer, float multiplier) const
+bool StyleFetchedImage::canRender(const RenderObject* renderer, float multiplier) const
 {
     return m_image->canRender(renderer, multiplier);
 }
 
-bool StyleCachedImage::isLoaded() const
+bool StyleFetchedImage::isLoaded() const
 {
     return m_image->isLoaded();
 }
 
-bool StyleCachedImage::errorOccurred() const
+bool StyleFetchedImage::errorOccurred() const
 {
     return m_image->errorOccurred();
 }
 
-LayoutSize StyleCachedImage::imageSize(const RenderObject* renderer, float multiplier) const
+LayoutSize StyleFetchedImage::imageSize(const RenderObject* renderer, float multiplier) const
 {
     return m_image->imageSizeForRenderer(renderer, multiplier);
 }
 
-bool StyleCachedImage::imageHasRelativeWidth() const
+bool StyleFetchedImage::imageHasRelativeWidth() const
 {
     return m_image->imageHasRelativeWidth();
 }
 
-bool StyleCachedImage::imageHasRelativeHeight() const
+bool StyleFetchedImage::imageHasRelativeHeight() const
 {
     return m_image->imageHasRelativeHeight();
 }
 
-void StyleCachedImage::computeIntrinsicDimensions(const RenderObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void StyleFetchedImage::computeIntrinsicDimensions(const RenderObject*, Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
 {
     m_image->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
 }
 
-bool StyleCachedImage::usesImageContainerSize() const
+bool StyleFetchedImage::usesImageContainerSize() const
 {
     return m_image->usesImageContainerSize();
 }
 
-void StyleCachedImage::setContainerSizeForRenderer(const RenderObject* renderer, const IntSize& imageContainerSize, float imageContainerZoomFactor)
+void StyleFetchedImage::setContainerSizeForRenderer(const RenderObject* renderer, const IntSize& imageContainerSize, float imageContainerZoomFactor)
 {
     m_image->setContainerSizeForRenderer(renderer, imageContainerSize, imageContainerZoomFactor);
 }
 
-void StyleCachedImage::addClient(RenderObject* renderer)
+void StyleFetchedImage::addClient(RenderObject* renderer)
 {
     m_image->addClient(renderer);
 }
 
-void StyleCachedImage::removeClient(RenderObject* renderer)
+void StyleFetchedImage::removeClient(RenderObject* renderer)
 {
     m_image->removeClient(renderer);
 }
 
-PassRefPtr<Image> StyleCachedImage::image(RenderObject* renderer, const IntSize&) const
+PassRefPtr<Image> StyleFetchedImage::image(RenderObject* renderer, const IntSize&) const
 {
     return m_image->imageForRenderer(renderer);
 }
 
-bool StyleCachedImage::knownToBeOpaque(const RenderObject* renderer) const
+bool StyleFetchedImage::knownToBeOpaque(const RenderObject* renderer) const
 {
     return m_image->currentFrameKnownToBeOpaque(renderer);
 }

@@ -23,15 +23,15 @@
 #define ProcessingInstruction_h
 
 #include "core/dom/Node.h"
-#include "core/loader/cache/CachedStyleSheetClient.h"
 #include "core/loader/cache/ResourcePtr.h"
+#include "core/loader/cache/StyleSheetResourceClient.h"
 
 namespace WebCore {
 
 class StyleSheet;
 class CSSStyleSheet;
 
-class ProcessingInstruction FINAL : public Node, private CachedStyleSheetClient {
+class ProcessingInstruction FINAL : public Node, private StyleSheetResourceClient {
 public:
     static PassRefPtr<ProcessingInstruction> create(Document*, const String& target, const String& data);
     virtual ~ProcessingInstruction();
@@ -68,7 +68,7 @@ private:
     virtual void removedFrom(ContainerNode*) OVERRIDE;
 
     void checkStyleSheet();
-    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet*);
+    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*);
     virtual void setXSLStyleSheet(const String& href, const KURL& baseURL, const String& sheet);
 
     virtual bool sheetLoaded();
@@ -82,7 +82,7 @@ private:
     String m_localHref;
     String m_title;
     String m_media;
-    ResourcePtr<Resource> m_cachedSheet;
+    ResourcePtr<Resource> m_resource;
     RefPtr<StyleSheet> m_sheet;
     bool m_loading;
     bool m_alternate;

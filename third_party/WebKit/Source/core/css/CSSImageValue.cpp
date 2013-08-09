@@ -24,10 +24,10 @@
 #include "FetchInitiatorTypeNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
-#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleFetchedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 
 namespace WebCore {
@@ -59,7 +59,7 @@ StyleImage* CSSImageValue::cachedOrPendingImage()
     return m_image.get();
 }
 
-StyleCachedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const ResourceLoaderOptions& options)
+StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const ResourceLoaderOptions& options)
 {
     ASSERT(loader);
 
@@ -67,18 +67,18 @@ StyleCachedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const Reso
         m_accessedImage = true;
 
         FetchRequest request(ResourceRequest(loader->document()->completeURL(m_url)), m_initiatorName.isEmpty() ? FetchInitiatorTypeNames::css : m_initiatorName, options);
-        if (ResourcePtr<CachedImage> cachedImage = loader->requestImage(request))
-            m_image = StyleCachedImage::create(cachedImage.get());
+        if (ResourcePtr<ImageResource> cachedImage = loader->requestImage(request))
+            m_image = StyleFetchedImage::create(cachedImage.get());
     }
 
-    return (m_image && m_image->isCachedImage()) ? static_cast<StyleCachedImage*>(m_image.get()) : 0;
+    return (m_image && m_image->isImageResource()) ? static_cast<StyleFetchedImage*>(m_image.get()) : 0;
 }
 
 bool CSSImageValue::hasFailedOrCanceledSubresources() const
 {
-    if (!m_image || !m_image->isCachedImage())
+    if (!m_image || !m_image->isImageResource())
         return false;
-    Resource* cachedResource = static_cast<StyleCachedImage*>(m_image.get())->cachedImage();
+    Resource* cachedResource = static_cast<StyleFetchedImage*>(m_image.get())->cachedImage();
     if (!cachedResource)
         return true;
     return cachedResource->loadFailedOrCanceled();

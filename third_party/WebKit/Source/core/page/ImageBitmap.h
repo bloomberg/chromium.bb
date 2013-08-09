@@ -61,7 +61,7 @@ private:
     IntRect m_cropRect;
 
     // The offset by which the desired Image is stored internally.
-    // ImageBitmaps constructed from HTMLImageElements reference the entire CachedImage and may have a non-zero bitmap offset.
+    // ImageBitmaps constructed from HTMLImageElements reference the entire ImageResource and may have a non-zero bitmap offset.
     // ImageBitmaps not constructed from HTMLImageElements always pre-crop and store the image at (0, 0).
     IntPoint m_bitmapOffset;
 

@@ -190,11 +190,11 @@ private:
         if (match(m_tagImpl, scriptTag))
             return Resource::Script;
         if (match(m_tagImpl, imgTag) || (match(m_tagImpl, inputTag) && m_inputIsImage))
-            return Resource::ImageResource;
+            return Resource::Image;
         if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet)
             return Resource::CSSStyleSheet;
         ASSERT_NOT_REACHED();
-        return Resource::RawResource;
+        return Resource::Raw;
     }
 
     bool shouldPreload()

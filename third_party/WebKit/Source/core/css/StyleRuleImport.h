@@ -23,12 +23,12 @@
 #define StyleRuleImport_h
 
 #include "core/css/StyleRule.h"
-#include "core/loader/cache/CachedStyleSheetClient.h"
 #include "core/loader/cache/ResourcePtr.h"
+#include "core/loader/cache/StyleSheetResourceClient.h"
 
 namespace WebCore {
 
-class CachedCSSStyleSheet;
+class CSSStyleSheetResource;
 class MediaQuerySet;
 class StyleSheetContents;
 
@@ -52,13 +52,13 @@ public:
     void requestStyleSheet();
 
 private:
-    // NOTE: We put the CachedStyleSheetClient in a member instead of inheriting from it
+    // NOTE: We put the StyleSheetResourceClient in a member instead of inheriting from it
     // to avoid adding a vptr to StyleRuleImport.
-    class ImportedStyleSheetClient : public CachedStyleSheetClient {
+    class ImportedStyleSheetClient : public StyleSheetResourceClient {
     public:
         ImportedStyleSheetClient(StyleRuleImport* ownerRule) : m_ownerRule(ownerRule) { }
         virtual ~ImportedStyleSheetClient() { }
-        virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet* sheet)
+        virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet)
         {
             m_ownerRule->setCSSStyleSheet(href, baseURL, charset, sheet);
         }
@@ -66,7 +66,7 @@ private:
         StyleRuleImport* m_ownerRule;
     };
 
-    void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet*);
+    void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*);
     friend class ImportedStyleSheetClient;
 
     StyleRuleImport(const String& href, PassRefPtr<MediaQuerySet>);
@@ -77,7 +77,7 @@ private:
     String m_strHref;
     RefPtr<MediaQuerySet> m_mediaQueries;
     RefPtr<StyleSheetContents> m_styleSheet;
-    ResourcePtr<CachedCSSStyleSheet> m_cachedSheet;
+    ResourcePtr<CSSStyleSheetResource> m_resource;
     bool m_loading;
 };
 

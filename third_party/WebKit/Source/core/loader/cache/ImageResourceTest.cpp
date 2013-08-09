@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
-#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/ImageResourceClient.h"
 #include "core/loader/cache/MemoryCache.h"
-#include "core/loader/cache/MockCachedImageClient.h"
+#include "core/loader/cache/MockImageResourceClient.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/page/Frame.h"
@@ -66,12 +66,12 @@ void runPendingTasks()
     WebKit::Platform::current()->currentThread()->enterRunLoop();
 }
 
-TEST(CachedImageTest, MultipartImage)
+TEST(ImageResourceTest, MultipartImage)
 {
-    ResourcePtr<CachedImage> cachedImage = new CachedImage(ResourceRequest());
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest());
     cachedImage->setLoading(true);
 
-    MockCachedImageClient client;
+    MockImageResourceClient client;
     cachedImage->addClient(&client);
 
     // Send the multipart response. No image or data buffer is created.
@@ -110,7 +110,7 @@ TEST(CachedImageTest, MultipartImage)
     ASSERT_TRUE(client.notifyFinishedCalled());
 }
 
-TEST(CachedImageTest, CancelOnDetach)
+TEST(ImageResourceTest, CancelOnDetach)
 {
     KURL testURL(ParsedURLString, "http://www.test.com/cancelTest.html");
 
@@ -133,11 +133,11 @@ TEST(CachedImageTest, CancelOnDetach)
     documentLoader->setFrame(frame.get());
 
     // Emulate starting a real load.
-    ResourcePtr<CachedImage> cachedImage = new CachedImage(ResourceRequest(testURL));
+    ResourcePtr<ImageResource> cachedImage = new ImageResource(ResourceRequest(testURL));
     cachedImage->load(documentLoader->fetcher(), ResourceLoaderOptions());
     memoryCache()->add(cachedImage.get());
 
-    MockCachedImageClient client;
+    MockImageResourceClient client;
     cachedImage->addClient(&client);
     EXPECT_EQ(Resource::Pending, cachedImage->status());
 

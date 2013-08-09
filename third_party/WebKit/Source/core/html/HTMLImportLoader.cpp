@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url, const ResourcePtr<CachedRawResource>& resource)
+HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url, const ResourcePtr<RawResource>& resource)
     : m_parent(parent)
     , m_state(StateLoading)
     , m_resource(resource)

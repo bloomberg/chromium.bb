@@ -332,7 +332,7 @@ bool SVGImage::dataChanged(bool allDataReceived)
         pageClients.chromeClient = m_chromeClient.get();
 
         // FIXME: If this SVG ends up loading itself, we might leak the world.
-        // The Cache code does not know about CachedImages holding Frames and
+        // The Cache code does not know about ImageResources holding Frames and
         // won't know to break the cycle.
         // This will become an issue when SVGImage will be able to load other
         // SVGImage objects, but we're safe now, because SVGImage can only be

@@ -199,7 +199,7 @@ void SVGImageElement::attach(const AttachContext& context)
         if (imageObj->imageResource()->hasImage())
             return;
 
-        imageObj->imageResource()->setCachedImage(m_imageLoader.image());
+        imageObj->imageResource()->setImageResource(m_imageLoader.image());
     }
 }
 

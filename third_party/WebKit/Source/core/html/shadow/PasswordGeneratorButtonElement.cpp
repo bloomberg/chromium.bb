@@ -39,7 +39,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/HTMLShadowElement.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -112,9 +112,9 @@ void PasswordGeneratorButtonElement::updateImage()
     if (!renderer() || !renderer()->isImage())
         return;
     RenderImageResource* resource = toRenderImage(renderer())->imageResource();
-    CachedImage* image = m_isInHoverState ? imageForHoverState() : imageForNormalState();
+    ImageResource* image = m_isInHoverState ? imageForHoverState() : imageForNormalState();
     ASSERT(image);
-    resource->setCachedImage(image);
+    resource->setImageResource(image);
 }
 
 PassRefPtr<RenderStyle> PasswordGeneratorButtonElement::customStyleForRenderer()
@@ -142,20 +142,20 @@ void PasswordGeneratorButtonElement::attach(const AttachContext& context)
     updateImage();
 }
 
-CachedImage* PasswordGeneratorButtonElement::imageForNormalState()
+ImageResource* PasswordGeneratorButtonElement::imageForNormalState()
 {
     if (!m_cachedImageForNormalState) {
         RefPtr<Image> image = Image::loadPlatformResource("generatePassword");
-        m_cachedImageForNormalState = new CachedImage(image.get());
+        m_cachedImageForNormalState = new ImageResource(image.get());
     }
     return m_cachedImageForNormalState.get();
 }
 
-CachedImage* PasswordGeneratorButtonElement::imageForHoverState()
+ImageResource* PasswordGeneratorButtonElement::imageForHoverState()
 {
     if (!m_cachedImageForHoverState) {
         RefPtr<Image> image = Image::loadPlatformResource("generatePasswordHover");
-        m_cachedImageForHoverState = new CachedImage(image.get());
+        m_cachedImageForHoverState = new ImageResource(image.get());
     }
     return m_cachedImageForHoverState.get();
 }

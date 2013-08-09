@@ -30,7 +30,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/canvas/CanvasPattern.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
@@ -60,7 +60,7 @@ bool CanvasRenderingContext::wouldTaintOrigin(const HTMLImageElement* image)
     if (!image || !canvas()->originClean())
         return false;
 
-    CachedImage* cachedImage = image->cachedImage();
+    ImageResource* cachedImage = image->cachedImage();
     if (!cachedImage->image()->hasSingleSecurityOrigin())
         return true;
 

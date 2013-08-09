@@ -31,26 +31,26 @@
 #include "bindings/v8/V8RecursionScope.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/loader/CachedMetadata.h"
-#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/ScriptResource.h"
 #include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 
-PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::String> code, CachedScript* cachedScript)
+PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::String> code, ScriptResource* resource)
 {
     TRACE_EVENT0("v8", "v8.compile");
     TRACE_EVENT_SCOPED_SAMPLING_STATE("V8", "Compile");
     // A pseudo-randomly chosen ID used to store and retrieve V8 ScriptData from
-    // the CachedScript. If the format changes, this ID should be changed too.
+    // the ScriptResource. If the format changes, this ID should be changed too.
     static const unsigned dataTypeID = 0xECC13BD7;
 
     // Very small scripts are not worth the effort to preparse.
     static const int minPreparseLength = 1024;
 
-    if (!cachedScript || code->Length() < minPreparseLength)
+    if (!resource || code->Length() < minPreparseLength)
         return nullptr;
 
-    CachedMetadata* cachedMetadata = cachedScript->cachedMetadata(dataTypeID);
+    CachedMetadata* cachedMetadata = resource->cachedMetadata(dataTypeID);
     if (cachedMetadata)
         return adoptPtr(v8::ScriptData::New(cachedMetadata->data(), cachedMetadata->size()));
 
@@ -58,7 +58,7 @@ PassOwnPtr<v8::ScriptData> V8ScriptRunner::precompileScript(v8::Handle<v8::Strin
     if (!scriptData)
         return nullptr;
 
-    cachedScript->setCachedMetadata(dataTypeID, scriptData->Data(), scriptData->Length());
+    resource->setCachedMetadata(dataTypeID, scriptData->Data(), scriptData->Length());
 
     return scriptData.release();
 }

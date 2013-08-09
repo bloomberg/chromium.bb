@@ -39,8 +39,8 @@
 #include "core/loader/DocumentThreadableLoaderClient.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/FetchRequest.h"
+#include "core/loader/cache/RawResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
@@ -177,7 +177,7 @@ void DocumentThreadableLoader::clearResource()
     // which could lead to calling Resource::removeClient() multiple times for
     // this DocumentThreadableLoader. Save off a copy of m_resource and clear it to
     // prevent the reentrancy.
-    if (ResourcePtr<CachedRawResource> resource = m_resource) {
+    if (ResourcePtr<RawResource> resource = m_resource) {
         m_resource = 0;
         resource->removeClient(this);
     }

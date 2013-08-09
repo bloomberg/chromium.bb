@@ -26,7 +26,7 @@
 
 namespace WebCore {
 
-class CachedCSSStyleSheet;
+class CSSStyleSheetResource;
 class MediaList;
 class MediaQuerySet;
 class StyleRuleImport;

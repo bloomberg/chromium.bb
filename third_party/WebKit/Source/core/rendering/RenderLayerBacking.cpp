@@ -34,7 +34,7 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Chrome.h"
 #include "core/page/FrameView.h"
 #include "core/page/Settings.h"
@@ -1344,7 +1344,7 @@ bool RenderLayerBacking::isDirectlyCompositedImage() const
         return false;
 
     RenderImage* imageRenderer = toRenderImage(renderObject);
-    if (CachedImage* cachedImage = imageRenderer->cachedImage()) {
+    if (ImageResource* cachedImage = imageRenderer->cachedImage()) {
         if (!cachedImage->hasImage())
             return false;
 
@@ -1382,7 +1382,7 @@ void RenderLayerBacking::updateImageContents()
     ASSERT(renderer()->isImage());
     RenderImage* imageRenderer = toRenderImage(renderer());
 
-    CachedImage* cachedImage = imageRenderer->cachedImage();
+    ImageResource* cachedImage = imageRenderer->cachedImage();
     if (!cachedImage)
         return;
 

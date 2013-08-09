@@ -35,7 +35,7 @@
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/ScriptResource.h"
 #include "core/page/Frame.h"
 #include "core/platform/NotImplemented.h"
 
@@ -55,12 +55,12 @@ HTMLScriptRunner::HTMLScriptRunner(Document* document, HTMLScriptRunnerHost* hos
 HTMLScriptRunner::~HTMLScriptRunner()
 {
     // FIXME: Should we be passed a "done loading/parsing" callback sooner than destruction?
-    if (m_parserBlockingScript.cachedScript() && m_parserBlockingScript.watchingForLoad())
+    if (m_parserBlockingScript.resource() && m_parserBlockingScript.watchingForLoad())
         stopWatchingForLoad(m_parserBlockingScript);
 
     while (!m_scriptsToExecuteAfterParsing.isEmpty()) {
         PendingScript pendingScript = m_scriptsToExecuteAfterParsing.takeFirst();
-        if (pendingScript.cachedScript() && pendingScript.watchingForLoad())
+        if (pendingScript.resource() && pendingScript.watchingForLoad())
             stopWatchingForLoad(pendingScript);
     }
 }
@@ -86,10 +86,10 @@ inline PassRefPtr<Event> createScriptLoadEvent()
 
 ScriptSourceCode HTMLScriptRunner::sourceFromPendingScript(const PendingScript& script, bool& errorOccurred) const
 {
-    if (script.cachedScript()) {
-        errorOccurred = script.cachedScript()->errorOccurred();
-        ASSERT(script.cachedScript()->isLoaded());
-        return ScriptSourceCode(script.cachedScript());
+    if (script.resource()) {
+        errorOccurred = script.resource()->errorOccurred();
+        ASSERT(script.resource()->isLoaded());
+        return ScriptSourceCode(script.resource());
     }
     errorOccurred = false;
     return ScriptSourceCode(script.element()->textContent(), documentURLForScriptExecution(m_document), script.startingPosition());
@@ -100,7 +100,7 @@ bool HTMLScriptRunner::isPendingScriptReady(const PendingScript& script)
     m_hasScriptsWaitingForResources = !m_document->haveStylesheetsAndImportsLoaded();
     if (m_hasScriptsWaitingForResources)
         return false;
-    if (script.cachedScript() && !script.cachedScript()->isLoaded())
+    if (script.resource() && !script.resource()->isLoaded())
         return false;
     return true;
 }
@@ -122,7 +122,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
     ScriptSourceCode sourceCode = sourceFromPendingScript(pendingScript, errorOccurred);
 
     // Stop watching loads before executeScript to prevent recursion if the script reloads itself.
-    if (pendingScript.cachedScript() && pendingScript.watchingForLoad())
+    if (pendingScript.resource() && pendingScript.watchingForLoad())
         stopWatchingForLoad(pendingScript);
 
     if (!isExecutingScript())
@@ -147,14 +147,14 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
 void HTMLScriptRunner::watchForLoad(PendingScript& pendingScript)
 {
     ASSERT(!pendingScript.watchingForLoad());
-    m_host->watchForLoad(pendingScript.cachedScript());
+    m_host->watchForLoad(pendingScript.resource());
     pendingScript.setWatchingForLoad(true);
 }
 
 void HTMLScriptRunner::stopWatchingForLoad(PendingScript& pendingScript)
 {
     ASSERT(pendingScript.watchingForLoad());
-    m_host->stopWatchingForLoad(pendingScript.cachedScript());
+    m_host->stopWatchingForLoad(pendingScript.resource());
     pendingScript.setWatchingForLoad(false);
 }
 
@@ -191,12 +191,12 @@ void HTMLScriptRunner::executeParsingBlockingScripts()
         executeParsingBlockingScript();
 }
 
-void HTMLScriptRunner::executeScriptsWaitingForLoad(Resource* cachedScript)
+void HTMLScriptRunner::executeScriptsWaitingForLoad(Resource* resource)
 {
     ASSERT(!isExecutingScript());
     ASSERT(hasParserBlockingScript());
-    ASSERT_UNUSED(cachedScript, m_parserBlockingScript.cachedScript() == cachedScript);
-    ASSERT(m_parserBlockingScript.cachedScript()->isLoaded());
+    ASSERT_UNUSED(resource, m_parserBlockingScript.resource() == resource);
+    ASSERT(m_parserBlockingScript.resource()->isLoaded());
     executeParsingBlockingScripts();
 }
 
@@ -216,8 +216,8 @@ bool HTMLScriptRunner::executeScriptsWaitingForParsing()
     while (!m_scriptsToExecuteAfterParsing.isEmpty()) {
         ASSERT(!isExecutingScript());
         ASSERT(!hasParserBlockingScript());
-        ASSERT(m_scriptsToExecuteAfterParsing.first().cachedScript());
-        if (!m_scriptsToExecuteAfterParsing.first().cachedScript()->isLoaded()) {
+        ASSERT(m_scriptsToExecuteAfterParsing.first().resource());
+        if (!m_scriptsToExecuteAfterParsing.first().resource()->isLoaded()) {
             watchForLoad(m_scriptsToExecuteAfterParsing.first());
             return false;
         }
@@ -235,12 +235,12 @@ void HTMLScriptRunner::requestParsingBlockingScript(Element* element)
     if (!requestPendingScript(m_parserBlockingScript, element))
         return;
 
-    ASSERT(m_parserBlockingScript.cachedScript());
+    ASSERT(m_parserBlockingScript.resource());
 
-    // We only care about a load callback if cachedScript is not already
+    // We only care about a load callback if resource is not already
     // in the cache. Callers will attempt to run the m_parserBlockingScript
     // if possible before returning control to the parser.
-    if (!m_parserBlockingScript.cachedScript()->isLoaded())
+    if (!m_parserBlockingScript.resource()->isLoaded())
         watchForLoad(m_parserBlockingScript);
 }
 
@@ -250,7 +250,7 @@ void HTMLScriptRunner::requestDeferredScript(Element* element)
     if (!requestPendingScript(pendingScript, element))
         return;
 
-    ASSERT(pendingScript.cachedScript());
+    ASSERT(pendingScript.resource());
     m_scriptsToExecuteAfterParsing.append(pendingScript);
 }
 
@@ -259,12 +259,12 @@ bool HTMLScriptRunner::requestPendingScript(PendingScript& pendingScript, Elemen
     ASSERT(!pendingScript.element());
     pendingScript.setElement(script);
     // This should correctly return 0 for empty or invalid srcValues.
-    CachedScript* cachedScript = toScriptLoaderIfPossible(script)->cachedScript().get();
-    if (!cachedScript) {
+    ScriptResource* resource = toScriptLoaderIfPossible(script)->resource().get();
+    if (!resource) {
         notImplemented(); // Dispatch error event.
         return false;
     }
-    pendingScript.setCachedScript(cachedScript);
+    pendingScript.setScriptResource(resource);
     return true;
 }
 

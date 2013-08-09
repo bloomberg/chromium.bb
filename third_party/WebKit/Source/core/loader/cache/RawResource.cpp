@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/loader/cache/CachedRawResource.h"
+#include "core/loader/cache/RawResource.h"
 
 #include "core/loader/ResourceLoader.h"
 #include "core/loader/cache/ResourceClient.h"
@@ -34,30 +34,30 @@
 
 namespace WebCore {
 
-CachedRawResource::CachedRawResource(const ResourceRequest& resourceRequest, Type type)
+RawResource::RawResource(const ResourceRequest& resourceRequest, Type type)
     : Resource(resourceRequest, type)
 {
 }
 
-void CachedRawResource::appendData(const char* data, int length)
+void RawResource::appendData(const char* data, int length)
 {
     Resource::appendData(data, length);
 
-    ResourcePtr<CachedRawResource> protect(this);
-    ResourceClientWalker<CachedRawResourceClient> w(m_clients);
-    while (CachedRawResourceClient* c = w.next())
+    ResourcePtr<RawResource> protect(this);
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
         c->dataReceived(this, data, length);
 }
 
-void CachedRawResource::didAddClient(ResourceClient* c)
+void RawResource::didAddClient(ResourceClient* c)
 {
     if (!hasClient(c))
         return;
     // The calls to the client can result in events running, potentially causing
     // this resource to be evicted from the cache and all clients to be removed,
     // so a protector is necessary.
-    ResourcePtr<CachedRawResource> protect(this);
-    CachedRawResourceClient* client = static_cast<CachedRawResourceClient*>(c);
+    ResourcePtr<RawResource> protect(this);
+    RawResourceClient* client = static_cast<RawResourceClient*>(c);
     size_t redirectCount = m_redirectChain.size();
     for (size_t i = 0; i < redirectCount; i++) {
         RedirectPair redirect = m_redirectChain[i];
@@ -75,52 +75,52 @@ void CachedRawResource::didAddClient(ResourceClient* c)
     if (m_data)
         client->dataReceived(this, m_data->data(), m_data->size());
     if (!hasClient(c))
-       return;
+        return;
     Resource::didAddClient(client);
 }
 
-void CachedRawResource::willSendRequest(ResourceRequest& request, const ResourceResponse& response)
+void RawResource::willSendRequest(ResourceRequest& request, const ResourceResponse& response)
 {
-    ResourcePtr<CachedRawResource> protect(this);
+    ResourcePtr<RawResource> protect(this);
     if (!response.isNull()) {
-        ResourceClientWalker<CachedRawResourceClient> w(m_clients);
-        while (CachedRawResourceClient* c = w.next())
+        ResourceClientWalker<RawResourceClient> w(m_clients);
+        while (RawResourceClient* c = w.next())
             c->redirectReceived(this, request, response);
         m_redirectChain.append(RedirectPair(request, response));
     }
     Resource::willSendRequest(request, response);
 }
 
-void CachedRawResource::responseReceived(const ResourceResponse& response)
+void RawResource::responseReceived(const ResourceResponse& response)
 {
-    ResourcePtr<CachedRawResource> protect(this);
+    ResourcePtr<RawResource> protect(this);
     Resource::responseReceived(response);
-    ResourceClientWalker<CachedRawResourceClient> w(m_clients);
-    while (CachedRawResourceClient* c = w.next())
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
         c->responseReceived(this, m_response);
 }
 
-void CachedRawResource::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
+void RawResource::didSendData(unsigned long long bytesSent, unsigned long long totalBytesToBeSent)
 {
-    ResourceClientWalker<CachedRawResourceClient> w(m_clients);
-    while (CachedRawResourceClient* c = w.next())
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
         c->dataSent(this, bytesSent, totalBytesToBeSent);
 }
 
-void CachedRawResource::didDownloadData(int dataLength)
+void RawResource::didDownloadData(int dataLength)
 {
-    ResourceClientWalker<CachedRawResourceClient> w(m_clients);
-    while (CachedRawResourceClient* c = w.next())
+    ResourceClientWalker<RawResourceClient> w(m_clients);
+    while (RawResourceClient* c = w.next())
         c->dataDownloaded(this, dataLength);
 }
 
-void CachedRawResource::setDefersLoading(bool defers)
+void RawResource::setDefersLoading(bool defers)
 {
     if (m_loader)
         m_loader->setDefersLoading(defers);
 }
 
-void CachedRawResource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
+void RawResource::setDataBufferingPolicy(DataBufferingPolicy dataBufferingPolicy)
 {
     m_options.dataBufferingPolicy = dataBufferingPolicy;
     clear();
@@ -144,7 +144,7 @@ static bool shouldIgnoreHeaderForCacheReuse(AtomicString headerName)
     return m_headers.contains(headerName);
 }
 
-bool CachedRawResource::canReuse(const ResourceRequest& newRequest) const
+bool RawResource::canReuse(const ResourceRequest& newRequest) const
 {
     if (m_options.dataBufferingPolicy == DoNotBufferData)
         return false;
@@ -187,7 +187,7 @@ bool CachedRawResource::canReuse(const ResourceRequest& newRequest) const
     return true;
 }
 
-void CachedRawResource::clear()
+void RawResource::clear()
 {
     m_data.clear();
     setEncodedSize(0);

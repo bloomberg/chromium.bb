@@ -25,12 +25,12 @@
 */
 
 #include "config.h"
-#include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CSSStyleSheetResource.h"
 
 #include "core/css/StyleSheetContents.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedStyleSheetClient.h"
 #include "core/loader/cache/ResourceClientWalker.h"
+#include "core/loader/cache/StyleSheetResourceClient.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "wtf/CurrentTime.h"
@@ -38,7 +38,7 @@
 
 namespace WebCore {
 
-CachedCSSStyleSheet::CachedCSSStyleSheet(const ResourceRequest& resourceRequest, const String& charset)
+CSSStyleSheetResource::CSSStyleSheetResource(const ResourceRequest& resourceRequest, const String& charset)
     : Resource(resourceRequest, CSSStyleSheet)
     , m_decoder(TextResourceDecoder::create("text/css", charset))
 {
@@ -49,35 +49,35 @@ CachedCSSStyleSheet::CachedCSSStyleSheet(const ResourceRequest& resourceRequest,
     setAccept(acceptCSS);
 }
 
-CachedCSSStyleSheet::~CachedCSSStyleSheet()
+CSSStyleSheetResource::~CSSStyleSheetResource()
 {
     if (m_parsedStyleSheetCache)
         m_parsedStyleSheetCache->removedFromMemoryCache();
 }
 
-void CachedCSSStyleSheet::didAddClient(ResourceClient* c)
+void CSSStyleSheetResource::didAddClient(ResourceClient* c)
 {
-    ASSERT(c->resourceClientType() == CachedStyleSheetClient::expectedType());
+    ASSERT(c->resourceClientType() == StyleSheetResourceClient::expectedType());
     // Resource::didAddClient() must be before setCSSStyleSheet(),
     // because setCSSStyleSheet() may cause scripts to be executed, which could destroy 'c' if it is an instance of HTMLLinkElement.
     // see the comment of HTMLLinkElement::setCSSStyleSheet.
     Resource::didAddClient(c);
 
     if (!isLoading())
-        static_cast<CachedStyleSheetClient*>(c)->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
+        static_cast<StyleSheetResourceClient*>(c)->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
 }
 
-void CachedCSSStyleSheet::setEncoding(const String& chs)
+void CSSStyleSheetResource::setEncoding(const String& chs)
 {
     m_decoder->setEncoding(chs, TextResourceDecoder::EncodingFromHTTPHeader);
 }
 
-String CachedCSSStyleSheet::encoding() const
+String CSSStyleSheetResource::encoding() const
 {
     return m_decoder->encoding().name();
 }
 
-const String CachedCSSStyleSheet::sheetText(bool enforceMIMEType, bool* hasValidMIMEType) const
+const String CSSStyleSheetResource::sheetText(bool enforceMIMEType, bool* hasValidMIMEType) const
 {
     ASSERT(!isPurgeable());
 
@@ -93,7 +93,7 @@ const String CachedCSSStyleSheet::sheetText(bool enforceMIMEType, bool* hasValid
     return sheetText;
 }
 
-void CachedCSSStyleSheet::checkNotify()
+void CSSStyleSheetResource::checkNotify()
 {
     // Decode the data to find out the encoding and keep the sheet text around during checkNotify()
     if (m_data) {
@@ -101,14 +101,14 @@ void CachedCSSStyleSheet::checkNotify()
         m_decodedSheetText.append(m_decoder->flush());
     }
 
-    ResourceClientWalker<CachedStyleSheetClient> w(m_clients);
-    while (CachedStyleSheetClient* c = w.next())
+    ResourceClientWalker<StyleSheetResourceClient> w(m_clients);
+    while (StyleSheetResourceClient* c = w.next())
         c->setCSSStyleSheet(m_resourceRequest.url(), m_response.url(), m_decoder->encoding().name(), this);
     // Clear the decoded text as it is unlikely to be needed immediately again and is cheap to regenerate.
     m_decodedSheetText = String();
 }
 
-bool CachedCSSStyleSheet::canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const
+bool CSSStyleSheetResource::canUseSheet(bool enforceMIMEType, bool* hasValidMIMEType) const
 {
     if (errorOccurred())
         return false;
@@ -116,9 +116,9 @@ bool CachedCSSStyleSheet::canUseSheet(bool enforceMIMEType, bool* hasValidMIMETy
     if (!enforceMIMEType && !hasValidMIMEType)
         return true;
 
-    // This check exactly matches Firefox.  Note that we grab the Content-Type
+    // This check exactly matches Firefox. Note that we grab the Content-Type
     // header directly because we want to see what the value is BEFORE content
-    // sniffing.  Firefox does this by setting a "type hint" on the channel.
+    // sniffing. Firefox does this by setting a "type hint" on the channel.
     // This implementation should be observationally equivalent.
     //
     // This code defaults to allowing the stylesheet for non-HTTP protocols so
@@ -132,7 +132,7 @@ bool CachedCSSStyleSheet::canUseSheet(bool enforceMIMEType, bool* hasValidMIMETy
     return typeOK;
 }
 
-void CachedCSSStyleSheet::destroyDecodedData()
+void CSSStyleSheetResource::destroyDecodedData()
 {
     if (!m_parsedStyleSheetCache)
         return;
@@ -146,7 +146,7 @@ void CachedCSSStyleSheet::destroyDecodedData()
         makePurgeable(true);
 }
 
-PassRefPtr<StyleSheetContents> CachedCSSStyleSheet::restoreParsedStyleSheet(const CSSParserContext& context)
+PassRefPtr<StyleSheetContents> CSSStyleSheetResource::restoreParsedStyleSheet(const CSSParserContext& context)
 {
     if (!m_parsedStyleSheetCache)
         return 0;
@@ -168,7 +168,7 @@ PassRefPtr<StyleSheetContents> CachedCSSStyleSheet::restoreParsedStyleSheet(cons
     return m_parsedStyleSheetCache;
 }
 
-void CachedCSSStyleSheet::saveParsedStyleSheet(PassRefPtr<StyleSheetContents> sheet)
+void CSSStyleSheetResource::saveParsedStyleSheet(PassRefPtr<StyleSheetContents> sheet)
 {
     ASSERT(sheet && sheet->isCacheable());
 

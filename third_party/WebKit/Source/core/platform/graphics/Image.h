@@ -102,7 +102,7 @@ public:
     virtual void stopAnimation() {}
     virtual void resetAnimation() {}
 
-    // Typically the CachedImage that owns us.
+    // Typically the ImageResource that owns us.
     ImageObserver* imageObserver() const { return m_imageObserver; }
     void setImageObserver(ImageObserver* observer) { m_imageObserver = observer; }
 

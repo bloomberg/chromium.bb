@@ -23,33 +23,33 @@
     pages from the web. It has a memory cache for these objects.
 */
 
-#ifndef CachedScript_h
-#define CachedScript_h
+#ifndef ScriptResource_h
+#define ScriptResource_h
 
 #include "core/loader/cache/Resource.h"
 
 namespace WebCore {
 
 class ResourceFetcher;
-    class TextResourceDecoder;
+class TextResourceDecoder;
 
-    class CachedScript : public Resource {
-    public:
-        CachedScript(const ResourceRequest&, const String& charset);
-        virtual ~CachedScript();
+class ScriptResource : public Resource {
+public:
+    ScriptResource(const ResourceRequest&, const String& charset);
+    virtual ~ScriptResource();
 
-        const String& script();
+    const String& script();
 
-        virtual void setEncoding(const String&);
-        virtual String encoding() const;
-        String mimeType() const;
+    virtual void setEncoding(const String&);
+    virtual String encoding() const;
+    String mimeType() const;
 
-        bool mimeTypeAllowedByNosniff() const;
+    bool mimeTypeAllowedByNosniff() const;
 
-    private:
-        AtomicString m_script;
-        RefPtr<TextResourceDecoder> m_decoder;
-    };
+private:
+    AtomicString m_script;
+    RefPtr<TextResourceDecoder> m_decoder;
+};
 }
 
 #endif

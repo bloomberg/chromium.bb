@@ -38,9 +38,9 @@
 #include "core/html/HTMLImport.h"
 #include "core/html/HTMLScriptElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
+#include "core/loader/cache/ScriptResource.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -55,7 +55,7 @@ namespace WebCore {
 
 ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadyStarted)
     : m_element(element)
-    , m_cachedScript(0)
+    , m_resource(0)
     , m_startLineNumber(WTF::OrdinalNumber::beforeFirst())
     , m_parserInserted(parserInserted)
     , m_isExternalScript(false)
@@ -246,11 +246,11 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
         m_willExecuteInOrder = true;
-        executingDocument->scriptRunner()->queueScriptForExecution(this, m_cachedScript, ScriptRunner::IN_ORDER_EXECUTION);
-        m_cachedScript->addClient(this);
+        executingDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::IN_ORDER_EXECUTION);
+        m_resource->addClient(this);
     } else if (client->hasSourceAttribute()) {
-        executingDocument->scriptRunner()->queueScriptForExecution(this, m_cachedScript, ScriptRunner::ASYNC_EXECUTION);
-        m_cachedScript->addClient(this);
+        executingDocument->scriptRunner()->queueScriptForExecution(this, m_resource, ScriptRunner::ASYNC_EXECUTION);
+        m_resource->addClient(this);
     } else {
         // Reset line numbering for nested writes.
         TextPosition position = elementDocument->isInDocumentWrite() ? TextPosition() : scriptStartPosition;
@@ -271,7 +271,7 @@ bool ScriptLoader::requestScript(const String& sourceUrl)
     if (!m_element->inDocument() || m_element->document() != elementDocument)
         return false;
 
-    ASSERT(!m_cachedScript);
+    ASSERT(!m_resource);
     if (!stripLeadingAndTrailingHTMLSpaces(sourceUrl).isEmpty()) {
         FetchRequest request(ResourceRequest(elementDocument->completeURL(sourceUrl)), m_element->localName());
 
@@ -286,11 +286,11 @@ bool ScriptLoader::requestScript(const String& sourceUrl)
         if (isValidScriptNonce)
             request.setContentSecurityCheck(DoNotCheckContentSecurityPolicy);
 
-        m_cachedScript = elementDocument->fetcher()->requestScript(request);
+        m_resource = elementDocument->fetcher()->requestScript(request);
         m_isExternalScript = true;
     }
 
-    if (m_cachedScript) {
+    if (m_resource) {
         return true;
     }
 
@@ -324,8 +324,8 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
     if (!m_isExternalScript && (!shouldBypassMainWorldContentSecurityPolicy && !elementDocument->contentSecurityPolicy()->allowInlineScript(elementDocument->url(), m_startLineNumber)))
         return;
 
-    if (m_isExternalScript && m_cachedScript && !m_cachedScript->mimeTypeAllowedByNosniff()) {
-        executingDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + m_cachedScript->url().elidedString() + "' because its MIME type ('" + m_cachedScript->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
+    if (m_isExternalScript && m_resource && !m_resource->mimeTypeAllowedByNosniff()) {
+        executingDocument->addConsoleMessage(SecurityMessageSource, ErrorMessageLevel, "Refused to execute script from '" + m_resource->url().elidedString() + "' because its MIME type ('" + m_resource->mimeType() + "') is not executable, and strict MIME type checking is enabled.");
         return;
     }
 
@@ -336,7 +336,7 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
             executingDocument->pushCurrentScript(toHTMLScriptElement(m_element));
 
         AccessControlStatus corsCheck = NotSharableCrossOrigin;
-        if (sourceCode.cachedScript() && sourceCode.cachedScript()->passesAccessControlCheck(m_element->document()->securityOrigin()))
+        if (sourceCode.resource() && sourceCode.resource()->passesAccessControlCheck(m_element->document()->securityOrigin()))
             corsCheck = SharableCrossOrigin;
 
         // Create a script from the script element node, using the script
@@ -353,24 +353,24 @@ void ScriptLoader::executeScript(const ScriptSourceCode& sourceCode)
 
 void ScriptLoader::stopLoadRequest()
 {
-    if (m_cachedScript) {
+    if (m_resource) {
         if (!m_willBeParserExecuted)
-            m_cachedScript->removeClient(this);
-        m_cachedScript = 0;
+            m_resource->removeClient(this);
+        m_resource = 0;
     }
 }
 
-void ScriptLoader::execute(CachedScript* cachedScript)
+void ScriptLoader::execute(ScriptResource* resource)
 {
     ASSERT(!m_willBeParserExecuted);
-    ASSERT(cachedScript);
-    if (cachedScript->errorOccurred()) {
+    ASSERT(resource);
+    if (resource->errorOccurred()) {
         dispatchErrorEvent();
-    } else if (!cachedScript->wasCanceled()) {
-        executeScript(ScriptSourceCode(cachedScript));
+    } else if (!resource->wasCanceled()) {
+        executeScript(ScriptSourceCode(resource));
         dispatchLoadEvent();
     }
-    cachedScript->removeClient(this);
+    resource->removeClient(this);
 }
 
 void ScriptLoader::notifyFinished(Resource* resource)
@@ -383,11 +383,11 @@ void ScriptLoader::notifyFinished(Resource* resource)
     // Resource possibly invokes this notifyFinished() more than
     // once because ScriptLoader doesn't unsubscribe itself from
     // Resource here and does it in execute() instead.
-    // We use m_cachedScript to check if this function is already called.
-    ASSERT_UNUSED(resource, resource == m_cachedScript);
-    if (!m_cachedScript)
+    // We use m_resource to check if this function is already called.
+    ASSERT_UNUSED(resource, resource == m_resource);
+    if (!m_resource)
         return;
-    if (!elementDocument->fetcher()->canAccess(m_cachedScript.get())) {
+    if (!elementDocument->fetcher()->canAccess(m_resource.get())) {
         dispatchErrorEvent();
         return;
     }
@@ -397,7 +397,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
     else
         executingDocument->scriptRunner()->notifyScriptReady(this, ScriptRunner::ASYNC_EXECUTION);
 
-    m_cachedScript = 0;
+    m_resource = 0;
 }
 
 bool ScriptLoader::ignoresLoadRequest() const

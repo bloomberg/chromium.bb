@@ -38,7 +38,7 @@ LazyDecodingPixelRef::LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator> frame
     , m_frameIndex(index)
     , m_scaledSize(scaledSize)
     , m_scaledSubset(scaledSubset)
-    , m_lockedCachedImage(0)
+    , m_lockedImageResource(0)
 {
 }
 
@@ -76,29 +76,29 @@ void* LazyDecodingPixelRef::onLockPixels(SkColorTable**)
 {
     TRACE_EVENT_ASYNC_BEGIN0("webkit", "LazyDecodingPixelRef::lockPixels", this);
 
-    ASSERT(!m_lockedCachedImage);
+    ASSERT(!m_lockedImageResource);
 
-    if (!ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), m_scaledSize, m_frameIndex, &m_lockedCachedImage))
-        m_lockedCachedImage = 0;
+    if (!ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), m_scaledSize, m_frameIndex, &m_lockedImageResource))
+        m_lockedImageResource = 0;
 
     // Use ImageFrameGenerator to generate the image. It will lock the cache
     // entry for us.
-    if (!m_lockedCachedImage)
-        m_lockedCachedImage = m_frameGenerator->decodeAndScale(m_scaledSize, m_frameIndex);
+    if (!m_lockedImageResource)
+        m_lockedImageResource = m_frameGenerator->decodeAndScale(m_scaledSize, m_frameIndex);
 
-    if (!m_lockedCachedImage)
+    if (!m_lockedImageResource)
         return 0;
 
-    ASSERT(!m_lockedCachedImage->bitmap().isNull());
-    ASSERT(m_lockedCachedImage->scaledSize() == m_scaledSize);
-    return m_lockedCachedImage->bitmap().getAddr(m_scaledSubset.x(), m_scaledSubset.y());
+    ASSERT(!m_lockedImageResource->bitmap().isNull());
+    ASSERT(m_lockedImageResource->scaledSize() == m_scaledSize);
+    return m_lockedImageResource->bitmap().getAddr(m_scaledSubset.x(), m_scaledSubset.y());
 }
 
 void LazyDecodingPixelRef::onUnlockPixels()
 {
-    if (m_lockedCachedImage) {
-        ImageDecodingStore::instance()->unlockCache(m_frameGenerator.get(), m_lockedCachedImage);
-        m_lockedCachedImage = 0;
+    if (m_lockedImageResource) {
+        ImageDecodingStore::instance()->unlockCache(m_frameGenerator.get(), m_lockedImageResource);
+        m_lockedImageResource = 0;
     }
 
     TRACE_EVENT_ASYNC_END0("webkit", "LazyDecodingPixelRef::lockPixels", this);

@@ -28,7 +28,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/dom/Node.h"
-#include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CSSStyleSheetResource.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 
@@ -269,7 +269,7 @@ const AtomicString& StyleSheetContents::determineNamespace(const AtomicString& p
     return it->value;
 }
 
-void StyleSheetContents::parseAuthorStyleSheet(const CachedCSSStyleSheet* cachedStyleSheet, const SecurityOrigin* securityOrigin)
+void StyleSheetContents::parseAuthorStyleSheet(const CSSStyleSheetResource* cachedStyleSheet, const SecurityOrigin* securityOrigin)
 {
     bool enforceMIMEType = isStrictParserMode(m_parserContext.mode);
     bool hasValidMIMEType = false;
@@ -348,7 +348,7 @@ void StyleSheetContents::checkLoaded()
         ownerNode->notifyLoadedSheetAndAllCriticalSubresources(m_didLoadErrorOccur);
 }
 
-void StyleSheetContents::notifyLoadedSheet(const CachedCSSStyleSheet* sheet)
+void StyleSheetContents::notifyLoadedSheet(const CSSStyleSheetResource* sheet)
 {
     ASSERT(sheet);
     m_didLoadErrorOccur |= sheet->errorOccurred();

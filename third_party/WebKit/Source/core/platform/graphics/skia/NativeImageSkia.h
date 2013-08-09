@@ -141,21 +141,21 @@ private:
 
     NativeImageSkia(const SkBitmap&, float resolutionScale);
 
-    // CachedImageInfo is used to uniquely identify cached or requested image
+    // ImageResourceInfo is used to uniquely identify cached or requested image
     // resizes.
     // Image resize is identified by the scaled image size and scaled image subset.
-    struct CachedImageInfo {
+    struct ImageResourceInfo {
         SkISize scaledImageSize;
         SkIRect scaledImageSubset;
 
-        CachedImageInfo();
+        ImageResourceInfo();
 
         bool isEqual(const SkISize& otherScaledImageSize, const SkIRect& otherScaledImageSubset) const;
         void set(const SkISize& otherScaledImageSize, const SkIRect& otherScaledImageSubset);
         SkIRect rectInSubset(const SkIRect& otherScaledImageRect);
     };
 
-    NativeImageSkia(const SkBitmap& image, float resolutionScale, const SkBitmap& resizedImage, const CachedImageInfo&, int resizeRequests);
+    NativeImageSkia(const SkBitmap& image, float resolutionScale, const SkBitmap& resizedImage, const ImageResourceInfo&, int resizeRequests);
 
     // Returns true if the given resize operation should either resize the whole
     // image and cache it, or resize just the part it needs and throw the result
@@ -196,8 +196,8 @@ private:
     // those requests individually are small and would not otherwise be cached.
     //
     // We also track scaling information and destination subset for the scaled
-    // image. See comments for CachedImageInfo.
-    mutable CachedImageInfo m_cachedImageInfo;
+    // image. See comments for ImageResourceInfo.
+    mutable ImageResourceInfo m_cachedImageInfo;
     mutable int m_resizeRequests;
 };
 

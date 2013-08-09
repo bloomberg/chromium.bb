@@ -39,14 +39,14 @@
 #include "core/loader/PingLoader.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
-#include "core/loader/cache/CachedCSSStyleSheet.h"
-#include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedRawResource.h"
-#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/CSSStyleSheetResource.h"
 #include "core/loader/cache/DocumentResource.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/FontResource.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/loader/cache/RawResource.h"
+#include "core/loader/cache/ScriptResource.h"
 #include "core/loader/cache/ShaderResource.h"
 #include "core/loader/cache/TextTrackResource.h"
 #include "core/loader/cache/XSLStyleSheetResource.h"
@@ -72,19 +72,19 @@ namespace WebCore {
 static Resource* createResource(Resource::Type type, const ResourceRequest& request, const String& charset)
 {
     switch (type) {
-    case Resource::ImageResource:
-        return new CachedImage(request);
+    case Resource::Image:
+        return new ImageResource(request);
     case Resource::CSSStyleSheet:
-        return new CachedCSSStyleSheet(request, charset);
+        return new CSSStyleSheetResource(request, charset);
     case Resource::Script:
-        return new CachedScript(request, charset);
+        return new ScriptResource(request, charset);
     case Resource::SVGDocument:
         return new DocumentResource(request, Resource::SVGDocument);
     case Resource::Font:
         return new FontResource(request);
-    case Resource::RawResource:
+    case Resource::Raw:
     case Resource::MainResource:
-        return new CachedRawResource(request, type);
+        return new RawResource(request, type);
     case Resource::XSLStyleSheet:
         return new XSLStyleSheetResource(request);
     case Resource::LinkPrefetch:
@@ -96,7 +96,7 @@ static Resource* createResource(Resource::Type type, const ResourceRequest& requ
     case Resource::Shader:
         return new ShaderResource(request);
     case Resource::ImportResource:
-        return new CachedRawResource(request, type);
+        return new RawResource(request, type);
     }
 
     ASSERT_NOT_REACHED();
@@ -115,10 +115,10 @@ static ResourceLoadPriority loadPriority(Resource::Type type, const FetchRequest
         return ResourceLoadPriorityHigh;
     case Resource::Script:
     case Resource::Font:
-    case Resource::RawResource:
+    case Resource::Raw:
     case Resource::ImportResource:
         return ResourceLoadPriorityMedium;
-    case Resource::ImageResource:
+    case Resource::Image:
         return request.forPreload() ? ResourceLoadPriorityVeryLow : ResourceLoadPriorityLow;
     case Resource::XSLStyleSheet:
         return ResourceLoadPriorityHigh;
@@ -149,7 +149,7 @@ static Resource* resourceFromDataURIRequest(const ResourceRequest& request)
         return 0;
     ResourceResponse response(url, mimetype, data->size(), charset, String());
 
-    Resource* resource = createResource(Resource::ImageResource, request, charset);
+    Resource* resource = createResource(Resource::Image, request, charset);
     resource->responseReceived(response);
     // FIXME: AppendData causes an unnecessary memcpy.
     if (data->size())
@@ -201,12 +201,12 @@ Frame* ResourceFetcher::frame() const
     return 0;
 }
 
-ResourcePtr<CachedImage> ResourceFetcher::requestImage(FetchRequest& request)
+ResourcePtr<ImageResource> ResourceFetcher::requestImage(FetchRequest& request)
 {
     if (Frame* f = frame()) {
         if (f->loader()->pageDismissalEventBeingDispatched() != FrameLoader::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
-            if (requestURL.isValid() && canRequest(Resource::ImageResource, requestURL, request.options(), request.forPreload()))
+            if (requestURL.isValid() && canRequest(Resource::Image, requestURL, request.options(), request.forPreload()))
                 PingLoader::loadImage(f, requestURL);
             return 0;
         }
@@ -216,7 +216,7 @@ ResourcePtr<CachedImage> ResourceFetcher::requestImage(FetchRequest& request)
         preCacheDataURIImage(request);
 
     request.setDefer(clientDefersImage(request.resourceRequest().url()) ? FetchRequest::DeferredByClient : FetchRequest::NoDefer);
-    return static_cast<CachedImage*>(requestResource(Resource::ImageResource, request).get());
+    return static_cast<ImageResource*>(requestResource(Resource::Image, request).get());
 }
 
 void ResourceFetcher::preCacheDataURIImage(const FetchRequest& request)
@@ -246,33 +246,33 @@ ResourcePtr<ShaderResource> ResourceFetcher::requestShader(FetchRequest& request
     return static_cast<ShaderResource*>(requestResource(Resource::Shader, request).get());
 }
 
-ResourcePtr<CachedRawResource> ResourceFetcher::requestImport(FetchRequest& request)
+ResourcePtr<RawResource> ResourceFetcher::requestImport(FetchRequest& request)
 {
-    return static_cast<CachedRawResource*>(requestResource(Resource::ImportResource, request).get());
+    return static_cast<RawResource*>(requestResource(Resource::ImportResource, request).get());
 }
 
-ResourcePtr<CachedCSSStyleSheet> ResourceFetcher::requestCSSStyleSheet(FetchRequest& request)
+ResourcePtr<CSSStyleSheetResource> ResourceFetcher::requestCSSStyleSheet(FetchRequest& request)
 {
-    return static_cast<CachedCSSStyleSheet*>(requestResource(Resource::CSSStyleSheet, request).get());
+    return static_cast<CSSStyleSheetResource*>(requestResource(Resource::CSSStyleSheet, request).get());
 }
 
-ResourcePtr<CachedCSSStyleSheet> ResourceFetcher::requestUserCSSStyleSheet(FetchRequest& request)
+ResourcePtr<CSSStyleSheetResource> ResourceFetcher::requestUserCSSStyleSheet(FetchRequest& request)
 {
     KURL url = MemoryCache::removeFragmentIdentifierIfNeeded(request.resourceRequest().url());
 
     if (Resource* existing = memoryCache()->resourceForURL(url)) {
         if (existing->type() == Resource::CSSStyleSheet)
-            return static_cast<CachedCSSStyleSheet*>(existing);
+            return static_cast<CSSStyleSheetResource*>(existing);
         memoryCache()->remove(existing);
     }
 
     request.setOptions(ResourceLoaderOptions(DoNotSendCallbacks, SniffContent, BufferData, AllowStoredCredentials, ClientRequestedCredentials, AskClientForCrossOriginCredentials, SkipSecurityCheck, CheckContentSecurityPolicy, UseDefaultOriginRestrictionsForType, DocumentContext));
-    return static_cast<CachedCSSStyleSheet*>(requestResource(Resource::CSSStyleSheet, request).get());
+    return static_cast<CSSStyleSheetResource*>(requestResource(Resource::CSSStyleSheet, request).get());
 }
 
-ResourcePtr<CachedScript> ResourceFetcher::requestScript(FetchRequest& request)
+ResourcePtr<ScriptResource> ResourceFetcher::requestScript(FetchRequest& request)
 {
-    return static_cast<CachedScript*>(requestResource(Resource::Script, request).get());
+    return static_cast<ScriptResource*>(requestResource(Resource::Script, request).get());
 }
 
 ResourcePtr<XSLStyleSheetResource> ResourceFetcher::requestXSLStyleSheet(FetchRequest& request)
@@ -292,14 +292,14 @@ ResourcePtr<Resource> ResourceFetcher::requestLinkResource(Resource::Type type, 
     return requestResource(type, request);
 }
 
-ResourcePtr<CachedRawResource> ResourceFetcher::requestRawResource(FetchRequest& request)
+ResourcePtr<RawResource> ResourceFetcher::requestRawResource(FetchRequest& request)
 {
-    return static_cast<CachedRawResource*>(requestResource(Resource::RawResource, request).get());
+    return static_cast<RawResource*>(requestResource(Resource::Raw, request).get());
 }
 
-ResourcePtr<CachedRawResource> ResourceFetcher::requestMainResource(FetchRequest& request)
+ResourcePtr<RawResource> ResourceFetcher::requestMainResource(FetchRequest& request)
 {
-    return static_cast<CachedRawResource*>(requestResource(Resource::MainResource, request).get());
+    return static_cast<RawResource*>(requestResource(Resource::MainResource, request).get());
 }
 
 bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url) const
@@ -320,8 +320,8 @@ bool ResourceFetcher::checkInsecureContent(Resource::Type type, const KURL& url)
         break;
     case Resource::TextTrack:
     case Resource::Shader:
-    case Resource::RawResource:
-    case Resource::ImageResource:
+    case Resource::Raw:
+    case Resource::Image:
     case Resource::Font: {
         // These resources can corrupt only the frame's pixels.
         if (Frame* f = frame()) {
@@ -357,11 +357,11 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
     // any URL.
     switch (type) {
     case Resource::MainResource:
-    case Resource::ImageResource:
+    case Resource::Image:
     case Resource::CSSStyleSheet:
     case Resource::Script:
     case Resource::Font:
-    case Resource::RawResource:
+    case Resource::Raw:
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
     case Resource::TextTrack:
@@ -408,7 +408,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
             return false;
         break;
     case Resource::SVGDocument:
-    case Resource::ImageResource:
+    case Resource::Image:
         if (!shouldBypassMainWorldContentSecurityPolicy && !m_document->contentSecurityPolicy()->allowImageFromSource(url))
             return false;
         break;
@@ -418,7 +418,7 @@ bool ResourceFetcher::canRequest(Resource::Type type, const KURL& url, const Res
         break;
     }
     case Resource::MainResource:
-    case Resource::RawResource:
+    case Resource::Raw:
     case Resource::LinkPrefetch:
     case Resource::LinkSubresource:
         break;
@@ -596,11 +596,11 @@ void ResourceFetcher::determineTargetType(ResourceRequest& request, Resource::Ty
     case Resource::Font:
         targetType = ResourceRequest::TargetIsFont;
         break;
-    case Resource::ImageResource:
+    case Resource::Image:
         targetType = ResourceRequest::TargetIsImage;
         break;
     case Resource::Shader:
-    case Resource::RawResource:
+    case Resource::Raw:
     case Resource::ImportResource:
         targetType = ResourceRequest::TargetIsSubresource;
         break;
@@ -775,13 +775,13 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
     }
 
     // Do not load from cache if images are not enabled. The load for this image will be blocked
-    // in CachedImage::load.
+    // in ImageResource::load.
     if (FetchRequest::DeferredByClient == defer)
         return Reload;
 
     // Always use data uris.
     // FIXME: Extend this to non-images.
-    if (type == Resource::ImageResource && request.url().protocolIsData())
+    if (type == Resource::Image && request.url().protocolIsData())
         return Use;
 
     if (!existingResource->canReuse(request))
@@ -914,7 +914,7 @@ void ResourceFetcher::reloadImagesIfNotDeferred()
     DocumentResourceMap::iterator end = m_documentResources.end();
     for (DocumentResourceMap::iterator it = m_documentResources.begin(); it != end; ++it) {
         Resource* resource = it->value.get();
-        if (resource->type() == Resource::ImageResource && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
+        if (resource->type() == Resource::Image && resource->stillNeedsLoad() && !clientDefersImage(resource->url()))
             const_cast<Resource*>(resource)->load(this, defaultResourceOptions());
     }
 }
@@ -1228,7 +1228,7 @@ bool ResourceFetcher::shouldRequest(Resource* resource, const ResourceRequest& r
 {
     if (!canRequest(resource->type(), request.url(), options))
         return false;
-    if (resource->type() == Resource::ImageResource && shouldDeferImageLoad(request.url()))
+    if (resource->type() == Resource::Image && shouldDeferImageLoad(request.url()))
         return false;
     return true;
 }

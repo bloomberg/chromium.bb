@@ -27,38 +27,38 @@
 #include "core/dom/PendingScript.h"
 
 #include "core/dom/Element.h"
-#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/ScriptResource.h"
 
 namespace WebCore {
 
 PendingScript::~PendingScript()
 {
-    if (m_cachedScript)
-        m_cachedScript->removeClient(this);
+    if (m_resource)
+        m_resource->removeClient(this);
 }
 
 PassRefPtr<Element> PendingScript::releaseElementAndClear()
 {
-    setCachedScript(0);
+    setScriptResource(0);
     m_watchingForLoad = false;
     m_startingPosition = TextPosition::belowRangePosition();
     return m_element.release();
 }
 
-void PendingScript::setCachedScript(CachedScript* cachedScript)
+void PendingScript::setScriptResource(ScriptResource* resource)
 {
-    if (m_cachedScript == cachedScript)
+    if (m_resource == resource)
         return;
-    if (m_cachedScript)
-        m_cachedScript->removeClient(this);
-    m_cachedScript = cachedScript;
-    if (m_cachedScript)
-        m_cachedScript->addClient(this);
+    if (m_resource)
+        m_resource->removeClient(this);
+    m_resource = resource;
+    if (m_resource)
+        m_resource->addClient(this);
 }
 
-CachedScript* PendingScript::cachedScript() const
+ScriptResource* PendingScript::resource() const
 {
-    return m_cachedScript.get();
+    return m_resource.get();
 }
 
 void PendingScript::notifyFinished(Resource*)

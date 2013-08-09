@@ -31,8 +31,8 @@
 #ifndef ScriptSourceCode_h
 #define ScriptSourceCode_h
 
-#include "core/loader/cache/CachedScript.h"
 #include "core/loader/cache/ResourcePtr.h"
+#include "core/loader/cache/ScriptResource.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
@@ -46,17 +46,17 @@ class ScriptSourceCode {
 public:
     ScriptSourceCode(const String& source, const KURL& url = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition())
         : m_source(source)
-        , m_cachedScript(0)
+        , m_resource(0)
         , m_url(url)
         , m_startPosition(startPosition)
     {
     }
 
-    // We lose the encoding information from CachedScript.
+    // We lose the encoding information from ScriptResource.
     // Not sure if that matters.
-    ScriptSourceCode(CachedScript* cs)
+    ScriptSourceCode(ScriptResource* cs)
         : m_source(cs->script())
-        , m_cachedScript(cs)
+        , m_resource(cs)
         , m_url(cs->url())
         , m_startPosition(TextPosition::minimumPosition())
     {
@@ -65,11 +65,11 @@ public:
     bool isEmpty() const { return m_source.isEmpty(); }
 
     const String& source() const { return m_source; }
-    CachedScript* cachedScript() const { return m_cachedScript.get(); }
+    ScriptResource* resource() const { return m_resource.get(); }
     const KURL& url() const
     {
-        if (m_cachedScript)
-            return m_cachedScript->response().url();
+        if (m_resource)
+            return m_resource->response().url();
         return m_url;
     }
     int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
@@ -77,7 +77,7 @@ public:
 
 private:
     String m_source;
-    ResourcePtr<CachedScript> m_cachedScript;
+    ResourcePtr<ScriptResource> m_resource;
     KURL m_url;
     TextPosition m_startPosition;
 };

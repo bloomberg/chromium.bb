@@ -27,7 +27,7 @@
 #include "core/dom/Clipboard.h"
 
 #include "core/fileapi/FileList.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 
 namespace WebCore {
 

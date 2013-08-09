@@ -53,7 +53,7 @@
 #include "core/html/canvas/CanvasPattern.h"
 #include "core/html/canvas/CanvasStyle.h"
 #include "core/html/canvas/DOMPath.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/ImageBitmap.h"
 #include "core/platform/graphics/DrawLooper.h"
 #include "core/platform/graphics/FloatQuad.h"
@@ -78,7 +78,7 @@ static const int defaultFontSize = 10;
 static const char* const defaultFontFamily = "sans-serif";
 static const char* const defaultFont = "10px sans-serif";
 
-static bool isOriginClean(CachedImage* cachedImage, SecurityOrigin* securityOrigin)
+static bool isOriginClean(ImageResource* cachedImage, SecurityOrigin* securityOrigin)
 {
     if (!cachedImage->image()->hasSingleSecurityOrigin())
         return false;
@@ -1173,7 +1173,7 @@ bool CanvasRenderingContext2D::shouldDrawShadows() const
 
 static LayoutSize sizeFor(HTMLImageElement* image)
 {
-    if (CachedImage* cachedImage = image->cachedImage())
+    if (ImageResource* cachedImage = image->cachedImage())
         return cachedImage->imageSizeForRenderer(image->renderer(), 1.0f); // FIXME: Not sure about this.
     return IntSize();
 }
@@ -1355,7 +1355,7 @@ void CanvasRenderingContext2D::drawImage(HTMLImageElement* image, const FloatRec
         || !std::isfinite(srcRect.x()) || !std::isfinite(srcRect.y()) || !std::isfinite(srcRect.width()) || !std::isfinite(srcRect.height()))
         return;
 
-    CachedImage* cachedImage = image->cachedImage();
+    ImageResource* cachedImage = image->cachedImage();
     if (!cachedImage || !image->complete())
         return;
 
@@ -1752,7 +1752,7 @@ PassRefPtr<CanvasPattern> CanvasRenderingContext2D::createPattern(HTMLImageEleme
     if (!image->complete())
         return 0;
 
-    CachedImage* cachedImage = image->cachedImage();
+    ImageResource* cachedImage = image->cachedImage();
     Image* imageForRendering = cachedImage ? cachedImage->imageForRenderer(image->renderer()) : 0;
     if (!imageForRendering)
         return CanvasPattern::create(Image::nullImage(), repeatX, repeatY, true);

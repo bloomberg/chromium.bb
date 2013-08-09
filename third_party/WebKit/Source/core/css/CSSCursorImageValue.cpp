@@ -25,10 +25,10 @@
 #include "SVGNames.h"
 #include "core/css/CSSImageSetValue.h"
 #include "core/css/CSSImageValue.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
-#include "core/rendering/style/StyleCachedImage.h"
-#include "core/rendering/style/StyleCachedImageSet.h"
+#include "core/rendering/style/StyleFetchedImage.h"
+#include "core/rendering/style/StyleFetchedImageSet.h"
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include "core/svg/SVGCursorElement.h"
@@ -107,7 +107,7 @@ bool CSSCursorImageValue::updateIfSVGCursorIsUsed(Element* element)
         m_hotSpot.setY(static_cast<int>(y));
 
         if (cachedImageURL() != element->document()->completeURL(cursorElement->hrefCurrentValue()))
-            clearCachedImage();
+            clearImageResource();
 
         SVGElement* svgElement = toSVGElement(element);
         m_referencedElements.add(svgElement);
@@ -135,7 +135,7 @@ StyleImage* CSSCursorImageValue::cachedImage(ResourceFetcher* loader, float devi
             // FIXME: This will fail if the <cursor> element is in a shadow DOM (bug 59827)
             if (SVGCursorElement* cursorElement = resourceReferencedByCursorElement(imageValue->url(), loader->document())) {
                 RefPtr<CSSImageValue> svgImageValue = CSSImageValue::create(cursorElement->hrefCurrentValue());
-                StyleCachedImage* cachedImage = svgImageValue->cachedImage(loader);
+                StyleFetchedImage* cachedImage = svgImageValue->cachedImage(loader);
                 m_image = cachedImage;
                 return cachedImage;
             }
@@ -145,8 +145,8 @@ StyleImage* CSSCursorImageValue::cachedImage(ResourceFetcher* loader, float devi
             m_image = toCSSImageValue(m_imageValue.get())->cachedImage(loader);
     }
 
-    if (m_image && m_image->isCachedImage())
-        return static_cast<StyleCachedImage*>(m_image.get());
+    if (m_image && m_image->isImageResource())
+        return static_cast<StyleFetchedImage*>(m_image.get());
 
     return 0;
 }
@@ -175,12 +175,12 @@ bool CSSCursorImageValue::isSVGCursor() const
 
 String CSSCursorImageValue::cachedImageURL()
 {
-    if (!m_image || !m_image->isCachedImage())
+    if (!m_image || !m_image->isImageResource())
         return String();
-    return static_cast<StyleCachedImage*>(m_image.get())->cachedImage()->url().string();
+    return static_cast<StyleFetchedImage*>(m_image.get())->cachedImage()->url().string();
 }
 
-void CSSCursorImageValue::clearCachedImage()
+void CSSCursorImageValue::clearImageResource()
 {
     m_image = 0;
     m_accessedImage = false;

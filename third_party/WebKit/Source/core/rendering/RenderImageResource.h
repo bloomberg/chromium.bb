@@ -26,7 +26,7 @@
 #ifndef RenderImageResource_h
 #define RenderImageResource_h
 
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/LayoutSize.h"
@@ -49,8 +49,8 @@ public:
     virtual void initialize(RenderObject*);
     virtual void shutdown();
 
-    void setCachedImage(CachedImage*);
-    CachedImage* cachedImage() const { return m_cachedImage.get(); }
+    void setImageResource(ImageResource*);
+    ImageResource* cachedImage() const { return m_cachedImage.get(); }
     virtual bool hasImage() const { return m_cachedImage; }
 
     void resetAnimation();
@@ -70,7 +70,7 @@ public:
 protected:
     RenderImageResource();
     RenderObject* m_renderer;
-    ResourcePtr<CachedImage> m_cachedImage;
+    ResourcePtr<ImageResource> m_cachedImage;
 
 private:
     static Image* nullImage();

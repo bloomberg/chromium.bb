@@ -37,7 +37,7 @@
 #include "core/editing/markup.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Frame.h"
 #include "core/platform/DragData.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -298,7 +298,7 @@ PassRefPtr<FileList> ClipboardChromium::files() const
     return files.release();
 }
 
-void ClipboardChromium::setDragImage(CachedImage* image, Node* node, const IntPoint& loc)
+void ClipboardChromium::setDragImage(ImageResource* image, Node* node, const IntPoint& loc)
 {
     if (!canSetDragImage())
         return;
@@ -313,7 +313,7 @@ void ClipboardChromium::setDragImage(CachedImage* image, Node* node, const IntPo
     m_dragImageElement = node;
 }
 
-void ClipboardChromium::setDragImage(CachedImage* img, const IntPoint& loc)
+void ClipboardChromium::setDragImage(ImageResource* img, const IntPoint& loc)
 {
     setDragImage(img, 0, loc);
 }
@@ -337,9 +337,9 @@ PassOwnPtr<DragImage> ClipboardChromium::createDragImage(IntPoint& loc) const
     return nullptr;
 }
 
-static CachedImage* getCachedImage(Element* element)
+static ImageResource* getImageResource(Element* element)
 {
-    // Attempt to pull CachedImage from element
+    // Attempt to pull ImageResource from element
     ASSERT(element);
     RenderObject* renderer = element->renderer();
     if (!renderer || !renderer->isImage())
@@ -356,7 +356,7 @@ static void writeImageToDataObject(ChromiumDataObject* dataObject, Element* elem
                                    const KURL& url)
 {
     // Shove image data into a DataObject for use as a file
-    CachedImage* cachedImage = getCachedImage(element);
+    ImageResource* cachedImage = getImageResource(element);
     if (!cachedImage || !cachedImage->imageForRenderer(element->renderer()) || !cachedImage->isLoaded())
         return;
 

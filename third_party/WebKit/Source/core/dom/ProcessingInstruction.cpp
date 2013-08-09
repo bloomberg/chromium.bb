@@ -27,7 +27,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
-#include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CSSStyleSheetResource.h"
 #include "core/loader/cache/FetchRequest.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/loader/cache/XSLStyleSheetResource.h"
@@ -40,7 +40,7 @@ inline ProcessingInstruction::ProcessingInstruction(Document* document, const St
     : Node(document, CreateOther)
     , m_target(target)
     , m_data(data)
-    , m_cachedSheet(0)
+    , m_resource(0)
     , m_loading(false)
     , m_alternate(false)
     , m_createdByParser(false)
@@ -60,8 +60,8 @@ ProcessingInstruction::~ProcessingInstruction()
     if (m_sheet)
         m_sheet->clearOwnerNode();
 
-    if (m_cachedSheet)
-        m_cachedSheet->removeClient(this);
+    if (m_resource)
+        m_resource->removeClient(this);
 
     if (inDocument())
         document()->styleSheetCollection()->removeStyleSheetCandidateNode(this);
@@ -142,9 +142,9 @@ void ProcessingInstruction::checkStyleSheet()
                 m_loading = false;
             }
         } else {
-            if (m_cachedSheet) {
-                m_cachedSheet->removeClient(this);
-                m_cachedSheet = 0;
+            if (m_resource) {
+                m_resource->removeClient(this);
+                m_resource = 0;
             }
 
             String url = document()->completeURL(href).string();
@@ -155,7 +155,7 @@ void ProcessingInstruction::checkStyleSheet()
             document()->styleSheetCollection()->addPendingSheet();
             FetchRequest request(ResourceRequest(document()->completeURL(href)), FetchInitiatorTypeNames::processinginstruction);
             if (m_isXSL)
-                m_cachedSheet = document()->fetcher()->requestXSLStyleSheet(request);
+                m_resource = document()->fetcher()->requestXSLStyleSheet(request);
             else
             {
                 String charset = attrs.get("charset");
@@ -163,10 +163,10 @@ void ProcessingInstruction::checkStyleSheet()
                     charset = document()->charset();
                 request.setCharset(charset);
 
-                m_cachedSheet = document()->fetcher()->requestCSSStyleSheet(request);
+                m_resource = document()->fetcher()->requestCSSStyleSheet(request);
             }
-            if (m_cachedSheet)
-                m_cachedSheet->addClient(this);
+            if (m_resource)
+                m_resource->addClient(this);
             else {
                 // The request may have been denied if (for example) the stylesheet is local and the document is remote.
                 m_loading = false;
@@ -194,7 +194,7 @@ bool ProcessingInstruction::sheetLoaded()
     return false;
 }
 
-void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet* sheet)
+void ProcessingInstruction::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* sheet)
 {
     if (!inDocument()) {
         ASSERT(!m_sheet);
@@ -233,9 +233,9 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
     else if (m_isXSL)
         static_cast<XSLStyleSheet*>(m_sheet.get())->parseString(sheet);
 
-    if (m_cachedSheet)
-        m_cachedSheet->removeClient(this);
-    m_cachedSheet = 0;
+    if (m_resource)
+        m_resource->removeClient(this);
+    m_resource = 0;
 
     m_loading = false;
 
@@ -247,7 +247,7 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
 
 void ProcessingInstruction::setCSSStyleSheet(PassRefPtr<CSSStyleSheet> sheet)
 {
-    ASSERT(!m_cachedSheet);
+    ASSERT(!m_resource);
     ASSERT(!m_loading);
     m_sheet = sheet;
     sheet->setTitle(m_title);

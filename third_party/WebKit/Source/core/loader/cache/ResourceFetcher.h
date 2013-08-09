@@ -41,12 +41,12 @@
 
 namespace WebCore {
 
-class CachedCSSStyleSheet;
+class CSSStyleSheetResource;
 class DocumentResource;
 class FontResource;
-class CachedImage;
-class CachedRawResource;
-class CachedScript;
+class ImageResource;
+class RawResource;
+class ScriptResource;
 class ShaderResource;
 class TextTrackResource;
 class XSLStyleSheetResource;
@@ -78,19 +78,19 @@ public:
     using RefCounted<ResourceFetcher>::ref;
     using RefCounted<ResourceFetcher>::deref;
 
-    ResourcePtr<CachedImage> requestImage(FetchRequest&);
-    ResourcePtr<CachedCSSStyleSheet> requestCSSStyleSheet(FetchRequest&);
-    ResourcePtr<CachedCSSStyleSheet> requestUserCSSStyleSheet(FetchRequest&);
-    ResourcePtr<CachedScript> requestScript(FetchRequest&);
+    ResourcePtr<ImageResource> requestImage(FetchRequest&);
+    ResourcePtr<CSSStyleSheetResource> requestCSSStyleSheet(FetchRequest&);
+    ResourcePtr<CSSStyleSheetResource> requestUserCSSStyleSheet(FetchRequest&);
+    ResourcePtr<ScriptResource> requestScript(FetchRequest&);
     ResourcePtr<FontResource> requestFont(FetchRequest&);
-    ResourcePtr<CachedRawResource> requestRawResource(FetchRequest&);
-    ResourcePtr<CachedRawResource> requestMainResource(FetchRequest&);
+    ResourcePtr<RawResource> requestRawResource(FetchRequest&);
+    ResourcePtr<RawResource> requestMainResource(FetchRequest&);
     ResourcePtr<DocumentResource> requestSVGDocument(FetchRequest&);
     ResourcePtr<XSLStyleSheetResource> requestXSLStyleSheet(FetchRequest&);
     ResourcePtr<Resource> requestLinkResource(Resource::Type, FetchRequest&);
     ResourcePtr<TextTrackResource> requestTextTrack(FetchRequest&);
     ResourcePtr<ShaderResource> requestShader(FetchRequest&);
-    ResourcePtr<CachedRawResource> requestImport(FetchRequest&);
+    ResourcePtr<RawResource> requestImport(FetchRequest&);
 
     // Logs an access denied message to the console for the specified URL.
     void printAccessDeniedMessage(const KURL&) const;

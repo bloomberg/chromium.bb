@@ -40,7 +40,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/markup.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
@@ -128,7 +128,7 @@ void Pasteboard::writeImage(Node* node, const KURL&, const String& title)
         return;
 
     RenderImage* renderer = toRenderImage(node->renderer());
-    CachedImage* cachedImage = renderer->cachedImage();
+    ImageResource* cachedImage = renderer->cachedImage();
     if (!cachedImage || cachedImage->errorOccurred())
         return;
     Image* image = cachedImage->imageForRenderer(renderer);

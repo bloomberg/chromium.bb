@@ -31,7 +31,7 @@
 namespace WebCore {
 
 class ResourceFetcher;
-class StyleCachedImageSet;
+class StyleFetchedImageSet;
 class StyleImage;
 
 class CSSImageSetValue : public CSSValueList {
@@ -43,9 +43,9 @@ public:
     }
     ~CSSImageSetValue();
 
-    StyleCachedImageSet* cachedImageSet(ResourceFetcher*, float deviceScaleFactor);
+    StyleFetchedImageSet* cachedImageSet(ResourceFetcher*, float deviceScaleFactor);
 
-    // Returns a StyleCachedImageSet if the best fit image has been cached already, otherwise a StylePendingImage.
+    // Returns a StyleFetchedImageSet if the best fit image has been cached already, otherwise a StylePendingImage.
     StyleImage* cachedOrPendingImageSet(float);
 
     String customCssText() const;

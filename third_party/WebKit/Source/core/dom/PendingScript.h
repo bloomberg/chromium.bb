@@ -34,7 +34,7 @@
 
 namespace WebCore {
 
-class CachedScript;
+class ScriptResource;
 class Element;
 
 // A container for an external script which may be loaded and executed.
@@ -50,11 +50,11 @@ public:
     {
     }
 
-    PendingScript(Element* element, CachedScript* cachedScript)
+    PendingScript(Element* element, ScriptResource* resource)
         : m_watchingForLoad(false)
         , m_element(element)
     {
-        setCachedScript(cachedScript);
+        setScriptResource(resource);
     }
 
     PendingScript(const PendingScript& other)
@@ -63,7 +63,7 @@ public:
         , m_element(other.m_element)
         , m_startingPosition(other.m_startingPosition)
     {
-        setCachedScript(other.cachedScript());
+        setScriptResource(other.resource());
     }
 
     ~PendingScript();
@@ -76,7 +76,7 @@ public:
         m_watchingForLoad = other.m_watchingForLoad;
         m_element = other.m_element;
         m_startingPosition = other.m_startingPosition;
-        setCachedScript(other.cachedScript());
+        setScriptResource(other.resource());
 
         return *this;
     }
@@ -91,8 +91,8 @@ public:
     void setElement(Element* element) { m_element = element; }
     PassRefPtr<Element> releaseElementAndClear();
 
-    CachedScript* cachedScript() const;
-    void setCachedScript(CachedScript*);
+    ScriptResource* resource() const;
+    void setScriptResource(ScriptResource*);
 
     virtual void notifyFinished(Resource*);
 
@@ -100,7 +100,7 @@ private:
     bool m_watchingForLoad;
     RefPtr<Element> m_element;
     TextPosition m_startingPosition; // Only used for inline script tags.
-    ResourcePtr<CachedScript> m_cachedScript;
+    ResourcePtr<ScriptResource> m_resource;
 };
 
 }

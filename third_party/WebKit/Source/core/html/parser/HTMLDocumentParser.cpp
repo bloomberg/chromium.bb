@@ -878,18 +878,18 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution()
     endIfDelayed();
 }
 
-void HTMLDocumentParser::watchForLoad(Resource* cachedScript)
+void HTMLDocumentParser::watchForLoad(Resource* resource)
 {
-    ASSERT(!cachedScript->isLoaded());
+    ASSERT(!resource->isLoaded());
     // addClient would call notifyFinished if the load were complete.
     // Callers do not expect to be re-entered from this call, so they should
     // not an already-loaded Resource.
-    cachedScript->addClient(this);
+    resource->addClient(this);
 }
 
-void HTMLDocumentParser::stopWatchingForLoad(Resource* cachedScript)
+void HTMLDocumentParser::stopWatchingForLoad(Resource* resource)
 {
-    cachedScript->removeClient(this);
+    resource->removeClient(this);
 }
 
 void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan()

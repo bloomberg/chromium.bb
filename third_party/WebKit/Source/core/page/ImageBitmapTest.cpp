@@ -33,7 +33,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 
@@ -46,7 +46,7 @@ class ImageBitmapTest : public ::testing::Test {
 
 // Verifies that the cached image held by an ImageBitmap is the same as the
 // one held by the HTMLImageElement.
-TEST_F(ImageBitmapTest, CachedImageConsistency)
+TEST_F(ImageBitmapTest, ImageResourceConsistency)
 {
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
@@ -58,7 +58,7 @@ TEST_F(ImageBitmapTest, CachedImageConsistency)
             *bitmap.getAddr32(x, y) = 0xFFFFFFFF;
 
     RefPtr<HTMLImageElement> imageElement = HTMLImageElement::create(Document::create().get());
-    imageElement->setCachedImage(new CachedImage(BitmapImage::create(NativeImageSkia::create(bitmap)).get()));
+    imageElement->setImageResource(new ImageResource(BitmapImage::create(NativeImageSkia::create(bitmap)).get()));
 
     RefPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(), IntRect(0, 0, width, height));
     RefPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(width / 2, height / 2, width / 2, height / 2));

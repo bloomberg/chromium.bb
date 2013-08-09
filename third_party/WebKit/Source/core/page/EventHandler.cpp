@@ -54,7 +54,7 @@
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Chrome.h"
 #include "core/page/DragController.h"
 #include "core/page/DragState.h"
@@ -1147,7 +1147,7 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
             StyleImage* styleImage = (*cursors)[i].image();
             if (!styleImage)
                 continue;
-            CachedImage* cachedImage = styleImage->cachedImage();
+            ImageResource* cachedImage = styleImage->cachedImage();
             if (!cachedImage)
                 continue;
             float scale = styleImage->imageScaleFactor();

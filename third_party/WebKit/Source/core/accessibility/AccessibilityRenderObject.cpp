@@ -2212,7 +2212,7 @@ AccessibilitySVGRoot* AccessibilityRenderObject::remoteSVGRootElement() const
     if (!m_renderer || !m_renderer->isRenderImage())
         return 0;
 
-    CachedImage* cachedImage = toRenderImage(m_renderer)->cachedImage();
+    ImageResource* cachedImage = toRenderImage(m_renderer)->cachedImage();
     if (!cachedImage)
         return 0;
 

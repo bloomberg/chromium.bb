@@ -20,31 +20,31 @@
     Boston, MA 02110-1301, USA.
 */
 
-#ifndef CachedImageClient_h
-#define CachedImageClient_h
+#ifndef ImageResourceClient_h
+#define ImageResourceClient_h
 
 #include "core/loader/cache/ResourceClient.h"
 
 namespace WebCore {
 
-class CachedImage;
+class ImageResource;
 class IntRect;
 
-class CachedImageClient : public ResourceClient {
+class ImageResourceClient : public ResourceClient {
 public:
-    virtual ~CachedImageClient() { }
+    virtual ~ImageResourceClient() { }
     static ResourceClientType expectedType() { return ImageType; }
     virtual ResourceClientType resourceClientType() const { return expectedType(); }
 
     // Called whenever a frame of an image changes, either because we got more data from the network or
     // because we are animating. If not null, the IntRect is the changed rect of the image.
-    virtual void imageChanged(CachedImage*, const IntRect* = 0) { }
+    virtual void imageChanged(ImageResource*, const IntRect* = 0) { }
 
     // Called to find out if this client wants to actually display the image. Used to tell when we
     // can halt animation. Content nodes that hold image refs for example would not render the image,
     // but RenderImages would (assuming they have visibility: visible and their render tree isn't hidden
     // e.g., in the b/f cache or in a background tab).
-    virtual bool willRenderImage(CachedImage*) { return false; }
+    virtual bool willRenderImage(ImageResource*) { return false; }
 };
 
 }

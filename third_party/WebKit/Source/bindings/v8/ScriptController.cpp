@@ -222,7 +222,7 @@ v8::Local<v8::Value> ScriptController::compileAndRunScript(const ScriptSourceCod
         tryCatch.SetVerbose(true);
 
         v8::Handle<v8::String> code = v8String(source.source(), m_isolate);
-        OwnPtr<v8::ScriptData> scriptData = V8ScriptRunner::precompileScript(code, source.cachedScript());
+        OwnPtr<v8::ScriptData> scriptData = V8ScriptRunner::precompileScript(code, source.resource());
 
         // NOTE: For compatibility with WebCore, ScriptSourceCode's line starts at
         // 1, whereas v8 starts at 0.

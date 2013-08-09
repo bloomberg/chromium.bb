@@ -32,8 +32,8 @@
 #include "core/html/LinkResource.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
-#include "core/loader/cache/CachedStyleSheetClient.h"
 #include "core/loader/cache/ResourcePtr.h"
+#include "core/loader/cache/StyleSheetResourceClient.h"
 
 namespace WebCore {
 
@@ -54,7 +54,7 @@ typedef EventSender<HTMLLinkElement> LinkEventSender;
 // changing @rel makes it harder to move such a design so we are
 // sticking current way so far.
 //
-class LinkStyle FINAL : public LinkResource, CachedStyleSheetClient {
+class LinkStyle FINAL : public LinkResource, StyleSheetResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<LinkStyle> create(HTMLLinkElement* owner);
@@ -84,7 +84,7 @@ public:
 
 private:
     // From ResourceClient
-    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CachedCSSStyleSheet*);
+    virtual void setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource*);
 
     enum DisabledState {
         Unset,
@@ -108,7 +108,7 @@ private:
     void removePendingSheet(RemovePendingSheetNotificationType = RemovePendingSheetNotifyImmediately);
     Document* document();
 
-    ResourcePtr<CachedCSSStyleSheet> m_cachedSheet;
+    ResourcePtr<CSSStyleSheetResource> m_resource;
     RefPtr<CSSStyleSheet> m_sheet;
     DisabledState m_disabledState;
     PendingSheetType m_pendingSheetType;

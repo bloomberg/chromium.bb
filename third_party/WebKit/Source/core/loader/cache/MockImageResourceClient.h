@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MockCachedImageClient_h
-#define MockCachedImageClient_h
+#ifndef MockImageResourceClient_h
+#define MockImageResourceClient_h
 
-#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/ImageResourceClient.h"
 #include "core/page/Frame.h"
 #include "core/platform/graphics/Image.h"
 
@@ -39,16 +39,16 @@
 
 namespace WebCore {
 
-class MockCachedImageClient : public WebCore::CachedImageClient {
+class MockImageResourceClient : public WebCore::ImageResourceClient {
 public:
-    MockCachedImageClient()
+    MockImageResourceClient()
         : m_imageChangedCount(0)
         , m_notifyFinishedCalled(false)
     {
     }
 
-    virtual ~MockCachedImageClient() { }
-    virtual void imageChanged(CachedImage*, const IntRect*)
+    virtual ~MockImageResourceClient() { }
+    virtual void imageChanged(ImageResource*, const IntRect*)
     {
         m_imageChangedCount++;
     }
@@ -69,4 +69,4 @@ private:
 
 } // namespace WebCore
 
-#endif // CachedImageTest_h
+#endif // ImageResourceTest_h

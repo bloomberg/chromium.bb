@@ -23,29 +23,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyleCachedImageSet_h
-#define StyleCachedImageSet_h
+#ifndef StyleFetchedImageSet_h
+#define StyleFetchedImageSet_h
 
-#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/ImageResourceClient.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {
 
-class CachedImage;
+class ImageResource;
 class CSSImageSetValue;
 
 // This class keeps one cached image and has access to a set of alternatives.
 
-class StyleCachedImageSet : public StyleImage, private CachedImageClient {
+class StyleFetchedImageSet : public StyleImage, private ImageResourceClient {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassRefPtr<StyleCachedImageSet> create(CachedImage* image, float imageScaleFactor, CSSImageSetValue* value)
+    static PassRefPtr<StyleFetchedImageSet> create(ImageResource* image, float imageScaleFactor, CSSImageSetValue* value)
     {
-        return adoptRef(new StyleCachedImageSet(image, imageScaleFactor, value));
+        return adoptRef(new StyleFetchedImageSet(image, imageScaleFactor, value));
     }
-    virtual ~StyleCachedImageSet();
+    virtual ~StyleFetchedImageSet();
 
     virtual PassRefPtr<CSSValue> cssValue() const;
 
@@ -70,16 +70,16 @@ public:
     virtual PassRefPtr<Image> image(RenderObject*, const IntSize&) const;
     virtual float imageScaleFactor() const { return m_imageScaleFactor; }
     virtual bool knownToBeOpaque(const RenderObject*) const OVERRIDE;
-    virtual CachedImage* cachedImage() const OVERRIDE { return m_bestFitImage.get(); }
+    virtual ImageResource* cachedImage() const OVERRIDE { return m_bestFitImage.get(); }
 
 private:
-    StyleCachedImageSet(CachedImage*, float imageScaleFactor, CSSImageSetValue*);
+    StyleFetchedImageSet(ImageResource*, float imageScaleFactor, CSSImageSetValue*);
 
-    ResourcePtr<CachedImage> m_bestFitImage;
+    ResourcePtr<ImageResource> m_bestFitImage;
     float m_imageScaleFactor;
     CSSImageSetValue* m_imageSetValue; // Not retained; it owns us.
 };
 
 } // namespace WebCore
 
-#endif // StyleCachedImageSet_h
+#endif // StyleFetchedImageSet_h

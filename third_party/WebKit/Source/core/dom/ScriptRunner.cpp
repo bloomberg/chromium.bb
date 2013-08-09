@@ -30,7 +30,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/PendingScript.h"
 #include "core/dom/ScriptLoader.h"
-#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/ScriptResource.h"
 
 namespace WebCore {
 
@@ -51,10 +51,10 @@ ScriptRunner::~ScriptRunner()
         m_document->decrementLoadEventDelayCount();
 }
 
-void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourcePtr<CachedScript> cachedScript, ExecutionType executionType)
+void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourcePtr<ScriptResource> resource, ExecutionType executionType)
 {
     ASSERT(scriptLoader);
-    ASSERT(cachedScript.get());
+    ASSERT(resource.get());
 
     Element* element = scriptLoader->element();
     ASSERT(element);
@@ -64,11 +64,11 @@ void ScriptRunner::queueScriptForExecution(ScriptLoader* scriptLoader, ResourceP
 
     switch (executionType) {
     case ASYNC_EXECUTION:
-        m_pendingAsyncScripts.add(scriptLoader, PendingScript(element, cachedScript.get()));
+        m_pendingAsyncScripts.add(scriptLoader, PendingScript(element, resource.get()));
         break;
 
     case IN_ORDER_EXECUTION:
-        m_scriptsToExecuteInOrder.append(PendingScript(element, cachedScript.get()));
+        m_scriptsToExecuteInOrder.append(PendingScript(element, resource.get()));
         break;
     }
 }
@@ -109,16 +109,16 @@ void ScriptRunner::timerFired(Timer<ScriptRunner>* timer)
     scripts.swap(m_scriptsToExecuteSoon);
 
     size_t numInOrderScriptsToExecute = 0;
-    for (; numInOrderScriptsToExecute < m_scriptsToExecuteInOrder.size() && m_scriptsToExecuteInOrder[numInOrderScriptsToExecute].cachedScript()->isLoaded(); ++numInOrderScriptsToExecute)
+    for (; numInOrderScriptsToExecute < m_scriptsToExecuteInOrder.size() && m_scriptsToExecuteInOrder[numInOrderScriptsToExecute].resource()->isLoaded(); ++numInOrderScriptsToExecute)
         scripts.append(m_scriptsToExecuteInOrder[numInOrderScriptsToExecute]);
     if (numInOrderScriptsToExecute)
         m_scriptsToExecuteInOrder.remove(0, numInOrderScriptsToExecute);
 
     size_t size = scripts.size();
     for (size_t i = 0; i < size; ++i) {
-        CachedScript* cachedScript = scripts[i].cachedScript();
+        ScriptResource* resource = scripts[i].resource();
         RefPtr<Element> element = scripts[i].releaseElementAndClear();
-        toScriptLoaderIfPossible(element.get())->execute(cachedScript);
+        toScriptLoaderIfPossible(element.get())->execute(resource);
         m_document->decrementLoadEventDelayCount();
     }
 }

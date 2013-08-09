@@ -34,7 +34,7 @@
 namespace WebCore {
 
 class CSSStyleSheet;
-class CachedCSSStyleSheet;
+class CSSStyleSheetResource;
 class Document;
 class Node;
 class SecurityOrigin;
@@ -62,7 +62,7 @@ public:
 
     const AtomicString& determineNamespace(const AtomicString& prefix);
 
-    void parseAuthorStyleSheet(const CachedCSSStyleSheet*, const SecurityOrigin*);
+    void parseAuthorStyleSheet(const CSSStyleSheetResource*, const SecurityOrigin*);
     bool parseString(const String&);
     bool parseStringAtPosition(const String&, const TextPosition&, bool);
 
@@ -104,7 +104,7 @@ public:
     const Vector<RefPtr<StyleRuleBase> >& childRules() const { return m_childRules; }
     const Vector<RefPtr<StyleRuleImport> >& importRules() const { return m_importRules; }
 
-    void notifyLoadedSheet(const CachedCSSStyleSheet*);
+    void notifyLoadedSheet(const CSSStyleSheetResource*);
 
     StyleSheetContents* parentStyleSheet() const;
     StyleRuleImport* ownerRule() const { return m_ownerRule; }

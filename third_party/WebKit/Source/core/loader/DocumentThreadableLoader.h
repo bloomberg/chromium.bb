@@ -33,7 +33,7 @@
 #define DocumentThreadableLoader_h
 
 #include "core/loader/ThreadableLoader.h"
-#include "core/loader/cache/CachedRawResource.h"
+#include "core/loader/cache/RawResource.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
@@ -50,7 +50,7 @@ namespace WebCore {
     class SecurityOrigin;
     class ThreadableLoaderClient;
 
-    class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private CachedRawResourceClient  {
+    class DocumentThreadableLoader : public RefCounted<DocumentThreadableLoader>, public ThreadableLoader, private RawResourceClient  {
         WTF_MAKE_FAST_ALLOCATED;
     public:
         static void loadResourceSynchronously(Document*, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&);
@@ -77,7 +77,7 @@ namespace WebCore {
 
         void clearResource();
 
-        // CachedRawResourceClient
+        // RawResourceClient
         virtual void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent);
         virtual void responseReceived(Resource*, const ResourceResponse&);
         virtual void dataReceived(Resource*, const char* data, int dataLength);
@@ -103,7 +103,7 @@ namespace WebCore {
 
         SecurityOrigin* securityOrigin() const;
 
-        ResourcePtr<CachedRawResource> m_resource;
+        ResourcePtr<RawResource> m_resource;
         ThreadableLoaderClient* m_client;
         Document* m_document;
         ThreadableLoaderOptions m_options;

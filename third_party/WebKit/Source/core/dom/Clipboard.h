@@ -35,7 +35,7 @@
 
 namespace WebCore {
 
-class CachedImage;
+class ImageResource;
 class DataTransferItemList;
 class DragData;
 class DragImage;
@@ -75,8 +75,8 @@ public:
     virtual PassRefPtr<FileList> files() const = 0;
 
     IntPoint dragLocation() const { return m_dragLoc; }
-    CachedImage* dragImage() const { return m_dragImage.get(); }
-    virtual void setDragImage(CachedImage*, const IntPoint&) = 0;
+    ImageResource* dragImage() const { return m_dragImage.get(); }
+    virtual void setDragImage(ImageResource*, const IntPoint&) = 0;
     Node* dragImageElement() const { return m_dragImageElement.get(); }
     virtual void setDragImageElement(Node*, const IntPoint&) = 0;
 
@@ -127,7 +127,7 @@ private:
 
 protected:
     IntPoint m_dragLoc;
-    ResourcePtr<CachedImage> m_dragImage;
+    ResourcePtr<ImageResource> m_dragImage;
     RefPtr<Node> m_dragImageElement;
 };
 

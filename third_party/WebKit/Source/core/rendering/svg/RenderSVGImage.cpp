@@ -68,7 +68,7 @@ bool RenderSVGImage::updateImageViewport()
     // by setting the image's container size to its intrinsic size.
     // See: http://www.w3.org/TR/SVG/single-page.html, 7.8 The ‘preserveAspectRatio’ attribute.
     if (image->preserveAspectRatioCurrentValue().align() == SVGPreserveAspectRatio::SVG_PRESERVEASPECTRATIO_NONE) {
-        if (CachedImage* cachedImage = m_imageResource->cachedImage()) {
+        if (ImageResource* cachedImage = m_imageResource->cachedImage()) {
             LayoutSize intrinsicSize = cachedImage->imageSizeForRenderer(0, style()->effectiveZoom());
             if (intrinsicSize != m_imageResource->imageSize(style()->effectiveZoom())) {
                 m_imageResource->setContainerSizeForRenderer(roundedIntSize(intrinsicSize));

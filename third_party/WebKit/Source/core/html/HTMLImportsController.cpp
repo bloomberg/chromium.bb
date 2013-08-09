@@ -74,7 +74,7 @@ PassRefPtr<HTMLImportLoader> HTMLImportsController::createLoader(HTMLImport* par
         return found.release();
 
     request.setPotentiallyCrossOriginEnabled(securityOrigin(), DoNotAllowStoredCredentials);
-    ResourcePtr<CachedRawResource> resource = parent->document()->fetcher()->requestImport(request);
+    ResourcePtr<RawResource> resource = parent->document()->fetcher()->requestImport(request);
     if (!resource)
         return 0;
 

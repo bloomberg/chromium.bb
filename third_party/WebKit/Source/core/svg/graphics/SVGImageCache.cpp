@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/graphics/SVGImageCache.h"
 
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -43,7 +43,7 @@ SVGImageCache::~SVGImageCache()
     m_imageForContainerMap.clear();
 }
 
-void SVGImageCache::removeClientFromCache(const CachedImageClient* client)
+void SVGImageCache::removeClientFromCache(const ImageResourceClient* client)
 {
     ASSERT(client);
 
@@ -51,7 +51,7 @@ void SVGImageCache::removeClientFromCache(const CachedImageClient* client)
         m_imageForContainerMap.remove(client);
 }
 
-void SVGImageCache::setContainerSizeForRenderer(const CachedImageClient* client, const IntSize& containerSize, float containerZoom)
+void SVGImageCache::setContainerSizeForRenderer(const ImageResourceClient* client, const IntSize& containerSize, float containerZoom)
 {
     ASSERT(client);
     ASSERT(!containerSize.isEmpty());

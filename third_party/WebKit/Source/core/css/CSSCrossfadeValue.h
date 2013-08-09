@@ -28,14 +28,14 @@
 
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/loader/cache/CachedImage.h"
-#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/ImageResource.h"
+#include "core/loader/cache/ImageResourceClient.h"
 #include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/graphics/Image.h"
 
 namespace WebCore {
 
-class CachedImage;
+class ImageResource;
 class CrossfadeSubimageObserverProxy;
 class RenderObject;
 class Document;
@@ -76,14 +76,14 @@ private:
         , m_cachedToImage(0)
         , m_crossfadeSubimageObserver(this) { }
 
-    class CrossfadeSubimageObserverProxy : public CachedImageClient {
+    class CrossfadeSubimageObserverProxy : public ImageResourceClient {
     public:
         CrossfadeSubimageObserverProxy(CSSCrossfadeValue* ownerValue)
         : m_ownerValue(ownerValue)
         , m_ready(false) { }
 
         virtual ~CrossfadeSubimageObserverProxy() { }
-        virtual void imageChanged(CachedImage*, const IntRect* = 0) OVERRIDE;
+        virtual void imageChanged(ImageResource*, const IntRect* = 0) OVERRIDE;
         void setReady(bool ready) { m_ready = ready; }
     private:
         CSSCrossfadeValue* m_ownerValue;
@@ -96,8 +96,8 @@ private:
     RefPtr<CSSValue> m_toValue;
     RefPtr<CSSPrimitiveValue> m_percentageValue;
 
-    ResourcePtr<CachedImage> m_cachedFromImage;
-    ResourcePtr<CachedImage> m_cachedToImage;
+    ResourcePtr<ImageResource> m_cachedFromImage;
+    ResourcePtr<ImageResource> m_cachedToImage;
 
     RefPtr<Image> m_generatedImage;
 

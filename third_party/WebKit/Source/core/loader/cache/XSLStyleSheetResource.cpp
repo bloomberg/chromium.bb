@@ -28,8 +28,8 @@
 #include "core/loader/cache/XSLStyleSheetResource.h"
 
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/CachedStyleSheetClient.h"
 #include "core/loader/cache/ResourceClientWalker.h"
+#include "core/loader/cache/StyleSheetResourceClient.h"
 #include "core/platform/SharedBuffer.h"
 #include "wtf/Vector.h"
 
@@ -48,9 +48,9 @@ XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequ
 
 void XSLStyleSheetResource::didAddClient(ResourceClient* c)
 {
-    ASSERT(c->resourceClientType() == CachedStyleSheetClient::expectedType());
+    ASSERT(c->resourceClientType() == StyleSheetResourceClient::expectedType());
     if (!isLoading())
-        static_cast<CachedStyleSheetClient*>(c)->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
+        static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }
 
 void XSLStyleSheetResource::setEncoding(const String& chs)
@@ -70,8 +70,8 @@ void XSLStyleSheetResource::checkNotify()
         m_sheet.append(m_decoder->flush());
     }
 
-    ResourceClientWalker<CachedStyleSheetClient> w(m_clients);
-    while (CachedStyleSheetClient* c = w.next())
+    ResourceClientWalker<StyleSheetResourceClient> w(m_clients);
+    while (StyleSheetResourceClient* c = w.next())
         c->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }
 

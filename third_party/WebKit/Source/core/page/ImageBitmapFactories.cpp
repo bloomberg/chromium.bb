@@ -49,7 +49,7 @@ namespace ImageBitmapFactories {
 
 static LayoutSize sizeFor(HTMLImageElement* image)
 {
-    if (CachedImage* cachedImage = image->cachedImage())
+    if (ImageResource* cachedImage = image->cachedImage())
         return cachedImage->imageSizeForRenderer(image->renderer(), 1.0f); // FIXME: Not sure about this.
     return IntSize();
 }

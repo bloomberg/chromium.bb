@@ -63,7 +63,7 @@ private:
 
     bool isSVGCursor() const;
     String cachedImageURL();
-    void clearCachedImage();
+    void clearImageResource();
 
     RefPtr<CSSValue> m_imageValue;
 

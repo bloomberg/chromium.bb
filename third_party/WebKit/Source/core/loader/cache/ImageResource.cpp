@@ -22,9 +22,9 @@
 */
 
 #include "config.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 
-#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/ImageResourceClient.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/loader/cache/ResourceClient.h"
 #include "core/loader/cache/ResourceClientWalker.h"
@@ -38,12 +38,12 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 
-using std::max;
+using namespace std;
 
 namespace WebCore {
 
-CachedImage::CachedImage(const ResourceRequest& resourceRequest)
-    : Resource(resourceRequest, ImageResource)
+ImageResource::ImageResource(const ResourceRequest& resourceRequest)
+    : Resource(resourceRequest, Image)
     , m_image(0)
     , m_loadingMultipartContent(false)
 {
@@ -51,8 +51,8 @@ CachedImage::CachedImage(const ResourceRequest& resourceRequest)
     setCustomAcceptHeader();
 }
 
-CachedImage::CachedImage(Image* image)
-    : Resource(ResourceRequest(), ImageResource)
+ImageResource::ImageResource(WebCore::Image* image)
+    : Resource(ResourceRequest(), Image)
     , m_image(image)
 {
     setStatus(Cached);
@@ -60,12 +60,12 @@ CachedImage::CachedImage(Image* image)
     setCustomAcceptHeader();
 }
 
-CachedImage::~CachedImage()
+ImageResource::~ImageResource()
 {
     clearImage();
 }
 
-void CachedImage::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
+void ImageResource::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& options)
 {
     if (!fetcher || fetcher->autoLoadImages())
         Resource::load(fetcher, options);
@@ -73,33 +73,33 @@ void CachedImage::load(ResourceFetcher* fetcher, const ResourceLoaderOptions& op
         setLoading(false);
 }
 
-void CachedImage::didAddClient(ResourceClient* c)
+void ImageResource::didAddClient(ResourceClient* c)
 {
     if (m_data && !m_image && !errorOccurred()) {
         createImage();
         m_image->setData(m_data, true);
     }
 
-    ASSERT(c->resourceClientType() == CachedImageClient::expectedType());
+    ASSERT(c->resourceClientType() == ImageResourceClient::expectedType());
     if (m_image && !m_image->isNull())
-        static_cast<CachedImageClient*>(c)->imageChanged(this);
+        static_cast<ImageResourceClient*>(c)->imageChanged(this);
 
     Resource::didAddClient(c);
 }
 
-void CachedImage::didRemoveClient(ResourceClient* c)
+void ImageResource::didRemoveClient(ResourceClient* c)
 {
     ASSERT(c);
-    ASSERT(c->resourceClientType() == CachedImageClient::expectedType());
+    ASSERT(c->resourceClientType() == ImageResourceClient::expectedType());
 
-    m_pendingContainerSizeRequests.remove(static_cast<CachedImageClient*>(c));
+    m_pendingContainerSizeRequests.remove(static_cast<ImageResourceClient*>(c));
     if (m_svgImageCache)
-        m_svgImageCache->removeClientFromCache(static_cast<CachedImageClient*>(c));
+        m_svgImageCache->removeClientFromCache(static_cast<ImageResourceClient*>(c));
 
     Resource::didRemoveClient(c);
 }
 
-void CachedImage::switchClientsToRevalidatedResource()
+void ImageResource::switchClientsToRevalidatedResource()
 {
     ASSERT(resourceToRevalidate());
     ASSERT(resourceToRevalidate()->isImage());
@@ -110,16 +110,16 @@ void CachedImage::switchClientsToRevalidatedResource()
         for (ContainerSizeRequests::iterator it = m_pendingContainerSizeRequests.begin(); it != m_pendingContainerSizeRequests.end(); ++it)
             switchContainerSizeRequests.set(it->key, it->value);
         Resource::switchClientsToRevalidatedResource();
-        CachedImage* revalidatedCachedImage = static_cast<CachedImage*>(resourceToRevalidate());
+        ImageResource* revalidatedImageResource = static_cast<ImageResource*>(resourceToRevalidate());
         for (ContainerSizeRequests::iterator it = switchContainerSizeRequests.begin(); it != switchContainerSizeRequests.end(); ++it)
-            revalidatedCachedImage->setContainerSizeForRenderer(it->key, it->value.first, it->value.second);
+            revalidatedImageResource->setContainerSizeForRenderer(it->key, it->value.first, it->value.second);
         return;
     }
 
     Resource::switchClientsToRevalidatedResource();
 }
 
-void CachedImage::allClientsRemoved()
+void ImageResource::allClientsRemoved()
 {
     m_pendingContainerSizeRequests.clear();
     if (m_image && !errorOccurred())
@@ -127,29 +127,29 @@ void CachedImage::allClientsRemoved()
     Resource::allClientsRemoved();
 }
 
-pair<Image*, float> CachedImage::brokenImage(float deviceScaleFactor) const
+pair<WebCore::Image*, float> ImageResource::brokenImage(float deviceScaleFactor) const
 {
     if (deviceScaleFactor >= 2) {
-        DEFINE_STATIC_LOCAL(Image*, brokenImageHiRes, (Image::loadPlatformResource("missingImage@2x").leakRef()));
+        DEFINE_STATIC_LOCAL(WebCore::Image*, brokenImageHiRes, (WebCore::Image::loadPlatformResource("missingImage@2x").leakRef()));
         return std::make_pair(brokenImageHiRes, 2);
     }
 
-    DEFINE_STATIC_LOCAL(Image*, brokenImageLoRes, (Image::loadPlatformResource("missingImage").leakRef()));
+    DEFINE_STATIC_LOCAL(WebCore::Image*, brokenImageLoRes, (WebCore::Image::loadPlatformResource("missingImage").leakRef()));
     return std::make_pair(brokenImageLoRes, 1);
 }
 
-bool CachedImage::willPaintBrokenImage() const
+bool ImageResource::willPaintBrokenImage() const
 {
     return errorOccurred();
 }
 
-Image* CachedImage::image()
+WebCore::Image* ImageResource::image()
 {
     ASSERT(!isPurgeable());
 
     if (errorOccurred()) {
         // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
-        // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage()
+        // deviceScaleFactor from here. It is critical that callers use ImageResource::brokenImage()
         // when they need the real, deviceScaleFactor-appropriate broken image icon.
         return brokenImage(1).first;
     }
@@ -157,33 +157,33 @@ Image* CachedImage::image()
     if (m_image)
         return m_image.get();
 
-    return Image::nullImage();
+    return WebCore::Image::nullImage();
 }
 
-Image* CachedImage::imageForRenderer(const RenderObject* renderer)
+WebCore::Image* ImageResource::imageForRenderer(const RenderObject* renderer)
 {
     ASSERT(!isPurgeable());
 
     if (errorOccurred()) {
         // Returning the 1x broken image is non-ideal, but we cannot reliably access the appropriate
-        // deviceScaleFactor from here. It is critical that callers use CachedImage::brokenImage()
+        // deviceScaleFactor from here. It is critical that callers use ImageResource::brokenImage()
         // when they need the real, deviceScaleFactor-appropriate broken image icon.
         return brokenImage(1).first;
     }
 
     if (!m_image)
-        return Image::nullImage();
+        return WebCore::Image::nullImage();
 
     if (m_image->isSVGImage()) {
-        Image* image = m_svgImageCache->imageForRenderer(renderer);
-        if (image != Image::nullImage())
+        WebCore::Image* image = m_svgImageCache->imageForRenderer(renderer);
+        if (image != WebCore::Image::nullImage())
             return image;
     }
 
     return m_image.get();
 }
 
-void CachedImage::setContainerSizeForRenderer(const CachedImageClient* renderer, const IntSize& containerSize, float containerZoom)
+void ImageResource::setContainerSizeForRenderer(const ImageResourceClient* renderer, const IntSize& containerSize, float containerZoom)
 {
     if (containerSize.isEmpty())
         return;
@@ -201,7 +201,7 @@ void CachedImage::setContainerSizeForRenderer(const CachedImageClient* renderer,
     m_svgImageCache->setContainerSizeForRenderer(renderer, containerSize, containerZoom);
 }
 
-bool CachedImage::usesImageContainerSize() const
+bool ImageResource::usesImageContainerSize() const
 {
     if (m_image)
         return m_image->usesContainerSize();
@@ -209,7 +209,7 @@ bool CachedImage::usesImageContainerSize() const
     return false;
 }
 
-bool CachedImage::imageHasRelativeWidth() const
+bool ImageResource::imageHasRelativeWidth() const
 {
     if (m_image)
         return m_image->hasRelativeWidth();
@@ -217,7 +217,7 @@ bool CachedImage::imageHasRelativeWidth() const
     return false;
 }
 
-bool CachedImage::imageHasRelativeHeight() const
+bool ImageResource::imageHasRelativeHeight() const
 {
     if (m_image)
         return m_image->hasRelativeHeight();
@@ -225,7 +225,7 @@ bool CachedImage::imageHasRelativeHeight() const
     return false;
 }
 
-LayoutSize CachedImage::imageSizeForRenderer(const RenderObject* renderer, float multiplier)
+LayoutSize ImageResource::imageSizeForRenderer(const RenderObject* renderer, float multiplier)
 {
     ASSERT(!isPurgeable());
 
@@ -254,20 +254,20 @@ LayoutSize CachedImage::imageSizeForRenderer(const RenderObject* renderer, float
     return imageSize;
 }
 
-void CachedImage::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
+void ImageResource::computeIntrinsicDimensions(Length& intrinsicWidth, Length& intrinsicHeight, FloatSize& intrinsicRatio)
 {
     if (m_image)
         m_image->computeIntrinsicDimensions(intrinsicWidth, intrinsicHeight, intrinsicRatio);
 }
 
-void CachedImage::notifyObservers(const IntRect* changeRect)
+void ImageResource::notifyObservers(const IntRect* changeRect)
 {
-    ResourceClientWalker<CachedImageClient> w(m_clients);
-    while (CachedImageClient* c = w.next())
+    ResourceClientWalker<ImageResourceClient> w(m_clients);
+    while (ImageResourceClient* c = w.next())
         c->imageChanged(this, changeRect);
 }
 
-void CachedImage::clear()
+void ImageResource::clear()
 {
     destroyDecodedData();
     clearImage();
@@ -275,13 +275,13 @@ void CachedImage::clear()
     setEncodedSize(0);
 }
 
-void CachedImage::setCustomAcceptHeader()
+void ImageResource::setCustomAcceptHeader()
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptWebP, ("image/webp,*/*;q=0.8", AtomicString::ConstructFromLiteral));
     setAccept(acceptWebP);
 }
 
-inline void CachedImage::createImage()
+inline void ImageResource::createImage()
 {
     // Create the image if it doesn't yet exist.
     if (m_image)
@@ -291,8 +291,9 @@ inline void CachedImage::createImage()
         RefPtr<SVGImage> svgImage = SVGImage::create(this);
         m_svgImageCache = SVGImageCache::create(svgImage.get());
         m_image = svgImage.release();
-    } else
+    } else {
         m_image = BitmapImage::create(this);
+    }
 
     if (m_image) {
         // Send queued container size requests.
@@ -304,7 +305,7 @@ inline void CachedImage::createImage()
     }
 }
 
-inline void CachedImage::clearImage()
+inline void ImageResource::clearImage()
 {
     // If our Image has an observer, it's always us so we need to clear the back pointer
     // before dropping our reference.
@@ -313,14 +314,14 @@ inline void CachedImage::clearImage()
     m_image.clear();
 }
 
-void CachedImage::appendData(const char* data, int length)
+void ImageResource::appendData(const char* data, int length)
 {
     Resource::appendData(data, length);
     if (!m_loadingMultipartContent)
         updateImage(false);
 }
 
-void CachedImage::updateImage(bool allDataReceived)
+void ImageResource::updateImage(bool allDataReceived)
 {
     if (m_data)
         createImage();
@@ -334,7 +335,7 @@ void CachedImage::updateImage(bool allDataReceived)
         sizeAvailable = m_image->setData(m_data, allDataReceived);
 
     // Go ahead and tell our observers to try to draw if we have either
-    // received all the data or the size is known.  Each chunk from the
+    // received all the data or the size is known. Each chunk from the
     // network causes observers to repaint, which will force that chunk
     // to decode.
     if (sizeAvailable || allDataReceived) {
@@ -351,7 +352,7 @@ void CachedImage::updateImage(bool allDataReceived)
     }
 }
 
-void CachedImage::finishOnePart()
+void ImageResource::finishOnePart()
 {
     if (m_loadingMultipartContent)
         clear();
@@ -361,14 +362,14 @@ void CachedImage::finishOnePart()
     Resource::finishOnePart();
 }
 
-void CachedImage::error(Resource::Status status)
+void ImageResource::error(Resource::Status status)
 {
     clear();
     Resource::error(status);
     notifyObservers();
 }
 
-void CachedImage::responseReceived(const ResourceResponse& response)
+void ImageResource::responseReceived(const ResourceResponse& response)
 {
     if (m_loadingMultipartContent && m_data)
         finishOnePart();
@@ -377,7 +378,7 @@ void CachedImage::responseReceived(const ResourceResponse& response)
     Resource::responseReceived(response);
 }
 
-void CachedImage::destroyDecodedData()
+void ImageResource::destroyDecodedData()
 {
     bool canDeleteImage = !m_image || (m_image->hasOneRef() && m_image->isBitmapImage());
     if (isSafeToMakePurgeable() && canDeleteImage && !isLoading()) {
@@ -386,11 +387,12 @@ void CachedImage::destroyDecodedData()
         m_image = 0;
         setDecodedSize(0);
         makePurgeable(true);
-    } else if (m_image && !errorOccurred())
+    } else if (m_image && !errorOccurred()) {
         m_image->destroyDecodedData();
+    }
 }
 
-void CachedImage::decodedSizeChanged(const Image* image, int delta)
+void ImageResource::decodedSizeChanged(const WebCore::Image* image, int delta)
 {
     if (!image || image != m_image)
         return;
@@ -398,7 +400,7 @@ void CachedImage::decodedSizeChanged(const Image* image, int delta)
     setDecodedSize(decodedSize() + delta);
 }
 
-void CachedImage::didDraw(const Image* image)
+void ImageResource::didDraw(const WebCore::Image* image)
 {
     if (!image || image != m_image)
         return;
@@ -410,13 +412,13 @@ void CachedImage::didDraw(const Image* image)
     Resource::didAccessDecodedData(timeStamp);
 }
 
-bool CachedImage::shouldPauseAnimation(const Image* image)
+bool ImageResource::shouldPauseAnimation(const WebCore::Image* image)
 {
     if (!image || image != m_image)
         return false;
 
-    ResourceClientWalker<CachedImageClient> w(m_clients);
-    while (CachedImageClient* c = w.next()) {
+    ResourceClientWalker<ImageResourceClient> w(m_clients);
+    while (ImageResourceClient* c = w.next()) {
         if (c->willRenderImage(this))
             return false;
     }
@@ -424,23 +426,23 @@ bool CachedImage::shouldPauseAnimation(const Image* image)
     return true;
 }
 
-void CachedImage::animationAdvanced(const Image* image)
+void ImageResource::animationAdvanced(const WebCore::Image* image)
 {
     if (!image || image != m_image)
         return;
     notifyObservers();
 }
 
-void CachedImage::changedInRect(const Image* image, const IntRect& rect)
+void ImageResource::changedInRect(const WebCore::Image* image, const IntRect& rect)
 {
     if (!image || image != m_image)
         return;
     notifyObservers(&rect);
 }
 
-bool CachedImage::currentFrameKnownToBeOpaque(const RenderObject* renderer)
+bool ImageResource::currentFrameKnownToBeOpaque(const RenderObject* renderer)
 {
-    Image* image = imageForRenderer(renderer);
+    WebCore::Image* image = imageForRenderer(renderer);
     if (image->isBitmapImage())
         image->nativeImageForCurrentFrame(); // force decode
     return image->currentFrameKnownToBeOpaque();

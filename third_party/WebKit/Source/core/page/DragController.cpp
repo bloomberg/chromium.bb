@@ -50,7 +50,7 @@
 #include "core/html/HTMLPlugInElement.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/DragActions.h"
 #include "core/page/DragClient.h"
@@ -661,7 +661,7 @@ Node* DragController::draggableNode(const Frame* src, Node* startNode, const Int
     return (state.m_dragType & DragSourceActionSelection) ? startNode : 0;
 }
 
-static CachedImage* getCachedImage(Element* element)
+static ImageResource* getImageResource(Element* element)
 {
     ASSERT(element);
     RenderObject* renderer = element->renderer();
@@ -674,7 +674,7 @@ static CachedImage* getCachedImage(Element* element)
 static Image* getImage(Element* element)
 {
     ASSERT(element);
-    CachedImage* cachedImage = getCachedImage(element);
+    ImageResource* cachedImage = getImageResource(element);
     // Don't use cachedImage->imageForRenderer() here as that may return BitmapImages for cached SVG Images.
     // Users of getImage() want access to the SVGImage, in order to figure out the filename extensions,
     // which would be empty when asking the cached BitmapImages.

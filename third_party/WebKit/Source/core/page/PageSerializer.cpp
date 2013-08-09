@@ -48,13 +48,13 @@
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/parser/HTMLMetaCharsetParser.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/SerializedResource.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderImage.h"
-#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleFetchedImage.h"
 #include "core/rendering/style/StyleImage.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
@@ -223,13 +223,13 @@ void PageSerializer::serializeFrame(Frame* frame)
         if (element->hasTagName(HTMLNames::imgTag)) {
             HTMLImageElement* imageElement = toHTMLImageElement(element);
             KURL url = document->completeURL(imageElement->getAttribute(HTMLNames::srcAttr));
-            CachedImage* cachedImage = imageElement->cachedImage();
+            ImageResource* cachedImage = imageElement->cachedImage();
             addImageToResources(cachedImage, imageElement->renderer(), url);
         } else if (element->hasTagName(HTMLNames::inputTag)) {
             HTMLInputElement* inputElement = toHTMLInputElement(element);
             if (inputElement->isImageButton() && inputElement->hasImageLoader()) {
                 KURL url = inputElement->src();
-                CachedImage* cachedImage = inputElement->imageLoader()->image();
+                ImageResource* cachedImage = inputElement->imageLoader()->image();
                 addImageToResources(cachedImage, inputElement->renderer(), url);
             }
         } else if (element->hasTagName(HTMLNames::linkTag)) {
@@ -288,7 +288,7 @@ void PageSerializer::serializeCSSStyleSheet(CSSStyleSheet* styleSheet, const KUR
     }
 }
 
-void PageSerializer::addImageToResources(CachedImage* image, RenderObject* imageRenderer, const KURL& url)
+void PageSerializer::addImageToResources(ImageResource* image, RenderObject* imageRenderer, const KURL& url)
 {
     if (!url.isValid() || m_resourceURLs.contains(url) || url.protocolIsData())
         return;
@@ -332,10 +332,10 @@ void PageSerializer::retrieveResourcesForProperties(const StylePropertySet* styl
         CSSImageValue* imageValue = toCSSImageValue(cssValue.get());
         StyleImage* styleImage = imageValue->cachedOrPendingImage();
         // Non cached-images are just place-holders and do not contain data.
-        if (!styleImage || !styleImage->isCachedImage())
+        if (!styleImage || !styleImage->isImageResource())
             continue;
 
-        CachedImage* image = static_cast<StyleCachedImage*>(styleImage)->cachedImage();
+        ImageResource* image = static_cast<StyleFetchedImage*>(styleImage)->cachedImage();
         addImageToResources(image, 0, image->url());
     }
 }

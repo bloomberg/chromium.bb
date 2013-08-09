@@ -34,7 +34,7 @@
 #include "core/html/HTMLPlugInImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/platform/Scrollbar.h"

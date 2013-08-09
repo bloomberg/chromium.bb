@@ -25,7 +25,7 @@
 #include "core/dom/Event.h"
 #include "core/dom/EventNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/svg/SVGImageElement.h"
 
 namespace WebCore {

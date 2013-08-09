@@ -34,7 +34,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMapElement.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/Font.h"
@@ -91,7 +91,7 @@ static const unsigned short paddingHeight = 4;
 static const float maxAltTextWidth = 1024;
 static const int maxAltTextHeight = 256;
 
-IntSize RenderImage::imageSizeForError(CachedImage* newImage) const
+IntSize RenderImage::imageSizeForError(ImageResource* newImage) const
 {
     ASSERT_ARG(newImage, newImage);
     ASSERT_ARG(newImage, newImage->imageForRenderer(this));
@@ -112,7 +112,7 @@ IntSize RenderImage::imageSizeForError(CachedImage* newImage) const
 
 // Sets the image height and width to fit the alt text.  Returns true if the
 // image size changed.
-bool RenderImage::setImageSizeForAltText(CachedImage* newImage /* = 0 */)
+bool RenderImage::setImageSizeForAltText(ImageResource* newImage /* = 0 */)
 {
     IntSize imageSize;
     if (newImage && newImage->imageForRenderer(this))
@@ -585,7 +585,7 @@ RenderBox* RenderImage::embeddedContentBox() const
     if (!m_imageResource)
         return 0;
 
-    CachedImage* cachedImage = m_imageResource->cachedImage();
+    ImageResource* cachedImage = m_imageResource->cachedImage();
     if (cachedImage && cachedImage->image() && cachedImage->image()->isSVGImage())
         return static_cast<SVGImage*>(cachedImage->image())->embeddedContentBox();
 

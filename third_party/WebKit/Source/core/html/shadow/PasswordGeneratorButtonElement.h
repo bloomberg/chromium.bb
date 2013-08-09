@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class CachedImage;
+class ImageResource;
 class HTMLInputElement;
 class ShadowRoot;
 
@@ -61,14 +61,14 @@ private:
     virtual bool isMouseFocusable() const OVERRIDE { return false; }
     virtual void defaultEventHandler(Event*) OVERRIDE;
 
-    CachedImage* imageForNormalState();
-    CachedImage* imageForHoverState();
+    ImageResource* imageForNormalState();
+    ImageResource* imageForHoverState();
 
     HTMLInputElement* hostInput();
     void updateImage();
 
-    ResourcePtr<CachedImage> m_cachedImageForNormalState;
-    ResourcePtr<CachedImage> m_cachedImageForHoverState;
+    ResourcePtr<ImageResource> m_cachedImageForNormalState;
+    ResourcePtr<ImageResource> m_cachedImageForHoverState;
     bool m_isInHoverState;
 };
 

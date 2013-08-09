@@ -40,7 +40,7 @@
 namespace WebCore {
 
 class ContainerNode;
-class CachedScript;
+class ScriptResource;
 class ResourceFetcher;
 class DocumentFragment;
 class Document;
@@ -179,7 +179,7 @@ class Text;
 
         XMLErrors m_xmlErrors;
 
-        ResourcePtr<CachedScript> m_pendingScript;
+        ResourcePtr<ScriptResource> m_pendingScript;
         RefPtr<Element> m_scriptElement;
         TextPosition m_scriptStartPosition;
 

@@ -39,7 +39,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/ImageResource.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -124,7 +124,7 @@ size_t ImageDocumentParser::appendBytes(const char* data, size_t length)
 void ImageDocumentParser::finish()
 {
     if (!isStopped() && document()->imageElement()) {
-        CachedImage* cachedImage = document()->cachedImage();
+        ImageResource* cachedImage = document()->cachedImage();
         cachedImage->finish();
         cachedImage->setResponse(document()->frame()->loader()->documentLoader()->response());
 
@@ -338,7 +338,7 @@ void ImageDocument::windowSizeChanged()
     }
 }
 
-CachedImage* ImageDocument::cachedImage()
+ImageResource* ImageDocument::cachedImage()
 {
     if (!m_imageElement)
         createDocumentStructure();
