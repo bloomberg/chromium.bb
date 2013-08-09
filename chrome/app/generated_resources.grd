@@ -7245,6 +7245,10 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
         No supported browser found
       </message>
+      <message name="IDS_IMPORT_PASSWORD_KEYCHAIN_WARNING" desc="Message displayed at the bottom of the Import Dialog for Safari on Mac OS">
+        Passwords saved in the Mac OS X Keychain will be used to help you sign in without typing.
+      </message>
+
 
       <!-- Import progress popup -->
       <message name="IDS_IMPORT_PROGRESS_TITLE" desc="Title for the importing progress dialog">

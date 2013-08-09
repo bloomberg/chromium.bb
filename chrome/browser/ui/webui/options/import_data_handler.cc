@@ -56,6 +56,7 @@ void ImportDataHandler::GetLocalizedValues(DictionaryValue* localized_strings) {
     { "noProfileFound", IDS_IMPORT_NO_PROFILE_FOUND },
     { "importSucceeded", IDS_IMPORT_SUCCEEDED },
     { "findYourImportedBookmarks", IDS_IMPORT_FIND_YOUR_BOOKMARKS },
+    { "macPasswordKeychain", IDS_IMPORT_PASSWORD_KEYCHAIN_WARNING },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -149,6 +150,13 @@ void ImportDataHandler::InitializePage() {
         (browser_services & importer::PASSWORDS) != 0);
     browser_profile->SetBoolean("search",
         (browser_services & importer::SEARCH_ENGINES) != 0);
+
+    browser_profile->SetBoolean("show_bottom_bar",
+#if defined(OS_MACOSX)
+        source_profile.importer_type == importer::TYPE_SAFARI);
+#else
+        false);
+#endif
 
     browser_profiles.Append(browser_profile);
   }
