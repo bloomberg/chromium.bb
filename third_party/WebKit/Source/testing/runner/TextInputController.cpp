@@ -125,7 +125,10 @@ void TextInputController::markedRange(const CppArgumentList&, CppVariant* result
     vector<int> intArray(2);
     intArray[0] = range.startOffset();
     intArray[1] = range.endOffset();
-    result->set(WebBindings::makeIntArray(intArray));
+
+    NPObject* resultArray = WebBindings::makeIntArray(intArray);
+    result->set(resultArray);
+    WebBindings::releaseObject(resultArray);
 }
 
 void TextInputController::selectedRange(const CppArgumentList&, CppVariant* result)
@@ -140,7 +143,10 @@ void TextInputController::selectedRange(const CppArgumentList&, CppVariant* resu
     vector<int> intArray(2);
     intArray[0] = range.startOffset();
     intArray[1] = range.endOffset();
-    result->set(WebBindings::makeIntArray(intArray));
+
+    NPObject* resultArray = WebBindings::makeIntArray(intArray);
+    result->set(resultArray);
+    WebBindings::releaseObject(resultArray);
 }
 
 void TextInputController::firstRectForCharacterRange(const CppArgumentList& arguments, CppVariant* result)
@@ -163,7 +169,10 @@ void TextInputController::firstRectForCharacterRange(const CppArgumentList& argu
     intArray[1] = rect.y;
     intArray[2] = rect.width;
     intArray[3] = rect.height;
-    result->set(WebBindings::makeIntArray(intArray));
+
+    NPObject* resultArray = WebBindings::makeIntArray(intArray);
+    result->set(resultArray);
+    WebBindings::releaseObject(resultArray);
 }
 
 void TextInputController::setComposition(const CppArgumentList& arguments, CppVariant* result)
