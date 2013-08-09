@@ -140,6 +140,18 @@ node = env.CommandSelLdrTestNacl(
     )
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_cond_wait_test')
 
+mutex_timedlock_test_nexe = env.ComponentProgram(
+    'mutex_timedlock_test',
+    ['mutex_timedlock.c'],
+    EXTRA_LIBS=['${PTHREAD_LIBS}', '${NONIRT_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'mutex_timedlock_test.out',
+    mutex_timedlock_test_nexe
+    )
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_mutex_timedlock_test',
+                       is_broken=env.IsRunningUnderValgrind())
+
 thread_stack_test_nexe = env.ComponentProgram('thread_stack_test',
                                               'thread_stack_test.c',
                                               EXTRA_LIBS=['${PTHREAD_LIBS}',

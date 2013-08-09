@@ -88,7 +88,8 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex) {
   return 0;
 }
 
-static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
+static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only,
+                                   struct timespec *abstime) {
   /*
    * Try to claim the mutex.  This compare-and-swap executes the full
    * memory barrier that pthread_mutex_lock() is required to execute.
@@ -99,6 +100,10 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
     if (try_only) {
       return EBUSY;
     }
+    if (abstime != NULL &&
+        (abstime->tv_nsec < 0 || 1000000000 <= abstime->tv_nsec)) {
+      return EINVAL;
+    }
     do {
       /*
        * If the state shows there are already waiters, or we can
@@ -108,8 +113,10 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
           __sync_val_compare_and_swap(&mutex->mutex_state,
                                       LOCKED_WITHOUT_WAITERS,
                                       LOCKED_WITH_WAITERS) != UNLOCKED) {
-        __nc_irt_futex.futex_wait_abs(&mutex->mutex_state,
-                                      LOCKED_WITH_WAITERS, NULL);
+        int rc = __nc_irt_futex.futex_wait_abs(&mutex->mutex_state,
+                                               LOCKED_WITH_WAITERS, abstime);
+        if (abstime != NULL && rc == ETIMEDOUT)
+          return ETIMEDOUT;
       }
       /*
        * Try again to claim the mutex.  On this try, we must set
@@ -124,9 +131,10 @@ static int mutex_lock_nonrecursive(pthread_mutex_t *mutex, int try_only) {
   return 0;
 }
 
-static int mutex_lock(pthread_mutex_t *mutex, int try_only) {
+static int mutex_lock(pthread_mutex_t *mutex, int try_only,
+                      struct timespec *abstime) {
   if (NACL_LIKELY(mutex->mutex_type == PTHREAD_MUTEX_FAST_NP)) {
-    return mutex_lock_nonrecursive(mutex, try_only);
+    return mutex_lock_nonrecursive(mutex, try_only, abstime);
   }
 
   /*
@@ -152,7 +160,7 @@ static int mutex_lock(pthread_mutex_t *mutex, int try_only) {
       return 0;
     }
   }
-  int err = mutex_lock_nonrecursive(mutex, try_only);
+  int err = mutex_lock_nonrecursive(mutex, try_only, abstime);
   if (err != 0)
     return err;
   mutex->owner_thread_id = self;
@@ -161,11 +169,16 @@ static int mutex_lock(pthread_mutex_t *mutex, int try_only) {
 }
 
 int pthread_mutex_trylock(pthread_mutex_t *mutex) {
-  return mutex_lock(mutex, 1);
+  return mutex_lock(mutex, 1, NULL);
 }
 
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
-  return mutex_lock(mutex, 0);
+  return mutex_lock(mutex, 0, NULL);
+}
+
+int pthread_mutex_timedlock(pthread_mutex_t *mutex,
+                            struct timespec *abstime) {
+  return mutex_lock(mutex, 0, abstime);
 }
 
 int pthread_mutex_unlock(pthread_mutex_t *mutex) {
