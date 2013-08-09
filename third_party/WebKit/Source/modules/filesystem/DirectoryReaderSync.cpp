@@ -35,7 +35,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
-#include "modules/filesystem/EntryArraySync.h"
 #include "modules/filesystem/EntrySync.h"
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
@@ -48,16 +47,16 @@ DirectoryReaderSync::DirectoryReaderSync(PassRefPtr<DOMFileSystemBase> fileSyste
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<EntryArraySync> DirectoryReaderSync::readEntries(ExceptionState& es)
+EntrySyncVector DirectoryReaderSync::readEntries(ExceptionState& es)
 {
     if (!m_hasMoreEntries)
-        return EntryArraySync::create();
+        return EntrySyncVector();
 
     EntriesSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->readDirectory(this, m_fullPath, helper.successCallback(), helper.errorCallback())) {
         es.throwDOMException(InvalidModificationError);
         setHasMoreEntries(false);
-        return 0;
+        return EntrySyncVector();
     }
     return helper.getResult(es);
 }

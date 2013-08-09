@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -35,9 +36,10 @@
 #include "core/fileapi/FileError.h"
 #include "core/html/VoidCallback.h"
 #include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/DirectoryReaderSync.h"
 #include "modules/filesystem/EntriesCallback.h"
-#include "modules/filesystem/EntryArraySync.h"
 #include "modules/filesystem/EntryCallback.h"
+#include "modules/filesystem/EntrySync.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntry.h"
 #include "modules/filesystem/FileSystemCallback.h"
@@ -47,11 +49,32 @@
 
 namespace WebCore {
 
-class AsyncFileSystem;
-class DirectoryEntrySync;
-class EntryArraySync;
-class EntrySync;
-class FileEntrySync;
+template <typename ResultType, typename CallbackArg>
+struct HelperResultType {
+    typedef PassRefPtr<ResultType> ReturnType;
+    typedef RefPtr<ResultType> StorageType;
+
+    static ReturnType createFromCallbackArg(CallbackArg argument)
+    {
+        return ResultType::create(argument);
+    }
+};
+
+template <>
+struct HelperResultType<EntrySyncVector, const EntryVector&> {
+    typedef EntrySyncVector ReturnType;
+    typedef EntrySyncVector StorageType;
+
+    static EntrySyncVector createFromCallbackArg(const EntryVector& entries)
+    {
+        EntrySyncVector result;
+        size_t entryCount = entries.size();
+        result.reserveInitialCapacity(entryCount);
+        for (size_t i = 0; i < entryCount; ++i)
+            result.uncheckedAppend(EntrySync::create(entries[i].get()));
+        return result;
+    }
+};
 
 // A helper template for FileSystemSync implementation.
 template <typename SuccessCallback, typename ObserverType, typename CallbackArg, typename ResultType>
@@ -59,6 +82,10 @@ class SyncCallbackHelper {
     WTF_MAKE_NONCOPYABLE(SyncCallbackHelper);
 public:
     typedef SyncCallbackHelper<SuccessCallback, ObserverType, CallbackArg, ResultType> HelperType;
+    typedef HelperResultType<ResultType, CallbackArg> ResultTypeTrait;
+    typedef typename ResultTypeTrait::StorageType ResultStorageType;
+    typedef typename ResultTypeTrait::ReturnType ResultReturnType;
+
     SyncCallbackHelper(ObserverType* observer = 0)
         : m_observer(observer)
         , m_successCallback(SuccessCallbackImpl::create(this))
@@ -68,7 +95,7 @@ public:
     {
     }
 
-    PassRefPtr<ResultType> getResult(ExceptionState& es)
+    ResultReturnType getResult(ExceptionState& es)
     {
         if (m_observer) {
             while (!m_completed) {
@@ -81,7 +108,7 @@ public:
         if (m_errorCode)
             FileError::throwDOMException(es, m_errorCode);
 
-        return m_result.release();
+        return m_result;
     }
 
     PassRefPtr<SuccessCallback> successCallback() { return m_successCallback; }
@@ -103,7 +130,7 @@ private:
 
         virtual bool handleEvent(CallbackArg arg)
         {
-            m_helper->setResult(ResultType::create(arg));
+            m_helper->setResult(arg);
             return true;
         }
 
@@ -146,16 +173,16 @@ private:
         m_completed = true;
     }
 
-    void setResult(PassRefPtr<ResultType> result)
+    void setResult(CallbackArg result)
     {
-        m_result = result;
+        m_result = ResultTypeTrait::createFromCallbackArg(result);
         m_completed = true;
     }
 
     ObserverType* m_observer;
     RefPtr<SuccessCallbackImpl> m_successCallback;
     RefPtr<ErrorCallbackImpl> m_errorCallback;
-    RefPtr<ResultType> m_result;
+    ResultStorageType m_result;
     FileError::ErrorCode m_errorCode;
     bool m_completed;
 };
@@ -175,7 +202,7 @@ struct EmptyObserverType {
 };
 
 typedef SyncCallbackHelper<EntryCallback, AsyncFileSystem, Entry*, EntrySync> EntrySyncCallbackHelper;
-typedef SyncCallbackHelper<EntriesCallback, AsyncFileSystem, const EntryVector&, EntryArraySync> EntriesSyncCallbackHelper;
+typedef SyncCallbackHelper<EntriesCallback, AsyncFileSystem, const EntryVector&, EntrySyncVector> EntriesSyncCallbackHelper;
 typedef SyncCallbackHelper<MetadataCallback, AsyncFileSystem, Metadata*, Metadata> MetadataSyncCallbackHelper;
 typedef SyncCallbackHelper<VoidCallback, AsyncFileSystem, EmptyType*, EmptyType> VoidSyncCallbackHelper;
 typedef SyncCallbackHelper<FileSystemCallback, EmptyObserverType, DOMFileSystem*, DOMFileSystemSync> FileSystemSyncCallbackHelper;

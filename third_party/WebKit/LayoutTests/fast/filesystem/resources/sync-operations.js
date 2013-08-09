@@ -27,8 +27,10 @@ var e = fileSystem.root.getFile('e', {create:true});
 var reader = fileSystem.root.createReader();
 var dirsCount = 0;
 var paths = [];
+var entries;
 do {
-    var entries = reader.readEntries();
+    entries = reader.readEntries();
+    shouldBe('entries.__proto__', 'Array.prototype');
     for (var i = 0; i < entries.length; ++i) {
         paths.push(entries[i].fullPath);
         if (entries[i].isDirectory)
