@@ -33,9 +33,10 @@ function keyDown(key, modifiers)
     eventSender.keyDown(key, modifiers);
 }
 
-function beginTest(title, opt_value, opt_min, opt_max)
+function beginTest(opt_title, opt_value, opt_min, opt_max)
 {
-    debug('== ' + title + ' ==');
+    if (opt_title)
+        debug('== ' + opt_title + ' ==');
     input.value = opt_value || '';
     input.min = opt_min ? opt_min : '';
     input.max = opt_max ? opt_max : '';
@@ -222,6 +223,12 @@ beginTest('Make an invalid date', '2012-02-01');
 keyDown('\t'); //        -> 02/[01]/2012
 keyDown('downArrow'); // -> 02/[31]/2012
 shouldBeEqualToString('input.value', ''); // 2012-02-31 is not a valid date.
+input.setAttribute('value', '2012-02-01');
+beginTest(undefined, '2012-02-01');
+keyDown('\t'); //        -> 02/[01]/2012
+keyDown('downArrow'); // -> 02/[31]/2012
+shouldBeEqualToString('input.value', ''); // 2012-02-31 is not a valid date.
+input.removeAttribute('value');
 
 beginTest('Backspace key', '2012-09-20');
 keyDown("\b"); // -> [mm]/20/2012

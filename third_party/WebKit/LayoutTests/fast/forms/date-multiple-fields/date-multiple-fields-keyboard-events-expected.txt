@@ -56,6 +56,7 @@ PASS input.value is "1000-12-31"
 PASS input.value is "1999-12-31"
 == Make an invalid date ==
 PASS input.value is ""
+PASS input.value is ""
 == Backspace key ==
 PASS input.value is ""
 == Delete key ==
