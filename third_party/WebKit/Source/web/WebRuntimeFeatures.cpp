@@ -387,4 +387,9 @@ void WebRuntimeFeatures::enableCustomElements(bool enable)
     RuntimeEnabledFeatures::setCustomDOMElementsEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableOverlayScrollbars(bool enable)
+{
+    RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(enable);
+}
+
 } // namespace WebKit

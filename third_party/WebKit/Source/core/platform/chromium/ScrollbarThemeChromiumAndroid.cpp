@@ -24,94 +24,17 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/ScrollbarThemeChromiumAndroid.h"
 
-#include "core/platform/PlatformMouseEvent.h"
-#include "core/platform/Scrollbar.h"
-#include "core/platform/graphics/GraphicsContext.h"
-#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "core/platform/ScrollbarTheme.h"
 
-#include <algorithm>
-
-using namespace std;
+#include "core/platform/chromium/ScrollbarThemeChromiumOverlay.h"
 
 namespace WebCore {
 
-static const int scrollbarWidth = 3;
-static const int scrollbarMargin = 4;
-
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
-    DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumAndroid, theme, ());
+    DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumOverlay, theme, ());
     return &theme;
-}
-
-int ScrollbarThemeChromiumAndroid::scrollbarThickness(ScrollbarControlSize controlSize)
-{
-    return scrollbarWidth + scrollbarMargin;
-}
-
-bool ScrollbarThemeChromiumAndroid::usesOverlayScrollbars() const
-{
-    return true;
-}
-
-int ScrollbarThemeChromiumAndroid::thumbPosition(ScrollbarThemeClient* scrollbar)
-{
-    if (!scrollbar->totalSize())
-        return 0;
-
-    int trackLen = trackLength(scrollbar);
-    float proportion = static_cast<float>(scrollbar->currentPos()) / scrollbar->totalSize();
-    return round(proportion * trackLen);
-}
-
-int ScrollbarThemeChromiumAndroid::thumbLength(ScrollbarThemeClient* scrollbar)
-{
-    int trackLen = trackLength(scrollbar);
-
-    if (!scrollbar->totalSize())
-        return trackLen;
-
-    float proportion = (float)scrollbar->visibleSize() / scrollbar->totalSize();
-    int length = round(proportion * trackLen);
-    length = min(max(length, minimumThumbLength(scrollbar)), trackLen);
-    return length;
-}
-
-bool ScrollbarThemeChromiumAndroid::hasThumb(ScrollbarThemeClient* scrollbar)
-{
-    return true;
-}
-
-IntRect ScrollbarThemeChromiumAndroid::backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
-{
-    return IntRect();
-}
-
-IntRect ScrollbarThemeChromiumAndroid::forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
-{
-    return IntRect();
-}
-
-IntRect ScrollbarThemeChromiumAndroid::trackRect(ScrollbarThemeClient* scrollbar, bool)
-{
-    IntRect rect = scrollbar->frameRect();
-    if (scrollbar->orientation() == HorizontalScrollbar)
-        rect.inflateX(-scrollbarMargin);
-    else
-        rect.inflateY(-scrollbarMargin);
-    return rect;
-}
-
-void ScrollbarThemeChromiumAndroid::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
-{
-    IntRect thumbRect = rect;
-    if (scrollbar->orientation() == HorizontalScrollbar)
-        thumbRect.setHeight(thumbRect.height() - scrollbarMargin);
-    else
-        thumbRect.setWidth(thumbRect.width() - scrollbarMargin);
-    context->fillRect(thumbRect, Color(128, 128, 128, 128));
 }
 
 } // namespace WebCore

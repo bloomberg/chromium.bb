@@ -23,14 +23,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeChromiumAndroid_h
-#define ScrollbarThemeChromiumAndroid_h
+#ifndef ScrollbarThemeChromiumOverlay_h
+#define ScrollbarThemeChromiumOverlay_h
 
 #include "core/platform/chromium/ScrollbarThemeChromium.h"
 
 namespace WebCore {
 
-class ScrollbarThemeChromiumAndroid : public ScrollbarThemeComposite {
+// This scrollbar theme is used to get overlay scrollbar for platforms other
+// than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
+class ScrollbarThemeChromiumOverlay : public ScrollbarThemeComposite {
 public:
     virtual int scrollbarThickness(ScrollbarControlSize);
     virtual bool usesOverlayScrollbars() const;

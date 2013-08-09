@@ -31,8 +31,10 @@
 #include "config.h"
 #include "core/platform/chromium/ScrollbarThemeChromiumDefault.h"
 
+#include "RuntimeEnabledFeatures.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
+#include "core/platform/chromium/ScrollbarThemeChromiumOverlay.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "public/platform/default/WebThemeEngine.h"
 #include "public/platform/Platform.h"
@@ -42,6 +44,11 @@ namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
+    if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
+        DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumOverlay, theme, ());
+        return &theme;
+    }
+
     DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumDefault, theme, ());
     return &theme;
 }

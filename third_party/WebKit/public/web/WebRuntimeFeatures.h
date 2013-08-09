@@ -140,6 +140,8 @@ public:
 
     WEBKIT_EXPORT static void enableCustomElements(bool);
 
+    WEBKIT_EXPORT static void enableOverlayScrollbars(bool);
+
 private:
     WebRuntimeFeatures();
 };

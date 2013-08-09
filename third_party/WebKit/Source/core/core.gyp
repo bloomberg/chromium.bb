@@ -638,6 +638,12 @@
             ['exclude', 'platform/chromium/ScrollbarThemeChromiumDefault.h'],
           ],
         }],
+        ['use_default_render_theme==0 and OS!="android"', {
+          'sources/': [
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumOverlay.cpp'],
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumOverlay.h'],
+          ]
+        }],
         ['OS=="linux" or OS=="android"', {
           'sources/': [
             # Cherry-pick files excluded by the broader regular expressions above.
