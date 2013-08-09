@@ -1123,19 +1123,31 @@ bool ImmersiveModeControllerAsh::ShouldIgnoreMouseEventAtLocation(
 
 bool ImmersiveModeControllerAsh::ShouldHandleGestureEvent(
     const gfx::Point& location) const {
+  gfx::Rect top_container_bounds_in_screen =
+      top_container_->GetBoundsInScreen();
+
   // All of the gestures that are of interest start in a region with left &
   // right edges agreeing with |top_container_|. When CLOSED it is difficult to
   // hit the bounds due to small size of the tab strip, so the hit target needs
-  // to be extended on the bottom, thus the inset call. Finally there may be a
-  // bezel sensor off screen logically above |top_container_| thus the test
-  // needs to include gestures starting above.
-  gfx::Rect near_bounds = top_container_->GetBoundsInScreen();
+  // to be extended on the bottom, thus the inset call.
+  gfx::Rect near_bounds = top_container_bounds_in_screen;
   if (reveal_state_ == CLOSED)
     near_bounds.Inset(gfx::Insets(0, 0, -kNearTopContainerDistance, 0));
-  return near_bounds.Contains(location) ||
-      ((location.y() < near_bounds.y()) &&
-       (location.x() >= near_bounds.x()) &&
-       (location.x() < near_bounds.right()));
+  if (near_bounds.Contains(location))
+    return true;
+
+  // There may be a bezel sensor off screen logically above |top_container_|
+  // thus the test needs to include gestures starting above, but this needs to
+  // be distinguished from events originating on another screen from
+  // (potentially) an extended desktop. The check for the event not contained by
+  // the closest screen ensures that the event is from a valid bezel and can be
+  // interpreted as such.
+  gfx::Rect screen_bounds =
+      ash::Shell::GetScreen()->GetDisplayNearestPoint(location).bounds();
+  return (!screen_bounds.Contains(location) &&
+          location.y() < top_container_bounds_in_screen.y() &&
+          location.x() >= top_container_bounds_in_screen.x() &&
+          location.x() < top_container_bounds_in_screen.right());
 }
 
 void ImmersiveModeControllerAsh::SetRenderWindowTopInsetsForTouch(
