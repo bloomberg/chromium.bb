@@ -1056,6 +1056,14 @@ notify_touch(struct weston_seat *seat, uint32_t time, int touch_id,
 		}
 
 		grab->interface->down(grab, time, touch_id, sx, sy);
+		if (seat->num_tp == 1) {
+			touch->grab_serial =
+				wl_display_get_serial(ec->wl_display);
+			touch->grab_time = time;
+			touch->grab_x = x;
+			touch->grab_y = y;
+		}
+
 		break;
 	case WL_TOUCH_MOTION:
 		es = (struct weston_surface *) touch->focus;
