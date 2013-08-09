@@ -57,6 +57,36 @@ cr.define('cr.ui.login', function() {
   var Bubble = cr.ui.Bubble;
 
   /**
+   * Maximum time in milliseconds to wait for step transition to finish.
+   * The value is used as the duration for ensureTransitionEndEvent below.
+   * It needs to be inline with the step screen transition duration time
+   * defined in css file. The current value in css is 200ms. To avoid emulated
+   * webkitTransitionEnd fired before real one, 250ms is used.
+   * @const
+   */
+  var MAX_SCREEN_TRANSITION_DURATION = 250;
+
+  /**
+   * webkitTransitionEnd does not always fire (e.g. when animation is aborted
+   * or when no paint happens during the animation). This function sets up
+   * a timer and emulate the event if it is not fired when the timer expires.
+   * @param {!HTMLElement} el The element to watch for webkitTransitionEnd.
+   * @param {number} timeOut The maximum wait time in milliseconds for the
+   *     webkitTransitionEnd to happen.
+   */
+  function ensureTransitionEndEvent(el, timeOut) {
+    var fired = false;
+    el.addEventListener('webkitTransitionEnd', function f(e) {
+      el.removeEventListener('webkitTransitionEnd', f);
+      fired = true;
+    });
+    window.setTimeout(function() {
+      if (!fired)
+        cr.dispatchSimpleEvent(el, 'webkitTransitionEnd');
+    }, timeOut);
+  }
+
+  /**
    * Groups of screens (screen IDs) that should have the same dimensions.
    * @type Array.<Array.<string>>
    * @const
@@ -310,6 +340,7 @@ cr.define('cr.ui.login', function() {
             if (defaultControl)
               defaultControl.focus();
           });
+          ensureTransitionEndEvent(oldStep, MAX_SCREEN_TRANSITION_DURATION);
         } else {
           oldStep.classList.add('hidden');
           if (defaultControl)
@@ -330,6 +361,8 @@ cr.define('cr.ui.login', function() {
                 if (defaultControl)
                   defaultControl.focus();
               });
+          ensureTransitionEndEvent(innerContainer,
+                                   MAX_SCREEN_TRANSITION_DURATION);
         } else {
           if (defaultControl)
             defaultControl.focus();

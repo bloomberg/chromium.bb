@@ -80,7 +80,7 @@ login.createScreen('KioskEnableScreen', 'kiosk-enable', function() {
      * Cancels the reset and drops the user back to the login screen.
      */
     cancel: function() {
-      chrome.send('kioskOnCancel');
+      chrome.send('kioskOnClose');
     },
 
     /**
