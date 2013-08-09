@@ -188,7 +188,6 @@ void ExtensionTtsEngineResume(Utterance* utterance) {
 
 bool ExtensionTtsEngineSendTtsEventFunction::RunImpl() {
   int utterance_id;
-  std::string error_message;
   EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &utterance_id));
 
   DictionaryValue* event;
