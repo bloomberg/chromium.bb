@@ -183,13 +183,13 @@ void DnsSdServer::ProcessMessage(int len, net::IOBufferWithSize* buf) {
 
   VLOG(1) << "Current TTL for respond: " << current_ttl;
 
-  bool multicast_respond =
-      CommandLine::ForCurrentProcess()->HasSwitch("multicast-respond");
+  bool unicast_respond =
+      CommandLine::ForCurrentProcess()->HasSwitch("unicast-respond");
   socket_->SendTo(buffer.get(), buffer.get()->size(),
-                  multicast_respond ? multicast_address_ : recv_address_,
+                  unicast_respond ? recv_address_ : multicast_address_,
                   base::Bind(&DoNothingAfterSendToSocket));
   VLOG(1) << "Responded to "
-      << (multicast_respond ? multicast_address_ : recv_address_).ToString();
+      << (unicast_respond ? recv_address_ : multicast_address_).ToString();
 }
 
 void DnsSdServer::ProccessQuery(uint32 current_ttl, const DnsQueryRecord& query,
