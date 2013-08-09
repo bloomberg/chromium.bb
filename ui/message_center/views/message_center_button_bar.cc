@@ -116,6 +116,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
 
   // Keyboardists can use the gear button to switch modes.
   title_arrow_->set_focusable(false);
+  AddChildView(title_arrow_);
 
   gfx::Font notification_label_font =
       ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BaseFont);
