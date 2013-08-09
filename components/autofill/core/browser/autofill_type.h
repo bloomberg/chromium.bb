@@ -31,7 +31,9 @@ class AutofillType {
   // Maps |this| type to a field type that can be directly stored in an Autofill
   // data model (in the sense that it makes sense to call
   // |AutofillDataModel::SetRawInfo()| with the returned field type as the first
-  // parameter).
+  // parameter).  Note that the returned type might not be exactly equivalent to
+  // |this| type.  For example, there is no exact analogue to the
+  // 'street-address' HTML type hint among the storable field types.
   ServerFieldType GetStorableType() const;
 
   // Serializes |this| type to a string.

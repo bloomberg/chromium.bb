@@ -4,34 +4,17 @@
 
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/address.h"
 #include "components/autofill/core/browser/autofill_type.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using content::BrowserThread;
 
 namespace autofill {
 
-class AddressTest : public testing::Test {
- public:
-  // In order to access the application locale -- which the tested functions do
-  // internally -- this test must run on the UI thread.
-  AddressTest() : ui_thread_(BrowserThread::UI, &message_loop_) {}
-
- private:
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-
-  DISALLOW_COPY_AND_ASSIGN(AddressTest);
-};
-
 // Test that country data can be properly returned as either a country code or a
 // localized country name.
-TEST_F(AddressTest, GetCountry) {
+TEST(AddressTest, GetCountry) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
@@ -63,7 +46,7 @@ TEST_F(AddressTest, GetCountry) {
 }
 
 // Test that we properly detect country codes appropriate for each country.
-TEST_F(AddressTest, SetCountry) {
+TEST(AddressTest, SetCountry) {
   Address address;
   EXPECT_EQ(base::string16(), address.GetRawInfo(ADDRESS_HOME_COUNTRY));
 
@@ -127,7 +110,7 @@ TEST_F(AddressTest, SetCountry) {
 }
 
 // Test that we properly match typed values to stored country data.
-TEST_F(AddressTest, IsCountry) {
+TEST(AddressTest, IsCountry) {
   Address address;
   address.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
 
@@ -164,6 +147,52 @@ TEST_F(AddressTest, IsCountry) {
   ServerFieldTypeSet matching_types;
   address.GetMatchingTypes(ASCIIToUTF16("Garbage"), "US", &matching_types);
   EXPECT_EQ(0U, matching_types.size());
+}
+
+// Verifies that Address::GetInfo() can correctly return a concatenated full
+// street address.
+TEST(AddressTest, GetStreetAddress) {
+  // Address has no address lines.
+  Address address;
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+
+  AutofillType type = AutofillType(HTML_TYPE_STREET_ADDRESS, HTML_MODE_NONE);
+  EXPECT_EQ(base::string16(), address.GetInfo(type, "en-US"));
+
+  // Address has only line 1.
+  address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave."),
+            address.GetInfo(type, "en-US"));
+
+  // Address has lines 1 and 2.
+  address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+
+  EXPECT_EQ(ASCIIToUTF16("123 Example Ave., Apt. 42"),
+            address.GetInfo(type, "en-US"));
+}
+
+// Verifies that Address::SetInfo() rejects setting data for
+// HTML_TYPE_STREET_ADDRESS, as there is no good general way to parse that data
+// into the consituent address lines.
+TEST(AddressTest, SetStreetAddress) {
+  // Address has no address lines.
+  Address address;
+  address.SetRawInfo(ADDRESS_HOME_LINE1, ASCIIToUTF16("123 Example Ave."));
+  address.SetRawInfo(ADDRESS_HOME_LINE2, ASCIIToUTF16("Apt. 42"));
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_FALSE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
+
+  AutofillType type = AutofillType(HTML_TYPE_STREET_ADDRESS, HTML_MODE_NONE);
+  base::string16 street_address = ASCIIToUTF16("456 New St., Apt. 17");
+  EXPECT_FALSE(address.SetInfo(type, street_address, "en-US"));
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE1).empty());
+  EXPECT_TRUE(address.GetRawInfo(ADDRESS_HOME_LINE2).empty());
 }
 
 }  // namespace autofill

@@ -137,6 +137,7 @@ FieldTypeGroup AutofillType::group() const {
     case HTML_TYPE_ORGANIZATION:
       return COMPANY;
 
+    case HTML_TYPE_STREET_ADDRESS:
     case HTML_TYPE_ADDRESS_LINE1:
     case HTML_TYPE_ADDRESS_LINE2:
     case HTML_TYPE_LOCALITY:
@@ -264,6 +265,9 @@ ServerFieldType AutofillType::GetStorableType() const {
 
     case HTML_TYPE_ORGANIZATION:
       return COMPANY_NAME;
+
+    case HTML_TYPE_STREET_ADDRESS:
+      return ADDRESS_HOME_LINE1;
 
     case HTML_TYPE_ADDRESS_LINE1:
       return ADDRESS_HOME_LINE1;
@@ -543,6 +547,8 @@ std::string AutofillType::ToString() const {
       return "HTML_TYPE_FAMILY_NAME";
     case HTML_TYPE_ORGANIZATION:
       return "HTML_TYPE_ORGANIZATION";
+    case HTML_TYPE_STREET_ADDRESS:
+      return "HTML_TYPE_STREET_ADDRESS";
     case HTML_TYPE_ADDRESS_LINE1:
       return "HTML_TYPE_ADDRESS_LINE1";
     case HTML_TYPE_ADDRESS_LINE2:

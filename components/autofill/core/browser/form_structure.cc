@@ -212,6 +212,9 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "organization")
     return HTML_TYPE_ORGANIZATION;
 
+  if (autocomplete_attribute_value == "street-address")
+    return HTML_TYPE_STREET_ADDRESS;
+
   if (autocomplete_attribute_value == "address-line1")
     return HTML_TYPE_ADDRESS_LINE1;
 

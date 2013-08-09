@@ -105,8 +105,14 @@ void Address::SetRawInfo(ServerFieldType type, const base::string16& value) {
 
 base::string16 Address::GetInfo(const AutofillType& type,
                                 const std::string& app_locale) const {
-  if (type.html_type() == HTML_TYPE_COUNTRY_CODE)
+  if (type.html_type() == HTML_TYPE_COUNTRY_CODE) {
     return ASCIIToUTF16(country_code_);
+  } else if (type.html_type() == HTML_TYPE_STREET_ADDRESS) {
+    base::string16 address = line1_;
+    if (!line2_.empty())
+      address += ASCIIToUTF16(", ") + line2_;
+    return address;
+  }
 
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_COUNTRY && !country_code_.empty())
@@ -126,6 +132,13 @@ bool Address::SetInfo(const AutofillType& type,
 
     country_code_ = StringToUpperASCII(UTF16ToASCII(value));
     return true;
+  } else if (type.html_type() == HTML_TYPE_STREET_ADDRESS) {
+    // Don't attempt to parse the address into lines, since this is potentially
+    // a user-entered address in the user's own format, so the code would have
+    // to rely on iffy heuristics at best.  Instead, just give up when importing
+    // addresses like this.
+    line1_ = line2_ = base::string16();
+    return false;
   }
 
   ServerFieldType storable_type = type.GetStorableType();

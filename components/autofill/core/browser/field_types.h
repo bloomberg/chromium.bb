@@ -121,6 +121,7 @@ enum HtmlFieldType {
   HTML_TYPE_ORGANIZATION,
 
   // Address types.
+  HTML_TYPE_STREET_ADDRESS,
   HTML_TYPE_ADDRESS_LINE1,
   HTML_TYPE_ADDRESS_LINE2,
   HTML_TYPE_LOCALITY,      // For U.S. addresses, corresponds to the city.
