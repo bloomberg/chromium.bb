@@ -137,11 +137,6 @@ bool InitializeBpfSandbox() {
       content::InitializeSandbox(NaClBpfSandboxPolicy);
   if (sandbox_is_initialized) {
     RunSandboxSanityChecks();
-    // TODO(jln): Find a way to fix this.
-    // The sandbox' SIGSYS handler trips NaCl, so we disable it.
-    // If SIGSYS is triggered it'll now execute the default action
-    // (CORE). This will make it hard to track down bugs and sandbox violations.
-    CHECK(signal(SIGSYS, SIG_DFL) != SIG_ERR);
     return true;
   }
   return false;
