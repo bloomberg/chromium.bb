@@ -714,6 +714,9 @@ function setShouldPollCards(shouldPollCardsRequest, callback) {
         startPollingCards();
       else
         stopPollingCards();
+    } else {
+      console.log(
+          'Action Ignored setShouldPollCards=' + shouldPollCardsRequest);
     }
     callback();
   });
@@ -739,6 +742,8 @@ function setToastVisible(visibleRequest, callback) {
         showWelcomeToast();
       else
         hideWelcomeToast();
+    } else {
+      console.log('Action Ignored setToastVisible=' + visibleRequest);
     }
 
     callback();
