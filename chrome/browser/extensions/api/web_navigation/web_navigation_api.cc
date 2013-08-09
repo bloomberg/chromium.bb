@@ -37,6 +37,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(extensions::WebNavigationTabObserver);
 
 namespace extensions {
 
+#if !defined(OS_ANDROID)
+
 namespace helpers = web_navigation_api_helpers;
 namespace keys = web_navigation_api_constants;
 
@@ -857,5 +859,7 @@ void WebNavigationAPI::OnListenerAdded(const EventListenerInfo& details) {
   web_navigation_event_router_.reset(new WebNavigationEventRouter(profile_));
   ExtensionSystem::Get(profile_)->event_router()->UnregisterObserver(this);
 }
+
+#endif  // OS_ANDROID
 
 }  // namespace extensions

@@ -107,8 +107,10 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
 
   SearchTabHelper::CreateForWebContents(contents());
 
+#if !defined(OS_ANDROID)
   // Observers.
   extensions::WebNavigationTabObserver::CreateForWebContents(contents());
+#endif  // OS_ANDROID
 
   // Favicons, required by the Task Manager.
   FaviconTabHelper::CreateForWebContents(contents());
