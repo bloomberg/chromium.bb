@@ -329,6 +329,8 @@
         'browser/chromeos/extensions/file_manager/file_tasks.h',
         'browser/chromeos/extensions/file_manager/file_watcher.cc',
         'browser/chromeos/extensions/file_manager/file_watcher.h',
+        'browser/chromeos/extensions/file_manager/fileapi_util.cc',
+        'browser/chromeos/extensions/file_manager/fileapi_util.h',
         'browser/chromeos/extensions/file_manager/mounted_disk_monitor.cc',
         'browser/chromeos/extensions/file_manager/mounted_disk_monitor.h',
         'browser/chromeos/extensions/file_manager/zip_file_creator.cc',

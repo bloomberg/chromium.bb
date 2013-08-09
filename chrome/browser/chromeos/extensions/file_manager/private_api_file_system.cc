@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
@@ -272,10 +273,9 @@ bool RequestFileSystemFunction::RunImpl() {
 
   set_log_on_completion(true);
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile_, site_instance)->
-      GetFileSystemContext();
+      fileapi_util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
 
   const GURL origin_url = source_url_.GetOrigin();
   file_system_context->OpenFileSystem(
@@ -312,10 +312,9 @@ bool FileWatchFunctionBase::RunImpl() {
   if (!args_->GetString(0, &url) || url.empty())
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-      GetFileSystemContext();
+      fileapi_util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
 
   FileSystemURL file_watch_url = file_system_context->CrackURL(GURL(url));
   base::FilePath local_path = file_watch_url.path();
@@ -538,10 +537,10 @@ bool ValidatePathNameLengthFunction::RunImpl() {
   if (!args_->GetString(1, &name))
     return false;
 
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-      GetFileSystemContext();
+      fileapi_util::GetFileSystemContextForRenderViewHost(
+          profile(), render_view_host());
+
   fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(GURL(parent_url)));
   if (!chromeos::FileSystemBackend::CanHandleURL(filesystem_url))

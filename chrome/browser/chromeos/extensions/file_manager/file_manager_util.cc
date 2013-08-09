@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -281,11 +282,9 @@ void ExecuteHandler(Profile* profile,
   if (!GrantFileSystemAccessToFileBrowser(profile))
     return;
 
-  GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
-      GetSiteForExtensionId(kFileBrowserDomain);
   fileapi::FileSystemContext* file_system_context =
-      BrowserContext::GetStoragePartitionForSite(profile, site)->
-          GetFileSystemContext();
+      fileapi_util::GetFileSystemContextForExtensionId(
+          profile, kFileBrowserDomain);
 
   // We are executing the task on behalf of File Browser extension.
   const GURL source_url = GetFileBrowserUrl();
@@ -743,11 +742,9 @@ void ViewItem(const base::FilePath& path) {
     return;
   }
 
-  GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
-      GetSiteForExtensionId(kFileBrowserDomain);
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartitionForSite(profile, site)->
-      GetFileSystemContext();
+      fileapi_util::GetFileSystemContextForExtensionId(
+          profile, kFileBrowserDomain);
 
   CheckIfDirectoryExists(file_system_context, url,
                          base::Bind(&ContinueViewItem, profile, path));

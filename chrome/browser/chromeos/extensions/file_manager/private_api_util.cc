@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -156,10 +157,9 @@ base::FilePath GetLocalPathFromURL(
   DCHECK(render_view_host);
   DCHECK(profile);
 
-  content::SiteInstance* site_instance = render_view_host->GetSiteInstance();
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      content::BrowserContext::GetStoragePartition(profile, site_instance)->
-      GetFileSystemContext();
+      fileapi_util::GetFileSystemContextForRenderViewHost(
+          profile, render_view_host);
 
   const fileapi::FileSystemURL filesystem_url(
       file_system_context->CrackURL(url));

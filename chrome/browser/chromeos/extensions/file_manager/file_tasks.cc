@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
@@ -33,7 +34,6 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/site_instance.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "webkit/browser/fileapi/file_system_context.h"
@@ -41,7 +41,6 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using content::BrowserContext;
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 using content::SiteInstance;
@@ -151,15 +150,6 @@ FileBrowserHandlerList FindFileBrowserHandlersForURL(
   return results;
 }
 
-fileapi::FileSystemContext* GetFileSystemContextForExtension(
-    Profile* profile,
-    const std::string& extension_id) {
-  GURL site = extensions::ExtensionSystem::Get(profile)->
-      extension_service()->GetSiteForExtensionId(extension_id);
-  return BrowserContext::GetStoragePartitionForSite(profile, site)->
-      GetFileSystemContext();
-}
-
 // Checks if the file browser extension has permissions for the files in its
 // file system context.
 bool FileBrowserHasAccessPermissionForFiles(
@@ -168,8 +158,8 @@ bool FileBrowserHasAccessPermissionForFiles(
     const std::string& file_browser_id,
     const std::vector<FileSystemURL>& files) {
   fileapi::ExternalFileSystemBackend* backend =
-      GetFileSystemContextForExtension(profile, file_browser_id)->
-      external_backend();
+      fileapi_util::GetFileSystemContextForExtensionId(
+          profile, file_browser_id)->external_backend();
   if (!backend)
     return false;
 
@@ -363,13 +353,14 @@ void FileBrowserHandlerExecutor::Execute(
   // Get file system context for the extension to which onExecute event will be
   // sent. The file access permissions will be granted to the extension in the
   // file system context for the files in |file_urls|.
-  GetFileSystemContextForExtension(profile_, extension_->id())->OpenFileSystem(
-      Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin(),
-      fileapi::kFileSystemTypeExternal,
-      fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&FileBrowserHandlerExecutor::DidOpenFileSystem,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_urls));
+  fileapi_util::GetFileSystemContextForExtensionId(
+      profile_, extension_->id())->OpenFileSystem(
+          Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin(),
+          fileapi::kFileSystemTypeExternal,
+          fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
+          base::Bind(&FileBrowserHandlerExecutor::DidOpenFileSystem,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     file_urls));
 }
 
 void FileBrowserHandlerExecutor::DidOpenFileSystem(
@@ -383,7 +374,8 @@ void FileBrowserHandlerExecutor::DidOpenFileSystem(
   }
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context(
-      GetFileSystemContextForExtension(profile_, extension_->id()));
+      fileapi_util::GetFileSystemContextForExtensionId(
+          profile_, extension_->id()));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,
       FROM_HERE,
