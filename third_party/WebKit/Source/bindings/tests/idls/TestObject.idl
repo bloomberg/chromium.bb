@@ -37,7 +37,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
 [
     Constructor(TestCallback testCallback),
     ImplementedAs=TestObj
-] interface TestObject {
+] interface TestObject : EventTarget {
     // Attributes
     readonly attribute long            readOnlyLongAttr;
     readonly attribute DOMString       readOnlyStringAttr;

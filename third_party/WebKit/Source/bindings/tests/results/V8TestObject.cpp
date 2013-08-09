@@ -25,6 +25,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "V8DOMStringList.h"
 #include "V8Document.h"
+#include "V8EventTarget.h"
 #include "V8MessagePort.h"
 #include "V8Node.h"
 #include "V8SVGDocument.h"
@@ -88,7 +89,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestObj* object)
 }
 
 namespace WebCore {
-WrapperTypeInfo V8TestObject::info = { V8TestObject::GetTemplate, V8TestObject::derefObject, 0, 0, 0, V8TestObject::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
+WrapperTypeInfo V8TestObject::info = { V8TestObject::GetTemplate, V8TestObject::derefObject, 0, V8TestObject::toEventTarget, 0, V8TestObject::installPerContextPrototypeProperties, &V8EventTarget::info, WrapperTypeObjectPrototype };
 
 namespace TestObjV8Internal {
 
@@ -5611,7 +5612,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     desc->ReadOnlyPrototype();
 
     v8::Local<v8::Signature> defaultSignature;
-    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestObject", v8::Local<v8::FunctionTemplate>(), V8TestObject::internalFieldCount,
+    defaultSignature = V8DOMConfiguration::configureTemplate(desc, "TestObject", V8EventTarget::GetTemplate(isolate, currentWorldType), V8TestObject::internalFieldCount,
         V8TestObjectAttrs, WTF_ARRAY_LENGTH(V8TestObjectAttrs),
         V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
@@ -5770,6 +5771,11 @@ void V8TestObject::installPerContextPrototypeProperties(v8::Handle<v8::Object> p
         proto->Set(v8::String::NewSymbol("enabledPerContextMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod1MethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
     if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context)))
         proto->Set(v8::String::NewSymbol("enabledPerContextMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod2MethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
+}
+
+EventTarget* V8TestObject::toEventTarget(v8::Handle<v8::Object> object)
+{
+    return toNative(object);
 }
 
 

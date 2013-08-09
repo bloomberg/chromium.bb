@@ -21,6 +21,7 @@
 #ifndef V8TestObject_h
 #define V8TestObject_h
 
+#include "V8EventTarget.h"
 #include "bindings/bindings/tests/idls/TestObj.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMWrapper.h"
@@ -39,6 +40,7 @@ public:
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
+    static EventTarget* toEventTarget(v8::Handle<v8::Object>);
     static void customMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void customMethodWithArgsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void classMethod2MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -49,12 +51,12 @@ public:
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 1;
     static inline void* toInternalPointer(TestObj* impl)
     {
-        return impl;
+        return V8EventTarget::toInternalPointer(impl);
     }
 
     static inline TestObj* fromInternalPointer(void* object)
     {
-        return static_cast<TestObj*>(object);
+        return static_cast<TestObj*>(V8EventTarget::fromInternalPointer(object));
     }
     static void installPerContextProperties(v8::Handle<v8::Object>, TestObj*, v8::Isolate*);
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*);

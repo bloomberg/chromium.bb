@@ -913,17 +913,6 @@ END
     }
 }
 
-sub HasEventHandlerAttribute
-{
-    my $interface = shift;
-
-    foreach my $attribute (@{$interface->attributes}) {
-        return 1 if $attribute->type eq "EventHandler";
-    }
-
-    return 0;
-}
-
 sub GetInternalFields
 {
     my $interface = shift;
@@ -931,7 +920,7 @@ sub GetInternalFields
     my @customInternalFields = ();
     # Event listeners on DOM nodes are explicitly supported in the GC controller.
     if (!InheritsInterface($interface, "Node") &&
-        (InheritsInterface($interface, "EventTarget") || HasEventHandlerAttribute($interface))) {
+        InheritsInterface($interface, "EventTarget")) {
         push(@customInternalFields, "eventListenerCacheIndex");
     }
     return @customInternalFields;
