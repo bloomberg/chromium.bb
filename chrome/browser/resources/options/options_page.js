@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('options', function() {
+  /** @const */ var FocusOutlineManager = cr.ui.FocusOutlineManager;
+
   /////////////////////////////////////////////////////////////////////////////
   // OptionsPage class:
 
@@ -279,8 +281,7 @@ cr.define('options', function() {
     // Change focus to the overlay if any other control was focused by keyboard
     // before. Otherwise, no one should have focus.
     if (document.activeElement != document.body) {
-      if (document.documentElement.classList.contains(
-          cr.ui.FocusOutlineManager.CLASS_NAME)) {
+      if (FocusOutlineManager.forDocument(document).visible) {
         overlay.focus();
       } else {
         document.activeElement.blur();
@@ -648,7 +649,7 @@ cr.define('options', function() {
   OptionsPage.initialize = function() {
     chrome.send('coreOptionsInitialize');
     uber.onContentFrameLoaded();
-    cr.ui.FocusOutlineManager.forDocument(document);
+    FocusOutlineManager.forDocument(document);
     document.addEventListener('scroll', this.handleScroll_.bind(this));
 
     // Trigger the scroll handler manually to set the initial state.
