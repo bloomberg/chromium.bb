@@ -15,7 +15,7 @@
 if (window.testRunner)
     testRunner.waitUntilDone();
 
-function jsWrapperClass(node)
+function classString(node)
 {
     if (!node)
         return "[null]";
@@ -23,19 +23,24 @@ function jsWrapperClass(node)
     return string.substr(8, string.length - 9);
 }
 
-function tagJSWrapperClass(tagName)
+function tagClassString(tagName)
 {
-    return jsWrapperClass(document.createElement(tagName));
+    return classString(document.createElement(tagName));
 }
 
-function tagJSWrapperPrototypeClass(tagName)
+function tagPrototypeClassString(tagName)
 {
-    return jsWrapperClass(document.createElement(tagName).__proto__);
+    return classString(document.createElement(tagName).__proto__);
 }
 
-function tagJSWrapperConstructorClass(tagName)
+function tagConstructorClassString(tagName)
 {
-    return jsWrapperClass(document.createElement(tagName).constructor);
+    return classString(document.createElement(tagName).constructor);
+}
+
+function tagConstructorName(tagName)
+{
+    return document.createElement(tagName).constructor.name;
 }
 
 function testTag(tagName, className, prototypeName, constructorName)
@@ -43,10 +48,11 @@ function testTag(tagName, className, prototypeName, constructorName)
     if (!prototypeName)
         prototypeName = className + "Prototype";
     if (!constructorName)
-        constructorName = className + "Constructor";
-    shouldBe("tagJSWrapperClass('" + tagName + "')", "'" + className + "'");
-    shouldBe("tagJSWrapperPrototypeClass('" + tagName + "')", "'" + prototypeName + "'");
-    shouldBe("tagJSWrapperConstructorClass('" + tagName + "')", "'" + constructorName + "'");
+        constructorName = className;
+    shouldBeEqualToString("tagClassString('" + tagName + "')", className);
+    shouldBeEqualToString("tagPrototypeClassString('" + tagName + "')", prototypeName);
+    shouldBeEqualToString("tagConstructorClassString('" + tagName + "')", "Function");
+    shouldBeEqualToString("tagConstructorName('" + tagName + "')", constructorName);
 }
 
 function test(expression, className, prototypeName, constructorName)
@@ -54,15 +60,15 @@ function test(expression, className, prototypeName, constructorName)
     if (!prototypeName)
         prototypeName = className + "Prototype";
     if (!constructorName)
-        constructorName = className + "Constructor";
-    shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
-    shouldBe("jsWrapperClass(" + expression + ".__proto__)", "'" + prototypeName + "'");
-    shouldBe("jsWrapperClass(" + expression + ".constructor)", "'" + constructorName + "'");
+        constructorName = className;
+    shouldBeEqualToString("classString(" + expression + ")", className);
+    shouldBeEqualToString("classString(" + expression + ".__proto__)", prototypeName);
+    shouldBeEqualToString("classString(" + expression + ".constructor)", "Function");
+    shouldBeEqualToString(expression + ".constructor.name", constructorName);
 }
 
 function runTest()
 {
-    // NOTE: This is a sister test to platform/mac/fast/dom/wrapper-class-objc.html which test the Objective-C wrapper classes.  Update accordingly.
     description("This tests wrapper class names for JavaScript.");
 
     stylesheet = document.getElementById("style").sheet;

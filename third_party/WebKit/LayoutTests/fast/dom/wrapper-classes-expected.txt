@@ -5,487 +5,641 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 Basics
 
-PASS jsWrapperClass(document.createAttribute()) is 'Attr'
-FAIL jsWrapperClass(document.createAttribute().__proto__) should be AttrPrototype. Was Object.
-FAIL jsWrapperClass(document.createAttribute().constructor) should be AttrConstructor. Was Function.
-PASS jsWrapperClass(document.createComment()) is 'Comment'
-FAIL jsWrapperClass(document.createComment().__proto__) should be CommentPrototype. Was Object.
-FAIL jsWrapperClass(document.createComment().constructor) should be CommentConstructor. Was Function.
-PASS jsWrapperClass(document.createDocumentFragment()) is 'DocumentFragment'
-FAIL jsWrapperClass(document.createDocumentFragment().__proto__) should be DocumentFragmentPrototype. Was Object.
-FAIL jsWrapperClass(document.createDocumentFragment().constructor) should be DocumentFragmentConstructor. Was Function.
-PASS jsWrapperClass(document.implementation) is 'DOMImplementation'
-FAIL jsWrapperClass(document.implementation.__proto__) should be DOMImplementationPrototype. Was Object.
-FAIL jsWrapperClass(document.implementation.constructor) should be DOMImplementationConstructor. Was Function.
-PASS jsWrapperClass(root.attributes) is 'NamedNodeMap'
-FAIL jsWrapperClass(root.attributes.__proto__) should be NamedNodeMapPrototype. Was Object.
-FAIL jsWrapperClass(root.attributes.constructor) should be NamedNodeMapConstructor. Was Function.
-PASS jsWrapperClass(document.createNodeIterator(root, 0, null, false)) is 'NodeIterator'
-FAIL jsWrapperClass(document.createNodeIterator(root, 0, null, false).__proto__) should be NodeIteratorPrototype. Was Object.
-FAIL jsWrapperClass(document.createNodeIterator(root, 0, null, false).constructor) should be NodeIteratorConstructor. Was Function.
-PASS jsWrapperClass(document.getElementsByTagName('div')) is 'NodeList'
-FAIL jsWrapperClass(document.getElementsByTagName('div').__proto__) should be NodeListPrototype. Was Object.
-FAIL jsWrapperClass(document.getElementsByTagName('div').constructor) should be NodeListConstructor. Was Function.
-PASS jsWrapperClass(document.createRange()) is 'Range'
-FAIL jsWrapperClass(document.createRange().__proto__) should be RangePrototype. Was Object.
-FAIL jsWrapperClass(document.createRange().constructor) should be RangeConstructor. Was Function.
-PASS jsWrapperClass(document.createTextNode()) is 'Text'
-FAIL jsWrapperClass(document.createTextNode().__proto__) should be TextPrototype. Was Object.
-FAIL jsWrapperClass(document.createTextNode().constructor) should be TextConstructor. Was Function.
-PASS jsWrapperClass(document.createTreeWalker(root, 0, null, false)) is 'TreeWalker'
-FAIL jsWrapperClass(document.createTreeWalker(root, 0, null, false).__proto__) should be TreeWalkerPrototype. Was Object.
-FAIL jsWrapperClass(document.createTreeWalker(root, 0, null, false).constructor) should be TreeWalkerConstructor. Was Function.
+PASS classString(document.createAttribute()) is "Attr"
+FAIL classString(document.createAttribute().__proto__) should be AttrPrototype. Was Object.
+PASS classString(document.createAttribute().constructor) is "Function"
+PASS document.createAttribute().constructor.name is "Attr"
+PASS classString(document.createComment()) is "Comment"
+FAIL classString(document.createComment().__proto__) should be CommentPrototype. Was Object.
+PASS classString(document.createComment().constructor) is "Function"
+PASS document.createComment().constructor.name is "Comment"
+PASS classString(document.createDocumentFragment()) is "DocumentFragment"
+FAIL classString(document.createDocumentFragment().__proto__) should be DocumentFragmentPrototype. Was Object.
+PASS classString(document.createDocumentFragment().constructor) is "Function"
+PASS document.createDocumentFragment().constructor.name is "DocumentFragment"
+PASS classString(document.implementation) is "DOMImplementation"
+FAIL classString(document.implementation.__proto__) should be DOMImplementationPrototype. Was Object.
+PASS classString(document.implementation.constructor) is "Function"
+PASS document.implementation.constructor.name is "DOMImplementation"
+PASS classString(root.attributes) is "NamedNodeMap"
+FAIL classString(root.attributes.__proto__) should be NamedNodeMapPrototype. Was Object.
+PASS classString(root.attributes.constructor) is "Function"
+PASS root.attributes.constructor.name is "NamedNodeMap"
+PASS classString(document.createNodeIterator(root, 0, null, false)) is "NodeIterator"
+FAIL classString(document.createNodeIterator(root, 0, null, false).__proto__) should be NodeIteratorPrototype. Was Object.
+PASS classString(document.createNodeIterator(root, 0, null, false).constructor) is "Function"
+PASS document.createNodeIterator(root, 0, null, false).constructor.name is "NodeIterator"
+PASS classString(document.getElementsByTagName('div')) is "NodeList"
+FAIL classString(document.getElementsByTagName('div').__proto__) should be NodeListPrototype. Was Object.
+PASS classString(document.getElementsByTagName('div').constructor) is "Function"
+PASS document.getElementsByTagName('div').constructor.name is "NodeList"
+PASS classString(document.createRange()) is "Range"
+FAIL classString(document.createRange().__proto__) should be RangePrototype. Was Object.
+PASS classString(document.createRange().constructor) is "Function"
+PASS document.createRange().constructor.name is "Range"
+PASS classString(document.createTextNode()) is "Text"
+FAIL classString(document.createTextNode().__proto__) should be TextPrototype. Was Object.
+PASS classString(document.createTextNode().constructor) is "Function"
+PASS document.createTextNode().constructor.name is "Text"
+PASS classString(document.createTreeWalker(root, 0, null, false)) is "TreeWalker"
+FAIL classString(document.createTreeWalker(root, 0, null, false).__proto__) should be TreeWalkerPrototype. Was Object.
+PASS classString(document.createTreeWalker(root, 0, null, false).constructor) is "Function"
+PASS document.createTreeWalker(root, 0, null, false).constructor.name is "TreeWalker"
 
 XML
 
-PASS jsWrapperClass(xmlDocument) is 'Document'
-FAIL jsWrapperClass(xmlDocument.__proto__) should be DocumentPrototype. Was Object.
-FAIL jsWrapperClass(xmlDocument.constructor) should be DocumentConstructor. Was Function.
-PASS jsWrapperClass(xmlDocument.createCDATASection()) is 'CDATASection'
-FAIL jsWrapperClass(xmlDocument.createCDATASection().__proto__) should be CDATASectionPrototype. Was Object.
-FAIL jsWrapperClass(xmlDocument.createCDATASection().constructor) should be CDATASectionConstructor. Was Function.
-PASS jsWrapperClass(xmlDocument.createElementNS('x', 'x', 'x')) is 'Element'
-FAIL jsWrapperClass(xmlDocument.createElementNS('x', 'x', 'x').__proto__) should be ElementPrototype. Was Object.
-FAIL jsWrapperClass(xmlDocument.createElementNS('x', 'x', 'x').constructor) should be ElementConstructor. Was Function.
-PASS jsWrapperClass(xmlDocument.createProcessingInstruction()) is 'ProcessingInstruction'
-FAIL jsWrapperClass(xmlDocument.createProcessingInstruction().__proto__) should be ProcessingInstructionPrototype. Was Object.
-FAIL jsWrapperClass(xmlDocument.createProcessingInstruction().constructor) should be ProcessingInstructionConstructor. Was Function.
+PASS classString(xmlDocument) is "Document"
+FAIL classString(xmlDocument.__proto__) should be DocumentPrototype. Was Object.
+PASS classString(xmlDocument.constructor) is "Function"
+PASS xmlDocument.constructor.name is "Document"
+PASS classString(xmlDocument.createCDATASection()) is "CDATASection"
+FAIL classString(xmlDocument.createCDATASection().__proto__) should be CDATASectionPrototype. Was Object.
+PASS classString(xmlDocument.createCDATASection().constructor) is "Function"
+PASS xmlDocument.createCDATASection().constructor.name is "CDATASection"
+PASS classString(xmlDocument.createElementNS('x', 'x', 'x')) is "Element"
+FAIL classString(xmlDocument.createElementNS('x', 'x', 'x').__proto__) should be ElementPrototype. Was Object.
+PASS classString(xmlDocument.createElementNS('x', 'x', 'x').constructor) is "Function"
+PASS xmlDocument.createElementNS('x', 'x', 'x').constructor.name is "Element"
+PASS classString(xmlDocument.createProcessingInstruction()) is "ProcessingInstruction"
+FAIL classString(xmlDocument.createProcessingInstruction().__proto__) should be ProcessingInstructionPrototype. Was Object.
+PASS classString(xmlDocument.createProcessingInstruction().constructor) is "Function"
+PASS xmlDocument.createProcessingInstruction().constructor.name is "ProcessingInstruction"
 
 Events
 
-PASS jsWrapperClass(document.createEvent('Event')) is 'Event'
-FAIL jsWrapperClass(document.createEvent('Event').__proto__) should be EventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('Event').constructor) should be EventConstructor. Was Function.
-PASS jsWrapperClass(document.createEvent('KeyboardEvent')) is 'KeyboardEvent'
-FAIL jsWrapperClass(document.createEvent('KeyboardEvent').__proto__) should be KeyboardEventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('KeyboardEvent').constructor) should be KeyboardEventConstructor. Was Function.
-PASS jsWrapperClass(document.createEvent('MouseEvent')) is 'MouseEvent'
-FAIL jsWrapperClass(document.createEvent('MouseEvent').__proto__) should be MouseEventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('MouseEvent').constructor) should be MouseEventConstructor. Was Function.
-PASS jsWrapperClass(document.createEvent('MutationEvent')) is 'MutationEvent'
-FAIL jsWrapperClass(document.createEvent('MutationEvent').__proto__) should be MutationEventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('MutationEvent').constructor) should be MutationEventConstructor. Was Function.
-PASS jsWrapperClass(document.createEvent('OverflowEvent')) is 'OverflowEvent'
-FAIL jsWrapperClass(document.createEvent('OverflowEvent').__proto__) should be OverflowEventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('OverflowEvent').constructor) should be OverflowEventConstructor. Was Function.
-PASS jsWrapperClass(document.createEvent('TextEvent')) is 'TextEvent'
-FAIL jsWrapperClass(document.createEvent('TextEvent').__proto__) should be TextEventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('TextEvent').constructor) should be TextEventConstructor. Was Function.
-PASS jsWrapperClass(document.createEvent('UIEvent')) is 'UIEvent'
-FAIL jsWrapperClass(document.createEvent('UIEvent').__proto__) should be UIEventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('UIEvent').constructor) should be UIEventConstructor. Was Function.
-PASS jsWrapperClass(document.createEvent('WheelEvent')) is 'WheelEvent'
-FAIL jsWrapperClass(document.createEvent('WheelEvent').__proto__) should be WheelEventPrototype. Was Object.
-FAIL jsWrapperClass(document.createEvent('WheelEvent').constructor) should be WheelEventConstructor. Was Function.
+PASS classString(document.createEvent('Event')) is "Event"
+FAIL classString(document.createEvent('Event').__proto__) should be EventPrototype. Was Object.
+PASS classString(document.createEvent('Event').constructor) is "Function"
+PASS document.createEvent('Event').constructor.name is "Event"
+PASS classString(document.createEvent('KeyboardEvent')) is "KeyboardEvent"
+FAIL classString(document.createEvent('KeyboardEvent').__proto__) should be KeyboardEventPrototype. Was Object.
+PASS classString(document.createEvent('KeyboardEvent').constructor) is "Function"
+PASS document.createEvent('KeyboardEvent').constructor.name is "KeyboardEvent"
+PASS classString(document.createEvent('MouseEvent')) is "MouseEvent"
+FAIL classString(document.createEvent('MouseEvent').__proto__) should be MouseEventPrototype. Was Object.
+PASS classString(document.createEvent('MouseEvent').constructor) is "Function"
+PASS document.createEvent('MouseEvent').constructor.name is "MouseEvent"
+PASS classString(document.createEvent('MutationEvent')) is "MutationEvent"
+FAIL classString(document.createEvent('MutationEvent').__proto__) should be MutationEventPrototype. Was Object.
+PASS classString(document.createEvent('MutationEvent').constructor) is "Function"
+PASS document.createEvent('MutationEvent').constructor.name is "MutationEvent"
+PASS classString(document.createEvent('OverflowEvent')) is "OverflowEvent"
+FAIL classString(document.createEvent('OverflowEvent').__proto__) should be OverflowEventPrototype. Was Object.
+PASS classString(document.createEvent('OverflowEvent').constructor) is "Function"
+PASS document.createEvent('OverflowEvent').constructor.name is "OverflowEvent"
+PASS classString(document.createEvent('TextEvent')) is "TextEvent"
+FAIL classString(document.createEvent('TextEvent').__proto__) should be TextEventPrototype. Was Object.
+PASS classString(document.createEvent('TextEvent').constructor) is "Function"
+PASS document.createEvent('TextEvent').constructor.name is "TextEvent"
+PASS classString(document.createEvent('UIEvent')) is "UIEvent"
+FAIL classString(document.createEvent('UIEvent').__proto__) should be UIEventPrototype. Was Object.
+PASS classString(document.createEvent('UIEvent').constructor) is "Function"
+PASS document.createEvent('UIEvent').constructor.name is "UIEvent"
+PASS classString(document.createEvent('WheelEvent')) is "WheelEvent"
+FAIL classString(document.createEvent('WheelEvent').__proto__) should be WheelEventPrototype. Was Object.
+PASS classString(document.createEvent('WheelEvent').constructor) is "Function"
+PASS document.createEvent('WheelEvent').constructor.name is "WheelEvent"
 
 CSS DOM
 
-PASS jsWrapperClass(document.styleSheets) is 'StyleSheetList'
-FAIL jsWrapperClass(document.styleSheets.__proto__) should be StyleSheetListPrototype. Was Object.
-FAIL jsWrapperClass(document.styleSheets.constructor) should be StyleSheetListConstructor. Was Function.
-PASS jsWrapperClass(stylesheet) is 'CSSStyleSheet'
-FAIL jsWrapperClass(stylesheet.__proto__) should be CSSStyleSheetPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.constructor) should be CSSStyleSheetConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules) is 'CSSRuleList'
-FAIL jsWrapperClass(stylesheet.cssRules.__proto__) should be CSSRuleListPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.constructor) should be CSSRuleListConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules.item(0)) is 'CSSStyleRule'
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).__proto__) should be CSSStyleRulePrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).constructor) should be CSSStyleRuleConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules.item(0).style) is 'CSSStyleDeclaration'
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.__proto__) should be CSSStyleDeclarationPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.constructor) should be CSSStyleDeclarationConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color')) is 'CSSPrimitiveValue'
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').__proto__) should be CSSPrimitiveValuePrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').constructor) should be CSSPrimitiveValueConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue()) is 'RGBColor'
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().__proto__) should be RGBColorPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().constructor) should be RGBColorConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue()) is 'Rect'
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().__proto__) should be RectPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().constructor) should be RectConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content')) is 'CSSValueList'
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').__proto__) should be CSSValueListPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').constructor) should be CSSValueListConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue()) is 'Counter'
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().__proto__) should be CounterPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().constructor) should be CounterConstructor. Was Function.
-PASS jsWrapperClass(stylesheet.media) is 'MediaList'
-FAIL jsWrapperClass(stylesheet.media.__proto__) should be MediaListPrototype. Was Object.
-FAIL jsWrapperClass(stylesheet.media.constructor) should be MediaListConstructor. Was Function.
+PASS classString(document.styleSheets) is "StyleSheetList"
+FAIL classString(document.styleSheets.__proto__) should be StyleSheetListPrototype. Was Object.
+PASS classString(document.styleSheets.constructor) is "Function"
+PASS document.styleSheets.constructor.name is "StyleSheetList"
+PASS classString(stylesheet) is "CSSStyleSheet"
+FAIL classString(stylesheet.__proto__) should be CSSStyleSheetPrototype. Was Object.
+PASS classString(stylesheet.constructor) is "Function"
+PASS stylesheet.constructor.name is "CSSStyleSheet"
+PASS classString(stylesheet.cssRules) is "CSSRuleList"
+FAIL classString(stylesheet.cssRules.__proto__) should be CSSRuleListPrototype. Was Object.
+PASS classString(stylesheet.cssRules.constructor) is "Function"
+PASS stylesheet.cssRules.constructor.name is "CSSRuleList"
+PASS classString(stylesheet.cssRules.item(0)) is "CSSStyleRule"
+FAIL classString(stylesheet.cssRules.item(0).__proto__) should be CSSStyleRulePrototype. Was Object.
+PASS classString(stylesheet.cssRules.item(0).constructor) is "Function"
+PASS stylesheet.cssRules.item(0).constructor.name is "CSSStyleRule"
+PASS classString(stylesheet.cssRules.item(0).style) is "CSSStyleDeclaration"
+FAIL classString(stylesheet.cssRules.item(0).style.__proto__) should be CSSStyleDeclarationPrototype. Was Object.
+PASS classString(stylesheet.cssRules.item(0).style.constructor) is "Function"
+PASS stylesheet.cssRules.item(0).style.constructor.name is "CSSStyleDeclaration"
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color')) is "CSSPrimitiveValue"
+FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').__proto__) should be CSSPrimitiveValuePrototype. Was Object.
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').constructor) is "Function"
+PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').constructor.name is "CSSPrimitiveValue"
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue()) is "RGBColor"
+FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().__proto__) should be RGBColorPrototype. Was Object.
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().constructor) is "Function"
+PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('color').getRGBColorValue().constructor.name is "RGBColor"
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue()) is "Rect"
+FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().__proto__) should be RectPrototype. Was Object.
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().constructor) is "Function"
+PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('clip').getRectValue().constructor.name is "Rect"
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content')) is "CSSValueList"
+FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').__proto__) should be CSSValueListPrototype. Was Object.
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').constructor) is "Function"
+PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').constructor.name is "CSSValueList"
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue()) is "Counter"
+FAIL classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().__proto__) should be CounterPrototype. Was Object.
+PASS classString(stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().constructor) is "Function"
+PASS stylesheet.cssRules.item(0).style.getPropertyCSSValue('content').item(0).getCounterValue().constructor.name is "Counter"
+PASS classString(stylesheet.media) is "MediaList"
+FAIL classString(stylesheet.media.__proto__) should be MediaListPrototype. Was Object.
+PASS classString(stylesheet.media.constructor) is "Function"
+PASS stylesheet.media.constructor.name is "MediaList"
 
 XPath
 
-PASS jsWrapperClass(document.createExpression('//*', document.createNSResolver(document))) is 'XPathExpression'
-FAIL jsWrapperClass(document.createExpression('//*', document.createNSResolver(document)).__proto__) should be XPathExpressionPrototype. Was Object.
-FAIL jsWrapperClass(document.createExpression('//*', document.createNSResolver(document)).constructor) should be XPathExpressionConstructor. Was Function.
-PASS jsWrapperClass(document.evaluate('//*', document, document.createNSResolver(document), 0, null)) is 'XPathResult'
-FAIL jsWrapperClass(document.evaluate('//*', document, document.createNSResolver(document), 0, null).__proto__) should be XPathResultPrototype. Was Object.
-FAIL jsWrapperClass(document.evaluate('//*', document, document.createNSResolver(document), 0, null).constructor) should be XPathResultConstructor. Was Function.
+PASS classString(document.createExpression('//*', document.createNSResolver(document))) is "XPathExpression"
+FAIL classString(document.createExpression('//*', document.createNSResolver(document)).__proto__) should be XPathExpressionPrototype. Was Object.
+PASS classString(document.createExpression('//*', document.createNSResolver(document)).constructor) is "Function"
+PASS document.createExpression('//*', document.createNSResolver(document)).constructor.name is "XPathExpression"
+PASS classString(document.evaluate('//*', document, document.createNSResolver(document), 0, null)) is "XPathResult"
+FAIL classString(document.evaluate('//*', document, document.createNSResolver(document), 0, null).__proto__) should be XPathResultPrototype. Was Object.
+PASS classString(document.evaluate('//*', document, document.createNSResolver(document), 0, null).constructor) is "Function"
+PASS document.evaluate('//*', document, document.createNSResolver(document), 0, null).constructor.name is "XPathResult"
 
 Other
 
-FAIL jsWrapperClass(window) should be Window. Was global.
-FAIL jsWrapperClass(window.__proto__) should be WindowPrototype. Was Object.
-FAIL jsWrapperClass(window.constructor) should be WindowConstructor. Was Function.
+FAIL classString(window) should be Window. Was global.
+FAIL classString(window.__proto__) should be WindowPrototype. Was Object.
+PASS classString(window.constructor) is "Function"
+PASS window.constructor.name is "Window"
 
 HTML DOM
 
-PASS jsWrapperClass(root.children) is 'HTMLCollection'
-FAIL jsWrapperClass(root.children.__proto__) should be HTMLCollectionPrototype. Was Object.
-FAIL jsWrapperClass(root.children.constructor) should be HTMLCollectionConstructor. Was Function.
-PASS jsWrapperClass(document) is 'HTMLDocument'
-FAIL jsWrapperClass(document.__proto__) should be HTMLDocumentPrototype. Was Object.
-FAIL jsWrapperClass(document.constructor) should be HTMLDocumentConstructor. Was Function.
-PASS jsWrapperClass(document.createElement('select').options) is 'HTMLOptionsCollection'
-FAIL jsWrapperClass(document.createElement('select').options.__proto__) should be HTMLOptionsCollectionPrototype. Was Object.
-FAIL jsWrapperClass(document.createElement('select').options.constructor) should be HTMLOptionsCollectionConstructor. Was Function.
+PASS classString(root.children) is "HTMLCollection"
+FAIL classString(root.children.__proto__) should be HTMLCollectionPrototype. Was Object.
+PASS classString(root.children.constructor) is "Function"
+PASS root.children.constructor.name is "HTMLCollection"
+PASS classString(document) is "HTMLDocument"
+FAIL classString(document.__proto__) should be HTMLDocumentPrototype. Was Object.
+PASS classString(document.constructor) is "Function"
+PASS document.constructor.name is "HTMLDocument"
+PASS classString(document.createElement('select').options) is "HTMLOptionsCollection"
+FAIL classString(document.createElement('select').options.__proto__) should be HTMLOptionsCollectionPrototype. Was Object.
+PASS classString(document.createElement('select').options.constructor) is "Function"
+PASS document.createElement('select').options.constructor.name is "HTMLOptionsCollection"
 
 HTML Elements
 
-PASS tagJSWrapperClass('a') is 'HTMLAnchorElement'
-FAIL tagJSWrapperPrototypeClass('a') should be HTMLAnchorElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('a') should be HTMLAnchorElementConstructor. Was Function.
-PASS tagJSWrapperClass('abbr') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('abbr') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('abbr') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('acronym') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('acronym') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('acronym') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('address') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('address') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('address') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('applet') is 'HTMLAppletElement'
-FAIL tagJSWrapperPrototypeClass('applet') should be HTMLAppletElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('applet') should be HTMLAppletElementConstructor. Was Function.
-PASS tagJSWrapperClass('area') is 'HTMLAreaElement'
-FAIL tagJSWrapperPrototypeClass('area') should be HTMLAreaElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('area') should be HTMLAreaElementConstructor. Was Function.
-PASS tagJSWrapperClass('article') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('article') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('article') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('aside') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('aside') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('aside') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('b') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('b') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('b') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('base') is 'HTMLBaseElement'
-FAIL tagJSWrapperPrototypeClass('base') should be HTMLBaseElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('base') should be HTMLBaseElementConstructor. Was Function.
-PASS tagJSWrapperClass('basefont') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('basefont') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('basefont') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('bdo') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('bdo') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('bdo') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('big') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('big') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('big') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('blockquote') is 'HTMLQuoteElement'
-FAIL tagJSWrapperPrototypeClass('blockquote') should be HTMLQuoteElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('blockquote') should be HTMLQuoteElementConstructor. Was Function.
-PASS tagJSWrapperClass('body') is 'HTMLBodyElement'
-FAIL tagJSWrapperPrototypeClass('body') should be HTMLBodyElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('body') should be HTMLBodyElementConstructor. Was Function.
-PASS tagJSWrapperClass('br') is 'HTMLBRElement'
-FAIL tagJSWrapperPrototypeClass('br') should be HTMLBRElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('br') should be HTMLBRElementConstructor. Was Function.
-PASS tagJSWrapperClass('button') is 'HTMLButtonElement'
-FAIL tagJSWrapperPrototypeClass('button') should be HTMLButtonElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('button') should be HTMLButtonElementConstructor. Was Function.
-PASS tagJSWrapperClass('canvas') is 'HTMLCanvasElement'
-FAIL tagJSWrapperPrototypeClass('canvas') should be HTMLCanvasElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('canvas') should be HTMLCanvasElementConstructor. Was Function.
-PASS tagJSWrapperClass('caption') is 'HTMLTableCaptionElement'
-FAIL tagJSWrapperPrototypeClass('caption') should be HTMLTableCaptionElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('caption') should be HTMLTableCaptionElementConstructor. Was Function.
-PASS tagJSWrapperClass('center') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('center') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('center') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('cite') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('cite') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('cite') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('code') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('code') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('code') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('col') is 'HTMLTableColElement'
-FAIL tagJSWrapperPrototypeClass('col') should be HTMLTableColElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('col') should be HTMLTableColElementConstructor. Was Function.
-PASS tagJSWrapperClass('colgroup') is 'HTMLTableColElement'
-FAIL tagJSWrapperPrototypeClass('colgroup') should be HTMLTableColElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('colgroup') should be HTMLTableColElementConstructor. Was Function.
-PASS tagJSWrapperClass('dd') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('dd') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('dd') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('del') is 'HTMLModElement'
-FAIL tagJSWrapperPrototypeClass('del') should be HTMLModElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('del') should be HTMLModElementConstructor. Was Function.
-PASS tagJSWrapperClass('dfn') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('dfn') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('dfn') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('dir') is 'HTMLDirectoryElement'
-FAIL tagJSWrapperPrototypeClass('dir') should be HTMLDirectoryElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('dir') should be HTMLDirectoryElementConstructor. Was Function.
-PASS tagJSWrapperClass('div') is 'HTMLDivElement'
-FAIL tagJSWrapperPrototypeClass('div') should be HTMLDivElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('div') should be HTMLDivElementConstructor. Was Function.
-PASS tagJSWrapperClass('dl') is 'HTMLDListElement'
-FAIL tagJSWrapperPrototypeClass('dl') should be HTMLDListElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('dl') should be HTMLDListElementConstructor. Was Function.
-PASS tagJSWrapperClass('dt') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('dt') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('dt') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('em') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('em') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('em') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('embed') is 'HTMLEmbedElement'
-FAIL tagJSWrapperPrototypeClass('embed') should be HTMLEmbedElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('embed') should be HTMLEmbedElementConstructor. Was Function.
-PASS tagJSWrapperClass('fieldset') is 'HTMLFieldSetElement'
-FAIL tagJSWrapperPrototypeClass('fieldset') should be HTMLFieldSetElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('fieldset') should be HTMLFieldSetElementConstructor. Was Function.
-PASS tagJSWrapperClass('font') is 'HTMLFontElement'
-FAIL tagJSWrapperPrototypeClass('font') should be HTMLFontElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('font') should be HTMLFontElementConstructor. Was Function.
-PASS tagJSWrapperClass('footer') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('footer') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('footer') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('form') is 'HTMLFormElement'
-FAIL tagJSWrapperPrototypeClass('form') should be HTMLFormElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('form') should be HTMLFormElementConstructor. Was Function.
-PASS tagJSWrapperClass('frame') is 'HTMLFrameElement'
-FAIL tagJSWrapperPrototypeClass('frame') should be HTMLFrameElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('frame') should be HTMLFrameElementConstructor. Was Function.
-PASS tagJSWrapperClass('frameset') is 'HTMLFrameSetElement'
-FAIL tagJSWrapperPrototypeClass('frameset') should be HTMLFrameSetElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('frameset') should be HTMLFrameSetElementConstructor. Was Function.
-PASS tagJSWrapperClass('head') is 'HTMLHeadElement'
-FAIL tagJSWrapperPrototypeClass('head') should be HTMLHeadElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('head') should be HTMLHeadElementConstructor. Was Function.
-PASS tagJSWrapperClass('h1') is 'HTMLHeadingElement'
-FAIL tagJSWrapperPrototypeClass('h1') should be HTMLHeadingElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('h1') should be HTMLHeadingElementConstructor. Was Function.
-PASS tagJSWrapperClass('h2') is 'HTMLHeadingElement'
-FAIL tagJSWrapperPrototypeClass('h2') should be HTMLHeadingElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('h2') should be HTMLHeadingElementConstructor. Was Function.
-PASS tagJSWrapperClass('h3') is 'HTMLHeadingElement'
-FAIL tagJSWrapperPrototypeClass('h3') should be HTMLHeadingElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('h3') should be HTMLHeadingElementConstructor. Was Function.
-PASS tagJSWrapperClass('h4') is 'HTMLHeadingElement'
-FAIL tagJSWrapperPrototypeClass('h4') should be HTMLHeadingElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('h4') should be HTMLHeadingElementConstructor. Was Function.
-PASS tagJSWrapperClass('h5') is 'HTMLHeadingElement'
-FAIL tagJSWrapperPrototypeClass('h5') should be HTMLHeadingElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('h5') should be HTMLHeadingElementConstructor. Was Function.
-PASS tagJSWrapperClass('h6') is 'HTMLHeadingElement'
-FAIL tagJSWrapperPrototypeClass('h6') should be HTMLHeadingElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('h6') should be HTMLHeadingElementConstructor. Was Function.
-PASS tagJSWrapperClass('head') is 'HTMLHeadElement'
-FAIL tagJSWrapperPrototypeClass('head') should be HTMLHeadElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('head') should be HTMLHeadElementConstructor. Was Function.
-PASS tagJSWrapperClass('header') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('header') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('header') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('hgroup') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('hgroup') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('hgroup') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('hr') is 'HTMLHRElement'
-FAIL tagJSWrapperPrototypeClass('hr') should be HTMLHRElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('hr') should be HTMLHRElementConstructor. Was Function.
-PASS tagJSWrapperClass('html') is 'HTMLHtmlElement'
-FAIL tagJSWrapperPrototypeClass('html') should be HTMLHtmlElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('html') should be HTMLHtmlElementConstructor. Was Function.
-PASS tagJSWrapperClass('i') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('i') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('i') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('iframe') is 'HTMLIFrameElement'
-FAIL tagJSWrapperPrototypeClass('iframe') should be HTMLIFrameElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('iframe') should be HTMLIFrameElementConstructor. Was Function.
-PASS tagJSWrapperClass('image') is 'HTMLImageElement'
-FAIL tagJSWrapperPrototypeClass('image') should be HTMLImageElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('image') should be HTMLImageElementConstructor. Was Function.
-PASS tagJSWrapperClass('img') is 'HTMLImageElement'
-FAIL tagJSWrapperPrototypeClass('img') should be HTMLImageElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('img') should be HTMLImageElementConstructor. Was Function.
-PASS tagJSWrapperClass('input') is 'HTMLInputElement'
-FAIL tagJSWrapperPrototypeClass('input') should be HTMLInputElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('input') should be HTMLInputElementConstructor. Was Function.
-PASS tagJSWrapperClass('ins') is 'HTMLModElement'
-FAIL tagJSWrapperPrototypeClass('ins') should be HTMLModElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('ins') should be HTMLModElementConstructor. Was Function.
-PASS tagJSWrapperClass('kbd') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('kbd') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('kbd') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('keygen') is 'HTMLKeygenElement'
-FAIL tagJSWrapperPrototypeClass('keygen') should be HTMLKeygenElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('keygen') should be HTMLKeygenElementConstructor. Was Function.
-PASS tagJSWrapperClass('label') is 'HTMLLabelElement'
-FAIL tagJSWrapperPrototypeClass('label') should be HTMLLabelElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('label') should be HTMLLabelElementConstructor. Was Function.
-PASS tagJSWrapperClass('layer') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('layer') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('layer') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('legend') is 'HTMLLegendElement'
-FAIL tagJSWrapperPrototypeClass('legend') should be HTMLLegendElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('legend') should be HTMLLegendElementConstructor. Was Function.
-PASS tagJSWrapperClass('li') is 'HTMLLIElement'
-FAIL tagJSWrapperPrototypeClass('li') should be HTMLLIElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('li') should be HTMLLIElementConstructor. Was Function.
-PASS tagJSWrapperClass('link') is 'HTMLLinkElement'
-FAIL tagJSWrapperPrototypeClass('link') should be HTMLLinkElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('link') should be HTMLLinkElementConstructor. Was Function.
-PASS tagJSWrapperClass('listing') is 'HTMLPreElement'
-FAIL tagJSWrapperPrototypeClass('listing') should be HTMLPreElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('listing') should be HTMLPreElementConstructor. Was Function.
-PASS tagJSWrapperClass('main') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('main') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('main') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('map') is 'HTMLMapElement'
-FAIL tagJSWrapperPrototypeClass('map') should be HTMLMapElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('map') should be HTMLMapElementConstructor. Was Function.
-PASS tagJSWrapperClass('marquee') is 'HTMLMarqueeElement'
-FAIL tagJSWrapperPrototypeClass('marquee') should be HTMLMarqueeElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('marquee') should be HTMLMarqueeElementConstructor. Was Function.
-PASS tagJSWrapperClass('menu') is 'HTMLMenuElement'
-FAIL tagJSWrapperPrototypeClass('menu') should be HTMLMenuElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('menu') should be HTMLMenuElementConstructor. Was Function.
-PASS tagJSWrapperClass('meta') is 'HTMLMetaElement'
-FAIL tagJSWrapperPrototypeClass('meta') should be HTMLMetaElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('meta') should be HTMLMetaElementConstructor. Was Function.
-PASS tagJSWrapperClass('nav') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('nav') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('nav') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('nobr') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('nobr') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('nobr') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('noembed') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('noembed') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('noembed') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('noframes') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('noframes') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('noframes') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('nolayer') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('nolayer') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('nolayer') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('noscript') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('noscript') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('noscript') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('object') is 'HTMLObjectElement'
-FAIL tagJSWrapperPrototypeClass('object') should be HTMLObjectElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('object') should be HTMLObjectElementConstructor. Was Function.
-PASS tagJSWrapperClass('ol') is 'HTMLOListElement'
-FAIL tagJSWrapperPrototypeClass('ol') should be HTMLOListElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('ol') should be HTMLOListElementConstructor. Was Function.
-PASS tagJSWrapperClass('optgroup') is 'HTMLOptGroupElement'
-FAIL tagJSWrapperPrototypeClass('optgroup') should be HTMLOptGroupElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('optgroup') should be HTMLOptGroupElementConstructor. Was Function.
-PASS tagJSWrapperClass('option') is 'HTMLOptionElement'
-FAIL tagJSWrapperPrototypeClass('option') should be HTMLOptionElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('option') should be HTMLOptionElementConstructor. Was Function.
-PASS tagJSWrapperClass('p') is 'HTMLParagraphElement'
-FAIL tagJSWrapperPrototypeClass('p') should be HTMLParagraphElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('p') should be HTMLParagraphElementConstructor. Was Function.
-PASS tagJSWrapperClass('param') is 'HTMLParamElement'
-FAIL tagJSWrapperPrototypeClass('param') should be HTMLParamElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('param') should be HTMLParamElementConstructor. Was Function.
-PASS tagJSWrapperClass('plaintext') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('plaintext') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('plaintext') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('pre') is 'HTMLPreElement'
-FAIL tagJSWrapperPrototypeClass('pre') should be HTMLPreElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('pre') should be HTMLPreElementConstructor. Was Function.
-PASS tagJSWrapperClass('q') is 'HTMLQuoteElement'
-FAIL tagJSWrapperPrototypeClass('q') should be HTMLQuoteElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('q') should be HTMLQuoteElementConstructor. Was Function.
-PASS tagJSWrapperClass('rp') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('rp') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('rp') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('rt') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('rt') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('rt') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('ruby') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('ruby') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('ruby') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('s') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('s') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('s') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('samp') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('samp') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('samp') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('script') is 'HTMLScriptElement'
-FAIL tagJSWrapperPrototypeClass('script') should be HTMLScriptElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('script') should be HTMLScriptElementConstructor. Was Function.
-PASS tagJSWrapperClass('section') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('section') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('section') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('select') is 'HTMLSelectElement'
-FAIL tagJSWrapperPrototypeClass('select') should be HTMLSelectElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('select') should be HTMLSelectElementConstructor. Was Function.
-PASS tagJSWrapperClass('small') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('small') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('small') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('span') is 'HTMLSpanElement'
-FAIL tagJSWrapperPrototypeClass('span') should be HTMLSpanElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('span') should be HTMLSpanElementConstructor. Was Function.
-PASS tagJSWrapperClass('strike') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('strike') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('strike') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('strong') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('strong') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('strong') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('style') is 'HTMLStyleElement'
-FAIL tagJSWrapperPrototypeClass('style') should be HTMLStyleElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('style') should be HTMLStyleElementConstructor. Was Function.
-PASS tagJSWrapperClass('sub') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('sub') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('sub') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('sup') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('sup') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('sup') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('table') is 'HTMLTableElement'
-FAIL tagJSWrapperPrototypeClass('table') should be HTMLTableElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('table') should be HTMLTableElementConstructor. Was Function.
-PASS tagJSWrapperClass('tbody') is 'HTMLTableSectionElement'
-FAIL tagJSWrapperPrototypeClass('tbody') should be HTMLTableSectionElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('tbody') should be HTMLTableSectionElementConstructor. Was Function.
-PASS tagJSWrapperClass('td') is 'HTMLTableCellElement'
-FAIL tagJSWrapperPrototypeClass('td') should be HTMLTableCellElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('td') should be HTMLTableCellElementConstructor. Was Function.
-PASS tagJSWrapperClass('textarea') is 'HTMLTextAreaElement'
-FAIL tagJSWrapperPrototypeClass('textarea') should be HTMLTextAreaElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('textarea') should be HTMLTextAreaElementConstructor. Was Function.
-PASS tagJSWrapperClass('tfoot') is 'HTMLTableSectionElement'
-FAIL tagJSWrapperPrototypeClass('tfoot') should be HTMLTableSectionElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('tfoot') should be HTMLTableSectionElementConstructor. Was Function.
-PASS tagJSWrapperClass('th') is 'HTMLTableCellElement'
-FAIL tagJSWrapperPrototypeClass('th') should be HTMLTableCellElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('th') should be HTMLTableCellElementConstructor. Was Function.
-PASS tagJSWrapperClass('thead') is 'HTMLTableSectionElement'
-FAIL tagJSWrapperPrototypeClass('thead') should be HTMLTableSectionElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('thead') should be HTMLTableSectionElementConstructor. Was Function.
-PASS tagJSWrapperClass('title') is 'HTMLTitleElement'
-FAIL tagJSWrapperPrototypeClass('title') should be HTMLTitleElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('title') should be HTMLTitleElementConstructor. Was Function.
-PASS tagJSWrapperClass('tr') is 'HTMLTableRowElement'
-FAIL tagJSWrapperPrototypeClass('tr') should be HTMLTableRowElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('tr') should be HTMLTableRowElementConstructor. Was Function.
-PASS tagJSWrapperClass('tt') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('tt') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('tt') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('u') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('u') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('u') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('ul') is 'HTMLUListElement'
-FAIL tagJSWrapperPrototypeClass('ul') should be HTMLUListElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('ul') should be HTMLUListElementConstructor. Was Function.
-PASS tagJSWrapperClass('var') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('var') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('var') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('wbr') is 'HTMLElement'
-FAIL tagJSWrapperPrototypeClass('wbr') should be HTMLElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('wbr') should be HTMLElementConstructor. Was Function.
-PASS tagJSWrapperClass('xmp') is 'HTMLPreElement'
-FAIL tagJSWrapperPrototypeClass('xmp') should be HTMLPreElementPrototype. Was Object.
-FAIL tagJSWrapperConstructorClass('xmp') should be HTMLPreElementConstructor. Was Function.
+PASS tagClassString('a') is "HTMLAnchorElement"
+FAIL tagPrototypeClassString('a') should be HTMLAnchorElementPrototype. Was Object.
+PASS tagConstructorClassString('a') is "Function"
+PASS tagConstructorName('a') is "HTMLAnchorElement"
+PASS tagClassString('abbr') is "HTMLElement"
+FAIL tagPrototypeClassString('abbr') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('abbr') is "Function"
+PASS tagConstructorName('abbr') is "HTMLElement"
+PASS tagClassString('acronym') is "HTMLElement"
+FAIL tagPrototypeClassString('acronym') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('acronym') is "Function"
+PASS tagConstructorName('acronym') is "HTMLElement"
+PASS tagClassString('address') is "HTMLElement"
+FAIL tagPrototypeClassString('address') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('address') is "Function"
+PASS tagConstructorName('address') is "HTMLElement"
+PASS tagClassString('applet') is "HTMLAppletElement"
+FAIL tagPrototypeClassString('applet') should be HTMLAppletElementPrototype. Was Object.
+PASS tagConstructorClassString('applet') is "Function"
+PASS tagConstructorName('applet') is "HTMLAppletElement"
+PASS tagClassString('area') is "HTMLAreaElement"
+FAIL tagPrototypeClassString('area') should be HTMLAreaElementPrototype. Was Object.
+PASS tagConstructorClassString('area') is "Function"
+PASS tagConstructorName('area') is "HTMLAreaElement"
+PASS tagClassString('article') is "HTMLElement"
+FAIL tagPrototypeClassString('article') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('article') is "Function"
+PASS tagConstructorName('article') is "HTMLElement"
+PASS tagClassString('aside') is "HTMLElement"
+FAIL tagPrototypeClassString('aside') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('aside') is "Function"
+PASS tagConstructorName('aside') is "HTMLElement"
+PASS tagClassString('b') is "HTMLElement"
+FAIL tagPrototypeClassString('b') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('b') is "Function"
+PASS tagConstructorName('b') is "HTMLElement"
+PASS tagClassString('base') is "HTMLBaseElement"
+FAIL tagPrototypeClassString('base') should be HTMLBaseElementPrototype. Was Object.
+PASS tagConstructorClassString('base') is "Function"
+PASS tagConstructorName('base') is "HTMLBaseElement"
+PASS tagClassString('basefont') is "HTMLElement"
+FAIL tagPrototypeClassString('basefont') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('basefont') is "Function"
+PASS tagConstructorName('basefont') is "HTMLElement"
+PASS tagClassString('bdo') is "HTMLElement"
+FAIL tagPrototypeClassString('bdo') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('bdo') is "Function"
+PASS tagConstructorName('bdo') is "HTMLElement"
+PASS tagClassString('big') is "HTMLElement"
+FAIL tagPrototypeClassString('big') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('big') is "Function"
+PASS tagConstructorName('big') is "HTMLElement"
+PASS tagClassString('blockquote') is "HTMLQuoteElement"
+FAIL tagPrototypeClassString('blockquote') should be HTMLQuoteElementPrototype. Was Object.
+PASS tagConstructorClassString('blockquote') is "Function"
+PASS tagConstructorName('blockquote') is "HTMLQuoteElement"
+PASS tagClassString('body') is "HTMLBodyElement"
+FAIL tagPrototypeClassString('body') should be HTMLBodyElementPrototype. Was Object.
+PASS tagConstructorClassString('body') is "Function"
+PASS tagConstructorName('body') is "HTMLBodyElement"
+PASS tagClassString('br') is "HTMLBRElement"
+FAIL tagPrototypeClassString('br') should be HTMLBRElementPrototype. Was Object.
+PASS tagConstructorClassString('br') is "Function"
+PASS tagConstructorName('br') is "HTMLBRElement"
+PASS tagClassString('button') is "HTMLButtonElement"
+FAIL tagPrototypeClassString('button') should be HTMLButtonElementPrototype. Was Object.
+PASS tagConstructorClassString('button') is "Function"
+PASS tagConstructorName('button') is "HTMLButtonElement"
+PASS tagClassString('canvas') is "HTMLCanvasElement"
+FAIL tagPrototypeClassString('canvas') should be HTMLCanvasElementPrototype. Was Object.
+PASS tagConstructorClassString('canvas') is "Function"
+PASS tagConstructorName('canvas') is "HTMLCanvasElement"
+PASS tagClassString('caption') is "HTMLTableCaptionElement"
+FAIL tagPrototypeClassString('caption') should be HTMLTableCaptionElementPrototype. Was Object.
+PASS tagConstructorClassString('caption') is "Function"
+PASS tagConstructorName('caption') is "HTMLTableCaptionElement"
+PASS tagClassString('center') is "HTMLElement"
+FAIL tagPrototypeClassString('center') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('center') is "Function"
+PASS tagConstructorName('center') is "HTMLElement"
+PASS tagClassString('cite') is "HTMLElement"
+FAIL tagPrototypeClassString('cite') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('cite') is "Function"
+PASS tagConstructorName('cite') is "HTMLElement"
+PASS tagClassString('code') is "HTMLElement"
+FAIL tagPrototypeClassString('code') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('code') is "Function"
+PASS tagConstructorName('code') is "HTMLElement"
+PASS tagClassString('col') is "HTMLTableColElement"
+FAIL tagPrototypeClassString('col') should be HTMLTableColElementPrototype. Was Object.
+PASS tagConstructorClassString('col') is "Function"
+PASS tagConstructorName('col') is "HTMLTableColElement"
+PASS tagClassString('colgroup') is "HTMLTableColElement"
+FAIL tagPrototypeClassString('colgroup') should be HTMLTableColElementPrototype. Was Object.
+PASS tagConstructorClassString('colgroup') is "Function"
+PASS tagConstructorName('colgroup') is "HTMLTableColElement"
+PASS tagClassString('dd') is "HTMLElement"
+FAIL tagPrototypeClassString('dd') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('dd') is "Function"
+PASS tagConstructorName('dd') is "HTMLElement"
+PASS tagClassString('del') is "HTMLModElement"
+FAIL tagPrototypeClassString('del') should be HTMLModElementPrototype. Was Object.
+PASS tagConstructorClassString('del') is "Function"
+PASS tagConstructorName('del') is "HTMLModElement"
+PASS tagClassString('dfn') is "HTMLElement"
+FAIL tagPrototypeClassString('dfn') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('dfn') is "Function"
+PASS tagConstructorName('dfn') is "HTMLElement"
+PASS tagClassString('dir') is "HTMLDirectoryElement"
+FAIL tagPrototypeClassString('dir') should be HTMLDirectoryElementPrototype. Was Object.
+PASS tagConstructorClassString('dir') is "Function"
+PASS tagConstructorName('dir') is "HTMLDirectoryElement"
+PASS tagClassString('div') is "HTMLDivElement"
+FAIL tagPrototypeClassString('div') should be HTMLDivElementPrototype. Was Object.
+PASS tagConstructorClassString('div') is "Function"
+PASS tagConstructorName('div') is "HTMLDivElement"
+PASS tagClassString('dl') is "HTMLDListElement"
+FAIL tagPrototypeClassString('dl') should be HTMLDListElementPrototype. Was Object.
+PASS tagConstructorClassString('dl') is "Function"
+PASS tagConstructorName('dl') is "HTMLDListElement"
+PASS tagClassString('dt') is "HTMLElement"
+FAIL tagPrototypeClassString('dt') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('dt') is "Function"
+PASS tagConstructorName('dt') is "HTMLElement"
+PASS tagClassString('em') is "HTMLElement"
+FAIL tagPrototypeClassString('em') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('em') is "Function"
+PASS tagConstructorName('em') is "HTMLElement"
+PASS tagClassString('embed') is "HTMLEmbedElement"
+FAIL tagPrototypeClassString('embed') should be HTMLEmbedElementPrototype. Was Object.
+PASS tagConstructorClassString('embed') is "Function"
+PASS tagConstructorName('embed') is "HTMLEmbedElement"
+PASS tagClassString('fieldset') is "HTMLFieldSetElement"
+FAIL tagPrototypeClassString('fieldset') should be HTMLFieldSetElementPrototype. Was Object.
+PASS tagConstructorClassString('fieldset') is "Function"
+PASS tagConstructorName('fieldset') is "HTMLFieldSetElement"
+PASS tagClassString('font') is "HTMLFontElement"
+FAIL tagPrototypeClassString('font') should be HTMLFontElementPrototype. Was Object.
+PASS tagConstructorClassString('font') is "Function"
+PASS tagConstructorName('font') is "HTMLFontElement"
+PASS tagClassString('footer') is "HTMLElement"
+FAIL tagPrototypeClassString('footer') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('footer') is "Function"
+PASS tagConstructorName('footer') is "HTMLElement"
+PASS tagClassString('form') is "HTMLFormElement"
+FAIL tagPrototypeClassString('form') should be HTMLFormElementPrototype. Was Object.
+PASS tagConstructorClassString('form') is "Function"
+PASS tagConstructorName('form') is "HTMLFormElement"
+PASS tagClassString('frame') is "HTMLFrameElement"
+FAIL tagPrototypeClassString('frame') should be HTMLFrameElementPrototype. Was Object.
+PASS tagConstructorClassString('frame') is "Function"
+PASS tagConstructorName('frame') is "HTMLFrameElement"
+PASS tagClassString('frameset') is "HTMLFrameSetElement"
+FAIL tagPrototypeClassString('frameset') should be HTMLFrameSetElementPrototype. Was Object.
+PASS tagConstructorClassString('frameset') is "Function"
+PASS tagConstructorName('frameset') is "HTMLFrameSetElement"
+PASS tagClassString('head') is "HTMLHeadElement"
+FAIL tagPrototypeClassString('head') should be HTMLHeadElementPrototype. Was Object.
+PASS tagConstructorClassString('head') is "Function"
+PASS tagConstructorName('head') is "HTMLHeadElement"
+PASS tagClassString('h1') is "HTMLHeadingElement"
+FAIL tagPrototypeClassString('h1') should be HTMLHeadingElementPrototype. Was Object.
+PASS tagConstructorClassString('h1') is "Function"
+PASS tagConstructorName('h1') is "HTMLHeadingElement"
+PASS tagClassString('h2') is "HTMLHeadingElement"
+FAIL tagPrototypeClassString('h2') should be HTMLHeadingElementPrototype. Was Object.
+PASS tagConstructorClassString('h2') is "Function"
+PASS tagConstructorName('h2') is "HTMLHeadingElement"
+PASS tagClassString('h3') is "HTMLHeadingElement"
+FAIL tagPrototypeClassString('h3') should be HTMLHeadingElementPrototype. Was Object.
+PASS tagConstructorClassString('h3') is "Function"
+PASS tagConstructorName('h3') is "HTMLHeadingElement"
+PASS tagClassString('h4') is "HTMLHeadingElement"
+FAIL tagPrototypeClassString('h4') should be HTMLHeadingElementPrototype. Was Object.
+PASS tagConstructorClassString('h4') is "Function"
+PASS tagConstructorName('h4') is "HTMLHeadingElement"
+PASS tagClassString('h5') is "HTMLHeadingElement"
+FAIL tagPrototypeClassString('h5') should be HTMLHeadingElementPrototype. Was Object.
+PASS tagConstructorClassString('h5') is "Function"
+PASS tagConstructorName('h5') is "HTMLHeadingElement"
+PASS tagClassString('h6') is "HTMLHeadingElement"
+FAIL tagPrototypeClassString('h6') should be HTMLHeadingElementPrototype. Was Object.
+PASS tagConstructorClassString('h6') is "Function"
+PASS tagConstructorName('h6') is "HTMLHeadingElement"
+PASS tagClassString('head') is "HTMLHeadElement"
+FAIL tagPrototypeClassString('head') should be HTMLHeadElementPrototype. Was Object.
+PASS tagConstructorClassString('head') is "Function"
+PASS tagConstructorName('head') is "HTMLHeadElement"
+PASS tagClassString('header') is "HTMLElement"
+FAIL tagPrototypeClassString('header') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('header') is "Function"
+PASS tagConstructorName('header') is "HTMLElement"
+PASS tagClassString('hgroup') is "HTMLElement"
+FAIL tagPrototypeClassString('hgroup') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('hgroup') is "Function"
+PASS tagConstructorName('hgroup') is "HTMLElement"
+PASS tagClassString('hr') is "HTMLHRElement"
+FAIL tagPrototypeClassString('hr') should be HTMLHRElementPrototype. Was Object.
+PASS tagConstructorClassString('hr') is "Function"
+PASS tagConstructorName('hr') is "HTMLHRElement"
+PASS tagClassString('html') is "HTMLHtmlElement"
+FAIL tagPrototypeClassString('html') should be HTMLHtmlElementPrototype. Was Object.
+PASS tagConstructorClassString('html') is "Function"
+PASS tagConstructorName('html') is "HTMLHtmlElement"
+PASS tagClassString('i') is "HTMLElement"
+FAIL tagPrototypeClassString('i') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('i') is "Function"
+PASS tagConstructorName('i') is "HTMLElement"
+PASS tagClassString('iframe') is "HTMLIFrameElement"
+FAIL tagPrototypeClassString('iframe') should be HTMLIFrameElementPrototype. Was Object.
+PASS tagConstructorClassString('iframe') is "Function"
+PASS tagConstructorName('iframe') is "HTMLIFrameElement"
+PASS tagClassString('image') is "HTMLImageElement"
+FAIL tagPrototypeClassString('image') should be HTMLImageElementPrototype. Was Object.
+PASS tagConstructorClassString('image') is "Function"
+PASS tagConstructorName('image') is "HTMLImageElement"
+PASS tagClassString('img') is "HTMLImageElement"
+FAIL tagPrototypeClassString('img') should be HTMLImageElementPrototype. Was Object.
+PASS tagConstructorClassString('img') is "Function"
+PASS tagConstructorName('img') is "HTMLImageElement"
+PASS tagClassString('input') is "HTMLInputElement"
+FAIL tagPrototypeClassString('input') should be HTMLInputElementPrototype. Was Object.
+PASS tagConstructorClassString('input') is "Function"
+PASS tagConstructorName('input') is "HTMLInputElement"
+PASS tagClassString('ins') is "HTMLModElement"
+FAIL tagPrototypeClassString('ins') should be HTMLModElementPrototype. Was Object.
+PASS tagConstructorClassString('ins') is "Function"
+PASS tagConstructorName('ins') is "HTMLModElement"
+PASS tagClassString('kbd') is "HTMLElement"
+FAIL tagPrototypeClassString('kbd') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('kbd') is "Function"
+PASS tagConstructorName('kbd') is "HTMLElement"
+PASS tagClassString('keygen') is "HTMLKeygenElement"
+FAIL tagPrototypeClassString('keygen') should be HTMLKeygenElementPrototype. Was Object.
+PASS tagConstructorClassString('keygen') is "Function"
+PASS tagConstructorName('keygen') is "HTMLKeygenElement"
+PASS tagClassString('label') is "HTMLLabelElement"
+FAIL tagPrototypeClassString('label') should be HTMLLabelElementPrototype. Was Object.
+PASS tagConstructorClassString('label') is "Function"
+PASS tagConstructorName('label') is "HTMLLabelElement"
+PASS tagClassString('layer') is "HTMLElement"
+FAIL tagPrototypeClassString('layer') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('layer') is "Function"
+PASS tagConstructorName('layer') is "HTMLElement"
+PASS tagClassString('legend') is "HTMLLegendElement"
+FAIL tagPrototypeClassString('legend') should be HTMLLegendElementPrototype. Was Object.
+PASS tagConstructorClassString('legend') is "Function"
+PASS tagConstructorName('legend') is "HTMLLegendElement"
+PASS tagClassString('li') is "HTMLLIElement"
+FAIL tagPrototypeClassString('li') should be HTMLLIElementPrototype. Was Object.
+PASS tagConstructorClassString('li') is "Function"
+PASS tagConstructorName('li') is "HTMLLIElement"
+PASS tagClassString('link') is "HTMLLinkElement"
+FAIL tagPrototypeClassString('link') should be HTMLLinkElementPrototype. Was Object.
+PASS tagConstructorClassString('link') is "Function"
+PASS tagConstructorName('link') is "HTMLLinkElement"
+PASS tagClassString('listing') is "HTMLPreElement"
+FAIL tagPrototypeClassString('listing') should be HTMLPreElementPrototype. Was Object.
+PASS tagConstructorClassString('listing') is "Function"
+PASS tagConstructorName('listing') is "HTMLPreElement"
+PASS tagClassString('main') is "HTMLElement"
+FAIL tagPrototypeClassString('main') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('main') is "Function"
+PASS tagConstructorName('main') is "HTMLElement"
+PASS tagClassString('map') is "HTMLMapElement"
+FAIL tagPrototypeClassString('map') should be HTMLMapElementPrototype. Was Object.
+PASS tagConstructorClassString('map') is "Function"
+PASS tagConstructorName('map') is "HTMLMapElement"
+PASS tagClassString('marquee') is "HTMLMarqueeElement"
+FAIL tagPrototypeClassString('marquee') should be HTMLMarqueeElementPrototype. Was Object.
+PASS tagConstructorClassString('marquee') is "Function"
+PASS tagConstructorName('marquee') is "HTMLMarqueeElement"
+PASS tagClassString('menu') is "HTMLMenuElement"
+FAIL tagPrototypeClassString('menu') should be HTMLMenuElementPrototype. Was Object.
+PASS tagConstructorClassString('menu') is "Function"
+PASS tagConstructorName('menu') is "HTMLMenuElement"
+PASS tagClassString('meta') is "HTMLMetaElement"
+FAIL tagPrototypeClassString('meta') should be HTMLMetaElementPrototype. Was Object.
+PASS tagConstructorClassString('meta') is "Function"
+PASS tagConstructorName('meta') is "HTMLMetaElement"
+PASS tagClassString('nav') is "HTMLElement"
+FAIL tagPrototypeClassString('nav') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('nav') is "Function"
+PASS tagConstructorName('nav') is "HTMLElement"
+PASS tagClassString('nobr') is "HTMLElement"
+FAIL tagPrototypeClassString('nobr') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('nobr') is "Function"
+PASS tagConstructorName('nobr') is "HTMLElement"
+PASS tagClassString('noembed') is "HTMLElement"
+FAIL tagPrototypeClassString('noembed') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('noembed') is "Function"
+PASS tagConstructorName('noembed') is "HTMLElement"
+PASS tagClassString('noframes') is "HTMLElement"
+FAIL tagPrototypeClassString('noframes') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('noframes') is "Function"
+PASS tagConstructorName('noframes') is "HTMLElement"
+PASS tagClassString('nolayer') is "HTMLElement"
+FAIL tagPrototypeClassString('nolayer') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('nolayer') is "Function"
+PASS tagConstructorName('nolayer') is "HTMLElement"
+PASS tagClassString('noscript') is "HTMLElement"
+FAIL tagPrototypeClassString('noscript') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('noscript') is "Function"
+PASS tagConstructorName('noscript') is "HTMLElement"
+PASS tagClassString('object') is "HTMLObjectElement"
+FAIL tagPrototypeClassString('object') should be HTMLObjectElementPrototype. Was Object.
+PASS tagConstructorClassString('object') is "Function"
+PASS tagConstructorName('object') is "HTMLObjectElement"
+PASS tagClassString('ol') is "HTMLOListElement"
+FAIL tagPrototypeClassString('ol') should be HTMLOListElementPrototype. Was Object.
+PASS tagConstructorClassString('ol') is "Function"
+PASS tagConstructorName('ol') is "HTMLOListElement"
+PASS tagClassString('optgroup') is "HTMLOptGroupElement"
+FAIL tagPrototypeClassString('optgroup') should be HTMLOptGroupElementPrototype. Was Object.
+PASS tagConstructorClassString('optgroup') is "Function"
+PASS tagConstructorName('optgroup') is "HTMLOptGroupElement"
+PASS tagClassString('option') is "HTMLOptionElement"
+FAIL tagPrototypeClassString('option') should be HTMLOptionElementPrototype. Was Object.
+PASS tagConstructorClassString('option') is "Function"
+PASS tagConstructorName('option') is "HTMLOptionElement"
+PASS tagClassString('p') is "HTMLParagraphElement"
+FAIL tagPrototypeClassString('p') should be HTMLParagraphElementPrototype. Was Object.
+PASS tagConstructorClassString('p') is "Function"
+PASS tagConstructorName('p') is "HTMLParagraphElement"
+PASS tagClassString('param') is "HTMLParamElement"
+FAIL tagPrototypeClassString('param') should be HTMLParamElementPrototype. Was Object.
+PASS tagConstructorClassString('param') is "Function"
+PASS tagConstructorName('param') is "HTMLParamElement"
+PASS tagClassString('plaintext') is "HTMLElement"
+FAIL tagPrototypeClassString('plaintext') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('plaintext') is "Function"
+PASS tagConstructorName('plaintext') is "HTMLElement"
+PASS tagClassString('pre') is "HTMLPreElement"
+FAIL tagPrototypeClassString('pre') should be HTMLPreElementPrototype. Was Object.
+PASS tagConstructorClassString('pre') is "Function"
+PASS tagConstructorName('pre') is "HTMLPreElement"
+PASS tagClassString('q') is "HTMLQuoteElement"
+FAIL tagPrototypeClassString('q') should be HTMLQuoteElementPrototype. Was Object.
+PASS tagConstructorClassString('q') is "Function"
+PASS tagConstructorName('q') is "HTMLQuoteElement"
+PASS tagClassString('rp') is "HTMLElement"
+FAIL tagPrototypeClassString('rp') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('rp') is "Function"
+PASS tagConstructorName('rp') is "HTMLElement"
+PASS tagClassString('rt') is "HTMLElement"
+FAIL tagPrototypeClassString('rt') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('rt') is "Function"
+PASS tagConstructorName('rt') is "HTMLElement"
+PASS tagClassString('ruby') is "HTMLElement"
+FAIL tagPrototypeClassString('ruby') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('ruby') is "Function"
+PASS tagConstructorName('ruby') is "HTMLElement"
+PASS tagClassString('s') is "HTMLElement"
+FAIL tagPrototypeClassString('s') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('s') is "Function"
+PASS tagConstructorName('s') is "HTMLElement"
+PASS tagClassString('samp') is "HTMLElement"
+FAIL tagPrototypeClassString('samp') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('samp') is "Function"
+PASS tagConstructorName('samp') is "HTMLElement"
+PASS tagClassString('script') is "HTMLScriptElement"
+FAIL tagPrototypeClassString('script') should be HTMLScriptElementPrototype. Was Object.
+PASS tagConstructorClassString('script') is "Function"
+PASS tagConstructorName('script') is "HTMLScriptElement"
+PASS tagClassString('section') is "HTMLElement"
+FAIL tagPrototypeClassString('section') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('section') is "Function"
+PASS tagConstructorName('section') is "HTMLElement"
+PASS tagClassString('select') is "HTMLSelectElement"
+FAIL tagPrototypeClassString('select') should be HTMLSelectElementPrototype. Was Object.
+PASS tagConstructorClassString('select') is "Function"
+PASS tagConstructorName('select') is "HTMLSelectElement"
+PASS tagClassString('small') is "HTMLElement"
+FAIL tagPrototypeClassString('small') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('small') is "Function"
+PASS tagConstructorName('small') is "HTMLElement"
+PASS tagClassString('span') is "HTMLSpanElement"
+FAIL tagPrototypeClassString('span') should be HTMLSpanElementPrototype. Was Object.
+PASS tagConstructorClassString('span') is "Function"
+PASS tagConstructorName('span') is "HTMLSpanElement"
+PASS tagClassString('strike') is "HTMLElement"
+FAIL tagPrototypeClassString('strike') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('strike') is "Function"
+PASS tagConstructorName('strike') is "HTMLElement"
+PASS tagClassString('strong') is "HTMLElement"
+FAIL tagPrototypeClassString('strong') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('strong') is "Function"
+PASS tagConstructorName('strong') is "HTMLElement"
+PASS tagClassString('style') is "HTMLStyleElement"
+FAIL tagPrototypeClassString('style') should be HTMLStyleElementPrototype. Was Object.
+PASS tagConstructorClassString('style') is "Function"
+PASS tagConstructorName('style') is "HTMLStyleElement"
+PASS tagClassString('sub') is "HTMLElement"
+FAIL tagPrototypeClassString('sub') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('sub') is "Function"
+PASS tagConstructorName('sub') is "HTMLElement"
+PASS tagClassString('sup') is "HTMLElement"
+FAIL tagPrototypeClassString('sup') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('sup') is "Function"
+PASS tagConstructorName('sup') is "HTMLElement"
+PASS tagClassString('table') is "HTMLTableElement"
+FAIL tagPrototypeClassString('table') should be HTMLTableElementPrototype. Was Object.
+PASS tagConstructorClassString('table') is "Function"
+PASS tagConstructorName('table') is "HTMLTableElement"
+PASS tagClassString('tbody') is "HTMLTableSectionElement"
+FAIL tagPrototypeClassString('tbody') should be HTMLTableSectionElementPrototype. Was Object.
+PASS tagConstructorClassString('tbody') is "Function"
+PASS tagConstructorName('tbody') is "HTMLTableSectionElement"
+PASS tagClassString('td') is "HTMLTableCellElement"
+FAIL tagPrototypeClassString('td') should be HTMLTableCellElementPrototype. Was Object.
+PASS tagConstructorClassString('td') is "Function"
+PASS tagConstructorName('td') is "HTMLTableCellElement"
+PASS tagClassString('textarea') is "HTMLTextAreaElement"
+FAIL tagPrototypeClassString('textarea') should be HTMLTextAreaElementPrototype. Was Object.
+PASS tagConstructorClassString('textarea') is "Function"
+PASS tagConstructorName('textarea') is "HTMLTextAreaElement"
+PASS tagClassString('tfoot') is "HTMLTableSectionElement"
+FAIL tagPrototypeClassString('tfoot') should be HTMLTableSectionElementPrototype. Was Object.
+PASS tagConstructorClassString('tfoot') is "Function"
+PASS tagConstructorName('tfoot') is "HTMLTableSectionElement"
+PASS tagClassString('th') is "HTMLTableCellElement"
+FAIL tagPrototypeClassString('th') should be HTMLTableCellElementPrototype. Was Object.
+PASS tagConstructorClassString('th') is "Function"
+PASS tagConstructorName('th') is "HTMLTableCellElement"
+PASS tagClassString('thead') is "HTMLTableSectionElement"
+FAIL tagPrototypeClassString('thead') should be HTMLTableSectionElementPrototype. Was Object.
+PASS tagConstructorClassString('thead') is "Function"
+PASS tagConstructorName('thead') is "HTMLTableSectionElement"
+PASS tagClassString('title') is "HTMLTitleElement"
+FAIL tagPrototypeClassString('title') should be HTMLTitleElementPrototype. Was Object.
+PASS tagConstructorClassString('title') is "Function"
+PASS tagConstructorName('title') is "HTMLTitleElement"
+PASS tagClassString('tr') is "HTMLTableRowElement"
+FAIL tagPrototypeClassString('tr') should be HTMLTableRowElementPrototype. Was Object.
+PASS tagConstructorClassString('tr') is "Function"
+PASS tagConstructorName('tr') is "HTMLTableRowElement"
+PASS tagClassString('tt') is "HTMLElement"
+FAIL tagPrototypeClassString('tt') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('tt') is "Function"
+PASS tagConstructorName('tt') is "HTMLElement"
+PASS tagClassString('u') is "HTMLElement"
+FAIL tagPrototypeClassString('u') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('u') is "Function"
+PASS tagConstructorName('u') is "HTMLElement"
+PASS tagClassString('ul') is "HTMLUListElement"
+FAIL tagPrototypeClassString('ul') should be HTMLUListElementPrototype. Was Object.
+PASS tagConstructorClassString('ul') is "Function"
+PASS tagConstructorName('ul') is "HTMLUListElement"
+PASS tagClassString('var') is "HTMLElement"
+FAIL tagPrototypeClassString('var') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('var') is "Function"
+PASS tagConstructorName('var') is "HTMLElement"
+PASS tagClassString('wbr') is "HTMLElement"
+FAIL tagPrototypeClassString('wbr') should be HTMLElementPrototype. Was Object.
+PASS tagConstructorClassString('wbr') is "Function"
+PASS tagConstructorName('wbr') is "HTMLElement"
+PASS tagClassString('xmp') is "HTMLPreElement"
+FAIL tagPrototypeClassString('xmp') should be HTMLPreElementPrototype. Was Object.
+PASS tagConstructorClassString('xmp') is "Function"
+PASS tagConstructorName('xmp') is "HTMLPreElement"
 
