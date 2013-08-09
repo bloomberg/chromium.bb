@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -70,6 +71,8 @@ enum SSLBlockingPageEvent {
   SHOW_UNDERSTAND,
   SHOW_INTERNAL_HOSTNAME,
   PROCEED_INTERNAL_HOSTNAME,
+  SHOW_NEW_SITE,
+  PROCEED_NEW_SITE,
   UNUSED_BLOCKING_PAGE_EVENT,
 };
 
@@ -84,7 +87,8 @@ void RecordSSLBlockingPageDetailedStats(
     int cert_error,
     bool overridable,
     bool internal,
-    const base::TimeTicks& start_time) {
+    const base::TimeTicks& start_time,
+    int num_visits) {
   UMA_HISTOGRAM_ENUMERATION("interstitial.ssl_error_type",
      SSLErrorInfo::NetErrorToErrorType(cert_error), SSLErrorInfo::END_OF_ENUM);
   if (start_time.is_null() || !overridable) {
@@ -93,10 +97,14 @@ void RecordSSLBlockingPageDetailedStats(
     // back. In either case, we don't want to record some of our metrics.
     return;
   }
+  if (num_visits == 0)
+    RecordSSLBlockingPageEventStats(SHOW_NEW_SITE);
   if (proceed) {
     RecordSSLBlockingPageEventStats(PROCEED_OVERRIDABLE);
     if (internal)
       RecordSSLBlockingPageEventStats(PROCEED_INTERNAL_HOSTNAME);
+    if (num_visits == 0)
+      RecordSSLBlockingPageEventStats(PROCEED_NEW_SITE);
   } else if (!proceed) {
     RecordSSLBlockingPageEventStats(DONT_PROCEED_OVERRIDABLE);
   }
@@ -158,17 +166,28 @@ SSLBlockingPage::SSLBlockingPage(
       request_url_(request_url),
       overridable_(overridable),
       strict_enforcement_(strict_enforcement),
-      internal_(false) {
+      internal_(false),
+      num_visits_(-1) {
   trialCondition_ = base::FieldTrialList::FindFullName(kStudyName);
 
+  // For UMA stats.
   if (net::IsHostnameNonUnique(request_url_.HostNoBrackets()))
     internal_ = true;
-
   RecordSSLBlockingPageEventStats(SHOW_ALL);
   if (overridable_ && !strict_enforcement_) {
     RecordSSLBlockingPageEventStats(SHOW_OVERRIDABLE);
     if (internal_)
       RecordSSLBlockingPageEventStats(SHOW_INTERNAL_HOSTNAME);
+    HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+        Profile::EXPLICIT_ACCESS);
+    if (history_service) {
+      history_service->GetVisibleVisitCountToHost(
+          request_url_,
+          &request_consumer_,
+          base::Bind(&SSLBlockingPage::OnGotHistoryCount,
+                    base::Unretained(this)));
+    }
   }
 
   interstitial_page_ = InterstitialPage::Create(
@@ -183,7 +202,8 @@ SSLBlockingPage::~SSLBlockingPage() {
                                        cert_error_,
                                        overridable_ && !strict_enforcement_,
                                        internal_,
-                                       display_start_time_);
+                                       display_start_time_,
+                                       num_visits_);
     // The page is closed without the user having chosen what to do, default to
     // deny.
     NotifyDenyCertificate();
@@ -310,7 +330,8 @@ void SSLBlockingPage::OnProceed() {
                                      cert_error_,
                                      overridable_ && !strict_enforcement_,
                                      internal_,
-                                     display_start_time_);
+                                     display_start_time_,
+                                     num_visits_);
   // Accepting the certificate resumes the loading of the page.
   NotifyAllowCertificate();
 }
@@ -320,7 +341,8 @@ void SSLBlockingPage::OnDontProceed() {
                                      cert_error_,
                                      overridable_ && !strict_enforcement_,
                                      internal_,
-                                     display_start_time_);
+                                     display_start_time_,
+                                     num_visits_);
   NotifyDenyCertificate();
 }
 
@@ -357,4 +379,11 @@ void SSLBlockingPage::SetExtraInfo(
   for (; i < 5; i++) {
     strings->SetString(keys[i], std::string());
   }
+}
+
+void SSLBlockingPage::OnGotHistoryCount(HistoryService::Handle handle,
+                                        bool success,
+                                        int num_visits,
+                                        base::Time first_visit) {
+  num_visits_ = num_visits;
 }

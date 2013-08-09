@@ -22109,6 +22109,8 @@ other types of suffix sets.
   <int value="11" label="SHOW_UNDERSTAND"/>
   <int value="12" label="SHOW_INTERNAL_HOSTNAME"/>
   <int value="13" label="PROCEED_INTERNAL_HOSTNAME"/>
+  <int value="14" label="SHOW_NEW_SITE"/>
+  <int value="15" label="PROCEED_NEW_SITE"/>
 </enum>
 
 <enum name="SuspendStatus" type="int">

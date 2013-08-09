@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "chrome/browser/history/history_service.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -60,6 +61,12 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   void NotifyDenyCertificate();
   void NotifyAllowCertificate();
 
+  // Used to query the HistoryService to see if the URL is in history. For UMA.
+  void OnGotHistoryCount(HistoryService::Handle handle,
+                         bool success,
+                         int num_visits,
+                         base::Time first_visit);
+
   base::Callback<void(bool)> callback_;
 
   content::WebContents* web_contents_;
@@ -74,6 +81,10 @@ class SSLBlockingPage : public content::InterstitialPageDelegate {
   content::InterstitialPage* interstitial_page_;  // Owns us.
   // Is the hostname for an internal network?
   bool internal_;
+  // How many times is this same URL in history?
+  int num_visits_;
+  // Used for getting num_visits_.
+  CancelableRequestConsumer request_consumer_;
 
   // For the FieldTrial: this contains the name of the condition.
   std::string trialCondition_;
