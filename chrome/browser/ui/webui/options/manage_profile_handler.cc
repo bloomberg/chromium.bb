@@ -27,6 +27,8 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -65,11 +67,11 @@ void OnNewDefaultProfileCreated(
     Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED) {
     profiles::FindOrCreateNewWindowForProfile(
-      profile,
-      chrome::startup::IS_PROCESS_STARTUP,
-      chrome::startup::IS_FIRST_RUN,
-      desktop_type,
-      false);
+        profile,
+        chrome::startup::IS_PROCESS_STARTUP,
+        chrome::startup::IS_FIRST_RUN,
+        desktop_type,
+        false);
   }
 }
 
@@ -92,9 +94,13 @@ void ManageProfileHandler::GetLocalizedValues(
         IDS_PROFILES_MANAGE_DUPLICATE_NAME_ERROR },
     { "manageProfilesIconLabel", IDS_PROFILES_MANAGE_ICON_LABEL },
     { "manageProfilesManagedSignedInLabel",
-    IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL },
+        IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL },
     { "manageProfilesManagedNotSignedInLabel",
         IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LABEL },
+    { "manageProfilesManagedAccountDetailsOutOfDate",
+        IDS_PROFILES_CREATE_MANAGED_ACCOUNT_DETAILS_OUT_OF_DATE_LABEL },
+    { "manageProfilesManagedSignInAgainLink",
+        IDS_PROFILES_CREATE_MANAGED_ACCOUNT_SIGN_IN_AGAIN_LINK },
     { "manageProfilesManagedNotSignedInLink",
         IDS_PROFILES_CREATE_MANAGED_NOT_SIGNED_IN_LINK },
     { "manageProfilesSelectExistingManagedProfileLabel",
@@ -443,13 +449,20 @@ void ManageProfileHandler::RequestHasProfileShortcuts(const ListValue* args) {
 
 void ManageProfileHandler::RequestCreateProfileUpdate(
     const base::ListValue* args) {
+  Profile* profile = Profile::FromWebUI(web_ui());
   SigninManagerBase* manager =
-      SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+      SigninManagerFactory::GetForProfile(profile);
   string16 username = UTF8ToUTF16(manager->GetAuthenticatedUsername());
-  StringValue username_value(username);
+  ProfileSyncService* service =
+     ProfileSyncServiceFactory::GetForProfile(profile);
+  GoogleServiceAuthError::State state = service->GetAuthError().state();
+  bool has_error = (state == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+                    state == GoogleServiceAuthError::USER_NOT_SIGNED_UP ||
+                    state == GoogleServiceAuthError::ACCOUNT_DELETED ||
+                    state == GoogleServiceAuthError::ACCOUNT_DISABLED);
   web_ui()->CallJavascriptFunction("CreateProfileOverlay.updateSignedInStatus",
-                                   username_value);
-
+                                   base::StringValue(username),
+                                   base::FundamentalValue(has_error));
   OnCreateManagedUserPrefChange();
 }
 

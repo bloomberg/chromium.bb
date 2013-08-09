@@ -120,7 +120,8 @@ html[dir='rtl'] #delete-profile-message {
   color: #999;
 }
 
-#create-profile-managed-not-signed-in-label {
+#create-profile-managed-not-signed-in-label,
+#create-profile-managed-account-details-out-of-date-label {
   white-space: pre-wrap;
   word-wrap: break-word;
 }

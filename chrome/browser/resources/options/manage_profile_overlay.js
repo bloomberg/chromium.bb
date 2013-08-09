@@ -82,7 +82,8 @@ cr.define('options', function() {
         chrome.send('removeProfileShortcut', [self.profileInfo_.filePath]);
       };
 
-      $('create-profile-managed-signed-in-link').onclick = function(event) {
+      $('create-profile-managed-signed-in-learn-more-link').onclick =
+          function(event) {
         OptionsPage.navigateToPage('managedUserLearnMore');
         return false;
       };
@@ -95,6 +96,11 @@ cr.define('options', function() {
         // else.
         OptionsPage.closeOverlay();
         SyncSetupOverlay.startSignIn();
+      };
+
+      $('create-profile-managed-sign-in-again-link').onclick = function(event) {
+        OptionsPage.closeOverlay();
+        SyncSetupOverlay.showSetupUI();
       };
 
       $('create-profile-managed').onchange = function(event) {
@@ -601,10 +607,13 @@ cr.define('options', function() {
      * will update additional UI elements.
      * @param {string} email The email address of the currently signed-in user.
      *     An empty string indicates that the user is not signed in.
+     * @param {boolean} hasError Whether the user's sign-in credentials are
+     *     still valid.
      * @private
      */
-    updateSignedInStatus_: function(email) {
+    updateSignedInStatus_: function(email, hasError) {
       this.signedInEmail_ = email;
+      this.hasError_ = hasError;
       var isSignedIn = email !== '';
       $('create-profile-managed-signed-in').hidden = !isSignedIn;
       $('create-profile-managed-not-signed-in').hidden = isSignedIn;
@@ -612,9 +621,19 @@ cr.define('options', function() {
       $('choose-existing-managed-profile').hidden = !isSignedIn;
 
       if (isSignedIn) {
+        var accountDetailsOutOfDate =
+            $('create-profile-managed-account-details-out-of-date-label');
+        accountDetailsOutOfDate.textContent = loadTimeData.getStringF(
+            'manageProfilesManagedAccountDetailsOutOfDate', email);
+        accountDetailsOutOfDate.hidden = !hasError;
+
         $('create-profile-managed-signed-in-label').textContent =
             loadTimeData.getStringF(
                 'manageProfilesManagedSignedInLabel', email);
+        $('create-profile-managed-signed-in-label').hidden = hasError;
+
+        $('create-profile-managed-sign-in-again-link').hidden = !hasError;
+        $('create-profile-managed-signed-in-learn-more-link').hidden = hasError;
       }
     },
 
@@ -629,7 +648,8 @@ cr.define('options', function() {
      */
     updateManagedUsersAllowed_: function(allowed) {
       var isSignedIn = this.signedInEmail_ !== '';
-      $('create-profile-managed').disabled = !isSignedIn || !allowed;
+      $('create-profile-managed').disabled =
+          !isSignedIn || !allowed || this.hasError_;
 
       $('create-profile-managed-not-signed-in-link').hidden = !allowed;
       if (!allowed) {
