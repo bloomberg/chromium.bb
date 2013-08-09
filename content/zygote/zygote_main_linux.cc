@@ -16,7 +16,10 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
+#include "base/containers/hash_tables.h"
+#include "base/files/file_path.h"
 #include "base/linux_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/native_library.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
@@ -54,13 +57,11 @@
 
 namespace content {
 
-namespace {
-
 // See http://code.google.com/p/chromium/wiki/LinuxZygote
 
-void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
-                                 char* timezone_out,
-                                 size_t timezone_out_len) {
+static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
+                                        char* timezone_out,
+                                        size_t timezone_out_len) {
   Pickle request;
   request.WriteInt(LinuxSandbox::METHOD_LOCALTIME);
   request.WriteString(
@@ -144,7 +145,7 @@ static LocaltimeFunction g_libc_localtime64;
 static LocaltimeRFunction g_libc_localtime_r;
 static LocaltimeRFunction g_libc_localtime64_r;
 
-void InitLibcLocaltimeFunctions() {
+static void InitLibcLocaltimeFunctions() {
   g_libc_localtime = reinterpret_cast<LocaltimeFunction>(
       dlsym(RTLD_NEXT, "localtime"));
   g_libc_localtime64 = reinterpret_cast<LocaltimeFunction>(
@@ -272,7 +273,7 @@ void PreloadPepperPlugins() {
 
 // This function triggers the static and lazy construction of objects that need
 // to be created before imposing the sandbox.
-void PreSandboxInit() {
+static void PreSandboxInit() {
   base::RandUint64();
 
   base::SysInfo::MaxSharedMemorySize();
@@ -303,12 +304,10 @@ void PreSandboxInit() {
 #if defined(ENABLE_WEBRTC)
   InitializeWebRtcModule();
 #endif
-  SkFontConfigInterface::SetGlobal(
-      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor))->unref();
 }
 
 // Do nothing here
-void SIGCHLDHandler(int signal) {
+static void SIGCHLDHandler(int signal) {
 }
 
 // The current process will become a process reaper like init.
@@ -316,7 +315,7 @@ void SIGCHLDHandler(int signal) {
 // exit.
 // We need to be careful we close the magic kZygoteIdFd properly in the parent
 // before this function returns.
-bool CreateInitProcessReaper() {
+static bool CreateInitProcessReaper() {
   int sync_fds[2];
   // We want to use send, so we can't use a pipe
   if (socketpair(AF_UNIX, SOCK_STREAM, 0, sync_fds)) {
@@ -385,22 +384,16 @@ bool CreateInitProcessReaper() {
 
 // This will set the *using_suid_sandbox variable to true if the SUID sandbox
 // is enabled. This does not necessarily exclude other types of sandboxing.
-bool EnterSuidSandbox(LinuxSandbox* linux_sandbox,
-                      bool* using_suid_sandbox,
-                      bool* has_started_new_init) {
+static bool EnterSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
+                         bool* using_suid_sandbox, bool* has_started_new_init) {
   *using_suid_sandbox = false;
   *has_started_new_init = false;
-
-  sandbox::SetuidSandboxClient* setuid_sandbox =
-      linux_sandbox->setuid_sandbox_client();
-
   if (!setuid_sandbox)
     return false;
 
   PreSandboxInit();
-
-  // Check that the pre-sandbox initialization didn't spawn threads.
-  DCHECK(linux_sandbox->IsSingleThreaded());
+  SkFontConfigInterface::SetGlobal(
+      new FontConfigIPC(Zygote::kMagicSandboxIPCDescriptor))->unref();
 
   if (setuid_sandbox->IsSuidSandboxChild()) {
     // Use the SUID sandbox.  This still allows the seccomp sandbox to
@@ -459,8 +452,6 @@ bool EnterSuidSandbox(LinuxSandbox* linux_sandbox,
   return true;
 }
 
-}  // namespace
-
 bool ZygoteMain(const MainFunctionParams& params,
                 ZygoteForkDelegate* forkdelegate) {
   g_am_zygote_or_renderer = true;
@@ -469,6 +460,9 @@ bool ZygoteMain(const MainFunctionParams& params,
   LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
   // This will pre-initialize the various sandboxes that need it.
   linux_sandbox->PreinitializeSandbox();
+
+  sandbox::SetuidSandboxClient* setuid_sandbox =
+      linux_sandbox->setuid_sandbox_client();
 
   if (forkdelegate != NULL) {
     VLOG(1) << "ZygoteMain: initializing fork delegate";
@@ -481,16 +475,13 @@ bool ZygoteMain(const MainFunctionParams& params,
   bool using_suid_sandbox = false;
   bool has_started_new_init = false;
 
-  if (!EnterSuidSandbox(linux_sandbox,
-                        &using_suid_sandbox,
-                        &has_started_new_init)) {
+  if (!EnterSandbox(setuid_sandbox,
+                    &using_suid_sandbox,
+                    &has_started_new_init)) {
     LOG(FATAL) << "Failed to enter sandbox. Fail safe abort. (errno: "
                << errno << ")";
     return false;
   }
-
-  sandbox::SetuidSandboxClient* setuid_sandbox =
-      linux_sandbox->setuid_sandbox_client();
 
   if (setuid_sandbox->IsInNewPIDNamespace() && !has_started_new_init) {
     LOG(ERROR) << "The SUID sandbox created a new PID namespace but Zygote "
