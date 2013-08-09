@@ -23,6 +23,8 @@
 #include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 
+using content::DesktopMediaID;
+
 namespace {
 
 const int kThumbnailWidth = 160;
@@ -49,7 +51,7 @@ class DesktopMediaPickerViews;
 class DesktopMediaSourceView : public views::View {
  public:
   DesktopMediaSourceView(DesktopMediaListView* parent,
-                         DesktopMediaPickerModel::SourceId source_id);
+                         DesktopMediaID source_id);
   virtual ~DesktopMediaSourceView();
 
   // Updates thumbnail and title from |source|.
@@ -57,7 +59,7 @@ class DesktopMediaSourceView : public views::View {
   void SetThumbnail(const gfx::ImageSkia& thumbnail);
 
   // Id for the source shown by this View.
-  const DesktopMediaPickerModel::SourceId& source_id() const {
+  const DesktopMediaID& source_id() const {
     return source_id_;
   }
 
@@ -79,8 +81,7 @@ class DesktopMediaSourceView : public views::View {
 
  private:
   DesktopMediaListView* parent_;
-
-  DesktopMediaPickerModel::SourceId source_id_;
+  DesktopMediaID source_id_;
 
   views::ImageView* image_view_;
   views::Label* label_;
@@ -166,7 +167,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
   DesktopMediaPickerViews();
   virtual ~DesktopMediaPickerViews();
 
-  void NotifyDialogResult(DesktopMediaPickerModel::SourceId source);
+  void NotifyDialogResult(DesktopMediaID source);
 
   // DesktopMediaPicker overrides.
   virtual void Show(gfx::NativeWindow context,
@@ -188,7 +189,7 @@ class DesktopMediaPickerViews : public DesktopMediaPicker {
 
 DesktopMediaSourceView::DesktopMediaSourceView(
     DesktopMediaListView* parent,
-    DesktopMediaPickerModel::SourceId source_id)
+    DesktopMediaID source_id)
     : parent_(parent),
       source_id_(source_id),
       image_view_(new views::ImageView()),
@@ -491,7 +492,7 @@ bool DesktopMediaPickerDialogView::Accept() {
   // Ok button should only be enabled when a source is selected.
   DCHECK(selection);
 
-  DesktopMediaPickerModel::SourceId source;
+  DesktopMediaID source;
   if (selection)
     source = selection->source_id();
 
@@ -504,10 +505,8 @@ bool DesktopMediaPickerDialogView::Accept() {
 
 void DesktopMediaPickerDialogView::DeleteDelegate() {
   // If the dialog is being closed then notify the parent about it.
-  if (parent_) {
-    parent_->NotifyDialogResult(
-        DesktopMediaPickerModel::SourceId(content::MEDIA_NO_SERVICE, 0));
-  }
+  if (parent_)
+    parent_->NotifyDialogResult(DesktopMediaID());
   delete this;
 }
 
@@ -537,7 +536,7 @@ void DesktopMediaPickerViews::Show(gfx::NativeWindow context,
 }
 
 void DesktopMediaPickerViews::NotifyDialogResult(
-    DesktopMediaPickerModel::SourceId source) {
+    DesktopMediaID source) {
   // Once this method is called the |dialog_| will close and destroy itself.
   dialog_->DetachParent();
   dialog_ = NULL;

@@ -9,7 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
-#include "content/public/common/media_stream_request.h"
+#include "content/public/common/desktop_media_id.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace webrtc {
@@ -35,23 +35,12 @@ class DesktopMediaPickerModel {
     virtual void OnSourceThumbnailChanged(int index) = 0;
   };
 
-  // Type used to identify desktop media sources.
-  struct SourceId {
-    SourceId();
-    SourceId(content::MediaStreamType type, intptr_t id);
-    bool operator<(const SourceId& other) const;
-    bool operator==(const SourceId& other) const;
-
-    content::MediaStreamType type;
-    intptr_t id;
-  };
-
   // Struct used to represent each entry in the model.
   struct Source {
-    Source(SourceId id, const string16 name);
+    Source(content::DesktopMediaID id, const string16& name);
 
     // Id of the source.
-    SourceId id;
+    content::DesktopMediaID id;
 
     // Name of the source that should be shown to the user.
     string16 name;
@@ -97,9 +86,9 @@ class DesktopMediaPickerModel {
 
   // Struct used to represent sources list the model gets from the Worker.
   struct SourceDescription {
-    SourceDescription(SourceId id, const string16& name);
+    SourceDescription(content::DesktopMediaID id, const string16& name);
 
-    SourceId id;
+    content::DesktopMediaID id;
     string16 name;
   };
 

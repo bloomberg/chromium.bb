@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/public/common/desktop_media_id.h"
 #include "content/renderer/media/media_stream_audio_renderer.h"
 #include "content/renderer/media/media_stream_dependency_factory.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
@@ -71,7 +72,9 @@ void UpdateRequestOptions(
           user_media_request.videoConstraints(),
           kMediaStreamSourceId, true);
     } else if (video_stream_source == kMediaStreamSourceScreen) {
-      options->video_type = content::MEDIA_SCREEN_VIDEO_CAPTURE;
+      options->video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+      options->video_device_id =
+          DesktopMediaID(DesktopMediaID::TYPE_SCREEN, 0).ToString();
     }
   }
 }

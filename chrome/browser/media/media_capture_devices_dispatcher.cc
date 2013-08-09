@@ -30,6 +30,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
@@ -179,7 +180,7 @@ void MediaCaptureDevicesDispatcher::ProcessMediaAccessRequest(
     const extensions::Extension* extension) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE ||
+  if (request.video_type == content::MEDIA_DESKTOP_VIDEO_CAPTURE ||
       request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE) {
     ProcessScreenCaptureAccessRequest(
         web_contents, request, callback, extension);
@@ -197,10 +198,41 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     const content::MediaStreamRequest& request,
     const content::MediaResponseCallback& callback,
     const extensions::Extension* extension) {
-  const bool component_extension =
-    extension && extension->location() == extensions::Manifest::COMPONENT;
-
   content::MediaStreamDevices devices;
+  scoped_ptr<content::MediaStreamUI> ui;
+
+  if (request.video_type != content::MEDIA_DESKTOP_VIDEO_CAPTURE) {
+    callback.Run(devices, ui.Pass());
+    return;
+  }
+
+  content::DesktopMediaID media_id =
+      content::DesktopMediaID::Parse(request.requested_video_device_id);
+  if (media_id.is_null()) {
+    LOG(ERROR) << "Invalid desktop media ID: "
+               << request.requested_video_device_id;
+    callback.Run(devices, ui.Pass());
+    return;
+  }
+
+  const bool system_audio_capture_requested =
+      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE;
+
+#if defined(USE_CRAS)
+  const bool system_audio_capture_supported = true;
+#else
+  const bool system_audio_capture_supported = false;
+#endif
+
+  // Reject request when audio capture was requested but is not supported on
+  // this system.
+  if (system_audio_capture_requested && !system_audio_capture_supported) {
+    callback.Run(devices, ui.Pass());
+    return;
+  }
+
+  const bool component_extension =
+      extension && extension->location() == extensions::Manifest::COMPONENT;
 
   const bool screen_capture_enabled =
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -213,27 +245,11 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAllowHttpScreenCapture);
 
-  const bool screen_video_capture_requested =
-      request.video_type == content::MEDIA_SCREEN_VIDEO_CAPTURE;
-
-  const bool system_audio_capture_requested =
-      request.audio_type == content::MEDIA_SYSTEM_AUDIO_CAPTURE;
-
-#if defined(USE_CRAS)
-  const bool system_audio_capture_supported = true;
-#else
-  const bool system_audio_capture_supported = false;
-#endif
-
   // Approve request only when the following conditions are met:
   //  1. Screen capturing is enabled via command line switch or white-listed for
   //     the given origin.
   //  2. Request comes from a page with a secure origin or from an extension.
-  //  3. Video capture is requested for screen video.
-  //  4. Audio capture is either not requested, or requested for system audio.
-  if (screen_capture_enabled && origin_is_secure &&
-      screen_video_capture_requested &&
-      (!system_audio_capture_requested || system_audio_capture_supported)) {
+  if (screen_capture_enabled && origin_is_secure) {
     // For component extensions, bypass message box.
     bool user_approved = false;
     if (!component_extension) {
@@ -254,7 +270,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
 
     if (user_approved || component_extension) {
       devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_SCREEN_VIDEO_CAPTURE, std::string(), "Screen"));
+          content::MEDIA_DESKTOP_VIDEO_CAPTURE, media_id.ToString(), "Screen"));
       if (system_audio_capture_requested) {
 #if defined(USE_CRAS)
         // Use the special loopback device ID for system audio capture.
@@ -267,7 +283,6 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     }
   }
 
-  scoped_ptr<content::MediaStreamUI> ui;
   // Unless we're being invoked from a component extension, register to display
   // the notification for stream capture.
   if (!devices.empty() && !component_extension) {
@@ -282,6 +297,7 @@ void MediaCaptureDevicesDispatcher::ProcessScreenCaptureAccessRequest(
     ui = ScreenCaptureNotificationUI::Create(l10n_util::GetStringFUTF16(
         IDS_MEDIA_SCREEN_CAPTURE_NOTIFICATION_TEXT, UTF8ToUTF16(title)));
   }
+
   callback.Run(devices, ui.Pass());
 }
 

@@ -8,15 +8,17 @@
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/media/desktop_media_picker_model.h"
+#include "base/strings/string16.h"
+#include "content/public/common/desktop_media_id.h"
 #include "ui/gfx/native_widget_types.h"
 
+class DesktopMediaPickerModel;
 
 // Abstract interface for desktop media picker UI. It's used by Desktop Media
 // API to let user choose a desktop media source.
 class DesktopMediaPicker {
  public:
-  typedef base::Callback<void(DesktopMediaPickerModel::SourceId)> DoneCallback;
+  typedef base::Callback<void(content::DesktopMediaID)> DoneCallback;
 
   // Creates default implementation of DesktopMediaPicker for the current
   // platform.

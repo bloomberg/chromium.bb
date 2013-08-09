@@ -186,9 +186,9 @@ TEST_F(DesktopMediaPickerModelTest, InitialSourceList) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(0).id.type, content::MEDIA_SCREEN_VIDEO_CAPTURE);
+  EXPECT_EQ(model_.source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
   EXPECT_EQ(model_.source(0).id.id, 0);
-  EXPECT_EQ(model_.source(1).id.type, content::MEDIA_WINDOW_VIDEO_CAPTURE);
+  EXPECT_EQ(model_.source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
   EXPECT_EQ(model_.source(1).id.id, 0);
   EXPECT_EQ(model_.source(1).name, UTF8ToUTF16(window.title));
 }
@@ -217,7 +217,7 @@ TEST_F(DesktopMediaPickerModelTest, WindowsOnly) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(0).id.type, content::MEDIA_WINDOW_VIDEO_CAPTURE);
+  EXPECT_EQ(model_.source(0).id.type, content::DesktopMediaID::TYPE_WINDOW);
 }
 
 TEST_F(DesktopMediaPickerModelTest, ScreenOnly) {
@@ -236,7 +236,7 @@ TEST_F(DesktopMediaPickerModelTest, ScreenOnly) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(0).id.type, content::MEDIA_SCREEN_VIDEO_CAPTURE);
+  EXPECT_EQ(model_.source(0).id.type, content::DesktopMediaID::TYPE_SCREEN);
 }
 
 TEST_F(DesktopMediaPickerModelTest, AddWindow) {
@@ -276,7 +276,7 @@ TEST_F(DesktopMediaPickerModelTest, AddWindow) {
 
   message_loop_.Run();
 
-  EXPECT_EQ(model_.source(1).id.type, content::MEDIA_WINDOW_VIDEO_CAPTURE);
+  EXPECT_EQ(model_.source(1).id.type, content::DesktopMediaID::TYPE_WINDOW);
   EXPECT_EQ(model_.source(1).id.id, 0);
 }
 

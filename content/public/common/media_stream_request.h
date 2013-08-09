@@ -26,14 +26,18 @@ enum MediaStreamType {
   MEDIA_DEVICE_VIDEO_CAPTURE,
 
   // Mirroring of a browser tab.
+  //
+  // TODO(serygeu): Remove these values and use MEDIA_DESKTOP_VIDEO_CAPTURE and
+  // MEDIA_DESKTOP_AUDIO_CAPTURE.
   MEDIA_TAB_AUDIO_CAPTURE,
   MEDIA_TAB_VIDEO_CAPTURE,
 
   // Desktop media sources.
-  MEDIA_SCREEN_VIDEO_CAPTURE,
-  MEDIA_WINDOW_VIDEO_CAPTURE,
+  MEDIA_DESKTOP_VIDEO_CAPTURE,
 
   // Capture system audio (post-mix loopback stream).
+  //
+  // TODO(sergeyu): Replace with MEDIA_DESKTOP_AUDIO_CAPTURE.
   MEDIA_SYSTEM_AUDIO_CAPTURE,
 
   NUM_MEDIA_TYPES

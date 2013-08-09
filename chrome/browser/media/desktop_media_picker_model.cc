@@ -22,6 +22,7 @@
 #include "ui/gfx/skia_util.h"
 
 using content::BrowserThread;
+using content::DesktopMediaID;
 
 namespace {
 
@@ -74,34 +75,13 @@ gfx::ImageSkia ScaleDesktopFrame(scoped_ptr<webrtc::DesktopFrame> frame,
 
 }  // namespace
 
-DesktopMediaPickerModel::SourceId::SourceId()
-    : type(content::MEDIA_NO_SERVICE),
-      id(0) {
-}
-
-DesktopMediaPickerModel::SourceId::SourceId(content::MediaStreamType type,
-                                            intptr_t id)
-    : type(type),
-      id(id) {
-}
-
-DesktopMediaPickerModel::Source::Source(SourceId id, const string16 name)
+DesktopMediaPickerModel::Source::Source(DesktopMediaID id, const string16& name)
     : id(id),
       name(name) {
 }
 
-bool DesktopMediaPickerModel::SourceId::operator<(
-    const DesktopMediaPickerModel::SourceId& other) const {
-  return type < other.type || (type == other.type && id < other.id);
-}
-
-bool DesktopMediaPickerModel::SourceId::operator==(
-    const DesktopMediaPickerModel::SourceId& other) const {
-  return type == other.type && id == other.id;
-}
-
 DesktopMediaPickerModel::SourceDescription::SourceDescription(
-    DesktopMediaPickerModel::SourceId id,
+    DesktopMediaID id,
     const string16& name)
     : id(id),
       name(name) {
@@ -118,7 +98,7 @@ class DesktopMediaPickerModel::Worker
   void Refresh(const gfx::Size& thumbnail_size);
 
  private:
-  typedef std::map<SourceId, uint32> ImageHashesMap;
+  typedef std::map<DesktopMediaID, uint32> ImageHashesMap;
 
   // webrtc::DesktopCapturer::Callback interface.
   virtual webrtc::SharedMemory* CreateSharedMemory(size_t size) OVERRIDE;
@@ -156,8 +136,8 @@ void DesktopMediaPickerModel::Worker::Refresh(const gfx::Size& thumbnail_size) {
 
   if (screen_capturer_) {
     // TODO(sergeyu): Enumerate each screen when ScreenCapturer supports it.
-    sources.push_back(SourceDescription(SourceId(
-        content::MEDIA_SCREEN_VIDEO_CAPTURE, 0),
+    sources.push_back(SourceDescription(DesktopMediaID(
+        DesktopMediaID::TYPE_SCREEN, 0),
         l10n_util::GetStringUTF16(IDS_DESKTOP_MEDIA_PICKER_SCREEN_NAME)));
   }
 
@@ -167,8 +147,7 @@ void DesktopMediaPickerModel::Worker::Refresh(const gfx::Size& thumbnail_size) {
       for (webrtc::WindowCapturer::WindowList::iterator it = windows.begin();
            it != windows.end(); ++it) {
         sources.push_back(SourceDescription(
-            DesktopMediaPickerModel::SourceId(
-                content::MEDIA_WINDOW_VIDEO_CAPTURE, it->id),
+            DesktopMediaID(DesktopMediaID::TYPE_WINDOW, it->id),
             base::UTF8ToUTF16(it->title)));
       }
     }
@@ -188,12 +167,12 @@ void DesktopMediaPickerModel::Worker::Refresh(const gfx::Size& thumbnail_size) {
   for (size_t i = 0; i < sources.size(); ++i) {
     SourceDescription& source = sources[i];
     switch (source.id.type) {
-      case content::MEDIA_SCREEN_VIDEO_CAPTURE:
+      case DesktopMediaID::TYPE_SCREEN:
         screen_capturer_->Capture(webrtc::DesktopRegion());
         DCHECK(current_frame_);
         break;
 
-      case content::MEDIA_WINDOW_VIDEO_CAPTURE:
+      case DesktopMediaID::TYPE_WINDOW:
         if (!window_capturer_->SelectWindow(source.id.id))
           continue;
         window_capturer_->Capture(webrtc::DesktopRegion());

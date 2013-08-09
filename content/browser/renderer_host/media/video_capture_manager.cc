@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/media/web_contents_video_capture_device.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/desktop_media_id.h"
 #include "content/public/common/media_stream_request.h"
 #include "media/base/scoped_histogram_timer.h"
 #include "media/video/capture/fake_video_capture_device.h"
@@ -187,13 +188,16 @@ void VideoCaptureManager::OnOpen(int capture_session_id,
           device.device.id);
       break;
     }
-    case MEDIA_SCREEN_VIDEO_CAPTURE: {
+    case MEDIA_DESKTOP_VIDEO_CAPTURE: {
 #if defined(ENABLE_SCREEN_CAPTURE)
-      scoped_refptr<base::SequencedWorkerPool> blocking_pool =
-          BrowserThread::GetBlockingPool();
-      video_capture_device = new ScreenCaptureDevice(
-          blocking_pool->GetSequencedTaskRunner(
-              blocking_pool->GetSequenceToken()));
+      DesktopMediaID id = DesktopMediaID::Parse(device.device.id);
+      if (id.type == DesktopMediaID::TYPE_SCREEN) {
+        scoped_refptr<base::SequencedWorkerPool> blocking_pool =
+            BrowserThread::GetBlockingPool();
+        video_capture_device = new ScreenCaptureDevice(
+            blocking_pool->GetSequencedTaskRunner(
+                blocking_pool->GetSequenceToken()));
+      }
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
       break;
     }
@@ -434,7 +438,7 @@ void VideoCaptureManager::GetAvailableDevices(
       *device_names = video_capture_devices_;
       break;
 
-    case MEDIA_SCREEN_VIDEO_CAPTURE:
+    case MEDIA_DESKTOP_VIDEO_CAPTURE:
       device_names->clear();
       break;
 

@@ -286,7 +286,7 @@ void MediaStreamDependencyFactory::CreateNativeMediaSources(
         source_data->device_info().device.type ==
             content::MEDIA_TAB_VIDEO_CAPTURE ||
         source_data->device_info().device.type ==
-            content::MEDIA_SCREEN_VIDEO_CAPTURE;
+            content::MEDIA_DESKTOP_VIDEO_CAPTURE;
     source_data->SetVideoSource(
         CreateLocalVideoSource(source_data->device_info().session_id,
                                is_screencast,

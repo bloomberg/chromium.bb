@@ -263,18 +263,19 @@ std::string MediaStreamManager::GenerateStream(
     DCHECK(found_match || translated_video_device_id.empty());
   }
 
-  if (options.video_type == MEDIA_SCREEN_VIDEO_CAPTURE ||
+  if (options.video_type == MEDIA_DESKTOP_VIDEO_CAPTURE ||
       options.audio_type == MEDIA_SYSTEM_AUDIO_CAPTURE) {
     // For screen capture we only support two valid combinations:
     // (1) screen video capture only, or
     // (2) screen video capture with system audio capture.
-    if (options.video_type != MEDIA_SCREEN_VIDEO_CAPTURE ||
+    if (options.video_type != MEDIA_DESKTOP_VIDEO_CAPTURE ||
         (options.audio_type != MEDIA_NO_SERVICE &&
          options.audio_type != MEDIA_SYSTEM_AUDIO_CAPTURE)) {
       // TODO(sergeyu): Surface error message to the calling JS code.
       LOG(ERROR) << "Invalid screen capture request.";
       return std::string();
     }
+    translated_video_device_id = options.video_device_id;
   }
 
   // Create a new request based on options.
@@ -624,11 +625,11 @@ void MediaStreamManager::HandleRequest(const std::string& label) {
       audio_type == MEDIA_TAB_AUDIO_CAPTURE ||
       video_type == MEDIA_TAB_VIDEO_CAPTURE;
 
-  bool is_screen_capure =
-      video_type == MEDIA_SCREEN_VIDEO_CAPTURE;
+  bool is_screen_capture =
+      video_type == MEDIA_DESKTOP_VIDEO_CAPTURE;
 
   if (!is_web_contents_capture &&
-      !is_screen_capure &&
+      !is_screen_capture &&
       ((IsAudioMediaType(audio_type) && !audio_enumeration_cache_.valid) ||
        (IsVideoMediaType(video_type) && !video_enumeration_cache_.valid))) {
     // Enumerate the devices if there is no valid device lists to be used.
