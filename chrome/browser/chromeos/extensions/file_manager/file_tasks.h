@@ -184,14 +184,15 @@ FileBrowserHandlerList FindDefaultTasks(
 FileBrowserHandlerList FindCommonTasks(Profile* profile,
                                        const std::vector<GURL>& files_list);
 
-// Finds a task for a file whose URL is |url| and whose path is |path|.
-// Returns default task if one is defined (The default task is the task that is
-// assigned to file browser task button by default). If default task is not
-// found, tries to match the url with one of the builtin tasks.
-bool GetTaskForURLAndPath(Profile* profile,
-                          const GURL& url,
-                          const base::FilePath& path,
-                          const FileBrowserHandler** handler);
+// Finds a file browser handler for a file whose URL is |url| and whose path
+// is |path|. Returns the default handler if one is defined (The default
+// handler is the one that is assigned to the file manager task button by
+// default). If the default handler is not found, tries to match the url with
+// one of the file browser handlers.
+const FileBrowserHandler* FindFileBrowserHandlerForURLAndPath(
+    Profile* profile,
+    const GURL& url,
+    const base::FilePath& path);
 
 // Used for returning success or failure from task executions.
 typedef base::Callback<void(bool)> FileTaskFinishedCallback;

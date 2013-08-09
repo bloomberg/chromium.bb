@@ -713,16 +713,16 @@ FileBrowserHandlerList FindCommonTasks(Profile* profile,
   return common_task_list;
 }
 
-bool GetTaskForURLAndPath(Profile* profile,
-                   const GURL& url,
-                   const base::FilePath& file_path,
-                   const FileBrowserHandler** handler) {
+const FileBrowserHandler* FindFileBrowserHandlerForURLAndPath(
+    Profile* profile,
+    const GURL& url,
+    const base::FilePath& file_path) {
   std::vector<GURL> file_urls;
   file_urls.push_back(url);
 
   FileBrowserHandlerList common_tasks = FindCommonTasks(profile, file_urls);
   if (common_tasks.empty())
-    return false;
+    return NULL;
 
   std::vector<base::FilePath> file_paths;
   file_paths.push_back(file_path);
@@ -735,15 +735,13 @@ bool GetTaskForURLAndPath(Profile* profile,
     // There should not be multiple default tasks for a single URL.
     DCHECK_EQ(1u, default_tasks.size());
 
-    *handler = *default_tasks.begin();
-    return true;
+    return *default_tasks.begin();
   }
 
   // If there are no default tasks, use first task in the list (file manager
   // does the same in this situation).
   // TODO(tbarzic): This is so not optimal behaviour.
-  *handler = *common_tasks.begin();
-  return true;
+  return *common_tasks.begin();
 }
 
 bool ExecuteFileTask(Profile* profile,
