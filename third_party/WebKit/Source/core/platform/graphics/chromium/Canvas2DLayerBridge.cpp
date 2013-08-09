@@ -65,7 +65,7 @@ PassOwnPtr<Canvas2DLayerBridge> Canvas2DLayerBridge::create(PassRefPtr<GraphicsC
     SkAutoTUnref<SkSurface> surface(createSurface(context.get(), size));
     if (!surface.get())
         return PassOwnPtr<Canvas2DLayerBridge>();
-    SkDeferredCanvas* canvas = new SkDeferredCanvas(surface);
+    SkDeferredCanvas* canvas = SkDeferredCanvas::Create(surface.get());
     OwnPtr<Canvas2DLayerBridge> layerBridge = adoptPtr(new Canvas2DLayerBridge(context, canvas, opacityMode));
     return layerBridge.release();
 }

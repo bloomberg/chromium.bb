@@ -27,6 +27,7 @@
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
 
 #include "SkDevice.h"
+#include "SkSurface.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/tests/FakeWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
@@ -90,8 +91,13 @@ public:
 
 static PassOwnPtr<SkDeferredCanvas> createCanvas(GraphicsContext3D* context)
 {
-    SkAutoTUnref<SkDevice> device(new SkDevice(SkBitmap::kARGB_8888_Config, 1, 1));
-    return adoptPtr(new SkDeferredCanvas(device.get()));
+    SkImage::Info info = {
+        1,
+        1,
+        SkImage::kPMColor_ColorType,
+        SkImage::kPremul_AlphaType,
+    };
+    return adoptPtr(SkDeferredCanvas::Create(SkSurface::NewRaster(info)));
 }
 
 class Canvas2DLayerManagerTest : public Test {

@@ -27,6 +27,7 @@
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 
 #include "SkDeferredCanvas.h"
+#include "SkSurface.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/tests/FakeWebGraphicsContext3D.h"
 #include "public/platform/Platform.h"
@@ -76,12 +77,17 @@ protected:
 
         MockCanvasContext& mainMock = *static_cast<MockCanvasContext*>(mainContext->webContext());
 
-        SkDevice device(SkBitmap::kARGB_8888_Config, 300, 150);
-        SkDeferredCanvas canvas(&device);
+        SkImage::Info info = {
+            300,
+            150,
+            SkImage::kPMColor_ColorType,
+            SkImage::kPremul_AlphaType,
+        };
+        SkAutoTUnref<SkDeferredCanvas> canvas(SkDeferredCanvas::Create(SkSurface::NewRaster(info)));
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
-        OwnPtr<Canvas2DLayerBridge> bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), &canvas, Canvas2DLayerBridge::NonOpaque);
+        OwnPtr<Canvas2DLayerBridge> bridge = FakeCanvas2DLayerBridge::create(mainContext.release(), canvas.get(), Canvas2DLayerBridge::NonOpaque);
 
         ::testing::Mock::VerifyAndClearExpectations(&mainMock);
 
