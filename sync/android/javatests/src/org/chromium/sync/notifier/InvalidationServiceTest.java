@@ -521,6 +521,70 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
     @SmallTest
     @Feature({"Sync"})
+    public void testRegistrationIntentNoProxyTabsUsingReady() {
+        getService().setShouldRunStates(true, true);
+        getService().onCreate();
+
+        // Send register Intent.
+        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Intent registrationIntent = IntentProtocol.createRegisterIntent(account, true, null);
+        getService().onHandleIntent(registrationIntent);
+
+        // Verify client started and state written.
+        assertTrue(InvalidationService.getIsClientStartedForTest());
+        InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
+        assertEquals(account, invPrefs.getSavedSyncedAccount());
+        assertEquals(ImmutableSet.of(ModelType.ALL_TYPES_TYPE), invPrefs.getSavedSyncedTypes());
+        assertEquals(1, mStartServiceIntents.size());
+        assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
+
+        // Set client to be ready. This triggers registrations.
+        getService().ready(CLIENT_ID);
+        assertTrue(Arrays.equals(CLIENT_ID, InvalidationService.getClientIdForTest()));
+
+        // Ensure registrations are correct.
+        Set<ObjectId> expectedTypes =
+                ModelType.modelTypesToObjectIds(Sets.newHashSet(ModelType.values()));
+        assertEquals(expectedTypes, Sets.newHashSet(getService().mRegistrations.get(0)));
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testRegistrationIntentNoProxyTabsAlreadyWithClientId() {
+        getService().setShouldRunStates(true, true);
+        getService().onCreate();
+
+        // Send register Intent with no desired types.
+        Account account = AccountManagerHelper.createAccountFromName("test@example.com");
+        Intent registrationIntent =
+                IntentProtocol.createRegisterIntent(account, false, Sets.<ModelType>newHashSet());
+        getService().onHandleIntent(registrationIntent);
+
+        // Verify client started and state written.
+        assertTrue(InvalidationService.getIsClientStartedForTest());
+        InvalidationPreferences invPrefs = new InvalidationPreferences(getContext());
+        assertEquals(account, invPrefs.getSavedSyncedAccount());
+        assertEquals(Sets.<String>newHashSet(), invPrefs.getSavedSyncedTypes());
+        assertEquals(1, mStartServiceIntents.size());
+        assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
+
+        // Make sure client is ready.
+        getService().ready(CLIENT_ID);
+        assertTrue(Arrays.equals(CLIENT_ID, InvalidationService.getClientIdForTest()));
+
+        // Choose to register for all types in an already ready client.
+        registrationIntent = IntentProtocol.createRegisterIntent(account, true, null);
+        getService().onHandleIntent(registrationIntent);
+
+        // Ensure registrations are correct.
+        assertEquals(1, getService().mRegistrations.size());
+        Set<ObjectId> expectedTypes =
+                ModelType.modelTypesToObjectIds(Sets.newHashSet(ModelType.values()));
+        assertEquals(expectedTypes, Sets.newHashSet(getService().mRegistrations.get(0)));
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
     public void testRegistrationIntentWhenClientShouldNotBeRunning() {
         /*
          * Test plan: send a registration change event when the client should not be running.

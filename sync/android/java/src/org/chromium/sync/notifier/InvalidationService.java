@@ -292,16 +292,8 @@ public class InvalidationService extends AndroidListener {
     @VisibleForTesting
     Set<ObjectId> readRegistrationsFromPrefs() {
         Set<String> savedTypes = new InvalidationPreferences(this).getSavedSyncedTypes();
-        if (savedTypes == null) {
-            return Collections.emptySet();
-        } else {
-            Set<ModelType> modelTypes = ModelType.syncTypesToModelTypes(savedTypes);
-            Set<ObjectId> objectIds = Sets.newHashSetWithExpectedSize(modelTypes.size());
-            for (ModelType modelType : modelTypes) {
-                objectIds.add(modelType.toObjectId());
-            }
-            return objectIds;
-        }
+        if (savedTypes == null) return Collections.emptySet();
+        else return ModelType.syncTypesToObjectIds(savedTypes);
     }
 
     /**
@@ -337,13 +329,11 @@ public class InvalidationService extends AndroidListener {
         // expansion of the ALL_TYPES_TYPE wildcard.
         // NOTE: syncTypes MUST NOT be used below this line, since it contains an unexpanded
         // wildcard.
-        Set<ModelType> newRegisteredTypes = ModelType.syncTypesToModelTypes(syncTypes);
-
         List<ObjectId> unregistrations = Lists.newArrayList();
         List<ObjectId> registrations = Lists.newArrayList();
         computeRegistrationOps(existingRegistrations,
-                ModelType.modelTypesToObjectIds(newRegisteredTypes), registrations,
-                unregistrations);
+                ModelType.syncTypesToObjectIds(syncTypes),
+                registrations, unregistrations);
         unregister(sClientId, unregistrations);
         register(sClientId, registrations);
     }

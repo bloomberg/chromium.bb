@@ -100,11 +100,7 @@ public class InvalidationController implements ActivityStatus.StateListener {
      * @param types    Set of types for which to register. Ignored if {@code allTypes == true}.
      */
     public void setRegisteredTypes(Account account, boolean allTypes, Set<ModelType> types) {
-        Set<ModelType> typesToRegister = types;
-        // Proxy types should never receive notifications.
-        typesToRegister.remove(ModelType.PROXY_TABS);
-        Intent registerIntent = IntentProtocol.createRegisterIntent(account, allTypes,
-                typesToRegister);
+        Intent registerIntent = IntentProtocol.createRegisterIntent(account, allTypes, types);
         registerIntent.setClass(mContext, InvalidationService.class);
         mContext.startService(registerIntent);
     }

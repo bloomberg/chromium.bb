@@ -6,14 +6,12 @@ package org.chromium.sync.internal_api.pub.base;
 
 import android.util.Log;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -63,7 +61,7 @@ public enum ModelType {
     /**
      * A proxy tabs object (placeholder for sessions).
      */
-    PROXY_TABS("NULL"),
+    PROXY_TABS("NULL", true),
     /**
      * A favicon image object.
      */
@@ -80,10 +78,25 @@ public enum ModelType {
 
     private final String mModelType;
 
-    ModelType(String modelType) {
+    private final boolean mNonInvalidationType;
+
+    ModelType(String modelType, boolean nonInvalidationType) {
         mModelType = modelType;
+        mNonInvalidationType = nonInvalidationType;
     }
 
+    ModelType(String modelType) {
+        this(modelType, false);
+    }
+
+    /**
+     * Returns the {@link ObjectId} representation of this {@link ModelType}.
+     *
+     * This should be used with caution, since it converts even {@link ModelType} instances with
+     * |mNonInvalidationType| set. For automatically stripping such {@link ModelType} entries out,
+     * use {@link ModelType#modelTypesToObjectIds(java.util.Set)} instead.
+     */
+    @VisibleForTesting
     public ObjectId toObjectId() {
         return ObjectId.newInstance(Types.ObjectSource.Type.CHROME_SYNC.getNumber(),
                 mModelType.getBytes());
@@ -124,11 +137,26 @@ public enum ModelType {
         }
     }
 
-    /** Converts a set of {@link ModelType} to a set of {@link ObjectId}. */
+    /**
+     * Converts a set of sync types {@link String} to a set of {@link ObjectId}.
+     *
+     * This strips out any {@link ModelType} that is not an invalidation type.
+     */
+    public static Set<ObjectId> syncTypesToObjectIds(Collection<String> syncTypes) {
+        return modelTypesToObjectIds(syncTypesToModelTypes(syncTypes));
+    }
+
+    /**
+     * Converts a set of {@link ModelType} to a set of {@link ObjectId}.
+     *
+     * This strips out any {@link ModelType} that is not an invalidation type.
+     */
     public static Set<ObjectId> modelTypesToObjectIds(Set<ModelType> modelTypes) {
         Set<ObjectId> objectIds = Sets.newHashSetWithExpectedSize(modelTypes.size());
         for (ModelType modelType : modelTypes) {
-            objectIds.add(modelType.toObjectId());
+            if (!modelType.mNonInvalidationType) {
+                objectIds.add(modelType.toObjectId());
+            }
         }
         return objectIds;
     }
