@@ -510,6 +510,15 @@ class HWTestConfig(object):
             cls(constants.HWTEST_AU_SUITE, **au_dargs)]
 
   @classmethod
+  def PGOList(cls, **dargs):
+    """Returns a list of tests to be run on the PGO'd image."""
+    pgo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
+                    timeout=90 * 60, num=1, async=True)
+    pgo_dict.update(dargs)
+    return [cls('pyauto_perf', **pgo_dict),
+            cls('perf_v2', **pgo_dict)]
+
+  @classmethod
   def DefaultListCQ(cls, **dargs):
     """Returns the default list for cq tests with overrides."""
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=50 * 60,
@@ -1391,7 +1400,8 @@ _config.add_group('x86-zgb-release-group',
 
 release_pgo = _release.derive(
   hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
-                                    num=4),
+                                    num=4) +
+           HWTestConfig.PGOList(),
   push_image=False,
   dev_installer_prebuilts=False,
 )

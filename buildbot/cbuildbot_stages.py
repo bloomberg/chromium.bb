@@ -2228,7 +2228,7 @@ class ASyncHWTestStage(HWTestStage, ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
   def __init__(self, *args, **dargs):
-    super(ASyncHWTestStage, self).__init__(self, *args, **dargs)
+    super(ASyncHWTestStage, self).__init__(*args, **dargs)
     self.wait_for_results = False
 
 
