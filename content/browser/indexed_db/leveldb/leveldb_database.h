@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace leveldb {
 class Comparator;
@@ -42,9 +43,10 @@ class LevelDBSnapshot {
 
 class CONTENT_EXPORT LevelDBDatabase {
  public:
-  static scoped_ptr<LevelDBDatabase> Open(const base::FilePath& file_name,
-                                          const LevelDBComparator* comparator,
-                                          bool* is_disk_full = 0);
+  static leveldb::Status Open(const base::FilePath& file_name,
+                              const LevelDBComparator* comparator,
+                              scoped_ptr<LevelDBDatabase>* db,
+                              bool* is_disk_full = 0);
   static scoped_ptr<LevelDBDatabase> OpenInMemory(
       const LevelDBComparator* comparator);
   static bool Destroy(const base::FilePath& file_name);

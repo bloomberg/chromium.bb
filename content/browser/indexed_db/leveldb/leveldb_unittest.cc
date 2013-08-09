@@ -41,8 +41,8 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   std::string got_value;
   SimpleComparator comparator;
 
-  scoped_ptr<LevelDBDatabase> leveldb =
-      LevelDBDatabase::Open(temp_directory.path(), &comparator);
+  scoped_ptr<LevelDBDatabase> leveldb;
+  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
   put_value = value;
   bool success = leveldb->Put(key, &put_value);
@@ -50,7 +50,7 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   leveldb.Pass();
   EXPECT_FALSE(leveldb);
 
-  leveldb = LevelDBDatabase::Open(temp_directory.path(), &comparator);
+  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
   bool found = false;
   success = leveldb->Get(key, &got_value, &found);
@@ -69,13 +69,16 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   base::TruncatePlatformFile(handle, 0);
   base::ClosePlatformFile(handle);
 
-  leveldb = LevelDBDatabase::Open(temp_directory.path(), &comparator);
+  leveldb::Status status =
+      LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_FALSE(leveldb);
+  EXPECT_FALSE(status.ok());
 
   bool destroyed = LevelDBDatabase::Destroy(temp_directory.path());
   EXPECT_TRUE(destroyed);
 
-  leveldb = LevelDBDatabase::Open(temp_directory.path(), &comparator);
+  status = LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
+  EXPECT_TRUE(status.ok());
   EXPECT_TRUE(leveldb);
   success = leveldb->Get(key, &got_value, &found);
   EXPECT_TRUE(success);
@@ -91,8 +94,8 @@ TEST(LevelDBDatabaseTest, Transaction) {
   std::string put_value;
   SimpleComparator comparator;
 
-  scoped_ptr<LevelDBDatabase> leveldb =
-      LevelDBDatabase::Open(temp_directory.path(), &comparator);
+  scoped_ptr<LevelDBDatabase> leveldb;
+  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 
   const std::string old_value("value");
@@ -158,8 +161,8 @@ TEST(LevelDBDatabaseTest, TransactionIterator) {
   SimpleComparator comparator;
   bool success;
 
-  scoped_ptr<LevelDBDatabase> leveldb =
-      LevelDBDatabase::Open(temp_directory.path(), &comparator);
+  scoped_ptr<LevelDBDatabase> leveldb;
+  LevelDBDatabase::Open(temp_directory.path(), &comparator, &leveldb);
   EXPECT_TRUE(leveldb);
 
   put_value = value1;

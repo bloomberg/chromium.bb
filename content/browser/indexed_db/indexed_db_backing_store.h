@@ -31,9 +31,10 @@ class LevelDBDatabase;
 class LevelDBFactory {
  public:
   virtual ~LevelDBFactory() {}
-  virtual scoped_ptr<LevelDBDatabase> OpenLevelDB(
+  virtual leveldb::Status OpenLevelDB(
       const base::FilePath& file_name,
       const LevelDBComparator* comparator,
+      scoped_ptr<LevelDBDatabase>* db,
       bool* is_disk_full) = 0;
   virtual bool DestroyLevelDB(const base::FilePath& file_name) = 0;
 };

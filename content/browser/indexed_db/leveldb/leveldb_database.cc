@@ -268,9 +268,10 @@ static void HistogramLevelDBError(const std::string& histogram_name,
     ParseAndHistogramCorruptionDetails(histogram_name, s);
 }
 
-scoped_ptr<LevelDBDatabase> LevelDBDatabase::Open(
+leveldb::Status LevelDBDatabase::Open(
     const base::FilePath& file_name,
     const LevelDBComparator* comparator,
+    scoped_ptr<LevelDBDatabase>* result,
     bool* is_disk_full) {
   scoped_ptr<ComparatorAdapter> comparator_adapter(
       new ComparatorAdapter(comparator));
@@ -289,17 +290,17 @@ scoped_ptr<LevelDBDatabase> LevelDBDatabase::Open(
 
     LOG(ERROR) << "Failed to open LevelDB database from "
                << file_name.AsUTF8Unsafe() << "," << s.ToString();
-    return scoped_ptr<LevelDBDatabase>();
+    return s;
   }
 
   CheckFreeSpace("Success", file_name);
 
-  scoped_ptr<LevelDBDatabase> result(new LevelDBDatabase);
-  result->db_ = make_scoped_ptr(db);
-  result->comparator_adapter_ = comparator_adapter.Pass();
-  result->comparator_ = comparator;
+  (*result).reset(new LevelDBDatabase);
+  (*result)->db_ = make_scoped_ptr(db);
+  (*result)->comparator_adapter_ = comparator_adapter.Pass();
+  (*result)->comparator_ = comparator;
 
-  return result.Pass();
+  return s;
 }
 
 scoped_ptr<LevelDBDatabase> LevelDBDatabase::OpenInMemory(

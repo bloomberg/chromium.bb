@@ -21,6 +21,7 @@
 #include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/WebIDBTypes.h"
+#include "third_party/leveldatabase/env_chromium.h"
 
 using base::StringPiece;
 
@@ -347,11 +348,12 @@ WARN_UNUSED_RESULT static bool GetMaxObjectStoreId(
 
 class DefaultLevelDBFactory : public LevelDBFactory {
  public:
-  virtual scoped_ptr<LevelDBDatabase> OpenLevelDB(
+  virtual leveldb::Status OpenLevelDB(
       const base::FilePath& file_name,
       const LevelDBComparator* comparator,
+      scoped_ptr<LevelDBDatabase>* db,
       bool* is_disk_full) OVERRIDE {
-    return LevelDBDatabase::Open(file_name, comparator, is_disk_full);
+    return LevelDBDatabase::Open(file_name, comparator, db, is_disk_full);
   }
   virtual bool DestroyLevelDB(const base::FilePath& file_name) OVERRIDE {
     return LevelDBDatabase::Destroy(file_name);
@@ -400,8 +402,44 @@ enum IndexedDBLevelDBBackingStoreOpenResult {
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ATTEMPT_NON_ASCII,
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL,
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_ORIGIN_TOO_LONG,
+  INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_NO_RECOVERY,
   INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
 };
+
+bool RecoveryCouldBeFruitful(leveldb::Status status) {
+  leveldb_env::MethodID method;
+  int error = -1;
+  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
+      status.ToString().c_str(), &method, &error);
+  switch (result) {
+    case leveldb_env::NONE:
+      return true;
+    case leveldb_env::METHOD_AND_PFE: {
+      base::PlatformFileError pfe = static_cast<base::PlatformFileError>(error);
+      switch (pfe) {
+        case base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED:
+        case base::PLATFORM_FILE_ERROR_NO_MEMORY:
+        case base::PLATFORM_FILE_ERROR_NO_SPACE:
+          return false;
+        default:
+          return true;
+      }
+    }
+    case leveldb_env::METHOD_AND_ERRNO: {
+      switch (error) {
+        case EMFILE:
+        case ENOMEM:
+        case ENOSPC:
+          return false;
+        default:
+          return true;
+      }
+    }
+    default:
+      return true;
+  }
+  return true;
+}
 
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const std::string& origin_identifier,
@@ -428,7 +466,6 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   *data_loss = WebKit::WebIDBCallbacks::DataLossNone;
 
   scoped_ptr<LevelDBComparator> comparator(new Comparator());
-  scoped_ptr<LevelDBDatabase> db;
 
   if (!IsStringASCII(path_base.AsUTF8Unsafe())) {
     base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
@@ -493,7 +530,9 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
   base::FilePath file_path = path_base.Append(identifier_path);
 
   bool is_disk_full = false;
-  db = leveldb_factory->OpenLevelDB(file_path, comparator.get(), &is_disk_full);
+  scoped_ptr<LevelDBDatabase> db;
+  leveldb::Status status = leveldb_factory->OpenLevelDB(
+      file_path, comparator.get(), &db, &is_disk_full);
 
   if (db) {
     bool known = false;
@@ -539,6 +578,16 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
                                 base::HistogramBase::kUmaTargetedHistogramFlag)
         ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_DISK_FULL);
     return scoped_refptr<IndexedDBBackingStore>();
+  } else if (!RecoveryCouldBeFruitful(status)) {
+    LOG(ERROR) << "Unable to open backing store, not trying to recover - "
+               << status.ToString();
+    base::Histogram::FactoryGet("WebCore.IndexedDB.BackingStore.OpenStatus",
+                                1,
+                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX,
+                                INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_MAX + 1,
+                                base::HistogramBase::kUmaTargetedHistogramFlag)
+        ->Add(INDEXED_DB_LEVEL_DB_BACKING_STORE_OPEN_NO_RECOVERY);
+    return scoped_refptr<IndexedDBBackingStore>();
   } else {
     LOG(ERROR) << "IndexedDB backing store open failed, attempting cleanup";
     *data_loss = WebKit::WebIDBCallbacks::DataLossTotal;
@@ -556,7 +605,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     }
 
     LOG(ERROR) << "IndexedDB backing store cleanup succeeded, reopening";
-    db = leveldb_factory->OpenLevelDB(file_path, comparator.get(), NULL);
+    leveldb_factory->OpenLevelDB(file_path, comparator.get(), &db, NULL);
     if (!db) {
       LOG(ERROR) << "IndexedDB backing store reopen after recovery failed";
       base::Histogram::FactoryGet(
