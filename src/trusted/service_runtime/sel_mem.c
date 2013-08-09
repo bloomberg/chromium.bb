@@ -48,7 +48,8 @@ struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t         page_num,
                                           int               prot,
                                           int               flags,
                                           struct NaClDesc   *desc,
-                                          nacl_off64_t      offset) {
+                                          nacl_off64_t      offset,
+                                          nacl_off64_t      file_size) {
   struct NaClVmmapEntry *entry;
 
   NaClLog(4,
@@ -70,6 +71,7 @@ struct NaClVmmapEntry *NaClVmmapEntryMake(uintptr_t         page_num,
     NaClDescRef(desc);
   }
   entry->offset = offset;
+  entry->file_size = file_size;
   return entry;
 }
 
@@ -269,7 +271,8 @@ void NaClVmmapAdd(struct NaClVmmap  *self,
                   int               prot,
                   int               flags,
                   struct NaClDesc   *desc,
-                  nacl_off64_t      offset) {
+                  nacl_off64_t      offset,
+                  nacl_off64_t      file_size) {
   struct NaClVmmapEntry *entry;
 
   NaClLog(2,
@@ -291,7 +294,8 @@ void NaClVmmapAdd(struct NaClVmmap  *self,
     self->size = new_size;
   }
   /* self->nvalid < self->size */
-  entry = NaClVmmapEntryMake(page_num, npages, prot, flags, desc, offset);
+  entry = NaClVmmapEntryMake(page_num, npages, prot, flags,
+      desc, offset, file_size);
 
   self->vmentry[self->nvalid] = entry;
   self->is_sorted = 0;
@@ -310,7 +314,8 @@ static void NaClVmmapUpdate(struct NaClVmmap  *self,
                             int               flags,
                             int               remove,
                             struct NaClDesc   *desc,
-                            nacl_off64_t      offset) {
+                            nacl_off64_t      offset,
+                            nacl_off64_t      file_size) {
   /* update existing entries or create new entry as needed */
   size_t                i;
   uintptr_t             new_region_end_page = page_num + npages;
@@ -343,7 +348,8 @@ static void NaClVmmapUpdate(struct NaClVmmap  *self,
                    ent->prot,
                    ent->flags,
                    ent->desc,
-                   ent->offset + additional_offset);
+                   ent->offset + additional_offset,
+                   ent->file_size);
       ent->npages = page_num - ent->page_num;
       break;
     } else if (ent->page_num < page_num && page_num < ent_end_page) {
@@ -367,7 +373,7 @@ static void NaClVmmapUpdate(struct NaClVmmap  *self,
   }
 
   if (!remove) {
-    NaClVmmapAdd(self, page_num, npages, prot, flags, desc, offset);
+    NaClVmmapAdd(self, page_num, npages, prot, flags, desc, offset, file_size);
   }
 
   NaClVmmapRemoveMarked(self);
@@ -379,7 +385,8 @@ void NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
                                int                prot,
                                int                flags,
                                struct NaClDesc    *desc,
-                               nacl_off64_t       offset) {
+                               nacl_off64_t       offset,
+                               nacl_off64_t       file_size) {
   NaClVmmapUpdate(self,
                   page_num,
                   npages,
@@ -387,22 +394,22 @@ void NaClVmmapAddWithOverwrite(struct NaClVmmap   *self,
                   flags,
                   /* remove= */ 0,
                   desc,
-                  offset);
+                  offset,
+                  file_size);
 }
 
 void NaClVmmapRemove(struct NaClVmmap   *self,
                      uintptr_t          page_num,
-                     size_t             npages,
-                     struct NaClDesc    *desc,
-                     nacl_off64_t       offset) {
+                     size_t             npages) {
   NaClVmmapUpdate(self,
                   page_num,
                   npages,
                   /* prot= */ 0,
                   /* flags= */ 0,
                   /* remove= */ 1,
-                  desc,
-                  offset);
+                  /* desc= */NULL,
+                  /* offset= */0,
+                  /* file_size= */0);
 }
 
 int NaClVmmapChangeProt(struct NaClVmmap   *self,
@@ -449,7 +456,8 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    ent->prot,
                    ent->flags,
                    ent->desc,
-                   ent->offset + additional_offset);
+                   ent->offset + additional_offset,
+                   ent->file_size);
       ent->npages = page_num - ent->page_num;
       /* Add the new mapping into the middle. */
       NaClVmmapAdd(self,
@@ -458,7 +466,8 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    prot,
                    ent->flags,
                    ent->desc,
-                   ent->offset + (page_num - ent->page_num));
+                   ent->offset + (page_num - ent->page_num),
+                   ent->file_size);
       break;
     } else if (ent->page_num < page_num && page_num < ent_end_page) {
       /* New mapping overlaps end of existing mapping. */
@@ -470,7 +479,8 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    prot,
                    ent->flags,
                    ent->desc,
-                   ent->offset + (page_num - ent->page_num));
+                   ent->offset + (page_num - ent->page_num),
+                   ent->file_size);
       /* The remaining part (if any) will be added in other iteration. */
       page_num = ent_end_page;
       npages = new_region_end_page - ent_end_page;
@@ -483,7 +493,8 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
                    prot,
                    ent->flags,
                    ent->desc,
-                   ent->offset);
+                   ent->offset,
+                   ent->file_size);
       ent->page_num = new_region_end_page;
       ent->npages = ent_end_page - new_region_end_page;
       ent->offset += additional_offset;
@@ -505,7 +516,7 @@ int NaClVmmapChangeProt(struct NaClVmmap   *self,
 int NaClVmmapEntryMaxProt(struct NaClVmmapEntry *entry) {
   int flags = PROT_NONE;
 
-  if (entry->desc != NULL) {
+  if (entry->desc != NULL && 0 == (entry->flags & NACL_ABI_MAP_PRIVATE)) {
     int o_flags = (*NACL_VTBL(NaClDesc, entry->desc)->GetFlags)(entry->desc);
     switch (o_flags & NACL_ABI_O_ACCMODE) {
       case NACL_ABI_O_RDONLY:

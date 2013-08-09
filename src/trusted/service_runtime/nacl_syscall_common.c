@@ -1815,14 +1815,6 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     if (map_result != sysaddr) {
       NaClLog(LOG_FATAL, "system mmap did not honor NACL_ABI_MAP_FIXED\n");
     }
-
-    NaClVmmapAddWithOverwrite(&nap->mem_map,
-                              NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
-                              length >> NACL_PAGESHIFT,
-                              prot,
-                              flags,
-                              ndp,
-                              offset);
   }
   /*
    * If we are mapping beyond the end of the file, we fill this space
@@ -1858,6 +1850,17 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     if (map_result != 0) {
       goto cleanup;
     }
+  }
+
+  if (alloc_rounded_length > 0) {
+    NaClVmmapAddWithOverwrite(&nap->mem_map,
+                              NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
+                              alloc_rounded_length >> NACL_PAGESHIFT,
+                              prot,
+                              flags,
+                              ndp,
+                              offset,
+                              file_size);
   }
 
   map_result = usraddr;
@@ -1941,18 +1944,44 @@ static int32_t MunmapInternal(struct NaClApp *nap,
                               uintptr_t sysaddr, size_t length) {
   uintptr_t addr;
   uintptr_t endaddr = sysaddr + length;
+  uintptr_t usraddr;
   for (addr = sysaddr; addr < endaddr; addr += NACL_MAP_PAGESIZE) {
     struct NaClVmmapEntry const *entry;
+    uintptr_t                   page_num;
+    uintptr_t                   offset;
 
-    entry = NaClVmmapFindPage(&nap->mem_map,
-                              NaClSysToUser(nap, addr) >> NACL_PAGESHIFT);
+    usraddr = NaClSysToUser(nap, addr);
+
+    entry = NaClVmmapFindPage(&nap->mem_map, usraddr >> NACL_PAGESHIFT);
     if (NULL == entry) {
       continue;
     }
     NaClLog(3,
             ("NaClSysMunmap: addr 0x%08x, desc 0x%08"NACL_PRIxPTR"\n"),
             addr, (uintptr_t) entry->desc);
-    if (NULL == entry->desc) {
+
+    page_num = usraddr - (entry->page_num << NACL_PAGESHIFT);
+    offset = (uintptr_t) entry->offset + page_num;
+
+    if (NULL != entry->desc &&
+        offset < (uintptr_t) entry->file_size) {
+      if (!UnmapViewOfFile((void *) addr)) {
+        NaClLog(LOG_FATAL,
+                ("MunmapInternal: UnmapViewOfFile failed to at addr"
+                 " 0x%08"NACL_PRIxPTR", error %d\n"),
+                addr, GetLastError());
+      }
+      /*
+      * Fill the address space hole that we opened
+      * with UnmapViewOfFile().
+      */
+      if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
+                        PAGE_READWRITE)) {
+        NaClLog(LOG_FATAL, "MunmapInternal: "
+                "failed to fill hole with VirtualAlloc(), error %d\n",
+                GetLastError());
+      }
+    } else {
       /*
        * Anonymous memory; we just decommit it and thus
        * make it inaccessible.
@@ -1962,34 +1991,14 @@ static int32_t MunmapInternal(struct NaClApp *nap,
                        MEM_DECOMMIT)) {
         int error = GetLastError();
         NaClLog(LOG_FATAL,
-                ("NaClSysMunmap: Could not VirtualFree MEM_DECOMMIT"
+                ("MunmapInternal: Could not VirtualFree MEM_DECOMMIT"
                  " addr 0x%08x, error %d (0x%x)\n"),
                 addr, error, error);
-      }
-    } else {
-      if (!UnmapViewOfFile((void *) addr)) {
-        int error = GetLastError();
-        NaClLog(LOG_FATAL,
-                ("NaClSysMunmap: UnmapViewOfFile failed"
-                 " addr 0x%08x, error %d (0x%x)\n"),
-                addr, error, error);
-      }
-      /*
-       * Fill the address space hole that we opened
-       * with UnmapViewOfFile().
-       */
-      if (!VirtualAlloc((void *) addr, NACL_MAP_PAGESIZE, MEM_RESERVE,
-                        PAGE_READWRITE)) {
-        NaClLog(LOG_FATAL, "MunmapInternal: "
-                "failed to fill hole with VirtualAlloc(), error %d\n",
-                GetLastError());
       }
     }
     NaClVmmapRemove(&nap->mem_map,
-                    NaClSysToUser(nap, (uintptr_t) addr) >> NACL_PAGESHIFT,
-                    NACL_PAGES_PER_MAP,
-                    NULL,
-                    0);
+                    usraddr >> NACL_PAGESHIFT,
+                    NACL_PAGES_PER_MAP);
   }
   return 0;
 }
@@ -1997,6 +2006,8 @@ static int32_t MunmapInternal(struct NaClApp *nap,
 static int32_t MunmapInternal(struct NaClApp *nap,
                               uintptr_t sysaddr, size_t length) {
   UNREFERENCED_PARAMETER(nap);
+  NaClLog(3, "MunmapInternal(0x%08"NACL_PRIxPTR", 0x%"NACL_PRIxS")\n",
+          (uintptr_t) sysaddr, length);
   /*
    * Overwrite current mapping with inaccessible, anonymous
    * zero-filled pages, which should be copy-on-write and thus
@@ -2013,9 +2024,7 @@ static int32_t MunmapInternal(struct NaClApp *nap,
   }
   NaClVmmapRemove(&nap->mem_map,
                   NaClSysToUser(nap, (uintptr_t) sysaddr) >> NACL_PAGESHIFT,
-                  length >> NACL_PAGESHIFT,
-                  NULL,
-                  0);
+                  length >> NACL_PAGESHIFT);
   return 0;
 }
 #endif
@@ -2099,49 +2108,89 @@ static int32_t MprotectInternal(struct NaClApp *nap,
                                 uintptr_t sysaddr, size_t length, int prot) {
   uintptr_t addr;
   uintptr_t endaddr = sysaddr + length;
-  DWORD     protect;
-  DWORD     old_protect;
+  uintptr_t usraddr;
+  DWORD     flProtect;
+  DWORD     flOldProtect;
 
-  protect = 0;
-  switch (prot) {
-    case NACL_ABI_PROT_NONE:
-      protect = PAGE_NOACCESS;
-      break;
-    case NACL_ABI_PROT_READ:
-      protect |= PAGE_READONLY;
-      break;
-    case NACL_ABI_PROT_WRITE:
-      protect |= PAGE_READWRITE;
-      break;
-    case NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE:
-      protect |= PAGE_READWRITE;
-      break;
-  }
   /*
    * VirtualProtect region cannot span allocations, all addresses must be
    * in one region of memory returned from VirtualAlloc or VirtualAllocEx.
    */
   for (addr = sysaddr; addr < endaddr; addr += NACL_MAP_PAGESIZE) {
     struct NaClVmmapEntry const *entry;
+    uintptr_t                   page_num;
+    uintptr_t                   offset;
 
-    entry = NaClVmmapFindPage(&nap->mem_map,
-                              NaClSysToUser(nap, addr) >> NACL_PAGESHIFT);
+    usraddr = NaClSysToUser(nap, addr);
+
+    entry = NaClVmmapFindPage(&nap->mem_map, usraddr >> NACL_PAGESHIFT);
     if (NULL == entry) {
       continue;
     }
     NaClLog(3, "MprotectInternal: addr 0x%08x, desc 0x%08"NACL_PRIxPTR"\n",
             addr, (uintptr_t) entry->desc);
-    /* Change the page protection */
-    if (!VirtualProtect((void *) addr,
-                        NACL_MAP_PAGESIZE,
-                        protect,
-                        &old_protect)) {
-      int error = GetLastError();
-      NaClLog(LOG_FATAL, "MprotectInternal: "
-              "failed to change the memory protection with VirtualProtect()"
-              " addr 0x%08x, error %d (0x%x)\n",
-              addr, error, error);
-      return -NaClXlateSystemError(error);
+
+    page_num = usraddr - (entry->page_num << NACL_PAGESHIFT);
+    offset = (uintptr_t) entry->offset + page_num;
+
+    if (NULL == entry->desc) {
+      flProtect = NaClflProtectMap(prot);
+
+      /* Change the page protection */
+      if (!VirtualProtect((void *) addr,
+                          NACL_MAP_PAGESIZE,
+                          flProtect,
+                          &flOldProtect)) {
+        int error = GetLastError();
+        NaClLog(LOG_FATAL, "MprotectInternal: "
+                "failed to change the memory protection with VirtualProtect,"
+                " addr 0x%08x, error %d (0x%x)\n",
+                addr, error, error);
+        return -NaClXlateSystemError(error);
+      }
+    } else if (offset < (uintptr_t) entry->file_size) {
+      nacl_off64_t  file_bytes;
+      size_t        chunk_size;
+      size_t        rounded_chunk_size;
+      int           desc_flags;
+      char const    *err_msg;
+
+      desc_flags = (*NACL_VTBL(NaClDesc, entry->desc)->GetFlags)(entry->desc);
+      NaClflProtectAndDesiredAccessMap(prot,
+                                       (entry->flags
+                                        & NACL_ABI_MAP_PRIVATE) != 0,
+                                       (desc_flags & NACL_ABI_O_ACCMODE),
+                                       /* flMaximumProtect= */ NULL,
+                                       &flProtect,
+                                       /* dwDesiredAccess= */ NULL,
+                                       &err_msg);
+      if (0 == flProtect) {
+        /*
+         * This shouldn't really happen since we already checked the address
+         * space using NaClVmmapCheckExistingMapping, but better be safe.
+         */
+        NaClLog(LOG_FATAL, "MprotectInternal: %s\n", err_msg);
+      }
+
+      file_bytes = entry->file_size - offset;
+      chunk_size = size_min((size_t) file_bytes, NACL_MAP_PAGESIZE);
+      rounded_chunk_size = NaClRoundPage(chunk_size);
+
+      NaClLog(4, "VirtualProtect(0x%08x, 0x%"NACL_PRIxS", %x)\n",
+              addr, rounded_chunk_size, flProtect);
+
+      /* Change the page protection */
+      if (!VirtualProtect((void *) addr,
+                          rounded_chunk_size,
+                          flProtect,
+                          &flOldProtect)) {
+        int error = GetLastError();
+        NaClLog(LOG_FATAL, "MprotectInternal: "
+                "failed to change the memory protection with VirtualProtect()"
+                " addr 0x%08x, error %d (0x%x)\n",
+                addr, error, error);
+        return -NaClXlateSystemError(error);
+      }
     }
   }
 
@@ -2150,14 +2199,54 @@ static int32_t MprotectInternal(struct NaClApp *nap,
 #else
 static int32_t MprotectInternal(struct NaClApp *nap,
                                 uintptr_t sysaddr, size_t length, int prot) {
-  int host_prot = NaClProtMap(prot);
-  UNREFERENCED_PARAMETER(nap);
+  uintptr_t               addr;
+  uintptr_t               usraddr;
+  uintptr_t               last_page_num;
+  int                     host_prot;
+  struct NaClVmmapIter    iter;
+  struct NaClVmmapEntry   *entry;
 
-  /* Change the memory protection. */
-  if (0 != mprotect((void *) sysaddr, length, host_prot)) {
-    NaClLog(LOG_FATAL, "MprotectInternal: "
-            "mprotect on anonymous memory failed, errno = %d\n", errno);
-    return -NaClXlateErrno(errno);
+  host_prot = NaClProtMap(prot);
+
+  usraddr = NaClSysToUser(nap, sysaddr);
+  last_page_num = (usraddr + length) >> NACL_PAGESHIFT;
+
+  for (NaClVmmapFindPageIter(&nap->mem_map,
+                             usraddr >> NACL_PAGESHIFT,
+                             &iter);
+       !NaClVmmapIterAtEnd(&iter) &&
+         (entry = NaClVmmapIterStar(&iter))->page_num < last_page_num;
+       NaClVmmapIterIncr(&iter)) {
+    size_t entry_len = entry->npages << NACL_PAGESHIFT;
+
+    usraddr = entry->page_num << NACL_PAGESHIFT;
+    addr = NaClUserToSys(nap, usraddr);
+
+    NaClLog(3, "MprotectInternal: "
+            "addr 0x%08"NACL_PRIxPTR", desc 0x%08"NACL_PRIxPTR"\n",
+            addr, (uintptr_t) entry->desc);
+
+    if (NULL == entry->desc) {
+      if (0 != mprotect((void *) addr, entry_len, host_prot)) {
+        NaClLog(LOG_FATAL, "MprotectInternal: "
+                "mprotect on anonymous memory failed, errno = %d\n", errno);
+        return -NaClXlateErrno(errno);
+      }
+    } else if (entry->offset < entry->file_size) {
+      nacl_abi_off64_t  file_bytes;
+      size_t            rounded_file_bytes;
+      size_t            prot_len;
+
+      file_bytes = entry->file_size - entry->offset;
+      rounded_file_bytes = NaClRoundPage((size_t) file_bytes);
+      prot_len = size_min(rounded_file_bytes, entry_len);
+
+      if (0 != mprotect((void *) addr, prot_len, host_prot)) {
+        NaClLog(LOG_FATAL, "MprotectInternal: "
+                "mprotect on file-backed memory failed, errno = %d\n", errno);
+        return -NaClXlateErrno(errno);
+      }
+    }
   }
 
   return 0;

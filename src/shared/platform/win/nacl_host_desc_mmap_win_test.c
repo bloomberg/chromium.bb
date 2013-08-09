@@ -227,7 +227,7 @@ struct TestParam {
     /* expected_open_error= */ ERROR_SUCCESS,
     /* expected_mmap_errno= */ 0,
   }, {
-    "Mapping normal rw file, PROT_READ, PRIVATE",
+    "Mapping normal ro file, PROT_READ, PRIVATE",
     &g_normal_r_file,
     1 << 16,
     NACL_ABI_PROT_READ,

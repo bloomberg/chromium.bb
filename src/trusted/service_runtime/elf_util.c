@@ -982,6 +982,7 @@ NaClErrorCode NaClElfImageLoadDynamically(
                                   NACL_ABI_PROT_READ,
                                   NACL_ABI_MAP_PRIVATE,
                                   NULL,
+                                  0,
                                   0);
       }
     }

@@ -61,8 +61,8 @@ struct NaClHostDesc {
    */
   struct NaClFastMutex mu;
 
-  /* flProtect fallback used; zero when unknown or not needed */
-  DWORD flProtect;
+  /* flMappingProtect fallback used; zero when unknown or not needed */
+  DWORD flMappingProtect;
 };
 
 EXTERN_C_END

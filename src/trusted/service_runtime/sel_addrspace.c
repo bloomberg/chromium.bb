@@ -127,6 +127,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                PROT_NONE,
                NACL_ABI_MAP_PRIVATE,
                NULL,
+               0,
                0);
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
@@ -159,6 +160,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
+               0,
                0);
 
   start_addr = NaClUserToSys(nap, nap->dynamic_text_start);
@@ -184,7 +186,8 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                  NACL_ABI_MAP_PRIVATE,
                  nap->text_shm,
-                 0);
+                 0,
+                 region_size);
   }
 
   if (0 != nap->rodata_start) {
@@ -227,6 +230,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NACL_ABI_PROT_READ,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
+                 0,
                  0);
   }
 
@@ -262,6 +266,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                  NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
+                 0,
                  0);
   }
 
@@ -295,6 +300,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                NACL_ABI_PROT_READ | NACL_ABI_PROT_WRITE,
                NACL_ABI_MAP_PRIVATE,
                NULL,
+               0,
                0);
   return LOAD_OK;
 }

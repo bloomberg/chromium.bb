@@ -20,6 +20,8 @@ EXTERN_C_BEGIN
 
 struct NaClDesc;
 
+#define NACL_MAP_COPY   0x100
+
 /*
  * Interface is based on setting properties and query properties by
  * page numbers (addr >> NACL_PAGESHIFT) and the number of pages
@@ -44,6 +46,7 @@ struct NaClVmmapEntry {
   int               removed;    /* flag set in NaClVmmapUpdate */
   struct NaClDesc   *desc;      /* the backing store, if any */
   nacl_off64_t      offset;     /* offset into desc */
+  nacl_off64_t      file_size;  /* backing store size */
 };
 
 struct NaClVmmap {
@@ -83,7 +86,8 @@ void  NaClVmmapAdd(struct NaClVmmap   *self,
                    int                prot,
                    int                flags,
                    struct NaClDesc    *desc,
-                   nacl_off64_t       offset);
+                   nacl_off64_t       offset,
+                   nacl_off64_t       file_size);
 
 /*
  * NaClVmmapAddWithOverwrite checks the existing mappings and resizes
@@ -95,7 +99,8 @@ void  NaClVmmapAddWithOverwrite(struct NaClVmmap  *self,
                                 int               prot,
                                 int               flags,
                                 struct NaClDesc   *desc,
-                                nacl_off64_t      offset);
+                                nacl_off64_t      offset,
+                                nacl_off64_t      file_size);
 
 /*
  * NaClVmmapRemove modifies the specified region and updates the existing
@@ -103,9 +108,7 @@ void  NaClVmmapAddWithOverwrite(struct NaClVmmap  *self,
  */
 void  NaClVmmapRemove(struct NaClVmmap  *self,
                       uintptr_t         page_num,
-                      size_t            npages,
-                      struct NaClDesc   *desc,
-                      nacl_off64_t      offset);
+                      size_t            npages);
 
 /*
  * NaClVmmapChangeProt updates the protection bits for the specified region.

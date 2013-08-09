@@ -3,7 +3,21 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import atexit
+import shutil
+import tempfile
+
 Import('env')
+
+def MakeTempDir():
+  temporary_dir = tempfile.mkdtemp()
+  def Cleanup():
+    try:
+      shutil.rmtree(temporary_dir)
+    except OSError:
+      pass
+  atexit.register(Cleanup)
+  return temporary_dir
 
 extra_flags = []
 if env.IsRunningUnderValgrind():
@@ -43,3 +57,20 @@ mmap_stdin_nexe = env.ComponentProgram('mmap_stdin', 'mmap_stdin.c',
 node = env.CommandSelLdrTestNacl('mmap_stdin.out', mmap_stdin_nexe)
 env.AddNodeToTestSuite(node,
                        ['small_tests', 'sel_ldr_tests'], 'run_mmap_stdin_test')
+
+mmap_prot_nexe = env.ComponentProgram('mmap_prot_test',
+                                      'mmap_prot_test.c',
+                                      EXTRA_LIBS=['platform',
+                                                  '${NONIRT_LIBS}',
+                                                  '${PTHREAD_LIBS}'])
+
+node = env.CommandSelLdrTestNacl(
+    'mmap_prot_test.out',
+    mmap_prot_nexe,
+    args=['-t', MakeTempDir()],
+    # '-a' enables file access for opening the test file.
+    # '-e' enables exception handling for testing unreadable pages.
+    sel_ldr_flags=['-a', '-e'] + extra_flags)
+
+env.AddNodeToTestSuite(node, ['small_tests', 'sel_ldr_tests'],
+                       'run_mmap_prot_test')

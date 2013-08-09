@@ -345,6 +345,18 @@ extern int NaClProtMap(int abi_prot);
 extern void NaClHostDescCheckValidity(char const *fn_name,
                                       struct NaClHostDesc *d);
 
+#if NACL_WINDOWS
+extern void NaClflProtectAndDesiredAccessMap(int prot,
+                                             int is_private,
+                                             int accmode,
+                                             DWORD *out_flProtect,
+                                             DWORD *out_dwDesiredAccess,
+                                             DWORD *out_flNewProtect,
+                                             char const **out_msg);
+
+extern DWORD NaClflProtectMap(int prot);
+#endif
+
 EXTERN_C_END
 
 #endif  /* defined __native_client__ */

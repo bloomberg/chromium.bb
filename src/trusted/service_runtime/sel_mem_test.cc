@@ -40,6 +40,7 @@ TEST_F(SelMemTest, AddTest) {
                  NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
+                 0,
                  0);
     EXPECT_EQ(i, static_cast<int>(mem_map.nvalid));
     EXPECT_EQ(5, static_cast<int>(mem_map.size));
@@ -52,6 +53,7 @@ TEST_F(SelMemTest, AddTest) {
                NACL_ABI_PROT_READ,
                NACL_ABI_MAP_PRIVATE,
                NULL,
+               0,
                0);
   EXPECT_EQ(6, static_cast<int>(mem_map.nvalid));
   EXPECT_EQ(10, static_cast<int>(mem_map.size));
@@ -71,6 +73,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
+                            0,
                             0);
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
 
@@ -81,6 +84,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             NACL_ABI_PROT_READ,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
+                            0,
                             0);
   // vmmap is [32, 44], [64, 74]
   EXPECT_EQ(2, static_cast<int>(mem_map.nvalid));
@@ -92,6 +96,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             NACL_ABI_PROT_READ,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
+                            0,
                             0);
   // vmmap is [32, 41], [42, 66], [67, 74]
   EXPECT_EQ(3, static_cast<int>(mem_map.nvalid));
@@ -103,6 +108,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
+                            0,
                             0);
   // vmmap is [32, 35], [34, 36], [37, 41], [42, 66], [67, 74]
   EXPECT_EQ(5, static_cast<int>(mem_map.nvalid));
@@ -114,6 +120,7 @@ TEST_F(SelMemTest, UpdateTest) {
                             NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                             NACL_ABI_MAP_PRIVATE,
                             NULL,
+                            0,
                             0);
   // vmmap is [32, 36], [37, 41], [42, 66], [67, 74]
   EXPECT_EQ(4, static_cast<int>(mem_map.nvalid));
@@ -121,9 +128,7 @@ TEST_F(SelMemTest, UpdateTest) {
   // remove existing mappings
   NaClVmmapRemove(&mem_map,
                   40,
-                  30,
-                  NULL,
-                  0);
+                  30);
   // vmmap is [32, 36], [37, 39], [71, 74]
   EXPECT_EQ(3, static_cast<int>(mem_map.nvalid));
 
@@ -149,6 +154,7 @@ TEST_F(SelMemTest, FindPageTest) {
                  NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                  NACL_ABI_MAP_PRIVATE,
                  NULL,
+                 0,
                  0);
     EXPECT_EQ(i, static_cast<int>(mem_map.nvalid));
   }
@@ -187,6 +193,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
                NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
+               0,
                0);
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
   // one entry only
@@ -199,6 +206,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
                NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
+               0,
                0);
   EXPECT_EQ(2U, mem_map.nvalid);
 
@@ -215,6 +223,7 @@ TEST_F(SelMemTest, FindSpaceTest) {
                NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
                NACL_ABI_MAP_PRIVATE,
                NULL,
+               0,
                0);
   EXPECT_EQ(3U, mem_map.nvalid);
 
