@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
@@ -23,7 +22,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "ui/compositor/compositor_setup.h"
 #include "ui/gl/gl_switches.h"
 
 // For fine-grained suppression on flaky tests.
@@ -150,15 +148,6 @@ class MockDownloadWebContentsDelegate : public content::WebContentsDelegate {
 
 class WebViewTest : public extensions::PlatformAppBrowserTest {
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    extensions::PlatformAppBrowserTest::SetUpCommandLine(command_line);
-#if !defined(OS_MACOSX)
-    CHECK(test_launcher_utils::OverrideGLImplementation(
-          command_line, gfx::kGLImplementationOSMesaName)) <<
-          "kUseGL must not be set by test framework code!";
-#endif
-  }
-
   virtual void SetUp() OVERRIDE {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();

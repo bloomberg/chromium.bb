@@ -154,6 +154,15 @@ TabDragControllerTest::TabDragControllerTest()
 TabDragControllerTest::~TabDragControllerTest() {
 }
 
+void TabDragControllerTest::SetUp() {
+  // TODO(danakj): Remove this when the tests are not flaky (crbug.com/270065)
+  // or we use test contexts in the renderer to keep things fast enough to
+  // avoid the flake (crbug.com/270918).
+  UseRealGLBindings();
+
+  InProcessBrowserTest::SetUp();
+}
+
 void TabDragControllerTest::StopAnimating(TabStrip* tab_strip) {
   tab_strip->StopAnimating(true);
 }
