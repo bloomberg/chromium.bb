@@ -23,6 +23,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -285,6 +286,17 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const Extension* extension,
                                       const CommandLine* command_line,
                                       const base::FilePath& current_directory) {
+#if defined(OS_WIN)
+    // On Windows 8's single window Metro mode we can not launch platform apps.
+    // Offer to switch Chrome to desktop mode.
+    if (win8::IsSingleWindowMetroMode()) {
+      AppMetroInfoBarDelegateWin::Create(
+          profile, AppMetroInfoBarDelegateWin::LAUNCH_PACKAGED_APP,
+          extension->id());
+      return;
+    }
+#endif
+
   base::FilePath path;
   if (!GetAbsolutePathFromCommandLine(command_line, current_directory, &path)) {
     LaunchPlatformAppWithNoData(profile, extension);
