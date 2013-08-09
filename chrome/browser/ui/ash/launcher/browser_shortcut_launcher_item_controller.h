@@ -23,9 +23,10 @@ class Profile;
 class BrowserShortcutLauncherItemController : public LauncherItemController {
  public:
   BrowserShortcutLauncherItemController(
-      ChromeLauncherControllerPerApp* controller, Profile* profile);
+      ChromeLauncherControllerPerApp* controller,
+      Profile* profile);
 
-  virtual ~BrowserShortcutLauncherItemController() {}
+  virtual ~BrowserShortcutLauncherItemController();
 
   // LauncherItemController overrides:
   virtual string16 GetTitle() OVERRIDE;
