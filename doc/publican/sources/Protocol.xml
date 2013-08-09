@@ -285,11 +285,11 @@
       A surface can change the pointer image when the surface is the pointer
       focus of the input device.  Wayland doesn't automatically change the
       pointer image when a pointer enters a surface, but expects the
-      application to set the cursor it wants in response the pointer
+      application to set the cursor it wants in response to the pointer
       focus and motion events.  The rationale is that a client has to manage
       changing pointer images for UI elements within the surface in response
       to motion events anyway, so we'll make that the only mechanism for
-      setting changing the pointer image.  If the server receives a request
+      setting or changing the pointer image.  If the server receives a request
       to set the pointer image after the surface loses pointer focus, the
       request is ignored.  To the client this will look like it successfully
       set the pointer image.
@@ -312,8 +312,8 @@
   <section id="sect-Protocol-Output">
     <title>Output</title>
     <para>
-      A output is a global object, advertised at connect time or as they
-      come and go.
+      An output is a global object, advertised at connect time or as it
+      comes and goes.
     </para>
     <para>
       See <xref linkend="protocol-spec-interface-wl_output"/> for the protocol
@@ -452,7 +452,7 @@
 	</para>
 	<para>
 	  When the drag ends, the receiving client receives a
-	  <function>wl_data_device.drop</function> event at which it is expect
+	  <function>wl_data_device.drop</function> event at which it is expected
 	  to transfer the data using the
 	  <function>wl_data_offer.receive</function> request.
 	</para>
