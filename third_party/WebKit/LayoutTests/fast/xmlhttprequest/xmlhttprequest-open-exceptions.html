@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Security-Policy" content="connect-src http://example.com">
+</head>
+<body>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script>
+        description("This tests that exceptions thrown by XHR.open() have reasonable messages.");
+
+        var xhrException;
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open("TRACE", "http://example.com/");
+            testFailed("xhr.open should throw an exception with a forbidden method type.");
+        } catch (e) {
+            xhrException = e;
+            shouldBeEqualToString("xhrException.message", "'XMLHttpRequest.open' does not support the 'TRACE' method.");
+        }
+
+        try {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "http://not.example.com/");
+            testFailed("xhr.open to a URL blocked by CSP should throw an exception.");
+        } catch (e) {
+            xhrException = e;
+            shouldBeEqualToString("xhrException.message", "Refused to connect to 'http://not.example.com/' because it violates the document's Content Security Policy.");
+        }
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

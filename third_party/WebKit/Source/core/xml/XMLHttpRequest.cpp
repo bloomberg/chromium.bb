@@ -468,13 +468,12 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
     }
 
     if (!isAllowedHTTPMethod(method)) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "'XMLHttpRequest.open' does not support the '" + method + "' method.");
         return;
     }
 
     if (!ContentSecurityPolicy::shouldBypassMainWorld(scriptExecutionContext()) && !scriptExecutionContext()->contentSecurityPolicy()->allowConnectToSource(url)) {
-        // FIXME: Should this be throwing an exception?
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "Refused to connect to '" + url.elidedString() + "' because it violates the document's Content Security Policy.");
         return;
     }
 

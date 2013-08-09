@@ -1,0 +1,13 @@
+CONSOLE MESSAGE: Refused to connect to 'http://not.example.com/' because it violates the following Content Security Policy directive: "connect-src http://example.com".
+
+This tests that exceptions thrown by XHR.open() have reasonable messages.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS xhrException.message is "'XMLHttpRequest.open' does not support the 'TRACE' method."
+PASS xhrException.message is "Refused to connect to 'http://not.example.com/' because it violates the document's Content Security Policy."
+PASS successfullyParsed is true
+
+TEST COMPLETE
+
