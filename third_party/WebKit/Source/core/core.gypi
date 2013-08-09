@@ -3746,6 +3746,7 @@
             'loader/cache/CachedImageTest.cpp',
             'loader/cache/MemoryCacheTest.cpp',
             'loader/cache/ResourceFetcherTest.cpp',
+            'page/ImageBitmapTest.cpp',
             'platform/DecimalTest.cpp',
             'platform/SharedBufferTest.cpp',
             'platform/chromium/ClipboardChromiumTest.cpp',

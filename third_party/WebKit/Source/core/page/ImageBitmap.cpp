@@ -38,8 +38,9 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
 {
     m_imageElement->addClient(this);
 
-    IntSize bitmapSize = intersection(cropRect, IntRect(0, 0, image->width(), image->height())).size();
-    m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), bitmapSize);
+    IntRect srcRect = intersection(cropRect, IntRect(0, 0, image->width(), image->height()));
+    m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), srcRect.size());
+    m_bitmapOffset = srcRect.location();
 
     ScriptWrappable::init(this);
 }
@@ -47,6 +48,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
 ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
     : m_cropRect(cropRect)
     , m_imageElement(0)
+    , m_bitmapOffset(IntPoint())
 {
     IntRect videoRect = IntRect(IntPoint(), video->player()->naturalSize());
     IntRect srcRect = intersection(cropRect, videoRect);
@@ -66,6 +68,7 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect)
 ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
     : m_cropRect(cropRect)
     , m_imageElement(0)
+    , m_bitmapOffset(IntPoint())
 {
     IntSize canvasSize = canvas->size();
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvasSize));
@@ -82,6 +85,7 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
 ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
     : m_cropRect(cropRect)
     , m_imageElement(0)
+    , m_bitmapOffset(IntPoint())
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
 
@@ -98,14 +102,16 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
     : m_cropRect(cropRect)
     , m_imageElement(bitmap->imageElement())
+    , m_bitmapOffset(IntPoint())
 {
     IntRect oldBitmapRect = bitmap->bitmapRect();
-    IntSize bitmapSize = intersection(cropRect, oldBitmapRect).size();
-    IntPoint bitmapOffset(max(0, oldBitmapRect.x() - cropRect.x()), max(0, oldBitmapRect.y() - cropRect.y()));
-    m_bitmapRect = IntRect(bitmapOffset, bitmapSize);
+    IntRect srcRect = intersection(cropRect, oldBitmapRect);
+    m_bitmapRect = IntRect(IntPoint(max(0, oldBitmapRect.x() - cropRect.x()), max(0, oldBitmapRect.y() - cropRect.y())), srcRect.size());
+
     if (m_imageElement) {
         m_imageElement->addClient(this);
         m_bitmap = 0;
+        m_bitmapOffset = srcRect.location();
     } else {
         IntRect adjustedCropRect(IntPoint(cropRect.x() -oldBitmapRect.x(), cropRect.y() - oldBitmapRect.y()), cropRect.size());
         m_bitmap = cropImage(bitmap->bitmapImage().get(), adjustedCropRect);
@@ -157,6 +163,7 @@ PassRefPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& 
 void ImageBitmap::notifyImageSourceChanged()
 {
     m_bitmap = cropImage(m_imageElement->cachedImage()->image(), m_cropRect);
+    m_bitmapOffset = IntPoint();
     m_imageElement = 0;
 }
 
@@ -164,7 +171,7 @@ PassRefPtr<Image> ImageBitmap::bitmapImage() const
 {
     ASSERT((m_imageElement || m_bitmap) && (!m_imageElement || !m_bitmap));
     if (m_imageElement)
-        return cropImage(m_imageElement->cachedImage()->image(), m_cropRect);
+        return m_imageElement->cachedImage()->image();
     return m_bitmap;
 }
 

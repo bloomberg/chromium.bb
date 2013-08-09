@@ -1294,9 +1294,10 @@ void CanvasRenderingContext2D::drawImage(ImageBitmap* bitmap,
 
     FloatRect intersectRect = intersection(bitmapRect, normalizedSrcRect);
     FloatRect actualSrcRect(intersectRect);
-    actualSrcRect.move(-bitmapRect.x(), -bitmapRect.y());
 
-    FloatRect imageRect = FloatRect(FloatPoint(), bitmapRect.size());
+    IntPoint bitmapOffset = bitmap->bitmapOffset();
+    actualSrcRect.move(bitmapOffset - bitmapRect.location());
+    FloatRect imageRect = FloatRect(bitmapOffset, bitmapRect.size());
 
     FloatRect actualDstRect(FloatPoint(intersectRect.location() - normalizedSrcRect.location()), bitmapRect.size());
     actualDstRect.scale(normalizedDstRect.width() / normalizedSrcRect.width() * intersectRect.width() / bitmapRect.width(),

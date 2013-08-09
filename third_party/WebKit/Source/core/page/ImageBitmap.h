@@ -32,12 +32,13 @@ public:
     PassRefPtr<HTMLImageElement> imageElement() const { return m_imageElement; }
 
     IntRect bitmapRect() const { return m_bitmapRect; }
+    IntPoint bitmapOffset() const { return m_bitmapOffset; }
 
     int width() const { return m_cropRect.width(); }
     int height() const { return m_cropRect.height(); }
     IntSize size() const { return m_cropRect.size(); }
 
-    ~ImageBitmap();
+    virtual ~ImageBitmap();
 
 private:
     ImageBitmap(HTMLImageElement*, const IntRect&);
@@ -58,6 +59,12 @@ private:
 
     IntRect m_bitmapRect; // The rect where the underlying Image should be placed in reference to the ImageBitmap.
     IntRect m_cropRect;
+
+    // The offset by which the desired Image is stored internally.
+    // ImageBitmaps constructed from HTMLImageElements reference the entire CachedImage and may have a non-zero bitmap offset.
+    // ImageBitmaps not constructed from HTMLImageElements always pre-crop and store the image at (0, 0).
+    IntPoint m_bitmapOffset;
+
 };
 
 } // namespace WebCore
