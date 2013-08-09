@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/process/process.h"
+#include "ui/gfx/native_widget_types.h"
 
 class CommandLine;
 class GURL;
@@ -36,7 +37,8 @@ class NativeProcessLauncher {
                                base::PlatformFile read_file,
                                base::PlatformFile write_file)> LaunchedCallback;
 
-  static scoped_ptr<NativeProcessLauncher> CreateDefault();
+  static scoped_ptr<NativeProcessLauncher> CreateDefault(
+      gfx::NativeView native_view);
 
   NativeProcessLauncher() {}
   virtual ~NativeProcessLauncher() {}

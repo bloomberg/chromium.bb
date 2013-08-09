@@ -34,6 +34,8 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
@@ -321,8 +323,14 @@ void MessageService::OpenChannelToNativeApp(
   channel->opener.reset(new ExtensionMessagePort(source, MSG_ROUTING_CONTROL,
                                                  source_extension_id));
 
+  // Get handle of the native view and pass it to the native messaging host.
+  gfx::NativeView native_view =
+      content::RenderWidgetHost::FromID(source_process_id, source_routing_id)->
+          GetView()->GetNativeView();
+
   scoped_ptr<NativeMessageProcessHost> native_process =
       NativeMessageProcessHost::Create(
+          native_view,
           base::WeakPtr<NativeMessageProcessHost::Client>(
               weak_factory_.GetWeakPtr()),
           source_extension_id, native_app_name, receiver_port_id);

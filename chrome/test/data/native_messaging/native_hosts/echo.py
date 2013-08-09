@@ -25,7 +25,10 @@ def Main():
   if len(sys.argv) < 2:
     sys.stderr.write("URL of the calling application is not specified.\n")
     return;
-  caller_url = sys.argv[1]
+  for arg in sys.argv[1:]:
+    if not arg.startswith('--'):
+      caller_url = arg
+      break
 
   while 1:
     # Read the message type (first 4 bytes).

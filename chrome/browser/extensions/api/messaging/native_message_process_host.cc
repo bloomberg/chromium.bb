@@ -77,13 +77,14 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 
 // static
 scoped_ptr<NativeMessageProcessHost> NativeMessageProcessHost::Create(
+    gfx::NativeView native_view,
     base::WeakPtr<Client> weak_client_ui,
     const std::string& source_extension_id,
     const std::string& native_host_name,
     int destination_port) {
   return CreateWithLauncher(weak_client_ui, source_extension_id,
                             native_host_name, destination_port,
-                            NativeProcessLauncher::CreateDefault());
+                            NativeProcessLauncher::CreateDefault(native_view));
 }
 
 // static

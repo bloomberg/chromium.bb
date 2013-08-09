@@ -14,6 +14,7 @@
 #include "base/process/process.h"
 #include "chrome/browser/extensions/api/messaging/native_process_launcher.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace net {
 
@@ -52,6 +53,7 @@ class NativeMessageProcessHost
   virtual ~NativeMessageProcessHost();
 
   static scoped_ptr<NativeMessageProcessHost> Create(
+      gfx::NativeView native_view,
       base::WeakPtr<Client> weak_client_ui,
       const std::string& source_extension_id,
       const std::string& native_host_name,
