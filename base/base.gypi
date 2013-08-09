@@ -390,8 +390,6 @@
           'power_monitor/power_monitor_device_source_win.cc',
           'power_monitor/power_monitor_source.cc',
           'power_monitor/power_monitor_source.h',
-          'power_monitor/power_monitor_test_base.cc',
-          'power_monitor/power_monitor_test_base.h',
           'power_monitor/power_observer.h',
           'process/internal_linux.cc',
           'process/internal_linux.h',
