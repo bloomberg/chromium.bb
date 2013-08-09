@@ -841,3 +841,12 @@
    fun:net::NSSCertDatabase::DeleteCertAndKey
    fun:chromeos::NetworkCertMigratorTest::CleanupTestCert
 }
+{
+   bug_270312
+   Heapcheck:Leak
+   ...
+   fun:MessageCenterButtonBar
+   fun:MessageCenterView
+   fun:message_center::MessageCenterViewTest::SetUp
+}
+

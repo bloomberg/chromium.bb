@@ -7212,3 +7212,12 @@
    fun:_ZN7WebCore22SkiaImageFilterBuilder5buildEPNS_12FilterEffectENS_10ColorSpaceE
    fun:_ZN7WebCore22SkiaImageFilterBuilder5buildERKNS_16FilterOperationsE
 }
+{
+   bug_270312
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN14message_center22MessageCenterButtonBarC1EPNS_17MessageCenterViewEPNS_13MessageCenterEPNS_24NotifierSettingsProviderEb
+   fun:_ZN14message_center17MessageCenterViewC1EPNS_13MessageCenterEPNS_17MessageCenterTrayEibb
+   fun:_ZN14message_center21MessageCenterViewTest5SetUpEv
+}
+
