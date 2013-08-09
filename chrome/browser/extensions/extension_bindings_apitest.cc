@@ -28,6 +28,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 
 // Tests that an error raised during an async function still fires
 // the callback, but sets chrome.runtime.lastError.
+// FIXME should be in ExtensionBindingsApiTest.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, LastError) {
   ASSERT_TRUE(LoadExtension(
       test_data_dir_.AppendASCII("browsertest").AppendASCII("last_error")));
@@ -68,6 +69,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
   ASSERT_TRUE(RunExtensionSubtest(
       "bindings/internal_apis_not_on_chrome_object",
       "page.html")) << message_;
+}
+
+// Tests that we don't override events when bindings are re-injected.
+// Regression test for http://crbug.com/269149.
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, EventOverriding) {
+  ASSERT_TRUE(RunExtensionTest("bindings/event_overriding")) << message_;
 }
 
 }  // namespace

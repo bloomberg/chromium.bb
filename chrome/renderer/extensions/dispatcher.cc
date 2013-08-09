@@ -776,8 +776,28 @@ void Dispatcher::RegisterBinding(const std::string& api_name,
   std::string bind_name;
   v8::Handle<v8::Object> bind_object =
       GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
+
+  // Empty if the bind object failed to be created, probably because the
+  // extension overrode chrome with a non-object, e.g. window.chrome = true.
   if (bind_object.IsEmpty())
     return;
+
+  v8::Local<v8::String> v8_api_name = v8::String::New(api_name.c_str());
+  if (bind_object->HasRealNamedProperty(v8_api_name)) {
+    // The bind object may already have the property if the API has been
+    // registered before (or if the extension has put something there already,
+    // but, whatevs).
+    //
+    // In the former case, we need to re-register the bindings for the APIs
+    // which the extension now has permissions for (if any), but not touch any
+    // others so that we don't destroy state such as event listeners.
+    //
+    // TODO(kalman): Only register available APIs to make this all moot.
+    if (bind_object->HasRealNamedCallbackProperty(v8_api_name))
+      return;  // lazy binding still there, nothing to do
+    if (bind_object->Get(v8_api_name)->IsObject())
+      return;  // binding has already been fully installed
+  }
 
   ModuleSystem* module_system = context->module_system();
   if (lazy_bindings_map_.find(api_name) != lazy_bindings_map_.end()) {

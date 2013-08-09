@@ -534,6 +534,8 @@ bool ExtensionBrowserTest::WaitForExtensionViewsToLoad() {
   content::NotificationRegistrar registrar;
   registrar.Add(this, content::NOTIFICATION_LOAD_STOP,
                 content::NotificationService::AllSources());
+  registrar.Add(this, content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+                content::NotificationService::AllSources());
 
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(profile())->process_manager();
@@ -751,7 +753,8 @@ void ExtensionBrowserTest::Observe(
     }
 
     case content::NOTIFICATION_LOAD_STOP:
-      VLOG(1) << "Got LOAD_STOP notification.";
+    case content::NOTIFICATION_WEB_CONTENTS_DESTROYED:
+      VLOG(1) << "Got LOAD_STOP or WEB_CONTENTS_DESTROYED notification.";
       base::MessageLoopForUI::current()->Quit();
       break;
 

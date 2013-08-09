@@ -218,6 +218,22 @@
         ]
       },
       {
+        "name": "assertThrows",
+        "type": "function",
+        "nocompile": true,
+        "parameters": [
+          {"type": "function", "name": "fn"},
+          {
+            "type": "object",
+            "name": "self",
+            "additionalProperties": {"type": "any"},
+            "optional": true
+          },
+          {"type": "array", "items": {"type": "any"}, "name": "args"},
+          {"type": "string", "name": "message", "optional": true}
+        ]
+      },
+      {
         "name": "callback",
         "type": "function",
         "nocompile": true,

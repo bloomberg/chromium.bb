@@ -228,6 +228,18 @@ binding.registerCustomHook(function(api) {
     chromeTest.assertEq(expectedError, chrome.runtime.lastError.message);
   });
 
+  apiFunctions.setHandleRequest('assertThrows',
+                                function(fn, self, args, message) {
+    assertTrue(typeof fn == 'function');
+    try {
+      fn.apply(self, args);
+      chromeTest.fail('Did not throw error: ' + fn);
+    } catch (e) {
+      if (message !== undefined)
+        chromeTest.assertEq(message, e.message);
+    }
+  });
+
   function safeFunctionApply(func, args) {
     try {
       if (func)
