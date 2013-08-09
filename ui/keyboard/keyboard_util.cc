@@ -64,6 +64,45 @@ bool InsertText(const base::string16& text, aura::RootWindow* root_window) {
   return true;
 }
 
+// TODO(varunjain): It would be cleaner to have something in the
+// ui::TextInputClient interface, say MoveCaretInDirection(). The code in
+// here would get the ui::InputMethod from the root_window, and the
+// ui::TextInputClient from that (see above in InsertText()).
+bool MoveCursor(int swipe_direction,
+                int modifier_flags,
+                aura::RootWindow* root_window) {
+  if (!root_window)
+    return false;
+  ui::KeyboardCode codex = ui::VKEY_UNKNOWN;
+  ui::KeyboardCode codey = ui::VKEY_UNKNOWN;
+  if (swipe_direction & kCursorMoveRight)
+    codex = ui::VKEY_RIGHT;
+  else if (swipe_direction & kCursorMoveLeft)
+    codex = ui::VKEY_LEFT;
+
+  if (swipe_direction & kCursorMoveUp)
+    codey = ui::VKEY_UP;
+  else if (swipe_direction & kCursorMoveDown)
+    codey = ui::VKEY_DOWN;
+
+  // First deal with the x movement.
+  if (codex != ui::VKEY_UNKNOWN) {
+    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codex, modifier_flags, 0);
+    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
+    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codex, modifier_flags, 0);
+    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
+  }
+
+  // Then deal with the y movement.
+  if (codey != ui::VKEY_UNKNOWN) {
+    ui::KeyEvent press_event(ui::ET_KEY_PRESSED, codey, modifier_flags, 0);
+    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&press_event);
+    ui::KeyEvent release_event(ui::ET_KEY_RELEASED, codey, modifier_flags, 0);
+    root_window->AsRootWindowHostDelegate()->OnHostKeyEvent(&release_event);
+  }
+  return true;
+}
+
 const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
   // This looks a lot like the contents of a resource map; however it is
   // necessary to have a custom path for the extension path, so the resource

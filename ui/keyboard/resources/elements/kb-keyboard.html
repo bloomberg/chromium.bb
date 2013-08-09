@@ -6,6 +6,7 @@
 
 <polymer-element name="kb-keyboard" on-key-over="keyOver" on-key-up="keyUp"
     on-key-down="keyDown" on-key-longpress="keyLongpress" on-pointerup="up"
+    on-pointerdown="down" on-enable-sel="enableSel"
     on-enable-dbl="enableDbl" attributes="keyset layout rows">
   <template>
     <style>
@@ -60,6 +61,7 @@
      * A structure to track the currently repeating key on the keyboard.
      */
     var repeatKey = {
+
       /**
         * The timer for the delay before repeating behaviour begins.
         * @type {number|undefined}
@@ -90,14 +92,97 @@
       }
     };
 
+    /**
+     * The minimum movement interval needed to trigger cursor move on
+     * horizontal and vertical way.
+     * @const
+     * @type {number}
+     */
+    var MIN_SWIPE_DIST = 30;
+
+    /**
+     * The flags constants when shift is on. It is according to the EventFlags
+     * in event_constants.h in chromium c++ code.
+     * @const
+     * @type {number}
+     * TODO(zyaozhujun): Might add more flags here according to the defination
+     * in EventFlags.
+     */
+    var SHIFT = 2;
+
+    /**
+     * The boolean to decide if it is swipe in process or finished.
+     * @const
+     * @type {boolean}
+     */
+    var swipeInProgress = false;
+
+    /**
+     * The enumeration of swipe directions.
+     * @const
+     * @type {Enum}
+     */
+    var SWIPE_DIRECTION = {
+      RIGHT: 0x1,
+      LEFT: 0x2,
+      UP: 0x4,
+      DOWN: 0x8
+    };
+
+    /**
+     * A structure to track the current swipe status.
+     */
+    var swipeStatus = {
+
+      /**
+       * The count of horizontal and vertical movement.
+       * @type {number}
+       */
+       offset_x : 0,
+       offset_y : 0,
+
+      /**
+       * Last touch coordinate.
+       * @type {number}
+       */
+      pre_x : 0,
+      pre_y : 0,
+
+      /**
+       * The flag of current modifier key.
+       * @type {number}
+       */
+      swipeFlags : 0,
+
+      /**
+       * Current swipe direction.
+       * @type {number}
+       */
+      swipeDirection : 0,
+
+      /**
+       * Reset all the values when swipe finished.
+       */
+      resetAll: function() {
+        this.offset_x = 0;
+        this.offset_y = 0;
+        this.pre_x = 0;
+        this.pre_y = 0;
+	this.swipeFlags = 0;
+	this.swipeDirection = 0;
+      }
+    };
+
     Polymer('kb-keyboard', {
       lastPressedKey: null,
       voiceInput_: null,
       dblDetail_: null,
       dblTimer_: null,
+      swipeHandler: null,
 
       ready: function() {
         this.voiceInput_ = new VoiceInput(this);
+        this.swipeHandler = this.onSwipeUpdate.bind(this);
       },
 
       /**
@@ -118,6 +203,48 @@
           }
         }
         return false;
+      },
+
+      /**
+       * This function is bound to swipeHandler. And swipeHandler handle
+       * the pointermove event after pointerdown event happened.
+       * @para {PointerEvent} event.
+       */
+      onSwipeUpdate: function(event) {
+	swipeStatus.offset_x += event.screenX - swipeStatus.pre_x;
+	swipeStatus.offset_y += event.screenY - swipeStatus.pre_y;
+        if (Math.abs(swipeStatus.offset_x) > MIN_SWIPE_DIST ||
+            Math.abs(swipeStatus.offset_y) > MIN_SWIPE_DIST) {
+          swipeInProgress = true;
+          this.lastPressedKey.classList.remove('active');
+        }
+        if (swipeStatus.offset_x > MIN_SWIPE_DIST) {
+	  swipeStatus.swipeDirection |= SWIPE_DIRECTION.RIGHT;
+          swipeStatus.offset_x = 0;
+        }
+        else if (swipeStatus.offset_x < -MIN_SWIPE_DIST) {
+	  swipeStatus.swipeDirection |= SWIPE_DIRECTION.LEFT;
+	  swipeStatus.offset_x = 0;
+	}
+        // Swipe vertically only when the swipe reaches the gradient of 45
+        // degree. This can also be larger.
+	if (Math.abs(event.screenY - swipeStatus.pre_y) >
+            Math.abs(event.screenX - swipeStatus.pre_x)) {
+          if (swipeStatus.offset_y > MIN_SWIPE_DIST) {
+            swipeStatus.swipeDirection |= SWIPE_DIRECTION.DOWN;
+	    swipeStatus.offset_y = 0;
+	  }
+          else if (swipeStatus.offset_y < -MIN_SWIPE_DIST) {
+	    swipeStatus.swipeDirection |= SWIPE_DIRECTION.UP;
+            swipeStatus.offset_y = 0;
+	  }
+        }
+       if (swipeStatus.swipeDirection) {
+	  MoveCursor(swipeStatus.swipeDirection, swipeStatus.swipeFlags);
+          swipeStatus.swipeDirection = 0;
+        }
+	swipeStatus.pre_x = event.screenX;
+	swipeStatus.pre_y = event.screenY;
       },
 
       /**
@@ -173,12 +300,34 @@
       },
 
       /**
+       * Enable the selection while swipe.
+       * @param {CustomEvent} event The enable-dbl event dispatched by
+       *    kb-shift-key.
+       */
+      enableSel: function(event) {
+        swipeStatus.swipeFlags = SHIFT;
+      },
+
+      /**
+       * Handles pointerdown event. This is used for swipe selection process.
+       * to get the start pre_x and pre_y. And also add a pointermove handler
+       * to start handling the swipe selection event.
+       * @param {PointerEvent} event The pointerup event that received by
+       *     kb-keyboard.
+       */
+      down: function(event) {
+        swipeStatus.pre_x = event.screenX;
+        swipeStatus.pre_y = event.screenY;
+        this.addEventListener("pointermove", this.swipeHandler, false);
+      },
+
+      /**
        * Handles pointerup event. This is used for double tap/click events.
        * @param {PointerEvent} event The pointerup event that bubbled to
        *     kb-keyboard.
        */
       up: function(event) {
-        if(this.dblDetail_) {
+        if (this.dblDetail_) {
           this.dblDetail_.clickCount++;
           if (this.dblDetail_.clickCount == 2) {
             this.keyset = this.dblDetail_.toKeyset;
@@ -188,6 +337,18 @@
             this.dblDetail_ = null;
           }
         }
+
+        // TODO(zyaozhujun): There are some edge cases to deal with later.
+        // (for instance, what if a second finger trigger a down and up
+	// event sequence while swiping).
+        // When pointer up from the screen, a swipe selection session finished,
+        // all the data should be reset to prepare for the next session.
+        if (swipeInProgress) {
+          swipeInProgress = false;
+          swipeStatus.resetAll();
+        }
+        // Remove the pointermove event hander here.
+        this.removeEventListener('pointermove', this.swipeHandler, false);
       },
 
       /**
@@ -198,7 +359,8 @@
       keyUp: function(event, detail) {
         if (this.skipEvent(detail))
           return;
-
+        if (swipeInProgress)
+          return;
         this.lastPressedKey.classList.remove('active');
         if (this.lastPressedKey != event.target)
           return;
@@ -226,6 +388,7 @@
         switch(char) {
           case 'Invalid':
           case 'Shift':
+            swipeStatus.swipeFlags = 0;
             return;
           case 'Microphone':
             this.voiceInput_.onDown();
@@ -273,7 +436,7 @@
             this.selectDefaultKeyset();
           } else {
             console.error('Unable to find layout ' + this.layout);
-          }
+         }
         }
       },
 

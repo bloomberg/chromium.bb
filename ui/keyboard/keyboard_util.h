@@ -17,6 +17,14 @@ struct GritResourceMap;
 
 namespace keyboard {
 
+// Enumeration of swipe directions.
+enum CursorMoveDirection {
+  kCursorMoveRight = 0x01,
+  kCursorMoveLeft = 0x02,
+  kCursorMoveUp = 0x04,
+  kCursorMoveDown = 0x08
+};
+
 // Returns true if the virtual keyboard is enabled.
 KEYBOARD_EXPORT bool IsKeyboardEnabled();
 
@@ -25,6 +33,12 @@ KEYBOARD_EXPORT bool IsKeyboardEnabled();
 // that this may convert |text| into ui::KeyEvents for injection in some
 // special circumstances (i.e. VKEY_RETURN, VKEY_BACK).
 KEYBOARD_EXPORT bool InsertText(const base::string16& text,
+                                aura::RootWindow* root_window);
+
+// Move cursor when swipe on the virtualkeyboard. Returns true if cursor was
+// successfully moved according to |swipe_direction|.
+KEYBOARD_EXPORT bool MoveCursor(int swipe_direction,
+                                int modifier_flags,
                                 aura::RootWindow* root_window);
 
 // Get the list of keyboard resources.  |size| is populated with the number of

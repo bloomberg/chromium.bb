@@ -26,6 +26,19 @@ class InsertTextInputFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class  MoveCursorFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION(
+      "experimental.input.virtualKeyboard.moveCursor",
+      EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_MOVECURSOR);
+
+ protected:
+  virtual ~MoveCursorFunction() {}
+
+  // ExtensionFunction.
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class InputAPI : public ProfileKeyedAPI {
  public:
   explicit InputAPI(Profile* profile);

@@ -38,10 +38,27 @@ bool InsertTextInputFunction::RunImpl() {
   return false;
 }
 
+bool MoveCursorFunction::RunImpl() {
+#if defined(USE_ASH)
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  int swipe_direction;
+  int modifier_flags;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &swipe_direction));
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &modifier_flags));
+
+  return keyboard::MoveCursor(swipe_direction, modifier_flags,
+                              ash::Shell::GetPrimaryRootWindow());
+#endif
+  error_ = kNotYetImplementedError;
+  return false;
+}
+
 InputAPI::InputAPI(Profile* profile) {
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
   registry->RegisterFunction<InsertTextInputFunction>();
+  registry->RegisterFunction<MoveCursorFunction>();
 }
 
 InputAPI::~InputAPI() {
