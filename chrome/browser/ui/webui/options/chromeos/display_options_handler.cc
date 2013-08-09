@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chromeos/display/output_configurator.h"
 #include "content/public/browser/web_ui.h"
+#include "grit/ash_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
@@ -100,11 +101,11 @@ void DisplayOptionsHandler::GetLocalizedValues(
   localized_strings->SetString("orientation0", l10n_util::GetStringUTF16(
       IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STANDARD_ORIENTATION));
   localized_strings->SetString("orientation90", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_90));
+      IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90));
   localized_strings->SetString("orientation180", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_180));
+      IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180));
   localized_strings->SetString("orientation270", l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_270));
+      IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270));
   localized_strings->SetString(
       "startCalibratingOverscan", l10n_util::GetStringUTF16(
           IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN));

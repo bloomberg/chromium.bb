@@ -986,15 +986,6 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_STANDARD_ORIENTATION" desc="The default value of display orientation option item.">
     Standard
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_90" desc="The value of display orientation option item: 90-degree rotated">
-    90&#x00B0;
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_180" desc="The value of display orientation option item: 180-degree rotated">
-    180&#x00B0;
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_ORIENTATION_270" desc="The value of display orientation option item: 270-degree rotated">
-    270&#x00B0;
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_DISPLAY_OPTIONS_START_CALIBRATING_OVERSCAN" desc="Button label to start calibrating the overscan preference.">
     Adjust...
   </message>

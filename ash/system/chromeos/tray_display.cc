@@ -195,7 +195,7 @@ void UpdateDisplayNotification(const base::string16& message) {
       message_center::NOTIFICATION_TYPE_SIMPLE,
       kDisplayNotificationId,
       message,
-      GetAllDisplayInfo(),
+      base::string16(),  // body is intentionally empty, see crbug.com/265915
       bundle.GetImageNamed(IDR_AURA_UBER_TRAY_DISPLAY),
       base::string16(),  // display_source
       "",  // extension_id
@@ -367,8 +367,25 @@ bool TrayDisplay::GetDisplayMessageForNotification(base::string16* message) {
       return true;
     }
     if (iter->second.rotation() != old_iter->second.rotation()) {
+      int rotation_text_id = 0;
+      switch (iter->second.rotation()) {
+        case gfx::Display::ROTATE_0:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION;
+          break;
+        case gfx::Display::ROTATE_90:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90;
+          break;
+        case gfx::Display::ROTATE_180:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180;
+          break;
+        case gfx::Display::ROTATE_270:
+          rotation_text_id = IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270;
+          break;
+      }
       *message = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetDisplayName(iter->first));
+          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED,
+          GetDisplayName(iter->first),
+          l10n_util::GetStringUTF16(rotation_text_id));
       return true;
     }
   }

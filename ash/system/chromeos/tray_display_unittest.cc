@@ -326,13 +326,21 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
 
   // rotation.
   UpdateDisplay("400x400/r");
-  base::string16 rotation_message = l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName());
-  EXPECT_EQ(rotation_message, GetDisplayNotificationText());
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
+          l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90)),
+      GetDisplayNotificationText());
 
   CloseNotification();
   UpdateDisplay("400x400");
-  EXPECT_EQ(rotation_message, GetDisplayNotificationText());
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetFirstDisplayName(),
+          l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION)),
+      GetDisplayNotificationText());
 
   // UI-scale
   CloseNotification();
@@ -395,7 +403,10 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
   UpdateDisplay("400x400@1.5,200x200/r");
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED, GetSecondDisplayName()),
+          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED,
+          GetSecondDisplayName(),
+          l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90)),
       GetDisplayNotificationText());
 }
 

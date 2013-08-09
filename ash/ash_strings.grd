@@ -325,10 +325,10 @@ Press Ctrl+Alt+Z to disable.
         Dock mode
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
-        <ph name="DISPLAY_NAME">$1</ph> has been resized to <ph name="RESOLUTION">$2</ph>
+        <ph name="DISPLAY_NAME">$1</ph> resolution was changed to <ph name="RESOLUTION">$2</ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED" desc="The label used in the tray to notify that the display rotation settings has changed.">
-        <ph name="DISPLAY_NAME">$1</ph> has been rotated
+        <ph name="DISPLAY_NAME">$1</ph> was rotated to <ph name="ROTATION">$2</ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_SINGLE_DISPLAY" desc="The label used in the tray to show a single display's configuration">
         <ph name="DISPLAY_NAME">$1</ph>: <ph name="ANNOTATION">$2</ph>
@@ -344,6 +344,18 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ANNOTATION_OVERSCAN" desc="Label used to describe that the system notice that this display device may have overscan area.">
         overscan
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION" desc="The default value of display orientation option item.">
+        0&#x00B0;
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90" desc="The value of display orientation option item: 90-degree rotated">
+        90&#x00B0;
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_180" desc="The value of display orientation option item: 180-degree rotated">
+        180&#x00B0;
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270" desc="The value of display orientation option item: 270-degree rotated">
+        270&#x00B0;
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DRIVE_SYNCING" desc="The label in the tray to indicate onoing file sync operations.">
         Syncing <ph name="count">$1<ex>3</ex></ph> file(s)
