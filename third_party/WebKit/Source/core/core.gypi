@@ -2893,8 +2893,6 @@
             'platform/graphics/filters/custom/ValidatedCustomFilterOperation.h',
             'platform/graphics/filters/DistantLightSource.cpp',
             'platform/graphics/filters/DistantLightSource.h',
-            'platform/graphics/filters/DropShadowImageFilter.cpp',
-            'platform/graphics/filters/DropShadowImageFilter.h',
             'platform/graphics/filters/FEBlend.cpp',
             'platform/graphics/filters/FEBlend.h',
             'platform/graphics/filters/FEColorMatrix.cpp',

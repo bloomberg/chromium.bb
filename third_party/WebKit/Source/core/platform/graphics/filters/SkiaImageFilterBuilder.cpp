@@ -29,9 +29,9 @@
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
+#include "SkDropShadowImageFilter.h"
 #include "SkTableColorFilter.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/filters/DropShadowImageFilter.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
@@ -295,7 +295,7 @@ SkImageFilter* SkiaImageFilterBuilder::build(const FilterOperations& operations)
         }
         case FilterOperation::DROP_SHADOW: {
             const DropShadowFilterOperation* drop = static_cast<const DropShadowFilterOperation*>(&op);
-            filter.reset(new DropShadowImageFilter(SkIntToScalar(drop->x()), SkIntToScalar(drop->y()), SkIntToScalar(drop->stdDeviation()), drop->color().rgb(), filter));
+            filter.reset(new SkDropShadowImageFilter(SkIntToScalar(drop->x()), SkIntToScalar(-drop->y()), SkIntToScalar(drop->stdDeviation()), drop->color().rgb(), filter));
             break;
         }
         case FilterOperation::VALIDATED_CUSTOM:
