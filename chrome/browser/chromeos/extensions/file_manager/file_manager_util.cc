@@ -439,7 +439,8 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
   // 5. non-default extension
   // Note that there can be at most one of default extension and default app.
   const FileBrowserHandler* handler =
-      file_tasks::FindFileBrowserHandlerForURLAndPath(profile, url, path);
+      file_browser_handlers::FindFileBrowserHandlerForURLAndPath(
+          profile, url, path);
   if (!handler) {
     return ExecuteDefaultAppHandler(
         profile, path, url, mime_type, default_task_id);
@@ -450,7 +451,7 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
         file_tasks::kFileBrowserHandlerTaskType,
         handler->id());
   if (handler_task_id != default_task_id &&
-      !file_tasks::IsFallbackFileBrowserHandler(handler) &&
+      !file_browser_handlers::IsFallbackFileBrowserHandler(handler) &&
       ExecuteDefaultAppHandler(
           profile, path, url, mime_type, default_task_id)) {
     return true;

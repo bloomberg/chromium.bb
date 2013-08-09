@@ -426,17 +426,17 @@ void GetFileTasksFunction::FindFileBrowserHandlerTasks(
   DCHECK(result_list);
   DCHECK(default_already_set);
 
-  file_tasks::FileBrowserHandlerList common_tasks =
-      file_tasks::FindCommonFileBrowserHandlers(profile_, file_urls);
+  file_browser_handlers::FileBrowserHandlerList common_tasks =
+      file_browser_handlers::FindCommonFileBrowserHandlers(profile_, file_urls);
   if (common_tasks.empty())
     return;
-  file_tasks::FileBrowserHandlerList default_tasks =
-      file_tasks::FindDefaultFileBrowserHandlers(
+  file_browser_handlers::FileBrowserHandlerList default_tasks =
+      file_browser_handlers::FindDefaultFileBrowserHandlers(
           profile_, file_paths, common_tasks);
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  for (file_tasks::FileBrowserHandlerList::const_iterator iter =
+  for (file_browser_handlers::FileBrowserHandlerList::const_iterator iter =
            common_tasks.begin();
        iter != common_tasks.end();
        ++iter) {
