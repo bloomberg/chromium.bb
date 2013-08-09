@@ -101,7 +101,7 @@ static void clearPeformanceEntries(PerformanceEntryMap& performanceEntryMap, con
 void UserTiming::mark(const String& markName, ExceptionState& es)
 {
     if (restrictedKeyMap().contains(markName)) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "'" + markName + "' is part of the PerformanceTiming interface, and cannot be used as a mark name.");
         return;
     }
 
@@ -122,13 +122,13 @@ double UserTiming::findExistingMarkStartTime(const String& markName, ExceptionSt
     if (restrictedKeyMap().contains(markName)) {
         double value = static_cast<double>((m_performance->timing()->*(restrictedKeyMap().get(markName)))());
         if (!value) {
-            es.throwDOMException(InvalidAccessError);
+            es.throwDOMException(InvalidAccessError, "'" + markName + "' is empty: either the event hasn't happened yet, or it would provide cross-origin timing information.");
             return 0.0;
         }
         return value - m_performance->timing()->navigationStart();
     }
 
-    es.throwDOMException(SyntaxError);
+    es.throwDOMException(SyntaxError, "The mark '" + markName + "' does not exist.");
     return 0.0;
 }
 

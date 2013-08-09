@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+</head>
+<body>
+    <script src="../js/resources/js-test-pre.js"></script>
+    <script>
+        description("This tests that 'performance.measure' throws exceptions with reasonable messages.");
+
+        shouldThrow('window.performance.measure("DoesNotExist", "AlsoDoesNotExist")', '"SyntaxError: The mark \'AlsoDoesNotExist\' does not exist."');
+
+        window.performance.mark('mark');
+
+        var allTheExceptionalThings = [
+            'unloadEventStart',
+            'unloadEventEnd',
+            'redirectStart',
+            'redirectEnd',
+            'secureConnectionStart',
+            'domInteractive',
+            'domContentLoadedEventStart',
+            'domContentLoadedEventEnd',
+            'domComplete',
+            'loadEventStart',
+            'loadEventEnd',
+        ];
+        allTheExceptionalThings.forEach(function(name) {
+            shouldThrow('window.performance.measure("measuring", \'' + name + '\', "mark")', '"InvalidAccessError: \'' + name + '\' is empty: either the event hasn\'t happened yet, or it would provide cross-origin timing information."');
+        });
+    </script>
+    <script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
