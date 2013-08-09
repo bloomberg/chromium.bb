@@ -581,9 +581,6 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
 
   virtual void OnSocketOpened() OVERRIDE {
     proxy_.reset(content::DevToolsExternalAgentProxy::Create(this));
-    tethering_adb_filter_.reset(new TetheringAdbFilter(
-        kAdbPort, serial_, adb_message_loop_, profile_->GetPrefs(),
-        web_socket_));
     OpenFrontend();
   }
 
@@ -598,7 +595,7 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
   }
 
   virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE {
-    return tethering_adb_filter_->ProcessIncomingMessage(message);
+    return false;
   }
 
   const std::string id_;
@@ -608,7 +605,6 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
   Profile* profile_;
 
   scoped_ptr<content::DevToolsExternalAgentProxy> proxy_;
-  scoped_ptr<TetheringAdbFilter> tethering_adb_filter_;
   scoped_refptr<AdbWebSocket> web_socket_;
   DISALLOW_COPY_AND_ASSIGN(AgentHostDelegate);
 };
