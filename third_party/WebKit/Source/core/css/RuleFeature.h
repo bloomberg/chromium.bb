@@ -30,6 +30,7 @@ namespace WebCore {
 
 class StyleRule;
 class CSSSelector;
+class CSSSelectorList;
 
 struct RuleFeature {
     RuleFeature(StyleRule* rule, unsigned selectorIndex, bool hasDocumentSecurityOrigin)
@@ -83,6 +84,8 @@ public:
     Vector<RuleFeature> siblingRules;
     Vector<RuleFeature> uncommonAttributeRules;
 private:
+    void collectFeaturesFromSelectorList(const CSSSelectorList*);
+
     bool m_usesFirstLineRules;
     bool m_usesBeforeAfterRules;
 };

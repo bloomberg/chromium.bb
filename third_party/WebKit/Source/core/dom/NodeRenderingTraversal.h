@@ -80,6 +80,13 @@ inline ContainerNode* parent(const Node* node)
     return parent(node, &unusedDetails);
 }
 
+inline Element* parentElement(const Node* node)
+{
+    ParentDetails unusedDetails;
+    Node* found = parent(node, &unusedDetails);
+    return found && found->isElementNode() ? toElement(found) : 0;
+}
+
 }
 
 } // namespace WebCore

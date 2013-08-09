@@ -790,6 +790,34 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 return true;
             break;
 
+        case CSSSelector::PseudoHost:
+            {
+                // :host only matches a shadow host when :host is in a shadow tree of the shadow host.
+                if (!context.scope || !(context.behaviorAtBoundary & ScopeIsShadowHost) || context.scope != element)
+                    return false;
+                ASSERT(element->shadow());
+
+                // For empty parameter case, i.e. just :host or :host().
+                if (!selector->selectorList())
+                    return true;
+
+                SelectorCheckingContext subContext(context);
+                subContext.isSubSelector = true;
+                subContext.behaviorAtBoundary = CrossesBoundary;
+                subContext.scope = 0;
+                // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
+                for (Element* nextElement = NodeRenderingTraversal::parentElement(element); nextElement; nextElement = NodeRenderingTraversal::parentElement(nextElement)) {
+                    // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
+                    for (subContext.selector = selector->selectorList()->first(); subContext.selector; subContext.selector = CSSSelectorList::next(subContext.selector)) {
+                        PseudoId ignoreDynamicPseudo = NOPSEUDO;
+                        subContext.element = nextElement;
+                        if (match(subContext, ignoreDynamicPseudo, siblingTraversalStrategy) == SelectorMatches)
+                            return true;
+                    }
+                }
+            }
+            break;
+
         case CSSSelector::PseudoHorizontal:
         case CSSSelector::PseudoVertical:
         case CSSSelector::PseudoDecrement:

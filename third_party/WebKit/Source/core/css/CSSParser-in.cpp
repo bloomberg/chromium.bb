@@ -10026,6 +10026,10 @@ inline bool CSSParser::detectFunctionTypeToken(int length)
             m_token = CALCFUNCTION;
             return true;
         }
+        CASE("host") {
+            m_token = HOSTFUNCTION;
+            return true;
+        }
         CASE("nth-child") {
             m_parsingMode = NthChildMode;
             return true;

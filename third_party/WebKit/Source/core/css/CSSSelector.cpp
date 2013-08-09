@@ -250,6 +250,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type)
     case PseudoPart:
     case PseudoUnresolved:
     case PseudoContent:
+    case PseudoHost:
         return NOPSEUDO;
     case PseudoNotParsed:
         ASSERT_NOT_REACHED();
@@ -341,6 +342,8 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
     DEFINE_STATIC_LOCAL(AtomicString, part, ("part(", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, unresolved, ("unresolved", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(AtomicString, content, ("content", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, host, ("host", AtomicString::ConstructFromLiteral));
+    DEFINE_STATIC_LOCAL(AtomicString, hostWithParams, ("host(", AtomicString::ConstructFromLiteral));
 
     static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoType = 0;
     if (!nameToPseudoType) {
@@ -420,12 +423,14 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
         nameToPseudoType->set(distributed.impl(), CSSSelector::PseudoDistributed);
         nameToPseudoType->set(inRange.impl(), CSSSelector::PseudoInRange);
         nameToPseudoType->set(outOfRange.impl(), CSSSelector::PseudoOutOfRange);
-        if (RuntimeEnabledFeatures::shadowDOMEnabled())
+        if (RuntimeEnabledFeatures::shadowDOMEnabled()) {
             nameToPseudoType->set(part.impl(), CSSSelector::PseudoPart);
+            nameToPseudoType->set(host.impl(), CSSSelector::PseudoHost);
+            nameToPseudoType->set(hostWithParams.impl(), CSSSelector::PseudoHost);
+            nameToPseudoType->set(content.impl(), CSSSelector::PseudoContent);
+        }
         if (RuntimeEnabledFeatures::customDOMElementsEnabled())
             nameToPseudoType->set(unresolved.impl(), CSSSelector::PseudoUnresolved);
-        if (RuntimeEnabledFeatures::shadowDOMEnabled())
-            nameToPseudoType->set(content.impl(), CSSSelector::PseudoContent);
     }
     return nameToPseudoType;
 }
@@ -542,6 +547,7 @@ void CSSSelector::extractPseudoType() const
     case PseudoOutOfRange:
     case PseudoFutureCue:
     case PseudoPastCue:
+    case PseudoHost:
     case PseudoUnresolved:
         break;
     case PseudoFirstPage:
@@ -639,6 +645,18 @@ String CSSSelector::selectorText(const String& rightSide) const
                     str.append(subSelector->selectorText());
                 }
                 str.append(')');
+                break;
+            }
+            case PseudoHost: {
+                if (cs->selectorList()) {
+                    const CSSSelector* firstSubSelector = cs->selectorList()->first();
+                    for (const CSSSelector* subSelector = firstSubSelector; subSelector; subSelector = CSSSelectorList::next(subSelector)) {
+                        if (subSelector != firstSubSelector)
+                            str.append(',');
+                        str.append(subSelector->selectorText());
+                    }
+                    str.append(')');
+                }
                 break;
             }
             default:

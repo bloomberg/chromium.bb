@@ -31,6 +31,7 @@
 
 #include "HTMLNames.h"
 #include "core/css/CSSSelector.h"
+#include "core/css/CSSSelectorList.h"
 
 namespace WebCore {
 
@@ -53,8 +54,22 @@ void RuleFeatureSet::collectFeaturesFromSelector(const CSSSelector* selector)
     case CSSSelector::PseudoPart:
         attrsInRules.add(HTMLNames::partAttr.localName().impl());
         break;
+    case CSSSelector::PseudoHost:
+        collectFeaturesFromSelectorList(selector->selectorList());
+        break;
     default:
         break;
+    }
+}
+
+void RuleFeatureSet::collectFeaturesFromSelectorList(const CSSSelectorList* selectorList)
+{
+    if (!selectorList)
+        return;
+
+    for (const CSSSelector* selector = selectorList->first(); selector; selector = CSSSelectorList::next(selector)) {
+        for (const CSSSelector* subSelector = selector; subSelector; subSelector = subSelector->tagHistory())
+            collectFeaturesFromSelector(subSelector);
     }
 }
 

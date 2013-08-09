@@ -51,7 +51,7 @@ public:
         StaysWithinTreeScope = 2,
         BoundaryBehaviorMask = 3, // 2bit for boundary behavior
         ScopeContainsLastMatchedElement = 4,
-        ScopeIsShadowHost = 8,
+        ScopeIsShadowHost = 8
     };
 
     struct SelectorCheckingContext {
