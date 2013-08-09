@@ -79,9 +79,6 @@ class TempFile;
 // TRANSLATION_COMPLETE
 //     Complete when TranslateFinished is invoked.
 //
-// If cache is enabled:
-// TODO: notify browser of finished translation (and re-open read-only?)
-//
 // OPEN_NEXE_FOR_SEL_LDR
 //   Complete when NexeReadDidOpen is invoked.
 class PnaclCoordinator: public CallbackSource<FileStreamData> {

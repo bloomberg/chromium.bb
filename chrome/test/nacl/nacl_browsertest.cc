@@ -52,12 +52,12 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SimpleLoad, {
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 })
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclWithNewCache,
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclWithOldCache,
                        MAYBE_PNACL(SimpleLoad)) {
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclWithNewCache,
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclWithOldCache,
                        MAYBE_PNACL(PnaclErrorHandling)) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
 }

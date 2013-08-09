@@ -263,7 +263,7 @@ PnaclCoordinator::PnaclCoordinator(
     manifest_(new PnaclManifest()),
     pexe_url_(pexe_url),
     pnacl_options_(pnacl_options),
-    use_new_cache_(false),
+    use_new_cache_(true),
     is_cache_hit_(PP_FALSE),
     nexe_handle_(PP_kInvalidFileHandle),
     error_already_reported_(false),
@@ -275,9 +275,9 @@ PnaclCoordinator::PnaclCoordinator(
   PLUGIN_PRINTF(("PnaclCoordinator::PnaclCoordinator (this=%p, plugin=%p)\n",
                  static_cast<void*>(this), static_cast<void*>(plugin)));
   callback_factory_.Initialize(this);
-  if (getenv("PNACL_USE_NEW_CACHE")) {
-    PLUGIN_PRINTF(("PnaclCoordinator using new translation cache\n"));
-    use_new_cache_ = true;
+  if (getenv("PNACL_USE_OLD_CACHE")) {
+    PLUGIN_PRINTF(("PnaclCoordinator using old translation cache\n"));
+    use_new_cache_ = false;
   }
 }
 
@@ -397,6 +397,15 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
     // care of caching.
     plugin_->nacl_interface()->ReportTranslationFinished(
         plugin_->pp_instance(), PP_TRUE);
+
+    // These can maybe move up with the rest of the UMA stats when we remove
+    // the old cache code
+    int64_t total_time = NaClGetTimeOfDayMicroseconds() - pnacl_init_time_;
+    HistogramTime("NaCl.Perf.PNaClLoadTime.TotalUncachedTime",
+                  total_time / NACL_MICROS_PER_MILLI);
+    HistogramKBPerSec("NaCl.Perf.PNaClLoadTime.TotalUncachedKBPerSec",
+                      pexe_size_ / 1024.0,
+                      total_time / 1000000.0);
     NexeReadDidOpen(PP_OK);
     return;
   }
@@ -866,8 +875,9 @@ void PnaclCoordinator::BitcodeStreamDidOpen(int32_t pp_error) {
           plugin_->nacl_interface()->GetNexeFd(
               plugin_->pp_instance(),
               streaming_downloader_->url().c_str(),
-              // TODO(dschuff): use the right abi version here.
-              0,
+              // TODO(dschuff): Get this value from the pnacl json file after it
+              // rolls in from NaCl.
+              1,
               pnacl_options_.opt_level(),
               parser.GetHeader("last-modified").c_str(),
               parser.GetHeader("etag").c_str(),
@@ -912,11 +922,11 @@ void PnaclCoordinator::NexeFdDidOpen(int32_t pp_error) {
             "PnaclCoordinator: Got bad temp file handle from GetNexeFd"));
     return;
   }
+  HistogramEnumerateTranslationCache(is_cache_hit_);
+
   if (is_cache_hit_ == PP_TRUE) {
     // Cache hit -- no need to stream the rest of the file.
     streaming_downloader_.reset(NULL);
-    // TODO(dschuff): update UMA stats for hit/miss once there could actually
-    // be hits/misses.
     // Open it for reading as the cached nexe file.
     pp::CompletionCallback cb =
         callback_factory_.NewCallback(&PnaclCoordinator::NexeReadDidOpen);

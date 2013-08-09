@@ -26,9 +26,8 @@ void CloseDiskCacheEntry(disk_cache::Entry* entry) { entry->Close(); }
 }  // namespace
 
 namespace pnacl {
-// These are in pnacl namespace instead of static so they can be used
+// This is in pnacl namespace instead of static so they can be used
 // by the unit test.
-const int kMaxDiskCacheSize = 1000 * 1024 * 1024;
 const int kMaxMemCacheSize = 100 * 1024 * 1024;
 
 //////////////////////////////////////////////////////////////////////
@@ -383,7 +382,7 @@ int PnaclTranslationCache::InitCache(const base::FilePath& cache_directory,
   if (in_memory_) {
     rv = InitWithMemBackend(kMaxMemCacheSize, callback);
   } else {
-    rv = InitWithDiskBackend(cache_directory, kMaxDiskCacheSize, callback);
+    rv = InitWithDiskBackend(cache_directory, 0, callback);
   }
 
   return rv;
