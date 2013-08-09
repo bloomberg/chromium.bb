@@ -202,4 +202,39 @@ TEST_F(BubbleBorderTest, IsArrowAtCenter) {
   EXPECT_FALSE(BubbleBorder::is_arrow_at_center(BubbleBorder::FLOAT));
 }
 
+TEST_F(BubbleBorderTest, TestMinimalSize) {
+  gfx::Rect anchor = gfx::Rect(100, 100, 20, 20);
+  gfx::Size contents = gfx::Size(10, 10);
+  BubbleBorder b1(BubbleBorder::RIGHT_TOP, BubbleBorder::NO_SHADOW, 0);
+
+  // The height should be much bigger then the requested size + border and
+  // padding since it needs to be able to include the tip bitmap.
+  gfx::Rect visible_tip_1 = b1.GetBounds(anchor, contents);
+  EXPECT_GE(visible_tip_1.height(), 30);
+  EXPECT_LE(visible_tip_1.width(), 30);
+
+  // With the tip being invisible the height should now be much smaller.
+  b1.set_paint_arrow(BubbleBorder::PAINT_TRANSPARENT);
+  gfx::Rect invisible_tip_1 = b1.GetBounds(anchor, contents);
+  EXPECT_LE(invisible_tip_1.height(), 30);
+  EXPECT_LE(invisible_tip_1.width(), 30);
+
+  // When the orientation of the tip changes, the above mentioned tests need to
+  // be reverse for width and height.
+  BubbleBorder b2(BubbleBorder::TOP_RIGHT, BubbleBorder::NO_SHADOW, 0);
+
+  // The width should be much bigger then the requested size + border and
+  // padding since it needs to be able to include the tip bitmap.
+  gfx::Rect visible_tip_2 = b2.GetBounds(anchor, contents);
+  EXPECT_GE(visible_tip_2.width(), 30);
+  EXPECT_LE(visible_tip_2.height(), 30);
+
+  // With the tip being invisible the width should now be much smaller.
+  b2.set_paint_arrow(BubbleBorder::PAINT_TRANSPARENT);
+  gfx::Rect invisible_tip_2 = b2.GetBounds(anchor, contents);
+  EXPECT_LE(invisible_tip_2.width(), 30);
+  EXPECT_LE(invisible_tip_2.height(), 30);
+}
+
+
 }  // namespace views

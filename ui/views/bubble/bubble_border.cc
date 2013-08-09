@@ -157,12 +157,13 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
   const int min_with_arrow_thickness = images_->border_thickness +
       std::max(images_->arrow_thickness + images_->border_interior_thickness,
                images_->border_thickness);
-  if (is_arrow_on_horizontal(arrow_))
-    size.SetToMax(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
-  else if (has_arrow(arrow_))
-    size.SetToMax(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));
-  else
+  // Only take arrow image sizes into account when the bubble tip is shown.
+  if (arrow_paint_type_ == PAINT_TRANSPARENT || !has_arrow(arrow_))
     size.SetToMax(gfx::Size(min, min));
+  else if (is_arrow_on_horizontal(arrow_))
+    size.SetToMax(gfx::Size(min_with_arrow_width, min_with_arrow_thickness));
+  else
+    size.SetToMax(gfx::Size(min_with_arrow_thickness, min_with_arrow_width));
 
   int x = anchor_rect.x();
   int y = anchor_rect.y();
