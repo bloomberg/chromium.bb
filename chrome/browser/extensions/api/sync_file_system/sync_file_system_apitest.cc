@@ -116,9 +116,7 @@ IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, GetFileStatus) {
 // on Precise. See http://crbug.com/230779.
 #define MAYBE_GetFileStatuses DISABLED_GetFileStatuses
 #else
-// Disabled temporarily to allow rolling Blink. Re-enable after
-// https://codereview.chromium.org/22639003/ lands.
-#define MAYBE_GetFileStatuses DISABLED_GetFileStatuses
+#define MAYBE_GetFileStatuses GetFileStatuses
 #endif
 IN_PROC_BROWSER_TEST_F(SyncFileSystemApiTest, MAYBE_GetFileStatuses) {
 #if defined(OS_WIN) && defined(USE_ASH)

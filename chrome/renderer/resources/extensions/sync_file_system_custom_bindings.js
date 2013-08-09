@@ -23,7 +23,7 @@ binding.registerCustomHook(function(bindingsAPI) {
   }
   $Array.forEach(['getFileStatus'], bindFileEntryFunction);
 
-  // Functions which take in an [instanceOf=EntryArray].
+  // Functions which take in a FileEntry array.
   function bindFileEntryArrayFunction(functionName) {
     apiFunctions.setUpdateArgumentsPostValidate(
         functionName, function(entries, callback) {

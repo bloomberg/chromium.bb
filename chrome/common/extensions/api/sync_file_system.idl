@@ -170,7 +170,7 @@ namespace syncFileSystem {
 
     // Returns each $ref:FileStatus for the given <code>fileEntry</code> array.
     // Typically called with the result from dirReader.readEntries().
-    static void getFileStatuses([instanceOf=EntryArray] object fileEntries,
+    static void getFileStatuses(object[] fileEntries,
                                 GetFileStatusesCallback callback);
   };
 
