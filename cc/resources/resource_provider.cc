@@ -785,7 +785,6 @@ const ResourceProvider::ResourceIdMap& ResourceProvider::GetChildToParentMap(
 void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
                                            TransferableResourceArray* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  list->clear();
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
     // TODO(skaslev): Implement this path for software compositing.
@@ -818,7 +817,6 @@ void ResourceProvider::PrepareSendToChild(int child,
                                           const ResourceIdArray& resources,
                                           TransferableResourceArray* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  list->clear();
   WebGraphicsContext3D* context3d = output_surface_->context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
     // TODO(skaslev): Implement this path for software compositing.

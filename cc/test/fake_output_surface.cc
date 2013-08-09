@@ -61,6 +61,14 @@ void FakeOutputSurface::SwapBuffers(CompositorFrame* frame) {
   if (frame->software_frame_data || frame->delegated_frame_data ||
       !context3d()) {
     frame->AssignTo(&last_sent_frame_);
+
+    if (last_sent_frame_.delegated_frame_data) {
+      resources_held_by_parent_.insert(
+          resources_held_by_parent_.end(),
+          last_sent_frame_.delegated_frame_data->resource_list.begin(),
+          last_sent_frame_.delegated_frame_data->resource_list.end());
+    }
+
     ++num_sent_frames_;
     PostSwapBuffersComplete();
     DidSwapBuffers();
@@ -114,6 +122,19 @@ void FakeOutputSurface::SetTreeActivationCallback(
     const base::Closure& callback) {
   DCHECK(client_);
   client_->SetTreeActivationCallback(callback);
+}
+
+void FakeOutputSurface::ReturnResource(unsigned id, CompositorFrameAck* ack) {
+  TransferableResourceArray::iterator it;
+  for (it = resources_held_by_parent_.begin();
+       it != resources_held_by_parent_.end();
+       ++it) {
+    if (it->id == id)
+      break;
+  }
+  DCHECK(it != resources_held_by_parent_.end());
+  ack->resources.push_back(*it);
+  resources_held_by_parent_.erase(it);
 }
 
 }  // namespace cc

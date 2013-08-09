@@ -17,6 +17,9 @@ class FakeDelegatedRendererLayerImpl : public DelegatedRendererLayerImpl {
   }
   virtual ~FakeDelegatedRendererLayerImpl();
 
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE;
+
   int ChildId() const { return ChildIdForTesting(); }
   const ScopedPtrVector<RenderPass>& RenderPassesInDrawOrder() const {
     return RenderPassesInDrawOrderForTesting();

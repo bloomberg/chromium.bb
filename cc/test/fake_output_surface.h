@@ -95,6 +95,12 @@ class FakeOutputSurface : public OutputSurface {
 
   void SetTreeActivationCallback(const base::Closure& callback);
 
+  const TransferableResourceArray& resources_held_by_parent() {
+    return resources_held_by_parent_;
+  }
+
+  void ReturnResource(unsigned id, CompositorFrameAck* ack);
+
  protected:
   FakeOutputSurface(
       scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
@@ -117,6 +123,7 @@ class FakeOutputSurface : public OutputSurface {
   bool needs_begin_frame_;
   bool forced_draw_to_software_device_;
   base::WeakPtrFactory<FakeOutputSurface> fake_weak_ptr_factory_;
+  TransferableResourceArray resources_held_by_parent_;
 };
 
 static inline scoped_ptr<cc::OutputSurface> CreateFakeOutputSurface() {
