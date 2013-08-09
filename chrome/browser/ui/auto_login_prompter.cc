@@ -11,12 +11,10 @@
 #include "chrome/browser/google/google_url_tracker.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -32,14 +30,10 @@ using content::WebContents;
 namespace {
 
 bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
-  // In an incognito window, there may not be a profile sync service and/or
-  // signin manager.
-  if (!ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-      profile)) {
-    return false;
-  }
-
-  if (!TokenServiceFactory::GetForProfile(profile)->AreCredentialsValid())
+  // In an incognito window these services are not available.
+  ProfileOAuth2TokenService* token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
+  if (!token_service || !token_service->RefreshTokenIsAvailable())
     return false;
 
   SigninManagerBase* signin_manager =
