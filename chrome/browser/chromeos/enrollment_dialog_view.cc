@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chromeos/network/network_event_log.h"
 #include "content/public/common/page_transition_types.h"
 #include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
@@ -192,7 +193,7 @@ class DialogEnrollmentDelegate : public EnrollmentDelegate {
   virtual ~DialogEnrollmentDelegate();
 
   // EnrollmentDelegate overrides
-  virtual void Enroll(const std::vector<std::string>& uri_list,
+  virtual bool Enroll(const std::vector<std::string>& uri_list,
                       const base::Closure& connect) OVERRIDE;
 
  private:
@@ -212,8 +213,8 @@ DialogEnrollmentDelegate::DialogEnrollmentDelegate(
 
 DialogEnrollmentDelegate::~DialogEnrollmentDelegate() {}
 
-void DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
-                                      const base::Closure& connect) {
+bool DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
+                                      const base::Closure& post_action) {
   // Keep the closure for later activation if we notice that
   // a certificate has been added.
 
@@ -229,16 +230,14 @@ void DialogEnrollmentDelegate::Enroll(const std::vector<std::string>& uri_list,
       EnrollmentDialogView::ShowDialog(owning_window_,
                                        network_name_,
                                        profile_,
-                                       uri, connect);
-      return;
+                                       uri, post_action);
+      return true;
     }
   }
 
-  // If we didn't find a scheme we could handle, then don't continue connecting.
-  // TODO(gspencer): provide a path to display this failure to the user. (but
-  // for the most part they won't know what it means, since it's probably coming
-  // from a policy-pushed ONC file).
-  VLOG(1) << "Couldn't find usable scheme in enrollment URI(s)";
+  // No appropriate scheme was found.
+  NET_LOG_EVENT("No usable enrollment URI", network_name_);
+  return false;
 }
 
 }  // namespace

@@ -36,7 +36,7 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
           wifi->error() == ERROR_BAD_WEPKEY ||
           wifi->connection_started() ||
           (wifi->encrypted() && wifi->added())) {
-        NetworkConfigView::Show(wifi, NULL);
+        NetworkConfigView::Show(wifi->service_path(), NULL);
         return;  // Only support one failure per notification.
       }
     }
@@ -58,7 +58,7 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
           wimax->error() == ERROR_BAD_WEPKEY ||
           wimax->connection_started() ||
           (wimax->passphrase_required() && wimax->added())) {
-        NetworkConfigView::Show(wimax, NULL);
+        NetworkConfigView::Show(wimax->service_path(), NULL);
         return;  // Only support one failure per notification.
       }
     }
@@ -74,7 +74,7 @@ void NetworkLoginObserver::OnNetworkManagerChanged(NetworkLibrary* cros) {
               << ", added: " << vpn->added();
       // Display login dialog for any error or newly added network.
       if (vpn->error() != ERROR_NO_ERROR || vpn->added()) {
-        NetworkConfigView::Show(vpn, NULL);
+        NetworkConfigView::Show(vpn->service_path(), NULL);
         return;  // Only support one failure per notification.
       }
     }

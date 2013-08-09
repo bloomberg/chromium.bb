@@ -27,9 +27,10 @@
 
 namespace chromeos {
 
+class CertificatePattern;
+class EnrollmentDelegate;
 class NetworkDeviceParser;
 class NetworkParser;
-class CertificatePattern;
 
 // This is the list of all implementation classes that are allowed
 // access to the internals of the network library classes.
@@ -296,25 +297,6 @@ class NetworkDevice {
   DISALLOW_COPY_AND_ASSIGN(NetworkDevice);
 };
 
-// A virtual class that can be used to handle certificate enrollment URIs when
-// encountered.  Also used by unit tests to avoid opening browser windows
-// when testing.
-class EnrollmentDelegate {
- public:
-  EnrollmentDelegate() {}
-  virtual ~EnrollmentDelegate() {}
-
-  // Implemented to handle a given certificate enrollment URI.  Returns false
-  // if the enrollment URI doesn't use a scheme that we can handle, and in
-  // that case, this will be called for any remaining enrollment URIs.
-  // If enrollment succeeds, then the enrollment handler must run
-  // |post_action| to finish connecting.
-  virtual void Enroll(const std::vector<std::string>& uri_list,
-                      const base::Closure& post_action) = 0;
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnrollmentDelegate);
-};
-
 // Contains data common to all network service types.
 class Network {
  public:
@@ -436,9 +418,7 @@ class Network {
 
   // Adopts the given enrollment handler to handle any certificate enrollment
   // URIs encountered during network connection.
-  void SetEnrollmentDelegate(EnrollmentDelegate* delegate) {
-    enrollment_delegate_.reset(delegate);
-  }
+  void SetEnrollmentDelegate(EnrollmentDelegate* delegate);
 
   virtual bool UpdateStatus(const std::string& key,
                             const base::Value& value,

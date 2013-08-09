@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
@@ -31,7 +32,7 @@ class WimaxConfigView : public ChildNetworkConfigView,
  public:
   // Wimax login dialog for wimax network |wimax|. |wimax| must be a non NULL
   // pointer to a WimaxNetwork in NetworkLibrary.
-  WimaxConfigView(NetworkConfigView* parent, WimaxNetwork* wimax);
+  WimaxConfigView(NetworkConfigView* parent, const std::string& service_path);
   virtual ~WimaxConfigView();
 
   // views::TextfieldController:
@@ -53,7 +54,12 @@ class WimaxConfigView : public ChildNetworkConfigView,
   virtual void InitFocus() OVERRIDE;
 
  private:
-  void Init(WimaxNetwork* wimax);
+  // Initializes UI.
+  void Init();
+
+  // Callback to initialize fields from uncached network properties.
+  void InitFromProperties(const std::string& service_path,
+                          const base::DictionaryValue& dictionary);
 
   // Get input values.
   std::string GetEapIdentity() const;
@@ -80,6 +86,8 @@ class WimaxConfigView : public ChildNetworkConfigView,
   views::Textfield* passphrase_textfield_;
   views::ToggleImageButton* passphrase_visible_button_;
   views::Label* error_label_;
+
+  base::WeakPtrFactory<WimaxConfigView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WimaxConfigView);
 };

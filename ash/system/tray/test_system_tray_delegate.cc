@@ -212,7 +212,9 @@ void TestSystemTrayDelegate::GetDriveOperationStatusList(
 void TestSystemTrayDelegate::ConfigureNetwork(const std::string& network_id) {
 }
 
-void TestSystemTrayDelegate::ConnectToNetwork(const std::string& network_id) {
+void TestSystemTrayDelegate::EnrollOrConfigureNetwork(
+    const std::string& network_id,
+    gfx::NativeWindow parent_window) {
 }
 
 void TestSystemTrayDelegate::ManageBluetoothDevices() {
@@ -227,6 +229,9 @@ bool TestSystemTrayDelegate::IsBluetoothDiscovering() {
 }
 
 void TestSystemTrayDelegate::ShowMobileSimDialog() {
+}
+
+void TestSystemTrayDelegate::ShowMobileSetup(const std::string& network_id) {
 }
 
 void TestSystemTrayDelegate::ShowOtherWifi() {

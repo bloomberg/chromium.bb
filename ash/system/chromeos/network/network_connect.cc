@@ -13,45 +13,71 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "chromeos/login/login_state.h"
+#include "chromeos/network/device_state.h"
+#include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
+#include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_profile.h"
+#include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "grit/ash_strings.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
+using chromeos::DeviceState;
+using chromeos::NetworkConfigurationHandler;
 using chromeos::NetworkConnectionHandler;
 using chromeos::NetworkHandler;
+using chromeos::NetworkProfile;
+using chromeos::NetworkProfileHandler;
 using chromeos::NetworkState;
 
 namespace ash {
 
 namespace {
 
+// Returns true for carriers that can be activated through Shill instead of
+// through a WebUI dialog.
+bool IsDirectActivatedCarrier(const std::string& carrier) {
+  if (carrier == shill::kCarrierSprint)
+    return true;
+  return false;
+}
+
 void OnConnectFailed(const std::string& service_path,
+                     gfx::NativeWindow owning_window,
                      const std::string& error_name,
                      scoped_ptr<base::DictionaryValue> error_data) {
-  VLOG(1) << "Connect Failed for " << service_path << ": " << error_name;
-  if (error_name == NetworkConnectionHandler::kErrorPassphraseRequired) {
-    // TODO(stevenjb): Possibly add inline UI to handle passphrase entry here.
-    ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
-        service_path);
-    return;
-  }
-  if (error_name == NetworkConnectionHandler::kErrorActivationRequired ||
-      error_name == NetworkConnectionHandler::kErrorCertificateRequired ||
+  NET_LOG_ERROR("Connect Failed: " + error_name, service_path);
+
+  if (error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
       error_name == NetworkConnectionHandler::kErrorAuthenticationRequired) {
     ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
         service_path);
     return;
   }
+
+  if (error_name == NetworkConnectionHandler::kErrorCertificateRequired) {
+    ash::Shell::GetInstance()->system_tray_delegate()->EnrollOrConfigureNetwork(
+        service_path, owning_window);
+    return;
+  }
+
+  if (error_name == NetworkConnectionHandler::kErrorActivationRequired) {
+    network_connect::ActivateCellular(service_path);
+    return;
+  }
+
   if (error_name == NetworkConnectionHandler::kErrorConnected ||
       error_name == NetworkConnectionHandler::kErrorConnecting) {
     ash::Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
         service_path);
     return;
   }
+
   // Shill does not always provide a helpful error. In this case, show the
   // configuration UI and a notification. See crbug.com/217033 for an example.
   if (error_name == NetworkConnectionHandler::kErrorConnectFailed) {
@@ -63,27 +89,197 @@ void OnConnectFailed(const std::string& service_path,
 }
 
 void OnConnectSucceeded(const std::string& service_path) {
-  VLOG(1) << "Connect Succeeded for " << service_path;
+  NET_LOG_USER("Connect Succeeded", service_path);
   ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
       NetworkObserver::ERROR_CONNECT_FAILED);
+}
+
+// If |check_error_state| is true, error state for the network is checked,
+// otherwise any current error state is ignored (e.g. for recently configured
+// networks or repeat connect attempts). |owning_window| will be used to parent
+// any configuration UI on failure and may be NULL (in which case the default
+// window will be used).
+void CallConnectToNetwork(const std::string& service_path,
+                          bool check_error_state,
+                          gfx::NativeWindow owning_window) {
+  NET_LOG_USER("ConnectToNetwork", service_path);
+
+  ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
+      NetworkObserver::ERROR_CONNECT_FAILED);
+
+  NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
+      service_path,
+      base::Bind(&OnConnectSucceeded, service_path),
+      base::Bind(&OnConnectFailed, service_path, owning_window),
+      check_error_state);
+}
+
+void OnActivateFailed(const std::string& service_path,
+                     const std::string& error_name,
+                      scoped_ptr<base::DictionaryValue> error_data) {
+  NET_LOG_ERROR("Unable to activate network", service_path);
+}
+
+void OnActivateSucceeded(const std::string& service_path) {
+  NET_LOG_USER("Activation Succeeded", service_path);
+}
+
+void OnConfigureFailed(const std::string& error_name,
+                       scoped_ptr<base::DictionaryValue> error_data) {
+  NET_LOG_ERROR("Unable to configure network", "");
+}
+
+void OnConfigureSucceeded(const std::string& service_path) {
+  NET_LOG_USER("Configure Succeeded", service_path);
+  // After configuring a network, ignore any (possibly stale) error state.
+  const bool check_error_state = false;
+  const gfx::NativeWindow owning_window = NULL;
+  CallConnectToNetwork(service_path, check_error_state, owning_window);
+}
+
+void SetPropertiesFailed(const std::string& desc,
+                         const std::string& service_path,
+                         const std::string& config_error_name,
+                         scoped_ptr<base::DictionaryValue> error_data) {
+  NET_LOG_ERROR(desc + ": Failed: " + config_error_name, service_path);
+}
+
+void SetPropertiesToClear(base::DictionaryValue* properties_to_set,
+                          std::vector<std::string>* properties_to_clear) {
+  // Move empty string properties to properties_to_clear.
+  for (base::DictionaryValue::Iterator iter(*properties_to_set);
+       !iter.IsAtEnd(); iter.Advance()) {
+    std::string value_str;
+    if (iter.value().GetAsString(&value_str) && value_str.empty())
+      properties_to_clear->push_back(iter.key());
+  }
+  // Remove cleared properties from properties_to_set.
+  for (std::vector<std::string>::iterator iter = properties_to_clear->begin();
+       iter != properties_to_clear->end(); ++iter) {
+    properties_to_set->RemoveWithoutPathExpansion(*iter, NULL);
+  }
+}
+
+void ClearPropertiesAndConnect(
+    const std::string& service_path,
+    const std::vector<std::string>& properties_to_clear) {
+  NET_LOG_USER("ClearPropertiesAndConnect", service_path);
+  // After configuring a network, ignore any (possibly stale) error state.
+  const bool check_error_state = false;
+  const gfx::NativeWindow owning_window = NULL;
+  NetworkHandler::Get()->network_configuration_handler()->ClearProperties(
+      service_path,
+      properties_to_clear,
+      base::Bind(&CallConnectToNetwork,
+                 service_path, check_error_state,
+                 owning_window),
+      base::Bind(&SetPropertiesFailed, "ClearProperties", service_path));
+}
+
+std::string GetNetworkProfilePath(bool shared) {
+  // No need to specify a profile if not logged in and authenticated.
+  if (!chromeos::LoginState::Get()->IsUserAuthenticated() && !shared) {
+    NET_LOG_ERROR("User profile specified before login", "");
+    shared = true;
+  }
+
+  if (!shared) {
+    const NetworkProfile* profile  =
+        NetworkHandler::Get()->network_profile_handler()->
+        GetDefaultUserProfile();
+    if (profile)
+      return profile->path;
+    NET_LOG_ERROR("No user profile for unshared network configuration", "");
+  }
+
+  return NetworkProfileHandler::kSharedProfilePath;
+}
+
+void ConfigureSetProfileSucceeded(
+    const std::string& service_path,
+    scoped_ptr<base::DictionaryValue> properties_to_set) {
+  std::vector<std::string> properties_to_clear;
+  SetPropertiesToClear(properties_to_set.get(), &properties_to_clear);
+  NetworkHandler::Get()->network_configuration_handler()->SetProperties(
+      service_path,
+      *properties_to_set,
+      base::Bind(&ClearPropertiesAndConnect,
+                 service_path,
+                 properties_to_clear),
+      base::Bind(&SetPropertiesFailed, "SetProperties", service_path));
 }
 
 }  // namespace
 
 namespace network_connect {
 
-void ConnectToNetwork(const std::string& service_path) {
-  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!network)
+void ConnectToNetwork(const std::string& service_path,
+                      gfx::NativeWindow owning_window) {
+  const bool check_error_state = true;
+  CallConnectToNetwork(service_path, check_error_state, owning_window);
+}
+
+void ActivateCellular(const std::string& service_path) {
+  NET_LOG_USER("ActivateCellular", service_path);
+  const DeviceState* cellular_device =
+      NetworkHandler::Get()->network_state_handler()->
+      GetDeviceStateByType(flimflam::kTypeCellular);
+  if (!cellular_device) {
+    NET_LOG_ERROR("ActivateCellular with no Device", service_path);
     return;
-  ash::Shell::GetInstance()->system_tray_notifier()->NotifyClearNetworkMessage(
-      NetworkObserver::ERROR_CONNECT_FAILED);
-  NetworkHandler::Get()->network_connection_handler()->ConnectToNetwork(
+  }
+  if (!IsDirectActivatedCarrier(cellular_device->carrier())) {
+    // For non direct activation, show the mobile setup dialog which can be
+    // used to activate the network.
+    ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSetup(
+        service_path);
+    return;
+  }
+  const NetworkState* cellular =
+      NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  if (!cellular || cellular->type() != flimflam::kTypeCellular) {
+    NET_LOG_ERROR("ActivateCellular with no Service", service_path);
+    return;
+  }
+  if (cellular->activation_state() == flimflam::kActivationStateActivated) {
+    NET_LOG_ERROR("ActivateCellular for activated service", service_path);
+    return;
+  }
+
+  NetworkHandler::Get()->network_connection_handler()->ActivateNetwork(
       service_path,
-      base::Bind(&OnConnectSucceeded, service_path),
-      base::Bind(&OnConnectFailed, service_path),
-      true /* check_error_state */);
+      "",  // carrier
+      base::Bind(&OnActivateSucceeded, service_path),
+      base::Bind(&OnActivateFailed, service_path));
+}
+
+void ConfigureNetworkAndConnect(const std::string& service_path,
+                                const base::DictionaryValue& properties,
+                                bool shared) {
+  NET_LOG_USER("ConfigureNetworkAndConnect", service_path);
+
+  scoped_ptr<base::DictionaryValue> properties_to_set(properties.DeepCopy());
+
+  std::string profile_path = GetNetworkProfilePath(shared);
+  NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
+      service_path, profile_path,
+      base::Bind(&ConfigureSetProfileSucceeded,
+                 service_path, base::Passed(&properties_to_set)),
+      base::Bind(&SetPropertiesFailed,
+                 "SetProfile: " + profile_path, service_path));
+}
+
+void CreateConfigurationAndConnect(base::DictionaryValue* properties,
+                                   bool shared) {
+  NET_LOG_USER("CreateConfigurationAndConnect", "");
+  std::string profile_path = GetNetworkProfilePath(shared);
+  properties->SetStringWithoutPathExpansion(
+      flimflam::kProfileProperty, profile_path);
+  NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(
+      *properties,
+      base::Bind(&OnConfigureSucceeded),
+      base::Bind(&OnConfigureFailed));
 }
 
 string16 ErrorString(const std::string& error) {

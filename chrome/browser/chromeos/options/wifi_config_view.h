@@ -10,10 +10,12 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -27,6 +29,8 @@ class ToggleImageButton;
 }
 
 namespace chromeos {
+
+class NetworkState;
 
 namespace internal {
 class EAPMethodComboboxModel;
@@ -43,11 +47,9 @@ class WifiConfigView : public ChildNetworkConfigView,
                        public views::ComboboxListener,
                        public CertLibrary::Observer {
  public:
-  // Wifi login dialog for wifi network |wifi|. |wifi| must be a non NULL
-  // pointer to a WifiNetwork in NetworkLibrary.
-  WifiConfigView(NetworkConfigView* parent, WifiNetwork* wifi);
-  // Wifi login dialog for "Joining other network..."
-  WifiConfigView(NetworkConfigView* parent, bool show_8021x);
+  WifiConfigView(NetworkConfigView* parent,
+                 const std::string& service_path,
+                 bool show_8021x);
   virtual ~WifiConfigView();
 
   // views::TextfieldController:
@@ -77,18 +79,23 @@ class WifiConfigView : public ChildNetworkConfigView,
   // Parses a WiFi UI |property| from the ONC associated with |network|. |key|
   // is the property name within the ONC WiFi dictionary.
   static void ParseWiFiUIProperty(NetworkPropertyUIData* property_ui_data,
-                                  Network* network,
+                                  const NetworkState* network,
                                   const std::string& key);
 
   // Parses a WiFi EAP UI |property| from the ONC associated with |network|.
   // |key| is the property name within the ONC WiFi.EAP dictionary.
   static void ParseWiFiEAPUIProperty(NetworkPropertyUIData* property_ui_data,
-                                     Network* network,
+                                     const NetworkState* network,
                                      const std::string& key);
 
  private:
   // Initializes UI.  If |show_8021x| includes 802.1x config options.
-  void Init(WifiNetwork* wifi, bool show_8021x);
+  void Init(bool show_8021x);
+
+  // Callback to initialize fields from uncached network properties.
+  void InitFromProperties(bool show_8021x,
+                          const std::string& service_path,
+                          const base::DictionaryValue& dictionary);
 
   // Get input values.
   std::string GetSsid() const;
@@ -97,13 +104,16 @@ class WifiConfigView : public ChildNetworkConfigView,
   bool GetShareNetwork(bool share_default) const;
 
   // Get various 802.1X EAP values from the widgets.
-  EAPMethod GetEapMethod() const;
-  EAPPhase2Auth GetEapPhase2Auth() const;
+  std::string GetEapMethod() const;
+  std::string GetEapPhase2Auth() const;
   std::string GetEapServerCaCertPEM() const;
   bool GetEapUseSystemCas() const;
   std::string GetEapClientCertPkcs11Id() const;
   std::string GetEapIdentity() const;
   std::string GetEapAnonymousIdentity() const;
+
+  // Fill in |properties| with the appropriate values.
+  void SetEapProperties(base::DictionaryValue* properties);
 
   // Returns true if the EAP method requires a user certificate.
   bool UserCertRequired() const;
@@ -173,6 +183,8 @@ class WifiConfigView : public ChildNetworkConfigView,
   views::Textfield* passphrase_textfield_;
   views::ToggleImageButton* passphrase_visible_button_;
   views::Label* error_label_;
+
+  base::WeakPtrFactory<WifiConfigView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiConfigView);
 };

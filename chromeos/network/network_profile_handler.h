@@ -52,6 +52,11 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   const NetworkProfile* GetProfileForUserhash(
       const std::string& userhash) const;
 
+  // Returns the first profile entry with a non-empty userhash.
+  // TODO(stevenjb): Replace with GetProfileForUserhash() with the correct
+  // userhash.
+  const NetworkProfile* GetDefaultUserProfile() const;
+
   static const char kSharedProfilePath[];
 
  protected:

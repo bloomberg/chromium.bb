@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "ash/system/chromeos/network/network_connect.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
@@ -515,7 +516,8 @@ void MobileActivator::ContinueConnecting() {
     LOG(WARNING) << "Connect failed, will try again in a little bit.";
     if (network) {
       LOG(INFO) << "Connecting to: " << network->service_path();
-      GetNetworkLibrary()->ConnectToCellularNetwork(network);
+      ash::network_connect::ConnectToNetwork(
+          network->service_path(), NULL /* no parent window */);
     }
   }
 }

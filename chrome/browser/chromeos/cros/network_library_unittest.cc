@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
+#include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -43,7 +44,7 @@ class StubEnrollmentDelegate : public EnrollmentDelegate {
       : did_enroll(false),
         correct_args(false) {}
 
-  virtual void Enroll(const std::vector<std::string>& uri_list,
+  virtual bool Enroll(const std::vector<std::string>& uri_list,
                       const base::Closure& closure) OVERRIDE {
     std::vector<std::string> expected_uri_list;
     expected_uri_list.push_back("http://youtu.be/dQw4w9WgXcQ");
@@ -53,6 +54,7 @@ class StubEnrollmentDelegate : public EnrollmentDelegate {
 
     did_enroll = true;
     closure.Run();
+    return true;
   }
 
   bool did_enroll;

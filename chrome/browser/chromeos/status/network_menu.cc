@@ -8,6 +8,7 @@
 
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/chromeos/network/network_icon.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
-#include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/url_constants.h"
@@ -219,17 +219,9 @@ class MainMenuModel : public NetworkMenuModel {
 
 void NetworkMenuModel::ConnectToNetworkAt(int index) {
   const std::string& service_path = menu_items_[index].service_path;
-  network_connect::ConnectResult result =
-      network_connect::ConnectToNetwork(
-          service_path, owner_->delegate()->GetNativeWindow());
+  gfx::NativeWindow native_window = owner_->delegate()->GetNativeWindow();
+  ash::network_connect::ConnectToNetwork(service_path, native_window);
   owner_->delegate()->OnConnectToNetworkRequested(service_path);
-  if (result == network_connect::NETWORK_NOT_FOUND) {
-    // If we are attempting to connect to a network that no longer exists,
-    // display a notification.
-    LOG(WARNING) << "Network does not exist to connect to: "
-                 << service_path;
-    // TODO(stevenjb): Show notification.
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -350,7 +342,7 @@ void NetworkMenuModel::ShowOther(const std::string& type) const {
   if (type == flimflam::kTypeCellular)
     ChooseMobileNetworkDialog::ShowDialog(native_window);
   else
-    NetworkConfigView::ShowForType(chromeos::TYPE_WIFI, native_window);
+    NetworkConfigView::ShowForType(flimflam::kTypeWifi, native_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

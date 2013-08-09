@@ -6,45 +6,46 @@
 #define CHROME_BROWSER_CHROMEOS_OPTIONS_NETWORK_CONNECT_H_
 
 #include <string>
+#include <vector>
 
+#include "chromeos/network/onc/onc_constants.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace chromeos {
+
+class NetworkState;
+
 namespace network_connect {
-
-enum ConnectResult {
-  NETWORK_NOT_FOUND,
-  CONNECT_NOT_STARTED,
-  CONNECT_STARTED
-};
-
-// Activate the cellular network associated with |service_path| if direct
-// activation is supported, otherwise call ShowMobileSetup.
-void ActivateCellular(const std::string& service_path);
 
 // Shows the mobile setup dialog which handles:
 // * Activation for non direct-activation networks
 // * Showing network plan info
 void ShowMobileSetup(const std::string& service_path);
 
-// Attempts to connect to the network specified by |service_path|.
-// Returns one of the following results:
-//  NETWORK_NOT_FOUND if the network does not exist.
-//  CONNECT_NOT_STARTED if no connection attempt was started, e.g. because the
-//   network is already connected, connecting, or activating.
-//  CONNECT_STARTED if a connection attempt was started.
-ConnectResult ConnectToNetwork(const std::string& service_path,
-                               gfx::NativeWindow parent_window);
+// Shows the network settings subpage for |service_path| (or the main
+// network settings page if empty).
+void ShowNetworkSettings(const std::string& service_path);
 
-// Handle an unconfigured network which might do any of the following:
-// * Configure and connect to the network with a matching cert but without
-//   pcks11id and tpm pin / slot configured.
-// * Show the enrollment dialog for the network.
-// * Show the configuration dialog for the network.
-// * Show the activation dialog for the network.
-// * Show the settings UI for the network.
+// Handle an unconfigured network:
+// * Show the Configure dialog for wifi/wimax/VPN
+// * Show the Activation, MobileSetup dialog, or settings page for cellular
 void HandleUnconfiguredNetwork(const std::string& service_path,
                                gfx::NativeWindow parent_window);
+
+// If the network UIData has a matching enrollment URL, triggers the enrollment
+// dialog and returns true.
+bool EnrollNetwork(const std::string& service_path,
+                   gfx::NativeWindow parent_window);
+
+// Looks up the policy for |network| for the current active user and sets
+// |onc_source| accordingly.
+const base::DictionaryValue* FindPolicyForActiveUser(
+    const NetworkState* network,
+    onc::ONCSource* onc_source);
 
 }  // namespace network_connect
 }  // namespace chromeos

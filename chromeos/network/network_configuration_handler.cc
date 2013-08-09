@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/format_macros.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -64,6 +65,43 @@ void GetPropertiesCallback(
   network_handler::GetPropertiesCallback(
       callback, error_callback, service_path, call_status,
       *properties_copy.get());
+}
+
+void SetNetworkProfileErrorCallback(
+    const std::string& service_path,
+    const std::string& profile_path,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& dbus_error_name,
+    const std::string& dbus_error_message) {
+  network_handler::ShillErrorCallbackFunction(
+      "Config.SetNetworkProfile Failed: " + profile_path,
+      service_path, error_callback,
+      dbus_error_name, dbus_error_message);
+}
+
+bool IsPassphrase(const std::string& key) {
+  return key == flimflam::kEapPrivateKeyPasswordProperty ||
+      key == flimflam::kEapPasswordProperty ||
+      key == flimflam::kL2tpIpsecPasswordProperty ||
+      key == flimflam::kOpenVPNPasswordProperty ||
+      key == flimflam::kPassphraseProperty ||
+      key == flimflam::kOpenVPNOTPProperty ||
+      key == flimflam::kEapPrivateKeyProperty ||
+      key == flimflam::kEapPrivateKeyPasswordProperty ||
+      key == flimflam::kEapPinProperty ||
+      key == flimflam::kApnPasswordProperty;
+}
+
+void LogConfigProperties(const std::string& desc,
+                         const std::string& path,
+                         const base::DictionaryValue& properties) {
+  for (base::DictionaryValue::Iterator iter(properties);
+       !iter.IsAtEnd(); iter.Advance()) {
+    std::string v = "******";
+    if (!IsPassphrase(iter.key()))
+      base::JSONWriter::Write(&iter.value(), &v);
+    NET_LOG_DEBUG(desc,  path + "." + iter.key() + "=" + v);
+  }
 }
 
 }  // namespace
@@ -188,7 +226,14 @@ void NetworkConfigurationHandler::SetProperties(
     const base::DictionaryValue& properties,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  if (properties.empty()) {
+    if (!callback.is_null())
+      callback.Run();
+    return;
+  }
   NET_LOG_USER("SetProperties", service_path);
+  LogConfigProperties("SetProperty", service_path, properties);
+
   DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
       dbus::ObjectPath(service_path),
       properties,
@@ -203,7 +248,16 @@ void NetworkConfigurationHandler::ClearProperties(
     const std::vector<std::string>& names,
     const base::Closure& callback,
     const network_handler::ErrorCallback& error_callback) {
+  if (names.empty()) {
+    if (!callback.is_null())
+      callback.Run();
+    return;
+  }
   NET_LOG_USER("ClearProperties", service_path);
+  for (std::vector<std::string>::const_iterator iter = names.begin();
+       iter != names.end(); ++iter) {
+    NET_LOG_DEBUG("ClearProperty", service_path + "." + *iter);
+  }
   DBusThreadManager::Get()->GetShillServiceClient()->ClearProperties(
       dbus::ObjectPath(service_path),
       names,
@@ -219,9 +273,12 @@ void NetworkConfigurationHandler::CreateConfiguration(
     const network_handler::ErrorCallback& error_callback) {
   ShillManagerClient* manager =
       DBusThreadManager::Get()->GetShillManagerClient();
-
   std::string type;
   properties.GetStringWithoutPathExpansion(flimflam::kTypeProperty, &type);
+
+  NET_LOG_USER("CreateConfiguration", type);
+  LogConfigProperties("Configure", type, properties);
+
   // Shill supports ConfigureServiceForProfile only for network type WiFi. In
   // all other cases, we have to rely on GetService for now. This is
   // unproblematic for VPN (user profile only), but will lead to inconsistencies
@@ -263,6 +320,22 @@ void NetworkConfigurationHandler::RemoveConfiguration(
       new ProfileEntryDeleter(this, service_path, callback, error_callback);
   profile_entry_deleters_[service_path] = deleter;
   deleter->Run();
+}
+
+void NetworkConfigurationHandler::SetNetworkProfile(
+    const std::string& service_path,
+    const std::string& profile_path,
+    const base::Closure& callback,
+    const network_handler::ErrorCallback& error_callback) {
+  NET_LOG_USER("SetNetworkProfile", service_path + ": " + profile_path);
+  base::StringValue profile_path_value(profile_path);
+  DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+      dbus::ObjectPath(service_path),
+      flimflam::kProfileProperty,
+      profile_path_value,
+      callback,
+      base::Bind(&SetNetworkProfileErrorCallback,
+                 service_path, profile_path, error_callback));
 }
 
 // NetworkConfigurationHandler Private methods

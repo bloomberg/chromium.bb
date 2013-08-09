@@ -315,12 +315,8 @@ void NetworkStateListDetailedView::OnViewClicked(views::View* sender) {
   if (!network || network->IsConnectedState() || network->IsConnectingState()) {
     Shell::GetInstance()->system_tray_delegate()->ShowNetworkSettings(
         service_path);
-  } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kUseNewNetworkConnectionHandler)) {
-    ash::network_connect::ConnectToNetwork(service_path);
   } else {
-    Shell::GetInstance()->system_tray_delegate()->ConnectToNetwork(
-        service_path);
+    ash::network_connect::ConnectToNetwork(service_path, NULL);
   }
 }
 

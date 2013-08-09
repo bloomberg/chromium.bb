@@ -6,6 +6,7 @@
 #define CHROMEOS_NETWORK_FAVORITE_STATE_H_
 
 #include "chromeos/network/managed_state.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 
 namespace chromeos {
@@ -30,7 +31,7 @@ class CHROMEOS_EXPORT FavoriteState : public ManagedState {
   // Accessors
   const std::string& profile_path() const { return profile_path_; }
   bool is_favorite() const { return !profile_path_.empty(); }
-  onc::ONCSource onc_source() const { return onc_source_; }
+  const NetworkUIData& ui_data() const { return ui_data_; }
 
   // Returns true if the ONC source is a device or user policy.
   bool IsManaged() const;
@@ -40,7 +41,7 @@ class CHROMEOS_EXPORT FavoriteState : public ManagedState {
 
  private:
   std::string profile_path_;
-  onc::ONCSource onc_source_;
+  NetworkUIData ui_data_;
 
   DISALLOW_COPY_AND_ASSIGN(FavoriteState);
 };

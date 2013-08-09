@@ -15,32 +15,31 @@
 namespace chromeos {
 
 FavoriteState::FavoriteState(const std::string& path)
-    : ManagedState(MANAGED_TYPE_FAVORITE, path),
-      onc_source_(onc::ONC_SOURCE_NONE) {
+    : ManagedState(MANAGED_TYPE_FAVORITE, path) {
 }
 
 FavoriteState::~FavoriteState() {
 }
 
 bool FavoriteState::PropertyChanged(const std::string& key,
-                                  const base::Value& value) {
+                                    const base::Value& value) {
   if (ManagedStatePropertyChanged(key, value))
     return true;
   if (key == flimflam::kProfileProperty) {
     return GetStringValue(key, value, &profile_path_);
   } else if (key == flimflam::kUIDataProperty) {
-    if (!NetworkState::GetOncSource(value, &onc_source_)) {
+    if (!NetworkState::GetUIDataFromValue(value, &ui_data_)) {
       NET_LOG_ERROR("Failed to parse " + key, path());
       return false;
     }
     return true;
-}
+  }
   return false;
 }
 
 bool FavoriteState::IsManaged() const {
-  return onc_source_ == onc::ONC_SOURCE_DEVICE_POLICY ||
-         onc_source_ == onc::ONC_SOURCE_USER_POLICY;
+  return ui_data_.onc_source() == onc::ONC_SOURCE_DEVICE_POLICY ||
+      ui_data_.onc_source() == onc::ONC_SOURCE_USER_POLICY;
 }
 
 bool FavoriteState::IsPrivate() const {

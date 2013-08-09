@@ -281,15 +281,6 @@ void SetNetworkProperty(const std::string& service_path,
       base::Bind(&ShillError, "SetNetworkProperty"));
 }
 
-const base::DictionaryValue* FindPolicyForActiveUser(
-    const NetworkState* network,
-    onc::ONCSource* onc_source) {
-  const User* user = UserManager::Get()->GetActiveUser();
-  std::string username_hash = user ? user->username_hash() : std::string();
-  return NetworkHandler::Get()->managed_network_configuration_handler()
-      ->FindPolicyByGUID(username_hash, network->guid(), onc_source);
-}
-
 std::string ActivationStateString(const std::string& activation_state) {
   int id;
   if (activation_state == flimflam::kActivationStateActivated)
@@ -656,7 +647,8 @@ void PopulateVPNDetails(const NetworkState* vpn,
   dictionary->SetString(kTagUsername, username);
 
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
-  const base::DictionaryValue* onc = FindPolicyForActiveUser(vpn, &onc_source);
+  const base::DictionaryValue* onc =
+      network_connect::FindPolicyForActiveUser(vpn, &onc_source);
 
   NetworkPropertyUIData hostname_ui_data;
   hostname_ui_data.ParseOncProperty(
@@ -1165,7 +1157,7 @@ void InternetOptionsHandler::CarrierStatusCallback() {
     const NetworkState* network =
         handler->FirstNetworkByType(flimflam::kTypeCellular);
     if (network) {
-      chromeos::network_connect::ActivateCellular(network->path());
+      ash::network_connect::ActivateCellular(network->path());
       UpdateConnectionData(network->path());
     }
   }
@@ -1447,7 +1439,7 @@ void InternetOptionsHandler::PopulateDictionaryDetailsCallback(
 
   onc::ONCSource onc_source = onc::ONC_SOURCE_NONE;
   const base::DictionaryValue* onc =
-      FindPolicyForActiveUser(network, &onc_source);
+      network_connect::FindPolicyForActiveUser(network, &onc_source);
   const NetworkPropertyUIData property_ui_data(onc_source);
 
   base::DictionaryValue dictionary;
@@ -1692,7 +1684,7 @@ void PopulateCellularDetails(const NetworkState* cellular,
     // caching them (will be done for the new UI).
     const base::DictionaryValue& device_properties = device->properties();
     const NetworkPropertyUIData cellular_property_ui_data(
-        cellular->onc_source());
+        cellular->ui_data().onc_source());
     CopyStringFromDictionary(device_properties, flimflam::kManufacturerProperty,
                             kTagManufacturer, dictionary);
     CopyStringFromDictionary(device_properties, flimflam::kModelIDProperty,
@@ -1850,17 +1842,16 @@ void InternetOptionsHandler::NetworkCommandCallback(
                    weak_factory_.GetWeakPtr()),
         base::Bind(&ShillError, "NetworkCommand: " + command));
   } else if (command == kTagConnect) {
-    network_connect::ConnectToNetwork(
-        service_path, GetNativeWindow());
+    ash::network_connect::ConnectToNetwork(service_path, GetNativeWindow());
   } else if (command == kTagDisconnect) {
     NetworkHandler::Get()->network_connection_handler()->DisconnectNetwork(
         service_path,
         base::Bind(&base::DoNothing),
         base::Bind(&ShillError, "NetworkCommand: " + command));
   } else if (command == kTagConfigure) {
-    NetworkConfigView::ShowForPath(service_path, GetNativeWindow());
+    NetworkConfigView::Show(service_path, GetNativeWindow());
   } else if (command == kTagActivate && type == flimflam::kTypeCellular) {
-    network_connect::ActivateCellular(service_path);
+    ash::network_connect::ActivateCellular(service_path);
     // Activation may update network properties (e.g. ActivationState), so
     // request them here in case they change.
     UpdateConnectionData(service_path);
@@ -1872,9 +1863,9 @@ void InternetOptionsHandler::NetworkCommandCallback(
 
 void InternetOptionsHandler::AddConnection(const std::string& type) {
   if (type == flimflam::kTypeWifi)
-    NetworkConfigView::ShowForType(chromeos::TYPE_WIFI, GetNativeWindow());
+    NetworkConfigView::ShowForType(flimflam::kTypeWifi, GetNativeWindow());
   else if (type == flimflam::kTypeVPN)
-    NetworkConfigView::ShowForType(chromeos::TYPE_VPN, GetNativeWindow());
+    NetworkConfigView::ShowForType(flimflam::kTypeVPN, GetNativeWindow());
   else if (type == flimflam::kTypeCellular)
     ChooseMobileNetworkDialog::ShowDialog(GetNativeWindow());
   else

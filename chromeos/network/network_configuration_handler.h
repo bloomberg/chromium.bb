@@ -99,6 +99,13 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
       const base::Closure& callback,
       const network_handler::ErrorCallback& error_callback);
 
+  // Changes the profile for the network |service_path| to |profile_path|.
+  // See note on |callback| and |error_callback| in class description above.
+  void SetNetworkProfile(const std::string& service_path,
+                         const std::string& profile_path,
+                         const base::Closure& callback,
+                         const network_handler::ErrorCallback& error_callback);
+
   // Construct and initialize an instance for testing.
   static NetworkConfigurationHandler* InitializeForTest(
       NetworkStateHandler* network_state_handler);

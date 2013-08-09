@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/options/vpn_config_view.h"
 #include "chrome/browser/chromeos/options/wifi_config_view.h"
 #include "chrome/browser/chromeos/options/wimax_config_view.h"
@@ -21,7 +20,8 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -76,39 +76,38 @@ namespace chromeos {
 // static
 const int ChildNetworkConfigView::kInputFieldMinWidth = 270;
 
-NetworkConfigView::NetworkConfigView(Network* network)
+NetworkConfigView::NetworkConfigView()
     : child_config_view_(NULL),
       delegate_(NULL),
       advanced_button_(NULL) {
   DCHECK(GetActiveDialog() == NULL);
   SetActiveDialog(this);
-  if (network->type() == TYPE_WIFI) {
-    child_config_view_ =
-        new WifiConfigView(this, static_cast<WifiNetwork*>(network));
-  } else if (network->type() == TYPE_WIMAX) {
-    child_config_view_ =
-        new WimaxConfigView(this, static_cast<WimaxNetwork*>(network));
-  } else if (network->type() == TYPE_VPN) {
-    child_config_view_ =
-        new VPNConfigView(this, static_cast<VirtualNetwork*>(network));
-  } else {
-    NOTREACHED();
-  }
 }
 
-NetworkConfigView::NetworkConfigView(ConnectionType type)
-    : child_config_view_(NULL),
-      delegate_(NULL),
-      advanced_button_(NULL) {
-  DCHECK(GetActiveDialog() == NULL);
-  SetActiveDialog(this);
-  if (type == TYPE_WIFI) {
-    child_config_view_ = new WifiConfigView(this, false /* show_8021x */);
+void NetworkConfigView::InitWithNetworkState(const NetworkState* network) {
+  DCHECK(network);
+  std::string service_path = network->path();
+  if (network->type() == flimflam::kTypeWifi)
+    child_config_view_ = new WifiConfigView(this, service_path, false);
+  else if (network->type() == flimflam::kTypeWimax)
+    child_config_view_ = new WimaxConfigView(this, service_path);
+  else if (network->type() == flimflam::kTypeVPN)
+    child_config_view_ = new VPNConfigView(this, service_path);
+  else
+    NOTREACHED();
+}
+
+void NetworkConfigView::InitWithType(const std::string& type) {
+  if (type == flimflam::kTypeWifi) {
+    child_config_view_ = new WifiConfigView(this,
+                                            "" /* service_path */,
+                                            false /* show_8021x */);
     advanced_button_ = new views::LabelButton(this, l10n_util::GetStringUTF16(
         IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON));
     advanced_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
-  } else if (type == TYPE_VPN) {
-    child_config_view_ = new VPNConfigView(this);
+  } else if (type == flimflam::kTypeVPN) {
+    child_config_view_ = new VPNConfigView(this,
+                                           "" /* service_path */);
   } else {
     NOTREACHED();
   }
@@ -120,31 +119,28 @@ NetworkConfigView::~NetworkConfigView() {
 }
 
 // static
-void NetworkConfigView::Show(Network* network, gfx::NativeWindow parent) {
+void NetworkConfigView::Show(const std::string& service_path,
+                             gfx::NativeWindow parent) {
   if (GetActiveDialog() != NULL)
     return;
-  NetworkConfigView* view = new NetworkConfigView(network);
+  NetworkConfigView* view = new NetworkConfigView();
+  const NetworkState* network = NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  if (!network) {
+    LOG(ERROR) << "NetworkConfigView::Show called with invalid service_path";
+    return;
+  }
+  view->InitWithNetworkState(network);
   view->ShowDialog(parent);
 }
 
 // static
-void NetworkConfigView::ShowForType(ConnectionType type,
+void NetworkConfigView::ShowForType(const std::string& type,
                                     gfx::NativeWindow parent) {
   if (GetActiveDialog() != NULL)
     return;
-  NetworkConfigView* view = new NetworkConfigView(type);
-  view->ShowDialog(parent);
-}
-
-// static
-void NetworkConfigView::ShowForPath(const std::string& path,
-                                    gfx::NativeWindow parent) {
-  if (GetActiveDialog() != NULL)
-    return;
-  Network* network = NetworkLibrary::Get()->FindNetworkByPath(path);
-  if (!network)
-    return;
-  NetworkConfigView* view = new NetworkConfigView(network);
+  NetworkConfigView* view = new NetworkConfigView();
+  view->InitWithType(type);
   view->ShowDialog(parent);
 }
 
@@ -219,7 +215,9 @@ void NetworkConfigView::ShowAdvancedView() {
   RemoveChildView(child_config_view_);
   delete child_config_view_;
   // For now, there is only an advanced view for Wi-Fi 802.1X.
-  child_config_view_ = new WifiConfigView(this, true /* show_8021x */);
+  child_config_view_ = new WifiConfigView(this,
+                                          "" /* service_path */,
+                                          true /* show_8021x */);
   AddChildView(child_config_view_);
   // Resize the window to be able to hold the new widgets.
   gfx::Size size = views::Widget::GetLocalizedContentsSize(
@@ -271,6 +269,20 @@ void NetworkConfigView::ShowDialog(gfx::NativeWindow parent) {
   window->Show();
 }
 
+// ChildNetworkConfigView
+
+ChildNetworkConfigView::ChildNetworkConfigView(
+    NetworkConfigView* parent,
+    const std::string& service_path)
+    : parent_(parent),
+      service_path_(service_path) {
+}
+
+ChildNetworkConfigView::~ChildNetworkConfigView() {
+}
+
+// ControlledSettingIndicatorView
+
 ControlledSettingIndicatorView::ControlledSettingIndicatorView()
     : managed_(false),
       image_view_(NULL) {
@@ -299,17 +311,6 @@ void ControlledSettingIndicatorView::Update(
 gfx::Size ControlledSettingIndicatorView::GetPreferredSize() {
   return (managed_ && visible()) ? image_view_->GetPreferredSize()
                                  : gfx::Size();
-}
-
-// static
-const base::DictionaryValue* NetworkConfigView::FindPolicyForActiveUser(
-    const Network* network,
-    onc::ONCSource* onc_source) {
-  const User* user = UserManager::Get()->GetActiveUser();
-  std::string username_hash = user ? user->username_hash() : std::string();
-  std::string guid = network->unique_id();
-  return NetworkHandler::Get()->managed_network_configuration_handler()
-      ->FindPolicyByGUID(username_hash, guid, onc_source);
 }
 
 void ControlledSettingIndicatorView::Layout() {

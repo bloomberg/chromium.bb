@@ -490,24 +490,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE {
     if (!LoginState::Get()->IsUserLoggedIn())
       return;
-
-    std::string page = chrome::kInternetOptionsSubPage;
-    const chromeos::NetworkState* network = service_path.empty() ? NULL :
-        NetworkHandler::Get()->network_state_handler()->GetNetworkState(
-            service_path);
-    if (network) {
-      std::string name(network->name());
-      if (name.empty() && network->type() == flimflam::kTypeEthernet)
-        name = l10n_util::GetStringUTF8(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-      page += base::StringPrintf(
-          "?servicePath=%s&networkType=%s&networkName=%s",
-          net::EscapeUrlEncodedData(service_path, true).c_str(),
-          net::EscapeUrlEncodedData(network->type(), true).c_str(),
-          net::EscapeUrlEncodedData(name, false).c_str());
-    }
-    content::RecordAction(
-        content::UserMetricsAction("OpenInternetOptionsDialog"));
-    chrome::ShowSettingsSubPage(GetAppropriateBrowser(), page);
+    network_connect::ShowNetworkSettings(service_path);
   }
 
   virtual void ShowBluetoothSettings() OVERRIDE {
@@ -768,15 +751,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     network_connect::HandleUnconfiguredNetwork(network_id, GetNativeWindow());
   }
 
-  virtual void ConnectToNetwork(const std::string& network_id) OVERRIDE {
-    DCHECK(!CommandLine::ForCurrentProcess()->HasSwitch(
-        chromeos::switches::kUseNewNetworkConnectionHandler));
-    network_connect::ConnectResult result =
-        network_connect::ConnectToNetwork(network_id, GetNativeWindow());
-    if (result == network_connect::NETWORK_NOT_FOUND)
-      ShowNetworkSettings("");
-    else if (result == network_connect::CONNECT_NOT_STARTED)
-      ShowNetworkSettings(network_id);
+  virtual void EnrollOrConfigureNetwork(
+      const std::string& network_id,
+      gfx::NativeWindow parent_window) OVERRIDE {
+    if (network_connect::EnrollNetwork(network_id, parent_window))
+      return;
+    network_connect::HandleUnconfiguredNetwork(network_id, parent_window);
   }
 
   virtual void ManageBluetoothDevices() OVERRIDE {
@@ -798,12 +778,16 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                                   SimDialogDelegate::SIM_DIALOG_UNLOCK);
   }
 
+  virtual void ShowMobileSetup(const std::string& network_id) OVERRIDE {
+    network_connect::ShowMobileSetup(network_id);
+  }
+
   virtual void ShowOtherWifi() OVERRIDE {
-    NetworkConfigView::ShowForType(chromeos::TYPE_WIFI, GetNativeWindow());
+    NetworkConfigView::ShowForType(flimflam::kTypeWifi, GetNativeWindow());
   }
 
   virtual void ShowOtherVPN() OVERRIDE {
-    NetworkConfigView::ShowForType(chromeos::TYPE_VPN, GetNativeWindow());
+    NetworkConfigView::ShowForType(flimflam::kTypeVPN, GetNativeWindow());
   }
 
   virtual void ShowOtherCellular() OVERRIDE {
@@ -1253,10 +1237,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
       ash::NetworkObserver::MessageType message_type,
       size_t link_index) OVERRIDE {
     if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
-      const CellularNetwork* cellular =
-          NetworkLibrary::Get()->cellular_network();
-      if (cellular)
-        ConnectToNetwork(cellular->service_path());
+      const NetworkState* cellular =
+          NetworkHandler::Get()->network_state_handler()->
+          FirstNetworkByType(flimflam::kTypeCellular);
+      std::string service_path = cellular ? cellular->path() : "";
+      ShowNetworkSettings(service_path);
+
       ash::Shell::GetInstance()->system_tray_notifier()->
           NotifyClearNetworkMessage(message_type);
     }

@@ -10,6 +10,7 @@
 
 #include "base/values.h"
 #include "chromeos/network/managed_state.h"
+#include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
 
 namespace chromeos {
@@ -50,7 +51,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool favorite() const { return favorite_; }
   int priority() const { return priority_; }
   const base::DictionaryValue& proxy_config() const { return proxy_config_; }
-  onc::ONCSource onc_source() const { return onc_source_; }
+  const NetworkUIData& ui_data() const { return ui_data_; }
   // IPConfig Properties
   const std::string& ip_address() const { return ip_address_; }
   const std::string& gateway() const { return gateway_; }
@@ -90,7 +91,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns a comma separated string of name servers.
   std::string GetDnsServersAsString() const;
 
-  // Converts the prefix length to a netmaks string.
+  // Converts the prefix length to a network string.
   std::string GetNetmask() const;
 
   // Helpers (used e.g. when a state is cached)
@@ -101,9 +102,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // key.
   static std::string IPConfigProperty(const char* key);
 
-  // Sets |out| to the ONCSource specified by the UIData property |value|.
-  // Returns true if the source was successfully parsed.
-  static bool GetOncSource(const base::Value& value, onc::ONCSource* out);
+  // Sets |out| to the UIData specified by |value|. Returns true if successfully
+  // parsed.
+  static bool GetUIDataFromValue(const base::Value& value, NetworkUIData* out);
 
   // Generates a name from properties."Wifi.HexSSID" if present, otherwise
   // validates properties.Name and returns a valid utf8 version.
@@ -134,7 +135,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // TODO(pneubeck): Remove ProxyConfig once NetworkConfigurationHandler
   // provides proxy configuration. crbug/241775
   base::DictionaryValue proxy_config_;
-  onc::ONCSource onc_source_;
+  NetworkUIData ui_data_;
   // IPConfig properties.
   // Note: These do not correspond to actual Shill.Service properties
   // but are derived from the service's corresponding IPConfig object.

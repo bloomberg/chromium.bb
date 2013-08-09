@@ -188,6 +188,16 @@ const NetworkProfile* NetworkProfileHandler::GetProfileForUserhash(
   return NULL;
 }
 
+const NetworkProfile* NetworkProfileHandler::GetDefaultUserProfile() const {
+  for (NetworkProfileHandler::ProfileList::const_iterator it =
+           profiles_.begin();
+       it != profiles_.end(); ++it) {
+    if (!it->userhash.empty())
+      return &*it;
+  }
+  return NULL;
+}
+
 NetworkProfileHandler::NetworkProfileHandler()
     : network_state_handler_(NULL),
       weak_ptr_factory_(this) {
