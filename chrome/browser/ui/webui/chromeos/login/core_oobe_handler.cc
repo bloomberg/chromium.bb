@@ -120,6 +120,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableSpokenFeedback);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
+  AddCallback("skipToLoginForTesting",
+              &CoreOobeHandler::HandleSkipToLoginForTesting);
 }
 
 void CoreOobeHandler::ShowSignInError(
@@ -220,6 +222,11 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
     const std::string& requisition) {
   g_browser_process->browser_policy_connector()->GetDeviceCloudPolicyManager()->
       SetDeviceRequisition(requisition);
+}
+
+void CoreOobeHandler::HandleSkipToLoginForTesting() {
+  if (WizardController::default_controller())
+      WizardController::default_controller()->SkipToLoginForTesting();
 }
 
 void CoreOobeHandler::ShowOobeUI(bool show) {
