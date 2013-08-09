@@ -85,16 +85,19 @@ int ExtractProcessFromExtensionId(Profile* profile,
   return process->GetID();
 }
 
-const FileBrowserHandler* FindFileBrowserHandler(const Extension* extension,
-                                                 const std::string& action_id) {
+// Finds a file browser handler that matches |action_id|. Returns NULL if not
+// found.
+const FileBrowserHandler* FindFileBrowserHandlerForActionId(
+    const Extension* extension,
+    const std::string& action_id) {
   FileBrowserHandler::List* handler_list =
       FileBrowserHandler::GetHandlers(extension);
-  for (FileBrowserHandler::List::const_iterator action_iter =
+  for (FileBrowserHandler::List::const_iterator handler_iter =
            handler_list->begin();
-       action_iter != handler_list->end();
-       ++action_iter) {
-    if (action_iter->get()->id() == action_id)
-      return action_iter->get();
+       handler_iter != handler_list->end();
+       ++handler_iter) {
+    if (handler_iter->get()->id() == action_id)
+      return handler_iter->get();
   }
   return NULL;
 }
@@ -107,8 +110,10 @@ std::string EscapedUtf8ToLower(const std::string& str) {
       false /* do not replace space with plus */);
 }
 
-FileBrowserHandlerList GetFileBrowserHandlers(Profile* profile,
-                                              const GURL& selected_file_url) {
+// Finds file browser handlers that can handle the |selected_file_url|.
+FileBrowserHandlerList FindFileBrowserHandlersForURL(
+    Profile* profile,
+    const GURL& selected_file_url) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   // In unit-tests, we may not have an ExtensionService.
@@ -132,15 +137,15 @@ FileBrowserHandlerList GetFileBrowserHandlers(Profile* profile,
         FileBrowserHandler::GetHandlers(extension);
     if (!handler_list)
       continue;
-    for (FileBrowserHandler::List::const_iterator action_iter =
+    for (FileBrowserHandler::List::const_iterator handler_iter =
              handler_list->begin();
-         action_iter != handler_list->end();
-         ++action_iter) {
-      const FileBrowserHandler* action = action_iter->get();
-      if (!action->MatchesURL(lowercase_url))
+         handler_iter != handler_list->end();
+         ++handler_iter) {
+      const FileBrowserHandler* handler = handler_iter->get();
+      if (!handler->MatchesURL(lowercase_url))
         continue;
 
-      results.push_back(action_iter->get());
+      results.push_back(handler_iter->get());
     }
   }
   return results;
@@ -182,27 +187,43 @@ bool FileBrowserHasAccessPermissionForFiles(
   return true;
 }
 
-// Find a specific handler in the handler list.
-FileBrowserHandlerList::iterator FindHandler(
+// Finds a file browser handler that matches |extension_id| and |action_id|
+// from |handler_list|.  Returns a mutable iterator to the handler if
+// found. Returns handler_list->end() if not found.
+FileBrowserHandlerList::iterator
+FindFileBrowserHandlerForExtensionIdAndActionId(
     FileBrowserHandlerList* handler_list,
     const std::string& extension_id,
-    const std::string& id) {
+    const std::string& action_id) {
+  DCHECK(handler_list);
+
   FileBrowserHandlerList::iterator iter = handler_list->begin();
   while (iter != handler_list->end() &&
          !((*iter)->extension_id() == extension_id &&
-           (*iter)->id() == id)) {
+           (*iter)->id() == action_id)) {
     ++iter;
   }
   return iter;
 }
 
-// ExtensionTaskExecutor executes tasks with kFileBrowserHandlerTaskType type.
-class ExtensionTaskExecutor {
+// This class is used to execute a file browser handler task. Here's how this
+// works:
+//
+// 1) Open the "external" file system
+// 2) Set up permissions for the target files on the external file system.
+// 3) Raise onExecute event with the action ID and entries of the target
+//    files. The event will launch the file browser handler if not active.
+// 4) In the file browser handler, onExecute event is handled and executes the
+//    task in JavaScript.
+//
+// That said, the class itself does not execute a task. The task will be
+// executed in JavaScript.
+class FileBrowserHandlerExecutor {
  public:
-  ExtensionTaskExecutor(Profile* profile,
-                        const Extension* extension,
-                        int32 tab_id,
-                        const std::string& action_id);
+  FileBrowserHandlerExecutor(Profile* profile,
+                             const Extension* extension,
+                             int32 tab_id,
+                             const std::string& action_id);
 
   // Executes the task for each file. |done| will be run with the result.
   void Execute(const std::vector<FileSystemURL>& file_urls,
@@ -210,7 +231,7 @@ class ExtensionTaskExecutor {
 
  private:
   // This object is responsible to delete itself.
-  virtual ~ExtensionTaskExecutor();
+  virtual ~FileBrowserHandlerExecutor();
 
   struct FileDefinition {
     FileDefinition();
@@ -257,20 +278,21 @@ class ExtensionTaskExecutor {
   int32 tab_id_;
   const std::string action_id_;
   FileTaskFinishedCallback done_;
-  base::WeakPtrFactory<ExtensionTaskExecutor> weak_ptr_factory_;
+  base::WeakPtrFactory<FileBrowserHandlerExecutor> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionTaskExecutor);
+  DISALLOW_COPY_AND_ASSIGN(FileBrowserHandlerExecutor);
 };
 
-ExtensionTaskExecutor::FileDefinition::FileDefinition() : is_directory(false) {
+FileBrowserHandlerExecutor::FileDefinition::FileDefinition()
+    : is_directory(false) {
 }
 
-ExtensionTaskExecutor::FileDefinition::~FileDefinition() {
+FileBrowserHandlerExecutor::FileDefinition::~FileDefinition() {
 }
 
 // static
-ExtensionTaskExecutor::FileDefinitionList
-ExtensionTaskExecutor::SetupFileAccessPermissions(
+FileBrowserHandlerExecutor::FileDefinitionList
+FileBrowserHandlerExecutor::SetupFileAccessPermissions(
     scoped_refptr<fileapi::FileSystemContext> file_system_context_handler,
     const scoped_refptr<const Extension>& handler_extension,
     const std::vector<FileSystemURL>& file_urls) {
@@ -319,7 +341,7 @@ ExtensionTaskExecutor::SetupFileAccessPermissions(
   return file_list;
 }
 
-ExtensionTaskExecutor::ExtensionTaskExecutor(
+FileBrowserHandlerExecutor::FileBrowserHandlerExecutor(
     Profile* profile,
     const Extension* extension,
     int32 tab_id,
@@ -331,10 +353,11 @@ ExtensionTaskExecutor::ExtensionTaskExecutor(
       weak_ptr_factory_(this) {
 }
 
-ExtensionTaskExecutor::~ExtensionTaskExecutor() {}
+FileBrowserHandlerExecutor::~FileBrowserHandlerExecutor() {}
 
-void ExtensionTaskExecutor::Execute(const std::vector<FileSystemURL>& file_urls,
-                                    const FileTaskFinishedCallback& done) {
+void FileBrowserHandlerExecutor::Execute(
+    const std::vector<FileSystemURL>& file_urls,
+    const FileTaskFinishedCallback& done) {
   done_ = done;
 
   // Get file system context for the extension to which onExecute event will be
@@ -344,12 +367,12 @@ void ExtensionTaskExecutor::Execute(const std::vector<FileSystemURL>& file_urls,
       Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin(),
       fileapi::kFileSystemTypeExternal,
       fileapi::OPEN_FILE_SYSTEM_FAIL_IF_NONEXISTENT,
-      base::Bind(&ExtensionTaskExecutor::DidOpenFileSystem,
+      base::Bind(&FileBrowserHandlerExecutor::DidOpenFileSystem,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_urls));
 }
 
-void ExtensionTaskExecutor::DidOpenFileSystem(
+void FileBrowserHandlerExecutor::DidOpenFileSystem(
     const std::vector<FileSystemURL>& file_urls,
     base::PlatformFileError result,
     const std::string& file_system_name,
@@ -368,20 +391,20 @@ void ExtensionTaskExecutor::DidOpenFileSystem(
                  file_system_context,
                  extension_,
                  file_urls),
-      base::Bind(&ExtensionTaskExecutor::ExecuteFileActionsOnUIThread,
+      base::Bind(&FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_system_name,
                  file_system_root));
 }
 
-void ExtensionTaskExecutor::ExecuteDoneOnUIThread(bool success) {
+void FileBrowserHandlerExecutor::ExecuteDoneOnUIThread(bool success) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!done_.is_null())
     done_.Run(success);
   delete this;
 }
 
-void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
+void FileBrowserHandlerExecutor::ExecuteFileActionsOnUIThread(
     const std::string& file_system_name,
     const GURL& file_system_root,
     const FileDefinitionList& file_list) {
@@ -401,7 +424,7 @@ void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
 
   if (handler_pid > 0) {
     SetupPermissionsAndDispatchEvent(file_system_name, file_system_root,
-        file_list, handler_pid, NULL);
+                                     file_list, handler_pid, NULL);
   } else {
     // We have to wake the handler background page before we proceed.
     extensions::LazyBackgroundTaskQueue* queue =
@@ -413,23 +436,24 @@ void ExtensionTaskExecutor::ExecuteFileActionsOnUIThread(
     }
     queue->AddPendingTask(
         profile_, extension_->id(),
-        base::Bind(&ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   file_system_name,
-                   file_system_root,
-                   file_list,
-                   handler_pid));
+        base::Bind(
+            &FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent,
+            weak_ptr_factory_.GetWeakPtr(),
+            file_system_name,
+            file_system_root,
+            file_list,
+            handler_pid));
   }
 }
 
-void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
+void FileBrowserHandlerExecutor::SetupPermissionsAndDispatchEvent(
     const std::string& file_system_name,
     const GURL& file_system_root,
     const FileDefinitionList& file_list,
     int handler_pid_in,
     extensions::ExtensionHost* host) {
   int handler_pid = host ? host->render_process_host()->GetID() :
-                           handler_pid_in;
+      handler_pid_in;
 
   if (handler_pid <= 0) {
     ExecuteDoneOnUIThread(false);
@@ -452,13 +476,13 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
   event_args->Append(details);
   // Get file definitions. These will be replaced with Entry instances by
   // dispatchEvent() method from event_binding.js.
-  ListValue* files_urls = new ListValue();
-  details->Set("entries", files_urls);
+  ListValue* file_entries = new ListValue();
+  details->Set("entries", file_entries);
   for (FileDefinitionList::const_iterator iter = file_list.begin();
        iter != file_list.end();
        ++iter) {
     DictionaryValue* file_def = new DictionaryValue();
-    files_urls->Append(file_def);
+    file_entries->Append(file_def);
     file_def->SetString("fileSystemName", file_system_name);
     file_def->SetString("fileSystemRoot", file_system_root.spec());
     base::FilePath root(FILE_PATH_LITERAL("/"));
@@ -477,12 +501,12 @@ void ExtensionTaskExecutor::SetupPermissionsAndDispatchEvent(
   ExecuteDoneOnUIThread(true);
 }
 
-void ExtensionTaskExecutor::SetupHandlerHostFileAccessPermissions(
+void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
     const FileDefinitionList& file_list,
     const Extension* extension,
     int handler_pid) {
-  const FileBrowserHandler* action = FindFileBrowserHandler(extension_,
-                                                            action_id_);
+  const FileBrowserHandler* action = FindFileBrowserHandlerForActionId(
+      extension_, action_id_);
   for (FileDefinitionList::const_iterator iter = file_list.begin();
        iter != file_list.end();
        ++iter) {
@@ -587,8 +611,10 @@ bool CrackTaskID(const std::string& task_id,
   std::vector<std::string> result;
   int count = Tokenize(task_id, std::string("|"), &result);
 
-  // Parse historic task_id parameters that only contain two parts. Drive tasks
-  // are identified by a prefix "drive-app:" on the extension ID.
+  // Parse a legacy task ID that only contain two parts. Drive tasks are
+  // identified by a prefix "drive-app:" on the extension ID. The legacy task
+  // IDs can be stored in preferences.
+  // TODO(satorux): We should get rid of this code: crbug.com/267359.
   if (count == 2) {
     if (StartsWithASCII(result[0], kDriveTaskExtensionPrefix, true)) {
       if (task_type)
@@ -631,13 +657,13 @@ bool CrackTaskID(const std::string& task_id,
 
 FileBrowserHandlerList FindDefaultFileBrowserHandlers(
     Profile* profile,
-    const std::vector<base::FilePath>& files_list,
+    const std::vector<base::FilePath>& file_list,
     const FileBrowserHandlerList& common_handlers) {
   FileBrowserHandlerList default_handlers;
 
   std::set<std::string> default_ids;
-  for (std::vector<base::FilePath>::const_iterator it = files_list.begin();
-       it != files_list.end(); ++it) {
+  for (std::vector<base::FilePath>::const_iterator it = file_list.begin();
+       it != file_list.end(); ++it) {
     std::string task_id = file_tasks::GetDefaultTaskIdFromPrefs(
         profile, "", it->Extension());
     if (!task_id.empty())
@@ -672,25 +698,26 @@ FileBrowserHandlerList FindDefaultFileBrowserHandlers(
 
 FileBrowserHandlerList FindCommonFileBrowserHandlers(
     Profile* profile,
-    const std::vector<GURL>& files_list) {
+    const std::vector<GURL>& file_list) {
   FileBrowserHandlerList common_handlers;
-  for (std::vector<GURL>::const_iterator it = files_list.begin();
-       it != files_list.end(); ++it) {
-    FileBrowserHandlerList file_actions = GetFileBrowserHandlers(profile, *it);
+  for (std::vector<GURL>::const_iterator it = file_list.begin();
+       it != file_list.end(); ++it) {
+    FileBrowserHandlerList handlers =
+        FindFileBrowserHandlersForURL(profile, *it);
     // If there is nothing to do for one file, the intersection of handlers
     // for all files will be empty at the end, so no need to check further.
-    if (file_actions.empty())
+    if (handlers.empty())
       return FileBrowserHandlerList();
 
     // For the very first file, just copy all the elements.
-    if (it == files_list.begin()) {
-      common_handlers = file_actions;
+    if (it == file_list.begin()) {
+      common_handlers = handlers;
     } else {
       // For all additional files, find intersection between the accumulated and
       // file specific set.
       FileBrowserHandlerList intersection;
       std::set_intersection(common_handlers.begin(), common_handlers.end(),
-                            file_actions.begin(), file_actions.end(),
+                            handlers.begin(), handlers.end(),
                             std::back_inserter(intersection));
       common_handlers = intersection;
       if (common_handlers.empty())
@@ -698,17 +725,19 @@ FileBrowserHandlerList FindCommonFileBrowserHandlers(
     }
   }
 
-  FileBrowserHandlerList::iterator watch_iter = FindHandler(
-      &common_handlers, kFileBrowserDomain, kFileBrowserWatchTaskId);
-  FileBrowserHandlerList::iterator gallery_iter = FindHandler(
-      &common_handlers, kFileBrowserDomain, kFileBrowserGalleryTaskId);
+  FileBrowserHandlerList::iterator watch_iter =
+      FindFileBrowserHandlerForExtensionIdAndActionId(
+          &common_handlers, kFileBrowserDomain, kFileBrowserWatchTaskId);
+  FileBrowserHandlerList::iterator gallery_iter =
+      FindFileBrowserHandlerForExtensionIdAndActionId(
+          &common_handlers, kFileBrowserDomain, kFileBrowserGalleryTaskId);
   if (watch_iter != common_handlers.end() &&
       gallery_iter != common_handlers.end()) {
     // Both "watch" and "gallery" actions are applicable which means that the
     // selection is all videos. Showing them both is confusing, so we only keep
     // the one that makes more sense ("watch" for single selection, "gallery"
     // for multiple selection).
-    if (files_list.size() == 1)
+    if (file_list.size() == 1)
       common_handlers.erase(gallery_iter);
     else
       common_handlers.erase(watch_iter);
@@ -782,10 +811,10 @@ bool ExecuteFileTask(Profile* profile,
   // Execute the task.
   if (task_type == kFileBrowserHandlerTaskType) {
     // Forbid calling undeclared handlers.
-    if (!FindFileBrowserHandler(extension, action_id))
+    if (!FindFileBrowserHandlerForActionId(extension, action_id))
       return false;
 
-    (new ExtensionTaskExecutor(
+    (new FileBrowserHandlerExecutor(
         profile, extension, tab_id, action_id))->Execute(file_urls, done);
     return true;
   } else if (task_type == kFileHandlerTaskType) {
