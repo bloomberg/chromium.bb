@@ -138,7 +138,7 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
         return AnimatableNumber::create(length.value(), AnimatableNumber::UnitTypeViewportMax);
     case Calculated:
         // FIXME: Convert platform calcs to CSS calcs.
-        ASSERT_WITH_MESSAGE(false, "Unable to convert platform CalculationValue to AnimatableValue, not yet implemented!");
+        ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: Convert platform CalculationValue to AnimatableValue");
         return 0;
     case Auto:
     case Intrinsic:
@@ -214,7 +214,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyWidth:
         return createFromLength(style->width(), style);
     default:
-        RELEASE_ASSERT_WITH_MESSAGE(false, "Unable to create AnimatableValue from render style, not yet implemented!");
+        RELEASE_ASSERT_WITH_MESSAGE(false, "Web Animations not yet implemented: Create AnimatableValue from render style");
         return 0;
     }
 }

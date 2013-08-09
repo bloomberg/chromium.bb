@@ -139,7 +139,7 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(const Element* ele
 
             // If there's a delay, no styles will apply yet.
             if (animationData->isDelaySet() && animationData->delay()) {
-                RELEASE_ASSERT_WITH_MESSAGE(animationData->delay() > 0, "Negative delay is not yet supported.");
+                RELEASE_ASSERT_WITH_MESSAGE(animationData->delay() > 0, "Web Animations not yet implemented: Negative delay");
                 continue;
             }
 
