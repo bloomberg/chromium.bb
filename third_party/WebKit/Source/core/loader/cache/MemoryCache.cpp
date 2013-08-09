@@ -151,7 +151,7 @@ unsigned MemoryCache::liveCapacity() const
 void MemoryCache::pruneLiveResources()
 {
     unsigned capacity = liveCapacity();
-    if (capacity && m_liveSize <= capacity)
+    if (!m_liveSize || (capacity && m_liveSize <= capacity))
         return;
 
     unsigned targetSize = static_cast<unsigned>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
@@ -198,7 +198,7 @@ void MemoryCache::pruneLiveResources()
 void MemoryCache::pruneDeadResources()
 {
     unsigned capacity = deadCapacity();
-    if (capacity && m_deadSize <= capacity)
+    if (!m_deadSize || (capacity && m_deadSize <= capacity))
         return;
 
     unsigned targetSize = static_cast<unsigned>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
