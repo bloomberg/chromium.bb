@@ -200,18 +200,31 @@ const FileBrowserHandler* FindFileBrowserHandlerForURLAndPath(
     const GURL& url,
     const base::FilePath& path);
 
-// Used for returning success or failure from task executions.
-typedef base::Callback<void(bool)> FileTaskFinishedCallback;
+// The callback is used for ExecuteFileTask(). Will be called with true if
+// the file task execution is successful, or false if unsuccessful.
+typedef base::Callback<void(bool success)> FileTaskFinishedCallback;
 
 // Executes file handler task for each element of |file_urls|.
 // Returns |false| if the execution cannot be initiated. Otherwise returns
 // |true| and then eventually calls |done| when all the files have been handled.
 // |done| can be a null callback.
+//
+// Parameters:
+// profile    - The profile used for making this function call.
+// source_url - The source URL which originates this function call.
+// tab_id     - The ID of the tab which originates this function call.
+//              This can be 0 if no tab is associated.
+// app_id     - See the comment at the beginning of the file for <app-id>.
+// task_type  - See the comment at the beginning of the file for <task-type>.
+// action_id  - See the comment at the beginning of the file for <action-id>.
+// file_urls  - URLs of the target files.
+// done       - The callback which will be called on completion.
+//              The callback won't be called if the function returns false.
 bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const std::string& file_browser_id,
                      int32 tab_id,
-                     const std::string& extension_id,
+                     const std::string& app_id,
                      const std::string& task_type,
                      const std::string& action_id,
                      const std::vector<fileapi::FileSystemURL>& file_urls,

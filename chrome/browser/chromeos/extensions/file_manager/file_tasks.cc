@@ -523,6 +523,26 @@ void FileBrowserHandlerExecutor::SetupHandlerHostFileAccessPermissions(
   }
 }
 
+// Executes a file browser handler specified by |extension| of the given
+// action ID for |file_urls|. Returns false if undeclared handlers are
+// found. |done| is on completion. See also the comment at ExecuteFileTask()
+// for other parameters.
+bool ExecuteFileBrowserHandler(Profile* profile,
+                               const Extension* extension,
+                               int32 tab_id,
+                               const std::string& action_id,
+                               const std::vector<FileSystemURL>& file_urls,
+                               const FileTaskFinishedCallback& done) {
+  // Forbid calling undeclared handlers.
+  if (!FindFileBrowserHandlerForActionId(extension, action_id))
+    return false;
+
+  // The executor object will be self deleted on completion.
+  (new FileBrowserHandlerExecutor(
+      profile, extension, tab_id, action_id))->Execute(file_urls, done);
+  return true;
+}
+
 }  // namespace
 
 bool IsFallbackFileBrowserHandler(const FileBrowserHandler* handler) {
@@ -782,7 +802,7 @@ bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const std::string& file_browser_id,
                      int32 tab_id,
-                     const std::string& extension_id,
+                     const std::string& app_id,
                      const std::string& task_type,
                      const std::string& action_id,
                      const std::vector<FileSystemURL>& file_urls,
@@ -795,7 +815,7 @@ bool ExecuteFileTask(Profile* profile,
   if (task_type == kDriveTaskType) {
     DCHECK_EQ("open-with", action_id);
     drive::FileTaskExecutor* executor =
-        new drive::FileTaskExecutor(profile, extension_id);
+        new drive::FileTaskExecutor(profile, app_id);
     executor->Execute(file_urls, done);
     return true;
   }
@@ -804,19 +824,18 @@ bool ExecuteFileTask(Profile* profile,
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   const Extension* extension = service ?
-      service->GetExtensionById(extension_id, false) : NULL;
+      service->GetExtensionById(app_id, false) : NULL;
   if (!extension)
     return false;
 
   // Execute the task.
   if (task_type == kFileBrowserHandlerTaskType) {
-    // Forbid calling undeclared handlers.
-    if (!FindFileBrowserHandlerForActionId(extension, action_id))
-      return false;
-
-    (new FileBrowserHandlerExecutor(
-        profile, extension, tab_id, action_id))->Execute(file_urls, done);
-    return true;
+    return ExecuteFileBrowserHandler(profile,
+                                     extension,
+                                     tab_id,
+                                     action_id,
+                                     file_urls,
+                                     done);
   } else if (task_type == kFileHandlerTaskType) {
     for (size_t i = 0; i != file_urls.size(); ++i) {
       apps::LaunchPlatformAppWithFileHandler(
