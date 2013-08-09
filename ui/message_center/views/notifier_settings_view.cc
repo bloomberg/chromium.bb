@@ -45,15 +45,27 @@
 namespace message_center {
 namespace {
 const int kButtonPainterInsets = 5;
-const int kMarginWidth = 20;
-const int kMenuButtonLeftPadding = 11;
-const int kMenuButtonRightPadding = 14;
+// We really want the margin to be 20px, but various views are padded by
+// whitespace.
+const int kDesiredMargin = 20;
+// The MenuButton has 2px whitespace built-in.
+const int kMenuButtonInnateMargin = 2;
+const int kMinimumHorizontalMargin = kDesiredMargin - kMenuButtonInnateMargin;
+// The EntryViews' leftmost view is a checkbox with 1px whitespace built in, so
+// the margin for entry views should be one less than the target margin.
+const int kCheckboxInnateMargin = 1;
+const int kEntryMargin = kDesiredMargin - kCheckboxInnateMargin;
+const int kMenuButtonLeftPadding = 12;
+const int kMenuButtonRightPadding = 13;
 const int kMenuButtonVerticalPadding = 9;
+const int kMenuWhitespaceOffset = 2;
 const int kMinimumWindowHeight = 480;
 const int kMinimumWindowWidth = 320;
-const int kSettingsTitleBottomMargin = 7;
+const int kSettingsTitleBottomMargin = 12;
 const int kSettingsTitleTopMargin = 15;
 const int kSpaceInButtonComponents = 16;
+const int kTitleVerticalMargin = 1;
+const int kTitleElementSpacing = 10;
 const int kEntryHeight = kMinimumWindowHeight / 10;
 
 // The view to guarantee the 48px height and place the contents at the
@@ -86,10 +98,10 @@ EntryView::~EntryView() {
 void EntryView::Layout() {
   DCHECK_EQ(1, child_count());
   views::View* content = child_at(0);
-  int content_width = width() - kMarginWidth * 2;
+  int content_width = width() - kEntryMargin * 2;
   int content_height = content->GetHeightForWidth(content_width);
   int y = std::max((height() - content_height) / 2, 0);
-  content->SetBounds(kMarginWidth, y, content_width, content_height);
+  content->SetBounds(kEntryMargin, y, content_width, content_height);
 }
 
 gfx::Size EntryView::GetPreferredSize() {
@@ -192,14 +204,18 @@ NotifierGroupMenuModel::NotifierGroupMenuModel(
     const NotifierGroup& group =
         notifier_settings_provider_->GetNotifierGroupAt(i);
 
-    AddItem(i, group.login_info.empty() ? group.name : group.login_info);
+    AddCheckItem(i, group.login_info.empty() ? group.name : group.login_info);
   }
 }
 
 NotifierGroupMenuModel::~NotifierGroupMenuModel() {}
 
 bool NotifierGroupMenuModel::IsCommandIdChecked(int command_id) const {
-  return false;
+  // If there's no provider, assume only one notifier group - the active one.
+  if (!notifier_settings_provider_)
+    return true;
+
+  return notifier_settings_provider_->IsNotifierGroupActiveAt(command_id);
 }
 
 bool NotifierGroupMenuModel::IsCommandIdEnabled(int command_id) const {
@@ -301,7 +317,11 @@ class NotifierSettingsView::NotifierButton : public views::CustomButton,
 };
 
 NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
-    : provider_(provider) {
+    : title_arrow_(NULL),
+      title_label_(NULL),
+      notifier_group_selector_(NULL),
+      scroller_(NULL),
+      provider_(provider) {
   // |provider_| may be NULL in tests.
   if (provider_)
     provider_->AddObserver(this);
@@ -322,9 +342,9 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   title_label_->SetMultiLine(true);
   title_label_->set_border(
       views::Border::CreateEmptyBorder(kSettingsTitleTopMargin,
-                                       kMarginWidth,
+                                       kDesiredMargin,
                                        kSettingsTitleBottomMargin,
-                                       kMarginWidth));
+                                       kDesiredMargin));
 
   AddChildView(title_label_);
 
@@ -378,7 +398,10 @@ void NotifierSettingsView::UpdateContentsView(
 
   views::View* contents_title_view = new views::View();
   contents_title_view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 5));
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           kMinimumHorizontalMargin,
+                           kTitleVerticalMargin,
+                           kTitleElementSpacing));
 
   bool need_account_switcher =
       provider_ && provider_->GetNotifierGroupCount() > 1;
@@ -391,6 +414,8 @@ void NotifierSettingsView::UpdateContentsView(
 
   top_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   top_label->SetMultiLine(true);
+  top_label->set_border(views::Border::CreateEmptyBorder(
+      0, kMenuButtonInnateMargin, 0, kMenuButtonInnateMargin));
   contents_title_view->AddChildView(top_label);
 
   string16 notifier_group_text;
@@ -402,16 +427,16 @@ void NotifierSettingsView::UpdateContentsView(
   }
 
   if (need_account_switcher) {
-    views::MenuButton* notifier_group_selector =
+    notifier_group_selector_ =
         new views::MenuButton(NULL, notifier_group_text, this, true);
-    notifier_group_selector->set_border(new NotifierGroupMenuButtonBorder);
-    notifier_group_selector->set_focus_border(NULL);
-    notifier_group_selector->set_animate_on_state_change(false);
-    notifier_group_selector->set_focusable(true);
-    contents_title_view->AddChildView(notifier_group_selector);
+    notifier_group_selector_->set_border(new NotifierGroupMenuButtonBorder);
+    notifier_group_selector_->set_focus_border(NULL);
+    notifier_group_selector_->set_animate_on_state_change(false);
+    notifier_group_selector_->set_focusable(true);
+    contents_title_view->AddChildView(notifier_group_selector_);
   }
 
-  contents_view->AddChildView(new EntryView(contents_title_view));
+  contents_view->AddChildView(contents_title_view);
 
   for (size_t i = 0; i < notifiers.size(); ++i) {
     NotifierButton* button = new NotifierButton(notifiers[i], this);
@@ -497,10 +522,13 @@ void NotifierSettingsView::OnMenuButtonClicked(views::View* source,
   notifier_group_menu_model_.reset(new NotifierGroupMenuModel(provider_));
   notifier_group_menu_runner_.reset(
       new views::MenuRunner(notifier_group_menu_model_.get()));
+  gfx::Rect menu_anchor = source->GetBoundsInScreen();
+  menu_anchor.Inset(
+      gfx::Insets(0, kMenuWhitespaceOffset, 0, kMenuWhitespaceOffset));
   if (views::MenuRunner::MENU_DELETED ==
       notifier_group_menu_runner_->RunMenuAt(GetWidget(),
-                                             NULL,
-                                             source->GetBoundsInScreen(),
+                                             notifier_group_selector_,
+                                             menu_anchor,
                                              views::MenuItemView::BUBBLE_ABOVE,
                                              ui::MENU_SOURCE_MOUSE,
                                              views::MenuRunner::CONTEXT_MENU))

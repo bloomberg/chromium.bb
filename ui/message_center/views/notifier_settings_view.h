@@ -17,6 +17,7 @@
 
 namespace views {
 class Label;
+class MenuButton;
 class MenuRunner;
 }
 
@@ -66,6 +67,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
 
   views::ImageButton* title_arrow_;
   views::Label* title_label_;
+  views::MenuButton* notifier_group_selector_;
   views::ScrollView* scroller_;
   NotifierSettingsProvider* provider_;
   std::set<NotifierButton*> buttons_;
