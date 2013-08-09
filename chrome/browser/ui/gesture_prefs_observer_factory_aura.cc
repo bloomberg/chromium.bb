@@ -151,6 +151,31 @@ GesturePrefsObserver::GesturePrefsObserver(PrefService* prefs)
   // Clear for migration.
   prefs->ClearPref(kTouchScreenFlingAccelerationAdjustment);
 
+  // TODO(mohsen): Remove following code in M32. By then, gesture prefs will
+  // have been cleared for majority of the users: crbug.com/269292.
+  // Do a one-time wipe of all gesture preferences.
+  if (!prefs->GetBoolean(prefs::kGestureConfigIsTrustworthy)) {
+    for (size_t i = 0; i < arraysize(kPrefsToObserve); ++i)
+      prefs->ClearPref(kPrefsToObserve[i]);
+
+    const std::vector<OverscrollPref>& overscroll_prefs = GetOverscrollPrefs();
+    for (size_t i = 0; i < overscroll_prefs.size(); ++i)
+      prefs->ClearPref(overscroll_prefs[i].pref_name);
+
+    for (size_t i = 0; i < arraysize(kFlingTouchpadPrefs); ++i)
+      prefs->ClearPref(kFlingTouchpadPrefs[i]);
+
+    for (size_t i = 0; i < arraysize(kFlingTouchscreenPrefs); ++i)
+      prefs->ClearPref(kFlingTouchscreenPrefs[i]);
+
+#if defined(USE_ASH)
+    for (size_t i = 0; i < arraysize(kImmersiveModePrefs); ++i)
+      prefs->ClearPref(kImmersiveModePrefs[i]);
+#endif  // USE_ASH
+
+    prefs->SetBoolean(prefs::kGestureConfigIsTrustworthy, true);
+  }
+
   registrar_.Init(prefs);
   registrar_.RemoveAll();
   base::Closure callback = base::Bind(&GesturePrefsObserver::Update,
@@ -481,6 +506,12 @@ void GesturePrefsObserverFactoryAura::RegisterProfilePrefs(
   RegisterOverscrollPrefs(registry);
   RegisterFlingCurveParameters(registry);
   RegisterImmersiveModePrefs(registry);
+
+  // Register pref for a one-time wipe of all gesture preferences.
+  registry->RegisterBooleanPref(
+      prefs::kGestureConfigIsTrustworthy,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 bool

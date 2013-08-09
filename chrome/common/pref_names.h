@@ -907,6 +907,7 @@ extern const char kOverscrollMinimumThresholdStart[];
 extern const char kOverscrollVerticalThresholdStart[];
 extern const char kOverscrollHorizontalResistThreshold[];
 extern const char kOverscrollVerticalResistThreshold[];
+extern const char kGestureConfigIsTrustworthy[];
 #endif
 
 extern const char kNetworkProfileWarningsLeft[];
