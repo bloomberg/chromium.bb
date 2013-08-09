@@ -4,8 +4,8 @@
 <link href="resources/grid.css" rel="stylesheet">
 <style>
 .grid {
-    grid-template: "firstArea" "secondArea"
-                   "thirdArea" "thirdArea";
+    grid-template: "firstArea secondArea"
+                   "thirdArea thirdArea";
 }
 
 .gridItemWithPositiveInteger {
@@ -144,9 +144,9 @@
     testColumnRowJSParsing("'first' / 'last'", "'nav' / 'last' span", "1 first / 1 last", "1 nav / span 1 last");
     testColumnRowJSParsing("3 'first' / 2 'last'", "5 'nav' / 'last' 7 span", "3 first / 2 last", "5 nav / span 7 last");
     testColumnRowJSParsing("3 'first' span / -3 'last'", "'last' 2 span / -1 'nav'", "span 3 first / -3 last", "span 2 last / -1 nav");
-    testColumnRowJSParsing("5 / none", "8 / foobar");
-    testColumnRowJSParsing("nonExistent / none", "nonExistent / foobar");
-    testColumnRowJSParsing("span 'first' 3 / none", "'last' span / foobar", "span 3 first / none", "span 1 last / foobar");
+    testColumnRowJSParsing("5 / none", "8 / foobar", "5 / auto", "8 / auto");
+    testColumnRowJSParsing("nonExistent / none", "nonExistent / foobar", "auto / auto", "auto / auto");
+    testColumnRowJSParsing("span 'first' 3 / none", "'last' span / foobar", "span 3 first / auto", "span 1 last / auto");
 
     debug("");
     debug("Test setting grid-column and grid-row back to 'auto' through JS");

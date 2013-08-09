@@ -31,19 +31,21 @@ window.testColumnRowCSSParsing = function(id, columnValue, rowValue)
 window.testColumnRowJSParsing = function(columnValue, rowValue, expectedColumnValue, expectedRowValue)
 {
     var gridItem = document.createElement("div");
-    document.body.appendChild(gridItem);
+    var gridElement = document.getElementsByClassName("grid")[0];
+    gridElement.appendChild(gridItem);
     gridItem.style.gridColumn = columnValue;
     gridItem.style.gridRow = rowValue;
 
     checkColumnRowValues(gridItem, expectedColumnValue ? expectedColumnValue : columnValue, expectedRowValue ? expectedRowValue : rowValue);
 
-    document.body.removeChild(gridItem);
+    gridElement.removeChild(gridItem);
 }
 
 window.testColumnStartRowStartJSParsing = function(columnStartValue, rowStartValue, expectedColumnStartValue, expectedRowStartValue)
 {
     var gridItem = document.createElement("div");
-    document.body.appendChild(gridItem);
+    var gridElement = document.getElementsByClassName("grid")[0];
+    gridElement.appendChild(gridItem);
     gridItem.style.gridColumnStart = columnStartValue;
     gridItem.style.gridRowStart = rowStartValue;
 
@@ -54,13 +56,14 @@ window.testColumnStartRowStartJSParsing = function(columnStartValue, rowStartVal
 
     checkColumnRowValues(gridItem, expectedColumnStartValue + " / auto", expectedRowStartValue + " / auto");
 
-    document.body.removeChild(gridItem);
+    gridElement.removeChild(gridItem);
 }
 
 window.testColumnEndRowEndJSParsing = function(columnEndValue, rowEndValue, expectedColumnEndValue, expectedRowEndValue)
 {
     var gridItem = document.createElement("div");
-    document.body.appendChild(gridItem);
+    var gridElement = document.getElementsByClassName("grid")[0];
+    gridElement.appendChild(gridItem);
     gridItem.style.gridColumnEnd = columnEndValue;
     gridItem.style.gridRowEnd = rowEndValue;
 
@@ -71,7 +74,7 @@ window.testColumnEndRowEndJSParsing = function(columnEndValue, rowEndValue, expe
 
     checkColumnRowValues(gridItem, "auto / " + expectedColumnEndValue, "auto / " + expectedRowEndValue);
 
-    document.body.removeChild(gridItem);
+    gridElement.removeChild(gridItem);
 }
 
 window.testColumnRowInvalidJSParsing = function(columnValue, rowValue)

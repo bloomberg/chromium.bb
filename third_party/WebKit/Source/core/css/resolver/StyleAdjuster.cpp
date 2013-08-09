@@ -363,7 +363,7 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     if (e && e->hasTagName(iframeTag) && style->display() == INLINE && toHTMLIFrameElement(e)->shouldDisplaySeamlessly())
         style->setDisplay(INLINE_BLOCK);
 
-    adjustGridItemPosition(style);
+    adjustGridItemPosition(style, parentStyle);
 
     if (e && e->isSVGElement()) {
         // Spec: http://www.w3.org/TR/SVG/masking.html#OverflowProperty
@@ -388,20 +388,35 @@ void StyleAdjuster::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
     }
 }
 
-void StyleAdjuster::adjustGridItemPosition(RenderStyle* style) const
+void StyleAdjuster::adjustGridItemPosition(RenderStyle* style, RenderStyle* parentStyle) const
 {
+    const GridPosition& columnStartPosition = style->gridColumnStart();
+    const GridPosition& columnEndPosition = style->gridColumnEnd();
+    const GridPosition& rowStartPosition = style->gridRowStart();
+    const GridPosition& rowEndPosition = style->gridRowEnd();
+
     // If opposing grid-placement properties both specify a grid span, they both compute to ‘auto’.
-    if (style->gridColumnStart().isSpan() && style->gridColumnEnd().isSpan()) {
+    if (columnStartPosition.isSpan() && columnEndPosition.isSpan()) {
         style->setGridColumnStart(GridPosition());
         style->setGridColumnEnd(GridPosition());
     }
 
-    if (style->gridRowStart().isSpan() && style->gridRowEnd().isSpan()) {
+    if (rowStartPosition.isSpan() && rowEndPosition.isSpan()) {
         style->setGridRowStart(GridPosition());
         style->setGridRowEnd(GridPosition());
     }
+
+    // Unknown named grid area compute to 'auto'.
+    const NamedGridAreaMap& map = parentStyle->namedGridArea();
+
+#define CLEAR_UNKNOWN_NAMED_AREA(prop, Prop) \
+    if (prop.isNamedGridArea() && !map.contains(prop.namedGridLine())) \
+        style->setGrid##Prop(GridPosition());
+
+    CLEAR_UNKNOWN_NAMED_AREA(columnStartPosition, ColumnStart);
+    CLEAR_UNKNOWN_NAMED_AREA(columnEndPosition, ColumnEnd);
+    CLEAR_UNKNOWN_NAMED_AREA(rowStartPosition, RowStart);
+    CLEAR_UNKNOWN_NAMED_AREA(rowEndPosition, RowEnd);
 }
-
-
 
 }
