@@ -153,6 +153,15 @@ void SearchBoxModelObserverBridge::TextChanged() {
   [self controlTextDidChange:nil];
 }
 
+- (void)rebuildMenu {
+  if (![delegate_ appListDelegate])
+    return;
+
+  menuController_.reset([[AppListMenuController alloc]
+      initWithSearchBoxController:self]);
+  [menuButton_ setMenu:[menuController_ menu]];  // Menu will populate here.
+}
+
 - (void)setDelegate:(id<AppsSearchBoxDelegate>)delegate {
   [[menuButton_ menu] removeAllItems];
   menuController_.reset();
@@ -167,9 +176,7 @@ void SearchBoxModelObserverBridge::TextChanged() {
     return;
 
   appListMenu_.reset(new app_list::AppListMenu([delegate_ appListDelegate]));
-  menuController_.reset([[AppListMenuController alloc]
-      initWithSearchBoxController:self]);
-  [menuButton_ setMenu:[menuController_ menu]];  // Menu will populate here.
+  [self rebuildMenu];
 }
 
 - (NSTextField*)searchTextField {

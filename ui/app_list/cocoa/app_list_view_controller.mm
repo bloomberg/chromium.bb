@@ -317,6 +317,7 @@ class SigninDelegateObserverBridge : public SigninDelegateObserver {
 }
 
 - (void)onSigninStatusChanged {
+  [appsSearchBoxController_ rebuildMenu];
   app_list::SigninDelegate* signinDelegate = [self signinDelegate];
   BOOL needsSignin = signinDelegate && signinDelegate->NeedSignin();
   if (!needsSignin) {

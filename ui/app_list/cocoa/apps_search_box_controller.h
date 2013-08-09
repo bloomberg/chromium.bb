@@ -49,6 +49,9 @@ APP_LIST_EXPORT
 - (id)initWithFrame:(NSRect)frame;
 - (void)clearSearch;
 
+// Rebuild the menu due to changes from the AppListViewDelegate.
+- (void)rebuildMenu;
+
 @end
 
 @interface AppsSearchBoxController (TestingAPI)
