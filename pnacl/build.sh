@@ -43,6 +43,7 @@ SetLogDirectory "${PNACL_ROOT}/build/log"
 readonly PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-8}
 # Concurrency for builds using the host's system compiler (which might be goma)
 readonly PNACL_CONCURRENCY_HOST=${PNACL_CONCURRENCY_HOST:-${PNACL_CONCURRENCY}}
+readonly PNACL_BUILD_OLD_PATHS=${PNACL_BUILD_OLD_PATHS:-false}
 PNACL_PRUNE=${PNACL_PRUNE:-false}
 PNACL_BUILD_ARM=true
 PNACL_BUILD_MIPS=${PNACL_BUILD_MIPS:-false}
@@ -119,7 +120,12 @@ readonly INSTALL_ROOT="${TOOLCHAIN_ROOT}/${TOOLCHAIN_LABEL}"
 
 # Top-level newlib- and glibc-specific directories
 # Should be kept in sync with driver-install function below
-readonly INSTALL_NEWLIB="${INSTALL_ROOT}/newlib"
+
+if ${PNACL_BUILD_OLD_PATHS}; then
+  readonly INSTALL_NEWLIB="${INSTALL_ROOT}/newlib"
+else
+  readonly INSTALL_NEWLIB="${INSTALL_ROOT}/"
+fi
 readonly INSTALL_GLIBC="${INSTALL_ROOT}/glibc"
 readonly INSTALL_NEWLIB_BIN="${INSTALL_NEWLIB}/bin"
 readonly INSTALL_GLIBC_BIN="${INSTALL_GLIBC}/bin"
@@ -167,8 +173,6 @@ readonly SYSROOT_DIR="${INSTALL_NEWLIB}/sysroot"
 readonly PNACL_LD_NEWLIB="${INSTALL_NEWLIB_BIN}/pnacl-ld"
 readonly PNACL_LD_GLIBC="${INSTALL_GLIBC_BIN}/pnacl-ld"
 
-# These driver tools are always pulled from newlib/bin,
-# but this should not introduce a bias.
 readonly PNACL_PP="${INSTALL_NEWLIB_BIN}/pnacl-clang -E"
 readonly PNACL_AR="${INSTALL_NEWLIB_BIN}/pnacl-ar"
 readonly PNACL_RANLIB="${INSTALL_NEWLIB_BIN}/pnacl-ranlib"
@@ -2835,7 +2839,11 @@ sdk-setup() {
   SDK_IS_SETUP=true
   SDK_LIBMODE=newlib
 
-  SDK_INSTALL_ROOT="${INSTALL_ROOT}/${SDK_LIBMODE}/sdk"
+  if ${PNACL_BUILD_OLD_PATHS}; then
+    SDK_INSTALL_ROOT="${INSTALL_ROOT}/${SDK_LIBMODE}/sdk"
+  else
+    SDK_INSTALL_ROOT="${INSTALL_ROOT}/sdk"
+  fi
   SDK_INSTALL_LIB="${SDK_INSTALL_ROOT}/lib"
   SDK_INSTALL_INCLUDE="${SDK_INSTALL_ROOT}/include"
 }
@@ -3085,7 +3093,9 @@ driver-install() {
   # This directory (the ${INSTALL_ROOT}/${libmode} part)
   # should be kept in sync with INSTALL_NEWLIB_BIN et al.
   local destdir="${INSTALL_ROOT}/${libmode}/${bindir}"
-
+  if [[ ${libmode} == "newlib" ]]; then
+    destdir="${INSTALL_ROOT}/${bindir}"
+  fi
   driver-install-python "${destdir}" "pnacl-*.py" "wrapper-*.py"
 
   # Tell the driver the library mode and host arch

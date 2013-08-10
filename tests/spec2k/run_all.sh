@@ -614,7 +614,7 @@ build-libs-nacl() {
 build-libs-pnacl() {
   pushd "${NACL_ROOT}"
   # TODO(dschuff/jvoung): fix this circular dependency with the toolchain build
-  TOOLCHAIN_LABEL=pnacl_linux_x86 pnacl/build.sh sdk newlib
+  PNACL_BUILD_OLD_PATHS=true TOOLCHAIN_LABEL=pnacl_linux_x86 pnacl/build.sh sdk newlib
   popd
 }
 

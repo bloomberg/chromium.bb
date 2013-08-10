@@ -186,18 +186,9 @@ def FindBaseToolchain():
 @memoize
 def FindBasePNaCl():
   """ Find the base directory of the PNaCl toolchain """
-  # The bin/ directory is one of:
-  # <base>/bin if <base> is /path/to/pnacl_translator
-  # <base>/newlib/bin or <base>/glibc/bin otherwise
+  # The <base> directory is one level up from the <base>/bin:
   bindir = env.getone('DRIVER_BIN')
-
-  # If this is a translator dir, use pnacl_translator
-  translator_dir = FindBaseDir(
-      lambda cur: pathtools.basename(cur) == 'pnacl_translator')
-  if translator_dir is not None:
-    return shell.escape(translator_dir)
-  # Else use ../..
-  basedir = pathtools.dirname(pathtools.dirname(bindir))
+  basedir = pathtools.dirname(bindir)
   return shell.escape(basedir)
 
 def ReadConfig():

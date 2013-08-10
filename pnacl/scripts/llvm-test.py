@@ -213,9 +213,9 @@ def SetupEnvironment():
     os.environ.get('PNACL_TOOLCHAIN_LABEL',
                    'pnacl_{BUILD_PLATFORM}_x86'.format(**env)))
   env['PNACL_BIN'] = (
-    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_LABEL}/newlib/bin'.format(**env))
+    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_LABEL}/bin'.format(**env))
   env['PNACL_SDK_DIR'] = (
-    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_LABEL}/newlib/sdk/lib'
+    '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_LABEL}/sdk/lib'
     .format(**env))
   env['PNACL_SCRIPTS'] = '{NACL_ROOT}/pnacl/scripts'.format(**env)
   env['LIT_KNOWN_FAILURES'] = ('{pwd}/pnacl/scripts/lit_known_failures.txt'

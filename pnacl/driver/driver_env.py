@@ -37,9 +37,9 @@ INITIAL_ENV = {
 
   'BASE_LIB_NATIVE' : '${BASE}/lib-',
 
-  'BASE_NEWLIB'     : '${BASE}/newlib',
+  # BASE_GLIBC still used by pnacl-ld...
   'BASE_GLIBC'      : '${BASE}/glibc',
-  'BASE_LIBMODE'    : '${BASE}/${LIBMODE}',
+  'BASE_LIBMODE'    : '${LIBMODE==newlib ? ${BASE} : ${BASE}/glibc }',
 
   'BASE_USR'        : '${BASE_LIBMODE}/usr',
   'BASE_SDK'        : '${BASE_LIBMODE}/sdk',
