@@ -147,6 +147,20 @@ void PrefServiceSyncable::UpdateCommandLinePrefStore(
   PrefService::UpdateCommandLinePrefStore(cmd_line_store);
 }
 
+void PrefServiceSyncable::AddSyncedPrefObserver(
+    const std::string& name,
+    SyncedPrefObserver* observer) {
+  pref_sync_associator_.AddSyncedPrefObserver(name, observer);
+  priority_pref_sync_associator_.AddSyncedPrefObserver(name, observer);
+}
+
+void PrefServiceSyncable::RemoveSyncedPrefObserver(
+    const std::string& name,
+    SyncedPrefObserver* observer) {
+  pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
+  priority_pref_sync_associator_.RemoveSyncedPrefObserver(name, observer);
+}
+
 void PrefServiceSyncable::AddRegisteredSyncablePreference(
     const char* path,
     const user_prefs::PrefRegistrySyncable::PrefSyncStatus sync_status) {

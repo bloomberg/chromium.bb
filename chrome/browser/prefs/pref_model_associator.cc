@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -61,6 +62,10 @@ PrefModelAssociator::PrefModelAssociator(syncer::ModelType type)
 PrefModelAssociator::~PrefModelAssociator() {
   DCHECK(CalledOnValidThread());
   pref_service_ = NULL;
+
+  STLDeleteContainerPairSecondPointers(synced_pref_observers_.begin(),
+                                       synced_pref_observers_.end());
+  synced_pref_observers_.clear();
 }
 
 void PrefModelAssociator::InitPrefAndAssociate(
@@ -395,6 +400,8 @@ syncer::SyncError PrefModelAssociator::ProcessSyncChanges(
     // policy controlled.
     pref_service_->Set(pref_name, *value);
 
+    NotifySyncedPrefObservers(name, true /*from_sync*/);
+
     // Keep track of any newly synced preferences.
     if (iter->change_type() == syncer::SyncChange::ACTION_ADD) {
       synced_preferences_.insert(name);
@@ -420,6 +427,26 @@ Value* PrefModelAssociator::ReadPreferenceSpecifics(
 
 bool PrefModelAssociator::IsPrefSynced(const std::string& name) const {
   return synced_preferences_.find(name) != synced_preferences_.end();
+}
+
+void PrefModelAssociator::AddSyncedPrefObserver(const std::string& name,
+    SyncedPrefObserver* observer) {
+  SyncedPrefObserverList* observers = synced_pref_observers_[name];
+  if (observers == NULL) {
+    observers = new SyncedPrefObserverList;
+    synced_pref_observers_[name] = observers;
+  }
+  observers->AddObserver(observer);
+}
+
+void PrefModelAssociator::RemoveSyncedPrefObserver(const std::string& name,
+    SyncedPrefObserver* observer) {
+  SyncedPrefObserverMap::iterator observer_iter =
+      synced_pref_observers_.find(name);
+  if (observer_iter == synced_pref_observers_.end())
+    return;
+  SyncedPrefObserverList* observers = observer_iter->second;
+  observers->RemoveObserver(observer);
 }
 
 std::set<std::string> PrefModelAssociator::registered_preferences() const {
@@ -463,6 +490,8 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
 
   base::AutoReset<bool> processing_changes(&processing_syncer_changes_, true);
 
+  NotifySyncedPrefObservers(name, false /*from_sync*/);
+
   if (synced_preferences_.count(name) == 0) {
     // Not in synced_preferences_ means no synced data. InitPrefAndAssociate(..)
     // will determine if we care about its data (e.g. if it has a default value
@@ -488,4 +517,15 @@ void PrefModelAssociator::ProcessPrefChange(const std::string& name) {
 void PrefModelAssociator::SetPrefService(PrefServiceSyncable* pref_service) {
   DCHECK(pref_service_ == NULL);
   pref_service_ = pref_service;
+}
+
+void PrefModelAssociator::NotifySyncedPrefObservers(const std::string& path,
+                                                    bool from_sync) const {
+  SyncedPrefObserverMap::const_iterator observer_iter =
+      synced_pref_observers_.find(path);
+  if (observer_iter == synced_pref_observers_.end())
+    return;
+  SyncedPrefObserverList* observers = observer_iter->second;
+  FOR_EACH_OBSERVER(SyncedPrefObserver, *observers,
+                    OnSyncedPrefChanged(path, from_sync));
 }

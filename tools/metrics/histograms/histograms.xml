@@ -13286,6 +13286,20 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.HomePageIsNewTabPage.PulledFromSync" enum="Boolean">
+  <summary>
+    The value of the home-page-is-new-tab-page pref when pulled down from sync
+    to update an out-of-sync local pref store.
+  </summary>
+</histogram>
+
+<histogram name="Settings.HomePageIsNewTabPage.PushedToSync" enum="Boolean">
+  <summary>
+    The value of the home-page-is-new-tab-page pref when pushed up to sync from
+    a change made locally.
+  </summary>
+</histogram>
+
 <histogram name="Settings.ShowHomeButton" enum="BooleanEnabled">
   <summary>
     Whether or not the home button is enabled in user preferences when a profile
@@ -13293,8 +13307,37 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Settings.ShowHomeButton.PulledFromSync" enum="BooleanEnabled">
+  <summary>
+    The enabled state of the Home button pref when pulled down from sync to
+    update an out-of-sync local pref store.
+  </summary>
+</histogram>
+
+<histogram name="Settings.ShowHomeButton.PushedToSync" enum="BooleanEnabled">
+  <summary>
+    The enabled state of the Home button pref when pushed up to sync from a
+    change made locally.
+  </summary>
+</histogram>
+
 <histogram name="Settings.StartupPageLoadSettings" enum="SessionStartupPref">
   <summary>The startup page settings when a profile is loaded.</summary>
+</histogram>
+
+<histogram name="Settings.StartupPageLoadSettings.PulledFromSync"
+    enum="SessionStartupPref">
+  <summary>
+    The startup page setting when pulled down from sync to update an out-of-sync
+    local pref store.
+  </summary>
+</histogram>
+
+<histogram name="Settings.StartupPageLoadSettings.PushedToSync"
+    enum="SessionStartupPref">
+  <summary>
+    The startup page setting when pushed up to sync from a change made locally.
+  </summary>
 </histogram>
 
 <histogram name="Settings.StartupPageLoadURLs">

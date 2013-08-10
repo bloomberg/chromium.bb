@@ -7,6 +7,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/prefs/pref_model_associator.h"
+#include "chrome/browser/prefs/synced_pref_observer.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 
 class PrefServiceSyncableObserver;
@@ -79,6 +80,11 @@ class PrefServiceSyncable : public PrefService {
 
   // Do not call this after having derived an incognito or per tab pref service.
   virtual void UpdateCommandLinePrefStore(PrefStore* cmd_line_store) OVERRIDE;
+
+  void AddSyncedPrefObserver(const std::string& name,
+                             SyncedPrefObserver* observer);
+  void RemoveSyncedPrefObserver(const std::string& name,
+                                SyncedPrefObserver* observer);
 
  private:
   friend class PrefModelAssociator;
