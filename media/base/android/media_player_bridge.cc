@@ -390,6 +390,16 @@ void MediaPlayerBridge::PendingSeekInternal(base::TimeDelta time) {
 }
 
 void MediaPlayerBridge::SeekInternal(base::TimeDelta time) {
+  if (time > duration_)
+    time = duration_;
+
+  // Seeking to an invalid position may cause media player to stuck in an
+  // error state.
+  if (time < base::TimeDelta()) {
+    DCHECK_EQ(-1.0, time.InMillisecondsF());
+    return;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
