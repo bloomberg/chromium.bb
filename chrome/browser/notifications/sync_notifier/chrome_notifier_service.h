@@ -91,8 +91,14 @@ class ChromeNotifierService : public syncer::SyncableService,
   // Add a notification to our list.  This takes ownership of the pointer.
   void Add(scoped_ptr<notifier::SyncedNotification> notification);
 
+  // Display this notification in the notification center, or remove it.
+  void UpdateInMessageCenter(notifier::SyncedNotification* notification);
+
   // Display a notification in the notification center (eventually).
   void Display(notifier::SyncedNotification* notification);
+
+  // Remove a notification from our store.
+  void FreeNotificationById(const std::string& notification_id);
 
   // Back pointer to the owning profile.
   Profile* const profile_;

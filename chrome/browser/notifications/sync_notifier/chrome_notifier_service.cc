@@ -127,7 +127,7 @@ syncer::SyncMergeResult ChromeNotifierService::MergeDataAndStartSyncing(
         found->Update(sync_data);
 
         // Tell the notification manager to update the notification.
-        Display(found);
+        UpdateInMessageCenter(found);
       }
     }
   }
@@ -152,10 +152,9 @@ syncer::SyncDataList ChromeNotifierService::GetAllSyncData(
   syncer::SyncDataList sync_data;
 
   // Copy our native format data into a SyncDataList format.
-  for (std::vector<SyncedNotification*>::const_iterator it =
-          notification_data_.begin();
-      it != notification_data_.end();
-      ++it) {
+  ScopedVector<SyncedNotification>::const_iterator it =
+      notification_data_.begin();
+  for (; it != notification_data_.end(); ++it) {
     sync_data.push_back(CreateSyncDataFromNotification(**it));
   }
 
@@ -182,15 +181,38 @@ syncer::SyncError ChromeNotifierService::ProcessSyncChanges(
       continue;
     }
 
+    const std::string& key = new_notification->GetKey();
+    DCHECK_GT(key.length(), 0U);
+    SyncedNotification* found = FindNotificationById(key);
+
     switch (change_type) {
       case syncer::SyncChange::ACTION_ADD:
-        // TODO(petewil): Update the notification if it already exists
-        // as opposed to adding it.
-        Add(new_notification.Pass());
+        // Intentional fall through, cases are identical.
+      case syncer::SyncChange::ACTION_UPDATE:
+        if (found == NULL) {
+          Add(new_notification.Pass());
+          break;
+        }
+        // Update it in our store.
+        found->Update(sync_data);
+        // Tell the notification manager to update the notification.
+        UpdateInMessageCenter(found);
         break;
-      // TODO(petewil): Implement code to add delete and update actions.
+
+      case syncer::SyncChange::ACTION_DELETE:
+        if (found == NULL) {
+          break;
+        }
+        // Remove it from our store.
+        FreeNotificationById(key);
+        // Remove it from the message center.
+        UpdateInMessageCenter(new_notification.get());
+        // TODO(petewil): Do I need to remember that it was deleted in case the
+        // add arrives after the delete?  If so, how long do I need to remember?
+        break;
 
       default:
+        NOTREACHED();
         break;
     }
   }
@@ -273,16 +295,27 @@ SyncedNotification* ChromeNotifierService::FindNotificationById(
   // TODO(petewil): We can make a performance trade off here.
   // While the vector has good locality of reference, a map has faster lookup.
   // Based on how big we expect this to get, maybe change this to a map.
-  for (std::vector<SyncedNotification*>::const_iterator it =
-          notification_data_.begin();
-      it != notification_data_.end();
-      ++it) {
+  ScopedVector<SyncedNotification>::const_iterator it =
+      notification_data_.begin();
+  for (; it != notification_data_.end(); ++it) {
     SyncedNotification* notification = *it;
     if (notification_id == notification->GetKey())
       return *it;
   }
 
   return NULL;
+}
+
+void ChromeNotifierService::FreeNotificationById(
+    const std::string& notification_id) {
+  ScopedVector<SyncedNotification>::iterator it = notification_data_.begin();
+  for (; it != notification_data_.end(); ++it) {
+    SyncedNotification* notification = *it;
+    if (notification_id == notification->GetKey()) {
+      notification_data_.erase(it);
+      return;
+    }
+  }
 }
 
 void ChromeNotifierService::GetSyncedNotificationServices(
@@ -352,7 +385,7 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
     return;
   }
 
-  Display(notification_copy);
+  UpdateInMessageCenter(notification_copy);
 }
 
 void ChromeNotifierService::AddForTest(
@@ -360,7 +393,8 @@ void ChromeNotifierService::AddForTest(
   notification_data_.push_back(notification.release());
 }
 
-void ChromeNotifierService::Display(SyncedNotification* notification) {
+void ChromeNotifierService::UpdateInMessageCenter(
+    SyncedNotification* notification) {
   // If the feature is disabled, exit now.
   if (!notifier::ChromeNotifierServiceFactory::UseSyncedNotifications(
       CommandLine::ForCurrentProcess()))
@@ -368,6 +402,17 @@ void ChromeNotifierService::Display(SyncedNotification* notification) {
 
   notification->LogNotification();
 
+  if (notification->GetReadState() == SyncedNotification::kUnread) {
+    // If the message is unread, update it.
+    Display(notification);
+  } else {
+    // If the message is read or deleted, dismiss it from the center.
+    // We intentionally ignore errors if it is not in the center.
+    notification_manager_->CancelById(notification->GetKey());
+  }
+}
+
+void ChromeNotifierService::Display(SyncedNotification* notification) {
   // Set up to fetch the bitmaps.
   notification->QueueBitmapFetchJobs(notification_manager_,
                                      this,

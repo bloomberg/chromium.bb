@@ -310,6 +310,103 @@ TEST_F(ChromeNotifierServiceTest, ProcessSyncChangesEmptyModel) {
   // this test more robust.
 }
 
+// Process sync changes when there is no local data.
+TEST_F(ChromeNotifierServiceTest, ProcessSyncChangesNonEmptyModel) {
+  StubNotificationUIManager notification_manager;
+  ChromeNotifierService notifier(NULL, &notification_manager);
+  notifier.set_avoid_bitmap_fetching_for_test(true);
+
+  // Create some local fake data.
+  scoped_ptr<SyncedNotification> n1(CreateNotification(
+      kTitle1, kText1, kIconUrl1, kImageUrl1, kAppId1, kKey1, kUnread));
+  notifier.AddForTest(n1.Pass());
+  scoped_ptr<SyncedNotification> n2(CreateNotification(
+      kTitle2, kText2, kIconUrl2, kImageUrl2, kAppId2, kKey2, kUnread));
+  notifier.AddForTest(n2.Pass());
+  scoped_ptr<SyncedNotification> n3(CreateNotification(
+      kTitle3, kText3, kIconUrl3, kImageUrl3, kAppId3, kKey3, kUnread));
+  notifier.AddForTest(n3.Pass());
+
+  notifier.MergeDataAndStartSyncing(
+      SYNCED_NOTIFICATIONS,
+      SyncDataList(),
+      PassProcessor(),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  // Set up some ADDs, some UPDATES, and some DELETEs
+  SyncChangeList changes;
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_ADD, CreateNotification(
+          kTitle4, kText4, kIconUrl4, kImageUrl4, kAppId4, kKey4, kUnread)));
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_UPDATE, CreateNotification(
+          kTitle2, kText2, kIconUrl2, kImageUrl2, kAppId2, kKey2, kRead)));
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_DELETE, CreateNotification(
+          kTitle3, kText3, kIconUrl3, kImageUrl3, kAppId3, kKey3, kDismissed)));
+
+  // Simulate incoming new notifications at runtime.
+  notifier.ProcessSyncChanges(FROM_HERE, changes);
+
+  // We should find notifications 1, 2, and 4, but not 3.
+  EXPECT_EQ(3U, notifier.GetAllSyncData(SYNCED_NOTIFICATIONS).size());
+  EXPECT_TRUE(notifier.FindNotificationById(kKey1));
+  EXPECT_TRUE(notifier.FindNotificationById(kKey2));
+  EXPECT_FALSE(notifier.FindNotificationById(kKey3));
+  EXPECT_TRUE(notifier.FindNotificationById(kKey4));
+}
+
+// Process sync changes that arrive before the change they are supposed to
+// modify.
+TEST_F(ChromeNotifierServiceTest, ProcessSyncChangesOutOfOrder) {
+  StubNotificationUIManager notification_manager;
+  ChromeNotifierService notifier(NULL, &notification_manager);
+  notifier.set_avoid_bitmap_fetching_for_test(true);
+
+  // Create some local fake data.
+  scoped_ptr<SyncedNotification> n1(CreateNotification(
+      kTitle1, kText1, kIconUrl1, kImageUrl1, kAppId1, kKey1, kUnread));
+  notifier.AddForTest(n1.Pass());
+  scoped_ptr<SyncedNotification> n2(CreateNotification(
+      kTitle2, kText2, kIconUrl2, kImageUrl2, kAppId2, kKey2, kUnread));
+  notifier.AddForTest(n2.Pass());
+  scoped_ptr<SyncedNotification> n3(CreateNotification(
+      kTitle3, kText3, kIconUrl3, kImageUrl3, kAppId3, kKey3, kUnread));
+  notifier.AddForTest(n3.Pass());
+
+  notifier.MergeDataAndStartSyncing(
+      SYNCED_NOTIFICATIONS,
+      SyncDataList(),
+      PassProcessor(),
+      scoped_ptr<syncer::SyncErrorFactory>(new syncer::SyncErrorFactoryMock()));
+
+  SyncChangeList changes;
+  // UPDATE a notification we have not seen an add for.
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_UPDATE, CreateNotification(
+          kTitle4, kText4, kIconUrl4, kImageUrl4, kAppId4, kKey4, kUnread)));
+  // ADD a notification that we already have.
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_ADD, CreateNotification(
+          kTitle2, kText2, kIconUrl2, kImageUrl2, kAppId2, kKey2, kRead)));
+  // DELETE a notification we have not seen yet.
+  changes.push_back(CreateSyncChange(
+      SyncChange::ACTION_DELETE, CreateNotification(
+          kTitle5, kText5, kIconUrl5, kImageUrl5, kAppId5, kKey5, kDismissed)));
+
+  // Simulate incoming new notifications at runtime.
+  notifier.ProcessSyncChanges(FROM_HERE, changes);
+
+  // We should find notifications 1, 2, 3, and 4, but not 5.
+  EXPECT_EQ(4U, notifier.GetAllSyncData(SYNCED_NOTIFICATIONS).size());
+  EXPECT_TRUE(notifier.FindNotificationById(kKey1));
+  EXPECT_TRUE(notifier.FindNotificationById(kKey2));
+  EXPECT_TRUE(notifier.FindNotificationById(kKey3));
+  EXPECT_TRUE(notifier.FindNotificationById(kKey4));
+  EXPECT_FALSE(notifier.FindNotificationById(kKey5));
+}
+
+
 // Model has some notifications, some of them are local only. Sync has some
 // notifications. No items match up.
 TEST_F(ChromeNotifierServiceTest, LocalRemoteBothNonEmptyNoOverlap) {
