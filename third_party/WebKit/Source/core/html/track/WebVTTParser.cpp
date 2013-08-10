@@ -328,13 +328,16 @@ PassRefPtr<DocumentFragment>  WebVTTParser::createDocumentFragmentFromCueText(co
     // 4.8.10.13.4 WebVTT cue text parsing rules and
     // 4.8.10.13.5 WebVTT cue text DOM construction rules.
 
-    if (!text.length())
-        return 0;
-
     ASSERT(m_scriptExecutionContext->isDocument());
     Document* document = toDocument(m_scriptExecutionContext);
 
     RefPtr<DocumentFragment> fragment = DocumentFragment::create(document);
+
+    if (!text.length()) {
+        fragment->parserAppendChild(Text::create(document, ""));
+        return fragment;
+    }
+
     m_currentNode = fragment;
     m_tokenizer->reset();
     m_token.clear();
