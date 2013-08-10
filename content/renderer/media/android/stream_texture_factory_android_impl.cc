@@ -2,23 +2,52 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/media/android/stream_texture_factory_android.h"
+#include "content/renderer/media/android/stream_texture_factory_android_impl.h"
 
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_messages.h"
+#include "content/renderer/gpu/stream_texture_host_android.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "ui/gfx/size.h"
 
 namespace content {
 
-StreamTextureProxy::StreamTextureProxy(StreamTextureHost* host)
+namespace {
+
+class StreamTextureProxyImpl : public StreamTextureProxy,
+                               public StreamTextureHost::Listener {
+ public:
+  explicit StreamTextureProxyImpl(StreamTextureHost* host);
+  virtual ~StreamTextureProxyImpl();
+
+  // StreamTextureProxy implementation:
+  virtual void BindToCurrentThread(int32 stream_id) OVERRIDE;
+  virtual bool IsBoundToThread() OVERRIDE { return loop_.get() != NULL; }
+  virtual void SetClient(cc::VideoFrameProvider::Client* client) OVERRIDE;
+  virtual void Release() OVERRIDE;
+
+  // StreamTextureHost::Listener implementation:
+  virtual void OnFrameAvailable() OVERRIDE;
+  virtual void OnMatrixChanged(const float matrix[16]) OVERRIDE;
+
+ private:
+  scoped_ptr<StreamTextureHost> host_;
+  scoped_refptr<base::MessageLoopProxy> loop_;
+
+  base::Lock client_lock_;
+  cc::VideoFrameProvider::Client* client_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxyImpl);
+};
+
+StreamTextureProxyImpl::StreamTextureProxyImpl(StreamTextureHost* host)
     : host_(host), client_(NULL) {
   host->SetListener(this);
 }
 
-StreamTextureProxy::~StreamTextureProxy() {}
+StreamTextureProxyImpl::~StreamTextureProxyImpl() {}
 
-void StreamTextureProxy::Release() {
+void StreamTextureProxyImpl::Release() {
   SetClient(NULL);
   if (loop_.get() && loop_.get() != base::MessageLoopProxy::current())
     loop_->DeleteSoon(FROM_HERE, this);
@@ -26,29 +55,31 @@ void StreamTextureProxy::Release() {
     delete this;
 }
 
-void StreamTextureProxy::SetClient(cc::VideoFrameProvider::Client* client) {
+void StreamTextureProxyImpl::SetClient(cc::VideoFrameProvider::Client* client) {
   base::AutoLock lock(client_lock_);
   client_ = client;
 }
 
-void StreamTextureProxy::BindToCurrentThread(int stream_id) {
+void StreamTextureProxyImpl::BindToCurrentThread(int stream_id) {
   loop_ = base::MessageLoopProxy::current();
   host_->Initialize(stream_id);
 }
 
-void StreamTextureProxy::OnFrameAvailable() {
+void StreamTextureProxyImpl::OnFrameAvailable() {
   base::AutoLock lock(client_lock_);
   if (client_)
     client_->DidReceiveFrame();
 }
 
-void StreamTextureProxy::OnMatrixChanged(const float matrix[16]) {
+void StreamTextureProxyImpl::OnMatrixChanged(const float matrix[16]) {
   base::AutoLock lock(client_lock_);
   if (client_)
     client_->DidUpdateMatrix(matrix);
 }
 
-StreamTextureFactory::StreamTextureFactory(
+}  // namespace
+
+StreamTextureFactoryImpl::StreamTextureFactoryImpl(
     WebKit::WebGraphicsContext3D* context,
     GpuChannelHost* channel,
     int view_id)
@@ -57,21 +88,21 @@ StreamTextureFactory::StreamTextureFactory(
   DCHECK(channel);
 }
 
-StreamTextureFactory::~StreamTextureFactory() {}
+StreamTextureFactoryImpl::~StreamTextureFactoryImpl() {}
 
-StreamTextureProxy* StreamTextureFactory::CreateProxy() {
+StreamTextureProxy* StreamTextureFactoryImpl::CreateProxy() {
   DCHECK(channel_.get());
   StreamTextureHost* host = new StreamTextureHost(channel_.get());
-  return new StreamTextureProxy(host);
+  return new StreamTextureProxyImpl(host);
 }
 
-void StreamTextureFactory::EstablishPeer(int32 stream_id, int player_id) {
+void StreamTextureFactoryImpl::EstablishPeer(int32 stream_id, int player_id) {
   DCHECK(channel_.get());
   channel_->Send(
       new GpuChannelMsg_EstablishStreamTexture(stream_id, view_id_, player_id));
 }
 
-unsigned StreamTextureFactory::CreateStreamTexture(
+unsigned StreamTextureFactoryImpl::CreateStreamTexture(
     unsigned texture_target,
     unsigned* texture_id,
     gpu::Mailbox* texture_mailbox,
@@ -91,7 +122,7 @@ unsigned StreamTextureFactory::CreateStreamTexture(
   return stream_id;
 }
 
-void StreamTextureFactory::DestroyStreamTexture(unsigned texture_id) {
+void StreamTextureFactoryImpl::DestroyStreamTexture(unsigned texture_id) {
   if (context_->makeContextCurrent()) {
     // TODO(sievers): Make the destroyStreamTexture implicit when the last
     // texture referencing it is lost.
@@ -101,7 +132,7 @@ void StreamTextureFactory::DestroyStreamTexture(unsigned texture_id) {
   }
 }
 
-void StreamTextureFactory::SetStreamTextureSize(
+void StreamTextureFactoryImpl::SetStreamTextureSize(
     int32 stream_id, const gfx::Size& size) {
   channel_->Send(new GpuChannelMsg_SetStreamTextureSize(stream_id, size));
 }

@@ -66,10 +66,16 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   }
 
   virtual scoped_refptr<cc::ContextProvider>
-      GetOffscreenContextProviderForMainThread() OVERRIDE {
-    NOTIMPLEMENTED()
-        << "Synchronous compositor does not support main thread context yet.";
-    return scoped_refptr<cc::ContextProvider>();
+  GetOffscreenContextProviderForMainThread() OVERRIDE {
+    if (!offscreen_context_for_main_thread_.get() ||
+        offscreen_context_for_main_thread_->DestroyedOnMainThread()) {
+      offscreen_context_for_main_thread_ =
+          webkit::gpu::ContextProviderInProcess::Create();
+      if (offscreen_context_for_main_thread_.get() &&
+          !offscreen_context_for_main_thread_->BindToCurrentThread())
+        offscreen_context_for_main_thread_ = NULL;
+    }
+    return offscreen_context_for_main_thread_;
   }
 
   // This is called on both renderer main thread (offscreen context creation
@@ -95,6 +101,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
   // Only guards construction of |offscreen_context_for_compositor_thread_|,
   // not usage.
   base::Lock offscreen_context_for_compositor_thread_creation_lock_;
+  scoped_refptr<cc::ContextProvider> offscreen_context_for_main_thread_;
   scoped_refptr<cc::ContextProvider> offscreen_context_for_compositor_thread_;
 };
 

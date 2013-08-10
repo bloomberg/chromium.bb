@@ -218,7 +218,8 @@
 #include "content/renderer/android/email_detector.h"
 #include "content/renderer/android/phone_number_detector.h"
 #include "content/renderer/media/android/renderer_media_player_manager.h"
-#include "content/renderer/media/android/stream_texture_factory_android.h"
+#include "content/renderer/media/android/stream_texture_factory_android_impl.h"
+#include "content/renderer/media/android/stream_texture_factory_android_synchronous_impl.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/android/webmediaplayer_proxy_android.h"
 #include "skia/ext/platform_canvas.h"
@@ -3022,6 +3023,15 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     media_player_proxy_ = new WebMediaPlayerProxyAndroid(
         this, media_player_manager_.get());
   }
+
+  scoped_ptr<StreamTextureFactory> stream_texture_factory;
+  if (UsingSynchronousRendererCompositor()) {
+    stream_texture_factory.reset(new StreamTextureFactorySynchronousImpl);
+  } else {
+    stream_texture_factory.reset(new StreamTextureFactoryImpl(
+        context_provider->Context3d(), gpu_channel_host, routing_id_));
+  }
+
   scoped_ptr<WebMediaPlayerAndroid> web_media_player_android(
       new WebMediaPlayerAndroid(
           frame,
@@ -3029,8 +3039,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
           AsWeakPtr(),
           media_player_manager_.get(),
           media_player_proxy_,
-          new StreamTextureFactory(
-              context_provider->Context3d(), gpu_channel_host, routing_id_),
+          stream_texture_factory.release(),
           new RenderMediaLog()));
 #if defined(ENABLE_WEBRTC) && defined(GOOGLE_TV)
   if (media_stream_client_->IsMediaStream(url)) {

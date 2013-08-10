@@ -7,51 +7,33 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/layers/video_frame_provider.h"
-#include "content/renderer/gpu/stream_texture_host_android.h"
 #include "gpu/command_buffer/common/mailbox.h"
-
-namespace WebKit {
-class WebGraphicsContext3D;
-}
+#include "ui/gfx/size.h"
 
 namespace content {
 
 // The proxy class for the gpu thread to notify the compositor thread
 // when a new video frame is available.
-class StreamTextureProxy : public StreamTextureHost::Listener {
+class StreamTextureProxy {
  public:
-  explicit StreamTextureProxy(StreamTextureHost* host);
-  virtual ~StreamTextureProxy();
+  virtual ~StreamTextureProxy() {}
 
   // Initialize and bind to the current thread, which becomes the thread that
   // a connected client will receive callbacks on.
-  void BindToCurrentThread(int32 stream_id);
+  virtual void BindToCurrentThread(int32 stream_id) = 0;
 
-  bool IsBoundToThread() { return loop_.get() != NULL; }
+  virtual bool IsBoundToThread() = 0;
 
   // Setting the target for callback when a frame is available. This function
   // could be called on both the main thread and the compositor thread.
-  void SetClient(cc::VideoFrameProvider::Client* client);
+  virtual void SetClient(cc::VideoFrameProvider::Client* client) = 0;
 
-  // StreamTextureHost::Listener implementation:
-  virtual void OnFrameAvailable() OVERRIDE;
-  virtual void OnMatrixChanged(const float matrix[16]) OVERRIDE;
+  // Causes this instance to be deleted on the thread it is bound to.
+  virtual void Release() = 0;
 
   struct Deleter {
     inline void operator()(StreamTextureProxy* ptr) const { ptr->Release(); }
   };
-
- private:
-  // Causes this instance to be deleted on the thread it is bound to.
-  void Release();
-
-  scoped_ptr<StreamTextureHost> host_;
-  scoped_refptr<base::MessageLoopProxy> loop_;
-
-  base::Lock client_lock_;
-  cc::VideoFrameProvider::Client* client_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureProxy);
 };
 
 typedef scoped_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
@@ -60,43 +42,34 @@ typedef scoped_ptr<StreamTextureProxy, StreamTextureProxy::Deleter>
 // Factory class for managing stream textures.
 class StreamTextureFactory {
  public:
-  StreamTextureFactory(WebKit::WebGraphicsContext3D* context,
-                       GpuChannelHost* channel,
-                       int view_id);
-  ~StreamTextureFactory();
+  virtual ~StreamTextureFactory() {}
 
   // Create the StreamTextureProxy object.
-  StreamTextureProxy* CreateProxy();
+  virtual StreamTextureProxy* CreateProxy() = 0;
 
   // Send an IPC message to the browser process to request a java surface
   // object for the given stream_id. After the the surface is created,
   // it will be passed back to the WebMediaPlayerAndroid object identified by
   // the player_id.
-  void EstablishPeer(int32 stream_id, int player_id);
+  virtual void EstablishPeer(int32 stream_id, int player_id) = 0;
 
   // Create the streamTexture and return the stream Id and create a client-side
   // texture id to refer to the streamTexture. The texture id is produced into
   // a mailbox so it can be used to ship in a VideoFrame, with a sync point for
   // when the mailbox can be accessed.
-  unsigned CreateStreamTexture(
+  virtual unsigned CreateStreamTexture(
       unsigned texture_target,
       unsigned* texture_id,
       gpu::Mailbox* texture_mailbox,
-      unsigned* texture_mailbox_sync_point);
+      unsigned* texture_mailbox_sync_point) = 0;
 
   // Destroy the streamTexture for the given texture id, as well as the
   // client side texture.
-  void DestroyStreamTexture(unsigned texture_id);
+  virtual void DestroyStreamTexture(unsigned texture_id) = 0;
 
   // Set the streamTexture size for the given stream Id.
-  void SetStreamTextureSize(int32 texture_id, const gfx::Size& size);
-
- private:
-  WebKit::WebGraphicsContext3D* context_;
-  scoped_refptr<GpuChannelHost> channel_;
-  int view_id_;
-
-  DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactory);
+  virtual void SetStreamTextureSize(int32 texture_id,
+                                    const gfx::Size& size) = 0;
 };
 
 }  // namespace content
