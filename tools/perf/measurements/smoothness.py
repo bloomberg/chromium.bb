@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 from metrics import loading
 from metrics import smoothness
+from metrics.gpu_rendering_stats import GpuRenderingStats
 from telemetry.page import page_measurement
 
 class DidNotScrollException(page_measurement.MeasurementFailure):
@@ -59,11 +60,9 @@ class Smoothness(page_measurement.PageMeasurement):
     loading.LoadingMetric().AddResults(tab, results)
 
     smoothness.CalcFirstPaintTimeResults(results, tab)
-    smoothness.CalcScrollResults(rendering_stats_deltas, results)
-    smoothness.CalcTextureUploadResults(rendering_stats_deltas, results)
-    smoothness.CalcImageDecodingResults(rendering_stats_deltas, results)
-    smoothness.CalcAnalysisResults(rendering_stats_deltas, results)
-    smoothness.CalcLatencyResults(rendering_stats_deltas, results)
+
+    benchmark_stats = GpuRenderingStats(rendering_stats_deltas)
+    smoothness.CalcResults(benchmark_stats, results)
 
     if self.options.report_all_results:
       for k, v in rendering_stats_deltas.iteritems():

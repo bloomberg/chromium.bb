@@ -25,6 +25,9 @@ if __name__ == '__main__':
   start_dir = 'perf_tools'
   ret += run_tests.Main(sys.argv[1:], start_dir, top_level_dir, runner)
 
+  start_dir = 'metrics'
+  ret += run_tests.Main(sys.argv[1:], start_dir, top_level_dir, runner)
+
   if runner.result:
     runner.result.PrintSummary()
     sys.exit(min(ret + runner.result.num_errors, 255))
