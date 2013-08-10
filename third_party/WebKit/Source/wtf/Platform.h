@@ -138,7 +138,6 @@
 #if OS(UNIX)
 #define HAVE_MMAP 1
 #define HAVE_SIGNAL_H 1
-#define HAVE_STRINGS_H 1
 #define HAVE_SYS_TIME_H 1
 #define WTF_USE_PTHREADS 1
 #endif /* OS(UNIX) */
@@ -150,12 +149,6 @@
 #if !defined(HAVE_VASPRINTF)
 #if !COMPILER(MSVC)
 #define HAVE_VASPRINTF 1
-#endif
-#endif
-
-#if !defined(HAVE_STRNSTR)
-#if OS(DARWIN) || (OS(FREEBSD) && !defined(__GLIBC__))
-#define HAVE_STRNSTR 1
 #endif
 #endif
 

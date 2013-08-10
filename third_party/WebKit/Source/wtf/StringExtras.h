@@ -26,6 +26,16 @@
 #ifndef WTF_StringExtras_h
 #define WTF_StringExtras_h
 
+#if OS(UNIX)
+#define HAVE_STRINGS_H 1
+#endif
+
+#if !defined(HAVE_STRNSTR)
+#if OS(DARWIN) || (OS(FREEBSD) && !defined(__GLIBC__))
+#define HAVE_STRNSTR 1
+#endif
+#endif
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
