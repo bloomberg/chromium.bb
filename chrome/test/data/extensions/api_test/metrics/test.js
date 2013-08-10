@@ -71,6 +71,26 @@ chrome.test.runTests([
     };
 
     chrome.metricsPrivate.getFieldTrial('apitestfieldtrial1', test1Callback);
-  }
+  },
+
+  function getVariationParams1() {
+    chrome.metricsPrivate.getVariationParams(
+        'apitestfieldtrial1', function(params) {
+      chrome.test.assertEq('Variation parameters are unavailable.',
+                           chrome.runtime.lastError.message);
+      chrome.test.assertEq(undefined, params);
+      chrome.test.succeed();
+    });
+  },
+
+  function getVariationParams2() {
+    chrome.metricsPrivate.getVariationParams(
+        'apitestfieldtrial2', function(params) {
+      chrome.test.assertEq(undefined, chrome.runtime.lastError);
+      chrome.test.assertEq({a: 'aa', b: 'bb'}, params);
+      chrome.test.succeed();
+    });
+  },
+
 ]);
 

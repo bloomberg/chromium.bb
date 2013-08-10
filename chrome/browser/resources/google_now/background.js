@@ -118,6 +118,7 @@ var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
 tasks.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
+tasks.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
 tasks.instrumentChromeApiFunction('notifications.create', 2);
 tasks.instrumentChromeApiFunction('notifications.update', 2);
 tasks.instrumentChromeApiFunction('notifications.getAll', 0);
@@ -400,11 +401,19 @@ function requestNotificationCards(position, callback) {
 function requestLocation() {
   console.log('requestLocation');
   recordEvent(GoogleNowEvent.LOCATION_REQUEST);
-  // TODO(vadimt): Figure out location request options. Use experiments
-  // framework to enable setting these parameters remotely.
-  chrome.location.watchLocation(LOCATION_WATCH_NAME, {
-    minDistanceInMeters: 100,
-    minTimeInMilliseconds: 180000  // 3 minutes.
+  // TODO(vadimt): Figure out location request options.
+  chrome.metricsPrivate.getVariationParams('GoogleNow', function(params) {
+    var minDistanceInMeters =
+        parseInt(params && params.minDistanceInMeters, 10) ||
+        100;
+    var minTimeInMilliseconds =
+        parseInt(params && params.minTimeInMilliseconds, 10) ||
+        180000;  // 3 minutes.
+
+    chrome.location.watchLocation(LOCATION_WATCH_NAME, {
+      minDistanceInMeters: minDistanceInMeters,
+      minTimeInMilliseconds: minTimeInMilliseconds
+    });
   });
 }
 

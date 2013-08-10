@@ -12,6 +12,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/extensions/api/metrics_private.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/metrics/variations/variations_associated_data.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 
@@ -23,6 +24,7 @@ namespace extensions {
 
 namespace GetIsCrashReportingEnabled =
     api::metrics_private::GetIsCrashReportingEnabled;
+namespace GetVariationParams = api::metrics_private::GetVariationParams;
 namespace GetFieldTrial = api::metrics_private::GetFieldTrial;
 namespace RecordUserAction = api::metrics_private::RecordUserAction;
 namespace RecordValue = api::metrics_private::RecordValue;
@@ -73,6 +75,22 @@ bool MetricsPrivateGetFieldTrialFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &name));
 
   SetResult(new base::StringValue(base::FieldTrialList::FindFullName(name)));
+  return true;
+}
+
+bool MetricsPrivateGetVariationParamsFunction::RunImpl() {
+  scoped_ptr<GetVariationParams::Params> params(
+      GetVariationParams::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  GetVariationParams::Results::Params result;
+  if (!chrome_variations::GetVariationParams(
+      params->name, &result.additional_properties)) {
+    SetError("Variation parameters are unavailable.");
+    return false;
+  }
+
+  SetResult(result.ToValue().release());
   return true;
 }
 

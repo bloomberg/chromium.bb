@@ -57,6 +57,26 @@
         ]
       },
       {
+        "name": "getVariationParams",
+        "description": "Returns variation parameters for the named trial if available, or undefined otherwise.",
+        "type": "function",
+        "parameters": [
+          {"name": "name", "type": "string"},
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": "false",
+            "parameters": [
+              {
+                "name": "params",
+                "type": "object",
+                "additionalProperties": { "type": "string" }
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "recordUserAction",
         "type": "function",
         "description": "Records an action performed by the user.",

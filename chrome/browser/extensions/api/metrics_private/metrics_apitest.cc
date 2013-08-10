@@ -8,6 +8,7 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/common/metrics/variations/variations_associated_data.h"
 #include "content/public/browser/user_metrics.h"
 
 namespace {
@@ -128,6 +129,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
   UserActionObserver observer;
 
   base::FieldTrialList::CreateFieldTrial("apitestfieldtrial2", "group1");
+
+  std::map<std::string, std::string> params;
+  params["a"] = "aa";
+  params["b"] = "bb";
+  ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+      "apitestfieldtrial2", "group1", params));
 
   ASSERT_TRUE(RunComponentExtensionTest("metrics")) << message_;
 

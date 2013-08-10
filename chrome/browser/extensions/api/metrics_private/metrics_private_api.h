@@ -37,6 +37,18 @@ class MetricsPrivateGetFieldTrialFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class MetricsPrivateGetVariationParamsFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("metricsPrivate.getVariationParams",
+                             METRICSPRIVATE_GETVARIATIONPARAMS)
+
+ protected:
+  virtual ~MetricsPrivateGetVariationParamsFunction() {}
+
+  // ExtensionFunction:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class MetricsPrivateRecordUserActionFunction : public SyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("metricsPrivate.recordUserAction",
