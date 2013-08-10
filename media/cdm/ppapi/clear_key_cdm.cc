@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/ppapi/clear_key_cdm.h"
+#include "media/cdm/ppapi/clear_key_cdm.h"
 
 #include <algorithm>
 #include <sstream>
@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm_video_decoder.h"
+#include "media/cdm/ppapi/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 #include "base/basictypes.h"
@@ -27,8 +27,8 @@ static const int64 kNoTimestamp = kint64min;
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "media/base/media.h"
-#include "webkit/renderer/media/crypto/ppapi/ffmpeg_cdm_audio_decoder.h"
-#include "webkit/renderer/media/crypto/ppapi/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/ffmpeg_cdm_audio_decoder.h"
+#include "media/cdm/ppapi/ffmpeg_cdm_video_decoder.h"
 
 // Include FFmpeg avformat.h for av_register_all().
 extern "C" {
@@ -140,14 +140,14 @@ void* CreateCdmInstance(
     return NULL;
 
   return static_cast<cdm::ContentDecryptionModule*>(
-      new webkit_media::ClearKeyCdm(host));
+      new media::ClearKeyCdm(host));
 }
 
 const char* GetCdmVersion() {
   return kClearKeyCdmVersion;
 }
 
-namespace webkit_media {
+namespace media {
 
 ClearKeyCdm::Client::Client() : status_(kKeyError) {}
 
@@ -315,7 +315,7 @@ cdm::Status ClearKeyCdm::InitializeAudioDecoder(
     const cdm::AudioDecoderConfig& audio_decoder_config) {
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   if (!audio_decoder_)
-    audio_decoder_.reset(new webkit_media::FFmpegCdmAudioDecoder(host_));
+    audio_decoder_.reset(new media::FFmpegCdmAudioDecoder(host_));
 
   if (!audio_decoder_->Initialize(audio_decoder_config))
     return cdm::kSessionError;
@@ -555,4 +555,4 @@ cdm::Status ClearKeyCdm::GenerateFakeAudioFrames(
 }
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
-}  // namespace webkit_media
+}  // namespace media

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/ppapi/ffmpeg_cdm_audio_decoder.h"
+#include "media/cdm/ppapi/ffmpeg_cdm_audio_decoder.h"
 
 #include <algorithm>
 
@@ -12,7 +12,6 @@
 #include "media/base/buffers.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 // Include FFmpeg header files.
 extern "C" {
@@ -22,7 +21,7 @@ MSVC_PUSH_DISABLE_WARNING(4244);
 MSVC_POP_WARNING();
 }  // extern "C"
 
-namespace webkit_media {
+namespace media {
 
 // Maximum number of channels with defined layout in src/media.
 static const int kMaxChannels = 8;
@@ -90,7 +89,7 @@ FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(cdm::Host* host)
       channels_(0),
       av_sample_format_(0),
       bytes_per_frame_(0),
-      last_input_timestamp_(media::kNoTimestamp()),
+      last_input_timestamp_(kNoTimestamp()),
       output_bytes_to_drop_(0) {
 }
 
@@ -143,7 +142,7 @@ bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
     int channels = codec_context_->channels;
     if (codec_context_->sample_fmt == AV_SAMPLE_FMT_FLT)
       channels = 1;
-    converter_bus_ = media::AudioBus::CreateWrapper(channels);
+    converter_bus_ = AudioBus::CreateWrapper(channels);
   }
 
   // Success!
@@ -152,7 +151,7 @@ bool FFmpegCdmAudioDecoder::Initialize(const cdm::AudioDecoderConfig& config) {
   samples_per_second_ = config.samples_per_second;
   bytes_per_frame_ = codec_context_->channels * bits_per_channel_ / 8;
   output_timestamp_helper_.reset(
-      new media::AudioTimestampHelper(config.samples_per_second));
+      new AudioTimestampHelper(config.samples_per_second));
   serialized_audio_frames_.reserve(bytes_per_frame_ * samples_per_second_);
   is_initialized_ = true;
 
@@ -183,9 +182,9 @@ bool FFmpegCdmAudioDecoder::IsValidConfig(
          config.channel_count > 0 &&
          config.channel_count <= kMaxChannels &&
          config.bits_per_channel > 0 &&
-         config.bits_per_channel <= media::limits::kMaxBitsPerSample &&
+         config.bits_per_channel <= limits::kMaxBitsPerSample &&
          config.samples_per_second > 0 &&
-         config.samples_per_second <= media::limits::kMaxSampleRate;
+         config.samples_per_second <= limits::kMaxSampleRate;
 }
 
 cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
@@ -200,7 +199,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
 
   bool is_vorbis = codec_context_->codec_id == AV_CODEC_ID_VORBIS;
   if (!is_end_of_stream) {
-    if (last_input_timestamp_ == media::kNoTimestamp()) {
+    if (last_input_timestamp_ == kNoTimestamp()) {
       if (is_vorbis && timestamp < base::TimeDelta()) {
         // Dropping frames for negative timestamps as outlined in section A.2
         // in the Vorbis spec. http://xiph.org/vorbis/doc/Vorbis_I_spec.html
@@ -210,7 +209,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
       } else {
         last_input_timestamp_ = timestamp;
       }
-    } else if (timestamp != media::kNoTimestamp()) {
+    } else if (timestamp != kNoTimestamp()) {
       if (timestamp < last_input_timestamp_) {
         base::TimeDelta diff = timestamp - last_input_timestamp_;
         DVLOG(1) << "Input timestamps are not monotonically increasing! "
@@ -260,9 +259,9 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
     packet.size -= result;
     packet.data += result;
 
-    if (output_timestamp_helper_->base_timestamp() == media::kNoTimestamp() &&
+    if (output_timestamp_helper_->base_timestamp() == kNoTimestamp() &&
         !is_end_of_stream) {
-      DCHECK(timestamp != media::kNoTimestamp());
+      DCHECK(timestamp != kNoTimestamp());
       if (output_bytes_to_drop_ > 0) {
         // Currently Vorbis is the only codec that causes us to drop samples.
         // If we have to drop samples it always means the timeline starts at 0.
@@ -311,7 +310,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
       output_bytes_to_drop_ -= dropped_size;
     }
 
-    scoped_refptr<media::DataBuffer> output;
+    scoped_refptr<DataBuffer> output;
     if (decoded_audio_size > 0) {
       DCHECK_EQ(decoded_audio_size % bytes_per_frame_, 0)
           << "Decoder didn't output full frames";
@@ -336,7 +335,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
               av_frame_->extended_data[i]));
         }
 
-        output = new media::DataBuffer(decoded_audio_size);
+        output = new DataBuffer(decoded_audio_size);
         output->set_data_size(decoded_audio_size);
 
         DCHECK_EQ(frames_to_interleave, converter_bus_->frames() - skip_frames);
@@ -344,7 +343,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
             skip_frames, frames_to_interleave, bits_per_channel_ / 8,
             output->writable_data());
       } else {
-        output = media::DataBuffer::CopyFrom(
+        output = DataBuffer::CopyFrom(
             av_frame_->extended_data[0] + start_sample * bytes_per_frame_,
             decoded_audio_size);
       }
@@ -384,8 +383,8 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
 }
 
 void FFmpegCdmAudioDecoder::ResetTimestampState() {
-  output_timestamp_helper_->SetBaseTimestamp(media::kNoTimestamp());
-  last_input_timestamp_ = media::kNoTimestamp();
+  output_timestamp_helper_->SetBaseTimestamp(kNoTimestamp());
+  last_input_timestamp_ = kNoTimestamp();
   output_bytes_to_drop_ = 0;
 }
 
@@ -410,4 +409,4 @@ void FFmpegCdmAudioDecoder::SerializeInt64(int64 value) {
   memcpy(&serialized_audio_frames_[0] + previous_size, &value, sizeof(value));
 }
 
-}  // namespace webkit_media
+}  // namespace media

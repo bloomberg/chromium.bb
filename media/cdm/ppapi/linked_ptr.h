@@ -37,8 +37,8 @@
 //  - is thread safe for copying and deletion
 //  - supports weak_ptrs
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_LINKED_PTR_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_LINKED_PTR_H_
+#ifndef MEDIA_CDM_PPAPI_LINKED_PTR_H_
+#define MEDIA_CDM_PPAPI_LINKED_PTR_H_
 
 #include "ppapi/cpp/logging.h"
 
@@ -182,4 +182,4 @@ linked_ptr<T> make_linked_ptr(T* ptr) {
   return linked_ptr<T>(ptr);
 }
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_LINKED_PTR_H_
+#endif  // MEDIA_CDM_PPAPI_LINKED_PTR_H_

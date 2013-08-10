@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/ppapi/fake_cdm_video_decoder.h"
+#include "media/cdm/ppapi/fake_cdm_video_decoder.h"
 
 #include "base/logging.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
 
-namespace webkit_media {
+namespace media {
 
 FakeCdmVideoDecoder::FakeCdmVideoDecoder(cdm::Host* host)
     : is_initialized_(false),
@@ -89,4 +88,4 @@ cdm::Status FakeCdmVideoDecoder::DecodeFrame(const uint8_t* compressed_frame,
   return cdm::kSuccess;
 }
 
-}  // namespace webkit_media
+}  // namespace media

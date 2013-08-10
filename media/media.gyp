@@ -314,8 +314,8 @@
         'base/video_util.h',
         'base/yuv_convert.cc',
         'base/yuv_convert.h',
-        'crypto/aes_decryptor.cc',
-        'crypto/aes_decryptor.h',
+        'cdm/aes_decryptor.cc',
+        'cdm/aes_decryptor.h',
         'ffmpeg/ffmpeg_common.cc',
         'ffmpeg/ffmpeg_common.h',
         'filters/audio_decoder_selector.cc',
@@ -945,7 +945,7 @@
         'base/video_frame_unittest.cc',
         'base/video_util_unittest.cc',
         'base/yuv_convert_unittest.cc',
-        'crypto/aes_decryptor_unittest.cc',
+        'cdm/aes_decryptor_unittest.cc',
         'ffmpeg/ffmpeg_common_unittest.cc',
         'filters/audio_decoder_selector_unittest.cc',
         'filters/audio_file_reader_unittest.cc',
@@ -1294,6 +1294,9 @@
       ], # targets
     }],
     ['OS!="ios"', {
+      'includes': [
+        'media_cdm.gypi',
+      ],
       'targets': [
         {
           # Minimal target for NaCl and other renderer side media clients which

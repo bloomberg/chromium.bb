@@ -11,7 +11,6 @@
       'includes': [
         '../../build/win_precompile.gypi',
         '../glue/webkit_glue.gypi',
-        '../renderer/media/webkit_media.gypi',
         'webkit_support.gypi',
       ],
     }],

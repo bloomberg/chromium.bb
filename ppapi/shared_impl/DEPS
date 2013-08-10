@@ -2,6 +2,7 @@ include_rules = [
   "+base",
   "+gpu",
   "+media/audio",
+  "+media/base",
   "+skia",
   "+webkit/common/webpreferences.h",
 

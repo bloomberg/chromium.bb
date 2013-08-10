@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/ppapi/libvpx_cdm_video_decoder.h"
+#include "media/cdm/ppapi/libvpx_cdm_video_decoder.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,17 +14,16 @@
 // backwards compatibility for legacy applications using the library.
 #define VPX_CODEC_DISABLE_COMPAT 1
 extern "C" {
+// Note: vpx_decoder.h must be first or compile will fail.
+#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"  // NOLINT
 #include "third_party/libvpx/source/libvpx/vpx/vp8dx.h"
-#include "third_party/libvpx/source/libvpx/vpx/vpx_decoder.h"
 }
-
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 // Enable USE_COPYPLANE_WITH_LIBVPX to use |CopyPlane()| instead of memcpy to
 // copy video frame data.
 // #define USE_COPYPLANE_WITH_LIBVPX 1
 
-namespace webkit_media {
+namespace media {
 
 static const int kDecodeThreads = 2;
 
@@ -94,9 +93,9 @@ bool LibvpxCdmVideoDecoder::IsValidOutputConfig(cdm::VideoFormat format,
   return ((format == cdm::kYv12 || format == cdm::kI420) &&
           (data_size.width % 2) == 0 && (data_size.height % 2) == 0 &&
           data_size.width > 0 && data_size.height > 0 &&
-          data_size.width <= media::limits::kMaxDimension &&
-          data_size.height <= media::limits::kMaxDimension &&
-          data_size.width * data_size.height <= media::limits::kMaxCanvas);
+          data_size.width <= limits::kMaxDimension &&
+          data_size.height <= limits::kMaxDimension &&
+          data_size.width * data_size.height <= limits::kMaxCanvas);
 }
 
 cdm::Status LibvpxCdmVideoDecoder::DecodeFrame(
@@ -193,4 +192,4 @@ bool LibvpxCdmVideoDecoder::CopyVpxImageTo(cdm::VideoFrame* cdm_video_frame) {
   return true;
 }
 
-}  // namespace webkit_media
+}  // namespace media

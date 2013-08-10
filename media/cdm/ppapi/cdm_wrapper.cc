@@ -10,6 +10,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "media/cdm/ppapi/api/content_decryption_module.h"
+#include "media/cdm/ppapi/linked_ptr.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/pp_stdint.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
@@ -25,8 +27,6 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/cpp/var_array_buffer.h"
 #include "ppapi/utility/completion_callback_factory.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
-#include "webkit/renderer/media/crypto/ppapi/linked_ptr.h"
 
 #if defined(CHECK_DOCUMENT_URL)
 #include "ppapi/cpp/dev/url_util_dev.h"
@@ -204,7 +204,7 @@ cdm::StreamType PpDecryptorStreamTypeToCdmStreamType(
 
 }  // namespace
 
-namespace webkit_media {
+namespace media {
 
 // cdm::Buffer implementation that provides access to memory owned by a
 // pp::Buffer_Dev.
@@ -1186,13 +1186,13 @@ class CdmWrapperModule : public pp::Module {
   }
 };
 
-}  // namespace webkit_media
+}  // namespace media
 
 namespace pp {
 
 // Factory function for your specialization of the Module object.
 Module* CreateModule() {
-  return new webkit_media::CdmWrapperModule();
+  return new media::CdmWrapperModule();
 }
 
 }  // namespace pp

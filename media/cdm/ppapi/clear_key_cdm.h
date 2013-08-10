@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_CLEAR_KEY_CDM_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_CLEAR_KEY_CDM_H_
+#ifndef MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_H_
+#define MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_H_
 
 #include <string>
 #include <vector>
@@ -13,8 +13,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
-#include "media/crypto/aes_decryptor.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
+#include "media/cdm/aes_decryptor.h"
+#include "media/cdm/ppapi/api/content_decryption_module.h"
 
 // Enable this to use the fake decoder for testing.
 // TODO(tomfinegan): Move fake audio decoder into a separate class.
@@ -23,12 +23,8 @@
 #endif
 
 namespace media {
-class DecoderBuffer;
-}
-
-namespace webkit_media {
-
 class CdmVideoDecoder;
+class DecoderBuffer;
 class FFmpegCdmAudioDecoder;
 
 // Clear key implementation of the cdm::ContentDecryptionModule interface.
@@ -87,7 +83,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 
     void KeyAdded(const std::string& session_id);
     void KeyError(const std::string& session_id,
-                  media::MediaKeys::KeyError error_code,
+                  MediaKeys::KeyError error_code,
                   int system_code);
     void KeyMessage(const std::string& session_id,
                     const std::vector<uint8>& message,
@@ -113,7 +109,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   // |decrypted_buffer| should be ignored by the caller.
   cdm::Status DecryptToMediaDecoderBuffer(
       const cdm::InputBuffer& encrypted_buffer,
-      scoped_refptr<media::DecoderBuffer>* decrypted_buffer);
+      scoped_refptr<DecoderBuffer>* decrypted_buffer);
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
   int64 CurrentTimeStampInMicroseconds() const;
@@ -130,7 +126,7 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
 #endif  // CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER
 
   Client client_;
-  media::AesDecryptor decryptor_;
+  AesDecryptor decryptor_;
 
   // Protects the |client_| from being accessed by the |decryptor_|
   // simultaneously.
@@ -165,6 +161,6 @@ class ClearKeyCdm : public cdm::ContentDecryptionModule {
   DISALLOW_COPY_AND_ASSIGN(ClearKeyCdm);
 };
 
-}  // namespace webkit_media
+}  // namespace media
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_CLEAR_KEY_CDM_H_
+#endif  // MEDIA_CDM_PPAPI_CLEAR_KEY_CDM_H_

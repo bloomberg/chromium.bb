@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_CDM_VIDEO_DECODER_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_CDM_VIDEO_DECODER_H_
+#ifndef MEDIA_CDM_PPAPI_CDM_VIDEO_DECODER_H_
+#define MEDIA_CDM_PPAPI_CDM_VIDEO_DECODER_H_
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
+#include "media/cdm/ppapi/api/content_decryption_module.h"
 
-namespace webkit_media {
+namespace media {
 
 class CdmVideoDecoder {
  public:
@@ -38,6 +38,6 @@ class CdmVideoDecoder {
 scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
     cdm::Host* host, const cdm::VideoDecoderConfig& config);
 
-}  // namespace webkit_media
+}  // namespace media
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_CDM_VIDEO_DECODER_H_
+#endif  // MEDIA_CDM_PPAPI_CDM_VIDEO_DECODER_H_

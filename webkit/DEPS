@@ -37,7 +37,6 @@ include_rules = [
   "+ui/base/keycodes",
 
   # TODO(brettw) - review these; move up if it's ok, or remove the dependency
-  "+crypto",
   "+net",
   "+third_party/npapi/bindings",
 

@@ -247,7 +247,7 @@ deps = {
   "src/third_party/accessibility-developer-tools":
     Var("chromium_git") + "/external/accessibility-developer-tools.git@2e3c9c8e49277a0ca1eeba510271eb03f9486d8f",
 
-  "src/webkit/renderer/media/crypto/ppapi/cdm":
+  "src/media/cdm/ppapi/api":
     "/trunk/deps/cdm@181763",
 
   "src/third_party/mesa/src":

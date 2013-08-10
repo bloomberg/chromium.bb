@@ -1,4 +1,0 @@
-include_rules = [
-  "+ppapi",
-  "+third_party/libvpx",
-]

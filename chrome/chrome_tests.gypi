@@ -2073,7 +2073,7 @@
           'dependencies': [
             # Runtime dependency.
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
-            '../webkit/support/webkit_support.gyp:clearkeycdmadapter',
+            '../media/media.gyp:clearkeycdmadapter',
           ],
         }],
       ],  # conditions

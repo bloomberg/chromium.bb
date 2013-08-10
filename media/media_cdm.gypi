@@ -29,8 +29,8 @@
         ['use_fake_video_decoder == 1' , {
           'defines': ['CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER'],
           'sources': [
-            'crypto/ppapi/fake_cdm_video_decoder.cc',
-            'crypto/ppapi/fake_cdm_video_decoder.h',
+            'cdm/ppapi/fake_cdm_video_decoder.cc',
+            'cdm/ppapi/fake_cdm_video_decoder.h',
           ],
         }],
         ['use_ffmpeg == 1'  , {
@@ -39,14 +39,14 @@
             '<(DEPTH)/third_party/ffmpeg/ffmpeg.gyp:ffmpeg',
           ],
           'sources': [
-            'crypto/ppapi/ffmpeg_cdm_audio_decoder.cc',
-            'crypto/ppapi/ffmpeg_cdm_audio_decoder.h',
+            'cdm/ppapi/ffmpeg_cdm_audio_decoder.cc',
+            'cdm/ppapi/ffmpeg_cdm_audio_decoder.h',
           ],
         }],
         ['use_ffmpeg == 1 and use_fake_video_decoder == 0'  , {
           'sources': [
-            'crypto/ppapi/ffmpeg_cdm_video_decoder.cc',
-            'crypto/ppapi/ffmpeg_cdm_video_decoder.h',
+            'cdm/ppapi/ffmpeg_cdm_video_decoder.cc',
+            'cdm/ppapi/ffmpeg_cdm_video_decoder.h',
           ],
         }],
         ['use_libvpx == 1 and use_fake_video_decoder == 0' , {
@@ -55,8 +55,8 @@
             '<(DEPTH)/third_party/libvpx/libvpx.gyp:libvpx',
           ],
           'sources': [
-            'crypto/ppapi/libvpx_cdm_video_decoder.cc',
-            'crypto/ppapi/libvpx_cdm_video_decoder.h',
+            'cdm/ppapi/libvpx_cdm_video_decoder.cc',
+            'cdm/ppapi/libvpx_cdm_video_decoder.h',
           ],
         }],
         ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {
@@ -73,16 +73,16 @@
       ],
       'defines': ['CDM_IMPLEMENTATION'],
       'dependencies': [
-        '<(DEPTH)/base/base.gyp:base',
-        '<(DEPTH)/media/media.gyp:media',
+        'media',
         # Include the following for media::AudioBus.
-        '<(DEPTH)/media/media.gyp:shared_memory_support',
+        'shared_memory_support',
+        '<(DEPTH)/base/base.gyp:base',
       ],
       'sources': [
-        'crypto/ppapi/cdm_video_decoder.cc',
-        'crypto/ppapi/cdm_video_decoder.h',
-        'crypto/ppapi/clear_key_cdm.cc',
-        'crypto/ppapi/clear_key_cdm.h',
+        'cdm/ppapi/cdm_video_decoder.cc',
+        'cdm/ppapi/cdm_video_decoder.h',
+        'cdm/ppapi/clear_key_cdm.cc',
+        'cdm/ppapi/clear_key_cdm.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -97,9 +97,9 @@
         'clearkeycdm',
       ],
       'sources': [
-        'crypto/ppapi/cdm_wrapper.cc',
-        'crypto/ppapi/cdm/content_decryption_module.h',
-        'crypto/ppapi/linked_ptr.h',
+        'cdm/ppapi/api/content_decryption_module.h',
+        'cdm/ppapi/cdm_wrapper.cc',
+        'cdm/ppapi/linked_ptr.h',
       ],
       'conditions': [
         ['os_posix == 1 and OS != "mac" and enable_pepper_cdms==1', {

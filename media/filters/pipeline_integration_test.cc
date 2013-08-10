@@ -11,7 +11,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/media_keys.h"
 #include "media/base/test_data_util.h"
-#include "media/crypto/aes_decryptor.h"
+#include "media/cdm/aes_decryptor.h"
 #include "media/filters/chunk_demuxer.h"
 
 using testing::AnyNumber;

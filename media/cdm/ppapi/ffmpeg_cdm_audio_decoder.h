@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
-#define WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
+#ifndef MEDIA_CDM_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
+#define MEDIA_CDM_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
 
 #include <vector>
 
@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
+#include "media/cdm/ppapi/api/content_decryption_module.h"
 
 struct AVCodecContext;
 struct AVFrame;
@@ -21,12 +21,12 @@ class AudioBus;
 class AudioTimestampHelper;
 }
 
-namespace webkit_media {
+namespace media {
 
-// TODO(xhwang): This class is partially cloned from media::FFmpegAudioDecoder.
-// When media::FFmpegAudioDecoder is updated, it's a pain to keep this class
-// in sync with media::FFmpegAudioDecoder. We need a long term sustainable
-// solution for this. See http://crbug.com/169203
+// TODO(xhwang): This class is partially cloned from FFmpegAudioDecoder. When
+// FFmpegAudioDecoder is updated, it's a pain to keep this class in sync with
+// FFmpegAudioDecoder. We need a long term sustainable solution for this. See
+// http://crbug.com/169203
 class FFmpegCdmAudioDecoder {
  public:
   explicit FFmpegCdmAudioDecoder(cdm::Host* host);
@@ -75,13 +75,13 @@ class FFmpegCdmAudioDecoder {
   int av_sample_format_;
 
   // Used for computing output timestamps.
-  scoped_ptr<media::AudioTimestampHelper> output_timestamp_helper_;
+  scoped_ptr<AudioTimestampHelper> output_timestamp_helper_;
   int bytes_per_frame_;
   base::TimeDelta last_input_timestamp_;
 
   // We may need to convert the audio data coming out of FFmpeg from planar
   // float to integer.
-  scoped_ptr<media::AudioBus> converter_bus_;
+  scoped_ptr<AudioBus> converter_bus_;
 
   // Number of output sample bytes to drop before generating output buffers.
   // This is required for handling negative timestamps when decoding Vorbis
@@ -94,6 +94,6 @@ class FFmpegCdmAudioDecoder {
   DISALLOW_COPY_AND_ASSIGN(FFmpegCdmAudioDecoder);
 };
 
-}  // namespace webkit_media
+}  // namespace media
 
-#endif  // WEBKIT_RENDERER_MEDIA_CRYPTO_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_
+#endif  // MEDIA_CDM_PPAPI_FFMPEG_CDM_AUDIO_DECODER_H_

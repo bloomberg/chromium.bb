@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/media/crypto/ppapi/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/ffmpeg_cdm_video_decoder.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/buffers.h"
 #include "media/base/limits.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
 
 // Include FFmpeg header files.
 extern "C" {
@@ -18,7 +17,7 @@ MSVC_PUSH_DISABLE_WARNING(4244);
 MSVC_POP_WARNING();
 }  // extern "C"
 
-namespace webkit_media {
+namespace media {
 
 static const int kDecodeThreads = 1;
 
@@ -199,9 +198,9 @@ bool FFmpegCdmVideoDecoder::IsValidOutputConfig(cdm::VideoFormat format,
   return ((format == cdm::kYv12 || format == cdm::kI420) &&
           (data_size.width % 2) == 0 && (data_size.height % 2) == 0 &&
           data_size.width > 0 && data_size.height > 0 &&
-          data_size.width <= media::limits::kMaxDimension &&
-          data_size.height <= media::limits::kMaxDimension &&
-          data_size.width * data_size.height <= media::limits::kMaxCanvas);
+          data_size.width <= limits::kMaxDimension &&
+          data_size.height <= limits::kMaxDimension &&
+          data_size.width * data_size.height <= limits::kMaxCanvas);
 }
 
 cdm::Status FFmpegCdmVideoDecoder::DecodeFrame(
@@ -342,4 +341,4 @@ void FFmpegCdmVideoDecoder::ReleaseFFmpegResources() {
   }
 }
 
-}  // namespace webkit_media
+}  // namespace media

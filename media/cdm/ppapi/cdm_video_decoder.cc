@@ -4,22 +4,21 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm/content_decryption_module.h"
-#include "webkit/renderer/media/crypto/ppapi/cdm_video_decoder.h"
+#include "media/cdm/ppapi/cdm_video_decoder.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
-#include "webkit/renderer/media/crypto/ppapi/fake_cdm_video_decoder.h"
+#include "media/cdm/ppapi/fake_cdm_video_decoder.h"
 #endif
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
-#include "webkit/renderer/media/crypto/ppapi/ffmpeg_cdm_video_decoder.h"
+#include "media/cdm/ppapi/ffmpeg_cdm_video_decoder.h"
 #endif
 
 #if defined(CLEAR_KEY_CDM_USE_LIBVPX_DECODER)
-#include "webkit/renderer/media/crypto/ppapi/libvpx_cdm_video_decoder.h"
+#include "media/cdm/ppapi/libvpx_cdm_video_decoder.h"
 #endif
 
-namespace webkit_media {
+namespace media {
 
 scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
     cdm::Host* host, const cdm::VideoDecoderConfig& config) {
@@ -54,4 +53,4 @@ scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
   return video_decoder.Pass();
 }
 
-}  // namespace webkit_media
+}  // namespace media

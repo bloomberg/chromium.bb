@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "content/renderer/media/crypto/key_systems.h"
-#include "media/crypto/aes_decryptor.h"
+#include "media/cdm/aes_decryptor.h"
 
 #if defined(ENABLE_PEPPER_CDMS)
 #include "content/renderer/media/crypto/ppapi_decryptor.h"
