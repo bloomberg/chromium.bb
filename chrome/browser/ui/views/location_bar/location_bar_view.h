@@ -261,7 +261,6 @@ class LocationBarView : public LocationBar,
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual gfx::Rect GetOmniboxBounds() const OVERRIDE;
 
   // views::View:
   virtual const char* GetClassName() const OVERRIDE;

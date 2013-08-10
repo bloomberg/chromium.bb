@@ -35,6 +35,10 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_instant_controller.h"
+#include "chrome/browser/ui/search/instant_controller.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -249,8 +253,7 @@ SearchProvider::SearchProvider(AutocompleteProviderListener* listener,
       providers_(TemplateURLServiceFactory::GetForProfile(profile)),
       suggest_results_pending_(0),
       field_trial_triggered_(false),
-      field_trial_triggered_in_session_(false),
-      omnibox_start_margin_(-1) {
+      field_trial_triggered_in_session_(false) {
 }
 
 // static
@@ -366,10 +369,6 @@ void SearchProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
 
 void SearchProvider::ResetSession() {
   field_trial_triggered_in_session_ = false;
-}
-
-void SearchProvider::SetOmniboxStartMargin(int omnibox_start_margin) {
-  omnibox_start_margin_ = omnibox_start_margin;
 }
 
 SearchProvider::~SearchProvider() {
@@ -1382,11 +1381,26 @@ void SearchProvider::AddMatchToMap(const string16& query_string,
                                    int accepted_suggestion,
                                    bool is_keyword,
                                    MatchMap* map) {
+  // On non-mobile, ask the instant controller for the appropriate start margin.
+  // On mobile the start margin is unused, so leave the value as default there.
+  int omnibox_start_margin = chrome::kDisableStartMargin;
+#if !defined(OS_ANDROID) && !defined(IOS)
+  if (chrome::IsInstantExtendedAPIEnabled()) {
+    Browser* browser =
+        chrome::FindBrowserWithProfile(profile_, chrome::GetActiveDesktop());
+    if (browser && browser->instant_controller() &&
+        browser->instant_controller()->instant()) {
+      omnibox_start_margin =
+          browser->instant_controller()->instant()->omnibox_bounds().x();
+    }
+  }
+#endif  // !defined(OS_ANDROID) && !defined(IOS)
+
   const TemplateURL* template_url = is_keyword ?
       providers_.GetKeywordProviderURL() : providers_.GetDefaultProviderURL();
   AutocompleteMatch match = CreateSearchSuggestion(this, relevance, type,
       template_url, query_string, input_text, input_, is_keyword,
-      accepted_suggestion, omnibox_start_margin_,
+      accepted_suggestion, omnibox_start_margin,
       !is_keyword || providers_.default_provider().empty());
   if (!match.destination_url.is_valid())
     return;

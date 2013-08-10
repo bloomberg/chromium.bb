@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/toolbar/toolbar_model_impl.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 namespace {
 
@@ -98,7 +97,6 @@ class TestingOmniboxEditController : public OmniboxEditController {
   virtual content::WebContents* GetWebContents() const OVERRIDE {
     return NULL;
   }
-  virtual gfx::Rect GetOmniboxBounds() const OVERRIDE { return gfx::Rect(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestingOmniboxEditController);

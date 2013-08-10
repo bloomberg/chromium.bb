@@ -502,8 +502,7 @@ void OmniboxEditModel::StartAutocomplete(
       (has_selected_text && inline_autocomplete_text_.empty()) ||
       (paste_state_ != NONE),
       keyword_is_selected,
-      keyword_is_selected || allow_exact_keyword_match_,
-      controller_->GetOmniboxBounds().x());
+      keyword_is_selected || allow_exact_keyword_match_);
 }
 
 void OmniboxEditModel::StopAutocomplete() {

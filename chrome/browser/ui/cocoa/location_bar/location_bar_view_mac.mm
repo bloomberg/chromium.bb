@@ -357,10 +357,6 @@ WebContents* LocationBarViewMac::GetWebContents() const {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
-gfx::Rect LocationBarViewMac::GetOmniboxBounds() const {
-  return gfx::Rect(NSRectToCGRect([field_ frame]));
-}
-
 PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
     ExtensionAction* page_action) {
   DCHECK(page_action);

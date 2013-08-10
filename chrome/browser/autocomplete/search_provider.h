@@ -94,9 +94,6 @@ class SearchProvider : public AutocompleteProvider,
   virtual void AddProviderInfo(ProvidersInfo* provider_info) const OVERRIDE;
   virtual void ResetSession() OVERRIDE;
 
-  // Update the omnibox start margin used to generate search suggestion URLs.
-  void SetOmniboxStartMargin(int omnibox_start_margin);
-
   bool field_trial_triggered_in_session() const {
     return field_trial_triggered_in_session_;
   }
@@ -526,9 +523,6 @@ class SearchProvider : public AutocompleteProvider,
   // Same as above except that it is maintained across the current Omnibox
   // session.
   bool field_trial_triggered_in_session_;
-
-  // Start margin of the omnibox. Used to construct search URLs.
-  int omnibox_start_margin_;
 
   // If true, search history query suggestions will score low enough that
   // they will not be inlined.

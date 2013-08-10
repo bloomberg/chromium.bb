@@ -18,7 +18,6 @@ class WebContents;
 
 namespace gfx {
 class Image;
-class Rect;
 }
 
 // I am in hack-and-slash mode right now.
@@ -69,9 +68,6 @@ class OmniboxEditController {
 
   // Returns the WebContents of the currently active tab.
   virtual content::WebContents* GetWebContents() const = 0;
-
-  // Returns the bounds for the omnibox.
-  virtual gfx::Rect GetOmniboxBounds() const = 0;
 
  protected:
   virtual ~OmniboxEditController() {}

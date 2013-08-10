@@ -16,7 +16,6 @@
 #include "testing/platform_test.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
 
 namespace {
 class OmniboxEditControllerMock : public OmniboxEditController {
@@ -34,7 +33,6 @@ class OmniboxEditControllerMock : public OmniboxEditController {
   MOCK_CONST_METHOD0(GetTitle, string16());
   MOCK_METHOD0(GetInstant, InstantController*());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());
-  MOCK_CONST_METHOD0(GetOmniboxBounds, gfx::Rect());
 
   virtual ~OmniboxEditControllerMock() {}
 };

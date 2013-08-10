@@ -33,6 +33,10 @@ namespace content {
 class WebContents;
 }
 
+namespace gfx {
+class Rect;
+}
+
 // Macro used for logging debug events. |message| should be a std::string.
 #define LOG_INSTANT_DEBUG_EVENT(controller, message) \
     controller->LogDebugEvent(message)
@@ -91,6 +95,11 @@ class InstantController : public InstantPage::Delegate {
   // See comments for |debug_events_| below.
   const std::list<std::pair<int64, std::string> >& debug_events() {
     return debug_events_;
+  }
+
+  // Gets the stored start-edge margin and width of the omnibox.
+  const gfx::Rect omnibox_bounds() {
+    return omnibox_bounds_;
   }
 
   // Used by BrowserInstantController to notify InstantController about the

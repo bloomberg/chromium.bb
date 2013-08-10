@@ -122,7 +122,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual gfx::Rect GetOmniboxBounds() const OVERRIDE;
 
   // LocationBar:
   virtual void ShowFirstRunBubble() OVERRIDE;

@@ -153,7 +153,6 @@ class LocationBarViewMac : public LocationBar,
   virtual string16 GetTitle() const OVERRIDE;
   virtual InstantController* GetInstant() OVERRIDE;
   virtual content::WebContents* GetWebContents() const OVERRIDE;
-  virtual gfx::Rect GetOmniboxBounds() const OVERRIDE;
 
   NSImage* GetKeywordImage(const string16& keyword);
 
