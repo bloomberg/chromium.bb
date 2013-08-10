@@ -2610,7 +2610,7 @@ void WebContentsImpl::OnMediaNotification(int64 player_cookie,
           "Playing video");
 #if defined(OS_ANDROID)
       static_cast<PowerSaveBlockerImpl*>(blocker.get())->
-          InitDisplaySleepBlocker(GetView()->GetTopLevelNativeWindow());
+          InitDisplaySleepBlocker(GetView()->GetNativeView());
 #endif
     } else if (has_audio) {
       blocker = PowerSaveBlocker::Create(

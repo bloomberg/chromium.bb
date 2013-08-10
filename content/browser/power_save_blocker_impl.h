@@ -17,11 +17,10 @@ class PowerSaveBlockerImpl : public PowerSaveBlocker {
   virtual ~PowerSaveBlockerImpl();
 
 #if defined(OS_ANDROID)
-  // In Android platform, the |native_window| is needed to create the
-  // kPowerSaveBlockPreventDisplaySleep type of PowerSaveBlocker
-  // so the blocker could be removed by platform if the window isn't in the
-  // foreground.
-  void InitDisplaySleepBlocker(gfx::NativeWindow native_window);
+  // In Android platform, the kPowerSaveBlockPreventDisplaySleep type of
+  // PowerSaveBlocker should associated with the ViewAndroid,
+  // so the blocker could be removed by platform if the view isn't visble
+  void InitDisplaySleepBlocker(gfx::NativeView view_android);
 #endif
 
  private:

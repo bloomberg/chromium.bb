@@ -5,23 +5,26 @@
 #include "content/browser/power_save_blocker_android.h"
 
 #include "base/android/jni_android.h"
+#include "base/android/jni_helper.h"
 #include "base/logging.h"
 #include "content/browser/power_save_blocker_impl.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_thread.h"
 #include "jni/PowerSaveBlocker_jni.h"
-#include "ui/android/window_android.h"
+#include "ui/android/view_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
+using gfx::NativeView;
 
 namespace content {
 
 class PowerSaveBlockerImpl::Delegate
     : public base::RefCountedThreadSafe<PowerSaveBlockerImpl::Delegate> {
  public:
-  explicit Delegate(gfx::NativeWindow native_window) {
-    j_window_android_ = JavaObjectWeakGlobalRef(AttachCurrentThread(),
-        static_cast<ui::WindowAndroid*>(native_window)->GetJavaObject().obj());
+  explicit Delegate(NativeView view_android) {
+    j_view_android_ = JavaObjectWeakGlobalRef(
+        AttachCurrentThread(), view_android->GetJavaObject().obj());
   }
 
   // Does the actual work to apply or remove the desired power save block.
@@ -32,7 +35,7 @@ class PowerSaveBlockerImpl::Delegate
   friend class base::RefCountedThreadSafe<Delegate>;
   ~Delegate() {}
 
-  JavaObjectWeakGlobalRef j_window_android_;
+  JavaObjectWeakGlobalRef j_view_android_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
@@ -40,7 +43,7 @@ class PowerSaveBlockerImpl::Delegate
 void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_object = j_window_android_.get(env);
+  ScopedJavaLocalRef<jobject> j_object = j_view_android_.get(env);
   if (j_object.obj())
     Java_PowerSaveBlocker_applyBlock(env, j_object.obj());
 }
@@ -48,7 +51,7 @@ void PowerSaveBlockerImpl::Delegate::ApplyBlock() {
 void PowerSaveBlockerImpl::Delegate::RemoveBlock() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> j_object = j_window_android_.get(env);
+  ScopedJavaLocalRef<jobject> j_object = j_view_android_.get(env);
   if (j_object.obj())
     Java_PowerSaveBlocker_removeBlock(env, j_object.obj());
 }
@@ -66,9 +69,8 @@ PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
   }
 }
 
-void PowerSaveBlockerImpl::InitDisplaySleepBlocker(
-    gfx::NativeWindow native_window) {
-  delegate_ = new Delegate(native_window);
+void PowerSaveBlockerImpl::InitDisplaySleepBlocker(NativeView view_android) {
+  delegate_ = new Delegate(view_android);
   // This may be called on any thread.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

@@ -5,16 +5,16 @@
 package org.chromium.content.browser;
 
 import org.chromium.base.CalledByNative;
-import org.chromium.ui.WindowAndroid;
+import org.chromium.ui.ViewAndroid;
 
 class PowerSaveBlocker {
     @CalledByNative
-    private static void applyBlock(WindowAndroid windowAndroid) {
-        windowAndroid.keepScreenOn(true);
+    private static void applyBlock(ViewAndroid view) {
+        view.incrementKeepScreenOnCount();
     }
 
     @CalledByNative
-    private static void removeBlock(WindowAndroid windowAndroid) {
-        windowAndroid.keepScreenOn(false);
+    private static void removeBlock(ViewAndroid view) {
+        view.decrementKeepScreenOnCount();
     }
 }
