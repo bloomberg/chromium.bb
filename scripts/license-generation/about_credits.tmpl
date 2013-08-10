@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Credits</title>
 <style>
 body {
@@ -50,6 +50,9 @@ body {
 .licence h3 {
   margin-top:0px;
 }
+.license-packages {
+  font-size:80%;
+}
 </style>
 <script>
 function $(o) {return document.getElementById(o);}
@@ -63,10 +66,10 @@ function toggle(o) {
 
   if (licence.style && licence.style.display == 'block') {
     licence.style.display = 'none';
-    o.innerHTML = 'show license(s)';
+    o.innerHTML = 'show license text';
   } else {
     licence.style.display = 'block';
-    o.innerHTML = 'hide license(s)';
+    o.innerHTML = 'hide license text';
   }
   return false;
 }
@@ -75,9 +78,13 @@ function toggle(o) {
 <body>
 <span class="page-title" style="float:left;">Credits</span>
 <a href="javascript:window.print();" style="float:right;">Print</a>
-<div style="clear:both; overflow:auto;"><!-- Chromium <3s the following projects -->
+<div style="clear:both; overflow:auto;">
+<h2>List of packages used in Google Chrome OS:</h2>
+<!-- Chromium <3s the following projects -->
 {{entries}}
 </div>
 
+<h2>List of shared stock Gentoo Licenses used in Google Chrome OS:</h2>
+{{licenses}}
 </body>
 </html>

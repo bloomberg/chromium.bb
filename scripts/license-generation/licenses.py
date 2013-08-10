@@ -74,163 +74,157 @@ import sys
 EQUERY_BASE = '/usr/local/bin/equery-%s'
 
 STOCK_LICENSE_DIRS = [
-  os.path.expanduser('~/trunk/src/third_party/portage/licenses'),
-  os.path.expanduser('~/trunk/src/third_party/portage-stable/licenses'),
-  os.path.abspath(os.path.join(os.path.dirname(__file__), 'licenses')),
+    os.path.expanduser('~/trunk/src/third_party/portage/licenses'),
+    os.path.expanduser('~/trunk/src/third_party/portage-stable/licenses'),
+    os.path.abspath(os.path.join(os.path.dirname(__file__), 'licenses')),
 ]
 
 # Virtual packages don't need to have a license and often don't, so we skip them
 # chromeos-base contains google platform packages that are covered by the
 # general license at top of tree, so we skip those too.
 SKIPPED_CATEGORIES = [
-  'chromeos-base', # TODO: this shouldn't be excluded ?
-  'virtual',
+    'chromeos-base',  # TODO: this shouldn't be excluded ?
+    'virtual',
 ]
 
 SKIPPED_PACKAGES = [
-  # Fix these packages by adding a real license in the code.
-  # You should not skip packages just because the license scraping doesn't
-  # work. Stick those special cases into PACKAGE_LICENSES.
-  # Packages should only be here because they are sub/split packages already
-  # covered by the license of the main package.
+    # Fix these packages by adding a real license in the code.
+    # You should not skip packages just because the license scraping doesn't
+    # work. Stick those special cases into PACKAGE_LICENSES.
+    # Packages should only be here because they are sub/split packages already
+    # covered by the license of the main package.
 
-  # These are Chrome-OS-specific packages, copyright BSD-Google
-  'sys-kernel/chromeos-kernel',  # already manually credit Linux
+    # These are Chrome-OS-specific packages, copyright BSD-Google
+    'sys-kernel/chromeos-kernel',  # already manually credit Linux
 
-  # These have been split across several packages, so we skip listing the
-  # individual components (and just list the main package instead).
-  'app-editors/vim-core',
-  'x11-apps/mesa-progs',
+    # These have been split across several packages, so we skip listing the
+    # individual components (and just list the main package instead).
+    'app-editors/vim-core',
+    'x11-apps/mesa-progs',
 
-  # Portage metapackage.
-  'x11-base/xorg-drivers',
+    # Portage metapackage.
+    'x11-base/xorg-drivers',
 
-   # These are covered by app-i18n/ibus-mozc (BSD, copyright Google).
-  'app-i18n/ibus-mozc-chewing',
-  'app-i18n/ibus-mozc-hangul',
-  'app-i18n/ibus-mozc-pinyin',
+    # These are covered by app-i18n/ibus-mozc (BSD, copyright Google).
+    'app-i18n/ibus-mozc-chewing',
+    'app-i18n/ibus-mozc-hangul',
+    'app-i18n/ibus-mozc-pinyin',
 
-  # Those have License: Proprietary in the ebuild.
-  'app-i18n/GoogleChineseInput-cangjie',
-  'app-i18n/GoogleChineseInput-pinyin',
-  'app-i18n/GoogleChineseInput-wubi',
-  'app-i18n/GoogleChineseInput-zhuyin',
-  'app-i18n/GoogleKoreanInput',
+    # Those have License: Proprietary in the ebuild.
+    'app-i18n/GoogleChineseInput-cangjie',
+    'app-i18n/GoogleChineseInput-pinyin',
+    'app-i18n/GoogleChineseInput-wubi',
+    'app-i18n/GoogleChineseInput-zhuyin',
+    'app-i18n/GoogleKoreanInput',
 
-  # These are all X.org sub-packages; shouldn't be any need to list them
-  # individually.
-  'media-fonts/encodings',
-  'x11-apps/iceauth',
-  'x11-apps/intel-gpu-tools',
-  'x11-apps/mkfontdir',
-  'x11-apps/rgb',
-  'x11-apps/setxkbmap',
-  'x11-apps/xauth',
-  'x11-apps/xcursorgen',
-  'x11-apps/xdpyinfo',
-  'x11-apps/xdriinfo',
-  'x11-apps/xev',
-  'x11-apps/xgamma',
-  'x11-apps/xhost',
-  'x11-apps/xinit',
-  'x11-apps/xinput',
-  'x11-apps/xkbcomp',
-  'x11-apps/xlsatoms',
-  'x11-apps/xlsclients',
-  'x11-apps/xmodmap',
-  'x11-apps/xprop',
-  'x11-apps/xrandr',
-  'x11-apps/xrdb',
-  'x11-apps/xset',
-  'x11-apps/xset-mini',
-  'x11-apps/xwininfo',
-  'x11-base/xorg-server',
-  'x11-drivers/xf86-input-evdev',
-  'x11-drivers/xf86-input-keyboard',
-  'x11-drivers/xf86-input-mouse',
-  'x11-drivers/xf86-input-synaptics',
-  'x11-drivers/xf86-video-intel',
-  'x11-drivers/xf86-video-vesa',
-  'x11-drivers/xf86-video-vmware',
-  'x11-libs/libICE',
-  'x11-libs/libSM',
-  'x11-libs/libX11',
-  'x11-libs/libXScrnSaver',
-  'x11-libs/libXau',
-  'x11-libs/libXcomposite',
-  'x11-libs/libXcursor',
-  'x11-libs/libXdamage',
-  'x11-libs/libXdmcp',
-  'x11-libs/libXext',
-  'x11-libs/libXfixes',
-  'x11-libs/libXfont',
-  'x11-libs/libXfontcache',
-  'x11-libs/libXft',
-  'x11-libs/libXi',
-  'x11-libs/libXinerama',
-  'x11-libs/libXmu',
-  'x11-libs/libXp',
-  'x11-libs/libXrandr',
-  'x11-libs/libXrender',
-  'x11-libs/libXres',
-  'x11-libs/libXt',
-  'x11-libs/libXtst',
-  'x11-libs/libXv',
-  'x11-libs/libXvMC',
-  'x11-libs/libXxf86vm',
-  'x11-libs/libdrm',
-  'x11-libs/libfontenc',
-  'x11-libs/libpciaccess',
-  'x11-libs/libxkbfile',
-  'x11-libs/libxkbui',
-  'x11-libs/pixman',
-  'x11-libs/xtrans',
-  'x11-misc/util-macros',
-  'x11-misc/xbitmaps',
-  'x11-proto/bigreqsproto',
-  'x11-proto/compositeproto',
-  'x11-proto/damageproto',
-  'x11-proto/dri2proto',
-  'x11-proto/fixesproto',
-  'x11-proto/fontcacheproto',
-  'x11-proto/fontsproto',
-  'x11-proto/inputproto',
-  'x11-proto/kbproto',
-  'x11-proto/printproto',
-  'x11-proto/randrproto',
-  'x11-proto/recordproto',
-  'x11-proto/renderproto',
-  'x11-proto/resourceproto',
-  'x11-proto/scrnsaverproto',
-  'x11-proto/trapproto',
-  'x11-proto/videoproto',
-  'x11-proto/xcmiscproto',
-  'x11-proto/xextproto',
-  'x11-proto/xf86bigfontproto',
-  'x11-proto/xf86dgaproto',
-  'x11-proto/xf86driproto',
-  'x11-proto/xf86rushproto',
-  'x11-proto/xf86vidmodeproto',
-  'x11-proto/xineramaproto',
-  'x11-proto/xproto',
+    # These are all X.org sub-packages; shouldn't be any need to list them
+    # individually.
+    'media-fonts/encodings',
+    'x11-apps/iceauth',
+    'x11-apps/intel-gpu-tools',
+    'x11-apps/mkfontdir',
+    'x11-apps/rgb',
+    'x11-apps/setxkbmap',
+    'x11-apps/xauth',
+    'x11-apps/xcursorgen',
+    'x11-apps/xdpyinfo',
+    'x11-apps/xdriinfo',
+    'x11-apps/xev',
+    'x11-apps/xgamma',
+    'x11-apps/xhost',
+    'x11-apps/xinit',
+    'x11-apps/xinput',
+    'x11-apps/xkbcomp',
+    'x11-apps/xlsatoms',
+    'x11-apps/xlsclients',
+    'x11-apps/xmodmap',
+    'x11-apps/xprop',
+    'x11-apps/xrandr',
+    'x11-apps/xrdb',
+    'x11-apps/xset',
+    'x11-apps/xset-mini',
+    'x11-apps/xwininfo',
+    'x11-base/xorg-server',
+    'x11-drivers/xf86-input-evdev',
+    'x11-drivers/xf86-input-keyboard',
+    'x11-drivers/xf86-input-mouse',
+    'x11-drivers/xf86-input-synaptics',
+    'x11-drivers/xf86-video-intel',
+    'x11-drivers/xf86-video-vesa',
+    'x11-drivers/xf86-video-vmware',
+    'x11-libs/libICE',
+    'x11-libs/libSM',
+    'x11-libs/libX11',
+    'x11-libs/libXScrnSaver',
+    'x11-libs/libXau',
+    'x11-libs/libXcomposite',
+    'x11-libs/libXcursor',
+    'x11-libs/libXdamage',
+    'x11-libs/libXdmcp',
+    'x11-libs/libXext',
+    'x11-libs/libXfixes',
+    'x11-libs/libXfont',
+    'x11-libs/libXfontcache',
+    'x11-libs/libXft',
+    'x11-libs/libXi',
+    'x11-libs/libXinerama',
+    'x11-libs/libXmu',
+    'x11-libs/libXp',
+    'x11-libs/libXrandr',
+    'x11-libs/libXrender',
+    'x11-libs/libXres',
+    'x11-libs/libXt',
+    'x11-libs/libXtst',
+    'x11-libs/libXv',
+    'x11-libs/libXvMC',
+    'x11-libs/libXxf86vm',
+    'x11-libs/libdrm',
+    'x11-libs/libfontenc',
+    'x11-libs/libpciaccess',
+    'x11-libs/libxkbfile',
+    'x11-libs/libxkbui',
+    'x11-libs/pixman',
+    'x11-libs/xtrans',
+    'x11-misc/util-macros',
+    'x11-misc/xbitmaps',
+    'x11-proto/bigreqsproto',
+    'x11-proto/compositeproto',
+    'x11-proto/damageproto',
+    'x11-proto/dri2proto',
+    'x11-proto/fixesproto',
+    'x11-proto/fontcacheproto',
+    'x11-proto/fontsproto',
+    'x11-proto/inputproto',
+    'x11-proto/kbproto',
+    'x11-proto/printproto',
+    'x11-proto/randrproto',
+    'x11-proto/recordproto',
+    'x11-proto/renderproto',
+    'x11-proto/resourceproto',
+    'x11-proto/scrnsaverproto',
+    'x11-proto/trapproto',
+    'x11-proto/videoproto',
+    'x11-proto/xcmiscproto',
+    'x11-proto/xextproto',
+    'x11-proto/xf86bigfontproto',
+    'x11-proto/xf86dgaproto',
+    'x11-proto/xf86driproto',
+    'x11-proto/xf86rushproto',
+    'x11-proto/xf86vidmodeproto',
+    'x11-proto/xineramaproto',
+    'x11-proto/xproto',
 ]
 
 # TODO(merlin): replace matching with regex matching to simplify this
 # Matching is done in lowercase, you MUST give lowercase names.
 LICENSE_FILENAMES = [
-  'copying',
-  'copyright',
-  'licence',        # used by openssh
-  'license',
-  'license.txt',    # used by hdparm, used by NumPy, glew
-  'licensing.txt',  # used by libatomic_ops
-  'copyright',
-  'ipa_font_license_agreement_v1.0.txt',  # used by ja-ipafonts
-]
-
-SKIPPED_LICENSE_FILENAME_COMPONENTS = [
-  # FIXME: check whether this should be excluded.
-  'third_party'
+    'copying',
+    'copyright',
+    'ipa_font_license_agreement_v1.0.txt',  # used by ja-ipafonts
+    'licence',        # used by openssh
+    'license',
+    'license.txt',    # used by hdparm, used by NumPy, glew
+    'licensing.txt',  # used by libatomic_ops
 ]
 
 # These are _temporary_ license mappings for packages that do not have a valid
@@ -243,74 +237,73 @@ SKIPPED_LICENSE_FILENAME_COMPONENTS = [
 # We should also fix the packages listed below so that the hardcoded
 # mappings can be obsoleted (i.e. FIXME for this entire list).
 PACKAGE_LICENSES = {
-  # One off licenses. Should we check in a custom LICENSE file in upstream?
-  'dev-python/netifaces': ['netiface'],
-  'net-dialup/ppp': ['ppp-2.4.4'],
-  'sys-libs/ncurses': ['ncurses'],
+    # One off licenses. Should we check in a custom LICENSE file in upstream?
+    'dev-python/netifaces': ['netiface'],
+    'net-dialup/ppp': ['ppp-2.4.4'],
+    'sys-libs/ncurses': ['ncurses'],
 
-  # BSD and MIT license authorship mapping.
-  # Ideally we should have a custom LICENSE file in the upstream source.
-  # TODO: BSD-2: bsdiff is missing a license file, add one upstream.
-  'dev-util/bsdiff': ['BSD-bsdiff'],
-  # TODO: libevent is missing a license file, add one upstream.
-  'dev-libs/libevent': ['BSD-libevent'],
-  # TODO: dhcpcd is missing a license file, (c) in README. Add one upstream.
-  'net-misc/dhcpcd': ['BSD-dhcpcd'],
-  # TODO: iputils is missing a license file, add one upstream.
-  'net-misc/iputils': ['BSD-iputils'],
-  # TODO: c-ares is missing a license file, add one upstream.
-  'net-dns/c-ares': ['MIT-MIT'],
+    # BSD and MIT license authorship mapping.
+    # Ideally we should have a custom LICENSE file in the upstream source.
+    # TODO: BSD-2: bsdiff is missing a license file, add one upstream.
+    'dev-util/bsdiff': ['BSD-bsdiff'],
+    # TODO: libevent is missing a license file, add one upstream.
+    'dev-libs/libevent': ['BSD-libevent'],
+    # TODO: dhcpcd is missing a license file, (c) in README. Add one upstream.
+    'net-misc/dhcpcd': ['BSD-dhcpcd'],
+    # TODO: iputils is missing a license file, add one upstream.
+    'net-misc/iputils': ['BSD-iputils'],
+    # TODO: c-ares is missing a license file, add one upstream.
+    'net-dns/c-ares': ['MIT-MIT'],
 
-  # TODO: We should just check in a LICENSE file in all of these:
-  'app-i18n/input-tools': ['BSD-Google'],
-  'app-i18n/nacl-mozc': ['BSD-Google'],
-  'app-i18n/ibus-mozc': ['BSD-Google'],
-  'media-plugins/o3d': ['BSD-Google'],
-  'dev-python/unittest2': ['BSD-Google'],
+    # TODO: We should just check in a LICENSE file in all of these:
+    'app-i18n/input-tools': ['BSD-Google'],
+    'app-i18n/nacl-mozc': ['BSD-Google'],
+    'app-i18n/ibus-mozc': ['BSD-Google'],
+    'media-plugins/o3d': ['BSD-Google'],
+    'dev-python/unittest2': ['BSD-Google'],
 
-  # Fix ebuild multi license definitions when they define licenses that do
-  # not apply to us because we don't use the resulting binaries.
+    # Fix ebuild multi license definitions when they define licenses that do
+    # not apply to us because we don't use the resulting binaries.
 
-  # Mesa ebuild says MIT and seems to omit LGPL-3 and SGI-B-2.0 mentioned in the
-  # docs directory? Either way, I had to create a text license file like so:
-  # mesa-9.1-r9/work/Mesa-9.1/docs$ lynx --dump license.html -nolist > license
-  'media-libs/mesa': [ 'MIT-Mesa', 'LGPL-3','SGI-B-2.0' ],
+    # Mesa ebuild says MIT and omits LGPL-3 and SGI-B-2.0 mentioned in the
+    # docs directory? Either way, I had to create a text license file like so:
+    # mesa-9.1-r9/work/Mesa-9.1/docs$ lynx --dump license.html -nolist > license
+    'media-libs/mesa': ['MIT-Mesa', 'LGPL-3', 'SGI-B-2.0'],
 
-  # TODO: Ebuild seems to wrongfully say BSD + public-domain.
-  # I scanned the unpacked source with licensecheck and didn't find any BSD.
-  # FIXME: Do a second review and fix upstream gentoo package
-  'sys-libs/timezone-data': [ 'public-domain' ],
+    # TODO: Ebuild seems to wrongfully say BSD + public-domain.
+    # I scanned the unpacked source with licensecheck and didn't find any BSD.
+    # FIXME: Do a second review and fix upstream gentoo package
+    'sys-libs/timezone-data': ['public-domain'],
 
-  # Ebuild only says 'LGPL-2.1', but source disagrees. I'll include 'as-is'
-  # to force reading files from the source (which states some parts are as-is).
-  # FIXME? Should the ebuild license be updated to match xz-4.999.9beta/COPYING?
-  'app-arch/xz-utils': [ 'public-domain', 'as-is', 'LGPL-2.1', 'GPL-2' ],
+    # Ebuild only says 'LGPL-2.1', but source disagrees. I'll include 'as-is'
+    # to force reading files from the source (which states some parts are as-is)
+    # FIXME? Update ebuild license to match xz-4.999.9beta/COPYING?
+    'app-arch/xz-utils': ['public-domain', 'as-is', 'LGPL-2.1', 'GPL-2'],
 
-  # These packages are not in Alex, check and remove later (might be used in
-  # other platforms).
-  #'media-libs/freeimage': ['GPL-2'],
-  #'sys-libs/talloc': ['LGPL-3'],  # ebuild incorrectly says GPL-3
-  #'app-crypt/nss': ['MPL-1.1'],
-  #'media-libs/jpeg': ['jpeg'],
-  #'app-editors/gentoo-editor': ['MIT-gentoo-editor'],
-  #
-  # 'media-fonts/font-util': ['font-util'],  # COPYING file from git repo
-  # 'net-wireless/iwl1000-ucode': ['Intel-iwl1000'],
-  # 'sys-process/vixie-cron': ['vixie-cron'],
+    # These packages are not in Alex, check and remove later (might be used in
+    # other platforms).
+    # 'media-libs/freeimage': ['GPL-2'],
+    # 'sys-libs/talloc': ['LGPL-3'],  # ebuild incorrectly says GPL-3
+    # 'media-libs/jpeg': ['jpeg'],
+    # 'app-editors/gentoo-editor': ['MIT-gentoo-editor'],
+    #
+    # 'media-fonts/font-util': ['font-util'],  # COPYING file from git repo
+    # 'net-wireless/iwl1000-ucode': ['Intel-iwl1000'],
+    # 'sys-process/vixie-cron': ['vixie-cron'],
 }
 
 # Any license listed list here found in the ebuild will make the code look for
 # license files inside the package source code in order to get copyright
 # attribution from them.
 COPYRIGHT_ATTRIBUTION_LICENSES = [
-  'BSD',    # requires distribution of copyright notice
-  'BSD-2',  # so does BSD-2 http://opensource.org/licenses/BSD-2-Clause
-  'BSD-3',  # and BSD-3? http://opensource.org/licenses/BSD-3-Clause
-  'BSD-4',  # and 4?
-  'BSD-with-attribution',
-  'Old-MIT',
-  'MIT',
-  'MIT-with-advertising',
+    'BSD',    # requires distribution of copyright notice
+    'BSD-2',  # so does BSD-2 http://opensource.org/licenses/BSD-2-Clause
+    'BSD-3',  # and BSD-3? http://opensource.org/licenses/BSD-3-Clause
+    'BSD-4',  # and 4?
+    'BSD-with-attribution',
+    'MIT',
+    'MIT-with-advertising',
+    'Old-MIT',
 ]
 
 # The following licenses are not invalid or to show as a less helpful stock
@@ -321,44 +314,52 @@ COPYRIGHT_ATTRIBUTION_LICENSES = [
 # found (there is no good way to know that a license we found on disk is the
 # better version of the stock version, so we show both).
 LOOK_IN_SOURCE_LICENSES = [
-  'as-is',  # The stock license is very vague, source always has more details.
-  'PSF-2',  # The custom license in python is more complete than the template.
+    'as-is',  # The stock license is very vague, source always has more details.
+    'PSF-2',  # The custom license in python is more complete than the template.
 
-# As far as I know, we have no requirement to do copyright attribution for
-# these licenses, but it's simple and reliable to do it, so go for it.
-  'BZIP2',     # Single use license, do copyright attribution because it's easy.
-  'OFL',       # Almost single use license, do copyright attribution.
-  'OFL-1.1',   # Almost single use license, do copyright attribution.
-  'UoI-NCSA',  # Only used by NSCA, might as well show their custom copyright.
+    # As far as I know, we have no requirement to do copyright attribution for
+    # these licenses, but the license included in the code has slightly better
+    # information than the stock Gentoo one (including copyright attribution).
+    'BZIP2',     # Single use license, do copyright attribution.
+    'OFL',       # Almost single use license, do copyright attribution.
+    'OFL-1.1',   # Almost single use license, do copyright attribution.
+    'UoI-NCSA',  # Only used by NSCA, might as well show their custom copyright.
 ]
 
 PACKAGE_HOMEPAGES = {
-  'app-editors/vim': ['http://www.vim.org/'],
-  'x11-proto/glproto': ['http://www.x.org/'],
+    # Example:
+    # 'x11-proto/glproto': ['http://www.x.org/'],
 }
 
 # These are tokens found in LICENSE= in an ebuild that aren't licenses we
 # can actually read from disk.
 # You should not use this to blacklist real licenses.
 LICENCES_IGNORE = [
-  ')',            # Ignore OR tokens from LICENSE="|| ( LGPL-2.1 MPL-1.1 )"
-  '(',
-  '||',
-  'International', # Workaround for LICENSE="Marvell International Ltd."
-  'Ltd.',          # Find Marvell and ignore the other 2 tokens (FIXME upstream)
+    ')',              # Ignore OR tokens from LICENSE="|| ( LGPL-2.1 MPL-1.1 )"
+    '(',
+    '||',
+    'International',  # Workaround for LICENSE="Marvell International Ltd."
+    'Ltd.',           # Get Marvell & ignore the other 2 tokens (FIXME upstream)
 ]
 
-TEMPLATE_FILE = 'about_credits.tmpl'
-ENTRY_TEMPLATE_FILE = 'about_credits_entry.tmpl'
+TMPL = 'about_credits.tmpl'
+ENTRY_TMPL = 'about_credits_entry.tmpl'
+SHARED_LICENSE_TMPL = 'about_credits_shared_license_entry.tmpl'
+
 
 class PackageLicenseError(Exception):
-  """This gets thrown any time something fails while getting license information
-  for a package. This will cause the processing to error in the end."""
+  """Thrown if something fails while getting license information for a package.
+  This will cause the processing to error in the end.
+  """
+
 
 class PackageSkipped(Exception):
-  """This is a non error to exclude packages from license processing."""
+  """Non error to exclude packages from license processing."""
 
-class PackageInfo:
+
+class PackageInfo(object):
+  """Package info containers, mostly for storing licenses."""
+
   def __init__(self):
 
     self.revision = None
@@ -396,31 +397,40 @@ class PackageInfo:
   def fullname(self):
     return '%s/%s' % (self.category, self.name)
 
-  def _RunEbuildPhases(self, path, *phases, **kwargs):
-    """Receives something like:
-      path = /mnt/host/source/src/
+  @staticmethod
+  def _RunEbuildPhases(path, *phases, **kwargs):
+    """Run a list of ebuild phases on an ebuild.
+
+    Args:
+      path: /mnt/host/source/src/
                  third_party/portage-stable/net-misc/rsync/rsync-3.0.8.ebuild
-      phases = ['clean', 'fetch'] or ['unpack']."""
+      *phases: list of phases like ['clean', 'fetch'] or ['unpack'].
+      **kwargs: dict passed to ebuild
+    """
 
     #logging.debug('ebuild-%s | %s | %s', board, path, str(list(phases)))
     subprocess.check_call(
-      ['ebuild-%s' % board, path] + list(phases), **kwargs)
+        ['ebuild-%s' % board, path] + list(phases), **kwargs)
 
   def _ExtractLicenses(self):
-    """Try to get licenses from the package by unpacking it with ebuild
-    and looking for license files in the unpacked tree.
+    """Scrounge for text licenses in the source of package we'll unpack.
+
     This is only called if we couldn't get usable licenses from the ebuild,
     or one of them is BSD/MIT like which forces us to look for a file with
     copyright attribution in the source code itself.
     It'll scan the unpacked source code for what looks like license files
     as defined in LICENSE_FILENAMES.
+
+    Raises:
+      AssertionError: on runtime errors
+      PackageLicenseError: couldn't find copyright attribution file.
     """
 
     path = self._GetEbuildPath(board, self.fullnamerev)
     self._RunEbuildPhases(
-      path, 'clean', 'fetch',
-      stdout=open('/dev/null', 'wb'),
-      stderr=subprocess.STDOUT)
+        path, 'clean', 'fetch',
+        stdout=open('/dev/null', 'wb'),
+        stderr=subprocess.STDOUT)
     self._RunEbuildPhases(path, 'unpack')
 
     p = subprocess.Popen(['portageq-%s' % board, 'envvar',
@@ -450,15 +460,7 @@ class PackageInfo:
     license_files = []
     for name in files:
       if os.path.basename(name).lower() in LICENSE_FILENAMES:
-        has_skipped_component = False
-        # FIXME: Should we really exclude third_party?
-        # (someone coded it that way with no comments as to why).
-        for comp in SKIPPED_LICENSE_FILENAME_COMPONENTS:
-          if comp in name:
-            has_skipped_component = True
-            break
-        if not has_skipped_component:
-          license_files.append(name)
+        license_files.append(name)
 
     if not license_files:
       if self.need_copyright_attribution:
@@ -497,19 +499,30 @@ class PackageInfo:
         logging.info("Adding license %s: (guessed latin1)", license_path)
 
       self.license_text_scanned += [
-          "Scanned Source license %s:\n\n%s" % (license_file, license_txt) ]
+          "Scanned Source license %s:\n\n%s" % (license_file, license_txt)]
 
     # We used to clean up here, but there have been many instances where
     # looking at unpacked source to see where the licenses were, was useful
     # so let's disable this for now
     #self._RunEbuildPhases(path, 'clean')
 
-  def _GetEbuildPath(self, board, name):
-    """Turns (x86-alex, net-misc/wget-1.12) into
-    /mnt/host/source/src/third_party/portage-stable/net-misc/wget/wget-1.12.ebui
+  @staticmethod
+  def _GetEbuildPath(board, name):
+    """Create a pathname where to find the ebuild of a given package for board.
+
+    Args:
+      board: eg x86-alex
+      name: eg net-misc/wget-1.12
+
+    Returns:
+      /mnt/host/source/src/third_party/portage-stable/net-misc/wget/
+                                                               wget-1.12.ebuild
+
+    Raises:
+      AssertionError: when equery did not return a valid path.
     """
     p = subprocess.Popen(
-      ['equery-%s' % board, 'which', name], stdout=subprocess.PIPE)
+        ['equery-%s' % board, 'which', name], stdout=subprocess.PIPE)
     stdout = p.communicate()[0]
     p.wait()
     path = stdout.strip()
@@ -522,24 +535,34 @@ class PackageInfo:
     return path
 
   def _GetPackageInfo(self, fullnamewithrev):
-    """Create a PackageInfo object and populate its license, homepage and
-    description if they are valid.
+    """Populate PackageInfo with package license, homepage and description.
+
     Some packages have static license mappings applied to them.
 
-    self.ebuild_license_names will not be filled the package is skipped
+    self.ebuild_license_names will not be filled if the package is skipped
     or if there was an issue getting data from the ebuild.
     self.stock_license_names will only get the licenses that we can paste
-    as stock licenses and scan_source_for_licenses will be set if we should
-    unpack the source to look for licenses (need_copyright_attribution will
-    make not finding one fatal later).
+    as stock licenses.
+    scan_source_for_licenses will be set if we should unpack the source to look
+    for licenses
+    if need_copyright_attribution is also set, not finding a license in the
+    source is fatal (PackageLicenseError will get raised).
+
+    Args:
+      fullnamewithrev: e.g. dev-libs/libatomic_ops-7.2d
+
+    Raises:
+      AssertionError: on runtime errors
+      PackageSkipped: if in skip list
+      PackageLicenseError: in case of error getting license file
     """
 
     try:
       self.category, self.name, self.version, self.revision = \
-        portage.versions.catpkgsplit(fullnamewithrev)
+          portage.versions.catpkgsplit(fullnamewithrev)
     except TypeError:
       raise AssertionError("portage couldn't find %s, missing version number?" %
-          fullnamewithrev)
+                           fullnamewithrev)
 
     if self.revision is not None:
       self.revision = str(self.revision).lstrip('r')
@@ -561,12 +584,12 @@ class PackageInfo:
       raise PackageLicenseError()
 
     cmd = [
-      'portageq',
-      'metadata',
-      '/build/%s' % board,
-      'ebuild',
-      self.fullnamerev,
-      'HOMEPAGE', 'LICENSE', 'DESCRIPTION',
+        'portageq',
+        'metadata',
+        '/build/%s' % board,
+        'ebuild',
+        self.fullnamerev,
+        'HOMEPAGE', 'LICENSE', 'DESCRIPTION',
     ]
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE)
     lines = [s.strip() for s in p.stdout.readlines()]
@@ -583,8 +606,8 @@ class PackageInfo:
     # GPL-3
     # Network utility to retrieve files from the WWW
 
-    (self.homepages,    self.ebuild_license_names, self.description) = (
-      lines[0].split(), lines[1].split(),          lines[2:])
+    (self.homepages,   self.ebuild_license_names, self.description) = (
+     lines[0].split(), lines[1].split(),          lines[2:])
 
     if self.fullname in PACKAGE_HOMEPAGES:
       self.homepages = PACKAGE_HOMEPAGES[self.fullname]
@@ -599,13 +622,19 @@ class PackageInfo:
       logging.info("Read licenses from ebuild for %s: %s", self.fullnamerev,
                    ",".join(self.ebuild_license_names))
 
-
   def GetLicenses(self, fullnamewithrev):
-    """After populating the package info and stock licenses, this figures
+    """Get licenses from the ebuild field and the unpacked source code.
+
+    After populating the package info and stock licenses, this figures
     out whether the package source should be scanned to add licenses found
     there.
 
-    Raises: PackageSkipped, PackageLicenseErrorCall (via _GetPackageInfo).
+    Args:
+      fullnamewithrev: e.g. dev-libs/libatomic_ops-7.2d
+
+    Raises:
+      AssertionError: on runtime errors
+      PackageLicenseError: couldn't find license in ebuild.
     """
 
     # First populate the package basic information
@@ -634,8 +663,6 @@ class PackageInfo:
       # the source.
       raise PackageLicenseError()
 
-    self.ebuild_license_names = self.ebuild_license_names
-
     # This is not invalid, but the parser can't deal with it, so if it ever
     # happens, error out to tell the programmer to do something.
     if "||" in self.ebuild_license_names[1:]:
@@ -647,8 +674,8 @@ class PackageInfo:
     or_licenses_and_one_is_no_attribution = False
     # We do a quick early pass first so that the longer pass below can
     # run accordingly.
-    for license_name in [ x for x in self.ebuild_license_names
-                                if x not in LICENCES_IGNORE ]:
+    for license_name in [x for x in self.ebuild_license_names
+                         if x not in LICENCES_IGNORE]:
       # Here we have an OR case, and one license that we can use stock, so
       # we remember that in order to be able to skip license attributions if
       # any were in the OR.
@@ -656,8 +683,8 @@ class PackageInfo:
           license_name not in COPYRIGHT_ATTRIBUTION_LICENSES):
         or_licenses_and_one_is_no_attribution = True
 
-    for license_name in [ x for x in self.ebuild_license_names
-                                if x not in LICENCES_IGNORE ]:
+    for license_name in [x for x in self.ebuild_license_names
+                         if x not in LICENCES_IGNORE]:
       # Licenses like BSD or MIT can't be used as is because they do not contain
       # copyright self. They have to be replaced by copyright file given in the
       # source code, or manually mapped by us in PACKAGE_LICENSES
@@ -711,14 +738,15 @@ class PackageInfo:
   find which license to assign. Once you found it, add a static mapping to the
   PACKAGE_LICENSES dict if that license is not in a file, or teach this script
   to find the license file.""",
-      self.fullname)
+                    self.fullname)
       raise PackageLicenseError()
 
 
-class Licensing:
-  def __init__(self, package_fullnames,
-               entry_template_file=ENTRY_TEMPLATE_FILE):
+class Licensing(object):
+  """Do the actual work of extracting licensing info and outputting html."""
 
+  def __init__(self, package_fullnames,
+               entry_template_file=ENTRY_TMPL):
     # List of stock licenses referenced in ebuilds. Used to print a report.
     self.stock_licenses = {}
 
@@ -731,38 +759,44 @@ class Licensing:
     self.package_text = {}
     self.entry_template = codecs.open(entry_template_file, mode='rb',
                                       encoding="utf-8").read()
-    self.packages = [ ]
+    self.packages = []
     self._package_fullnames = package_fullnames
 
   @property
   def sorted_stock_licenses(self):
-    return sorted(self.stock_licenses.keys())
+    return sorted(self.stock_licenses.keys(), key=str.lower)
 
   def LicensedPackages(self, license_name):
-    '''Return list of packages using a given license.'''
+    """Return list of packages using a given license."""
     return self.stock_licenses[license_name]
 
   def ProcessPackages(self):
-    """Do not call this after adding virtual packages with AddExtraPkg."""
+    """Iterate through all packages provided and gather their licenses.
+
+    GetLicenses will scrape licenses from the code and/or gather stock license
+    names. We gather the list of stock ones for later processing.
+
+    Do not call this after adding virtual packages with AddExtraPkg.
+    """
     for package in self._package_fullnames:
       pkg = PackageInfo()
       try:
         pkg.GetLicenses(package)
-        # Keep track of which stock licenses are used by which packages.
-        for stock_license in pkg.stock_license_names:
-          try:
-            self.stock_licenses[stock_license] += [ pkg.fullnamerev ]
-          except KeyError:
-            self.stock_licenses[stock_license] = [ pkg.fullnamerev ]
-        self.packages += [ pkg ]
+        self.packages += [pkg]
       except PackageSkipped, e:
         logging.info(e)
       except PackageLicenseError:
-        self.incomplete_packages  += [ pkg.fullnamerev ]
+        self.incomplete_packages += [pkg.fullnamerev]
 
   def AddExtraPkg(self, pkg_data):
-    """Allow adding pre-created virtual packages. GetLicenses will not work
-    on them, so add them after having run ProcessPackages."""
+    """Allow adding pre-created virtual packages.
+
+    GetLicenses will not work on them, so add them after having run
+    ProcessPackages.
+
+    Args:
+      pkg_data: array of package data as defined below
+    """
     pkg = PackageInfo()
     pkg.category = pkg_data[0]
     pkg.name = pkg_data[1]
@@ -770,10 +804,11 @@ class Licensing:
     pkg.homepages = pkg_data[3]            # this is a list
     pkg.stock_license_names = pkg_data[4]  # this is also a list
     pkg.ebuild_license_names = pkg_data[4]
-    self.packages += [ pkg ]
+    self.packages += [pkg]
 
-  def _ReadStockLicense(self, stock_license_name, package):
-    '''Read and return stock license file specified in an ebuild.'''
+  @staticmethod
+  def _ReadStockLicense(stock_license_name):
+    """Read and return stock license file specified in an ebuild."""
 
     license_path = None
     for directory in STOCK_LICENSE_DIRS:
@@ -786,83 +821,121 @@ class Licensing:
       # others are utf-8 and of course you can't know but only guess.
       try:
         license_txt = codecs.open(license_path, encoding="utf-8").read()
-        logging.info('%s: read license %s (UTF-8)', package.fullnamerev,
-                     license_path)
+        logging.info("read stock license %s (UTF-8)", license_path)
       except UnicodeDecodeError:
         license_txt = codecs.open(license_path, encoding="latin1").read()
-        logging.info('%s: read license %s (latin1)', package.fullnamerev,
-                     license_path)
+        logging.info("read stock license %s (latin1)", license_path)
       return license_txt
     else:
-      logging.error('%s: stock license %s could not be found in %s',
-                    package.fullnamerev, stock_license_name,
-                    '\n'.join(STOCK_LICENSE_DIRS))
-      self.incomplete_packages  += [ package.fullnamerev ]
-      return ""
+      raise AssertionError("stock license %s could not be found in %s"
+                           % (stock_license_name,
+                              '\n'.join(STOCK_LICENSE_DIRS)))
+
+  @staticmethod
+  def EvaluateTemplate(template, env):
+    """Expand a template with vars like {{foo}} using a dict of expansions."""
+    # TODO switch to stock python templates.
+    for key, val in env.iteritems():
+      template = template.replace('{{%s}}' % key, val)
+    return template
 
   def _GeneratePackageLicenseText(self, package):
-    '''Concatenate all stock gentoo licenses and licenses read the package
-    source tree, if any.'''
+    """Concatenate all licenses related to a package.
+
+    This means a combination of stock gentoo licenses and licenses read from the
+    package source tree, if any.
+
+    Args:
+      package: PackageInfo object
+
+    Raises:
+      AssertionError: on runtime errors
+    """
 
     license_text = []
     for license_text_scanned in package.license_text_scanned:
       license_text.append(license_text_scanned)
-      license_text.append("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-                          "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n")
+      license_text.append('%s\n' % ('-=' * 40))
 
-    for stock_license_name in package.stock_license_names:
-      license_text.append("Gentoo Package Provided Stock License %s:" %
-                           stock_license_name)
-      license_text.append(self._ReadStockLicense(stock_license_name, package))
-      license_text.append("-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
-                          "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n")
+    license_pointers = []
+    for sln in package.stock_license_names:
+      license_pointers.append(
+          "<li><a href='#%s'>Gentoo Package Stock License %s</a></li>" % (
+              sln, sln))
+      # Keep track of which stock licenses are used by which packages.
+      try:
+        self.stock_licenses[sln] += [package.fullnamerev]
+      except KeyError:
+        self.stock_licenses[sln] = [package.fullnamerev]
+
 
     # This should get caught earlier, but one extra check.
-    if not license_text:
+    if not (license_text + license_pointers):
       raise AssertionError('Ended up with no license_text')
 
     env = {
-      'name':    "%s-%s" % (package.name, package.version),
-      'url':     package.homepages[0] if package.homepages else '',
-      'license': '\n'.join(license_text) or 'ERROR FINDING LICENSE(S)',
+        'name': "%s-%s" % (package.name, package.version),
+        'url': package.homepages[0] if package.homepages else '',
+        'licenses_txt': cgi.escape('\n'.join(license_text)) or '',
+        'licenses_ptr': '\n'.join(license_pointers) or '',
     }
-    self.package_text[package] = EvaluateTemplate(self.entry_template, env)
-
+    self.package_text[package] = self.EvaluateTemplate(self.entry_template, env)
 
   def GenerateHTMLLicenseOutput(self, output_file,
-                                output_template_file=TEMPLATE_FILE):
+                                output_template=TMPL,
+                                stock_license_template=SHARED_LICENSE_TMPL):
+    """Generate the combined html license file used in ChromeOS.
+
+    Args:
+      output_file: resulting HTML license output.
+      output_template: template for the entire HTML file.
+      stock_license_template: template for stock license entries.
+    """
     sorted_license_txt = []
-    self.packages.sort(key=lambda x:(x.name, x.version, x.revision))
+    self.packages.sort(key=lambda x: (x.name.lower(), x.version, x.revision))
     for pkg in self.packages:
       self._GeneratePackageLicenseText(pkg)
-      sorted_license_txt += [ self.package_text[pkg] ]
+      sorted_license_txt += [self.package_text[pkg]]
 
-    file_template = codecs.open(output_template_file, mode='rb',
+    # Now generate the bottom of the page that will contain all the stock
+    # licenses and a list of who is pointing to them.
+    stock_license_template = codecs.open(stock_license_template, mode='rb',
+                                         encoding="utf-8").read()
+    # TODO: stock licenses that are only used once should be migrated to the
+    # per package license list. No need to factor out a stock license if
+    # it's only used once.
+    stock_licenses_txt = []
+    for license_name in self.sorted_stock_licenses:
+      env = {
+          'license_name': license_name,
+          'license': self._ReadStockLicense(license_name),
+          'license_packages': ' '.join(
+              licensing.LicensedPackages(license_name)),
+      }
+      stock_licenses_txt += [self.EvaluateTemplate(stock_license_template, env)]
+
+    file_template = codecs.open(output_template, mode='rb',
                                 encoding="utf-8").read()
+    env = {
+        'entries': '\n'.join(sorted_license_txt),
+        'licenses': '\n'.join(stock_licenses_txt),
+    }
     out_file = codecs.open(output_file, mode="w", encoding="utf-8")
-    out_file.write(EvaluateTemplate(file_template,
-                                    { 'entries': '\n'.join(sorted_license_txt)},
-                                    escape=False))
+    out_file.write(self.EvaluateTemplate(file_template, env))
 
 
 def ListInstalledPackages(board):
   """Return a list of all packages installed for a particular board."""
-  # FIXME(merlin): davidjames pointed out that this is
-  # not the right way to get the package list as it does not apply
-  # filters. This should change to ~/trunk/src/scripts/get_package_list
+  # TODO(merlin): davidjames pointed out that this is not the right way to
+  # get the package list as it does not apply filters. This should change to
+  # ~/trunk/src/scripts/get_package_list which lists fewer packages, but it's
+  # not a drop in since equery list gives version numbers while get_package_list
+  # does not.
+  # get_package_list gives a shorter list, and it'll have to be reviewed to make
+  # sure it does not mistakenly remove anything it shouldn't have.
   args = [EQUERY_BASE % board, 'list', '*']
   p = subprocess.Popen(args, stdout=subprocess.PIPE)
   return [s.strip() for s in p.stdout.readlines()]
-
-
-def EvaluateTemplate(template, env, escape=True):
-  """Expand a template with variables like {{foo}} using a
-  dictionary of expansions."""
-  for key, val in env.iteritems():
-    if escape:
-      val = cgi.escape(val)
-    template = template.replace('{{%s}}' % key, val)
-  return template
 
 
 def usage():
@@ -870,6 +943,10 @@ def usage():
   sys.exit(1)
 
 
+# TODO make this a main function after fixing those:
+# board needs to be passed instead of being global
+# licensing too
+# so does SKIPPED_PACKAGES
 if __name__ == '__main__':
   debug = False
   testpkg = None
@@ -907,11 +984,10 @@ if __name__ == '__main__':
     raise AssertionError('%s exit code was not 0: got %s' % (cmd, ret))
   SKIPPED_PACKAGES += packages
 
-
   # For temporary single package debugging (make sure to include trailing -ver):
   if testpkg:
     logging.info("Will only generate license for %s", testpkg)
-    packages = [ testpkg ]
+    packages = [testpkg]
   else:
     packages = ListInstalledPackages(board)
   # If the caller forgets to set $board, it'll default to beaglebone, and return
@@ -923,13 +999,12 @@ if __name__ == '__main__':
   logging.debug('\n'.join(packages))
   logging.debug("Will skip these packages:")
   logging.debug('\n'.join(SKIPPED_PACKAGES))
-
   licensing = Licensing(packages)
   licensing.ProcessPackages()
   if not testpkg:
     for extra_pkg in [
-      ['x11-base', 'X.Org', '1.9.3', ['http://www.x.org/' ], [ 'X' ]],
-      ['sys-kernel', 'Linux', '2.6', [ 'http://www.kernel.org/' ], [ 'GPL-2' ]]
+        ['x11-base', 'X.Org', '1.9.3', ['http://www.x.org/'], ['X']],
+        ['sys-kernel', 'Linux', '2.6', ['http://www.kernel.org/'], ['GPL-2']]
     ]:
       licensing.AddExtraPkg(extra_pkg)
   licensing.GenerateHTMLLicenseOutput(output_file)
@@ -941,8 +1016,3 @@ this run.
 List of packages with errors:
 %s
   """ % '\n'.join(licensing.incomplete_packages))
-
-  logging.info("Non copyright attribution license usage:")
-  for license_name in licensing.sorted_stock_licenses:
-    logging.info("%s: %s", license_name,
-                 ", ".join(licensing.LicensedPackages(license_name)))
