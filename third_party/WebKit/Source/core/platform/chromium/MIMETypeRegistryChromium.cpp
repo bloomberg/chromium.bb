@@ -37,10 +37,6 @@
 #include "public/platform/WebMimeRegistry.h"
 #include "wtf/text/CString.h"
 
-// NOTE: Unlike other ports, we don't use the shared implementation in
-// MIMETypeRegistry.cpp.  Instead, we need to route most functions via
-// Platform.h to the embedder.
-
 namespace WebCore {
 
 String MIMETypeRegistry::getMIMETypeForExtension(const String &ext)
@@ -52,21 +48,6 @@ String MIMETypeRegistry::getWellKnownMIMETypeForExtension(const String &ext)
 {
     // This method must be thread safe and should not consult the OS/registry.
     return WebKit::Platform::current()->mimeRegistry()->wellKnownMimeTypeForExtension(ext);
-}
-
-// Returns the file extension if one is found.  Does not include the dot in the
-// filename.  E.g., 'html'.
-String MIMETypeRegistry::getPreferredExtensionForMIMEType(const String& type)
-{
-    // Prune out any parameters in case they happen to have snuck in there...
-    // FIXME: Is this really necessary??
-    String mimeType = type.substring(0, static_cast<unsigned>(type.find(';')));
-
-    String ext = WebKit::Platform::current()->mimeRegistry()->preferredExtensionForMIMEType(type);
-    if (!ext.isEmpty() && ext[0] == '.')
-        ext = ext.substring(1);
-
-    return ext;
 }
 
 String MIMETypeRegistry::getMIMETypeForPath(const String& path)

@@ -32,9 +32,9 @@
 #define WebMimeRegistry_h
 
 #include "WebCommon.h"
+#include "WebString.h"
 
 namespace WebKit {
-class WebString;
 
 class WebMimeRegistry {
 public:
@@ -59,7 +59,11 @@ public:
     virtual WebKit::WebString mimeTypeForExtension(const WebKit::WebString& fileExtension) = 0;
     virtual WebKit::WebString wellKnownMimeTypeForExtension(const WebKit::WebString& fileExtension) = 0;
     virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString& filePath) = 0;
-    virtual WebKit::WebString preferredExtensionForMIMEType(const WebKit::WebString& mimeType) = 0;
+    // FIXME: Remove the method once Chromium implementations have been removed.
+    virtual WebKit::WebString preferredExtensionForMIMEType(const WebKit::WebString& mimeType)
+    {
+        return WebString();
+    }
 
 protected:
     ~WebMimeRegistry() { }

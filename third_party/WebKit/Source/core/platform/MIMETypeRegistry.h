@@ -38,8 +38,6 @@ public:
     static String getMIMETypeForExtension(const String& extension);
     static String getWellKnownMIMETypeForExtension(const String& extension);
 
-    static String getPreferredExtensionForMIMEType(const String& type);
-
     static String getMIMETypeForPath(const String& path);
 
     // Check to see if a mime type is suitable for being loaded inline as an
