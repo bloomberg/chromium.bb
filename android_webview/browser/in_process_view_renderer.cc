@@ -110,6 +110,26 @@ bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
   return true;
 }
 
+class ScopedPixelAccess {
+ public:
+  ScopedPixelAccess(JNIEnv* env, jobject java_canvas) {
+    AwDrawSWFunctionTable* sw_functions =
+        BrowserViewRenderer::GetAwDrawSWFunctionTable();
+    pixels_ = sw_functions ?
+      sw_functions->access_pixels(env, java_canvas) : NULL;
+  }
+  ~ScopedPixelAccess() {
+    if (pixels_)
+      BrowserViewRenderer::GetAwDrawSWFunctionTable()->release_pixels(pixels_);
+  }
+  AwPixelInfo* pixels() { return pixels_; }
+
+ private:
+  AwPixelInfo* pixels_;
+
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScopedPixelAccess);
+};
+
 bool HardwareEnabled() {
   static bool g_hw_enabled = !CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableWebViewGLMode);
@@ -413,12 +433,32 @@ bool InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded(
       void* owner_key) {
   TRACE_EVENT0("android_webview",
                "InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded");
-  JNIEnv* env = AttachCurrentThread();
 
-  AwDrawSWFunctionTable* sw_functions = GetAwDrawSWFunctionTable();
-  AwPixelInfo* pixels = sw_functions ?
-      sw_functions->access_pixels(env, java_canvas) : NULL;
-  if (pixels == NULL) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedPixelAccess auto_release_pixels(env, java_canvas);
+  AwPixelInfo* pixels = auto_release_pixels.pixels();
+  SkMatrix matrix;
+  SkBitmap::Config config(SkBitmap::kNo_Config);
+  if (pixels) {
+    switch (pixels->config) {
+      case AwConfig_ARGB_8888:
+        config = SkBitmap::kARGB_8888_Config;
+        break;
+      case AwConfig_RGB_565:
+        config = SkBitmap::kRGB_565_Config;
+        break;
+    }
+
+    for (int i = 0; i < 9; i++) {
+      matrix.set(i, pixels->matrix[i]);
+    }
+    // Workaround for http://crbug.com/271096: SW draw only supports
+    // translate & scale transforms.
+    if (matrix.getType() & ~(SkMatrix::kTranslate_Mask | SkMatrix::kScale_Mask))
+      config = SkBitmap::kNo_Config;
+  }
+
+  if (config == SkBitmap::kNo_Config) {
     // Render into an auxiliary bitmap if pixel info is not available.
     ScopedJavaLocalRef<jobject> jcanvas(env, java_canvas);
     TRACE_EVENT0("android_webview", "RenderToAuxBitmap");
@@ -447,41 +487,43 @@ bool InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded(
   }
 
   // Draw in a SkCanvas built over the pixel information.
-  bool succeeded = false;
-  {
-    SkBitmap bitmap;
-    bitmap.setConfig(static_cast<SkBitmap::Config>(pixels->config),
-                     pixels->width,
-                     pixels->height,
-                     pixels->row_bytes);
-    bitmap.setPixels(pixels->pixels);
-    SkDevice device(bitmap);
-    SkCanvas canvas(&device);
-    SkMatrix matrix;
-    for (int i = 0; i < 9; i++)
-      matrix.set(i, pixels->matrix[i]);
-    canvas.setMatrix(matrix);
+  SkBitmap bitmap;
+  bitmap.setConfig(config,
+                   pixels->width,
+                   pixels->height,
+                   pixels->row_bytes);
+  bitmap.setPixels(pixels->pixels);
+  SkDevice device(bitmap);
+  SkCanvas canvas(&device);
+  canvas.setMatrix(matrix);
 
-    if (pixels->clip_region_size) {
-      SkRegion clip_region;
-      size_t bytes_read = clip_region.readFromMemory(pixels->clip_region);
-      DCHECK_EQ(pixels->clip_region_size, bytes_read);
-      canvas.setClipRegion(clip_region);
-    } else {
-      canvas.clipRect(gfx::RectToSkRect(clip));
+  if (pixels->clip_region) {
+    SkRegion clip_region;
+    size_t bytes_read = clip_region.readFromMemory(pixels->clip_region);
+    DCHECK_EQ(pixels->clip_region_size, bytes_read);
+    canvas.setClipRegion(clip_region);
+  } else if (pixels->clip_rect_count) {
+    SkRegion clip;
+    for (int i = 0; i < pixels->clip_rect_count; ++i) {
+      clip.op(SkIRect::MakeXYWH(pixels->clip_rects[i + 0],
+                                pixels->clip_rects[i + 1],
+                                pixels->clip_rects[i + 2],
+                                pixels->clip_rects[i + 3]),
+              SkRegion::kUnion_Op);
     }
-    canvas.translate(scroll_correction.x(),
-                     scroll_correction.y());
-
-    succeeded = render_source.Run(&canvas);
+    canvas.setClipRegion(clip);
   }
 
-  sw_functions->release_pixels(pixels);
-  return succeeded;
+  canvas.translate(scroll_correction.x(),
+                   scroll_correction.y());
+
+  return render_source.Run(&canvas);
 }
 
 skia::RefPtr<SkPicture> InProcessViewRenderer::CapturePicture(int width,
                                                               int height) {
+  TRACE_EVENT0("android_webview", "InProcessViewRenderer::CapturePicture");
+
   // Return empty Picture objects for empty SkPictures.
   skia::RefPtr<SkPicture> picture = skia::AdoptRef(new SkPicture);
   if (width <= 0 || height <= 0) {

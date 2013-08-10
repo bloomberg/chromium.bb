@@ -14,16 +14,30 @@
 
 class SkPicture;
 
+static const int kAwPixelInfoVersion = 2;
+
+// Values of the AwPixelInfo::config field.
+enum AwPixelConfig {
+  AwConfig_RGB_565 = 4,
+  AwConfig_ARGB_4444 = 5,
+  AwConfig_ARGB_8888 = 6,
+};
+
 // Holds the information required to implement the SW draw to system canvas.
 struct AwPixelInfo {
-  int config;         // In SkBitmap::Config format.
-  int width;          // In pixels.
-  int height;         // In pixels.
-  int row_bytes;      // Number of bytes from start of one line to next.
-  void* pixels;       // The pixels, all (height * row_bytes) of them.
-  float matrix[9];    // The matrix currently in effect on the canvas.
-  void* clip_region;  // Flattened clip region.
-  size_t clip_region_size;   // Number of bytes in |clip_region|.
+  int version;          // The kAwPixelInfoVersion this struct was built with.
+  int config;           // |pixel| format: a value from AwPixelConfig.
+  int width;            // In pixels.
+  int height;           // In pixels.
+  int row_bytes;        // Number of bytes from start of one line to next.
+  void* pixels;         // The pixels, all (height * row_bytes) of them.
+  // The Matrix and Clip are relative to |pixels|, not the source canvas.
+  float matrix[9];      // The matrix currently in effect on the canvas.
+  int clip_rect_count;  // Number of rects in |clip_rects|.
+  int* clip_rects;      // Clip area: 4 ints per rect in {x,y,w,h} format.
+  void* clip_region;    // TODO(joth): remove clip_region and clip_region_size.
+  size_t clip_region_size;
+  // NOTE: If you add more members, bump kAwPixelInfoVersion.
 };
 
 // Function that can be called to fish out the underlying native pixel data
