@@ -269,6 +269,17 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                    callback));
   }
 
+  virtual void GetScrubbedLogs(const GetLogsCallback& callback) OVERRIDE {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kGetFeedbackLogs);
+    debugdaemon_proxy_->CallMethod(
+        &method_call,
+        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&DebugDaemonClientImpl::OnGetAllLogs,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   callback));
+  }
+
   virtual void GetAllLogs(const GetLogsCallback& callback)
       OVERRIDE {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
@@ -653,12 +664,19 @@ class DebugDaemonClientStubImpl : public DebugDaemonClient {
                            const GetPerfDataCallback& callback) OVERRIDE {
     std::vector<uint8> data;
     base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, data));
+    base::Bind(callback, data));
+  }
+  virtual void GetScrubbedLogs(const GetLogsCallback& callback) OVERRIDE {
+    std::map<std::string, std::string> sample;
+    sample["Sample Scrubbed Log"] = "Your email address is xxxxxxxx";
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, false, sample));
   }
   virtual void GetAllLogs(const GetLogsCallback& callback) OVERRIDE {
-    std::map<std::string, std::string> empty;
-    base::MessageLoop::current()->PostTask(FROM_HERE,
-                                           base::Bind(callback, false, empty));
+    std::map<std::string, std::string> sample;
+    sample["Sample Log"] = "Your email address is abc@abc.com";
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, false, sample));
   }
   virtual void GetUserLogFiles(const GetLogsCallback& callback) OVERRIDE {
     std::map<std::string, std::string> user_logs;

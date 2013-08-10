@@ -95,10 +95,13 @@ class CHROMEOS_EXPORT DebugDaemonClient {
   virtual void GetPerfData(uint32_t duration,
                            const GetPerfDataCallback& callback) = 0;
 
-  // Callback type for GetAllLogs() or GetUserLogFiles().
+  // Callback type for GetScrubbedLogs(), GetAllLogs() or GetUserLogFiles().
   typedef base::Callback<void(bool succeeded,
                               const std::map<std::string, std::string>& logs)>
       GetLogsCallback;
+
+  // Gets scrubbed logs from debugd.
+  virtual void GetScrubbedLogs(const GetLogsCallback& callback) = 0;
 
   // Gets all logs collected by debugd.
   virtual void GetAllLogs(const GetLogsCallback& callback) = 0;

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/system_logs/memory_details_log_source.h"
 
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
 #include "chrome/browser/memory_details.h"
 #include "content/public/browser/browser_thread.h"
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/system_logs/dbus_log_source.h"
 
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
 #include "content/public/browser/browser_thread.h"
 #include "dbus/dbus_statistics.h"
 

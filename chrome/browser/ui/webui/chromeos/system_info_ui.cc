@@ -18,7 +18,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/chromeos/system_logs/about_system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/url_constants.h"
@@ -110,7 +110,7 @@ void SystemInfoUIHTMLSource::StartDataRequest(
   path_ = path;
   callback_ = callback;
 
-  SystemLogsFetcher* fetcher = new SystemLogsFetcher();
+  AboutSystemLogsFetcher* fetcher = new AboutSystemLogsFetcher();
   fetcher->Fetch(base::Bind(&SystemInfoUIHTMLSource::SysInfoComplete,
                             weak_ptr_factory_.GetWeakPtr()));
 }

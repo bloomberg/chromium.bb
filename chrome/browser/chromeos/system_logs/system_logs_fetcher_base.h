@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_H_
-#define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
+#define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
 
 #include <map>
 #include <string>
@@ -20,12 +20,12 @@ typedef std::map<std::string, std::string> SystemLogsResponse;
 typedef base::Callback<void(SystemLogsResponse* response)>
     SysLogsSourceCallback;
 
-// Callback that the SystemLogsFetcher uses to return data.
+// Callback that the SystemLogsFetcherBase uses to return data.
 typedef base::Callback<void(scoped_ptr<SystemLogsResponse> response)>
     SysLogsFetcherCallback;
 
 // The SystemLogsSource provides a interface for the data sources that
-// the SystemLogsFetcher class uses to fetch logs and other
+// the SystemLogsFetcherBase class uses to fetch logs and other
 // information.
 class SystemLogsSource {
  public:
@@ -34,13 +34,9 @@ class SystemLogsSource {
   virtual ~SystemLogsSource() {}
 };
 
-// The SystemLogsFetcher creates a list of data sources which must be
-// classes that implement the SystemLogsSource. It's Fetch function
-// receives as a parameter a callback that takes only one parameter
-// SystemLogsResponse that is a map of keys and values.
-// Each data source also returns a SystemLogsResponse. If two data sources
-// return the same key, only the first one will be stored.
-// The class runs on the UI thread.
+// The SystemLogsFetcherBaseBase specifies an interface for LogFetcher classes.
+// Derived LogFetcher classes aggregate the logs from a list of SystemLogSource
+// classes.
 //
 // EXAMPLE:
 // class Example {
@@ -49,17 +45,18 @@ class SystemLogsSource {
 //      //do something with the logs
 //   }
 //   void GetLogs() {
-//     SystemLogsFetcher* fetcher = new SystemLogsFetcher();
+//     SystemLogsFetcherBase* fetcher = new SystemLogsFetcherBase();
 //     fetcher->Fetch(base::Bind(&Example::ProcessLogs, this));
 //   }
-class SystemLogsFetcher {
+class SystemLogsFetcherBase
+    : public base::SupportsWeakPtr<SystemLogsFetcherBase> {
  public:
-  SystemLogsFetcher();
-  ~SystemLogsFetcher();
+  SystemLogsFetcherBase();
+  ~SystemLogsFetcherBase();
 
   void Fetch(const SysLogsFetcherCallback& callback);
 
- private:
+ protected:
   // Callback passed to all the data sources. It merges the |data| it recieves
   // into response_. When all the data sources have responded, it deletes their
   // objects and returns the response to the callback_. After this it
@@ -72,12 +69,12 @@ class SystemLogsFetcher {
   scoped_ptr<SystemLogsResponse> response_;  // The actual response data.
   size_t num_pending_requests_;   // The number of callbacks it should get.
 
-  base::WeakPtrFactory<SystemLogsFetcher> weak_ptr_factory_;
+ private:
 
-  DISALLOW_COPY_AND_ASSIGN(SystemLogsFetcher);
+  DISALLOW_COPY_AND_ASSIGN(SystemLogsFetcherBase);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_SYSTEM_LOGS_FETCHER_BASE_H_
 

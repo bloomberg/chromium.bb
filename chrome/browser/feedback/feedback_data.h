@@ -13,7 +13,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/chromeos/system_logs/scrubbed_system_logs_fetcher.h"
 #endif
 
 class Profile;

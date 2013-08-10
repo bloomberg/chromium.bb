@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -28,9 +27,10 @@ const char kUserLogFileKeyName[] = "user_log_files";
 
 namespace chromeos {
 
-DebugDaemonLogSource::DebugDaemonLogSource()
+DebugDaemonLogSource::DebugDaemonLogSource(bool scrub)
     : response_(new SystemLogsResponse()),
       num_pending_requests_(0),
+      scrub_(scrub),
       weak_ptr_factory_(this) {}
 
 DebugDaemonLogSource::~DebugDaemonLogSource() {}
@@ -57,11 +57,17 @@ void DebugDaemonLogSource::Fetch(const SysLogsSourceCallback& callback) {
   client->GetWiMaxStatus(base::Bind(&DebugDaemonLogSource::OnGetWiMaxStatus,
                                     weak_ptr_factory_.GetWeakPtr()));
   ++num_pending_requests_;
-  client->GetAllLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
-                                weak_ptr_factory_.GetWeakPtr()));
-  ++num_pending_requests_;
   client->GetUserLogFiles(base::Bind(&DebugDaemonLogSource::OnGetUserLogFiles,
                                      weak_ptr_factory_.GetWeakPtr()));
+  ++num_pending_requests_;
+
+  if (scrub_) {
+    client->GetScrubbedLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    client->GetAllLogs(base::Bind(&DebugDaemonLogSource::OnGetLogs,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
   ++num_pending_requests_;
 }
 

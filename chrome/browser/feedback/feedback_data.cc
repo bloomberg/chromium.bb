@@ -167,7 +167,8 @@ void FeedbackData::ReadFileComplete() {
 }
 
 void FeedbackData::StartSyslogsCollection() {
-  chromeos::SystemLogsFetcher* fetcher = new chromeos::SystemLogsFetcher();
+  chromeos::ScrubbedSystemLogsFetcher* fetcher =
+      new chromeos::ScrubbedSystemLogsFetcher();
   fetcher->Fetch(base::Bind(&FeedbackData::CompressSyslogs, this));
 }
 

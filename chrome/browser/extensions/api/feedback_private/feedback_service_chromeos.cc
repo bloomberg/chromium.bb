@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/chromeos/system_logs/about_system_logs_fetcher.h"
 
 using extensions::api::feedback_private::SystemInformation;
 
@@ -55,7 +55,8 @@ void FeedbackServiceImpl::GetSystemInformation(
     const GetSystemInformationCallback& callback) {
   system_information_callback_ = callback;
 
-  chromeos::SystemLogsFetcher* fetcher = new chromeos::SystemLogsFetcher();
+  chromeos::AboutSystemLogsFetcher* fetcher =
+      new chromeos::AboutSystemLogsFetcher();
   fetcher->Fetch(base::Bind(&FeedbackServiceImpl::ProcessSystemLogs,
                             AsWeakPtr()));
 }

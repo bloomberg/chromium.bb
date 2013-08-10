@@ -65,7 +65,7 @@
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/chromeos/system_logs/system_logs_fetcher_base.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #endif

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_CHROME_INTERNAL_LOG_SOURCE_H_
 #define CHROME_BROWSER_CHROMEOS_SYSTEM_LOGS_CHROME_INTERNAL_LOG_SOURCE_H_
 
-#include "chrome/browser/chromeos/system_logs/system_logs_fetcher.h"
+#include "chrome/browser/chromeos/system_logs/system_logs_fetcher_base.h"
 
 namespace chromeos {
 
