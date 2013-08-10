@@ -27,6 +27,7 @@
 #include "core/editing/VisibleUnits.h"
 
 #include "HTMLNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/Document.h"
@@ -1109,11 +1110,7 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
 
     Node* n = startNode;
     while (n) {
-#if ENABLE(USERSELECT_ALL)
         if (boundaryCrossingRule == CannotCrossEditingBoundary && !Position::nodeIsUserSelectAll(n) && n->rendererIsEditable() != startNode->rendererIsEditable())
-#else
-        if (boundaryCrossingRule == CannotCrossEditingBoundary && n->rendererIsEditable() != startNode->rendererIsEditable())
-#endif
             break;
         if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
             while (n && n->rendererIsEditable() != startNode->rendererIsEditable())
@@ -1189,11 +1186,7 @@ VisiblePosition endOfParagraph(const VisiblePosition &c, EditingBoundaryCrossing
 
     Node* n = startNode;
     while (n) {
-#if ENABLE(USERSELECT_ALL)
         if (boundaryCrossingRule == CannotCrossEditingBoundary && !Position::nodeIsUserSelectAll(n) && n->rendererIsEditable() != startNode->rendererIsEditable())
-#else
-        if (boundaryCrossingRule == CannotCrossEditingBoundary && n->rendererIsEditable() != startNode->rendererIsEditable())
-#endif
             break;
         if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
             while (n && n->rendererIsEditable() != startNode->rendererIsEditable())

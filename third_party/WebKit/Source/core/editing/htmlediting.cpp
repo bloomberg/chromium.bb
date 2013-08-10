@@ -101,6 +101,11 @@ int comparePositions(const Position& a, const Position& b)
     return result ? result : bias;
 }
 
+int comparePositions(const PositionWithAffinity& a, const PositionWithAffinity& b)
+{
+    return comparePositions(a.position(), b.position());
+}
+
 int comparePositions(const VisiblePosition& a, const VisiblePosition& b)
 {
     return comparePositions(a.deepEquivalent(), b.deepEquivalent());

@@ -148,6 +148,7 @@ inline Position lastPositionInOrAfterNode(Node* node)
 // comparision functions on Position
 
 int comparePositions(const Position&, const Position&);
+int comparePositions(const PositionWithAffinity&, const PositionWithAffinity&);
 
 // boolean functions on Position
 

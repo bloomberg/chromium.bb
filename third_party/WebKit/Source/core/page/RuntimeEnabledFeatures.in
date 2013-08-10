@@ -1,4 +1,4 @@
-// http://dev.chromium.org/blink/runtime-enabled-features 
+// http://dev.chromium.org/blink/runtime-enabled-features
 //
 // This list is used to generate RuntimeEnabledFeatures.h/cpp which contains
 // a class that stores static enablers for all experimental features.
@@ -80,6 +80,7 @@ SpeechSynthesis status=experimental
 Stream status=experimental
 StyleScoped status=experimental
 Touch status=stable
+UserSelectAll status=experimental
 Vibration status=experimental
 VideoTrack status=stable
 WebAnimations
