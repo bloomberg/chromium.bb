@@ -28,8 +28,6 @@
 #include "ThreadingPrimitives.h"
 #include "wtf/DoublyLinkedList.h"
 
-#if !USE(PTHREADS)
-
 namespace WTF {
 
 static DoublyLinkedList<PlatformThreadSpecificKey>& destructorsList()
@@ -133,7 +131,5 @@ void ThreadSpecificThreadExit()
 }
 
 } // namespace WTF
-
-#endif // !USE(PTHREADS)
 
 #endif // OS(WINDOWS)

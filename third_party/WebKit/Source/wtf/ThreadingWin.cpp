@@ -94,6 +94,7 @@
 
 #include "MainThread.h"
 #include "ThreadFunctionInvocation.h"
+#include "ThreadSpecific.h"
 #include <windows.h>
 #include "wtf/CurrentTime.h"
 #include "wtf/HashMap.h"
@@ -102,10 +103,6 @@
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RandomNumberSeed.h"
 #include "wtf/WTFThreadData.h"
-
-#if !USE(PTHREADS) && OS(WINDOWS)
-#include "ThreadSpecific.h"
-#endif
 
 #include <errno.h>
 #include <process.h>
@@ -205,10 +202,8 @@ static unsigned __stdcall wtfThreadEntryPoint(void* param)
     OwnPtr<ThreadFunctionInvocation> invocation = adoptPtr(static_cast<ThreadFunctionInvocation*>(param));
     invocation->function(invocation->data);
 
-#if !USE(PTHREADS) && OS(WINDOWS)
     // Do the TLS cleanup.
     ThreadSpecificThreadExit();
-#endif
 
     return 0;
 }
