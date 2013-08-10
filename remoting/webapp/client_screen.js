@@ -356,6 +356,7 @@ remoting.onConnected = function(clientSession) {
         }
       };
       remoting.HostSettings.save(clientSession.hostId, pairingInfo);
+      remoting.connector.updatePairingInfo(clientId, sharedSecret);
     };
     // Use the platform name as a proxy for the local computer name.
     // TODO(jamiewalch): Use a descriptive name for the local computer, for

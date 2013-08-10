@@ -194,6 +194,18 @@ remoting.SessionConnector.prototype.connectMe2Me =
 };
 
 /**
+ * Update the pairing info so that the reconnect function will work correctly.
+ *
+ * @param {string} clientId The paired client id.
+ * @param {string} sharedSecret The shared secret.
+ */
+remoting.SessionConnector.prototype.updatePairingInfo =
+    function(clientId, sharedSecret) {
+  this.clientPairingId_ = clientId;
+  this.clientPairedSecret_ = sharedSecret;
+};
+
+/**
  * Initiate a Me2Me connection.
  *
  * @param {string} hostId ID of the Me2Me host.
@@ -224,8 +236,6 @@ remoting.SessionConnector.prototype.connectMe2MeInternal_ =
   this.cancel();
 
   this.hostId_ = hostId;
-  this.clientPairingId_ = clientPairingId;
-  this.clientPairedSecret_ = clientPairedSecret;
   this.hostJid_ = hostJid;
   this.hostPublicKey_ = hostPublicKey;
   this.fetchPin_ = fetchPin;
@@ -233,6 +243,7 @@ remoting.SessionConnector.prototype.connectMe2MeInternal_ =
   this.hostDisplayName_ = hostDisplayName;
   this.connectionMode_ = remoting.ClientSession.Mode.ME2ME;
   this.refreshHostJidIfOffline_ = refreshHostJidIfOffline;
+  this.updatePairingInfo(clientPairingId, clientPairedSecret);
   this.createSessionIfReady_();
 };
 
