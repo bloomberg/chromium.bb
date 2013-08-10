@@ -108,6 +108,11 @@ body.rtl #cursor {
     opacity: 0;
   }
 }
+
+body.fakebox-drag-focused #cursor {
+  visibility: inherit;
+}
+
 body.fakebox-focused #cursor {
   -webkit-animation: blink 1.3s step-end infinite;
   visibility: inherit;

@@ -28,6 +28,8 @@ var CLASSES = {
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   FAKEBOX_DISABLE: 'fakebox-disable', // Makes fakebox non-interactive
   FAKEBOX_FOCUS: 'fakebox-focused', // Applies focus styles to the fakebox
+  // Applies drag focus style to the fakebox
+  FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   FAVICON: 'mv-favicon',
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
@@ -55,6 +57,7 @@ var IDS = {
   ATTRIBUTION_TEXT: 'attribution-text',
   CUSTOM_THEME_STYLE: 'ct-style',
   FAKEBOX: 'fakebox',
+  FAKEBOX_INPUT: 'fakebox-input',
   LOGO: 'logo',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
@@ -770,6 +773,7 @@ function getTileByRid(rid) {
 function onInputStart() {
   if (fakebox && isFakeboxFocused()) {
     setFakeboxFocus(false);
+    setFakeboxDragFocus(false);
     disposeNtp(true);
   } else if (!isFakeboxFocused()) {
     disposeNtp(false);
@@ -806,12 +810,19 @@ function setFakeboxFocus(focus) {
   document.body.classList.toggle(CLASSES.FAKEBOX_FOCUS, focus);
 }
 
+/**
+ * @param {boolean} focus True to show a dragging focus to the fakebox.
+ */
+function setFakeboxDragFocus(focus) {
+  document.body.classList.toggle(CLASSES.FAKEBOX_DRAG_FOCUS, focus);
+}
 
 /**
  * @return {boolean} True if the fakebox has focus.
  */
 function isFakeboxFocused() {
-  return document.body.classList.contains(CLASSES.FAKEBOX_FOCUS);
+  return document.body.classList.contains(CLASSES.FAKEBOX_FOCUS) ||
+      document.body.classList.contains(CLASSES.FAKEBOX_DRAG_FOCUS);
 }
 
 
@@ -947,7 +958,8 @@ function init() {
     fakebox = document.createElement('div');
     fakebox.id = IDS.FAKEBOX;
     fakebox.innerHTML =
-        '<input autocomplete="off" tabindex="-1" aria-hidden="true">' +
+        '<input id="' + IDS.FAKEBOX_INPUT +
+            '" autocomplete="off" tabindex="-1" aria-hidden="true">' +
         '<div id=cursor></div>';
 
     ntpContents.insertBefore(fakebox, ntpContents.firstChild);
@@ -1011,7 +1023,7 @@ function init() {
 
   if (fakebox) {
     // Listener for updating the key capture state.
-    document.body.onclick = function(event) {
+    document.body.onmousedown = function(event) {
       if (isFakeboxClick(event))
         searchboxApiHandle.startCapturingKeyStrokes();
       else if (isFakeboxFocused())
@@ -1020,6 +1032,26 @@ function init() {
     searchboxApiHandle.onkeycapturechange = function() {
       setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
     };
+    var inputbox = $(IDS.FAKEBOX_INPUT);
+    if (inputbox) {
+      inputbox.onpaste = function(event) {
+        event.preventDefault();
+        searchboxApiHandle.paste();
+      };
+      inputbox.ondrop = function(event) {
+        event.preventDefault();
+        var text = event.dataTransfer.getData('text/plain');
+        if (text) {
+          searchboxApiHandle.paste(text);
+        }
+      };
+      inputbox.ondragenter = function() {
+        setFakeboxDragFocus(true);
+      };
+      inputbox.ondragleave = function() {
+        setFakeboxDragFocus(false);
+      };
+    }
   }
 
   if (searchboxApiHandle.rtl) {

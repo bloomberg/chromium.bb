@@ -164,6 +164,8 @@ class InstantController : public InstantPage::Delegate {
       content::PageTransition transition,
       WindowOpenDisposition disposition,
       bool is_search_type) OVERRIDE;
+  virtual void PasteIntoOmnibox(const content::WebContents* contents,
+                                const string16& text) OVERRIDE;
   virtual void InstantPageLoadFailed(content::WebContents* contents) OVERRIDE;
 
   // Invoked by the InstantLoader when the Instant page wants to delete a

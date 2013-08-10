@@ -24,6 +24,26 @@ string16 OmniboxView::StripJavascriptSchemas(const string16& text) {
 }
 
 // static
+string16 OmniboxView::SanitizeTextForPaste(const string16& text) {
+  // Check for non-newline whitespace; if found, collapse whitespace runs down
+  // to single spaces.
+  // TODO(shess): It may also make sense to ignore leading or
+  // trailing whitespace when making this determination.
+  for (size_t i = 0; i < text.size(); ++i) {
+    if (IsWhitespace(text[i]) && text[i] != '\n' && text[i] != '\r') {
+      const string16 collapsed = CollapseWhitespace(text, false);
+      // If the user is pasting all-whitespace, paste a single space
+      // rather than nothing, since pasting nothing feels broken.
+      return collapsed.empty() ?
+          ASCIIToUTF16(" ") : StripJavascriptSchemas(collapsed);
+    }
+  }
+
+  // Otherwise, all whitespace is newlines; remove it entirely.
+  return StripJavascriptSchemas(CollapseWhitespace(text, true));
+}
+
+// static
 string16 OmniboxView::GetClipboardText() {
   // Try text format.
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
@@ -31,26 +51,7 @@ string16 OmniboxView::GetClipboardText() {
                                    ui::Clipboard::BUFFER_STANDARD)) {
     string16 text;
     clipboard->ReadText(ui::Clipboard::BUFFER_STANDARD, &text);
-
-    // If the input contains non-newline whitespace, treat it as
-    // search data and convert newlines to spaces.  For instance, a
-    // street address.
-    // TODO(shess): It may also make sense to ignore leading or
-    // trailing whitespace when making this determination.
-    for (size_t i = 0; i < text.size(); ++i) {
-      if (IsWhitespace(text[i]) && text[i] != '\n' && text[i] != '\r') {
-        const string16 collapsed = CollapseWhitespace(text, false);
-        // If the user is pasting all-whitespace, paste a single space
-        // rather than nothing, since pasting nothing feels broken.
-        return collapsed.empty() ?
-            ASCIIToUTF16(" ") : StripJavascriptSchemas(collapsed);
-      }
-    }
-
-    // Otherwise, the only whitespace in |text| is newlines.  Remove
-    // these entirely, because users are most likely pasting URLs
-    // split into multiple lines by terminals, email programs, etc.
-    return StripJavascriptSchemas(CollapseWhitespace(text, true));
+    return SanitizeTextForPaste(text);
   }
 
   // Try bookmark format.

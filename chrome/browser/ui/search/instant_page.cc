@@ -122,6 +122,10 @@ bool InstantPage::ShouldProcessNavigateToURL() {
   return false;
 }
 
+bool InstantPage::ShouldProcessPasteIntoOmnibox() {
+  return false;
+}
+
 bool InstantPage::ShouldProcessDeleteMostVisitedItem() {
   return false;
 }
@@ -143,6 +147,8 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_FocusOmnibox, OnFocusOmnibox)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxNavigate,
                         OnSearchBoxNavigate);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
+                        OnSearchBoxPaste);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CountMouseover, OnCountMouseover);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                         OnDeleteMostVisitedItem);
@@ -242,6 +248,17 @@ void InstantPage::OnSearchBoxNavigate(int page_id,
 
   delegate_->NavigateToURL(
       contents(), url, transition, disposition, is_search_type);
+}
+
+void InstantPage::OnSearchBoxPaste(int page_id, const string16& text) {
+  if (!contents()->IsActiveEntry(page_id))
+    return;
+
+  SearchTabHelper::FromWebContents(contents())->InstantSupportChanged(true);
+  if (!ShouldProcessPasteIntoOmnibox())
+    return;
+
+  delegate_->PasteIntoOmnibox(contents(), text);
 }
 
 void InstantPage::OnCountMouseover(int page_id) {

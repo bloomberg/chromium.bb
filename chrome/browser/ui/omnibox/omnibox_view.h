@@ -231,9 +231,17 @@ class OmniboxView {
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) = 0;
 #endif
 
-  // Returns a string with any leading javascript schemas stripped from the
-  // input text.
+  // Returns |text| with any leading javascript schemas stripped.
   static string16 StripJavascriptSchemas(const string16& text);
+
+  // First, calls StripJavascriptSchemas().  Then automatically collapses
+  // internal whitespace as follows:
+  // * If the only whitespace in |text| is newlines, users are most likely
+  // pasting in URLs split into multiple lines by terminals, email programs,
+  // etc. So all newlines are removed.
+  // * Otherwise, users may be pasting in search data, e.g. street addresses. In
+  // this case, runs of whitespace are collapsed down to single spaces.
+  static string16 SanitizeTextForPaste(const string16& text);
 
   // Returns the current clipboard contents as a string that can be pasted in.
   // In addition to just getting CF_UNICODETEXT out, this can also extract URLs

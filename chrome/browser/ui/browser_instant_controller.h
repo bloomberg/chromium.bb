@@ -55,9 +55,8 @@ class BrowserInstantController : public SearchModelObserver {
   // this BrowserInstantController.
   InstantController* instant() { return &instant_; }
 
-  // Invoked by |instant_| to give the omnibox focus, with the option of making
-  // the caret invisible.
-  void FocusOmnibox(bool caret_visibility);
+  // Invoked by |instant_| to change the omnibox focus.
+  void FocusOmnibox(OmniboxFocusState state);
 
   // Invoked by |instant_| to get the currently active tab.
   content::WebContents* GetActiveWebContents() const;
@@ -72,6 +71,11 @@ class BrowserInstantController : public SearchModelObserver {
   void OpenURL(const GURL& url,
                content::PageTransition transition,
                WindowOpenDisposition disposition);
+
+  // Invoked by |instant_| to paste the |text| (or clipboard content if text is
+  // empty) into the omnibox. It will set focus to the omnibox if the omnibox is
+  // not focused.
+  void PasteIntoOmnibox(const string16& text);
 
   // Sets the stored omnibox bounds.
   void SetOmniboxBounds(const gfx::Rect& bounds);

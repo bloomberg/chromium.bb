@@ -231,6 +231,11 @@ void SearchBox::NavigateToURL(const GURL& url,
       url, transition, disposition, is_search_type));
 }
 
+void SearchBox::Paste(const string16& text) {
+  render_view()->Send(new ChromeViewHostMsg_PasteAndOpenDropdown(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), text));
+}
+
 void SearchBox::SetVoiceSearchSupported(bool supported) {
   render_view()->Send(new ChromeViewHostMsg_SetVoiceSearchSupported(
       render_view()->GetRoutingID(), render_view()->GetPageId(), supported));

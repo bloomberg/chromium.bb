@@ -46,6 +46,10 @@ bool InstantTab::ShouldProcessNavigateToURL() {
   return true;
 }
 
+bool InstantTab::ShouldProcessPasteIntoOmnibox() {
+  return true;
+}
+
 bool InstantTab::ShouldProcessDeleteMostVisitedItem() {
   return true;
 }

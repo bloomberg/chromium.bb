@@ -362,6 +362,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void NavigateContentWindow(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Pastes provided value or clipboard's content into the omnibox.
+  static void Paste(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Indicates whether the page supports voice search.
   static void SetVoiceSearchSupported(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -485,6 +488,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(LogEvent);
   if (name->Equals(v8::String::New("NavigateContentWindow")))
     return v8::FunctionTemplate::New(NavigateContentWindow);
+  if (name->Equals(v8::String::New("Paste")))
+    return v8::FunctionTemplate::New(Paste);
   if (name->Equals(v8::String::New("SetVoiceSearchSupported")))
     return v8::FunctionTemplate::New(SetVoiceSearchSupported);
   if (name->Equals(v8::String::New("StartCapturingKeyStrokes")))
@@ -849,6 +854,20 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
     SearchBox::Get(render_view)->NavigateToURL(
         destination_url, transition, disposition, false);
   }
+}
+
+// static
+void SearchBoxExtensionWrapper::Paste(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view) return;
+
+  string16 text;
+  if (!args[0]->IsUndefined())
+    text = V8ValueToUTF16(args[0]);
+
+  DVLOG(1) << render_view << " Paste: " << text;
+  SearchBox::Get(render_view)->Paste(text);
 }
 
 // static

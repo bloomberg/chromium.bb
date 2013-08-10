@@ -307,27 +307,7 @@ void InstantController::InstantPageAboutToNavigateMainFrame(
 void InstantController::FocusOmnibox(const content::WebContents* contents,
                                      OmniboxFocusState state) {
   DCHECK(IsContentsFrom(instant_tab(), contents));
-
-  // Do not add a default case in the switch block for the following reasons:
-  // (1) Explicitly handle the new states. If new states are added in the
-  // OmniboxFocusState, the compiler will warn the developer to handle the new
-  // states.
-  // (2) An attacker may control the renderer and sends the browser process a
-  // malformed IPC. This function responds to the invalid |state| values by
-  // doing nothing instead of crashing the browser process (intentional no-op).
-  switch (state) {
-    case OMNIBOX_FOCUS_VISIBLE:
-      // TODO(samarth): re-enable this once setValue() correctly handles
-      // URL-shaped queries.
-      // browser_->FocusOmnibox(true);
-      break;
-    case OMNIBOX_FOCUS_INVISIBLE:
-      browser_->FocusOmnibox(false);
-      break;
-    case OMNIBOX_FOCUS_NONE:
-      contents->GetView()->Focus();
-      break;
-  }
+  browser_->FocusOmnibox(state);
 }
 
 void InstantController::NavigateToURL(const content::WebContents* contents,
@@ -349,6 +329,16 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
       RecordNavigationHistogram(UsingLocalPage(), true, true);
   }
   browser_->OpenURL(url, transition, disposition);
+}
+
+void InstantController::PasteIntoOmnibox(const content::WebContents* contents,
+      const string16& text) {
+  if (search_mode_.is_origin_default())
+    return;
+
+  DCHECK(IsContentsFrom(instant_tab(), contents));
+
+  browser_->PasteIntoOmnibox(text);
 }
 
 void InstantController::ResetInstantTab() {

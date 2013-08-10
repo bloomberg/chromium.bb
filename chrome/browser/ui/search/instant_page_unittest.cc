@@ -46,6 +46,9 @@ class FakePageDelegate : public InstantPage::Delegate {
                     content::PageTransition transition,
                     WindowOpenDisposition disposition,
                     bool is_search_type));
+  MOCK_METHOD2(PasteIntoOmnibox,
+               void(const content::WebContents* contents,
+                    const string16& text));
   MOCK_METHOD1(DeleteMostVisitedItem, void(const GURL& url));
   MOCK_METHOD1(UndoMostVisitedDeletion, void(const GURL& url));
   MOCK_METHOD0(UndoAllMostVisitedDeletions, void());

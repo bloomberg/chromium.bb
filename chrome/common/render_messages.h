@@ -672,6 +672,13 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FocusOmnibox,
                     int /* page_id */,
                     OmniboxFocusState /* state */)
 
+// Tells InstantExtended to paste text into the omnibox.  If text is empty,
+// the clipboard contents will be pasted. This causes the omnibox dropdown to
+// open.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PasteAndOpenDropdown,
+                    int /* page_id */,
+                    string16 /* text to be pasted */)
+
 // Tells InstantExtended whether the embedded search API is supported.
 // See http://dev.chromium.org/embeddedsearch
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_InstantSupportDetermined,

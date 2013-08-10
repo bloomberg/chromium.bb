@@ -72,6 +72,11 @@ class InstantPage : public content::WebContentsObserver,
                                WindowOpenDisposition disposition,
                                bool is_search_type) = 0;
 
+    // Called when the page wants to paste the |text| (or the clipboard content
+    // if the |text| is empty) into the omnibox.
+    virtual void PasteIntoOmnibox(const content::WebContents* contents,
+                                  const string16& text) = 0;
+
     // Called when the SearchBox wants to delete a Most Visited item.
     virtual void DeleteMostVisitedItem(const GURL& url) = 0;
 
@@ -133,6 +138,7 @@ class InstantPage : public content::WebContentsObserver,
   virtual bool ShouldProcessAboutToNavigateMainFrame();
   virtual bool ShouldProcessFocusOmnibox();
   virtual bool ShouldProcessNavigateToURL();
+  virtual bool ShouldProcessPasteIntoOmnibox();
   virtual bool ShouldProcessDeleteMostVisitedItem();
   virtual bool ShouldProcessUndoMostVisitedDeletion();
   virtual bool ShouldProcessUndoAllMostVisitedDeletions();
@@ -188,6 +194,7 @@ class InstantPage : public content::WebContentsObserver,
                            content::PageTransition transition,
                            WindowOpenDisposition disposition,
                            bool is_search_type);
+  void OnSearchBoxPaste(int page_id, const string16& text);
   void OnCountMouseover(int page_id);
   void OnDeleteMostVisitedItem(int page_id, const GURL& url);
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url);

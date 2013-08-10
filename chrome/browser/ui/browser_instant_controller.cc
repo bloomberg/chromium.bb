@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
+#include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/browser/ui/search/instant_ntp.h"
 #include "chrome/browser/ui/search/search_model.h"
@@ -30,6 +31,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 
 using content::UserMetricsAction;
 
@@ -151,18 +153,42 @@ void BrowserInstantController::ReplaceWebContentsAt(
                                                       index);
 }
 
-void BrowserInstantController::FocusOmnibox(bool caret_visibility) {
+void BrowserInstantController::FocusOmnibox(OmniboxFocusState state) {
   OmniboxView* omnibox_view = browser_->window()->GetLocationBar()->
       GetLocationEntry();
-  omnibox_view->SetFocus();
-  omnibox_view->model()->SetCaretVisibility(caret_visibility);
-  if (!caret_visibility) {
-    // If the user clicked on the fakebox, any text already in the omnibox
-    // should get cleared when they start typing. Selecting all the existing
-    // text is a convenient way to accomplish this. It also gives a slight
-    // visual cue to users who really understand selection state about what will
-    // happen if they start typing.
-    omnibox_view->SelectAll(false);
+
+  // Do not add a default case in the switch block for the following reasons:
+  // (1) Explicitly handle the new states. If new states are added in the
+  // OmniboxFocusState, the compiler will warn the developer to handle the new
+  // states.
+  // (2) An attacker may control the renderer and sends the browser process a
+  // malformed IPC. This function responds to the invalid |state| values by
+  // doing nothing instead of crashing the browser process (intentional no-op).
+  switch (state) {
+    case OMNIBOX_FOCUS_VISIBLE:
+      omnibox_view->SetFocus();
+      omnibox_view->model()->SetCaretVisibility(true);
+      break;
+    case OMNIBOX_FOCUS_INVISIBLE:
+      omnibox_view->SetFocus();
+      omnibox_view->model()->SetCaretVisibility(false);
+      // If the user clicked on the fakebox, any text already in the omnibox
+      // should get cleared when they start typing. Selecting all the existing
+      // text is a convenient way to accomplish this. It also gives a slight
+      // visual cue to users who really understand selection state about what
+      // will happen if they start typing.
+      omnibox_view->SelectAll(false);
+      break;
+    case OMNIBOX_FOCUS_NONE:
+      // Remove focus only if the popup is closed. This will prevent someone
+      // from changing the omnibox value and closing the popup without user
+      // interaction.
+      if (!omnibox_view->model()->popup_model()->IsOpen()) {
+        content::WebContents* contents = GetActiveWebContents();
+        if (contents)
+          contents->GetView()->Focus();
+      }
+      break;
   }
 }
 
@@ -187,6 +213,27 @@ void BrowserInstantController::OpenURL(
                                            disposition,
                                            transition,
                                            false));
+}
+
+void BrowserInstantController::PasteIntoOmnibox(const string16& text) {
+  OmniboxView* omnibox_view = browser_->window()->GetLocationBar()->
+      GetLocationEntry();
+  // The first case is for right click to paste, where the text is retrieved
+  // from the clipboard already sanitized. The second case is needed to handle
+  // drag-and-drop value and it has to be sanitazed before setting it into the
+  // omnibox.
+  string16 text_to_paste = text.empty() ?
+      omnibox_view->GetClipboardText() :
+      omnibox_view->SanitizeTextForPaste(text);
+
+  if (!text_to_paste.empty()) {
+    if (!omnibox_view->model()->has_focus())
+      omnibox_view->SetFocus();
+    omnibox_view->OnBeforePossibleChange();
+    omnibox_view->model()->on_paste();
+    omnibox_view->SetUserText(text_to_paste);
+    omnibox_view->OnAfterPossibleChange();
+  }
 }
 
 void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {

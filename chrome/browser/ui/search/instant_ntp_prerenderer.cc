@@ -197,29 +197,37 @@ void InstantNTPPrerenderer::InstantSupportDetermined(
 }
 
 void InstantNTPPrerenderer::InstantPageAboutToNavigateMainFrame(
-    const content::WebContents* contents,
-    const GURL& url) {
+    const content::WebContents* /* contents */,
+    const GURL& /* url */) {
   NOTREACHED();
 }
 
-void InstantNTPPrerenderer::FocusOmnibox(const content::WebContents* contents,
-                                         OmniboxFocusState state) {
+void InstantNTPPrerenderer::FocusOmnibox(
+    const content::WebContents* /* contents */,
+    OmniboxFocusState /* state */) {
   NOTREACHED();
 }
 
-void InstantNTPPrerenderer::NavigateToURL(const content::WebContents* contents,
-                                          const GURL& url,
-                                          content::PageTransition transition,
-                                          WindowOpenDisposition disposition,
-                                          bool is_search_type) {
+void InstantNTPPrerenderer::NavigateToURL(
+    const content::WebContents* /* contents */,
+    const GURL& /* url */,
+    content::PageTransition /* transition */,
+    WindowOpenDisposition /* disposition */,
+    bool /* is_search_type */) {
   NOTREACHED();
 }
 
-void InstantNTPPrerenderer::DeleteMostVisitedItem(const GURL& url) {
+void InstantNTPPrerenderer::PasteIntoOmnibox(
+    const content::WebContents* /* contents */,
+    const string16& /* text */) {
   NOTREACHED();
 }
 
-void InstantNTPPrerenderer::UndoMostVisitedDeletion(const GURL& url) {
+void InstantNTPPrerenderer::DeleteMostVisitedItem(const GURL& /* url */) {
+  NOTREACHED();
+}
+
+void InstantNTPPrerenderer::UndoMostVisitedDeletion(const GURL& /* url */) {
   NOTREACHED();
 }
 

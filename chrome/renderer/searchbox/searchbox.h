@@ -71,6 +71,9 @@ class SearchBox : public content::RenderViewObserver,
                      WindowOpenDisposition disposition,
                      bool is_search_type);
 
+  // Sends ChromeViewHostMsg_SearchBoxPaste to the browser.
+  void Paste(const string16& text);
+
   const ThemeBackgroundInfo& GetThemeBackgroundInfo();
 
   // Sends ChromeViewHostMsg_SetVoiceSearchSupported to the browser.

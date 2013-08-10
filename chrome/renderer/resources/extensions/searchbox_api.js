@@ -21,6 +21,7 @@ if (!chrome.embeddedSearch) {
       native function GetStartMargin();
       native function IsFocused();
       native function IsKeyCaptureEnabled();
+      native function Paste();
       native function SetVoiceSearchSupported();
       native function StartCapturingKeyStrokes();
       native function StopCapturingKeyStrokes();
@@ -40,6 +41,10 @@ if (!chrome.embeddedSearch) {
       // checking the invoking context's origin in searchbox_extension.cc.
       this.getMostVisitedItemData = function(restrictedId) {
         return GetMostVisitedItemData(restrictedId);
+      };
+
+      this.paste = function(value) {
+        Paste(value);
       };
 
       this.setVoiceSearchSupported = function(supported) {
