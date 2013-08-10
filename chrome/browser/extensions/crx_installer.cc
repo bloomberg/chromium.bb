@@ -569,13 +569,6 @@ void CrxInstaller::InstallUIAbort(bool user_initiated) {
     ExtensionService::RecordPermissionMessagesHistogram(
         extension(), histogram_name.c_str());
 
-    // Kill the theme loading bubble.
-    content::NotificationService* service =
-        content::NotificationService::current();
-    service->Notify(chrome::NOTIFICATION_NO_THEME_DETECTED,
-                    content::Source<CrxInstaller>(this),
-                    content::NotificationService::NoDetails());
-
     NotifyCrxInstallComplete(false);
   }
 

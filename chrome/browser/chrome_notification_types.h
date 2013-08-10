@@ -471,9 +471,6 @@ enum NotificationType {
   // UpdatedExtensionPermissionsInfo, and the source is a Profile.
   NOTIFICATION_EXTENSION_PERMISSIONS_UPDATED,
 
-  // Sent when an extension install turns out to not be a theme.
-  NOTIFICATION_NO_THEME_DETECTED,
-
   // Sent when new extensions are installed, or existing extensions are updated.
   // The details are an InstalledExtensionInfo, and the source is a Profile.
   NOTIFICATION_EXTENSION_INSTALLED,
