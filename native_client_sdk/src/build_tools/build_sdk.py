@@ -186,6 +186,18 @@ def BuildStepCopyTextFiles(pepperdir, pepper_ver, chrome_revision,
   open(os.path.join(pepperdir, 'README'), 'w').write(readme_text)
 
 
+def PrunePNaClToolchain(root):
+  dirs_to_prune = [
+    'newlib/lib-bc-x86-64',
+    'newlib/usr-bc-x86-64'
+    # TODO(sbc): remove this once its really not needed.
+    # Currently we seem to rely on it at least for <bits/stat.h>
+    #'newlib/sysroot',
+  ]
+  for dirname in dirs_to_prune:
+    buildbot_common.RemoveDir(os.path.join(root, dirname))
+
+
 def BuildStepUntarToolchains(pepperdir, arch, toolchains):
   buildbot_common.BuildStep('Untar Toolchains')
   platform = getos.GetPlatform()
@@ -236,6 +248,7 @@ def BuildStepUntarToolchains(pepperdir, arch, toolchains):
     # Then rename/move it to the pepper toolchain directory
     pnacldir = os.path.join(pepperdir, 'toolchain', tcname + '_pnacl')
     buildbot_common.Move(tmpdir, pnacldir)
+    PrunePNaClToolchain(pnacldir)
 
   buildbot_common.RemoveDir(tmpdir)
 
