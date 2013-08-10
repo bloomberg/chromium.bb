@@ -1,0 +1,40 @@
+This file describes the directory layout of the PNaCl toolchain.
+
+The most important thing is the user-facing toolchain programs, including
+pnacl-clang, pnacl-clang++, pnacl-translate, etc. These are located in
+the bin/ directory. The location (and existence) of everything else is subject
+to change.
+
+bin/
+  User-facing toolchain programs (pnacl-clang, pnacl-translate, etc).
+  Currently these are OS-specific wrapper scripts.
+host_x86_32/
+  Executable toolchain binaries for x86-32 hosts. These are not intended to be
+  run directly; use the wrapper scripts in bin/
+host_x86_32/
+  Executable toolchain binaries for x86-64 hosts. These are not intended to be
+  run directly; use the wrapper scripts in bin/
+lib/
+  Bitcode object files and/or libraries linked into user-generated pexes
+lib-arm/
+  Native NaCl object files and/or libraries linked into ARM nexes after
+  offline translation.
+lib-mips32/
+  Native NaCl object files and/or libraries linked into MIPS nexes after
+  offline translation.
+lib-x86-32/
+  Native NaCl object files and/or libraries linked into x86-32 nexes after
+  offline translation.
+lib-x86-64/
+  Native NaCl object files and/or libraries linked into x86-64 nexes after
+  offline translation.
+sdk/
+  Libraries and headers provided by the NaCl SDK which are not packaged with
+  the toolchain itself
+tools-arm/
+  Native ARM binaries used for testing (e.g. the standalone NaCl loader)
+tools-x86/
+  Native x86 binaries used for testing (e.g. x86 version of the ARM validator)
+usr/
+  Libraries and headers packaged with the toolchain (e.g. libc, libm, libstdc++)
+  Naclports also installs its libraries and headers here.

@@ -537,6 +537,7 @@ build-all() {
   # NOTE: we delay the tool building till after the sdk is essentially
   #      complete, so that sdk sanity checks don't fail
   misc-tools
+  cp "${PNACL_ROOT}/README" "${INSTALL_ROOT}"
   verify
 
   if ${PNACL_PRUNE}; then
