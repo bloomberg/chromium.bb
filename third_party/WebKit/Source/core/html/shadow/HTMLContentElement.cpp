@@ -87,74 +87,6 @@ void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicS
         InsertionPoint::parseAttribute(name, value);
 }
 
-static bool validateSubSelector(const CSSSelector* selector)
-{
-    switch (selector->m_match) {
-    case CSSSelector::Tag:
-    case CSSSelector::Id:
-    case CSSSelector::Class:
-    case CSSSelector::Exact:
-    case CSSSelector::Set:
-    case CSSSelector::List:
-    case CSSSelector::Hyphen:
-    case CSSSelector::Contain:
-    case CSSSelector::Begin:
-    case CSSSelector::End:
-        return true;
-    case CSSSelector::PseudoElement:
-        return false;
-    case CSSSelector::PagePseudoClass:
-    case CSSSelector::PseudoClass:
-        break;
-    }
-
-    switch (selector->pseudoType()) {
-    case CSSSelector::PseudoEmpty:
-    case CSSSelector::PseudoLink:
-    case CSSSelector::PseudoVisited:
-    case CSSSelector::PseudoTarget:
-    case CSSSelector::PseudoEnabled:
-    case CSSSelector::PseudoDisabled:
-    case CSSSelector::PseudoChecked:
-    case CSSSelector::PseudoIndeterminate:
-    case CSSSelector::PseudoNthChild:
-    case CSSSelector::PseudoNthLastChild:
-    case CSSSelector::PseudoNthOfType:
-    case CSSSelector::PseudoNthLastOfType:
-    case CSSSelector::PseudoFirstChild:
-    case CSSSelector::PseudoLastChild:
-    case CSSSelector::PseudoFirstOfType:
-    case CSSSelector::PseudoLastOfType:
-    case CSSSelector::PseudoOnlyOfType:
-        return true;
-    default:
-        return false;
-    }
-}
-
-static bool validateSelector(const CSSSelector* selector)
-{
-    ASSERT(selector);
-
-    if (!validateSubSelector(selector))
-        return false;
-
-    const CSSSelector* prevSubSelector = selector;
-    const CSSSelector* subSelector = selector->tagHistory();
-
-    while (subSelector) {
-        if (prevSubSelector->relation() != CSSSelector::SubSelector)
-            return false;
-        if (!validateSubSelector(subSelector))
-            return false;
-
-        prevSubSelector = subSelector;
-        subSelector = subSelector->tagHistory();
-    }
-
-    return true;
-}
-
 bool HTMLContentElement::validateSelect() const
 {
     ASSERT(!m_shouldParseSelect);
@@ -166,7 +98,7 @@ bool HTMLContentElement::validateSelect() const
         return false;
 
     for (const CSSSelector* selector = m_selectorList.first(); selector; selector = m_selectorList.next(selector)) {
-        if (!validateSelector(selector))
+        if (!selector->isCompound())
             return false;
     }
 
@@ -193,4 +125,3 @@ bool HTMLContentElement::matchSelector(const Vector<Node*>& siblings, int nth) c
 }
 
 }
-

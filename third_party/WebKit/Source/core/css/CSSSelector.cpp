@@ -771,6 +771,72 @@ void CSSSelector::setMatchUserAgentOnly()
     m_data.m_rareData->m_matchUserAgentOnly = true;
 }
 
+static bool validateSubSelector(const CSSSelector* selector)
+{
+    switch (selector->m_match) {
+    case CSSSelector::Tag:
+    case CSSSelector::Id:
+    case CSSSelector::Class:
+    case CSSSelector::Exact:
+    case CSSSelector::Set:
+    case CSSSelector::List:
+    case CSSSelector::Hyphen:
+    case CSSSelector::Contain:
+    case CSSSelector::Begin:
+    case CSSSelector::End:
+        return true;
+    case CSSSelector::PseudoElement:
+        return false;
+    case CSSSelector::PagePseudoClass:
+    case CSSSelector::PseudoClass:
+        break;
+    }
+
+    switch (selector->pseudoType()) {
+    case CSSSelector::PseudoEmpty:
+    case CSSSelector::PseudoLink:
+    case CSSSelector::PseudoVisited:
+    case CSSSelector::PseudoTarget:
+    case CSSSelector::PseudoEnabled:
+    case CSSSelector::PseudoDisabled:
+    case CSSSelector::PseudoChecked:
+    case CSSSelector::PseudoIndeterminate:
+    case CSSSelector::PseudoNthChild:
+    case CSSSelector::PseudoNthLastChild:
+    case CSSSelector::PseudoNthOfType:
+    case CSSSelector::PseudoNthLastOfType:
+    case CSSSelector::PseudoFirstChild:
+    case CSSSelector::PseudoLastChild:
+    case CSSSelector::PseudoFirstOfType:
+    case CSSSelector::PseudoLastOfType:
+    case CSSSelector::PseudoOnlyOfType:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool CSSSelector::isCompound() const
+{
+    if (!validateSubSelector(this))
+        return false;
+
+    const CSSSelector* prevSubSelector = this;
+    const CSSSelector* subSelector = tagHistory();
+
+    while (subSelector) {
+        if (prevSubSelector->relation() != CSSSelector::SubSelector)
+            return false;
+        if (!validateSubSelector(subSelector))
+            return false;
+
+        prevSubSelector = subSelector;
+        subSelector = subSelector->tagHistory();
+    }
+
+    return true;
+}
+
 bool CSSSelector::parseNth() const
 {
     if (!m_hasRareData)

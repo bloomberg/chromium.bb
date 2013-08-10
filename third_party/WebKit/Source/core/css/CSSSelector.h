@@ -230,7 +230,8 @@ namespace WebCore {
         bool isLastInTagHistory() const { return m_isLastInTagHistory; }
         void setNotLastInTagHistory() { m_isLastInTagHistory = false; }
 
-        bool isSimple() const;
+        // http://dev.w3.org/csswg/selectors4/#compound
+        bool isCompound() const;
 
         bool isForPage() const { return m_isForPage; }
         void setForPage() { m_isForPage = true; }
