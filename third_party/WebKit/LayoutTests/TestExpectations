@@ -1264,6 +1264,4 @@ crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyF
 
 crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-column-span-all.html [ Crash Pass ]
 
-Bug(ojan) editing/selection/user-select-all-with-shift.html [ NeedsRebaseline ]
-
 crbug.com/270266 fast/events/touch/compositor-touch-hit-rects-scroll.html [ Pass Failure ]
