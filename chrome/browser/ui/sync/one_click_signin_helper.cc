@@ -93,7 +93,7 @@ struct StartSyncArgs {
                 const std::string& session_index,
                 const std::string& email,
                 const std::string& password,
-                bool force_same_tab_navigation,
+                content::WebContents* web_contents,
                 bool untrusted_confirmation_required,
                 signin::Source source,
                 OneClickSigninSyncStarter::Callback callback);
@@ -104,7 +104,11 @@ struct StartSyncArgs {
   std::string session_index;
   std::string email;
   std::string password;
-  bool force_same_tab_navigation;
+
+  // Web contents in which the sync setup page should be displayed,
+  // if necessary. Can be NULL.
+  content::WebContents* web_contents;
+
   OneClickSigninSyncStarter::ConfirmationRequired confirmation_required;
   signin::Source source;
   OneClickSigninSyncStarter::Callback callback;
@@ -116,7 +120,7 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
                              const std::string& session_index,
                              const std::string& email,
                              const std::string& password,
-                             bool force_same_tab_navigation,
+                             content::WebContents* web_contents,
                              bool untrusted_confirmation_required,
                              signin::Source source,
                              OneClickSigninSyncStarter::Callback callback)
@@ -126,7 +130,7 @@ StartSyncArgs::StartSyncArgs(Profile* profile,
       session_index(session_index),
       email(email),
       password(password),
-      force_same_tab_navigation(force_same_tab_navigation),
+      web_contents(web_contents),
       source(source),
       callback(callback) {
   if (untrusted_confirmation_required) {
@@ -243,7 +247,7 @@ void StartSync(const StartSyncArgs& args,
   // The starter deletes itself once its done.
   new OneClickSigninSyncStarter(args.profile, args.browser, args.session_index,
                                 args.email, args.password, start_mode,
-                                args.force_same_tab_navigation,
+                                args.web_contents,
                                 args.confirmation_required,
                                 args.source,
                                 args.callback);
@@ -1151,8 +1155,9 @@ void OneClickSigninHelper::DidStopLoading(
   // checked, the source parameter will indicate settings.  This will only be
   // communicated back to chrome when Gaia redirects to the continue URL, and
   // this is considered here a last minute change to the source.  See a little
-  // further below for when this variable is set to true.
-  bool force_same_tab_navigation = false;
+  // further below for when this variable is set to a web contents that must be
+  // used to show the sync setup page.
+  content::WebContents* sync_setup_contents = NULL;
 
   if (!continue_url_match && IsValidGaiaSigninRedirectOrResponseURL(url))
     return;
@@ -1188,8 +1193,10 @@ void OneClickSigninHelper::DidStopLoading(
     signin::Source source = signin::GetSourceForPromoURL(url);
     if (source != source_) {
       source_ = source;
-      force_same_tab_navigation = source == signin::SOURCE_SETTINGS;
-      switched_to_advanced_ = source == signin::SOURCE_SETTINGS;
+      if (source == signin::SOURCE_SETTINGS) {
+        sync_setup_contents = web_contents();
+        switched_to_advanced_ = true;
+      }
     }
   }
 
@@ -1210,12 +1217,13 @@ void OneClickSigninHelper::DidStopLoading(
       SigninManager::DisableOneClickSignIn(profile);
       // Start syncing with the default settings - prompt the user to sign in
       // first.
-      StartSync(StartSyncArgs(profile, browser, auto_accept_,
-                              session_index_, email_, password_,
-                              false /* force_same_tab_navigation */,
-                              true /* confirmation_required */, source_,
-                              CreateSyncStarterCallback()),
-                OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+      StartSync(
+          StartSyncArgs(profile, browser, auto_accept_,
+                        session_index_, email_, password_,
+                        NULL /* don't force to show sync setup in same tab */,
+                        true /* confirmation_required */, source_,
+                        CreateSyncStarterCallback()),
+          OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
       break;
     case AUTO_ACCEPT_CONFIGURE:
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);
@@ -1224,8 +1232,9 @@ void OneClickSigninHelper::DidStopLoading(
       // Display the extra confirmation (even in the SAML case) in case this
       // was an untrusted renderer.
       StartSync(
-          StartSyncArgs(profile, browser, auto_accept_, session_index_, email_,
-                        password_, false /* force_same_tab_navigation */,
+          StartSyncArgs(profile, browser, auto_accept_,
+                        session_index_, email_, password_,
+                        NULL  /* don't force to show sync setup in same tab */,
                         true /* confirmation_required */, source_,
                         CreateSyncStarterCallback()),
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
@@ -1265,6 +1274,8 @@ void OneClickSigninHelper::DidStopLoading(
 
         // No need to display a second confirmation so pass false below.
         // TODO(atwilson): Move this into OneClickSigninSyncStarter.
+        // If |sync_setup_contents| is deleted before the callback execution,
+        // the tab modal dialog is closed and the callback is never executed.
         ConfirmEmailDialogDelegate::AskForConfirmation(
             contents,
             last_email,
@@ -1273,7 +1284,7 @@ void OneClickSigninHelper::DidStopLoading(
                 &StartExplicitSync,
                 StartSyncArgs(profile, browser, auto_accept_,
                               session_index_, email_, password_,
-                              force_same_tab_navigation,
+                              sync_setup_contents,
                               false /* confirmation_required */, source_,
                               CreateSyncStarterCallback()),
                 contents,
@@ -1281,7 +1292,7 @@ void OneClickSigninHelper::DidStopLoading(
       } else {
         StartSync(
             StartSyncArgs(profile, browser, auto_accept_, session_index_,
-                          email_, password_, force_same_tab_navigation,
+                          email_, password_, sync_setup_contents,
                           untrusted_confirmation_required_, source_,
                           CreateSyncStarterCallback()),
             start_mode);

@@ -48,12 +48,12 @@ OneClickSigninSyncStarter::OneClickSigninSyncStarter(
     const std::string& email,
     const std::string& password,
     StartSyncMode start_mode,
-    bool force_same_tab_navigation,
+    content::WebContents* web_contents,
     ConfirmationRequired confirmation_required,
     signin::Source source,
     Callback sync_setup_completed_callback)
-    : start_mode_(start_mode),
-      force_same_tab_navigation_(force_same_tab_navigation),
+    : content::WebContentsObserver(web_contents),
+      start_mode_(start_mode),
       confirmation_required_(confirmation_required),
       source_(source),
       sync_setup_completed_callback_(sync_setup_completed_callback),
@@ -424,8 +424,8 @@ void OneClickSigninSyncStarter::ShowSettingsPageInNewTab(bool configure_sync) {
     EnsureBrowser();
     if (profile_sync_service) {
       // Need to navigate to the settings page and display the sync UI.
-      if (force_same_tab_navigation_) {
-        ShowSyncSettingsPageOnSameTab();
+      if (web_contents()) {
+        ShowSyncSettingsPageInWebContents(web_contents());
       } else {
         // If the user is setting up sync for the first time, let them configure
         // advanced sync settings. However, in the case of re-authentication,
@@ -459,12 +459,21 @@ void OneClickSigninSyncStarter::FinishProfileSyncServiceSetup() {
     service->SetSetupInProgress(false);
 }
 
-void OneClickSigninSyncStarter::ShowSyncSettingsPageOnSameTab() {
+void OneClickSigninSyncStarter::ShowSyncSettingsPageInWebContents(
+    content::WebContents* contents) {
   std::string url = std::string(chrome::kChromeUISettingsURL) +
       chrome::kSyncSetupSubPage;
-  chrome::NavigateParams params(
-      browser_, GURL(url), content::PAGE_TRANSITION_AUTO_TOPLEVEL);
-  params.disposition = CURRENT_TAB;
-  params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-  chrome::Navigate(&params);
+  content::OpenURLParams params(GURL(url),
+                                content::Referrer(),
+                                CURRENT_TAB,
+                                content::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                false);
+  contents->OpenURL(params);
+
+  // Activate the tab.
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  int content_index =
+      browser->tab_strip_model()->GetIndexOfWebContents(contents);
+  browser->tab_strip_model()->ActivateTabAt(content_index,
+                                            false /* user_gesture */);
 }

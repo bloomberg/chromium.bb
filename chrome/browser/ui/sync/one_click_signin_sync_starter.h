@@ -17,9 +17,14 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
+#include "content/public/browser/web_contents_observer.h"
 
 class Browser;
 class ProfileSyncService;
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace policy {
 class CloudPolicyClient;
@@ -29,7 +34,8 @@ class CloudPolicyClient;
 // starts the sync machine.  Instances of this class delete themselves once
 // the job is done.
 class OneClickSigninSyncStarter : public SigninTracker::Observer,
-                                  public chrome::BrowserListObserver {
+                                  public chrome::BrowserListObserver,
+                                  public content::WebContentsObserver {
  public:
   enum StartSyncMode {
     // Starts the process of signing the user in with the SigninManager, and
@@ -75,6 +81,9 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // OneClickSigninSyncStarter from a browser, provide both.
   // If |display_confirmation| is true, the user will be prompted to confirm the
   // signin before signin completes.
+  // |web_contents| is used to show the sync setup page, if necessary. If NULL,
+  // the sync setup page will be loaded in either a new tab or a tab that is
+  // already showing it.
   // |callback| is always executed before OneClickSigninSyncStarter is deleted.
   // It can be empty.
   OneClickSigninSyncStarter(Profile* profile,
@@ -83,7 +92,7 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
                             const std::string& email,
                             const std::string& password,
                             StartSyncMode start_mode,
-                            bool force_same_tab_navigation,
+                            content::WebContents* web_contents,
                             ConfirmationRequired display_confirmation,
                             signin::Source source,
                             Callback callback);
@@ -178,8 +187,8 @@ class OneClickSigninSyncStarter : public SigninTracker::Observer,
   // dialog if |configure_sync| is true.
   void ShowSettingsPageInNewTab(bool configure_sync);
 
-  // Displays the sync configuration UI in the same tab.
-  void ShowSyncSettingsPageOnSameTab();
+  // Displays the sync configuration UI in the provided web contents.
+  void ShowSyncSettingsPageInWebContents(content::WebContents* contents);
 
   // Shows the post-signin confirmation bubble. If |custom_message| is empty,
   // the default "You are signed in" message is displayed.

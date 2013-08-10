@@ -60,7 +60,7 @@ class OneClickSigninSyncStarterTest : public testing::Test {
       kTestingUsername,
       std::string(),
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS,
-      false,
+      NULL,
       OneClickSigninSyncStarter::NO_CONFIRMATION,
       signin::SOURCE_UNKNOWN,
       callback
