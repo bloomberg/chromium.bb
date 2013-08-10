@@ -54,6 +54,8 @@
         # All .cc, .h, .m, and .mm files under browser/extensions except for
         # tests and mocks.
         '../extensions/browser/extension_prefs_scope.h',
+        '../extensions/browser/extension_error.cc',
+        '../extensions/browser/extension_error.h',
         '../extensions/browser/file_reader.cc',
         '../extensions/browser/file_reader.h',
         '../extensions/browser/pref_names.cc',
@@ -573,8 +575,6 @@
         'browser/extensions/default_apps.h',
         'browser/extensions/error_console/error_console.cc',
         'browser/extensions/error_console/error_console.h',
-        'browser/extensions/error_console/extension_error.cc',
-        'browser/extensions/error_console/extension_error.h',
         'browser/extensions/event_listener_map.cc',
         'browser/extensions/event_listener_map.h',
         'browser/extensions/event_names.cc',

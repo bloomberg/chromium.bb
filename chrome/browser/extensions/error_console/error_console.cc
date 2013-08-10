@@ -4,18 +4,43 @@
 
 #include "chrome/browser/extensions/error_console/error_console.h"
 
-#include <algorithm>
+#include <list>
 
+#include "base/lazy_instance.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/error_console/extension_error.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/constants.h"
 
 namespace extensions {
+
+namespace {
+
+const size_t kMaxErrorsPerExtension = 100;
+
+// Iterate through an error list and remove and delete all errors which were
+// from an incognito context.
+void DeleteIncognitoErrorsFromList(ErrorConsole::ErrorList* list) {
+  ErrorConsole::ErrorList::iterator iter = list->begin();
+  while (iter != list->end()) {
+    if ((*iter)->from_incognito()) {
+      delete *iter;
+      iter = list->erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+}
+
+base::LazyInstance<ErrorConsole::ErrorList> g_empty_error_list =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 void ErrorConsole::Observer::OnErrorConsoleDestroyed() {
 }
@@ -24,10 +49,14 @@ ErrorConsole::ErrorConsole(Profile* profile) : profile_(profile) {
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNINSTALLED,
+                 content::Source<Profile>(profile_));
 }
 
 ErrorConsole::~ErrorConsole() {
   FOR_EACH_OBSERVER(Observer, observers_, OnErrorConsoleDestroyed());
+  RemoveAllErrors();
 }
 
 // static
@@ -35,31 +64,28 @@ ErrorConsole* ErrorConsole::Get(Profile* profile) {
   return ExtensionSystem::Get(profile)->error_console();
 }
 
-void ErrorConsole::ReportError(scoped_ptr<ExtensionError> error) {
+void ErrorConsole::ReportError(scoped_ptr<const ExtensionError> scoped_error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  errors_.push_back(error.release());
-  FOR_EACH_OBSERVER(Observer, observers_, OnErrorAdded(errors_.back()));
-}
 
-ErrorConsole::WeakErrorList ErrorConsole::GetErrorsForExtension(
-    const std::string& extension_id) const {
-  WeakErrorList result;
-  for (ErrorList::const_iterator iter = errors_.begin();
-       iter != errors_.end(); ++iter) {
-    if ((*iter)->extension_id() == extension_id)
-      result.push_back(*iter);
+  const ExtensionError* error = scoped_error.release();
+  // If there are too many errors for an extension already, limit ourselves to
+  // the most recent ones.
+  ErrorList* error_list = &errors_[error->extension_id()];
+  if (error_list->size() >= kMaxErrorsPerExtension) {
+    delete error_list->front();
+    error_list->pop_front();
   }
-  return result;
+  error_list->push_back(error);
+
+  FOR_EACH_OBSERVER(Observer, observers_, OnErrorAdded(error));
 }
 
-void ErrorConsole::RemoveError(const ExtensionError* error) {
-  ErrorList::iterator iter = std::find(errors_.begin(), errors_.end(), error);
-  CHECK(iter != errors_.end());
-  errors_.erase(iter);
-}
-
-void ErrorConsole::RemoveAllErrors() {
-  errors_.clear();
+const ErrorConsole::ErrorList& ErrorConsole::GetErrorsForExtension(
+    const std::string& extension_id) const {
+  ErrorMap::const_iterator iter = errors_.find(extension_id);
+  if (iter != errors_.end())
+    return iter->second;
+  return g_empty_error_list.Get();
 }
 
 void ErrorConsole::AddObserver(Observer* observer) {
@@ -73,17 +99,24 @@ void ErrorConsole::RemoveObserver(Observer* observer) {
 }
 
 void ErrorConsole::RemoveIncognitoErrors() {
-  WeakErrorList to_remove;
-  for (ErrorList::const_iterator iter = errors_.begin();
+  for (ErrorMap::iterator iter = errors_.begin();
        iter != errors_.end(); ++iter) {
-    if ((*iter)->from_incognito())
-      to_remove.push_back(*iter);
+    DeleteIncognitoErrorsFromList(&(iter->second));
   }
+}
 
-  for (WeakErrorList::const_iterator iter = to_remove.begin();
-       iter != to_remove.end(); ++iter) {
-    RemoveError(*iter);
+void ErrorConsole::RemoveErrorsForExtension(const std::string& extension_id) {
+  ErrorMap::iterator iter = errors_.find(extension_id);
+  if (iter != errors_.end()) {
+    STLDeleteContainerPointers(iter->second.begin(), iter->second.end());
+    errors_.erase(iter);
   }
+}
+
+void ErrorConsole::RemoveAllErrors() {
+  for (ErrorMap::iterator iter = errors_.begin(); iter != errors_.end(); ++iter)
+    STLDeleteContainerPointers(iter->second.begin(), iter->second.end());
+  errors_.clear();
 }
 
 void ErrorConsole::Observe(int type,
@@ -98,6 +131,12 @@ void ErrorConsole::Observe(int type,
         RemoveIncognitoErrors();
       break;
     }
+    case chrome::NOTIFICATION_EXTENSION_UNINSTALLED:
+      // No need to check the profile here, since we registered to only receive
+      // notifications from our own.
+      RemoveErrorsForExtension(
+          content::Details<Extension>(details).ptr()->id());
+      break;
     default:
       NOTREACHED();
   }
