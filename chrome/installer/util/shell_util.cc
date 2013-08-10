@@ -516,16 +516,16 @@ class RegistryEntry {
   // Generate work_item tasks required to create current registry entry and
   // add them to the given work item list.
   void AddToWorkItemList(HKEY root, WorkItemList *items) const {
-    items->AddCreateRegKeyWorkItem(root, _key_path);
-    if (_is_string) {
-      items->AddSetRegValueWorkItem(root, _key_path, _name, _value, true);
+    items->AddCreateRegKeyWorkItem(root, key_path_);
+    if (is_string_) {
+      items->AddSetRegValueWorkItem(root, key_path_, name_, value_, true);
     } else {
-      items->AddSetRegValueWorkItem(root, _key_path, _name, _int_value, true);
+      items->AddSetRegValueWorkItem(root, key_path_, name_, int_value_, true);
     }
   }
 
-  // Checks if the current registry entry exists in HKCU\|_key_path|\|_name|
-  // and value is |_value|. If the key does NOT exist in HKCU, checks for
+  // Checks if the current registry entry exists in HKCU\|key_path_|\|name_|
+  // and value is |value_|. If the key does NOT exist in HKCU, checks for
   // the correct name and value in HKLM.
   // |look_for_in| specifies roots (HKCU and/or HKLM) in which to look for the
   // key, unspecified roots are not looked into (i.e. the the key is assumed not
@@ -550,57 +550,57 @@ class RegistryEntry {
  private:
   // States this RegistryKey can be in compared to the registry.
   enum RegistryStatus {
-    // |_name| does not exist in the registry
+    // |name_| does not exist in the registry
     DOES_NOT_EXIST,
-    // |_name| exists, but its value != |_value|
+    // |name_| exists, but its value != |value_|
     DIFFERENT_VALUE,
-    // |_name| exists and its value is |_value|
+    // |name_| exists and its value is |value_|
     SAME_VALUE,
   };
 
   // Create a object that represent default value of a key
   RegistryEntry(const string16& key_path, const string16& value)
-      : _key_path(key_path), _name(),
-        _is_string(true), _value(value), _int_value(0) {
+      : key_path_(key_path), name_(),
+        is_string_(true), value_(value), int_value_(0) {
   }
 
   // Create a object that represent a key of type REG_SZ
   RegistryEntry(const string16& key_path, const string16& name,
                 const string16& value)
-      : _key_path(key_path), _name(name),
-        _is_string(true), _value(value), _int_value(0) {
+      : key_path_(key_path), name_(name),
+        is_string_(true), value_(value), int_value_(0) {
   }
 
   // Create a object that represent a key of integer type
   RegistryEntry(const string16& key_path, const string16& name,
                 DWORD value)
-      : _key_path(key_path), _name(name),
-        _is_string(false), _value(), _int_value(value) {
+      : key_path_(key_path), name_(name),
+        is_string_(false), value_(), int_value_(value) {
   }
 
-  string16 _key_path;  // key path for the registry entry
-  string16 _name;      // name of the registry entry
-  bool _is_string;     // true if current registry entry is of type REG_SZ
-  string16 _value;     // string value (useful if _is_string = true)
-  DWORD _int_value;    // integer value (useful if _is_string = false)
+  string16 key_path_;  // key path for the registry entry
+  string16 name_;      // name of the registry entry
+  bool is_string_;     // true if current registry entry is of type REG_SZ
+  string16 value_;     // string value (useful if is_string_ = true)
+  DWORD int_value_;    // integer value (useful if is_string_ = false)
 
   // Helper function for ExistsInRegistry().
   // Returns the RegistryStatus of the current registry entry in
-  // |root|\|_key_path|\|_name|.
+  // |root|\|key_path_|\|name_|.
   RegistryStatus StatusInRegistryUnderRoot(HKEY root) const {
-    RegKey key(root, _key_path.c_str(), KEY_QUERY_VALUE);
+    RegKey key(root, key_path_.c_str(), KEY_QUERY_VALUE);
     bool found = false;
     bool correct_value = false;
-    if (_is_string) {
+    if (is_string_) {
       string16 read_value;
-      found = key.ReadValue(_name.c_str(), &read_value) == ERROR_SUCCESS;
-      correct_value = read_value.size() == _value.size() &&
-          std::equal(_value.begin(), _value.end(), read_value.begin(),
+      found = key.ReadValue(name_.c_str(), &read_value) == ERROR_SUCCESS;
+      correct_value = read_value.size() == value_.size() &&
+          std::equal(value_.begin(), value_.end(), read_value.begin(),
                      base::CaseInsensitiveCompare<wchar_t>());
     } else {
       DWORD read_value;
-      found = key.ReadValueDW(_name.c_str(), &read_value) == ERROR_SUCCESS;
-      correct_value = read_value == _int_value;
+      found = key.ReadValueDW(name_.c_str(), &read_value) == ERROR_SUCCESS;
+      correct_value = read_value == int_value_;
     }
     return found ?
         (correct_value ? SAME_VALUE : DIFFERENT_VALUE) : DOES_NOT_EXIST;
