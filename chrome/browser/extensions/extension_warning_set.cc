@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_warning_set.h"
 
+#include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/common/extensions/extension.h"
@@ -154,6 +155,24 @@ ExtensionWarning ExtensionWarning::CreateRepeatedCacheFlushesWarning(
       kRepeatedCacheFlushes,
       extension_id,
       IDS_EXTENSION_WARNINGS_NETWORK_DELAY,
+      message_parameters);
+}
+
+// static
+ExtensionWarning ExtensionWarning::CreateDownloadFilenameConflictWarning(
+    const std::string& losing_extension_id,
+    const std::string& winning_extension_id,
+    const base::FilePath& losing_filename,
+    const base::FilePath& winning_filename) {
+  std::vector<std::string> message_parameters;
+  message_parameters.push_back(UTF16ToUTF8(losing_filename.LossyDisplayName()));
+  message_parameters.push_back(kTranslate + winning_extension_id);
+  message_parameters.push_back(UTF16ToUTF8(
+      winning_filename.LossyDisplayName()));
+  return ExtensionWarning(
+      kDownloadFilenameConflict,
+      losing_extension_id,
+      IDS_EXTENSION_WARNINGS_DOWNLOAD_FILENAME_CONFLICT,
       message_parameters);
 }
 

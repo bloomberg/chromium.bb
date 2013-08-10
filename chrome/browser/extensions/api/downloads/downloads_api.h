@@ -17,6 +17,7 @@
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/common/extensions/api/downloads.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -297,6 +298,21 @@ class ExtensionDownloadsEventRouter : public extensions::EventRouter::Observer,
       const base::FilePath& changed_filename,
       DownloadPathReservationTracker::FilenameConflictAction)>
     FilenameChangedCallback;
+
+  // The logic for how to handle conflicting filename suggestions from multiple
+  // extensions is split out here for testing.
+  static void DetermineFilenameInternal(
+      const base::FilePath& filename,
+      extensions::api::downloads::FilenameConflictAction conflict_action,
+      const std::string& suggesting_extension_id,
+      const base::Time& suggesting_install_time,
+      const std::string& incumbent_extension_id,
+      const base::Time& incumbent_install_time,
+      std::string* winner_extension_id,
+      base::FilePath* determined_filename,
+      extensions::api::downloads::FilenameConflictAction*
+        determined_conflict_action,
+      extensions::ExtensionWarningSet* warnings);
 
   // A downloads.onDeterminingFilename listener has returned. If the extension
   // wishes to override the download's filename, then |filename| will be

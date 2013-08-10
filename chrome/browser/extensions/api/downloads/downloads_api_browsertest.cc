@@ -3497,3 +3497,73 @@ TEST(DownloadInterruptReasonEnumsSynced,
 #include "content/public/browser/download_interrupt_reason_values.h"
 #undef INTERRUPT_REASON
 }
+
+TEST(ExtensionDetermineDownloadFilenameInternal,
+     ExtensionDetermineDownloadFilenameInternal) {
+
+  std::string winner_id;
+  base::FilePath filename;
+  extensions::api::downloads::FilenameConflictAction conflict_action =
+    api::FILENAME_CONFLICT_ACTION_UNIQUIFY;
+  extensions::ExtensionWarningSet warnings;
+
+  // Empty incumbent determiner
+  warnings.clear();
+  ExtensionDownloadsEventRouter::DetermineFilenameInternal(
+      base::FilePath(FILE_PATH_LITERAL("a")),
+      api::FILENAME_CONFLICT_ACTION_OVERWRITE,
+      "suggester",
+      base::Time::Now(),
+      "",
+      base::Time(),
+      &winner_id,
+      &filename,
+      &conflict_action,
+      &warnings);
+  EXPECT_EQ("suggester", winner_id);
+  EXPECT_EQ(FILE_PATH_LITERAL("a"), filename.value());
+  EXPECT_EQ(api::FILENAME_CONFLICT_ACTION_OVERWRITE, conflict_action);
+  EXPECT_TRUE(warnings.empty());
+
+  // Incumbent wins
+  warnings.clear();
+  ExtensionDownloadsEventRouter::DetermineFilenameInternal(
+      base::FilePath(FILE_PATH_LITERAL("b")),
+      api::FILENAME_CONFLICT_ACTION_PROMPT,
+      "suggester",
+      base::Time::Now() - base::TimeDelta::FromDays(1),
+      "incumbent",
+      base::Time::Now(),
+      &winner_id,
+      &filename,
+      &conflict_action,
+      &warnings);
+  EXPECT_EQ("incumbent", winner_id);
+  EXPECT_EQ(FILE_PATH_LITERAL("a"), filename.value());
+  EXPECT_EQ(api::FILENAME_CONFLICT_ACTION_OVERWRITE, conflict_action);
+  EXPECT_FALSE(warnings.empty());
+  EXPECT_EQ(extensions::ExtensionWarning::kDownloadFilenameConflict,
+            warnings.begin()->warning_type());
+  EXPECT_EQ("suggester", warnings.begin()->extension_id());
+
+  // Suggester wins
+  warnings.clear();
+  ExtensionDownloadsEventRouter::DetermineFilenameInternal(
+      base::FilePath(FILE_PATH_LITERAL("b")),
+      api::FILENAME_CONFLICT_ACTION_PROMPT,
+      "suggester",
+      base::Time::Now(),
+      "incumbent",
+      base::Time::Now() - base::TimeDelta::FromDays(1),
+      &winner_id,
+      &filename,
+      &conflict_action,
+      &warnings);
+  EXPECT_EQ("suggester", winner_id);
+  EXPECT_EQ(FILE_PATH_LITERAL("b"), filename.value());
+  EXPECT_EQ(api::FILENAME_CONFLICT_ACTION_PROMPT, conflict_action);
+  EXPECT_FALSE(warnings.empty());
+  EXPECT_EQ(extensions::ExtensionWarning::kDownloadFilenameConflict,
+            warnings.begin()->warning_type());
+  EXPECT_EQ("incumbent", warnings.begin()->extension_id());
+}

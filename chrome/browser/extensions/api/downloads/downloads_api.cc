@@ -45,6 +45,8 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_warning_service.h"
+#include "chrome/browser/extensions/extension_warning_set.h"
 #include "chrome/browser/icon_loader.h"
 #include "chrome/browser/icon_manager.h"
 #include "chrome/browser/platform_util.h"
@@ -593,6 +595,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
             extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY),
         determined_conflict_action_(
             extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     download_item->SetUserData(kKey, this);
   }
 
@@ -614,6 +617,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   void set_filename_change_callbacks(
       const base::Closure& no_change,
       const ExtensionDownloadsEventRouter::FilenameChangedCallback& change) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     filename_no_change_ = no_change;
     filename_change_ = change;
     determined_filename_ = creator_suggested_filename_;
@@ -623,6 +627,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   }
 
   void ClearPendingDeterminers() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     determined_filename_.clear();
     determined_conflict_action_ =
       extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY;
@@ -634,6 +639,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   }
 
   void DeterminerRemoved(const std::string& extension_id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     for (DeterminerInfoVector::iterator iter = determiners_.begin();
          iter != determiners_.end();) {
       if (iter->extension_id == extension_id) {
@@ -649,6 +655,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
 
   void AddPendingDeterminer(const std::string& extension_id,
                             const base::Time& installed) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     for (size_t index = 0; index < determiners_.size(); ++index) {
       if (determiners_[index].extension_id == extension_id) {
         DCHECK(false) << extension_id;
@@ -659,6 +666,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   }
 
   bool DeterminerAlreadyReported(const std::string& extension_id) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     for (size_t index = 0; index < determiners_.size(); ++index) {
       if (determiners_[index].extension_id == extension_id) {
         return determiners_[index].reported;
@@ -670,6 +678,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   void CreatorSuggestedFilename(
       const base::FilePath& filename,
       extensions::api::downloads::FilenameConflictAction conflict_action) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     creator_suggested_filename_ = filename;
     creator_conflict_action_ = conflict_action;
   }
@@ -684,6 +693,7 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   }
 
   void ResetCreatorSuggestion() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     creator_suggested_filename_.clear();
     creator_conflict_action_ =
       extensions::api::downloads::FILENAME_CONFLICT_ACTION_UNIQUIFY;
@@ -693,9 +703,11 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
   // |extension_id| has already reported. The caller is responsible for
   // validating |filename|.
   bool DeterminerCallback(
+      Profile* profile,
       const std::string& extension_id,
       const base::FilePath& filename,
       extensions::api::downloads::FilenameConflictAction conflict_action) {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     bool found_info = false;
     for (size_t index = 0; index < determiners_.size(); ++index) {
       if (determiners_[index].extension_id == extension_id) {
@@ -706,12 +718,25 @@ class ExtensionDownloadsEventRouterData : public base::SupportsUserData::Data {
         // Do not use filename if another determiner has already overridden the
         // filename and they take precedence. Extensions that were installed
         // later take precedence over previous extensions.
-        if (!filename.empty() &&
-            (determiner_.extension_id.empty() ||
-             (determiners_[index].install_time > determiner_.install_time))) {
-          determined_filename_ = filename;
-          determined_conflict_action_ = conflict_action;
-          determiner_ = determiners_[index];
+        if (!filename.empty()) {
+          extensions::ExtensionWarningSet warnings;
+          std::string winner_extension_id;
+          ExtensionDownloadsEventRouter::DetermineFilenameInternal(
+              filename,
+              conflict_action,
+              determiners_[index].extension_id,
+              determiners_[index].install_time,
+              determiner_.extension_id,
+              determiner_.install_time,
+              &winner_extension_id,
+              &determined_filename_,
+              &determined_conflict_action_,
+              &warnings);
+          if (!warnings.empty())
+            extensions::ExtensionWarningService::NotifyWarningsOnUI(
+                profile, warnings);
+          if (winner_extension_id == determiners_[index].extension_id)
+            determiner_ = determiners_[index];
         }
         break;
       }
@@ -1559,6 +1584,50 @@ void ExtensionDownloadsEventRouter::OnDeterminingFilename(
   }
 }
 
+void ExtensionDownloadsEventRouter::DetermineFilenameInternal(
+    const base::FilePath& filename,
+    extensions::api::downloads::FilenameConflictAction conflict_action,
+    const std::string& suggesting_extension_id,
+    const base::Time& suggesting_install_time,
+    const std::string& incumbent_extension_id,
+    const base::Time& incumbent_install_time,
+    std::string* winner_extension_id,
+    base::FilePath* determined_filename,
+    extensions::api::downloads::FilenameConflictAction*
+      determined_conflict_action,
+    extensions::ExtensionWarningSet* warnings) {
+  DCHECK(!filename.empty());
+  DCHECK(!suggesting_extension_id.empty());
+
+  if (incumbent_extension_id.empty()) {
+    *winner_extension_id = suggesting_extension_id;
+    *determined_filename = filename;
+    *determined_conflict_action = conflict_action;
+    return;
+  }
+
+  if (suggesting_install_time < incumbent_install_time) {
+    *winner_extension_id = incumbent_extension_id;
+    warnings->insert(
+        extensions::ExtensionWarning::CreateDownloadFilenameConflictWarning(
+            suggesting_extension_id,
+            incumbent_extension_id,
+            filename,
+            *determined_filename));
+    return;
+  }
+
+  *winner_extension_id = suggesting_extension_id;
+  warnings->insert(
+      extensions::ExtensionWarning::CreateDownloadFilenameConflictWarning(
+          incumbent_extension_id,
+          suggesting_extension_id,
+          *determined_filename,
+          filename));
+  *determined_filename = filename;
+  *determined_conflict_action = conflict_action;
+}
+
 bool ExtensionDownloadsEventRouter::DetermineFilename(
     Profile* profile,
     bool include_incognito,
@@ -1592,7 +1661,8 @@ bool ExtensionDownloadsEventRouter::DetermineFilename(
               base::FilePath());
   // If the invalid filename check is moved to before DeterminerCallback(), then
   // it will block forever waiting for this ext_id to report.
-  if (Fault(!data->DeterminerCallback(ext_id, filename, conflict_action),
+  if (Fault(!data->DeterminerCallback(
+                profile, ext_id, filename, conflict_action),
             errors::kUnexpectedDeterminer, error) ||
       Fault((!const_filename.empty() && !valid_filename),
             errors::kInvalidFilename, error))
@@ -1791,6 +1861,7 @@ void ExtensionDownloadsEventRouter::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   switch (type) {
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       extensions::UnloadedExtensionInfo* unloaded =
