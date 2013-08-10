@@ -1157,6 +1157,10 @@ const char kAutofillDialogShowCount[] = "autofill.show_count";
 const char kAutofillGeneratedCardBubbleTimesShown[] =
     "autofill.generated_card_bubble_times_shown";
 
+// A dictionary that tracks the defaults to be set on the next invocation
+// of the requestAutocomplete/Autocheckout dialog.
+const char kAutofillDialogDefaults[] = "autofill.rac_dialog_defaults";
+
 // Modifying bookmarks is completely disabled when this is set to false.
 const char kEditBookmarksEnabled[] = "bookmarks.editing_enabled";
 

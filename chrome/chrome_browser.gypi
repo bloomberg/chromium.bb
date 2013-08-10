@@ -3389,6 +3389,8 @@
           'type': 'none',
           'sources': [
             'android/java/src/org/chromium/chrome/browser/ApplicationLifetime.java',
+            'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogControllerAndroid.java',
+            'android/java/src/org/chromium/chrome/browser/autofill/AutofillDialogResult.java',
             'android/java/src/org/chromium/chrome/browser/autofill/AutofillPopupGlue.java',
             'android/java/src/org/chromium/chrome/browser/autofill/PersonalDataManager.java',
             'android/java/src/org/chromium/chrome/browser/CertificateViewer.java',
