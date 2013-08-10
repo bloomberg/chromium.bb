@@ -67,8 +67,6 @@
     'renderer/accessibility/renderer_accessibility_focus_only.h',
     'renderer/active_notification_tracker.cc',
     'renderer/active_notification_tracker.h',
-    'renderer/all_rendering_benchmarks.cc',
-    'renderer/all_rendering_benchmarks.h',
     'renderer/android/address_detector.cc',
     'renderer/android/address_detector.h',
     'renderer/android/content_detector.cc',

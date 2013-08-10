@@ -14,7 +14,6 @@
 #include "content/common/browser_rendering_stats.h"
 #include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/all_rendering_benchmarks.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/rendering_benchmark.h"
@@ -213,10 +212,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "  native function SmoothScrollSendsTouch();"
           "  return SmoothScrollSendsTouch();"
           "};"
-          "chrome.gpuBenchmarking.runRenderingBenchmarks = function(filter) {"
-          "  native function RunRenderingBenchmarks();"
-          "  return RunRenderingBenchmarks(filter);"
-          "};"
           "chrome.gpuBenchmarking.beginWindowSnapshotPNG = function(callback) {"
           "  native function BeginWindowSnapshotPNG();"
           "  BeginWindowSnapshotPNG(callback);"
@@ -240,8 +235,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(BeginSmoothScroll);
     if (name->Equals(v8::String::New("SmoothScrollSendsTouch")))
       return v8::FunctionTemplate::New(SmoothScrollSendsTouch);
-    if (name->Equals(v8::String::New("RunRenderingBenchmarks")))
-      return v8::FunctionTemplate::New(RunRenderingBenchmarks);
     if (name->Equals(v8::String::New("BeginWindowSnapshotPNG")))
       return v8::FunctionTemplate::New(BeginWindowSnapshotPNG);
     if (name->Equals(v8::String::New("ClearImageCache")))
@@ -449,62 +442,6 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         mouse_event_y);
 
     args.GetReturnValue().Set(true);
-  }
-
-  static void RunRenderingBenchmarks(
-      const v8::FunctionCallbackInfo<v8::Value>& args) {
-    // For our name filter, the argument can be undefined or null to run
-    // all benchmarks, or a string for filtering by name.
-    if (!args.Length() ||
-        (!args[0]->IsString() &&
-         !(args[0]->IsNull() || args[0]->IsUndefined()))) {
-      return;
-    }
-
-    std::string name_filter;
-    if (args[0]->IsNull() || args[0]->IsUndefined()) {
-      name_filter = "";
-    } else {
-      char filter[256];
-      args[0]->ToString()->WriteUtf8(filter, sizeof(filter)-1);
-      name_filter = std::string(filter);
-    }
-
-    WebFrame* web_frame = WebFrame::frameForCurrentContext();
-    if (!web_frame)
-      return;
-
-    WebView* web_view = web_frame->view();
-    if (!web_view)
-      return;
-
-    WebViewBenchmarkSupport* support = web_view->benchmarkSupport();
-    if (!support)
-      return;
-
-    ScopedVector<RenderingBenchmark> benchmarks = AllRenderingBenchmarks();
-
-    v8::Handle<v8::Array> results = v8::Array::New(0);
-    ScopedVector<RenderingBenchmark>::const_iterator it;
-    for (it = benchmarks.begin(); it != benchmarks.end(); it++) {
-      RenderingBenchmark* benchmark = *it;
-      const std::string& name = benchmark->name();
-      if (name_filter != "" &&
-          std::string::npos == name.find(name_filter)) {
-        continue;
-      }
-      benchmark->SetUp(support);
-      double result = benchmark->Run(support);
-      benchmark->TearDown(support);
-
-      v8::Handle<v8::Object> result_object = v8::Object::New();
-      result_object->Set(v8::String::New("benchmark", 9),
-                         v8::String::New(name.c_str(), -1));
-      result_object->Set(v8::String::New("result", 6), v8::Number::New(result));
-      results->Set(results->Length(), result_object);
-    }
-
-    args.GetReturnValue().Set(results);
   }
 
   static void OnSnapshotCompleted(CallbackAndContext* callback_and_context,
