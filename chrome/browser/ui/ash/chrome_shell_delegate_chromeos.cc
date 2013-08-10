@@ -45,7 +45,7 @@
 
 bool ChromeShellDelegate::IsFirstRunAfterBoot() const {
   return CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kFirstBoot);
+      chromeos::switches::kFirstExecAfterBoot);
 }
 
 void ChromeShellDelegate::PreInit() {

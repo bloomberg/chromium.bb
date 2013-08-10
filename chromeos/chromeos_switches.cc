@@ -120,8 +120,9 @@ const char kFileManagerShowCheckboxes[]     = "file-manager-show-checkboxes";
 const char kFileManagerEnableWebstoreIntegration[] =
     "file-manager-enable-webstore-integration";
 
-// Passed to Chrome on first boot. Not passed on restart after sign out.
-const char kFirstBoot[]                     = "first-boot";
+// Passed to Chrome the first time that it's run after the system boots.
+// Not passed on restart after sign out.
+const char kFirstExecAfterBoot[]            = "first-exec-after-boot";
 
 // Usually in browser tests the usual login manager bringup is skipped so that
 // tests can change how it's brought up. This flag disables that.

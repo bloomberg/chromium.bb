@@ -1796,7 +1796,8 @@ void UserManagerImpl::RestorePendingUserSessions() {
 void UserManagerImpl::SendRegularUserLoginMetrics(const std::string& email) {
   // If this isn't the first time Chrome was run after the system booted,
   // assume that Chrome was restarted because a previous session ended.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kFirstExecAfterBoot)) {
     const std::string last_email =
         g_browser_process->local_state()->GetString(kLastLoggedInRegularUser);
     const base::TimeDelta time_to_login =

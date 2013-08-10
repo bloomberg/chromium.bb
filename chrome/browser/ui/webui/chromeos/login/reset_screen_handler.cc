@@ -70,7 +70,8 @@ void ResetScreenHandler::DeclareLocalizedValues(
                 IDS_RESET_SCREEN_WARNING_MSG,
                 IDS_SHORT_PRODUCT_NAME);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kFirstExecAfterBoot)) {
     builder->AddF("resetWarningDetails",
                   IDS_RESET_SCREEN_WARNING_DETAILS,
                   IDS_SHORT_PRODUCT_NAME);
@@ -104,7 +105,8 @@ void ResetScreenHandler::HandleOnCancel() {
 }
 
 void ResetScreenHandler::HandleOnReset() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kFirstBoot)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kFirstExecAfterBoot)) {
     chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
         StartDeviceWipe();
   } else {
