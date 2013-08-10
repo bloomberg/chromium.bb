@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
@@ -77,6 +78,7 @@ class NaClDomHandler : public WebUIMessageHandler {
   // WebUIMessageHandler implementation.
   virtual void RegisterMessages() OVERRIDE;
 
+ private:
   // Callback for the "requestNaClInfo" message.
   void HandleRequestNaClInfo(const ListValue* args);
 
@@ -84,11 +86,10 @@ class NaClDomHandler : public WebUIMessageHandler {
   void OnGotPlugins(const std::vector<content::WebPluginInfo>& plugins);
 
   // A helper callback that receives the result of checking if PNaCl path
-  // exists. |is_valid| is true if the PNaCl path that was returned by
-  // PathService is valid, and false otherwise.
-  void DidValidatePnaclPath(bool* is_valid);
+  // exists and checking the PNaCl |version|. |is_valid| is true if the PNaCl
+  // path that was returned by PathService is valid, and false otherwise.
+  void DidCheckPathAndVersion(bool* is_valid, std::string* version);
 
- private:
   // Called when enough information is gathered to return data back to the page.
   void MaybeRespondToPage();
 
@@ -108,7 +109,8 @@ class NaClDomHandler : public WebUIMessageHandler {
   // Adds the list of plugins for NaCl to list.
   void AddPluginList(ListValue* list);
 
-  // Adds the information relevant to PNaCl (e.g., enablement, paths) to list.
+  // Adds the information relevant to PNaCl (e.g., enablement, paths, version)
+  // to the list.
   void AddPnaclInfo(ListValue* list);
 
   // Adds the information relevant to NaCl to list.
@@ -124,6 +126,7 @@ class NaClDomHandler : public WebUIMessageHandler {
   // that does not exists, so it needs to be validated.
   bool pnacl_path_validated_;
   bool pnacl_path_exists_;
+  std::string pnacl_version_string_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClDomHandler);
 };
@@ -265,12 +268,9 @@ void NaClDomHandler::AddPnaclInfo(ListValue* list) {
     AddPair(list,
             ASCIIToUTF16("PNaCl translator path"),
             pnacl_path.LossyDisplayName());
-    // Version string is part of the directory name:
-    // pnacl/<version>/_platform_specific/<arch>/[files]
-    // Keep in sync with pnacl_component_installer.cc.
     AddPair(list,
             ASCIIToUTF16("PNaCl translator version"),
-            pnacl_path.DirName().DirName().BaseName().LossyDisplayName());
+            ASCIIToUTF16(pnacl_version_string_));
   }
   AddLineBreak(list);
 }
@@ -289,7 +289,7 @@ void NaClDomHandler::AddNaClInfo(ListValue* list) {
 
 void NaClDomHandler::HandleRequestNaClInfo(const ListValue* args) {
   page_has_requested_data_ = true;
-  // Force re-validation of pnacl's path in the next call to
+  // Force re-validation of PNaCl's path in the next call to
   // MaybeRespondToPage(), in case PNaCl went from not-installed
   // to installed since the request.
   pnacl_path_validated_ = false;
@@ -318,16 +318,35 @@ void NaClDomHandler::PopulatePageInformation(DictionaryValue* naclInfo) {
   naclInfo->Set("naclInfo", list.release());
 }
 
-void NaClDomHandler::DidValidatePnaclPath(bool* is_valid) {
+void NaClDomHandler::DidCheckPathAndVersion(bool* is_valid,
+                                            std::string* version) {
   pnacl_path_validated_ = true;
   pnacl_path_exists_ = *is_valid;
+  pnacl_version_string_ = *version;
   MaybeRespondToPage();
 }
 
-void ValidatePnaclPath(bool* is_valid) {
+void CheckVersion(const base::FilePath& pnacl_path, std::string* version) {
+  base::FilePath pnacl_json_path =
+      pnacl_path.Append(FILE_PATH_LITERAL("pnacl_public_pnacl_json"));
+  JSONFileValueSerializer serializer(pnacl_json_path);
+  std::string error;
+  scoped_ptr<base::Value> root(serializer.Deserialize(NULL, &error));
+  if (!root || !root->IsType(base::Value::TYPE_DICTIONARY))
+    return;
+
+  // Now try to get the field. This may leave version empty if the
+  // the "get" fails (no key, or wrong type).
+  static_cast<base::DictionaryValue*>(root.get())->
+      GetStringASCII("pnacl-version", version);
+}
+
+void CheckPathAndVersion(bool* is_valid, std::string* version) {
   base::FilePath pnacl_path;
   bool got_path = PathService::Get(chrome::DIR_PNACL_COMPONENT, &pnacl_path);
   *is_valid = got_path && !pnacl_path.empty() && base::PathExists(pnacl_path);
+  if (*is_valid)
+    CheckVersion(pnacl_path, version);
 }
 
 void NaClDomHandler::MaybeRespondToPage() {
@@ -338,12 +357,14 @@ void NaClDomHandler::MaybeRespondToPage() {
 
   if (!pnacl_path_validated_) {
     bool* is_valid = new bool;
+    std::string* version_string = new std::string;
     BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
-        base::Bind(&ValidatePnaclPath, is_valid),
-        base::Bind(&NaClDomHandler::DidValidatePnaclPath,
+        base::Bind(&CheckPathAndVersion, is_valid, version_string),
+        base::Bind(&NaClDomHandler::DidCheckPathAndVersion,
                    weak_ptr_factory_.GetWeakPtr(),
-                   base::Owned(is_valid)));
+                   base::Owned(is_valid),
+                   base::Owned(version_string)));
     return;
   }
 
