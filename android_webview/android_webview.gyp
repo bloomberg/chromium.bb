@@ -85,6 +85,7 @@
         '../gpu/gpu.gyp:command_buffer_service',
         '../gpu/gpu.gyp:gles2_implementation',
         '../ui/gl/gl.gyp:gl',
+        '../ui/ui.gyp:shell_dialogs',
         '../webkit/common/gpu/webkit_gpu.gyp:webkit_gpu',
         'android_webview_pak',
       ],

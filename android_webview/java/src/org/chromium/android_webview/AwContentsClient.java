@@ -199,6 +199,14 @@ public abstract class AwContentsClient {
     //             WebView specific methods that map directly to WebViewClient / WebChromeClient
     //--------------------------------------------------------------------------------------------
 
+    public static class FileChooserParams {
+        public int mode;
+        public String acceptTypes;
+        public String title;
+        public String defaultFilename;
+        public boolean capture;
+    }
+
     public abstract void getVisitedHistory(ValueCallback<String[]> callback);
 
     public abstract void doUpdateVisitedHistory(String url, boolean isReload);
@@ -228,6 +236,10 @@ public abstract class AwContentsClient {
 
     public abstract void onDownloadStart(String url, String userAgent, String contentDisposition,
             String mimeType, long contentLength);
+
+    // TODO(joth): Make abstract once this has rolled in downstream.
+    public /*abstract*/ void showFileChooser(ValueCallback<String[]> uploadFilePathsCallback,
+            FileChooserParams fileChooserParams) { }
 
     public abstract void onGeolocationPermissionsShowPrompt(String origin,
             GeolocationPermissions.Callback callback);

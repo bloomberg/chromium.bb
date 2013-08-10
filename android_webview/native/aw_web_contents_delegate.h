@@ -31,7 +31,9 @@ class AwWebContentsDelegate
                            int request_id,
                            const std::string& request_method,
                            const base::Callback<void(bool)>& callback) OVERRIDE;
-
+  virtual void RunFileChooser(
+      content::WebContents* web_contents,
+      const content::FileChooserParams& params) OVERRIDE;
   virtual void AddNewContents(content::WebContents* source,
                               content::WebContents* new_contents,
                               WindowOpenDisposition disposition,

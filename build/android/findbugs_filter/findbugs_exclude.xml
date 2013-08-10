@@ -21,10 +21,15 @@ In particular, ~ at the start of a string means it's a regex.
   <Match>
     <Class name="~org\.chromium\.content\..*\.NativeLibraries.*?" />
   </Match>
+  <!-- Ignore errors in JavaBridge due to reflection. -->
   <Match>
     <Class name="~.*\.JavaBridge.*"/>
-    <!-- Ignore errors in JavaBridge due to reflection. -->
     <Bug code="UuF,UrF,UMAC" />
+  </Match>
+  <!-- "Struct" like classes expect to have unused public data members -->
+  <Match>
+    <Class name="~.*android_webview.*FileChooserParams"/>
+    <Bug code="UrF" />
   </Match>
   <!-- Ignore "reliance on default String encoding" warnings, as we're not multi-platform -->
   <Bug pattern="DM_DEFAULT_ENCODING" />

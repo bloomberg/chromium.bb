@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/browser",
   "+ui/gfx",
+  "+ui/shell_dialogs",
 
   # Components that Android WebView depends on.
   "+components/autofill/content/browser",
