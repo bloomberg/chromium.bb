@@ -46,6 +46,9 @@ sudo apt-get -f install
 # common
 sudo apt-get -y install lighttpd python-pexpect xvfb x11-utils
 
+# Few binaries in the Android SDK require 32-bit libraries on the host.
+sudo apt-get -y install lib32z1 g++-multilib
+
 if /usr/bin/lsb_release -r -s | grep -q "12."; then
   # Ubuntu 12.x
   sudo apt-get -y install ant
