@@ -54,7 +54,7 @@ import oshelpers
 CYGTAR = os.path.join(NACL_DIR, 'build', 'cygtar.py')
 
 NACLPORTS_URL = 'https://naclports.googlecode.com/svn/trunk/src'
-NACLPORTS_REV = 774
+NACLPORTS_REV = 850
 
 GYPBUILD_DIR = 'gypbuild'
 
