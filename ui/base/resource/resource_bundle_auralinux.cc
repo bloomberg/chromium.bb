@@ -33,9 +33,6 @@ void ResourceBundle::LoadCommonResources() {
   // Always load the 1x data pack first as the 2x data pack contains both 1x and
   // 2x images. The 1x data pack only has 1x images, thus passes in an accurate
   // scale factor to gfx::ImageSkia::AddRepresentation.
-
-  AddDataPackFromPath(GetResourcesPakFilePath("chrome.pak"),
-                      SCALE_FACTOR_NONE);
   AddDataPackFromPath(GetResourcesPakFilePath(
       "chrome_100_percent.pak"), SCALE_FACTOR_100P);
 

@@ -7,7 +7,6 @@
     '<(DEPTH)/chrome/chrome_resources.gyp:packed_extra_resources',
   ],
   'mac_bundle_resources': [
-    '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak',
     '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_100_percent.pak',
     '<(SHARED_INTERMEDIATE_DIR)/repack/chrome_200_percent.pak',
     '<(SHARED_INTERMEDIATE_DIR)/repack/resources.pak',
