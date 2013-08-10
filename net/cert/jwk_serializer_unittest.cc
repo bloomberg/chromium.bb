@@ -26,7 +26,7 @@ static const unsigned char kP256SpkiPrefix[] = {
     0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
     0x42, 0x00, 0x04
 };
-static const unsigned int kEcPointSize = 32U;
+static const unsigned int kEcCoordinateSize = 32U;
 
 // This is a valid P-256 public key.
 static const unsigned char kSpkiEc[] = {
@@ -82,19 +82,19 @@ TEST(JwkSerializerNSSTest, ConvertSpkiFromDerToJwkEc) {
   EXPECT_TRUE(public_key_jwk.GetString("x", &string_value));
   std::string decoded_coordinate;
   EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
-  EXPECT_EQ(kEcPointSize, decoded_coordinate.size());
+  EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
             memcmp(decoded_coordinate.data(),
                    kSpkiEc + sizeof(kP256SpkiPrefix),
-                   kEcPointSize));
+                   kEcCoordinateSize));
 
   EXPECT_TRUE(public_key_jwk.GetString("y", &string_value));
   EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
-  EXPECT_EQ(kEcPointSize, decoded_coordinate.size());
+  EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
             memcmp(decoded_coordinate.data(),
-                  kSpkiEc + sizeof(kP256SpkiPrefix) + kEcPointSize,
-                  kEcPointSize));
+                  kSpkiEc + sizeof(kP256SpkiPrefix) + kEcCoordinateSize,
+                  kEcCoordinateSize));
 
   // Test the result of a corner case: leading 0s in the x, y coordinates are
   // not trimmed, but the point is fixed-length encoded.
@@ -109,19 +109,19 @@ TEST(JwkSerializerNSSTest, ConvertSpkiFromDerToJwkEc) {
 
   EXPECT_TRUE(public_key_jwk.GetString("x", &string_value));
   EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
-  EXPECT_EQ(kEcPointSize, decoded_coordinate.size());
+  EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
             memcmp(decoded_coordinate.data(),
                    kSpkiEcWithZeroXY + sizeof(kP256SpkiPrefix),
-                   kEcPointSize));
+                   kEcCoordinateSize));
 
   EXPECT_TRUE(public_key_jwk.GetString("y", &string_value));
   EXPECT_TRUE(base::Base64Decode(string_value, &decoded_coordinate));
-  EXPECT_EQ(kEcPointSize, decoded_coordinate.size());
+  EXPECT_EQ(kEcCoordinateSize, decoded_coordinate.size());
   EXPECT_EQ(0,
-            memcmp(decoded_coordinate.data(),
-                   kSpkiEcWithZeroXY + sizeof(kP256SpkiPrefix) + kEcPointSize,
-                   kEcPointSize));
+      memcmp(decoded_coordinate.data(),
+             kSpkiEcWithZeroXY + sizeof(kP256SpkiPrefix) + kEcCoordinateSize,
+             kEcCoordinateSize));
 }
 
 #else

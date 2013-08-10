@@ -22,12 +22,12 @@ namespace {
 bool ConvertEcPrime256v1PublicKeyInfoToJwk(
     CERTSubjectPublicKeyInfo* spki,
     base::DictionaryValue* public_key_jwk) {
-  static const int kPrime256v1EncodingType = 4;
+  static const int kUncompressedEncodingType = 4;
   static const int kPrime256v1PublicKeyLength = 64;
   // The public key value is encoded as 0x04 + 64 bytes of public key.
   // NSS gives the length as the bit length.
   if (spki->subjectPublicKey.len != (kPrime256v1PublicKeyLength + 1) * 8 ||
-      spki->subjectPublicKey.data[0] != kPrime256v1EncodingType)
+      spki->subjectPublicKey.data[0] != kUncompressedEncodingType)
     return false;
 
   public_key_jwk->SetString("alg", "EC");
