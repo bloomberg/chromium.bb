@@ -236,21 +236,6 @@ typedef std::map<const DetailInput*, string16> DetailOutputMap;
 
 typedef std::map<ServerFieldType, string16> ValidityData;
 
-// Returns the AutofillMetrics::DIALOG_UI_*_EDIT_UI_SHOWN metric corresponding
-// to the |section|.
-AutofillMetrics::DialogUiEvent DialogSectionToUiEditEvent(
-    DialogSection section);
-
-// Returns the AutofillMetrics::DIALOG_UI_*_ITEM_ADDED metric corresponding
-// to the |section|.
-AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(
-    DialogSection section);
-
-// Returns the AutofillMetrics::DIALOG_UI_*_ITEM_ADDED metric corresponding
-// to the |section|.
-AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
-    DialogSection section);
-
 }  // namespace autofill
 
 #endif  // CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_DIALOG_TYPES_H_

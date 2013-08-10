@@ -25,7 +25,7 @@ class WebContents;
 namespace autofill {
 
 class AutocheckoutBubble;
-class AutofillDialogControllerImpl;
+class AutofillDialogController;
 class AutofillPopupControllerImpl;
 struct FormData;
 
@@ -92,7 +92,7 @@ class TabAutofillManagerDelegate
   virtual void WasShown() OVERRIDE;
 
   // Exposed for testing.
-  AutofillDialogControllerImpl* GetDialogControllerForTesting() {
+  AutofillDialogController* GetDialogControllerForTesting() {
     return dialog_controller_.get();
   }
 
@@ -101,7 +101,7 @@ class TabAutofillManagerDelegate
   friend class content::WebContentsUserData<TabAutofillManagerDelegate>;
 
   content::WebContents* const web_contents_;
-  base::WeakPtr<AutofillDialogControllerImpl> dialog_controller_;
+  base::WeakPtr<AutofillDialogController> dialog_controller_;
   base::WeakPtr<AutocheckoutBubble> autocheckout_bubble_;
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
 

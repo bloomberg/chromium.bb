@@ -2151,6 +2151,18 @@
             ['exclude', '^renderer/safe_browsing/'],
           ],
         }],
+        ['enable_autofill_dialog!=1 or OS=="android"', {
+          'sources!': [
+            'browser/ui/autofill/account_chooser_model_unittest.cc',
+            'browser/ui/autofill/autocheckout_bubble_controller_unittest.cc',
+            'browser/ui/autofill/autofill_credit_card_bubble_controller_unittest.cc',
+            'browser/ui/autofill/autofill_dialog_controller_unittest.cc',
+            'browser/ui/autofill/mock_autofill_dialog_view_delegate.cc',
+            'browser/ui/autofill/mock_autofill_dialog_view_delegate.h',
+            'browser/ui/autofill/test_autofill_credit_card_bubble.cc',
+            'browser/ui/autofill/test_autofill_credit_card_bubble.h',
+          ],
+        }],
         ['enable_automation!=1', {
           'sources/': [
             ['exclude', '^browser/automation/'],

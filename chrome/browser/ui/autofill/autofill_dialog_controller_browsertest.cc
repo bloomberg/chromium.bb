@@ -140,7 +140,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
         section, inputs, validation_type);
   }
 
-  // Saving to Chrome is tested in AutofillDialogController unit tests.
+  // Saving to Chrome is tested in AutofillDialogControllerImpl unit tests.
   // TODO(estade): test that the view defaults to saving to Chrome.
   virtual bool ShouldOfferToSaveInChrome() const OVERRIDE {
     return false;
@@ -301,7 +301,8 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     ExpectDomMessage("clicked");
 
     AutofillDialogControllerImpl* controller =
-        delegate->GetDialogControllerForTesting();
+        static_cast<AutofillDialogControllerImpl*>(
+            delegate->GetDialogControllerForTesting());
     DCHECK(controller);
     return controller;
   }

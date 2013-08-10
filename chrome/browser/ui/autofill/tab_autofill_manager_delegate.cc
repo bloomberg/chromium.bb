@@ -13,7 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/autofill/autocheckout_bubble.h"
 #include "chrome/browser/ui/autofill/autocheckout_bubble_controller.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -150,19 +150,19 @@ void TabAutofillManagerDelegate::ShowRequestAutocompleteDialog(
     DialogType dialog_type,
     const base::Callback<void(const FormStructure*,
                               const std::string&)>& callback) {
-#if defined(ENABLE_AUTOFILL_DIALOG)
   HideRequestAutocompleteDialog();
 
-  dialog_controller_ = AutofillDialogControllerImpl::Create(web_contents_,
-                                                            form,
-                                                            source_url,
-                                                            dialog_type,
-                                                            callback);
-  dialog_controller_->Show();
-#else
-  callback.Run(NULL, std::string());
-  NOTIMPLEMENTED();
-#endif  // #if !defined(ENABLE_AUTOFILL_DIALOG)
+  dialog_controller_ = AutofillDialogController::Create(web_contents_,
+                                                        form,
+                                                        source_url,
+                                                        dialog_type,
+                                                        callback);
+  if (dialog_controller_) {
+    dialog_controller_->Show();
+  } else {
+    callback.Run(NULL, std::string());
+    NOTIMPLEMENTED();
+  }
 }
 
 void TabAutofillManagerDelegate::ShowAutofillPopup(
@@ -246,7 +246,7 @@ void TabAutofillManagerDelegate::DidNavigateMainFrame(
   bool was_redirect = details.entry &&
       content::PageTransitionIsRedirect(details.entry->GetTransitionType());
 
-  if (dialog_controller_->dialog_type() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
+  if (dialog_controller_->GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE ||
       (!was_redirect && !preserve_dialog)) {
     HideRequestAutocompleteDialog();
   }

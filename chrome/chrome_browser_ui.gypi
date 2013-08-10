@@ -280,6 +280,10 @@
         'browser/ui/autofill/autofill_credit_card_bubble.h',
         'browser/ui/autofill/autofill_credit_card_bubble_controller.cc',
         'browser/ui/autofill/autofill_credit_card_bubble_controller.h',
+        'browser/ui/autofill/autofill_dialog_common.cc',
+        'browser/ui/autofill/autofill_dialog_common.h',
+        'browser/ui/autofill/autofill_dialog_controller.cc',
+        'browser/ui/autofill/autofill_dialog_controller.h',
         'browser/ui/autofill/autofill_dialog_controller_impl.cc',
         'browser/ui/autofill/autofill_dialog_controller_impl.h',
         'browser/ui/autofill/autofill_dialog_models.cc',
@@ -3083,6 +3087,15 @@
             ['exclude', '^browser/ui/app_list/'],
             ['include', '^browser/ui/app_list/app_list_service.h'],
             ['include', '^browser/ui/app_list/app_list_service_disabled.cc'],
+          ],
+        }],
+        ['enable_autofill_dialog!=1 or OS=="android"', {
+          'sources!': [
+            'browser/ui/autofill/autofill_dialog_controller_impl.cc',
+            'browser/ui/autofill/autofill_dialog_controller_impl.h',
+            'browser/ui/autofill/autofill_dialog_view.h',
+            'browser/ui/autofill/autofill_dialog_view.cc',
+            'browser/ui/autofill/autofill_dialog_view_delegate.h',
           ],
         }],
         ['enable_google_now==0', {
