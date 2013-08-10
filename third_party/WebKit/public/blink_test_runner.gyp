@@ -33,10 +33,10 @@
             'target_name': 'blink_test_runner',
             'type': 'none',
             'dependencies': [
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
+                '../Source/testing/testing.gyp:TestRunner',
             ],
             'export_dependent_settings': [
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
+                '../Source/testing/testing.gyp:TestRunner',
             ],
         },
     ],

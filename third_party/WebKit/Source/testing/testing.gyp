@@ -30,9 +30,8 @@
 
 {
     'variables': {
-        'ahem_path': '../../../Source/testing/data/fonts/AHEM____.TTF',
-        'tools_dir': '../..',
-        'source_dir': '../../../Source',
+        'ahem_path': '../../Source/testing/data/fonts/AHEM____.TTF',
+        'source_dir': '../../Source',
         'conditions': [
             ['OS=="linux"', {
                 'use_custom_freetype%': 1,
@@ -42,9 +41,9 @@
         ],
     },
     'includes': [
-        '../../../Source/core/features.gypi',
-        '../../../Source/testing/runner/runner.gypi',
-        '../../../Source/testing/plugin/plugin.gypi',
+        '../../Source/core/features.gypi',
+        '../../Source/testing/runner/runner.gypi',
+        '../../Source/testing/plugin/plugin.gypi',
     ],
     'targets': [
         {
@@ -55,20 +54,15 @@
             ],
             'dependencies': [
                 'TestRunner_resources',
-                '../../../public/blink.gyp:blink',
+                '../../public/blink.gyp:blink',
                 '<(source_dir)/web/web.gyp:webkit_test_support',
             ],
-            'include_dirs': [
-                '<(DEPTH)',
-                '../../../Source',
-                '../../..',
-            ],
             'export_dependent_settings': [
-                '../../../public/blink.gyp:blink',
+                '../../public/blink.gyp:blink',
             ],
             'direct_dependent_settings': {
                 'include_dirs': [
-                    '../../..',
+                    '../..',
                 ],
             },
             'sources': [
@@ -256,7 +250,7 @@
                     },
                     'xcode_settings': {
                         'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
-                        'INFOPLIST_FILE': '<(source_dir)/testing/plugin/mac/Info.plist',
+                        'INFOPLIST_FILE': 'plugin/mac/Info.plist',
                     },
                 }],
                 ['os_posix == 1 and OS != "mac"', {
@@ -270,8 +264,8 @@
                         'snprintf=_snprintf',
                     ],
                     'sources': [
-                        '<(source_dir)/testing/plugin/win/TestNetscapePlugin.def',
-                        '<(source_dir)/testing/plugin/win/TestNetscapePlugin.rc',
+                        'plugin/win/TestNetscapePlugin.def',
+                        'plugin/win/TestNetscapePlugin.rc',
                     ],
                     # The .rc file requires that the name of the dll is npTestNetscapePlugIn.dll.
                     'product_name': 'npTestNetscapePlugIn',
@@ -314,14 +308,14 @@
             'targets': [{
                 'target_name': 'LayoutTestHelper',
                 'type': 'executable',
-                'sources': ['<(source_dir)/testing/helper/LayoutTestHelperWin.cpp'],
+                'sources': ['helper/LayoutTestHelperWin.cpp'],
             }],
         }],
         ['OS=="mac"', {
             'targets': [{
                 'target_name': 'LayoutTestHelper',
                 'type': 'executable',
-                'sources': ['<(source_dir)/testing/helper/LayoutTestHelperMac.mm'],
+                'sources': ['helper/LayoutTestHelperMac.mm'],
                 'link_settings': {
                     'libraries': [
                         '$(SDKROOT)/System/Library/Frameworks/AppKit.framework',

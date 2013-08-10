@@ -36,10 +36,10 @@
             'target_name': 'all_blink',
             'type': 'none',
             'dependencies': [
+                '../Source/testing/testing.gyp:TestRunner',
                 '../Source/web/web_tests.gyp:webkit_unit_tests',
                 '../Source/weborigin/weborigin_tests.gyp:weborigin_unittests',
                 '../Source/wtf/wtf_tests.gyp:wtf_unittests',
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:TestRunner',
             ],
             'conditions': [
                 # Special target to wrap a gtest_target_type==shared_library

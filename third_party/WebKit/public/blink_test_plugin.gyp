@@ -33,10 +33,10 @@
             'target_name': 'blink_test_plugin',
             'type': 'none',
             'dependencies': [
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
+                '../Source/testing/testing.gyp:copy_TestNetscapePlugIn',
             ],
             'export_dependent_settings': [
-                '../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
+                '../Source/testing/testing.gyp:copy_TestNetscapePlugIn',
             ],
         },
     ],

@@ -45,7 +45,7 @@
             'msvs_guid': '7CEFE800-8403-418A-AD6A-2D52C6FC3EAD',
             'dependencies': [
                 '../../public/blink.gyp:blink',
-                '../../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree_resources',
+                '../testing/testing.gyp:DumpRenderTree_resources',
                 '<(DEPTH)/base/base.gyp:base',
                 '<(DEPTH)/base/base.gyp:base_i18n',
                 '<(DEPTH)/base/base.gyp:test_support_base',
