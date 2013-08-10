@@ -474,8 +474,12 @@ void UsbFindDevicesFunction::EnumerateDevices(
 
 void UsbFindDevicesFunction::OnEnumerationCompleted(
     ScopedDeviceVector devices) {
-  for (size_t i = 0; i < devices->size(); ++i)
-    device_handles_.push_back(devices->at(i)->Open());
+  for (size_t i = 0; i < devices->size(); ++i) {
+    scoped_refptr<UsbDeviceHandle> device_handle =
+      devices->at(i)->Open();
+    if (device_handle)
+      device_handles_.push_back(device_handle);
+  }
 
   BrowserThread::PostTask(
       BrowserThread::IO,

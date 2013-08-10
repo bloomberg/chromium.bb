@@ -51,7 +51,7 @@ scoped_refptr<UsbDeviceHandle> UsbDevice::Open() {
   int rv = libusb_open(platform_device_, &handle);
   if (LIBUSB_SUCCESS == rv) {
     scoped_refptr<UsbDeviceHandle> device_handle =
-        new UsbDeviceHandle(this, handle);
+        new UsbDeviceHandle(context_, this, handle);
     handles_.push_back(device_handle);
     return device_handle;
   }
