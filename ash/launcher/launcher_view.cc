@@ -782,10 +782,9 @@ void LauncherView::CalculateIdealBounds(IdealBounds* bounds) {
       last_hidden_index_ >= first_panel_index);
 
   // Create Space for the overflow button
-  if (show_overflow && ash::switches::UseAlternateShelfLayout()) {
-    DCHECK(last_visible_index_ > 0);
+  if (show_overflow && ash::switches::UseAlternateShelfLayout() &&
+      last_visible_index_ > 0)
     --last_visible_index_;
-  }
   for (int i = 0; i < view_model_->view_size(); ++i) {
     bool visible = i <= last_visible_index_ || i > last_hidden_index_;
     // Always show the app list.
