@@ -281,6 +281,138 @@ class ScopedKeepAlive {
   DISALLOW_COPY_AND_ASSIGN(ScopedKeepAlive);
 };
 
+class ActivationTracker {
+ public:
+  ActivationTracker(app_list::AppListView* view,
+                    const base::Closure& on_active_lost)
+      : view_(view),
+        on_active_lost_(on_active_lost),
+        regain_next_lost_focus_(false),
+        preserving_focus_for_taskbar_menu_(false) {
+  }
+
+  void RegainNextLostFocus() {
+    regain_next_lost_focus_ = true;
+  }
+
+  void OnActivationChanged(bool active) {
+    const int kFocusCheckIntervalMS = 250;
+    if (active) {
+      timer_.Stop();
+      return;
+    }
+
+    preserving_focus_for_taskbar_menu_ = false;
+    timer_.Start(FROM_HERE,
+                 base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
+                 &ActivationTracker::CheckTaskbarOrViewHasFocus);
+  }
+
+  void OnViewHidden() {
+    timer_.Stop();
+  }
+
+  void CheckTaskbarOrViewHasFocus() {
+    // Remember if the taskbar had focus without the right mouse button being
+    // down.
+    bool was_preserving_focus = preserving_focus_for_taskbar_menu_;
+    preserving_focus_for_taskbar_menu_ = false;
+
+    // First get the taskbar and jump lists windows (the jump list is the
+    // context menu which the taskbar uses).
+    HWND jump_list_hwnd = FindWindow(L"DV2ControlHost", NULL);
+    HWND taskbar_hwnd = FindWindow(kTrayClassName, NULL);
+
+    // This code is designed to hide the app launcher when it loses focus,
+    // except for the cases necessary to allow the launcher to be pinned or
+    // closed via the taskbar context menu.
+    // First work out if the left or right button is currently down.
+    int swapped = GetSystemMetrics(SM_SWAPBUTTON);
+    int left_button = swapped ? VK_RBUTTON : VK_LBUTTON;
+    bool left_button_down = GetAsyncKeyState(left_button) < 0;
+    int right_button = swapped ? VK_LBUTTON : VK_RBUTTON;
+    bool right_button_down = GetAsyncKeyState(right_button) < 0;
+
+    // Now get the window that currently has focus.
+    HWND focused_hwnd = GetForegroundWindow();
+    if (!focused_hwnd) {
+      // Sometimes the focused window is NULL. This can happen when the focus is
+      // changing due to a mouse button press. If the button is still being
+      // pressed the launcher should not be hidden.
+      if (right_button_down || left_button_down)
+        return;
+
+      // If the focused window is NULL, and the mouse button is not being
+      // pressed, then the launcher no longer has focus.
+      on_active_lost_.Run();
+      return;
+    }
+
+    while (focused_hwnd) {
+      // If the focused window is the right click menu (called a jump list) or
+      // the app list, don't hide the launcher.
+      if (focused_hwnd == jump_list_hwnd ||
+          focused_hwnd == view_->GetHWND()) {
+        return;
+      }
+
+      if (focused_hwnd == taskbar_hwnd) {
+        // If the focused window is the taskbar, and the right button is down,
+        // don't hide the launcher as the user might be bringing up the menu.
+        if (right_button_down)
+          return;
+
+        // There is a short period between the right mouse button being down
+        // and the menu gaining focus, where the taskbar has focus and no button
+        // is down. If the taskbar is observed in this state once the launcher
+        // is not dismissed. If it happens twice in a row it is dismissed.
+        if (!was_preserving_focus) {
+          preserving_focus_for_taskbar_menu_ = true;
+          return;
+        }
+
+        break;
+      }
+      focused_hwnd = GetParent(focused_hwnd);
+    }
+
+    if (regain_next_lost_focus_) {
+      regain_next_lost_focus_ = false;
+      view_->GetWidget()->Activate();
+      return;
+    }
+
+    // If we get here, the focused window is not the taskbar, it's context menu,
+    // or the app list.
+    on_active_lost_.Run();
+  }
+
+ private:
+  // The window to track the active state of.
+  app_list::AppListView* view_;
+
+  // Called to request |view_| be closed.
+  base::Closure on_active_lost_;
+
+  // True if we are anticipating that the app list will lose focus, and we want
+  // to take it back. This is used when switching out of Metro mode, and the
+  // browser regains focus after showing the app list.
+  bool regain_next_lost_focus_;
+
+  // When the context menu on the app list's taskbar icon is brought up the
+  // app list should not be hidden, but it should be if the taskbar is clicked
+  // on. There can be a period of time when the taskbar gets focus between a
+  // right mouse click and the menu showing; to prevent hiding the app launcher
+  // when this happens it is kept visible if the taskbar is seen briefly without
+  // the right mouse button down, but not if this happens twice in a row.
+  bool preserving_focus_for_taskbar_menu_;
+
+  // Timer used to check if the taskbar or app list is active. Using a timer
+  // means we don't need to hook Windows, which is apparently not possible
+  // since Vista (and is not nice at any time).
+  base::RepeatingTimer<ActivationTracker> timer_;
+};
+
 // The AppListController class manages global resources needed for the app
 // list to operate, and controls when the app list is opened and closed.
 // TODO(tapted): Rename this class to AppListServiceWin and move entire file to
@@ -363,10 +495,7 @@ class AppListController : public AppListServiceImpl {
   // Weak pointer. The view manages its own lifetime.
   app_list::AppListView* current_view_;
 
-  // Timer used to check if the taskbar or app list is active. Using a timer
-  // means we don't need to hook Windows, which is apparently not possible
-  // since Vista (and is not nice at any time).
-  base::RepeatingTimer<AppListController> timer_;
+  scoped_ptr<ActivationTracker> activation_tracker_;
 
   app_list::PaginationModel pagination_model_;
 
@@ -375,19 +504,6 @@ class AppListController : public AppListServiceImpl {
 
   // Used to keep the browser process alive while the app list is visible.
   scoped_ptr<ScopedKeepAlive> keep_alive_;
-
-  // True if we are anticipating that the app list will lose focus, and we want
-  // to take it back. This is used when switching out of Metro mode, and the
-  // browser regains focus after showing the app list.
-  bool regain_first_lost_focus_;
-
-  // When the context menu on the app list's taskbar icon is brought up the
-  // app list should not be hidden, but it should be if the taskbar is clicked
-  // on. There can be a period of time when the taskbar gets focus between a
-  // right mouse click and the menu showing; to prevent hiding the app launcher
-  // when this happens it is kept visible if the taskbar is seen briefly without
-  // the right mouse button down, but not if this happens twice in a row.
-  bool preserving_focus_for_taskbar_menu_;
 
   bool enable_app_list_on_next_init_;
 
@@ -484,8 +600,6 @@ void AppListControllerDelegateWin::LaunchApp(
 AppListController::AppListController()
     : current_view_(NULL),
       can_close_app_list_(true),
-      regain_first_lost_focus_(false),
-      preserving_focus_for_taskbar_menu_(false),
       enable_app_list_on_next_init_(false),
       weak_factory_(this) {}
 
@@ -550,8 +664,8 @@ void AppListController::ShowForProfile(Profile* requested_profile) {
 
 void AppListController::ShowAppListDuringModeSwitch(
     Profile* requested_profile) {
-  regain_first_lost_focus_ = true;
   ShowForProfile(requested_profile);
+  activation_tracker_->RegainNextLostFocus();
 }
 
 void AppListController::PopulateViewFromProfile(Profile* requested_profile) {
@@ -567,6 +681,8 @@ void AppListController::PopulateViewFromProfile(Profile* requested_profile) {
 
   SetProfile(requested_profile);
   current_view_ = CreateAppListView();
+  activation_tracker_.reset(new ActivationTracker(current_view_,
+      base::Bind(&AppListController::DismissAppList, base::Unretained(this))));
 }
 
 app_list::AppListView* AppListController::CreateAppListView() {
@@ -620,7 +736,7 @@ void AppListController::SetWindowAttributes(HWND hwnd) {
 void AppListController::DismissAppList() {
   if (IsAppListVisible() && can_close_app_list_) {
     current_view_->GetWidget()->Hide();
-    timer_.Stop();
+    activation_tracker_->OnViewHidden();
     FreeAnyKeepAliveForView();
   }
 }
@@ -628,21 +744,12 @@ void AppListController::DismissAppList() {
 void AppListController::AppListClosing() {
   FreeAnyKeepAliveForView();
   current_view_ = NULL;
+  activation_tracker_.reset();
   SetProfile(NULL);
-  timer_.Stop();
 }
 
 void AppListController::AppListActivationChanged(bool active) {
-  const int kFocusCheckIntervalMS = 250;
-  if (active) {
-    timer_.Stop();
-    return;
-  }
-
-  preserving_focus_for_taskbar_menu_ = false;
-  timer_.Start(FROM_HERE,
-               base::TimeDelta::FromMilliseconds(kFocusCheckIntervalMS), this,
-               &AppListController::CheckTaskbarOrViewHasFocus);
+  activation_tracker_->OnActivationChanged(active);
 }
 
 // Attempts to find the bounds of the Windows taskbar. Returns true on success.
@@ -756,87 +863,6 @@ string16 AppListController::GetAppListIconPath() {
   string16 result = icon_path.value();
   result.append(UTF8ToUTF16(ss.str()));
   return result;
-}
-
-void AppListController::CheckTaskbarOrViewHasFocus() {
-  // Remember if the taskbar had focus without the right mouse button being
-  // down.
-  bool was_preserving_focus = preserving_focus_for_taskbar_menu_;
-  preserving_focus_for_taskbar_menu_ = false;
-
-  // Don't bother checking if the view has been closed.
-  if (!current_view_)
-    return;
-
-  // First get the taskbar and jump lists windows (the jump list is the
-  // context menu which the taskbar uses).
-  HWND jump_list_hwnd = FindWindow(L"DV2ControlHost", NULL);
-  HWND taskbar_hwnd = FindWindow(kTrayClassName, NULL);
-
-  HWND app_list_hwnd = current_view_->GetHWND();
-
-  // This code is designed to hide the app launcher when it loses focus, except
-  // for the cases necessary to allow the launcher to be pinned or closed via
-  // the taskbar context menu.
-  // First work out if the left or right button is currently down.
-  int swapped = GetSystemMetrics(SM_SWAPBUTTON);
-  int left_button = swapped ? VK_RBUTTON : VK_LBUTTON;
-  bool left_button_down = GetAsyncKeyState(left_button) < 0;
-  int right_button = swapped ? VK_LBUTTON : VK_RBUTTON;
-  bool right_button_down = GetAsyncKeyState(right_button) < 0;
-
-  // Now get the window that currently has focus.
-  HWND focused_hwnd = GetForegroundWindow();
-  if (!focused_hwnd) {
-    // Sometimes the focused window is NULL. This can happen when the focus is
-    // changing due to a mouse button press. If the button is still being
-    // pressed the launcher should not be hidden.
-    if (right_button_down || left_button_down)
-      return;
-
-    // If the focused window is NULL, and the mouse button is not being pressed,
-    // then the launcher no longer has focus so hide it.
-    DismissAppList();
-    return;
-  }
-
-  while (focused_hwnd) {
-    // If the focused window is the right click menu (called a jump list) or
-    // the app list, don't hide the launcher.
-    if (focused_hwnd == jump_list_hwnd ||
-        focused_hwnd == app_list_hwnd) {
-      return;
-    }
-
-    if (focused_hwnd == taskbar_hwnd) {
-      // If the focused window is the taskbar, and the right button is down,
-      // don't hide the launcher as the user might be bringing up the menu.
-      if (right_button_down)
-        return;
-
-      // There is a short period between the right mouse button being down
-      // and the menu gaining focus, where the taskbar has focus and no button
-      // is down. If the taskbar is observed in this state once the launcher
-      // is not dismissed. If it happens twice in a row it is dismissed.
-      if (!was_preserving_focus) {
-        preserving_focus_for_taskbar_menu_ = true;
-        return;
-      }
-
-      break;
-    }
-    focused_hwnd = GetParent(focused_hwnd);
-  }
-
-  if (regain_first_lost_focus_) {
-    regain_first_lost_focus_ = false;
-    current_view_->GetWidget()->Activate();
-    return;
-  }
-
-  // If we get here, the focused window is not the taskbar, it's context menu,
-  // or the app list, so close the app list.
-  DismissAppList();
 }
 
 void AppListController::EnsureHaveKeepAliveForView() {
