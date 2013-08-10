@@ -66,6 +66,8 @@ static const struct Executables {
   { "class", DANGEROUS },
   { "jar", DANGEROUS },
   { "jnlp", DANGEROUS },
+#endif
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
   // Relating to PDF.
   { "pdf", ALLOW_ON_USER_GESTURE },
   { "pdfxml", ALLOW_ON_USER_GESTURE },
@@ -77,6 +79,7 @@ static const struct Executables {
   // Relating to scripting languages.
   { "pl", ALLOW_ON_USER_GESTURE },
   { "py", ALLOW_ON_USER_GESTURE },
+  { "pyc", ALLOW_ON_USER_GESTURE },
   { "pyw", ALLOW_ON_USER_GESTURE },
   { "rb", ALLOW_ON_USER_GESTURE },
 #endif
