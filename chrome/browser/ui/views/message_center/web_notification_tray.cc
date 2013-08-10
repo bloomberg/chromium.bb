@@ -132,7 +132,6 @@ WebNotificationTray::WebNotificationTray()
       should_update_tray_content_(true) {
   message_center_tray_.reset(
       new MessageCenterTray(this, g_browser_process->message_center()));
-  OnMessageCenterTrayChanged();
 }
 
 WebNotificationTray::~WebNotificationTray() {
