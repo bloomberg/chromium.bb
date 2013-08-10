@@ -44,6 +44,13 @@ public:
     virtual void abort() = 0;
     virtual void remove(double start, double end) = 0;
     virtual bool setTimestampOffset(double) = 0;
+
+    // Set presentation timestamp for the start of append window.
+    virtual void setAppendWindowStart(double) = 0;
+
+    // Set presentation timestamp for the end of append window.
+    virtual void setAppendWindowEnd(double) = 0;
+
     virtual void removedFromMediaSource() = 0;
 };
 

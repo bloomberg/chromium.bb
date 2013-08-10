@@ -44,6 +44,8 @@ public:
     virtual void abort() = 0;
     virtual void remove(double start, double end) = 0;
     virtual bool setTimestampOffset(double) = 0;
+    virtual void setAppendWindowStart(double) = 0;
+    virtual void setAppendWindowEnd(double) = 0;
     virtual void removedFromMediaSource() = 0;
 };
 

@@ -41,6 +41,9 @@
 #include "modules/mediasource/MediaSource.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
+#include "wtf/MathExtras.h"
+
+#include <limits>
 
 namespace WebCore {
 
@@ -58,6 +61,8 @@ SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, 
     , m_asyncEventQueue(asyncEventQueue)
     , m_updating(false)
     , m_timestampOffset(0)
+    , m_appendWindowStart(0)
+    , m_appendWindowEnd(std::numeric_limits<double>::infinity())
     , m_appendBufferTimer(this, &SourceBuffer::appendBufferTimerFired)
     , m_removeTimer(this, &SourceBuffer::removeTimerFired)
     , m_pendingRemoveStart(-1)
@@ -122,6 +127,73 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
     m_timestampOffset = offset;
 }
 
+double SourceBuffer::appendWindowStart() const
+{
+    return m_appendWindowStart;
+}
+
+void SourceBuffer::setAppendWindowStart(double start, ExceptionState& es)
+{
+    // Enforce throwing an exception on restricted double values.
+    if (std::isnan(start)
+        || start == std::numeric_limits<double>::infinity()
+        || start == -std::numeric_limits<double>::infinity()) {
+        es.throwDOMException(TypeMismatchError);
+        return;
+    }
+
+    // Section 3.1 appendWindowStart attribute setter steps.
+    // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
+    //    InvalidStateError exception and abort these steps.
+    // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
+    if (isRemoved() || m_updating) {
+        es.throwDOMException(InvalidStateError);
+        return;
+    }
+
+    // 3. If the new value is less than 0 or greater than or equal to appendWindowEnd then throw an InvalidAccessError
+    //    exception and abort these steps.
+    if (start < 0 || start >= m_appendWindowEnd) {
+        es.throwDOMException(InvalidAccessError);
+        return;
+    }
+
+    m_private->setAppendWindowStart(start);
+
+    // 4. Update the attribute to the new value.
+    m_appendWindowStart = start;
+}
+
+double SourceBuffer::appendWindowEnd() const
+{
+    return m_appendWindowEnd;
+}
+
+void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& es)
+{
+    // Section 3.1 appendWindowEnd attribute setter steps.
+    // 1. If this object has been removed from the sourceBuffers attribute of the parent media source then throw an
+    //    InvalidStateError exception and abort these steps.
+    // 2. If the updating attribute equals true, then throw an InvalidStateError exception and abort these steps.
+    if (isRemoved() || m_updating) {
+        es.throwDOMException(InvalidStateError);
+        return;
+    }
+
+    // 3. If the new value equals NaN, then throw an InvalidAccessError and abort these steps.
+    // 4. If the new value is less than or equal to appendWindowStart then throw an InvalidAccessError
+    //    exception and abort these steps.
+    if (std::isnan(end) || end <= m_appendWindowStart) {
+        es.throwDOMException(InvalidAccessError);
+        return;
+    }
+
+    m_private->setAppendWindowEnd(end);
+
+    // 5. Update the attribute to the new value.
+    m_appendWindowEnd = end;
+}
+
 void SourceBuffer::appendBuffer(PassRefPtr<ArrayBuffer> data, ExceptionState& es)
 {
     // Section 3.2 appendBuffer()
@@ -167,7 +239,11 @@ void SourceBuffer::abort(ExceptionState& es)
     // 4. Run the reset parser state algorithm.
     m_private->abort();
 
-    // FIXME(229408) Add steps 5-6 update appendWindowStart & appendWindowEnd.
+    // 5. Set appendWindowStart to 0.
+    setAppendWindowStart(0, es);
+
+    // 6. Set appendWindowEnd to positive Infinity.
+    setAppendWindowEnd(std::numeric_limits<double>::infinity(), es);
 }
 
 void SourceBuffer::remove(double start, double end, ExceptionState& es)

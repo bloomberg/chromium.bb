@@ -50,6 +50,8 @@ public:
     virtual void abort() OVERRIDE;
     virtual void remove(double start, double end) OVERRIDE;
     virtual bool setTimestampOffset(double) OVERRIDE;
+    virtual void setAppendWindowStart(double) OVERRIDE;
+    virtual void setAppendWindowEnd(double) OVERRIDE;
     virtual void removedFromMediaSource() OVERRIDE;
 
 private:

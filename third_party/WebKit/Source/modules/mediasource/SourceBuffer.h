@@ -62,6 +62,10 @@ public:
     void appendBuffer(PassRefPtr<ArrayBufferView> data, ExceptionState&);
     void abort(ExceptionState&);
     void remove(double start, double end, ExceptionState&);
+    double appendWindowStart() const;
+    void setAppendWindowStart(double, ExceptionState&);
+    double appendWindowEnd() const;
+    void setAppendWindowEnd(double, ExceptionState&);
 
     void abortIfUpdating();
     void removedFromMediaSource();
@@ -102,6 +106,8 @@ private:
 
     bool m_updating;
     double m_timestampOffset;
+    double m_appendWindowStart;
+    double m_appendWindowEnd;
 
     Vector<unsigned char> m_pendingAppendData;
     Timer<SourceBuffer> m_appendBufferTimer;

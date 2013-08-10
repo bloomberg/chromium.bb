@@ -70,6 +70,20 @@ bool SourceBufferPrivateImpl::setTimestampOffset(double offset)
     return m_sourceBuffer->setTimestampOffset(offset);
 }
 
+void SourceBufferPrivateImpl::setAppendWindowStart(double start)
+{
+    if (!m_sourceBuffer)
+        return;
+    m_sourceBuffer->setAppendWindowStart(start);
+}
+
+void SourceBufferPrivateImpl::setAppendWindowEnd(double end)
+{
+    if (!m_sourceBuffer)
+        return;
+    m_sourceBuffer->setAppendWindowEnd(end);
+}
+
 void SourceBufferPrivateImpl::removedFromMediaSource()
 {
     m_sourceBuffer->removedFromMediaSource();
