@@ -165,8 +165,9 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
                                      const base::Closure& callback,
                                      const ErrorCallback& error_callback) {
   VLOG(1) << "ShillServiceClientStub::Connect: " << service_path.value();
-  base::Value* service;
-  if (!stub_services_.Get(service_path.value(), &service)) {
+  base::DictionaryValue* service_properties;
+  if (!stub_services_.GetDictionary(
+          service_path.value(), &service_properties)) {
     LOG(ERROR) << "Service not found: " << service_path.value();
     error_callback.Run("Error.InvalidService", "Invalid Service");
     return;
@@ -191,6 +192,11 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
     delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
   }
   base::StringValue online_value(flimflam::kStateOnline);
+  std::string passphrase;
+  service_properties->GetStringWithoutPathExpansion(
+      flimflam::kPassphraseProperty, &passphrase);
+  if (passphrase == "failure")
+    online_value = base::StringValue(flimflam::kStateFailure);
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&ShillServiceClientStub::SetProperty,
@@ -202,6 +208,19 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
                  error_callback),
       delay);
   callback.Run();
+  // On failure, also set the Error property.
+  if (passphrase == "failure") {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&ShillServiceClientStub::SetProperty,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   service_path,
+                   flimflam::kErrorProperty,
+                   base::StringValue(flimflam::kErrorBadPassphrase),
+                   base::Bind(&base::DoNothing),
+                   error_callback),
+        delay);
+  }
 }
 
 void ShillServiceClientStub::Disconnect(const dbus::ObjectPath& service_path,

@@ -191,13 +191,9 @@ class CHROMEOS_EXPORT NetworkStateHandler
   // existing networks.
   void RequestUpdateForAllNetworks();
 
-  // Set the user initiated connecting network.
-  void SetConnectingNetwork(const std::string& service_path);
-
   // Set the list of devices on which portal check is enabled.
   void SetCheckPortalList(const std::string& check_portal_list);
 
-  const std::string& connecting_network() const { return connecting_network_; }
   const std::string& check_portal_list() const { return check_portal_list_; }
 
   // Generates a DictionaryValue of all NetworkState properties. Currently
@@ -331,12 +327,6 @@ class CHROMEOS_EXPORT NetworkStateHandler
 
   // Keeps track of the default network for notifying observers when it changes.
   std::string default_network_path_;
-
-  // Convenience member to track the user initiated connecting network. Set
-  // externally when a connection is requested and cleared here when the state
-  // changes to something other than Connecting (after observers are notified).
-  // TODO(stevenjb): Move this to NetworkConfigurationHandler.
-  std::string connecting_network_;
 
   // List of interfaces on which portal check is enabled.
   std::string check_portal_list_;

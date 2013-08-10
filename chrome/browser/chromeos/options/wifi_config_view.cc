@@ -356,9 +356,14 @@ WifiConfigView::WifiConfigView(NetworkConfigView* parent,
       error_label_(NULL),
       weak_ptr_factory_(this) {
   Init(show_8021x);
+  NetworkHandler::Get()->network_state_handler()->AddObserver(this, FROM_HERE);
 }
 
 WifiConfigView::~WifiConfigView() {
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RemoveObserver(
+        this, FROM_HERE);
+  }
   CertLibrary::Get()->RemoveObserver(this);
 }
 
@@ -1245,6 +1250,12 @@ void WifiConfigView::InitFocus() {
   views::View* view_to_focus = GetInitiallyFocusedView();
   if (view_to_focus)
     view_to_focus->RequestFocus();
+}
+
+void WifiConfigView::NetworkPropertiesUpdated(const NetworkState* network) {
+  if (network->path() != service_path_)
+    return;
+  UpdateErrorLabel();
 }
 
 // static

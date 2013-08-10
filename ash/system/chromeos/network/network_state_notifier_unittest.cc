@@ -7,13 +7,14 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/chromeos/network/network_connect.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
@@ -27,7 +28,7 @@ ash::SystemTray* GetSystemTray() {
 
 using chromeos::DBusThreadManager;
 using chromeos::NetworkHandler;
-using chromeos::NetworkStateHandler;
+using chromeos::NetworkConnectionHandler;
 using chromeos::ShillDeviceClient;
 using chromeos::ShillServiceClient;
 
@@ -71,17 +72,17 @@ class NetworkStateNotifierTest : public AshTestBase {
     const bool add_to_visible = true;
     // Create wifi and cellular networks and set to online.
     service_test->AddService("wifi1", "wifi1",
-                             flimflam::kTypeWifi, flimflam::kStateOnline,
+                             flimflam::kTypeWifi, flimflam::kStateIdle,
                              add_to_visible, add_to_watchlist);
-    RunAllPendingInMessageLoop();
-  }
-
-  void SetServiceState(const std::string& service_path,
-                       const std::string& state) {
-    ShillServiceClient::TestInterface* service_test =
-        DBusThreadManager::Get()->GetShillServiceClient()->GetTestInterface();
-    service_test->SetServiceProperty(service_path, flimflam::kStateProperty,
-                                     base::StringValue(state));
+    service_test->SetServiceProperty("wifi1",
+                                     flimflam::kSecurityProperty,
+                                     base::StringValue(flimflam::kSecurityWep));
+    service_test->SetServiceProperty("wifi1",
+                                     flimflam::kConnectableProperty,
+                                     base::FundamentalValue(true));
+    service_test->SetServiceProperty("wifi1",
+                                     flimflam::kPassphraseProperty,
+                                     base::StringValue("failure"));
     RunAllPendingInMessageLoop();
   }
 
@@ -91,20 +92,10 @@ class NetworkStateNotifierTest : public AshTestBase {
 
 TEST_F(NetworkStateNotifierTest, ConnectionFailure) {
   EXPECT_FALSE(GetSystemTray()->HasNotificationBubble());
-  // State -> Failure for non connecting network should not spawn a notification
-  SetServiceState("wifi1", flimflam::kStateFailure);
-  EXPECT_FALSE(GetSystemTray()->CloseNotificationBubbleForTest());
-  // State -> Failure for connecting network should spawn a notification
-  SetServiceState("wifi1", flimflam::kStateAssociation);
-  NetworkHandler::Get()->network_state_handler()->SetConnectingNetwork("wifi1");
-  SetServiceState("wifi1", flimflam::kStateFailure);
+  ash::network_connect::ConnectToNetwork("wifi1", NULL /* owning_window */);
+  RunAllPendingInMessageLoop();
+  // Failure should spawn a notification.
   EXPECT_TRUE(GetSystemTray()->CloseNotificationBubbleForTest());
-  // Failure -> Idle should not spawn a notification
-  SetServiceState("wifi1", flimflam::kStateIdle);
-  EXPECT_FALSE(GetSystemTray()->HasNotificationBubble());
-  // Idle  -> Failure should also not spawn a notification
-  SetServiceState("wifi1", flimflam::kStateFailure);
-  EXPECT_FALSE(GetSystemTray()->HasNotificationBubble());
 }
 
 }  // namespace test

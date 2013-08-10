@@ -368,16 +368,6 @@ void NetworkStateHandler::RequestUpdateForAllNetworks() {
   }
 }
 
-void NetworkStateHandler::SetConnectingNetwork(
-    const std::string& service_path) {
-  connecting_network_ = service_path;
-  const NetworkState* network = GetNetworkState(service_path);
-  if (network)
-    NET_LOG_EVENT("SetConnectingNetwork", GetManagedStateLogName(network));
-  else
-    NET_LOG_ERROR("SetConnectingNetwork to unknown network", service_path);
-}
-
 void NetworkStateHandler::SetCheckPortalList(
     const std::string& check_portal_list) {
   NET_LOG_EVENT("SetCheckPortalList", check_portal_list);
@@ -703,16 +693,6 @@ void NetworkStateHandler::NetworkPropertiesUpdated(
     const NetworkState* network) {
   FOR_EACH_OBSERVER(NetworkStateHandlerObserver, observers_,
                     NetworkPropertiesUpdated(network));
-  // If |connecting_network_| transitions to a non-idle, non-connecting state,
-  // clear it *after* signaling observers.
-  if (network->path() == connecting_network_ &&
-      !network->IsConnectingState() &&
-      network->connection_state() != flimflam::kStateIdle) {
-    connecting_network_.clear();
-    NET_LOG_EVENT("ClearConnectingNetwork", base::StringPrintf(
-        "%s:%s", GetManagedStateLogName(network).c_str(),
-        network->connection_state().c_str()));
-  }
 }
 
 void NetworkStateHandler::ScanCompleted(const std::string& type) {

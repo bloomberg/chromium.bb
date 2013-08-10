@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/network_property_ui_data.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
+#include "chromeos/network/network_state_handler_observer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/button/button.h"
@@ -45,36 +46,40 @@ class WifiConfigView : public ChildNetworkConfigView,
                        public views::TextfieldController,
                        public views::ButtonListener,
                        public views::ComboboxListener,
-                       public CertLibrary::Observer {
+                       public CertLibrary::Observer,
+                       public NetworkStateHandlerObserver {
  public:
   WifiConfigView(NetworkConfigView* parent,
                  const std::string& service_path,
                  bool show_8021x);
   virtual ~WifiConfigView();
 
-  // views::TextfieldController:
+  // views::TextfieldController
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) OVERRIDE;
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
 
-  // views::ButtonListener:
+  // views::ButtonListener
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
-  // views::ComboboxListener:
+  // views::ComboboxListener
   virtual void OnSelectedIndexChanged(views::Combobox* combobox) OVERRIDE;
 
-  // CertLibrary::Observer:
+  // CertLibrary::Observer
   virtual void OnCertificatesLoaded(bool initial_load) OVERRIDE;
 
-  // ChildNetworkConfigView:
+  // ChildNetworkConfigView
   virtual string16 GetTitle() const OVERRIDE;
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual bool CanLogin() OVERRIDE;
   virtual bool Login() OVERRIDE;
   virtual void Cancel() OVERRIDE;
   virtual void InitFocus() OVERRIDE;
+
+  // NetworkStateHandlerObserver
+  virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;
 
   // Parses a WiFi UI |property| from the ONC associated with |network|. |key|
   // is the property name within the ONC WiFi dictionary.

@@ -19,6 +19,11 @@ class DictionaryValue;
 namespace chromeos {
 namespace network_handler {
 
+CHROMEOS_EXPORT extern const char kErrorName[];
+CHROMEOS_EXPORT extern const char kErrorDetail[];
+CHROMEOS_EXPORT extern const char kDbusErrorName[];
+CHROMEOS_EXPORT extern const char kDbusErrorMessage[];
+
 // An error callback used by both the configuration handler and the state
 // handler to receive error results from the API.
 typedef base::Callback<

@@ -104,8 +104,14 @@ void HandleUnconfiguredNetwork(const std::string& service_path,
     return;
   }
 
-  if (network->type() == flimflam::kTypeWifi ||
-      network->type() == flimflam::kTypeWimax ||
+  if (network->type() == flimflam::kTypeWifi) {
+    // Only show the config view for secure networks, otherwise do nothing.
+    if (network->security() != flimflam::kSecurityNone)
+      NetworkConfigView::Show(service_path, parent_window);
+    return;
+  }
+
+  if (network->type() == flimflam::kTypeWimax ||
       network->type() == flimflam::kTypeVPN) {
     NetworkConfigView::Show(service_path, parent_window);
     return;

@@ -119,8 +119,14 @@ const char NetworkConnectionHandler::kErrorAuthenticationRequired[] =
     "authentication-required";
 const char NetworkConnectionHandler::kErrorShillError[] = "shill-error";
 const char NetworkConnectionHandler::kErrorConnectFailed[] = "connect-failed";
+const char NetworkConnectionHandler::kErrorConfigureFailed[] =
+    "configure-failed";
+const char NetworkConnectionHandler::kErrorActivateFailed[] =
+    "activate-failed";
 const char NetworkConnectionHandler::kErrorMissingProvider[] =
     "missing-provider";
+const char NetworkConnectionHandler::kErrorConnectCanceled[] =
+    "connect-canceled";
 const char NetworkConnectionHandler::kErrorUnknown[] = "unknown-error";
 
 struct NetworkConnectionHandler::ConnectRequest {
@@ -244,6 +250,26 @@ void NetworkConnectionHandler::ConnectToNetwork(
     return;
   }
 
+  if (check_error_state) {
+    const std::string& error = network->error();
+    if (error == flimflam::kErrorConnectFailed) {
+      InvokeErrorCallback(
+          service_path, error_callback, kErrorPassphraseRequired);
+      return;
+    }
+    if (error == flimflam::kErrorBadPassphrase) {
+      InvokeErrorCallback(
+          service_path, error_callback, kErrorPassphraseRequired);
+      return;
+    }
+
+    if (IsAuthenticationError(error)) {
+      InvokeErrorCallback(
+          service_path, error_callback, kErrorAuthenticationRequired);
+      return;
+    }
+  }
+
   // All synchronous checks passed, add |service_path| to connecting list.
   pending_requests_.insert(std::make_pair(
       service_path,
@@ -340,30 +366,6 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     const base::DictionaryValue& service_properties) {
   NET_LOG_EVENT("VerifyConfiguredAndConnect", service_path);
 
-  std::string type;
-  service_properties.GetStringWithoutPathExpansion(
-      flimflam::kTypeProperty, &type);
-
-  if (check_error_state) {
-    std::string error;
-    service_properties.GetStringWithoutPathExpansion(
-        flimflam::kErrorProperty, &error);
-    if (error == flimflam::kErrorConnectFailed) {
-      ErrorCallbackForPendingRequest(service_path, kErrorPassphraseRequired);
-      return;
-    }
-    if (error == flimflam::kErrorBadPassphrase) {
-      ErrorCallbackForPendingRequest(service_path, kErrorPassphraseRequired);
-      return;
-    }
-
-    if (IsAuthenticationError(error)) {
-      ErrorCallbackForPendingRequest(service_path,
-                                     kErrorAuthenticationRequired);
-      return;
-    }
-  }
-
   // If 'passphrase_required' is still true, then the 'Passphrase' property
   // has not been set to a minimum length value.
   bool passphrase_required = false;
@@ -373,6 +375,10 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     ErrorCallbackForPendingRequest(service_path, kErrorPassphraseRequired);
     return;
   }
+
+  std::string type;
+  service_properties.GetStringWithoutPathExpansion(
+      flimflam::kTypeProperty, &type);
 
   // Get VPN provider type and host (required for configuration) and ensure
   // that required VPN non-cert properties are set.
@@ -540,7 +546,7 @@ void NetworkConnectionHandler::HandleConfigurationFailure(
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
   if (!error_callback.is_null())
-    error_callback.Run(error_name, error_data.Pass());
+    error_callback.Run(kErrorConfigureFailed, error_data.Pass());
 }
 
 void NetworkConnectionHandler::HandleShillConnectSuccess(
@@ -599,13 +605,21 @@ void NetworkConnectionHandler::CheckPendingRequest(
   }
 
   // Network is neither connecting or connected; an error occurred.
-  std::string error_name = kErrorConnectFailed;
-  std::string error_detail = network->error();
-  if (error_detail.empty()) {
-    if (network->connection_state() == flimflam::kStateFailure)
-      error_detail = flimflam::kUnknownString;
-    else
-      error_detail = "Unexpected State: " + network->connection_state();
+  std::string error_name, error_detail;
+  if (network->connection_state() == flimflam::kStateIdle &&
+      pending_requests_.size() > 1) {
+    // Another connect request canceled this one.
+    error_name = kErrorConnectCanceled;
+    error_detail = "";
+  } else {
+    error_name = kErrorConnectFailed;
+    error_detail = network->error();
+    if (error_detail.empty()) {
+      if (network->connection_state() == flimflam::kStateFailure)
+        error_detail = flimflam::kUnknownString;
+      else
+        error_detail = "Unexpected State: " + network->connection_state();
+    }
   }
   std::string error_msg = error_name + ": " + error_detail;
   NET_LOG_ERROR(error_msg, service_path);

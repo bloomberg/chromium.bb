@@ -18,6 +18,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_handler_callbacks.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
@@ -38,6 +39,9 @@ namespace ash {
 
 namespace {
 
+// TODO(stevenjb): This should be in service_constants.h
+const char kErrorInProgress[] = "org.chromium.flimflam.Error.InProgress";
+
 // Returns true for carriers that can be activated through Shill instead of
 // through a WebUI dialog.
 bool IsDirectActivatedCarrier(const std::string& carrier) {
@@ -46,11 +50,21 @@ bool IsDirectActivatedCarrier(const std::string& carrier) {
   return false;
 }
 
+void ShowErrorNotification(const std::string& error,
+                           const std::string& service_path) {
+  Shell::GetInstance()->system_tray_notifier()->network_state_notifier()->
+      ShowNetworkConnectError(error, service_path);
+}
+
 void OnConnectFailed(const std::string& service_path,
                      gfx::NativeWindow owning_window,
                      const std::string& error_name,
                      scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Connect Failed: " + error_name, service_path);
+
+  // If a new connect attempt canceled this connect, no need to notify the user.
+  if (error_name == NetworkConnectionHandler::kErrorConnectCanceled)
+    return;
 
   if (error_name == NetworkConnectionHandler::kErrorPassphraseRequired ||
       error_name == NetworkConnectionHandler::kErrorConfigurationRequired ||
@@ -78,14 +92,22 @@ void OnConnectFailed(const std::string& service_path,
     return;
   }
 
-  // Shill does not always provide a helpful error. In this case, show the
-  // configuration UI and a notification. See crbug.com/217033 for an example.
-  if (error_name == NetworkConnectionHandler::kErrorConnectFailed) {
-    ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
-        service_path);
-  }
-  ash::Shell::GetInstance()->system_tray_notifier()->network_state_notifier()->
-      ShowNetworkConnectError(error_name, service_path);
+  // ConnectFailed or unknown error; show a notification.
+  ShowErrorNotification(error_name, service_path);
+
+  // Show a configure dialog for ConnectFailed errors.
+  if (error_name != NetworkConnectionHandler::kErrorConnectFailed)
+    return;
+
+  // If Shill reports an InProgress error, don't try to configure the network.
+  std::string dbus_error_name;
+  error_data.get()->GetString(
+      chromeos::network_handler::kDbusErrorName, &dbus_error_name);
+  if (dbus_error_name == kErrorInProgress)
+    return;
+
+  ash::Shell::GetInstance()->system_tray_delegate()->ConfigureNetwork(
+      service_path);
 }
 
 void OnConnectSucceeded(const std::string& service_path) {
@@ -118,6 +140,8 @@ void OnActivateFailed(const std::string& service_path,
                      const std::string& error_name,
                       scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to activate network", service_path);
+  ShowErrorNotification(
+      NetworkConnectionHandler::kErrorActivateFailed, service_path);
 }
 
 void OnActivateSucceeded(const std::string& service_path) {
@@ -127,6 +151,7 @@ void OnActivateSucceeded(const std::string& service_path) {
 void OnConfigureFailed(const std::string& error_name,
                        scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR("Unable to configure network", "");
+  ShowErrorNotification(NetworkConnectionHandler::kErrorConfigureFailed, "");
 }
 
 void OnConfigureSucceeded(const std::string& service_path) {
@@ -142,6 +167,8 @@ void SetPropertiesFailed(const std::string& desc,
                          const std::string& config_error_name,
                          scoped_ptr<base::DictionaryValue> error_data) {
   NET_LOG_ERROR(desc + ": Failed: " + config_error_name, service_path);
+  ShowErrorNotification(
+      NetworkConnectionHandler::kErrorConfigureFailed, service_path);
 }
 
 void SetPropertiesToClear(base::DictionaryValue* properties_to_set,
@@ -176,23 +203,29 @@ void ClearPropertiesAndConnect(
       base::Bind(&SetPropertiesFailed, "ClearProperties", service_path));
 }
 
-std::string GetNetworkProfilePath(bool shared) {
-  // No need to specify a profile if not logged in and authenticated.
-  if (!chromeos::LoginState::Get()->IsUserAuthenticated() && !shared) {
+// Returns false if !shared and no valid profile is available, which will
+// trigger an error and abort.
+bool GetNetworkProfilePath(bool shared, std::string* profile_path) {
+  if (shared) {
+    *profile_path = NetworkProfileHandler::kSharedProfilePath;
+    return true;
+  }
+
+  if (!chromeos::LoginState::Get()->IsUserAuthenticated()) {
     NET_LOG_ERROR("User profile specified before login", "");
-    shared = true;
+    return false;
   }
 
-  if (!shared) {
-    const NetworkProfile* profile  =
-        NetworkHandler::Get()->network_profile_handler()->
-        GetDefaultUserProfile();
-    if (profile)
-      return profile->path;
+  const NetworkProfile* profile  =
+      NetworkHandler::Get()->network_profile_handler()->
+      GetDefaultUserProfile();
+  if (!profile) {
     NET_LOG_ERROR("No user profile for unshared network configuration", "");
+    return false;
   }
 
-  return NetworkProfileHandler::kSharedProfilePath;
+  *profile_path = profile->path;
+  return true;
 }
 
 void ConfigureSetProfileSucceeded(
@@ -261,7 +294,12 @@ void ConfigureNetworkAndConnect(const std::string& service_path,
 
   scoped_ptr<base::DictionaryValue> properties_to_set(properties.DeepCopy());
 
-  std::string profile_path = GetNetworkProfilePath(shared);
+  std::string profile_path;
+  if (!GetNetworkProfilePath(shared, &profile_path)) {
+    ShowErrorNotification(
+        NetworkConnectionHandler::kErrorConfigureFailed, service_path);
+    return;
+  }
   NetworkHandler::Get()->network_configuration_handler()->SetNetworkProfile(
       service_path, profile_path,
       base::Bind(&ConfigureSetProfileSucceeded,
@@ -273,7 +311,11 @@ void ConfigureNetworkAndConnect(const std::string& service_path,
 void CreateConfigurationAndConnect(base::DictionaryValue* properties,
                                    bool shared) {
   NET_LOG_USER("CreateConfigurationAndConnect", "");
-  std::string profile_path = GetNetworkProfilePath(shared);
+  std::string profile_path;
+  if (!GetNetworkProfilePath(shared, &profile_path)) {
+    ShowErrorNotification(NetworkConnectionHandler::kErrorConfigureFailed, "");
+    return;
+  }
   properties->SetStringWithoutPathExpansion(
       flimflam::kProfileProperty, profile_path);
   NetworkHandler::Get()->network_configuration_handler()->CreateConfiguration(

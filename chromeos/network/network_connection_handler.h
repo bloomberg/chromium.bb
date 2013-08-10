@@ -58,7 +58,10 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   static const char kErrorConfigurationRequired[];
   static const char kErrorShillError[];
   static const char kErrorConnectFailed[];
+  static const char kErrorConfigureFailed[];
+  static const char kErrorActivateFailed[];
   static const char kErrorMissingProvider[];
+  static const char kErrorConnectCanceled[];
   static const char kErrorUnknown[];
 
   // Constants for |error_name| from |error_callback| for Disconnect.

@@ -783,7 +783,6 @@ void GetDefaultNetworkImageAndLabel(IconType icon_type,
   // network.
   if (connecting_network &&
       (!connected_network ||
-       state_handler->connecting_network() == connecting_network->path() ||
        connect_handler->HasConnectingNetwork(connecting_network->path()))) {
     network = connecting_network;
   } else {

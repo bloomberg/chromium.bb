@@ -20,12 +20,19 @@ class NetworkState;
 
 namespace ash {
 
-// This class observes NetworkStateHandler and generates notifications
-// on connection failures. NOTE: The Observer for this class only triggers
-// "Out of credits" notifications, and failures triggered from NetworkLibrary
-// calls (which sets NetworkStateHandler::connecting_network()).
-// Failures from NetworkStateListDetailedView::ConnectToNetwork are now
-// handled by the ConnectToNetwork callbacks.
+// This class has two purposes:
+// 1. ShowNetworkConnectError() gets called after any user initiated connect
+//    failure. This will handle displaying an error notification.
+//    NOTE: Because Shill sets the Error property of a Service *after*
+//    the Connect call fails, this class will delay the notification if
+//    necessary until the Error property is set so that the correct
+//    message can be displayed.
+//    TODO(stevenjb): convert this class to use the new MessageCenter
+//    notification system, generate a notification immediately, and update
+//    it when the Error property is set to guarantee that a notification is
+//    displayed for every failure.
+// 2. It observes NetworkState changes to generate notifications when a
+//    Cellular network is out of credits.
 class ASH_EXPORT NetworkStateNotifier :
       public chromeos::NetworkStateHandlerObserver,
       public NetworkTrayDelegate {
@@ -34,9 +41,8 @@ class ASH_EXPORT NetworkStateNotifier :
   virtual ~NetworkStateNotifier();
 
   // NetworkStateHandlerObserver
+  virtual void NetworkListChanged() OVERRIDE;
   virtual void DefaultNetworkChanged(
-      const chromeos::NetworkState* network) OVERRIDE;
-  virtual void NetworkConnectionStateChanged(
       const chromeos::NetworkState* network) OVERRIDE;
   virtual void NetworkPropertiesUpdated(
       const chromeos::NetworkState* network) OVERRIDE;
@@ -53,14 +59,9 @@ class ASH_EXPORT NetworkStateNotifier :
  private:
   typedef std::map<std::string, std::string> CachedStateMap;
 
-  void ShowConnectError(const std::string& error_name,
-                        const chromeos::NetworkState* network);
-
-  void InitializeNetworks();
-
-  CachedStateMap cached_state_;
   std::string last_active_network_;
   std::string cellular_network_;
+  std::string connect_failed_network_;
   bool cellular_out_of_credits_;
   base::Time out_of_credits_notify_time_;
 

@@ -424,11 +424,6 @@ void Network::AttemptConnection(const base::Closure& closure) {
 
 void Network::set_connecting() {
   state_ = STATE_CONNECT_REQUESTED;
-  // Set the connecting network in NetworkStateHandler for the status area UI.
-  if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()->
-        SetConnectingNetwork(service_path());
-  }
 }
 
 void Network::SetProfilePath(const std::string& profile_path) {

@@ -91,7 +91,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Returns a comma separated string of name servers.
   std::string GetDnsServersAsString() const;
 
-  // Converts the prefix length to a network string.
+  // Converts the prefix length to a netmask string.
   std::string GetNetmask() const;
 
   // Helpers (used e.g. when a state is cached)

@@ -19,6 +19,8 @@
 
 namespace {
 
+const char kErrorUnknown[] = "Unknown";
+
 bool ConvertListValueToStringVector(const base::ListValue& string_list,
                                     std::vector<std::string>* result) {
   for (size_t i = 0; i < string_list.GetSize(); ++i) {
@@ -109,7 +111,12 @@ bool NetworkState::PropertyChanged(const std::string& key,
   } else if (key == flimflam::kConnectableProperty) {
     return GetBooleanValue(key, value, &connectable_);
   } else if (key == flimflam::kErrorProperty) {
-    return GetStringValue(key, value, &error_);
+    if (!GetStringValue(key, value, &error_))
+      return false;
+    // Shill uses "Unknown" to indicate an unset error state.
+    if (error_ == kErrorUnknown)
+      error_.clear();
+    return true;
   } else if (key == shill::kErrorDetailsProperty) {
     return GetStringValue(key, value, &error_details_);
   } else if (key == IPConfigProperty(flimflam::kAddressProperty)) {
