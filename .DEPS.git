@@ -27,6 +27,8 @@ deps = {
         Var('git_url') + '/external/octane-benchmark.git@9ac27bfd9e0bc73663db0c0551440215d8b20d09',
     'src/googleurl':
         Var('git_url') + '/external/google-url.git@ca8c31644137b3b46021ee37973c8749aae5c3bf',
+    'src/media/cdm/ppapi/api':
+        Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
     'src/native_client':
         Var('git_url') + '/native_client/src/native_client.git@a2c3083b0d772c1741f1530270d2754bafdf59ce',
     'src/sdch/open-vcdiff':
@@ -137,8 +139,6 @@ deps = {
         Var('git_url') + '/chromium/tools/swarm_client.git@86681e9a54c88972dba217b4f1007222dd8936a4',
     'src/v8':
         Var('git_url') + '/external/v8.git@89acc0bef1acf051e807b057dbcbcd478a8ad301',
-    'src/webkit/renderer/media/crypto/ppapi/cdm':
-        Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
 }
 
 deps_os = {
