@@ -1265,18 +1265,14 @@ inline void RenderObject::setNeedsLayout(bool needsLayout, MarkingBehavior markP
 
 inline void RenderObject::setChildNeedsLayout(bool childNeedsLayout, MarkingBehavior markParents)
 {
+    // FIXME: Remove the boolean argument to this function as it's no longer used.
+    ASSERT_UNUSED(childNeedsLayout, childNeedsLayout);
+    ASSERT(!isSetNeedsLayoutForbidden());
+
     bool alreadyNeededLayout = normalChildNeedsLayout();
-    setNormalChildNeedsLayout(childNeedsLayout);
-    if (childNeedsLayout) {
-        ASSERT(!isSetNeedsLayoutForbidden());
-        if (!alreadyNeededLayout && markParents == MarkContainingBlockChain)
-            markContainingBlocksForLayout();
-    } else {
-        setPosChildNeedsLayout(false);
-        setNeedsSimplifiedNormalFlowLayout(false);
-        setNormalChildNeedsLayout(false);
-        setNeedsPositionedMovementLayout(false);
-    }
+    setNormalChildNeedsLayout(true);
+    if (!alreadyNeededLayout && markParents == MarkContainingBlockChain)
+        markContainingBlocksForLayout();
 }
 
 inline void RenderObject::setNeedsPositionedMovementLayout()
