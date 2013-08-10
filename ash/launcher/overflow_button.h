@@ -8,11 +8,8 @@
 #include "ash/shelf/shelf_types.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/custom_button.h"
-
-namespace gfx {
-class ImageSkia;
-}
 
 namespace ash {
 namespace internal {
@@ -31,7 +28,12 @@ class OverflowButton : public views::CustomButton {
   // views::View overrides:
   virtual void OnPaint(gfx::Canvas* canvas) OVERRIDE;
 
-  const gfx::ImageSkia* image_;
+  // Left and right images are rotations of bottom_image and are
+  // owned by the overflow button.
+  gfx::ImageSkia left_image_;
+  gfx::ImageSkia right_image_;
+  // Bottom image is owned by the resource bundle.
+  const gfx::ImageSkia* bottom_image_;
 
   DISALLOW_COPY_AND_ASSIGN(OverflowButton);
 };
