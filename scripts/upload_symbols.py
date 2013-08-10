@@ -152,10 +152,15 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
   return num_errors.value
 
 
-def UploadSymbols(board, official=False, breakpad_dir=None,
+def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
-                  upload_count=None):
+                  upload_count=None, sym_files=None):
   """Upload all the generated symbols for |board| to the crash server
+
+  You can use in a few ways:
+    * pass |board| to locate all of its symbols
+    * pass |breakpad_dir| to upload all the symbols in there
+    * pass |sym_files| to upload specific symbols
 
   Args:
     board: The board whose symbols we wish to upload
@@ -164,6 +169,7 @@ def UploadSymbols(board, official=False, breakpad_dir=None,
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: How long to sleep in between uploads
     upload_count: If set, only upload this many symbols (meant for testing)
+    sym_files: Specific symbol files to upload, otherwise search |breakpad_dir|
   Returns:
     False if some errors were encountered, True otherwise.
   """
@@ -175,12 +181,18 @@ def UploadSymbols(board, official=False, breakpad_dir=None,
     cros_build_lib.Warning('unofficial builds upload to the staging server')
     upload_url = STAGING_UPLOAD_URL
 
-  if breakpad_dir is None:
-    breakpad_dir = FindBreakpadDir(board)
-  cros_build_lib.Info('uploading symbols to %s from %s', upload_url,
-                      breakpad_dir)
+  if sym_files:
+    cros_build_lib.Info('uploading specified symbol files to %s', upload_url)
+    sym_file_sets = [('', '', sym_files)]
+    all_files = True
+  else:
+    if breakpad_dir is None:
+      breakpad_dir = FindBreakpadDir(board)
+    cros_build_lib.Info('uploading all symbols to %s from %s', upload_url,
+                        breakpad_dir)
+    sym_file_sets = os.walk(breakpad_dir)
+    all_files = False
 
-  cros_build_lib.Info('uploading all breakpad symbol files')
   # We need to limit ourselves to one upload at a time to avoid the server
   # kicking in DoS protection.  See these bugs for more details:
   # http://crbug.com/209442
@@ -189,12 +201,12 @@ def UploadSymbols(board, official=False, breakpad_dir=None,
   with parallel.BackgroundTaskRunner(UploadSymbol, file_limit=file_limit,
                                      sleep=sleep, num_errors=bg_errors,
                                      processes=1) as queue:
-    for root, _, files in os.walk(breakpad_dir):
+    for root, _, files in sym_file_sets:
       if upload_count == 0:
         break
 
       for sym_file in files:
-        if sym_file.endswith('.sym'):
+        if all_files or sym_file.endswith('.sym'):
           sym_file = os.path.join(root, sym_file)
           queue.put([sym_file, upload_url])
 
@@ -246,6 +258,7 @@ def FindBreakpadDir(board):
 def main(argv):
   parser = commandline.ArgumentParser(description=__doc__)
 
+  parser.add_argument('sym_files', type='path', nargs='*', default=None)
   parser.add_argument('--board', default=None,
                       help='board to build packages for')
   parser.add_argument('--breakpad_root', type='path', default=None,
@@ -266,8 +279,12 @@ def main(argv):
 
   opts = parser.parse_args(argv)
 
-  if opts.board is None:
-    cros_build_lib.Die('--board is required')
+  if opts.sym_files:
+    if opts.regenerate:
+      cros_build_lib.Die('--regenerate may not be used with specific files')
+  else:
+    if opts.board is None:
+      cros_build_lib.Die('--board is required')
 
   if opts.breakpad_root and opts.regenerate:
     cros_build_lib.Die('--regenerate may not be used with --breakpad_root')
@@ -301,7 +318,7 @@ def main(argv):
   ret += UploadSymbols(opts.board, official=opts.official_build,
                        breakpad_dir=opts.breakpad_root,
                        file_limit=opts.strip_cfi, sleep=DEFAULT_SLEEP_DELAY,
-                       upload_count=opts.upload_count)
+                       upload_count=opts.upload_count, sym_files=opts.sym_files)
   if ret:
     cros_build_lib.Error('encountered %i problem(s)', ret)
     # Since exit(status) gets masked, clamp it to 1 so we don't inadvertently
