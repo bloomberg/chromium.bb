@@ -84,10 +84,15 @@ views::Widget* ToastContentsView::CreateWidget(gfx::NativeView parent) {
 }
 
 void ToastContentsView::SetContents(MessageView* view) {
+  bool already_has_contents = child_count() > 0;
   RemoveAllChildViews(true);
   AddChildView(view);
   preferred_size_ = GetToastSizeForView(view);
   Layout();
+  // If it has the contents already, this invocation means an update of the
+  // popup toast, and the new contents should be read through a11y feature.
+  if (already_has_contents)
+    NotifyAccessibilityEvent(ui::AccessibilityTypes::EVENT_FOCUS, false);
 }
 
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
