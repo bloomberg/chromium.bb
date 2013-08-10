@@ -75,6 +75,9 @@ if env.Bit('bitcode'):
   # The following tests were only made to work on LLVM for
   # PNaCl. Command-line flags and libraries need to be updated for GCC
   # support.
+  AddIntrinsicTest(cpp11_env, 'condition_variable_cpp11.cc', '0')
+  AddIntrinsicTest(cpp11_env, 'future_cpp11.cc', '0')
+  AddIntrinsicTest(cpp11_env, 'mutex_cpp11.cc', '0')
   AddIntrinsicTest(cpp11_env, 'synchronization_cpp11.cc', '0')
   AddIntrinsicTest(cpp11_env, 'thread_cpp11.cc', '0')
 
