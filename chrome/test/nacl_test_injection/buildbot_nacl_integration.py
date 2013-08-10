@@ -9,10 +9,6 @@ import sys
 
 
 def Main(args):
-  if sys.platform == 'darwin':
-    print >> sys.stderr, "SKIPPING NACL INTEGRATION DUE TO BUG #261724."
-    return 0
-
   pwd = os.environ.get('PWD', '')
   is_integration_bot = 'nacl-chrome' in pwd
 
