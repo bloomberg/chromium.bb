@@ -228,6 +228,9 @@ class BrowserOptionsHandler
   // Callback for the "restartBrowser" message. Restores all tabs on restart.
   void HandleRestartBrowser(const ListValue* args);
 
+  // Callback for "requestProfilesInfo" message.
+  void HandleRequestProfilesInfo(const ListValue* args);
+
 #if !defined(OS_CHROMEOS)
   // Callback for the "showNetworkProxySettings" message. This will invoke
   // an appropriate dialog for configuring proxy settings.

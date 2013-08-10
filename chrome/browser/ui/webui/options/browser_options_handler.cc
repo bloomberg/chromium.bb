@@ -585,6 +585,10 @@ void BrowserOptionsHandler::RegisterMessages() {
       "themesReset",
       base::Bind(&BrowserOptionsHandler::ThemesReset,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestProfilesInfo",
+      base::Bind(&BrowserOptionsHandler::HandleRequestProfilesInfo,
+                 base::Unretained(this)));
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "themesSetNative",
@@ -1482,6 +1486,10 @@ void BrowserOptionsHandler::HandleDefaultZoomFactor(const ListValue* args) {
 
 void BrowserOptionsHandler::HandleRestartBrowser(const ListValue* args) {
   chrome::AttemptRestart();
+}
+
+void BrowserOptionsHandler::HandleRequestProfilesInfo(const ListValue* args) {
+  SendProfilesInfo();
 }
 
 #if !defined(OS_CHROMEOS)

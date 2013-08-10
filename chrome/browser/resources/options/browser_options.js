@@ -178,7 +178,9 @@ cr.define('options', function() {
         options.browser_options.ProfileList.decorate(profilesList);
         profilesList.autoExpands = true;
 
+        // The profiles info data in |loadTimeData| might be stale.
         this.setProfilesInfo_(loadTimeData.getValue('profilesInfo'));
+        chrome.send('requestProfilesInfo');
 
         profilesList.addEventListener('change',
             this.setProfileViewButtonsStatus_);
