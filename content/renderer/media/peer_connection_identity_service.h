@@ -19,7 +19,8 @@ namespace content {
 class PeerConnectionIdentityService
     : public webrtc::DTLSIdentityServiceInterface {
  public:
-  explicit PeerConnectionIdentityService(const GURL& origin);
+  static PeerConnectionIdentityService* Create(const GURL& origin);
+
   virtual ~PeerConnectionIdentityService();
 
   // webrtc::DTLSIdentityServiceInterface implementation.
@@ -29,6 +30,8 @@ class PeerConnectionIdentityService
       webrtc::DTLSIdentityRequestObserver* observer) OVERRIDE;
 
  private:
+  explicit PeerConnectionIdentityService(const GURL& origin);
+
   void OnIdentityReady(const std::string& certificate,
                        const std::string& private_key);
   void OnRequestFailed(int error);

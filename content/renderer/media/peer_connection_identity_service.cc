@@ -9,8 +9,17 @@
 
 namespace content {
 
-PeerConnectionIdentityService::PeerConnectionIdentityService(const GURL& origin)
-    : origin_(origin), pending_observer_(NULL), pending_request_id_(0) {}
+PeerConnectionIdentityService* PeerConnectionIdentityService::Create(
+    const GURL& origin) {
+// The crypto APIs needed for generating identities are not implenented for
+// OPENSSL yet (crbug/91512). So returning NULL in that case.
+// TODO(jiayl): remove the #if once the crypto APIs are implemented for OPENSSL.
+#if defined(USE_OPENSSL)
+  return NULL;
+#else
+  return new PeerConnectionIdentityService(origin);
+#endif  // defined(USE_OPENSSL)
+}
 
 PeerConnectionIdentityService::~PeerConnectionIdentityService() {
   if (pending_observer_)
@@ -38,6 +47,9 @@ bool PeerConnectionIdentityService::RequestIdentity(
                      base::Unretained(this)));
   return true;
 }
+
+PeerConnectionIdentityService::PeerConnectionIdentityService(const GURL& origin)
+    : origin_(origin), pending_observer_(NULL), pending_request_id_(0) {}
 
 void PeerConnectionIdentityService::OnIdentityReady(
     const std::string& certificate,
