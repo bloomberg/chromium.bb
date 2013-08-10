@@ -51,6 +51,9 @@ body.main2: [regular, 23:0-23:10] {
 body.mainpage: [regular, 3:0-3:13] {
     ['text-decoration':'none'] @[4:4-4:26] active
     ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] active
+    ['text-decoration-line':'none'] @[undefined-undefined] style
+    ['text-decoration-style':'initial'] @[undefined-undefined] style
+    ['text-decoration-color':'initial'] @[undefined-undefined] style
 }
 body.mainpage: [regular, 8:0-8:13] {
     ['prop1':'val1' non-parsed] @[9:4-9:16] active
@@ -122,6 +125,9 @@ body.main2: [regular, 23:0-23:10] {
 body.mainpage: [regular, 3:0-3:13] {
     ['text-decoration':'none'] @[4:4-4:26] active
     ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] active
+    ['text-decoration-line':'none'] @[undefined-undefined] style
+    ['text-decoration-style':'initial'] @[undefined-undefined] style
+    ['text-decoration-color':'initial'] @[undefined-undefined] style
 }
 body.mainpage: [regular, 8:0-8:13] {
     ['prop1':'val1' non-parsed] @[9:4-9:16] active
@@ -322,6 +328,9 @@ body:hover {
 body.mainpage: [regular, 3:0-3:13] {
     ['text-decoration':'none'] @[4:4-4:26] active
     ['badproperty':'1badvalue1' non-parsed] @[5:5-5:29] active
+    ['text-decoration-line':'none'] @[undefined-undefined] style
+    ['text-decoration-style':'initial'] @[undefined-undefined] style
+    ['text-decoration-color':'initial'] @[undefined-undefined] style
 }
 body.mainpage: [regular, 8:0-8:13] {
     ['prop1':'val1' non-parsed] @[9:4-9:16] active

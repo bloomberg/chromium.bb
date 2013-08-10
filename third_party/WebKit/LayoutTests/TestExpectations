@@ -77,6 +77,11 @@ webkit.org/b/100985 media/progress-events-generated-correctly.html [ Failure Pas
 # CSS3 Text support is not yet enabled for all properties (must replace CSS3_TEXT with a runtime flag).
 webkit.org/b/112755 fast/css3-text/css3-text-indent/text-indent-each-line.html [ ImageOnlyFailure ]
 
+# CSS3 Text Decoration shorthand runtime feature flag is not enabled by default.
+webkit.org/b/112755 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-shorthand-ordering.html [ Skip ]
+webkit.org/b/112755 fast/css3-text/css3-text-decoration/getComputedStyle/getComputedStyle-text-decoration-shorthand.html [ Skip ]
+webkit.org/b/112755 fast/css3-text/css3-text-decoration/repaint/repaint-text-decoration-line.html [ Skip ]
+
 # We expect V8 to crash in an orderly fashion instead of throwing a JavaScript out-of-memory error.
 webkit.org/b/103348 fast/js/string-replacement-outofmemory.html [ Crash ]
 
