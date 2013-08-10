@@ -18,7 +18,7 @@ import sys
 import xml.dom.minidom as minidom
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
+sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir))
 
 import chrome_paths
 import test_environment

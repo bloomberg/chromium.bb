@@ -14,9 +14,9 @@ import time
 import unittest
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'client'))
-sys.path.insert(0, os.path.join(_THIS_DIR, os.pardir, 'server'))
+sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir))
+sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir, 'client'))
+sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir, 'server'))
 
 import chrome_paths
 import chromedriver
