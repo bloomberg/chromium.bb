@@ -165,3 +165,10 @@ all: $(OUTDIR)/$(1).html
 $(OUTDIR)/$(1).html: $(OUTDIR)/$(1).pexe
 	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef
+
+
+#
+# Determine which executable to pass into the debugger.  For pnacl, this is
+# the .bc -> .nexe translated app.
+#
+GDB_DEBUG_TARGET = $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe

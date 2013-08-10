@@ -429,3 +429,22 @@ all: $(OUTDIR)/$(1).html
 $(OUTDIR)/$(1).html: $(EXECUTABLES)
 	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) $(HTML_FLAGS) -o $$@ $$^)
 endef
+
+
+#
+# Determine which executable to pass into the debugger.  For newlib
+# this is the NEXE which will actually be used.  For glibc, runnable-ld.so
+# is the "app", and the "app" is actual an .so we load.
+#
+ifeq (x86_32,$(SYSARCH))
+LIB_NAME = lib32
+else
+LIB_NAME = lib64
+endif
+
+
+ifeq (newlib,$(TOOLCHAIN))
+GDB_DEBUG_TARGET = $(abspath $(OUTDIR))/$(TARGET)_$(SYSARCH).nexe
+else
+GDB_DEBUG_TARGET = $(abspath $(OUTDIR))/$(LIB_NAME)/runnable-ld.so
+endif
