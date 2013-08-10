@@ -9,27 +9,45 @@
 
 #include "base/logging.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/history/top_sites.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sessions/tab_restore_service.h"
+#include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_tab_restore_service_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_desktop_root_window_host_x11.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/global_menu_bar_registrar_x11.h"
 #include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/text/text_elider.h"
 
 // libdbusmenu-glib types
 typedef struct _DbusmenuMenuitem DbusmenuMenuitem;
 typedef DbusmenuMenuitem* (*dbusmenu_menuitem_new_func)();
-typedef DbusmenuMenuitem* (*dbusmenu_menuitem_new_with_id_func)(int id);
-
-typedef int (*dbusmenu_menuitem_get_id_func)(DbusmenuMenuitem* item);
+typedef bool (*dbusmenu_menuitem_child_add_position_func)(
+    DbusmenuMenuitem* parent,
+    DbusmenuMenuitem* child,
+    unsigned int position);
 typedef DbusmenuMenuitem* (*dbusmenu_menuitem_child_append_func)(
     DbusmenuMenuitem* parent,
     DbusmenuMenuitem* child);
+typedef bool (*dbusmenu_menuitem_child_delete_func)(
+    DbusmenuMenuitem* parent,
+    DbusmenuMenuitem* child);
+typedef GList* (*dbusmenu_menuitem_get_children_func)(
+    DbusmenuMenuitem* item);
 typedef DbusmenuMenuitem* (*dbusmenu_menuitem_property_set_func)(
     DbusmenuMenuitem* item,
     const char* property,
@@ -65,9 +83,10 @@ namespace {
 
 // DbusmenuMenuItem methods:
 dbusmenu_menuitem_new_func menuitem_new = NULL;
-dbusmenu_menuitem_new_with_id_func menuitem_new_with_id = NULL;
-dbusmenu_menuitem_get_id_func menuitem_get_id = NULL;
+dbusmenu_menuitem_get_children_func menuitem_get_children = NULL;
+dbusmenu_menuitem_child_add_position_func menuitem_child_add_position = NULL;
 dbusmenu_menuitem_child_append_func menuitem_child_append = NULL;
+dbusmenu_menuitem_child_delete_func menuitem_child_delete = NULL;
 dbusmenu_menuitem_property_set_func menuitem_property_set = NULL;
 dbusmenu_menuitem_property_set_variant_func menuitem_property_set_variant =
     NULL;
@@ -90,10 +109,30 @@ const char kPropertyVisible[] = "visible";
 const char kTypeCheckmark[] = "checkmark";
 const char kTypeSeparator[] = "separator";
 
-// Constants used in menu definitions
+// Data set on GObjectgs.
+const char kTypeTag[] = "type-tag";
+const char kHistoryItem[] = "history-item";
+
+// The maximum number of most visited items to display.
+const unsigned int kMostVisitedCount = 8;
+
+// The number of recently closed items to get.
+const unsigned int kRecentlyClosedCount = 8;
+
+// Menus more than this many chars long will get trimmed.
+const int kMaximumMenuWidthInChars = 50;
+
+// Constants used in menu definitions.
 const int MENU_SEPARATOR =-1;
 const int MENU_END = -2;
-const int MENU_DISABLED_LABEL = -3;
+const int MENU_DISABLED_ID = -3;
+
+// These tag values are used to refer to menu itesm.
+const int TAG_NORMAL = 0;
+const int TAG_MOST_VISITED = 1;
+const int TAG_RECENTLY_CLOSED = 2;
+const int TAG_MOST_VISITED_HEADER = 3;
+const int TAG_RECENTLY_CLOSED_HEADER = 4;
 
 GlobalMenuBarCommand file_menu[] = {
   { IDS_NEW_TAB, IDC_NEW_TAB },
@@ -136,7 +175,6 @@ GlobalMenuBarCommand edit_menu[] = {
   { MENU_END, MENU_END }
 };
 
-
 GlobalMenuBarCommand view_menu[] = {
   { IDS_SHOW_BOOKMARK_BAR, IDC_SHOW_BOOKMARK_BAR },
 
@@ -155,7 +193,25 @@ GlobalMenuBarCommand view_menu[] = {
   { MENU_END, MENU_END }
 };
 
-// TODO(erg): History menu.
+GlobalMenuBarCommand history_menu[] = {
+  { IDS_HISTORY_HOME_LINUX, IDC_HOME },
+  { IDS_HISTORY_BACK_LINUX, IDC_BACK },
+  { IDS_HISTORY_FORWARD_LINUX, IDC_FORWARD },
+
+  { MENU_SEPARATOR, MENU_SEPARATOR },
+
+  { IDS_HISTORY_VISITED_LINUX, MENU_DISABLED_ID, TAG_MOST_VISITED_HEADER },
+
+  { MENU_SEPARATOR, MENU_SEPARATOR },
+
+  { IDS_HISTORY_CLOSED_LINUX, MENU_DISABLED_ID, TAG_RECENTLY_CLOSED_HEADER },
+
+  { MENU_SEPARATOR, MENU_SEPARATOR },
+
+  { IDS_SHOWFULLHISTORY_LINK, IDC_SHOW_HISTORY },
+
+  { MENU_END, MENU_END }
+};
 
 GlobalMenuBarCommand tools_menu[] = {
   { IDS_SHOW_DOWNLOADS, IDC_SHOW_DOWNLOADS },
@@ -182,7 +238,6 @@ GlobalMenuBarCommand help_menu[] = {
   { MENU_END, MENU_END }
 };
 
-
 void EnsureMethodsLoaded() {
   static bool attempted_load = false;
   if (attempted_load)
@@ -196,12 +251,15 @@ void EnsureMethodsLoaded() {
   // DbusmenuMenuItem methods.
   menuitem_new = reinterpret_cast<dbusmenu_menuitem_new_func>(
       dlsym(dbusmenu_lib, "dbusmenu_menuitem_new"));
-  menuitem_new_with_id = reinterpret_cast<dbusmenu_menuitem_new_with_id_func>(
-      dlsym(dbusmenu_lib, "dbusmenu_menuitem_new_with_id"));
-  menuitem_get_id = reinterpret_cast<dbusmenu_menuitem_get_id_func>(
-      dlsym(dbusmenu_lib, "dbusmenu_menuitem_get_id"));
+  menuitem_child_add_position =
+      reinterpret_cast<dbusmenu_menuitem_child_add_position_func>(
+          dlsym(dbusmenu_lib, "dbusmenu_menuitem_child_add_position"));
   menuitem_child_append = reinterpret_cast<dbusmenu_menuitem_child_append_func>(
       dlsym(dbusmenu_lib, "dbusmenu_menuitem_child_append"));
+  menuitem_child_delete = reinterpret_cast<dbusmenu_menuitem_child_delete_func>(
+      dlsym(dbusmenu_lib, "dbusmenu_menuitem_child_delete"));
+  menuitem_get_children = reinterpret_cast<dbusmenu_menuitem_get_children_func>(
+      dlsym(dbusmenu_lib, "dbusmenu_menuitem_get_children"));
   menuitem_property_set = reinterpret_cast<dbusmenu_menuitem_property_set_func>(
       dlsym(dbusmenu_lib, "dbusmenu_menuitem_property_set"));
   menuitem_property_set_variant =
@@ -223,13 +281,43 @@ void EnsureMethodsLoaded() {
 
 }  // namespace
 
+struct GlobalMenuBarX11::HistoryItem {
+  HistoryItem() : session_id(0) {}
+
+  // The title for the menu item.
+  string16 title;
+  // The URL that will be navigated to if the user selects this item.
+  GURL url;
+
+  // This ID is unique for a browser session and can be passed to the
+  // TabRestoreService to re-open the closed window or tab that this
+  // references. A non-0 session ID indicates that this is an entry can be
+  // restored that way. Otherwise, the URL will be used to open the item and
+  // this ID will be 0.
+  SessionID::id_type session_id;
+
+  // If the HistoryItem is a window, this will be the vector of tabs. Note
+  // that this is a list of weak references. The |menu_item_map_| is the owner
+  // of all items. If it is not a window, then the entry is a single page and
+  // the vector will be empty.
+  std::vector<HistoryItem*> tabs;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(HistoryItem);
+};
+
 GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
                                    BrowserDesktopRootWindowHostX11* host)
     : browser_(browser_view->browser()),
+      profile_(browser_->profile()),
       browser_view_(browser_view),
       host_(host),
       server_(NULL),
-      root_item_(NULL) {
+      root_item_(NULL),
+      history_menu_(NULL),
+      top_sites_(NULL),
+      tab_restore_service_(NULL),
+      weak_ptr_factory_(this) {
   EnsureMethodsLoaded();
 
   if (server_new)
@@ -239,6 +327,10 @@ GlobalMenuBarX11::GlobalMenuBarX11(BrowserView* browser_view,
 GlobalMenuBarX11::~GlobalMenuBarX11() {
   if (server_) {
     Disable();
+
+    if (tab_restore_service_)
+      tab_restore_service_->RemoveObserver(this);
+
     g_object_unref(server_);
     host_->RemoveObserver(this);
   }
@@ -249,6 +341,26 @@ std::string GlobalMenuBarX11::GetPathForWindow(unsigned long xid) {
   return base::StringPrintf("/com/canonical/menu/%lX", xid);
 }
 
+DbusmenuMenuitem* GlobalMenuBarX11::BuildSeparator() {
+  DbusmenuMenuitem* item = menuitem_new();
+  menuitem_property_set(item, kPropertyType, kTypeSeparator);
+  menuitem_property_set_bool(item, kPropertyVisible, true);
+  return item;
+}
+
+DbusmenuMenuitem* GlobalMenuBarX11::BuildMenuItem(
+    const std::string& label,
+    int tag_id) {
+  DbusmenuMenuitem* item = menuitem_new();
+  menuitem_property_set(item, kPropertyLabel, label.c_str());
+  menuitem_property_set_bool(item, kPropertyVisible, true);
+
+  if (tag_id)
+    g_object_set_data(G_OBJECT(item), kTypeTag, GINT_TO_POINTER(tag_id));
+
+  return item;
+}
+
 void GlobalMenuBarX11::InitServer(unsigned long xid) {
   std::string path = GetPathForWindow(xid);
   server_ = server_new(path.c_str());
@@ -257,13 +369,20 @@ void GlobalMenuBarX11::InitServer(unsigned long xid) {
   menuitem_property_set(root_item_, kPropertyLabel, "Root");
   menuitem_property_set_bool(root_item_, kPropertyVisible, true);
 
-  BuildMenuFrom(root_item_, IDS_FILE_MENU_LINUX, &id_to_menu_item_, file_menu);
-  BuildMenuFrom(root_item_, IDS_EDIT_MENU_LINUX, &id_to_menu_item_, edit_menu);
-  BuildMenuFrom(root_item_, IDS_VIEW_MENU_LINUX, &id_to_menu_item_, view_menu);
-  // TODO(erg): History menu.
-  BuildMenuFrom(root_item_, IDS_TOOLS_MENU_LINUX, &id_to_menu_item_,
-                tools_menu);
-  BuildMenuFrom(root_item_, IDS_HELP_MENU_LINUX, &id_to_menu_item_, help_menu);
+  // First build static menu content.
+  BuildStaticMenu(root_item_, IDS_FILE_MENU_LINUX, file_menu);
+  BuildStaticMenu(root_item_, IDS_EDIT_MENU_LINUX, edit_menu);
+  BuildStaticMenu(root_item_, IDS_VIEW_MENU_LINUX, view_menu);
+  history_menu_ = BuildStaticMenu(
+      root_item_, IDS_HISTORY_MENU_LINUX, history_menu);
+  BuildStaticMenu(root_item_, IDS_TOOLS_MENU_LINUX, tools_menu);
+  BuildStaticMenu(root_item_, IDS_HELP_MENU_LINUX, help_menu);
+
+  // We have to connect to |history_menu_item|'s "activate" signal instead of
+  // |history_menu|'s "show" signal because we are not supposed to modify the
+  // menu during "show"
+  g_signal_connect(history_menu_, "about-to-show",
+                   G_CALLBACK(OnHistoryMenuAboutToShowThunk), this);
 
   for (CommandIDMenuItemMap::const_iterator it = id_to_menu_item_.begin();
        it != id_to_menu_item_.end(); ++it) {
@@ -284,6 +403,16 @@ void GlobalMenuBarX11::InitServer(unsigned long xid) {
                  base::Unretained(this)));
   OnBookmarkBarVisibilityChanged();
 
+  top_sites_ = profile_->GetTopSites();
+  if (top_sites_) {
+    GetTopSitesData();
+
+    // Register for notification when TopSites changes so that we can update
+    // ourself.
+    registrar_.Add(this, chrome::NOTIFICATION_TOP_SITES_CHANGED,
+                   content::Source<history::TopSites>(top_sites_));
+  }
+
   server_set_root(server_, root_item_);
 }
 
@@ -297,10 +426,9 @@ void GlobalMenuBarX11::Disable() {
   pref_change_registrar_.RemoveAll();
 }
 
-void GlobalMenuBarX11::BuildMenuFrom(
+DbusmenuMenuitem* GlobalMenuBarX11::BuildStaticMenu(
     DbusmenuMenuitem* parent,
     int menu_str_id,
-    std::map<int, DbusmenuMenuitem*>* id_to_menu_item,
     GlobalMenuBarCommand* commands) {
   DbusmenuMenuitem* top = menuitem_new();
   menuitem_property_set(
@@ -310,48 +438,37 @@ void GlobalMenuBarX11::BuildMenuFrom(
   menuitem_property_set_bool(top, kPropertyVisible, true);
 
   for (int i = 0; commands[i].str_id != MENU_END; ++i) {
-    DbusmenuMenuitem* menu_item = BuildMenuItem(
-        commands[i].str_id, commands[i].command, commands[i].tag,
-        id_to_menu_item);
+    DbusmenuMenuitem* menu_item = NULL;
+    int command_id = commands[i].command;
+    if (commands[i].str_id == MENU_SEPARATOR) {
+      menu_item = BuildSeparator();
+    } else {
+      std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
+          l10n_util::GetStringUTF8(commands[i].str_id));
+
+      menu_item = BuildMenuItem(label, commands[i].tag);
+
+      if (command_id == MENU_DISABLED_ID) {
+        menuitem_property_set_bool(menu_item, kPropertyEnabled, false);
+      } else {
+        if (command_id == IDC_SHOW_BOOKMARK_BAR)
+          menuitem_property_set(menu_item, kPropertyToggleType, kTypeCheckmark);
+
+        id_to_menu_item_.insert(std::make_pair(command_id, menu_item));
+        g_object_set_data(G_OBJECT(menu_item), "command-id",
+                          GINT_TO_POINTER(command_id));
+        g_signal_connect(menu_item, "item-activated",
+                         G_CALLBACK(OnItemActivatedThunk), this);
+      }
+    }
+
     menuitem_child_append(top, menu_item);
+    g_object_unref(menu_item);
   }
 
   menuitem_child_append(parent, top);
-}
-
-DbusmenuMenuitem* GlobalMenuBarX11::BuildMenuItem(
-    int string_id,
-    int command_id,
-    int tag_id,
-    std::map<int, DbusmenuMenuitem*>* id_to_menu_item) {
-  DbusmenuMenuitem* item = menuitem_new();
-
-  if (string_id == MENU_SEPARATOR) {
-    menuitem_property_set(item, kPropertyType, kTypeSeparator);
-  } else {
-    std::string label = ui::ConvertAcceleratorsFromWindowsStyle(
-        l10n_util::GetStringUTF8(string_id));
-    menuitem_property_set(item, kPropertyLabel, label.c_str());
-
-    if (command_id == IDC_SHOW_BOOKMARK_BAR)
-      menuitem_property_set(item, kPropertyToggleType, kTypeCheckmark);
-
-    if (tag_id)
-      g_object_set_data(G_OBJECT(item), "type-tag", GINT_TO_POINTER(tag_id));
-
-    if (command_id == MENU_DISABLED_LABEL) {
-      menuitem_property_set_bool(item, kPropertyEnabled, false);
-    } else {
-      id_to_menu_item->insert(std::make_pair(command_id, item));
-      g_object_set_data(G_OBJECT(item), "command-id",
-                        GINT_TO_POINTER(command_id));
-      g_signal_connect(item, "item-activated",
-                       G_CALLBACK(OnItemActivatedThunk), this);
-    }
-  }
-
-  menuitem_property_set_bool(item, kPropertyVisible, true);
-  return item;
+  g_object_unref(top);
+  return top;
 }
 
 void GlobalMenuBarX11::RegisterAccelerator(DbusmenuMenuitem* item,
@@ -384,6 +501,70 @@ void GlobalMenuBarX11::RegisterAccelerator(DbusmenuMenuitem* item,
   menuitem_property_set_variant(item, kPropertyShortcut, outside_array);
 }
 
+GlobalMenuBarX11::HistoryItem* GlobalMenuBarX11::HistoryItemForTab(
+    const TabRestoreService::Tab& entry) {
+  const sessions::SerializedNavigationEntry& current_navigation =
+      entry.navigations.at(entry.current_navigation_index);
+  HistoryItem* item = new HistoryItem();
+  item->title = current_navigation.title();
+  item->url = current_navigation.virtual_url();
+  item->session_id = entry.id;
+
+  return item;
+}
+
+void GlobalMenuBarX11::AddHistoryItemToMenu(HistoryItem* item,
+                                            DbusmenuMenuitem* menu,
+                                            int tag,
+                                            int index) {
+  string16 title = item->title;
+  std::string url_string = item->url.possibly_invalid_spec();
+
+  if (title.empty())
+    title = UTF8ToUTF16(url_string);
+  ui::ElideString(title, kMaximumMenuWidthInChars, &title);
+
+  DbusmenuMenuitem* menu_item = BuildMenuItem(UTF16ToUTF8(title), tag);
+  g_signal_connect(menu_item, "item-activated",
+                   G_CALLBACK(OnHistoryItemActivatedThunk), this);
+
+  g_object_set_data_full(G_OBJECT(menu_item), kHistoryItem, item,
+                         DeleteHistoryItem);
+  menuitem_child_add_position(menu, menu_item, index);
+  g_object_unref(menu_item);
+}
+
+void GlobalMenuBarX11::GetTopSitesData() {
+  DCHECK(top_sites_);
+
+  top_sites_->GetMostVisitedURLs(
+      base::Bind(&GlobalMenuBarX11::OnTopSitesReceived,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void GlobalMenuBarX11::OnTopSitesReceived(
+    const history::MostVisitedURLList& visited_list) {
+  ClearMenuSection(history_menu_, TAG_MOST_VISITED);
+
+  int index = GetIndexOfMenuItemWithTag(history_menu_,
+                                        TAG_MOST_VISITED_HEADER) + 1;
+
+  for (size_t i = 0; i < visited_list.size() && i < kMostVisitedCount; ++i) {
+    const history::MostVisitedURL& visited = visited_list[i];
+    if (visited.url.spec().empty())
+      break;  // This is the signal that there are no more real visited sites.
+
+    HistoryItem* item = new HistoryItem();
+    item->title = visited.title;
+    item->url = visited.url;
+
+    AddHistoryItemToMenu(item,
+                         history_menu_,
+                         TAG_MOST_VISITED,
+                         index++);
+  }
+}
+
 void GlobalMenuBarX11::OnBookmarkBarVisibilityChanged() {
   CommandIDMenuItemMap::iterator it =
       id_to_menu_item_.find(IDC_SHOW_BOOKMARK_BAR);
@@ -396,10 +577,150 @@ void GlobalMenuBarX11::OnBookmarkBarVisibilityChanged() {
   }
 }
 
+int GlobalMenuBarX11::GetIndexOfMenuItemWithTag(DbusmenuMenuitem* menu,
+                                                int tag_id) {
+  GList* childs = menuitem_get_children(menu);
+  int i = 0;
+  for (; childs != NULL; childs = childs->next, i++) {
+    int tag =
+        GPOINTER_TO_INT(g_object_get_data(G_OBJECT(childs->data), kTypeTag));
+    if (tag == tag_id)
+      return i;
+  }
+
+  NOTREACHED();
+  return -1;
+}
+
+void GlobalMenuBarX11::ClearMenuSection(DbusmenuMenuitem* menu, int tag_id) {
+  std::vector<DbusmenuMenuitem*> menuitems_to_delete;
+
+  GList* childs = menuitem_get_children(menu);
+  for (; childs != NULL; childs = childs->next) {
+    DbusmenuMenuitem* current_item = reinterpret_cast<DbusmenuMenuitem*>(
+        childs->data);
+    ClearMenuSection(current_item, tag_id);
+
+    int tag =
+        GPOINTER_TO_INT(g_object_get_data(G_OBJECT(childs->data), kTypeTag));
+    if (tag == tag_id)
+      menuitems_to_delete.push_back(current_item);
+  }
+
+  for (std::vector<DbusmenuMenuitem*>::const_iterator it =
+           menuitems_to_delete.begin(); it != menuitems_to_delete.end(); ++it) {
+    menuitem_child_delete(menu, *it);
+  }
+}
+
+// static
+void GlobalMenuBarX11::DeleteHistoryItem(void* void_item) {
+  HistoryItem* item =
+      reinterpret_cast<GlobalMenuBarX11::HistoryItem*>(void_item);
+  delete item;
+}
+
 void GlobalMenuBarX11::EnabledStateChangedForCommand(int id, bool enabled) {
   CommandIDMenuItemMap::iterator it = id_to_menu_item_.find(id);
   if (it != id_to_menu_item_.end())
     menuitem_property_set_bool(it->second, kPropertyEnabled, enabled);
+}
+
+void GlobalMenuBarX11::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+  if (type == chrome::NOTIFICATION_TOP_SITES_CHANGED) {
+    GetTopSitesData();
+  } else {
+    NOTREACHED();
+  }
+}
+
+void GlobalMenuBarX11::TabRestoreServiceChanged(TabRestoreService* service) {
+  const TabRestoreService::Entries& entries = service->entries();
+
+  ClearMenuSection(history_menu_, TAG_RECENTLY_CLOSED);
+
+  // We'll get the index the "Recently Closed" header. (This can vary depending
+  // on the number of "Most Visited" items.
+  int index = GetIndexOfMenuItemWithTag(history_menu_,
+                                        TAG_RECENTLY_CLOSED_HEADER) + 1;
+
+  unsigned int added_count = 0;
+  for (TabRestoreService::Entries::const_iterator it = entries.begin();
+       it != entries.end() && added_count < kRecentlyClosedCount; ++it) {
+    TabRestoreService::Entry* entry = *it;
+
+    if (entry->type == TabRestoreService::WINDOW) {
+      TabRestoreService::Window* entry_win =
+          static_cast<TabRestoreService::Window*>(entry);
+      std::vector<TabRestoreService::Tab>& tabs = entry_win->tabs;
+      if (tabs.empty())
+        continue;
+
+      // Create the item for the parent/window.
+      HistoryItem* item = new HistoryItem();
+      item->session_id = entry_win->id;
+
+      std::string title = item->tabs.size() == 1 ?
+          l10n_util::GetStringUTF8(
+              IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_SINGLE) :
+          l10n_util::GetStringFUTF8(
+              IDS_NEW_TAB_RECENTLY_CLOSED_WINDOW_MULTIPLE,
+              base::IntToString16(item->tabs.size()));
+      DbusmenuMenuitem* parent_item = BuildMenuItem(
+          title, TAG_RECENTLY_CLOSED);
+      menuitem_child_add_position(history_menu_, parent_item, index++);
+      g_object_unref(parent_item);
+
+      // The mac version of this code allows the user to click on the parent
+      // menu item to have the same effect as clicking the restore window
+      // submenu item. GTK+ helpfully activates a menu item when it shows a
+      // submenu so toss that feature out.
+      DbusmenuMenuitem* restore_item = BuildMenuItem(
+          l10n_util::GetStringUTF8(
+              IDS_HISTORY_CLOSED_RESTORE_WINDOW_LINUX).c_str(),
+          TAG_RECENTLY_CLOSED);
+      g_signal_connect(restore_item, "item-activated",
+                       G_CALLBACK(OnHistoryItemActivatedThunk), this);
+      g_object_set_data_full(G_OBJECT(restore_item), kHistoryItem, item,
+                             DeleteHistoryItem);
+      menuitem_child_append(parent_item, restore_item);
+      g_object_unref(restore_item);
+
+      DbusmenuMenuitem* separator = BuildSeparator();
+      menuitem_child_append(parent_item, separator);
+      g_object_unref(separator);
+
+      // Loop over the window's tabs and add them to the submenu.
+      int subindex = 2;
+      std::vector<TabRestoreService::Tab>::const_iterator iter;
+      for (iter = tabs.begin(); iter != tabs.end(); ++iter) {
+        TabRestoreService::Tab tab = *iter;
+        HistoryItem* tab_item = HistoryItemForTab(tab);
+        item->tabs.push_back(tab_item);
+        AddHistoryItemToMenu(tab_item,
+                             parent_item,
+                             TAG_RECENTLY_CLOSED,
+                             subindex++);
+      }
+
+      ++added_count;
+    } else if (entry->type == TabRestoreService::TAB) {
+      TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
+      HistoryItem* item = HistoryItemForTab(*tab);
+      AddHistoryItemToMenu(item,
+                           history_menu_,
+                           TAG_RECENTLY_CLOSED,
+                           index++);
+      ++added_count;
+    }
+  }
+}
+
+void GlobalMenuBarX11::TabRestoreServiceDestroyed(
+    TabRestoreService* service) {
+  tab_restore_service_ = NULL;
 }
 
 void GlobalMenuBarX11::OnWindowMapped(unsigned long xid) {
@@ -417,4 +738,45 @@ void GlobalMenuBarX11::OnItemActivated(DbusmenuMenuitem* item,
                                        unsigned int timestamp) {
   int id = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(item), "command-id"));
   chrome::ExecuteCommand(browser_, id);
+}
+
+void GlobalMenuBarX11::OnHistoryItemActivated(DbusmenuMenuitem* sender,
+                                              unsigned int timestamp) {
+  // Note: We don't have access to the event modifiers used to click the menu
+  // item since that happens in a different process.
+  HistoryItem* item = reinterpret_cast<HistoryItem*>(
+      g_object_get_data(G_OBJECT(sender), kHistoryItem));
+
+  // If this item can be restored using TabRestoreService, do so. Otherwise,
+  // just load the URL.
+  TabRestoreService* service =
+      TabRestoreServiceFactory::GetForProfile(profile_);
+  if (item->session_id && service) {
+    service->RestoreEntryById(browser_->tab_restore_service_delegate(),
+                              item->session_id, browser_->host_desktop_type(),
+                              UNKNOWN);
+  } else {
+    DCHECK(item->url.is_valid());
+    browser_->OpenURL(content::OpenURLParams(
+        item->url,
+        content::Referrer(),
+        NEW_FOREGROUND_TAB,
+        content::PAGE_TRANSITION_AUTO_BOOKMARK,
+        false));
+  }
+}
+
+void GlobalMenuBarX11::OnHistoryMenuAboutToShow(DbusmenuMenuitem* item) {
+  if (!tab_restore_service_) {
+    tab_restore_service_ = TabRestoreServiceFactory::GetForProfile(profile_);
+    if (tab_restore_service_) {
+      tab_restore_service_->LoadTabsFromLastSession();
+      tab_restore_service_->AddObserver(this);
+
+      // If LoadTabsFromLastSession doesn't load tabs, it won't call
+      // TabRestoreServiceChanged(). This ensures that all new windows after
+      // the first one will have their menus populated correctly.
+      TabRestoreServiceChanged(tab_restore_service_);
+    }
+  }
 }
