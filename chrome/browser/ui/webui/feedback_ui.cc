@@ -24,6 +24,7 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/feedback/feedback_data.h"
 #include "chrome/browser/feedback/feedback_util.h"
+#include "chrome/browser/feedback/tracing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_manager.h"
@@ -86,6 +87,7 @@ const char kCustomPageUrlParameter[] = "customPageUrl=";
 #if defined(OS_CHROMEOS)
 
 const char kTimestampParameter[] = "timestamp=";
+const char kTraceIdParameter[] = "traceId=";
 
 const size_t kMaxSavedScreenshots = 2;
 size_t kMaxNumScanFiles = 1000;
@@ -236,6 +238,13 @@ void ShowFeedbackPage(Browser* browser,
 #if defined(OS_CHROMEOS)
   feedback_url = feedback_url + "&" + kTimestampParameter +
                  net::EscapeUrlEncodedData(timestamp, false);
+
+  // The manager is only available if tracing is enabled.
+  if (TracingManager* manager = TracingManager::Get()) {
+    int trace_id = manager->RequestTrace();
+    feedback_url = feedback_url + "&" + kTraceIdParameter +
+                   base::IntToString(trace_id);
+  }
 #endif
   chrome::ShowSingletonTab(browser, GURL(feedback_url));
 }
@@ -307,6 +316,8 @@ content::WebUIDataSource* CreateFeedbackUIHTMLSource(bool successful_init) {
   source->AddLocalizedString("user-email", IDS_FEEDBACK_USER_EMAIL_LABEL);
 
 #if defined(OS_CHROMEOS)
+  source->AddLocalizedString("performance-trace",
+                             IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX);
   source->AddLocalizedString("sysinfo",
                              IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX);
   source->AddLocalizedString("currentscreenshots",
@@ -608,6 +619,11 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   (*i++)->GetAsString(&sys_info_checkbox);
   bool send_sys_info = (sys_info_checkbox == "true");
 
+  std::string trace_id_str;
+  (*i++)->GetAsString(&trace_id_str);
+  int trace_id = 0;
+  base::StringToInt(trace_id_str, &trace_id);
+
   std::string attached_filename;
   scoped_ptr<std::string> attached_filedata;
   // If we have an attached file, we'll still have more data in the list.
@@ -645,6 +661,7 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   feedback_data_->set_attached_filename(attached_filename);
   feedback_data_->set_send_sys_info(send_sys_info);
   feedback_data_->set_timestamp(timestamp_);
+  feedback_data_->set_trace_id(trace_id);
 #endif
 
   // Signal the feedback object that the data from the feedback page has been

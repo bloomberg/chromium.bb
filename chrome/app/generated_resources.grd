@@ -7352,6 +7352,9 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_FEEDBACK_SAVED_SCREENSHOTS" desc="Radio button for including the last screen image on the bug report dialog box">
         Send a saved screen shot
       </message>
+      <message name="IDS_FEEDBACK_INCLUDE_PERFORMANCE_TRACE_CHECKBOX" desc="Checkbox for including system information on the bug report dialog box">
+        Send performance trace data
+      </message>
       <message name="IDS_FEEDBACK_INCLUDE_SYSTEM_INFORMATION_CHKBOX" desc="Checkbox for including system information on the bug report dialog box">
         Send system information
       </message>

@@ -17,6 +17,11 @@
 #endif
 
 class Profile;
+#if defined(OS_CHROMEOS)
+namespace base {
+class RefCountedString;
+}
+#endif
 
 class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
  public:
@@ -69,6 +74,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   chromeos::SystemLogsResponse* sys_info() const {
     return send_sys_info_ ? sys_info_.get() : NULL;
   }
+  const int trace_id() const { return trace_id_; }
   const std::string timestamp() const { return timestamp_; }
   std::string* compressed_logs() const { return compressed_logs_.get(); }
 #endif
@@ -96,6 +102,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   void set_screenshot_url(const GURL& url) { screenshot_url_ = url; }
 #if defined(OS_CHROMEOS)
   void set_sys_info(scoped_ptr<chromeos::SystemLogsResponse> sys_info);
+  void set_trace_id(int trace_id) { trace_id_ = trace_id; }
   void set_send_sys_info(bool send_sys_info) { send_sys_info_ = send_sys_info; }
   void set_timestamp(const std::string& timestamp) {
     timestamp_ = timestamp;
@@ -109,6 +116,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
 
 #if defined(OS_CHROMEOS)
   void ReadAttachedFile(const base::FilePath& from);
+  void OnGetTraceData(scoped_refptr<base::RefCountedString> trace_data);
 #endif
 
   Profile* profile_;
@@ -130,6 +138,7 @@ class FeedbackData : public base::RefCountedThreadSafe<FeedbackData> {
   // we don't send the logs with the report.
   scoped_ptr<chromeos::SystemLogsResponse> sys_info_;
 
+  int trace_id_;
   std::string timestamp_;
   scoped_ptr<std::string> compressed_logs_;
 

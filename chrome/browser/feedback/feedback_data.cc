@@ -11,6 +11,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/feedback/feedback_util.h"
+#include "chrome/browser/feedback/tracing_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -27,6 +28,8 @@ namespace {
 const char kMultilineIndicatorString[] = "<multiline>\n";
 const char kMultilineStartString[] = "---------- START ----------\n";
 const char kMultilineEndString[] = "---------- END ----------\n\n";
+
+const char kTraceFilename[] = "tracing.log\n";
 
 std::string LogsToString(chromeos::SystemLogsResponse* sys_info) {
   std::string syslogs_string;
@@ -67,6 +70,7 @@ FeedbackData::FeedbackData() : profile_(NULL),
                                feedback_page_data_complete_(false) {
 #if defined(OS_CHROMEOS)
   sys_info_.reset(NULL);
+  trace_id_ = 0;
   attached_filedata_.reset(NULL);
   send_sys_info_ = true;
   read_attached_file_complete_ = false;
@@ -94,6 +98,19 @@ void FeedbackData::SendReport() {
 
 void FeedbackData::FeedbackPageDataComplete() {
 #if defined(OS_CHROMEOS)
+  if (trace_id_ != 0) {
+    TracingManager* manager = TracingManager::Get();
+    // When there is a trace id attached to this report, fetch it and attach it
+    // as a file.  In this case, return early and retry this function later.
+    if (manager &&
+        manager->GetTraceData(
+            trace_id_,
+            base::Bind(&FeedbackData::OnGetTraceData, this))) {
+      return;
+    } else {
+      trace_id_ = 0;
+    }
+  }
   if (attached_filename_.size() &&
       base::FilePath::IsSeparator(attached_filename_[0]) &&
       !attached_filedata_.get()) {
@@ -179,4 +196,15 @@ void FeedbackData::ReadAttachedFile(const base::FilePath& from) {
       attached_filedata_->clear();
   }
 }
+
+void FeedbackData::OnGetTraceData(
+    scoped_refptr<base::RefCountedString> trace_data) {
+  scoped_ptr<std::string> data(new std::string(trace_data->data()));
+
+  set_attached_filename(kTraceFilename);
+  set_attached_filedata(data.Pass());
+  trace_id_ = 0;
+  FeedbackPageDataComplete();
+}
+
 #endif

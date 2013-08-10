@@ -18,6 +18,7 @@ savedThumbnailIds['saved-screenshots'] = '';
 var categoryTag = '';
 var filePath = '';
 var forceDisableScreenshots = false;
+var traceId = 0;
 
 // Globals to manage reading data from the attach a file option.
 var attachFileBinaryData = '';
@@ -184,6 +185,10 @@ function sendReport() {
   // Add chromeos data if it exists.
   if ($('sys-info-checkbox')) {
     reportArray = reportArray.concat([String($('sys-info-checkbox').checked)]);
+    if (!$('performance-info-checkbox').checked) {
+      traceId = 0;
+    }
+    reportArray = reportArray.concat([String(traceId)]);
   }
 
   if ($('attach-file-checkbox') &&
@@ -274,6 +279,24 @@ function changeToCurrent() {
   currentSelected();
 }
 
+<if expr="pp_ifdef('chromeos')">
+/**
+ * Update the page when performance feedback state is changed.
+ */
+function performanceFeedbackChanged() {
+  if ($('performance-info-checkbox').checked) {
+    $('attach-file-checkbox').disabled = true;
+    $('attach-file-checkbox').checked = false;
+
+    $('screenshot-checkbox').disabled = true;
+    $('screenshot-checkbox').checked = false;
+  } else {
+    $('attach-file-checkbox').disabled = false;
+    $('screenshot-checkbox').disabled = false;
+  }
+}
+</if>
+
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
 /**
@@ -293,6 +316,9 @@ function load() {
 <if expr="pp_ifdef('chromeos')">
   $('screenshot-link-tosaved').onclick = changeToSaved;
   $('screenshot-link-tocurrent').onclick = changeToCurrent;
+
+  $('performance-info-checkbox').addEventListener(
+      'change', performanceFeedbackChanged);
 </if>
   $('send-report-button').onclick = sendReport;
   $('cancel-button').onclick = cancel;
@@ -304,6 +330,7 @@ function load() {
     'categoryTag': '',
     'customPageUrl': '',
     'filePath': '',
+    'traceId': 0,
   };
 
   var loc = window.location;
@@ -355,6 +382,13 @@ function load() {
     } else {
       filePath = '';
     }
+  }
+
+  traceId = parameters['traceId'];
+  if (traceId != 0 && ($('performance-info-area'))) {
+    $('performance-info-area').hidden = false;
+    $('performance-info-checkbox').checked = true;
+    performanceFeedbackChanged();
   }
 
   chrome.send('getDialogDefaults');
