@@ -3298,7 +3298,7 @@
           'dependencies': [
             'browser_tests',
             'chrome',
-            '../third_party/WebKit/Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:copy_TestNetscapePlugIn',
+            '../third_party/WebKit/public/blink_test_plugin.gyp:blink_test_plugin',
           ],
           'includes': [
             '../build/isolate.gypi',
