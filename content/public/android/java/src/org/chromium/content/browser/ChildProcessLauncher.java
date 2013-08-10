@@ -116,26 +116,26 @@ public class ChildProcessLauncher {
 
     // Service class for child process. As the default value it uses SandboxedProcessService0 and
     // PrivilegedProcessService0.
-    private static final ChildConnectionAllocator mSandboxedChildConnectionAllocator =
+    private static final ChildConnectionAllocator sSandboxedChildConnectionAllocator =
             new ChildConnectionAllocator(true);
-    private static final ChildConnectionAllocator mPrivilegedChildConnectionAllocator =
+    private static final ChildConnectionAllocator sPrivilegedChildConnectionAllocator =
             new ChildConnectionAllocator(false);
 
-    private static boolean mConnectionAllocated = false;
+    private static boolean sConnectionAllocated = false;
 
     // Sets service class for sandboxed service and privileged service.
     public static void setChildProcessClass(
             Class<? extends SandboxedProcessService> sandboxedServiceClass,
             Class<? extends PrivilegedProcessService> privilegedServiceClass) {
         // We should guarantee this is called before allocating connection.
-        assert !mConnectionAllocated;
-        mSandboxedChildConnectionAllocator.setServiceClass(sandboxedServiceClass);
-        mPrivilegedChildConnectionAllocator.setServiceClass(privilegedServiceClass);
+        assert !sConnectionAllocated;
+        sSandboxedChildConnectionAllocator.setServiceClass(sandboxedServiceClass);
+        sPrivilegedChildConnectionAllocator.setServiceClass(privilegedServiceClass);
     }
 
     private static ChildConnectionAllocator getConnectionAllocator(boolean inSandbox) {
         return inSandbox ?
-                mSandboxedChildConnectionAllocator : mPrivilegedChildConnectionAllocator;
+                sSandboxedChildConnectionAllocator : sPrivilegedChildConnectionAllocator;
     }
 
     private static ChildProcessConnection allocateConnection(Context context,
@@ -147,7 +147,7 @@ public class ChildProcessLauncher {
                     stop(pid);
                 }
             };
-        mConnectionAllocated = true;
+        sConnectionAllocated = true;
         return getConnectionAllocator(inSandbox).allocate(context, deathCallback);
     }
 
@@ -172,7 +172,7 @@ public class ChildProcessLauncher {
     private static final int NULL_PROCESS_HANDLE = 0;
 
     // Map from pid to ChildService connection.
-    private static Map<Integer, ChildProcessConnection> mServiceMap =
+    private static Map<Integer, ChildProcessConnection> sServiceMap =
             new ConcurrentHashMap<Integer, ChildProcessConnection>();
 
     // Map from pid to the count of oom bindings. "Oom binding" is a binding that raises the process
@@ -181,7 +181,7 @@ public class ChildProcessLauncher {
     private static SparseIntArray sOomBindingCount = new SparseIntArray();
 
     // A pre-allocated and pre-bound connection ready for connection setup, or null.
-    static ChildProcessConnection mSpareSandboxedConnection = null;
+    private static ChildProcessConnection sSpareSandboxedConnection = null;
 
     /**
      * Returns the child process service interface for the given pid. This may be called on
@@ -192,7 +192,7 @@ public class ChildProcessLauncher {
      * @return The IChildProcessService or null if the service no longer exists.
      */
     public static IChildProcessService getChildService(int pid) {
-        ChildProcessConnection connection = mServiceMap.get(pid);
+        ChildProcessConnection connection = sServiceMap.get(pid);
         if (connection != null) {
             return connection.getService();
         }
@@ -208,8 +208,8 @@ public class ChildProcessLauncher {
     public static void warmUp(Context context) {
         synchronized (ChildProcessLauncher.class) {
             assert !ThreadUtils.runningOnUiThread();
-            if (mSpareSandboxedConnection == null) {
-                mSpareSandboxedConnection = allocateBoundConnection(context, null, true);
+            if (sSpareSandboxedConnection == null) {
+                sSpareSandboxedConnection = allocateBoundConnection(context, null, true);
             }
         }
     }
@@ -272,8 +272,8 @@ public class ChildProcessLauncher {
         ChildProcessConnection allocatedConnection = null;
         synchronized (ChildProcessLauncher.class) {
             if (inSandbox) {
-                allocatedConnection = mSpareSandboxedConnection;
-                mSpareSandboxedConnection = null;
+                allocatedConnection = sSpareSandboxedConnection;
+                sSpareSandboxedConnection = null;
             }
         }
         if (allocatedConnection == null) {
@@ -293,7 +293,7 @@ public class ChildProcessLauncher {
                 Log.d(TAG, "on connect callback, pid=" + pid + " context=" + clientContext);
                 if (pid != NULL_PROCESS_HANDLE) {
                     sOomBindingCount.put(pid, oomBindingCount);
-                    mServiceMap.put(pid, connection);
+                    sServiceMap.put(pid, connection);
                 } else {
                     freeConnection(connection);
                 }
@@ -335,7 +335,7 @@ public class ChildProcessLauncher {
     @CalledByNative
     static void stop(int pid) {
         Log.d(TAG, "stopping child connection: pid=" + pid);
-        ChildProcessConnection connection = mServiceMap.remove(pid);
+        ChildProcessConnection connection = sServiceMap.remove(pid);
         if (connection == null) {
             LogPidWarning(pid, "Tried to stop non-existent connection");
             return;
@@ -350,7 +350,7 @@ public class ChildProcessLauncher {
      * binding once it is no longer needed.
      */
     static void removeInitialBinding(int pid) {
-        ChildProcessConnection connection = mServiceMap.get(pid);
+        ChildProcessConnection connection = sServiceMap.get(pid);
         if (connection == null) {
             LogPidWarning(pid, "Tried to remove a binding for a non-existent connection");
             return;
@@ -366,7 +366,7 @@ public class ChildProcessLauncher {
      * @param pid The process handle of the service connection obtained from {@link #start}.
      */
     static void bindAsHighPriority(int pid) {
-        ChildProcessConnection connection = mServiceMap.get(pid);
+        ChildProcessConnection connection = sServiceMap.get(pid);
         if (connection == null) {
             LogPidWarning(pid, "Tried to bind a non-existent connection");
             return;
@@ -380,7 +380,7 @@ public class ChildProcessLauncher {
      * @param pid The process handle of the service obtained from {@link #start}.
      */
     static void unbindAsHighPriority(int pid) {
-        ChildProcessConnection connection = mServiceMap.get(pid);
+        ChildProcessConnection connection = sServiceMap.get(pid);
         if (connection == null) {
             LogPidWarning(pid, "Tried to unbind non-existent connection");
             return;
@@ -392,7 +392,7 @@ public class ChildProcessLauncher {
      * @return True iff the given service process is protected from the out-of-memory killing, or it
      * was protected from it when it died.
      */
-    public static boolean isOomProtected(int pid) {
+    static boolean isOomProtected(int pid) {
         return sOomBindingCount.get(pid) > 0;
     }
 
