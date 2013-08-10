@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_piece.h"
@@ -184,9 +185,23 @@ DictionaryValue* CreateDownloadItemValue(
                    content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
                download_item->GetDangerType() ==
                    content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED);
+        std::string trial_condition =
+            base::FieldTrialList::FindFullName(download_util::kFinchTrialName);
         const char* danger_type_value =
             GetDangerTypeString(download_item->GetDangerType());
         file_value->SetString("danger_type", danger_type_value);
+        if (!trial_condition.empty()) {
+          base::string16 finch_string;
+          content::DownloadDangerType danger_type =
+              download_item->GetDangerType();
+          if (danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
+              danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+              danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST) {
+            finch_string = download_util::AssembleMalwareFinchString(
+                trial_condition, file_name);
+          }
+          file_value->SetString("finch_string", finch_string);
+        }
       } else if (download_item->IsPaused()) {
         file_value->SetString("state", "PAUSED");
       } else {

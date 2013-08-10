@@ -751,6 +751,7 @@
         'browser/download/download_status_updater_unittest.cc',
         'browser/download/download_target_determiner_unittest.cc',
         'browser/download/download_ui_controller_unittest.cc',
+        'browser/download/download_util_unittest.cc',
         'browser/drive/drive_api_util_unittest.cc',
         'browser/drive/drive_uploader_unittest.cc',
         'browser/drive/event_logger_unittest.cc',

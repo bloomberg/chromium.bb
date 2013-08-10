@@ -5,8 +5,10 @@
 #include "chrome/browser/download/download_danger_prompt.h"
 
 #include "base/bind.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "content/public/browser/download_danger_type.h"
@@ -103,29 +105,41 @@ string16 DownloadDangerPromptImpl::GetMessage() {
     return l10n_util::GetStringUTF16(
         IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD);
   switch (download_->GetDangerType()) {
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE:
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: {
       return l10n_util::GetStringFUTF16(
           IDS_PROMPT_DANGEROUS_DOWNLOAD,
           download_->GetFileNameToReportUser().LossyDisplayName());
+    }
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: // Fall through
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
-    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST:
-      return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+    case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
+      std::string trial_condition =
+          base::FieldTrialList::FindFullName(download_util::kFinchTrialName);
+      if (trial_condition.empty()) {
+        return l10n_util::GetStringFUTF16(
+            IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
+            download_->GetFileNameToReportUser().LossyDisplayName());
+      }
+      return download_util::AssembleMalwareFinchString(
+          trial_condition,
           download_->GetFileNameToReportUser().LossyDisplayName());
-    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT:
+    }
+    case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
       return l10n_util::GetStringFUTF16(
           IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
           download_->GetFileNameToReportUser().LossyDisplayName());
-    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
+    }
+    case content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
       return l10n_util::GetStringFUTF16(
           IDS_PROMPT_DOWNLOAD_CHANGES_SEARCH_SETTINGS,
           download_->GetFileNameToReportUser().LossyDisplayName());
+    }
     case content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
-    case content::DOWNLOAD_DANGER_TYPE_MAX:
+    case content::DOWNLOAD_DANGER_TYPE_MAX: {
       break;
+    }
   }
   NOTREACHED();
   return string16();
