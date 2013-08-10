@@ -332,7 +332,7 @@ void RangeInputType::listAttributeTargetChanged()
     m_tickMarkValuesDirty = true;
     HTMLElement* sliderTrackElement = sliderTrackElementOf(element());
     if (sliderTrackElement->renderer())
-        sliderTrackElement->renderer()->setNeedsLayout(true);
+        sliderTrackElement->renderer()->setNeedsLayout();
 }
 
 static bool decimalCompare(const Decimal& a, const Decimal& b)

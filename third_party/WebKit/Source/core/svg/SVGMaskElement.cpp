@@ -138,7 +138,7 @@ void SVGMaskElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -149,7 +149,7 @@ void SVGMaskElement::childrenChanged(bool changedByParser, Node* beforeChange, N
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 RenderObject* SVGMaskElement::createRenderer(RenderStyle*)

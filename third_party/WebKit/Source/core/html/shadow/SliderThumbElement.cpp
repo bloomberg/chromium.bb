@@ -176,7 +176,7 @@ void RenderSliderContainer::layout()
     // Force a layout to reset the position of the thumb so the code below doesn't move the thumb to the wrong place.
     // FIXME: Make a custom Render class for the track and move the thumb positioning code there.
     if (track)
-        track->setChildNeedsLayout(true, MarkOnlyThis);
+        track->setChildNeedsLayout(MarkOnlyThis);
 
     RenderFlexibleBox::layout();
 
@@ -216,7 +216,7 @@ void SliderThumbElement::setPositionFromValue()
     // path, we don't actually update the value here. Instead, we poke at the
     // renderer directly to trigger layout.
     if (renderer())
-        renderer()->setNeedsLayout(true);
+        renderer()->setNeedsLayout();
 }
 
 RenderObject* SliderThumbElement::createRenderer(RenderStyle*)
@@ -308,7 +308,7 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
     // FIXME: This is no longer being set from renderer. Consider updating the method name.
     input->setValueFromRenderer(valueString);
     if (renderer())
-        renderer()->setNeedsLayout(true);
+        renderer()->setNeedsLayout();
     input->dispatchFormControlChangeEvent();
 }
 
@@ -329,7 +329,7 @@ void SliderThumbElement::stopDragging()
         frame->eventHandler()->setCapturingMouseEventsNode(0);
     m_inDragMode = false;
     if (renderer())
-        renderer()->setNeedsLayout(true);
+        renderer()->setNeedsLayout();
 }
 
 void SliderThumbElement::defaultEventHandler(Event* event)

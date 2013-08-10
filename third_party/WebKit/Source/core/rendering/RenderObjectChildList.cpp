@@ -159,7 +159,7 @@ void RenderObjectChildList::insertChildNode(RenderObject* owner, RenderObject* n
 
     newChild->setNeedsLayoutAndPrefWidthsRecalc();
     if (!owner->normalChildNeedsLayout())
-        owner->setChildNeedsLayout(true); // We may supply the static position for an absolute positioned child.
+        owner->setChildNeedsLayout(); // We may supply the static position for an absolute positioned child.
 
     if (AXObjectCache* cache = owner->document()->axObjectCache())
         cache->childrenChanged(owner);

@@ -424,7 +424,7 @@ void RenderTable::layout()
 
     if (logicalWidth() != oldLogicalWidth) {
         for (unsigned i = 0; i < m_captions.size(); i++)
-            m_captions[i]->setNeedsLayout(true, MarkOnlyThis);
+            m_captions[i]->setNeedsLayout(MarkOnlyThis);
     }
     // FIXME: The optimisation below doesn't work since the internal table
     // layout could have changed.  we need to add a flag to the table
@@ -444,7 +444,7 @@ void RenderTable::layout()
         if (child->isTableSection()) {
             RenderTableSection* section = toRenderTableSection(child);
             if (m_columnLogicalWidthChanged)
-                section->setChildNeedsLayout(true, MarkOnlyThis);
+                section->setChildNeedsLayout(MarkOnlyThis);
             section->layoutIfNeeded();
             totalSectionLogicalHeight += section->calcRowLogicalHeight();
             if (collapsing)

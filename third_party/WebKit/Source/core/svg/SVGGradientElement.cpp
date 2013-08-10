@@ -122,7 +122,7 @@ void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName)
     SVGElementInstance::InvalidationGuard invalidationGuard(this);
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 void SVGGradientElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -133,7 +133,7 @@ void SVGGradientElement::childrenChanged(bool changedByParser, Node* beforeChang
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 Vector<Gradient::ColorStop> SVGGradientElement::buildStops()

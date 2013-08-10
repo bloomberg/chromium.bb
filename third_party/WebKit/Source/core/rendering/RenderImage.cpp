@@ -234,7 +234,7 @@ void RenderImage::imageDimensionsChanged(bool imageSizeChanged, const IntRect* r
         if (imageSizeChanged || hasOverrideSize || containingBlockNeedsToRecomputePreferredSize) {
             shouldRepaint = false;
             if (!selfNeedsLayout())
-                setNeedsLayout(true);
+                setNeedsLayout();
         }
     }
 

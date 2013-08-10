@@ -84,7 +84,7 @@ void RenderTableRow::styleDidChange(StyleDifference diff, const RenderStyle* old
             for (RenderBox* childBox = firstChildBox(); childBox; childBox = childBox->nextSiblingBox()) {
                 if (!childBox->isTableCell())
                     continue;
-                childBox->setChildNeedsLayout(true, MarkOnlyThis);
+                childBox->setChildNeedsLayout(MarkOnlyThis);
             }
         }
     }
@@ -167,7 +167,7 @@ void RenderTableRow::layout()
         if (child->isTableCell()) {
             RenderTableCell* cell = toRenderTableCell(child);
             if (!cell->needsLayout() && paginated && view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(cell, cell->logicalTop()) != cell->pageLogicalOffset())
-                cell->setChildNeedsLayout(true, MarkOnlyThis);
+                cell->setChildNeedsLayout(MarkOnlyThis);
 
             if (child->needsLayout()) {
                 cell->computeAndSetBlockDirectionMargins(table());

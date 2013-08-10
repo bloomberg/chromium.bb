@@ -1509,7 +1509,7 @@ void RenderBlock::layoutRunsAndFloats(LineLayoutState& layoutState, bool hasInli
     // determineStartPosition can change the fullLayout flag we have to do this here. Failure to call
     // determineStartPosition first will break fast/repaint/line-flow-with-floats-9.html.
     if (layoutState.isFullLayout() && hasInlineChild && !selfNeedsLayout()) {
-        setNeedsLayout(true, MarkOnlyThis); // Mark as needing a full layout to force us to repaint.
+        setNeedsLayout(MarkOnlyThis); // Mark as needing a full layout to force us to repaint.
         RenderView* v = view();
         if (v && !v->doingFullRepaint() && hasLayer()) {
             // Because we waited until we were already inside layout to discover
@@ -2091,7 +2091,7 @@ void RenderBlock::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repain
                 RenderBox* box = toRenderBox(o);
 
                 if (relayoutChildren || box->hasRelativeDimensions())
-                    o->setChildNeedsLayout(true, MarkOnlyThis);
+                    o->setChildNeedsLayout(MarkOnlyThis);
 
                 // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
                 if (relayoutChildren && box->needsPreferredWidthsRecalculation())
@@ -3426,7 +3426,7 @@ bool RenderBlock::positionNewFloatOnLine(FloatingObject* newFloat, FloatingObjec
             RenderBox* o = f->m_renderer;
             setLogicalTopForChild(o, logicalTopForChild(o) + marginBeforeForChild(o) + paginationStrut);
             if (o->isRenderBlock())
-                toRenderBlock(o)->setChildNeedsLayout(true, MarkOnlyThis);
+                toRenderBlock(o)->setChildNeedsLayout(MarkOnlyThis);
             o->layoutIfNeeded();
             // Save the old logical top before calling removePlacedObject which will set
             // isPlaced to false. Otherwise it will trigger an assert in logicalTopForFloat.

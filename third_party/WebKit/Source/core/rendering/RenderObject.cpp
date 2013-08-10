@@ -2791,7 +2791,7 @@ void RenderObject::forceLayout()
 {
     // This is the only way it's safe to use MarkOnlyThis (i.e. if we're immediately going to call layout).
     // FIXME: Add asserts that we only ever do the MarkOnlyThis behavior from here.
-    setNeedsLayout(true, MarkOnlyThis);
+    setNeedsLayout(MarkOnlyThis);
     layout();
 }
 
@@ -2799,7 +2799,7 @@ void RenderObject::forceLayout()
 // I don't think it does and we should change all callers to use forceLayout.
 void RenderObject::forceChildLayout()
 {
-    setChildNeedsLayout(true, MarkOnlyThis);
+    setChildNeedsLayout(MarkOnlyThis);
     forceLayout();
 }
 

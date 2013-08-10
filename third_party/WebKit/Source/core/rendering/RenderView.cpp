@@ -119,7 +119,7 @@ bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
 void RenderView::markLazyBlocksForLayout()
 {
     for (RenderLazyBlock* block = m_firstLazyBlock; block; block = block->next())
-        block->setNeedsLayout(true);
+        block->setNeedsLayout();
 }
 
 void RenderView::layoutContent(const LayoutState& state)
@@ -260,7 +260,7 @@ void RenderView::layout()
     // Use calcWidth/Height to get the new width/height, since this will take the full page zoom factor into account.
     bool relayoutChildren = !shouldUsePrintingLayout() && (!m_frameView || width() != viewWidth() || height() != viewHeight());
     if (relayoutChildren) {
-        setChildNeedsLayout(true, MarkOnlyThis);
+        setChildNeedsLayout(MarkOnlyThis);
         for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
             if ((child->isBox() && toRenderBox(child)->hasRelativeLogicalHeight())
                     || child->style()->logicalHeight().isPercent()
@@ -270,7 +270,7 @@ void RenderView::layout()
                     || child->style()->logicalMinHeight().isViewportPercentage()
                     || child->style()->logicalMaxHeight().isViewportPercentage()
                     || child->isSVGRoot())
-                child->setChildNeedsLayout(true, MarkOnlyThis);
+                child->setChildNeedsLayout(MarkOnlyThis);
         }
     }
 

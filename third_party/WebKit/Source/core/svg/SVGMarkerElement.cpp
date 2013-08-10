@@ -172,7 +172,7 @@ void SVGMarkerElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 void SVGMarkerElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -183,7 +183,7 @@ void SVGMarkerElement::childrenChanged(bool changedByParser, Node* beforeChange,
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 void SVGMarkerElement::setOrientToAuto()

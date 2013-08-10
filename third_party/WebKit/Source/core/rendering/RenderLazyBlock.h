@@ -45,7 +45,7 @@ public:
 
     void markForNestedLayout()
     {
-        setNeedsLayout(true);
+        setNeedsLayout();
         m_isNestedLayout = true;
     }
 

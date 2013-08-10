@@ -98,7 +98,7 @@ void SVGFilterElement::setFilterRes(unsigned filterResX, unsigned filterResY)
     setFilterResYBaseValue(filterResY);
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 bool SVGFilterElement::isSupportedAttribute(const QualifiedName& attrName)
@@ -170,7 +170,7 @@ void SVGFilterElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 void SVGFilterElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -181,7 +181,7 @@ void SVGFilterElement::childrenChanged(bool changedByParser, Node* beforeChange,
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 RenderObject* SVGFilterElement::createRenderer(RenderStyle*)

@@ -970,9 +970,9 @@ void FrameView::layout(bool allowSubtree)
                     RenderBox* rootRenderer = document->documentElement() ? document->documentElement()->renderBox() : 0;
                     RenderBox* bodyRenderer = rootRenderer && document->body() ? document->body()->renderBox() : 0;
                     if (bodyRenderer && bodyRenderer->stretchesToViewport())
-                        bodyRenderer->setChildNeedsLayout(true);
+                        bodyRenderer->setChildNeedsLayout();
                     else if (rootRenderer && rootRenderer->stretchesToViewport())
-                        rootRenderer->setChildNeedsLayout(true);
+                        rootRenderer->setChildNeedsLayout();
                 }
             }
         }
@@ -1119,7 +1119,7 @@ void FrameView::layoutLazyBlocks()
     for (RenderLazyBlock* block = renderView()->firstLazyBlock(); block; block = block->next()) {
         if (!block->isNested())
             continue;
-        block->setNeedsLayout(true);
+        block->setNeedsLayout();
         layout();
     }
 }
@@ -1569,7 +1569,7 @@ void FrameView::setViewportConstrainedObjectsNeedLayout()
     ViewportConstrainedObjectSet::const_iterator end = m_viewportConstrainedObjects->end();
     for (ViewportConstrainedObjectSet::const_iterator it = m_viewportConstrainedObjects->begin(); it != end; ++it) {
         RenderObject* renderer = *it;
-        renderer->setNeedsLayout(true);
+        renderer->setNeedsLayout();
     }
 }
 
@@ -1879,7 +1879,7 @@ void FrameView::scheduleRelayout()
     // When frame seamless is enabled, the contents of the frame could affect the layout of the parent frames.
     // Also invalidate parent frame starting from the owner element of this frame.
     if (m_frame->ownerRenderer() && frame()->document()->shouldDisplaySeamlesslyWithParent())
-        m_frame->ownerRenderer()->setNeedsLayout(true, MarkContainingBlockChain);
+        m_frame->ownerRenderer()->setNeedsLayout(MarkContainingBlockChain);
 
     int delay = m_frame->document()->minimumLayoutDelay();
     if (m_layoutTimer.isActive() && m_delayedLayout && !delay)
@@ -1970,7 +1970,7 @@ void FrameView::setNeedsLayout()
     }
 
     if (RenderView* renderView = this->renderView())
-        renderView->setNeedsLayout(true);
+        renderView->setNeedsLayout();
 }
 
 void FrameView::unscheduleRelayout()

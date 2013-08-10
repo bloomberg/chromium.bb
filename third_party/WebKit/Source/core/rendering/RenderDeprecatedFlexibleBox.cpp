@@ -346,7 +346,7 @@ static void gatherFlexChildrenInfo(FlexBoxIterator& iterator, bool relayoutChild
             // may have changed, and we need to reallocate space.
             child->clearOverrideSize();
             if (!relayoutChildren)
-                child->setChildNeedsLayout(true, MarkOnlyThis);
+                child->setChildNeedsLayout(MarkOnlyThis);
             haveFlex = true;
             unsigned int flexGroup = child->style()->boxFlexGroup();
             if (lowestFlexGroup == 0)
@@ -393,7 +393,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         for (RenderBox* child = iterator.first(); child; child = iterator.next()) {
             // make sure we relayout children if we need it.
             if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent())))
-                child->setChildNeedsLayout(true, MarkOnlyThis);
+                child->setChildNeedsLayout(MarkOnlyThis);
 
             if (child->isOutOfFlowPositioned())
                 continue;
@@ -450,7 +450,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 if (childLayer->staticBlockPosition() != yPos) {
                     childLayer->setStaticBlockPosition(yPos);
                     if (child->style()->hasStaticBlockPosition(style()->isHorizontalWritingMode()))
-                        child->setChildNeedsLayout(true, MarkOnlyThis);
+                        child->setChildNeedsLayout(MarkOnlyThis);
                 }
                 continue;
             }
@@ -469,7 +469,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             LayoutUnit oldChildHeight = child->height();
             child->updateLogicalHeight();
             if (oldChildHeight != child->height())
-                child->setChildNeedsLayout(true, MarkOnlyThis);
+                child->setChildNeedsLayout(MarkOnlyThis);
 
             if (!child->needsLayout())
                 child->markForPaginationRelayoutIfNeeded();
@@ -682,7 +682,7 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
         for (RenderBox* child = iterator.first(); child; child = iterator.next()) {
             // Make sure we relayout children if we need it.
             if (!haveLineClamp && (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))))
-                child->setChildNeedsLayout(true, MarkOnlyThis);
+                child->setChildNeedsLayout(MarkOnlyThis);
 
             if (child->isOutOfFlowPositioned()) {
                 child->containingBlock()->insertPositionedObject(child);
@@ -691,7 +691,7 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                 if (childLayer->staticBlockPosition() != height()) {
                     childLayer->setStaticBlockPosition(height());
                     if (child->style()->hasStaticBlockPosition(style()->isHorizontalWritingMode()))
-                        child->setChildNeedsLayout(true, MarkOnlyThis);
+                        child->setChildNeedsLayout(MarkOnlyThis);
                 }
                 continue;
             }
@@ -909,7 +909,7 @@ void RenderDeprecatedFlexibleBox::applyLineClamp(FlexBoxIterator& iterator, bool
         child->clearOverrideSize();
         if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))
             || (child->style()->height().isAuto() && child->isBlockFlow())) {
-            child->setChildNeedsLayout(true, MarkOnlyThis);
+            child->setChildNeedsLayout(MarkOnlyThis);
 
             // Dirty all the positioned objects.
             if (child->isRenderBlock()) {
@@ -1007,7 +1007,7 @@ void RenderDeprecatedFlexibleBox::clearLineClamp()
         child->clearOverrideSize();
         if ((child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))
             || (child->style()->height().isAuto() && child->isBlockFlow())) {
-            child->setChildNeedsLayout(true);
+            child->setChildNeedsLayout();
 
             if (child->isRenderBlock()) {
                 toRenderBlock(child)->markPositionedObjectsForLayout();

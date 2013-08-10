@@ -156,7 +156,7 @@ void SVGPatternElement::svgAttributeChanged(const QualifiedName& attrName)
         updateRelativeLengthsInformation();
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 void SVGPatternElement::childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta)
@@ -167,7 +167,7 @@ void SVGPatternElement::childrenChanged(bool changedByParser, Node* beforeChange
         return;
 
     if (RenderObject* object = renderer())
-        object->setNeedsLayout(true);
+        object->setNeedsLayout();
 }
 
 RenderObject* SVGPatternElement::createRenderer(RenderStyle*)

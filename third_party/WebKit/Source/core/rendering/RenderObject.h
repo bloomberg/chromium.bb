@@ -406,7 +406,7 @@ public:
             if (!s_ancestorLineboxDirtySet)
                 s_ancestorLineboxDirtySet = new RenderObjectAncestorLineboxDirtySet;
             s_ancestorLineboxDirtySet->add(this);
-            setNeedsLayout(true);
+            setNeedsLayout();
         } else if (s_ancestorLineboxDirtySet) {
             s_ancestorLineboxDirtySet->remove(this);
             if (s_ancestorLineboxDirtySet->isEmpty()) {
@@ -622,9 +622,9 @@ public:
     Element* offsetParent() const;
 
     void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0);
-    void setNeedsLayout(bool needsLayout, MarkingBehavior = MarkContainingBlockChain);
+    void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain);
     void clearNeedsLayout();
-    void setChildNeedsLayout(bool childNeedsLayout, MarkingBehavior = MarkContainingBlockChain);
+    void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain);
     void setNeedsPositionedMovementLayout();
     void setNeedsSimplifiedNormalFlowLayout();
     void setPreferredLogicalWidthsDirty(bool, MarkingBehavior = MarkContainingBlockChain);
@@ -632,7 +632,7 @@ public:
 
     void setNeedsLayoutAndPrefWidthsRecalc()
     {
-        setNeedsLayout(true);
+        setNeedsLayout();
         setPreferredLogicalWidthsDirty(true);
     }
 
@@ -1240,12 +1240,9 @@ inline bool RenderObject::isBeforeOrAfterContent() const
     return isBeforeContent() || isAfterContent();
 }
 
-inline void RenderObject::setNeedsLayout(bool needsLayout, MarkingBehavior markParents)
+inline void RenderObject::setNeedsLayout(MarkingBehavior markParents)
 {
-    // FIXME: Remove the boolean argument to this function as it's no longer used.
-    ASSERT_UNUSED(needsLayout, needsLayout);
     ASSERT(!isSetNeedsLayoutForbidden());
-
     bool alreadyNeededLayout = m_bitfields.needsLayout();
     m_bitfields.setNeedsLayout(true);
     if (!alreadyNeededLayout) {
@@ -1270,12 +1267,9 @@ inline void RenderObject::clearNeedsLayout()
 #endif
 }
 
-inline void RenderObject::setChildNeedsLayout(bool childNeedsLayout, MarkingBehavior markParents)
+inline void RenderObject::setChildNeedsLayout(MarkingBehavior markParents)
 {
-    // FIXME: Remove the boolean argument to this function as it's no longer used.
-    ASSERT_UNUSED(childNeedsLayout, childNeedsLayout);
     ASSERT(!isSetNeedsLayoutForbidden());
-
     bool alreadyNeededLayout = normalChildNeedsLayout();
     setNormalChildNeedsLayout(true);
     if (!alreadyNeededLayout && markParents == MarkContainingBlockChain)
