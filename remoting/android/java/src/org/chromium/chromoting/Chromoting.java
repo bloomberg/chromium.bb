@@ -146,7 +146,7 @@ public class Chromoting extends Activity {
         mAccountSwitcher = menu.findItem(R.id.actionbar_accountswitcher);
 
         Account[] usableAccounts = AccountManager.get(this).getAccountsByType(ACCOUNT_TYPE);
-        if (usableAccounts.length == 1 && mAccount.equals(usableAccounts[0])) {
+        if (usableAccounts.length == 1 && usableAccounts[0].equals(mAccount)) {
             // If we're using the only available account, don't offer account switching.
             // (If there are *no* accounts available, clicking this allows you to add a new one.)
             mAccountSwitcher.setEnabled(false);
