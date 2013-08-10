@@ -2,8 +2,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#ifndef SYS_TERMIOS_H_
-#define SYS_TERMIOS_H_
+#ifndef LIBRARIES_NACL_IO_INCLUDE_SYS_TERMIOS_H_
+#define LIBRARIES_NACL_IO_INCLUDE_SYS_TERMIOS_H_
 
 #define IGNBRK  0000001
 #define BRKINT  0000002
@@ -126,4 +126,4 @@ int tcsetattr(int fd, int optional_actions, const struct termios *termios_p);
 
 __END_DECLS
 
-#endif  /* SYS_TERMIOS_H_ */
+#endif  /* LIBRARIES_NACL_IO_INCLUDE_SYS_TERMIOS_H_ */

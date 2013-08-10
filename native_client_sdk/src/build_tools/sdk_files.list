@@ -361,6 +361,7 @@ include/newlib/netinet/in.h
 include/newlib/netinet/tcp.h
 include/newlib/netinet6/in6.h
 include/newlib/poll.h
+include/newlib/sys/mount.h
 include/newlib/sys/select.h
 include/newlib/sys/socket.h
 include/newlib/sys/termios.h
@@ -371,6 +372,7 @@ include/pnacl/netinet/in.h
 include/pnacl/netinet/tcp.h
 include/pnacl/netinet6/in6.h
 include/pnacl/poll.h
+include/pnacl/sys/mount.h
 include/pnacl/sys/select.h
 include/pnacl/sys/socket.h
 include/pnacl/sys/termios.h

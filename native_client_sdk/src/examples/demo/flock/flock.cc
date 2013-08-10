@@ -5,13 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mount.h>
 
 #include <algorithm>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include "nacl_io/nacl_io.h"
 
 #include "ppapi/c/pp_rect.h"
 #include "ppapi/c/pp_size.h"

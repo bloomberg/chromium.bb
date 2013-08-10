@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mount.h>
 #include <pthread.h>
 
 #include "ppapi/c/pp_errors.h"
