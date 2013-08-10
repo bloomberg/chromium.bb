@@ -149,8 +149,8 @@ StyleResolver::StyleResolver(Document* document, bool matchAuthorAndUserStyles)
             fontSelector()->addFontFaceRule((*it)->fontFaceRule());
     }
 #endif
-
-    styleSheetCollection->appendActiveAuthorStyleSheets(this);
+    m_styleTree.setBuildInDocumentOrder(!styleSheetCollection->hasScopedStyleSheet());
+    appendAuthorStyleSheets(0, styleSheetCollection->activeAuthorStyleSheets());
 }
 
 void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets)
@@ -170,10 +170,7 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
         resolver->addRulesFromSheet(sheet, *m_medium, this);
         m_inspectorCSSOMWrappers.collectFromStyleSheetIfNeeded(cssSheet);
     }
-}
 
-void StyleResolver::finishAppendAuthorStyleSheets()
-{
     collectFeatures();
 
     if (document()->renderer() && document()->renderer()->style())
@@ -193,13 +190,8 @@ void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
     m_ruleSets.shadowDistributedRules().reset(scopingNode);
 
     resolver->resetAuthorStyle();
-    if (!scopingNode)
-        return;
 
-    if (scopingNode->isShadowRoot())
-        resetAtHostRules(scopingNode);
-
-    if (!resolver->hasOnlyEmptyRuleSets())
+    if (!scopingNode || !resolver->hasOnlyEmptyRuleSets())
         return;
 
     m_styleTree.remove(scopingNode);

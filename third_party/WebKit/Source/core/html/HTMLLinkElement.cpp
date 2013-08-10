@@ -507,8 +507,6 @@ void LinkStyle::removePendingSheet(RemovePendingSheetNotificationType notificati
     if (type == None)
         return;
     if (type == NonBlocking) {
-        // Tell StyleSheetCollections to re-compute styleSheets of this m_owner's treescope.
-        m_owner->document()->styleSheetCollection()->modifiedStyleSheetCandidateNode(m_owner);
         // Document::removePendingSheet() triggers the style selector recalc for blocking sheets.
         // FIXME: We don't have enough knowledge at this point to know if we're adding or removing a sheet
         // so we can't call addedStyleSheet() or removedStyleSheet().
@@ -516,7 +514,7 @@ void LinkStyle::removePendingSheet(RemovePendingSheetNotificationType notificati
         return;
     }
 
-    m_owner->document()->styleSheetCollection()->removePendingSheet(m_owner,
+    m_owner->document()->styleSheetCollection()->removePendingSheet(
         notification == RemovePendingSheetNotifyImmediately
         ? DocumentStyleSheetCollection::RemovePendingSheetNotifyImmediately
         : DocumentStyleSheetCollection::RemovePendingSheetNotifyLater);

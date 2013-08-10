@@ -127,7 +127,7 @@ void StyleElement::createSheet(Element* e, const String& text)
     Document* document = e->document();
     if (m_sheet) {
         if (m_sheet->isLoading())
-            document->styleSheetCollection()->removePendingSheet(e);
+            document->styleSheetCollection()->removePendingSheet();
         clearSheet();
     }
 
@@ -169,7 +169,7 @@ bool StyleElement::sheetLoaded(Document* document)
     if (isLoading())
         return false;
 
-    document->styleSheetCollection()->removePendingSheet(m_sheet->ownerNode());
+    document->styleSheetCollection()->removePendingSheet();
     return true;
 }
 

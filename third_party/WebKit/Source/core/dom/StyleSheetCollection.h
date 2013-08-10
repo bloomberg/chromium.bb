@@ -52,73 +52,45 @@ class StyleSheetList;
 class StyleSheetCollection {
     WTF_MAKE_NONCOPYABLE(StyleSheetCollection); WTF_MAKE_FAST_ALLOCATED;
 public:
+    explicit StyleSheetCollection(TreeScope*);
+
     void addStyleSheetCandidateNode(Node*, bool createdByParser);
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode);
-    bool hasStyleSheetCandidateNodes() const { return !m_styleSheetCandidateNodes.isEmpty(); }
 
     Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() { return m_activeAuthorStyleSheets; }
     Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() { return m_styleSheetsForStyleSheetList; }
     const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const { return m_activeAuthorStyleSheets; }
     const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList() const { return m_styleSheetsForStyleSheetList; }
 
-    bool usesRemUnits() const { return m_usesRemUnits; }
-
     DocumentOrderedList& styleSheetCandidateNodes() { return m_styleSheetCandidateNodes; }
     DocumentOrderedList* scopingNodesForStyleScoped() { return m_scopingNodesForStyleScoped.scopingNodes(); }
     ListHashSet<Node*, 4>* scopingNodesRemoved() { return m_scopingNodesForStyleScoped.scopingNodesRemoved(); }
-
-protected:
-    explicit StyleSheetCollection(TreeScope*);
-
-    Document* document() { return m_treeScope->documentScope(); }
 
     enum StyleResolverUpdateType {
         Reconstruct,
         Reset,
         Additive
     };
-    void analyzeStyleSheetChange(StyleResolverUpdateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, StyleResolverUpdateType&, bool& requiresFullStyleRecalc);
-    void resetAllRuleSetsInTreeScope(StyleResolver*);
-    void updateUsesRemUnits();
+    bool updateActiveStyleSheets(DocumentStyleSheetCollection*, StyleResolverUpdateMode, StyleResolverUpdateType&);
 
 private:
+    Document* document() { return m_treeScope->documentScope(); }
+
+    void collectStyleSheets(DocumentStyleSheetCollection* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
+
     StyleResolverUpdateType compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, Vector<StyleSheetContents*>& addedSheets);
     bool activeLoadingStyleSheetLoaded(const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets);
 
-protected:
+    void analyzeStyleSheetChange(StyleResolverUpdateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, StyleResolverUpdateType&, bool& requiresFullStyleRecalc);
+
     Vector<RefPtr<StyleSheet> > m_styleSheetsForStyleSheetList;
     Vector<RefPtr<CSSStyleSheet> > m_activeAuthorStyleSheets;
 
     TreeScope* m_treeScope;
     bool m_hadActiveLoadingStylesheet;
-    bool m_usesRemUnits;
 
     DocumentOrderedList m_styleSheetCandidateNodes;
     StyleSheetScopingNodeList m_scopingNodesForStyleScoped;
-};
-
-// FIXME: rename this class to DocumentStyleSheetCollection.
-class StyleSheetCollectionForDocument FINAL : public StyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(StyleSheetCollectionForDocument); WTF_MAKE_FAST_ALLOCATED;
-public:
-    explicit StyleSheetCollectionForDocument(TreeScope*);
-
-    bool updateActiveStyleSheets(DocumentStyleSheetCollection*, StyleResolverUpdateMode);
-
-private:
-    void collectStyleSheets(DocumentStyleSheetCollection*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
-};
-
-// FIXME: rename this class to ShadowStyleSheetCollection.
-class StyleSheetCollectionForShadow FINAL : public StyleSheetCollection {
-    WTF_MAKE_NONCOPYABLE(StyleSheetCollectionForShadow); WTF_MAKE_FAST_ALLOCATED;
-public:
-    explicit StyleSheetCollectionForShadow(ShadowRoot*);
-
-    bool updateActiveStyleSheets(DocumentStyleSheetCollection*, StyleResolverUpdateMode);
-
-private:
-    void collectStyleSheets(DocumentStyleSheetCollection*, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets);
 };
 
 }

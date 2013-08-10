@@ -37,11 +37,13 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
+#include "core/page/Page.h"
+#include "core/page/PageGroup.h"
 #include "core/page/Settings.h"
+#include "core/page/UserContentURLPattern.h"
 #include "core/svg/SVGStyleElement.h"
 
 namespace WebCore {
@@ -84,115 +86,7 @@ void StyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNo
         m_scopingNodesForStyleScoped.remove(scopingNode);
 }
 
-StyleSheetCollection::StyleResolverUpdateType StyleSheetCollection::compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, Vector<StyleSheetContents*>& addedSheets)
-{
-    // Find out which stylesheets are new.
-    unsigned newStylesheetCount = newStylesheets.size();
-    unsigned oldStylesheetCount = oldStyleSheets.size();
-    if (newStylesheetCount < oldStylesheetCount)
-        return Reconstruct;
-
-    unsigned newIndex = 0;
-    for (unsigned oldIndex = 0; oldIndex < oldStylesheetCount; ++oldIndex) {
-        if (newIndex >= newStylesheetCount)
-            return Reconstruct;
-        while (oldStyleSheets[oldIndex] != newStylesheets[newIndex]) {
-            addedSheets.append(newStylesheets[newIndex]->contents());
-            ++newIndex;
-            if (newIndex == newStylesheetCount)
-                return Reconstruct;
-        }
-        ++newIndex;
-    }
-    bool hasInsertions = !addedSheets.isEmpty();
-    while (newIndex < newStylesheetCount) {
-        addedSheets.append(newStylesheets[newIndex]->contents());
-        ++newIndex;
-    }
-    // If all new sheets were added at the end of the list we can just add them to existing StyleResolver.
-    // If there were insertions we need to re-add all the stylesheets so rules are ordered correctly.
-    return hasInsertions ? Reset : Additive;
-}
-
-bool StyleSheetCollection::activeLoadingStyleSheetLoaded(const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets)
-{
-    // StyleSheets of <style> elements that @import stylesheets are active but loading. We need to trigger a full recalc when such loads are done.
-    bool hasActiveLoadingStylesheet = false;
-    unsigned newStylesheetCount = newStyleSheets.size();
-    for (unsigned i = 0; i < newStylesheetCount; ++i) {
-        if (newStyleSheets[i]->isLoading())
-            hasActiveLoadingStylesheet = true;
-    }
-    if (m_hadActiveLoadingStylesheet && !hasActiveLoadingStylesheet) {
-        m_hadActiveLoadingStylesheet = false;
-        return true;
-    }
-    m_hadActiveLoadingStylesheet = hasActiveLoadingStylesheet;
-    return false;
-}
-
-void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets, StyleResolverUpdateType& styleResolverUpdateType, bool& requiresFullStyleRecalc)
-{
-    styleResolverUpdateType = Reconstruct;
-    requiresFullStyleRecalc = true;
-
-    if (activeLoadingStyleSheetLoaded(newStyleSheets))
-        return;
-
-    if (updateMode != AnalyzedStyleUpdate)
-        return;
-    if (!document()->styleResolverIfExists())
-        return;
-
-    // Find out which stylesheets are new.
-    Vector<StyleSheetContents*> addedSheets;
-    styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
-
-    // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
-    if (!document()->body() || document()->hasNodesWithPlaceholderStyle())
-        return;
-    StyleInvalidationAnalysis invalidationAnalysis(addedSheets);
-    if (invalidationAnalysis.dirtiesAllStyle())
-        return;
-    invalidationAnalysis.invalidateStyle(document());
-    requiresFullStyleRecalc = false;
-}
-
-void StyleSheetCollection::resetAllRuleSetsInTreeScope(StyleResolver* styleResolver)
-{
-    // FIXME: If many web developers use style scoped, implement reset RuleSets in per-scoping node manner.
-    if (DocumentOrderedList* styleScopedScopingNodes = scopingNodesForStyleScoped()) {
-        for (DocumentOrderedList::iterator it = styleScopedScopingNodes->begin(); it != styleScopedScopingNodes->end(); ++it)
-            styleResolver->resetAuthorStyle(toContainerNode(*it));
-    }
-    if (ListHashSet<Node*, 4>* removedNodes = scopingNodesRemoved()) {
-        for (ListHashSet<Node*, 4>::iterator it = removedNodes->begin(); it != removedNodes->end(); ++it)
-            styleResolver->resetAuthorStyle(toContainerNode(*it));
-    }
-    styleResolver->resetAuthorStyle(toContainerNode(m_treeScope->rootNode()));
-}
-
-static bool styleSheetsUseRemUnits(const Vector<RefPtr<CSSStyleSheet> >& sheets)
-{
-    for (unsigned i = 0; i < sheets.size(); ++i) {
-        if (sheets[i]->contents()->usesRemUnits())
-            return true;
-    }
-    return false;
-}
-
-void StyleSheetCollection::updateUsesRemUnits()
-{
-    m_usesRemUnits = styleSheetsUseRemUnits(m_activeAuthorStyleSheets);
-}
-
-StyleSheetCollectionForDocument::StyleSheetCollectionForDocument(TreeScope* treeScope)
-    : StyleSheetCollection(treeScope)
-{
-    ASSERT(treeScope->rootNode() == treeScope->rootNode()->document());
-}
-
-void StyleSheetCollectionForDocument::collectStyleSheets(DocumentStyleSheetCollection* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
+void StyleSheetCollection::collectStyleSheets(DocumentStyleSheetCollection* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
 {
     if (document()->settings() && !document()->settings()->authorAndUserStylesEnabled())
         return;
@@ -279,6 +173,80 @@ void StyleSheetCollectionForDocument::collectStyleSheets(DocumentStyleSheetColle
     }
 }
 
+StyleSheetCollection::StyleResolverUpdateType StyleSheetCollection::compareStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStylesheets, Vector<StyleSheetContents*>& addedSheets)
+{
+    // Find out which stylesheets are new.
+    unsigned newStylesheetCount = newStylesheets.size();
+    unsigned oldStylesheetCount = oldStyleSheets.size();
+    if (newStylesheetCount < oldStylesheetCount)
+        return Reconstruct;
+
+    unsigned newIndex = 0;
+    for (unsigned oldIndex = 0; oldIndex < oldStylesheetCount; ++oldIndex) {
+        if (newIndex >= newStylesheetCount)
+            return Reconstruct;
+        while (oldStyleSheets[oldIndex] != newStylesheets[newIndex]) {
+            addedSheets.append(newStylesheets[newIndex]->contents());
+            ++newIndex;
+            if (newIndex == newStylesheetCount)
+                return Reconstruct;
+        }
+        ++newIndex;
+    }
+    bool hasInsertions = !addedSheets.isEmpty();
+    while (newIndex < newStylesheetCount) {
+        addedSheets.append(newStylesheets[newIndex]->contents());
+        ++newIndex;
+    }
+    // If all new sheets were added at the end of the list we can just add them to existing StyleResolver.
+    // If there were insertions we need to re-add all the stylesheets so rules are ordered correctly.
+    return hasInsertions ? Reset : Additive;
+}
+
+bool StyleSheetCollection::activeLoadingStyleSheetLoaded(const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets)
+{
+    // StyleSheets of <style> elements that @import stylesheets are active but loading. We need to trigger a full recalc when such loads are done.
+    bool hasActiveLoadingStylesheet = false;
+    unsigned newStylesheetCount = newStyleSheets.size();
+    for (unsigned i = 0; i < newStylesheetCount; ++i) {
+        if (newStyleSheets[i]->isLoading())
+            hasActiveLoadingStylesheet = true;
+    }
+    if (m_hadActiveLoadingStylesheet && !hasActiveLoadingStylesheet) {
+        m_hadActiveLoadingStylesheet = false;
+        return true;
+    }
+    m_hadActiveLoadingStylesheet = hasActiveLoadingStylesheet;
+    return false;
+}
+
+void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updateMode, const Vector<RefPtr<CSSStyleSheet> >& oldStyleSheets, const Vector<RefPtr<CSSStyleSheet> >& newStyleSheets, StyleResolverUpdateType& styleResolverUpdateType, bool& requiresFullStyleRecalc)
+{
+    styleResolverUpdateType = Reconstruct;
+    requiresFullStyleRecalc = true;
+
+    if (activeLoadingStyleSheetLoaded(newStyleSheets))
+        return;
+
+    if (updateMode != AnalyzedStyleUpdate)
+        return;
+    if (!document()->styleResolverIfExists())
+        return;
+
+    // Find out which stylesheets are new.
+    Vector<StyleSheetContents*> addedSheets;
+    styleResolverUpdateType = compareStyleSheets(oldStyleSheets, newStyleSheets, addedSheets);
+
+    // If we are already parsing the body and so may have significant amount of elements, put some effort into trying to avoid style recalcs.
+    if (!document()->body() || document()->hasNodesWithPlaceholderStyle())
+        return;
+    StyleInvalidationAnalysis invalidationAnalysis(addedSheets);
+    if (invalidationAnalysis.dirtiesAllStyle())
+        return;
+    invalidationAnalysis.invalidateStyle(document());
+    requiresFullStyleRecalc = false;
+}
+
 static void collectActiveCSSStyleSheetsFromSeamlessParents(Vector<RefPtr<CSSStyleSheet> >& sheets, Document* document)
 {
     HTMLIFrameElement* seamlessParentIFrame = document->seamlessParentIFrame();
@@ -287,7 +255,7 @@ static void collectActiveCSSStyleSheetsFromSeamlessParents(Vector<RefPtr<CSSStyl
     sheets.append(seamlessParentIFrame->document()->styleSheetCollection()->activeAuthorStyleSheets());
 }
 
-bool StyleSheetCollectionForDocument::updateActiveStyleSheets(DocumentStyleSheetCollection* collections, StyleResolverUpdateMode updateMode)
+bool StyleSheetCollection::updateActiveStyleSheets(DocumentStyleSheetCollection* collections, StyleResolverUpdateMode updateMode, StyleResolverUpdateType& styleResolverUpdateType)
 {
     Vector<RefPtr<StyleSheet> > styleSheets;
     Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
@@ -296,104 +264,25 @@ bool StyleSheetCollectionForDocument::updateActiveStyleSheets(DocumentStyleSheet
     collectActiveCSSStyleSheetsFromSeamlessParents(activeCSSStyleSheets, document());
     collectStyleSheets(collections, styleSheets, activeCSSStyleSheets);
 
-    StyleResolverUpdateType styleResolverUpdateType;
     bool requiresFullStyleRecalc;
     analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, styleResolverUpdateType, requiresFullStyleRecalc);
 
     if (styleResolverUpdateType == Reconstruct) {
         document()->clearStyleResolver();
     } else {
-        StyleResolver* styleResolver = document()->styleResolverIfExists();
-        ASSERT(styleResolver);
+        StyleResolver* styleResolver = document()->styleResolver();
         styleResolver->setBuildScopedStyleTreeInDocumentOrder(!scopingNodesForStyleScoped());
         if (styleResolverUpdateType == Reset) {
-            resetAllRuleSetsInTreeScope(styleResolver);
-            styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
-        } else {
-            ASSERT(styleResolverUpdateType == Additive);
-            styleResolver->appendAuthorStyleSheets(m_activeAuthorStyleSheets.size(), activeCSSStyleSheets);
-        }
-    }
-    m_scopingNodesForStyleScoped.didRemoveScopingNodes();
-    m_activeAuthorStyleSheets.swap(activeCSSStyleSheets);
-    m_styleSheetsForStyleSheetList.swap(styleSheets);
-    updateUsesRemUnits();
-
-    return requiresFullStyleRecalc;
-}
-
-StyleSheetCollectionForShadow::StyleSheetCollectionForShadow(ShadowRoot* shadowRoot)
-    : StyleSheetCollection(shadowRoot)
-{
-}
-
-void StyleSheetCollectionForShadow::collectStyleSheets(DocumentStyleSheetCollection* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
-{
-    if (document()->settings() && !document()->settings()->authorAndUserStylesEnabled())
-        return;
-
-    DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
-    DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
-    for (DocumentOrderedList::iterator it = begin; it != end; ++it) {
-        Node* node = *it;
-        StyleSheet* sheet = 0;
-        CSSStyleSheet* activeSheet = 0;
-
-        if (!node->isHTMLElement() || !node->hasTagName(styleTag))
-            continue;
-
-        Element* element = toElement(node);
-        AtomicString title = element->getAttribute(titleAttr);
-        bool enabledViaScript = false;
-
-        sheet = static_cast<HTMLStyleElement*>(node)->sheet();
-        if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
-            activeSheet = static_cast<CSSStyleSheet*>(sheet);
-
-        // FIXME: clarify how PREFERRED or ALTERNATE works in shadow trees.
-        // Should we set preferred/selected stylesheets name in shadow trees and
-        // use the name in document?
-        AtomicString rel = element->getAttribute(relAttr);
-        if (!enabledViaScript && sheet && !title.isEmpty()) {
-            if (collections->preferredStylesheetSetName().isEmpty()) {
-                if (element->hasLocalName(styleTag) || !rel.contains("alternate")) {
-                    collections->setPreferredStylesheetSetName(title);
-                    collections->setSelectedStylesheetSetName(title);
-                }
+            if (DocumentOrderedList* styleScopedScopingNodes = scopingNodesForStyleScoped()) {
+                for (DocumentOrderedList::iterator it = styleScopedScopingNodes->begin(); it != styleScopedScopingNodes->end(); ++it)
+                    styleResolver->resetAuthorStyle(toContainerNode(*it));
             }
-            if (title != collections->preferredStylesheetSetName())
-                activeSheet = 0;
-        }
-
-        if (rel.contains("alternate") && title.isEmpty())
-            activeSheet = 0;
-
-        if (sheet)
-            styleSheets.append(sheet);
-        if (activeSheet)
-            activeSheets.append(activeSheet);
-    }
-}
-
-bool StyleSheetCollectionForShadow::updateActiveStyleSheets(DocumentStyleSheetCollection* collections, StyleResolverUpdateMode updateMode)
-{
-    Vector<RefPtr<StyleSheet> > styleSheets;
-    Vector<RefPtr<CSSStyleSheet> > activeCSSStyleSheets;
-    collectStyleSheets(collections, styleSheets, activeCSSStyleSheets);
-
-    bool requiresFullStyleRecalc = true;
-
-    // If we have already decided to destroy StyleResolver, we don't need to analyze. Reconstruction will take care.
-    if (StyleResolver* styleResolver = document()->styleResolverIfExists()) {
-        StyleResolverUpdateType styleResolverUpdateType;
-
-        analyzeStyleSheetChange(updateMode, activeAuthorStyleSheets(), activeCSSStyleSheets, styleResolverUpdateType, requiresFullStyleRecalc);
-
-        styleResolver->setBuildScopedStyleTreeInDocumentOrder(!scopingNodesForStyleScoped());
-        if (styleResolverUpdateType == Reset || styleResolverUpdateType == Reconstruct) {
-            // We should not destroy StyleResolver when we find any stylesheet update in a shadow tree.
-            // In this case, we will reset rulesets created from style elements in the shadow tree.
-            resetAllRuleSetsInTreeScope(styleResolver);
+            if (ListHashSet<Node*, 4>* removedNodes = scopingNodesRemoved()) {
+                for (ListHashSet<Node*, 4>::iterator it = removedNodes->begin(); it != removedNodes->end(); ++it)
+                    styleResolver->resetAuthorStyle(toContainerNode(*it));
+            }
+            ASSERT(m_treeScope->rootNode() == document());
+            styleResolver->resetAuthorStyle(toContainerNode(m_treeScope->rootNode()));
             styleResolver->appendAuthorStyleSheets(0, activeCSSStyleSheets);
         } else {
             ASSERT(styleResolverUpdateType == Additive);
@@ -403,7 +292,6 @@ bool StyleSheetCollectionForShadow::updateActiveStyleSheets(DocumentStyleSheetCo
     m_scopingNodesForStyleScoped.didRemoveScopingNodes();
     m_activeAuthorStyleSheets.swap(activeCSSStyleSheets);
     m_styleSheetsForStyleSheetList.swap(styleSheets);
-    updateUsesRemUnits();
 
     return requiresFullStyleRecalc;
 }
