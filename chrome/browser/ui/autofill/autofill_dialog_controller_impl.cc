@@ -710,9 +710,8 @@ bool AutofillDialogControllerImpl::ShouldShowSpinner() const {
 }
 
 string16 AutofillDialogControllerImpl::AccountChooserText() const {
-  // TODO(aruslan): this should be l10n "Not using Google Wallet".
   if (!account_chooser_model_.WalletIsSelected())
-    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET);
 
   if (SignedInState() == SIGNED_IN)
     return account_chooser_model_.active_wallet_account_name();
@@ -724,7 +723,7 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
 string16 AutofillDialogControllerImpl::SignInLinkText() const {
   return l10n_util::GetStringUTF16(
       signin_registrar_.IsEmpty() ? IDS_AUTOFILL_DIALOG_SIGN_IN :
-                                    IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET);
+                                    IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN);
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {

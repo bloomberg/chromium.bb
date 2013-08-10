@@ -9817,11 +9817,17 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="Title for autofill dialog which asks user to input address + payment info.">
         Pay
       </message>
-      <message name="IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET" desc="This text is shown in a payment method chooser when a user is forced to pay without Google Wallet because the service is unavailable.">
-        Chrome Autofill
+      <message name="IDS_AUTOFILL_DIALOG_PAY_WITHOUT_WALLET" desc="This text is shown in a payment method chooser as a way for a user to pay with local Chrome Autofill data instead of using Wallet.">
+        Disable Google Wallet
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_PAYING_WITHOUT_WALLET" desc="This text is shown as the click target for a dormant payment method chooser when using Chrome Autofill data instead of Wallet.">
+        Google Wallet disabled
       </message>
       <message name="IDS_AUTOFILL_DIALOG_SIGN_IN" desc="This link text is shown when the user is not signed into a GAIA account.">
         Sign in to pay with Google Wallet
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN" desc="This link text is shown when the user is signing into a GAIA account as a way to cancel sign in.">
+        Back
       </message>
       <message name="IDS_AUTOFILL_DIALOG_GOOGLE_WALLET" desc="The menu item that allows a user to select Google Wallet as their payment backend.">
         Google Wallet
