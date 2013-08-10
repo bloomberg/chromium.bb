@@ -403,13 +403,13 @@ int RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
 
 void RenderWidgetHostViewAndroid::OnTextInputStateChanged(
     const ViewHostMsg_TextInputState_Params& params) {
-#if defined(OS_ANDROID)
-  if (params.require_ack) {
-    // Regardless of how we exit from this method, we must acknowledge that we
-    // processed the input state change.
-    base::ScopedClosureRunner ack_caller(base::Bind(&SendImeEventAck, host_));
-  }
-#endif
+  // If an acknowledgement is required for this event, regardless of how we exit
+  // from this method, we must acknowledge that we processed the input state
+  // change.
+  base::ScopedClosureRunner ack_caller(base::Bind(&SendImeEventAck, host_));
+  if (!params.require_ack)
+    ack_caller.Release();
+
   if (!IsShowing())
     return;
 
