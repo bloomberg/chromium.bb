@@ -1,4 +1,4 @@
-# Copyright (c) 2012 The Chromium Authors. All rights reserved.
+# Copyright (c) 2012 The Chromium Authors.   All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -17,6 +17,7 @@ PNACL_LINK ?= $(PNACL_BIN)/pnacl-clang++
 PNACL_LIB ?= $(PNACL_BIN)/pnacl-ar
 PNACL_STRIP ?= $(PNACL_BIN)/pnacl-strip
 PNACL_FINALIZE ?= $(PNACL_BIN)/pnacl-finalize
+PNACL_TRANSLATE ?= $(PNACL_BIN)/pnacl-translate
 
 #
 # Compile Macro
@@ -93,8 +94,19 @@ endef
 # $5 = List of lib dirs
 # $6 = Other Linker Args
 #
+# For debugging, we translate the pre-finalized .bc file.
+#
 define LINKER_RULE
-all: $(1).pexe
+all: $(1).pexe 
+$(1)_x86_32.nexe : $(1).bc
+	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch x86-32 $$^ -o $$@)
+
+$(1)_x86_64.nexe : $(1).bc
+	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch x86-64 $$^ -o $$@)
+
+$(1)_arm.nexe : $(1).bc
+	$(call LOG,TRANSLATE,$$@,$(PNACL_TRANSLATE) --allow-llvm-bitcode-input -arch arm $$^ -o $$@)
+
 $(1).pexe: $(1).bc
 	$(call LOG,FINALIZE,$$@,$(PNACL_FINALIZE) -o $$@ $$^)
 
@@ -113,7 +125,15 @@ endef
 # $5 = POSIX Linker Switches
 # $6 = VC Linker Switches
 #
+# NOTE:  For Debug builds we translate the .bc file to a .nexe instead of
+# using the finalizing to a .pexe.  This enables debugging.
+#
 define LINK_RULE
+ifeq ($(CONFIG),Debug)
+EXECUTABLES=$(OUTDIR)/$(1)_x86_32.nexe $(OUTDIR)/$(1)_x86_64.nexe $(OUTDIR)/$(1)_arm.nexe
+else
+EXECUTABLES=$(OUTDIR)/$(1).pexe
+endif
 $(call LINKER_RULE,$(OUTDIR)/$(1),$(foreach src,$(2),$(call SRC_TO_OBJ,$(src),_pnacl)),$(filter-out pthread,$(3)),$(4),$(LIB_PATHS),$(5))
 endef
 
@@ -151,7 +171,7 @@ NMF:=python $(NACL_SDK_ROOT)/tools/create_nmf.py
 
 define NMF_RULE
 all: $(OUTDIR)/$(1).nmf
-$(OUTDIR)/$(1).nmf: $(OUTDIR)/$(1).pexe
+$(OUTDIR)/$(1).nmf: $(EXECUTABLES)
 	$(call LOG,CREATE_NMF,$$@,$(NMF) -o $$@ $$^ -s $(OUTDIR) $(2))
 endef
 
@@ -162,7 +182,7 @@ CREATE_HTML := python $(NACL_SDK_ROOT)/tools/create_html.py
 
 define HTML_RULE
 all: $(OUTDIR)/$(1).html
-$(OUTDIR)/$(1).html: $(OUTDIR)/$(1).pexe
+$(OUTDIR)/$(1).html: $(EXECUTABLES)
 	$(call LOG,CREATE_HTML,$$@,$(CREATE_HTML) -o $$@ $$^)
 endef
 

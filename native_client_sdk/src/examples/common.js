@@ -36,7 +36,7 @@ var common = (function() {
         mimetype = 'application/x-ppapi-release';
       else
         mimetype = 'application/x-ppapi-debug';
-    } else if (tool == 'pnacl') {
+    } else if (tool == 'pnacl' && isRelease) {
       mimetype = 'application/x-pnacl';
     }
     return mimetype;
