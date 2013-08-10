@@ -112,7 +112,11 @@ bool ThreadProxy::CompositeAndReadback(void* pixels, gfx::Rect rect) {
   TRACE_EVENT0("cc", "ThreadProxy::CompositeAndReadback");
   DCHECK(IsMainThread());
   DCHECK(layer_tree_host_);
-  DCHECK(!defer_commits_);
+
+  if (defer_commits_) {
+    TRACE_EVENT0("cc", "CompositeAndReadback_DeferCommit");
+    return false;
+  }
 
   if (!layer_tree_host_->InitializeOutputSurfaceIfNeeded()) {
     TRACE_EVENT0("cc", "CompositeAndReadback_EarlyOut_LR_Uninitialized");
