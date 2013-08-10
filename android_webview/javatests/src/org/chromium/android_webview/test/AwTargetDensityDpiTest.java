@@ -7,22 +7,14 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
-
 public class AwTargetDensityDpiTest extends AwTestBase {
 
-    /**
-      * @MediumTest
-      * @Feature({"AndroidWebView"})
-      *
-      * TODO(mkosiba): This is disabled only temporarily to enable the WebKit roll that contains
-      * http://crrev.com/22574004
-      */
-    @DisabledTest
+    @MediumTest
+    @Feature({"AndroidWebView"})
     public void testTargetDensityDpi() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -46,8 +38,9 @@ public class AwTargetDensityDpiTest extends AwTestBase {
         int actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals((float)deviceInfo.getDisplayWidth(), (float)actualWidth, 10f);
 
-        float displayWidth = (float)(deviceInfo.getDisplayWidth() / deviceInfo.getDIPScale());
-        float deviceDpi = (float)(120f * deviceInfo.getDIPScale());
+        float displayWidth = (float)(deviceInfo.getDisplayWidth());
+        float deviceDpi = (float)(160f * deviceInfo.getDIPScale());
+
         loadDataSync(awContents, onPageFinishedHelper, pageHighDpi, "text/html", false);
         actualWidth = Integer.parseInt(getTitleOnUiThread(awContents));
         assertEquals(displayWidth * (240f / deviceDpi), (float)actualWidth, 10f);
