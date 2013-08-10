@@ -175,12 +175,6 @@ void ImporterList::DetectSourceProfilesWorker(const std::string& locale) {
 #else
   DetectFirefoxProfiles(locale, &profiles);
 #endif
-  importer::SourceProfile* bookmarks_file = new importer::SourceProfile;
-  bookmarks_file->importer_name =
-      l10n_util::GetStringUTF16(IDS_IMPORT_FROM_BOOKMARKS_HTML_FILE);
-  bookmarks_file->importer_type = importer::TYPE_BOOKMARKS_FILE;
-  bookmarks_file->services_supported = importer::FAVORITES;
-  profiles.push_back(bookmarks_file);
 
   // TODO(jhawkins): Remove this condition once DetectSourceProfilesHack is
   // removed.
