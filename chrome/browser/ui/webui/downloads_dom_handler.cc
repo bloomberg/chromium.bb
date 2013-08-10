@@ -262,8 +262,7 @@ bool IsDownloadDisplayable(const content::DownloadItem& item) {
 }  // namespace
 
 DownloadsDOMHandler::DownloadsDOMHandler(content::DownloadManager* dlm)
-    : search_text_(),
-      main_notifier_(dlm, this),
+    : main_notifier_(dlm, this),
       update_scheduled_(false),
       weak_ptr_factory_(this) {
   // Create our fileicon data source.
@@ -338,16 +337,14 @@ void DownloadsDOMHandler::OnDownloadUpdated(
     content::DownloadManager* manager,
     content::DownloadItem* download_item) {
   if (IsDownloadDisplayable(*download_item)) {
-    if (!search_text_.empty()) {
+    if (search_terms_ && !search_terms_->empty()) {
       // Don't CallDownloadUpdated() if download_item doesn't match
-      // search_text_.
+      // search_terms_.
       // TODO(benjhayden): Consider splitting MatchesQuery() out to a function.
       content::DownloadManager::DownloadVector all_items, filtered_items;
       all_items.push_back(download_item);
       DownloadQuery query;
-      scoped_ptr<base::Value> query_text(base::Value::CreateStringValue(
-          search_text_));
-      query.AddFilter(DownloadQuery::FILTER_QUERY, *query_text.get());
+      query.AddFilter(DownloadQuery::FILTER_QUERY, *search_terms_.get());
       query.Search(all_items.begin(), all_items.end(), &filtered_items);
       if (filtered_items.empty())
         return;
@@ -379,7 +376,7 @@ void DownloadsDOMHandler::OnDownloadRemoved(
 
 void DownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
   CountDownloadsDOMEvents(DOWNLOADS_DOM_EVENT_GET_DOWNLOADS);
-  search_text_ = ExtractStringValue(args);
+  search_terms_.reset((args && !args->empty()) ? args->DeepCopy() : NULL);
   SendCurrentDownloads();
 }
 
@@ -523,10 +520,8 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
     original_notifier_->GetManager()->CheckForHistoryFilesRemoval();
   }
   DownloadQuery query;
-  if (!search_text_.empty()) {
-    scoped_ptr<base::Value> query_text(base::Value::CreateStringValue(
-        search_text_));
-    query.AddFilter(DownloadQuery::FILTER_QUERY, *query_text.get());
+  if (search_terms_ && !search_terms_->empty()) {
+    query.AddFilter(DownloadQuery::FILTER_QUERY, *search_terms_.get());
   }
   query.AddFilter(base::Bind(&IsDownloadDisplayable));
   query.AddSorter(DownloadQuery::SORT_START_TIME, DownloadQuery::DESCENDING);

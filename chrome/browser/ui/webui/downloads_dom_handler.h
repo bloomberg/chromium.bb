@@ -130,8 +130,8 @@ class DownloadsDOMHandler : public content::WebUIMessageHandler,
   // Returns the download that is referred to in a given value.
   content::DownloadItem* GetDownloadByValue(const base::ListValue* args);
 
-  // Current search text.
-  string16 search_text_;
+  // Current search terms.
+  scoped_ptr<base::ListValue> search_terms_;
 
   // Notifies OnDownload*() and provides safe access to the DownloadManager.
   AllDownloadItemNotifier main_notifier_;

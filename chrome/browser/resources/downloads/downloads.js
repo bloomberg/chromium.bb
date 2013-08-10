@@ -758,7 +758,19 @@ function load() {
 function setSearch(searchText) {
   fifoResults.length = 0;
   downloads.setSearchText(searchText);
-  chrome.send('getDownloads', [searchText.toString()]);
+  searchText = searchText.toString().match(/(?:[^\s"]+|"[^"]*")+/g);
+  if (searchText) {
+    searchText = searchText.map(function(term) {
+      // strip quotes
+      return (term.match(/\s/) &&
+              term[0].match(/["']/) &&
+              term[term.length - 1] == term[0]) ?
+        term.substr(1, term.length - 2) : term;
+    });
+  } else {
+    searchText = [];
+  }
+  chrome.send('getDownloads', searchText);
 }
 
 function clearAll() {
