@@ -45,7 +45,6 @@ class SelectionFormatMap;
 
 namespace views {
 class DesktopNativeCursorManager;
-class DesktopRootWindowHostX11;
 
 // Implements drag and drop on X11 for aura. On one side, this class takes raw
 // X11 events forwarded from DesktopRootWindowHostLinux, while on the other, it
@@ -56,7 +55,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       public X11WholeScreenMoveLoopDelegate {
  public:
   DesktopDragDropClientAuraX11(
-      views::DesktopRootWindowHostX11* root_window_host,
       aura::RootWindow* root_window,
       views::DesktopNativeCursorManager* cursor_manager,
       Display* xdisplay,
@@ -156,7 +154,6 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   // X11WholeScreenMoveLoopDelegate interface.
   X11WholeScreenMoveLoop move_loop_;
 
-  views::DesktopRootWindowHostX11* root_window_host_;
   aura::RootWindow* root_window_;
 
   Display* xdisplay_;

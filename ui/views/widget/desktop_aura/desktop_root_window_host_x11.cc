@@ -946,7 +946,7 @@ aura::RootWindow* DesktopRootWindowHostX11::InitRootWindow(
   desktop_native_widget_aura_->InstallInputMethodEventFilter(root_window_);
 
   drag_drop_client_.reset(new DesktopDragDropClientAuraX11(
-      this, root_window_, desktop_native_cursor_manager, xdisplay_, xwindow_));
+      root_window_, desktop_native_cursor_manager, xdisplay_, xwindow_));
   aura::client::SetDragDropClient(root_window_, drag_drop_client_.get());
 
   // TODO(erg): Unify this code once the other consumer goes away.

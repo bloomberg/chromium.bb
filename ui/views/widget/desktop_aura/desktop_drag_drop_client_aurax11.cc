@@ -19,7 +19,6 @@
 #include "ui/base/x/selection_utils.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
-#include "ui/views/widget/desktop_aura/desktop_root_window_host_x11.h"
 
 using aura::client::DragDropDelegate;
 using ui::OSExchangeData;
@@ -367,13 +366,11 @@ bool DesktopDragDropClientAuraX11::X11DragContext::Dispatch(
 ///////////////////////////////////////////////////////////////////////////////
 
 DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
-    views::DesktopRootWindowHostX11* root_window_host,
     aura::RootWindow* root_window,
     views::DesktopNativeCursorManager* cursor_manager,
     Display* xdisplay,
     ::Window xwindow)
     : move_loop_(this),
-      root_window_host_(root_window_host),
       root_window_(root_window),
       xdisplay_(xdisplay),
       xwindow_(xwindow),
