@@ -1219,6 +1219,7 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
         GetHostAndPort(request_->url));
   }
 
+  bool should_fallback = false;
   uint16 version_max = server_ssl_config_.version_max;
 
   switch (error) {
@@ -1250,18 +1251,33 @@ int HttpNetworkTransaction::HandleSSLHandshakeError(int error) {
             (server_ssl_config_.unrestricted_ssl3_fallback_enabled ||
              !TransportSecurityState::IsGooglePinnedProperty(
                  request_->url.host(), true /* include SNI */))) {
-          net_log_.AddEvent(
-              NetLog::TYPE_SSL_VERSION_FALLBACK,
-              base::Bind(&NetLogSSLVersionFallbackCallback,
-                         &request_->url, error, server_ssl_config_.version_max,
-                         version_max));
-          server_ssl_config_.version_max = version_max;
-          server_ssl_config_.version_fallback = true;
-          ResetConnectionAndRequestForResend();
-          error = OK;
+          should_fallback = true;
         }
       }
       break;
+    case ERR_SSL_BAD_RECORD_MAC_ALERT:
+      if (version_max >= SSL_PROTOCOL_VERSION_TLS1_1 &&
+          version_max > server_ssl_config_.version_min) {
+        // Some broken SSL devices negotiate TLS 1.0 when sent a TLS 1.1 or
+        // 1.2 ClientHello, but then return a bad_record_mac alert. See
+        // crbug.com/260358. In order to make the fallback as minimal as
+        // possible, this fallback is only triggered for >= TLS 1.1.
+        version_max--;
+        should_fallback = true;
+      }
+      break;
+  }
+
+  if (should_fallback) {
+    net_log_.AddEvent(
+        NetLog::TYPE_SSL_VERSION_FALLBACK,
+        base::Bind(&NetLogSSLVersionFallbackCallback,
+                   &request_->url, error, server_ssl_config_.version_max,
+                   version_max));
+    server_ssl_config_.version_max = version_max;
+    server_ssl_config_.version_fallback = true;
+    ResetConnectionAndRequestForResend();
+    error = OK;
   }
 
   return error;

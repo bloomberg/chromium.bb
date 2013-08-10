@@ -1861,15 +1861,6 @@ int SSLClientSocketNSS::Core::DoHandshake() {
       net_error = ERR_SSL_PROTOCOL_ERROR;
     }
 
-    // Some broken SSL devices negotiate TLS 1.0 when sent a TLS 1.1 or 1.2
-    // ClientHello, but then return a bad-record-MAC alert. See
-    // crbug.com/260358. In order to make the fallback as minimal as possible,
-    // this fallback is only triggered for >= TLS 1.1.
-    if (net_error == ERR_SSL_BAD_RECORD_MAC_ALERT &&
-        ssl_config_.version_max >= SSL_PROTOCOL_VERSION_TLS1_1) {
-      net_error = ERR_SSL_PROTOCOL_ERROR;
-    }
-
     // If not done, stay in this state
     if (net_error == ERR_IO_PENDING) {
       GotoState(STATE_HANDSHAKE);
