@@ -687,6 +687,8 @@
             '<(libjingle_source)/talk/app/webrtc/webrtcsdp.h',
             '<(libjingle_source)/talk/app/webrtc/webrtcsession.cc',
             '<(libjingle_source)/talk/app/webrtc/webrtcsession.h',
+            '<(libjingle_source)/talk/app/webrtc/webrtcsessiondescriptionfactory.cc',
+            '<(libjingle_source)/talk/app/webrtc/webrtcsessiondescriptionfactory.h',
             '<(libjingle_source)/talk/media/base/audiorenderer.h',
             '<(libjingle_source)/talk/media/base/capturemanager.cc',
             '<(libjingle_source)/talk/media/base/capturemanager.h',
