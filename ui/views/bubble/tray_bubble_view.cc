@@ -86,8 +86,6 @@ class TrayBubbleBorder : public BubbleBorder {
       return rect;
     }
 
-    // TODO(skuhne): With shelf LR alignment, arrow-less messages get
-    // automatically offsetted from an open status menu which needs addressing.
     gfx::Size border_size(contents_size);
     gfx::Insets insets = GetInsets();
     border_size.Enlarge(insets.width(), insets.height());
