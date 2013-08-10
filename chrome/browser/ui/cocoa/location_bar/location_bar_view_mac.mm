@@ -218,7 +218,7 @@ void LocationBarViewMac::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Mac.
 }
 
-void LocationBarViewMac::UpdateAutofillCreditCardView() {
+void LocationBarViewMac::UpdateGeneratedCreditCardView() {
   // TODO(dbeam): encourage groby@ to implement via prodding or chocolate.
   NOTIMPLEMENTED();
 }

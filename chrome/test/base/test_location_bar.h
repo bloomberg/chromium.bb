@@ -38,7 +38,7 @@ class TestLocationBar : public LocationBar {
   virtual void UpdatePageActions() OVERRIDE {}
   virtual void InvalidatePageActions() OVERRIDE {}
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE {}
-  virtual void UpdateAutofillCreditCardView() OVERRIDE {}
+  virtual void UpdateGeneratedCreditCardView() OVERRIDE {}
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE {}
   virtual void Revert() OVERRIDE {}
   virtual const OmniboxView* GetLocationEntry() const OVERRIDE;

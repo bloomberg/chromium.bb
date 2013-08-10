@@ -909,6 +909,9 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_TOOLTIP" desc="Tooltip which explains function of checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
         Chromium will securely store your information so you don't need to type it in again, but you will still need to verify your card's security code for future payments.
       </message>
+      <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_TITLE" desc="Title text of the new credit card bubble informing a user their billing information has been saved in chrome.">
+        Your billing details have been saved in Chromium.
+      </message>
 
       <!-- Network Error Pages -->
       <message name="IDS_ERRORPAGES_SUGGESTION_NETWORK_PREDICTION_BODY" desc="When a page fails to load, sometimes we suggest disabling predicting network actions.  These are details below a header.">

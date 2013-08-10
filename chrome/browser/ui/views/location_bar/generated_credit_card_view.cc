@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/location_bar/autofill_credit_card_view.h"
+#include "chrome/browser/ui/views/location_bar/generated_credit_card_view.h"
 
-#include "chrome/browser/ui/autofill/autofill_credit_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "ui/gfx/image/image.h"
 
-AutofillCreditCardView::AutofillCreditCardView(
+GeneratedCreditCardView::GeneratedCreditCardView(
     ToolbarModel* toolbar_model,
     LocationBarView::Delegate* delegate)
     : toolbar_model_(toolbar_model),
@@ -16,10 +16,10 @@ AutofillCreditCardView::AutofillCreditCardView(
   Update();
 }
 
-AutofillCreditCardView::~AutofillCreditCardView() {}
+GeneratedCreditCardView::~GeneratedCreditCardView() {}
 
-void AutofillCreditCardView::Update() {
-  autofill::AutofillCreditCardBubbleController* controller = GetController();
+void GeneratedCreditCardView::Update() {
+  autofill::GeneratedCreditCardBubbleController* controller = GetController();
   if (controller && !controller->AnchorIcon().IsEmpty()) {
     SetVisible(true);
     SetImage(controller->AnchorIcon().AsImageSkia());
@@ -31,22 +31,22 @@ void AutofillCreditCardView::Update() {
 
 // TODO(dbeam): figure out what to do for a tooltip and accessibility.
 
-bool AutofillCreditCardView::CanHandleClick() const {
-  autofill::AutofillCreditCardBubbleController* controller = GetController();
+bool GeneratedCreditCardView::CanHandleClick() const {
+  autofill::GeneratedCreditCardBubbleController* controller = GetController();
   return controller && !controller->IsHiding();
 }
 
-void AutofillCreditCardView::OnClick() {
-  autofill::AutofillCreditCardBubbleController* controller = GetController();
+void GeneratedCreditCardView::OnClick() {
+  autofill::GeneratedCreditCardBubbleController* controller = GetController();
   if (controller)
     controller->OnAnchorClicked();
 }
 
-autofill::AutofillCreditCardBubbleController* AutofillCreditCardView::
+autofill::GeneratedCreditCardBubbleController* GeneratedCreditCardView::
     GetController() const {
   content::WebContents* wc = delegate_->GetWebContents();
   if (!wc || toolbar_model_->GetInputInProgress())
     return NULL;
 
-  return autofill::AutofillCreditCardBubbleController::FromWebContents(wc);
+  return autofill::GeneratedCreditCardBubbleController::FromWebContents(wc);
 }

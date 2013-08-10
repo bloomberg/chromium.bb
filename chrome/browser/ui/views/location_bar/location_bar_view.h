@@ -32,13 +32,13 @@
 #endif
 
 class ActionBoxButtonView;
-class AutofillCreditCardView;
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class ContentSettingImageView;
 class EVBubbleView;
 class ExtensionAction;
 class GURL;
+class GeneratedCreditCardView;
 class InstantController;
 class KeywordHintView;
 class LocationIconView;
@@ -245,7 +245,7 @@ class LocationBarView : public LocationBar,
 
   views::View* location_entry_view() const { return location_entry_view_; }
 
-  views::View* autofill_credit_card_view();
+  views::View* generated_credit_card_view();
 
   // OmniboxEditController:
   virtual void OnAutocompleteAccept(const GURL& url,
@@ -296,7 +296,7 @@ class LocationBarView : public LocationBar,
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
-  virtual void UpdateAutofillCreditCardView() OVERRIDE;
+  virtual void UpdateGeneratedCreditCardView() OVERRIDE;
   virtual void SaveStateToContents(content::WebContents* contents) OVERRIDE;
   virtual void Revert() OVERRIDE;
   virtual const OmniboxView* GetLocationEntry() const OVERRIDE;
@@ -482,8 +482,8 @@ class LocationBarView : public LocationBar,
   // The zoom icon.
   ZoomView* zoom_view_;
 
-  // A bubble that shows after successful submission of the Autofill dialog.
-  AutofillCreditCardView* autofill_credit_card_view_;
+  // A bubble that shows after successfully generating a new credit card number.
+  GeneratedCreditCardView* generated_credit_card_view_;
 
   // The icon to open a PDF in Reader.
   OpenPDFInReaderView* open_pdf_in_reader_view_;

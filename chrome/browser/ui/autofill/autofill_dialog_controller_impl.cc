@@ -25,10 +25,13 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/autofill/autofill_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/data_model_wrapper.h"
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/new_credit_card_bubble_controller.h"
+#endif
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -2287,6 +2290,16 @@ bool AutofillDialogControllerImpl::TransmissionWillBeSecure() const {
   return source_url_.SchemeIs(chrome::kHttpsScheme);
 }
 
+void AutofillDialogControllerImpl::ShowNewCreditCardBubble(
+    scoped_ptr<CreditCard> new_card,
+    scoped_ptr<AutofillProfile> billing_profile) {
+#if !defined(OS_ANDROID)
+  NewCreditCardBubbleController::Show(profile(),
+                                      new_card.Pass(),
+                                      billing_profile.Pass());
+#endif
+}
+
 AutofillDialogControllerImpl::AutofillDialogControllerImpl(
     content::WebContents* contents,
     const FormData& form_structure,
@@ -3397,8 +3410,28 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
     return;
 
   if (newly_saved_card_) {
-    AutofillCreditCardBubbleController::ShowNewCardSavedBubble(
-        web_contents(), newly_saved_card_->TypeAndLastFourDigits());
+    scoped_ptr<AutofillProfile> billing_profile;
+    if (IsManuallyEditingSection(SECTION_BILLING)) {
+      // Scrape the view as the user's entering or updating information.
+      DetailOutputMap outputs;
+      view_->GetUserInput(SECTION_BILLING, &outputs);
+      billing_profile.reset(new AutofillProfile);
+      FillFormGroupFromOutputs(outputs, billing_profile.get());
+    } else {
+      // Just snag the currently suggested profile.
+      std::string item_key = SuggestionsMenuModelForSection(SECTION_BILLING)->
+          GetItemKeyForCheckedItem();
+      AutofillProfile* profile = GetManager()->GetProfileByGUID(item_key);
+      billing_profile.reset(new AutofillProfile(*profile));
+    }
+
+    // The bubble also needs the associated email address.
+    billing_profile->SetRawInfo(
+        EMAIL_ADDRESS,
+        GetValueFromSection(SECTION_EMAIL, EMAIL_ADDRESS));
+
+    ShowNewCreditCardBubble(newly_saved_card_.Pass(),
+                            billing_profile.Pass());
     return;
   }
 
@@ -3421,8 +3454,12 @@ void AutofillDialogControllerImpl::MaybeShowCreditCardBubble() {
     GetBillingInfoFromOutputs(output, &card, NULL, NULL);
     backing_last_four = card.TypeAndLastFourDigits();
   }
-  AutofillCreditCardBubbleController::ShowGeneratedCardUI(
-      web_contents(), backing_last_four, full_wallet_->TypeAndLastFourDigits());
+#if !defined(OS_ANDROID)
+  GeneratedCreditCardBubbleController::Show(
+      web_contents(),
+      backing_last_four,
+      full_wallet_->TypeAndLastFourDigits());
+#endif
 }
 
 }  // namespace autofill

@@ -10088,14 +10088,14 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         No, Thanks
       </message>
 
-      <!-- Autofill dialog post-submit bubble -->
-      <message name="IDS_AUTOFILL_CREDIT_CARD_BUBBLE_GENERATED_TITLE" desc="Title of a bubble shown directly after a new card has been generated via Online Wallet using the Autofill dialog.">
+      <!-- Autofill dialog post-submit bubbles -->
+      <message name="IDS_AUTOFILL_GENERATED_CREDIT_CARD_BUBBLE_TITLE" desc="Title of a bubble shown directly after a new card has been generated via Online Wallet using the Autofill dialog.">
         Google Wallet is protecting your card
       </message>
-      <message name="IDS_AUTOFILL_CREDIT_CARD_BUBBLE_GENERATED_TEXT" desc="Text in the bubble explaining that a temporary card has been generated for the user's security by Google Wallet.">
+      <message name="IDS_AUTOFILL_GENERATED_CREDIT_CARD_BUBBLE_CONTENTS" desc="Text in the bubble explaining that a temporary card has been generated for the user's security by Google Wallet.">
         Don't worry, this purchase will still be charged to your |$1|. Your card has been protected with the Google Wallet Virtual Online Card (|$2|), this number will appear on your receipt.
       </message>
-      <message name="IDS_AUTOFILL_CREDIT_CARD_BUBBLE_MANAGE_CARDS" desc="The text of a link at the bottom of the autofill dialog bubble that sends users to a Google Wallet billing/card management page.">
+      <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_LINK" desc="The text of a link at the bottom of the autofill dialog bubble that sends users to a Google Wallet billing/card management page.">
         Manage Saved Cards
       </message>
 

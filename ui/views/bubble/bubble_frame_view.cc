@@ -54,6 +54,11 @@ namespace views {
 // static
 const char BubbleFrameView::kViewClassName[] = "BubbleFrameView";
 
+// static
+gfx::Insets BubbleFrameView::GetTitleInsets() {
+  return gfx::Insets(kTitleTopInset, kTitleLeftInset, kTitleBottomInset, 0);
+}
+
 BubbleFrameView::BubbleFrameView(const gfx::Insets& content_margins)
     : bubble_border_(NULL),
       content_margins_(content_margins),

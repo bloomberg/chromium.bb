@@ -107,7 +107,7 @@ class VIEWS_EXPORT NonClientFrameView : public View {
 //  +- views::Widget ------------------------------------+
 //  | +- views::RootView ------------------------------+ |
 //  | | +- views::NonClientView ---------------------+ | |
-//  | | | +- views::NonClientFrameView subclas  ---+ | | |
+//  | | | +- views::NonClientFrameView subclass ---+ | | |
 //  | | | |                                        | | | |
 //  | | | | << all painting and event receiving >> | | | |
 //  | | | | << of the non-client areas of a     >> | | | |

@@ -287,6 +287,12 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
 
   AutocheckoutState autocheckout_state() const { return autocheckout_state_; }
 
+  // Shows a new credit card saved bubble and passes ownership of |new_card| and
+  // |billing_profile| to the bubble. Exposed for testing.
+  virtual void ShowNewCreditCardBubble(
+      scoped_ptr<CreditCard> new_card,
+      scoped_ptr<AutofillProfile> billing_profile);
+
  private:
   // Whether or not the current request wants credit info back.
   bool RequestingCreditCardInfo() const;

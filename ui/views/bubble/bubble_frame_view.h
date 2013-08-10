@@ -25,6 +25,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Internal class name.
   static const char kViewClassName[];
 
+  // Insets to make bubble contents align horizontal with the bubble title.
+  // NOTE: this does not take into account whether a title actually exists.
+  static gfx::Insets GetTitleInsets();
+
   explicit BubbleFrameView(const gfx::Insets& content_margins);
   virtual ~BubbleFrameView();
 

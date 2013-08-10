@@ -71,7 +71,6 @@
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/autofill/autofill_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/browser_ui_prefs.h"
 #include "chrome/browser/ui/network_profile_bubble.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -156,6 +155,8 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/ui/webui/ntp/android/promo_handler.h"
+#else
+#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -290,8 +291,10 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // User prefs. Please keep this list alphabetized.
   AlternateErrorPageTabObserver::RegisterProfilePrefs(registry);
   apps::RegisterProfilePrefs(registry);
-  autofill::AutofillCreditCardBubbleController::RegisterUserPrefs(registry);
   autofill::AutofillManager::RegisterProfilePrefs(registry);
+#if !defined(OS_ANDROID)
+  autofill::GeneratedCreditCardBubbleController::RegisterUserPrefs(registry);
+#endif
   BookmarkPromptPrefs::RegisterProfilePrefs(registry);
   bookmark_utils::RegisterProfilePrefs(registry);
   browser_sync::SyncPrefs::RegisterProfilePrefs(registry);

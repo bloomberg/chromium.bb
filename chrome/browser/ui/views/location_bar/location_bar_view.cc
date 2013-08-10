@@ -38,9 +38,9 @@
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views/location_bar/autofill_credit_card_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/ev_bubble_view.h"
+#include "chrome/browser/ui/views/location_bar/generated_credit_card_view.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
@@ -185,7 +185,7 @@ LocationBarView::LocationBarView(Browser* browser,
       keyword_hint_view_(NULL),
       mic_search_view_(NULL),
       zoom_view_(NULL),
-      autofill_credit_card_view_(NULL),
+      generated_credit_card_view_(NULL),
       open_pdf_in_reader_view_(NULL),
       script_bubble_icon_view_(NULL),
       star_view_(NULL),
@@ -328,8 +328,8 @@ void LocationBarView::Init() {
     AddChildView(content_blocked_view);
   }
 
-  autofill_credit_card_view_ = new AutofillCreditCardView(model_, delegate_);
-  AddChildView(autofill_credit_card_view_);
+  generated_credit_card_view_ = new GeneratedCreditCardView(model_, delegate_);
+  AddChildView(generated_credit_card_view_);
 
   zoom_view_ = new ZoomView(model_, delegate_);
   zoom_view_->set_id(VIEW_ID_ZOOM_BUTTON);
@@ -467,7 +467,7 @@ void LocationBarView::Update(const WebContents* tab_for_state_restoring) {
       !model_->GetInputInProgress() && browser_ &&
       browser_->search_model()->voice_search_supported());
   RefreshContentSettingViews();
-  autofill_credit_card_view_->Update();
+  generated_credit_card_view_->Update();
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
   RefreshPageActionViews();
@@ -530,8 +530,8 @@ void LocationBarView::UpdateOpenPDFInReaderPrompt() {
   SchedulePaint();
 }
 
-void LocationBarView::UpdateAutofillCreditCardView() {
-  autofill_credit_card_view_->Update();
+void LocationBarView::UpdateGeneratedCreditCardView() {
+  generated_credit_card_view_->Update();
   Layout();
   SchedulePaint();
 }
@@ -758,10 +758,10 @@ void LocationBarView::Layout() {
           item_padding, (*i)->GetBuiltInHorizontalPadding(), (*i));
     }
   }
-  if (autofill_credit_card_view_->visible()) {
+  if (generated_credit_card_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
                                        location_height, 0,
-                                       autofill_credit_card_view_);
+                                       generated_credit_card_view_);
   }
   if (mic_search_view_->visible()) {
     trailing_decorations.AddDecoration(vertical_edge_thickness(),
@@ -993,8 +993,8 @@ void LocationBarView::OnMouseCaptureLost() {
 }
 #endif
 
-views::View* LocationBarView::autofill_credit_card_view() {
-  return autofill_credit_card_view_;
+views::View* LocationBarView::generated_credit_card_view() {
+  return generated_credit_card_view_;
 }
 
 void LocationBarView::OnAutocompleteAccept(

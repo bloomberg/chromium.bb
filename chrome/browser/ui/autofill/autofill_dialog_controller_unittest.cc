@@ -14,10 +14,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/tuple.h"
-#include "chrome/browser/ui/autofill/autofill_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
-#include "chrome/browser/ui/autofill/test_autofill_credit_card_bubble.h"
+#include "chrome/browser/ui/autofill/generated_credit_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/mock_new_credit_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -193,7 +194,8 @@ class TestAutofillDialogController
       const AutofillMetrics& metric_logger,
       const DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
-                                const std::string&)>& callback)
+                                const std::string&)>& callback,
+      MockNewCreditCardBubbleController* mock_new_card_bubble_controller)
       : AutofillDialogControllerImpl(contents,
                                      form_structure,
                                      source_url,
@@ -203,7 +205,9 @@ class TestAutofillDialogController
         mock_wallet_client_(
             Profile::FromBrowserContext(contents->GetBrowserContext())->
                 GetRequestContext(), this),
-        dialog_type_(dialog_type) {}
+        dialog_type_(dialog_type),
+        mock_new_card_bubble_controller_(mock_new_card_bubble_controller) {}
+
   virtual ~TestAutofillDialogController() {}
 
   virtual AutofillDialogView* CreateView() OVERRIDE {
@@ -265,6 +269,13 @@ class TestAutofillDialogController
     return true;
   }
 
+  virtual void ShowNewCreditCardBubble(
+      scoped_ptr<CreditCard> new_card,
+      scoped_ptr<AutofillProfile> billing_profile) OVERRIDE {
+    mock_new_card_bubble_controller_->Show(new_card.Pass(),
+                                           billing_profile.Pass());
+  }
+
  private:
   // To specify our own metric logger.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE {
@@ -276,31 +287,29 @@ class TestAutofillDialogController
   testing::NiceMock<wallet::MockWalletClient> mock_wallet_client_;
   GURL open_tab_url_;
   DialogType dialog_type_;
+  MockNewCreditCardBubbleController* mock_new_card_bubble_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
 
-class TestAutofillCreditCardBubbleController :
-    public AutofillCreditCardBubbleController {
+class TestGeneratedCreditCardBubbleController :
+    public GeneratedCreditCardBubbleController {
  public:
-  explicit TestAutofillCreditCardBubbleController(
+  explicit TestGeneratedCreditCardBubbleController(
       content::WebContents* contents)
-      : AutofillCreditCardBubbleController(contents) {
+      : GeneratedCreditCardBubbleController(contents) {
     contents->SetUserData(UserDataKey(), this);
     CHECK_EQ(contents->GetUserData(UserDataKey()), this);
   }
 
-  virtual ~TestAutofillCreditCardBubbleController() {}
+  virtual ~TestGeneratedCreditCardBubbleController() {}
 
-  MOCK_METHOD2(ShowAsGeneratedCardBubble,
-               void(const base::string16& backing_card_name,
-                    const base::string16& fronting_card_name));
-  MOCK_METHOD1(ShowAsNewCardSavedBubble,
-               void(const base::string16& newly_saved_card_name));
+  MOCK_METHOD2(SetupAndShow, void(const base::string16& backing_card_name,
+                                  const base::string16& fronting_card_name));
 
  protected:
-  virtual base::WeakPtr<AutofillCreditCardBubble> CreateBubble() OVERRIDE {
-    return TestAutofillCreditCardBubble::Create(GetWeakPtr());
+  virtual base::WeakPtr<GeneratedCreditCardBubbleView> CreateBubble() OVERRIDE {
+    return TestGeneratedCreditCardBubbleView::Create(GetWeakPtr());
   }
 
   virtual bool CanShow() const OVERRIDE {
@@ -308,7 +317,7 @@ class TestAutofillCreditCardBubbleController :
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestAutofillCreditCardBubbleController);
+  DISALLOW_COPY_AND_ASSIGN(TestGeneratedCreditCardBubbleController);
 };
 
 class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
@@ -318,16 +327,7 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   // testing::Test implementation:
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
-
-    test_bubble_controller_ =
-        new testing::NiceMock<TestAutofillCreditCardBubbleController>(
-            web_contents());
-
-    // Don't get stuck on the first run wallet interstitial.
-    profile()->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
-                                      true);
-
-    SetUpControllerWithFormData(DefaultFormData());
+    Reset();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -340,9 +340,11 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
     if (controller_)
       controller_->ViewClosed();
 
-    test_bubble_controller_ =
-        new testing::NiceMock<TestAutofillCreditCardBubbleController>(
+    test_generated_bubble_controller_ =
+        new testing::NiceMock<TestGeneratedCreditCardBubbleController>(
             web_contents());
+    mock_new_card_bubble_controller_.reset(
+        new MockNewCreditCardBubbleController);
 
     // Don't get stuck on the first run wallet interstitial.
     profile()->GetPrefs()->SetBoolean(::prefs::kAutofillDialogHasPaidWithWallet,
@@ -374,7 +376,8 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
         GURL(),
         metric_logger_,
         DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
-        callback))->AsWeakPtr();
+        callback,
+        mock_new_card_bubble_controller_.get()))->AsWeakPtr();
     controller_->Init(profile());
     controller_->Show();
     controller_->OnUserNameFetchSuccess(kFakeEmail);
@@ -461,8 +464,12 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
   const FormStructure* form_structure() { return form_structure_; }
 
-  TestAutofillCreditCardBubbleController* test_bubble_controller() {
-    return test_bubble_controller_;
+  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller() {
+    return test_generated_bubble_controller_;
+  }
+
+  const MockNewCreditCardBubbleController* mock_new_card_bubble_controller() {
+    return mock_new_card_bubble_controller_.get();
   }
 
  private:
@@ -489,7 +496,11 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
 
   // Used to monitor if the Autofill credit card bubble is shown. Owned by
   // |web_contents()|.
-  TestAutofillCreditCardBubbleController* test_bubble_controller_;
+  TestGeneratedCreditCardBubbleController* test_generated_bubble_controller_;
+
+  // Used to record when new card bubbles would show. Created in |Reset()|.
+  scoped_ptr<MockNewCreditCardBubbleController>
+      mock_new_card_bubble_controller_;
 };
 
 }  // namespace
@@ -1488,10 +1499,12 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
 TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
   SwitchToAutofill();
 
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
   controller()->EditClickedForSection(SECTION_SHIPPING);
 
   DetailOutputMap outputs;
@@ -1569,10 +1582,12 @@ TEST_F(AutofillDialogControllerTest, AddAutofillProfile) {
 // (as opposed to creating its own profile). http://crbug.com/240926
 TEST_F(AutofillDialogControllerTest, AddEmail) {
   SwitchToAutofill();
-  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
+  CreditCard credit_card(test::GetVerifiedCreditCard());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+  controller()->GetTestingManager()->AddTestingCreditCard(&credit_card);
 
   ui::MenuModel* model = controller()->MenuModelForSection(SECTION_EMAIL);
   ASSERT_TRUE(model);
@@ -2395,27 +2410,25 @@ TEST_F(AutofillDialogControllerTest, DetailedSteps) {
   EXPECT_FALSE(ReadSetVisuallyDeemphasizedIpc());
 }
 
-
 TEST_F(AutofillDialogControllerTest, NewCardBubbleShown) {
-  EXPECT_CALL(*test_bubble_controller(),
-              ShowAsNewCardSavedBubble(ASCIIToUTF16("Visa - 1111"))).Times(1);
-  EXPECT_CALL(*test_bubble_controller(),
-              ShowAsGeneratedCardBubble(_, _)).Times(0);
+  EXPECT_CALL(*test_generated_bubble_controller(), SetupAndShow(_, _)).Times(0);
 
   SwitchToAutofill();
   FillCreditCardInputs();
   controller()->OnAccept();
   controller()->ViewClosed();
+
+  EXPECT_EQ(1, mock_new_card_bubble_controller()->bubbles_shown());
 }
 
 TEST_F(AutofillDialogControllerTest, GeneratedCardBubbleShown) {
-  EXPECT_CALL(*test_bubble_controller(),
-              ShowAsGeneratedCardBubble(_, _)).Times(1);
-  EXPECT_CALL(*test_bubble_controller(), ShowAsNewCardSavedBubble(_)).Times(0);
+  EXPECT_CALL(*test_generated_bubble_controller(), SetupAndShow(_, _)).Times(1);
 
   SubmitWithWalletItems(CompleteAndValidWalletItems());
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
   controller()->ViewClosed();
+
+  EXPECT_EQ(0, mock_new_card_bubble_controller()->bubbles_shown());
 }
 
 TEST_F(AutofillDialogControllerTest, ReloadWalletItemsOnActivation) {
@@ -2491,15 +2504,15 @@ TEST_F(AutofillDialogControllerTest, ReloadWithEmptyWalletItems) {
 }
 
 TEST_F(AutofillDialogControllerTest, GeneratedCardBubbleNotShown) {
-  EXPECT_CALL(*test_bubble_controller(),
-              ShowAsGeneratedCardBubble(_, _)).Times(0);
-  EXPECT_CALL(*test_bubble_controller(), ShowAsNewCardSavedBubble(_)).Times(0);
+  EXPECT_CALL(*test_generated_bubble_controller(), SetupAndShow(_, _)).Times(0);
 
   SubmitWithWalletItems(CompleteAndValidWalletItems());
   controller()->set_dialog_type(DIALOG_TYPE_AUTOCHECKOUT);
   controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
   controller()->OnAutocheckoutError();
   controller()->ViewClosed();
+
+  EXPECT_EQ(0, mock_new_card_bubble_controller()->bubbles_shown());
 }
 
 }  // namespace autofill

@@ -942,7 +942,7 @@ void LocationBarViewGtk::UpdateOpenPDFInReaderPrompt() {
   // Not implemented on Gtk.
 }
 
-void LocationBarViewGtk::UpdateAutofillCreditCardView() {
+void LocationBarViewGtk::UpdateGeneratedCreditCardView() {
   NOTIMPLEMENTED();
 }
 

@@ -3,6 +3,7 @@ isherman@chromium.org
 
 per-file autofill_dialog*=dbeam@chromium.org
 per-file data_model*=dbeam@chromium.org
+per-file *credit_card_bubble*=dbeam@chromium.org
 
 # Temporary owner, for refactoring changes only.
 joi@chromium.org
