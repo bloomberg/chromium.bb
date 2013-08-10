@@ -1174,12 +1174,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     unsigned char flags) {
   DCHECK(name);
 
-  TimeDelta duration;
-  if (phase == TRACE_EVENT_PHASE_END && trace_options_ & ECHO_TO_CONSOLE) {
-    duration = timestamp - thread_event_start_times_[thread_id].top();
-    thread_event_start_times_[thread_id].pop();
-  }
-
   if (flags & TRACE_EVENT_FLAG_MANGLE_ID)
     id ^= process_id_hash_;
 
@@ -1189,20 +1183,17 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
                flags);
 #endif
 
+  if (!IsCategoryGroupEnabled(category_group_enabled))
+    return;
+
   TimeTicks now = timestamp - time_offset_;
   EventCallback event_callback_copy;
 
   NotificationHelper notifier(this);
 
-  do {
-    AutoLock lock(lock_);
-    if (!IsCategoryGroupEnabled(category_group_enabled))
-      return;
-
-    event_callback_copy = event_callback_;
-    if (logged_events_->IsFull())
-      break;
-
+  // Check and update the current thread name only if the event is for the
+  // current thread to avoid locks in most cases.
+  if (thread_id == static_cast<int>(PlatformThread::CurrentId())) {
     const char* new_name = ThreadIdNameManager::GetInstance()->
         GetName(thread_id);
     // Check if the thread name has been set or changed since the previous
@@ -1213,6 +1204,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
         new_name && *new_name) {
       g_current_thread_name.Get().Set(new_name);
 
+      AutoLock lock(lock_);
       hash_map<int, std::string>::iterator existing_name =
           thread_names_.find(thread_id);
       if (existing_name == thread_names_.end()) {
@@ -1232,15 +1224,29 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
         }
       }
     }
+  }
 
-    TraceEvent trace_event(thread_id,
-        now, phase, category_group_enabled, name, id,
-        num_args, arg_names, arg_types, arg_values,
-        convertable_values, flags);
+  TraceEvent trace_event(thread_id,
+      now, phase, category_group_enabled, name, id,
+      num_args, arg_names, arg_types, arg_values,
+      convertable_values, flags);
+
+  do {
+    AutoLock lock(lock_);
+
+    event_callback_copy = event_callback_;
+    if (logged_events_->IsFull())
+      break;
 
     logged_events_->AddEvent(trace_event);
 
     if (trace_options_ & ECHO_TO_CONSOLE) {
+      TimeDelta duration;
+      if (phase == TRACE_EVENT_PHASE_END) {
+        duration = timestamp - thread_event_start_times_[thread_id].top();
+        thread_event_start_times_[thread_id].pop();
+      }
+
       std::string thread_name = thread_names_[thread_id];
       if (thread_colors_.find(thread_name) == thread_colors_.end())
         thread_colors_[thread_name] = (thread_colors_.size() % 6) + 1;
@@ -1263,6 +1269,9 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
         log << base::StringPrintf(" (%.3f ms)", duration.InMillisecondsF());
 
       LOG(ERROR) << log.str() << "\x1b[0;m";
+
+      if (phase == TRACE_EVENT_PHASE_BEGIN)
+        thread_event_start_times_[thread_id].push(timestamp);
     }
 
     if (logged_events_->IsFull())
@@ -1271,9 +1280,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     if (watch_category_ == category_group_enabled && watch_event_name_ == name)
       notifier.AddNotificationWhileLocked(EVENT_WATCH_NOTIFICATION);
   } while (0); // release lock
-
-  if (phase == TRACE_EVENT_PHASE_BEGIN && trace_options_ & ECHO_TO_CONSOLE)
-    thread_event_start_times_[thread_id].push(timestamp);
 
   notifier.SendNotificationIfAny();
   if (event_callback_copy != NULL) {
@@ -1455,6 +1461,7 @@ void TraceLog::UpdateProcessLabel(
 }
 
 void TraceLog::RemoveProcessLabel(int label_id) {
+  AutoLock lock(lock_);
   base::hash_map<int, std::string>::iterator it = process_labels_.find(
         label_id);
   if (it == process_labels_.end())
