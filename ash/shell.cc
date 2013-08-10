@@ -743,6 +743,18 @@ void Shell::OnAppTerminating() {
 
 void Shell::OnLockStateChanged(bool locked) {
   FOR_EACH_OBSERVER(ShellObserver, observers_, OnLockStateChanged(locked));
+#ifndef NDEBUG
+  // Make sure that there is no system modal in Lock layer when unlocked.
+  if (!locked) {
+    std::vector<aura::Window*> containers = GetContainersFromAllRootWindows(
+        internal::kShellWindowId_LockSystemModalContainer,
+        GetPrimaryRootWindow());
+    for (std::vector<aura::Window*>::const_iterator iter = containers.begin();
+         iter != containers.end(); ++iter) {
+      DCHECK_EQ(0u, (*iter)->children().size());
+    }
+  }
+#endif
 }
 
 void Shell::CreateLauncher() {
