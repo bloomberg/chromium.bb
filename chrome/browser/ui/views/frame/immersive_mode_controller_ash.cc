@@ -353,7 +353,7 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
 
     if (reveal_state_ == REVEALED) {
       // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
-      UpdateLocatedEventRevealedLock(NULL);
+      UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
       UpdateFocusRevealedLock();
     }
   } else {
@@ -440,7 +440,7 @@ void ImmersiveModeControllerAsh::OnMouseEvent(ui::MouseEvent* event) {
     return;
 
   if (IsRevealed())
-    UpdateLocatedEventRevealedLock(event);
+    UpdateLocatedEventRevealedLock(event, ALLOW_REVEAL_WHILE_CLOSING_NO);
 
   // Trigger a reveal if the cursor pauses at the top of the screen for a
   // while.
@@ -452,7 +452,7 @@ void ImmersiveModeControllerAsh::OnTouchEvent(ui::TouchEvent* event) {
   if (!enabled_ || event->type() != ui::ET_TOUCH_PRESSED)
     return;
 
-  UpdateLocatedEventRevealedLock(event);
+  UpdateLocatedEventRevealedLock(event, ALLOW_REVEAL_WHILE_CLOSING_NO);
 }
 
 void ImmersiveModeControllerAsh::OnGestureEvent(ui::GestureEvent* event) {
@@ -493,15 +493,6 @@ void ImmersiveModeControllerAsh::OnWillChangeFocus(views::View* focused_before,
 
 void ImmersiveModeControllerAsh::OnDidChangeFocus(views::View* focused_before,
                                                   views::View* focused_now) {
-  scoped_ptr<ImmersiveRevealedLock> lock;
-  if (reveal_state_ == REVEALED || reveal_state_ == SLIDING_OPEN) {
-    // Acquire a lock so that if UpdateLocatedEventRevealedLock() or
-    // UpdateFocusRevealedLock() ends the reveal, it occurs after the
-    // function terminates. This is useful in tests.
-    lock.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
-  }
-
-  UpdateLocatedEventRevealedLock(NULL);
   UpdateFocusRevealedLock();
 }
 
@@ -517,20 +508,21 @@ void ImmersiveModeControllerAsh::OnWidgetDestroying(views::Widget* widget) {
 void ImmersiveModeControllerAsh::OnWidgetActivationChanged(
     views::Widget* widget,
     bool active) {
-  scoped_ptr<ImmersiveRevealedLock> lock;
-  if (reveal_state_ == REVEALED || reveal_state_ == SLIDING_OPEN) {
-    // Acquire a lock so that if UpdateLocatedEventRevealedLock() or
-    // UpdateFocusRevealedLock() ends the reveal, it occurs after the
-    // function terminates. This is useful in tests.
-    lock.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
-  }
-
   // Mouse hover should not initiate revealing the top-of-window views while
   // |native_window_| is inactive.
   top_edge_hover_timer_.Stop();
 
-  UpdateLocatedEventRevealedLock(NULL);
   UpdateFocusRevealedLock();
+
+  // Allow the top-of-window views to stay revealed if all of the revealed locks
+  // were released in the process of activating |widget| but the mouse is still
+  // hovered above the top-of-window views. For instance, if the bubble which
+  // has been keeping the top-of-window views revealed is hidden but the mouse
+  // is hovered above the top-of-window views, the top-of-window views should
+  // stay revealed. We cannot call UpdateLocatedEventRevealedLock() from
+  // BubbleManager::UpdateRevealedLock() because |widget| is not yet active
+  // at that time.
+  UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_YES);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -623,12 +615,12 @@ void ImmersiveModeControllerAsh::SetForceHideTabIndicatorsForTest(bool force) {
 void ImmersiveModeControllerAsh::StartRevealForTest(bool hovered) {
   MaybeStartReveal(ANIMATE_NO);
   MoveMouse(top_container_, hovered);
-  UpdateLocatedEventRevealedLock(NULL);
+  UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
 }
 
 void ImmersiveModeControllerAsh::SetMouseHoveredForTest(bool hovered) {
   MoveMouse(top_container_, hovered);
-  UpdateLocatedEventRevealedLock(NULL);
+  UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
 }
 
 void ImmersiveModeControllerAsh::DisableAnimationsForTest() {
@@ -746,7 +738,8 @@ void ImmersiveModeControllerAsh::UpdateTopEdgeHoverTimer(
 }
 
 void ImmersiveModeControllerAsh::UpdateLocatedEventRevealedLock(
-    ui::LocatedEvent* event) {
+    ui::LocatedEvent* event,
+    AllowRevealWhileClosing allow_reveal_while_closing) {
   if (!enabled_)
     return;
   DCHECK(!event || event->IsMouseEvent() || event->IsTouchEvent());
@@ -755,8 +748,11 @@ void ImmersiveModeControllerAsh::UpdateLocatedEventRevealedLock(
   // views are sliding closed or are closed with the following exceptions:
   // - Hovering at y = 0 which is handled in OnMouseEvent().
   // - Doing a SWIPE_OPEN edge gesture which is handled in OnGestureEvent().
-  if (reveal_state_ == SLIDING_CLOSED || reveal_state_ == CLOSED)
+  if (reveal_state_ == CLOSED ||
+      (reveal_state_ == SLIDING_CLOSED &&
+       allow_reveal_while_closing == ALLOW_REVEAL_WHILE_CLOSING_NO)) {
     return;
+  }
 
   // Neither the mouse nor touch should keep the top-of-window views revealed if
   // |native_window_| is not active.
@@ -895,7 +891,7 @@ bool ImmersiveModeControllerAsh::UpdateRevealedLocksForSwipe(
         return true;
 
       // Ending the reveal was unsuccessful. Reaquire the locks if appropriate.
-      UpdateLocatedEventRevealedLock(NULL);
+      UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
       UpdateFocusRevealedLock();
     }
   }
@@ -1031,7 +1027,7 @@ void ImmersiveModeControllerAsh::OnSlideOpenAnimationCompleted(Layout layout) {
 
   // The user may not have moved the mouse since the reveal was initiated.
   // Update the revealed lock to reflect the mouse's current state.
-  UpdateLocatedEventRevealedLock(NULL);
+  UpdateLocatedEventRevealedLock(NULL, ALLOW_REVEAL_WHILE_CLOSING_NO);
 }
 
 void ImmersiveModeControllerAsh::MaybeEndReveal(Animate animate) {

@@ -13,6 +13,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/base/animation/slide_animation.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 // For now, immersive fullscreen is Chrome OS only.
@@ -96,7 +97,21 @@ class ImmersiveModeControllerAshTest : public ash::test::AshTestBase {
     widget_->GetContentsView()->AddChildView(top_container_);
 
     controller_->Init(delegate_.get(), widget_, top_container_);
-    controller_->DisableAnimationsForTest();
+    SetAnimationsDisabled(true);
+  }
+
+  // Enable or disable the immersive mode controller's animations. When the
+  // immersive mode controller's animations are disabled, some behavior is
+  // slightly different. In particular, the behavior is different when there
+  // is a transfer in which lock keeps the top-of-window views revealed (eg
+  // bubble keeps top-of-window views revealed -> mouse keeps top-of-window
+  // views revealed). It is necessary to temparily enable the immersive
+  // controller's animations to get the correct behavior in tests.
+  void SetAnimationsDisabled(bool disabled) {
+    controller_->animations_disabled_for_test_ = disabled;
+    // Force any in progress animations to finish.
+    if (disabled)
+      controller_->animation_->End();
   }
 
   // Attempt to reveal the top-of-window views via |modality|.
@@ -654,14 +669,25 @@ TEST_F(ImmersiveModeControllerAshTest, Bubbles) {
   bubble_widget2->Close();
   EXPECT_FALSE(controller()->IsRevealed());
 
-  // 2) Test that the top-of-window views stay revealed as long as at least one
-  // bubble anchored to a child of the top container is visible.
-  views::BubbleDelegateView* bubble_delegate3(new views::BubbleDelegateView(
-      child_view, views::BubbleBorder::NONE));
-  bubble_delegate3->set_use_focusless(true);
-  views::Widget* bubble_widget3(views::BubbleDelegateView::CreateBubble(
-      bubble_delegate3));
+  // 2) Test that transitioning from keeping the top-of-window views revealed
+  // because of a bubble to keeping the top-of-window views revealed because of
+  // mouse hover by activating |top_container_widget| works.
+  views::Widget* bubble_widget3 = views::BubbleDelegateView::CreateBubble(
+      new views::BubbleDelegateView(child_view, views::BubbleBorder::NONE));
   bubble_widget3->Show();
+  SetHovered(true);
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  SetAnimationsDisabled(false);
+  // Activating |top_container_widget| will close |bubble_widget3|.
+  top_container_widget->Activate();
+  SetAnimationsDisabled(true);
+  EXPECT_TRUE(controller()->IsRevealed());
+
+  // 3) Test that the top-of-window views stay revealed as long as at least one
+  // bubble anchored to a child of the top container is visible.
+  SetHovered(false);
+  EXPECT_FALSE(controller()->IsRevealed());
 
   views::BubbleDelegateView* bubble_delegate4(new views::BubbleDelegateView(
       child_view, views::BubbleBorder::NONE));
@@ -670,44 +696,51 @@ TEST_F(ImmersiveModeControllerAshTest, Bubbles) {
       bubble_delegate4));
   bubble_widget4->Show();
 
-  EXPECT_TRUE(controller()->IsRevealed());
-  bubble_widget3->Hide();
+  views::BubbleDelegateView* bubble_delegate5(new views::BubbleDelegateView(
+      child_view, views::BubbleBorder::NONE));
+  bubble_delegate5->set_use_focusless(true);
+  views::Widget* bubble_widget5(views::BubbleDelegateView::CreateBubble(
+      bubble_delegate5));
+  bubble_widget5->Show();
+
   EXPECT_TRUE(controller()->IsRevealed());
   bubble_widget4->Hide();
+  EXPECT_TRUE(controller()->IsRevealed());
+  bubble_widget5->Hide();
   EXPECT_FALSE(controller()->IsRevealed());
-  bubble_widget4->Show();
+  bubble_widget5->Show();
   EXPECT_TRUE(controller()->IsRevealed());
 
-  // 3) Test that visibility changes which occur while immersive fullscreen is
+  // 4) Test that visibility changes which occur while immersive fullscreen is
   // disabled are handled upon reenabling immersive fullscreen.
   controller()->SetEnabled(false);
-  bubble_widget4->Hide();
+  bubble_widget5->Hide();
   controller()->SetEnabled(true);
   EXPECT_FALSE(controller()->IsRevealed());
 
-  // We do not need |bubble_widget3| or |bubble_widget4| anymore, close them.
-  bubble_widget3->Close();
+  // We do not need |bubble_widget4| or |bubble_widget5| anymore, close them.
   bubble_widget4->Close();
+  bubble_widget5->Close();
 
-  // 4) Test that a bubble added while immersive fullscreen is disabled is
+  // 5) Test that a bubble added while immersive fullscreen is disabled is
   // handled upon reenabling immersive fullscreen.
   controller()->SetEnabled(false);
 
-  views::Widget* bubble_widget5 = views::BubbleDelegateView::CreateBubble(
+  views::Widget* bubble_widget6 = views::BubbleDelegateView::CreateBubble(
       new views::BubbleDelegateView(child_view, views::BubbleBorder::NONE));
-  bubble_widget5->Show();
+  bubble_widget6->Show();
 
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->IsRevealed());
 
-  bubble_widget5->Close();
+  bubble_widget6->Close();
 
-  // 5) Test that a bubble which is not anchored to a child of the
+  // 6) Test that a bubble which is not anchored to a child of the
   // TopContainerView does not trigger a reveal or keep the
   // top-of-window views revealed if they are already revealed.
-  views::Widget* bubble_widget6 = views::BubbleDelegateView::CreateBubble(
+  views::Widget* bubble_widget7 = views::BubbleDelegateView::CreateBubble(
       new views::BubbleDelegateView(unrelated_view, views::BubbleBorder::NONE));
-  bubble_widget6->Show();
+  bubble_widget7->Show();
   EXPECT_FALSE(controller()->IsRevealed());
 
   // Activating |top_container_widget| will close |bubble_widget6|.
@@ -715,12 +748,12 @@ TEST_F(ImmersiveModeControllerAshTest, Bubbles) {
   AttemptReveal(MODALITY_MOUSE);
   EXPECT_TRUE(controller()->IsRevealed());
 
-  views::Widget* bubble_widget7 = views::BubbleDelegateView::CreateBubble(
+  views::Widget* bubble_widget8 = views::BubbleDelegateView::CreateBubble(
       new views::BubbleDelegateView(unrelated_view, views::BubbleBorder::NONE));
-  bubble_widget7->Show();
+  bubble_widget8->Show();
   SetHovered(false);
   EXPECT_FALSE(controller()->IsRevealed());
-  bubble_widget7->Close();
+  bubble_widget8->Close();
 }
 
 #endif  // defined(OS_WIN)
