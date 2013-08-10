@@ -576,6 +576,22 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   // is fullscreen status.
   widget->Close();
   RunAllPendingInMessageLoop();
+
+  // The shelf should be shown because there are no more visible windows.
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  // Swipe-up to hide. This should have no effect because there are no visible
+  // windows.
+  end = below_start - delta;
+  generator.GestureScrollSequenceWithCallback(below_start, end,
+      base::TimeDelta::FromMilliseconds(10), kNumScrollSteps,
+      base::Bind(&ShelfDragCallback::ProcessScroll,
+                 base::Unretained(&handler)));
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
 }
 
 // Fails on Mac only.  Need to be implemented.  http://crbug.com/111279.

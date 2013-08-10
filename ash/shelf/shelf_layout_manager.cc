@@ -36,6 +36,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/base/events/event.h"
 #include "ui/base/events/event_handler.h"
@@ -954,9 +955,6 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (visibility_state != SHELF_AUTO_HIDE || !shelf_)
     return SHELF_AUTO_HIDE_HIDDEN;
 
-  if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS)
-    return gesture_drag_auto_hide_state_;
-
   Shell* shell = Shell::GetInstance();
   if (shell->GetAppListTargetVisibility())
     return SHELF_AUTO_HIDE_SHOWN;
@@ -974,8 +972,34 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_->IsActive() || shelf_->status_area_widget()->IsActive())
     return SHELF_AUTO_HIDE_SHOWN;
 
+  const std::vector<aura::Window*> windows =
+      ash::MruWindowTracker::BuildWindowList(false);
+
+  // Process the window list and check if there are any visible windows.
+  bool visible_window = false;
+  for (size_t i = 0; i < windows.size(); ++i) {
+    if (windows[i] && windows[i]->IsVisible() &&
+        !ash::wm::IsWindowMinimized(windows[i]) &&
+        root_window_ == windows[i]->GetRootWindow()) {
+      visible_window = true;
+      break;
+    }
+  }
+  // If there are no visible windows do not hide the shelf.
+  if (!visible_window)
+    return SHELF_AUTO_HIDE_SHOWN;
+
+  if (gesture_drag_status_ == GESTURE_DRAG_COMPLETE_IN_PROGRESS)
+    return gesture_drag_auto_hide_state_;
+
   // Don't show if the user is dragging the mouse.
   if (auto_hide_event_filter_.get() && auto_hide_event_filter_->in_mouse_drag())
+    return SHELF_AUTO_HIDE_HIDDEN;
+
+  // Ignore the mouse position if mouse events are disabled.
+  aura::client::CursorClient* cursor_client = aura::client::GetCursorClient(
+      shelf_->GetNativeWindow()->GetRootWindow());
+  if (!cursor_client->IsMouseEventsEnabled())
     return SHELF_AUTO_HIDE_HIDDEN;
 
   gfx::Rect shelf_region = shelf_->GetWindowBoundsInScreen();
@@ -1018,19 +1042,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
     return SHELF_AUTO_HIDE_SHOWN;
   }
 
-  const std::vector<aura::Window*> windows =
-      ash::MruWindowTracker::BuildWindowList(false);
-
-  // Process the window list and check if there are any visible windows.
-  for (size_t i = 0; i < windows.size(); ++i) {
-    if (windows[i] && windows[i]->IsVisible() &&
-        !ash::wm::IsWindowMinimized(windows[i]) &&
-        root_window_ == windows[i]->GetRootWindow())
-      return SHELF_AUTO_HIDE_HIDDEN;
-  }
-
-  // If there are no visible windows do not hide the shelf.
-  return SHELF_AUTO_HIDE_SHOWN;
+  return SHELF_AUTO_HIDE_HIDDEN;
 }
 
 void ShelfLayoutManager::UpdateHitTestBounds() {
