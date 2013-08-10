@@ -61,16 +61,19 @@ var Statistics = new (function () {
     this.confidenceIntervalDelta = function (confidenceLevel, numberOfSamples, sum, squareSum) {
         var probability = (1 - (1 - confidenceLevel) / 2);
         if (!(probability in tDistributionInverseCDF)) {
-            throw 'We only support ' + this.supportedConfidenceLevels().map(
-                function (level) { return level * 100 + '%'; } ).join(', ') + ' confidence intervals.';
+            console.warn('We only support ' + this.supportedConfidenceLevels().map(
+                function (level) { return level * 100 + '%'; } ).join(', ') + ' confidence intervals.');
+            return NaN;
         }
         if (numberOfSamples - 2 < 0)
             return NaN;
 
         var cdfForProbability = tDistributionInverseCDF[probability];
         var degreesOfFreedom = numberOfSamples - 1;
-        if (degreesOfFreedom > cdfForProbability.length)
-            throw 'We only support up to ' + deltas.length + ' degrees of freedom';
+        if (degreesOfFreedom > cdfForProbability.length) {
+            console.warn('We only support up to ' + cdfForProbability.length + ' degrees of freedom');
+            return NaN;
+        }
 
         // tDistributionQuantile(degreesOfFreedom, confidenceLevel) * sampleStandardDeviation / sqrt(numberOfSamples) * S/sqrt(numberOfSamples)
         var quantile = cdfForProbability[degreesOfFreedom - 1]; // The first entry is for the one degree of freedom.
