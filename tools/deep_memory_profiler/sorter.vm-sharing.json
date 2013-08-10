@@ -3,6 +3,7 @@
   "version": 1,
   "world": "vm",
   "name": "sharing",
+  "root": true,
   "order": {},
   "rules": [
     {

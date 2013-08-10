@@ -20,6 +20,8 @@ DEFAULT_SORTERS = [
     os.path.join(BASE_PATH, 'sorter.vm-sharing.json'),
     ]
 
+DEFAULT_TEMPLATES = os.path.join(BASE_PATH, 'templates.json')
+
 
 class Unit(object):
   """Represents a minimum unit of memory usage categorization.
@@ -152,7 +154,7 @@ class AbstractRule(object):
   def __init__(self, dct):
     self._name = dct['name']
     self._hidden = dct.get('hidden', False)
-    self._subworlds = dct.get('subworlds', [])
+    self._subs = dct.get('subs', [])
 
   def match(self, unit):
     raise NotImplementedError()
@@ -165,9 +167,9 @@ class AbstractRule(object):
   def hidden(self):
     return self._hidden
 
-  def iter_subworld(self):
-    for subworld in self._subworlds:
-      yield subworld
+  def iter_subs(self):
+    for sub in self._subs:
+      yield sub
 
 
 class VMRule(AbstractRule):
@@ -328,6 +330,7 @@ class AbstractSorter(object):
     self._version = dct['version']
     self._world = dct['world']
     self._name = dct['name']
+    self._root = dct.get('root', False)
     self._order = dct['order']
 
     self._rules = []
@@ -367,6 +370,10 @@ class AbstractSorter(object):
   @property
   def name(self):
     return self._name
+
+  @property
+  def root(self):
+    return self._root
 
   def find(self, unit):
     raise NotImplementedError()
@@ -414,6 +421,21 @@ class MallocSorter(AbstractSorter):
     assert False
 
 
+class SorterTemplates(object):
+  """Represents a template for sorters."""
+  def __init__(self, dct):
+    self._dict = dct
+
+  def as_dict(self):
+    return self._dict
+
+  @staticmethod
+  def load(filename):
+    with open(filename) as templates_f:
+      templates_dict = json.load(templates_f)
+    return SorterTemplates(templates_dict)
+
+
 class SorterSet(object):
   """Represents an iterable set of Sorters."""
   def __init__(self, additional=None, default=None):
@@ -427,6 +449,7 @@ class SorterSet(object):
       if sorter.world not in self._sorters:
         self._sorters[sorter.world] = []
       self._sorters[sorter.world].append(sorter)
+    self._templates = SorterTemplates.load(DEFAULT_TEMPLATES)
 
   def __repr__(self):
     result = cStringIO.StringIO()
@@ -441,3 +464,7 @@ class SorterSet(object):
   def iter_world(self, world):
     for sorter in self._sorters.get(world, []):
       yield sorter
+
+  @property
+  def templates(self):
+    return self._templates

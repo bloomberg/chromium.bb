@@ -3,6 +3,7 @@
   "version": 1,
   "world": "vm",
   "name": "map",
+  "root": true,
   "order": {},
   "rules": [
     {
@@ -46,8 +47,11 @@
     {
       "name": "mmap-tcmalloc",
       "backtrace_function": ".*(DoAllocWithArena|SbrkSysAllocator::Alloc|MmapSysAllocator::Alloc|LowLevelAlloc::Alloc|LowLevelAlloc::AllocWithArena).*",
-      "mmap": true,
-      "subworlds": [ "malloc" ]
+      "subs": [
+        [ "malloc", "component" ],
+        [ "malloc", "type" ]
+      ],
+      "mmap": true
     },
     {
       "name": "mmap-v8-heap-newspace",

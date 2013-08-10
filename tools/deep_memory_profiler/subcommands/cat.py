@@ -37,6 +37,9 @@ class CatCommand(SubCommand):
     (bucket_set, dumps) = SubCommand.load_basic_files(
         dump_path, True, alternative_dirs=alternative_dirs_dict)
 
+    # Load all sorters.
+    sorters = SorterSet()
+
     json_root = OrderedDict()
     json_root['version'] = 1
     json_root['run_id'] = None
@@ -46,10 +49,14 @@ class CatCommand(SubCommand):
         json_root['run_id'] = ''
         break
       json_root['run_id'] = dump.run_id
-    json_root['snapshots'] = []
+    json_root['roots'] = []
+    for sorter in sorters:
+      if sorter.root:
+        json_root['roots'].append([sorter.world, sorter.name])
+    json_root['default_template'] = 'l2'
+    json_root['templates'] = sorters.templates.as_dict()
 
-    # Load all sorters.
-    sorters = SorterSet()
+    json_root['snapshots'] = []
 
     for dump in dumps:
       json_root['snapshots'].append(
@@ -76,9 +83,9 @@ class CatCommand(SubCommand):
   def _fill_world(dump, bucket_set, sorters, world):
     root = OrderedDict()
 
-    root['name'] = 'world'
+    root['name'] = world
     if world == 'vm':
-      root['unit_fields'] = ['committed', 'reserved']
+      root['unit_fields'] = ['size', 'reserved']
     elif world == 'malloc':
       root['unit_fields'] = ['size', 'alloc_count', 'free_count']
 
@@ -107,11 +114,11 @@ class CatCommand(SubCommand):
           category = OrderedDict()
           category['name'] = found.name
           category['color'] = 'random'
-          subworlds = {}
-          for subworld in found.iter_subworld():
-            subworlds[subworld] = False
-          if subworlds:
-            category['subworlds'] = subworlds
+          subs = []
+          for sub_world, sub_breakdown in found.iter_subs():
+            subs.append([sub_world, sub_breakdown])
+          if subs:
+            category['subs'] = subs
           if found.hidden:
             category['hidden'] = True
           category['units'] = []
