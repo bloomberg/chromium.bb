@@ -109,6 +109,7 @@ const char kChromeUIOSCreditsURL[] = "chrome://os-credits/";
 const char kChromeUIProxySettingsURL[] = "chrome://proxy-settings/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
 const char kChromeUISlideshowURL[] = "chrome://slideshow/";
+const char kChromeUISlowURL[] = "chrome://slow/";
 const char kChromeUISystemInfoURL[] = "chrome://system/";
 const char kChromeUITermsOemURL[] = "chrome://terms/oem";
 const char kChromeUIUserImageURL[] = "chrome://userimage/";
@@ -262,6 +263,7 @@ const char kChromeUIProxySettingsHost[] = "proxy-settings";
 const char kChromeUIRotateHost[] = "rotate";
 const char kChromeUISimUnlockHost[] = "sim-unlock";
 const char kChromeUISlideshowHost[] = "slideshow";
+const char kChromeUISlowHost[] = "slow";
 const char kChromeUISystemInfoHost[] = "system";
 const char kChromeUIUserImageHost[] = "userimage";
 
