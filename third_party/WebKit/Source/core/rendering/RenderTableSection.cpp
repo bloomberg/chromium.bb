@@ -639,7 +639,7 @@ void RenderTableSection::layout()
     }
 
     statePusher.pop();
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 void RenderTableSection::distributeExtraLogicalHeightToPercentRows(int& extraLogicalHeight, int totalPercent)

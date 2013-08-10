@@ -623,6 +623,7 @@ public:
 
     void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0);
     void setNeedsLayout(bool needsLayout, MarkingBehavior = MarkContainingBlockChain);
+    void clearNeedsLayout();
     void setChildNeedsLayout(bool childNeedsLayout, MarkingBehavior = MarkContainingBlockChain);
     void setNeedsPositionedMovementLayout();
     void setNeedsSimplifiedNormalFlowLayout();
@@ -1196,6 +1197,7 @@ private:
 
     RenderObjectBitfields m_bitfields;
 
+    // FIXME: These private methods are silly. We should just call m_bitfields.setXXX(b) directly.
     void setNeedsPositionedMovementLayout(bool b) { m_bitfields.setNeedsPositionedMovementLayout(b); }
     void setNormalChildNeedsLayout(bool b) { m_bitfields.setNormalChildNeedsLayout(b); }
     void setPosChildNeedsLayout(bool b) { m_bitfields.setPosChildNeedsLayout(b); }
@@ -1240,27 +1242,32 @@ inline bool RenderObject::isBeforeOrAfterContent() const
 
 inline void RenderObject::setNeedsLayout(bool needsLayout, MarkingBehavior markParents)
 {
+    // FIXME: Remove the boolean argument to this function as it's no longer used.
+    ASSERT_UNUSED(needsLayout, needsLayout);
+    ASSERT(!isSetNeedsLayoutForbidden());
+
     bool alreadyNeededLayout = m_bitfields.needsLayout();
-    m_bitfields.setNeedsLayout(needsLayout);
-    if (needsLayout) {
-        ASSERT(!isSetNeedsLayoutForbidden());
-        if (!alreadyNeededLayout) {
-            if (markParents == MarkContainingBlockChain)
-                markContainingBlocksForLayout();
-            if (hasLayer())
-                setLayerNeedsFullRepaint();
-        }
-    } else {
-        setEverHadLayout(true);
-        setPosChildNeedsLayout(false);
-        setNeedsSimplifiedNormalFlowLayout(false);
-        setNormalChildNeedsLayout(false);
-        setNeedsPositionedMovementLayout(false);
-        setAncestorLineBoxDirty(false);
-#ifndef NDEBUG
-        checkBlockPositionedObjectsNeedLayout();
-#endif
+    m_bitfields.setNeedsLayout(true);
+    if (!alreadyNeededLayout) {
+        if (markParents == MarkContainingBlockChain)
+            markContainingBlocksForLayout();
+        if (hasLayer())
+            setLayerNeedsFullRepaint();
     }
+}
+
+inline void RenderObject::clearNeedsLayout()
+{
+    m_bitfields.setNeedsLayout(false);
+    setEverHadLayout(true);
+    setPosChildNeedsLayout(false);
+    setNeedsSimplifiedNormalFlowLayout(false);
+    setNormalChildNeedsLayout(false);
+    setNeedsPositionedMovementLayout(false);
+    setAncestorLineBoxDirty(false);
+#ifndef NDEBUG
+    checkBlockPositionedObjectsNeedLayout();
+#endif
 }
 
 inline void RenderObject::setChildNeedsLayout(bool childNeedsLayout, MarkingBehavior markParents)

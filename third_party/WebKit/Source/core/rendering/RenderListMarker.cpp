@@ -1343,7 +1343,7 @@ void RenderListMarker::layout()
     if (endMargin.isFixed())
         setMarginEnd(endMargin.value());
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 void RenderListMarker::imageChanged(WrappedImagePtr o, const IntRect*)

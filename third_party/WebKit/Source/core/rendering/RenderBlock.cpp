@@ -1699,7 +1699,7 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
         }
     }
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 void RenderBlock::addOverflowFromChildren()
@@ -2680,8 +2680,9 @@ void RenderBlock::simplifiedNormalFlowLayout()
                     RootInlineBox* box = toRenderBox(o)->inlineBoxWrapper()->root();
                     lineBoxes.add(box);
                 }
-            } else if (o->isText() || (o->isRenderInline() && !walker.atEndOfInline()))
-                o->setNeedsLayout(false);
+            } else if (o->isText() || (o->isRenderInline() && !walker.atEndOfInline())) {
+                o->clearNeedsLayout();
+            }
         }
 
         // FIXME: Glyph overflow will get lost in this case, but not really a big deal.
@@ -2737,7 +2738,7 @@ bool RenderBlock::simplifiedLayout()
 
     updateScrollInfoAfterLayout();
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
     return true;
 }
 
@@ -2811,7 +2812,7 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPosit
         // We don't have to do a full layout.  We just have to update our position. Try that first. If we have shrink-to-fit width
         // and we hit the available width constraint, the layoutIfNeeded() will catch it and do a full layout.
         if (r->needsPositionedMovementLayoutOnly() && r->tryLayoutDoingPositionedMovementOnly())
-            r->setNeedsLayout(false);
+            r->clearNeedsLayout();
 
         // If we are paginated or in a line grid, go ahead and compute a vertical position for our object now.
         // If it's wrong we'll lay out again.

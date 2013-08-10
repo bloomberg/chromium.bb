@@ -137,7 +137,7 @@ void RenderIFrame::layout()
     addVisualEffectOverflow();
     updateLayerTransform();
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 }

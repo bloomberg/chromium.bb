@@ -293,7 +293,7 @@ void RenderView::layout()
     checkLayoutState(state);
 #endif
     m_layoutState = 0;
-    setNeedsLayout(false);
+    clearNeedsLayout();
 
     if (isSeamlessAncestorInFlowThread)
         flowThreadController()->setCurrentRenderFlowThread(0);

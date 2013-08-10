@@ -2782,7 +2782,7 @@ void RenderObject::layout()
         ASSERT(!child->needsLayout());
         child = child->nextSibling();
     }
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 // FIXME: Do we need this method at all? If setNeedsLayout early returns in all the right places,

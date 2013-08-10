@@ -88,7 +88,7 @@ void RenderMedia::layout()
     controlsRenderer->style()->setHeight(Length(newSize.height(), Fixed));
     controlsRenderer->style()->setWidth(Length(newSize.width(), Fixed));
     controlsRenderer->forceLayout();
-    setNeedsLayout(false);
+    clearNeedsLayout();
 
     statePusher.pop();
 }

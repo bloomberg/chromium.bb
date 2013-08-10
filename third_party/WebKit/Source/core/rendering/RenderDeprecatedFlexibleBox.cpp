@@ -333,7 +333,7 @@ void RenderDeprecatedFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
     // Repaint with our new bounds if they are different from our old bounds.
     repainter.repaintAfterLayout();
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 // The first walk over our kids is to find out if we have any flexible children.

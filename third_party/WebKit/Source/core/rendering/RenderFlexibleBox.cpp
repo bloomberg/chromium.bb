@@ -294,7 +294,7 @@ void RenderFlexibleBox::layoutBlock(bool relayoutChildren, LayoutUnit)
 
     repainter.repaintAfterLayout();
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 void RenderFlexibleBox::appendChildFrameRects(ChildFrameRects& childFrameRects)

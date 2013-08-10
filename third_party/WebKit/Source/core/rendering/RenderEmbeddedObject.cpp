@@ -225,7 +225,7 @@ void RenderEmbeddedObject::layout()
     if (!widget() && frameView())
         frameView()->addWidgetToUpdate(this);
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 
     if (!canHaveChildren())
         return;
@@ -254,7 +254,7 @@ void RenderEmbeddedObject::layout()
     childBox->style()->setHeight(Length(newSize.height(), Fixed));
     childBox->style()->setWidth(Length(newSize.width(), Fixed));
     childBox->forceLayout();
-    setNeedsLayout(false);
+    clearNeedsLayout();
 
     statePusher.pop();
 }

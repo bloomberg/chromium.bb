@@ -2114,7 +2114,7 @@ void RenderBlock::layoutInlineChildren(bool relayoutChildren, LayoutUnit& repain
                     toRenderInline(o)->updateAlwaysCreateLineBoxes(layoutState.isFullLayout());
                 if (layoutState.isFullLayout() || o->selfNeedsLayout())
                     dirtyLineBoxesForRenderer(o, layoutState.isFullLayout());
-                o->setNeedsLayout(false);
+                o->clearNeedsLayout();
             }
         }
 

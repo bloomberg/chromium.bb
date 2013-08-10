@@ -566,7 +566,7 @@ void RenderTable::layout()
     }
 
     m_columnLogicalWidthChanged = false;
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 // Collect all the unique border values that we want to paint in a sorted list.

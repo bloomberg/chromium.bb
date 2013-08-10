@@ -273,7 +273,7 @@ void RenderGrid::layoutBlock(bool relayoutChildren, LayoutUnit)
 
     repainter.repaintAfterLayout();
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 void RenderGrid::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const

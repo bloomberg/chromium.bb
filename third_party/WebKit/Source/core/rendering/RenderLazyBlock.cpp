@@ -245,7 +245,7 @@ void RenderLazyBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalH
     repainter.repaintAfterLayout();
 
     m_isNestedLayout = false;
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 } // namespace WebCore

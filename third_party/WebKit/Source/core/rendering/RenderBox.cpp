@@ -388,7 +388,7 @@ void RenderBox::layout()
 
     RenderObject* child = firstChild();
     if (!child) {
-        setNeedsLayout(false);
+        clearNeedsLayout();
         return;
     }
 
@@ -400,7 +400,7 @@ void RenderBox::layout()
     }
     statePusher.pop();
     invalidateBackgroundObscurationStatus();
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 // More IE extensions.  clientWidth and clientHeight represent the interior of an object

@@ -480,7 +480,7 @@ void RenderFrameSet::layout()
             repaintUsingContainer(repaintContainer, pixelSnappedIntRect(newBounds));
     }
 
-    setNeedsLayout(false);
+    clearNeedsLayout();
 }
 
 void RenderFrameSet::positionFrames()
@@ -522,7 +522,7 @@ void RenderFrameSet::positionFrames()
     for (; child; child = child->nextSiblingBox()) {
         child->setWidth(0);
         child->setHeight(0);
-        child->setNeedsLayout(false);
+        child->clearNeedsLayout();
     }
 }
 
