@@ -33,7 +33,7 @@ ARCHIVED_TOOLCHAIN_REV=11755
 readonly PNACL_BUILD="pnacl/build.sh"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.py"
-readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test.py"
+readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test.sh"
 
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
@@ -401,12 +401,12 @@ tc-test-bot() {
 
   for arch in ${archset}; do
     echo "@@@BUILD_STEP llvm-test-suite $arch @@@"
-    python ${LLVM_TESTSUITE} --testsuite-prereq --arch ${arch}
-    python ${LLVM_TESTSUITE} --testsuite-clean
+    ${LLVM_TESTSUITE} testsuite-prereq ${arch}
+    ${LLVM_TESTSUITE} testsuite-clean
 
-    { python ${LLVM_TESTSUITE} --testsuite-configure &&
-        python ${LLVM_TESTSUITE} --testsuite-run --arch ${arch} &&
-        python ${LLVM_TESTSUITE} --testsuite-report --arch ${arch} -v -c
+    { ${LLVM_TESTSUITE} testsuite-configure ${arch} &&
+        ${LLVM_TESTSUITE} testsuite-run ${arch} &&
+        ${LLVM_TESTSUITE} testsuite-report ${arch} -v -c
     } || handle-error
 
     archived-frontend-test ${arch}

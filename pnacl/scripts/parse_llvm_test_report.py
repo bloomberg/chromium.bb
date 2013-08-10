@@ -14,13 +14,12 @@ import csv
 import optparse
 import os
 import sys
-import StringIO
 
 # exclude these tests
 EXCLUDES = {}
 
 def ParseCommandLine(argv):
-  parser = optparse.OptionParser(prog=argv[0])
+  parser = optparse.OptionParser()
   parser.add_option('-x', '--exclude', action='append', dest='excludes',
                     default=[],
                     help='Add list of excluded tests (expected fails)')
@@ -40,7 +39,7 @@ def ParseCommandLine(argv):
   parser.add_option('-l', '--lit', action='store_true', dest='lit',
                     default=False)
 
-  options, args = parser.parse_args(argv[1:])
+  options, args = parser.parse_args(argv)
   return options, args
 
 def Fatal(text):
@@ -53,7 +52,7 @@ def IsFullname(name):
 def GetShortname(fullname):
   return fullname.split('/')[-1]
 
-def ParseTestsuiteCSV(filecontents):
+def ParseTestsuiteCSV(filename):
   ''' Parse a CSV file output by llvm testsuite with a record for each test.
       returns 2 dictionaries:
       1) a mapping from the short name of the test (without the path) to
@@ -63,7 +62,7 @@ def ParseTestsuiteCSV(filecontents):
   '''
   alltests = {}
   failures = {}
-  reader = csv.DictReader(StringIO.StringIO(filecontents))
+  reader = csv.DictReader(open(filename, 'rb'))
 
   testcount = 0
   for row in reader:
@@ -82,7 +81,7 @@ def ParseTestsuiteCSV(filecontents):
   print testcount, 'tests,', len(failures), 'failures'
   return alltests, failures
 
-def ParseLit(filecontents):
+def ParseLit(filename):
   ''' Parse the output of the LLVM regression test runner (lit/make check).
       returns a dictionary mapping test name to the type of failure
       (Clang, LLVM, LLVMUnit, etc)
@@ -90,19 +89,20 @@ def ParseLit(filecontents):
   alltests = {}
   failures = {}
   testcount = 0
-  for line in filecontents.splitlines():
-    l = line.split()
-    if len(l) < 4:
-      continue
-    if l[0] in ('PASS:', 'FAIL:', 'XFAIL:', 'XPASS:', 'UNSUPPORTED:'):
-      testcount += 1
-      fullname = ''.join(l[1:4])
-      shortname = GetShortname(fullname)
-      fullnames = alltests.get(shortname, [])
-      fullnames.append(fullname)
-      alltests[shortname] = fullnames
-    if l[0] in ('FAIL:', 'XPASS:'):
-      failures[fullname] = l[1]
+  with open(filename) as f:
+    for line in f:
+      l = line.split()
+      if len(l) < 4:
+        continue
+      if l[0] in ('PASS:', 'FAIL:', 'XFAIL:', 'XPASS:', 'UNSUPPORTED:'):
+        testcount += 1
+        fullname = ''.join(l[1:4])
+        shortname = GetShortname(fullname)
+        fullnames = alltests.get(shortname, [])
+        fullnames.append(fullname)
+        alltests[shortname] = fullnames
+      if l[0] in ('FAIL:', 'XPASS:'):
+        failures[fullname] = l[1]
   print testcount, 'tests,', len(failures), 'failures'
   return alltests, failures
 
@@ -190,42 +190,32 @@ def PrintCompilationResult(path, test):
   DumpFileContents(os.path.join(outputdir, testname + '.out-pnacl'))
 
 def main(argv):
-  options, args = ParseCommandLine(argv)
+  options, args = ParseCommandLine(argv[1:])
 
   if len(args) != 1:
     Fatal('Must specify filename to parse')
-  filename = args[0]
-  return Report(vars(options), filename=filename)
-
-
-def Report(options, filename=None, filecontents=None):
-  if options['verbose']:
-    if options['buildpath'] is None:
+  if options.verbose:
+    if options.buildpath is None:
       Fatal('ERROR: must specify build path if verbose output is desired')
 
-  if not (filename or filecontents):
-    Fatal('ERROR: must specify filename or filecontents')
-
+  filename = args[0]
   failures = {}
-  if options['verbose']:
+  if options.verbose:
     print 'Full test results:'
 
-  if not filecontents:
-    with open(filename, 'rb') as f:
-      filecontents = f.read();
   # get the set of tests and failures
-  if options['testsuite']:
-    alltests, failures = ParseTestsuiteCSV(filecontents)
+  if options.testsuite:
+    alltests, failures = ParseTestsuiteCSV(filename)
     check_test_names = True
-  elif options['lit']:
-    alltests, failures = ParseLit(filecontents)
+  elif options.lit:
+    alltests, failures = ParseLit(filename)
     check_test_names = True
   else:
     Fatal('Must specify either testsuite (-t) or lit (-l) output format')
 
   # get the set of excludes
-  for f in options['excludes']:
-    ParseExcludeFile(f, set(options['attributes']),
+  for f in options.excludes:
+    ParseExcludeFile(f, set(options.attributes),
                      check_test_names=check_test_names, alltests=alltests)
 
   # intersect them and check for unexpected fails/passes
@@ -237,8 +227,8 @@ def Report(options, filename=None, filecontents=None):
         if test not in EXCLUDES:
           unexpected_failures += 1
           print '[  FAILED  ] ' + test + ': ' + failures[test] + ' failure'
-          if options['verbose']:
-            PrintCompilationResult(options['buildpath'], test)
+          if options.verbose:
+            PrintCompilationResult(options.buildpath, test)
       elif test in EXCLUDES:
         unexpected_passes += 1
         print test + ': ' + ' unexpected success'
@@ -246,7 +236,7 @@ def Report(options, filename=None, filecontents=None):
   print unexpected_failures, 'unexpected failures',
   print unexpected_passes, 'unexpected passes'
 
-  if options['check_excludes']:
+  if options.check_excludes:
     return unexpected_failures + unexpected_passes > 0
   return unexpected_failures > 0
 
