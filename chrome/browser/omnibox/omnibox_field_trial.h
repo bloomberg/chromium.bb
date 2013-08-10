@@ -138,7 +138,7 @@ class OmniboxFieldTrial {
       DemotionMultipliers* demotions_by_type);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(OmniboxFieldTrialTest, GetValueForRuleInContext);
+  friend class OmniboxFieldTrialTest;
 
   // The bundled omnibox experiment comes with a set of parameters
   // (key-value pairs).  Each key indicates a certain rule that applies in
@@ -148,14 +148,13 @@ class OmniboxFieldTrial {
   // prevent search history matches from inlining.
   //
   // This function returns the value associated with the |rule| that applies
-  // in the current context (which currently only consists of
-  // |page_classification| but will soon contain other features, some not
-  // passed in as parameters, such as whether Instant Extended is enabled).
-  // If no such rule exists in the current context, looks for that rule in
-  // the global context and return its value if found.  If the rule remains
-  // unfound in the global context, returns the empty string.  For more
-  // details, see the implementation.  How to interpret the value is left
-  // to the caller; this is rule-dependent.
+  // in the current context (which currently consists of |page_classification|
+  // and whether Instant Extended is enabled).  If no such rule exists in the
+  // current context, fall back to the rule in various wildcard contexts and
+  // return its value if found.  If the rule remains unfound in the global
+  // context, returns the empty string.  For more details, including how we
+  // prioritize different wildcard contexts, see the implementation.  How to
+  // interpret the value is left to the caller; this is rule-dependent.
   static std::string GetValueForRuleInContext(
       const std::string& rule,
       AutocompleteInput::PageClassification page_classification);

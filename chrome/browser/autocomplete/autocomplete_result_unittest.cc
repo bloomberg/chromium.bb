@@ -348,7 +348,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   const std::string kRuleName = "DemoteByType";
   {
     std::map<std::string, std::string> params;
-    params[kRuleName + ":3"] = "1:50,7:100,2:0";  // 3 == HOMEPAGE
+    params[kRuleName + ":3:*"] = "1:50,7:100,2:0";  // 3 == HOMEPAGE
     ASSERT_TRUE(chrome_variations::AssociateVariationParams(
         kTrialName, "A", params));
   }
