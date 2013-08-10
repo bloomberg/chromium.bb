@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "chromeos/login/login_state.h"
 #endif
 
 namespace {
@@ -352,6 +353,12 @@ void ScreenshotTaker::ShowNotification(
     const base::FilePath& screenshot_path) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 #if defined(OS_CHROMEOS)
+  // Do not show a notification that a screenshot was taken while no user is
+  // logged in, since it is confusing for the user to get a message about it
+  // after he logs in (crbug.com/235217).
+  if (!chromeos::LoginState::Get()->IsUserLoggedIn())
+    return;
+
   // TODO(sschmitz): make this work for Windows.
   DesktopNotificationService* const service =
       DesktopNotificationServiceFactory::GetForProfile(GetProfile());

@@ -22,6 +22,10 @@
 #include "ui/aura/root_window.h"
 #include "ui/message_center/message_center_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif
+
 namespace ash {
 namespace test {
 
@@ -94,6 +98,12 @@ class ScreenshotTakerTest : public AshTestBase,
 };
 
 TEST_F(ScreenshotTakerTest, TakeScreenshot) {
+#if defined(OS_CHROMEOS)
+  // Note that within the test framework the LoginState object will always
+  // claim that the user did log in.
+  ASSERT_FALSE(chromeos::LoginState::IsInitialized());
+  chromeos::LoginState::Initialize();
+#endif
   scoped_ptr<TestingProfileManager> profile_manager(
       new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
   ASSERT_TRUE(profile_manager->SetUp());
@@ -127,6 +137,10 @@ TEST_F(ScreenshotTakerTest, TakeScreenshot) {
 
   if (ScreenshotTakerObserver::SCREENSHOT_SUCCESS == screenshot_result_)
     EXPECT_TRUE(base::PathExists(screenshot_path_));
+
+#if defined(OS_CHROMEOS)
+  chromeos::LoginState::Shutdown();
+#endif
 }
 
 }  // namespace test
