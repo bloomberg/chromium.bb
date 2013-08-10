@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/condition_variable.h"
@@ -84,7 +85,16 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   // callback is targeted to run, it will *not* be run immediately.
   void PostRun(int32_t result);
 
-  void BlockUntilRun();
+  // A task to perform cleanup or write output parameters before the callback
+  // returns a result to the plugin. The |result| parameter has the result so
+  // far, e.g. whether the callback has been aborted. If the callback hasn't
+  // been aborted the return value of the task will become the callback result.
+  // The task is always called on the same thread as the callback to the plugin.
+  typedef base::Callback<int32_t(int32_t /* result */)> CompletionTask;
+
+  // Sets a task that is run just before calling back into the plugin. This
+  // should only be called once.
+  void set_completion_task(const CompletionTask& completion_task);
 
   // Returns the ID of the resource which "owns" the callback, or 0 if the
   // callback is not associated with any resource.
@@ -156,6 +166,9 @@ class PPAPI_SHARED_EXPORT TrackedCallback
   bool completed_;
   bool aborted_;
   PP_CompletionCallback callback_;
+
+  // Task to run just before calling back into the plugin.
+  CompletionTask completion_task_;
 
   // The MessageLoopShared on which this callback should be run. This will be
   // NULL if we're in-process.
