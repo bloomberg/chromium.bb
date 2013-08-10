@@ -93,6 +93,7 @@ class ChromeDownloadManagerDelegate
   virtual void CheckForFileExistence(
       content::DownloadItem* download,
       const content::CheckForFileExistenceCallback& callback) OVERRIDE;
+  virtual std::string ApplicationClientIdForFileScanning() const OVERRIDE;
 
   DownloadPrefs* download_prefs() { return download_prefs_.get(); }
 

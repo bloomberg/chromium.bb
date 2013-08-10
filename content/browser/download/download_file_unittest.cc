@@ -138,6 +138,8 @@ class DownloadFileTest : public testing::Test {
                              net::BoundNetLog(),
                              scoped_ptr<PowerSaveBlocker>().Pass(),
                              observer_factory_.GetWeakPtr()));
+    download_file_->SetClientGuid(
+        "12345678-ABCD-1234-DCBA-123456789ABC");
 
     EXPECT_CALL(*input_stream_, Read(_, _))
         .WillOnce(Return(ByteStreamReader::STREAM_EMPTY))

@@ -69,8 +69,15 @@ class CONTENT_EXPORT BaseFile {
   // Indicate that the download has finished. No new data will be received.
   void Finish();
 
+  // Set the client guid which will be used to identify the app to the
+  // system AV scanning function. Should be called before
+  // AnnotateWithSourceInformation() to take effect.
+  void SetClientGuid(const std::string& guid);
+
   // Informs the OS that this file came from the internet. Returns a
   // DownloadInterruptReason indicating the result of the operation.
+  // Note: SetClientGuid() should be called before this function on
+  // Windows to ensure the correct app client ID is available.
   DownloadInterruptReason AnnotateWithSourceInformation();
 
   base::FilePath full_path() const { return full_path_; }
@@ -141,6 +148,8 @@ class CONTENT_EXPORT BaseFile {
 
   // The URL where the download was initiated.
   GURL referrer_url_;
+
+  std::string client_guid_;
 
   // OS file stream for writing
   scoped_ptr<net::FileStream> file_stream_;

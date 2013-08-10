@@ -422,6 +422,13 @@ void DownloadManagerImpl::StartDownloadWithId(
           delegate_->GenerateFileHash(),
           stream.Pass(), download->GetBoundNetLog(),
           download->DestinationObserverAsWeakPtr()));
+
+  // Attach the client ID identifying the app to the AV system.
+  if (download_file.get() && delegate_) {
+    download_file->SetClientGuid(
+        delegate_->ApplicationClientIdForFileScanning());
+  }
+
   scoped_ptr<DownloadRequestHandleInterface> req_handle(
       new DownloadRequestHandle(info->request_handle));
   download->Start(download_file.Pass(), req_handle.Pass());

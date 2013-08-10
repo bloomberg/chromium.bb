@@ -38,6 +38,11 @@ bool DownloadManagerDelegate::GenerateFileHash() {
   return false;
 }
 
+std::string
+DownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
+  return std::string();
+}
+
 DownloadManagerDelegate::~DownloadManagerDelegate() {}
 
 }  // namespace content

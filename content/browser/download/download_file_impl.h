@@ -63,6 +63,7 @@ class CONTENT_EXPORT DownloadFileImpl : virtual public DownloadFile {
   virtual int64 CurrentSpeed() const OVERRIDE;
   virtual bool GetHash(std::string* hash) OVERRIDE;
   virtual std::string GetHashState() OVERRIDE;
+  virtual void SetClientGuid(const std::string& guid) OVERRIDE;
 
  protected:
   // For test class overrides.

@@ -195,6 +195,7 @@ class MockDownloadManagerDelegate : public DownloadManagerDelegate {
   MOCK_METHOD5(ChooseSavePath, void(
       WebContents*, const base::FilePath&, const base::FilePath::StringType&,
       bool, const SavePackagePathPickedCallback&));
+  MOCK_CONST_METHOD0(ApplicationClientIdForFileScanning, std::string());
 };
 
 MockDownloadManagerDelegate::MockDownloadManagerDelegate() {}
@@ -363,7 +364,7 @@ class MockDownloadFileFactory
   virtual ~MockDownloadFileFactory() {}
 
   // Overridden method from DownloadFileFactory
-  MOCK_METHOD8(MockCreateFile, DownloadFile*(
+  MOCK_METHOD8(MockCreateFile, MockDownloadFile*(
     const DownloadSaveInfo&,
     const base::FilePath&,
     const GURL&, const GURL&, bool,
@@ -593,9 +594,15 @@ TEST_F(DownloadManagerTest, StartDownload) {
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GetSaveDir(_, _, _, _));
   EXPECT_CALL(GetMockDownloadManagerDelegate(), GenerateFileHash())
       .WillOnce(Return(true));
+  EXPECT_CALL(GetMockDownloadManagerDelegate(),
+              ApplicationClientIdForFileScanning())
+      .WillRepeatedly(Return("client-id"));
+  MockDownloadFile* mock_file = new MockDownloadFile;
+  EXPECT_CALL(*mock_file, SetClientGuid("client-id"));
   EXPECT_CALL(*mock_download_file_factory_.get(),
               MockCreateFile(Ref(*info->save_info.get()), _, _, _, true,
-                             stream.get(), _, _));
+                             stream.get(), _, _))
+      .WillOnce(Return(mock_file));
 
   download_manager_->StartDownload(
       info.Pass(), stream.Pass(), DownloadUrlParameters::OnStartedCallback());

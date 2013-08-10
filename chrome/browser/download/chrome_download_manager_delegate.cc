@@ -34,6 +34,7 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/download_item.h"
@@ -400,6 +401,11 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&base::PathExists, download->GetTargetFilePath()),
       callback);
+}
+
+std::string
+ChromeDownloadManagerDelegate::ApplicationClientIdForFileScanning() const {
+  return std::string(chrome::kApplicationClientIDStringForAVScanning);
 }
 
 DownloadProtectionService*

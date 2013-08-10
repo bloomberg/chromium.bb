@@ -129,6 +129,12 @@ class CONTENT_EXPORT DownloadManagerDelegate {
       DownloadItem* download,
       const CheckForFileExistenceCallback& callback) {}
 
+  // Return a GUID string used for identifying the application to the
+  // system AV function for scanning downloaded files. If an empty
+  // or invalid GUID string is returned, no client identification
+  // will be given to the AV function.
+  virtual std::string ApplicationClientIdForFileScanning() const;
+
  protected:
   virtual ~DownloadManagerDelegate();
 };

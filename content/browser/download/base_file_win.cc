@@ -5,9 +5,12 @@
 #include "content/browser/download/base_file.h"
 
 #include <windows.h>
+#include <cguid.h>
+#include <objbase.h>
 #include <shellapi.h>
 
 #include "base/file_util.h"
+#include "base/guid.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
@@ -326,7 +329,16 @@ DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {
 
   bound_net_log_.BeginEvent(net::NetLog::TYPE_DOWNLOAD_FILE_ANNOTATED);
   DownloadInterruptReason result = DOWNLOAD_INTERRUPT_REASON_NONE;
-  HRESULT hr = ScanAndSaveDownloadedFile(full_path_, source_url_);
+  std::string braces_guid = "{" + client_guid_ + "}";
+  GUID guid = GUID_NULL;
+  if (base::IsValidGUID(client_guid_)) {
+    HRESULT hr = CLSIDFromString(
+        base::UTF8ToUTF16(braces_guid).c_str(), &guid);
+    if (FAILED(hr))
+      guid = GUID_NULL;
+  }
+
+  HRESULT hr = AVScanFile(full_path_, source_url_.spec(), guid);
 
   // If the download file is missing after the call, then treat this as an
   // interrupted download.

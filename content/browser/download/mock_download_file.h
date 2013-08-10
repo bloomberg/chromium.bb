@@ -48,6 +48,7 @@ class MockDownloadFile : virtual public DownloadFile {
   MOCK_CONST_METHOD0(Id, int());
   MOCK_METHOD0(GetDownloadManager, DownloadManager*());
   MOCK_CONST_METHOD0(DebugString, std::string());
+  MOCK_METHOD1(SetClientGuid, void(const std::string&));
 };
 
 }  // namespace content

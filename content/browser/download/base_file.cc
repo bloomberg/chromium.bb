@@ -211,6 +211,10 @@ void BaseFile::Finish() {
   Close();
 }
 
+void BaseFile::SetClientGuid(const std::string& guid) {
+  client_guid_ = guid;
+}
+
 // OS_WIN, OS_MACOSX and OS_LINUX have specialized implementations.
 #if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
 DownloadInterruptReason BaseFile::AnnotateWithSourceInformation() {

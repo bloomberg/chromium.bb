@@ -200,6 +200,10 @@ std::string DownloadFileImpl::GetHashState() {
   return file_.GetHashState();
 }
 
+void DownloadFileImpl::SetClientGuid(const std::string& guid) {
+  file_.SetClientGuid(guid);
+}
+
 void DownloadFileImpl::StreamActive() {
   base::TimeTicks start(base::TimeTicks::Now());
   base::TimeTicks now;

@@ -253,6 +253,12 @@ const wchar_t kLaunchModeValue[] = L"launch_mode";
 const char kProfileDirPrefix[] = "u-";
 #endif
 
+// This GUID is associated with any 'don't ask me again' settings that the
+// user can select for different file types.
+// {2676A9A2-D919-4FEE-9187-152100393AB2}
+const char kApplicationClientIDStringForAVScanning[] =
+    "2676A9A2-D919-4FEE-9187-152100393AB2";
+
 }  // namespace chrome
 
 #undef FPL

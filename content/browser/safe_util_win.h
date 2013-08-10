@@ -16,34 +16,6 @@ class FilePath;
 
 namespace content {
 
-// Open or run a downloaded file via the Windows shell, possibly showing first
-// a consent dialog if the the file is deemed dangerous. This function is an
-// enhancement over the OpenItemViaShell() function of win_util.h.
-//
-// The user consent dialog will be shown or not according to the windows
-// execution policy defined in the registry which can be overridden per user.
-// The mechanics of the policy are explained in the Microsoft Knowledge base
-// number 883260: http://support.microsoft.com/kb/883260
-//
-// The 'hwnd' is the handle to the parent window. In case a dialog is displayed
-// the parent window will be disabled since the dialog is meant to be modal.
-// The 'window_title' is the text displayed on the title bar of the dialog. If
-// you pass an empty string the dialog will have a generic 'windows security'
-// name on the title bar.
-//
-// You must provide a valid 'full_path' to the file to be opened and a well
-// formed url in 'source_url'. The url should identify the source of the file
-// but does not have to be network-reachable. If the url is malformed a
-// dialog will be shown telling the user that the file will be blocked.
-//
-// In the event that there is no default application registered for the file
-// specified by 'full_path' it ask the user, via the Windows "Open With"
-// dialog.
-// Returns 'true' on successful open, 'false' otherwise.
-bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
-                           const base::FilePath& full_path,
-                           const std::wstring& source_url);
-
 // Invokes IAttachmentExecute::Save to validate the downloaded file. The call
 // may scan the file for viruses and if necessary, annotate it with evidence. As
 // a result of the validation, the file may be deleted.  See:
@@ -67,10 +39,15 @@ bool SaferOpenItemViaShell(HWND hwnd, const std::wstring& window_title,
 // Any other return value indicates an unexpected error during the scan.
 //
 // |full_path| : is the path to the downloaded file. This should be the final
-//               path of the download.
-// |source_url|: the source URL for the download.
-HRESULT ScanAndSaveDownloadedFile(const base::FilePath& full_path,
-                                  const GURL& source_url);
+//               path of the download. Must be present.
+// |source_url|: the source URL for the download. If empty, the source will
+//               not be set.
+// |client_guid|: the GUID to be set in the IAttachmentExecute client slot.
+//                Used to identify the app to the system AV function.
+//                If GUID_NULL is passed, no client GUID is set.
+HRESULT AVScanFile(const base::FilePath& full_path,
+                   const std::string& source_url,
+                   const GUID& client_guid);
 }  // namespace content
 
 #endif  // CONTENT_COMMON_SAFE_UTIL_WIN_H_

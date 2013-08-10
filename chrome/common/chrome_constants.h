@@ -139,6 +139,9 @@ extern const wchar_t kLaunchModeValue[];
 extern const char kProfileDirPrefix[];
 #endif
 
+// Used to identify the application to the system AV function in Windows.
+extern const char kApplicationClientIDStringForAVScanning[];
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_

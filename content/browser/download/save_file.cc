@@ -60,6 +60,8 @@ void SaveFile::Finish() {
 }
 
 void SaveFile::AnnotateWithSourceInformation() {
+  // TODO(gbillock): If this method is called, it should set the
+  // file_.SetClientGuid() method first.
   file_.AnnotateWithSourceInformation();
 }
 
