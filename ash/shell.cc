@@ -17,6 +17,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/display/event_transformation_handler.h"
 #include "ash/display/mouse_cursor_event_filter.h"
+#include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_position_controller.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/focus_cycler.h"
@@ -312,6 +313,8 @@ Shell::~Shell() {
   lock_state_controller_.reset();
   mru_window_tracker_.reset();
 
+  resolution_notification_controller_.reset();
+
   // This also deletes all RootWindows. Note that we invoke Shutdown() on
   // DisplayController before resetting |display_controller_|, since destruction
   // of its owned RootWindowControllers relies on the value.
@@ -504,6 +507,9 @@ void Shell::Init() {
   display_controller_->InitPrimaryDisplay();
   aura::RootWindow* root_window = display_controller_->GetPrimaryRootWindow();
   target_root_window_ = root_window;
+
+  resolution_notification_controller_.reset(
+      new internal::ResolutionNotificationController);
 
   cursor_manager_.SetDisplay(DisplayController::GetPrimaryDisplay());
 

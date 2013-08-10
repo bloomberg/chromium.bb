@@ -7,6 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
+#include "ash/display/resolution_notification_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -20,6 +21,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/display/output_configurator.h"
+#include "ui/message_center/message_center.h"
+
+using ash::internal::ResolutionNotificationController;
 
 namespace chromeos {
 namespace {
@@ -40,6 +44,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   virtual void SetUp() OVERRIDE {
     EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(false));
+    EXPECT_CALL(*mock_user_manager_, Shutdown());
     ash::test::AshTestBase::SetUp();
     RegisterDisplayLocalStatePrefs(local_state_.registry());
     TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);
@@ -145,6 +150,8 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
 
   DISALLOW_COPY_AND_ASSIGN(DisplayPreferencesTest);
 };
+
+}  // namespace
 
 TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   UpdateDisplay("100x100,200x200");
@@ -352,6 +359,47 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_EQ(400, height);
 }
 
+TEST_F(DisplayPreferencesTest, PreventStore) {
+  ResolutionNotificationController::SuppressTimerForTest();
+  LoggedInAsUser();
+  UpdateDisplay("400x300");
+  int64 id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
+  // Set display's resolution in single display. It creates the notification and
+  // display preferences should not stored meanwhile.
+  ash::Shell::GetInstance()->resolution_notification_controller()->
+      SetDisplayResolutionAndNotify(
+          id, gfx::Size(400, 300), gfx::Size(500, 400), base::Closure());
+  UpdateDisplay("500x400");
+
+  const base::DictionaryValue* properties =
+      local_state()->GetDictionary(prefs::kDisplayProperties);
+  const base::DictionaryValue* property = NULL;
+  EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id), &property));
+  int width = 0, height = 0;
+  EXPECT_FALSE(property->GetInteger("width", &width));
+  EXPECT_FALSE(property->GetInteger("height", &height));
+
+  // Revert the change. When timeout, 2nd button is revert.
+  message_center::MessageCenter::Get()->ClickOnNotificationButton(
+      ResolutionNotificationController::kNotificationId, 1);
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(message_center::MessageCenter::Get()->HasNotification(
+      ResolutionNotificationController::kNotificationId));
+
+  // Once the notification is removed, the specified resolution will be stored
+  // by SetDisplayResolution.
+  ash::Shell::GetInstance()->display_manager()->SetDisplayResolution(
+      id, gfx::Size(300, 200));
+  UpdateDisplay("300x200");
+
+  property = NULL;
+  EXPECT_TRUE(properties->GetDictionary(base::Int64ToString(id), &property));
+  EXPECT_TRUE(property->GetInteger("width", &width));
+  EXPECT_TRUE(property->GetInteger("height", &height));
+  EXPECT_EQ(300, width);
+  EXPECT_EQ(200, height);
+}
+
 TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
   UpdateDisplay("100x100,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
@@ -445,5 +493,4 @@ TEST_F(DisplayPreferencesTest, DisplayPowerStateAfterRestart) {
       ash::Shell::GetInstance()->output_configurator()->power_state());
 }
 
-}  // namespace
 }  // namespace chromeos

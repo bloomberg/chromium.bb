@@ -8,6 +8,7 @@
 #include "ash/display/display_layout_store.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/display_pref_util.h"
+#include "ash/display/resolution_notification_controller.h"
 #include "ash/shell.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -258,8 +259,12 @@ void RegisterDisplayLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 void StoreDisplayPrefs() {
-  if (!IsValidUser())
+  // Do not store prefs when the confirmation dialog is shown.
+  if (!IsValidUser() ||
+      ash::Shell::GetInstance()->resolution_notification_controller()->
+          DoesNotificationTimeout()) {
     return;
+  }
   StoreCurrentDisplayLayoutPrefs();
   StoreCurrentDisplayProperties();
   StoreCurrentDisplayPowerState();

@@ -115,6 +115,7 @@ class MouseCursorEventFilter;
 class OutputConfiguratorAnimation;
 class OverlayEventFilter;
 class ResizeShadowController;
+class ResolutionNotificationController;
 class RootWindowController;
 class RootWindowLayoutManager;
 class ScopedTargetRootWindow;
@@ -450,6 +451,11 @@ class ASH_EXPORT Shell
   }
 #endif  // defined(OS_CHROMEOS) && defined(USE_X11)
 
+  internal::ResolutionNotificationController*
+      resolution_notification_controller() {
+    return resolution_notification_controller_.get();
+  }
+
   RootWindowHostFactory* root_window_host_factory() {
     return root_window_host_factory_.get();
   }
@@ -606,6 +612,9 @@ class ASH_EXPORT Shell
   // Receives output change events and udpates the display manager.
   scoped_ptr<internal::DisplayChangeObserverX11> display_change_observer_;
 #endif  // defined(OS_CHROMEOS) && defined(USE_X11)
+
+  scoped_ptr<internal::ResolutionNotificationController>
+      resolution_notification_controller_;
 
   // |native_cursor_manager_| is owned by |cursor_manager_|, but we keep a
   // pointer to vend to test code.
