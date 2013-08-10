@@ -288,6 +288,17 @@ class AnalyzeBaselines(AbstractRebaseliningCommand):
 class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
     # not overriding execute() - pylint: disable=W0223
 
+    def __init__(self, options=None):
+        super(AbstractParallelRebaselineCommand, self).__init__(options=options)
+        self._builder_data = {}
+
+    def builder_data(self):
+        if not self._builder_data:
+            for builder_name in self._release_builders():
+                builder = self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name)
+                self._builder_data[builder_name] = builder.latest_layout_test_results()
+        return self._builder_data
+
     # The release builders cycle much faster than the debug ones and cover all the platforms.
     def _release_builders(self):
         release_builders = []
@@ -337,7 +348,11 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         for test_prefix in test_prefix_list:
             for test in port.tests([test_prefix]):
                 for builder in self._builders_to_fetch_from(test_prefix_list[test_prefix]):
-                    suffixes = ','.join(test_prefix_list[test_prefix][builder])
+                    actual_failures_suffixes = self._suffixes_for_actual_failures(test, builder, test_prefix_list[test_prefix][builder])
+                    if not actual_failures_suffixes:
+                        continue
+
+                    suffixes = ','.join(actual_failures_suffixes)
                     cmd_line = ['--suffixes', suffixes, '--builder', builder, '--test', test]
                     if options.results_directory:
                         cmd_line.extend(['--results-directory', options.results_directory])
@@ -379,7 +394,7 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         for test in test_prefix_list:
             all_suffixes = set()
             for builder in self._builders_to_fetch_from(test_prefix_list[test]):
-                all_suffixes.update(test_prefix_list[test][builder])
+                all_suffixes.update(self._suffixes_for_actual_failures(test, builder, test_prefix_list[test][builder]))
             # FIXME: We should propagate the platform options as well.
             self._run_webkit_patch(['optimize-baselines', '--suffixes', ','.join(all_suffixes), test], verbose)
 
@@ -419,6 +434,12 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
 
         if options.optimize:
             self._optimize_baselines(test_prefix_list, options.verbose)
+
+    def _suffixes_for_actual_failures(self, test, builder_name, existing_suffixes):
+        actual_results = self.builder_data()[builder_name].actual_results(test)
+        if not actual_results:
+            return set()
+        return set(existing_suffixes) & TestExpectations.suffixes_for_actual_expectations_string(actual_results)
 
 
 class RebaselineJson(AbstractParallelRebaselineCommand):
@@ -546,14 +567,6 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             # FIXME: Remove this option.
             self.results_directory_option,
             ])
-        self._builder_data = {}
-
-    def builder_data(self):
-        if not self._builder_data:
-            for builder_name in self._release_builders():
-                builder = self._tool.buildbot_for_builder_name(builder_name).builder_with_name(builder_name)
-                self._builder_data[builder_name] = builder.latest_layout_test_results()
-        return self._builder_data
 
     def latest_revision_processed_on_all_bots(self):
         revisions = []
@@ -622,7 +635,6 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
     def get_test_prefix_list(self, tests):
         test_prefix_list = {}
         lines_to_remove = {}
-        builder_data = self.builder_data()
 
         for builder_name in self._release_builders():
             port_name = builders.port_name_for_builder_name(builder_name)
@@ -632,21 +644,11 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 if test not in tests:
                     continue
 
-                if test not in lines_to_remove:
-                    lines_to_remove[test] = []
-                lines_to_remove[test].append(builder_name)
-
-                actual_results = builder_data[builder_name].actual_results(test)
-                if not actual_results:
-                    continue
-
-                suffixes = TestExpectations.suffixes_for_actual_expectations_string(actual_results)
-                if not suffixes:
-                    continue
-
                 if test not in test_prefix_list:
+                    lines_to_remove[test] = []
                     test_prefix_list[test] = {}
-                test_prefix_list[test][builder_name] = suffixes
+                lines_to_remove[test].append(builder_name)
+                test_prefix_list[test][builder_name] = BASELINE_SUFFIX_LIST
 
         return test_prefix_list, lines_to_remove
 
