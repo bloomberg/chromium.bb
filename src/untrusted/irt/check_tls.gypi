@@ -46,7 +46,7 @@
             ['target_arch=="arm"', {
               'variables': {
                 'nacl_objdump':
-                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_x86_pnacl/host_x86_32/bin/le32-nacl-objdump',
+                  '<(SHARED_INTERMEDIATE_DIR)/sdk/toolchain/<(OS)_pnacl/host_x86_32/bin/le32-nacl-objdump',
               },
             }, {
               # target_arch!="arm", so it's x86.
