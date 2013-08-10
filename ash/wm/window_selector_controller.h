@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/wm/window_selector.h"
 #include "ash/wm/window_selector_delegate.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -16,6 +17,10 @@
 
 namespace aura {
 class Window;
+}
+
+namespace ui {
+class EventHandler;
 }
 
 namespace ash {
@@ -39,6 +44,15 @@ class ASH_EXPORT WindowSelectorController
   // or touch rather than keypresses.
   void ToggleOverview();
 
+  // Cycles between windows in the given |direction|. It is assumed that the
+  // alt key is held down and a key filter is installed to watch for alt being
+  // released.
+  void HandleCycleWindow(WindowSelector::Direction direction);
+
+  // Informs the controller that the Alt key has been released and it can
+  // terminate the existing multi-step cycle.
+  void AltKeyReleased();
+
   // Returns true if window selection mode is active.
   bool IsSelecting();
 
@@ -48,6 +62,7 @@ class ASH_EXPORT WindowSelectorController
 
  private:
   scoped_ptr<WindowSelector> window_selector_;
+  scoped_ptr<ui::EventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorController);
 };
