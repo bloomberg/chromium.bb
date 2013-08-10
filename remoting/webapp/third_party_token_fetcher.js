@@ -44,7 +44,7 @@ remoting.ThirdPartyTokenFetcher = function(
   this.xsrfToken_ = remoting.generateXsrfToken();
   this.tokenUrlPatterns_ = tokenUrlPatterns;
   this.hostPublicKey_ = hostPublicKey;
-  if (chrome.experimental && chrome.experimental.identity) {
+  if (chrome.identity) {
     /** @type {function():void}
      * @private */
     this.fetchTokenInternal_ = this.fetchTokenIdentityApi_.bind(this);
@@ -169,8 +169,7 @@ remoting.ThirdPartyTokenFetcher.prototype.fetchTokenWindowOpen_ = function() {
  */
 remoting.ThirdPartyTokenFetcher.prototype.fetchTokenIdentityApi_ = function() {
   var fullTokenUrl = this.getFullTokenUrl_();
-  // TODO(rmsousa): chrome.identity.launchWebAuthFlow is experimental.
-  chrome.experimental.identity.launchWebAuthFlow(
+  chrome.identity.launchWebAuthFlow(
     {'url': fullTokenUrl, 'interactive': true},
     this.parseRedirectUrl_.bind(this));
 };

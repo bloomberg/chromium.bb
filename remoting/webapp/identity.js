@@ -51,7 +51,7 @@ remoting.Identity = function(consentCallback) {
 remoting.Identity.prototype.callWithToken = function(onOk, onError) {
   this.pendingCallbacks_.push(new remoting.Identity.Callbacks(onOk, onError));
   if (this.pendingCallbacks_.length == 1) {
-    chrome.experimental.identity.getAuthToken(
+    chrome.identity.getAuthToken(
         { 'interactive': false },
         this.onAuthComplete_.bind(this, false));
   }
@@ -132,7 +132,7 @@ remoting.Identity.prototype.onAuthComplete_ = function(interactive, token) {
  * @private
  */
 remoting.Identity.prototype.onAuthContinue_ = function() {
-  chrome.experimental.identity.getAuthToken(
+  chrome.identity.getAuthToken(
       { 'interactive': true },
       this.onAuthComplete_.bind(this, true));
 };

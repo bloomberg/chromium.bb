@@ -122,10 +122,7 @@ chrome.app.window = {
 };
 
 /** @type {Object} */
-chrome.experimental = {};
-
-/** @type {Object} */
-chrome.experimental.identity = {
+chrome.identity = {
   /**
    * @param {Object.<string>} parameters
    * @param {function(string):void} callback
