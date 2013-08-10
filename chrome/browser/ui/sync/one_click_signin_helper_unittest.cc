@@ -28,7 +28,9 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/password_form.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -668,6 +670,27 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
   helper->OnStateChanged();
   EXPECT_EQ(GURL(continueUrl), contents->GetURL());
   EXPECT_EQ("user@gmail.com", signin_manager_->GetAuthenticatedUsername());
+}
+
+// Checks that the state of OneClickSigninHelper is cleaned when there is a
+// navigation away from the sign in flow that is not triggered by the
+// web contents.
+TEST_F(OneClickSigninHelperTest, CleanTransientStateOnNavigate) {
+  content::WebContents* contents = web_contents();
+
+  OneClickSigninHelper::CreateForWebContents(contents);
+  OneClickSigninHelper* helper =
+      OneClickSigninHelper::FromWebContents(contents);
+  helper->SetDoNotClearPendingEmailForTesting();
+  helper->auto_accept_ = OneClickSigninHelper::AUTO_ACCEPT_EXPLICIT;
+
+  content::LoadCommittedDetails details;
+  content::FrameNavigateParams params;
+  params.url = GURL("http://crbug.com");
+  params.transition = content::PAGE_TRANSITION_TYPED;
+  helper->DidNavigateMainFrame(details, params);
+
+  EXPECT_EQ(OneClickSigninHelper::AUTO_ACCEPT_NONE, helper->auto_accept_);
 }
 
 // I/O thread tests

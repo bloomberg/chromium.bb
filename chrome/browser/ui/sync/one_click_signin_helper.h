@@ -133,6 +133,8 @@ class OneClickSigninHelper
                            ShowSigninBubbleAfterSigninComplete);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest, SigninCancelled);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest, SigninFailed);
+  FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperTest,
+                           CleanTransientStateOnNavigate);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest, CanOfferOnIOThread);
   FRIEND_TEST_ALL_PREFIXES(OneClickSigninHelperIOTest,
                            CanOfferOnIOThreadIncognito);

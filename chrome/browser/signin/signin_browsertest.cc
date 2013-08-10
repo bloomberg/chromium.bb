@@ -207,8 +207,13 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, SigninSkipForNowAndGoBack) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // Simulate clicking on the Skip for now link by navigating to the URL.
-  ui_test_utils::NavigateToURL(browser(), skip_url);
+  // Simulate clicking on the Skip for now link. It's important to have a
+  // link transition so that OneClickSigninHelper removes the blank page
+  // from the history.
+  chrome::NavigateParams navigate_params(browser(),
+                                         skip_url,
+                                         content::PAGE_TRANSITION_LINK);
+  ui_test_utils::NavigateToURL(&navigate_params);
 
   // Register an observer that will navigate back immediately on the commit of
   // the NTP. This will allow us to hit the race condition of navigating back

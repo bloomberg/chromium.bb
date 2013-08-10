@@ -1050,9 +1050,9 @@ void OneClickSigninHelper::NavigateToPendingEntry(
 void OneClickSigninHelper::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,
     const content::FrameNavigateParams& params) {
-  // If we navigate to a non-sign-in URL, make sure that the renderer process
-  // is no longer considered the trusted sign-in process.
   if (!SigninManager::IsWebBasedSigninFlowURL(params.url)) {
+    // Make sure the renderer process is no longer considered the trusted
+    // sign-in process when a navigation to a non-sign-in URL occurs.
     Profile* profile =
         Profile::FromBrowserContext(web_contents()->GetBrowserContext());
     SigninManager* manager = profile ?
@@ -1060,6 +1060,14 @@ void OneClickSigninHelper::DidNavigateMainFrame(
     int process_id = web_contents()->GetRenderProcessHost()->GetID();
     if (manager && manager->IsSigninProcess(process_id))
       manager->ClearSigninProcess();
+
+    // If the navigation to a non-sign-in URL hasn't been triggered by the web
+    // contents, the sign in flow has been aborted and the state must be
+    // cleaned (crbug.com/269421).
+    if (!content::PageTransitionIsWebTriggerable(params.transition) &&
+        auto_accept_ != AUTO_ACCEPT_NONE) {
+      CleanTransientState();
+    }
   }
 }
 
