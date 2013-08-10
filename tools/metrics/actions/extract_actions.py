@@ -271,6 +271,10 @@ def AddAndroidActions(actions):
   actions.add('MobileToolbarShowStackView')
   actions.add('MobileToolbarStackViewNewTab')
   actions.add('MobileToolbarToggleBookmark')
+  actions.add('MobileUsingMenuByHwButtonDragging')
+  actions.add('MobileUsingMenuByHwButtonTap')
+  actions.add('MobileUsingMenuBySwButtonDragging')
+  actions.add('MobileUsingMenuBySwButtonTap')
   actions.add('SystemBack')
   actions.add('SystemBackForNavigation')
 
