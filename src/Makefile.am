@@ -93,7 +93,8 @@ westoninclude_HEADERS =				\
 	version.h				\
 	compositor.h				\
 	../shared/matrix.h			\
-	../shared/config-parser.h
+	../shared/config-parser.h		\
+	../shared/zalloc.h
 
 moduledir = $(libdir)/weston
 module_LTLIBRARIES =				\
