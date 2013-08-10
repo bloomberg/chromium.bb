@@ -33,7 +33,6 @@ CPU::CPU()
     has_ssse3_(false),
     has_sse41_(false),
     has_sse42_(false),
-    has_avx_(false),
     has_non_stop_time_stamp_counter_(false),
     cpu_vendor_("unknown") {
   Initialize();
@@ -83,17 +82,6 @@ void __cpuidex(int cpu_info[4], int info_type, int info_index) {
 }
 
 #endif
-
-unsigned long long _xgetbv(unsigned int xcr) {
-  unsigned int eax, edx;
-  __asm__ volatile (
-    ".byte 0x0f, 0x01, 0xd0"
-    : "=a"(eax), "=d"(edx)
-    : "c" (xcr)
-  );
-  return static_cast<unsigned long long>(eax) ^
-         static_cast<unsigned long long>(edx) << 32;
-}
 #endif  // _MSC_VER
 #endif  // ARCH_CPU_X86_FAMILY
 
@@ -132,7 +120,7 @@ void CPU::Initialize() {
     has_ssse3_ = (cpu_info[2] & 0x00000200) != 0;
     has_sse41_ = (cpu_info[2] & 0x00080000) != 0;
     has_sse42_ = (cpu_info[2] & 0x00100000) != 0;
-    has_avx_ = (cpu_info[2] & 0x10000000) != 0 && (_xgetbv(0) & 6) == 6;
+    has_avx_ = (cpu_info[2] & 0x10000000) != 0;
   }
 
   // Get the brand string of the cpu.
