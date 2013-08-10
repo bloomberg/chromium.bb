@@ -4245,31 +4245,42 @@ static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int ob
     return false;
 }
 
+template<>
+bool RenderBlock::FloatIntervalSearchAdapter<RenderBlock::FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject) const
+{
+    if (m_renderer->logicalRightForFloat(floatingObject) > m_offset) {
+        m_offset = m_renderer->logicalRightForFloat(floatingObject);
+        return true;
+    }
+    return false;
+}
+
+template<>
+bool RenderBlock::FloatIntervalSearchAdapter<RenderBlock::FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject) const
+{
+    if (m_renderer->logicalLeftForFloat(floatingObject) < m_offset) {
+        m_offset = m_renderer->logicalLeftForFloat(floatingObject);
+        return true;
+    }
+    return false;
+}
+
 template <RenderBlock::FloatingObject::Type FloatTypeValue>
 inline void RenderBlock::FloatIntervalSearchAdapter<FloatTypeValue>::collectIfNeeded(const IntervalType& interval) const
 {
-    const FloatingObject* r = interval.data();
-    if (r->type() != FloatTypeValue || !rangesIntersect(interval.low(), interval.high(), m_lowValue, m_highValue))
+    const FloatingObject* floatingObject = interval.data();
+    if (floatingObject->type() != FloatTypeValue || !rangesIntersect(interval.low(), interval.high(), m_lowValue, m_highValue))
         return;
 
     // All the objects returned from the tree should be already placed.
-    ASSERT(r->isPlaced() && rangesIntersect(m_renderer->pixelSnappedLogicalTopForFloat(r), m_renderer->pixelSnappedLogicalBottomForFloat(r), m_lowValue, m_highValue));
+    ASSERT(floatingObject->isPlaced());
+    ASSERT(rangesIntersect(m_renderer->pixelSnappedLogicalTopForFloat(floatingObject), m_renderer->pixelSnappedLogicalBottomForFloat(floatingObject), m_lowValue, m_highValue));
 
-    if (FloatTypeValue == FloatingObject::FloatLeft
-        && m_renderer->logicalRightForFloat(r) > m_offset) {
-        m_offset = m_renderer->logicalRightForFloat(r);
-        if (m_heightRemaining)
-            *m_heightRemaining = m_renderer->logicalBottomForFloat(r) - m_lowValue;
-    }
+    bool floatIsNewExtreme = updateOffsetIfNeeded(floatingObject);
+    if (floatIsNewExtreme && m_heightRemaining)
+        *m_heightRemaining = m_renderer->logicalBottomForFloat(floatingObject) - m_lowValue;
 
-    if (FloatTypeValue == FloatingObject::FloatRight
-        && m_renderer->logicalLeftForFloat(r) < m_offset) {
-        m_offset = m_renderer->logicalLeftForFloat(r);
-        if (m_heightRemaining)
-            *m_heightRemaining = m_renderer->logicalBottomForFloat(r) - m_lowValue;
-    }
-
-    m_last = r;
+    m_last = floatingObject;
 }
 
 LayoutUnit RenderBlock::textIndentOffset() const
