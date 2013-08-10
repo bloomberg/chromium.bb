@@ -115,7 +115,6 @@ void BookmarkModelTestUtils::AddNodesFromModelString(
     const BookmarkNode* node,
     const std::string& model_string) {
   DCHECK(node);
-  const std::string folder_tell(":[");
   std::string::size_type start_pos = 0;
   std::string::size_type end_pos =
       AddNodesFromString(model, node, model_string, start_pos);
