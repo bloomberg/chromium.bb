@@ -188,15 +188,15 @@
     }
   ],
   "downloads": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension"]
   },
   "downloads.open": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension"]
   },
   "downloads.shelf": {
-    "channel": "beta",
+    "channel": "stable",
     "extension_types": ["extension"]
   },
   "dial": {
