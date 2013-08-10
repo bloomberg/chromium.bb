@@ -200,6 +200,9 @@ class Dispatcher : public content::RenderProcessObserver {
       const Extension* extension,
       const URLPatternSet& origins);
 
+  // Enable custom element whitelist in Apps.
+  void EnableCustomElementWhiteList();
+
   // Adds or removes bindings for every context belonging to |extension_id|, or
   // or all contexts if |extension_id| is empty.
   void AddOrRemoveBindings(const std::string& extension_id);
@@ -226,10 +229,8 @@ class Dispatcher : public content::RenderProcessObserver {
                        v8::Handle<v8::Context> v8_context,
                        const std::string& api);
 
-  // Determines whether |frame| is loading a platform app resource URL. (this
-  // evaluates to true for iframes in platform apps and sandboxed resources that
-  // are not in the same origin).
-  bool IsWithinPlatformApp(const WebKit::WebFrame* frame);
+  // Returns whether the current renderer hosts a platform app.
+  bool IsWithinPlatformApp();
 
   bool IsSandboxedPage(const GURL& url) const;
 

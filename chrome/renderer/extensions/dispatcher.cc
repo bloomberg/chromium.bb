@@ -84,9 +84,11 @@
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
+#include "third_party/WebKit/public/web/WebCustomElement.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
 #include "third_party/WebKit/public/web/WebSecurityPolicy.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -472,6 +474,9 @@ void Dispatcher::WebKitInitialized() {
     CHECK(extension);
     InitOriginPermissions(extension);
   }
+
+  if (IsWithinPlatformApp())
+    EnableCustomElementWhiteList();
 
   is_webkit_initialized_ = true;
 }
@@ -1095,7 +1100,7 @@ void Dispatcher::DidCreateScriptContext(
 
   AddOrRemoveBindingsForContext(context);
 
-  bool is_within_platform_app = IsWithinPlatformApp(frame);
+  bool is_within_platform_app = IsWithinPlatformApp();
   // Inject custom JS into the platform app context.
   if (is_within_platform_app) {
     module_system->Require("platformApp");
@@ -1168,11 +1173,14 @@ std::string Dispatcher::GetExtensionID(const WebFrame* frame, int world_id) {
   return extensions_.GetExtensionOrAppIDByURL(frame_url);
 }
 
-bool Dispatcher::IsWithinPlatformApp(const WebFrame* frame) {
-  GURL url(UserScriptSlave::GetDataSourceURLForFrame(frame->top()));
-  const Extension* extension = extensions_.GetExtensionOrAppByURL(url);
-
-  return extension && extension->is_platform_app();
+bool Dispatcher::IsWithinPlatformApp() {
+  for (std::set<std::string>::iterator iter = active_extension_ids_.begin();
+       iter != active_extension_ids_.end(); ++iter) {
+    const Extension* extension = extensions_.GetByID(*iter);
+    if (extension && extension->is_platform_app())
+      return true;
+  }
+  return false;
 }
 
 void Dispatcher::WillReleaseScriptContext(
@@ -1190,7 +1198,7 @@ void Dispatcher::WillReleaseScriptContext(
 }
 
 void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
-  if (IsWithinPlatformApp(frame)) {
+  if (IsWithinPlatformApp()) {
     // WebKit doesn't let us define an additional user agent stylesheet, so we
     // insert the default platform app stylesheet into all documents that are
     // loaded in each app.
@@ -1241,6 +1249,9 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
                                      extension_id,
                                      extension->url(),
                                      string16());
+
+    if (IsWithinPlatformApp())
+      EnableCustomElementWhiteList();
   }
 }
 
@@ -1286,6 +1297,14 @@ void Dispatcher::AddOrRemoveOriginPermissions(
       }
     }
   }
+}
+
+void Dispatcher::EnableCustomElementWhiteList() {
+  WebKit::WebRuntimeFeatures::enableCustomElements(true);
+  WebKit::WebCustomElement::allowTagName("webview");
+  // TODO(fsamuel): Add <adview> to the whitelist once it has been converted
+  // into a custom element.
+  WebKit::WebCustomElement::allowTagName("browser-plugin");
 }
 
 void Dispatcher::AddOrRemoveBindings(const std::string& extension_id) {
