@@ -192,8 +192,7 @@ class MessageCenterNotificationManager
   // Helpers that add/remove the notification from local map and MessageCenter.
   // They take ownership of profile_notification object.
   void AddProfileNotification(ProfileNotification* profile_notification);
-  void RemoveProfileNotification(ProfileNotification* profile_notification,
-                                 bool by_user);
+  void RemoveProfileNotification(ProfileNotification* profile_notification);
 
   // Returns the ProfileNotification for the |id|, or NULL if no such
   // notification is found.

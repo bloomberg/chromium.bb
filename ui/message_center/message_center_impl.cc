@@ -313,6 +313,11 @@ void MessageCenterImpl::RemoveNotification(const std::string& id,
   if (!HasNotification(id))
     return;
 
+  NotificationDelegate* delegate =
+      notification_list_->GetNotificationDelegate(id);
+  if (delegate)
+    delegate->Close(by_user);
+
   // In many cases |id| is a reference to an existing notification instance
   // but the instance can be destructed in RemoveNotification(). Hence
   // copies the id explicitly here.

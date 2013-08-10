@@ -307,7 +307,7 @@ void MessageCenterNotificationManager::OnNotificationRemoved(
   NotificationMap::const_iterator iter =
       profile_notifications_.find(notification_id);
   if (iter != profile_notifications_.end())
-    RemoveProfileNotification(iter->second, by_user);
+    RemoveProfileNotification(iter->second);
 
 #if defined(OS_WIN)
   CheckFirstRunTimer();
@@ -549,9 +549,7 @@ void MessageCenterNotificationManager::AddProfileNotification(
 }
 
 void MessageCenterNotificationManager::RemoveProfileNotification(
-    ProfileNotification* profile_notification,
-    bool by_user) {
-  profile_notification->notification().Close(by_user);
+    ProfileNotification* profile_notification) {
   std::string id = profile_notification->notification().notification_id();
   profile_notifications_.erase(id);
   delete profile_notification;
