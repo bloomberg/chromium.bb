@@ -185,10 +185,10 @@ class Builder(object):
       raise Error('pnacl glibc not yet supported.')
 
     if self.is_pnacl_toolchain:
+      mainarch = 'x86'
       self.tool_prefix = 'pnacl-'
-      # TODO(jvoung): get rid of tool_subdir after newlib rename (empty).
       tool_subdir = toolname
-      tooldir = '%s_pnacl' % self.osname
+      tooldir = '%s_%s_pnacl' % (self.osname, mainarch)
     else:
       tool_subdir = ''
       tooldir = '%s_%s_%s' % (self.osname, mainarch, toolname)

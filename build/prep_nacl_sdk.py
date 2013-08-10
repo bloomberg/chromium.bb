@@ -62,7 +62,7 @@ HEADER_MAP = {
       'arm-nacl/include/irt_ppapi.h': 'src/untrusted/irt/irt_ppapi.h',
       'arm-nacl/lib/crt1.o': 'src/untrusted/stubs/crt1.x',
   },
-  'pnacl': {
+  'x86_pnacl': {
       'newlib/sdk/include/pthread.h': 'src/untrusted/pthread/pthread.h',
       'newlib/sdk/include/semaphore.h': 'src/untrusted/pthread/semaphore.h',
       'newlib/sdk/include/nacl/dynamic_annotations.h':

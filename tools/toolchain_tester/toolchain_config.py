@@ -244,7 +244,7 @@ if not 'PNACL_TOOLCHAIN_LABEL' in os.environ:
 else:
   PNACL_TOOLCHAIN_LABEL = os.environ['PNACL_TOOLCHAIN_LABEL']
 
-PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_LABEL)
+PNACL_ROOT = os.path.join('toolchain', PNACL_TOOLCHAIN_LABEL, 'newlib')
 PNACL_FRONTEND = PNACL_ROOT + '/bin/pnacl-clang'
 PNACL_FINALIZE = PNACL_ROOT + '/bin/pnacl-finalize'
 

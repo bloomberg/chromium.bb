@@ -251,9 +251,6 @@ def _SetEnvForPnacl(env, root):
     subroot = root + '/glibc'
   else:
     subroot = root + '/newlib'
-    # TODO(jvoung): stop looking in two places (moving out of newlib).
-    if not os.path.exists(subroot):
-      subroot = root
 
   translator_root = os.path.join(os.path.dirname(root), 'pnacl_translator')
 
@@ -277,11 +274,6 @@ def _SetEnvForPnacl(env, root):
     pnacl_include = os.path.join(root, 'glibc', 'usr', 'include')
   else:
     pnacl_include = os.path.join(root, 'newlib', 'usr', 'include')
-    # TODO(jvoung): stop looking in two places (moving out of newlib).
-    # Also remove the usr bit...
-    if not os.path.exists(pnacl_include):
-      pnacl_include = os.path.join(root, 'usr', 'include')
-
   pnacl_ar = binprefix + 'ar' + binext
   pnacl_as = binprefix + 'as' + binext
   pnacl_nm = binprefix + 'nm' + binext

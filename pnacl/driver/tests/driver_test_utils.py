@@ -20,7 +20,7 @@ def CanRunHost():
     return False
   # We also cannot run some of the Windows binaries directly, since
   # they depend on cygwin DLLs and the cygwin DLLs are only in the
-  # path for the installed drivers bin and not for the binaries.
+  # path for the installed drivers (newlib/bin) and not for the binaries.
   if sys.platform == 'win32':
     return False
   return True

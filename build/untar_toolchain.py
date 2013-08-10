@@ -39,7 +39,7 @@ def Main(args):
     tool_path = os.path.join(untar_path, 'sdk', 'nacl-sdk')
   elif options.tool == 'x86_glibc':
     tool_path = os.path.join(untar_path, 'toolchain', options.os + '_x86')
-  elif options.tool in ('pnacl', 'arm_newlib'):
+  elif options.tool in ('x86_pnacl', 'arm_newlib'):
     tool_path = untar_path
   else:
     parser.error('Unknown tool type: ' + options.tool)
