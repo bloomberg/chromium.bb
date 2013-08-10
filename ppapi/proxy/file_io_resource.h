@@ -67,6 +67,46 @@ class PPAPI_PROXY_EXPORT FileIOResource
       scoped_refptr<TrackedCallback> callback) OVERRIDE;
 
  private:
+  // Class to perform file query operations across multiple threads.
+  class QueryOp : public base::RefCountedThreadSafe<QueryOp> {
+   public:
+    explicit QueryOp(PP_FileHandle file_handle);
+
+    // Queries the file. Called on the file thread (non-blocking) or the plugin
+    // thread (blocking). This should not be called when we hold the proxy lock.
+    int32_t DoWork();
+
+    const base::PlatformFileInfo& file_info() const { return file_info_; }
+
+   private:
+    friend class base::RefCountedThreadSafe<QueryOp>;
+    ~QueryOp();
+
+    PP_FileHandle file_handle_;
+    base::PlatformFileInfo file_info_;
+  };
+
+  // Class to perform file read operations across multiple threads.
+  class ReadOp : public base::RefCountedThreadSafe<ReadOp> {
+   public:
+    ReadOp(PP_FileHandle file_handle, int64_t offset, int32_t bytes_to_read);
+
+    // Reads the file. Called on the file thread (non-blocking) or the plugin
+    // thread (blocking). This should not be called when we hold the proxy lock.
+    int32_t DoWork();
+
+    char* buffer() const { return buffer_.get(); }
+
+   private:
+    friend class base::RefCountedThreadSafe<ReadOp>;
+    ~ReadOp();
+
+    PP_FileHandle file_handle_;
+    int64_t offset_;
+    int32_t bytes_to_read_;
+    scoped_ptr<char[]> buffer_;
+  };
+
   int32_t ReadValidated(int64_t offset,
                         int32_t bytes_to_read,
                         const PP_ArrayOutput& array_output,
@@ -74,19 +114,20 @@ class PPAPI_PROXY_EXPORT FileIOResource
 
   void CloseFileHandle();
 
+
+  // Completion tasks for file operations that are done in the plugin.
+  int32_t OnQueryComplete(scoped_refptr<QueryOp> query_op,
+                          PP_FileInfo* info,
+                          int32_t result);
+  int32_t OnReadComplete(scoped_refptr<ReadOp> read_op,
+                         PP_ArrayOutput array_output,
+                         int32_t result);
+
   // Reply message handlers for operations that are done in the host.
   void OnPluginMsgGeneralComplete(scoped_refptr<TrackedCallback> callback,
                                   const ResourceMessageReplyParams& params);
   void OnPluginMsgOpenFileComplete(scoped_refptr<TrackedCallback> callback,
                                    const ResourceMessageReplyParams& params);
-  void OnPluginMsgQueryComplete(scoped_refptr<TrackedCallback> callback,
-                                PP_FileInfo* output_info_,
-                                const ResourceMessageReplyParams& params,
-                                const PP_FileInfo& info);
-  void OnPluginMsgReadComplete(scoped_refptr<TrackedCallback> callback,
-                               PP_ArrayOutput array_output,
-                               const ResourceMessageReplyParams& params,
-                               const std::string& data);
   void OnPluginMsgRequestOSFileHandleComplete(
       scoped_refptr<TrackedCallback> callback,
       PP_FileHandle* output_handle,

@@ -1295,15 +1295,9 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Open,
                      int32_t /* open_flags */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileIO_OpenReply)
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_Close)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_Query)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileIO_QueryReply, PP_FileInfo /* info */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Touch,
                      PP_Time /* last_access_time */,
                      PP_Time /* last_modified_time */)
-IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Read,
-                     int64_t /* offset */,
-                     int32_t /* bytes_to_read */)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileIO_ReadReply, std::string /* data */)
 IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileIO_Write,
                      int64_t /* offset */,
                      std::string /* data */)

@@ -42,13 +42,6 @@ using ppapi::thunk::EnterResourceNoLock;
 
 namespace {
 
-// The maximum size we'll support reading in one chunk. The renderer process
-// must allocate a buffer sized according to the request of the plugin. To
-// keep things from getting out of control, we cap the read size to this value.
-// This should generally be OK since the API specifies that it may perform a
-// partial read.
-static const int32_t kMaxReadSize = 32 * 1024 * 1024;  // 32MB
-
 typedef base::Callback<void (base::PlatformFileError)> PlatformGeneralCallback;
 
 int32_t ErrorOrByteNumber(int32_t pp_error, int32_t byte_number) {
@@ -167,12 +160,8 @@ int32_t PepperFileIOHost::OnResourceMessageReceived(
   IPC_BEGIN_MESSAGE_MAP(PepperFileIOHost, msg)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Open,
                                       OnHostMsgOpen)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(PpapiHostMsg_FileIO_Query,
-                                        OnHostMsgQuery)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Touch,
                                       OnHostMsgTouch)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Read,
-                                      OnHostMsgRead)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_Write,
                                       OnHostMsgWrite)
     PPAPI_DISPATCH_HOST_RESOURCE_CALL(PpapiHostMsg_FileIO_SetLength,
@@ -304,25 +293,6 @@ void PepperFileIOHost::DidGetFileRefInfo(
   }
 }
 
-int32_t PepperFileIOHost::OnHostMsgQuery(
-    ppapi::host::HostMessageContext* context) {
-  int32_t rv = state_manager_.CheckOperationState(
-      FileIOStateManager::OPERATION_EXCLUSIVE, true);
-  if (rv != PP_OK)
-    return rv;
-
-  if (!base::FileUtilProxy::GetFileInfoFromPlatformFile(
-          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
-          file_,
-          base::Bind(&PepperFileIOHost::ExecutePlatformQueryCallback,
-                     weak_factory_.GetWeakPtr(),
-                     context->MakeReplyMessageContext())))
-    return PP_ERROR_FAILED;
-
-  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  return PP_OK_COMPLETIONPENDING;
-}
-
 int32_t PepperFileIOHost::OnHostMsgTouch(
     ppapi::host::HostMessageContext* context,
     PP_Time last_access_time,
@@ -359,39 +329,6 @@ int32_t PepperFileIOHost::OnHostMsgTouch(
     return PP_ERROR_FAILED;
 
   state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_EXCLUSIVE);
-  return PP_OK_COMPLETIONPENDING;
-}
-
-int32_t PepperFileIOHost::OnHostMsgRead(
-    ppapi::host::HostMessageContext* context,
-    int64_t offset,
-    int32_t max_read_length) {
-  int32_t rv = state_manager_.CheckOperationState(
-      FileIOStateManager::OPERATION_READ, true);
-  if (rv != PP_OK)
-    return rv;
-
-  // Validate max_read_length before allocating below. This value is coming from
-  // the untrusted plugin.
-  if (max_read_length < 0) {
-    ReplyMessageContext reply_context = context->MakeReplyMessageContext();
-    reply_context.params.set_result(PP_ERROR_FAILED);
-    host()->SendReply(reply_context,
-                      PpapiPluginMsg_FileIO_ReadReply(std::string()));
-    return PP_OK_COMPLETIONPENDING;
-  }
-
-  if (!base::FileUtilProxy::Read(
-          RenderThreadImpl::current()->GetFileThreadMessageLoopProxy().get(),
-          file_,
-          offset,
-          max_read_length,
-          base::Bind(&PepperFileIOHost::ExecutePlatformReadCallback,
-                     weak_factory_.GetWeakPtr(),
-                     context->MakeReplyMessageContext())))
-    return PP_ERROR_FAILED;
-
-  state_manager_.SetPendingOperation(FileIOStateManager::OPERATION_READ);
   return PP_OK_COMPLETIONPENDING;
 }
 
@@ -640,36 +577,6 @@ void PepperFileIOHost::ExecutePlatformOpenFileSystemURLCallback(
     notify_close_file_callback_ = callback;
   quota_policy_ = quota_policy;
   ExecutePlatformOpenFileCallback(reply_context, error_code, file);
-}
-
-void PepperFileIOHost::ExecutePlatformQueryCallback(
-    ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFileError error_code,
-    const base::PlatformFileInfo& file_info) {
-  PP_FileInfo pp_info;
-  ppapi::PlatformFileInfoToPepperFileInfo(file_info, file_system_type_,
-                                          &pp_info);
-
-  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
-  reply_context.params.set_result(pp_error);
-  host()->SendReply(reply_context,
-                    PpapiPluginMsg_FileIO_QueryReply(pp_info));
-  state_manager_.SetOperationFinished();
-}
-
-void PepperFileIOHost::ExecutePlatformReadCallback(
-    ppapi::host::ReplyMessageContext reply_context,
-    base::PlatformFileError error_code,
-    const char* data, int bytes_read) {
-  int32_t pp_error = ppapi::PlatformFileErrorToPepperError(error_code);
-
-  // Only send the amount of data in the string that was actually read.
-  std::string buffer;
-  if (pp_error == PP_OK)
-    buffer.append(data, bytes_read);
-  reply_context.params.set_result(ErrorOrByteNumber(pp_error, bytes_read));
-  host()->SendReply(reply_context, PpapiPluginMsg_FileIO_ReadReply(buffer));
-  state_manager_.SetOperationFinished();
 }
 
 void PepperFileIOHost::ExecutePlatformWriteCallback(
