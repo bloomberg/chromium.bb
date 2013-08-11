@@ -15,15 +15,16 @@ from chromite.lib import osutils
 from chromite.lib import commandline
 from chromite.buildbot import constants
 
-_EXCLUDE_LIST = ('--exclude=/tmp/', '--exclude=/var/cache/portage/',
-                 '--exclude=/usr/local/autotest/packages**',
-                 '--exclude=**.pyc', '--exclude=**.pyo')
-
+_CREATE_BATCH_CMD = ('rsync',)
+_CREATE_BATCH_EXCLUDE = ('--exclude=/tmp/', '--exclude=/var/cache/',
+                         '--exclude=/usr/local/autotest/packages**',
+                         '--exclude=/packages/', '--exclude=**.pyc',
+                         '--exclude=**.pyo')
 # rsync is used in archive mode with no --times.
 # --checksum is used to ensure 100% accuracy.
 # --delete is used to account for files that may be deleted during emerge.
 # Short version: rsync -rplgoDc --delete
-_CREATE_BATCH_CMD = ('rsync', '--recursive', '--links', '--perms', '--group',
+_CREATE_BATCH_ARGS = ('--recursive', '--links', '--perms', '--group',
                      '--owner', '--devices', '--specials', '--checksum',
                      '--delete')
 
@@ -46,7 +47,8 @@ def CreateBatchFile(build_dir, out_dir, batch_file):
     batch_file: Batch file to be created.
   """
   cmd = list(_CREATE_BATCH_CMD)
-  cmd.extend(list(_EXCLUDE_LIST))
+  cmd.extend(list(_CREATE_BATCH_EXCLUDE))
+  cmd.extend(list(_CREATE_BATCH_ARGS))
   cmd.extend(['--only-write-batch=' + batch_file, build_dir + '/', out_dir])
   cros_build_lib.SudoRunCommand(cmd)
 
@@ -64,6 +66,9 @@ def _ParseCommandLine(argv):
   parser.add_argument('--out-file', default=constants.DELTA_SYSROOT_TAR,
                       help='The name to give to the tarball. Defaults to %r.'
                             % constants.DELTA_SYSROOT_TAR)
+  parser.add_argument('--skip-tests', action='store_false', default=True,
+                      dest='build_tests',
+                      help='If we should not build the autotests packages.')
   options = parser.parse_args(argv)
 
   return options
@@ -80,12 +85,13 @@ def FinishParsing(options):
         'Non-existent directory %r specified for --out-dir' % options.out_dir)
 
 
-def GenerateSysroot(sysroot, board, unpack_only=False):
+def GenerateSysroot(sysroot, board, build_tests, unpack_only=False):
   """Create a sysroot using only binary packages from local binhost.
 
   Arguments:
     sysroot: Where we want to place the sysroot.
     board: Board we want to build for.
+    build_tests: If we should include autotest packages.
     unpack_only: If we only want to unpack the binary packages, and not build
                  them.
   """
@@ -98,6 +104,8 @@ def GenerateSysroot(sysroot, board, unpack_only=False):
   cmd.extend(['--board_root', sysroot, '--board', board])
   if unpack_only:
     cmd.append('--unpackonly')
+  if not build_tests:
+    cmd.append('--nowithautotest')
   env = {'USE': os.environ.get('USE', ''),
          'PORTAGE_BINHOST': 'file://localhost/build/%s/packages' % board}
   cros_build_lib.RunCommand(cmd, extra_env=env)
@@ -107,10 +115,10 @@ def main(argv):
   """Generate a tarball containing a sysroot that can be patched over
   extracted prebuilt package contents to create a complete sysroot.
 
-  1. Emerge all packages for a board into a build sysroot directory.
-  2. Unpack all packages for a board into a tmp sysroot directory.
+  1. Unpack all packages for a board into an unpack_only sysroot directory.
+  2. Emerge all packages for a board into a build sysroot directory.
   3. Create a batch file using:
-    rsync -rplgoDc --delete --write-batch=<batch> <build_sys> <tmp_sys>
+    rsync -rplgoDc --delete --write-batch=<batch> <build_sys> <unpackonly_sys>
   4. Put the batch file inside a tarball.
   """
   options = _ParseCommandLine(argv)
@@ -123,8 +131,10 @@ def main(argv):
     unpackonly_sysroot = os.path.join(tmp_dir, 'tmp-sys')
     batch_filename = options.out_batch
 
-    GenerateSysroot(build_sysroot, options.board, unpack_only=False)
-    GenerateSysroot(unpackonly_sysroot, options.board, unpack_only=True)
+    GenerateSysroot(unpackonly_sysroot, options.board, options.build_tests,
+                    unpack_only=True)
+    GenerateSysroot(build_sysroot, options.board, options.build_tests,
+                    unpack_only=False)
 
     # Finally create batch file.
     CreateBatchFile(build_sysroot, unpackonly_sysroot,

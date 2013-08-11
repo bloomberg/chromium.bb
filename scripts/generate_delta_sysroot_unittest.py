@@ -19,7 +19,8 @@ def _Parse(argv):
   return gds._ParseCommandLine(argv)
 
 
-class InterfaceTest(cros_test_lib.OutputTestCase):
+class InterfaceTest(cros_test_lib.OutputTestCase,
+                    cros_test_lib.TempDirTestCase):
   """Test the commandline interface of the script"""
 
   def testNoBoard(self):
@@ -34,8 +35,21 @@ class InterfaceTest(cros_test_lib.OutputTestCase):
 
   def testCorrectArgv(self):
     """Test successful parsing"""
-    argv = ['--board', 'link', '--out-dir', '/out/dir']
-    _Parse(argv)
+    argv = ['--board', 'link', '--out-dir', self.tempdir]
+    options =  _Parse(argv)
+    gds.FinishParsing(options)
+
+  def testTestsSet(self):
+    """Test successful parsing"""
+    argv = ['--board', 'link', '--out-dir', self.tempdir]
+    options =  _Parse(argv)
+    self.assertTrue(options.build_tests)
+
+  def testNoTestsSet(self):
+    """Test successful parsing"""
+    argv = ['--board', 'link', '--out-dir', self.tempdir, '--skip-tests']
+    options =  _Parse(argv)
+    self.assertFalse(options.build_tests)
 
   def assertParseError(self, argv):
     """Helper to assert parsing error, given argv."""
