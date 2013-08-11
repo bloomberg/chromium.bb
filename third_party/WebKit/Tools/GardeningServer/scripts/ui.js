@@ -324,7 +324,7 @@ ui.revisionDetails = base.extends('span', {
 
         checkout.lastBlinkRollRevision(function(revision) {
             theSpan.appendChild(document.createTextNode(', last roll is to '));
-            theSpan.appendChild(base.createLinkNode(trac.changesetURL(totRevision), revision));
+            theSpan.appendChild(base.createLinkNode(trac.changesetURL(revision), revision));
         }, function() {});
 
         rollbot.fetchCurrentRoll(function(roll) {
