@@ -1,8 +1,8 @@
 These two links should be different colors (green and orange):
 
 One Two
-PASS firstStyle.color became different from secondStyle.color
-PASS firstStyle.backgroundColor became different from secondStyle.backgroundColor
+FAIL firstStyle.color did not become different from secondStyle.color in 0.5 seconds.
+FAIL firstStyle.backgroundColor did not become different from secondStyle.backgroundColor in 0.5 seconds.
 PASS successfullyParsed is true
 
 TEST COMPLETE

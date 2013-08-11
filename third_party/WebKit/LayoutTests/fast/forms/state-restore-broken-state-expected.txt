@@ -4,7 +4,7 @@ The value was modified in the first load of state-restore-broken-state-1.html, b
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS document.getElementsByTagName("iframe")[0].contentDocument.f.name1.value is "unmodified"
+FAIL document.getElementsByTagName("iframe")[0].contentDocument.f.name1.value should be unmodified. Was modified.
 PASS successfullyParsed is true
 
 TEST COMPLETE

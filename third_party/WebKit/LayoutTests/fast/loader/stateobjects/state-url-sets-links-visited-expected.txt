@@ -7,8 +7,8 @@ This link should get colored visited as a result of replaceState() setting it as
 This link should get colored visited as a result of pushState() adding it to the forward list
 If you're running in a browser, the link should be orange-on-black and you should see "replacedURL.html" in your global history.
 If you're running in DRT, the test will also append "PASS" or "FAIL".
-PASS style1.color became "rgb(255, 165, 0)"
-PASS style2.color became "rgb(255, 165, 0)"
+FAIL style1.color failed to change to "rgb(255, 165, 0)" in 0.5 seconds.
+FAIL style2.color failed to change to "rgb(255, 165, 0)" in 0.5 seconds.
 PASS successfullyParsed is true
 
 TEST COMPLETE

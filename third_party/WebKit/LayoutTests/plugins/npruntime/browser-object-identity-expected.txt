@@ -9,9 +9,9 @@ PASS embed.refCount(obj) is 1
 PASS embed.refCount(obj) is 2
 PASS embed.getRememberedObject() is obj
 PASS embed.getRememberedObject() is obj
-PASS embed.refCount(obj) is 2
+FAIL embed.refCount(obj) should be 2. Was 4.
 PASS embed.getAndForgetRememberedObject() is obj
-PASS embed.refCount(obj) is 1
+FAIL embed.refCount(obj) should be 1. Was 4.
 PASS successfullyParsed is true
 
 TEST COMPLETE

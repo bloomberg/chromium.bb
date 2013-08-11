@@ -1,7 +1,7 @@
 These two links should be the same color (orange):
 
 One Two
-PASS firstStyle.color became secondStyle.color
+FAIL firstStyle.color failed to change to secondStyle.color in 0.5 seconds.
 PASS successfullyParsed is true
 
 TEST COMPLETE

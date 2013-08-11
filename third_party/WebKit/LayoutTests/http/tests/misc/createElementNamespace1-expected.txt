@@ -4,7 +4,7 @@ Test1: document.namespaceURI
 PASS: document.namespaceURI should be 'null' and is.
 
 Test2: document.createElement().namespaceURI
-PASS: document.createElement("div").namespaceURI should be 'null' and is.
+*** FAIL: document.createElement("div").namespaceURI should be 'null' but instead is http://www.w3.org/1999/xhtml. ***
 
 Test3: script tag.namespaceURI
 PASS: myScriptTag.namespaceURI should be 'http://www.w3.org/1999/xhtml' and is.

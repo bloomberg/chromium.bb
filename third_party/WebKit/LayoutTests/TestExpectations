@@ -128,14 +128,6 @@ webkit.org/b/74654 http/tests/inspector/network/network-worker.html [ Skip ]
 webkit.org/b/75186 [ Linux ] http/tests/inspector-enabled/dedicated-workers-list.html [ Skip ]
 
 # -----------------------------------------------------------------
-# Security tests
-# -----------------------------------------------------------------
-
-# Need to update chromium so the web frame delegate is informed when window objects
-# in isolated worlds are cleared.
-crbug.com/27849 http/tests/security/isolatedWorld/didClearWindowObject.html [ Failure ]
-
-# -----------------------------------------------------------------
 # Plugin tests
 # -----------------------------------------------------------------
 
@@ -146,12 +138,8 @@ crbug.com/35387 [ Mac ] plugins/reentrant-update-widget-positions.html [ Timeout
 
 # Tests differences from switching to webkit.org's test netscape plugin rather
 # than chromium's old forked copy.
-crbug.com/108833 [ Release ] plugins/geturlnotify-during-document-teardown.html [ Failure ]
 crbug.com/108833 [ Debug ] plugins/geturlnotify-during-document-teardown.html [ Crash ]
 webkit.org/b/48655 [ Debug ] plugins/js-from-destroy.html [ Crash ]
-
-# canplaythrough event is sent too early.
-crbug.com/73609 http/tests/media/video-play-stall.html [ Failure ]
 
 crbug.com/100798 [ Debug ] fullscreen/full-screen-iframe-allowed.html [ Failure Pass ]
 crbug.com/100798 [ Debug ] fullscreen/full-screen-iframe-allowed-prefixed.html [ Failure Pass ]
@@ -314,9 +302,6 @@ webkit.org/b/92287 virtual/gpu/fast/canvas/webgl/context-creation-and-destructio
 # WebGL not yet supported by the software compositor.
 crbug.com/151713 virtual/softwarecompositing/draws-content/webgl-simple-background.html [ ImageOnlyFailure ]
 
-# This test isn't hanging, it just takes 12-13 seconds to run. See BUGWK87839.
-crbug.com/30536 http/tests/misc/acid3.html [ Failure ] # See "SVG Tests" section too
-
 # Clipping differences between Chromium platforms. Needs investigation.
 webkit.org/b/98599 [ Linux Win ] css3/masking/clip-path-reference-userSpaceOnUse.html [ ImageOnlyFailure ]
 
@@ -328,14 +313,6 @@ crbug.com/250935 [ Win ] fast/multicol/shrink-to-column-height-for-pagination.ht
 
 webkit.org/b/111141 fast/regions/seamless-iframe-flowed-into-regions.html [ ImageOnlyFailure ]
 
-# The following are flaky in that some times the timeout or crash, but we think
-# it is because of bugs in other parts of the code and not specific to what
-# these tests are doing.  The are being noted here so we can get the buildbots
-# green so new mac regressions are caught much quicker.
-# (there are a few others marked w/ multiple status like this in other parts of
-# the file, but they were left there as the comments in those areas are valid.)
-crbug.com/10384 [ Mac ] fast/dom/Window/new-window-opener.html [ Failure ]
-
 crbug.com/9798 [ Win Release ] http/tests/navigation/no-referrer-reset.html [ Pass Timeout ]
 
 # Unexpected gray
@@ -343,7 +320,6 @@ crbug.com/23476 [ Mac ] fast/frames/inline-object-inside-frameset.html [ Failure
 
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
-crbug.com/7482 [ SnowLeopard ] http/tests/misc/timer-vs-loading.html [ Failure ]
 crbug.com/7482 [ Win Lion MountainLion ] http/tests/misc/timer-vs-loading.html [ Pass Timeout ]
 
 # This test isn't just slow -- sometimes it times out indefinitely.
@@ -384,11 +360,6 @@ crbug.com/33293 [ Mac Debug ] fast/media/lifetime.html [ Pass Timeout ]
 
 # Chromium DumpRenderTree does not have support for visited links.
 # It always return false in response to isLinkVisited().
-webkit.org/b/111031 fast/history/multiple-classes-visited.html [ Failure ]
-webkit.org/b/111031 fast/history/nested-visited-test.html [ Failure ]
-webkit.org/b/111031 fast/history/self-is-visited.html [ Failure ]
-webkit.org/b/111031 fast/history/sibling-visited-test.html [ Failure ]
-webkit.org/b/111031 fast/loader/stateobjects/state-url-sets-links-visited.html [ Failure ]
 webkit.org/b/111031 fast/history/visited-link-background-color.html [ ImageOnlyFailure ]
 
 # Chromium does not support cancel for notifications permissions.
@@ -557,15 +528,11 @@ webkit.org/b/72761 accessibility/anonymous-render-block-in-continuation-causes-c
 webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFailure ]
 
 webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Failure Timeout ]
-webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/shared-worker-methods.html [ Failure ]
-webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/shared-worker-methods-async.html [ Failure ]
 
 webkit.org/b/75111 fast/workers/storage/use-same-database-in-page-and-workers.html [ Pass Timeout ]
 
 # Crashes due to an OOM error on V8.
 crbug.com/108832 fast/js/array-splice.html [ Crash ]
-
-webkit.org/b/48454 compositing/tiling/huge-layer-img.html [ Failure ]
 
 # New reftest failing on Win7.
 webkit.org/b/76050 [ Win7 ] fast/text/font-kerning.html [ ImageOnlyFailure ]
@@ -686,7 +653,6 @@ webkit.org/b/91372 [ Win ] css2.1/20110323/vertical-align-boxes-001.htm [ ImageO
 
 webkit.org/b/92019 [ Debug ] fast/text/international/inline-plaintext-relayout-with-leading-neutrals.html [ ImageOnlyFailure Pass ]
 webkit.org/b/92022 [ Debug ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure Pass ]
-crbug.com/243711 [ Lion Release ] svg/W3C-SVG-1.1/struct-dom-06-b.svg [ Failure ]
 
 webkit.org/b/92027 fast/performance/performance-now-timestamps.html [ Failure Pass ]
 webkit.org/b/99333 [ Debug ] plugins/update-widgets-crash.html [ Pass Timeout ]
@@ -759,7 +725,6 @@ webkit.org/b/102724 svg/carto.net/colourpicker.svg [ ImageOnlyFailure Pass ]
 crbug.com/237003 [ Win Mac Debug ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_iframe_self_navigation.html [ Failure Pass ]
 crbug.com/237003 http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_dynamic_insertion.html [ Failure Pass Timeout ]
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_initiator_types.html [ Pass Timeout ]
-crbug.com/237003 [ Mac Linux ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure ]
 crbug.com/237003 [ Win ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_redirects.html [ Failure Timeout ]
 
 webkit.org/b/103148 [ Linux ] fast/text/atsui-small-caps-punctuation-size.html [ Failure ImageOnlyFailure Pass ]
@@ -804,7 +769,6 @@ webkit.org/b/110247 [ Debug ] fast/workers/storage/interrupt-database.html [ Cra
 
 # Tests failing since applyPageScaleFactorInCompositor enabled
 crbug.com/225184 fast/repaint/relayout-fixed-position-after-scale.html [ ImageOnlyFailure ]
-crbug.com/225184 inspector/elements/highlight-node-scaled.html [ Failure ]
 crbug.com/225184 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure ]
 crbug.com/225184 [ Win ] fast/text/descent-clip-in-scaled-page.html [ ImageOnlyFailure Pass ]
 
@@ -871,7 +835,6 @@ crbug.com/231721 [ Win ] svg/custom/invisible-text-after-scrolling.xhtml [ Pass 
 crbug.com/232061 [ Linux ] fast/text/zero-font-size-2.html [ ImageOnlyFailure ]
 
 crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ Failure Pass ]
-crbug.com/233260 [ Win ] fast/preloader/script.html [ Failure ]
 
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Failure Pass ]
 
@@ -893,7 +856,7 @@ crbug.com/237270 [ Debug ] fast/sub-pixel/transformed-iframe-copy-on-scroll.html
 crbug.com/251129 [ Linux Win Debug ] http/tests/history/redirect-js-form-submit-0-seconds.html [ Failure Pass ]
 
 # Gets a "Maximum call stack size exceeded" exception in debug that doesn't happen in release.
-crbug.com/14885 [ Mac ] fast/js/JSON-stringify.html [ Failure ]
+crbug.com/14885 [ Mac Release ] fast/js/JSON-stringify.html [ Failure ]
 
 # started failing around the V8 roll in http://crrev.com/206035
 # started timing out around r154246..r154251
@@ -1055,34 +1018,16 @@ crbug.com/260660 fast/canvas/webgl/array-large-array-tests.html [ Crash ]
 crbug.com/260660 virtual/gpu/fast/canvas/webgl/array-large-array-tests.html [ Crash ]
 
 # Switching to content shell failures
-crbug.com/178709 plugins/document-open.html [ Failure ]
-crbug.com/178744 plugins/npruntime/browser-object-identity.html [ Failure ]
 crbug.com/178745 [ Debug ] plugins/open-and-close-window-with-plugin.html [ Crash ]
-crbug.com/178745 [ Release ] plugins/open-and-close-window-with-plugin.html [ Failure ]
 crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Skip ]
-crbug.com/231859 [ Win Linux ] compositing/plugins/invalidate_rect.html [ Failure ]
 crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ Pass ImageOnlyFailure ]
-crbug.com/231865 editing/pasteboard/copy-image-with-alt-text.html [ Failure ]
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
+# This test doesn't make sense since we enable experimental features by default when running tests.
 crbug.com/231867 fast/css-grid-layout/grid-disabled-by-default.html [ Failure ]
-crbug.com/231875 fast/css/preserve-user-specified-zoom-level-on-reload.html [ Failure ]
-crbug.com/231878 fast/dom/HTMLLinkElement/prefetch.html [ Failure ]
-crbug.com/231878 fast/dom/HTMLLinkElement/subresource.html [ Failure ]
-crbug.com/231880 fast/dom/Window/open-window-min-size.html [ Failure ]
-crbug.com/231914 fast/forms/state-restore-broken-state.html [ Failure ]
 crbug.com/231917 [ Win Mac ] fast/parser/external-entities-in-xslt.xml [ Failure Pass ]
+# This test doesn't make sense since we enable experimental features by default when running tests.
 crbug.com/231918 fast/regions/css-regions-disabled.html [ Failure ]
-crbug.com/231922 [ Linux Mac ] fast/workers/storage/test-authorizer-sync.html [ Failure ]
-crbug.com/231922 [ Mac ] fast/workers/storage/test-authorizer.html [ Failure ]
-crbug.com/231922 [ Mac ] storage/websql/test-authorizer.html [ Failure ]
-crbug.com/231927 http/tests/misc/createElementNamespace1.xml [ Failure ]
-crbug.com/231929 http/tests/navigation/no-referrer-target-blank.html [ Failure ]
-crbug.com/231931 http/tests/security/local-user-CSS-from-remote.html [ Failure ]
 crbug.com/231932 http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
-crbug.com/231940 [ Mac ] storage/websql/sql-error-codes.html [ Failure ]
-crbug.com/231942 svg/dom/fuzz-path-parser.html [ Failure ]
-crbug.com/231859 [ Win Linux ] virtual/softwarecompositing/plugins/invalidate_rect.html [ Failure ]
-crbug.com/233887 plugins/call-as-function.html [ Failure ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Failure Pass ]
 crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Skip ]
@@ -1099,10 +1044,7 @@ crbug.com/243353 animations/dynamic-stylesheet-loading.html [ Failure Pass ]
 crbug.com/243353 animations/suspend-resume-animation.html [ Failure Pass ]
 crbug.com/243353 animations/animation-direction-normal.html [ ImageOnlyFailure Pass ]
 crbug.com/243353 animations/play-state-paused.html [ ImageOnlyFailure Pass ]
-crbug.com/243370 [ Mac ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
 crbug.com/243378 [ Linux ] fast/text/chromium-linux-text-subpixel-positioning.html [ Failure ]
-crbug.com/243420 http/tests/appcache/different-https-origin-resource-main.html [ Failure ]
-crbug.com/243420 http/tests/w3c/webperf/approved/UserTiming/test_user_timing_measure_exceptions.htm [ Failure ]
 crbug.com/243492 [ Win Mac Linux ] http/tests/inspector-enabled/injected-script-discard.html [ Pass Timeout ]
 crbug.com/243520 [ Mac ] fast/css/font-weight-1.html [ Failure ImageOnlyFailure Pass ]
 crbug.com/243523 http/tests/history/back-with-fragment-change.php [ Pass Timeout Failure ]
@@ -1161,7 +1103,6 @@ crbug.com/246549 http/tests/security/svg-image-leak.html [ Failure Pass ]
 # Seems to have been timing out for a long time.
 crbug.com/248969 [ Win7 Debug ] printing/page-count-with-one-word.html [ Timeout Pass ]
 
-crbug.com/247604 fast/workers/shared-worker-lifecycle.html [ Failure ]
 crbug.com/247604 fast/workers/shared-worker-frame-lifecycle.html [ Skip ]
 
 crbug.com/247888 fast/workers/worker-cloneport.html [ Failure Pass Timeout ]
@@ -1236,8 +1177,6 @@ crbug.com/255407 plugins/npruntime/leak-window-scriptable-object.html [ Pass Fai
 crbug.com/264501 [ Debug ] xmlviewer/extensions-api.html [ Pass Crash ]
 
 crbug.com/265650 [ SnowLeopard Debug ] compositing/repaint/transform-style-change.html [ Pass ImageOnlyFailure ]
-
-crbug.com/261998 inspector/profiler/canvas2d/canvas2d-api-changes.html [ Failure ]
 
 crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 

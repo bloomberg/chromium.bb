@@ -1,0 +1,8 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
+FAIL 0 should be >= 100. Was 0 (of type number).
+FAIL 0 should be >= 100. Was 0 (of type number).
+FAIL 0 should be >= 100. Was 0 (of type number).
+FAIL 0 should be >= 100. Was 0 (of type number).
+

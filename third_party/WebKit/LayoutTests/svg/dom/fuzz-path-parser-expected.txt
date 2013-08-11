@@ -200,7 +200,7 @@ CONSOLE MESSAGE: Error: Problem parsing d="M1,1Q2 9,4 1,s6,3 6,9,s6 0,0,6,1 zc2,
 CONSOLE MESSAGE: Error: Problem parsing d="M1,1a9,2 6 1 2 2 2,za9 0 2 8,2,3,3 s5,8,8 1,HC5 8 5,8,4 2 c8 4 5 2 5 9,l3 9,H7 s6 2,0 0 a4 9,1 6,3,7,0,M6,"
 CONSOLE MESSAGE: Error: Problem parsing d=""
 CONSOLE MESSAGE: Error: Problem parsing d="M"
-CONSOLE MESSAGE: Error: Problem parsing d="M
+CONSOLE MESSAGE: Error: Problem parsing d="M "
 CONSOLE MESSAGE: Error: Problem parsing d="M1,1Z0"
 This test fuzzes the path parser with semi-random attribute values and dumps the results.
 

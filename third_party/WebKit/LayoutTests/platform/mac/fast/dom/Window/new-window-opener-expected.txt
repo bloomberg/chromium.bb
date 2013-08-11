@@ -12,27 +12,27 @@ PASS newWin.scrollbars.visible is true
 PASS newWin.scrollbars.visible is false
 
 Toolbar
-FAIL newWin.toolbar.visible should be true. Was false.
+PASS newWin.toolbar.visible is true
 PASS newWin.toolbar.visible is false
-FAIL newWin.toolbar.visible should be true. Was false.
+PASS newWin.toolbar.visible is true
 PASS newWin.toolbar.visible is false
 
 Statusbar
-FAIL newWin.statusbar.visible should be true. Was false.
+PASS newWin.statusbar.visible is true
 PASS newWin.statusbar.visible is false
-FAIL newWin.statusbar.visible should be true. Was false.
+PASS newWin.statusbar.visible is true
 PASS newWin.statusbar.visible is false
 
 Menubar
 PASS newWin.menubar.visible is true
-PASS newWin.menubar.visible is isMenubarAlwaysExpected
+FAIL newWin.menubar.visible should be true. Was false.
 PASS newWin.menubar.visible is true
-PASS newWin.menubar.visible is isMenubarAlwaysExpected
+FAIL newWin.menubar.visible should be true. Was false.
 
 Locationbar
-FAIL newWin.locationbar.visible should be true. Was false.
+PASS newWin.locationbar.visible is true
 PASS newWin.locationbar.visible is false
-FAIL newWin.locationbar.visible should be true. Was false.
+PASS newWin.locationbar.visible is true
 PASS newWin.locationbar.visible is false
 PASS successfullyParsed is true
 

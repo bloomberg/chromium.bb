@@ -5,8 +5,8 @@ EVENT(durationchange)
 EVENT(loadedmetadata)
 EVENT(loadeddata)
 EVENT(canplay)
+EVENT(canplaythrough)
 EVENT(timeupdate)
-EVENT(waiting)
 EVENT(stalled)
 END OF TEST
 
