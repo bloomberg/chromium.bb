@@ -142,10 +142,6 @@
 #define WTF_USE_PTHREADS 1
 #endif /* OS(UNIX) */
 
-#if (OS(FREEBSD) || OS(OPENBSD)) && !defined(__GLIBC__)
-#define HAVE_PTHREAD_NP_H 1
-#endif
-
 #if !defined(HAVE_VASPRINTF)
 #if !COMPILER(MSVC)
 #define HAVE_VASPRINTF 1
