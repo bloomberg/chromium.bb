@@ -1022,11 +1022,7 @@ crbug.com/178745 [ Debug ] plugins/open-and-close-window-with-plugin.html [ Cras
 crbug.com/223583 http/tests/filesystem/no-cache-filesystem-url.html [ Skip ]
 crbug.com/231863 compositing/visibility/visibility-composited-animation.html [ Pass ImageOnlyFailure ]
 crbug.com/231866 [ Lion ] fast/backgrounds/animated-gif-as-background.html [ Pass ImageOnlyFailure ]
-# This test doesn't make sense since we enable experimental features by default when running tests.
-crbug.com/231867 fast/css-grid-layout/grid-disabled-by-default.html [ Failure ]
 crbug.com/231917 [ Win Mac ] fast/parser/external-entities-in-xslt.xml [ Failure Pass ]
-# This test doesn't make sense since we enable experimental features by default when running tests.
-crbug.com/231918 fast/regions/css-regions-disabled.html [ Failure ]
 crbug.com/231932 http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
 crbug.com/235449 fast/loader/stateobjects/state-attribute-history-getter.html [ Failure Pass ]
 crbug.com/235448 fast/loader/stateobjects/popstate-fires-on-history-traversal.html [ Failure Pass ]
