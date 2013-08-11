@@ -129,8 +129,9 @@ class FilteringOption(Option):
 
 class BaseParser(object):
   """Base parser class that includes the logic to add logging controls."""
-  DEFAULT_LOG_LEVELS = ("critical", "debug", "error", "fatal", "info",
-                        "warning")
+  DEFAULT_LOG_LEVELS = ('fatal', 'critical', 'error', 'warning', 'info',
+                        'debug')
+
   DEFAULT_LOG_LEVEL = "info"
   ALLOW_LOGGING = True
   SUPPORTS_CACHING = False
