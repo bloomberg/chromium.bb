@@ -6,6 +6,10 @@
 // string.
 var isTest = false;
 
+// Set to true when loading a "Release" NaCl module, false when loading a
+// "Debug" NaCl module.
+var isRelease = false;
+
 // Javascript module pattern:
 //   see http://en.wikipedia.org/wiki/Unobtrusive_JavaScript#Namespaces
 // In essence, we define an anonymous function which is immediately called and
@@ -22,11 +26,10 @@ var common = (function() {
    * Return the mime type for NaCl plugin.
    *
    * @param {string} tool The name of the toolchain, e.g. "glibc", "newlib" etc.
-   * @param {bool} isRelease True if this is a release build.
    * @return {string} The mime-type for the kind of NaCl plugin matching
    * the given toolchain.
    */
-  function mimeTypeForTool(tool, isRelease) {
+  function mimeTypeForTool(tool) {
     // For NaCl modules use application/x-nacl.
     var mimetype = 'application/x-nacl';
     if (isHostToolchain(tool)) {
@@ -293,8 +296,8 @@ var common = (function() {
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
     updateStatus('Page loaded.');
-    var isRelease = path.toLowerCase().indexOf('release') != -1;
-    if (!browserSupportsNaCl(tool, isRelease)) {
+    isRelease = path.toLowerCase().indexOf('release') != -1;
+    if (!browserSupportsNaCl(tool)) {
       updateStatus(
           'Browser does not support NaCl (' + tool + '), or NaCl is disabled');
     } else if (common.naclModule == null) {
