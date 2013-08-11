@@ -3069,6 +3069,7 @@ irt_variant_tests = [
     'tests/common/nacl.scons',
     'tests/compiler_thread_suspension/nacl.scons',
     'tests/computed_gotos/nacl.scons',
+    'tests/data_below_data_start/nacl.scons',
     'tests/data_not_executable/nacl.scons',
     'tests/dup/nacl.scons',
     'tests/dynamic_code_loading/nacl.scons',

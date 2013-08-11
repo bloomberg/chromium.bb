@@ -163,6 +163,18 @@ NaClErrorCode NaClCheckAddressSpaceLayoutSanity(struct NaClApp *nap,
     NaClLog(LOG_INFO, "rodata_start not a multiple of allocation size\n");
     return LOAD_BAD_RODATA_ALIGNMENT;
   }
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+  /*
+   * This check is necessary to make MIPS sandbox secure, as there is no NX page
+   * protection support on MIPS.
+   */
+  if (nap->rodata_start < NACL_DATA_SEGMENT_START) {
+    NaClLog(LOG_INFO,
+            "rodata_start is below NACL_DATA_SEGMENT_START (0x%X) address\n",
+            NACL_DATA_SEGMENT_START);
+    return LOAD_SEGMENT_BAD_LOC;
+  }
+#endif
   return LOAD_OK;
 }
 
