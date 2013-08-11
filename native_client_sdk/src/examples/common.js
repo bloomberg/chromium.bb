@@ -296,7 +296,6 @@ var common = (function() {
     // status message indicating that the module is still loading.  Otherwise,
     // do not change the status message.
     updateStatus('Page loaded.');
-    isRelease = path.toLowerCase().indexOf('release') != -1;
     if (!browserSupportsNaCl(tool)) {
       updateStatus(
           'Browser does not support NaCl (' + tool + '), or NaCl is disabled');
@@ -402,6 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
       var path = pathFormat.replace('{tc}', tc).replace('{config}', config);
 
       isTest = searchVars.test === 'true';
+      isRelease = path.toLowerCase().indexOf('release') != -1;
 
       loadFunction(body.dataset.name, tc, path, body.dataset.width,
                    body.dataset.height, attrs);
