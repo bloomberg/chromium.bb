@@ -11,13 +11,10 @@
     <div id="description">This test makes sure that CSSStyleDeclaration enumerates JavaScript properties for defined and non-defined CSS properties, indexed properties, and properties defined on the prototype. See <a href="https://bugs.webkit.org/show_bug.cgi?id=23946">Bug 23946</a>.</div>
     <div id="console"></div>
     <script>
-        shouldBe("document.body.style.length", "4");
+        shouldBe("document.body.style.length", "2");
         shouldBeTrue("'0' in document.body.style");
         shouldBeTrue("'1' in document.body.style");
         shouldBeTrue("'textDecoration' in document.body.style");
-        shouldBeTrue("'textDecorationLine' in document.body.style");
-        shouldBeTrue("'textDecorationStyle' in document.body.style");
-        shouldBeTrue("'textDecorationColor' in document.body.style");
         shouldBeTrue("'borderTopColor' in document.body.style");
         shouldBeTrue("'border' in document.body.style");
         shouldBeTrue("'font' in document.body.style");

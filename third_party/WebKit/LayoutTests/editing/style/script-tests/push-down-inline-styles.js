@@ -31,17 +31,17 @@ testSingleToggle("bold", '<span style="font-weight: bold;"><div id="test">hello<
 testSingleToggle("italic", '<span style="font-style: italic;"><div>hello</div></span>', '<div>hello</div>');
 testSingleToggle("italic", '<span style="font-style: italic;"><div id="test">hello</div><span style="font-style: oblique;">world</span>', '<div id="test">hello</div><span style="font-style: oblique;">world</span>');
 testSingleToggle("italic", '<span style="font-style: italic; font-weight: bold;"><div>hello</div></span>', '<span style="font-weight: bold;"><div>hello</div></span>');
-testSingleToggle("italic", '<span style="font-style: italic; text-decoration: line-through;"><div>hello</div></span>', '<span style="text-decoration-line: line-through;"><div>hello</div></span>');
+testSingleToggle("italic", '<span style="font-style: italic; text-decoration: line-through;"><div>hello</div></span>', '<span style="text-decoration: line-through;"><div>hello</div></span>');
 testSingleToggle("italic", '<span style="font-style: italic;">hello<div id="test">world</div><blockquote>webkit</blockquote></span>', '<i>hello</i><div id="test">world</div><blockquote style="font-style: italic;">webkit</blockquote>');
 testSingleToggle("italic", '<span style="font-style: italic;">hello <span id="test">world</span> webkit</span>', '<i>hello </i><span id="test">world</span><i> webkit</i>');
 testSingleToggle("underline", '<span style="text-decoration: underline;"><div id="test">hello</div>world</span>', '<div id="test">hello</div><u>world</u>');
-testSingleToggle("underline", '<span style="text-decoration: underline;"><div id="test">hello</div><blockquote>world<br>webkit</blockquote></span>', '<div id="test">hello</div><blockquote style="text-decoration-line: underline;">world<br>webkit</blockquote>');
+testSingleToggle("underline", '<span style="text-decoration: underline;"><div id="test">hello</div><blockquote>world<br>webkit</blockquote></span>', '<div id="test">hello</div><blockquote style="text-decoration: underline;">world<br>webkit</blockquote>');
 testSingleToggle("underline", '<span style="text-decoration: underline;">hello<div id="test">world</div>webkit</u>', '<u>hello</u><div id="test">world</div><u>webkit</u>');
 testSingleToggle("underline",
     '<div style="text-decoration: underline;"><div>hello</span></div><div id="test">webkit</div><span style="font-style: italic;">rocks</span>',
-    '<div><div style="text-decoration-line: underline;">hello</span></div><div id="test">webkit</div><u><span style="font-style: italic;">rocks</span></u></div>');
-testSingleToggle("underline", '<span style="text-decoration: underline;"><div style="text-decoration: line-through;">hello</div><div id="test">world</div></span>', '<div style="text-decoration-line: underline line-through;">hello</div><div id="test">world</div>');
-testSingleToggle("strikeThrough", '<span style="text-decoration: line-through;"><div id="test">hello</div><div style="text-decoration: underline;">world</div></span>', '<div id="test">hello</div><div style="text-decoration-line: line-through underline;">world</div>');
+    '<div><div style="text-decoration: underline;">hello</span></div><div id="test">webkit</div><u><span style="font-style: italic;">rocks</span></u></div>');
+testSingleToggle("underline", '<span style="text-decoration: underline;"><div style="text-decoration: line-through;">hello</div><div id="test">world</div></span>', '<div style="text-decoration: underline line-through;">hello</div><div id="test">world</div>');
+testSingleToggle("strikeThrough", '<span style="text-decoration: line-through;"><div id="test">hello</div><div style="text-decoration: underline;">world</div></span>', '<div id="test">hello</div><div style="text-decoration: line-through underline;">world</div>');
 
 document.body.removeChild(testContainer);
 
