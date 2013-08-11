@@ -127,12 +127,15 @@ class WTFStringImplPrinter(StringPrinter):
         return self.val['m_length']
 
     def to_string(self):
+        chars_start = self.val.address + 1
         if self.is_8bit():
-            return lstring_to_string(self.val['m_data8'], self.get_length())
-        return ustring_to_string(self.val['m_data16'], self.get_length())
+            return lstring_to_string(chars_start.cast(gdb.lookup_type('char').pointer()),
+                                     self.get_length())
+        return ustring_to_string(chars_start.cast(gdb.lookup_type('UChar').pointer()),
+                                 self.get_length())
 
     def is_8bit(self):
-        return self.val['m_hashAndFlags'] & self.val['s_hashFlag8BitBuffer']
+        return self.val['m_is8Bit']
 
 
 class WTFStringPrinter(StringPrinter):
