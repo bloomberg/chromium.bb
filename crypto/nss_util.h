@@ -20,6 +20,9 @@ class Time;
 // initialization functions.
 namespace crypto {
 
+// The TPMToken name used for the NSS slot opened by ScopedTestNSSDB.
+CRYPTO_EXPORT extern const char kTestTPMTokenName[];
+
 #if defined(USE_NSS)
 // EarlySetupForNSSInit performs lightweight setup which must occur before the
 // process goes multithreaded. This does not initialise NSS. For test, see

@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "crypto/nss_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
@@ -184,13 +185,13 @@ void CryptohomeClientStubImpl::Pkcs11IsTpmTokenReady(
 
 void CryptohomeClientStubImpl::Pkcs11GetTpmTokenInfo(
     const Pkcs11GetTpmTokenInfoCallback& callback) {
-  const char kStubLabel[] = "Stub TPM Token";
   const char kStubUserPin[] = "012345";
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-                                         base::Bind(callback,
-                                                    DBUS_METHOD_CALL_SUCCESS,
-                                                    std::string(kStubLabel),
-                                                    std::string(kStubUserPin)));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback,
+                 DBUS_METHOD_CALL_SUCCESS,
+                 std::string(crypto::kTestTPMTokenName),
+                 std::string(kStubUserPin)));
 }
 
 bool CryptohomeClientStubImpl::InstallAttributesGet(const std::string& name,

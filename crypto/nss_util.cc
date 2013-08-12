@@ -313,7 +313,7 @@ class NSSInitSingleton {
       return true;
     if (!g_test_nss_db_dir.Get().CreateUniqueTempDir())
       return false;
-    test_slot_ = OpenUserDB(g_test_nss_db_dir.Get().path(), "Test DB");
+    test_slot_ = OpenUserDB(g_test_nss_db_dir.Get().path(), kTestTPMTokenName);
     return !!test_slot_;
   }
 
@@ -593,6 +593,8 @@ bool NSSInitSingleton::force_nodb_init_ = false;
 base::LazyInstance<NSSInitSingleton>::Leaky
     g_nss_singleton = LAZY_INSTANCE_INITIALIZER;
 }  // namespace
+
+const char kTestTPMTokenName[] = "Test DB";
 
 #if defined(USE_NSS)
 void EarlySetupForNSSInit() {
