@@ -277,6 +277,13 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings =
       widget->UsingSynchronousRendererCompositor();
+#elif !defined(OS_MACOSX)
+  if (cmd->HasSwitch(switches::kEnableOverlayScrollbars)) {
+    settings.use_linear_fade_scrollbar_animator = true;
+    settings.solid_color_scrollbars = true;
+    settings.solid_color_scrollbar_color = SkColorSetARGB(128, 128, 128, 128);
+    settings.solid_color_scrollbar_thickness_dip = 3;
+  }
 #endif
 
   if (!compositor->initialize(settings))

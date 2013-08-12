@@ -424,6 +424,9 @@ const char kEnableNewMediaInternals[]       = "enable-new-media-internals";
 // Enables use of cache if offline, even if it's stale
 const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
 
+// Enables overlay scrollbars on Aura or Linux. Does nothing on Mac.
+const char kEnableOverlayScrollbars[]       = "enable-overlay-scrollbars";
+
 // Forward overscroll event data from the renderer to the browser.
 const char kEnableOverscrollNotifications[] = "enable-overscroll-notifications";
 
