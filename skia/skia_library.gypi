@@ -199,7 +199,6 @@
       ],
       'include_dirs': [
         '../third_party/skia/include/gpu',
-        '../third_party/skia/include/gpu/gl',
         '../third_party/skia/src/gpu',
       ],
     }],
@@ -460,7 +459,6 @@
       '../third_party/skia/include/effects',
       '../third_party/skia/include/pdf',
       '../third_party/skia/include/gpu',
-      '../third_party/skia/include/gpu/gl',
       '../third_party/skia/include/lazy',
       '../third_party/skia/include/pathops',
       '../third_party/skia/include/pipe',
