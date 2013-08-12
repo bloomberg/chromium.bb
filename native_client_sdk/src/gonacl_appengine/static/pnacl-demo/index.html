@@ -9,68 +9,173 @@ found in the LICENSE file.
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="-1">
   <meta charset="UTF-8">
-  <title>Multi-Threaded Earth Demo</title>
+  <title>Multi-Threaded Raycasted Earth</title>
   <script type="text/javascript" src="example.js"></script>
+  <style>
+    body {
+      /* from http://css-tricks.com/snippets/css/better-helvetica/ */
+      font-family: "HelveticaNeue-Light", "Helvetica Neue Light",
+          "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+      font-weight: 300;
+      overflow: hidden;
+    }
+    .absolute-fill-parent {
+      position: relative;
+    }
+    .absolute-fill {
+      bottom: 0;
+      left: 0;
+      position: absolute;
+      right: 0;
+      top: 0;
+    }
+    .flex-container {
+      margin: 0;
+      display: -moz-box;
+      display: -ms-flexbox;
+      display: -webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      width: 100%;
+      height: 100%;
+    }
+    .main {
+      background-color: #000;
+      -moz-box-flex: 1;
+      -ms-flex: 1;
+      -webkit-box-flex: 1;
+      -webkit-flex: 1;
+      flex: 1;
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .flex-column {
+      -moz-box-orient: vertical;
+      -ms-flex-direction: column;
+      -webkit-box-orient: vertical;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+    }
+    .flex-justify-center {
+      -moz-box-pack: center;
+      -ms-flex-pack: center;
+      -webkit-box-pack: center;
+      -webkit-justify-content: center;
+      justify-content: center;
+    }
+    #message {
+      text-align: center;
+      width: 100%;
+    }
+    #statusField {
+      display: none;
+      color: #fff;
+      font-size: 34px;
+      text-align: center;
+      width: 100%;
+    }
+    #progress {
+      display: none;
+      margin: auto;
+      width: 300px;
+    }
+    #nacl_module {
+      height: 100%;
+      width: 100%;
+    }
+    .sidebar {
+      padding: 0 8px;
+      overflow-y: auto;
+      width: 350px;
+    }
+    #config {
+      width: 100%;
+    }
+    #config .name {
+      font-weight: bold;
+      padding-right: 8px;
+      text-align: right;
+      white-space: nowrap;
+      width: 1px;
+    }
+    #threadCount, #lightRange, #zoomRange {
+      width: 100%;
+    }
+    .small {
+      font-size: 12px;
+    }
+  </style>
 </head>
-<body data-name="earth" data-width="480" data-height="480">
-  <h1>Multi-Threaded Earth Demo</h1>
-  <div id="progress_div">
-    Load progress: <progress id="progress"></progress>
-  </div>
-  <div id="statusField"></div>
-  <br/>
-  <div id="config-demo">
-    <br/>
-    Zoom:
-    <input type="range" id="zoomRange"
-        min="1.0" max="50.0" step="0.5" value="14.0" />
-    Light:
-    <input type="range" id="lightRange"
-        min="0.2" max="2.0" step=".01" value="1.0" />
-    <br/>
-    Number of worker threads (0 means rendering is done in the main thread):
-    <br/>
-    <input type="radio" name="threadCount" id="radio0" value="0"
-        checked="checked">
-    <label for="radio0">0</label>
-    <input type="radio" name="threadCount" id="radio1" value="1">
-    <label for="radio1">1</label>
-    <input type="radio" name="threadCount" id="radio2" value="2">
-    <label for="radio2">2</label>
-    <input type="radio" name="threadCount" id="radio3" value="4">
-    <label for="radio3">4</label>
-    <input type="radio" name="threadCount" id="radio4" value="6">
-    <label for="radio4">6</label>
-    <input type="radio" name="threadCount" id="radio5" value="8">
-    <label for="radio5">8</label>
-    <input type="radio" name="threadCount" id="radio6" value="12">
-    <label for="radio6">12</label>
-    <input type="radio" name="threadCount" id="radio7" value="16">
-    <label for="radio7">16</label>
-    <input type="radio" name="threadCount" id="radio8" value="24">
-    <label for="radio8">24</label>
-    <input type="radio" name="threadCount" id="radio9" value="32">
-    <label for="radio9">32</label>
-    <br/><br/>
-    <label id="result" name="result"> </label>
-  </div>
-  <div id="listener"></div>
-  <br/>
-  <div id="auxnotes">
-  Note: the C++ source code of this demo is available in the Native
-  Client SDK (<tt>examples/demo/earth</tt>).
-  <br/><br/>
-  Image Credit:
-  <br/>
-  NASA Goddard Space Flight Center Image by Reto Stöckli (land surface,
-  shallow water, clouds). Enhancements by Robert Simmon (ocean color,
-  compositing, 3D globes, animation).
-  <br/>
-  Data and technical support: MODIS Land Group; MODIS Science Data,
-  Support Team; MODIS Atmosphere Group; MODIS Ocean Group Additional data:
-  USGS EROS Data Center (topography); USGS Terrestrial Remote Sensing
-  Flagstaff Field Center (Antarctica); Defense Meteorological
-  Satellite Program (city lights).
+<body>
+  <div class="absolute-fill">
+    <div class="flex-container">
+      <div class="main absolute-fill-parent">
+        <div class="absolute-fill">
+          <div class="flex-container flex-column flex-justify-center">
+            <div id="message">
+              <div id="statusField"></div>
+              <progress id="progress"></progress>
+            </div>
+          </div>
+        </div>
+        <div id="listener" class="absolute-fill"></div>
+      </div>
+      <div class="sidebar">
+        <h1>Multi-Threaded Raycasted Earth</h1>
+        <table id="config">
+          <tbody>
+            <tr>
+              <td class="name">Thread Count:</td>
+              <td class="value">
+                <select id="threadCount">
+                  <option value="0">Main Thread only</option>
+                  <option value="1">1 Thread</option>
+                  <option value="2" selected="selected">2 Threads</option>
+                  <option value="4">4 Threads</option>
+                  <option value="6">6 Threads</option>
+                  <option value="8">8 Threads</option>
+                  <option value="12">12 Threads</option>
+                  <option value="24">24 Threads</option>
+                  <option value="32">32 Threads</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td class="name">Zoom:</td>
+              <td class="value">
+                <input type="range" id="zoomRange"
+                    min="1.0" max="50.0" step="0.5" value="14.0">
+              </td>
+            </tr>
+            <tr>
+              <td class="name">Light:</td>
+              <td class="value">
+                <input type="range" id="lightRange"
+                    min="0.2" max="2.0" step=".01" value="1.0">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="small">
+          Note: the C++ source code of this demo is available in the Native
+          Client SDK (<tt>examples/demo/earth</tt>).
+        </p>
+        <p class="small">
+          Image Credit:
+          <br/>
+          NASA Goddard Space Flight Center Image by Reto Stöckli (land
+          surface, shallow water, clouds). Enhancements by Robert Simmon
+          (ocean color, compositing, 3D globes, animation).
+          <br/>
+          Data and technical support: MODIS Land Group; MODIS Science Data,
+          Support Team; MODIS Atmosphere Group; MODIS Ocean Group Additional
+          data: USGS EROS Data Center (topography); USGS Terrestrial Remote
+          Sensing Flagstaff Field Center (Antarctica); Defense Meteorological
+          Satellite Program (city lights).
+        </p>
+      </div>
+    </div>
   </div>
 </body>
 </html>
