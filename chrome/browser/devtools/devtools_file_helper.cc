@@ -321,9 +321,10 @@ void DevToolsFileHelper::InnerAddFileSystem(
     return;
   }
 
+  std::string path_display_name = path.AsEndingWithSeparator().AsUTF8Unsafe();
   string16 message = l10n_util::GetStringFUTF16(
       IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE,
-      UTF8ToUTF16(file_system_path + "/"));
+      UTF8ToUTF16(path_display_name));
   show_info_bar_callback.Run(
       message,
       Bind(&DevToolsFileHelper::AddUserConfirmedFileSystem,
