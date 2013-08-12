@@ -187,29 +187,28 @@ base::Closure WebRTCIdentityStore::RequestIdentity(
     const std::string& common_name,
     const CompletionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  WebRTCIdentityRequestHandle* handle =
-      new WebRTCIdentityRequestHandle(this, callback);
-
   WebRTCIdentityRequest* request =
       FindRequest(origin, identity_name, common_name);
-
   // If there is no identical request in flight, create a new one, queue it,
   // and make the backend request.
   if (!request) {
     request = new WebRTCIdentityRequest(origin, identity_name, common_name);
-
+    // |request| will delete itself after the result is posted.
     if (!backend_->FindIdentity(
             origin,
             identity_name,
             common_name,
             base::Bind(
                 &WebRTCIdentityStore::BackendFindCallback, this, request))) {
+      // Bail out if the backend failed to start the task.
       delete request;
       return base::Closure();
     }
     in_flight_requests_.push_back(request);
   }
+
+  WebRTCIdentityRequestHandle* handle =
+    new WebRTCIdentityRequestHandle(this, callback);
 
   request->AddCallback(
       handle,
