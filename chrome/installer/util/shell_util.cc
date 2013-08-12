@@ -1186,9 +1186,47 @@ bool GetAppShortcutsFolder(BrowserDistribution* dist,
   return true;
 }
 
-typedef base::Callback<bool(const base::FilePath&)> FileOperationCallback;
+// Shortcut filters for BatchShortcutAction().
+
+typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/,
+                            const string16& /*args*/)>
+    ShortcutFilterCallback;
+
+// FilterTargetEq is a shortcut filter that matches only shortcuts that have a
+// specific target.
+class FilterTargetEq {
+ public:
+  explicit FilterTargetEq(const base::FilePath& desired_target_exe);
+
+  // Returns true if filter rules are satisfied, i.e.:
+  // - |target_path| matches |desired_target_compare_|.
+  bool Match(const base::FilePath& target_path, const string16& args) const;
+
+  // A convenience routine to create a callback to call Match().
+  // The callback is only valid during the lifetime of the FilterTargetEq
+  // instance.
+  ShortcutFilterCallback AsShortcutFilterCallback();
+
+ private:
+  InstallUtil::ProgramCompare desired_target_compare_;
+};
+
+FilterTargetEq::FilterTargetEq(const base::FilePath& desired_target_exe)
+    : desired_target_compare_(desired_target_exe) {}
+
+bool FilterTargetEq::Match(const base::FilePath& target_path,
+                           const string16& args) const {
+  return desired_target_compare_.EvaluatePath(target_path);
+}
+
+ShortcutFilterCallback FilterTargetEq::AsShortcutFilterCallback() {
+  return base::Bind(&FilterTargetEq::Match, base::Unretained(this));
+}
 
 // Shortcut operations for BatchShortcutAction().
+
+typedef base::Callback<bool(const base::FilePath& /*shortcut_path*/)>
+    ShortcutOperationCallback;
 
 bool ShortcutOpUnpin(const base::FilePath& shortcut_path) {
   VLOG(1) << "Trying to unpin " << shortcut_path.value();
@@ -1214,15 +1252,14 @@ bool ShortcutOpUpdate(const base::win::ShortcutProperties& shortcut_properties,
 }
 
 // {|location|, |dist|, |level|} determine |shortcut_folder|.
-// Applies |shortcut_operation| to each shortcut in |shortcut_folder| that
-// targets |target_exe|.
-// Returns true if all operations are successful. All intended operations are
-// attempted even if failures occur.
-bool BatchShortcutAction(const FileOperationCallback& shortcut_operation,
+// For each shortcut in |shortcut_folder| that match |shortcut_filter|, apply
+// |shortcut_operation|. Returns true if all operations are successful.
+// All intended operations are attempted, even if failures occur.
+bool BatchShortcutAction(const ShortcutFilterCallback& shortcut_filter,
+                         const ShortcutOperationCallback& shortcut_operation,
                          ShellUtil::ShortcutLocation location,
                          BrowserDistribution* dist,
-                         ShellUtil::ShellChange level,
-                         const base::FilePath& target_exe) {
+                         ShellUtil::ShellChange level) {
   DCHECK(!shortcut_operation.is_null());
   base::FilePath shortcut_folder;
   if (!ShellUtil::GetShortcutPath(location, dist, level, &shortcut_folder)) {
@@ -1231,16 +1268,16 @@ bool BatchShortcutAction(const FileOperationCallback& shortcut_operation,
   }
 
   bool success = true;
-  InstallUtil::ProgramCompare target_compare(target_exe);
   base::FileEnumerator enumerator(
       shortcut_folder, false, base::FileEnumerator::FILES,
       string16(L"*") + installer::kLnkExt);
   base::FilePath target_path;
+  string16 args;
   for (base::FilePath shortcut_path = enumerator.Next();
        !shortcut_path.empty();
        shortcut_path = enumerator.Next()) {
-    if (base::win::ResolveShortcut(shortcut_path, &target_path, NULL)) {
-      if (target_compare.EvaluatePath(target_path) &&
+    if (base::win::ResolveShortcut(shortcut_path, &target_path, &args)) {
+      if (shortcut_filter.Run(target_path, args) &&
           !shortcut_operation.Run(shortcut_path)) {
         success = false;
       }
@@ -1996,12 +2033,20 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
       return RemoveShortcutFolder(location, dist, level);
 
     case SHORTCUT_LOCATION_TASKBAR_PINS:
-      return BatchShortcutAction(base::Bind(&ShortcutOpUnpin), location, dist,
-                                 level, target_exe);
+      return BatchShortcutAction(FilterTargetEq(target_exe).
+                                     AsShortcutFilterCallback(),
+                                 base::Bind(&ShortcutOpUnpin),
+                                 location,
+                                 dist,
+                                 level);
 
     default:
-      return BatchShortcutAction(base::Bind(&ShortcutOpDelete), location, dist,
-                                 level, target_exe);
+      return BatchShortcutAction(FilterTargetEq(target_exe).
+                                     AsShortcutFilterCallback(),
+                                 base::Bind(&ShortcutOpDelete),
+                                 location,
+                                 dist,
+                                 level);
   }
 }
 
@@ -2017,8 +2062,12 @@ bool ShellUtil::UpdateShortcuts(
 
   base::win::ShortcutProperties shortcut_properties(
       TranslateShortcutProperties(properties));
-  return BatchShortcutAction(base::Bind(&ShortcutOpUpdate, shortcut_properties),
-                             location, dist, level, target_exe);
+  return BatchShortcutAction(FilterTargetEq(target_exe).
+                                 AsShortcutFilterCallback(),
+                             base::Bind(&ShortcutOpUpdate, shortcut_properties),
+                             location,
+                             dist,
+                             level);
 }
 
 bool ShellUtil::GetUserSpecificRegistrySuffix(string16* suffix) {
