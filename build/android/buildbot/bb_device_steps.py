@@ -64,7 +64,8 @@ INSTRUMENTATION_TESTS = dict((suite.name, suite) for suite in [
       'webview:android_webview/test/data/device_files'),
     ])
 
-VALID_TESTS = set(['chromedriver', 'ui', 'unit', 'webkit', 'webkit_layout'])
+VALID_TESTS = set(['chromedriver', 'ui', 'unit', 'webkit', 'webkit_layout',
+                   'webrtc'])
 
 RunCmd = bb_utils.RunCmd
 
@@ -277,13 +278,18 @@ def RunWebkitTests(options):
   RunWebkitLint(options.target)
 
 
+def RunWebRTCTests(options):
+  RunTestSuites(options, gtest_config.WEBRTC_TEST_SUITES)
+
+
 def GetTestStepCmds():
   return [
       ('chromedriver', RunChromeDriverTests),
       ('unit', RunUnitTests),
       ('ui', RunInstrumentationTests),
       ('webkit', RunWebkitTests),
-      ('webkit_layout', RunWebkitLayoutTests)
+      ('webkit_layout', RunWebkitLayoutTests),
+      ('webrtc', RunWebRTCTests),
   ]
 
 

@@ -31,3 +31,18 @@ STABLE_TEST_SUITES = [
     'sandbox_linux_unittests',
     'content_browsertests',
 ]
+
+WEBRTC_TEST_SUITES = [
+    'audio_decoder_unittests',
+    'common_audio_unittests',
+    'common_video_unittests',
+    'metrics_unittests',
+    'modules_integrationtests',
+    'modules_unittests',
+    'neteq_unittests',
+    'system_wrappers_unittests',
+    'test_support_unittests',
+    'tools_unittests',
+    'video_engine_core_unittests',
+    'voice_engine_unittests',
+]
