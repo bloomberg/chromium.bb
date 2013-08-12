@@ -62,11 +62,6 @@ static bool canAccessDocument(Document* targetDocument, SecurityReportingOption 
     return false;
 }
 
-bool BindingSecurity::shouldAllowAccessToDOMWindow(DOMWindow* target, SecurityReportingOption reportingOption)
-{
-    return target && canAccessDocument(target->document(), reportingOption);
-}
-
 bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, SecurityReportingOption reportingOption)
 {
     return target && canAccessDocument(target->document(), reportingOption);
