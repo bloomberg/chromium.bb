@@ -102,6 +102,8 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
     kDecoding,           // DecodeBufferInitial() successful; decoding frames.
     kResetting,          // Presently resetting.
     kAfterReset,         // After Reset(), ready to start decoding again.
+    kChangingResolution, // Performing resolution change, all remaining
+                         // pre-change frames decoded and processed.
     kError,              // Error in kDecoding state.
   };
 
@@ -204,13 +206,16 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
   void AssignPictureBuffersTask(scoped_ptr<PictureBufferArrayRef> pic_buffers);
 
   // Service I/O on the V4L2 devices.  This task should only be scheduled from
-  // DevicePollTask().
-  void ServiceDeviceTask();
+  // DevicePollTask().  If |mfc_event_pending| is true, one or more events
+  // on MFC file descriptor are pending.
+  void ServiceDeviceTask(bool mfc_event_pending);
   // Handle the various device queues.
   void EnqueueMfc();
   void DequeueMfc();
   void EnqueueGsc();
   void DequeueGsc();
+  // Handle incoming MFC events.
+  void DequeueMfcEvents();
   // Enqueue a buffer on the corresponding queue.
   bool EnqueueMfcInputRecord();
   bool EnqueueMfcOutputRecord();
@@ -245,10 +250,22 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
 
   // Attempt to start/stop device_poll_thread_.
   bool StartDevicePoll();
-  bool StopDevicePoll();
+  // If |keep_mfc_input_state| is true, don't reset MFC input state; used during
+  // resolution change.
+  bool StopDevicePoll(bool keep_mfc_input_state);
   // Set/clear the device poll interrupt (using device_poll_interrupt_fd_).
   bool SetDevicePollInterrupt();
   bool ClearDevicePollInterrupt();
+
+  void StartResolutionChangeIfNeeded();
+  void FinishResolutionChange();
+  void ResumeAfterResolutionChange();
+
+  // Try to get output format from MFC, detected after parsing the beginning
+  // of the stream. Sets |again| to true if more parsing is needed.
+  bool GetFormatInfo(struct v4l2_format* format, bool* again);
+  // Create MFC output and GSC input and output buffers for the given |format|.
+  bool CreateBuffersForFormat(const struct v4l2_format& format);
 
   //
   // Device tasks, to be run on device_poll_thread_.
@@ -280,11 +297,16 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
   bool CreateGscInputBuffers();
   bool CreateGscOutputBuffers();
 
-  // Destroy these buffers.
+  //
+  // Methods run on child thread.
+  //
+
+  // Destroy buffers.
   void DestroyMfcInputBuffers();
   void DestroyMfcOutputBuffers();
   void DestroyGscInputBuffers();
   void DestroyGscOutputBuffers();
+  void ResolutionChangeDestroyBuffers();
 
   // Our original calling message loop for the child thread.
   scoped_refptr<base::MessageLoopProxy> child_message_loop_proxy_;
@@ -331,6 +353,11 @@ class CONTENT_EXPORT ExynosVideoDecodeAccelerator :
   int decoder_frames_at_client_;
   // Are we flushing?
   bool decoder_flushing_;
+  // Got a notification from driver that it reached resolution change point
+  // in the stream.
+  bool resolution_change_pending_;
+  // Got a reset request while we were performing resolution change.
+  bool resolution_change_reset_pending_;
   // Input queue for decoder_thread_: BitstreamBuffers in.
   std::list<linked_ptr<BitstreamBufferRef> > decoder_input_queue_;
   // For H264 decode, hardware requires that we send it frame-sized chunks.
