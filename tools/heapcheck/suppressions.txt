@@ -849,11 +849,3 @@
    fun:MessageCenterView
    fun:message_center::MessageCenterViewTest::SetUp
 }
-{
-   bug_270742
-   Heapcheck:Leak
-   ...
-   fun:ReadDatabaseContents
-   fun:sync_file_system::drive_backend::MetadataDatabase::InitializeOnTaskRunner
-   fun:sync_file_system::drive_backend::MetadataDatabase::CreateOnTaskRunner
-}

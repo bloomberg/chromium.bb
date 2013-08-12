@@ -641,7 +641,10 @@ void MetadataDatabase::UpdateByChangeList(
 
     if (FindTrackersByFileID(file_id, NULL)) {
       PutFileToBatch(*file, batch.get());
-      file_by_id_[file_id] = file.release();
+
+      FileMetadata* file_ptr = file.release();
+      std::swap(file_ptr, file_by_id_[file_id]);
+      delete file_ptr;
     }
   }
 

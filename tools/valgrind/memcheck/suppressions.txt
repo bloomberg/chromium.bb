@@ -7228,12 +7228,3 @@
    fun:_ZN14message_center17MessageCenterViewC1EPNS_13MessageCenterEPNS_17MessageCenterTrayEibb
    fun:_ZN14message_center21MessageCenterViewTest5SetUpEv
 }
-{
-   bug_270742
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16sync_file_system13drive_backend12_GLOBAL__N_120ReadDatabaseContentsEPN7leveldb2DBEPNS0_16DatabaseContentsE
-   fun:_ZN16sync_file_system13drive_backend16MetadataDatabase22InitializeOnTaskRunnerERKN4base8FilePathE
-   fun:_ZN16sync_file_system13drive_backend16MetadataDatabase18CreateOnTaskRunnerEPN4base22SingleThreadTaskRunnerEPNS2_19SequencedTaskRunnerERKNS2_8FilePathERKNS2_8CallbackIFvNS_14SyncStatusCodeE10scoped_ptrIS1_NS2_14DefaultDeleterIS1_EEEEEE
-}
-
