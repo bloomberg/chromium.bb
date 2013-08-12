@@ -57,5 +57,14 @@ catch (exception) {
     pre.innerText += exception + "\n";
 }
 
+pre.innerText += "Set cssText: ";
+try {
+    preStyle.cssText = "yay: !important;";
+    pre.innerText += "No exception thrown (fail).\n";
+}
+catch (exception) {
+    pre.innerText += exception + "\n";
+}
+
 pre.innerText += "Read deleted variable: " + preStyle.var.get("inline") + "\n";
 </script>

@@ -1,13 +1,14 @@
 Computed variables declaration: [object CSSVariablesMap]
-Create variable: NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.
+Create variable: NoModificationAllowedError: Failed to set the 'create' property on a computed 'CSSStyleDeclaration': computed styles are read-only.
 Count variables: 3
 Count empty variables: 0
 Read stylesheet variable: pass
 Read inherited variable: pass
 Read inline variable: pass
 Read non-existent variable: pass
-Update variable: NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.
+Update variable: NoModificationAllowedError: Failed to set the 'inline' property on a computed 'CSSStyleDeclaration': computed styles are read-only.
 Delete variable: Not deleted
-Clear variables: NoModificationAllowedError: An attempt was made to modify an object where modifications are not allowed.
+Clear variables: NoModificationAllowedError: Failed to clear variables from a computed 'CSSStyleDeclaration': computed styles are read-only.
+Set cssText: NoModificationAllowedError: Failed to set the 'cssText' property on a computed 'CSSStyleDeclaration': computed styles are read-only.
 Read deleted variable: pass
 
