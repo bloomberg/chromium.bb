@@ -151,7 +151,6 @@ void ChromeClassTester::BuildBannedLists() {
   banned_directories_.push_back("ppapi/");
   banned_directories_.push_back("usr/");
   banned_directories_.push_back("testing/");
-  banned_directories_.push_back("googleurl/");
   banned_directories_.push_back("v8/");
   banned_directories_.push_back("dart/");
   banned_directories_.push_back("sdch/");

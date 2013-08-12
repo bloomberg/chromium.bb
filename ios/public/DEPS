@@ -4,7 +4,6 @@ include_rules = [
   # be kept in sync with src/DEPS.
   "-base",
   "-build",
-  "-googleurl",
   "-library_loaders",
   "-testing",
   "-third_party/icu/source/common/unicode",

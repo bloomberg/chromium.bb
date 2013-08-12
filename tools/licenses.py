@@ -82,7 +82,6 @@ ADDITIONAL_PATHS = (
     os.path.join('chrome', 'common', 'extensions', 'docs', 'examples'),
     os.path.join('chrome', 'test', 'chromeos', 'autotest'),
     os.path.join('chrome', 'test', 'data'),
-    os.path.join('googleurl'),
     os.path.join('native_client'),
     os.path.join('native_client_sdk'),
     os.path.join('net', 'tools', 'spdyshark'),
@@ -97,6 +96,7 @@ ADDITIONAL_PATHS = (
     os.path.join('tools', 'grit'),
     os.path.join('tools', 'gyp'),
     os.path.join('tools', 'page_cycler', 'acid3'),
+    os.path.join('url', 'third_party', 'mozilla'),
     os.path.join('v8'),
     # Fake directory so we can include the strongtalk license.
     os.path.join('v8', 'strongtalk'),
@@ -107,12 +107,6 @@ ADDITIONAL_PATHS = (
 # can't provide a README.chromium.  Please prefer a README.chromium
 # wherever possible.
 SPECIAL_CASES = {
-    os.path.join('googleurl'): {
-        "Name": "google-url",
-        "URL": "http://code.google.com/p/google-url/",
-        "License": "BSD and MPL 1.1/GPL 2.0/LGPL 2.1",
-        "License File": "LICENSE.txt",
-    },
     os.path.join('native_client'): {
         "Name": "native client",
         "URL": "http://code.google.com/p/nativeclient",

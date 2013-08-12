@@ -22,6 +22,8 @@
       'sources': [
         'gurl.cc',
         'gurl.h',
+        'third_party/mozilla/url_parse.cc',
+        'third_party/mozilla/url_parse.h',
         'url_canon.h',
         'url_canon_etc.cc',
         'url_canon_filesystemurl.cc',
@@ -42,8 +44,6 @@
         'url_canon_stdstring.h',
         'url_canon_stdurl.cc',
         'url_file.h',
-        'url_parse.cc',
-        'url_parse.h',
         'url_parse_file.cc',
         'url_parse_internal.h',
         'url_util.cc',

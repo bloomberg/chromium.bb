@@ -128,10 +128,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'data/tab_switching': [
         'UNKNOWN',
     ],
-    'googleurl': [  # http://code.google.com/p/google-url/issues/detail?id=15
-        'UNKNOWN',
-    ],
-
     'native_client': [  # http://crbug.com/98099
         'UNKNOWN',
     ],

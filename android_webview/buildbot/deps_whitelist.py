@@ -32,7 +32,6 @@ class DepsWhitelist(object):
 
     # Dependencies that need to be merged into the Android tree.
     self._snapshot_into_android_dependencies = [
-      'googleurl',
       'sdch/open-vcdiff',
       'testing/gtest',
       'third_party/WebKit',
