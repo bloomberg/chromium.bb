@@ -677,11 +677,12 @@ class PrecompiledHeader(object):
     files."""
     return os.path.split(self.settings.msvs_precompiled_header[self.config])[1]
 
-  def GetObjDependencies(self, sources, objs):
+  def GetObjDependencies(self, sources, objs, arch):
     """Given a list of sources files and the corresponding object files,
     returns a list of the pch files that should be depended upon. The
     additional wrapping in the return value is for interface compatability
     with make.py on Mac, and xcode_emulation.py."""
+    assert arch is None
     if not self._PchHeader():
       return []
     pch_ext = os.path.splitext(self.pch_source)[1]
@@ -690,7 +691,7 @@ class PrecompiledHeader(object):
         return [(None, None, self.output_obj)]
     return []
 
-  def GetPchBuildCommands(self):
+  def GetPchBuildCommands(self, arch):
     """Not used on Windows as there are no additional build steps required
     (instead, existing steps are modified in GetFlagsModifications below)."""
     return []
