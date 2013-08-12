@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -22,7 +21,7 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "grit/generated_resources.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,17 +71,11 @@ class MediaGalleriesPreferencesTest : public testing::Test {
       DeviceIdPrefIdsMap;
 
   MediaGalleriesPreferencesTest()
-      : ui_thread_(content::BrowserThread::UI, &loop_),
-        file_thread_(content::BrowserThread::FILE, &loop_),
-        profile_(new TestingProfile()),
+      : profile_(new TestingProfile()),
         default_galleries_count_(0) {
   }
 
   virtual ~MediaGalleriesPreferencesTest() {
-    // TestExtensionSystem uses DeleteSoon, so we need to delete the profile
-    // and then run the message queue to clean up.
-    profile_.reset();
-    base::MessageLoop::current()->RunUntilIdle();
   }
 
   virtual void SetUp() OVERRIDE {
@@ -240,9 +233,7 @@ class MediaGalleriesPreferencesTest : public testing::Test {
 
  private:
   // Needed for extension service & friends to work.
-  base::MessageLoop loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
