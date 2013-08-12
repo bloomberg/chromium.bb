@@ -580,6 +580,7 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     static const char* webkitPrefix[] = { "WEBKIT_", 0, };
     static const char* bothPrefixes[] = { "", "WEBKIT_", 0, };
 
+    registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays, false, false, false, unprefixed);
     registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, false, false, true, webkitPrefix);
     registerExtension<OESElementIndexUint>(m_oesElementIndexUint, false, false, false, unprefixed);
     registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives, false, false, false, unprefixed);
@@ -595,7 +596,6 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     registerExtension<WebGLLoseContext>(m_webglLoseContext, false, false, false, bothPrefixes);
 
     // Register draft extensions.
-    registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays, false, true, false, unprefixed);
     registerExtension<EXTFragDepth>(m_extFragDepth, false, true, false, unprefixed);
     registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers, false, true, false, unprefixed);
 
