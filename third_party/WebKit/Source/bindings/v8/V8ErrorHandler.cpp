@@ -31,12 +31,16 @@
 #include "config.h"
 #include "bindings/v8/V8ErrorHandler.h"
 
+#include "V8ErrorEvent.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8ScriptRunner.h"
+#include "core/dom/Document.h"
 #include "core/dom/ErrorEvent.h"
 #include "core/dom/EventNames.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 
@@ -71,6 +75,16 @@ v8::Local<v8::Value> V8ErrorHandler::callListenerFunction(ScriptExecutionContext
             returnValue = ScriptController::callFunctionWithInstrumentation(0, callFunction, thisValue, WTF_ARRAY_LENGTH(parameters), parameters);
     }
     return returnValue;
+}
+
+// static
+void V8ErrorHandler::storeExceptionOnErrorEventWrapper(ErrorEvent* event, v8::Handle<v8::Value> data, v8::Isolate* isolate)
+{
+    v8::Local<v8::Value> wrappedEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
+    if (!wrappedEvent.IsEmpty()) {
+        ASSERT(wrappedEvent->IsObject());
+        v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
+    }
 }
 
 bool V8ErrorHandler::shouldPreventDefault(v8::Local<v8::Value> returnValue)

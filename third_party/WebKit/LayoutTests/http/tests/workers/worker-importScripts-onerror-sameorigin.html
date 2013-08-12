@@ -21,7 +21,8 @@
             shouldBeEqualToString("workerOnerror.filename", "http://127.0.0.1:8000/workers/resources/worker-importScripts-throw.js");
             shouldEvaluateTo("workerOnerror.lineno", 1);
             shouldEvaluateTo("workerOnerror.colno", 0);
-            shouldBeNull("workerOnerror.error");
+            shouldNotBe("workerOnerror.error", "null");
+            shouldBeEqualToString("workerOnerror.error", "This is a custom error message.");
         };
 
         var onerrorMessage, onerrorURL, onerrorLine;

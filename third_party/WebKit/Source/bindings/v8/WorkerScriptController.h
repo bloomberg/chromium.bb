@@ -58,6 +58,7 @@ namespace WebCore {
         int lineNumber;
         int columnNumber;
         String sourceURL;
+        ScriptValue exception;
     };
 
     class WorkerScriptController {

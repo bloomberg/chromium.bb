@@ -35,6 +35,7 @@
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/ScriptProfiler.h"
 #include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ErrorHandler.h"
 #include "bindings/v8/V8GCController.h"
 #include "bindings/v8/V8HiddenPropertyName.h"
 #include "bindings/v8/V8PerContextData.h"
@@ -46,9 +47,9 @@
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/platform/MemoryUsageSupport.h"
-#include <v8-debug.h>
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
+#include <v8-debug.h>
 
 namespace WebCore {
 
@@ -99,20 +100,14 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
     String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName);
     RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn());
+    AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
-    // messageHandlerInMainThread can be called while we're creating a new context.
-    // Since we cannot create a wrapper in the intermediate timing, we need to skip
-    // creating a wrapper for |event|.
+    // This method might be called while we're creating a new context. In this case, we
+    // avoid storing the exception object, as we can't create a wrapper during context creation.
     DOMWrapperWorld* world = DOMWrapperWorld::current();
     Frame* frame = firstWindow->document()->frame();
-    if (world && frame && frame->script()->existingWindowShell(world)) {
-        v8::Local<v8::Value> wrappedEvent = toV8(event.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
-        if (!wrappedEvent.IsEmpty()) {
-            ASSERT(wrappedEvent->IsObject());
-            v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
-        }
-    }
-    AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
+    if (world && frame && frame->script()->existingWindowShell(world))
+        V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, v8::Isolate::GetCurrent());
     firstWindow->document()->reportException(event.release(), callStack, corsStatus);
 }
 
@@ -183,12 +178,9 @@ static void messageHandlerInWorker(v8::Handle<v8::Message> message, v8::Handle<v
         String errorMessage = toWebCoreString(message->Get());
         String sourceURL = toWebCoreString(message->GetScriptResourceName());
         RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, sourceURL, message->GetLineNumber(), message->GetStartColumn());
-        v8::Local<v8::Value> wrappedEvent = toV8(event.get(), v8::Handle<v8::Object>(), v8::Isolate::GetCurrent());
-        if (!wrappedEvent.IsEmpty()) {
-            ASSERT(wrappedEvent->IsObject());
-            v8::Local<v8::Object>::Cast(wrappedEvent)->SetHiddenValue(V8HiddenPropertyName::error(), data);
-        }
         AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
+
+        V8ErrorHandler::storeExceptionOnErrorEventWrapper(event.get(), data, v8::Isolate::GetCurrent());
         context->reportException(event.release(), 0, corsStatus);
     }
 
