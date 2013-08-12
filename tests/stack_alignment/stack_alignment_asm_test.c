@@ -64,12 +64,14 @@ static const int kStackPadBelowAlign = 0;
 
 __asm__(
     ".pushsection .text, \"ax\", %progbits\n"
+    ".set noreorder\n"
     ".global ThreadStartWrapper\n"
     "ThreadStartWrapper:\n"
     "move $a0, $sp\n"  /* Set argument. */
     "lui $t9, %hi(ThreadStart)\n"
     "bal ThreadStart\n"
     "addiu $t9, $t9, %lo(ThreadStart)\n"
+    ".set reorder\n"
     ".popsection\n");
 
 static const int kStackAlignment = 8;

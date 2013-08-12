@@ -80,6 +80,7 @@ char recovery_stack[0x1000] __attribute__((aligned(8)));
 
 void bad_stack_exception_handler(struct NaClExceptionContext *context);
 __asm__(".pushsection .text, \"ax\", @progbits\n"
+        ".set noreorder\n"
         ".global bad_stack_exception_handler\n"
         "bad_stack_exception_handler:\n"
         "lui   $t9,      %hi(recovery_stack)\n"
@@ -90,6 +91,7 @@ __asm__(".pushsection .text, \"ax\", @progbits\n"
         "addiu $t9, $t9, %lo(error_exit)\n"
         "nop\n"
         "nop\n"
+        ".set reorder\n"
         ".popsection\n");
 
 void error_exit() {

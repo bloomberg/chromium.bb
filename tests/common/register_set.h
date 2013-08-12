@@ -353,6 +353,7 @@ extern const uint8_t kX86FlagBits[5];
     void callee_func(struct NaClSignalContext *regs); \
     __asm__( \
         ".pushsection .text, \"ax\", %progbits\n" \
+        ".set noreorder\n" \
         ".p2align 4\n" \
         ".global " #def_func "\n"\
         #def_func ":\n" \
@@ -412,6 +413,7 @@ extern const uint8_t kX86FlagBits[5];
         "nop\n" \
         "nop \n" \
         "nop\n" \
+        ".set reorder\n" \
         ".popsection\n")
 
 #else
