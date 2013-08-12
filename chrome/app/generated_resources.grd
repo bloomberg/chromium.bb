@@ -14230,6 +14230,9 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_PROFILES_CREATE_REMOTE_ERROR" desc="Message shown when a remote error (for example, a network error) occurs during creation of a new supervised user.">
       Oops! The new supervised user couldn't be created. Please check your network connection and try again later.
     </message>
+    <message name="IDS_PROFILES_CREATE_SIGN_IN_ERROR" desc="Message shown when a sign-in error occurs during creation of a new supervised user.">
+      Oops! The new supervised user couldn't be created. Please make sure you're signed in properly and try again.
+    </message>
     <message name="IDS_PROFILES_CREATE_MANAGED_SIGNED_IN_LABEL" desc="Label for the 'Supervised user' checkbox in the create-profile dialog when the current user is signed in. This will be followed by a 'Learn more' link.">
       This is a supervised user managed by <ph name="CUSTODIAN_EMAIL">$1<ex>user@gmail.com</ex>.</ph>
     </message>
