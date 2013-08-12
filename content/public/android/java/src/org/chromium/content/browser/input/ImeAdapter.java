@@ -362,6 +362,7 @@ public class ImeAdapter {
     }
 
     void finishComposingText() {
+        if (mNativeImeAdapterAndroid == 0) return;
         nativeFinishComposingText(mNativeImeAdapterAndroid);
     }
 
