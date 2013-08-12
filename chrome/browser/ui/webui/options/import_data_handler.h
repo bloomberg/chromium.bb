@@ -12,6 +12,7 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "chrome/common/importer/importer_data_types.h"
+#include "ui/shell_dialogs/select_file_dialog.h"
 
 class ExternalProcessImporterHost;
 class ImporterList;
@@ -21,7 +22,8 @@ namespace options {
 // Chrome personal stuff import data overlay UI handler.
 class ImportDataHandler : public OptionsPageUIHandler,
                           public importer::ImporterListObserver,
-                          public importer::ImporterProgressObserver {
+                          public importer::ImporterProgressObserver,
+                          public ui::SelectFileDialog::Listener {
  public:
   ImportDataHandler();
   virtual ~ImportDataHandler();
@@ -32,7 +34,7 @@ class ImportDataHandler : public OptionsPageUIHandler,
   virtual void InitializeHandler() OVERRIDE;
   virtual void InitializePage() OVERRIDE;
 
-  // WebUIMessageHandler:
+  // content::WebUIMessageHandler:
   virtual void RegisterMessages() OVERRIDE;
 
  private:
@@ -47,6 +49,14 @@ class ImportDataHandler : public OptionsPageUIHandler,
   virtual void ImportItemEnded(importer::ImportItem item) OVERRIDE;
   virtual void ImportEnded() OVERRIDE;
 
+  // ui::SelectFileDialog::Listener:
+  virtual void FileSelected(const base::FilePath& path,
+                            int index,
+                            void* params) OVERRIDE;
+
+  // Opens a file selection dialog to choose the bookmarks HTML file.
+  void HandleChooseBookmarksFile(const base::ListValue* args);
+
   scoped_refptr<ImporterList> importer_list_;
 
   // If non-null it means importing is in progress. ImporterHost takes care
@@ -54,6 +64,8 @@ class ImportDataHandler : public OptionsPageUIHandler,
   ExternalProcessImporterHost* importer_host_;  // weak
 
   bool import_did_succeed_;
+
+  scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportDataHandler);
 };

@@ -146,7 +146,7 @@ int MaskExpectedImportState(int expected_import_state) {
   // Internet Explorer always exists and always has something to import.
   EXPECT_GT(source_profile_count, 0);
 #endif
-  if (source_profile_count == 0)
+  if (source_profile_count == 1)
     return expected_import_state & ~first_run::AUTO_IMPORT_PROFILE_IMPORTED;
 
   return expected_import_state;

@@ -58,6 +58,10 @@ cr.define('options', function() {
         ImportDataOverlay.dismiss();
       };
 
+      $('import-choose-file').onclick = function() {
+        chrome.send('chooseBookmarksFile');
+      };
+
       $('import-data-show-bookmarks-bar').onchange = function() {
         // Note: The callback 'toggleShowBookmarksBar' is handled within the
         // browser options handler -- rather than the import data handler --
@@ -117,6 +121,10 @@ cr.define('options', function() {
      */
     updateCheckboxes_: function() {
       var index = $('import-browsers').selectedIndex;
+      var bookmarksFileSelected = index == this.browserProfiles.length - 1;
+      $('import-choose-file').hidden = !bookmarksFileSelected;
+      $('import-data-commit').hidden = bookmarksFileSelected;
+
       var browserProfile;
       if (this.browserProfiles.length > index)
         browserProfile = this.browserProfiles[index];
@@ -124,6 +132,7 @@ cr.define('options', function() {
       for (var i = 0; i < importOptions.length; i++) {
         var checkbox = $('import-' + importOptions[i]);
         var enable = browserProfile && browserProfile[importOptions[i]];
+        checkbox.checked = enable;
         this.setUpCheckboxState_(checkbox, enable);
         var checkboxWithLabel = $('import-' + importOptions[i] + '-with-label');
         checkboxWithLabel.style.display = enable ? '' : 'none';
