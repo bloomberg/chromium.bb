@@ -131,7 +131,7 @@ void WebHelperPluginImpl::closeHelperPlugin()
     if (m_page) {
         m_page->clearPageGroup();
         m_page->mainFrame()->loader()->stopAllLoaders();
-        m_page->mainFrame()->loader()->stopLoading(UnloadEventPolicyNone);
+        m_page->mainFrame()->loader()->stopLoading();
     }
 
     // We must destroy the page now in case the host page is being destroyed, in

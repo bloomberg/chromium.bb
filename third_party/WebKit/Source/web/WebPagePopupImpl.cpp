@@ -320,7 +320,7 @@ void WebPagePopupImpl::closePopup()
     if (m_page) {
         m_page->clearPageGroup();
         m_page->mainFrame()->loader()->stopAllLoaders();
-        m_page->mainFrame()->loader()->stopLoading(UnloadEventPolicyNone);
+        m_page->mainFrame()->loader()->stopLoading();
         DOMWindowPagePopup::uninstall(m_page->mainFrame()->domWindow());
     }
     m_closing = true;

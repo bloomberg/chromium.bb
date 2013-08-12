@@ -67,6 +67,7 @@ class CSSStyleSheetResource;
 class ScriptResource;
 class CanvasRenderingContext;
 class CharacterData;
+class Chrome;
 class Comment;
 class ContentSecurityPolicyResponseHeaders;
 class ContextFeatures;
@@ -545,6 +546,17 @@ public:
     // implicitClose() actually does the work of closing the input stream.
     void implicitClose();
 
+    bool dispatchBeforeUnloadEvent(Chrome&, Document* navigatingDocument);
+    void dispatchUnloadEvents();
+
+    enum PageDismissalType {
+        NoDismissal = 0,
+        BeforeUnloadDismissal = 1,
+        PageHideDismissal = 2,
+        UnloadDismissal = 3
+    };
+    PageDismissalType pageDismissalEventBeingDispatched() const;
+
     void cancelParsing();
 
     void write(const SegmentedString& text, Document* ownerDocument = 0);
@@ -914,15 +926,15 @@ public:
         LoadEventTried,
         LoadEventInProgress,
         LoadEventCompleted,
+        BeforeUnloadEventInProgress,
+        BeforeUnloadEventCompleted,
+        PageHideInProgress,
         UnloadEventInProgress,
         UnloadEventHandled
     };
     bool loadEventStillNeeded() const { return m_loadEventProgress == LoadEventNotRun; }
     bool processingLoadEvent() const { return m_loadEventProgress == LoadEventInProgress; }
     bool loadEventFinished() const { return m_loadEventProgress >= LoadEventCompleted; }
-    bool unloadEventStillNeeded() const { return m_loadEventProgress >= LoadEventTried && m_loadEventProgress <= UnloadEventInProgress; }
-    void unloadEventStarted() { m_loadEventProgress = UnloadEventInProgress; }
-    void unloadEventWasHandled() { m_loadEventProgress = UnloadEventHandled; }
 
     virtual bool isContextThread() const;
     virtual bool isJSExecutionForbidden() const { return false; }
@@ -1316,6 +1328,8 @@ private:
 
     bool m_directionSetOnDocumentElement;
     bool m_writingModeSetOnDocumentElement;
+
+    bool m_didAllowNavigationViaBeforeUnloadConfirmationPanel;
 
     DocumentTiming m_documentTiming;
     RefPtr<MediaQueryMatcher> m_mediaQueryMatcher;

@@ -204,7 +204,7 @@ Frame* ResourceFetcher::frame() const
 ResourcePtr<ImageResource> ResourceFetcher::requestImage(FetchRequest& request)
 {
     if (Frame* f = frame()) {
-        if (f->loader()->pageDismissalEventBeingDispatched() != FrameLoader::NoDismissal) {
+        if (f->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal) {
             KURL requestURL = request.resourceRequest().url();
             if (requestURL.isValid() && canRequest(Resource::Image, requestURL, request.options(), request.forPreload()))
                 PingLoader::loadImage(f, requestURL);

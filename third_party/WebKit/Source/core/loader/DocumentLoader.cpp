@@ -240,7 +240,7 @@ void DocumentLoader::stopLoading()
         Document* doc = m_frame->document();
 
         if (loading || doc->parsing())
-            m_frame->loader()->stopLoading(UnloadEventPolicyNone);
+            m_frame->loader()->stopLoading();
     }
 
     // Always cancel multipart loaders

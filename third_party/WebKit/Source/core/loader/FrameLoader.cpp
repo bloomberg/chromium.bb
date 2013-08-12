@@ -39,7 +39,6 @@
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/SerializedScriptValue.h"
-#include "core/dom/BeforeUnloadEvent.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Event.h"
@@ -49,7 +48,6 @@
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/InspectorController.h"
@@ -160,7 +158,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_state(FrameStateProvisional)
     , m_loadType(FrameLoadTypeStandard)
     , m_inStopAllLoaders(false)
-    , m_pageDismissalEventBeingDispatched(NoDismissal)
     , m_isComplete(false)
     , m_containsPlugins(false)
     , m_needsClear(false)
@@ -173,7 +170,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_suppressOpenerInNewFrame(false)
     , m_startingClientRedirect(false)
     , m_forcedSandboxFlags(SandboxNone)
-    , m_hasAllowedNavigationViaBeforeUnloadConfirmationPanel(false)
 {
 }
 
@@ -279,58 +275,8 @@ void FrameLoader::submitForm(PassRefPtr<FormSubmission> submission)
     targetFrame->navigationScheduler()->scheduleFormSubmission(submission);
 }
 
-void FrameLoader::stopLoading(UnloadEventPolicy unloadEventPolicy)
+void FrameLoader::stopLoading()
 {
-    if (m_frame->document() && m_frame->document()->parser())
-        m_frame->document()->parser()->stopParsing();
-
-    if (unloadEventPolicy != UnloadEventPolicyNone) {
-        if (m_frame->document()) {
-            if (m_frame->document()->unloadEventStillNeeded()) {
-                m_frame->document()->unloadEventStarted();
-                Element* currentFocusedElement = m_frame->document()->focusedElement();
-                if (currentFocusedElement && currentFocusedElement->hasTagName(inputTag))
-                    toHTMLInputElement(currentFocusedElement)->endEditing();
-                if (m_pageDismissalEventBeingDispatched == NoDismissal) {
-                    if (unloadEventPolicy == UnloadEventPolicyUnloadAndPageHide) {
-                        m_pageDismissalEventBeingDispatched = PageHideDismissal;
-                        m_frame->domWindow()->dispatchEvent(PageTransitionEvent::create(eventNames().pagehideEvent, false), m_frame->document());
-                    }
-                    RefPtr<Event> unloadEvent(Event::create(eventNames().unloadEvent, false, false));
-                    // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed
-                    // while dispatching the event, so protect it to prevent writing the end
-                    // time into freed memory.
-                    RefPtr<DocumentLoader> documentLoader = m_provisionalDocumentLoader;
-                    m_pageDismissalEventBeingDispatched = UnloadDismissal;
-                    if (documentLoader && !documentLoader->timing()->unloadEventStart() && !documentLoader->timing()->unloadEventEnd()) {
-                        DocumentLoadTiming* timing = documentLoader->timing();
-                        ASSERT(timing->navigationStart());
-                        timing->markUnloadEventStart();
-                        m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
-                        timing->markUnloadEventEnd();
-                    } else {
-                        m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
-                    }
-                }
-                m_pageDismissalEventBeingDispatched = NoDismissal;
-                if (m_frame->document()) {
-                    m_frame->document()->updateStyleIfNeeded();
-                    m_frame->document()->unloadEventWasHandled();
-                }
-            }
-        }
-
-        // Dispatching the unload event could have made m_frame->document() null.
-        if (m_frame->document()) {
-            // Don't remove event listeners from a transitional empty document (see bug 28716 for more information).
-            bool keepEventListeners = m_stateMachine.isDisplayingInitialEmptyDocument() && m_provisionalDocumentLoader
-                && m_frame->document()->isSecureTransitionTo(m_provisionalDocumentLoader->url());
-
-            if (!keepEventListeners)
-                m_frame->document()->removeAllEventListeners();
-        }
-    }
-
     m_isComplete = true; // to avoid calling completed() in finishedParsing()
 
     if (m_frame->document() && m_frame->document()->parsing()) {
@@ -368,8 +314,9 @@ bool FrameLoader::closeURL()
     history()->saveDocumentState();
 
     // Should only send the pagehide event here if the current document exists.
-    Document* currentDocument = m_frame->document();
-    stopLoading(currentDocument ? UnloadEventPolicyUnloadAndPageHide : UnloadEventPolicyUnloadOnly);
+    if (m_frame->document())
+        m_frame->document()->dispatchUnloadEvents();
+    stopLoading();
 
     m_frame->editor()->clearUndoRedoOperations();
     return true;
@@ -984,7 +931,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
 
 void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItemPolicy)
 {
-    if (m_pageDismissalEventBeingDispatched != NoDismissal)
+    if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
     // If this method is called from within this method, infinite recursion can occur (3442218). Avoid this.
@@ -1074,8 +1021,6 @@ void FrameLoader::commitProvisionalLoad()
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(pdl->request().url());
         pdl->timing()->setHasSameOriginAsPreviousDocument(securityOrigin->canRequest(m_frame->document()->url()));
     }
-
-    clearAllowNavigationViaBeforeUnloadConfirmationPanel();
 
     // The call to closeURL() invokes the unload event handler, which can execute arbitrary
     // JavaScript. If the script initiates a new load, we need to abandon the current load,
@@ -1552,7 +1497,7 @@ bool FrameLoader::shouldClose()
         for (i = 0; i < targetFrames.size(); i++) {
             if (!targetFrames[i]->tree()->isDescendantOf(m_frame))
                 continue;
-            if (!targetFrames[i]->loader()->fireBeforeUnloadEvent(page->chrome(), this))
+            if (!targetFrames[i]->document()->dispatchBeforeUnloadEvent(page->chrome(), m_frame->document()))
                 break;
         }
 
@@ -1566,43 +1511,10 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-bool FrameLoader::fireBeforeUnloadEvent(Chrome& chrome, FrameLoader* navigatingFrameLoader)
-{
-    DOMWindow* domWindow = m_frame->domWindow();
-    if (!domWindow)
-        return true;
-
-    RefPtr<Document> document = m_frame->document();
-    if (!document->body())
-        return true;
-
-    RefPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
-    m_pageDismissalEventBeingDispatched = BeforeUnloadDismissal;
-    domWindow->dispatchEvent(beforeUnloadEvent.get(), domWindow->document());
-    m_pageDismissalEventBeingDispatched = NoDismissal;
-
-    if (!beforeUnloadEvent->defaultPrevented())
-        document->defaultEventHandler(beforeUnloadEvent.get());
-    if (beforeUnloadEvent->result().isNull())
-        return true;
-
-    if (navigatingFrameLoader->hasAllowedNavigationViaBeforeUnloadConfirmationPanel()) {
-        m_frame->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Blocked attempt to show multiple 'beforeunload' confirmation panels for a single navigation.");
-        return true;
-    }
-
-    String text = document->displayStringModifiedByEncoding(beforeUnloadEvent->result());
-    if (chrome.runBeforeUnloadConfirmPanel(text, m_frame)) {
-        navigatingFrameLoader->didAllowNavigationViaBeforeUnloadConfirmationPanel();
-        return true;
-    }
-    return false;
-}
-
 void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, const String& overrideEncoding)
 {
     ASSERT(m_client->hasWebView());
-    if (m_pageDismissalEventBeingDispatched != NoDismissal)
+    if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
     // We skip dispatching the beforeload event on the frame owner if we've already committed a real
@@ -1666,7 +1578,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 
 void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action)
 {
-    if (m_pageDismissalEventBeingDispatched != NoDismissal)
+    if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
         return;
 
     if (m_frame->document() && m_frame->document()->isSandboxed(SandboxPopups))

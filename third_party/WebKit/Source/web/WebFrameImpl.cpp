@@ -984,7 +984,7 @@ void WebFrameImpl::stopLoading()
     // FIXME: Figure out what we should really do here.  It seems like a bug
     // that FrameLoader::stopLoading doesn't call stopAllLoaders.
     frame()->loader()->stopAllLoaders();
-    frame()->loader()->stopLoading(UnloadEventPolicyNone);
+    frame()->loader()->stopLoading();
 }
 
 WebDataSource* WebFrameImpl::provisionalDataSource() const

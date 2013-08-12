@@ -921,7 +921,7 @@ void ChromeClientImpl::openPasswordGenerator(HTMLInputElement* input)
     m_webView->passwordGeneratorClient()->openPasswordGenerator(webInput);
 }
 
-bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, FrameLoader::PageDismissalType dismissalType) const
+bool ChromeClientImpl::shouldRunModalDialogDuringPageDismissal(const DialogType& dialogType, const String& dialogMessage, Document::PageDismissalType dismissalType) const
 {
     const char* kDialogs[] = {"alert", "confirm", "prompt", "showModalDialog"};
     int dialog = static_cast<int>(dialogType);

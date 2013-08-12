@@ -175,7 +175,7 @@ public:
     virtual bool isPasswordGenerationEnabled() const OVERRIDE;
     virtual void openPasswordGenerator(WebCore::HTMLInputElement*) OVERRIDE;
 
-    virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, WebCore::FrameLoader::PageDismissalType) const;
+    virtual bool shouldRunModalDialogDuringPageDismissal(const DialogType&, const String& dialogMessage, WebCore::Document::PageDismissalType) const;
 
     virtual bool shouldRubberBandInDirection(WebCore::ScrollDirection) const;
     virtual void numWheelEventHandlersChanged(unsigned);

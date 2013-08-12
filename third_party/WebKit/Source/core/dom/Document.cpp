@@ -51,6 +51,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Attr.h"
+#include "core/dom/BeforeUnloadEvent.h"
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
@@ -108,6 +109,7 @@
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLImport.h"
+#include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLNameCollection.h"
 #include "core/html/HTMLScriptElement.h"
@@ -435,6 +437,7 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_referrerPolicy(ReferrerPolicyDefault)
     , m_directionSetOnDocumentElement(false)
     , m_writingModeSetOnDocumentElement(false)
+    , m_didAllowNavigationViaBeforeUnloadConfirmationPanel(false)
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_wheelEventHandlerCount(0)
@@ -2320,6 +2323,95 @@ void Document::implicitClose()
 
     if (svgExtensions())
         accessSVGExtensions()->startAnimations();
+}
+
+bool Document::dispatchBeforeUnloadEvent(Chrome& chrome, Document* navigatingDocument)
+{
+    if (!m_domWindow)
+        return true;
+
+    if (!body())
+        return true;
+
+    RefPtr<Document> protect(this);
+
+    RefPtr<BeforeUnloadEvent> beforeUnloadEvent = BeforeUnloadEvent::create();
+    m_loadEventProgress = BeforeUnloadEventInProgress;
+    dispatchWindowEvent(beforeUnloadEvent.get(), this);
+    m_loadEventProgress = BeforeUnloadEventCompleted;
+    if (!beforeUnloadEvent->defaultPrevented())
+        defaultEventHandler(beforeUnloadEvent.get());
+    if (beforeUnloadEvent->result().isNull())
+        return true;
+
+    if (navigatingDocument->m_didAllowNavigationViaBeforeUnloadConfirmationPanel) {
+        addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Blocked attempt to show multiple 'beforeunload' confirmation panels for a single navigation.");
+        return true;
+    }
+
+    String text = displayStringModifiedByEncoding(beforeUnloadEvent->result());
+    if (chrome.runBeforeUnloadConfirmPanel(text, m_frame)) {
+        navigatingDocument->m_didAllowNavigationViaBeforeUnloadConfirmationPanel = true;
+        return true;
+    }
+    return false;
+}
+
+void Document::dispatchUnloadEvents()
+{
+    RefPtr<Document> protect(this);
+    if (m_parser)
+        m_parser->stopParsing();
+
+    if (m_loadEventProgress >= LoadEventTried && m_loadEventProgress <= UnloadEventInProgress) {
+        Element* currentFocusedElement = focusedElement();
+        if (currentFocusedElement && currentFocusedElement->hasTagName(inputTag))
+            toHTMLInputElement(currentFocusedElement)->endEditing();
+        if (m_loadEventProgress < PageHideInProgress) {
+            m_loadEventProgress = PageHideInProgress;
+            dispatchWindowEvent(PageTransitionEvent::create(eventNames().pagehideEvent, false), this);
+            if (!m_frame)
+                return;
+
+            // The DocumentLoader (and thus its DocumentLoadTiming) might get destroyed
+            // while dispatching the event, so protect it to prevent writing the end
+            // time into freed memory.
+            RefPtr<DocumentLoader> documentLoader =  m_frame->loader()->provisionalDocumentLoader();
+            m_loadEventProgress = UnloadEventInProgress;
+            RefPtr<Event> unloadEvent(Event::create(eventNames().unloadEvent, false, false));
+            if (documentLoader && !documentLoader->timing()->unloadEventStart() && !documentLoader->timing()->unloadEventEnd()) {
+                DocumentLoadTiming* timing = documentLoader->timing();
+                ASSERT(timing->navigationStart());
+                timing->markUnloadEventStart();
+                dispatchWindowEvent(unloadEvent, this);
+                timing->markUnloadEventEnd();
+            } else {
+                m_frame->domWindow()->dispatchEvent(unloadEvent, m_frame->document());
+            }
+        }
+        updateStyleIfNeeded();
+        m_loadEventProgress = UnloadEventHandled;
+    }
+
+    if (!m_frame)
+        return;
+
+    // Don't remove event listeners from a transitional empty document (see https://bugs.webkit.org/show_bug.cgi?id=28716 for more information).
+    bool keepEventListeners = m_frame->loader()->stateMachine()->isDisplayingInitialEmptyDocument() && m_frame->loader()->provisionalDocumentLoader()
+        && isSecureTransitionTo(m_frame->loader()->provisionalDocumentLoader()->url());
+    if (!keepEventListeners)
+        removeAllEventListeners();
+}
+
+Document::PageDismissalType Document::pageDismissalEventBeingDispatched() const
+{
+    if (m_loadEventProgress == BeforeUnloadEventInProgress)
+        return BeforeUnloadDismissal;
+    if (m_loadEventProgress == PageHideInProgress)
+        return PageHideDismissal;
+    if (m_loadEventProgress == UnloadEventInProgress)
+        return UnloadDismissal;
+    return NoDismissal;
 }
 
 void Document::setParsing(bool b)

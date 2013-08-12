@@ -437,7 +437,8 @@ void NavigationScheduler::schedule(PassOwnPtr<ScheduledNavigation> redirect)
     if (redirect->wasDuringLoad()) {
         if (DocumentLoader* provisionalDocumentLoader = m_frame->loader()->provisionalDocumentLoader())
             provisionalDocumentLoader->stopLoading();
-        m_frame->loader()->stopLoading(UnloadEventPolicyUnloadAndPageHide);
+        m_frame->document()->dispatchUnloadEvents();
+        m_frame->loader()->stopLoading();
     }
 
     cancel();
