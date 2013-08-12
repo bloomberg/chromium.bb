@@ -1599,7 +1599,7 @@ class OptionParserTestCases(OptionParserWithTestShardingAndFiltering):
     self.add_option(
         '--use-less-jobs',
         action='store_const',
-        const=run_isolated.num_processors() - 1,
+        const=max(1, run_isolated.num_processors() / 2),
         dest='jobs',
         help='Starts less parallel jobs than the default, used to help reduce'
              'contention between threads if all the tests are very CPU heavy.')
