@@ -9,7 +9,7 @@ it cycles through each tab in sequence, and records a histogram of the time
 between when a tab was first requested to be shown, and when it was painted.
 """
 
-from metrics import histogram
+from metrics import histogram_util
 from telemetry.core import util
 from telemetry.page import page_measurement
 from telemetry.page import page_runner
@@ -37,27 +37,27 @@ class TabSwitching(page_measurement.PageMeasurement):
     thenrecord a single histogram for the tab switching metric.
     """
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
-    histogram_type = histogram.BROWSER_HISTOGRAM
-    first_histogram = histogram.GetHistogramData(histogram_type,
-                                                 histogram_name, tab)
+    histogram_type = 'getBrowserHistogram'
+    first_histogram = histogram_util.GetHistogramFromDomAutomation(
+        histogram_type, histogram_name, tab)
     prev_histogram = first_histogram
 
     for i in xrange(len(tab.browser.tabs)):
       t = tab.browser.tabs[i]
       t.Activate()
       def _IsDone():
-        cur_histogram = histogram.GetHistogramData(
-            histogram_type,histogram_name, tab)
-        diff_histogram = histogram.SubtractHistogram(
+        cur_histogram = histogram_util.GetHistogramFromDomAutomation(
+            histogram_type, histogram_name, tab)
+        diff_histogram = histogram_util.SubtractHistogram(
             cur_histogram, prev_histogram)
         return diff_histogram
       util.WaitFor(_IsDone, 30)
-      prev_histogram = histogram.GetHistogramData(
+      prev_histogram = histogram_util.GetHistogramFromDomAutomation(
           histogram_type, histogram_name, tab)
 
-    last_histogram = histogram.GetHistogramData(
+    last_histogram = histogram_util.GetHistogramFromDomAutomation(
         histogram_type, histogram_name, tab)
-    diff_histogram = histogram.SubtractHistogram(last_histogram,
+    diff_histogram = histogram_util.SubtractHistogram(last_histogram,
         first_histogram)
 
     results.AddSummary(histogram_name, '', diff_histogram,

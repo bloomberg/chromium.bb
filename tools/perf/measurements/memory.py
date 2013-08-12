@@ -1,20 +1,42 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
+from metrics import histogram
 from metrics import memory
 from telemetry.page import page_measurement
+
+
+MEMORY_HISTOGRAMS = [
+    {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},
+    {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb'},
+    {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb'},
+    {'name': 'Memory.RendererUsed', 'units': 'kb'}]
+
+
+BROWSER_MEMORY_HISTOGRAMS =  [
+    {'name': 'Memory.BrowserUsed', 'units': 'kb'}]
+
 
 class Memory(page_measurement.PageMeasurement):
   def __init__(self):
     super(Memory, self).__init__('stress_memory')
+    self.histograms = (
+        [histogram.HistogramMetric(
+            h, histogram.RENDERER_HISTOGRAM)
+         for h in MEMORY_HISTOGRAMS] +
+        [histogram.HistogramMetric(
+            h, histogram.BROWSER_HISTOGRAM)
+         for h in BROWSER_MEMORY_HISTOGRAMS])
+
     self._memory_metric = None
 
   def DidStartBrowser(self, browser):
     self._memory_metric = memory.MemoryMetric(browser)
+    self._memory_metric.Start()
 
   def DidNavigateToPage(self, page, tab):
-    self._memory_metric.Start(page, tab)
+    for h in self.histograms:
+      h.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
@@ -37,8 +59,8 @@ class Memory(page_measurement.PageMeasurement):
     return hasattr(page, 'stress_memory')
 
   def MeasurePage(self, page, tab, results):
-    self._memory_metric.Stop(page, tab)
-    self._memory_metric.AddResults(tab, results)
+    for h in self.histograms:
+      h.GetValue(page, tab, results)
 
     if tab.browser.is_profiler_active('tcmalloc-heap'):
       # The tcmalloc_heap_profiler dumps files at regular
@@ -53,5 +75,6 @@ class Memory(page_measurement.PageMeasurement):
       """)
 
   def DidRunTest(self, tab, results):
-    self._memory_metric.AddSummaryResults(results)
+    self._memory_metric.Stop()
+    self._memory_metric.AddResults(tab, results)
 
