@@ -13,6 +13,7 @@
 
 #include "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/strings/string16.h"
 #include "ui/message_center/message_center_export.h"
 
 @class HoverImageButton;
@@ -106,6 +107,9 @@ MESSAGE_CENTER_EXPORT
   base::mac::ScopedBlock<message_center::TrayAnimationEndedCallback>
       testingAnimationEndedCallback_;
 }
+
+// The title that is displayed at the top of the message center tray.
+@property(copy, nonatomic) NSString* trayTitle;
 
 // Designated initializer.
 - (id)initWithMessageCenter:(message_center::MessageCenter*)messageCenter;

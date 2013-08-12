@@ -35,7 +35,7 @@ const int kBackButtonSize = 16;
   frozen_ = frozen;
 }
 
--(NSPoint)constrainScrollPoint:(NSPoint)proposedNewOrigin {
+- (NSPoint)constrainScrollPoint:(NSPoint)proposedNewOrigin {
   return frozen_ ? [self documentVisibleRect].origin :
       [super constrainScrollPoint:proposedNewOrigin];
 }
@@ -108,6 +108,15 @@ const CGFloat kTrayBottomMargin = 75;
     notificationsPendingRemoval_.reset([[NSMutableArray alloc] init]);
   }
   return self;
+}
+
+- (NSString*)trayTitle {
+  return [title_ stringValue];
+}
+
+- (void)setTrayTitle:(NSString*)title {
+  [title_ setStringValue:title];
+  [title_ sizeToFit];
 }
 
 - (void)onWindowClosing {

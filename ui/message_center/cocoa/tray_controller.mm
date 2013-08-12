@@ -69,6 +69,10 @@
   [super dealloc];
 }
 
+- (MCTrayViewController*)viewController {
+  return viewController_.get();
+}
+
 - (void)close {
   [viewController_ onWindowClosing];
   [super close];

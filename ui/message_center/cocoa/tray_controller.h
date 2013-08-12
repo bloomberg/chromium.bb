@@ -32,6 +32,8 @@ MESSAGE_CENTER_EXPORT
   id clickEventMonitor_;
 }
 
+@property(readonly, nonatomic) MCTrayViewController* viewController;
+
 // Designated initializer.
 - (id)initWithMessageCenterTray:(message_center::MessageCenterTray*)tray;
 

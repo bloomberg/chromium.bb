@@ -9,12 +9,14 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/browser_process.h"
 #include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/message_center/cocoa/popup_collection.h"
 #import "ui/message_center/cocoa/status_item_view.h"
 #import "ui/message_center/cocoa/tray_controller.h"
+#import "ui/message_center/cocoa/tray_view_controller.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_tray.h"
 
@@ -119,6 +121,9 @@ void MessageCenterTrayBridge::OpenTrayWindow() {
   DCHECK(!tray_controller_);
   tray_controller_.reset(
       [[MCTrayController alloc] initWithMessageCenterTray:tray_.get()]);
+  [[tray_controller_ viewController] setTrayTitle:
+      l10n_util::GetNSStringF(IDS_MESSAGE_CENTER_FOOTER_WITH_PRODUCT_TITLE,
+          l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME))];
 
   UpdateStatusItem();
 

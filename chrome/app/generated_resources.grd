@@ -13210,6 +13210,11 @@ Some features may be unavailable.  Please check that the profile exists and you 
       <message name="IDS_NOTIFICATION_POSITION_UPPER_RIGHT" desc="Menu label for positioning in upper right corner">
         Upper right
       </message>
+      <if expr="is_macosx">
+        <message name="IDS_MESSAGE_CENTER_FOOTER_WITH_PRODUCT_TITLE" desc="The label in the footer of the message center tray, with the product title.">
+          <ph name="product_name">$1<ex>Chrome</ex></ph> Notifications
+        </message>
+      </if>
 
       <!-- Mac AppleScript -->
       <if expr="is_macosx">
