@@ -46,16 +46,16 @@ bool g_brand_empty = false;
 }  // namespace
 
 void ClearBrandForCurrentSession() {
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   g_brand_empty = true;
 }
 
 std::string GetBrand() {
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (g_brand_empty)
     return std::string();
   DCHECK(g_browser_process->local_state());

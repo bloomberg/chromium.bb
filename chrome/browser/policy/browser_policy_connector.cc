@@ -152,7 +152,7 @@ void BrowserPolicyConnector::Init(
     scoped_refptr<net::URLRequestContextGetter> request_context) {
   // Initialization of some of the providers requires the FILE thread; make
   // sure that threading is ready at this point.
-  DCHECK(BrowserThread::IsWellKnownThread(BrowserThread::FILE));
+  DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::FILE));
   DCHECK(!is_initialized()) << "BrowserPolicyConnector::Init() called twice.";
 
   local_state_ = local_state;

@@ -349,7 +349,7 @@ void ContentSettingsStore::NotifyOfContentSettingChanged(
 
 bool ContentSettingsStore::OnCorrectThread() {
   // If there is no UI thread, we're most likely in a unit test.
-  return !BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+  return !BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI);
 }
 

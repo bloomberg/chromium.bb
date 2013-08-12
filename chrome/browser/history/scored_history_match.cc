@@ -256,9 +256,9 @@ float ScoredHistoryMatch::GetTopicalityScore(
   // be on it."  The first part is necessary so unit tests pass.  (Many
   // unit tests don't set up the threading naming system; hence
   // CurrentlyOn(UI thread) will fail.)
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (raw_term_score_to_topicality_score == NULL) {
     raw_term_score_to_topicality_score = new float[kMaxRawTermScore];
     FillInTermScoreToTopicalityScoreArray();
@@ -400,9 +400,9 @@ float ScoredHistoryMatch::GetRecencyScore(int last_visit_days_ago) {
   // be on it."  The first part is necessary so unit tests pass.  (Many
   // unit tests don't set up the threading naming system; hence
   // CurrentlyOn(UI thread) will fail.)
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (days_ago_to_recency_score == NULL) {
     days_ago_to_recency_score = new float[kDaysToPrecomputeRecencyScoresFor];
     FillInDaysAgoToRecencyScoreArray();

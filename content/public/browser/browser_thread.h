@@ -179,9 +179,9 @@ class CONTENT_EXPORT BrowserThread {
   // Windows registry.
   static base::SequencedWorkerPool* GetBlockingPool();
 
-  // Callable on any thread.  Returns whether the given ID corresponds to a well
-  // known thread.
-  static bool IsWellKnownThread(ID identifier);
+  // Callable on any thread.  Returns whether the given well-known thread is
+  // initialized.
+  static bool IsThreadInitialized(ID identifier);
 
   // Callable on any thread.  Returns whether you're currently on a particular
   // thread.

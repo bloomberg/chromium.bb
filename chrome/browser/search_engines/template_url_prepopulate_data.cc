@@ -1290,7 +1290,7 @@ TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile) {
 SearchEngineType GetEngineType(const std::string& url) {
   // Restricted to UI thread because ReplaceSearchTerms() is so restricted.
   using content::BrowserThread;
-  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We may get a valid URL, or we may get the Google prepopulate URL which

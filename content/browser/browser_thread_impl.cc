@@ -339,14 +339,14 @@ base::SequencedWorkerPool* BrowserThread::GetBlockingPool() {
 }
 
 // static
-bool BrowserThread::IsWellKnownThread(ID identifier) {
+bool BrowserThread::IsThreadInitialized(ID identifier) {
   if (g_globals == NULL)
     return false;
 
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
-  return (identifier >= 0 && identifier < ID_COUNT &&
-          globals.threads[identifier]);
+  DCHECK(identifier >= 0 && identifier < ID_COUNT);
+  return globals.threads[identifier] != NULL;
 }
 
 // static

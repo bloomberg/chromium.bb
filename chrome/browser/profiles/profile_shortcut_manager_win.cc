@@ -765,8 +765,8 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
     CreateOrUpdateMode create_mode,
     NonProfileShortcutAction action,
     const base::Closure& callback) {
-  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
-      BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
   CreateOrUpdateShortcutsParams params(profile_path, create_mode, action);
 
   ProfileInfoCache* cache = &profile_manager_->GetProfileInfoCache();

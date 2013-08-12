@@ -284,9 +284,9 @@ void TestingProfile::CreateTempProfileDir() {
 
 void TestingProfile::Init() {
   // If threads have been initialized, we should be on the UI thread.
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Normally this would happen during browser startup, but for tests
   // we need to trigger creation of Profile-related services.

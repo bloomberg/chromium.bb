@@ -13,17 +13,17 @@ base::LazyInstance<std::string>::Leaky
     SearchTermsDataAndroid::search_client_ = LAZY_INSTANCE_INITIALIZER;
 
 string16 UIThreadSearchTermsData::GetRlzParameterValue() const {
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Android doesn't use the rlz library.  Instead, it manages the rlz string
   // on its own.
   return SearchTermsDataAndroid::rlz_parameter_value_.Get();
 }
 
 std::string UIThreadSearchTermsData::GetSearchClient() const {
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   return SearchTermsDataAndroid::search_client_.Get();
 }

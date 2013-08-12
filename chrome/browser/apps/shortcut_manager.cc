@@ -63,9 +63,9 @@ AppShortcutManager::AppShortcutManager(Profile* profile)
       weak_factory_(this) {
   // Use of g_browser_process requires that we are either on the UI thread, or
   // there are no threads initialized (such as in unit tests).
-  DCHECK(
-      !content::BrowserThread::IsWellKnownThread(content::BrowserThread::UI) ||
-      content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(!content::BrowserThread::IsThreadInitialized(
+             content::BrowserThread::UI) ||
+         content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_INSTALLED,
                  content::Source<Profile>(profile_));

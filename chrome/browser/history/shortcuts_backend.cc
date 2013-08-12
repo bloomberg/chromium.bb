@@ -266,7 +266,7 @@ void ShortcutsBackend::Observe(int type,
 }
 
 void ShortcutsBackend::ShutdownOnUIThread() {
-  DCHECK(!BrowserThread::IsWellKnownThread(BrowserThread::UI) ||
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
   notification_registrar_.RemoveAll();
 }
