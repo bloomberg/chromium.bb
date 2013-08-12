@@ -11,7 +11,7 @@
 #include "ppapi/thunk/ppb_flash_drm_api.h"
 
 namespace ppapi {
-struct FileRefCreateInfo;
+struct PPB_FileRef_CreateInfo;
 }
 
 namespace ppapi {
@@ -44,7 +44,7 @@ class FlashDRMResource
   void OnPluginMsgGetVoucherFileReply(PP_Resource* dest,
                                       scoped_refptr<TrackedCallback> callback,
                                       const ResourceMessageReplyParams& params,
-                                      const FileRefCreateInfo& file_info);
+                                      const PPB_FileRef_CreateInfo& file_info);
 
   DISALLOW_COPY_AND_ASSIGN(FlashDRMResource);
 };

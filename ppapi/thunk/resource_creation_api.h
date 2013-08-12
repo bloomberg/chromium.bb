@@ -33,7 +33,7 @@ struct PP_Size;
 
 namespace ppapi {
 
-struct FileRefCreateInfo;
+struct PPB_FileRef_CreateInfo;
 struct URLRequestInfoData;
 struct URLResponseInfoData;
 
@@ -49,9 +49,15 @@ class ResourceCreationAPI {
   virtual ~ResourceCreationAPI() {}
 
   virtual PP_Resource CreateFileIO(PP_Instance instance) = 0;
+  virtual PP_Resource CreateFileRef(PP_Instance instance,
+                                    PP_Resource file_system,
+                                    const char* path) = 0;
+  // Like the above version but takes a serialized file ref. The resource
+  // in the serialized file ref is passed into this, which takes ownership of
+  // the reference. In the proxy, the return value will be a plugin resource.
+  // In the impl, the return value will be the same resource ID.
   virtual PP_Resource CreateFileRef(
-      PP_Instance instance,
-      const FileRefCreateInfo& serialized) = 0;
+      const PPB_FileRef_CreateInfo& serialized) = 0;
   virtual PP_Resource CreateFileSystem(PP_Instance instance,
                                        PP_FileSystemType type) = 0;
   virtual PP_Resource CreateIsolatedFileSystem(PP_Instance instance,

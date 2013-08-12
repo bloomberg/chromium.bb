@@ -113,7 +113,7 @@ int32_t FileIOResource::Open(PP_Resource file_ref,
 
   Call<PpapiPluginMsg_FileIO_OpenReply>(RENDERER,
       PpapiHostMsg_FileIO_Open(
-          file_ref,
+          enter.resource()->host_resource().host_resource(),
           open_flags),
       base::Bind(&FileIOResource::OnPluginMsgOpenFileComplete, this,
                  callback));

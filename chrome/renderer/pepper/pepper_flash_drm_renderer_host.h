@@ -7,12 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/memory/weak_ptr.h"
 #include "ppapi/host/resource_host.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace content {
 class RendererPpapiHost;
@@ -36,15 +31,8 @@ class PepperFlashDRMRendererHost : public ppapi::host::ResourceHost {
  private:
   int32_t OnGetVoucherFile(ppapi::host::HostMessageContext* context);
 
-  void DidCreateFileRefHost(
-      const ppapi::host::ReplyMessageContext& reply_context,
-      const base::FilePath& external_path,
-      int pending_resource_id);
-
   // Non-owning pointer.
   content::RendererPpapiHost* renderer_ppapi_host_;
-
-  base::WeakPtrFactory<PepperFlashDRMRendererHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFlashDRMRendererHost);
 };

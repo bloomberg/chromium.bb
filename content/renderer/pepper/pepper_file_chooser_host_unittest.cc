@@ -18,6 +18,7 @@
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/resource_message_test_sink.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+#include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -64,11 +65,70 @@ std::string FilePathToUTF8(const base::FilePath::StringType& path) {
 
 }  // namespace
 
-// TODO(teravest): Write a good test for the "Show" interface of FileChooser.
-// We can't do this very easily today because we need direct access to the
-// RenderViewImpl, but also need renderer and browser instances fully set up.
-// This is was caused by the "new" FileRef refactor, which moved FileRef
-// hosting to the browser. http://crbug.com/270322
+TEST_F(PepperFileChooserHostTest, Show) {
+  PP_Resource pp_resource = 123;
+
+  MockRendererPpapiHost host(view_, pp_instance());
+  PepperFileChooserHost chooser(&host, pp_instance(), pp_resource);
+
+  // Say there's a user gesture.
+  host.set_has_user_gesture(true);
+
+  std::vector<std::string> accept;
+  accept.push_back("text/plain");
+  PpapiHostMsg_FileChooser_Show show_msg(false, false, std::string(), accept);
+
+  ppapi::proxy::ResourceMessageCallParams call_params(pp_resource, 0);
+  ppapi::host::HostMessageContext context(call_params);
+  int32 result = chooser.OnResourceMessageReceived(show_msg, &context);
+  EXPECT_EQ(PP_OK_COMPLETIONPENDING, result);
+
+  // The render view should have sent a chooser request to the browser
+  // (caught by the render thread's test message sink).
+  const IPC::Message* msg = render_thread_->sink().GetUniqueMessageMatching(
+      ViewHostMsg_RunFileChooser::ID);
+  ASSERT_TRUE(msg);
+  ViewHostMsg_RunFileChooser::Schema::Param call_msg_param;
+  ASSERT_TRUE(ViewHostMsg_RunFileChooser::Read(msg, &call_msg_param));
+  const FileChooserParams& chooser_params = call_msg_param.a;
+
+  // Basic validation of request.
+  EXPECT_EQ(FileChooserParams::Open, chooser_params.mode);
+  ASSERT_EQ(1u, chooser_params.accept_types.size());
+  EXPECT_EQ(accept[0], UTF16ToUTF8(chooser_params.accept_types[0]));
+
+  // Send a chooser reply to the render view. Note our reply path has to have a
+  // path separator so we include both a Unix and a Windows one.
+  ui::SelectedFileInfo selected_info;
+  selected_info.display_name = FILE_PATH_LITERAL("Hello, world");
+  selected_info.local_path = base::FilePath(FILE_PATH_LITERAL("myp\\ath/foo"));
+  std::vector<ui::SelectedFileInfo> selected_info_vector;
+  selected_info_vector.push_back(selected_info);
+  RenderViewImpl* view_impl = static_cast<RenderViewImpl*>(view_);
+  ViewMsg_RunFileChooserResponse response(view_impl->routing_id(),
+                                          selected_info_vector);
+  EXPECT_TRUE(view_impl->OnMessageReceived(response));
+
+  // This should have sent the Pepper reply to our test sink.
+  ppapi::proxy::ResourceMessageReplyParams reply_params;
+  IPC::Message reply_msg;
+  ASSERT_TRUE(host.sink().GetFirstResourceReplyMatching(
+      PpapiPluginMsg_FileChooser_ShowReply::ID, &reply_params, &reply_msg));
+
+  // Basic validation of reply.
+  EXPECT_EQ(call_params.sequence(), reply_params.sequence());
+  EXPECT_EQ(PP_OK, reply_params.result());
+  PpapiPluginMsg_FileChooser_ShowReply::Schema::Param reply_msg_param;
+  ASSERT_TRUE(PpapiPluginMsg_FileChooser_ShowReply::Read(&reply_msg,
+                                                         &reply_msg_param));
+  const std::vector<ppapi::PPB_FileRef_CreateInfo>& chooser_results =
+      reply_msg_param.a;
+  ASSERT_EQ(1u, chooser_results.size());
+  // Note path is empty because this is an external filesystem.
+  EXPECT_EQ(std::string(), chooser_results[0].path);
+  EXPECT_EQ(FilePathToUTF8(selected_info.display_name),
+            chooser_results[0].name);
+}
 
 TEST_F(PepperFileChooserHostTest, NoUserGesture) {
   PP_Resource pp_resource = 123;

@@ -7,7 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
-#include "ppapi/c/pp_instance.h"
 
 namespace ppapi {
 struct URLRequestInfoData;
@@ -24,8 +23,7 @@ namespace content {
 // on success, false if the request is invalid (in which case *dest may be
 // partially initialized). Any upload files with only resource IDs (no file ref
 // pointers) will be populated by this function on success.
-CONTENT_EXPORT bool CreateWebURLRequest(PP_Instance instance,
-                                        ppapi::URLRequestInfoData* data,
+CONTENT_EXPORT bool CreateWebURLRequest(ppapi::URLRequestInfoData* data,
                                         WebKit::WebFrame* frame,
                                         WebKit::WebURLRequest* dest);
 

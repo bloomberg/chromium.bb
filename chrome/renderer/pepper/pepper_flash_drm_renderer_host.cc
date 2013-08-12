@@ -12,6 +12,7 @@
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
 
 namespace chrome {
 
@@ -27,8 +28,7 @@ PepperFlashDRMRendererHost::PepperFlashDRMRendererHost(
     PP_Instance instance,
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
-      renderer_ppapi_host_(host),
-      weak_factory_(this) {
+      renderer_ppapi_host_(host) {
 }
 
 PepperFlashDRMRendererHost::~PepperFlashDRMRendererHost() {
@@ -56,26 +56,13 @@ int32_t PepperFlashDRMRendererHost::OnGetVoucherFile(
   base::FilePath voucher_file = plugin_dir.Append(
       base::FilePath(kVoucherFilename));
 
-  renderer_ppapi_host_->CreateBrowserResourceHost(
-      pp_instance(),
-      PpapiHostMsg_FileRef_CreateExternal(voucher_file),
-      base::Bind(&PepperFlashDRMRendererHost::DidCreateFileRefHost,
-                 weak_factory_.GetWeakPtr(),
-                 context->MakeReplyMessageContext(),
-                 voucher_file));
-  return PP_OK_COMPLETIONPENDING;
-}
-
-void PepperFlashDRMRendererHost::DidCreateFileRefHost(
-    const ppapi::host::ReplyMessageContext& reply_context,
-    const base::FilePath& external_path,
-    int pending_resource_id) {
-  ppapi::FileRefCreateInfo create_info =
-      ppapi::MakeExternalFileRefCreateInfo(external_path,
-                                           std::string(),
-                                           pending_resource_id);
-  host()->SendReply(reply_context,
-                    PpapiPluginMsg_FlashDRM_GetVoucherFileReply(create_info));
+  ppapi::PPB_FileRef_CreateInfo create_info;
+  ppapi::proxy::PPB_FileRef_Proxy::SerializeFileRef(
+      plugin_instance->CreateExternalFileReference(voucher_file),
+      &create_info);
+  context->reply_msg =
+      PpapiPluginMsg_FlashDRM_GetVoucherFileReply(create_info);
+  return PP_OK;
 }
 
 }  // namespace chrome
