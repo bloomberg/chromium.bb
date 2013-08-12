@@ -5,20 +5,19 @@
 #ifndef CONTENT_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 #define CONTENT_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 
-#include "webkit/renderer/appcache/web_application_cache_host_impl.h"
+#include "content/child/appcache/web_application_cache_host_impl.h"
 
 namespace content {
 class RenderViewImpl;
 
-class RendererWebApplicationCacheHostImpl
-    : public appcache::WebApplicationCacheHostImpl {
+class RendererWebApplicationCacheHostImpl : public WebApplicationCacheHostImpl {
  public:
   RendererWebApplicationCacheHostImpl(
       RenderViewImpl* render_view,
       WebKit::WebApplicationCacheHostClient* client,
       appcache::AppCacheBackend* backend);
 
-  // appcache::WebApplicationCacheHostImpl methods.
+  // WebApplicationCacheHostImpl:
   virtual void OnLogMessage(appcache::LogLevel log_level,
                             const std::string& message) OVERRIDE;
   virtual void OnContentBlocked(const GURL& manifest_url) OVERRIDE;

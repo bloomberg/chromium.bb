@@ -1,15 +1,15 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_APPCACHE_DISPATCHER_H_
-#define CONTENT_CHILD_APPCACHE_DISPATCHER_H_
+#ifndef CONTENT_CHILD_APPCACHE_APPCACHE_DISPATCHER_H_
+#define CONTENT_CHILD_APPCACHE_APPCACHE_DISPATCHER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/memory/scoped_ptr.h"
-#include "content/child/appcache_backend_proxy.h"
+#include "content/child/appcache/appcache_backend_proxy.h"
 #include "ipc/ipc_listener.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
 
@@ -50,4 +50,4 @@ class AppCacheDispatcher : public IPC::Listener {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_APPCACHE_DISPATCHER_H_
+#endif  // CONTENT_CHILD_APPCACHE_APPCACHE_DISPATCHER_H_

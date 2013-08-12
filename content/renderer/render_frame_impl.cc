@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "content/child/appcache_dispatcher.h"
+#include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_callback_adapters.h"
 #include "content/child/quota_dispatcher.h"
@@ -65,11 +65,8 @@ using WebKit::WebURLResponse;
 using WebKit::WebUserGestureIndicator;
 using WebKit::WebVector;
 using WebKit::WebView;
-
-using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
-
 using webkit_glue::WebURLResponseExtraDataImpl;
 
 namespace content {
@@ -78,9 +75,8 @@ static RenderFrameImpl* (*g_create_render_frame_impl)(RenderViewImpl*, int32) =
     NULL;
 
 // static
-RenderFrameImpl* RenderFrameImpl::Create(
-    RenderViewImpl* render_view,
-    int32 routing_id) {
+RenderFrameImpl* RenderFrameImpl::Create(RenderViewImpl* render_view,
+                                         int32 routing_id) {
   DCHECK(routing_id != MSG_ROUTING_NONE);
 
   RenderFrameImpl* render_frame = NULL;

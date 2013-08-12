@@ -19,10 +19,6 @@
       'defines': ['WEBKIT_STORAGE_RENDERER_IMPLEMENTATION'],
       'sources': [
         'renderer/webkit_storage_renderer_export.h',
-        'renderer/appcache/appcache_frontend_impl.cc',
-        'renderer/appcache/appcache_frontend_impl.h',
-        'renderer/appcache/web_application_cache_host_impl.cc',
-        'renderer/appcache/web_application_cache_host_impl.h',
         'renderer/fileapi/webfilewriter_base.cc',
         'renderer/fileapi/webfilewriter_base.h',
       ],

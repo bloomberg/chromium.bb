@@ -1,33 +1,33 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/appcache/appcache_frontend_impl.h"
+#include "content/child/appcache/appcache_frontend_impl.h"
 
 #include "base/logging.h"
+#include "content/child/appcache/web_application_cache_host_impl.h"
 #include "third_party/WebKit/public/web/WebApplicationCacheHost.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
-#include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebConsoleMessage;
 
-namespace appcache {
+namespace content {
 
 // Inline helper to keep the lines shorter and unwrapped.
 inline WebApplicationCacheHostImpl* GetHost(int id) {
   return WebApplicationCacheHostImpl::FromId(id);
 }
 
-void AppCacheFrontendImpl::OnCacheSelected(
-    int host_id, const AppCacheInfo& info) {
+void AppCacheFrontendImpl::OnCacheSelected(int host_id,
+                                           const appcache::AppCacheInfo& info) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
     host->OnCacheSelected(info);
 }
 
 void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,
-                                           Status status) {
+                                           appcache::Status status) {
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
@@ -37,9 +37,9 @@ void AppCacheFrontendImpl::OnStatusChanged(const std::vector<int>& host_ids,
 }
 
 void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
-                                         EventID event_id) {
-  DCHECK(event_id != PROGRESS_EVENT);  // See OnProgressEventRaised.
-  DCHECK(event_id != ERROR_EVENT);  // See OnErrorEventRaised.
+                                         appcache::EventID event_id) {
+  DCHECK(event_id != appcache::PROGRESS_EVENT);  // See OnProgressEventRaised.
+  DCHECK(event_id != appcache::ERROR_EVENT);  // See OnErrorEventRaised.
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
@@ -50,7 +50,9 @@ void AppCacheFrontendImpl::OnEventRaised(const std::vector<int>& host_ids,
 
 void AppCacheFrontendImpl::OnProgressEventRaised(
     const std::vector<int>& host_ids,
-    const GURL& url, int num_total, int num_complete) {
+    const GURL& url,
+    int num_total,
+    int num_complete) {
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
@@ -59,9 +61,8 @@ void AppCacheFrontendImpl::OnProgressEventRaised(
   }
 }
 
-void AppCacheFrontendImpl::OnErrorEventRaised(
-    const std::vector<int>& host_ids,
-    const std::string& message) {
+void AppCacheFrontendImpl::OnErrorEventRaised(const std::vector<int>& host_ids,
+                                              const std::string& message) {
   for (std::vector<int>::const_iterator i = host_ids.begin();
        i != host_ids.end(); ++i) {
     WebApplicationCacheHostImpl* host = GetHost(*i);
@@ -70,7 +71,8 @@ void AppCacheFrontendImpl::OnErrorEventRaised(
   }
 }
 
-void AppCacheFrontendImpl::OnLogMessage(int host_id, LogLevel log_level,
+void AppCacheFrontendImpl::OnLogMessage(int host_id,
+                                        appcache::LogLevel log_level,
                                         const std::string& message) {
   WebApplicationCacheHostImpl* host = GetHost(host_id);
   if (host)
@@ -87,40 +89,40 @@ void AppCacheFrontendImpl::OnContentBlocked(int host_id,
 // Ensure that enum values never get out of sync with the
 // ones declared for use within the WebKit api
 COMPILE_ASSERT((int)WebApplicationCacheHost::Uncached ==
-               (int)UNCACHED, Uncached);
+               (int)appcache::UNCACHED, Uncached);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Idle ==
-               (int)IDLE, Idle);
+               (int)appcache::IDLE, Idle);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Checking ==
-               (int)CHECKING, Checking);
+               (int)appcache::CHECKING, Checking);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Downloading ==
-               (int)DOWNLOADING, Downloading);
+               (int)appcache::DOWNLOADING, Downloading);
 COMPILE_ASSERT((int)WebApplicationCacheHost::UpdateReady ==
-               (int)UPDATE_READY, UpdateReady);
+               (int)appcache::UPDATE_READY, UpdateReady);
 COMPILE_ASSERT((int)WebApplicationCacheHost::Obsolete ==
-               (int)OBSOLETE, Obsolete);
+               (int)appcache::OBSOLETE, Obsolete);
 COMPILE_ASSERT((int)WebApplicationCacheHost::CheckingEvent ==
-               (int)CHECKING_EVENT, CheckingEvent);
+               (int)appcache::CHECKING_EVENT, CheckingEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ErrorEvent ==
-               (int)ERROR_EVENT, ErrorEvent);
+               (int)appcache::ERROR_EVENT, ErrorEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::NoUpdateEvent ==
-               (int)NO_UPDATE_EVENT, NoUpdateEvent);
+               (int)appcache::NO_UPDATE_EVENT, NoUpdateEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::DownloadingEvent ==
-               (int)DOWNLOADING_EVENT, DownloadingEvent);
+               (int)appcache::DOWNLOADING_EVENT, DownloadingEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ProgressEvent ==
-               (int)PROGRESS_EVENT, ProgressEvent);
+               (int)appcache::PROGRESS_EVENT, ProgressEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::UpdateReadyEvent ==
-               (int)UPDATE_READY_EVENT, UpdateReadyEvent);
+               (int)appcache::UPDATE_READY_EVENT, UpdateReadyEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::CachedEvent ==
-               (int)CACHED_EVENT, CachedEvent);
+               (int)appcache::CACHED_EVENT, CachedEvent);
 COMPILE_ASSERT((int)WebApplicationCacheHost::ObsoleteEvent ==
-               (int)OBSOLETE_EVENT, ObsoleteEvent);
+               (int)appcache::OBSOLETE_EVENT, ObsoleteEvent);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelDebug ==
-               (int)LOG_DEBUG, LevelDebug);
+               (int)appcache::LOG_DEBUG, LevelDebug);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelLog ==
-               (int)LOG_INFO, LevelLog);
+               (int)appcache::LOG_INFO, LevelLog);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelWarning ==
-               (int)LOG_WARNING, LevelWarning);
+               (int)appcache::LOG_WARNING, LevelWarning);
 COMPILE_ASSERT((int)WebConsoleMessage::LevelError ==
-               (int)LOG_ERROR, LevelError);
+               (int)appcache::LOG_ERROR, LevelError);
 
-}  // namespace appcache
+}  // namespace content

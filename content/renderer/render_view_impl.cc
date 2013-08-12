@@ -29,7 +29,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "content/child/appcache_dispatcher.h"
+#include "content/child/appcache/appcache_dispatcher.h"
+#include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_callback_adapters.h"
@@ -205,7 +206,6 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
-#include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/webpreferences_renderer.h"
 
 #if defined(OS_ANDROID)
@@ -337,10 +337,8 @@ using WebKit::WebVector;
 using WebKit::WebView;
 using WebKit::WebWidget;
 using WebKit::WebWindowFeatures;
-using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
-
 using webkit_glue::WebURLResponseExtraDataImpl;
 
 #if defined(OS_ANDROID)

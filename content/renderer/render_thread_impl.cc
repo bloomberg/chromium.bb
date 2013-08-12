@@ -26,7 +26,8 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
-#include "content/child/appcache_dispatcher.h"
+#include "content/child/appcache/appcache_dispatcher.h"
+#include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
@@ -108,7 +109,6 @@
 #include "v8/include/v8.h"
 #include "webkit/child/worker_task_runner.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/appcache/appcache_frontend_impl.h"
 #include "webkit/renderer/compositor_bindings/web_external_bitmap_impl.h"
 
 #if defined(OS_WIN)
@@ -351,7 +351,7 @@ void RenderThreadImpl::Init() {
   shutdown_event_ = NULL;
 
   appcache_dispatcher_.reset(
-      new AppCacheDispatcher(Get(), new appcache::AppCacheFrontendImpl()));
+      new AppCacheDispatcher(Get(), new AppCacheFrontendImpl()));
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher(
       thread_safe_sender()));

@@ -1,9 +1,9 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_RENDERER_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
-#define WEBKIT_RENDERER_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
+#ifndef CONTENT_CHILD_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
+#define CONTENT_CHILD_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
 
 #include <string>
 
@@ -12,15 +12,14 @@
 #include "third_party/WebKit/public/web/WebApplicationCacheHostClient.h"
 #include "url/gurl.h"
 #include "webkit/common/appcache/appcache_interfaces.h"
-#include "webkit/renderer/webkit_storage_renderer_export.h"
 
 namespace WebKit {
 class WebFrame;
 }
 
-namespace appcache {
+namespace content {
 
-class WEBKIT_STORAGE_RENDERER_EXPORT WebApplicationCacheHostImpl
+class WebApplicationCacheHostImpl
     : NON_EXPORTED_BASE(public WebKit::WebApplicationCacheHost) {
  public:
   // Returns the host having given id or NULL if there is no such host.
@@ -30,11 +29,11 @@ class WEBKIT_STORAGE_RENDERER_EXPORT WebApplicationCacheHostImpl
   static WebApplicationCacheHostImpl* FromFrame(const WebKit::WebFrame* frame);
 
   WebApplicationCacheHostImpl(WebKit::WebApplicationCacheHostClient* client,
-                              AppCacheBackend* backend);
+                              appcache::AppCacheBackend* backend);
   virtual ~WebApplicationCacheHostImpl();
 
   int host_id() const { return host_id_; }
-  AppCacheBackend* backend() const { return backend_; }
+  appcache::AppCacheBackend* backend() const { return backend_; }
   WebKit::WebApplicationCacheHostClient* client() const { return client_; }
 
   virtual void OnCacheSelected(const appcache::AppCacheInfo& info);
@@ -42,10 +41,11 @@ class WEBKIT_STORAGE_RENDERER_EXPORT WebApplicationCacheHostImpl
   void OnEventRaised(appcache::EventID);
   void OnProgressEventRaised(const GURL& url, int num_total, int num_complete);
   void OnErrorEventRaised(const std::string& message);
-  virtual void OnLogMessage(LogLevel log_level, const std::string& message) {}
+  virtual void OnLogMessage(appcache::LogLevel log_level,
+                            const std::string& message) {}
   virtual void OnContentBlocked(const GURL& manifest_url) {}
 
-  // WebApplicationCacheHost methods
+  // WebKit::WebApplicationCacheHost:
   virtual void willStartMainResourceRequest(WebKit::WebURLRequest&,
                                             const WebKit::WebFrame*);
   virtual void willStartSubResourceRequest(WebKit::WebURLRequest&);
@@ -68,7 +68,7 @@ class WEBKIT_STORAGE_RENDERER_EXPORT WebApplicationCacheHostImpl
   };
 
   WebKit::WebApplicationCacheHostClient* client_;
-  AppCacheBackend* backend_;
+  appcache::AppCacheBackend* backend_;
   int host_id_;
   appcache::Status status_;
   WebKit::WebURLResponse document_response_;
@@ -81,6 +81,6 @@ class WEBKIT_STORAGE_RENDERER_EXPORT WebApplicationCacheHostImpl
   bool was_select_cache_called_;
 };
 
-}  // namespace
+}  // namespace content
 
-#endif  // WEBKIT_RENDERER_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_
+#endif  // CONTENT_CHILD_APPCACHE_WEB_APPLICATION_CACHE_HOST_IMPL_H_

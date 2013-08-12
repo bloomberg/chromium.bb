@@ -34,7 +34,6 @@
 #include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
 #include "webkit/support/gc_extension.h"
 #include "webkit/support/mock_webclipboard_impl.h"

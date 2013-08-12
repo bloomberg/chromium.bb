@@ -4,7 +4,7 @@
 
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 
-#include "content/child/appcache_dispatcher.h"
+#include "content/child/appcache/appcache_dispatcher.h"
 #include "content/worker/worker_thread.h"
 
 namespace content {

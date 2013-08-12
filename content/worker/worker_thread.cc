@@ -7,7 +7,8 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_local.h"
-#include "content/child/appcache_dispatcher.h"
+#include "content/child/appcache/appcache_dispatcher.h"
+#include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_message_filter.h"
 #include "content/child/runtime_features.h"
@@ -22,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/renderer/appcache/appcache_frontend_impl.h"
 
 using WebKit::WebRuntimeFeatures;
 
@@ -40,7 +40,7 @@ WorkerThread::WorkerThread() {
   WebKit::initialize(webkit_platform_support_.get());
 
   appcache_dispatcher_.reset(
-      new AppCacheDispatcher(this, new appcache::AppCacheFrontendImpl()));
+      new AppCacheDispatcher(this, new AppCacheFrontendImpl()));
 
   web_database_observer_impl_.reset(
       new WebDatabaseObserverImpl(sync_message_filter()));

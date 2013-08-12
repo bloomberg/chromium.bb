@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "cc/layers/io_surface_layer.h"
+#include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/npapi/plugin_host.h"
 #include "content/child/npapi/plugin_instance.h"
 #include "content/child/npapi/webplugin_delegate_impl.h"
@@ -50,10 +51,8 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 #include "webkit/child/multipart_response_delegate.h"
-#include "webkit/renderer/appcache/web_application_cache_host_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 
-using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebCanvas;
 using WebKit::WebConsoleMessage;
 using WebKit::WebCookieJar;
