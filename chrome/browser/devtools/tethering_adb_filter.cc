@@ -55,7 +55,8 @@ class SocketTunnel {
       : location_(location),
         pending_writes_(0),
         pending_destruction_(false),
-        callback_(callback) {
+        callback_(callback),
+        about_to_destroy_(false) {
     callback_.Run(1);
   }
 
@@ -101,6 +102,7 @@ class SocketTunnel {
   }
 
   ~SocketTunnel() {
+    about_to_destroy_ = true;
     if (host_socket_)
       host_socket_->Disconnect();
     if (remote_socket_)
@@ -187,6 +189,11 @@ class SocketTunnel {
   }
 
   void SelfDestruct() {
+    // In case one of the connections closes, we could get here
+    // from another one due to Disconnect firing back on all
+    // read callbacks.
+    if (about_to_destroy_)
+      return;
     if (pending_writes_ > 0) {
       pending_destruction_ = true;
       return;
@@ -202,6 +209,7 @@ class SocketTunnel {
   int pending_writes_;
   bool pending_destruction_;
   CounterCallback callback_;
+  bool about_to_destroy_;
 };
 
 }  // namespace
@@ -214,8 +222,7 @@ TetheringAdbFilter::TetheringAdbFilter(
     : device_(device),
       adb_message_loop_(adb_message_loop),
       web_socket_(web_socket),
-      command_id_(0),
-      weak_factory_(this) {
+      command_id_(0) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   pref_change_registrar_.Init(pref_service);
 
@@ -255,8 +262,7 @@ void TetheringAdbFilter::OnPrefsChange() {
   adb_message_loop_->PostTask(
       FROM_HERE,
       base::Bind(&TetheringAdbFilter::ChangeForwardingMap,
-                 weak_factory_.GetWeakPtr(),
-                 new_forwarding_map));
+                 this, new_forwarding_map));
 }
 
 void TetheringAdbFilter::ChangeForwardingMap(ForwardingMap new_forwarding_map) {
@@ -290,7 +296,7 @@ void TetheringAdbFilter::SendCommand(const std::string& method, int port) {
   if (method == kTetheringBind) {
     pending_responses_[command.id()] =
         base::Bind(&TetheringAdbFilter::ProcessBindResponse,
-                   weak_factory_.GetWeakPtr(), port);
+                   base::Unretained(this), port);
 #if defined(DEBUG_DEVTOOLS)
     port_status_[port] = kStatusConnecting;
     UpdatePortStatusMap();
@@ -308,7 +314,7 @@ void TetheringAdbFilter::SendCommand(const std::string& method, int port) {
 
     pending_responses_[command.id()] =
         base::Bind(&TetheringAdbFilter::ProcessUnbindResponse,
-                   weak_factory_.GetWeakPtr(), port);
+                   base::Unretained(this), port);
 #if defined(DEBUG_DEVTOOLS)
     port_status_[port] = kStatusDisconnecting;
     UpdatePortStatusMap();
@@ -364,7 +370,7 @@ void TetheringAdbFilter::UpdateSocketCount(int port, int increment) {
 void TetheringAdbFilter::UpdatePortStatusMap() {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
      base::Bind(&TetheringAdbFilter::UpdatePortStatusMapOnUIThread,
-        weak_factory_.GetWeakPtr(), port_status_));
+        this, port_status_));
 }
 
 void TetheringAdbFilter::UpdatePortStatusMapOnUIThread(
@@ -409,9 +415,7 @@ bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
   std::string location = it->second;
 
   SocketTunnel* tunnel = new SocketTunnel(location,
-      base::Bind(&TetheringAdbFilter::UpdateSocketCount,
-                weak_factory_.GetWeakPtr(),
-                port));
+      base::Bind(&TetheringAdbFilter::UpdateSocketCount, this, port));
 
   device_->OpenSocket(connection_id.c_str(),
       base::Bind(&SocketTunnel::Start, base::Unretained(tunnel)));
@@ -443,7 +447,7 @@ class PortForwardingController::Connection : public AdbWebSocket::Delegate {
   base::MessageLoop* adb_message_loop_;
   PrefService* pref_service_;
 
-  scoped_ptr<TetheringAdbFilter> tethering_adb_filter_;
+  scoped_refptr<TetheringAdbFilter> tethering_adb_filter_;
   scoped_refptr<AdbWebSocket> web_socket_;
 };
 
@@ -491,8 +495,8 @@ void PortForwardingController::Connection::OnSocketOpened() {
     return;
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  tethering_adb_filter_.reset(new TetheringAdbFilter(
-      device_, adb_message_loop_, pref_service_, web_socket_));
+  tethering_adb_filter_ = new TetheringAdbFilter(
+      device_, adb_message_loop_, pref_service_, web_socket_);
 }
 
 void PortForwardingController::Connection::OnFrameRead(

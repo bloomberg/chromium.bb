@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/weak_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/devtools/adb_web_socket.h"
 #include "chrome/browser/devtools/devtools_adb_bridge.h"
@@ -20,7 +20,9 @@ namespace base {
 class MessageLoop;
 }
 
-class TetheringAdbFilter {
+class TetheringAdbFilter : public base::RefCountedThreadSafe<
+    TetheringAdbFilter,
+    content::BrowserThread::DeleteOnUIThread> {
  public:
   typedef DevToolsAdbBridge::RemoteDevice::PortStatus PortStatus;
   typedef DevToolsAdbBridge::RemoteDevice::PortStatusMap PortStatusMap;
@@ -29,13 +31,18 @@ class TetheringAdbFilter {
                      base::MessageLoop* adb_message_loop,
                      PrefService* pref_service,
                      scoped_refptr<AdbWebSocket> web_socket);
-  ~TetheringAdbFilter();
 
   const PortStatusMap& GetPortStatusMap();
 
   bool ProcessIncomingMessage(const std::string& message);
 
  private:
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+  friend class base::DeleteHelper<TetheringAdbFilter>;
+
+  virtual ~TetheringAdbFilter();
+
   typedef std::map<int, std::string> ForwardingMap;
 
   typedef base::Callback<void(PortStatus)> CommandCallback;
@@ -67,7 +74,6 @@ class TetheringAdbFilter {
   CommandCallbackMap pending_responses_;
   PortStatusMap port_status_;
   PortStatusMap port_status_on_ui_thread_;
-  base::WeakPtrFactory<TetheringAdbFilter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TetheringAdbFilter);
 };
