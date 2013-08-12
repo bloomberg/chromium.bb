@@ -45,7 +45,7 @@ int TCPServerSocketWin::Listen(const IPEndPoint& address, int backlog) {
   }
 
   socket_ = socket(address.GetSockAddrFamily(), SOCK_STREAM, IPPROTO_TCP);
-  if (socket_ < 0) {
+  if (socket_ == INVALID_SOCKET) {
     PLOG(ERROR) << "socket() returned an error";
     return MapSystemError(WSAGetLastError());
   }
