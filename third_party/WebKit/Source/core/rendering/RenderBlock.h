@@ -711,12 +711,12 @@ private:
         bool isPlaced() const { return m_isPlaced; }
         void setIsPlaced(bool placed = true) { m_isPlaced = placed; }
 
-        inline LayoutUnit x() const { ASSERT(isPlaced()); return m_frameRect.x(); }
-        inline LayoutUnit maxX() const { ASSERT(isPlaced()); return m_frameRect.maxX(); }
-        inline LayoutUnit y() const { ASSERT(isPlaced()); return m_frameRect.y(); }
-        inline LayoutUnit maxY() const { ASSERT(isPlaced()); return m_frameRect.maxY(); }
-        inline LayoutUnit width() const { return m_frameRect.width(); }
-        inline LayoutUnit height() const { return m_frameRect.height(); }
+        LayoutUnit x() const { ASSERT(isPlaced()); return m_frameRect.x(); }
+        LayoutUnit maxX() const { ASSERT(isPlaced()); return m_frameRect.maxX(); }
+        LayoutUnit y() const { ASSERT(isPlaced()); return m_frameRect.y(); }
+        LayoutUnit maxY() const { ASSERT(isPlaced()); return m_frameRect.maxY(); }
+        LayoutUnit width() const { return m_frameRect.width(); }
+        LayoutUnit height() const { return m_frameRect.height(); }
 
         void setX(LayoutUnit x) { ASSERT(!isInPlacedTree()); m_frameRect.setX(x); }
         void setY(LayoutUnit y) { ASSERT(!isInPlacedTree()); m_frameRect.setY(y); }
