@@ -1168,19 +1168,19 @@ protected:
     public:
         typedef FloatingObjectInterval IntervalType;
 
-        FloatIntervalSearchAdapter(const RenderBlock* renderer, int lowValue, int highValue, LayoutUnit& offset, LayoutUnit* heightRemaining)
+        FloatIntervalSearchAdapter(const RenderBlock* renderer, int lowValue, int highValue, LayoutUnit& offset)
             : m_renderer(renderer)
             , m_lowValue(lowValue)
             , m_highValue(highValue)
             , m_offset(offset)
-            , m_heightRemaining(heightRemaining)
             , m_last(0)
+            , m_floatForHeight(0)
         {
         }
 
         inline int lowValue() const { return m_lowValue; }
         inline int highValue() const { return m_highValue; }
-        void collectIfNeeded(const IntervalType&) const;
+        void collectIfNeeded(const IntervalType&);
 
         // When computing the offset caused by the floats on a given line, if
         // the outermost float on that line has a shape-outside, the inline
@@ -1190,6 +1190,8 @@ protected:
         // computed correctly by the code using this adapter.
         const FloatingObject* lastFloat() const { return m_last; }
 
+        LayoutUnit getHeightRemaining() const;
+
     private:
         bool updateOffsetIfNeeded(const FloatingObject*) const;
 
@@ -1197,13 +1199,8 @@ protected:
         int m_lowValue;
         int m_highValue;
         LayoutUnit& m_offset;
-        LayoutUnit* m_heightRemaining;
-        // This member variable is mutable because the collectIfNeeded method
-        // is declared as const, even though it doesn't actually respect that
-        // contract. It modifies other member variables via loopholes in the
-        // const behavior. Instead of using loopholes, I decided it was better
-        // to make the fact that this is modified in a const method explicit.
-        mutable const FloatingObject* m_last;
+        const FloatingObject* m_last;
+        const FloatingObject* m_floatForHeight;
     };
 
     void createFloatingObjects();
