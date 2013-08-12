@@ -1,8 +1,8 @@
 {
   "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDGJWLUb83WKoDeODlrPIZu60M8bzbvrkg3Jf/5aO3ux2FL+G+/BO4Vyt/J0t8lXBtnTOvHo6KPpA042PyE9xMdlufFnJqEkvPXNzRlBWeVQqFHbMWE6o/x8diG69dNmHyFYcUjjFFDk2X2GOLQXNUGJQ6MIikbdzoWdLGttmhAIwIDAQAB",
   "manifest_version": 2,
-  "name": "Chrome Connectivity Debugger (Dev)",
-  "version": "0.2.8",
+  "name": "Connectivity Diagnostics",
+  "version": "0.5.2",
   "minimum_chrome_version": "27",
   "offline_enabled": true,
   "default_locale": "en",
@@ -21,8 +21,9 @@
    ]},
    "clipboardWrite",
    "experimental",
+   "networkingPrivate",
    "http://*.google.com/*",
-   "http://www.yahoo.com/*"
+   "https://*.google.com/*"
   ],
   "app": {
     "background": {
