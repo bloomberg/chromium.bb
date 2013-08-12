@@ -110,7 +110,7 @@ void CertLoader::SetCryptoTaskRunner(
 }
 
 void CertLoader::SetSlowTaskRunnerForTest(
-    const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+    const scoped_refptr<base::TaskRunner>& task_runner) {
   slow_task_runner_for_test_ = task_runner;
 }
 
@@ -238,6 +238,7 @@ void CertLoader::OnPersistentNSSDBOpened() {
   InitializeTokenAndLoadCertificates();
 }
 
+// This is copied from chrome/common/net/x509_certificate_model_nss.cc.
 // For background see this discussion on dev-tech-crypto.lists.mozilla.org:
 // http://web.archiveorange.com/archive/v/6JJW7E40sypfZGtbkzxX
 //
@@ -245,11 +246,9 @@ void CertLoader::OnPersistentNSSDBOpened() {
 // is shared between a certificate and its associated private and public
 // keys.  I tried to implement this with PK11_GetLowLevelKeyIDForCert(),
 // but that always returns NULL on Chrome OS for me.
-std::string CertLoader::GetPkcs11IdForCert(
-    const net::X509Certificate& cert) const {
-  if (!IsHardwareBacked())
-    return std::string();
 
+// static
+std::string CertLoader::GetPkcs11IdForCert(const net::X509Certificate& cert) {
   CERTCertificateStr* cert_handle = cert.os_cert_handle();
   SECKEYPrivateKey *priv_key =
       PK11_FindKeyByAnyCert(cert_handle, NULL /* wincx */);

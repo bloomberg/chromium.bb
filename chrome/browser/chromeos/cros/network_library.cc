@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/enrollment_dialog_view.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chromeos/network/certificate_pattern.h"
-#include "chromeos/network/certificate_pattern_matcher.h"
+#include "chromeos/network/client_cert_util.h"
 #include "chromeos/network/cros_network_functions.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -768,7 +768,7 @@ void VirtualNetwork::MatchCertificatePattern(bool allow_enroll,
   }
 
   scoped_refptr<net::X509Certificate> matching_cert =
-      certificate_pattern::GetCertificateMatch(client_cert_pattern());
+      client_cert::GetCertificateMatch(client_cert_pattern());
   if (matching_cert.get()) {
     std::string client_cert_id =
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle());
@@ -1285,7 +1285,7 @@ void WifiNetwork::MatchCertificatePattern(bool allow_enroll,
   }
 
   scoped_refptr<net::X509Certificate> matching_cert =
-      certificate_pattern::GetCertificateMatch(client_cert_pattern());
+      client_cert::GetCertificateMatch(client_cert_pattern());
   if (matching_cert.get()) {
     SetEAPClientCertPkcs11Id(
         x509_certificate_model::GetPkcs11Id(matching_cert->os_cert_handle()));

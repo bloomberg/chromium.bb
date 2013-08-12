@@ -167,7 +167,10 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
 
   void CheckPendingRequest(const std::string service_path);
   void CheckAllPendingRequests();
-  bool CertificateIsConfigured(NetworkUIData* ui_data, std::string* pkcs11_id);
+
+  // Returns the PKCS#11 ID of a cert matching the certificate pattern in
+  // |ui_data|. Returns empty string otherwise.
+  std::string CertificateIsConfigured(NetworkUIData* ui_data);
   void ErrorCallbackForPendingRequest(const std::string& service_path,
                                       const std::string& error_name);
 

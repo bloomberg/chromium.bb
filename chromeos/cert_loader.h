@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -20,6 +21,7 @@
 
 namespace base {
 class SequencedTaskRunner;
+class TaskRunner;
 }
 
 namespace crypto {
@@ -65,6 +67,8 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   // Returns true if the global instance has been initialized.
   static bool IsInitialized();
 
+  static std::string GetPkcs11IdForCert(const net::X509Certificate& cert);
+
   // |crypto_task_runner| is the task runner that any synchronous crypto calls
   // should be made from, e.g. in Chrome this is the IO thread. Must be called
   // after the thread is started. Certificate loading will not happen unless
@@ -75,7 +79,7 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   // Sets the task runner that any slow calls will be made from, e.g. calls
   // to the NSS database. If not set, uses base::WorkerPool.
   void SetSlowTaskRunnerForTest(
-      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
+      const scoped_refptr<base::TaskRunner>& task_runner);
 
   void AddObserver(CertLoader::Observer* observer);
   void RemoveObserver(CertLoader::Observer* observer);
@@ -85,8 +89,6 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   // Returns true if the TPM is available for hardware-backed certificates.
   bool IsHardwareBacked() const;
-
-  std::string GetPkcs11IdForCert(const net::X509Certificate& cert) const;
 
   bool certificates_loaded() const { return certificates_loaded_; }
 

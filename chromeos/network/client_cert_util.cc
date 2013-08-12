@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/certificate_pattern_matcher.h"
+#include "chromeos/network/client_cert_util.h"
 
 #include <cert.h>
 #include <pk11pub.h>
@@ -11,53 +11,20 @@
 #include <string>
 #include <vector>
 
+#include "base/values.h"
 #include "chromeos/network/certificate_pattern.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/x509_cert_types.h"
 #include "net/cert/x509_certificate.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
+namespace client_cert {
+
 namespace {
-
-// Returns true only if any fields set in this pattern match exactly with
-// similar fields in the principal.  If organization_ or organizational_unit_
-// are set, then at least one of the organizations or units in the principal
-// must match.
-bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
-                          const net::CertPrincipal& principal) {
-  if (!pattern.common_name().empty() &&
-      pattern.common_name() != principal.common_name) {
-    return false;
-  }
-
-  if (!pattern.locality().empty() &&
-      pattern.locality() != principal.locality_name) {
-    return false;
-  }
-
-  if (!pattern.organization().empty()) {
-    if (std::find(principal.organization_names.begin(),
-                  principal.organization_names.end(),
-                  pattern.organization()) ==
-        principal.organization_names.end()) {
-      return false;
-    }
-  }
-
-  if (!pattern.organizational_unit().empty()) {
-    if (std::find(principal.organization_unit_names.begin(),
-                  principal.organization_unit_names.end(),
-                  pattern.organizational_unit()) ==
-        principal.organization_unit_names.end()) {
-      return false;
-    }
-  }
-
-  return true;
-}
 
 // Functor to filter out non-matching issuers.
 class IssuerFilter {
@@ -126,7 +93,42 @@ class IssuerCaFilter {
 
 }  // namespace
 
-namespace certificate_pattern {
+// Returns true only if any fields set in this pattern match exactly with
+// similar fields in the principal.  If organization_ or organizational_unit_
+// are set, then at least one of the organizations or units in the principal
+// must match.
+bool CertPrincipalMatches(const IssuerSubjectPattern& pattern,
+                          const net::CertPrincipal& principal) {
+  if (!pattern.common_name().empty() &&
+      pattern.common_name() != principal.common_name) {
+    return false;
+  }
+
+  if (!pattern.locality().empty() &&
+      pattern.locality() != principal.locality_name) {
+    return false;
+  }
+
+  if (!pattern.organization().empty()) {
+    if (std::find(principal.organization_names.begin(),
+                  principal.organization_names.end(),
+                  pattern.organization()) ==
+        principal.organization_names.end()) {
+      return false;
+    }
+  }
+
+  if (!pattern.organizational_unit().empty()) {
+    if (std::find(principal.organization_unit_names.begin(),
+                  principal.organization_unit_names.end(),
+                  pattern.organizational_unit()) ==
+        principal.organization_unit_names.end()) {
+      return false;
+    }
+  }
+
+  return true;
+}
 
 scoped_refptr<net::X509Certificate> GetCertificateMatch(
     const CertificatePattern& pattern) {
@@ -188,6 +190,54 @@ scoped_refptr<net::X509Certificate> GetCertificateMatch(
   return latest;
 }
 
-}  // namespace certificate_pattern
+void SetShillProperties(const client_cert::ConfigType cert_config_type,
+                        const std::string& tpm_slot,
+                        const std::string& tpm_pin,
+                        const std::string* pkcs11_id,
+                        base::DictionaryValue* properties) {
+  const char* tpm_pin_property = NULL;
+  switch (cert_config_type) {
+    case CONFIG_TYPE_NONE: {
+      return;
+    }
+    case CONFIG_TYPE_OPENVPN: {
+      tpm_pin_property = flimflam::kOpenVPNPinProperty;
+      if (pkcs11_id) {
+        properties->SetStringWithoutPathExpansion(
+            flimflam::kOpenVPNClientCertIdProperty, *pkcs11_id);
+      }
+      break;
+    }
+    case CONFIG_TYPE_IPSEC: {
+      tpm_pin_property = flimflam::kL2tpIpsecPinProperty;
+      if (!tpm_slot.empty()) {
+        properties->SetStringWithoutPathExpansion(
+            flimflam::kL2tpIpsecClientCertSlotProperty, tpm_slot);
+      }
+      if (pkcs11_id) {
+        properties->SetStringWithoutPathExpansion(
+            flimflam::kL2tpIpsecClientCertIdProperty, *pkcs11_id);
+      }
+      break;
+    }
+    case CONFIG_TYPE_EAP: {
+      tpm_pin_property = flimflam::kEapPinProperty;
+      if (pkcs11_id) {
+        // Shill requires both CertID and KeyID for TLS connections, despite the
+        // fact that by convention they are the same ID.
+        properties->SetStringWithoutPathExpansion(flimflam::kEapCertIdProperty,
+                                                  *pkcs11_id);
+        properties->SetStringWithoutPathExpansion(flimflam::kEapKeyIdProperty,
+                                                  *pkcs11_id);
+      }
+      break;
+    }
+  }
+  DCHECK(tpm_pin_property);
+  if (!tpm_pin.empty())
+    properties->SetStringWithoutPathExpansion(tpm_pin_property, tpm_pin);
+}
+
+}  // namespace client_cert
 
 }  // namespace chromeos
