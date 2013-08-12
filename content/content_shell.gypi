@@ -89,6 +89,8 @@
         'shell/minimal_shell.h',
         'shell/notify_done_forwarder.cc',
         'shell/notify_done_forwarder.h',
+        'shell/renderer/gc_extension.cc',
+        'shell/renderer/gc_extension.h',
         'shell/renderer/shell_content_renderer_client.cc',
         'shell/renderer/shell_content_renderer_client.h',
         'shell/renderer/shell_render_process_observer.cc',

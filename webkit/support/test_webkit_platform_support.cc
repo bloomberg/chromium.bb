@@ -32,7 +32,6 @@
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
-#include "webkit/support/gc_extension.h"
 #include "webkit/support/mock_webclipboard_impl.h"
 #include "webkit/support/web_gesture_curve_mock.h"
 #include "webkit/support/web_layer_tree_view_impl_for_testing.h"
@@ -101,8 +100,6 @@ TestWebKitPlatformSupport::TestWebKitPlatformSupport() {
 
   // Test shell always exposes the GC.
   webkit_glue::SetJavaScriptFlags(" --expose-gc");
-  // Expose GCController to JavaScript.
-  WebScriptController::registerExtension(extensions_v8::GCExtension::Get());
 }
 
 TestWebKitPlatformSupport::~TestWebKitPlatformSupport() {

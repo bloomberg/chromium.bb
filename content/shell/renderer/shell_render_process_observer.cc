@@ -11,12 +11,12 @@
 #include "content/public/test/layouttest_support.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/common/shell_switches.h"
+#include "content/shell/renderer/gc_extension.h"
 #include "content/shell/renderer/shell_content_renderer_client.h"
 #include "content/shell/renderer/webkit_test_runner.h"
 #include "third_party/WebKit/public/testing/WebTestInterfaces.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/glue/webkit_glue.h"
-#include "webkit/support/gc_extension.h"
 
 using WebKit::WebFrame;
 using WebTestRunner::WebTestDelegate;
