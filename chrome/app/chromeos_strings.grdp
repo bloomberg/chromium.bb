@@ -471,6 +471,9 @@ Press any key to continue exploring.
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT" desc="Text shown when supervised user can be created, but no users that can be manager exist.">
     At least one account must exist on this device before creating a supervised user.
   </message>
+  <message name="IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_RESTRICTED_TEXT" desc="Text shown when supervised user can be created, but owner of the device restricted managed user creation or whitelist has been enabled for this device.">
+    Creation of supervised users is restricted by the owner of this device.
+  </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_INTRO_TEXT_TITLE" desc="Supervised user dialog, intro page, title">
     What is a supervised user?
   </message>

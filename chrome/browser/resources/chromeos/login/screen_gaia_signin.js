@@ -269,6 +269,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('createManagedUserLinkPlaceholder').hidden =
           !data.managedUsersCanCreate;
       $('createManagedUserNoManagerText').hidden = data.managedUsersCanCreate;
+      $('createManagedUserNoManagerText').textContent =
+          data.managedUsersRestrictionReason;
 
       // Allow cancellation of screen only when user pods can be displayed.
       this.cancelAllowed_ = data.isShowUsers && $('pod-row').pods.length;

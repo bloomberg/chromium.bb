@@ -456,8 +456,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_CREATE_LOCALLY_MANAGED_USER_HTML);
   builder->Add("createManagedUserFeatureName",
                IDS_CREATE_LOCALLY_MANAGED_USER_FEATURE_NAME);
-  builder->Add("createManagedUserNoManagerText",
-               IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT);
   builder->Add("offlineLogin", IDS_OFFLINE_LOGIN_HTML);
   builder->Add("ownerUserPattern", IDS_LOGIN_POD_OWNER_USER);
   builder->Add("removeUser", IDS_LOGIN_POD_REMOVE_USER);
@@ -1098,13 +1096,23 @@ void SigninScreenHandler::UpdateAuthParams(DictionaryValue* params) {
 
   bool managed_users_allowed =
       UserManager::Get()->AreLocallyManagedUsersAllowed();
-  bool managed_users_can_create = false;
-  if (managed_users_allowed) {
-    managed_users_can_create =
-        (delegate_->GetUsers().size() > 0) && allow_new_user;
+  bool managed_users_can_create = true;
+  int message_id = -1;
+  if (delegate_->GetUsers().size() == 0) {
+    managed_users_can_create = false;
+    message_id = IDS_CREATE_LOCALLY_MANAGED_USER_NO_MANAGER_TEXT;
   }
+  if (!allow_new_user) {
+    managed_users_can_create = false;
+    message_id = IDS_CREATE_LOCALLY_MANAGED_USER_CREATION_RESTRICTED_TEXT;
+  }
+
   params->SetBoolean("managedUsersEnabled", managed_users_allowed);
   params->SetBoolean("managedUsersCanCreate", managed_users_can_create);
+  if (!managed_users_can_create) {
+    params->SetString("managedUsersRestrictionReason",
+        l10n_util::GetStringUTF16(message_id));
+  }
 }
 
 void SigninScreenHandler::LoadAuthExtension(
