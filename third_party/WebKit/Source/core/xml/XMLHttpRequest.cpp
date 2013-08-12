@@ -260,12 +260,10 @@ Document* XMLHttpRequest::responseXML(ExceptionState& es)
     return m_responseDocument.get();
 }
 
-Blob* XMLHttpRequest::responseBlob(ExceptionState& es)
+Blob* XMLHttpRequest::responseBlob()
 {
-    if (m_responseTypeCode != ResponseTypeBlob) {
-        es.throwDOMException(InvalidStateError);
-        return 0;
-    }
+    ASSERT(m_responseTypeCode == ResponseTypeBlob);
+
     // We always return null before DONE.
     if (m_error || m_state != DONE)
         return 0;
@@ -295,12 +293,9 @@ Blob* XMLHttpRequest::responseBlob(ExceptionState& es)
     return m_responseBlob.get();
 }
 
-ArrayBuffer* XMLHttpRequest::responseArrayBuffer(ExceptionState& es)
+ArrayBuffer* XMLHttpRequest::responseArrayBuffer()
 {
-    if (m_responseTypeCode != ResponseTypeArrayBuffer) {
-        es.throwDOMException(InvalidStateError);
-        return 0;
-    }
+    ASSERT(m_responseTypeCode == ResponseTypeArrayBuffer);
 
     if (m_error || m_state != DONE)
         return 0;

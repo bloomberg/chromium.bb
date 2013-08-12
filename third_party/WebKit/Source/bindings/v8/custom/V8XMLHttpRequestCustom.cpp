@@ -102,20 +102,14 @@ void V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, cons
 
     case XMLHttpRequest::ResponseTypeBlob:
         {
-            ExceptionState es(info.GetIsolate());
-            Blob* blob = xmlHttpRequest->responseBlob(es);
-            if (es.throwIfNeeded())
-                return;
+            Blob* blob = xmlHttpRequest->responseBlob();
             v8SetReturnValue(info, toV8Fast(blob, info, xmlHttpRequest));
             return;
         }
 
     case XMLHttpRequest::ResponseTypeArrayBuffer:
         {
-            ExceptionState es(info.GetIsolate());
-            ArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer(es);
-            if (es.throwIfNeeded())
-                return;
+            ArrayBuffer* arrayBuffer = xmlHttpRequest->responseArrayBuffer();
             if (arrayBuffer && !arrayBuffer->hasDeallocationObserver()) {
                 arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
                 v8::V8::AdjustAmountOfExternalAllocatedMemory(arrayBuffer->byteLength());
