@@ -37,9 +37,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/printing/print_preview_context_menu_observer.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/search/search.h"
@@ -66,7 +63,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/net/url_util.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/print_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/spellcheck_messages.h"
 #include "chrome/common/url_constants.h"
@@ -97,6 +93,18 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
+
+#if defined(ENABLE_PRINTING)
+#include "chrome/common/print_messages.h"
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_context_menu_observer.h"
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
@@ -649,12 +657,14 @@ void RenderViewContextMenu::InitMenu() {
   AppendDeveloperItems();
 
   if (!is_guest_) {
+#if defined(ENABLE_FULL_PRINTING)
     if (!print_preview_menu_observer_.get()) {
       print_preview_menu_observer_.reset(
           new PrintPreviewContextMenuObserver(source_web_contents_));
     }
 
     observers_.AddObserver(print_preview_menu_observer_.get());
+#endif
   }
 }
 
@@ -1148,10 +1158,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
   int content_restrictions = 0;
   if (core_tab_helper)
     content_restrictions = core_tab_helper->content_restrictions();
-  if (id == IDC_PRINT &&
-      (content_restrictions & CONTENT_RESTRICTION_PRINT)) {
+  if (id == IDC_PRINT && (content_restrictions & CONTENT_RESTRICTION_PRINT))
     return false;
-  }
 
   if (id == IDC_SAVE_PAGE &&
       (content_restrictions & CONTENT_RESTRICTION_SAVE)) {
@@ -1320,10 +1328,15 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
         return false;
 
       const GURL& url = params_.src_url;
-      return (params_.media_flags & WebContextMenuData::MediaCanSave) &&
-          url.is_valid() && ProfileIOData::IsHandledProtocol(url.scheme()) &&
+      bool can_save =
+          (params_.media_flags & WebContextMenuData::MediaCanSave) &&
+          url.is_valid() && ProfileIOData::IsHandledProtocol(url.scheme());
+#if defined(ENABLE_FULL_PRINTING)
           // Do not save the preview PDF on the print preview page.
+      can_save = can_save &&
           !(printing::PrintPreviewDialogController::IsPrintPreviewURL(url));
+#endif
+      return can_save;
     }
 
     case IDC_CONTENT_CONTEXT_OPENAVNEWTAB:
@@ -1736,9 +1749,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     }
 
     case IDC_PRINT:
+#if defined(ENABLE_PRINTING)
       if (params_.media_type == WebContextMenuData::MediaTypeNone) {
+#if defined(ENABLE_FULL_PRINTING)
         printing::PrintViewManager* print_view_manager =
             printing::PrintViewManager::FromWebContents(source_web_contents_);
+
         if (!print_view_manager)
           break;
         if (profile_->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled)) {
@@ -1746,9 +1762,18 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         } else {
           print_view_manager->PrintPreviewNow(!params_.selection_text.empty());
         }
+#else
+        printing::PrintViewManagerBasic* print_view_manager =
+            printing::PrintViewManagerBasic::FromWebContents(
+                source_web_contents_);
+        if (!print_view_manager)
+          break;
+        print_view_manager->PrintNow();
+#endif  // defined(ENABLE_FULL_PRINTING)
       } else {
         rvh->Send(new PrintMsg_PrintNodeUnderContextMenu(rvh->GetRoutingID()));
       }
+#endif  // defined(ENABLE_PRINTING)
       break;
 
     case IDC_VIEW_SOURCE:

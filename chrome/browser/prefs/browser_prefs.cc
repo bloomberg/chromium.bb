@@ -349,6 +349,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   BrowserWindowGtk::RegisterProfilePrefs(registry);
 #endif
 
+#if defined(ENABLE_FULL_PRINTING)
+  print_dialog_cloud::RegisterProfilePrefs(registry);
+  printing::StickySettings::RegisterProfilePrefs(registry);
+  CloudPrintURL::RegisterProfilePrefs(registry);
+#endif
+
 #if defined(OS_ANDROID)
   PromoHandler::RegisterProfilePrefs(registry);
 #endif
@@ -358,7 +364,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if !defined(OS_ANDROID)
-  CloudPrintURL::RegisterProfilePrefs(registry);
   DeviceIDFetcher::RegisterProfilePrefs(registry);
   DevToolsWindow::RegisterProfilePrefs(registry);
   extensions::CommandService::RegisterProfilePrefs(registry);
@@ -368,8 +373,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   PepperFlashSettingsManager::RegisterProfilePrefs(registry);
   PinnedTabCodec::RegisterProfilePrefs(registry);
   PluginsUI::RegisterProfilePrefs(registry);
-  print_dialog_cloud::RegisterProfilePrefs(registry);
-  printing::StickySettings::RegisterProfilePrefs(registry);
   RegisterAutolaunchUserPrefs(registry);
   signin::RegisterProfilePrefs(registry);
 #endif

@@ -246,7 +246,7 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
 
 int32_t PepperPDFHost::OnHostMsgPrint(
     ppapi::host::HostMessageContext* context) {
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
   content::PepperPluginInstance* instance =
       host_->GetPluginInstance(pp_instance());
   if (!instance)

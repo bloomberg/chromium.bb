@@ -74,7 +74,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -165,6 +164,10 @@
 #if !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
 #include "third_party/tcmalloc/chromium/src/gperftools/heap-profiler.h"
 #endif  // !defined(NO_TCMALLOC) && (defined(OS_LINUX) || defined(OS_CHROMEOS))
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
+#endif
 
 using automation::Error;
 using automation::ErrorCode;
@@ -5253,8 +5256,10 @@ void TestingAutomationProvider::GetTabIds(
 void TestingAutomationProvider::GetViews(
     DictionaryValue* args, IPC::Message* reply_message) {
   ListValue* view_list = new ListValue();
+#if defined(ENABLE_FULL_PRINTING)
   printing::PrintPreviewDialogController* preview_controller =
       printing::PrintPreviewDialogController::GetInstance();
+#endif
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
     for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
@@ -5263,6 +5268,7 @@ void TestingAutomationProvider::GetViews(
       AutomationId id = automation_util::GetIdForTab(contents);
       dict->Set("auto_id", id.ToValue());
       view_list->Append(dict);
+#if defined(ENABLE_FULL_PRINTING)
       if (preview_controller) {
         WebContents* preview_dialog =
             preview_controller->GetPrintPreviewForContents(contents);
@@ -5273,6 +5279,7 @@ void TestingAutomationProvider::GetViews(
           view_list->Append(dict);
         }
       }
+#endif
     }
   }
 

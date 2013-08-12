@@ -46,9 +46,8 @@
         'platform_locale_settings_grd':
             'app/resources/locale_settings_win.grd',
       },],
-      ['OS!="android" and OS!="ios"', {
+      ['enable_printing==1', {
         'chromium_browser_dependencies': [
-          # Android doesn't use the service process (only needed for print).
           'service',
         ],
       }],
@@ -352,98 +351,6 @@
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
-        },
-        {
-          'target_name': 'service',
-          'type': 'static_library',
-          'variables': { 'enable_wexit_time_destructors': 1, },
-          'dependencies': [
-            'chrome_resources.gyp:chrome_strings',
-            'common',
-            'common_net',
-            '../base/base.gyp:base',
-            '../google_apis/google_apis.gyp:google_apis',
-            '../jingle/jingle.gyp:notifier',
-            '../net/net.gyp:net',
-            '../printing/printing.gyp:printing',
-            '../skia/skia.gyp:skia',
-            '../third_party/libjingle/libjingle.gyp:libjingle',
-          ],
-          'sources': [
-            'service/chrome_service_application_mac.h',
-            'service/chrome_service_application_mac.mm',
-            'service/service_ipc_server.cc',
-            'service/service_ipc_server.h',
-            'service/service_main.cc',
-            'service/service_process.cc',
-            'service/service_process.h',
-            'service/service_process_prefs.cc',
-            'service/service_process_prefs.h',
-            'service/service_utility_process_host.cc',
-            'service/service_utility_process_host.h',
-            'service/cloud_print/cloud_print_auth.cc',
-            'service/cloud_print/cloud_print_auth.h',
-            'service/cloud_print/cloud_print_connector.cc',
-            'service/cloud_print/cloud_print_connector.h',
-            'service/cloud_print/cloud_print_helpers.cc',
-            'service/cloud_print/cloud_print_helpers.h',
-            'service/cloud_print/cloud_print_proxy.cc',
-            'service/cloud_print/cloud_print_proxy.h',
-            'service/cloud_print/cloud_print_proxy_backend.cc',
-            'service/cloud_print/cloud_print_proxy_backend.h',
-            'service/cloud_print/cloud_print_token_store.cc',
-            'service/cloud_print/cloud_print_token_store.h',
-            'service/cloud_print/cloud_print_url_fetcher.cc',
-            'service/cloud_print/cloud_print_url_fetcher.h',
-            'service/cloud_print/cloud_print_wipeout.cc',
-            'service/cloud_print/cloud_print_wipeout.h',
-            'service/cloud_print/connector_settings.cc',
-            'service/cloud_print/connector_settings.h',
-            'service/cloud_print/job_status_updater.cc',
-            'service/cloud_print/job_status_updater.h',
-            'service/cloud_print/print_system_dummy.cc',
-            'service/cloud_print/print_system.cc',
-            'service/cloud_print/print_system.h',
-            'service/cloud_print/printer_job_handler.cc',
-            'service/cloud_print/printer_job_handler.h',
-            'service/cloud_print/printer_job_queue_handler.cc',
-            'service/cloud_print/printer_job_queue_handler.h',
-            'service/net/service_url_request_context.cc',
-            'service/net/service_url_request_context.h',
-          ],
-          'include_dirs': [
-            '..',
-          ],
-          'conditions': [
-            ['OS=="win"', {
-              'defines': [
-                # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
-                # of cloud print system, and allows to use custom implementaiton.
-                'CP_PRINT_SYSTEM_AVAILABLE',
-              ],
-              'sources': [
-                'service/cloud_print/print_system_win.cc',
-              ],
-            }],
-            ['toolkit_uses_gtk == 1', {
-              'dependencies': [
-                '../build/linux/system.gyp:gtk',
-              ],
-            }],
-            ['use_cups==1', {
-              'dependencies': [
-                '../printing/printing.gyp:cups',
-              ],
-              'defines': [
-                # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
-                # of cloud print system, and allows to use custom implementaiton.
-                'CP_PRINT_SYSTEM_AVAILABLE',
-              ],
-              'sources': [
-                'service/cloud_print/print_system_cups.cc',
-              ],
-            }],
-          ],
         },
         {
           'target_name': 'ipclist',
@@ -1200,6 +1107,102 @@
     ],  # OS=="android"
     ['configuration_policy==1 and OS!="android"', {
       'includes': [ 'policy.gypi', ],
+    }],
+    ['enable_printing==1', {
+      'targets': [
+        {
+          'target_name': 'service',
+          'type': 'static_library',
+          'variables': { 'enable_wexit_time_destructors': 1, },
+          'dependencies': [
+            'chrome_resources.gyp:chrome_strings',
+            'common',
+            'common_net',
+            '../base/base.gyp:base',
+            '../google_apis/google_apis.gyp:google_apis',
+            '../jingle/jingle.gyp:notifier',
+            '../net/net.gyp:net',
+            '../printing/printing.gyp:printing',
+            '../skia/skia.gyp:skia',
+            '../third_party/libjingle/libjingle.gyp:libjingle',
+          ],
+          'sources': [
+            'service/chrome_service_application_mac.h',
+            'service/chrome_service_application_mac.mm',
+            'service/service_ipc_server.cc',
+            'service/service_ipc_server.h',
+            'service/service_main.cc',
+            'service/service_process.cc',
+            'service/service_process.h',
+            'service/service_process_prefs.cc',
+            'service/service_process_prefs.h',
+            'service/service_utility_process_host.cc',
+            'service/service_utility_process_host.h',
+            'service/cloud_print/cloud_print_auth.cc',
+            'service/cloud_print/cloud_print_auth.h',
+            'service/cloud_print/cloud_print_connector.cc',
+            'service/cloud_print/cloud_print_connector.h',
+            'service/cloud_print/cloud_print_helpers.cc',
+            'service/cloud_print/cloud_print_helpers.h',
+            'service/cloud_print/cloud_print_proxy.cc',
+            'service/cloud_print/cloud_print_proxy.h',
+            'service/cloud_print/cloud_print_proxy_backend.cc',
+            'service/cloud_print/cloud_print_proxy_backend.h',
+            'service/cloud_print/cloud_print_token_store.cc',
+            'service/cloud_print/cloud_print_token_store.h',
+            'service/cloud_print/cloud_print_url_fetcher.cc',
+            'service/cloud_print/cloud_print_url_fetcher.h',
+            'service/cloud_print/cloud_print_wipeout.cc',
+            'service/cloud_print/cloud_print_wipeout.h',
+            'service/cloud_print/connector_settings.cc',
+            'service/cloud_print/connector_settings.h',
+            'service/cloud_print/job_status_updater.cc',
+            'service/cloud_print/job_status_updater.h',
+            'service/cloud_print/print_system_dummy.cc',
+            'service/cloud_print/print_system.cc',
+            'service/cloud_print/print_system.h',
+            'service/cloud_print/printer_job_handler.cc',
+            'service/cloud_print/printer_job_handler.h',
+            'service/cloud_print/printer_job_queue_handler.cc',
+            'service/cloud_print/printer_job_queue_handler.h',
+            'service/net/service_url_request_context.cc',
+            'service/net/service_url_request_context.h',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'defines': [
+                # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
+                # of cloud print system, and allows to use custom implementaiton.
+                'CP_PRINT_SYSTEM_AVAILABLE',
+              ],
+              'sources': [
+                'service/cloud_print/print_system_win.cc',
+              ],
+            }],
+            ['toolkit_uses_gtk == 1', {
+              'dependencies': [
+                '../build/linux/system.gyp:gtk',
+              ],
+            }],
+            ['use_cups==1', {
+              'dependencies': [
+                '../printing/printing.gyp:cups',
+              ],
+              'defines': [
+                # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
+                # of cloud print system, and allows to use custom implementaiton.
+                'CP_PRINT_SYSTEM_AVAILABLE',
+              ],
+              'sources': [
+                'service/cloud_print/print_system_cups.cc',
+              ],
+            }],
+          ],
+        },
+      ],
     }],
   ],  # 'conditions'
 }

@@ -742,7 +742,10 @@ int ChromeMainDelegate::RunProcess(
 #if !defined(OS_ANDROID) && \
     (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_BROWSER))
   static const MainFunction kMainFunctions[] = {
+#if defined(ENABLE_FULL_PRINTING)
     { switches::kServiceProcess,     ServiceProcessMain },
+#endif
+
 #if defined(OS_MACOSX)
     { switches::kRelauncherProcess,
       mac_relauncher::internal::RelauncherMain },

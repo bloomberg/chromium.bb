@@ -9,8 +9,6 @@
 #include "chrome/browser/file_select_helper.h"
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/platform_util.h"
-#include "chrome/browser/printing/print_preview_message_handler.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -24,6 +22,15 @@
 #if defined(USE_ASH)
 #include "ash/launcher/launcher_types.h"
 #endif
+
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_message_handler.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 
 namespace {
 
@@ -58,9 +65,13 @@ void ChromeShellWindowDelegate::InitWebContents(
   FaviconTabHelper::CreateForWebContents(web_contents);
 
 #if defined(ENABLE_PRINTING)
-  printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
+#if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager::CreateForWebContents(web_contents);
-#endif
+  printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
+#else
+  printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 }
 
 apps::NativeAppWindow* ChromeShellWindowDelegate::CreateNativeAppWindow(

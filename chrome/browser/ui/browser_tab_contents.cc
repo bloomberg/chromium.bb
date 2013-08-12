@@ -56,9 +56,13 @@
 #endif
 
 #if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
 #include "chrome/browser/printing/print_preview_message_handler.h"
 #include "chrome/browser/printing/print_view_manager.h"
-#endif
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -161,9 +165,13 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
   }
 
 #if defined(ENABLE_PRINTING)
-  printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
+#if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager::CreateForWebContents(web_contents);
-#endif
+  printing::PrintPreviewMessageHandler::CreateForWebContents(web_contents);
+#else
+  printing::PrintViewManagerBasic::CreateForWebContents(web_contents);
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   // If this is not an incognito window, setup to handle one-click login.

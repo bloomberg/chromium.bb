@@ -92,7 +92,7 @@
         ],
       },
       'conditions': [
-        ['enable_printing!=1', {
+        ['enable_printing==0', {
           'sources/': [
             ['exclude', '.'],
           ],
@@ -252,7 +252,7 @@
         'units_unittest.cc',
       ],
       'conditions': [
-        ['enable_printing!=1', {
+        ['enable_printing==0', {
           'sources/': [
             ['exclude', '.'],
             ['include', 'run_all_unittests.cc'],

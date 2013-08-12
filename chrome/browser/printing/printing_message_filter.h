@@ -109,16 +109,18 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
       scoped_refptr<printing::PrinterQuery> printer_query,
       IPC::Message* reply_msg);
 
+#if defined(ENABLE_FULL_PRINTING)
   // Check to see if print preview has been cancelled.
   void OnCheckForCancel(int32 preview_ui_id,
                         int preview_request_id,
                         bool* cancel);
+#endif
 
   printing::PrintJobManager* print_job_manager_;
 
   ProfileIOData* profile_io_data_;
 
-  int render_process_id_;
+  const int render_process_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintingMessageFilter);
 };

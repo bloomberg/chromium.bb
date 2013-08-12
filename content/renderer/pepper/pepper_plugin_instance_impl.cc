@@ -1521,7 +1521,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
 
 bool PepperPluginInstanceImpl::PrintPage(int page_number,
                                          WebKit::WebCanvas* canvas) {
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
   DCHECK(plugin_print_interface_);
   PP_PrintPageNumberRange_Dev page_range;
   page_range.first_page_number = page_range.last_page_number = page_number;
@@ -1700,7 +1700,7 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
 
 bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
                                               WebKit::WebCanvas* canvas) {
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
   ppapi::thunk::EnterResourceNoLock<PPB_Buffer_API> enter(print_output, true);
   if (enter.failed())
     return false;
@@ -1785,7 +1785,7 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
 #endif  // defined(OS_WIN)
 
   return ret;
-#else  // defined(ENABLE_PRINTING)
+#else  // defined(ENABLE_FULL_PRINTING)
   return false;
 #endif
 }

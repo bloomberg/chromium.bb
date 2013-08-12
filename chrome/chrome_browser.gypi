@@ -1597,6 +1597,10 @@
         'browser/printing/print_preview_message_handler.h',
         'browser/printing/print_system_task_proxy.cc',
         'browser/printing/print_system_task_proxy.h',
+        'browser/printing/print_view_manager_base.cc',
+        'browser/printing/print_view_manager_base.h',
+        'browser/printing/print_view_manager_basic.cc',
+        'browser/printing/print_view_manager_basic.h',
         'browser/printing/print_view_manager.cc',
         'browser/printing/print_view_manager.h',
         'browser/printing/print_view_manager_observer.h',
@@ -2942,9 +2946,26 @@
             ['exclude', '^browser/automation/'],
           ],
         }],
-        ['enable_printing!=1', {
+        ['enable_printing==0', {
           'sources/': [
             ['exclude', '^browser/printing/'],
+          ],
+        }],
+        ['enable_printing==1', {
+          'sources/': [
+            ['exclude', '^browser/printing/print_view_manager_basic.*'],
+          ],
+        }],
+        ['enable_printing==2', {
+          'sources/': [
+            ['exclude', '^browser/printing/background_printing_manager.*'],
+            ['exclude', '^browser/printing/print_view_manager.cc'],
+            ['exclude', '^browser/printing/print_error_dialog.*'],
+            ['exclude', '^browser/printing/print_preview.*'],
+            ['exclude', '^browser/printing/print_system_task_proxy.*'],
+            ['exclude', '^browser/printing/print_view_manager.cc'],
+            ['exclude', '^browser/printing/print_view_manager.h'],
+            ['exclude', '^browser/printing/printer_manager_dialog.*'],
           ],
         }],
         ['enable_captive_portal_detection!=1', {
@@ -3194,8 +3215,6 @@
             ['toolkit_uses_gtk==1', {
               'sources/': [
                 ['exclude', '^browser/lifetime/application_lifetime_stub.cc'],
-                ['include', '^browser/printing/print_dialog_gtk.cc'],
-                ['include', '^browser/printing/print_dialog_gtk.h'],
               ],
             }],
             ['gcc_version == 45', {

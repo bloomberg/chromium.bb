@@ -10,7 +10,6 @@
 #include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search/instant_service.h"
@@ -34,6 +33,10 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/background_printing_manager.h"
+#endif
+
 using content::WebContents;
 using extensions::Extension;
 
@@ -49,9 +52,13 @@ bool IsContentsPrerendering(WebContents* web_contents) {
 }
 
 bool IsContentsBackgroundPrinted(WebContents* web_contents) {
+#if defined(ENABLE_FULL_PRINTING)
   printing::BackgroundPrintingManager* printing_manager =
       g_browser_process->background_printing_manager();
   return printing_manager->HasPrintPreviewDialog(web_contents);
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -230,6 +237,7 @@ void TabContentsResourceProvider::StartUpdating() {
       Add(instant_service->GetNTPContents());
   }
 
+#if defined(ENABLE_FULL_PRINTING)
   // Add all the pages being background printed.
   printing::BackgroundPrintingManager* printing_manager =
       g_browser_process->background_printing_manager();
@@ -238,6 +246,7 @@ void TabContentsResourceProvider::StartUpdating() {
        i != printing_manager->end(); ++i) {
     Add(*i);
   }
+#endif
 
   // Then we register for notifications to get new web contents.
   registrar_.Add(this, content::NOTIFICATION_WEB_CONTENTS_CONNECTED,

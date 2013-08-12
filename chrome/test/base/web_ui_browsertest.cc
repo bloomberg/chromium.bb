@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -41,6 +40,10 @@
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/resource/resource_handle.h"
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
+#endif
 
 using content::NavigationController;
 using content::RenderViewHost;
@@ -279,6 +282,7 @@ void WebUIBrowserTest::BrowsePreload(const GURL& browse_to) {
 }
 
 void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
+#if defined(ENABLE_FULL_PRINTING)
   ui_test_utils::NavigateToURL(browser(), browse_to);
 
   TestTabStripModelObserver tabstrip_observer(
@@ -296,6 +300,9 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
       browser()->tab_strip_model()->GetActiveWebContents());
   ASSERT_TRUE(preview_dialog);
   SetWebUIInstance(preview_dialog->GetWebUI());
+#else
+  NOTREACHED();
+#endif
 }
 
 const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";

@@ -12,12 +12,15 @@
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
+#endif
 
 #if defined(OS_CHROMEOS)
 #include <fcntl.h>
@@ -119,7 +122,9 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(PrintHostMsg_UpdatePrintSettings,
                                     OnUpdatePrintSettings)
+#if defined(ENABLE_FULL_PRINTING)
     IPC_MESSAGE_HANDLER(PrintHostMsg_CheckForCancel, OnCheckForCancel)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -378,6 +383,7 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
   }
 }
 
+#if defined(ENABLE_FULL_PRINTING)
 void PrintingMessageFilter::OnCheckForCancel(int32 preview_ui_id,
                                              int preview_request_id,
                                              bool* cancel) {
@@ -385,3 +391,4 @@ void PrintingMessageFilter::OnCheckForCancel(int32 preview_ui_id,
                                                preview_request_id,
                                                cancel);
 }
+#endif

@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -50,6 +49,10 @@
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#endif
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #endif
 
 using content::BrowserThread;
@@ -517,8 +520,10 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
   if (id.type() != AutomationId::kTypeTab)
     return false;
 
+#if defined(ENABLE_FULL_PRINTING)
   printing::PrintPreviewDialogController* preview_controller =
       printing::PrintPreviewDialogController::GetInstance();
+#endif
   for (chrome::BrowserIterator it; !it.done(); it.Next()) {
     Browser* browser = *it;
     for (int tab_index = 0;
@@ -533,6 +538,8 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
         *tab = web_contents;
         return true;
       }
+
+#if defined(ENABLE_FULL_PRINTING)
       if (preview_controller) {
         WebContents* print_preview_contents =
             preview_controller->GetPrintPreviewForContents(web_contents);
@@ -547,6 +554,7 @@ bool GetTabForId(const AutomationId& id, WebContents** tab) {
           }
         }
       }
+#endif
     }
   }
   return false;

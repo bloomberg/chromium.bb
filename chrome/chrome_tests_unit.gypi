@@ -359,9 +359,15 @@
             '../build/linux/system.gyp:ssl',
           ],
         }],
-        ['OS!="android" and OS!="ios"', {
+        ['enable_printing==1', {
           'dependencies': [
             'service',
+          ],
+        }],
+        ['enable_printing==0', {
+          'sources/': [
+            ['exclude', '^renderer/mock_printer.cc'],
+            ['exclude', '^renderer/mock_printer.h'],
           ],
         }],
         ['OS=="android"', {
@@ -2557,10 +2563,6 @@
             ['exclude', '^browser/ui/webui/signin/'],
             ['exclude', '^browser/ui/webui/suggestions_internals'],
             ['exclude', '^browser/ui/webui/sync_promo'],
-            # No service process on Android.
-            ['exclude', '^browser/service/'],
-            ['exclude', '^common/service_'],
-            ['exclude', '^service/'],
             ['exclude', '^utility/importer/'],
           ],
           'conditions': [
@@ -2572,6 +2574,14 @@
             }],
           ],
         }],  # OS == android
+        ['enable_printing!=1', {
+          'sources/': [
+            # No need for service process.
+            ['exclude', '^browser/service/'],
+            ['exclude', '^common/service_'],
+            ['exclude', '^service/'],
+          ],
+        }],
         ['enable_themes==0', {
           'sources!': [
             'browser/ui/webui/theme_source_unittest.cc',

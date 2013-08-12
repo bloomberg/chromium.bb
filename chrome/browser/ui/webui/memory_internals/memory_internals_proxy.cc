@@ -17,7 +17,6 @@
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
@@ -40,6 +39,10 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/background_printing_manager.h"
+#endif
 
 using content::BrowserThread;
 
@@ -114,7 +117,7 @@ void GetAllWebContents(std::set<content::WebContents*>* web_contents) {
     if (instant_service && instant_service->GetNTPContents())
       web_contents->insert(instant_service->GetNTPContents());
   }
-#if !defined(OS_ANDROID)
+#if defined(ENABLE_FULL_PRINTING)
   // Add all the pages being background printed.
   printing::BackgroundPrintingManager* printing_manager =
       g_browser_process->background_printing_manager();

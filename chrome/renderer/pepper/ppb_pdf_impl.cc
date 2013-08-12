@@ -130,7 +130,7 @@ static const ResourceImageInfo kResourceImageMap[] = {
   { PP_RESOURCEIMAGE_PDF_PAN_SCROLL_ICON, IDR_PAN_SCROLL_ICON },
 };
 
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
 
 WebKit::WebElement GetWebElement(PP_Instance instance_id) {
   content::PepperPluginInstance* instance =
@@ -155,13 +155,13 @@ bool IsPrintingEnabled(PP_Instance instance_id) {
   return helper && helper->IsPrintingEnabled();
 }
 
-#else  // ENABLE_PRINTING
+#else  // ENABLE_FULL_PRINTING
 
 bool IsPrintingEnabled(PP_Instance instance_id) {
   return false;
 }
 
-#endif  // ENABLE_PRINTING
+#endif  // ENABLE_FULL_PRINTING
 
 
 
@@ -425,10 +425,10 @@ const PPB_PDF* PPB_PDF_Impl::GetInterface() {
 
 // static
 void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
   WebKit::WebElement element = GetWebElement(instance_id);
   printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
   if (helper)
     helper->PrintNode(element);
-#endif  // ENABLE_PRINTING
+#endif  // ENABLE_FULL_PRINTING
 }

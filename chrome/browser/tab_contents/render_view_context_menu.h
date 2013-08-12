@@ -276,8 +276,10 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   // An observer that handles a 'spell-checker options' submenu.
   scoped_ptr<SpellCheckerSubMenuObserver> spellchecker_submenu_observer_;
 
+#if defined(ENABLE_FULL_PRINTING)
   // An observer that disables menu items when print preview is active.
   scoped_ptr<PrintPreviewContextMenuObserver> print_preview_menu_observer_;
+#endif
 
   // Our observers.
   mutable ObserverList<RenderViewContextMenuObserver> observers_;

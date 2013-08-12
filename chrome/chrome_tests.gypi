@@ -2076,6 +2076,20 @@
             '../media/media.gyp:clearkeycdmadapter',
           ],
         }],
+        ['enable_printing!=1', {
+          'sources/': [
+            ['exclude', '^browser/extensions/api/cloud_print_private/cloud_print_private_apitest.cc'],
+            ['exclude', '^browser/printing/cloud_print/test/.*'],
+            ['exclude', '^browser/printing/print_dialog_cloud_interative_uitest.cc'],
+            ['exclude', '^browser/printing/printing_layout_browsertest.cc'],
+            ['exclude', '^browser/printing/print_preview_dialog_controller_browsertest.cc'],
+            ['exclude', '^browser/ui/webui/print_preview/print_preview_ui_browsertest.cc'],
+            ['exclude', '^renderer/printing/print_web_view_helper_browsertest.cc'],
+            ['exclude', '^test/data/webui/print_preview.cc'],
+            ['exclude', '^test/data/webui/print_preview.h'],
+            ['exclude', '^test/data/webui/print_preview.js'],
+          ],
+        }],
       ],  # conditions
     },  # target browser_tests
     {

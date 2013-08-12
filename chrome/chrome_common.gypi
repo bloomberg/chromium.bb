@@ -661,6 +661,12 @@
             'common/media/webrtc_logging_messages.h',
           ]
         }],
+        ['enable_printing==0', {
+          'sources!': [
+            'common/print_messages.cc',
+            'common/print_messages.h',
+          ]
+        }],
       ],
       'target_conditions': [
         ['OS == "ios"', {

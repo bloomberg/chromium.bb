@@ -343,7 +343,11 @@
       # Enable Google Now.
       'enable_google_now%': 1,
 
-      # Enable printing support and UI.
+      # Enable printing support and UI. This variable is used to configure
+      # which parts of printing will be built. 0 disables printing completely,
+      # 1 enables it fully, and 2 enables only the codepath to generate a
+      # Metafile (e.g. usually a PDF or EMF) and disables print preview, cloud
+      # print, UI, etc.
       'enable_printing%': 1,
 
       # Enable spell checker.
@@ -1584,7 +1588,7 @@
       ['enable_extensions==1', {
         'grit_defines': ['-D', 'enable_extensions'],
       }],
-      ['enable_printing==1', {
+      ['enable_printing!=0', {
         'grit_defines': ['-D', 'enable_printing'],
       }],
       ['enable_themes==1', {
@@ -2261,6 +2265,9 @@
         'defines': ['ENABLE_GOOGLE_NOW=1'],
       }],
       ['enable_printing==1', {
+        'defines': ['ENABLE_FULL_PRINTING=1', 'ENABLE_PRINTING=1'],
+      }],
+      ['enable_printing==2', {
         'defines': ['ENABLE_PRINTING=1'],
       }],
       ['enable_spellcheck==1', {

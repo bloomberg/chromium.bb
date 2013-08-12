@@ -73,7 +73,9 @@ class BrowserOptionsHandler
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
   void OnCloudPrintPrefsChanged();
+#endif
 
   // SelectFileDialog::Listener implementation
   virtual void FileSelected(const base::FilePath& path,
@@ -243,6 +245,7 @@ class BrowserOptionsHandler
   void ShowManageSSLCertificates(const ListValue* args);
 #endif
 
+#if defined(ENABLE_FULL_PRINTING)
   // Callback for the Cloud Print manage button. This will open a new
   // tab pointed at the management URL.
   void ShowCloudPrintManagePage(const ListValue* args);
@@ -269,7 +272,8 @@ class BrowserOptionsHandler
   // Remove cloud print connector section if cloud print connector management
   //  UI is disabled.
   void RemoveCloudPrintConnectorSection();
-#endif
+#endif  // defined(OS_CHROMEOS)
+#endif  // defined(ENABLE_FULL_PRINTING)
 
 #if defined(OS_CHROMEOS)
   // Opens the wallpaper manager component extension.
@@ -337,7 +341,7 @@ class BrowserOptionsHandler
 
   scoped_refptr<ui::SelectFileDialog> select_folder_dialog_;
 
-#if !defined(OS_CHROMEOS)
+#if defined(ENABLE_FULL_PRINTING) && !defined(OS_CHROMEOS)
   StringPrefMember cloud_print_connector_email_;
   BooleanPrefMember cloud_print_connector_enabled_;
   bool cloud_print_connector_ui_enabled_;

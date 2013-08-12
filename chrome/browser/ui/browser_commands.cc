@@ -24,8 +24,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
-#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/rlz/rlz.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -81,6 +79,15 @@
 #include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 #include "win8/util/win8_util.h"
 #endif
+
+#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
+#include "chrome/browser/printing/print_preview_dialog_controller.h"
+#include "chrome/browser/printing/print_view_manager.h"
+#else
+#include "chrome/browser/printing/print_view_manager_basic.h"
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 
 namespace {
 const char kOsOverrideForTabletSite[] = "Linux; Android 4.0.3";
@@ -187,11 +194,15 @@ bool IsShowingWebContentsModalDialog(const Browser* browser) {
 }
 
 bool PrintPreviewShowing(const Browser* browser) {
+#if defined(ENABLE_FULL_PRINTING)
   WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
   printing::PrintPreviewDialogController* controller =
       printing::PrintPreviewDialogController::GetInstance();
   return controller && (controller->GetPrintPreviewForContents(contents) ||
                         controller->is_creating_print_preview_dialog());
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -711,15 +722,23 @@ void ShowWebsiteSettings(Browser* browser,
       web_contents, url, ssl);
 }
 
+
 void Print(Browser* browser) {
+#if defined(ENABLE_PRINTING)
+  WebContents* contents = browser->tab_strip_model()->GetActiveWebContents();
+#if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager* print_view_manager =
-      printing::PrintViewManager::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents());
-  if (browser->profile()->GetPrefs()->GetBoolean(
-      prefs::kPrintPreviewDisabled))
+      printing::PrintViewManager::FromWebContents(contents);
+  if (browser->profile()->GetPrefs()->GetBoolean(prefs::kPrintPreviewDisabled))
     print_view_manager->PrintNow();
   else
     print_view_manager->PrintPreviewNow(false);
+#else
+  printing::PrintViewManagerBasic* print_view_manager =
+      printing::PrintViewManagerBasic::FromWebContents(contents);
+  print_view_manager->PrintNow();
+#endif  // defined(ENABLE_FULL_PRINTING)
+#endif  // defined(ENABLE_PRINTING)
 }
 
 bool CanPrint(const Browser* browser) {
@@ -731,10 +750,12 @@ bool CanPrint(const Browser* browser) {
 }
 
 void AdvancedPrint(Browser* browser) {
+#if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   print_view_manager->AdvancedPrintNow();
+#endif
 }
 
 bool CanAdvancedPrint(const Browser* browser) {
@@ -745,10 +766,12 @@ bool CanAdvancedPrint(const Browser* browser) {
 }
 
 void PrintToDestination(Browser* browser) {
+#if defined(ENABLE_FULL_PRINTING)
   printing::PrintViewManager* print_view_manager =
       printing::PrintViewManager::FromWebContents(
           browser->tab_strip_model()->GetActiveWebContents());
   print_view_manager->PrintToDestination();
+#endif
 }
 
 void EmailPageLocation(Browser* browser) {

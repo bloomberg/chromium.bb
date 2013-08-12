@@ -8,7 +8,6 @@
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/print_messages.h"
 #include "chrome/renderer/mock_printer.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/print_job_constants.h"
@@ -21,11 +20,18 @@
 #include "base/file_util.h"
 #endif
 
+#if defined(ENABLE_PRINTING)
+#include "chrome/common/print_messages.h"
+#endif
+
 ChromeMockRenderThread::ChromeMockRenderThread()
+#if defined(ENABLE_PRINTING)
     : printer_(new MockPrinter),
       print_dialog_user_response_(true),
       print_preview_cancel_page_number_(-1),
-      print_preview_pages_remaining_(0) {
+      print_preview_pages_remaining_(0)
+#endif
+{
 }
 
 ChromeMockRenderThread::~ChromeMockRenderThread() {
@@ -41,6 +47,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP_EX(ChromeMockRenderThread, msg, msg_is_ok)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_OpenChannelToExtension,
                         OnOpenChannelToExtension)
+#if defined(ENABLE_PRINTING)
     IPC_MESSAGE_HANDLER(PrintHostMsg_GetDefaultPrintSettings,
                         OnGetDefaultPrintSettings)
     IPC_MESSAGE_HANDLER(PrintHostMsg_ScriptedPrint, OnScriptedPrint)
@@ -60,7 +67,8 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
                         OnAllocateTempFileForPrinting)
     IPC_MESSAGE_HANDLER(PrintHostMsg_TempFileForPrintingWritten,
                         OnTempFileForPrintingWritten)
-#endif
+#endif  // defined(OS_CHROMEOS)
+#endif  // defined(ENABLE_PRINTING)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   return handled;
@@ -74,6 +82,7 @@ void ChromeMockRenderThread::OnOpenChannelToExtension(
   *port_id = 0;
 }
 
+#if defined(ENABLE_PRINTING)
 #if defined(OS_CHROMEOS)
 void ChromeMockRenderThread::OnAllocateTempFileForPrinting(
     base::FileDescriptor* renderer_fd,
@@ -205,3 +214,4 @@ void ChromeMockRenderThread::set_print_preview_cancel_page_number(int page) {
 int ChromeMockRenderThread::print_preview_pages_remaining() const {
   return print_preview_pages_remaining_;
 }
+#endif  // defined(ENABLE_PRINTING)

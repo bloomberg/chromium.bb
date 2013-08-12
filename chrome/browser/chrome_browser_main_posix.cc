@@ -28,9 +28,12 @@
 #include "content/public/browser/notification_service.h"
 
 #if defined(TOOLKIT_GTK)
-#include "chrome/browser/printing/print_dialog_gtk.h"
 #include "chrome/browser/ui/gtk/chrome_browser_main_extra_parts_gtk.h"
-#endif
+
+#if defined(ENABLE_PRINTING)
+#include "chrome/browser/printing/print_dialog_gtk.h"
+#endif  // defined(ENABLE_PRINTING)
+#endif  // defined(TOOLKIT_GTK)
 
 using content::BrowserThread;
 
@@ -348,7 +351,7 @@ void ChromeBrowserMainPartsPosix::PostMainMessageLoopStart() {
   action.sa_handler = SIGHUPHandler;
   CHECK(sigaction(SIGHUP, &action, NULL) == 0);
 
-#if defined(TOOLKIT_GTK)
+#if defined(TOOLKIT_GTK) && defined(ENABLE_PRINTING)
   printing::PrintingContextGtk::SetCreatePrintDialogFunction(
       &PrintDialogGtk::CreatePrintDialog);
 #endif

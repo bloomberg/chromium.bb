@@ -53,7 +53,7 @@
 #include "chrome/utility/media_galleries/picasa_albums_indexer.h"
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
 #include "chrome/common/child_process_logging.h"
 #include "printing/backend/print_backend.h"
 #endif
@@ -494,7 +494,7 @@ void ChromeContentUtilityClient::OnParseJSON(const std::string& json) {
 
 void ChromeContentUtilityClient::OnGetPrinterCapsAndDefaults(
     const std::string& printer_name) {
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
   scoped_refptr<printing::PrintBackend> print_backend =
       printing::PrintBackend::CreateInstance(NULL);
   printing::PrinterCapsAndDefaults printer_info;

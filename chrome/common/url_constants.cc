@@ -586,7 +586,7 @@ const char* const kChromeHostURLs[] = {
 #if defined(ENABLE_EXTENSIONS)
   kChromeUIExtensionsHost,
 #endif
-#if defined(ENABLE_PRINTING)
+#if defined(ENABLE_FULL_PRINTING)
   kChromeUIPrintHost,
 #endif
   content::kChromeUIAccessibilityHost,
