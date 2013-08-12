@@ -378,6 +378,16 @@ NetInternalsTest::NetInternalsTest()
 NetInternalsTest::~NetInternalsTest() {
 }
 
+void NetInternalsTest::SetUp() {
+#if defined(OS_WIN) && defined(USE_AURA)
+  // The NetInternalsTest.netInternalsTimelineViewScrollbar test requires real
+  // GL bindings to pass on Win7 Aura.
+  UseRealGLBindings();
+#endif
+
+  WebUIBrowserTest::SetUp();
+}
+
 void NetInternalsTest::SetUpCommandLine(CommandLine* command_line) {
   WebUIBrowserTest::SetUpCommandLine(command_line);
   // Needed to test the prerender view.

@@ -308,6 +308,8 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
     gl_helper_.reset();
 }
 
+bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
+
 ui::ContextFactory* GpuProcessTransportFactory::AsContextFactory() {
   return this;
 }

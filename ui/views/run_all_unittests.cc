@@ -7,7 +7,6 @@
 #include "base/test/test_suite.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/compositor/compositor_setup.h"
 #include "ui/views/view.h"
 
 class ViewTestSuite : public base::TestSuite {
@@ -19,8 +18,6 @@ class ViewTestSuite : public base::TestSuite {
     base::TestSuite::Initialize();
     ui::RegisterPathProvider();
     ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
-
-    ui::SetupTestCompositor();
   }
 
  private:

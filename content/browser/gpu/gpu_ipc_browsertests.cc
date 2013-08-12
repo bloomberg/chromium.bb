@@ -26,18 +26,6 @@ class ContextTestBase : public content::ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    // TODO(Hubbe): This code is very similar to some code in
-    // test/gpu/gpu_feature_browsertest.cc, and should really be
-    // shared in a common location.
-    if (!command_line->HasSwitch(switches::kUseGpuInTests)) {
-      CHECK(!command_line->HasSwitch(switches::kUseGL))
-          << "kUseGL must not be set by test framework code!";
-      command_line->AppendSwitchASCII(switches::kUseGL,
-                                      gfx::kGLImplementationOSMesaName);
-    }
-  }
-
   virtual void TearDownOnMainThread() OVERRIDE {
     // Must delete the context first.
     context_.reset(NULL);

@@ -645,6 +645,14 @@ class PrerenderBrowserTest : virtual public InProcessBrowserTest {
     return web_contents->GetController().GetDefaultSessionStorageNamespace();
   }
 
+  virtual void SetUp() OVERRIDE {
+    // TODO(danakj): The GPU Video Decoder needs real GL bindings.
+    // crbug.com/269087
+    UseRealGLBindings();
+
+    InProcessBrowserTest::SetUp();
+  }
+
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
 #if defined(FULL_SAFE_BROWSING)
     SafeBrowsingService::RegisterFactory(safe_browsing_factory_.get());
@@ -2743,6 +2751,10 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
 class PrerenderBrowserTestWithExtensions : public PrerenderBrowserTest,
                                            public ExtensionApiTest {
  public:
+  virtual void SetUp() OVERRIDE {
+    PrerenderBrowserTest::SetUp();
+  }
+
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     PrerenderBrowserTest::SetUpCommandLine(command_line);
     ExtensionApiTest::SetUpCommandLine(command_line);

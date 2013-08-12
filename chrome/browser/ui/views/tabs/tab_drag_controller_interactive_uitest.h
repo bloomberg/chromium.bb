@@ -33,6 +33,8 @@ class TabDragControllerTest : public InProcessBrowserTest {
   TabDragControllerTest();
   virtual ~TabDragControllerTest();
 
+  virtual void SetUp() OVERRIDE;
+
   // Cover for TabStrip::StopAnimating(true).
   void StopAnimating(TabStrip* tab_strip);
 
@@ -71,6 +73,6 @@ void ResetIDs(TabStripModel* model, int start);
 // is separated by a space.
 std::string IDString(TabStripModel* model);
 
-}
+}  // namespace test
 
 #endif  // CHROME_BROWSER_UI_VIEWS_TABS_TAB_DRAG_CONTROLLER_INTERACTIVE_UITEST_H_

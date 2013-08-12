@@ -16,7 +16,6 @@
 #include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/compositor/compositor_setup.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
@@ -71,9 +70,6 @@ void ContentTestSuiteBase::Initialize() {
 
   RegisterPathProvider();
   ui::RegisterPathProvider();
-
-  // Mock out the compositor on platforms that use it.
-  ui::SetupTestCompositor();
 
   testing::UnitTest::GetInstance()->listeners().Append(
       new ContentTestSuiteBaseListener);

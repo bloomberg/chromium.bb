@@ -69,6 +69,14 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     base::Closure on_channel_closing_;
   };
 
+  virtual void SetUp() OVERRIDE {
+    // TODO(phoglund): Remove this when the bots enable real GPU with the
+    // command line. crbug.com/271504
+    UseRealGLBindings();
+
+    WebRtcTestBase::SetUp();
+  }
+
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
     peerconnection_server_.Start();

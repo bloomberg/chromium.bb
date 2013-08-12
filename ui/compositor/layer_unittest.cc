@@ -17,7 +17,6 @@
 #include "cc/test/pixel_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor_observer.h"
-#include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -82,13 +81,18 @@ class LayerWithRealCompositorTest : public testing::Test {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    DisableTestCompositor();
+    bool allow_test_contexts = false;
+    Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+    Compositor::Initialize();
+
     const gfx::Rect host_bounds(10, 10, 500, 500);
     window_.reset(TestCompositorHost::Create(host_bounds));
     window_->Show();
   }
 
   virtual void TearDown() OVERRIDE {
+    window_.reset();
+    Compositor::Terminate();
   }
 
   Compositor* GetCompositor() {
@@ -307,43 +311,7 @@ class TestCompositorObserver : public CompositorObserver {
 
 }  // namespace
 
-#if defined(OS_WIN)
-// These are disabled on windows as they don't run correctly on the buildbot.
-// Reenable once we move to the real compositor.
-#define MAYBE_Delegate DISABLED_Delegate
-#define MAYBE_Draw DISABLED_Draw
-#define MAYBE_DrawTree DISABLED_DrawTree
-#define MAYBE_Hierarchy DISABLED_Hierarchy
-#define MAYBE_HierarchyNoTexture DISABLED_HierarchyNoTexture
-#define MAYBE_DrawPixels DISABLED_DrawPixels
-#define MAYBE_SetRootLayer DISABLED_SetRootLayer
-#define MAYBE_CompositorObservers DISABLED_CompositorObservers
-#define MAYBE_ModifyHierarchy DISABLED_ModifyHierarchy
-#define MAYBE_Opacity DISABLED_Opacity
-#define MAYBE_ScaleUpDown DISABLED_ScaleUpDown
-#define MAYBE_ScaleReparent DISABLED_ScaleReparent
-#define MAYBE_NoScaleCanvas DISABLED_NoScaleCanvas
-#define MAYBE_AddRemoveThreadedAnimations DISABLED_AddRemoveThreadedAnimations
-#define MAYBE_SwitchCCLayerAnimations DISABLED_SwitchCCLayerAnimations
-#else
-#define MAYBE_Delegate Delegate
-#define MAYBE_Draw Draw
-#define MAYBE_DrawTree DrawTree
-#define MAYBE_Hierarchy Hierarchy
-#define MAYBE_HierarchyNoTexture HierarchyNoTexture
-#define MAYBE_DrawPixels DrawPixels
-#define MAYBE_SetRootLayer SetRootLayer
-#define MAYBE_CompositorObservers CompositorObservers
-#define MAYBE_ModifyHierarchy ModifyHierarchy
-#define MAYBE_Opacity Opacity
-#define MAYBE_ScaleUpDown ScaleUpDown
-#define MAYBE_ScaleReparent ScaleReparent
-#define MAYBE_NoScaleCanvas NoScaleCanvas
-#define MAYBE_AddRemoveThreadedAnimations AddRemoveThreadedAnimations
-#define MAYBE_SwitchCCLayerAnimations SwitchCCLayerAnimations
-#endif
-
-TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
+TEST_F(LayerWithRealCompositorTest, Draw) {
   scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
                                            gfx::Rect(20, 20, 50, 50)));
   DrawTree(layer.get());
@@ -355,7 +323,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_Draw) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_F(LayerWithRealCompositorTest, MAYBE_Hierarchy) {
+TEST_F(LayerWithRealCompositorTest, Hierarchy) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -379,12 +347,16 @@ class LayerWithDelegateTest : public testing::Test, public CompositorDelegate {
 
   // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
-    ui::SetupTestCompositor();
+    bool allow_test_contexts = true;
+    Compositor::InitializeContextFactoryForTests(allow_test_contexts);
+    Compositor::Initialize();
     compositor_.reset(new Compositor(this, gfx::kNullAcceleratedWidget));
     compositor_->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
   }
 
   virtual void TearDown() OVERRIDE {
+    compositor_.reset();
+    Compositor::Terminate();
   }
 
   Compositor* compositor() { return compositor_.get(); }
@@ -491,7 +463,7 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
-TEST_F(LayerWithRealCompositorTest, MAYBE_Delegate) {
+TEST_F(LayerWithRealCompositorTest, Delegate) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorBLACK,
                                         gfx::Rect(20, 20, 400, 400)));
   GetCompositor()->SetRootLayer(l1.get());
@@ -520,7 +492,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_Delegate) {
   EXPECT_EQ(delegate.paint_size(), gfx::Size(50, 50));
 }
 
-TEST_F(LayerWithRealCompositorTest, MAYBE_DrawTree) {
+TEST_F(LayerWithRealCompositorTest, DrawTree) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -554,7 +526,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_DrawTree) {
 // |   +-- L3 - yellow
 // +-- L4 - magenta
 //
-TEST_F(LayerWithRealCompositorTest, MAYBE_HierarchyNoTexture) {
+TEST_F(LayerWithRealCompositorTest, HierarchyNoTexture) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateNoTextureLayer(gfx::Rect(10, 10, 350, 350)));
@@ -590,13 +562,9 @@ class LayerWithNullDelegateTest : public LayerWithDelegateTest {
   LayerWithNullDelegateTest() {}
   virtual ~LayerWithNullDelegateTest() {}
 
-  // Overridden from testing::Test:
   virtual void SetUp() OVERRIDE {
     LayerWithDelegateTest::SetUp();
     default_layer_delegate_.reset(new NullLayerDelegate());
-  }
-
-  virtual void TearDown() OVERRIDE {
   }
 
   virtual Layer* CreateLayer(LayerType type) OVERRIDE {
@@ -801,35 +769,53 @@ TEST_F(LayerWithNullDelegateTest, SetBoundsSchedulesPaint) {
 }
 
 // Checks that pixels are actually drawn to the screen with a read back.
-// Currently disabled on all platforms, see http://crbug.com/148709.
-TEST_F(LayerWithRealCompositorTest, MAYBE_DrawPixels) {
-  scoped_ptr<Layer> layer(CreateColorLayer(SK_ColorRED,
-                                           gfx::Rect(0, 0, 500, 500)));
-  scoped_ptr<Layer> layer2(CreateColorLayer(SK_ColorBLUE,
-                                            gfx::Rect(0, 0, 500, 10)));
+TEST_F(LayerWithRealCompositorTest, DrawPixels) {
+  gfx::Size viewport_size = GetCompositor()->size();
+
+  // The window should be some non-trivial size but may not be exactly
+  // 500x500 on all platforms/bots.
+  EXPECT_GE(viewport_size.width(), 200);
+  EXPECT_GE(viewport_size.height(), 200);
+
+  int blue_height = 10;
+
+  scoped_ptr<Layer> layer(
+      CreateColorLayer(SK_ColorRED, gfx::Rect(viewport_size)));
+  scoped_ptr<Layer> layer2(
+      CreateColorLayer(SK_ColorBLUE,
+                       gfx::Rect(0, 0, viewport_size.width(), blue_height)));
 
   layer->Add(layer2.get());
 
   DrawTree(layer.get());
 
   SkBitmap bitmap;
-  gfx::Size size = GetCompositor()->size();
-  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap,
-                                          gfx::Rect(0, 10,
-                                          size.width(), size.height() - 10)));
+  ASSERT_TRUE(GetCompositor()->ReadPixels(&bitmap, gfx::Rect(viewport_size)));
   ASSERT_FALSE(bitmap.empty());
 
   SkAutoLockPixels lock(bitmap);
-  bool is_all_red = true;
-  for (int x = 0; is_all_red && x < 500; x++)
-    for (int y = 0; is_all_red && y < 490; y++)
-      is_all_red = is_all_red && (bitmap.getColor(x, y) == SK_ColorRED);
-
-  EXPECT_TRUE(is_all_red);
+  for (int x = 0; x < viewport_size.width(); x++) {
+    for (int y = 0; y < viewport_size.height(); y++) {
+      SkColor actual_color = bitmap.getColor(x, y);
+      SkColor expected_color = y < blue_height ? SK_ColorBLUE : SK_ColorRED;
+      EXPECT_EQ(expected_color, actual_color)
+          << "Pixel error at x=" << x << " y=" << y << "; "
+          << "actual RGBA=("
+          << SkColorGetR(actual_color) << ","
+          << SkColorGetG(actual_color) << ","
+          << SkColorGetB(actual_color) << ","
+          << SkColorGetA(actual_color) << "); "
+          << "expected RGBA=("
+          << SkColorGetR(expected_color) << ","
+          << SkColorGetG(expected_color) << ","
+          << SkColorGetB(expected_color) << ","
+          << SkColorGetA(expected_color) << ")";
+    }
+  }
 }
 
 // Checks the logic around Compositor::SetRootLayer and Layer::SetCompositor.
-TEST_F(LayerWithRealCompositorTest, MAYBE_SetRootLayer) {
+TEST_F(LayerWithRealCompositorTest, SetRootLayer) {
   Compositor* compositor = GetCompositor();
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
@@ -861,7 +847,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_SetRootLayer) {
 // - After ScheduleDraw is called, or
 // - Whenever SetBounds, SetOpacity or SetTransform are called.
 // TODO(vollick): could be reorganized into compositor_unittest.cc
-TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
+TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorRED,
                                         gfx::Rect(20, 20, 400, 400)));
   scoped_ptr<Layer> l2(CreateColorLayer(SK_ColorBLUE,
@@ -935,7 +921,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_CompositorObservers) {
 }
 
 // Checks that modifying the hierarchy correctly affects final composite.
-TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
+TEST_F(LayerWithRealCompositorTest, ModifyHierarchy) {
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50));
 
   // l0
@@ -1004,7 +990,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ModifyHierarchy) {
 
 // Opacity is rendered correctly.
 // Checks that modifying the hierarchy correctly affects final composite.
-TEST_F(LayerWithRealCompositorTest, MAYBE_Opacity) {
+TEST_F(LayerWithRealCompositorTest, Opacity) {
   GetCompositor()->SetScaleAndSize(1.0f, gfx::Size(50, 50));
 
   // l0
@@ -1112,7 +1098,7 @@ TEST_F(LayerWithDelegateTest, SchedulePaintFromOnPaintLayer) {
                   gfx::Rect(10, 10, 30, 30)));
 }
 
-TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
+TEST_F(LayerWithRealCompositorTest, ScaleUpDown) {
   scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
                                           gfx::Rect(10, 20, 200, 220)));
   TestLayerDelegate root_delegate;
@@ -1198,7 +1184,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleUpDown) {
   EXPECT_EQ("0.0 0.0", l1_delegate.ToScaleString());
 }
 
-TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
+TEST_F(LayerWithRealCompositorTest, ScaleReparent) {
   scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
                                           gfx::Rect(10, 20, 200, 220)));
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
@@ -1243,7 +1229,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_ScaleReparent) {
 }
 
 // Tests layer::set_scale_content(false).
-TEST_F(LayerWithRealCompositorTest, MAYBE_NoScaleCanvas) {
+TEST_F(LayerWithRealCompositorTest, NoScaleCanvas) {
   scoped_ptr<Layer> root(CreateColorLayer(SK_ColorWHITE,
                                           gfx::Rect(10, 20, 200, 220)));
   scoped_ptr<Layer> l1(CreateColorLayer(SK_ColorWHITE,
@@ -1358,7 +1344,7 @@ TEST_F(LayerWithDelegateTest, DelegatedLayer) {
 }
 
 // Tests Layer::AddThreadedAnimation and Layer::RemoveThreadedAnimation.
-TEST_F(LayerWithRealCompositorTest, MAYBE_AddRemoveThreadedAnimations) {
+TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
   scoped_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
   scoped_ptr<Layer> l2(CreateLayer(LAYER_TEXTURED));
@@ -1405,7 +1391,7 @@ TEST_F(LayerWithRealCompositorTest, MAYBE_AddRemoveThreadedAnimations) {
 
 // Tests that in-progress threaded animations complete when a Layer's
 // cc::Layer changes.
-TEST_F(LayerWithRealCompositorTest, MAYBE_SwitchCCLayerAnimations) {
+TEST_F(LayerWithRealCompositorTest, SwitchCCLayerAnimations) {
   scoped_ptr<Layer> root(CreateLayer(LAYER_TEXTURED));
   scoped_ptr<Layer> l1(CreateLayer(LAYER_TEXTURED));
   GetCompositor()->SetRootLayer(root.get());
