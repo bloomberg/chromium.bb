@@ -62,8 +62,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
 
     if (index > m_groupRule->childRules().size()) {
-        // IndexSizeError: Raised if the specified index is not a valid insertion point.
-        es.throwDOMException(IndexSizeError);
+        es.throwDOMException(IndexSizeError, "Failed to execute 'insertRule' on a 'CSSGroupingRule' object: the index " + String::number(index) + " must be less than or equal to the length of the rule list.");
         return 0;
     }
 
@@ -71,8 +70,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
     CSSParser parser(parserContext(), UseCounter::getFrom(styleSheet));
     RefPtr<StyleRuleBase> newRule = parser.parseRule(styleSheet ? styleSheet->contents() : 0, ruleString);
     if (!newRule) {
-        // SyntaxError: Raised if the specified rule has a syntax error and is unparsable.
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "Failed to execute 'insertRule' on a 'CSSGroupingRule' object: the rule '" + ruleString + "' is invalid and cannot be parsed.");
         return 0;
     }
 
@@ -80,11 +78,7 @@ unsigned CSSGroupingRule::insertRule(const String& ruleString, unsigned index, E
         // FIXME: an HierarchyRequestError should also be thrown for a @charset or a nested
         // @media rule. They are currently not getting parsed, resulting in a SyntaxError
         // to get raised above.
-
-        // HierarchyRequestError: Raised if the rule cannot be inserted at the specified
-        // index, e.g., if an @import rule is inserted after a standard rule set or other
-        // at-rule.
-        es.throwDOMException(HierarchyRequestError);
+        es.throwDOMException(HierarchyRequestError, "Failed to execute 'insertRule' on a 'CSSGroupingRule' object: '@import' rules cannot be inserted inside a group rule.");
         return 0;
     }
     CSSStyleSheet::RuleMutationScope mutationScope(this);
@@ -100,9 +94,7 @@ void CSSGroupingRule::deleteRule(unsigned index, ExceptionState& es)
     ASSERT(m_childRuleCSSOMWrappers.size() == m_groupRule->childRules().size());
 
     if (index >= m_groupRule->childRules().size()) {
-        // IndexSizeError: Raised if the specified index does not correspond to a
-        // rule in the media rule list.
-        es.throwDOMException(IndexSizeError);
+        es.throwDOMException(IndexSizeError, "Failed to execute 'deleteRule' on a 'CSSGroupingRule' object: the index " + String::number(index) + " is greated than the length of the rule list.");
         return;
     }
 
