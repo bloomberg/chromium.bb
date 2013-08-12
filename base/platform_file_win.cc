@@ -121,7 +121,7 @@ int64 SeekPlatformFile(PlatformFile file,
                        PlatformFileWhence whence,
                        int64 offset) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file < 0 || offset < 0)
+  if (file == kInvalidPlatformFileValue || offset < 0)
     return -1;
 
   LARGE_INTEGER distance, res;
