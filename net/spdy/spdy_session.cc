@@ -1806,6 +1806,26 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
         base::Bind(&NetLogSpdyDataCallback, stream_id, len, fin));
   }
 
+  // Build the buffer as early as possible so that we go through the
+  // session flow control checks and update
+  // |unacked_recv_window_bytes_| properly even when the stream is
+  // inactive (since the other side has still reduced its session send
+  // window).
+  scoped_ptr<SpdyBuffer> buffer;
+  if (data) {
+    DCHECK_GT(len, 0u);
+    buffer.reset(new SpdyBuffer(data, len));
+
+    if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
+      DecreaseRecvWindowSize(static_cast<int32>(len));
+      buffer->AddConsumeCallback(
+          base::Bind(&SpdySession::OnReadBufferConsumed,
+                     weak_factory_.GetWeakPtr()));
+    }
+  } else {
+    DCHECK_EQ(len, 0u);
+  }
+
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
 
   // By the time data comes in, the stream may already be inactive.
@@ -1822,20 +1842,6 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
     return;
   }
 
-  scoped_ptr<SpdyBuffer> buffer;
-  if (data) {
-    DCHECK_GT(len, 0u);
-    buffer.reset(new SpdyBuffer(data, len));
-
-    if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-      DecreaseRecvWindowSize(static_cast<int32>(len));
-      buffer->AddConsumeCallback(
-          base::Bind(&SpdySession::OnReadBufferConsumed,
-                     weak_factory_.GetWeakPtr()));
-    }
-  } else {
-    DCHECK_EQ(len, 0u);
-  }
   stream->OnDataReceived(buffer.Pass());
 }
 

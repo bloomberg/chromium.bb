@@ -3178,7 +3178,8 @@ TEST_P(SpdySessionTest, AdjustSendWindowSize) {
 }
 
 // Incoming data for an inactive stream should not cause the session
-// receive window size to decrease.
+// receive window size to decrease, but it should cause the unacked
+// bytes to increase.
 TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
   if (GetParam() < kProtoSPDY31)
     return;
@@ -3210,7 +3211,7 @@ TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
   data.RunFor(1);
 
   EXPECT_EQ(kSpdySessionInitialWindowSize, session->session_recv_window_size_);
-  EXPECT_EQ(0, session->session_unacked_recv_window_bytes_);
+  EXPECT_EQ(kUploadDataSize, session->session_unacked_recv_window_bytes_);
 
   data.RunFor(1);
 }
