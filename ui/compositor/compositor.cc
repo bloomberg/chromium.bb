@@ -50,8 +50,9 @@ enum SwapType {
   READPIXELS_SWAP,
 };
 
-bool g_compositor_initialized = false;
 base::Thread* g_compositor_thread = NULL;
+
+bool g_test_compositor_enabled = false;
 
 ui::ContextFactory* g_implicit_factory = NULL;
 ui::ContextFactory* g_context_factory = NULL;
@@ -76,13 +77,39 @@ class PendingSwap {
   DISALLOW_COPY_AND_ASSIGN(PendingSwap);
 };
 
+void SetupImplicitFactory() {
+  // We leak the implicit factory so that we don't race with the tear down of
+  // the gl_bindings.
+  DCHECK(!g_context_factory);
+  DCHECK(!g_implicit_factory);
+  if (g_test_compositor_enabled) {
+    g_implicit_factory = new ui::TestContextFactory;
+  } else {
+    DVLOG(1) << "Using DefaultContextFactory";
+    scoped_ptr<ui::DefaultContextFactory> instance(
+        new ui::DefaultContextFactory());
+    if (instance->Initialize())
+      g_implicit_factory = instance.release();
+  }
+  g_context_factory = g_implicit_factory;
+}
+
+void ResetImplicitFactory() {
+  if (!g_implicit_factory || g_context_factory != g_implicit_factory)
+    return;
+  delete g_implicit_factory;
+  g_implicit_factory = NULL;
+  g_context_factory = NULL;
+}
+
 }  // namespace
 
 namespace ui {
 
 // static
 ContextFactory* ContextFactory::GetInstance() {
-  DCHECK(g_context_factory);
+  if (!g_context_factory)
+    SetupImplicitFactory();
   return g_context_factory;
 }
 
@@ -153,8 +180,6 @@ DefaultContextFactory::OffscreenContextProviderForCompositorThread() {
 void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
 }
 
-bool DefaultContextFactory::DoesCreateTestContexts() { return false; }
-
 scoped_ptr<WebKit::WebGraphicsContext3D>
 DefaultContextFactory::CreateContextCommon(Compositor* compositor,
                                            bool offscreen) {
@@ -222,8 +247,6 @@ TestContextFactory::OffscreenContextProviderForCompositorThread() {
 
 void TestContextFactory::RemoveCompositor(Compositor* compositor) {
 }
-
-bool TestContextFactory::DoesCreateTestContexts() { return true; }
 
 Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
     : size_(size),
@@ -387,9 +410,6 @@ Compositor::Compositor(CompositorDelegate* delegate,
       next_draw_is_resize_(false),
       disable_schedule_composite_(false),
       compositor_lock_(NULL) {
-  DCHECK(g_compositor_initialized)
-      << "Compositor::Initialize must be called before creating a Compositor.";
-
   root_web_layer_ = cc::Layer::Create();
   root_web_layer_->SetAnchorPoint(gfx::PointF(0.f, 0.f));
 
@@ -397,9 +417,7 @@ Compositor::Compositor(CompositorDelegate* delegate,
 
   cc::LayerTreeSettings settings;
   settings.refresh_rate =
-      ContextFactory::GetInstance()->DoesCreateTestContexts()
-      ? kTestRefreshRate
-      : kDefaultRefreshRate;
+      g_test_compositor_enabled ? kTestRefreshRate : kDefaultRefreshRate;
   settings.partial_swap_enabled =
       !command_line->HasSwitch(cc::switches::kUIDisablePartialSwap);
   settings.per_tile_painting_enabled =
@@ -434,8 +452,6 @@ Compositor::Compositor(CompositorDelegate* delegate,
 }
 
 Compositor::~Compositor() {
-  DCHECK(g_compositor_initialized);
-
   CancelCompositorLock();
   DCHECK(!compositor_lock_);
 
@@ -449,41 +465,6 @@ Compositor::~Compositor() {
   host_.reset();
 
   ContextFactory::GetInstance()->RemoveCompositor(this);
-}
-
-// static
-void Compositor::InitializeContextFactoryForTests(bool allow_test_contexts) {
-  DCHECK(!g_context_factory) << "ContextFactory already initialized.";
-  DCHECK(!g_implicit_factory) <<
-      "ContextFactory for tests already initialized.";
-
-  bool use_test_contexts = true;
-
-  // Always use test contexts unless the disable command line flag is used.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableTestCompositor))
-    use_test_contexts = false;
-
-#if defined(OS_CHROMEOS)
-  // If the test is running on the chromeos envrionment (such as
-  // device or vm bots), always use real contexts.
-  if (base::chromeos::IsRunningOnChromeOS())
-    use_test_contexts = false;
-#endif
-
-  if (!allow_test_contexts)
-    use_test_contexts = false;
-
-  if (use_test_contexts) {
-    g_implicit_factory = new ui::TestContextFactory;
-  } else {
-    DVLOG(1) << "Using DefaultContextFactory";
-    scoped_ptr<ui::DefaultContextFactory> instance(
-        new ui::DefaultContextFactory());
-    if (instance->Initialize())
-      g_implicit_factory = instance.release();
-  }
-  g_context_factory = g_implicit_factory;
 }
 
 // static
@@ -502,9 +483,6 @@ void Compositor::Initialize() {
     g_compositor_thread = new base::Thread("Browser Compositor");
     g_compositor_thread->Start();
   }
-
-  DCHECK(!g_compositor_initialized) << "Compositor initialized twice.";
-  g_compositor_initialized = true;
 }
 
 // static
@@ -522,24 +500,11 @@ scoped_refptr<base::MessageLoopProxy> Compositor::GetCompositorMessageLoop() {
 
 // static
 void Compositor::Terminate() {
-  if (g_context_factory) {
-    if (g_implicit_factory) {
-      delete g_implicit_factory;
-      g_implicit_factory = NULL;
-    }
-    g_context_factory = NULL;
-  }
-
   if (g_compositor_thread) {
-    DCHECK(!g_context_factory)
-        << "The ContextFactory should not outlive the compositor thread.";
     g_compositor_thread->Stop();
     delete g_compositor_thread;
     g_compositor_thread = NULL;
   }
-
-  DCHECK(g_compositor_initialized) << "Compositor::Initialize() didn't happen.";
-  g_compositor_initialized = false;
 }
 
 void Compositor::ScheduleDraw() {
@@ -784,6 +749,29 @@ void Compositor::NotifyEnd() {
   FOR_EACH_OBSERVER(CompositorObserver,
                     observer_list_,
                     OnCompositingEnded(this));
+}
+
+COMPOSITOR_EXPORT void SetupTestCompositor() {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableTestCompositor)) {
+    g_test_compositor_enabled = true;
+  }
+#if defined(OS_CHROMEOS)
+  // If the test is running on the chromeos envrionment (such as
+  // device or vm bots), use the real compositor.
+  if (base::chromeos::IsRunningOnChromeOS())
+    g_test_compositor_enabled = false;
+#endif
+  ResetImplicitFactory();
+}
+
+COMPOSITOR_EXPORT void DisableTestCompositor() {
+  ResetImplicitFactory();
+  g_test_compositor_enabled = false;
+}
+
+COMPOSITOR_EXPORT bool IsTestCompositorEnabled() {
+  return g_test_compositor_enabled;
 }
 
 }  // namespace ui

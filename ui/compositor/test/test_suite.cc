@@ -28,15 +28,19 @@ void CompositorTestSuite::Initialize() {
 #if defined(USE_X11)
   XInitThreads();
 #endif
-  CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
+#if defined(OS_LINUX)
+  gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL);
+#endif
   base::TestSuite::Initialize();
 
   gfx::RegisterPathProvider();
 
   message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
+  Compositor::Initialize();
 }
 
 void CompositorTestSuite::Shutdown() {
+  Compositor::Terminate();
   message_loop_.reset();
 
   base::TestSuite::Shutdown();

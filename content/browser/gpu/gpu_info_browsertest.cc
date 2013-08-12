@@ -11,6 +11,7 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "content/public/common/content_switches.h"
 #include "content/test/content_browser_test.h"
+#include "ui/compositor/compositor_setup.h"
 
 namespace content {
 
@@ -73,11 +74,9 @@ class GpuInfoBrowserTest : public ContentBrowserTest {
       : message_loop_(base::MessageLoop::TYPE_UI) {
   }
 
-  virtual void SetUp() {
-    // We expect real pixel output for these tests.
-    UseRealGLContexts();
-
-    ContentBrowserTest::SetUp();
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    ContentBrowserTest::SetUpInProcessBrowserTestFixture();
+    ui::DisableTestCompositor();
   }
 
   base::MessageLoop* GetMessageLoop() { return &message_loop_; }

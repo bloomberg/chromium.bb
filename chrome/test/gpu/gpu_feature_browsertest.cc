@@ -14,6 +14,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/tracing.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/gpu_data_manager.h"
@@ -23,7 +24,8 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_test_config.h"
 #include "net/base/net_util.h"
-#include "ui/gl/gl_implementation.h"
+#include "ui/compositor/compositor_setup.h"
+#include "ui/gl/gl_switches.h"
 
 #if defined(OS_MACOSX)
 #include "ui/gl/io_surface_support_mac.h"
@@ -47,14 +49,7 @@ const char kWebGLCreationEvent[] = "DrawingBufferCreation";
 
 class GpuFeatureTest : public InProcessBrowserTest {
  public:
-  GpuFeatureTest() : category_patterns_("test_gpu") {}
-
-  virtual void SetUp() OVERRIDE {
-    // We expect to use real GL contexts for these tests.
-    UseRealGLContexts();
-
-    InProcessBrowserTest::SetUp();
-  }
+  GpuFeatureTest() : category_patterns_("test_gpu"), gpu_enabled_(false) {}
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     base::FilePath test_dir;
@@ -63,7 +58,18 @@ class GpuFeatureTest : public InProcessBrowserTest {
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    // Do not use mesa if real GPU is required.
+    if (!command_line->HasSwitch(switches::kUseGpuInTests)) {
+#if !defined(OS_MACOSX)
+      CHECK(test_launcher_utils::OverrideGLImplementation(
+          command_line, gfx::kGLImplementationOSMesaName)) <<
+          "kUseGL must not be set by test framework code!";
+#endif
+    } else {
+      gpu_enabled_ = true;
+    }
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
+    ui::DisableTestCompositor();
     command_line->AppendSwitchASCII(switches::kWindowSize, "400,300");
   }
 
@@ -79,7 +85,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
                bool new_tab) {
 #if defined(OS_LINUX) && !defined(NDEBUG)
     // Bypass tests on GPU Linux Debug bots.
-    if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL)
+    if (gpu_enabled_)
       return;
 #endif
 
@@ -111,7 +117,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
                     bool event_expected = false) {
 #if defined(OS_LINUX) && !defined(NDEBUG)
     // Bypass tests on GPU Linux Debug bots.
-    if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL)
+    if (gpu_enabled_)
       return;
 #endif
 #if defined(OS_MACOSX)
@@ -167,6 +173,7 @@ class GpuFeatureTest : public InProcessBrowserTest {
   scoped_ptr<TraceAnalyzer> analyzer_;
   std::string category_patterns_;
   std::string trace_events_json_;
+  bool gpu_enabled_;
 };
 
 #if defined(OS_WIN) || defined(ADDRESS_SANITIZER)
@@ -301,7 +308,9 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, MultisamplingAllowed) {
       gpu::GPU_FEATURE_TYPE_MULTISAMPLING));
 
   // Multisampling is not supported if running on top of osmesa.
-  if (gfx::GetGLImplementation() != gfx::kGLImplementationOSMesaGL)
+  std::string use_gl = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kUseGL);
+  if (use_gl == gfx::kGLImplementationOSMesaName)
     return;
 
   // Linux Intel uses mesa driver, where multisampling is not supported.
@@ -549,4 +558,4 @@ IN_PROC_BROWSER_TEST_F(GpuFeatureTest, IOSurfaceReuse) {
 }
 #endif
 
-}  // namespace
+}  // namespace anonymous

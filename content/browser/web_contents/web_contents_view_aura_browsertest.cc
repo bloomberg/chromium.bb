@@ -24,6 +24,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/event_generator.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/compositor_setup.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 
 namespace content {
@@ -84,11 +85,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
  public:
   WebContentsViewAuraTest()
       : screenshot_manager_(NULL) {
-  }
-
-  virtual void SetUp() OVERRIDE {
-    // TODO(jbauman): Remove this. http://crbug.com/268644
-    UseRealGLContexts();
   }
 
   // Executes the javascript synchronously and makes sure the returned value is
@@ -330,6 +326,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 //    gesture.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        OverscrollScreenshot) {
+  // http://crbug.com/268644
+  if (ui::IsTestCompositorEnabled())
+    return;
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
   WebContentsImpl* web_contents =
@@ -424,6 +423,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
 // RenderViewHost to be swapped out.
 IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest,
                        ScreenshotForSwappedOutRenderViews) {
+  // http://crbug.com/268644
+  if (ui::IsTestCompositorEnabled())
+    return;
   ASSERT_NO_FATAL_FAILURE(
       StartTestWithPage("files/overscroll_navigation.html"));
   // Create a new server with a different site.

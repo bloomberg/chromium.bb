@@ -247,11 +247,6 @@ class BrowserPluginHostTest : public ContentBrowserTest {
     content::BrowserPluginGuestManager::set_factory_for_testing(
         TestBrowserPluginHostFactory::GetInstance());
 
-    // On legacy windows, the AcceptDragEvents test needs this to pass.
-#if defined(OS_WIN) && !defined(USE_AURA)
-    UseRealGLBindings();
-#endif
-
     ContentBrowserTest::SetUp();
   }
   virtual void TearDown() OVERRIDE {

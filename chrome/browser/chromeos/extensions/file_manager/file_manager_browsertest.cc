@@ -347,14 +347,6 @@ class FileManagerBrowserTest :
       drive_volume_(std::tr1::get<0>(GetParam()) != IN_GUEST_MODE ?
                     new DriveTestVolume() : NULL) {}
 
-  virtual void SetUp() OVERRIDE {
-    // TODO(danakj): The GPU Video Decoder needs real GL bindings.
-    // crbug.com/269087
-    UseRealGLBindings();
-
-    ExtensionApiTest::SetUp();
-  }
-
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
 
   virtual void SetUpOnMainThread() OVERRIDE;
