@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2013 Google Inc. All Rights Reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -21,40 +21,37 @@
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
  */
 
-#ifndef LifecycleObserver_h
-#define LifecycleObserver_h
+
+#include "config.h"
+#include "core/page/DOMWindowLifecycleNotifier.h"
 
 namespace WebCore {
 
-class LifecycleContext;
+DOMWindowLifecycleNotifier::DOMWindowLifecycleNotifier(LifecycleContext* context)
+    : LifecycleNotifier(context)
+{
+}
 
-class LifecycleObserver {
-public:
-    enum Type {
-        ActiveDOMObjectType,
-        DocumentLifecycleObserverType,
-        GenericType,
-        PageLifecycleObserverType,
-        DOMWindowLifecycleObserverType
-    };
+void DOMWindowLifecycleNotifier::addObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+{
+    if (type == LifecycleObserver::DOMWindowLifecycleObserverType) {
+        RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
+        m_windowObservers.add(static_cast<DOMWindowLifecycleObserver*>(observer));
+    }
 
-    explicit LifecycleObserver(LifecycleContext*, Type = GenericType);
+    LifecycleNotifier::addObserver(observer, type);
+}
 
-    virtual void contextDestroyed();
+void DOMWindowLifecycleNotifier::removeObserver(LifecycleObserver* observer, LifecycleObserver::Type type)
+{
+    if (type == LifecycleObserver::DOMWindowLifecycleObserverType) {
+        RELEASE_ASSERT(m_iterating != IteratingOverDOMWindowObservers);
+        m_windowObservers.remove(static_cast<DOMWindowLifecycleObserver*>(observer));
+    }
 
-    LifecycleContext* lifecycleContext() const { return m_lifecycleContext; }
-
-protected:
-    virtual ~LifecycleObserver();
-
-    void observeContext(LifecycleContext*, Type);
-
-    LifecycleContext* m_lifecycleContext;
-};
+    LifecycleNotifier::removeObserver(observer, type);
+}
 
 } // namespace WebCore
-
-#endif // LifecycleObserver_h

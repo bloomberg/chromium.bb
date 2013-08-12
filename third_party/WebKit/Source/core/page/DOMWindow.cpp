@@ -70,6 +70,7 @@
 #include "core/page/Console.h"
 #include "core/page/CreateWindow.h"
 #include "core/page/DOMPoint.h"
+#include "core/page/DOMWindowLifecycleNotifier.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
@@ -1504,8 +1505,7 @@ void DOMWindow::removeAllEventListeners()
 {
     EventTarget::removeAllEventListeners();
 
-    if (DeviceMotionController* controller = DeviceMotionController::from(document()))
-        controller->stopUpdating();
+    lifecycleNotifier()->notifyRemoveAllEventListeners();
     if (DeviceOrientationController* controller = DeviceOrientationController::from(page()))
         controller->removeAllDeviceEventListeners(this);
     if (Document* document = this->document())
@@ -1728,6 +1728,16 @@ DOMWindow* DOMWindow::anonymousIndexedGetter(uint32_t index)
         return child->domWindow();
 
     return 0;
+}
+
+DOMWindowLifecycleNotifier* DOMWindow::lifecycleNotifier()
+{
+    return static_cast<DOMWindowLifecycleNotifier*>(LifecycleContext::lifecycleNotifier());
+}
+
+PassOwnPtr<LifecycleNotifier> DOMWindow::createLifecycleNotifier()
+{
+    return DOMWindowLifecycleNotifier::create(this);
 }
 
 

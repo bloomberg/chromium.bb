@@ -30,6 +30,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventTarget.h"
 #include "core/page/FrameDestructionObserver.h"
+#include "core/platform/LifecycleContext.h"
 #include "core/platform/Supplementable.h"
 
 #include "wtf/Forward.h"
@@ -47,6 +48,7 @@ namespace WebCore {
     class Database;
     class DatabaseCallback;
     class Document;
+    class DOMWindowLifecycleNotifier;
     class Element;
     class EventListener;
     class ExceptionState;
@@ -79,7 +81,7 @@ namespace WebCore {
 
     enum SetLocationLocking { LockHistoryBasedOnGestureState, LockHistoryAndBackForwardList };
 
-    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTarget, public FrameDestructionObserver, public Supplementable<DOMWindow> {
+    class DOMWindow : public RefCounted<DOMWindow>, public ScriptWrappable, public EventTarget, public FrameDestructionObserver, public Supplementable<DOMWindow>, public LifecycleContext {
     public:
         static PassRefPtr<DOMWindow> create(Frame* frame) { return adoptRef(new DOMWindow(frame)); }
         virtual ~DOMWindow();
@@ -372,10 +374,15 @@ namespace WebCore {
 
         bool isInsecureScriptAccess(DOMWindow* activeWindow, const String& urlString);
 
+    protected:
+        DOMWindowLifecycleNotifier* lifecycleNotifier();
+
     private:
         explicit DOMWindow(Frame*);
 
         Page* page();
+
+        virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
         virtual void frameDestroyed() OVERRIDE;
         virtual void willDetachPage() OVERRIDE;
