@@ -392,6 +392,10 @@ void InspectorDebuggerAgent::continueToLocation(ErrorString* errorString, const 
 
 void InspectorDebuggerAgent::getStepInPositions(ErrorString* errorString, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::Location> >& positions)
 {
+    if (!isPaused() || m_currentCallStack.isNull()) {
+        *errorString = "Attempt to access callframe when debugger is not on pause";
+        return;
+    }
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
     if (injectedScript.hasNoValue()) {
         *errorString = "Inspected frame has gone";
@@ -548,6 +552,10 @@ void InspectorDebuggerAgent::setScriptSource(ErrorString* error, RefPtr<TypeBuil
 }
 void InspectorDebuggerAgent::restartFrame(ErrorString* errorString, const String& callFrameId, RefPtr<Array<TypeBuilder::Debugger::CallFrame> >& newCallFrames, RefPtr<JSONObject>& result)
 {
+    if (!isPaused() || m_currentCallStack.isNull()) {
+        *errorString = "Attempt to access callframe when debugger is not on pause";
+        return;
+    }
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
     if (injectedScript.hasNoValue()) {
         *errorString = "Inspected frame has gone";
@@ -675,6 +683,10 @@ void InspectorDebuggerAgent::setPauseOnExceptionsImpl(ErrorString* errorString, 
 
 void InspectorDebuggerAgent::evaluateOnCallFrame(ErrorString* errorString, const String& callFrameId, const String& expression, const String* const objectGroup, const bool* const includeCommandLineAPI, const bool* const doNotPauseOnExceptionsAndMuteConsole, const bool* const returnByValue, const bool* generatePreview, RefPtr<TypeBuilder::Runtime::RemoteObject>& result, TypeBuilder::OptOutput<bool>* wasThrown)
 {
+    if (!isPaused() || m_currentCallStack.isNull()) {
+        *errorString = "Attempt to access callframe when debugger is not on pause";
+        return;
+    }
     InjectedScript injectedScript = m_injectedScriptManager->injectedScriptForObjectId(callFrameId);
     if (injectedScript.hasNoValue()) {
         *errorString = "Inspected frame has gone";
@@ -759,6 +771,10 @@ void InspectorDebuggerAgent::setVariableValue(ErrorString* errorString, int scop
 {
     InjectedScript injectedScript;
     if (callFrameId) {
+        if (!isPaused() || m_currentCallStack.isNull()) {
+            *errorString = "Attempt to access callframe when debugger is not on pause";
+            return;
+        }
         injectedScript = m_injectedScriptManager->injectedScriptForObjectId(*callFrameId);
         if (injectedScript.hasNoValue()) {
             *errorString = "Inspected frame has gone";

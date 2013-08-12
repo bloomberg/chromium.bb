@@ -128,8 +128,10 @@ ScriptValue ScriptFunctionCall::call(bool& hadException, bool reportExceptions)
 
     v8::Local<v8::Function> function = v8::Local<v8::Function>::Cast(value);
     OwnArrayPtr<v8::Handle<v8::Value> > args = adoptArrayPtr(new v8::Handle<v8::Value>[m_arguments.size()]);
-    for (size_t i = 0; i < m_arguments.size(); ++i)
+    for (size_t i = 0; i < m_arguments.size(); ++i) {
         args[i] = m_arguments[i].v8Value();
+        ASSERT(!args[i].IsEmpty());
+    }
 
     v8::Local<v8::Value> result = V8ScriptRunner::callFunction(function, getScriptExecutionContext(), thisObject, m_arguments.size(), args.get());
     if (!scope.success()) {

@@ -1,0 +1,11 @@
+Paused on 'debugger;'
+resume
+restartFrame
+PASS, error message as expected
+evaluateOnFrame
+PASS, error message as expected
+setVariableValue
+PASS, error message as expected
+getStepInPositions
+PASS, error message as expected
+
