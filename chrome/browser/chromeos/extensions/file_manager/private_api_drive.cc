@@ -142,10 +142,8 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
         file_specific_info.content_mime_type(),
         file_path_.Extension());
     file_tasks::TaskDescriptor default_task;
-    if (!file_tasks::ParseTaskID(default_task_id, &default_task)) {
-      LOG(WARNING) << "Invalid task ID: " << default_task_id;
-      return;
-    }
+    file_tasks::ParseTaskID(default_task_id, &default_task);
+    DCHECK(default_task_id.empty() || !default_task.app_id.empty());
 
     ListValue* apps = new ListValue();
     properties_->Set("driveApps", apps);
