@@ -542,7 +542,7 @@ def _RunMonkeyTests(options, error_func):
   runner_factory, tests = monkey_setup.Setup(monkey_options)
 
   results, exit_code = test_dispatcher.RunTests(
-      tests, runner_factory, False, None, shard=False)
+      tests, runner_factory, False, None, shard=False, test_timeout=None)
 
   report_results.LogFull(
       results=results,
