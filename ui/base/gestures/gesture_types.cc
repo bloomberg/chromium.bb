@@ -15,11 +15,15 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
     case ui::ET_GESTURE_SCROLL_UPDATE:
       data.scroll_update.x = delta_x;
       data.scroll_update.y = delta_y;
+      data.scroll_update.x_ordinal = delta_x;
+      data.scroll_update.y_ordinal = delta_y;
       break;
 
     case ui::ET_SCROLL_FLING_START:
       data.fling_velocity.x = delta_x;
       data.fling_velocity.y = delta_y;
+      data.fling_velocity.x_ordinal = delta_x;
+      data.fling_velocity.y_ordinal = delta_y;
       break;
 
     case ui::ET_GESTURE_LONG_PRESS:
@@ -58,11 +62,44 @@ GestureEventDetails::GestureEventDetails(ui::EventType type,
   }
 }
 
+GestureEventDetails::GestureEventDetails(ui::EventType type,
+                                         float delta_x,
+                                         float delta_y,
+                                         float delta_x_ordinal,
+                                         float delta_y_ordinal)
+    : type_(type),
+      touch_points_(1) {
+  CHECK(type == ui::ET_GESTURE_SCROLL_UPDATE ||
+        type == ui::ET_SCROLL_FLING_START);
+  switch (type_) {
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      data.scroll_update.x = delta_x;
+      data.scroll_update.y = delta_y;
+      data.scroll_update.x_ordinal = delta_x_ordinal;
+      data.scroll_update.y_ordinal = delta_y_ordinal;
+      break;
+
+    case ui::ET_SCROLL_FLING_START:
+      data.fling_velocity.x = delta_x;
+      data.fling_velocity.y = delta_y;
+      data.fling_velocity.x_ordinal = delta_x_ordinal;
+      data.fling_velocity.y_ordinal = delta_y_ordinal;
+      break;
+
+    default:
+      break;
+  }
+}
+
 void GestureEventDetails::SetScrollVelocity(float velocity_x,
-                                            float velocity_y) {
+                                            float velocity_y,
+                                            float velocity_x_ordinal,
+                                            float velocity_y_ordinal) {
   CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
   data.scroll_update.velocity_x = velocity_x;
   data.scroll_update.velocity_y = velocity_y;
+  data.scroll_update.velocity_x_ordinal = velocity_x_ordinal;
+  data.scroll_update.velocity_y_ordinal = velocity_y_ordinal;
 }
 
 }  // namespace ui

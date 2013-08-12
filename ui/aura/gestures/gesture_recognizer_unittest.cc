@@ -90,6 +90,12 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_velocity_y_(0),
         velocity_x_(0),
         velocity_y_(0),
+        scroll_x_ordinal_(0),
+        scroll_y_ordinal_(0),
+        scroll_velocity_x_ordinal_(0),
+        scroll_velocity_y_ordinal_(0),
+        velocity_x_ordinal_(0),
+        velocity_y_ordinal_(0),
         tap_count_(0),
         wait_until_event_(ui::ET_UNKNOWN) {
   }
@@ -126,6 +132,12 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
     scroll_velocity_y_ = 0;
     velocity_x_ = 0;
     velocity_y_ = 0;
+    scroll_x_ordinal_ = 0;
+    scroll_y_ordinal_ = 0;
+    scroll_velocity_x_ordinal_ = 0;
+    scroll_velocity_y_ordinal_ = 0;
+    velocity_x_ordinal_ = 0;
+    velocity_y_ordinal_ = 0;
     tap_count_ = 0;
   }
 
@@ -163,9 +175,15 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_y() const { return scroll_y_; }
   float scroll_velocity_x() const { return scroll_velocity_x_; }
   float scroll_velocity_y() const { return scroll_velocity_y_; }
-  int touch_id() const { return touch_id_; }
   float velocity_x() const { return velocity_x_; }
   float velocity_y() const { return velocity_y_; }
+  float scroll_x_ordinal() const { return scroll_x_ordinal_; }
+  float scroll_y_ordinal() const { return scroll_y_ordinal_; }
+  float scroll_velocity_x_ordinal() const { return scroll_velocity_x_ordinal_; }
+  float scroll_velocity_y_ordinal() const { return scroll_velocity_y_ordinal_; }
+  float velocity_x_ordinal() const { return velocity_x_ordinal_; }
+  float velocity_y_ordinal() const { return velocity_y_ordinal_; }
+  int touch_id() const { return touch_id_; }
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   int tap_count() const { return tap_count_; }
 
@@ -207,6 +225,10 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         scroll_y_ += gesture->details().scroll_y();
         scroll_velocity_x_ = gesture->details().velocity_x();
         scroll_velocity_y_ = gesture->details().velocity_y();
+        scroll_x_ordinal_ += gesture->details().scroll_x_ordinal();
+        scroll_y_ordinal_ += gesture->details().scroll_y_ordinal();
+        scroll_velocity_x_ordinal_ = gesture->details().velocity_x_ordinal();
+        scroll_velocity_y_ordinal_ = gesture->details().velocity_y_ordinal();
         break;
       case ui::ET_GESTURE_SCROLL_END:
         EXPECT_TRUE(velocity_x_ == 0 && velocity_y_ == 0);
@@ -235,6 +257,8 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
         fling_ = true;
         velocity_x_ = gesture->details().velocity_x();
         velocity_y_ = gesture->details().velocity_y();
+        velocity_x_ordinal_ = gesture->details().velocity_x_ordinal();
+        velocity_y_ordinal_ = gesture->details().velocity_y_ordinal();
         break;
       case ui::ET_GESTURE_TWO_FINGER_TAP:
         two_finger_tap_ = true;
@@ -288,6 +312,12 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
   float scroll_velocity_y_;
   float velocity_x_;
   float velocity_y_;
+  float scroll_x_ordinal_;
+  float scroll_y_ordinal_;
+  float scroll_velocity_x_ordinal_;
+  float scroll_velocity_y_ordinal_;
+  float velocity_x_ordinal_;
+  float velocity_y_ordinal_;
   int touch_id_;
   gfx::Rect bounding_box_;
   int tap_count_;
@@ -1103,7 +1133,9 @@ TEST_F(GestureRecognizerTest, GestureEventHorizontalRailFling) {
   // horizontal scroll.
   tes.SendScrollEvent(root_window(), 20, 1, kTouchId, delegate.get());
   EXPECT_EQ(0, delegate->scroll_y());
+  EXPECT_EQ(1, delegate->scroll_y_ordinal());
   EXPECT_EQ(20, delegate->scroll_x());
+  EXPECT_EQ(20, delegate->scroll_x_ordinal());
 
   // Get a high x velocity, while still staying on the rail
   tes.SendScrollEvents(root_window(), 1, 1,
@@ -1145,8 +1177,11 @@ TEST_F(GestureRecognizerTest, GestureEventVerticalRailFling) {
   // vertical scroll.
   tes.SendScrollEvent(root_window(), 1, 20, kTouchId, delegate.get());
   EXPECT_EQ(20, delegate->scroll_y());
+  EXPECT_EQ(20, delegate->scroll_y_ordinal());
   EXPECT_EQ(0, delegate->scroll_x());
+  EXPECT_EQ(1, delegate->scroll_x_ordinal());
   EXPECT_EQ(0, delegate->scroll_velocity_x());
+  EXPECT_GT(delegate->scroll_velocity_x_ordinal(), 0);
 
   // Get a high y velocity, while still staying on the rail
   tes.SendScrollEvents(root_window(), 1, 1,

@@ -17,6 +17,9 @@ class TouchEvent;
 struct UI_EXPORT GestureEventDetails {
  public:
   GestureEventDetails(EventType type, float delta_x, float delta_y);
+  GestureEventDetails(EventType type,
+                      float delta_x, float delta_y,
+                      float delta_x_ordinal, float delta_y_ordinal);
 
   EventType type() const { return type_; }
 
@@ -26,7 +29,8 @@ struct UI_EXPORT GestureEventDetails {
   const gfx::Rect& bounding_box() const { return bounding_box_; }
   void set_bounding_box(const gfx::Rect& box) { bounding_box_ = box; }
 
-  void SetScrollVelocity(float velocity_x, float velocity_y);
+  void SetScrollVelocity(float velocity_x, float velocity_y,
+                         float velocity_x_ordinal, float velocity_y_ordinal);
 
   float scroll_x() const {
     CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
@@ -50,6 +54,33 @@ struct UI_EXPORT GestureEventDetails {
           type_ == ui::ET_SCROLL_FLING_START);
     return type_ == ui::ET_SCROLL_FLING_START ? data.fling_velocity.y :
                                                 data.scroll_update.velocity_y;
+  }
+
+  // *_ordinal values are unmodified by rail based clamping.
+  float scroll_x_ordinal() const {
+    CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
+    return data.scroll_update.x_ordinal;
+  }
+
+  float scroll_y_ordinal() const {
+    CHECK_EQ(ui::ET_GESTURE_SCROLL_UPDATE, type_);
+    return data.scroll_update.y_ordinal;
+  }
+
+  float velocity_x_ordinal() const {
+    CHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
+          type_ == ui::ET_SCROLL_FLING_START);
+    return type_ == ui::ET_SCROLL_FLING_START ?
+        data.fling_velocity.x_ordinal :
+        data.scroll_update.velocity_x_ordinal;
+  }
+
+  float velocity_y_ordinal() const {
+    CHECK(type_ == ui::ET_GESTURE_SCROLL_UPDATE ||
+          type_ == ui::ET_SCROLL_FLING_START);
+    return type_ == ui::ET_SCROLL_FLING_START ?
+        data.fling_velocity.y_ordinal :
+        data.scroll_update.velocity_y_ordinal;
   }
 
   int touch_id() const {
@@ -105,6 +136,10 @@ struct UI_EXPORT GestureEventDetails {
       float y;
       float velocity_x;
       float velocity_y;
+      float x_ordinal;
+      float y_ordinal;
+      float velocity_x_ordinal;
+      float velocity_y_ordinal;
     } scroll_update;
 
     float scale;  // PINCH scale.
@@ -112,6 +147,8 @@ struct UI_EXPORT GestureEventDetails {
     struct {  // FLING velocity.
       float x;
       float y;
+      float x_ordinal;
+      float y_ordinal;
     } fling_velocity;
 
     int touch_id;  // LONG_PRESS touch-id.
