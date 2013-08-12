@@ -16,6 +16,7 @@
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
+#include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -27,8 +28,21 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
+
+using base::TimeTicks;
+
+namespace {
+
+static const char kPng[] = "png";
+static const char kJpeg[] = "jpeg";
+static int kDefaultScreenshotQuality = 80;
+
+}  // namespace
 
 namespace content {
 
@@ -141,44 +155,119 @@ RendererOverridesHandler::PageNavigate(
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageCaptureScreenshot(
     scoped_refptr<DevToolsProtocol::Command> command) {
-  // Emulate async processing.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&RendererOverridesHandler::CaptureScreenshot,
-                 weak_factory_.GetWeakPtr(),
-                 command));
-
-  return command->AsyncResponsePromise();
-}
-
-void RendererOverridesHandler::CaptureScreenshot(
-    scoped_refptr<DevToolsProtocol::Command> command) {
+  // Parse input parameters.
+  std::string format;
+  int quality = kDefaultScreenshotQuality;
+  double scale = 1;
+  base::DictionaryValue* params = command->params();
+  if (params) {
+    params->GetString(devtools::Page::captureScreenshot::kParamFormat,
+                      &format);
+    params->GetInteger(devtools::Page::captureScreenshot::kParamQuality,
+                       &quality);
+    params->GetDouble(devtools::Page::captureScreenshot::kParamScale,
+                      &scale);
+  }
+  if (format.empty())
+    format = kPng;
+  if (quality < 0 || quality > 100)
+    quality = kDefaultScreenshotQuality;
+  if (scale <= 0 || scale > 1)
+    scale = 1;
 
   RenderViewHost* host = agent_->GetRenderViewHost();
   gfx::Rect view_bounds = host->GetView()->GetViewBounds();
-  gfx::Rect snapshot_bounds(view_bounds.size());
-  gfx::Size snapshot_size = snapshot_bounds.size();
 
+  // Grab screen pixels if available for current platform.
+  // TODO(pfeldman): support format, scale and quality in ui::GrabViewSnapshot.
   std::vector<unsigned char> png;
-  if (ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
-                           &png,
-                           snapshot_bounds)) {
-    std::string base_64_data;
+  bool is_unscaled_png = scale == 1 && format == kPng;
+  if (is_unscaled_png && ui::GrabViewSnapshot(host->GetView()->GetNativeView(),
+                                              &png, view_bounds)) {
+    std::string base64_data;
     bool success = base::Base64Encode(
         base::StringPiece(reinterpret_cast<char*>(&*png.begin()), png.size()),
-        &base_64_data);
+        &base64_data);
     if (success) {
       base::DictionaryValue* result = new base::DictionaryValue();
       result->SetString(
-          devtools::Page::captureScreenshot::kResponseData, base_64_data);
-      scoped_refptr<DevToolsProtocol::Response> response =
-          command->SuccessResponse(result);
-      SendRawMessage(response->Serialize());
-      return;
+          devtools::Page::captureScreenshot::kResponseData, base64_data);
+      return command->SuccessResponse(result);
     }
+    return command->InternalErrorResponse("Unable to base64encode screenshot");
   }
-  SendRawMessage(command->
-      InternalErrorResponse("Unable to capture a screenshot")->Serialize());
+
+  // Fallback to copying from compositing surface.
+  RenderWidgetHostViewPort* view_port =
+      RenderWidgetHostViewPort::FromRWHV(host->GetView());
+
+  gfx::Size snapshot_size = gfx::ToFlooredSize(
+      gfx::ScaleSize(view_bounds.size(), scale));
+  view_port->CopyFromCompositingSurface(
+      view_bounds, snapshot_size,
+      base::Bind(&RendererOverridesHandler::ScreenshotCaptured,
+                 weak_factory_.GetWeakPtr(), command, format, quality, scale));
+  return command->AsyncResponsePromise();
+}
+
+void RendererOverridesHandler::ScreenshotCaptured(
+    scoped_refptr<DevToolsProtocol::Command> command,
+    const std::string& format,
+    int quality,
+    double scale,
+    bool success,
+    const SkBitmap& bitmap) {
+  if (!success) {
+    SendRawMessage(
+        command->InternalErrorResponse("Unable to capture screenshot")->
+            Serialize());
+    return;
+  }
+
+  std::vector<unsigned char> data;
+  SkAutoLockPixels lock_image(bitmap);
+  bool encoded;
+  if (format == kPng) {
+    encoded = gfx::PNGCodec::Encode(
+        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+        gfx::PNGCodec::FORMAT_SkBitmap,
+        gfx::Size(bitmap.width(), bitmap.height()),
+        bitmap.width() * bitmap.bytesPerPixel(),
+        false, std::vector<gfx::PNGCodec::Comment>(), &data);
+  } else if (format == kJpeg) {
+    encoded = gfx::JPEGCodec::Encode(
+        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
+        gfx::JPEGCodec::FORMAT_SkBitmap,
+        bitmap.width(),
+        bitmap.height(),
+        bitmap.width() * bitmap.bytesPerPixel(),
+        quality, &data);
+  } else {
+    encoded = false;
+  }
+
+  if (!encoded) {
+    SendRawMessage(
+        command->InternalErrorResponse("Unable to encode screenshot")->
+            Serialize());
+    return;
+  }
+
+  std::string base_64_data;
+  if (!base::Base64Encode(base::StringPiece(
+                             reinterpret_cast<char*>(&data[0]),
+                             data.size()),
+                          &base_64_data)) {
+    SendRawMessage(
+        command->InternalErrorResponse("Unable to base64 encode screenshot")->
+            Serialize());
+    return;
+  }
+
+  base::DictionaryValue* response = new base::DictionaryValue();
+  response->SetString(
+      devtools::Page::captureScreenshot::kResponseData, base_64_data);
+  SendRawMessage(command->SuccessResponse(response)->Serialize());
 }
 
 }  // namespace content

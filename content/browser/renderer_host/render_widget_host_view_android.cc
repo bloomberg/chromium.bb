@@ -18,6 +18,8 @@
 #include "cc/layers/texture_layer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_view_core_impl.h"
@@ -25,6 +27,7 @@
 #include "content/browser/android/overscroll_glow.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/surface_texture_transport_client_android.h"
@@ -34,6 +37,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "skia/ext/image_operations.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/android/device_display_info.h"
@@ -80,6 +84,17 @@ void InsertSyncPointAndAckForCompositor(
 // Sends an acknowledgement to the renderer of a processed IME event.
 void SendImeEventAck(RenderWidgetHostImpl* host) {
   host->Send(new ViewMsg_ImeEventAck(host->GetRoutingID()));
+}
+
+void CopyFromCompositingSurfaceFinished(
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    const cc::TextureMailbox::ReleaseCallback& release_callback,
+    scoped_ptr<SkBitmap> bitmap,
+    scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock,
+    bool result) {
+  bitmap_pixels_lock.reset();
+  release_callback.Run(0, false);
+  callback.Run(result, *bitmap);
 }
 
 }  // anonymous namespace
@@ -329,8 +344,7 @@ bool RenderWidgetHostViewAndroid::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAndroid::IsSurfaceAvailableForCopy() const {
-  NOTIMPLEMENTED();
-  return false;
+  return HasValidFrame();
 }
 
 void RenderWidgetHostViewAndroid::Show() {
@@ -540,8 +554,36 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& dst_size,
     const base::Callback<void(bool, const SkBitmap&)>& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(false, SkBitmap());
+  if (!IsSurfaceAvailableForCopy()) {
+    callback.Run(false, SkBitmap());
+    return;
+  }
+
+  const gfx::Display& display =
+      gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();
+  float device_scale_factor = display.device_scale_factor();
+
+  DCHECK_EQ(device_scale_factor,
+            ui::GetScaleFactorScale(GetScaleFactorForView(this)));
+
+  const gfx::Size& dst_size_in_pixel = ConvertViewSizeToPixel(this, dst_size);
+  gfx::Rect src_subrect_in_pixel =
+      ConvertRectToPixel(device_scale_factor, src_subrect);
+
+  scoped_ptr<cc::CopyOutputRequest> request;
+  if (src_subrect_in_pixel.size() == dst_size_in_pixel) {
+      request = cc::CopyOutputRequest::CreateBitmapRequest(base::Bind(
+          &RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult,
+          dst_size_in_pixel,
+          callback));
+  } else {
+      request = cc::CopyOutputRequest::CreateRequest(base::Bind(
+          &RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult,
+          dst_size_in_pixel,
+          callback));
+  }
+  request->set_area(src_subrect_in_pixel);
+  layer_->RequestCopyOfOutput(request.Pass());
 }
 
 void RenderWidgetHostViewAndroid::CopyFromCompositingSurfaceToVideoFrame(
@@ -1150,6 +1192,80 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
     texture_layer_->SetIsDrawable(false);
   texture_id_in_layer_ = 0;
   RunAckCallbacks();
+}
+
+// static
+void RenderWidgetHostViewAndroid::PrepareTextureCopyOutputResult(
+    const gfx::Size& dst_size_in_pixel,
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  DCHECK(result->HasTexture());
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
+
+  if (!result->HasTexture() || result->IsEmpty() || result->size().IsEmpty())
+    return;
+
+  scoped_ptr<SkBitmap> bitmap(new SkBitmap);
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                    dst_size_in_pixel.width(), dst_size_in_pixel.height());
+  if (!bitmap->allocPixels())
+    return;
+  bitmap->setIsOpaque(true);
+
+  ImageTransportFactoryAndroid* factory =
+      ImageTransportFactoryAndroid::GetInstance();
+  GLHelper* gl_helper = factory->GetGLHelper();
+  if (!gl_helper)
+    return;
+
+  scoped_ptr<SkAutoLockPixels> bitmap_pixels_lock(
+      new SkAutoLockPixels(*bitmap));
+  uint8* pixels = static_cast<uint8*>(bitmap->getPixels());
+
+  scoped_ptr<cc::TextureMailbox> texture_mailbox = result->TakeTexture();
+  DCHECK(texture_mailbox->IsTexture());
+  if (!texture_mailbox->IsTexture())
+    return;
+
+  scoped_callback_runner.Release();
+
+  gl_helper->CropScaleReadbackAndCleanMailbox(
+      texture_mailbox->name(),
+      texture_mailbox->sync_point(),
+      result->size(),
+      gfx::Rect(result->size()),
+      dst_size_in_pixel,
+      pixels,
+      base::Bind(&CopyFromCompositingSurfaceFinished,
+                 callback,
+                 texture_mailbox->callback(),
+                 base::Passed(&bitmap),
+                 base::Passed(&bitmap_pixels_lock)));
+}
+
+// static
+void RenderWidgetHostViewAndroid::PrepareBitmapCopyOutputResult(
+    const gfx::Size& dst_size_in_pixel,
+    const base::Callback<void(bool, const SkBitmap&)>& callback,
+    scoped_ptr<cc::CopyOutputResult> result) {
+  DCHECK(result->HasBitmap());
+  base::ScopedClosureRunner scoped_callback_runner(
+      base::Bind(callback, false, SkBitmap()));
+
+  if (!result->HasBitmap() || result->IsEmpty() || result->size().IsEmpty())
+    return;
+
+  scoped_ptr<SkBitmap> source = result->TakeBitmap();
+  DCHECK(source);
+  if (!source)
+    return;
+
+  DCHECK_EQ(source->width(), dst_size_in_pixel.width());
+  DCHECK_EQ(source->height(), dst_size_in_pixel.height());
+
+  scoped_callback_runner.Release();
+  callback.Run(true, *source);
 }
 
 // static

@@ -43,6 +43,9 @@ namespace navigate {
 }  // navigate
 namespace captureScreenshot {
   extern const char kName[];
+  extern const char kParamFormat[];
+  extern const char kParamQuality[];
+  extern const char kParamScale[];
   extern const char kResponseData[];
 }  // captureScreenshot
 }  // Page

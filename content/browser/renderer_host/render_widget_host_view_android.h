@@ -33,6 +33,7 @@ struct GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params;
 struct GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params;
 
 namespace cc {
+class CopyOutputResult;
 class DelegatedRendererLayer;
 class Layer;
 class TextureLayer;
@@ -255,6 +256,17 @@ class RenderWidgetHostViewAndroid
   void CreateOverscrollEffectIfNecessary();
   void UpdateAnimationSize(const cc::CompositorFrameMetadata& frame_metadata);
   void ScheduleAnimationIfNecessary();
+
+  // Called after async screenshot task completes. Scales and crops the result
+  // of the copy.
+  static void PrepareTextureCopyOutputResult(
+      const gfx::Size& dst_size_in_pixel,
+      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      scoped_ptr<cc::CopyOutputResult> result);
+  static void PrepareBitmapCopyOutputResult(
+      const gfx::Size& dst_size_in_pixel,
+      const base::Callback<void(bool, const SkBitmap&)>& callback,
+      scoped_ptr<cc::CopyOutputResult> result);
 
   // The model object.
   RenderWidgetHostImpl* host_;

@@ -36,6 +36,9 @@ namespace navigate {
 }  // navigate
 namespace captureScreenshot {
   const char kName[] = "Page.captureScreenshot";
+  const char kParamFormat[] = "format";
+  const char kParamQuality[] = "quality";
+  const char kParamScale[] = "scale";
   const char kResponseData[] = "data";
 }  // captureScreenshot
 }  // Page

@@ -11,6 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/devtools_protocol.h"
 
+class SkBitmap;
+
 namespace content {
 
 class DevToolsAgentHost;
@@ -35,7 +37,13 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
   scoped_refptr<DevToolsProtocol::Response> PageCaptureScreenshot(
       scoped_refptr<DevToolsProtocol::Command> command);
 
-  void CaptureScreenshot(scoped_refptr<DevToolsProtocol::Command> command);
+  void ScreenshotCaptured(
+      scoped_refptr<DevToolsProtocol::Command> command,
+      const std::string& format,
+      int quality,
+      double scale,
+      bool success,
+      const SkBitmap& bitmap);
 
   DevToolsAgentHost* agent_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
