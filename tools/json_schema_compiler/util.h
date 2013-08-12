@@ -173,6 +173,8 @@ scoped_ptr<base::Value> CreateValueFromOptionalArray(
   return scoped_ptr<base::Value>();
 }
 
+std::string ValueTypeToString(Value::Type type);
+
 }  // namespace util
 }  // namespace json_schema_compiler
 

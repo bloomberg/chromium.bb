@@ -23,6 +23,7 @@
           'idl_object_types.idl',
           'objects.json',
           'simple_api.json',
+          'error_generation.json'
         ],
         'cc_dir': 'tools/json_schema_compiler/test',
         'root_namespace': 'test::api',

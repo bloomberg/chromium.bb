@@ -26,6 +26,8 @@ class _Generator(object):
     self._cpp_namespace = cpp_namespace
     self._target_namespace = (
         self._type_helper.GetCppNamespaceName(self._namespace))
+    self._generate_error_messages = namespace.compiler_options.get(
+        'generate_error_messages', False)
 
   def Generate(self):
     """Generates a Code object with the .h for a single namespace.
@@ -228,15 +230,15 @@ class _Generator(object):
         (c.Append()
           .Comment('Populates a %s object from a base::Value. Returns'
                    ' whether |out| was successfully populated.' % classname)
-          .Append('static bool Populate(const base::Value& value, '
-                  '%(classname)s* out);')
+          .Append('static bool Populate(%s);' % self._GenerateParams(
+              ('const base::Value& value', '%s* out' % classname)))
         )
         if is_toplevel:
           (c.Append()
             .Comment('Creates a %s object from a base::Value, or NULL on '
                      'failure.' % classname)
-            .Append('static scoped_ptr<%(classname)s> '
-                        'FromValue(const base::Value& value);')
+            .Append('static scoped_ptr<%s> FromValue(%s);' % (
+                classname, self._GenerateParams(('const base::Value& value',))))
           )
       if type_.origin.from_client:
         value_type = ('base::Value'
@@ -323,7 +325,8 @@ class _Generator(object):
 
     c = Code()
     (c.Sblock('struct Params {')
-      .Append('static scoped_ptr<Params> Create(const base::ListValue& args);')
+      .Append('static scoped_ptr<Params> Create(%s);' % self._GenerateParams(
+          ('const base::ListValue& args',)))
       .Append('~Params();')
       .Append()
       .Cblock(self._GenerateTypes(p.type_ for p in function.params))
@@ -385,3 +388,10 @@ class _Generator(object):
       .Append('}  // namespace Results')
     )
     return c
+
+  def _GenerateParams(self, params):
+    """Builds the parameter list for a function, given an array of parameters.
+    """
+    if self._generate_error_messages:
+      params += ('std::string* error = NULL',)
+    return ', '.join(str(p) for p in params)

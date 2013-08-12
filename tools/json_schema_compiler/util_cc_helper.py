@@ -77,3 +77,9 @@ class UtilCCHelper(object):
 
   def GetIncludePath(self):
     return '#include "tools/json_schema_compiler/util.h"'
+
+  def GetValueTypeString(self, value, is_ptr=False):
+    call = '.GetType()'
+    if is_ptr:
+      call = '->GetType()'
+    return 'json_schema_compiler::util::ValueTypeToString(%s%s)' % (value, call)

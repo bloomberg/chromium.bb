@@ -50,7 +50,7 @@ class Namespace(object):
   - |functions| a map of function names to their model.Function
   - |events| a map of event names to their model.Function
   - |properties| a map of property names to their model.Property
-  - |compiler_options| the compiler_options dict, only present if
+  - |compiler_options| the compiler_options dict, only not empty if
                        |include_compiler_options| is True
   """
   def __init__(self, json, source_file, include_compiler_options=False):
@@ -71,8 +71,8 @@ class Namespace(object):
     self.functions = _GetFunctions(self, json, self)
     self.events = _GetEvents(self, json, self)
     self.properties = _GetProperties(self, json, self, toplevel_origin)
-    if include_compiler_options:
-      self.compiler_options = json.get('compiler_options', {})
+    self.compiler_options = (json.get('compiler_options', {})
+        if include_compiler_options else {})
 
 class Origin(object):
   """Stores the possible origin of model object as a pair of bools. These are:

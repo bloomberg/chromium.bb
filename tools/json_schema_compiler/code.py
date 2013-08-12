@@ -49,9 +49,9 @@ class Code(object):
         if line.substitute:
           line.value %= ()
       except TypeError:
-        raise TypeError('Unsubstituted value when concatting\n' + line)
+        raise TypeError('Unsubstituted value when concatting\n' + line.value)
       except ValueError:
-        raise ValueError('Stray % character when concatting\n' + line)
+        raise ValueError('Stray % character when concatting\n' + line.value)
       self.Append(line.value, line.substitute)
 
     return self

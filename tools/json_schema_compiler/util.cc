@@ -70,5 +70,28 @@ void AddItemToList(const linked_ptr<base::DictionaryValue>& from,
   out->Append(static_cast<base::Value*>(from->DeepCopy()));
 }
 
+std::string ValueTypeToString(Value::Type type) {
+  switch(type) {
+    case Value::TYPE_NULL:
+      return "null";
+    case Value::TYPE_BOOLEAN:
+      return "boolean";
+    case Value::TYPE_INTEGER:
+      return "integer";
+    case Value::TYPE_DOUBLE:
+      return "number";
+    case Value::TYPE_STRING:
+      return "string";
+    case Value::TYPE_BINARY:
+      return "binary";
+    case Value::TYPE_DICTIONARY:
+      return "dictionary";
+    case Value::TYPE_LIST:
+      return "list";
+  }
+  NOTREACHED();
+  return "";
+}
+
 }  // namespace api_util
 }  // namespace extensions
