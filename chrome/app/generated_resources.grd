@@ -5326,11 +5326,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NACL_DEBUG_MASK_CHOICE_EXCLUDE_UTILS">
         Debug everything except secure shell
       </message>
-      <message name="IDS_FLAGS_PNACL_NAME" desc="Name of the 'Portable Native Client' lab.">
+      <message name="IDS_FLAGS_ENABLE_PNACL_NAME" desc="Name of the 'Enable Portable Native Client' lab.">
         Portable Native Client.
       </message>
-      <message name="IDS_FLAGS_PNACL_DESCRIPTION" desc="Description of the 'Disable Portable Native Client' lab.">
-        Allows web pages to use Portable Native Client.
+      <message name="IDS_FLAGS_ENABLE_PNACL_DESCRIPTION" desc="Description of the 'Enable Portable Native Client' lab.">
+        Enable support for Portable Native Client.
       </message>
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
         Save Page as MHTML

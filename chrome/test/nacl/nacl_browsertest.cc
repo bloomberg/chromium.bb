@@ -85,6 +85,10 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
 })
 
+NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PnaclMimeType, {
+  RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
+})
+
 // Some versions of Visual Studio does not like preprocessor
 // conditionals inside the argument of a macro, so we put the
 // conditionals on a helper function.  We are already in an anonymous
@@ -186,15 +190,6 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        MAYBE_PNACL(PnaclExceptionHandlingDisabled)) {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pnacl_exception_handling_disabled.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl, MAYBE_PNACL(PnaclMimeType)) {
-  RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
-}
-
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclDisabled,
-                       MAYBE_PNACL(PnaclMimeType)) {
-  RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
 }
 
 }  // namespace

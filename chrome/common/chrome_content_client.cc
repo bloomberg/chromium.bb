@@ -170,8 +170,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
                                                 kNaClPluginExtension,
                                                 kNaClPluginDescription);
       nacl.mime_types.push_back(nacl_mime_type);
-      if (!CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisablePnacl)) {
+      if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePnacl)) {
         content::WebPluginMimeType pnacl_mime_type(kPnaclPluginMimeType,
                                                    kPnaclPluginExtension,
                                                    kPnaclPluginDescription);

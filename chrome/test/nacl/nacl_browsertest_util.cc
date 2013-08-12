@@ -187,15 +187,6 @@ static void AddPnaclParm(const base::FilePath::StringType& url,
   }
 }
 
-static void AddPnaclDisabledParm(const base::FilePath::StringType& url,
-                                 base::FilePath::StringType* url_with_parm) {
-  if (url.find(FILE_PATH_LITERAL("?")) == base::FilePath::StringType::npos) {
-    *url_with_parm = url + FILE_PATH_LITERAL("?pnacl_disabled=1");
-  } else {
-    *url_with_parm = url + FILE_PATH_LITERAL("&pnacl_disabled=1");
-  }
-}
-
 NaClBrowserTestBase::NaClBrowserTestBase() {
 }
 
@@ -219,11 +210,7 @@ bool NaClBrowserTestBase::GetDocumentRoot(base::FilePath* document_root) {
   return GetNaClVariantRoot(Variant(), document_root);
 }
 
-bool NaClBrowserTestBase::IsAPnaclTest() {
-  return false;
-}
-
-bool NaClBrowserTestBase::IsPnaclDisabled() {
+bool NaClBrowserTestBase::IsPnacl() {
   return false;
 }
 
@@ -246,15 +233,11 @@ bool NaClBrowserTestBase::RunJavascriptTest(const GURL& url,
 void NaClBrowserTestBase::RunLoadTest(
     const base::FilePath::StringType& test_file) {
   LoadTestMessageHandler handler;
-  base::FilePath::StringType test_file_with_pnacl = test_file;
-  if (IsAPnaclTest()) {
-    AddPnaclParm(test_file, &test_file_with_pnacl);
+  base::FilePath::StringType test_file_with_parm = test_file;
+  if (IsPnacl()) {
+    AddPnaclParm(test_file, &test_file_with_parm);
   }
-  base::FilePath::StringType test_file_with_both = test_file_with_pnacl;
-  if (IsPnaclDisabled()) {
-    AddPnaclDisabledParm(test_file_with_pnacl, &test_file_with_both);
-  }
-  bool ok = RunJavascriptTest(TestURL(test_file_with_both), &handler);
+  bool ok = RunJavascriptTest(TestURL(test_file_with_parm), &handler);
   ASSERT_TRUE(ok) << handler.error_message();
   ASSERT_TRUE(handler.test_passed()) << "Test failed.";
 }
@@ -262,15 +245,11 @@ void NaClBrowserTestBase::RunLoadTest(
 void NaClBrowserTestBase::RunNaClIntegrationTest(
     const base::FilePath::StringType& url_fragment) {
   NaClIntegrationMessageHandler handler;
-  base::FilePath::StringType url_fragment_with_pnacl = url_fragment;
-  if (IsAPnaclTest()) {
-    AddPnaclParm(url_fragment, &url_fragment_with_pnacl);
+  base::FilePath::StringType url_fragment_with_parm = url_fragment;
+  if (IsPnacl()) {
+    AddPnaclParm(url_fragment, &url_fragment_with_parm);
   }
-  base::FilePath::StringType url_fragment_with_both = url_fragment_with_pnacl;
-  if (IsPnaclDisabled()) {
-    AddPnaclDisabledParm(url_fragment_with_pnacl, &url_fragment_with_both);
-  }
-  bool ok = RunJavascriptTest(TestURL(url_fragment_with_both), &handler);
+  bool ok = RunJavascriptTest(TestURL(url_fragment_with_parm), &handler);
   ASSERT_TRUE(ok) << handler.error_message();
   ASSERT_TRUE(handler.test_passed()) << "Test failed.";
 }
@@ -299,25 +278,13 @@ base::FilePath::StringType NaClBrowserTestPnacl::Variant() {
   return FILE_PATH_LITERAL("pnacl");
 }
 
-bool NaClBrowserTestPnacl::IsAPnaclTest() {
+bool NaClBrowserTestPnacl::IsPnacl() {
   return true;
 }
 
-base::FilePath::StringType NaClBrowserTestPnaclDisabled::Variant() {
-  return FILE_PATH_LITERAL("pnacl");
-}
-
-bool NaClBrowserTestPnaclDisabled::IsAPnaclTest() {
-  return true;
-}
-
-bool NaClBrowserTestPnaclDisabled::IsPnaclDisabled() {
-  return true;
-}
-
-void NaClBrowserTestPnaclDisabled::SetUpCommandLine(CommandLine* command_line) {
+void NaClBrowserTestPnacl::SetUpCommandLine(CommandLine* command_line) {
   NaClBrowserTestBase::SetUpCommandLine(command_line);
-  command_line->AppendSwitch(switches::kDisablePnacl);
+  command_line->AppendSwitch(switches::kEnablePnacl);
 }
 
 NaClBrowserTestPnaclWithOldCache::NaClBrowserTestPnaclWithOldCache() {

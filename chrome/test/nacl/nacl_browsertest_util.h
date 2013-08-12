@@ -74,9 +74,7 @@ class NaClBrowserTestBase : public InProcessBrowserTest {
   // Where are the files for this class of test located on disk?
   virtual bool GetDocumentRoot(base::FilePath* document_root);
 
-  virtual bool IsAPnaclTest();
-
-  virtual bool IsPnaclDisabled();
+  virtual bool IsPnacl();
 
   // Map a file relative to the variant directory to a URL served by the test
   // web server.
@@ -118,22 +116,11 @@ class NaClBrowserTestGLibc : public NaClBrowserTestBase {
 
 class NaClBrowserTestPnacl : public NaClBrowserTestBase {
  public:
-  virtual base::FilePath::StringType Variant() OVERRIDE;
-
-  virtual bool IsAPnaclTest() OVERRIDE;
-};
-
-// Class used to test that when --disable-pnacl is specified the PNaCl mime
-// type is not available.
-class NaClBrowserTestPnaclDisabled : public NaClBrowserTestBase {
- public:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
 
   virtual base::FilePath::StringType Variant() OVERRIDE;
 
-  virtual bool IsAPnaclTest() OVERRIDE;
-
-  virtual bool IsPnaclDisabled() OVERRIDE;
+  virtual bool IsPnacl() OVERRIDE;
 };
 
 // Temporary class for running tests with the old cache enabled. Once all the
@@ -170,7 +157,7 @@ body
 
 #else
 
-// Otherwise, we have Glibc, Newlib, and Pnacl tests
+// Otherwise, we have Glibc, Newlib and PNaCl tests
 #define NACL_BROWSER_TEST_F(suite, name, body) \
 IN_PROC_BROWSER_TEST_F(suite##Newlib, name) \
 body \

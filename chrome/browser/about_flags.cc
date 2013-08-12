@@ -513,11 +513,11 @@ const Experiment kExperiments[] = {
     MULTI_VALUE_TYPE(kNaClDebugMaskChoices)
   },
   {
-    "disable-pnacl",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_PNACL_NAME,
-    IDS_FLAGS_PNACL_DESCRIPTION,
+    "enable-pnacl",  // FLAGS:RECORD_UMA
+    IDS_FLAGS_ENABLE_PNACL_NAME,
+    IDS_FLAGS_ENABLE_PNACL_DESCRIPTION,
     kOsDesktop,
-    ENABLE_DISABLE_VALUE_TYPE("", switches::kDisablePnacl)
+    SINGLE_VALUE_TYPE(switches::kEnablePnacl)
   },
   {
     "extension-apis",  // FLAGS:RECORD_UMA

@@ -355,8 +355,8 @@ void PluginReverseInterface::OpenManifestEntry_MainThreadContinuation(
       *p->op_complete_ptr = true;  // done...
       p->file_info->desc = -1;  // but failed.
       p->error_info->SetReport(ERROR_PNACL_NOT_ENABLED,
-                               "ServiceRuntime: GetPnaclFd failed -- pnacl "
-                               "disabled with --disable-pnacl.");
+                               "ServiceRuntime: GetPnaclFd failed -- pnacl not "
+                               "enabled with --enable-pnacl.");
       NaClXCondVarBroadcast(&cv_);
       return;
     }
