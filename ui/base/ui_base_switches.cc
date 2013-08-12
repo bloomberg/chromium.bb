@@ -98,13 +98,6 @@ const char kTouchSideBezels[] = "touch-side-bezels";
 const char kTouchCalibration[] = "touch-calibration";
 #endif
 
-#if defined(OS_MACOSX)
-// Disables support for Core Animation plugins. This is triggered when
-// accelerated compositing is disabled. See http://crbug.com/122430 .
-const char kDisableCoreAnimationPlugins[] =
-    "disable-core-animation-plugins";
-#endif
-
 #if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
 // Tells chrome to interpret events from these devices as touch events. Only
 // available with XInput 2 (i.e. X server 1.8 or above). The id's of the
