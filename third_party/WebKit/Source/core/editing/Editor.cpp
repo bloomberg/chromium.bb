@@ -856,9 +856,10 @@ bool Editor::insertTextWithoutSendingTextEvent(const String& text, bool selectIn
             TypingCommand::insertText(document.get(), text, selection, options, triggeringEvent && triggeringEvent->isComposition() ? TypingCommand::TextCompositionConfirm : TypingCommand::TextCompositionNone);
 
             // Reveal the current selection
-            if (Frame* editedFrame = document->frame())
+            if (Frame* editedFrame = document->frame()) {
                 if (Page* page = editedFrame->page())
-                    page->focusController()->focusedOrMainFrame()->selection()->revealSelection(ScrollAlignment::alignCenterIfNeeded);
+                    page->focusController().focusedOrMainFrame()->selection()->revealSelection(ScrollAlignment::alignCenterIfNeeded);
+            }
         }
     }
 

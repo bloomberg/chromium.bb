@@ -2453,7 +2453,7 @@ IntRect FrameView::windowClipRectForFrameOwner(const HTMLFrameOwnerElement* owne
 bool FrameView::isActive() const
 {
     Page* page = frame()->page();
-    return page && page->focusController()->isActive();
+    return page && page->focusController().isActive();
 }
 
 void FrameView::scrollTo(const IntSize& newOffset)

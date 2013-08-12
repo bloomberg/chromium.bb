@@ -385,7 +385,7 @@ Element* TreeScope::adjustedFocusedElement()
     Document* document = rootNode()->document();
     Element* element = document->focusedElement();
     if (!element && document->page())
-        element = focusedFrameOwnerElement(document->page()->focusController()->focusedFrame(), document->frame());
+        element = focusedFrameOwnerElement(document->page()->focusController().focusedFrame(), document->frame());
     if (!element)
         return 0;
     Vector<Node*> targetStack;

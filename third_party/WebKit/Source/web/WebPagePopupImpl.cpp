@@ -302,9 +302,9 @@ void WebPagePopupImpl::setFocus(bool enable)
 {
     if (!m_page)
         return;
-    m_page->focusController()->setFocused(enable);
+    m_page->focusController().setFocused(enable);
     if (enable)
-        m_page->focusController()->setActive(true);
+        m_page->focusController().setActive(true);
 }
 
 void WebPagePopupImpl::close()

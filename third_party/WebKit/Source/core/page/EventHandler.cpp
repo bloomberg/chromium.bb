@@ -1683,7 +1683,7 @@ bool EventHandler::handlePasteGlobalSelection(const PlatformMouseEvent& mouseEve
 
     if (!m_frame->page())
         return false;
-    Frame* focusFrame = m_frame->page()->focusController()->focusedOrMainFrame();
+    Frame* focusFrame = m_frame->page()->focusController().focusedOrMainFrame();
     // Do not paste here if the focus was moved somewhere else.
     if (m_frame == focusFrame && m_frame->editor()->client()->supportsGlobalSelection())
         return m_frame->editor()->command("PasteGlobalSelection").execute();
@@ -2057,14 +2057,14 @@ bool EventHandler::dispatchMouseEvent(const AtomicString& eventType, Node* targe
         // clear swallowEvent if the page already set it (e.g., by canceling
         // default behavior).
         if (elementIsMouseFocusable) {
-            if (!page->focusController()->setFocusedElement(element, m_frame, FocusDirectionMouse))
+            if (!page->focusController().setFocusedElement(element, m_frame, FocusDirectionMouse))
                 swallowEvent = true;
         } else if (!element || !element->focused()) {
             // We call setFocusedElement even with !element in order to blur
             // current focus element when a link is clicked; this is expected by
             // some sites that rely on onChange handlers running from form
             // fields before the button click is processed.
-            if (!page->focusController()->setFocusedElement(0, m_frame))
+            if (!page->focusController().setFocusedElement(0, m_frame))
                 swallowEvent = true;
         }
     }
@@ -2855,7 +2855,7 @@ void EventHandler::fakeMouseMoveEventTimerFired(Timer<EventHandler>* timer)
     if (!view)
         return;
 
-    if (!m_frame->page() || !m_frame->page()->focusController()->isActive())
+    if (!m_frame->page() || !m_frame->page()->focusController().isActive())
         return;
 
     // Don't dispatch a synthetic mouse move event if the mouse cursor is not visible to the user.
@@ -3007,13 +3007,13 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     if (initialKeyEvent.type() == PlatformEvent::RawKeyDown) {
         node->dispatchEvent(keydown, IGNORE_EXCEPTION);
         // If frame changed as a result of keydown dispatch, then return true to avoid sending a subsequent keypress message to the new frame.
-        bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController()->focusedOrMainFrame();
+        bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
         return keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
     }
 
     node->dispatchEvent(keydown, IGNORE_EXCEPTION);
     // If frame changed as a result of keydown dispatch, then return early to avoid sending a subsequent keypress message to the new frame.
-    bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController()->focusedOrMainFrame();
+    bool changedFocusedFrame = m_frame->page() && m_frame != m_frame->page()->focusController().focusedOrMainFrame();
     bool keydownResult = keydown->defaultHandled() || keydown->defaultPrevented() || changedFocusedFrame;
     if (keydownResult)
         return keydownResult;
@@ -3410,7 +3410,7 @@ void EventHandler::defaultArrowEventHandler(FocusDirection focusDirection, Keybo
     if (m_frame->document()->inDesignMode())
         return;
 
-    if (page->focusController()->advanceFocus(focusDirection))
+    if (page->focusController().advanceFocus(focusDirection))
         event->setDefaultHandled();
 }
 
@@ -3434,7 +3434,7 @@ void EventHandler::defaultTabEventHandler(KeyboardEvent* event)
     if (m_frame->document()->inDesignMode())
         return;
 
-    if (page->focusController()->advanceFocus(focusDirection))
+    if (page->focusController().advanceFocus(focusDirection))
         event->setDefaultHandled();
 }
 
@@ -3830,7 +3830,7 @@ void EventHandler::focusDocumentView()
     Page* page = m_frame->page();
     if (!page)
         return;
-    page->focusController()->setFocusedFrame(m_frame);
+    page->focusController().setFocusedFrame(m_frame);
 }
 
 unsigned EventHandler::accessKeyModifiers()

@@ -142,7 +142,7 @@ public:
     Chrome& chrome() const { return *m_chrome; }
     DragCaretController* dragCaretController() const { return m_dragCaretController.get(); }
     DragController* dragController() const { return m_dragController.get(); }
-    FocusController* focusController() const { return m_focusController.get(); }
+    FocusController& focusController() const { return *m_focusController; }
     ContextMenuController* contextMenuController() const { return m_contextMenuController.get(); }
     InspectorController* inspectorController() const { return m_inspectorController.get(); }
     PointerLockController* pointerLockController() const { return m_pointerLockController.get(); }

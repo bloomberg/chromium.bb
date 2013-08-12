@@ -802,15 +802,11 @@ bool RenderTheme::isActive(const RenderObject* o) const
     if (!node)
         return false;
 
-    Frame* frame = node->document()->frame();
-    if (!frame)
-        return false;
-
-    Page* page = frame->page();
+    Page* page = node->document()->page();
     if (!page)
         return false;
 
-    return page->focusController()->isActive();
+    return page->focusController().isActive();
 }
 
 bool RenderTheme::isChecked(const RenderObject* o) const

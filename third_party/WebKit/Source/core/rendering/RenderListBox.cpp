@@ -727,7 +727,7 @@ LayoutRect RenderListBox::controlClipRect(const LayoutPoint& additionalOffset) c
 bool RenderListBox::isActive() const
 {
     Page* page = frame()->page();
-    return page && page->focusController()->isActive();
+    return page && page->focusController().isActive();
 }
 
 void RenderListBox::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)

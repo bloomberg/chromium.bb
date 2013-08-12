@@ -92,7 +92,7 @@ FrameSelection::FrameSelection(Frame* frame)
     , m_absCaretBoundsDirty(true)
     , m_caretPaint(true)
     , m_isCaretBlinkingSuspended(false)
-    , m_focused(frame && frame->page() && frame->page()->focusController()->focusedFrame() == frame)
+    , m_focused(frame && frame->page() && frame->page()->focusController().focusedFrame() == frame)
     , m_shouldShowBlockCursor(false)
 {
     if (shouldAlwaysUseDirectionalSelection(m_frame))
@@ -1407,7 +1407,7 @@ void FrameSelection::selectFrameElementInParentIfFullySelected()
     // Focus on the parent frame, and then select from before this element to after.
     VisibleSelection newSelection(beforeOwnerElement, afterOwnerElement);
     if (parent->selection()->shouldChangeSelection(newSelection)) {
-        page->focusController()->setFocusedFrame(parent);
+        page->focusController().setFocusedFrame(parent);
         parent->selection()->setSelection(newSelection);
     }
 }
@@ -1558,7 +1558,7 @@ void FrameSelection::setFocused(bool flag)
 
 bool FrameSelection::isFocusedAndActive() const
 {
-    return m_focused && m_frame->page() && m_frame->page()->focusController()->isActive();
+    return m_focused && m_frame->page() && m_frame->page()->focusController().isActive();
 }
 
 inline static bool shouldStopBlinkingDueToTypingCommand(Frame* frame)
@@ -1710,7 +1710,7 @@ void FrameSelection::setFocusedNodeIfNeeded()
     bool caretBrowsing = m_frame->settings() && m_frame->settings()->caretBrowsingEnabled();
     if (caretBrowsing) {
         if (Element* anchor = enclosingAnchorElement(base())) {
-            m_frame->page()->focusController()->setFocusedElement(anchor, m_frame);
+            m_frame->page()->focusController().setFocusedElement(anchor, m_frame);
             return;
         }
     }
@@ -1722,7 +1722,7 @@ void FrameSelection::setFocusedNodeIfNeeded()
             // so add the !isFrameElement check here. There's probably a better way to make this
             // work in the long term, but this is the safest fix at this time.
             if (target->isMouseFocusable() && !isFrameElement(target)) {
-                m_frame->page()->focusController()->setFocusedElement(target, m_frame);
+                m_frame->page()->focusController().setFocusedElement(target, m_frame);
                 return;
             }
             target = target->parentOrShadowHostElement();
@@ -1731,7 +1731,7 @@ void FrameSelection::setFocusedNodeIfNeeded()
     }
 
     if (caretBrowsing)
-        m_frame->page()->focusController()->setFocusedElement(0, m_frame);
+        m_frame->page()->focusController().setFocusedElement(0, m_frame);
 }
 
 PassRefPtr<MutableStylePropertySet> FrameSelection::copyTypingStyle() const

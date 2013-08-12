@@ -577,7 +577,7 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
     if (result.innerNonSharedNode())
         targetFrame = result.innerNonSharedNode()->document()->frame();
     else
-        targetFrame = m_page->focusController()->focusedOrMainFrame();
+        targetFrame = m_page->focusController().focusedOrMainFrame();
 
 #if OS(WINDOWS)
     targetFrame->view()->setCursor(pointerCursor());
@@ -1358,7 +1358,7 @@ bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
     page()->contextMenuController()->clearContextMenu();
 
     m_contextMenuAllowed = true;
-    Frame* focusedFrame = page()->focusController()->focusedOrMainFrame();
+    Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
     bool handled = focusedFrame->eventHandler()->sendContextMenuEventForKey();
     m_contextMenuAllowed = false;
     return handled;
@@ -1561,7 +1561,7 @@ WebHelperPluginImpl* WebViewImpl::createHelperPlugin(const String& pluginType, c
 
 Frame* WebViewImpl::focusedWebCoreFrame() const
 {
-    return m_page ? m_page->focusController()->focusedOrMainFrame() : 0;
+    return m_page ? m_page->focusController().focusedOrMainFrame() : 0;
 }
 
 WebViewImpl* WebViewImpl::fromPage(Page* page)
@@ -1946,10 +1946,10 @@ void WebViewImpl::mouseCaptureLost()
 
 void WebViewImpl::setFocus(bool enable)
 {
-    m_page->focusController()->setFocused(enable);
+    m_page->focusController().setFocused(enable);
     if (enable) {
-        m_page->focusController()->setActive(true);
-        RefPtr<Frame> focusedFrame = m_page->focusController()->focusedFrame();
+        m_page->focusController().setActive(true);
+        RefPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame) {
             Element* element = focusedFrame->document()->focusedElement();
             if (element && focusedFrame->selection()->selection().isNone()) {
@@ -1981,7 +1981,7 @@ void WebViewImpl::setFocus(bool enable)
         if (!frame)
             return;
 
-        RefPtr<Frame> focusedFrame = m_page->focusController()->focusedFrame();
+        RefPtr<Frame> focusedFrame = m_page->focusController().focusedFrame();
         if (focusedFrame) {
             // Finish an ongoing composition to delete the composition node.
             if (focusedFrame->inputMethodController().hasComposition()) {
@@ -2578,17 +2578,17 @@ void WebViewImpl::setFocusedFrame(WebFrame* frame)
     }
     WebFrameImpl* frameImpl = static_cast<WebFrameImpl*>(frame);
     Frame* webcoreFrame = frameImpl->frame();
-    webcoreFrame->page()->focusController()->setFocusedFrame(webcoreFrame);
+    webcoreFrame->page()->focusController().setFocusedFrame(webcoreFrame);
 }
 
 void WebViewImpl::setInitialFocus(bool reverse)
 {
     if (!m_page)
         return;
-    Frame* frame = page()->focusController()->focusedOrMainFrame();
+    Frame* frame = page()->focusController().focusedOrMainFrame();
     if (Document* document = frame->document())
         document->setFocusedElement(0);
-    page()->focusController()->setInitialFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
+    page()->focusController().setInitialFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
 }
 
 void WebViewImpl::clearFocusedNode()
@@ -2711,7 +2711,7 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
 
 void WebViewImpl::advanceFocus(bool reverse)
 {
-    page()->focusController()->advanceFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
+    page()->focusController().advanceFocus(reverse ? FocusDirectionBackward : FocusDirectionForward);
 }
 
 double WebViewImpl::zoomLevel()
@@ -3475,7 +3475,7 @@ void WebViewImpl::showContextMenu()
 
     page()->contextMenuController()->clearContextMenu();
     m_contextMenuAllowed = true;
-    if (Frame* focusedFrame = page()->focusController()->focusedOrMainFrame())
+    if (Frame* focusedFrame = page()->focusController().focusedOrMainFrame())
         focusedFrame->eventHandler()->sendContextMenuEventForKey();
     m_contextMenuAllowed = false;
 }
@@ -3515,13 +3515,13 @@ void WebViewImpl::setBaseBackgroundColor(WebColor color)
 
 void WebViewImpl::setIsActive(bool active)
 {
-    if (page() && page()->focusController())
-        page()->focusController()->setActive(active);
+    if (page())
+        page()->focusController().setActive(active);
 }
 
 bool WebViewImpl::isActive() const
 {
-    return (page() && page()->focusController()) ? page()->focusController()->isActive() : false;
+    return page() ? page()->focusController().isActive() : false;
 }
 
 void WebViewImpl::setDomainRelaxationForbidden(bool forbidden, const WebString& scheme)
@@ -3731,7 +3731,7 @@ void WebViewImpl::refreshAutofillPopup()
 
 Element* WebViewImpl::focusedElement()
 {
-    Frame* frame = m_page->focusController()->focusedFrame();
+    Frame* frame = m_page->focusController().focusedFrame();
     if (!frame)
         return 0;
 

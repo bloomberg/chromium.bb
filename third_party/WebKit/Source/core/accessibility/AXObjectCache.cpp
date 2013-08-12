@@ -155,7 +155,7 @@ AccessibilityObject* AXObjectCache::focusedUIElementForPage(const Page* page)
         return 0;
 
     // get the focused node in the page
-    Document* focusedDocument = page->focusController()->focusedOrMainFrame()->document();
+    Document* focusedDocument = page->focusController().focusedOrMainFrame()->document();
     Node* focusedNode = focusedDocument->focusedElement();
     if (!focusedNode)
         focusedNode = focusedDocument;
