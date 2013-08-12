@@ -179,6 +179,11 @@ void HTMLImageElement::attach(const AttachContext& context)
 Node::InsertionNotificationRequest HTMLImageElement::insertedInto(ContainerNode* insertionPoint)
 {
     // m_form can be non-null if it was set in constructor.
+    if (m_form && insertionPoint->highestAncestor() != m_form->highestAncestor()) {
+        m_form->removeImgElement(this);
+        m_form = 0;
+    }
+
     if (!m_form) {
         m_form = findFormAncestor();
         if (m_form)
