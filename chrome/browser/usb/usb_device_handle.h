@@ -137,6 +137,11 @@ class UsbDeviceHandle : public base::RefCountedThreadSafe<UsbDeviceHandle> {
   // SetInterfaceAlternateSetting.
   void RefreshEndpointMap();
 
+  // Look up the claimed interface by endpoint. Return NULL if the interface
+  // of the endpoint is not found.
+  scoped_refptr<InterfaceClaimer> GetClaimedInterfaceForEndpoint(
+      unsigned char endpoint);
+
   // Submits a transfer and starts tracking it. Retains the buffer and copies
   // the completion callback until the transfer finishes, whereupon it invokes
   // the callback then releases the buffer.

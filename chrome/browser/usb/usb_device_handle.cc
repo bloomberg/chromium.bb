@@ -535,6 +535,14 @@ void UsbDeviceHandle::RefreshEndpointMap() {
   }
 }
 
+scoped_refptr<UsbDeviceHandle::InterfaceClaimer>
+    UsbDeviceHandle::GetClaimedInterfaceForEndpoint(unsigned char endpoint) {
+  unsigned char address = endpoint & LIBUSB_ENDPOINT_ADDRESS_MASK;
+  if (ContainsKey(endpoint_map_, address))
+    return claimed_interfaces_[endpoint_map_[address]];
+  return NULL;
+}
+
 void UsbDeviceHandle::SubmitTransfer(
     PlatformUsbTransferHandle handle,
     UsbTransferType transfer_type,
@@ -550,23 +558,16 @@ void UsbDeviceHandle::SubmitTransfer(
                    make_scoped_refptr(buffer), 0));
   }
 
-  unsigned char address = handle->endpoint & LIBUSB_ENDPOINT_ADDRESS_MASK;
-  if (!ContainsKey(endpoint_map_, address)) {
-    // Endpoint for given transfer not found or the interface is not claimed.
-    message_loop_proxy->PostTask(
-        FROM_HERE,
-        base::Bind(callback, USB_TRANSFER_ERROR,
-                   make_scoped_refptr(buffer), 0));
-    return;
-  }
-
   Transfer transfer;
   transfer.transfer_type = transfer_type;
   transfer.buffer = buffer;
   transfer.length = length;
   transfer.callback = callback;
   transfer.message_loop_proxy = message_loop_proxy;
-  transfer.claimed_interface = claimed_interfaces_[endpoint_map_[address]];
+
+  // It's OK for this method to return NULL. libusb_submit_transfer will fail if
+  // it requires an interface we didn't claim.
+  transfer.claimed_interface = GetClaimedInterfaceForEndpoint(handle->endpoint);
 
   if (libusb_submit_transfer(handle) == LIBUSB_SUCCESS) {
     transfers_[handle] = transfer;
