@@ -24,6 +24,9 @@ namespace chromeos {
 
 namespace {
 
+const char kStubPortalledWifiPath[] = "portalled_wifi";
+const char kStubPortalledWifiName[] = "Portalled Wifi";
+
 void ErrorFunction(const std::string& error_name,
                    const std::string& error_message) {
   LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
@@ -49,6 +52,16 @@ ShillServiceClientStub::ShillServiceClientStub() : weak_ptr_factory_(this) {
 ShillServiceClientStub::~ShillServiceClientStub() {
   STLDeleteContainerPairSecondPointers(
       observer_list_.begin(), observer_list_.end());
+}
+
+// static
+bool ShillServiceClientStub::IsStubPortalledWifiEnabled(
+    const std::string& path) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubPortalledWifi)) {
+    return false;
+  }
+  return path == kStubPortalledWifiPath;
 }
 
 // ShillServiceClient overrides.
@@ -192,6 +205,8 @@ void ShillServiceClientStub::Connect(const dbus::ObjectPath& service_path,
     delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
   }
   base::StringValue online_value(flimflam::kStateOnline);
+  if (service_path.value() == kStubPortalledWifiPath)
+    online_value = base::StringValue(flimflam::kStatePortal);
   std::string passphrase;
   service_properties->GetStringWithoutPathExpansion(
       flimflam::kPassphraseProperty, &passphrase);
@@ -320,7 +335,12 @@ void ShillServiceClientStub::AddService(const std::string& service_path,
                                         const std::string& state,
                                         bool add_to_visible_list,
                                         bool add_to_watch_list) {
-  AddServiceWithIPConfig(service_path, name, type, state, "",
+  std::string nstate = state;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDefaultStubNetworkStateIdle)) {
+    nstate = flimflam::kStateIdle;
+  }
+  AddServiceWithIPConfig(service_path, name, type, nstate, "",
                          add_to_visible_list, add_to_watch_list);
 }
 
@@ -453,6 +473,17 @@ void ShillServiceClientStub::AddDefaultServices() {
   SetServiceProperty("wifi2",
                      flimflam::kSignalStrengthProperty,
                      strength_value);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubPortalledWifi)) {
+    AddService(kStubPortalledWifiPath, kStubPortalledWifiName,
+               flimflam::kTypeWifi,
+               flimflam::kStatePortal,
+               add_to_visible, add_to_watchlist);
+    SetServiceProperty(kStubPortalledWifiPath,
+                       flimflam::kSecurityProperty,
+                       base::StringValue(flimflam::kSecurityNone));
+  }
 
   // Wimax
 

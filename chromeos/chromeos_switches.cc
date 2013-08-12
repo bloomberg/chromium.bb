@@ -24,6 +24,9 @@ const char kChromeOSReleaseBoard[] = "chromeos-release-board";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// All stub networks are idle by default.
+const char kDefaultStubNetworkStateIdle[] = "default-stub-network-state-idle";
+
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
@@ -87,6 +90,9 @@ const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
 
 // Enable "interactive" mode for stub implemenations (e.g. NetworkStateHandler)
 const char kEnableStubInteractive[] = "enable-stub-interactive";
+
+// Enable stub portalled wifi network for testing.
+const char kEnableStubPortalledWifi[] = "enable-stub-portalled-wifi";
 
 // Enables touchpad three-finger-click as middle button.
 const char kEnableTouchpadThreeFingerClick[]

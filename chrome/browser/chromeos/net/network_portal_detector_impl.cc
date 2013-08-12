@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/common/chrome_switches.h"
+#include "chromeos/dbus/shill_service_client_stub.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "content/public/browser/notification_service.h"
@@ -352,6 +352,15 @@ void NetworkPortalDetectorImpl::CancelPortalDetection() {
 
 void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
     const CaptivePortalDetector::Results& results) {
+  captive_portal::Result result = results.result;
+  int response_code = results.response_code;
+
+  if (ShillServiceClientStub::IsStubPortalledWifiEnabled(
+          default_service_path_)) {
+    result = captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL;
+    response_code = 200;
+  }
+
   DCHECK(CalledOnValidThread());
   DCHECK(IsCheckingForPortal());
 
@@ -368,8 +377,8 @@ void NetworkPortalDetectorImpl::OnPortalDetectionCompleted(
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
 
   CaptivePortalState state;
-  state.response_code = results.response_code;
-  switch (results.result) {
+  state.response_code = response_code;
+  switch (result) {
     case captive_portal::RESULT_NO_RESPONSE:
       if (attempt_count_ >= kMaxRequestAttempts) {
         if (state.response_code == net::HTTP_PROXY_AUTHENTICATION_REQUIRED) {

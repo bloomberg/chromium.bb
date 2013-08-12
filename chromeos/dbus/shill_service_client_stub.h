@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_service_client.h"
 
 namespace chromeos {
@@ -22,6 +23,11 @@ class ShillServiceClientStub : public ShillServiceClient,
  public:
   ShillServiceClientStub();
   virtual ~ShillServiceClientStub();
+
+  // Returns true when stub portalled wifi is enabled and it's service
+  // path equals to |path|.
+  CHROMEOS_EXPORT static bool IsStubPortalledWifiEnabled(
+      const std::string& path);
 
   // ShillServiceClient overrides.
   virtual void AddPropertyChangedObserver(
