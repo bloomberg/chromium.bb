@@ -474,8 +474,13 @@ void ThemeService::OnManagedUserInitialized() {
   // after the boolean flag has been set in
   // ProfileManager::InitProfileUserPrefs() and after the
   // NOTIFICATION_EXTENSIONS_READY notification is sent.
-  if (theme_supplier_.get() || !IsManagedUser())
+  if ((theme_supplier_.get() &&
+       (theme_supplier_->get_theme_type() == CustomThemeSupplier::EXTENSION ||
+        theme_supplier_->get_theme_type() ==
+            CustomThemeSupplier::MANAGED_USER_THEME)) ||
+      !IsManagedUser()) {
     return;
+  }
 
   SetManagedUserTheme();
 }
