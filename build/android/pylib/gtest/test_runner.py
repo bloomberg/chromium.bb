@@ -188,10 +188,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
   #override
   def TearDown(self):
     """Cleans up the test enviroment for the test suite."""
-    # Content shell creates a profile on the sdscard which accumulates cache
-    # files over time.
-    self.adb.RunShellCommand('rm -r ' +
-        os.path.join(self.adb.GetExternalStorage(), 'content_shell'),
-        timeout_time=60 * 2)
+    self.test_package.ClearApplicationState(self.adb)
     self.tool.CleanUpEnvironment()
     super(TestRunner, self).TearDown()

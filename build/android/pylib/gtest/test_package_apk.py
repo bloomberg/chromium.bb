@@ -87,6 +87,12 @@ class TestPackageApk(TestPackage):
   #override
   def ClearApplicationState(self, adb):
     adb.ClearApplicationState(self._test_apk_package_name)
+    # Content shell creates a profile on the sdscard which accumulates cache
+    # files over time.
+    if self.suite_name == 'content_browsertests':
+      adb.RunShellCommand(
+          'rm -r %s/content_shell' % adb.GetExternalStorage(),
+          timeout_time=60 * 2)
 
   #override
   def CreateCommandLineFileOnDevice(self, adb, test_filter, test_arguments):
