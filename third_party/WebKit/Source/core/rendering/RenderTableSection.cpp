@@ -35,6 +35,7 @@
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/SubtreeLayoutScope.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 
@@ -612,6 +613,7 @@ void RenderTableSection::layout()
 
     const Vector<int>& columnPos = table()->columnPositions();
 
+    SubtreeLayoutScope layouter(this);
     for (unsigned r = 0; r < m_grid.size(); ++r) {
         Row& row = m_grid[r].row;
         unsigned cols = row.size();
@@ -631,7 +633,7 @@ void RenderTableSection::layout()
                 endCol++;
             }
             int tableLayoutLogicalWidth = columnPos[endCol] - columnPos[startColumn] - table()->hBorderSpacing();
-            cell->setCellLogicalWidth(tableLayoutLogicalWidth);
+            cell->setCellLogicalWidth(tableLayoutLogicalWidth, layouter);
         }
 
         if (RenderTableRow* rowRenderer = m_grid[r].rowRenderer)
@@ -836,14 +838,15 @@ void RenderTableSection::layoutRows()
                 }
             }
 
-            cell->computeIntrinsicPadding(rHeight);
+            SubtreeLayoutScope layouter(cell);
+            cell->computeIntrinsicPadding(rHeight, layouter);
 
             LayoutRect oldCellRect = cell->frameRect();
 
             setLogicalPositionForCell(cell, c);
 
             if (!cell->needsLayout() && view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(cell, cell->logicalTop()) != cell->pageLogicalOffset())
-                cell->setChildNeedsLayout(MarkOnlyThis);
+                layouter.setChildNeedsLayout(cell);
 
             cell->layoutIfNeeded();
 

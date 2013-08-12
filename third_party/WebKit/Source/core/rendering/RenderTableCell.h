@@ -35,6 +35,8 @@ static const unsigned maxColumnIndex = 0x1FFFFFFE; // 536,870,910
 
 enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 
+class SubtreeLayoutScope;
+
 class RenderTableCell FINAL : public RenderBlock {
 public:
     explicit RenderTableCell(Element*);
@@ -103,7 +105,7 @@ public:
     }
 
 
-    void setCellLogicalWidth(int constrainedLogicalWidth);
+    void setCellLogicalWidth(int constrainedLogicalWidth, SubtreeLayoutScope&);
 
     virtual int borderLeft() const;
     virtual int borderRight() const;
@@ -131,7 +133,7 @@ public:
         return va == BASELINE || va == TEXT_BOTTOM || va == TEXT_TOP || va == SUPER || va == SUB || va == LENGTH;
     }
 
-    void computeIntrinsicPadding(int rowHeight);
+    void computeIntrinsicPadding(int rowHeight, SubtreeLayoutScope&);
     void clearIntrinsicPadding() { setIntrinsicPadding(0, 0); }
 
     int intrinsicPaddingBefore() const { return m_intrinsicPaddingBefore; }

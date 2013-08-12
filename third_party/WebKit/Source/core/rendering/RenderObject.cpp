@@ -673,10 +673,11 @@ static inline bool objectIsRelayoutBoundary(const RenderObject* object)
     return true;
 }
 
-void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, RenderObject* newRoot)
+void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, RenderObject* newRoot, SubtreeLayoutScope* layouter)
 {
     ASSERT(!scheduleRelayout || !newRoot);
     ASSERT(!isSetNeedsLayoutForbidden());
+    ASSERT(!layouter || this != layouter->root());
 
     RenderObject* object = container();
     RenderObject* last = this;
@@ -720,6 +721,12 @@ void RenderObject::markContainingBlocksForLayout(bool scheduleRelayout, RenderOb
                 return;
             object->setNormalChildNeedsLayout(true);
             ASSERT(!object->isSetNeedsLayoutForbidden());
+        }
+
+        if (layouter) {
+            layouter->addRendererToLayout(object);
+            if (object == layouter->root())
+                return;
         }
 
         if (object == newRoot)

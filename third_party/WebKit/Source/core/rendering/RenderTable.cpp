@@ -40,6 +40,7 @@
 #include "core/rendering/RenderTableCol.h"
 #include "core/rendering/RenderTableSection.h"
 #include "core/rendering/RenderView.h"
+#include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/CollapsedBorderValue.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
@@ -422,9 +423,11 @@ void RenderTable::layout()
     LayoutUnit oldLogicalWidth = logicalWidth();
     updateLogicalWidth();
 
+    SubtreeLayoutScope layouter(this);
+
     if (logicalWidth() != oldLogicalWidth) {
         for (unsigned i = 0; i < m_captions.size(); i++)
-            m_captions[i]->setNeedsLayout(MarkOnlyThis);
+            layouter.setNeedsLayout(m_captions[i]);
     }
     // FIXME: The optimisation below doesn't work since the internal table
     // layout could have changed.  we need to add a flag to the table
@@ -444,7 +447,7 @@ void RenderTable::layout()
         if (child->isTableSection()) {
             RenderTableSection* section = toRenderTableSection(child);
             if (m_columnLogicalWidthChanged)
-                section->setChildNeedsLayout(MarkOnlyThis);
+                layouter.setChildNeedsLayout(section);
             section->layoutIfNeeded();
             totalSectionLogicalHeight += section->calcRowLogicalHeight();
             if (collapsing)

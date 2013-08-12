@@ -36,6 +36,7 @@
 #include "core/rendering/PaintPhase.h"
 #include "core/rendering/RenderObjectChildList.h"
 #include "core/rendering/ScrollBehavior.h"
+#include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include "wtf/HashSet.h"
@@ -621,10 +622,10 @@ public:
 
     Element* offsetParent() const;
 
-    void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0);
-    void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain);
+    void markContainingBlocksForLayout(bool scheduleRelayout = true, RenderObject* newRoot = 0, SubtreeLayoutScope* = 0);
+    void setNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void clearNeedsLayout();
-    void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain);
+    void setChildNeedsLayout(MarkingBehavior = MarkContainingBlockChain, SubtreeLayoutScope* = 0);
     void setNeedsPositionedMovementLayout();
     void setNeedsSimplifiedNormalFlowLayout();
     void setPreferredLogicalWidthsDirty(bool, MarkingBehavior = MarkContainingBlockChain);
@@ -1240,14 +1241,14 @@ inline bool RenderObject::isBeforeOrAfterContent() const
     return isBeforeContent() || isAfterContent();
 }
 
-inline void RenderObject::setNeedsLayout(MarkingBehavior markParents)
+inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = m_bitfields.needsLayout();
     m_bitfields.setNeedsLayout(true);
     if (!alreadyNeededLayout) {
-        if (markParents == MarkContainingBlockChain)
-            markContainingBlocksForLayout();
+        if (markParents == MarkContainingBlockChain && (!layouter || layouter->root() != this))
+            markContainingBlocksForLayout(true, 0, layouter);
         if (hasLayer())
             setLayerNeedsFullRepaint();
     }
@@ -1267,13 +1268,14 @@ inline void RenderObject::clearNeedsLayout()
 #endif
 }
 
-inline void RenderObject::setChildNeedsLayout(MarkingBehavior markParents)
+inline void RenderObject::setChildNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
     bool alreadyNeededLayout = normalChildNeedsLayout();
     setNormalChildNeedsLayout(true);
-    if (!alreadyNeededLayout && markParents == MarkContainingBlockChain)
-        markContainingBlocksForLayout();
+    // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and remove the MarkingBehavior argument entirely.
+    if (!alreadyNeededLayout && markParents == MarkContainingBlockChain && (!layouter || layouter->root() != this))
+        markContainingBlocksForLayout(true, 0, layouter);
 }
 
 inline void RenderObject::setNeedsPositionedMovementLayout()
