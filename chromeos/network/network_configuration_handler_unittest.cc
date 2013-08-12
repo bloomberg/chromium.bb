@@ -12,6 +12,7 @@
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
+#include "chromeos/dbus/shill_profile_client_stub.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -157,9 +158,11 @@ class NetworkConfigurationHandlerTest : public testing::Test {
     callback.Run(result);
   }
 
-  void OnConfigureService(const base::DictionaryValue& properties,
-                    const ObjectPathCallback& callback,
-                    const ShillClientHelper::ErrorCallback& error_callback) {
+  void OnConfigureService(
+      const dbus::ObjectPath& profile_path,
+      const base::DictionaryValue& properties,
+      const ObjectPathCallback& callback,
+      const ShillClientHelper::ErrorCallback& error_callback) {
     callback.Run(dbus::ObjectPath("/service/2"));
   }
 
@@ -327,19 +330,21 @@ TEST_F(NetworkConfigurationHandlerTest, ClearPropertiesError) {
 }
 
 TEST_F(NetworkConfigurationHandlerTest, CreateConfiguration) {
-  std::string expected_json = "{\n   \"SSID\": \"MyNetwork\"\n}\n";
   std::string networkName = "MyNetwork";
   std::string key = "SSID";
+  std::string profile = "profile path";
   scoped_ptr<base::StringValue> networkNameValue(
       base::Value::CreateStringValue(networkName));
   base::DictionaryValue value;
-  value.Set(key, base::Value::CreateStringValue(networkName));
+  value.SetWithoutPathExpansion(flimflam::kSSIDProperty,
+                                base::Value::CreateStringValue(networkName));
+  value.SetWithoutPathExpansion(flimflam::kProfileProperty,
+                                base::Value::CreateStringValue(profile));
 
-  EXPECT_CALL(
-      *mock_manager_client_,
-      ConfigureService(_, _, _)).WillOnce(
-          Invoke(this,
-                 &NetworkConfigurationHandlerTest::OnConfigureService));
+  EXPECT_CALL(*mock_manager_client_,
+              ConfigureServiceForProfile(dbus::ObjectPath(profile), _, _, _))
+      .WillOnce(
+           Invoke(this, &NetworkConfigurationHandlerTest::OnConfigureService));
   network_configuration_handler_->CreateConfiguration(
       value,
       base::Bind(&StringResultCallback, std::string("/service/2")),
@@ -586,6 +591,8 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
       flimflam::kTypeProperty, flimflam::kTypeWifi);
   properties.SetStringWithoutPathExpansion(
       flimflam::kStateProperty, flimflam::kStateIdle);
+  properties.SetStringWithoutPathExpansion(
+      flimflam::kProfileProperty, ShillProfileClientStub::kSharedProfilePath);
 
   network_configuration_handler_->CreateConfiguration(
       properties,
@@ -596,10 +603,16 @@ TEST_F(NetworkConfigurationHandlerStubTest, StubCreateConfiguration) {
   message_loop_.RunUntilIdle();
 
   EXPECT_FALSE(create_service_path_.empty());
+
   std::string ssid;
   EXPECT_TRUE(GetServiceStringProperty(
       create_service_path_, flimflam::kSSIDProperty, &ssid));
+  std::string actual_profile;
   EXPECT_EQ(service_path, ssid);
+
+  EXPECT_TRUE(GetServiceStringProperty(
+      create_service_path_, flimflam::kProfileProperty, &actual_profile));
+  EXPECT_EQ(ShillProfileClientStub::kSharedProfilePath, actual_profile);
 }
 
 }  // namespace chromeos
