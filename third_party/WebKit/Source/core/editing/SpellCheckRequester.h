@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SpellCheckRequestManager_h
-#define SpellCheckRequestManager_h
+#ifndef SpellCheckRequester_h
+#define SpellCheckRequester_h
 
 #include "core/dom/Element.h"
 #include "core/dom/Range.h"
@@ -118,4 +118,4 @@ private:
 
 } // namespace WebCore
 
-#endif // SpellCheckRequestManager_h
+#endif // SpellCheckRequester_h

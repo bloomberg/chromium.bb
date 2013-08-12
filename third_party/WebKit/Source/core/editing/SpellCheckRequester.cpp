@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/editing/SpellCheckRequestManager.h"
+#include "core/editing/SpellCheckRequester.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentMarkerController.h"
