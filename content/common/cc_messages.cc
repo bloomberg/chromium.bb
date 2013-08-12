@@ -4,9 +4,13 @@
 
 #include "content/common/cc_messages.h"
 
+#include "base/command_line.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/filter_operations.h"
 #include "content/public/common/common_param_traits.h"
+#include "content/public/common/content_switches.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkFlattenableSerialization.h"
 #include "ui/gfx/transform.h"
 
 namespace IPC {
@@ -182,6 +186,41 @@ void ParamTraits<cc::FilterOperations>::Log(
       l->append(", ");
     LogParam(p.at(i), l);
   }
+  l->append(")");
+}
+
+void ParamTraits<skia::RefPtr<SkImageFilter> >::Write(
+    Message* m, const param_type& p) {
+  SkImageFilter* filter = p.get();
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (filter && command_line.HasSwitch(switches::kAllowFiltersOverIPC)) {
+    skia::RefPtr<SkData> data = skia::AdoptRef(SkSerializeFlattenable(filter));
+    m->WriteData(static_cast<const char*>(data->data()), data->size());
+  } else {
+    m->WriteData(0, 0);
+  }
+}
+
+bool ParamTraits<skia::RefPtr<SkImageFilter> >::Read(
+    const Message* m, PickleIterator* iter, param_type* r) {
+  const char* data = 0;
+  int length = 0;
+  if (!m->ReadData(iter, &data, &length))
+    return false;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if ((length > 0) && command_line.HasSwitch(switches::kAllowFiltersOverIPC)) {
+    SkFlattenable* flattenable = SkDeserializeFlattenable(data, length);
+    *r = skia::AdoptRef(static_cast<SkImageFilter*>(flattenable));
+  } else {
+    r->clear();
+  }
+  return true;
+}
+
+void ParamTraits<skia::RefPtr<SkImageFilter> >::Log(
+    const param_type& p, std::string* l) {
+  l->append("(");
+  LogParam(p.get() ? p->countInputs() : 0, l);
   l->append(")");
 }
 

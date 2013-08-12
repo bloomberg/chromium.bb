@@ -935,4 +935,7 @@ extern const char kTestCompositor[]         = "test-compositor";
 
 // Don't dump stuff here, follow the same order as the header.
 
+// Allows filters (SkImageFilter objects) to be sent between processes over IPC
+const char kAllowFiltersOverIPC[] = "allow-filters-over-ipc";
+
 }  // namespace switches

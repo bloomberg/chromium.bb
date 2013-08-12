@@ -56,6 +56,14 @@ struct ParamTraits<cc::FilterOperations> {
 };
 
 template <>
+struct ParamTraits<skia::RefPtr<SkImageFilter> > {
+  typedef skia::RefPtr<SkImageFilter> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template <>
 struct ParamTraits<gfx::Transform> {
   typedef gfx::Transform param_type;
   static void Write(Message* m, const param_type& p);
@@ -148,8 +156,7 @@ IPC_STRUCT_TRAITS_BEGIN(cc::RenderPassDrawQuad)
   IPC_STRUCT_TRAITS_MEMBER(contents_changed_since_last_frame)
   IPC_STRUCT_TRAITS_MEMBER(mask_uv_rect)
   IPC_STRUCT_TRAITS_MEMBER(filters)
-  // TODO(piman): filter isn't being serialized.
-  // IPC_STRUCT_TRAITS_MEMBER(filter)
+  IPC_STRUCT_TRAITS_MEMBER(filter)
   IPC_STRUCT_TRAITS_MEMBER(background_filters)
 IPC_STRUCT_TRAITS_END()
 
