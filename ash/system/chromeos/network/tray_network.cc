@@ -264,6 +264,15 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
   }
 
  private:
+  virtual void Layout() OVERRIDE {
+    // Center both views vertically.
+    views::View::Layout();
+    image_view_->SetY(
+        (height() - image_view_->GetPreferredSize().height()) / 2);
+    label_view_->SetY(
+        (height() - label_view_->GetPreferredSize().height()) / 2);
+  }
+
   void Update() {
     bool wifi_enabled = NetworkHandler::Get()->network_state_handler()->
         IsTechnologyEnabled(flimflam::kTypeWifi);
@@ -276,6 +285,9 @@ class NetworkWifiDetailedView : public NetworkDetailedView {
         IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED :
         IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
     label_view_->SetText(bundle.GetLocalizedString(string_id));
+    label_view_->SizeToFit(kTrayPopupMinWidth -
+        kTrayPopupPaddingHorizontal * 2 - kTrayPopupPaddingBetweenItems -
+        kTrayPopupDetailsIconWidth);
   }
 
   views::ImageView* image_view_;
