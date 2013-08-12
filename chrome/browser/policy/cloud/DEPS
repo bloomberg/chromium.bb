@@ -1,0 +1,162 @@
+# The //chrome/browser/policy code is being converted into a component at
+# //components/policy. This DEPS file is temporarily restricting the include
+# rules for this code; once all the exceptions are fixed then the code will
+# be moved, and this file will be removed.
+# http://crbug.com/271392
+
+include_rules = [
+  "-chrome",
+  "-chromeos",
+  "-content",
+  "+chrome/browser/policy",
+  "+chrome/browser/policy/cloud",
+]
+
+specific_include_rules = {
+  # These files will stay.
+  r"(cloud_policy_browsertest|"
+  r"cloud_policy_manager_browsertest|"
+  r"component_cloud_policy_browsertest|"
+  r"device_management_service_browsertest|"
+  r"user_policy_signin_service_android|"
+  r"user_policy_signin_service_base|"
+  r"user_policy_signin_service|"
+  r"user_policy_signin_service_factory|"
+  r"user_policy_signin_service_unittest)"
+  r"\.(cc|h)": [
+    "+chrome",
+    "+chromeos",
+    "+content/public/browser",
+    "+content/public/common",
+    "+content/public/test",
+    "+content/test/net",
+  ],
+
+  # TODO(joaodasilva): remove these exceptions.
+  r"cloud_external_data_manager_base\.cc": [
+    "+content/public/browser/browser_thread.h",
+  ],
+
+  r"cloud_external_data_manager_base_unittest\.cc": [
+    "+content/public/test/test_browser_thread_bundle.h",
+  ],
+
+  r"cloud_policy_client_registration_helper\.cc": [
+    "+chrome/browser/signin/android_profile_oauth2_token_service.h",
+    "+chrome/browser/signin/oauth2_token_service.h",
+  ],
+
+  r"cloud_policy_constants\.cc": [
+    "+chrome/common/chrome_switches.h",
+  ],
+
+  r"cloud_policy_core_unittest\.cc": [
+    "+chrome/browser/prefs/browser_prefs.h",
+    "+chrome/common/pref_names.h",
+  ],
+
+  r"cloud_policy_invalidator\.cc": [
+    "+chrome/browser/invalidation/invalidation_service.h",
+    "+chrome/browser/invalidation/invalidation_service_factory.h",
+    "+chrome/common/chrome_switches.h",
+  ],
+
+  r"cloud_policy_invalidator_unittest\.cc": [
+    "+chrome/browser/invalidation/fake_invalidation_service.h",
+  ],
+
+  r"cloud_policy_manager_unittest\.cc": [
+    "+chrome/browser/invalidation/fake_invalidation_service.h",
+  ],
+
+  r"cloud_policy_refresh_scheduler\.cc": [
+    "+chrome/browser/chrome_notification_types.h",
+    "+content/public/browser/notification_details.h",
+  ],
+
+  r"cloud_policy_refresh_scheduler_unittest\.cc": [
+    "+chrome/browser/prefs/browser_prefs.h",
+  ],
+
+  r"cloud_policy_validator\.cc": [
+    "+content/public/browser/browser_thread.h",
+  ],
+
+  r"cloud_policy_validator_unittest\.cc": [
+    "+content/public/test/test_browser_thread.h",
+  ],
+
+  r"component_cloud_policy_service\.cc": [
+    "+content/public/browser/browser_thread.h",
+  ],
+
+  r"component_cloud_policy_service_unittest\.cc": [
+    "+chrome/common/policy/policy_schema.h",
+    "+content/public/browser/browser_thread.h",
+    "+content/public/test/test_browser_thread.h",
+  ],
+
+  r"device_management_service\.cc": [
+    "+chrome/browser/browser_process.h",
+    "+chrome/browser/net/basic_http_user_agent_settings.h",
+    "+chrome/browser/net/chrome_net_log.h",
+    "+chrome/common/chrome_version_info.h",
+    "+content/public/browser/browser_thread.h",
+    "+content/public/common/content_client.h",
+    "+chrome/browser/chromeos/system/statistics_provider.h",
+  ],
+
+  r"device_management_service_unittest\.cc": [
+    "+chrome/test/base/testing_browser_process.h",
+    "+content/public/test/test_browser_thread_bundle.h",
+  ],
+
+  r"test_request_interceptor\.cc": [
+    "+content/public/browser/browser_thread.h",
+    "+content/public/test/test_utils.h",
+    "+content/test/net/url_request_mock_http_job.h",
+  ],
+
+  r"user_cloud_policy_invalidator\.cc": [
+    "+chrome/browser/chrome_notification_types.h",
+    "+content/public/browser/notification_source.h",
+  ],
+
+  r"user_cloud_policy_invalidator_factory\.cc": [
+    "+chrome/browser/invalidation/invalidation_service_factory.h",
+    "+chrome/browser/profiles/profile.h",
+    "+chrome/common/chrome_switches.h",
+    "+chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h",
+    "+chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h",
+  ],
+
+  r"user_cloud_policy_invalidator\.h": [
+    "+content/public/browser/notification_observer.h",
+    "+content/public/browser/notification_registrar.h",
+  ],
+
+  r"user_cloud_policy_manager\.cc": [
+    "+chrome/common/pref_names.h",
+  ],
+
+  r"user_cloud_policy_manager_factory\.cc": [
+    "+chrome/browser/profiles/profile.h",
+    "+chrome/common/chrome_switches.h",
+  ],
+
+  r"user_cloud_policy_store\.cc": [
+    "+chrome/browser/profiles/profile.h",
+    "+chrome/browser/signin/signin_manager.h",
+    "+chrome/browser/signin/signin_manager_factory.h",
+    "+content/public/browser/browser_thread.h",
+  ],
+
+  r"user_cloud_policy_store_unittest\.cc": [
+    "+chrome/browser/signin/fake_signin_manager.h",
+    "+chrome/browser/signin/signin_manager.h",
+    "+chrome/browser/signin/signin_manager_factory.h",
+    "+chrome/common/pref_names.h",
+    "+chrome/test/base/testing_profile.h",
+    "+content/public/test/test_browser_thread.h",
+  ],
+}

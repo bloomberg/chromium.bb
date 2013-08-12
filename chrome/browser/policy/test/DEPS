@@ -1,0 +1,18 @@
+# The //chrome/browser/policy code is being converted into a component at
+# //components/policy. This DEPS file is temporarily restricting the include
+# rules for this code; once all the exceptions are fixed then the code will
+# be moved, and this file will be removed.
+# http://crbug.com/271392
+
+include_rules = [
+  "-chrome",
+  "-chromeos",
+  "-content",
+  "+chrome/browser/policy",
+]
+
+specific_include_rules = {
+  r"local_policy_test_server\.cc": [
+    "+chrome/common/chrome_paths.h",
+  ],
+}
