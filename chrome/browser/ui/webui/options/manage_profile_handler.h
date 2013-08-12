@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
+#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
 
 namespace base {
@@ -18,7 +19,8 @@ class StringValue;
 namespace options {
 
 // Chrome personal stuff profiles manage overlay UI handler.
-class ManageProfileHandler : public OptionsPageUIHandler {
+class ManageProfileHandler : public OptionsPageUIHandler,
+                             public ProfileSyncServiceObserver {
  public:
   ManageProfileHandler();
   virtual ~ManageProfileHandler();
@@ -36,6 +38,9 @@ class ManageProfileHandler : public OptionsPageUIHandler {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // ProfileSyncServiceObserver:
+  virtual void OnStateChanged() OVERRIDE;
 
  private:
   // Callback for the "requestDefaultProfileIcons" message.

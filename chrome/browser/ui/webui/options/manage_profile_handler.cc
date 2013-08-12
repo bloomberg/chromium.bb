@@ -82,6 +82,11 @@ ManageProfileHandler::ManageProfileHandler()
 }
 
 ManageProfileHandler::~ManageProfileHandler() {
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(Profile::FromWebUI(web_ui()));
+  // Sync may be disabled in tests.
+  if (service)
+    service->RemoveObserver(this);
 }
 
 void ManageProfileHandler::GetLocalizedValues(
@@ -140,11 +145,17 @@ void ManageProfileHandler::InitializeHandler() {
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CACHED_INFO_CHANGED,
                  content::NotificationService::AllSources());
 
-  pref_change_registrar_.Init(Profile::FromWebUI(web_ui())->GetPrefs());
+  Profile* profile = Profile::FromWebUI(web_ui());
+  pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kManagedUserCreationAllowed,
       base::Bind(&ManageProfileHandler::OnCreateManagedUserPrefChange,
                  base::Unretained(this)));
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
+  // Sync may be disabled for tests.
+  if (service)
+    service->AddObserver(this);
 }
 
 void ManageProfileHandler::InitializePage() {
@@ -204,6 +215,10 @@ void ManageProfileHandler::Observe(
   } else {
     OptionsPageUIHandler::Observe(type, source, details);
   }
+}
+
+void ManageProfileHandler::OnStateChanged() {
+  RequestCreateProfileUpdate(NULL);
 }
 
 void ManageProfileHandler::RequestDefaultProfileIcons(const ListValue* args) {

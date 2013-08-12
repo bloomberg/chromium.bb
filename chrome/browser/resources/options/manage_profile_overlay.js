@@ -617,8 +617,13 @@ cr.define('options', function() {
       var isSignedIn = email !== '';
       $('create-profile-managed-signed-in').hidden = !isSignedIn;
       $('create-profile-managed-not-signed-in').hidden = isSignedIn;
-      $('select-existing-managed-profile-checkbox').hidden = !isSignedIn;
-      $('choose-existing-managed-profile').hidden = !isSignedIn;
+      var hideSelectExistingManagedUsers =
+          !isSignedIn ||
+          !loadTimeData.getBoolean('allowCreateExistingManagedUsers');
+      $('select-existing-managed-profile-checkbox').hidden =
+          hideSelectExistingManagedUsers;
+      $('choose-existing-managed-profile').hidden =
+          hideSelectExistingManagedUsers;
 
       if (isSignedIn) {
         var accountDetailsOutOfDate =
