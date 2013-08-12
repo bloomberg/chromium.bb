@@ -36,7 +36,7 @@ readonly SCONS_COMMON="./scons --verbose bitcode=1"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 # This script is used by toolchain bots (i.e. tc-xxx functions)
 readonly PNACL_BUILD="pnacl/build.sh"
-readonly LLVM_TEST="pnacl/scripts/llvm-test.sh"
+readonly LLVM_TEST="pnacl/scripts/llvm-test.py"
 readonly DRIVER_TESTS="pnacl/driver/tests/driver_tests.py"
 readonly ACCEPTABLE_TOOLCHAIN_SIZE_MB=55
 
@@ -364,7 +364,7 @@ scons-stage-noirt() {
 
 llvm-regression() {
   echo "@@@BUILD_STEP llvm_regression@@@"
-  ${LLVM_TEST} llvm-regression || handle-error
+  ${LLVM_TEST} --llvm-regression || handle-error
 }
 
 # This function is shared between x86-32 and x86-64. All building and testing
