@@ -11,7 +11,6 @@
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "cc/output/context_provider.h"
 #include "media/base/media.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
@@ -30,9 +29,6 @@
 #include "v8/include/v8.h"
 #include "webkit/browser/database/vfs_backend.h"
 #include "webkit/child/webkitplatformsupport_impl.h"
-#include "webkit/common/gpu/test_context_provider_factory.h"
-#include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-#include "webkit/common/gpu/webgraphicscontext3d_provider_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/renderer/compositor_bindings/web_compositor_support_impl.h"
@@ -218,35 +214,6 @@ WebKit::WebThemeEngine* TestWebKitPlatformSupport::themeEngine() {
   return active_theme_engine_;
 }
 #endif
-
-WebKit::WebGraphicsContext3D*
-TestWebKitPlatformSupport::createOffscreenGraphicsContext3D(
-    const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  return WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-      attributes).release();
-}
-
-WebKit::WebGraphicsContext3DProvider* TestWebKitPlatformSupport::
-    createSharedOffscreenGraphicsContext3DProvider() {
-  main_thread_contexts_ =
-      webkit::gpu::TestContextProviderFactory::GetInstance()->
-          OffscreenContextProviderForMainThread();
-  if (!main_thread_contexts_.get())
-    return NULL;
-  return new webkit::gpu::WebGraphicsContext3DProviderImpl(
-      main_thread_contexts_);
-}
-
-bool TestWebKitPlatformSupport::canAccelerate2dCanvas() {
-  // We supply an OS-MESA based context for accelarated 2d
-  // canvas, which should always work.
-  return true;
-}
-
-bool TestWebKitPlatformSupport::isThreadedCompositingEnabled() {
-  return false;
-}
 
 WebKit::WebCompositorSupport*
 TestWebKitPlatformSupport::compositorSupport() {

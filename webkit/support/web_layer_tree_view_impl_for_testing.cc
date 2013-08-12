@@ -177,8 +177,8 @@ WebLayerTreeViewImplForTesting::OffscreenContextProviderForMainThread() {
 
 scoped_refptr<cc::ContextProvider>
 WebLayerTreeViewImplForTesting::OffscreenContextProviderForCompositorThread() {
-  return webkit::gpu::TestContextProviderFactory::GetInstance()->
-      OffscreenContextProviderForCompositorThread();
+  NOTREACHED();
+  return NULL;
 }
 
 }  // namespace webkit

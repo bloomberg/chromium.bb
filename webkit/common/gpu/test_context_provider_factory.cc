@@ -34,12 +34,5 @@ scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
   return main_thread_;
 }
 
-scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
-    OffscreenContextProviderForCompositorThread() {
-  if (!compositor_thread_.get() || compositor_thread_->DestroyedOnMainThread())
-    compositor_thread_ = ContextProviderInProcess::Create();
-  return compositor_thread_;
-}
-
 }  // namespace gpu
 }  // namespace webkit

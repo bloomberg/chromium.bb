@@ -22,15 +22,12 @@ class WEBKIT_GPU_EXPORT TestContextProviderFactory {
   static TestContextProviderFactory* GetInstance();
 
   scoped_refptr<cc::ContextProvider> OffscreenContextProviderForMainThread();
-  scoped_refptr<cc::ContextProvider>
-      OffscreenContextProviderForCompositorThread();
 
  private:
   TestContextProviderFactory();
   ~TestContextProviderFactory();
 
   scoped_refptr<webkit::gpu::ContextProviderInProcess> main_thread_;
-  scoped_refptr<webkit::gpu::ContextProviderInProcess> compositor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextProviderFactory);
 };

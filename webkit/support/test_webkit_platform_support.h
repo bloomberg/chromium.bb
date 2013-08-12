@@ -7,7 +7,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/scoped_temp_dir.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/WebKit/public/platform/WebUnitTestSupport.h"
 #include "webkit/child/webkitplatformsupport_child_impl.h"
 #include "webkit/glue/simple_webmimeregistry_impl.h"
@@ -16,14 +15,7 @@
 #include "webkit/support/mock_webclipboard_impl.h"
 #include "webkit/support/weburl_loader_mock_factory.h"
 
-class TestShellWebBlobRegistryImpl;
-
-namespace cc {
-class ContextProvider;
-}
-
 namespace WebKit {
-class WebGraphicsContext3DProvider;
 class WebLayerTreeView;
 }
 
@@ -58,12 +50,6 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebThemeEngine *themeEngine();
 #endif
 
-  virtual WebKit::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
-      const WebKit::WebGraphicsContext3D::Attributes&);
-  virtual WebKit::WebGraphicsContext3DProvider*
-      createSharedOffscreenGraphicsContext3DProvider();
-  virtual bool canAccelerate2dCanvas();
-  virtual bool isThreadedCompositingEnabled();
   virtual WebKit::WebCompositorSupport* compositorSupport();
 
   WebURLLoaderMockFactory* url_loader_factory() {
@@ -115,8 +101,6 @@ class TestWebKitPlatformSupport :
   base::ScopedTempDir file_system_root_;
   WebURLLoaderMockFactory url_loader_factory_;
   webkit::WebCompositorSupportImpl compositor_support_;
-
-  scoped_refptr<cc::ContextProvider> main_thread_contexts_;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   WebKit::WebThemeEngine* active_theme_engine_;
