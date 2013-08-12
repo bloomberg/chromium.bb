@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -347,6 +348,7 @@ void GtkThemeService::InitThemesFor(content::NotificationObserver* observer) {
 
 void GtkThemeService::SetTheme(const extensions::Extension* extension) {
   profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
+  use_gtk_ = false;
   LoadDefaultValues();
   ThemeService::SetTheme(extension);
 }
@@ -368,6 +370,14 @@ void GtkThemeService::SetNativeTheme() {
 
 bool GtkThemeService::UsingDefaultTheme() const {
   return !use_gtk_ && ThemeService::UsingDefaultTheme();
+}
+
+void GtkThemeService::SetCustomDefaultTheme(
+    scoped_refptr<CustomThemeSupplier> theme_supplier) {
+  profile()->GetPrefs()->SetBoolean(prefs::kUsesSystemTheme, false);
+  use_gtk_ = false;
+  LoadDefaultValues();
+  ThemeService::SetCustomDefaultTheme(theme_supplier);
 }
 
 bool GtkThemeService::ShouldInitWithNativeTheme() const {

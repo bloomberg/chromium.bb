@@ -18,6 +18,7 @@
 #include "ui/base/gtk/owned_widget_gtk.h"
 #include "ui/gfx/color_utils.h"
 
+class CustomThemeSupplier;
 class Profile;
 
 namespace content {
@@ -79,6 +80,8 @@ class GtkThemeService : public ThemeService {
   virtual void SetNativeTheme() OVERRIDE;
   virtual bool UsingDefaultTheme() const OVERRIDE;
   virtual bool UsingNativeTheme() const OVERRIDE;
+  virtual void SetCustomDefaultTheme(
+      scoped_refptr<CustomThemeSupplier> theme_supplier) OVERRIDE;
   virtual bool ShouldInitWithNativeTheme() const OVERRIDE;
 
   // Creates a GtkChromeButton instance, registered with this theme provider,

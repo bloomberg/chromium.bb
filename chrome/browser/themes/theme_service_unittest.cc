@@ -6,19 +6,26 @@
 
 #include "base/json/json_reader.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
+#include "chrome/browser/managed_mode/managed_user_service.h"
+#include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace theme_service_internal {
 
 class ThemeServiceTest : public ExtensionServiceTestBase {
  public:
-  ThemeServiceTest() {}
+  ThemeServiceTest() {
+    manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+  }
   virtual ~ThemeServiceTest() {}
 
   scoped_refptr<extensions::Extension> MakeThemeExtension(base::FilePath path) {
@@ -40,11 +47,20 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
   virtual void SetUp() {
     ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
+    bool success = manager_->SetUp();
+    ASSERT_TRUE(success);
   }
 
   const CustomThemeSupplier* get_theme_supplier(ThemeService* theme_service) {
     return theme_service->get_theme_supplier();
   }
+
+  TestingProfileManager* manager() {
+    return manager_.get();
+  }
+
+ private:
+  scoped_ptr<TestingProfileManager> manager_;
 };
 
 // Installs then uninstalls a theme and makes sure that the ThemeService
@@ -101,6 +117,18 @@ TEST_F(ThemeServiceTest, ManagedUserThemeReplacesDefaultTheme) {
   EXPECT_TRUE(get_theme_supplier(theme_service));
   EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
             CustomThemeSupplier::MANAGED_USER_THEME);
+}
+
+TEST_F(ThemeServiceTest, ManagedUserThemeNewUser) {
+  TestingProfile* profile = manager()->CreateTestingProfile("mu");
+  // Simulate the current initialization behavior: first the ThemeService is
+  // created, then the supervised user profile is initialized.
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile);
+  ManagedUserServiceFactory::GetForProfile(profile)->InitForTesting();
+  EXPECT_EQ(get_theme_supplier(theme_service)->get_theme_type(),
+            CustomThemeSupplier::MANAGED_USER_THEME);
+  manager()->DeleteTestingProfile("mu");
 }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

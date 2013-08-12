@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
@@ -214,6 +215,9 @@ class ThemeService : public base::NonThreadSafe,
   // managed user profiles.
   void SetManagedUserTheme();
 
+  // Sets the managed user theme if the user has no custom theme yet.
+  void OnManagedUserInitialized();
+
 #if defined(TOOLKIT_GTK)
   // Loads an image and flips it horizontally if |rtl_enabled| is true.
   GdkPixbuf* GetPixbufImpl(int id, bool rtl_enabled) const;
@@ -246,6 +250,8 @@ class ThemeService : public base::NonThreadSafe,
   content::NotificationRegistrar registrar_;
 
   scoped_ptr<ThemeSyncableService> theme_syncable_service_;
+
+  base::WeakPtrFactory<ThemeService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThemeService);
 };

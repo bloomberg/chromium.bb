@@ -277,6 +277,11 @@ void ManagedUserService::DidBlockNavigation(
   }
 }
 
+void ManagedUserService::AddInitCallback(
+    const base::Closure& callback) {
+  init_callbacks_.push_back(callback);
+}
+
 std::string ManagedUserService::GetDebugPolicyProviderName() const {
   // Save the string space in official builds.
 #ifdef NDEBUG
@@ -596,6 +601,14 @@ void ManagedUserService::Init() {
   UpdateSiteLists();
   UpdateManualHosts();
   UpdateManualURLs();
+
+  // Call the callbacks to notify that the ManagedUserService has been
+  // initialized.
+  for (std::vector<base::Closure>::iterator it = init_callbacks_.begin();
+       it != init_callbacks_.end();
+       ++it) {
+    it->Run();
+  }
 }
 
 void ManagedUserService::RegisterAndInitSync(

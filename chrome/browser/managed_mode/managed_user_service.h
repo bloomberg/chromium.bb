@@ -144,6 +144,8 @@ class ManagedUserService : public BrowserContextKeyedService,
   void AddNavigationBlockedCallback(const NavigationBlockedCallback& callback);
   void DidBlockNavigation(content::WebContents* web_contents);
 
+  void AddInitCallback(const base::Closure& callback);
+
   // extensions::ManagementPolicy::Provider implementation:
   virtual std::string GetDebugPolicyProviderName() const OVERRIDE;
   virtual bool UserMayLoad(const extensions::Extension* extension,
@@ -256,6 +258,8 @@ class ManagedUserService : public BrowserContextKeyedService,
   // True iff we're waiting for the Sync service to be initialized.
   bool waiting_for_sync_initialization_;
   bool is_profile_active_;
+
+  std::vector<base::Closure> init_callbacks_;
 
   std::vector<NavigationBlockedCallback> navigation_blocked_callbacks_;
 
