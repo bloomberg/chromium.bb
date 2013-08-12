@@ -11,9 +11,9 @@ option optimize_for = LITE_RUNTIME;
 package sync_file_system.drive_backend;
 
 enum FileKind {
-  KIND_UNSUPPORTED = 0;
-  KIND_FILE = 1;
-  KIND_FOLDER = 2;
+  FILE_KIND_UNSUPPORTED = 0;
+  FILE_KIND_FILE = 1;
+  FILE_KIND_FOLDER = 2;
 }
 
 message ServiceMetadata {
@@ -29,7 +29,7 @@ message FileDetails {
   repeated string parent_folder_ids = 1;
 
   optional string title = 2;
-  optional FileKind kind = 3;
+  optional FileKind file_kind = 3;
   optional string md5 = 4;
   optional string etag = 5;
 

@@ -55,7 +55,7 @@ void ExpectEquivalent(const FileDetails* left, const FileDetails* right) {
   EXPECT_TRUE(parents.empty());
 
   EXPECT_EQ(left->title(), right->title());
-  EXPECT_EQ(left->kind(), right->kind());
+  EXPECT_EQ(left->file_kind(), right->file_kind());
   EXPECT_EQ(left->md5(), right->md5());
   EXPECT_EQ(left->etag(), right->etag());
   EXPECT_EQ(left->creation_time(), right->creation_time());
@@ -247,7 +247,7 @@ class MetadataDatabaseTest : public testing::Test {
     sync_root.set_file_id(kSyncRootFolderID);
     FileDetails* details = sync_root.mutable_details();
     details->set_title("Chrome Syncable FileSystem");
-    details->set_kind(KIND_FOLDER);
+    details->set_file_kind(FILE_KIND_FOLDER);
     return sync_root;
   }
 
@@ -258,7 +258,7 @@ class MetadataDatabaseTest : public testing::Test {
     FileDetails* details = file.mutable_details();
     details->add_parent_folder_ids(parent.file_id());
     details->set_title(title);
-    details->set_kind(KIND_FILE);
+    details->set_file_kind(FILE_KIND_FILE);
     details->set_md5(
         "md5_value_" + base::Int64ToString(next_md5_sequence_number_++));
     return file;
@@ -271,7 +271,7 @@ class MetadataDatabaseTest : public testing::Test {
     FileDetails* details = folder.mutable_details();
     details->add_parent_folder_ids(parent.file_id());
     details->set_title(title);
-    details->set_kind(KIND_FOLDER);
+    details->set_file_kind(FILE_KIND_FOLDER);
     return folder;
   }
 
@@ -325,9 +325,9 @@ class MetadataDatabaseTest : public testing::Test {
     file_resource->set_file_id(file.file_id());
     file_resource->set_parents(&parents);
     file_resource->set_title(file.details().title());
-    if (file.details().kind() == KIND_FOLDER)
+    if (file.details().file_kind() == FILE_KIND_FOLDER)
       file_resource->set_mime_type("application/vnd.google-apps.folder");
-    else if (file.details().kind() == KIND_FILE)
+    else if (file.details().file_kind() == FILE_KIND_FILE)
       file_resource->set_mime_type("text/plain");
     else
       file_resource->set_mime_type("application/vnd.google-apps.document");
