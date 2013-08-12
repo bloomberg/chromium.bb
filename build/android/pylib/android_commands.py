@@ -350,6 +350,11 @@ class AndroidCommands(object):
     if full_reboot or not self.IsRootEnabled():
       self._adb.SendCommand('reboot')
       timeout = 300
+      retries = 1
+      # Wait for the device to disappear.
+      while retries < 10 and self.IsOnline():
+        time.sleep(1)
+        retries += 1
     else:
       self.RestartShell()
       timeout = 120
