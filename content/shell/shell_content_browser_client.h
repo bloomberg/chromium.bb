@@ -27,6 +27,8 @@ class ShellContentBrowserClient : public ContentBrowserClient,
   // Gets the current instance.
   static ShellContentBrowserClient* Get();
 
+  static void SetSwapProcessesForRedirect(bool swap);
+
   ShellContentBrowserClient();
   virtual ~ShellContentBrowserClient();
 
@@ -57,6 +59,9 @@ class ShellContentBrowserClient : public ContentBrowserClient,
       WebContents* web_contents) OVERRIDE;
   virtual QuotaPermissionContext* CreateQuotaPermissionContext() OVERRIDE;
   virtual net::NetLog* GetNetLog() OVERRIDE;
+  virtual bool ShouldSwapProcessesForRedirect(ResourceContext* resource_context,
+                                              const GURL& current_url,
+                                              const GURL& new_url) OVERRIDE;
 
 #if defined(OS_ANDROID)
   virtual void GetAdditionalMappedFilesForChildProcess(

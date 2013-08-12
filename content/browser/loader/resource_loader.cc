@@ -155,8 +155,14 @@ void ResourceLoader::ReportUploadProgress() {
   }
 }
 
-void ResourceLoader::MarkAsTransferring() {
+void ResourceLoader::MarkAsTransferring(const GURL& target_url) {
+  CHECK_EQ(GetRequestInfo()->GetResourceType(), ResourceType::MAIN_FRAME)
+      << "Cannot transfer non-main frame navigations";
   is_transferring_ = true;
+
+  // When transferring a request to another process, the renderer doesn't get
+  // a chance to update the cookie policy URL. Do it here instead.
+  request()->set_first_party_for_cookies(target_url);
 
   // When an URLRequest is transferred to a new RenderViewHost, its
   // ResourceHandler should not receive any notifications because it may depend

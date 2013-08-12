@@ -1269,8 +1269,8 @@ void ResourceDispatcherHostImpl::BeginSaveFile(
 }
 
 void ResourceDispatcherHostImpl::MarkAsTransferredNavigation(
-    const GlobalRequestID& id) {
-  GetLoader(id)->MarkAsTransferring();
+    const GlobalRequestID& id, const GURL& target_url) {
+  GetLoader(id)->MarkAsTransferring(target_url);
 }
 
 void ResourceDispatcherHostImpl::ResumeDeferredNavigation(

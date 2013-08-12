@@ -70,7 +70,8 @@ void TransferNavigationResourceThrottle::WillRedirectRequest(
     if (info->GetAssociatedRenderView(&render_process_id, &render_view_id)) {
       GlobalRequestID global_id(info->GetChildID(), info->GetRequestID());
 
-      ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(global_id);
+      ResourceDispatcherHostImpl::Get()->MarkAsTransferredNavigation(global_id,
+                                                                     new_url);
 
       BrowserThread::PostTask(
           BrowserThread::UI,
