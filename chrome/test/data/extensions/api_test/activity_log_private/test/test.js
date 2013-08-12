@@ -217,13 +217,8 @@ domExpectedActivity = [
      // Dom mutations
     'Document.createElement',
     'Document.createElement',
-    'Document.location',
     'Node.appendChild',
-    'Document.location',
-    'Document.location',
     'Node.insertBefore',
-    'Document.location',
-    'Document.location',
     'Node.replaceChild',
     //'Document.location',
     'HTMLDocument.write',

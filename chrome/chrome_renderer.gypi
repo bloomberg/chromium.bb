@@ -49,6 +49,8 @@
       'sources': [
         'renderer/benchmarking_extension.cc',
         'renderer/benchmarking_extension.h',
+        'renderer/extensions/activity_log_converter_strategy.cc',
+        'renderer/extensions/activity_log_converter_strategy.h',
         'renderer/extensions/api_activity_logger.cc',
         'renderer/extensions/api_activity_logger.h',
         'renderer/extensions/api_definitions_natives.cc',

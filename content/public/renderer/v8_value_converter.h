@@ -24,6 +24,20 @@ namespace content {
 // ArrayBufferView subclasses (Uint8Array, etc.).
 class CONTENT_EXPORT V8ValueConverter {
  public:
+  // Extends the default behaviour of V8ValueConverter.
+  class CONTENT_EXPORT Strategy {
+   public:
+    virtual ~Strategy() {}
+    // If false is returned, V8ValueConverter proceeds with the default
+    // behavior.
+    virtual bool FromV8Object(v8::Handle<v8::Object> value,
+                              base::Value** out) const = 0;
+    // If false is returned, V8ValueConverter proceeds with the default
+    // behavior.
+    virtual bool FromV8Array(v8::Handle<v8::Array> value,
+                             base::Value** out) const = 0;
+  };
+
   static V8ValueConverter* create();
 
   virtual ~V8ValueConverter() {}
@@ -51,6 +65,9 @@ class CONTENT_EXPORT V8ValueConverter {
   // If true, null values are stripped from objects. This is often useful when
   // converting arguments to extension APIs.
   virtual void SetStripNullFromObjects(bool val) = 0;
+
+  // Extend default behavior of V8ValueConverter.
+  virtual void SetStrategy(Strategy* strategy) = 0;
 
   // Converts a base::Value to a v8::Value.
   //

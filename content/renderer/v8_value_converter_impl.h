@@ -30,6 +30,7 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   virtual void SetRegExpAllowed(bool val) OVERRIDE;
   virtual void SetFunctionAllowed(bool val) OVERRIDE;
   virtual void SetStripNullFromObjects(bool val) OVERRIDE;
+  virtual void SetStrategy(Strategy* strategy) OVERRIDE;
   virtual v8::Handle<v8::Value> ToV8Value(
       const base::Value* value,
       v8::Handle<v8::Context> context) const OVERRIDE;
@@ -75,6 +76,9 @@ class CONTENT_EXPORT V8ValueConverterImpl : public V8ValueConverter {
   bool strip_null_from_objects_;
 
   bool avoid_identity_hash_for_testing_;
+
+  // Strategy object that changes the converter's behavior.
+  Strategy* strategy_;
 
   DISALLOW_COPY_AND_ASSIGN(V8ValueConverterImpl);
 };

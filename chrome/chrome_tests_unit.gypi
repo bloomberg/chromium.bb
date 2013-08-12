@@ -1786,6 +1786,7 @@
         'common/worker_thread_ticker_unittest.cc',
         'renderer/chrome_content_renderer_client_unittest.cc',
         'renderer/content_settings_observer_unittest.cc',
+        'renderer/extensions/activity_log_converter_strategy_unittest.cc',
         'renderer/extensions/chrome_v8_context_set_unittest.cc',
         'renderer/extensions/event_unittest.cc',
         'renderer/extensions/extension_localization_peer_unittest.cc',

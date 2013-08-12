@@ -86,7 +86,8 @@ V8ValueConverterImpl::V8ValueConverterImpl()
       reg_exp_allowed_(false),
       function_allowed_(false),
       strip_null_from_objects_(false),
-      avoid_identity_hash_for_testing_(false) {}
+      avoid_identity_hash_for_testing_(false),
+      strategy_(NULL) {}
 
 void V8ValueConverterImpl::SetDateAllowed(bool val) {
   date_allowed_ = val;
@@ -102,6 +103,10 @@ void V8ValueConverterImpl::SetFunctionAllowed(bool val) {
 
 void V8ValueConverterImpl::SetStripNullFromObjects(bool val) {
   strip_null_from_objects_ = val;
+}
+
+void V8ValueConverterImpl::SetStrategy(Strategy* strategy) {
+  strategy_ = strategy;
 }
 
 v8::Handle<v8::Value> V8ValueConverterImpl::ToV8Value(
@@ -302,6 +307,12 @@ base::Value* V8ValueConverterImpl::FromV8Array(
       val->CreationContext() != v8::Context::GetCurrent())
     scope.reset(new v8::Context::Scope(val->CreationContext()));
 
+  if (strategy_) {
+    Value* out = NULL;
+    if (strategy_->FromV8Array(val, &out))
+      return out;
+  }
+
   base::ListValue* result = new base::ListValue();
 
   // Only fields with integer keys are carried over to the ListValue.
@@ -357,12 +368,19 @@ base::Value* V8ValueConverterImpl::FromV8Object(
     FromV8ValueState* state) const {
   if (!state->UpdateAndCheckUniqueness(val))
     return base::Value::CreateNullValue();
+
   scoped_ptr<v8::Context::Scope> scope;
   // If val was created in a different context than our current one, change to
   // that context, but change back after val is converted.
   if (!val->CreationContext().IsEmpty() &&
       val->CreationContext() != v8::Context::GetCurrent())
     scope.reset(new v8::Context::Scope(val->CreationContext()));
+
+  if (strategy_) {
+    Value* out = NULL;
+    if (strategy_->FromV8Object(val, &out))
+      return out;
+  }
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue());
   v8::Handle<v8::Array> property_names(val->GetOwnPropertyNames());

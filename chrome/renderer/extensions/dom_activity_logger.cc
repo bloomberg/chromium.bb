@@ -8,6 +8,7 @@
 #include "chrome/common/extensions/dom_action_types.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/renderer/chrome_render_process_observer.h"
+#include "chrome/renderer/extensions/activity_log_converter_strategy.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -30,6 +31,9 @@ void DOMActivityLogger::log(
     const v8::Handle<v8::Value> argv[],
     const WebString& call_type) {
   scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  ActivityLogConverterStrategy strategy;
+  converter->SetFunctionAllowed(true);
+  converter->SetStrategy(&strategy);
   scoped_ptr<ListValue> argv_list_value(new ListValue());
   for (int i =0; i < argc; i++) {
     argv_list_value->Set(
