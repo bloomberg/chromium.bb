@@ -130,7 +130,8 @@ void ShillToONCTranslator::TranslateOpenVPN() {
        field_signature->onc_field_name != NULL; ++field_signature) {
     const std::string& onc_field_name = field_signature->onc_field_name;
     if (onc_field_name == vpn::kSaveCredentials ||
-        onc_field_name == openvpn::kRemoteCertKU) {
+        onc_field_name == openvpn::kRemoteCertKU ||
+        onc_field_name == openvpn::kServerCAPEMs) {
       CopyProperty(field_signature);
       continue;
     }

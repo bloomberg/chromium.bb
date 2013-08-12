@@ -85,14 +85,16 @@ INSTANTIATE_TEST_CASE_P(
     ONCTranslatorShillToOncTest,
     ONCTranslatorShillToOncTest,
     ::testing::Values(
-         std::make_pair("shill_l2tpipsec.json",
-                        "translation_of_shill_l2tpipsec.onc"),
-         std::make_pair("shill_openvpn.json",
-                        "translation_of_shill_openvpn.onc"),
-         std::make_pair("shill_openvpn_with_errors.json",
-                        "translation_of_shill_openvpn_with_errors.onc"),
-         std::make_pair("shill_wifi_with_state.json",
-                        "translation_of_shill_wifi_with_state.onc")));
+        std::make_pair("shill_wifi_clientcert.json",
+                       "translation_of_shill_wifi_clientcert.onc"),
+        std::make_pair("shill_l2tpipsec.json",
+                       "translation_of_shill_l2tpipsec.onc"),
+        std::make_pair("shill_openvpn.json",
+                       "translation_of_shill_openvpn.onc"),
+        std::make_pair("shill_openvpn_with_errors.json",
+                       "translation_of_shill_openvpn_with_errors.onc"),
+        std::make_pair("shill_wifi_with_state.json",
+                       "translation_of_shill_wifi_with_state.onc")));
 
 }  // namespace onc
 }  // namespace chromeos

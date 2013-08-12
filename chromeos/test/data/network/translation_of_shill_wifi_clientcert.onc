@@ -1,0 +1,9 @@
+{
+  "GUID":"{77db0089-0bc8-4358-929c-123xcv}",
+  "Name":"",
+  "Type":"WiFi",
+  "WiFi":{
+    "SSID":"SomeWifi-XY",
+    "Security":"WPA-EAP"
+  }
+}
