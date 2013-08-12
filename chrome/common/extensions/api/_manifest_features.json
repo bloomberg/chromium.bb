@@ -146,14 +146,20 @@
       ]
     }
   ],
-  "export": {
-    "channel": "stable",
-    "extension_types": ["shared_module"],
-    "whitelist": [
-      "gpcckkmippodnppallflahfabmeilgjg", // browser and unit tests
-      "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F"
-    ]
-  },
+  "export": [
+    {
+      "channel": "stable",
+      "extension_types": ["shared_module"],
+      "whitelist": [
+        "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",
+        "4EB74897CB187C7633357C2FE832E0AD6A44883A"
+      ]
+    },
+    {
+      "channel": "dev",
+      "extension_types": ["shared_module"]
+    }
+  ],
   "externally_connectable": {
     "channel": "stable",
     "extension_types": [

@@ -29,7 +29,8 @@ namespace chrome {
 namespace {
 
 const char* kPredefinedAllowedCrxFsOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F"  // see crbug.com/234789
+  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
+  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/234789
 };
 
 }  // namespace

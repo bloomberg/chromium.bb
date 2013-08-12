@@ -35,9 +35,11 @@
               "version": "2",
               "manifest_version": 2,
               "name": "My extension 2",
-              "export": [
-                "*"
-              ],
+              "export": {
+                "resources": [
+                  "*"
+                ]
+              },
               "background": {
                 "page": "background.html"
               }
