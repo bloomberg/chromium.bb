@@ -1061,8 +1061,8 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
         base::Bind(&LogMediaSourceError, media_log_));
     demuxer_.reset(chunk_demuxer_);
 
-#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
-    // Disable GpuVideoDecoder creation on platforms other than CrOS x86 until
+#if !defined(OS_CHROMEOS)
+    // Disable GpuVideoDecoder creation on platforms other than CrOS until
     // they support codec config changes.
     // TODO(acolwell): Remove this once http://crbug.com/151045 is fixed.
     gpu_factories_ = NULL;

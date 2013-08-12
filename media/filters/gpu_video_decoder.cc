@@ -137,7 +137,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
       BindToCurrentLoop(orig_status_cb));
 
   bool previously_initialized = config_.IsValidConfig();
-#if !defined(OS_CHROMEOS) || !defined(ARCH_CPU_X86_FAMILY)
+#if !defined(OS_CHROMEOS)
   if (previously_initialized) {
     // TODO(xhwang): Make GpuVideoDecoder reinitializable.
     // See http://crbug.com/233608
