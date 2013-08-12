@@ -136,6 +136,7 @@ namespace WebCore {
         virtual void refEventTarget() = 0;
         virtual void derefEventTarget() = 0;
 
+        DOMWindow* executingWindow();
         void fireEventListeners(Event*, EventTargetData*, EventListenerVector&);
 
         bool clearAttributeEventListener(const AtomicString& eventType, DOMWrapperWorld* isolatedWorld);

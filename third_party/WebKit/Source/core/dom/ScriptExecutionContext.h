@@ -44,6 +44,7 @@
 namespace WebCore {
 
 class ContextLifecycleNotifier;
+class DOMWindow;
 class DatabaseContext;
 class EventListener;
 class EventQueue;
@@ -62,6 +63,9 @@ public:
     virtual bool isWorkerGlobalScope() const { return false; }
 
     virtual bool isJSExecutionForbidden() const = 0;
+
+    virtual DOMWindow* executingWindow() { return 0; }
+    virtual void userEventWasHandled() { }
 
     const KURL& url() const { return virtualURL(); }
     KURL completeURL(const String& url) const { return virtualCompleteURL(url); }

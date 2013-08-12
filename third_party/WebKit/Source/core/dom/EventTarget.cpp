@@ -68,6 +68,13 @@ DOMWindow* EventTarget::toDOMWindow()
     return 0;
 }
 
+inline DOMWindow* EventTarget::executingWindow()
+{
+    if (ScriptExecutionContext* context = scriptExecutionContext())
+        return context->executingWindow();
+    return 0;
+}
+
 bool EventTarget::addEventListener(const AtomicString& eventType, PassRefPtr<EventListener> listener, bool useCapture)
 {
     EventTargetData* d = ensureEventTargetData();
@@ -203,17 +210,14 @@ bool EventTarget::fireEventListeners(Event* event)
     }
 
     if (!prefixedTypeName.isEmpty()) {
-        ScriptExecutionContext* context = scriptExecutionContext();
-        if (context && context->isDocument()) {
-            Document* document = toDocument(context);
-            if (document->domWindow()) {
-                if (listenerPrefixedVector)
-                    if (listenerUnprefixedVector)
-                        UseCounter::count(document->domWindow(), UseCounter::PrefixedAndUnprefixedTransitionEndEvent);
-                    else
-                        UseCounter::count(document->domWindow(), UseCounter::PrefixedTransitionEndEvent);
-                else if (listenerUnprefixedVector)
-                    UseCounter::count(document->domWindow(), UseCounter::UnprefixedTransitionEndEvent);
+        if (DOMWindow* executingWindow = this->executingWindow()) {
+            if (listenerPrefixedVector) {
+                if (listenerUnprefixedVector)
+                    UseCounter::count(executingWindow, UseCounter::PrefixedAndUnprefixedTransitionEndEvent);
+                else
+                    UseCounter::count(executingWindow, UseCounter::PrefixedTransitionEndEvent);
+            } else if (listenerUnprefixedVector) {
+                UseCounter::count(executingWindow, UseCounter::UnprefixedTransitionEndEvent);
             }
         }
     }
@@ -231,12 +235,10 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     // index |size|, so iterating up to (but not including) |size| naturally excludes
     // new event listeners.
 
-    ScriptExecutionContext* context = scriptExecutionContext();
-    if (context && context->isDocument() && event->type() == eventNames().beforeunloadEvent) {
-        Document* document = toDocument(context);
-        if (DOMWindow* domWindow = document->domWindow()) {
-            if (domWindow != domWindow->top())
-                UseCounter::count(domWindow, UseCounter::SubFrameBeforeUnloadFired);
+    if (event->type() == eventNames().beforeunloadEvent) {
+        if (DOMWindow* executingWindow = this->executingWindow()) {
+            if (executingWindow->top())
+                UseCounter::count(executingWindow, UseCounter::SubFrameBeforeUnloadFired);
         }
     }
 
@@ -269,11 +271,8 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
     }
     d->firingEventIterators->removeLast();
     if (userEventWasHandled) {
-        ScriptExecutionContext* context = scriptExecutionContext();
-        if (context && context->isDocument()) {
-            Document* document = toDocument(context);
-            document->resetLastHandledUserGestureTimestamp();
-        }
+        if (ScriptExecutionContext* context = scriptExecutionContext())
+            context->userEventWasHandled();
     }
 }
 

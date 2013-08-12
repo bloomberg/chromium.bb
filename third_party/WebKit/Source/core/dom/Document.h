@@ -1041,6 +1041,9 @@ public:
 
     virtual void addConsoleMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0);
 
+    virtual DOMWindow* executingWindow() OVERRIDE { return domWindow(); }
+    virtual void userEventWasHandled() OVERRIDE { resetLastHandledUserGestureTimestamp(); }
+
     PassRefPtr<FontLoader> fontloader();
     DocumentLifecycleNotifier* lifecycleNotifier();
 
