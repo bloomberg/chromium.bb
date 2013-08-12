@@ -822,12 +822,16 @@ void RootWindowHostX11::SetFocusWhenShown(bool focus_when_shown) {
 bool RootWindowHostX11::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
                                              const gfx::Point& dest_offset,
                                              SkCanvas* canvas) {
-  scoped_ptr<ui::XScopedImage> scoped_image(GetXImage(source_bounds));
-  if (!scoped_image)
+  ui::XScopedImage scoped_image(
+      XGetImage(xdisplay_, xwindow_,
+                source_bounds.x(), source_bounds.y(),
+                source_bounds.width(), source_bounds.height(),
+                AllPlanes, ZPixmap));
+  XImage* image = scoped_image.get();
+  if (!image) {
+    LOG(ERROR) << "XGetImage failed";
     return false;
-
-  XImage* image = scoped_image->get();
-  DCHECK(image);
+  }
 
   if (image->bits_per_pixel == 32) {
     if ((0xff << SK_R32_SHIFT) != image->red_mask ||
@@ -1083,20 +1087,6 @@ void RootWindowHostX11::TranslateAndDispatchMouseEvent(
     event->set_root_location(location);
   }
   delegate_->OnHostMouseEvent(event);
-}
-
-scoped_ptr<ui::XScopedImage> RootWindowHostX11::GetXImage(
-    const gfx::Rect& snapshot_bounds) {
-  scoped_ptr<ui::XScopedImage> image(new ui::XScopedImage(
-      XGetImage(xdisplay_, xwindow_,
-                snapshot_bounds.x(), snapshot_bounds.y(),
-                snapshot_bounds.width(), snapshot_bounds.height(),
-                AllPlanes, ZPixmap)));
-  if (!image) {
-    LOG(ERROR) << "XGetImage failed";
-    image.reset();
-  }
-  return image.Pass();
 }
 
 void RootWindowHostX11::UpdateIsInternalDisplay() {

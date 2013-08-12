@@ -96,10 +96,6 @@ class RootWindowHostX11 : public RootWindowHost,
   // dispatches the event to RootWindowHostDelegate.
   void TranslateAndDispatchMouseEvent(ui::MouseEvent* event);
 
-  // Copies and returns |snapshot_bounds| from |xwindow_|.  Helper method for
-  // CopyAreaToSkCanvas() and GrabSnapshot().
-  scoped_ptr<ui::XScopedImage> GetXImage(const gfx::Rect& snapshot_bounds);
-
   // Update is_internal_display_ based on delegate_ state
   void UpdateIsInternalDisplay();
 
