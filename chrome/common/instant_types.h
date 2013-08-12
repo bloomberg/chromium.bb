@@ -112,15 +112,6 @@ struct InstantAutocompleteResult {
 typedef std::pair<InstantRestrictedID, InstantAutocompleteResult>
     InstantAutocompleteResultIDPair;
 
-// How to interpret the size (height or width) of the Instant overlay (preview).
-enum InstantSizeUnits {
-  // As an absolute number of pixels.
-  INSTANT_SIZE_PIXELS,
-
-  // As a percentage of the height or width of the containing (parent) view.
-  INSTANT_SIZE_PERCENT,
-};
-
 // The alignment of the theme background image.
 enum ThemeBackgroundImageAlignment {
   THEME_BKGRND_IMAGE_ALIGN_CENTER,

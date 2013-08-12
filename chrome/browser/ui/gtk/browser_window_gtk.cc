@@ -64,7 +64,6 @@
 #include "chrome/browser/ui/gtk/gtk_window_util.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_container_gtk.h"
 #include "chrome/browser/ui/gtk/infobars/infobar_gtk.h"
-#include "chrome/browser/ui/gtk/instant_overlay_controller_gtk.h"
 #include "chrome/browser/ui/gtk/location_bar_view_gtk.h"
 #include "chrome/browser/ui/gtk/nine_box.h"
 #include "chrome/browser/ui/gtk/one_click_signin_bubble_gtk.h"
@@ -1685,9 +1684,6 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_show(render_area_event_box_);
   gtk_box_pack_end(GTK_BOX(window_vbox_), render_area_event_box_,
                    TRUE, TRUE, 0);
-
-  instant_overlay_controller_.reset(
-      new InstantOverlayControllerGtk(this, contents_container_.get()));
 
   if (IsBookmarkBarSupported()) {
     bookmark_bar_.reset(new BookmarkBarGtk(this,

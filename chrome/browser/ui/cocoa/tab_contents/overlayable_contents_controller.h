@@ -9,62 +9,29 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/common/instant_types.h"
 
 class Browser;
-class InstantOverlayControllerMac;
 
 namespace content {
 class WebContents;
 }
 
-// OverlayableContentsController manages the display of up to two tab contents
-// views. It is primarily for use with Instant results. This class supports the
-// notion of an "active" view vs. an "overlay" tab contents view.
+// OverlayableContentsController is an obsolete wrapper holding the view where a
+// tab's WebContents is displayed. In the old Chrome Instant implementation it
+// multiplexed between the tab's contents and an overlay's contents. Now there
+// is no overlay, but ripping this class out entirely is hard.
 //
-// The "active" view is a container view that can be retrieved using
-// |-activeContainer|. Its contents are meant to be managed by an external
-// class.
-//
-// The "overlay" can be set using |-showOverlay:| and |-hideOverlay|. When an
-// overlay is set, the active view is hidden (but stays in the view hierarchy).
-// When the overlay is removed, the active view is reshown.
+// TODO(sail): Remove this class and replace it with something saner.
 @interface OverlayableContentsController : NSViewController {
  @private
   // Container view for the "active" contents.
   base::scoped_nsobject<NSView> activeContainer_;
-
-  // The overlay WebContents. Will be NULL if no overlay is currently showing.
-  content::WebContents* overlayContents_;  // weak
-
-  // C++ bridge to the Instant model change interface.
-  scoped_ptr<InstantOverlayControllerMac> instantOverlayController_;
-
-  // The desired height of the overlay and units.
-  CGFloat overlayHeight_;
-  InstantSizeUnits overlayHeightUnits_;
 }
 
 @property(readonly, nonatomic) NSView* activeContainer;
 
 // Initialization.
 - (id)initWithBrowser:(Browser*)browser;
-
-// Sets the current overlay and installs its WebContentsView into the view
-// hierarchy. Hides the active view. If |overlay| is NULL then closes the
-// current overlay and shows the active view.
-- (void)setOverlay:(content::WebContents*)overlay
-            height:(CGFloat)height
-       heightUnits:(InstantSizeUnits)heightUnits
-    drawDropShadow:(BOOL)drawDropShadow;
-
-// Called when a tab with |contents| is activated, so that we can check to see
-// if it's the overlay being activated (and adjust internal state accordingly).
-- (void)onActivateTabWithContents:(content::WebContents*)contents;
-
-- (InstantOverlayControllerMac*)instantOverlayController;
-
-- (BOOL)isShowingOverlay;
 
 @end
 

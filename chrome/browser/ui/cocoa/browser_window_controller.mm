@@ -1611,8 +1611,6 @@ enum {
 
   [infoBarContainerController_ changeWebContents:contents];
 
-  [overlayableContentsController_ onActivateTabWithContents:contents];
-
   [self updateAllowOverlappingViews:[self inPresentationMode]];
 }
 
@@ -1949,27 +1947,6 @@ willAnimateFromState:(BookmarkBar::State)oldState
 
   // Shift to window base coordinates.
   return [[toolbarView superview] convertRect:anchorRect toView:nil];
-}
-
-- (NSRect)instantFrame {
-  // The view's bounds are in its own coordinate system.  Convert that to the
-  // window base coordinate system, then translate it into the screen's
-  // coordinate system.
-  NSView* view = [overlayableContentsController_ view];
-  if (!view)
-    return NSZeroRect;
-
-  NSRect frame = [view convertRect:[view bounds] toView:nil];
-  NSPoint originInScreenCoords =
-      [[view window] convertBaseToScreen:frame.origin];
-  frame.origin = originInScreenCoords;
-
-  // Account for the bookmark bar height if it is currently in the detached
-  // state on the new tab page.
-  if ([bookmarkBarController_ isInState:BookmarkBar::DETACHED])
-    frame.size.height += NSHeight([[bookmarkBarController_ view] bounds]);
-
-  return frame;
 }
 
 - (void)sheetDidEnd:(NSWindow*)sheet

@@ -512,9 +512,6 @@ class BrowserWindowGtk
   // selected tab contents.
   scoped_ptr<TabContentsContainerGtk> devtools_container_;
 
-  // A sub-controller that manages the Instant overlay visual state.
-  scoped_ptr<InstantOverlayControllerGtk> instant_overlay_controller_;
-
   // The Extension Keybinding Registry responsible for registering listeners for
   // accelerators that are sent to the window, that are destined to be turned
   // into events and sent to the extension.
