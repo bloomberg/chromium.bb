@@ -1413,7 +1413,10 @@ void NativeTextfieldViews::TrackMouseClicks(const ui::MouseEvent& event) {
     base::TimeDelta time_delta = event.time_stamp() - last_click_time_;
     if (time_delta.InMilliseconds() <= GetDoubleClickInterval() &&
         !ExceededDragThresholdFromLastClickLocation(event)) {
-      aggregated_clicks_ = (aggregated_clicks_ + 1) % 3;
+      // Upon clicking after a triple click, the count should go back to double
+      // click and alternate between double and triple. This assignment maps
+      // 0 to 1, 1 to 2, 2 to 1.
+      aggregated_clicks_ = (aggregated_clicks_ % 2) + 1;
     } else {
       aggregated_clicks_ = 0;
     }

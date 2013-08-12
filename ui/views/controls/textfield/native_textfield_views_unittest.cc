@@ -816,10 +816,10 @@ TEST_F(NativeTextfieldViewsTest, DoubleAndTripleClickTest) {
   textfield_view_->OnMouseReleased(release);
   EXPECT_STR_EQ("hello world", textfield_->GetSelectedText());
 
-  // Another click should reset back to single click.
+  // Another click should reset back to double click.
   textfield_view_->OnMousePressed(click);
   textfield_view_->OnMouseReleased(release);
-  EXPECT_TRUE(textfield_->GetSelectedText().empty());
+  EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
 }
 
 TEST_F(NativeTextfieldViewsTest, DragToSelect) {
