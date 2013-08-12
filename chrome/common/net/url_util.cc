@@ -5,7 +5,7 @@
 #include "chrome/common/net/url_util.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 #include "net/base/net_util.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -21,7 +21,7 @@ void WriteURLToClipboard(const GURL& url,
 
   // Unescaping path and query is not a good idea because other applications
   // may not encode non-ASCII characters in UTF-8.  See crbug.com/2820.
-  string16 text = url.SchemeIs(chrome::kMailToScheme) ?
+  string16 text = url.SchemeIs(content::kMailToScheme) ?
       ASCIIToUTF16(url.path()) :
       net::FormatUrl(url, languages, net::kFormatUrlOmitNothing,
                      net::UnescapeRule::NONE, NULL, NULL, NULL);

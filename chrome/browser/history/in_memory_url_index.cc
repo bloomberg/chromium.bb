@@ -45,7 +45,7 @@ void InitializeSchemeWhitelist(std::set<std::string>* whitelist) {
   whitelist->insert(std::string(chrome::kFtpScheme));
   whitelist->insert(std::string(chrome::kHttpScheme));
   whitelist->insert(std::string(chrome::kHttpsScheme));
-  whitelist->insert(std::string(chrome::kMailToScheme));
+  whitelist->insert(std::string(content::kMailToScheme));
 }
 
 // Restore/SaveCacheObserver ---------------------------------------------------

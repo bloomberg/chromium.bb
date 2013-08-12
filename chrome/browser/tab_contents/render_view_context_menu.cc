@@ -838,7 +838,7 @@ void RenderViewContextMenu::AppendLinkItems() {
 
   menu_model_.AddItemWithStringId(
       IDC_CONTENT_CONTEXT_COPYLINKLOCATION,
-      params_.link_url.SchemeIs(chrome::kMailToScheme) ?
+      params_.link_url.SchemeIs(content::kMailToScheme) ?
           IDS_CONTENT_CONTEXT_COPYEMAILADDRESS :
           IDS_CONTENT_CONTEXT_COPYLINKLOCATION);
 }

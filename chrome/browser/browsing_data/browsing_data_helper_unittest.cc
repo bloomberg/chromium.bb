@@ -75,8 +75,8 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotWebSafe) {
   EXPECT_FALSE(IsWebScheme(chrome::kChromeInternalScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kChromeUIScheme));
   EXPECT_FALSE(IsWebScheme(chrome::kJavaScriptScheme));
-  EXPECT_FALSE(IsWebScheme(chrome::kMailToScheme));
-  EXPECT_FALSE(IsWebScheme(chrome::kMetadataScheme));
+  EXPECT_FALSE(IsWebScheme(content::kMailToScheme));
+  EXPECT_FALSE(IsWebScheme(content::kMetadataScheme));
   EXPECT_FALSE(IsWebScheme(content::kSwappedOutScheme));
   EXPECT_FALSE(IsWebScheme(content::kViewSourceScheme));
 }
@@ -100,8 +100,8 @@ TEST_F(BrowsingDataHelperTest, ChromeSchemesAreNotAllExtension) {
   EXPECT_FALSE(IsExtensionScheme(chrome::kChromeInternalScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kChromeUIScheme));
   EXPECT_FALSE(IsExtensionScheme(chrome::kJavaScriptScheme));
-  EXPECT_FALSE(IsExtensionScheme(chrome::kMailToScheme));
-  EXPECT_FALSE(IsExtensionScheme(chrome::kMetadataScheme));
+  EXPECT_FALSE(IsExtensionScheme(content::kMailToScheme));
+  EXPECT_FALSE(IsExtensionScheme(content::kMetadataScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kSwappedOutScheme));
   EXPECT_FALSE(IsExtensionScheme(content::kViewSourceScheme));
 }
