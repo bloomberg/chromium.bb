@@ -2,11 +2,12 @@
 
 function doLeakTest(src, tolerance) {
     function getCounterValues() {
+        testRunner.resetTestHelperControllers();
         gc();
         return {'numberOfLiveDocuments': window.internals.numberOfLiveDocuments()};
     }
 
-    var frame = document.createElement('frame');
+    var frame = document.createElement('iframe');
     document.body.appendChild(frame);
     function loadSourceIntoIframe(src, callback) {
         var originalSrc = frame.src;

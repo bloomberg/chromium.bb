@@ -65,6 +65,7 @@ public:
     void setWebView(WebKit::WebView*, WebTestProxyBase*);
     void setDelegate(WebTestDelegate*);
     void bindTo(WebKit::WebFrame*);
+    void resetTestHelperControllers();
     void resetAll();
     void setTestIsRunning(bool);
     void configureForTestWithURL(const WebKit::WebURL&, bool generatePixels);

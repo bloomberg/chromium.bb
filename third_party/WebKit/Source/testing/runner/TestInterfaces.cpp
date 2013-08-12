@@ -114,14 +114,19 @@ void TestInterfaces::bindTo(WebFrame* frame)
     m_testRunner->bindToJavascript(frame, WebString::fromUTF8("layoutTestController"));
 }
 
-void TestInterfaces::resetAll()
+void TestInterfaces::resetTestHelperControllers()
 {
     m_accessibilityController->reset();
     m_eventSender->reset();
     m_gamepadController->reset();
     // m_textInputController doesn't have any state to reset.
-    m_testRunner->reset();
     WebCache::clear();
+}
+
+void TestInterfaces::resetAll()
+{
+    resetTestHelperControllers();
+    m_testRunner->reset();
 }
 
 void TestInterfaces::setTestIsRunning(bool running)

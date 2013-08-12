@@ -175,6 +175,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("queueNonLoadingScript", &TestRunner::queueNonLoadingScript);
     bindMethod("queueReload", &TestRunner::queueReload);
     bindMethod("setCloseRemainingWindowsWhenComplete", &TestRunner::setCloseRemainingWindowsWhenComplete);
+    bindMethod("resetTestHelperControllers", &TestRunner::resetTestHelperControllers);
     bindMethod("setCustomPolicyDelegate", &TestRunner::setCustomPolicyDelegate);
     bindMethod("waitForPolicyDelegate", &TestRunner::waitForPolicyDelegate);
     bindMethod("waitUntilDone", &TestRunner::waitUntilDone);
@@ -971,6 +972,13 @@ void TestRunner::setCloseRemainingWindowsWhenComplete(const CppArgumentList& arg
 {
     if (arguments.size() > 0 && arguments[0].isBool())
         m_closeRemainingWindows = arguments[0].value.boolValue;
+    result->setNull();
+}
+
+void TestRunner::resetTestHelperControllers(const CppArgumentList& arguments, CppVariant* result)
+{
+    m_testInterfaces->resetTestHelperControllers();
+
     result->setNull();
 }
 

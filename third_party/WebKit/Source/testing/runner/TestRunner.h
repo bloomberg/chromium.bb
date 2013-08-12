@@ -205,6 +205,8 @@ private:
     void windowCount(const CppArgumentList&, CppVariant*);
     void setCloseRemainingWindowsWhenComplete(const CppArgumentList&, CppVariant*);
 
+    void resetTestHelperControllers(const CppArgumentList&, CppVariant*);
+
     ///////////////////////////////////////////////////////////////////////////
     // Methods implemented entirely in terms of chromium's public WebKit API
 
