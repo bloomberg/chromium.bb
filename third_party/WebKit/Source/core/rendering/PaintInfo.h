@@ -61,7 +61,7 @@ struct PaintInfo {
         , renderRegion(region)
         , outlineObjects(newOutlineObjects)
         , overlapTestRequests(overlapTestRequests)
-        , paintContainer(newPaintContainer)
+        , m_paintContainer(newPaintContainer)
     {
     }
 
@@ -101,6 +101,7 @@ struct PaintInfo {
     }
 
     static IntRect infiniteRect() { return IntRect(LayoutRect::infiniteRect()); }
+    const RenderLayerModelObject* paintContainer() const { return m_paintContainer; }
 
     // FIXME: Introduce setters/getters at some point. Requires a lot of changes throughout rendering/.
     GraphicsContext* context;
@@ -111,7 +112,10 @@ struct PaintInfo {
     RenderRegion* renderRegion;
     ListHashSet<RenderInline*>* outlineObjects; // used to list outlines that should be painted by a block with inline children
     OverlapTestRequestMap* overlapTestRequests;
-    const RenderLayerModelObject* paintContainer; // the layer object that originates the current painting
+
+private:
+
+    const RenderLayerModelObject* m_paintContainer; // the layer object that originates the current painting
 };
 
 } // namespace WebCore

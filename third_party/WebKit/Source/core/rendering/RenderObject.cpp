@@ -1121,7 +1121,7 @@ void RenderObject::drawLineForBoxSide(GraphicsContext* graphicsContext, int x1, 
 void RenderObject::paintFocusRing(PaintInfo& paintInfo, const LayoutPoint& paintOffset, RenderStyle* style)
 {
     Vector<IntRect> focusRingRects;
-    addFocusRingRects(focusRingRects, paintOffset, paintInfo.paintContainer);
+    addFocusRingRects(focusRingRects, paintOffset, paintInfo.paintContainer());
     if (style->outlineStyleIsAuto())
         paintInfo.context->drawFocusRing(focusRingRects, style->outlineWidth(), style->outlineOffset(), resolveColor(style, CSSPropertyOutlineColor));
     else
