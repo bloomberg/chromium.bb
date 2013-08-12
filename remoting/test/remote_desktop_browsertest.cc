@@ -35,6 +35,15 @@ const char kOverrideUserDataDir[] = "override-user-data-dir";
 const char kNoCleanup[] = "no-cleanup";
 const char kNoInstall[] = "no-install";
 const char kWebAppCrx[] = "webapp-crx";
+const char kUsername[] = "username";
+const char kkPassword[] = "password";
+
+// ASSERT_TRUE can only be used in void returning functions.
+void _ASSERT_TRUE(bool condition) {
+  ASSERT_TRUE(condition);
+  return;
+}
+
 }
 
 namespace remoting {
@@ -77,6 +86,8 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
 
   void Authorize();
 
+  void Authenticate();
+
   // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
   // This is useful for diagnostic purposes.
   bool NoCleanup() { return no_cleanup_; }
@@ -107,6 +118,59 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
   }
 
+  // Helper to execute a javascript code snippet on the current page.
+  void ExecuteScript(const std::string& script) {
+    ASSERT_TRUE(content::ExecuteScript(
+        browser()->tab_strip_model()->GetActiveWebContents(), script));
+  }
+
+  // Helper to execute a javascript code snippet on the current page and
+  // wait for page load to complete.
+  void ExecuteScriptAndWait(const std::string& script) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<content::NavigationController>(
+            &browser()->tab_strip_model()->GetActiveWebContents()->
+                GetController()));
+
+    ExecuteScript(script);
+
+    observer.Wait();
+  }
+
+  // Helper to execute a javascript code snippet on the current page and
+  // extract the boolean result.
+  bool ExecuteScriptAndExtractBool(const std::string& script) {
+    bool result;
+    // Using a private assert function because ASSERT_TRUE can only be used in
+    // void returning functions.
+    _ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "window.domAutomationController.send(" + script + ");",
+        &result));
+
+    return result;
+  }
+
+  // Helper to check whether a html element with the given name exists on
+  // the current page.
+  bool HtmlElementExists(const std::string& name) {
+    return ExecuteScriptAndExtractBool(
+        "document.getElementById(\"" + name + "\") != null");
+  }
+
+  // Helper to navigate to a given url.
+  void NavigateToURLAndWait(const GURL& url) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<content::NavigationController>(
+            &browser()->tab_strip_model()->GetActiveWebContents()->
+                GetController()));
+
+    ui_test_utils::NavigateToURL(browser(), url);
+    observer.Wait();
+  }
+
   // This test needs to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version
   // to override the default resolver while the test is active.
@@ -116,6 +180,8 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   bool no_install_;
   std::string chromoting_id_;
   base::FilePath webapp_crx_;
+  std::string username_;
+  std::string password_;
 };
 
 void RemoteDesktopBrowserTest::ParseCommandLine() {
@@ -137,6 +203,9 @@ void RemoteDesktopBrowserTest::ParseCommandLine() {
     command_line->AppendSwitchPath(switches::kUserDataDir,
                                    override_user_data_dir);
   }
+
+  username_ = command_line->GetSwitchValueASCII(kUsername);
+  password_ = command_line->GetSwitchValueASCII(kkPassword);
 
   no_cleanup_ = command_line->HasSwitch(kNoCleanup);
   no_install_ = command_line->HasSwitch(kNoInstall);
@@ -169,15 +238,8 @@ void RemoteDesktopBrowserTest::DisableDNSLookupForThisTest() {
 }
 
 void RemoteDesktopBrowserTest::VerifyInternetAccess() {
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
-
   GURL google_url("http://www.google.com");
-  ui_test_utils::NavigateToURL(browser(), google_url);
-  observer.Wait();
+  NavigateToURLAndWait(google_url);
 
   EXPECT_EQ(GetCurrentURL().host(), "www.google.com");
 }
@@ -197,17 +259,10 @@ void RemoteDesktopBrowserTest::UninstallChromotingApp() {
 
 void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   ASSERT_FALSE(ChromotingID().empty());
+
   std::string url = "chrome-extension://" + ChromotingID() + "/main.html";
   const GURL chromoting_main(url);
-
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
-
-  ui_test_utils::NavigateToURL(browser(), chromoting_main);
-  observer.Wait();
+  NavigateToURLAndWait(chromoting_main);
 
   EXPECT_EQ(GetCurrentURL(), chromoting_main);
 }
@@ -249,42 +304,37 @@ void RemoteDesktopBrowserTest::Authorize() {
   // and isAuthenticated() should be false (auth dialog visible).
   std::string url = "chrome-extension://" + ChromotingID() + "/main.html";
   ASSERT_EQ(GetCurrentURL().spec(), url);
+  ASSERT_FALSE(ExecuteScriptAndExtractBool(
+      "remoting.OAuth2.prototype.isAuthenticated()"));
 
-  bool result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-          "remoting.OAuth2.prototype.isAuthenticated());",
-      &result));
-  EXPECT_FALSE(result);
-
-  content::WindowedNotificationObserver observer(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<content::NavigationController>(
-          &browser()->tab_strip_model()->GetActiveWebContents()->
-              GetController()));
-
-  ASSERT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "remoting.OAuth2.prototype.doAuthRedirect()"));
-  observer.Wait();
+  ExecuteScriptAndWait("remoting.OAuth2.prototype.doAuthRedirect();");
 
   // Verify the active tab is at the "Google Accounts" login page.
   EXPECT_EQ(GetCurrentURL().host(), "accounts.google.com");
+  EXPECT_TRUE(HtmlElementExists("Email"));
+  EXPECT_TRUE(HtmlElementExists("Passwd"));
+}
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-          "document.getElementById(\"Email\") != null);",
-      &result));
-  EXPECT_TRUE(result);
+void RemoteDesktopBrowserTest::Authenticate() {
+  // The chromoting extension should be installed.
+  ASSERT_FALSE(ChromotingID().empty());
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send("
-          "document.getElementById(\"Passwd\") != null);",
-      &result));
-  EXPECT_TRUE(result);
+  // The active tab should have the "Google Accounts" login page loaded.
+  ASSERT_EQ(GetCurrentURL().host(), "accounts.google.com");
+  ASSERT_TRUE(HtmlElementExists("Email"));
+  ASSERT_TRUE(HtmlElementExists("Passwd"));
+
+  // Now log in using the username and password passed in from the command line.
+  ExecuteScriptAndWait(
+      "document.getElementById(\"Email\").value = \"" + username_ + "\";" +
+      "document.getElementById(\"Passwd\").value = \"" + password_ +"\";" +
+      "document.forms[\"gaia_loginform\"].submit();");
+
+  EXPECT_EQ(GetCurrentURL().host(), "accounts.google.com");
+
+  // TODO: Is there a better way to verify we are on the
+  // "Request for Permission" page?
+  EXPECT_TRUE(HtmlElementExists("submit_approve_access"));
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Launch) {
@@ -324,6 +374,8 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Auth) {
   LaunchChromotingApp();
 
   Authorize();
+
+  Authenticate();
 
   if (!NoCleanup()) {
     UninstallChromotingApp();
