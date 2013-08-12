@@ -32,7 +32,6 @@
 #include "WebDataSourceImpl.h"
 
 #include "ApplicationCacheHostInternal.h"
-#include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
@@ -98,14 +97,12 @@ bool WebDataSourceImpl::replacesCurrentHistoryItem() const
 
 WebString WebDataSourceImpl::pageTitle() const
 {
-    ASSERT(frame()->loader()->documentLoader() == this);
-    return frame()->document()->title();
+    return title().string();
 }
 
 WebTextDirection WebDataSourceImpl::pageTitleDirection() const
 {
-    ASSERT(frame()->loader()->documentLoader() == this);
-    return frame()->document()->titleWithDirection().direction() == LTR ? WebTextDirectionLeftToRight : WebTextDirectionRightToLeft;
+    return title().direction() == LTR ? WebTextDirectionLeftToRight : WebTextDirectionRightToLeft;
 }
 
 WebNavigationType WebDataSourceImpl::navigationType() const

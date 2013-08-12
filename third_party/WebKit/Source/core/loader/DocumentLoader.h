@@ -120,6 +120,7 @@ namespace WebCore {
         bool replacesCurrentHistoryItem() const { return m_replacesCurrentHistoryItem; }
         void setReplacesCurrentHistoryItem(bool replacesCurrentHistoryItem) { m_replacesCurrentHistoryItem = replacesCurrentHistoryItem; }
         bool isLoadingInAPISense() const;
+        void setTitle(const StringWithDirection&);
         const String& overrideEncoding() const { return m_overrideEncoding; }
 
         bool scheduleArchiveLoad(Resource*, const ResourceRequest&);
@@ -134,6 +135,7 @@ namespace WebCore {
         void setTriggeringAction(const NavigationAction& action) { m_triggeringAction = action; }
 
         void setOverrideEncoding(const String& encoding) { m_overrideEncoding = encoding; }
+        const StringWithDirection& title() const { return m_pageTitle; }
 
         KURL urlForHistory() const;
 
@@ -248,6 +250,8 @@ namespace WebCore {
         bool m_isStopping;
         bool m_isClientRedirect;
         bool m_replacesCurrentHistoryItem;
+
+        StringWithDirection m_pageTitle;
 
         String m_overrideEncoding;
 

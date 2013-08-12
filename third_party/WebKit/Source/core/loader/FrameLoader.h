@@ -142,6 +142,7 @@ public:
     bool isLoadingMainFrame() const;
 
     bool subframeIsLoading() const;
+    void didChangeTitle(DocumentLoader*);
 
     bool shouldTreatURLAsSrcdocDocument(const KURL&) const;
 
@@ -200,6 +201,8 @@ public:
     void checkCompleted();
 
     bool isComplete() const;
+
+    void setTitle(const StringWithDirection&);
 
     void commitProvisionalLoad();
 

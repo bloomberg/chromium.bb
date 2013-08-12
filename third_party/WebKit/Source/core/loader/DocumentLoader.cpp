@@ -807,6 +807,15 @@ bool DocumentLoader::scheduleArchiveLoad(Resource* cachedResource, const Resourc
     return true;
 }
 
+void DocumentLoader::setTitle(const StringWithDirection& title)
+{
+    if (m_pageTitle == title)
+        return;
+
+    m_pageTitle = title;
+    frameLoader()->didChangeTitle(this);
+}
+
 KURL DocumentLoader::urlForHistory() const
 {
     // Return the URL to be used for history and B/F list.
