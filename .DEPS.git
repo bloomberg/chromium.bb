@@ -25,8 +25,6 @@ deps = {
         Var('git_url') + '/chromium/frame_rate/content.git@c10272c88463efeef6bb19c9ec07c42bc8fe22b9',
     'src/chrome/test/data/perf/third_party/octane':
         Var('git_url') + '/external/octane-benchmark.git@9ac27bfd9e0bc73663db0c0551440215d8b20d09',
-    'src/googleurl':
-        Var('git_url') + '/external/google-url.git@ca8c31644137b3b46021ee37973c8749aae5c3bf',
     'src/media/cdm/ppapi/api':
         Var('git_url') + '/chromium/cdm.git@c2b192a02546916d28233cfd8b7717ffcdcc8347',
     'src/native_client':
@@ -357,15 +355,13 @@ include_rules = [
     '+testing',
     '+third_party/icu/source/common/unicode',
     '+third_party/icu/source/i18n/unicode',
-    '+url',
-    '!googleurl'
+    '+url'
 ]
 
 skip_child_includes = [
     'breakpad',
     'chrome_frame',
     'delegate_execute',
-    'googleurl',
     'metro_driver',
     'native_client_sdk',
     'o3d',
