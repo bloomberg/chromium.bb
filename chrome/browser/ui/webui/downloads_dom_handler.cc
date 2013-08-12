@@ -51,10 +51,6 @@
 #include "ui/base/l10n/time_format.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
-#endif
-
 using content::BrowserContext;
 using content::BrowserThread;
 using content::UserMetricsAction;
