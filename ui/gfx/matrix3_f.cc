@@ -125,7 +125,7 @@ Vector3dF Matrix3F::SolveEigenproblem(Matrix3F* eigenvectors) const {
   // The matrix must be symmetric.
   const float epsilon = std::numeric_limits<float>::epsilon();
   if (std::abs(data_[M01] - data_[M10]) > epsilon ||
-      std::abs(data_[M02] - data_[M02]) > epsilon ||
+      std::abs(data_[M02] - data_[M20]) > epsilon ||
       std::abs(data_[M12] - data_[M21]) > epsilon) {
     NOTREACHED();
     return Vector3dF();
