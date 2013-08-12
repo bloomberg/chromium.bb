@@ -32,7 +32,6 @@
 
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 
-#include "core/platform/FileSystem.h"
 #include "core/platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebData.h"
@@ -56,16 +55,7 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName)
     String filePath = Platform::current()->unitTestSupport()->webKitRootDir();
     filePath.append(fileName);
 
-    long long fileSize;
-    if (!getFileSize(filePath, fileSize))
-        return 0;
-
-    PlatformFileHandle handle = openFile(filePath, OpenForRead);
-    int fileLength = static_cast<int>(fileSize);
-    Vector<char> buffer(fileLength);
-    readFromFile(handle, buffer.data(), fileLength);
-    closeFile(handle);
-    return SharedBuffer::adoptVector(buffer);
+    return Platform::current()->unitTestSupport()->readFromFile(filePath);
 }
 
 PassOwnPtr<GIFImageDecoder> createDecoder()

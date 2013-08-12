@@ -38,18 +38,6 @@
 
 namespace WebCore {
 
-#if OS(WINDOWS)
-typedef void *HANDLE;
-typedef HANDLE PlatformFileHandle;
-#else
-typedef int PlatformFileHandle;
-#endif
-
-enum FileOpenMode {
-    OpenForRead = 0,
-    OpenForWrite
-};
-
 struct FileMetadata;
 
 bool getFileSize(const String&, long long& result);
@@ -59,12 +47,6 @@ String directoryName(const String&);
 
 inline double invalidFileTime() { return std::numeric_limits<double>::quiet_NaN(); }
 inline bool isValidFileTime(double time) { return std::isfinite(time); }
-
-// FIXME: Only used by test code, move them into WebUnitTestSupport.
-PlatformFileHandle openFile(const String& path, FileOpenMode);
-void closeFile(PlatformFileHandle&);
-// Returns number of bytes actually written if successful, -1 otherwise.
-int readFromFile(PlatformFileHandle, char* data, int length);
 
 } // namespace WebCore
 

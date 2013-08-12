@@ -75,19 +75,4 @@ String directoryName(const String& path)
     return WebKit::Platform::current()->fileUtilities()->directoryName(path);
 }
 
-PlatformFileHandle openFile(const String& path, FileOpenMode mode)
-{
-    return WebKit::Platform::current()->fileUtilities()->openFile(path, mode);
-}
-
-void closeFile(PlatformFileHandle& handle)
-{
-    WebKit::Platform::current()->fileUtilities()->closeFile(handle);
-}
-
-int readFromFile(PlatformFileHandle handle, char* data, int length)
-{
-    return WebKit::Platform::current()->fileUtilities()->readFromFile(handle, data, length);
-}
-
 } // namespace WebCore

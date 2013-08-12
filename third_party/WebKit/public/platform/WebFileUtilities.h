@@ -55,10 +55,6 @@ public:
     virtual WebString baseName(const WebString& path)  { return WebString(); }
     virtual bool isDirectory(const WebString& path) { return false; }
     virtual WebURL filePathToURL(const WebString& path)  { return WebURL(); }
-    virtual FileHandle openFile(const WebString& path, int mode)  { return FileHandle(); }
-    // Should set the FileHandle to a invalid value if the file is closed successfully.
-    virtual void closeFile(FileHandle&) { }
-    virtual int readFromFile(FileHandle, char* data, int length) { return 0; }
 
 protected:
     ~WebFileUtilities() { }

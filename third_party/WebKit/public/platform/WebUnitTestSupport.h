@@ -27,6 +27,7 @@
 #define WebUnitTestSupport_h
 
 #include "WebCommon.h"
+#include "WebData.h"
 #include "WebString.h"
 
 namespace WebKit {
@@ -56,8 +57,9 @@ public:
 
     // Constructs a WebLayerTreeView set up with reasonable defaults for
     // testing.
-
     virtual WebLayerTreeView* createLayerTreeViewForTesting() { return 0; }
+
+    virtual WebData readFromFile(const WebString& path) { return WebData(); }
 
     // DEPRECATED, use the version above.
 #define HAVE_CREATELAYERTREEVIEWFORTESTING 1
