@@ -5135,11 +5135,6 @@ init_egl(struct display *d)
 		return -1;
 	}
 
-	if (!eglMakeCurrent(d->dpy, NULL, NULL, d->argb_ctx)) {
-		fprintf(stderr, "failed to make EGL context current\n");
-		return -1;
-	}
-
 	d->argb_device = cairo_egl_device_create(d->dpy, d->argb_ctx);
 	if (cairo_device_status(d->argb_device) != CAIRO_STATUS_SUCCESS) {
 		fprintf(stderr, "failed to get cairo EGL argb device\n");
