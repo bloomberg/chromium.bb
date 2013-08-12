@@ -64,6 +64,7 @@ class BalsaBuffer {
   // BalsaHeaders implementation, yet be testable.
   friend class BalsaBufferTestSpouse;
   friend class BalsaHeaders;
+  friend class BalsaBufferTest;
 
   // The BufferBlock is a structure used internally by the
   // BalsaBuffer class to store the base buffer pointers to

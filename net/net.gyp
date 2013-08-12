@@ -1870,6 +1870,8 @@
             'flip_balsa_and_epoll_library',
           ],
           'sources': [
+            'tools/flip_server/balsa_frame_test.cc',
+            'tools/flip_server/balsa_headers_test.cc',
             'tools/flip_server/mem_cache_test.cc',
             'tools/flip_server/simple_buffer.cc',
             'tools/flip_server/simple_buffer.h',
