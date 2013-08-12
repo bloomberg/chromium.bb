@@ -29,6 +29,10 @@ const int kMenuButtonDimension = 29;
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
+// Menu offset relative to the bottom-right corner of the menu button.
+const int kMenuYOffsetFromButton = -4;
+const int kMenuXOffsetFromButton = -7;
+
 }  // namespace
 
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
@@ -158,8 +162,10 @@ void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {
   if (!menu_)
     menu_.reset(new AppListMenuViews(view_delegate_));
 
-  menu_->RunMenuAt(menu_button_,
-                   menu_button_->GetBoundsInScreen().bottom_right());
+  const gfx::Point menu_location =
+      menu_button_->GetBoundsInScreen().bottom_right() +
+      gfx::Vector2d(kMenuXOffsetFromButton, kMenuYOffsetFromButton);
+  menu_->RunMenuAt(menu_button_, menu_location);
 }
 
 void SearchBoxView::IconChanged() {

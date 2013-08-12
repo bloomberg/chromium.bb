@@ -30,8 +30,9 @@ const CGFloat kSearchIconDimension = 32;
 // Size of the menu button on the right.
 const CGFloat kMenuButtonDimension = 29;
 
-// Vertical offset that the menu should appear below the menu button.
-const CGFloat kMenuOffsetFromButton = 2;
+// Menu offset relative to the bottom-right corner of the menu button.
+const CGFloat kMenuYOffsetFromButton = -4;
+const CGFloat kMenuXOffsetFromButton = -7;
 
 }
 
@@ -392,8 +393,8 @@ void SearchBoxModelObserverBridge::TextChanged() {
   NSRect anchorRect = [menuButton convertRect:[menuButton bounds]
                                        toView:nil];
   NSPoint anchorPoint = [[menuButton window] convertBaseToScreen:NSMakePoint(
-      NSMaxX(anchorRect),
-      NSMinY(anchorRect) - kMenuOffsetFromButton)];
+      NSMaxX(anchorRect) + kMenuXOffsetFromButton,
+      NSMinY(anchorRect) - kMenuYOffsetFromButton)];
   NSRect confinementRect = [[menuButton window] frame];
   confinementRect.size = NSMakeSize(anchorPoint.x - NSMinX(confinementRect),
                                     anchorPoint.y - NSMinY(confinementRect));
