@@ -529,7 +529,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @private
      */
     checkUserName_: function() {
-      var userName = $('managed-user-creation-name').value;
+      var userName = this.getScreenElement('name').value;
 
       // Avoid flickering
       if (userName == this.lastIncorrectUserName_ ||
@@ -542,6 +542,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
         this.nameErrorVisible = false;
         this.lastVerifiedName_ = null;
         this.lastIncorrectUserName_ = null;
+        this.updateNextButtonForUser_();
       }
     },
 
@@ -554,7 +555,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.lastIncorrectUserName_ = null;
       if ($('managed-user-creation-name').value == name)
         this.clearUserNameError_();
-      this.updateNextButtonForManager_();
+      this.updateNextButtonForUser_();
     },
 
     /**
@@ -573,7 +574,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
             $('managed-user-creation-name'),
             errorText,
             cr.ui.Bubble.Attachment.RIGHT,
-            24, 4);
+            12, 4);
         this.setButtonDisabledStatus('next', true);
       }
     },
@@ -600,7 +601,7 @@ login.createScreen('LocallyManagedUserCreationScreen',
           $('managed-user-creation-password'),
           errorText,
           cr.ui.Bubble.Attachment.RIGHT,
-          24, 4);
+          12, 4);
       $('managed-user-creation-password').classList.add('password-error');
       $('managed-user-creation-password').focus();
       this.disabled = false;
@@ -638,12 +639,12 @@ login.createScreen('LocallyManagedUserCreationScreen',
      * @private
      */
     updateNextButtonForUser_: function() {
-      var firstPassword = $('managed-user-creation-password').value;
-      var secondPassword =
-          $('managed-user-creation-password-confirm').value;
-      var userName = $('managed-user-creation-name').value;
+      var firstPassword = this.getScreenElement('password').value;
+      var secondPassword = this.getScreenElement('password-confirm').value;
+      var userName = this.getScreenElement('name').value;
 
       var canProceed =
+          (userName.length > 0) &&
           (firstPassword.length > 0) &&
           (firstPassword.length == secondPassword.length) &&
            this.lastVerifiedName_ &&
@@ -716,6 +717,8 @@ login.createScreen('LocallyManagedUserCreationScreen',
         chrome.send('supervisedUserSelectImage',
                     [selected.url, 'default']);
         this.getScreenElement('image-grid').redraw();
+        this.updateNextButtonForUser_();
+        this.getScreenElement('name').focus();
       }
     },
 
