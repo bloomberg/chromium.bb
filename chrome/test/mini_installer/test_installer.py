@@ -13,25 +13,96 @@ import argparse
 import json
 import os
 import subprocess
+import unittest
 
-import settings
 import verifier
 
 
 class Config:
   """Describes the machine states, actions, and test cases.
 
-  A state is a dictionary where each key is a verifier's name and the
-  associated value is the input to that verifier. An action is a shorthand for
-  a command. A test is array of alternating state names and action names,
-  starting and ending with state names. An instance of this class stores a map
-  from state names to state objects, a map from action names to commands, and
-  an array of test objects.
+  Attributes:
+    states: A dictionary where each key is a state name and the associated value
+        is a property dictionary describing that state.
+    actions: A dictionary where each key is an action name and the associated
+        value is the action's command.
+    tests: An array of test cases.
   """
   def __init__(self):
     self.states = {}
     self.actions = {}
     self.tests = []
+
+
+class InstallerTest(unittest.TestCase):
+  """Tests a test case in the config file."""
+
+  def __init__(self, test, config):
+    """Constructor.
+
+    Args:
+      test: An array of alternating state names and action names, starting and
+          ending with state names.
+      config: The Config object.
+    """
+    super(InstallerTest, self).__init__()
+    self._test = test
+    self._config = config
+
+  def __str__(self):
+    """Returns a string representing the test case.
+
+    Returns:
+      A string created by joining state names and action names together with
+      ' -> ', for example, 'Test: clean -> install chrome -> chrome_installed'.
+    """
+    return 'Test: %s' % (' -> '.join(self._test))
+
+  def runTest(self):
+    """Run the test case."""
+    # |test| is an array of alternating state names and action names, starting
+    # and ending with state names. Therefore, its length must be odd.
+    self.assertEqual(1, len(self._test) % 2,
+                     'The length of test array must be odd')
+
+    # TODO(sukolsak): run a reset command that puts the machine in clean state.
+
+    state = self._test[0]
+    self._VerifyState(state)
+
+    # Starting at index 1, we loop through pairs of (action, state).
+    for i in range(1, len(self._test), 2):
+      action = self._test[i]
+      self._RunCommand(self._config.actions[action])
+
+      state = self._test[i + 1]
+      self._VerifyState(state)
+
+  def shortDescription(self):
+    """Overridden from unittest.TestCase.
+
+    We return None as the short description to suppress its printing.
+    The default implementation of this method returns the docstring of the
+    runTest method, which is not useful since it's the same for every test case.
+    The description from the __str__ method is informative enough.
+    """
+    return None
+
+  def _VerifyState(self, state):
+    """Verifies that the current machine state matches a given state.
+
+    Args:
+      state: A state name.
+    """
+    try:
+      verifier.Verify(self._config.states[state])
+    except AssertionError as e:
+      # If an AssertionError occurs, we intercept it and add the state name
+      # to the error message so that we know where the test fails.
+      raise AssertionError("In state '%s', %s" % (state, e))
+
+  def _RunCommand(self, command):
+    subprocess.call(command, shell=True)
 
 
 def MergePropertyDictionaries(current_property, new_property):
@@ -100,54 +171,16 @@ def ParseConfigFile(filename):
   return config
 
 
-def VerifyState(config, state):
-  """Verifies that the current machine states match the given machine states.
-
-  Args:
-    config: A Config object.
-    state: The current state.
-  """
-  # TODO(sukolsak): Think of ways of preserving the log when the test fails but
-  # not printing these when the test passes.
-  print settings.PRINT_STATE_PREFIX + state
-  verifier.Verify(config.states[state])
-
-
-def RunCommand(command):
-  print settings.PRINT_COMMAND_PREFIX + command
-  subprocess.call(command, shell=True)
-
-
-def RunResetCommand():
-  print settings.PRINT_COMMAND_PREFIX + 'Reset'
-  # TODO(sukolsak): Need to figure how exactly we want to reset.
-
-
-def Test(config):
+def RunTests(config):
   """Tests the installer using the given Config object.
 
   Args:
     config: A Config object.
   """
+  suite = unittest.TestSuite()
   for test in config.tests:
-    print settings.PRINT_TEST_PREFIX + ' -> '.join(test)
-
-    # A Test object is an array of alternating state names and action names.
-    # The array starts and ends with states. Therefore, the length must be odd.
-    assert(len(test) % 2 == 1)
-
-    RunResetCommand()
-
-    current_state = test[0]
-    VerifyState(config, current_state)
-    # TODO(sukolsak): Quit the test early if VerifyState fails at any point.
-
-    for i in range(1, len(test), 2):
-      action = test[i]
-      RunCommand(config.actions[action])
-
-      current_state = test[i + 1]
-      VerifyState(config, current_state)
+    suite.addTest(InstallerTest(test, config))
+  unittest.TextTestRunner(verbosity=2).run(suite)
 
 
 def main():
@@ -157,7 +190,7 @@ def main():
   args = parser.parse_args()
 
   config = ParseConfigFile(args.config_filename)
-  Test(config)
+  RunTests(config)
 
 
 if __name__ == '__main__':

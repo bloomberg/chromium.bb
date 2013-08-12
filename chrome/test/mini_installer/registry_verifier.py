@@ -4,20 +4,20 @@
 
 import _winreg
 
-import settings
-
 
 def VerifyRegistryEntries(entries):
-  """Verifies that the current registry matches the specified criteria."""
-  for key, entry in entries.iteritems():
-    # TODO(sukolsak): Use unittest framework instead of prints.
-    if VerifyRegistryEntry(key, entry):
-      print 'Passed'
-    else:
-      print 'Failed'
+  """Verifies that the current registry matches the specified criteria.
+
+  Args:
+    entries: A dictionary whose keys are registry keys and values are
+        expectation dictionaries.
+  """
+  for key, expectation in entries.iteritems():
+    VerifyRegistryEntry(key, expectation)
 
 
 def RootKeyConstant(key):
+  """Converts a root registry key string into a _winreg.HKEY_* constant."""
   if key == 'HKEY_CLASSES_ROOT':
     return _winreg.HKEY_CLASSES_ROOT
   if key == 'HKEY_CURRENT_USER':
@@ -26,39 +26,31 @@ def RootKeyConstant(key):
     return _winreg.HKEY_LOCAL_MACHINE
   if key == 'HKEY_USERS':
     return _winreg.HKEY_USERS
-  # TODO(sukolsak): Use unittest framework instead of exceptions.
-  raise Exception('Unknown registry key')
+  raise KeyError("Unknown root registry key '%s'" % key)
 
 
-def VerifyRegistryEntry(key, entry):
-  """Verifies that a registry entry exists or doesn't exist and has
-  the specified value.
+def VerifyRegistryEntry(key, expectation):
+  """Verifies a registry key according to the |expectation|.
+
+  The |expectation| specifies whether or not the registry key should exist
+  (under 'exists') and optionally specifies an expected 'value' for the key.
 
   Args:
     key: Name of the registry key.
-    entry: A dictionary with the following keys and values:
-      'expected' a boolean indicating whether the registry entry exists.
-      'value' (optional) a string representing the value of the registry entry.
-
-  Returns:
-    A boolean indicating whether the registry entry matches the criteria.
+    expectation: A dictionary with the following keys and values:
+        'exists' a boolean indicating whether the registry entry should exist.
+        'value' (optional) a string representing the expected value for
+            the key.
   """
-  expected = entry['expected']
-  # TODO(sukolsak): Debug prints to be removed later.
-  print settings.PRINT_VERIFIER_PREFIX + key,
-  if expected:
-    print 'exists...',
-  else:
-    print "doesn't exist...",
   root_key, sub_key = key.split('\\', 1)
   try:
-    reg_key = _winreg.OpenKey(RootKeyConstant(root_key),
-                              sub_key, 0, _winreg.KEY_READ)
+    # Query the Windows registry for the registry key. It will throw a
+    # WindowsError if the key doesn't exist.
+    _ = _winreg.OpenKey(RootKeyConstant(root_key), sub_key, 0, _winreg.KEY_READ)
   except WindowsError:
-    return not expected
-  if not expected:
-    return False
-  if 'value' in entry:
-    # TODO(sukolsak): implement value
-    pass
-  return True
+    # Key doesn't exist. See that it matches the expectation.
+    assert not expectation['exists'], 'Registry entry %s is missing' % key
+    return
+  # The key exists, see that it matches the expectation.
+  assert expectation['exists'], 'Registry entry %s exists' % key
+  # TODO(sukolsak): Verify the expected value.
