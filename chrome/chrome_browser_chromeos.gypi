@@ -323,6 +323,8 @@
         'browser/chromeos/extensions/file_manager/desktop_notifications.h',
         'browser/chromeos/extensions/file_manager/event_router.cc',
         'browser/chromeos/extensions/file_manager/event_router.h',
+        'browser/chromeos/extensions/file_manager/file_browser_handlers.cc',
+        'browser/chromeos/extensions/file_manager/file_browser_handlers.h',
         'browser/chromeos/extensions/file_manager/file_manager_util.cc',
         'browser/chromeos/extensions/file_manager/file_manager_util.h',
         'browser/chromeos/extensions/file_manager/file_tasks.cc',

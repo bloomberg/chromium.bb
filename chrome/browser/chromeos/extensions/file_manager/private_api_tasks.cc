@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
+#include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
