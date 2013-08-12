@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
+#include "ash/display/display_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
@@ -39,6 +40,33 @@ const float kMinimumPercentOnScreenArea = 0.3f;
 bool IsMaximizedState(ui::WindowShowState state) {
   return state == ui::SHOW_STATE_MAXIMIZED ||
       state == ui::SHOW_STATE_FULLSCREEN;
+}
+
+void MoveToDisplayForRestore(aura::Window* window) {
+  const gfx::Rect* restore_bounds = GetRestoreBoundsInScreen(window);
+  if (!restore_bounds)
+    return;
+
+  // Move only if the restore bounds is outside of
+  // the root window. There is no information about in which
+  // display it should be restored, so this is best guess.
+  // TODO(oshima): Restore information should contain the
+  // work area information like WindowResizer does for the
+  // last window location.
+  if (!window->GetRootWindow()->GetBoundsInScreen().Intersects(
+          *restore_bounds)) {
+    DisplayController* display_controller =
+        Shell::GetInstance()->display_controller();
+    const gfx::Display& display =
+        display_controller->GetDisplayMatching(*restore_bounds);
+    aura::RootWindow* new_root =
+        display_controller->GetRootWindowForDisplayId(display.id());
+    if (new_root != window->GetRootWindow()) {
+      aura::Window* new_container =
+          Shell::GetContainer(new_root, window->parent()->id());
+      new_container->AddChild(window);
+    }
+  }
 }
 
 }  // namespace
@@ -285,14 +313,15 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
     }
 
     case ui::SHOW_STATE_MAXIMIZED:
+      MoveToDisplayForRestore(window);
       CrossFadeToBounds(window, ScreenAsh::GetMaximizedWindowBoundsInParent(
           window->parent()->parent()));
       break;
     case ui::SHOW_STATE_FULLSCREEN:
+      MoveToDisplayForRestore(window);
       CrossFadeToBounds(window, ScreenAsh::GetDisplayBoundsInParent(
           window->parent()->parent()));
       break;
-
     default:
       break;
   }

@@ -17,10 +17,34 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/insets.h"
+#include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-
 namespace {
+
+class MaximizeDelegateView : public views::WidgetDelegateView {
+ public:
+  MaximizeDelegateView(const gfx::Rect& initial_bounds)
+      : initial_bounds_(initial_bounds) {
+  }
+  virtual ~MaximizeDelegateView() {}
+
+  virtual bool GetSavedWindowPlacement(
+      gfx::Rect* bounds,
+      ui::WindowShowState* show_state) const OVERRIDE {
+    *bounds = initial_bounds_;
+    *show_state = ui::SHOW_STATE_MAXIMIZED;
+    return true;
+  }
+
+ private:
+  const gfx::Rect initial_bounds_;
+
+  DISALLOW_COPY_AND_ASSIGN(MaximizeDelegateView);
+};
+
+}  // namespace
 
 typedef test::AshTestBase WorkspaceLayoutManagerTest;
 
@@ -96,6 +120,91 @@ TEST_F(WorkspaceLayoutManagerTest, KeepRestoredWindowInDisplay) {
   EXPECT_TRUE(
       Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
   EXPECT_EQ("-20,-30 30x40", window->bounds().ToString());
+}
+
+TEST_F(WorkspaceLayoutManagerTest, MaximizeInDisplayToBeRestored) {
+  if (!SupportsMultipleDisplays())
+    return;
+  UpdateDisplay("300x400,400x500");
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 30, 40)));
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
+
+  SetRestoreBoundsInScreen(window.get(), gfx::Rect(400, 0, 30, 40));
+  // Maximize the window in 2nd display as the restore bounds
+  // is inside 2nd display.
+  wm::MaximizeWindow(window.get());
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("300,0 400x452", window->GetBoundsInScreen().ToString());
+
+  wm::RestoreWindow(window.get());
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("400,0 30x40", window->GetBoundsInScreen().ToString());
+
+  // If the restore bounds intersects with the current display,
+  // don't move.
+  SetRestoreBoundsInScreen(window.get(), gfx::Rect(280, 0, 30, 40));
+  wm::MaximizeWindow(window.get());
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("300,0 400x452", window->GetBoundsInScreen().ToString());
+
+  wm::RestoreWindow(window.get());
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("280,0 30x40", window->GetBoundsInScreen().ToString());
+
+  // Restoring widget state.
+  scoped_ptr<views::Widget> w1(new views::Widget);
+  views::Widget::InitParams params;
+  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.delegate = new MaximizeDelegateView(gfx::Rect(400, 0, 30, 40));
+  params.context = root_windows[0];
+  w1->Init(params);
+  w1->Show();
+  EXPECT_TRUE(w1->IsMaximized());
+  EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ("300,0 400x452", w1->GetWindowBoundsInScreen().ToString());
+  w1->Restore();
+  EXPECT_EQ(root_windows[1], w1->GetNativeView()->GetRootWindow());
+  EXPECT_EQ("400,0 30x40", w1->GetWindowBoundsInScreen().ToString());
+}
+
+TEST_F(WorkspaceLayoutManagerTest, FullscreenInDisplayToBeRestored) {
+  if (!SupportsMultipleDisplays())
+    return;
+  UpdateDisplay("300x400,400x500");
+
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 30, 40)));
+  EXPECT_EQ(root_windows[0], window->GetRootWindow());
+
+  SetRestoreBoundsInScreen(window.get(), gfx::Rect(400, 0, 30, 40));
+  // Maximize the window in 2nd display as the restore bounds
+  // is inside 2nd display.
+  window->SetProperty(aura::client::kShowStateKey,
+                      ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("300,0 400x500", window->GetBoundsInScreen().ToString());
+
+  wm::RestoreWindow(window.get());
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("400,0 30x40", window->GetBoundsInScreen().ToString());
+
+  // If the restore bounds intersects with the current display,
+  // don't move.
+  SetRestoreBoundsInScreen(window.get(), gfx::Rect(280, 0, 30, 40));
+  window->SetProperty(aura::client::kShowStateKey,
+                      ui::SHOW_STATE_FULLSCREEN);
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("300,0 400x500", window->GetBoundsInScreen().ToString());
+
+  wm::RestoreWindow(window.get());
+  EXPECT_EQ(root_windows[1], window->GetRootWindow());
+  EXPECT_EQ("280,0 30x40", window->GetBoundsInScreen().ToString());
 }
 
 // WindowObserver implementation used by DontClobberRestoreBoundsWindowObserver.
@@ -250,5 +359,4 @@ TEST_F(WorkspaceLayoutManagerTest, SizeToWorkArea) {
       window->bounds().ToString());
 }
 
-}  // namespace
 }  // namespace ash
