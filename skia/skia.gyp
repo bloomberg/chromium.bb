@@ -4,10 +4,31 @@
 
 {
   'conditions': [
-    # In component mode (shared_lib), we build all of content as a single DLL.
-    # However, in the static mode, we need to build content as multiple targets
+    # In component mode (shared_lib), we build all of skia as a single DLL.
+    # However, in the static mode, we need to build skia as multiple targets
     # in order to support the use case where a platform (e.g. Android) may
     # already have a copy of skia as a system library.
+    ['component=="static_library" and use_system_skia==0', {
+      'targets': [
+        {
+          'target_name': 'skia_library',
+          'type': 'static_library',
+          'includes': [
+            'skia_library.gypi',
+            'skia_common.gypi',
+          ],
+        },
+      ],
+    }],
+    ['component=="static_library" and use_system_skia==1', {
+      'targets': [
+        {
+          'target_name': 'skia_library',
+          'type': 'none',
+          'includes': ['skia_system.gypi'],
+        },
+      ],
+    }],
     ['component=="static_library"', {
       'targets': [
         {
@@ -20,14 +41,6 @@
           'export_dependent_settings': [
             'skia_library',
             'skia_chrome',
-          ],
-        },
-        {
-          'target_name': 'skia_library',
-          'type': 'static_library',
-          'includes': [
-            'skia_library.gypi',
-            'skia_common.gypi',
           ],
         },
         {

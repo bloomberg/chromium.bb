@@ -1119,6 +1119,9 @@
     # Turns on the i18n support in V8.
     'v8_enable_i18n_support': 1,
 
+    # Use the chromium skia by default.
+    'use_system_skia%': '0',
+
     'conditions': [
       # The version of GCC in use, set later in platforms that use GCC and have
       # not explicitly chosen to build with clang. Currently, this means all
@@ -1331,9 +1334,6 @@
 
         # Uses system APIs for decoding audio and video.
         'use_libffmpeg%': '0',
-
-        # Always use the chromium skia.
-        'use_system_skia%': '0',
 
         # When building as part of the Android system, use system libraries
         # where possible to reduce ROM size.
