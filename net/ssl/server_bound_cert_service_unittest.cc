@@ -105,7 +105,13 @@ MockServerBoundCertStoreWithAsyncGet::CallGetServerBoundCertCallbackWithResult(
     const std::string& cert) {
   if (err == OK)
     cert_count_ = 1;
-  callback_.Run(err, server_identifier_, expiration_time, private_key, cert);
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+                                         base::Bind(callback_,
+                                                    err,
+                                                    server_identifier_,
+                                                    expiration_time,
+                                                    private_key,
+                                                    cert));
 }
 
 TEST_F(ServerBoundCertServiceTest, GetDomainForHost) {
