@@ -1283,21 +1283,21 @@ public class AwContents {
      * @see android.webkit.WebView#flingScroll(int, int)
      */
     public void flingScroll(int velocityX, int velocityY) {
-        mContentViewCore.flingScroll(velocityX, velocityY);
+        mScrollOffsetManager.flingScroll(velocityX, velocityY);
     }
 
     /**
      * @see android.webkit.WebView#pageUp(boolean)
      */
     public boolean pageUp(boolean top) {
-        return mContentViewCore.pageUp(top);
+        return mScrollOffsetManager.pageUp(top);
     }
 
     /**
      * @see android.webkit.WebView#pageDown(boolean)
      */
     public boolean pageDown(boolean bottom) {
-        return mContentViewCore.pageDown(bottom);
+        return mScrollOffsetManager.pageDown(bottom);
     }
 
     /**

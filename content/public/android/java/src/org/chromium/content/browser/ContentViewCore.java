@@ -1202,18 +1202,6 @@ import java.util.Map;
     // End FrameLayout overrides.
 
     /**
-     * @see {@link android.webkit.WebView#flingScroll(int, int)}
-     */
-    public void flingScroll(int vx, int vy) {
-        // Notes:
-        //   (1) Use large negative values for the x/y parameters so we don't accidentally scroll a
-        //       nested frame.
-        //   (2) vx and vy are inverted to match WebView behavior.
-        mContentViewGestureHandler.fling(
-                System.currentTimeMillis(), -Integer.MAX_VALUE, -Integer.MIN_VALUE, -vx, -vy);
-    }
-
-    /**
      * @see View#onTouchEvent(MotionEvent)
      */
     public boolean onTouchEvent(MotionEvent event) {
@@ -2894,43 +2882,6 @@ import java.util.Map;
     public void updateTopControlsState(boolean enableHiding, boolean enableShowing,
             boolean animate) {
         nativeUpdateTopControlsState(mNativeContentViewCore, enableHiding, enableShowing, animate);
-    }
-
-    /**
-     * @See android.webkit.WebView#pageDown(boolean)
-     */
-    public boolean pageDown(boolean bottom) {
-        final int maxVerticalScrollPix = mRenderCoordinates.getMaxVerticalScrollPixInt();
-        if (computeVerticalScrollOffset() >= maxVerticalScrollPix) {
-            // We seem to already be at the bottom of the page, so no scrolling will occur.
-            return false;
-        }
-
-        if (bottom) {
-            scrollTo(computeHorizontalScrollOffset(), maxVerticalScrollPix);
-        } else {
-            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_PAGE_DOWN));
-            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_PAGE_DOWN));
-        }
-        return true;
-    }
-
-    /**
-     * @See android.webkit.WebView#pageUp(boolean)
-     */
-    public boolean pageUp(boolean top) {
-        if (computeVerticalScrollOffset() == 0) {
-            // We seem to already be at the top of the page, so no scrolling will occur.
-            return false;
-        }
-
-        if (top) {
-            scrollTo(computeHorizontalScrollOffset(), 0);
-        } else {
-            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_PAGE_UP));
-            dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_PAGE_UP));
-        }
-        return true;
     }
 
     /**

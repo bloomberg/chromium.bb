@@ -18,6 +18,15 @@ import org.chromium.base.CalledByNative;
  */
 @VisibleForTesting
 public class AwScrollOffsetManager {
+    // Values taken from WebViewClassic.
+
+    // The amount of content to overlap between two screens when using pageUp/pageDown methiods.
+    private static final int PAGE_SCROLL_OVERLAP = 24;
+    // Standard animated scroll speed.
+    private static final int STD_SCROLL_ANIMATION_SPEED_PIX_PER_SEC = 480;
+    // Time for the longest scroll animation.
+    private static final int MAX_SCROLL_ANIMATION_DURATION_MILLISEC = 750;
+
     // The unit of all the values in this delegate are physical pixels.
     public interface Delegate {
         // Call View#overScrollBy on the containerView.
@@ -289,5 +298,69 @@ public class AwScrollOffsetManager {
         scrollBy(x - oldX, y - oldY);
 
         mDelegate.invalidate();
+    }
+
+    private static int computeDurationInMilliSec(int dx, int dy) {
+        int distance = Math.max(Math.abs(dx), Math.abs(dy));
+        int duration = distance * 1000 / STD_SCROLL_ANIMATION_SPEED_PIX_PER_SEC;
+        return Math.min(duration, MAX_SCROLL_ANIMATION_DURATION_MILLISEC);
+    }
+
+    private boolean animateScrollTo(int x, int y) {
+        final int scrollX = mDelegate.getContainerViewScrollX();
+        final int scrollY = mDelegate.getContainerViewScrollY();
+
+        x = clampHorizontalScroll(x);
+        y = clampVerticalScroll(y);
+
+        int dx = x - scrollX;
+        int dy = y - scrollY;
+
+        if (dx == 0 && dy == 0)
+            return false;
+
+        mScroller.startScroll(scrollX, scrollY, dx, dy, computeDurationInMilliSec(dx, dy));
+        mDelegate.invalidate();
+
+        return true;
+    }
+
+    /**
+     * See {@link WebView#pageUp(boolean)}
+     */
+    public boolean pageUp(boolean top) {
+        final int scrollX = mDelegate.getContainerViewScrollX();
+        final int scrollY = mDelegate.getContainerViewScrollY();
+
+        if (top) {
+            // go to the top of the document
+            return animateScrollTo(scrollX, 0);
+        }
+        int dy = -mContainerViewHeight / 2;
+        if (mContainerViewHeight > 2 * PAGE_SCROLL_OVERLAP) {
+            dy = -mContainerViewHeight + PAGE_SCROLL_OVERLAP;
+        }
+        // animateScrollTo clamps the argument to the scrollable range so using (scrollY + dy) is
+        // fine.
+        return animateScrollTo(scrollX, scrollY + dy);
+    }
+
+    /**
+     * See {@link WebView#pageDown(boolean)}
+     */
+    public boolean pageDown(boolean bottom) {
+        final int scrollX = mDelegate.getContainerViewScrollX();
+        final int scrollY = mDelegate.getContainerViewScrollY();
+
+        if (bottom) {
+            return animateScrollTo(scrollX, computeVerticalScrollRange());
+        }
+        int dy = mContainerViewHeight / 2;
+        if (mContainerViewHeight > 2 * PAGE_SCROLL_OVERLAP) {
+            dy = mContainerViewHeight - PAGE_SCROLL_OVERLAP;
+        }
+        // animateScrollTo clamps the argument to the scrollable range so using (scrollY + dy) is
+        // fine.
+        return animateScrollTo(scrollX, scrollY + dy);
     }
 }

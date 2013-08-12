@@ -23,6 +23,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -543,5 +544,116 @@ public class AndroidScrollIntegrationTest extends AwTestBase {
                 assertTrue(maxVertical - awContents.computeVerticalScrollOffset() < 3);
             }
         });
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testFlingScroll() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+            (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
+
+        assertScrollOnMainSync(testContainerView, 0, 0);
+
+        final CallbackHelper onScrollToCallbackHelper =
+            testContainerView.getOnScrollToCallbackHelper();
+        final int scrollToCallCount = onScrollToCallbackHelper.getCallCount();
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                testContainerView.getAwContents().flingScroll(1000, 1000);
+            }
+        });
+
+        onScrollToCallbackHelper.waitForCallback(scrollToCallCount);
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                assertTrue(testContainerView.getScrollX() > 0);
+                assertTrue(testContainerView.getScrollY() > 0);
+            }
+        });
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPageDown() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+            (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
+
+        assertScrollOnMainSync(testContainerView, 0, 0);
+
+        final int maxScrollYPix = runTestOnUiThreadAndGetResult(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return (testContainerView.getAwContents().computeVerticalScrollRange() -
+                    testContainerView.getHeight());
+            }
+        });
+
+        final CallbackHelper onScrollToCallbackHelper =
+            testContainerView.getOnScrollToCallbackHelper();
+        final int scrollToCallCount = onScrollToCallbackHelper.getCallCount();
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                testContainerView.getAwContents().pageDown(true);
+            }
+        });
+
+        // Wait for the animation to hit the bottom of the page.
+        for (int i = 1; ; ++i) {
+            onScrollToCallbackHelper.waitForCallback(scrollToCallCount, i);
+            if (checkScrollOnMainSync(testContainerView, 0, maxScrollYPix))
+                break;
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testPageUp() throws Throwable {
+        final TestAwContentsClient contentsClient = new TestAwContentsClient();
+        final ScrollTestContainerView testContainerView =
+            (ScrollTestContainerView) createAwTestContainerViewOnMainSync(contentsClient);
+        enableJavaScriptOnUiThread(testContainerView.getAwContents());
+
+        final double deviceDIPScale =
+            DeviceDisplayInfo.create(testContainerView.getContext()).getDIPScale();
+        final int targetScrollYCss = 243;
+        final int targetScrollYPix = (int) Math.round(targetScrollYCss * deviceDIPScale);
+
+        loadTestPageAndWaitForFirstFrame(testContainerView, contentsClient, null, "");
+
+        assertScrollOnMainSync(testContainerView, 0, 0);
+
+        scrollToOnMainSync(testContainerView, 0, targetScrollYPix);
+
+        final CallbackHelper onScrollToCallbackHelper =
+            testContainerView.getOnScrollToCallbackHelper();
+        final int scrollToCallCount = onScrollToCallbackHelper.getCallCount();
+
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                testContainerView.getAwContents().pageUp(true);
+            }
+        });
+
+        // Wait for the animation to hit the bottom of the page.
+        for (int i = 1; ; ++i) {
+            onScrollToCallbackHelper.waitForCallback(scrollToCallCount, i);
+            if (checkScrollOnMainSync(testContainerView, 0, 0))
+                break;
+        }
     }
 }
