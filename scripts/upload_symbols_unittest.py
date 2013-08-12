@@ -139,15 +139,6 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(m.call_count, 1)
 
 
-class FindBreakpadDirTest(cros_test_lib.TestCase):
-
-  def testBasic(self):
-    """Make sure board->breakpad path expansion works"""
-    expected = '/build/blah/usr/lib/debug/breakpad'
-    result = upload_symbols.FindBreakpadDir('blah')
-    self.assertEquals(expected, result)
-
-
 if __name__ == '__main__':
   # pylint: disable=W0212
   # Set timeouts small so that if the unit test hangs, it won't hang for long.

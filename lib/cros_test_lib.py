@@ -485,6 +485,22 @@ class TestCase(unittest.TestCase):
         raise AssertionError("\n".join(bad))
       return e
 
+  def assertExists(self, path):
+    """Make sure |path| exists"""
+    if not os.path.exists(path):
+      msg = ['path is missing: %s' % path]
+      while path != '/':
+        path = os.path.dirname(path)
+        if not path:
+          # If we're given something like "foo", abort once we get to "".
+          break
+        result = os.path.exists(path)
+        msg.append('\tos.path.exists(%s): %s' % (path, result))
+        if result:
+          msg.append('\tcontents: %r' % os.listdir(path))
+          break
+      raise self.failureException('\n'.join(msg))
+
 
 class LoggingTestCase(TestCase):
   """Base class for logging capturer test cases."""

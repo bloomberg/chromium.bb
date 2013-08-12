@@ -532,3 +532,15 @@ class PartialCmdMock(PartialMock):
       patched = self.patched[mock_attr]
       cmds = '\n'.join(repr(x) for x in patched.call_args_list)
       raise AssertionError(msg % (mock.call(args, **kwargs), cmds))
+
+  @property
+  @CheckAttr
+  def call_count(self, mock_attr=None):
+    """Return the number of times we've been called."""
+    return self.patched[mock_attr].call_count
+
+  @property
+  @CheckAttr
+  def call_args_list(self, mock_attr=None):
+    """Return the list of args we've been called with."""
+    return self.patched[mock_attr].call_args_list

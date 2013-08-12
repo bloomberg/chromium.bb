@@ -17,11 +17,10 @@ import textwrap
 import tempfile
 import time
 
-from chromite.buildbot import constants
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
-from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.scripts import cros_generate_breakpad_symbols
 
 
 # URLs used for uploading symbols.
@@ -96,6 +95,9 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
     upload_url: The crash server to upload things to
     file_limit: The max file size of a symbol file before we try to strip it
     sleep: Number of seconds to sleep before running
+    num_errors: An object to update with the error count (needs a .value member)
+  Returns:
+    The number of errors that were encountered.
   """
   if num_errors is None:
     num_errors = ctypes.c_int()
@@ -171,7 +173,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     upload_count: If set, only upload this many symbols (meant for testing)
     sym_files: Specific symbol files to upload, otherwise search |breakpad_dir|
   Returns:
-    False if some errors were encountered, True otherwise.
+    The number of errors that were encountered.
   """
   num_errors = 0
 
@@ -187,7 +189,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     all_files = True
   else:
     if breakpad_dir is None:
-      breakpad_dir = FindBreakpadDir(board)
+      breakpad_dir = cros_generate_breakpad_symbols.FindBreakpadDir(board)
     cros_build_lib.Info('uploading all symbols to %s from %s', upload_url,
                         breakpad_dir)
     sym_file_sets = os.walk(breakpad_dir)
@@ -217,42 +219,6 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
   num_errors += bg_errors.value
 
   return num_errors
-
-
-def GenerateBreakpadSymbols(board, breakpad_dir=None):
-  """Generate all the symbols for this board
-
-  Note: this should be merged with buildbot_commands.GenerateBreakpadSymbols()
-  once we rewrite cros_generate_breakpad_symbols in python.
-
-  Args:
-    board: The board whose symbols we wish to generate
-    breakpad_dir: The full path to the breakpad directory where symbols live
-  """
-  if breakpad_dir is None:
-    breakpad_dir = FindBreakpadDir(board)
-
-  cros_build_lib.Info('clearing out %s', breakpad_dir)
-  osutils.RmDir(breakpad_dir, ignore_missing=True, sudo=True)
-
-  cros_build_lib.Info('generating all breakpad symbol files')
-  cmd = [os.path.join(constants.CROSUTILS_DIR,
-                      'cros_generate_breakpad_symbols'),
-         '--board', board]
-  if cros_build_lib.logger.getEffectiveLevel() < logging.INFO:
-    cmd += ['--verbose']
-  result = cros_build_lib.RunCommand(cmd, error_code_ok=True)
-  if result.returncode:
-    cros_build_lib.Warning('errors hit while generating symbols; '
-                           'uploading anyways')
-    return 1
-
-  return 0
-
-
-def FindBreakpadDir(board):
-  """Given a |board|, return the path to the breakpad dir for it"""
-  return os.path.join('/build', board, 'usr', 'lib', 'debug', 'breakpad')
 
 
 def main(argv):
@@ -313,7 +279,8 @@ def main(argv):
 
   ret = 0
   if opts.regenerate:
-    ret += GenerateBreakpadSymbols(opts.board, breakpad_dir=opts.breakpad_root)
+    ret += cros_generate_breakpad_symbols.GenerateBreakpadSymbols(
+        opts.board, breakpad_dir=opts.breakpad_root)
 
   ret += UploadSymbols(opts.board, official=opts.official_build,
                        breakpad_dir=opts.breakpad_root,
