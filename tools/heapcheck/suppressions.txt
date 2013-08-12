@@ -849,3 +849,12 @@
    fun:MessageCenterView
    fun:message_center::MessageCenterViewTest::SetUp
 }
+{
+   bug_271431
+   Heapcheck:Leak
+   ...
+   fun:CreateBubble
+   fun:autofill::GeneratedCreditCardBubbleController::Show
+   fun:autofill::GeneratedCreditCardBubbleController::SetupAndShow
+   fun:autofill::GeneratedCreditCardBubbleController::Show
+}

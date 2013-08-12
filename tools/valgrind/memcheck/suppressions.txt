@@ -7228,3 +7228,14 @@
    fun:_ZN14message_center17MessageCenterViewC1EPNS_13MessageCenterEPNS_17MessageCenterTrayEibb
    fun:_ZN14message_center21MessageCenterViewTest5SetUpEv
 }
+{
+   bug_271431
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN8autofill33TestGeneratedCreditCardBubbleView6CreateERKN4base7WeakPtrINS_35GeneratedCreditCardBubbleControllerEEE
+   fun:_ZN8autofill12_GLOBAL__N_139TestGeneratedCreditCardBubbleController12CreateBubbleEv
+   fun:_ZN8autofill35GeneratedCreditCardBubbleController4ShowEb
+   fun:_ZN8autofill35GeneratedCreditCardBubbleController12SetupAndShowERKSbItN4base20string16_char_traitsESaItEES6_
+   fun:_ZN8autofill35GeneratedCreditCardBubbleController4ShowEPN7content11WebContentsERKSbItN4base20string16_char_traitsESaItEES9_
+   fun:_ZN8autofill12_GLOBAL__N_139GeneratedCreditCardBubbleControllerTest4ShowEv
+}
