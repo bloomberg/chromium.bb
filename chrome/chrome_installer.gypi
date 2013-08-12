@@ -279,6 +279,7 @@
             'installer/setup/install_worker.cc',
             'installer/setup/install_worker.h',
             'installer/setup/setup_main.cc',
+            'installer/setup/setup_main.h',
             'installer/setup/setup.ico',
             'installer/setup/setup.rc',
             'installer/setup/setup_constants.cc',
