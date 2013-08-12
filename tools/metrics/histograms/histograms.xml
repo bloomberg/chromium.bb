@@ -3286,7 +3286,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Extensions.ExternalItemState" enum="ExtensionState">
+<histogram name="Extensions.ExternalItemState" enum="ExternalItemState">
   <summary>
     The number of sideloaded apps/extensions loaded on startup grouped by
     enabled/disabled state.
@@ -17681,13 +17681,6 @@ other types of suffix sets.
   <int value="28" label="SOCKET_SPECIFIC_HOSTS"/>
 </enum>
 
-<enum name="ExtensionState" type="int">
-  <int value="0" label="DISABLED"/>
-  <int value="1" label="ENABLED"/>
-  <int value="2" label="EXTERNAL_EXTENSION_UNINSTALLED"/>
-  <int value="3" label="ENABLED_COMPONENT"/>
-</enum>
-
 <enum name="ExtensionType" type="int">
   <int value="0" label="UNKNOWN"/>
   <int value="1" label="EXTENSION"/>
@@ -17745,6 +17738,15 @@ other types of suffix sets.
   <int value="3" label="Watch video"/>
   <int value="4" label="Error"/>
   <int value="5" label="Close (no action)"/>
+</enum>
+
+<enum name="ExternalItemState" type="int">
+  <int value="0" label="DEPRECATED_DISABLED"/>
+  <int value="1" label="DEPRECATED_ENABLED"/>
+  <int value="2" label="DISABLED (in webstore)"/>
+  <int value="3" label="ENABLED (in webstore)"/>
+  <int value="4" label="DISABLED (not in webstore)"/>
+  <int value="5" label="ENABLED (not in webstore)"/>
 </enum>
 
 <enum name="Exynos5250LotIdEnum" type="int">

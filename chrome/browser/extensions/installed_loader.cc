@@ -61,6 +61,18 @@ enum BackgroundPageType {
   EVENT_PAGE = 2,
 };
 
+// Used in histogram Extensions.ExternalItemState. Values may be added, as
+// long as existing values are not changed.
+enum ExternalItemState {
+  DEPRECATED_EXTERNAL_ITEM_DISABLED = 0,
+  DEPRECATED_EXTERNAL_ITEM_ENABLED = 1,
+  EXTERNAL_ITEM_WEBSTORE_DISABLED = 2,
+  EXTERNAL_ITEM_WEBSTORE_ENABLED = 3,
+  EXTERNAL_ITEM_NONWEBSTORE_DISABLED = 4,
+  EXTERNAL_ITEM_NONWEBSTORE_ENABLED = 5,
+  EXTERNAL_ITEM_MAX_ITEMS = 6
+};
+
 ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
   // Always reload manifests of unpacked extensions, because they can change
   // on disk independent of the manifest in our prefs.
@@ -267,22 +279,28 @@ void InstalledLoader::LoadAllExtensions() {
     }
     if (Manifest::IsExternalLocation(location)) {
       // See loop below for DISABLED.
-      UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
-                                Extension::ENABLED, 100);
+      if (ManifestURL::UpdatesFromGallery(*ex)) {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                  EXTERNAL_ITEM_WEBSTORE_ENABLED,
+                                  EXTERNAL_ITEM_MAX_ITEMS);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                  EXTERNAL_ITEM_NONWEBSTORE_ENABLED,
+                                  EXTERNAL_ITEM_MAX_ITEMS);
+      }
     }
     if ((*ex)->from_webstore()) {
       // Check for inconsistencies if the extension was supposedly installed
       // from the webstore.
       enum {
         BAD_UPDATE_URL = 0,
-        IS_EXTERNAL = 1,
+        // This value was a mistake. Turns out sideloaded extensions can
+        // have the from_webstore bit if they update from the webstore.
+        DEPRECATED_IS_EXTERNAL = 1,
       };
       if (!ManifestURL::UpdatesFromGallery(*ex)) {
         UMA_HISTOGRAM_ENUMERATION("Extensions.FromWebstoreInconsistency",
                                   BAD_UPDATE_URL, 2);
-      } else if (Manifest::IsExternalLocation(location)) {
-        UMA_HISTOGRAM_ENUMERATION("Extensions.FromWebstoreInconsistency",
-                                  IS_EXTERNAL, 2);
       }
     }
 
@@ -384,8 +402,15 @@ void InstalledLoader::LoadAllExtensions() {
     }
     if (Manifest::IsExternalLocation((*ex)->location())) {
       // See loop above for ENABLED.
-      UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
-                                Extension::DISABLED, 100);
+      if (ManifestURL::UpdatesFromGallery(*ex)) {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                  EXTERNAL_ITEM_WEBSTORE_DISABLED,
+                                  EXTERNAL_ITEM_MAX_ITEMS);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                  EXTERNAL_ITEM_NONWEBSTORE_DISABLED,
+                                  EXTERNAL_ITEM_MAX_ITEMS);
+      }
     }
   }
 
