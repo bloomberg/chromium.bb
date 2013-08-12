@@ -22,6 +22,7 @@
               4244,  # implicit conversion, possible loss of data
               4355,  # 'this' used in base member initializer list
               4267,  # size_t to int truncation
+              4291,  # no matching operator delete for a placement new
             ],
             'defines!': [
               'WIN32_LEAN_AND_MEAN',  # Protobuf defines this itself.
@@ -161,6 +162,7 @@
             'src/google/protobuf/descriptor.pb.h',
             'src/google/protobuf/descriptor_database.h',
             'src/google/protobuf/dynamic_message.h',
+            'src/google/protobuf/generated_enum_reflection.h',
             'src/google/protobuf/generated_message_reflection.h',
             'src/google/protobuf/message.h',
             'src/google/protobuf/reflection_ops.h',
@@ -174,17 +176,27 @@
             'src/google/protobuf/compiler/code_generator.h',
             'src/google/protobuf/compiler/command_line_interface.h',
             'src/google/protobuf/compiler/importer.h',
+            'src/google/protobuf/compiler/java/java_doc_comment.cc',
+            'src/google/protobuf/compiler/java/java_doc_comment.h',
             'src/google/protobuf/compiler/parser.h',
 
             'src/google/protobuf/stubs/strutil.cc',
             'src/google/protobuf/stubs/strutil.h',
             'src/google/protobuf/stubs/substitute.cc',
             'src/google/protobuf/stubs/substitute.h',
+            'src/google/protobuf/stubs/stl_util.h',
+            'src/google/protobuf/stubs/stringprintf.cc',
+            'src/google/protobuf/stubs/stringprintf.h',
             'src/google/protobuf/stubs/structurally_valid.cc',
+            'src/google/protobuf/stubs/template_util.h',
+            'src/google/protobuf/stubs/type_traits.h',
+
             'src/google/protobuf/descriptor.cc',
             'src/google/protobuf/descriptor.pb.cc',
             'src/google/protobuf/descriptor_database.cc',
             'src/google/protobuf/dynamic_message.cc',
+            'src/google/protobuf/extension_set.cc',
+            'src/google/protobuf/extension_set.h',
             'src/google/protobuf/extension_set_heavy.cc',
             'src/google/protobuf/generated_message_reflection.cc',
             'src/google/protobuf/message.cc',
@@ -314,7 +326,10 @@
               'files': [
                 'python/google/protobuf/__init__.py',
                 'python/google/protobuf/descriptor.py',
+                'python/google/protobuf/descriptor_database.py',
+                'python/google/protobuf/descriptor_pool.py',
                 'python/google/protobuf/message.py',
+                'python/google/protobuf/message_factory.py',
                 'python/google/protobuf/reflection.py',
                 'python/google/protobuf/service.py',
                 'python/google/protobuf/service_reflection.py',
@@ -340,6 +355,7 @@
                 'python/google/protobuf/internal/cpp_message.py',
                 'python/google/protobuf/internal/decoder.py',
                 'python/google/protobuf/internal/encoder.py',
+                'python/google/protobuf/internal/enum_type_wrapper.py',
                 'python/google/protobuf/internal/generator_test.py',
                 'python/google/protobuf/internal/message_listener.py',
                 'python/google/protobuf/internal/python_message.py',

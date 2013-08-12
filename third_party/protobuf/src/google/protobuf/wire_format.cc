@@ -48,11 +48,10 @@
 #include <google/protobuf/unknown_field_set.h>
 
 
+
 namespace google {
 namespace protobuf {
 namespace internal {
-
-using internal::WireFormatLite;
 
 namespace {
 
@@ -340,10 +339,7 @@ bool WireFormat::ParseAndMergeMessageSetItem(
   const FieldDescriptor* field = NULL;
 
   // If we see message data before the type_id, we'll append it to this so
-  // we can parse it later.  This will probably never happen in practice,
-  // as no MessageSet encoder I know of writes the message before the type ID.
-  // But, it's technically valid so we should allow it.
-  // TODO(kenton):  Use a Cord instead?  Do I care?
+  // we can parse it later.
   string message_data;
 
   while (true) {
@@ -381,7 +377,10 @@ bool WireFormat::ParseAndMergeMessageSetItem(
           uint32 length;
           if (!input->ReadVarint32(&length)) return false;
           if (!input->ReadString(&temp, length)) return false;
-          message_data.append(temp);
+          io::StringOutputStream output_stream(&message_data);
+          io::CodedOutputStream coded_output(&output_stream);
+          coded_output.WriteVarint32(length);
+          coded_output.WriteString(temp);
         } else {
           // Already saw type_id, so we can parse this directly.
           if (!ParseAndMergeField(fake_tag, field, message, input)) {
@@ -754,10 +753,10 @@ void WireFormat::VerifyUTF8StringFallback(const char* data,
         break;
       // no default case: have the compiler warn if a case is not covered.
     }
-    GOOGLE_LOG(ERROR) << "Encountered string containing invalid UTF-8 data while "
+    GOOGLE_LOG(ERROR) << "String field contains invalid UTF-8 data when "
                << operation_str
-               << " protocol buffer. Strings must contain only UTF-8; "
-                  "use the 'bytes' type for raw bytes.";
+               << " a protocol buffer. Use the 'bytes' type if you intend to "
+                  "send raw bytes.";
   }
 }
 
