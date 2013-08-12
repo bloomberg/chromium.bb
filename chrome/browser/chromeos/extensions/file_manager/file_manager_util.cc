@@ -100,15 +100,6 @@ const char* kBrowserSupportedExtensions[] = {
     ".mhtml", ".mht", ".svg"
 };
 
-// List of all extensions we want to be shown in histogram that keep track of
-// files that were unsuccessfully tried to be opened.
-// The list has to be synced with histogram values.
-const char* kUMATrackingExtensions[] = {
-  "other", ".doc", ".docx", ".odt", ".rtf", ".pdf", ".ppt", ".pptx", ".odp",
-  ".xls", ".xlsx", ".ods", ".csv", ".odf", ".rar", ".asf", ".wma", ".wmv",
-  ".mov", ".mpg", ".log"
-};
-
 // Returns a file manager URL for the given |path|.
 GURL GetFileManagerUrl(const char* path) {
   return GURL(std::string("chrome-extension://") + kFileBrowserDomain + path);
@@ -154,19 +145,6 @@ bool IsFlashPluginEnabled(Profile* profile) {
   if (plugin_path.empty())
     PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &plugin_path);
   return IsPepperPluginEnabled(profile, plugin_path);
-}
-
-// Returns index |ext| has in the |array|. If there is no |ext| in |array|, last
-// element's index is return (last element should have irrelevant value).
-int UMAExtensionIndex(const char *file_extension,
-                      const char** array,
-                      size_t array_size) {
-  for (size_t i = 0; i < array_size; i++) {
-    if (base::strcasecmp(file_extension, array[i]) == 0) {
-      return i;
-    }
-  }
-  return 0;
 }
 
 // Convert numeric dialog type to a string.
@@ -810,13 +788,8 @@ bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path) {
     return true;
   }
 
-  // Unknown file type. Record UMA and show an error message.
-  size_t extension_index = UMAExtensionIndex(file_extension.data(),
-                                             kUMATrackingExtensions,
-                                             arraysize(kUMATrackingExtensions));
-  UMA_HISTOGRAM_ENUMERATION("FileBrowser.OpeningFileType",
-                            extension_index,
-                            arraysize(kUMATrackingExtensions) - 1);
+  // Failed to open the file of unknown type.
+  LOG(WARNING) << "Unknown file type: " << path.value();
   return false;
 }
 
