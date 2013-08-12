@@ -403,13 +403,6 @@ void FrameLoader::receivedFirstData()
 
     dispatchDidCommitLoad();
     dispatchDidClearWindowObjectsInAllWorlds();
-
-    if (m_documentLoader) {
-        StringWithDirection ptitle = m_documentLoader->title();
-        // If we have a title let the WebView know about it.
-        if (!ptitle.isNull())
-            m_client->dispatchDidReceiveTitle(ptitle);
-    }
 }
 
 void FrameLoader::setOutgoingReferrer(const KURL& url)
@@ -680,6 +673,7 @@ void FrameLoader::updateForSameDocumentNavigation(const KURL& newURL, SameDocume
     m_documentLoader->appendRedirect(newURL);
 
     m_client->dispatchDidNavigateWithinPage();
+    m_client->dispatchDidReceiveTitle(m_frame->document()->titleWithDirection());
 
     if (m_frame->document()->loadEventFinished())
         m_client->postProgressFinishedNotification();
@@ -1828,11 +1822,6 @@ void FrameLoader::insertDummyHistoryItem()
     frame()->page()->backForward()->setCurrentItem(currentItem.get());
 }
 
-void FrameLoader::setTitle(const StringWithDirection& title)
-{
-    documentLoader()->setTitle(title);
-}
-
 String FrameLoader::referrer() const
 {
     return m_documentLoader ? m_documentLoader->request().httpReferrer() : "";
@@ -1875,15 +1864,6 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
     if (HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement())
         flags |= ownerElement->sandboxFlags();
     return flags;
-}
-
-void FrameLoader::didChangeTitle(DocumentLoader* loader)
-{
-    if (loader == m_documentLoader) {
-        // Must update the entries in the back-forward list too.
-        history()->setCurrentItemTitle(loader->title());
-        m_client->dispatchDidReceiveTitle(loader->title());
-    }
 }
 
 void FrameLoader::dispatchDidCommitLoad()
