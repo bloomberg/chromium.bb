@@ -229,7 +229,7 @@ RenderViewDevToolsAgentHost::~RenderViewDevToolsAgentHost() {
 
 void RenderViewDevToolsAgentHost::AboutToNavigateRenderView(
     RenderViewHost* dest_rvh) {
-  if (!render_view_host_ || !IsAttached())
+  if (!render_view_host_)
     return;
 
   if (render_view_host_ == dest_rvh && static_cast<RenderViewHostImpl*>(
@@ -273,7 +273,8 @@ void RenderViewDevToolsAgentHost::SetRenderViewHost(RenderViewHost* rvh) {
 
 void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh) {
   SetRenderViewHost(rvh);
-  Reattach(state_);
+  if (IsAttached())
+    Reattach(state_);
 }
 
 void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
