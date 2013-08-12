@@ -42,7 +42,7 @@ void WelcomeHandler::RegisterMessages() {
 }
 
 void WelcomeHandler::HandleUpdateSyncFooterVisibility(const ListValue* args) {
-  OnStateChanged();
+  UpdateSyncFooterVisibility(true);
 }
 
 void WelcomeHandler::HandleShowSyncSettings(const ListValue* args) {
@@ -54,10 +54,14 @@ void WelcomeHandler::HandleShowTermsOfService(const ListValue* args) {
 }
 
 void WelcomeHandler::OnStateChanged() {
+  UpdateSyncFooterVisibility(false);
+}
+
+void WelcomeHandler::UpdateSyncFooterVisibility(bool forced) {
   bool is_sync_enabled =
       sync_service_ && sync_service_->IsSyncEnabledAndLoggedIn();
 
-  if (is_sync_footer_visible_ != is_sync_enabled) {
+  if (forced || is_sync_footer_visible_ != is_sync_enabled) {
     is_sync_footer_visible_ = is_sync_enabled;
     web_ui()->CallJavascriptFunction("welcome.setSyncFooterVisible",
                                      base::FundamentalValue(is_sync_enabled));

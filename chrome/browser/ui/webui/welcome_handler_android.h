@@ -40,6 +40,11 @@ class WelcomeHandler : public content::WebUIMessageHandler,
   virtual void OnStateChanged() OVERRIDE;
 
  private:
+  // Update the sync footer visibility. Set |forced| if you want to force to
+  // send an update to the renderer regardless of whether we assume the state
+  // is up to date or not.
+  void UpdateSyncFooterVisibility(bool forced);
+
   // Cached pointer to the sync service for this profile.
   ProfileSyncService* sync_service_;
 
