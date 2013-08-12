@@ -56,10 +56,6 @@ class CONTENT_EXPORT LibGps {
 };
 
 // Location provider for Linux, that uses libgps/gpsd to obtain position fixes.
-// TODO(joth): Currently this runs entirely in the client thread (i.e. Chrome's
-// IO thread). As the older libgps API is not designed to support polling,
-// there's a chance it could block, so better move this into its own worker
-// thread.
 class CONTENT_EXPORT GpsLocationProviderLinux : public LocationProviderBase {
  public:
   typedef LibGps* (*LibGpsFactory)();
