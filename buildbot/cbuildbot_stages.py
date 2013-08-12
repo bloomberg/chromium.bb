@@ -2519,6 +2519,8 @@ class ArchiveStage(ArchivingStage):
     in_chroot_path = git.ReinterpretPathForChroot(self.archive_path)
     cmd = ['generate_delta_sysroot', '--out-dir', in_chroot_path,
            '--board', self._current_board]
+    if not self._build_config['build_tests'] or not self._options.tests:
+      cmd.append('--skip-tests')
     cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
                               extra_env=extra_env)
     self._upload_queue.put([constants.DELTA_SYSROOT_TAR])
