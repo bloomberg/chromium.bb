@@ -92,7 +92,8 @@ static const char kFaviconUrlField[] = "faviconUrl";
 static const char kPidField[]  = "pid";
 static const char kAdbSerialField[] = "adbSerial";
 static const char kAdbModelField[] = "adbModel";
-static const char kAdbBrowserNameField[] = "adbBrowserName";
+static const char kAdbBrowserProductField[] = "adbBrowserProduct";
+static const char kAdbBrowserVersionField[] = "adbBrowserVersion";
 static const char kAdbGlobalIdField[] = "adbGlobalId";
 static const char kAdbBrowsersField[] = "browsers";
 static const char kAdbPagesField[] = "pages";
@@ -596,12 +597,13 @@ void InspectUI::RemoteDevicesChanged(
         browsers.begin(); bit != browsers.end(); ++bit) {
       DevToolsAdbBridge::RemoteBrowser* browser = bit->get();
       DictionaryValue* browser_data = new DictionaryValue();
-      browser_data->SetString(kAdbBrowserNameField, browser->name());
+      browser_data->SetString(kAdbBrowserProductField, browser->product());
+      browser_data->SetString(kAdbBrowserVersionField, browser->version());
       std::string browser_id = base::StringPrintf(
           "browser:%s:%s:%s",
           device->serial().c_str(),
-          browser->socket().c_str(),
-          browser->name().c_str());
+          browser->product().c_str(),  // Force sorting by product name.
+          browser->socket().c_str());
       browser_data->SetString(kAdbGlobalIdField, browser_id);
       remote_browsers_[browser_id] = browser;
       ListValue* page_list = new ListValue();

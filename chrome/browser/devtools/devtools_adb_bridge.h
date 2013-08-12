@@ -127,12 +127,15 @@ class DevToolsAdbBridge
    public:
     RemoteBrowser(scoped_refptr<DevToolsAdbBridge> bridge,
                   scoped_refptr<AndroidDevice> device,
-                  const std::string& socket,
-                  const std::string& name);
+                  const std::string& socket);
 
     scoped_refptr<AndroidDevice> device() { return device_; }
     std::string socket() { return socket_; }
-    std::string name() { return name_; }
+
+    std::string product() { return product_; }
+    void set_product(const std::string& product) { product_ = product; }
+    std::string version() { return version_; }
+    void set_version(const std::string& version) { version_ = version; }
 
     RemotePages& pages() { return pages_; }
     void AddPage(scoped_refptr<RemotePage> page) { pages_.push_back(page); }
@@ -152,7 +155,8 @@ class DevToolsAdbBridge
     scoped_refptr<DevToolsAdbBridge> bridge_;
     scoped_refptr<AndroidDevice> device_;
     const std::string socket_;
-    const std::string name_;
+    std::string product_;
+    std::string version_;
     RemotePages pages_;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteBrowser);

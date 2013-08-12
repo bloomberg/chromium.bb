@@ -96,6 +96,18 @@ function populateDeviceLists(devices) {
     return false;
   }
 
+  function insertChildSortedById(parent, child) {
+    for (var sibling = parent.firstElementChild;
+                     sibling;
+                     sibling = sibling.nextElementSibling) {
+      if (sibling.id > child.id) {
+        parent.insertBefore(child, sibling);
+        return;
+      }
+    }
+    parent.appendChild(child);
+  }
+
   var deviceList = $('devices');
   if (alreadyDisplayed(deviceList, devices))
     return;
@@ -185,6 +197,9 @@ function populateDeviceLists(devices) {
     for (var b = 0; b < device.browsers.length; b++) {
       var browser = device.browsers[b];
 
+      var isChrome = browser.adbBrowserProduct &&
+          browser.adbBrowserProduct.match(/^Chrome/);
+
       var pageList;
       var browserSection = $(browser.adbGlobalId);
       if (browserSection) {
@@ -193,36 +208,47 @@ function populateDeviceLists(devices) {
         browserSection = document.createElement('div');
         browserSection.id = browser.adbGlobalId;
         browserSection.className = 'browser';
-        browserList.appendChild(browserSection);
+        insertChildSortedById(browserList, browserSection);
 
         var browserHeader = document.createElement('div');
         browserHeader.className = 'browser-header';
-        browserHeader.textContent = browser.adbBrowserName;
+        browserHeader.textContent = browser.adbBrowserProduct;
+        var majorChromeVersion = 0;
+        if (browser.adbBrowserVersion) {
+          browserHeader.textContent += ' (' + browser.adbBrowserVersion + ')';
+          if (isChrome) {
+            var match = browser.adbBrowserVersion.match(/^(\d+)/);
+            if (match)
+              majorChromeVersion = parseInt(match[1]);
+          }
+        }
         browserSection.appendChild(browserHeader);
 
-        var newPage = document.createElement('div');
-        newPage.className = 'open';
+        if (majorChromeVersion >= 29) {
+          var newPage = document.createElement('div');
+          newPage.className = 'open';
 
-        var newPageUrl = document.createElement('input');
-        newPageUrl.type = 'text';
-        newPageUrl.placeholder = 'Open tab with url';
-        newPage.appendChild(newPageUrl);
+          var newPageUrl = document.createElement('input');
+          newPageUrl.type = 'text';
+          newPageUrl.placeholder = 'Open tab with url';
+          newPage.appendChild(newPageUrl);
 
-        var openHandler = function(browserId, input) {
-          open(browserId, input.value || 'about:blank');
-          input.value = '';
-        }.bind(null, browser.adbGlobalId, newPageUrl);
-        newPageUrl.addEventListener('keyup', function(handler, event) {
-          if (event.keyIdentifier == 'Enter' && event.target.value)
-            handler();
-        }.bind(null, openHandler), true);
+          var openHandler = function(browserId, input) {
+            open(browserId, input.value || 'about:blank');
+            input.value = '';
+          }.bind(null, browser.adbGlobalId, newPageUrl);
+          newPageUrl.addEventListener('keyup', function(handler, event) {
+            if (event.keyIdentifier == 'Enter' && event.target.value)
+              handler();
+          }.bind(null, openHandler), true);
 
-        var newPageButton = document.createElement('button');
-        newPageButton.textContent = 'Open';
-        newPage.appendChild(newPageButton);
-        newPageButton.addEventListener('click', openHandler, true);
+          var newPageButton = document.createElement('button');
+          newPageButton.textContent = 'Open';
+          newPage.appendChild(newPageButton);
+          newPageButton.addEventListener('click', openHandler, true);
 
-        browserSection.appendChild(newPage);
+          browserSection.appendChild(newPage);
+        }
 
         pageList = document.createElement('div');
         pageList.className = 'list pages';
@@ -237,10 +263,12 @@ function populateDeviceLists(devices) {
         var page = browser.pages[p];
         var row = addTargetToList(
             page, pageList, ['faviconUrl', 'name', 'url']);
-        row.appendChild(createActionLink(
-            'reload', reload.bind(null, page), page.attached));
-        row.appendChild(createActionLink(
-            'close', terminate.bind(null, page), page.attached));
+        if (isChrome) {
+          row.appendChild(createActionLink(
+              'reload', reload.bind(null, page), page.attached));
+          row.appendChild(createActionLink(
+              'close', terminate.bind(null, page), page.attached));
+        }
       }
     }
   }
@@ -270,6 +298,10 @@ function addToOthersList(data) {
 
 function formatValue(data, property) {
   var value = data[property];
+
+  if (property == 'name' && value == '') {
+    value = 'untitled';
+  }
 
   if (property == 'faviconUrl') {
     var faviconElement = document.createElement('img');
