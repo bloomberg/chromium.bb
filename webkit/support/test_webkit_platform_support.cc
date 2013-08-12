@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/metrics/stats_counters.h"
 #include "base/path_service.h"
@@ -344,3 +345,12 @@ WebKit::WebLayerTreeView*
   return createLayerTreeViewForTesting();
 }
 
+WebKit::WebData TestWebKitPlatformSupport::readFromFile(
+    const WebKit::WebString& path) {
+  base::FilePath file_path = base::FilePath::FromUTF16Unsafe(path);
+
+  std::string buffer;
+  file_util::ReadFileToString(file_path, &buffer);
+
+  return WebKit::WebData(buffer.data(), buffer.size());
+}

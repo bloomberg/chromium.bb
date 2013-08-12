@@ -106,6 +106,7 @@ class TestWebKitPlatformSupport :
   virtual WebKit::WebLayerTreeView* createLayerTreeViewForTesting();
   virtual WebKit::WebLayerTreeView* createLayerTreeViewForTesting(
       TestViewType type);
+  virtual WebKit::WebData readFromFile(const WebKit::WebString& path);
 
  private:
   webkit_glue::SimpleWebMimeRegistryImpl mime_registry_;
