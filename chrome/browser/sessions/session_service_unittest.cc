@@ -50,7 +50,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
     path_ = path_.AppendASCII(b);
 
     SessionService* session_service = new SessionService(path_);
-    helper_.set_service(session_service);
+    helper_.SetService(session_service);
 
     service()->SetWindowType(
         window_id, Browser::TYPE_TABBED, SessionService::TYPE_NORMAL);
@@ -68,7 +68,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   }
 
   virtual void TearDown() {
-    helper_.set_service(NULL);
+    helper_.SetService(NULL);
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -87,10 +87,10 @@ class SessionServiceTest : public BrowserWithTestWindowTest,
   void ReadWindows(std::vector<SessionWindow*>* windows,
                    SessionID::id_type* active_window_id) {
     // Forces closing the file.
-    helper_.set_service(NULL);
+    helper_.SetService(NULL);
 
     SessionService* session_service = new SessionService(path_);
-    helper_.set_service(session_service);
+    helper_.SetService(session_service);
 
     SessionID::id_type* non_null_active_window_id = active_window_id;
     SessionID::id_type dummy_active_window_id = 0;
@@ -856,12 +856,12 @@ TEST_F(SessionServiceTest, CanOpenV1TabClosed) {
   dest_file_path = dest_file_path.AppendASCII("Current Session");
 
   // Forces closing the file.
-  helper_.set_service(NULL);
+  helper_.SetService(NULL);
 
   ASSERT_TRUE(base::CopyFile(v1_file_path, dest_file_path));
 
   SessionService* session_service = new SessionService(path_);
-  helper_.set_service(session_service);
+  helper_.SetService(session_service);
   ScopedVector<SessionWindow> windows;
   SessionID::id_type active_window_id = 0;
   helper_.ReadWindows(&(windows.get()), &active_window_id);

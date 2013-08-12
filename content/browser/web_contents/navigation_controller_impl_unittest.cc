@@ -3813,7 +3813,7 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
                                  controller.session_id(), 0);
     controller.SetWindowID(window_id);
 
-    session_helper_.set_service(service);
+    session_helper_.SetService(service);
   }
 
   virtual void TearDown() {
@@ -3841,12 +3841,12 @@ class NavigationControllerHistoryTest : public NavigationControllerTest {
   // Deletes the current profile manager and creates a new one. Indirectly this
   // shuts down the history database and reopens it.
   void ReopenDatabase() {
-    session_helper_.set_service(NULL);
+    session_helper_.SetService(NULL);
     SessionServiceFactory::SetForTestProfile(profile(), NULL);
 
     SessionService* service = new SessionService(profile());
     SessionServiceFactory::SetForTestProfile(profile(), service);
-    session_helper_.set_service(service);
+    session_helper_.SetService(service);
   }
 
   void GetLastSession() {

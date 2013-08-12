@@ -10,6 +10,7 @@
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "components/sessions/serialized_navigation_entry_test_helper.h"
+#include "content/public/browser/browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -103,3 +104,10 @@ void SessionServiceTestHelper::AssertSingleWindowWithSingleTab(
 SessionBackend* SessionServiceTestHelper::backend() {
   return service_->backend();
 }
+
+void SessionServiceTestHelper::SetService(SessionService* service) {
+  service_.reset(service);
+  // Execute IO tasks posted by the SessionService.
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+}
+

@@ -70,7 +70,7 @@ class SessionServiceTestHelper {
       const std::vector<SessionWindow*>& windows,
       size_t nav_count);
 
-  void set_service(SessionService* service) { service_.reset(service); }
+  void SetService(SessionService* service);
   SessionService* ReleaseService() { return service_.release(); }
   SessionService* service() { return service_.get(); }
 

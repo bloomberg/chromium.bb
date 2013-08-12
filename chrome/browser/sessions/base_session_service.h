@@ -13,6 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/common/cancelable_request.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/common/cancelable_task_tracker.h"
@@ -154,15 +155,10 @@ class BaseSessionService : public CancelableRequestProvider {
       const InternalGetCommandsCallback& callback,
       CancelableTaskTracker* tracker);
 
-  // In production, this posts the task to the FILE thread.  For
-  // tests, it immediately runs the specified task on the current
-  // thread.
+  // This posts the task to the SequencedWorkerPool, or run immediately
+  // if the SequencedWorkerPool has been shutdown.
   bool RunTaskOnBackendThread(const tracked_objects::Location& from_here,
                               const base::Closure& task);
-
-  // Returns true if we appear to be running in production, false if we appear
-  // to be running as part of a unit test or if the FILE thread has gone away.
-  bool RunningInProduction() const;
 
   // Max number of navigation entries in each direction we'll persist.
   static const int max_persist_navigation_count;
@@ -188,6 +184,9 @@ class BaseSessionService : public CancelableRequestProvider {
 
   // The number of commands sent to the backend before doing a reset.
   int commands_since_reset_;
+
+  // A token to make sure that all tasks will be serialized.
+  base::SequencedWorkerPool::SequenceToken sequence_token_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSessionService);
 };

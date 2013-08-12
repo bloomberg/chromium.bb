@@ -77,23 +77,15 @@ BaseSessionService::BaseSessionService(SessionType type,
     : profile_(profile),
       weak_factory_(this),
       pending_reset_(false),
-      commands_since_reset_(0) {
+      commands_since_reset_(0),
+      sequence_token_(
+          content::BrowserThread::GetBlockingPool()->GetSequenceToken()) {
   if (profile) {
     // We should never be created when incognito.
     DCHECK(!profile->IsOffTheRecord());
   }
   backend_ = new SessionBackend(type, profile_ ? profile_->GetPath() : path);
   DCHECK(backend_.get());
-
-  // SessionBackend::Init() cannot be scheduled to be called here. There are
-  // service processes which create the BaseSessionService, but they should not
-  // initialize the backend. If they do, the backend will cycle the session
-  // restore files. That in turn prevents the session restore from working when
-  // the normal chromium process is launched. Normally, the backend will be
-  // initialized before it's actually used. However, if we're running as a part
-  // of a test, it must be initialized now.
-  if (!RunningInProduction())
-    backend_->Init();
 }
 
 BaseSessionService::~BaseSessionService() {
@@ -299,17 +291,17 @@ CancelableTaskTracker::TaskId
 bool BaseSessionService::RunTaskOnBackendThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
-  if (profile_ && BrowserThread::IsMessageLoopValid(BrowserThread::FILE)) {
-    return BrowserThread::PostTask(BrowserThread::FILE, from_here, task);
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
+  if (!pool->IsShutdownInProgress()) {
+    return pool->PostSequencedWorkerTask(sequence_token_,
+                                         from_here,
+                                         task);
   } else {
-    // Fall back to executing on the main thread if the file thread
-    // has gone away (around shutdown time) or if we're running as
-    // part of a unit test that does not set profile_.
+    // Fall back to executing on the main thread if the sequence
+    // worker pool has been requested to shutdown (around shutdown
+    // time).
     task.Run();
     return true;
   }
-}
-
-bool BaseSessionService::RunningInProduction() const {
-  return profile_ && BrowserThread::IsMessageLoopValid(BrowserThread::FILE);
 }
