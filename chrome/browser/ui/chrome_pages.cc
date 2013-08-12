@@ -147,6 +147,12 @@ void ShowPolicy(Browser* browser) {
   ShowSingletonTab(browser, GURL(kChromeUIPolicyURL));
 }
 
+void ShowSlow(Browser* browser) {
+#if defined(OS_CHROMEOS)
+  ShowSingletonTab(browser, GURL(kChromeUISlowURL));
+#endif
+}
+
 void ShowSettings(Browser* browser) {
   content::RecordAction(UserMetricsAction("ShowOptions"));
   ShowSettingsSubPage(browser, std::string());

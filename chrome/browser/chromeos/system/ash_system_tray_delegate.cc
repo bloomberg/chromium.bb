@@ -72,6 +72,7 @@
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/drive/drive_service_interface.h"
+#include "chrome/browser/feedback/tracing_manager.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -503,6 +504,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                                 kDisplaySettingsSubPageName);
   }
 
+  virtual void ShowChromeSlow() OVERRIDE {
+    chrome::ShowSlow(GetAppropriateBrowser());
+  }
+
   virtual bool ShouldShowDisplayNotification() OVERRIDE {
     // Packaged app is not counted as 'last active', so if a browser opening the
     // display settings is in background of a packaged app, it will return true.
@@ -928,9 +933,14 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         base::Bind(&SystemTrayDelegate::OnAccessibilityModeChanged,
                    base::Unretained(this),
                    ash::A11Y_NOTIFICATION_NONE));
+    user_pref_registrar_->Add(
+        prefs::kPerformanceTracingEnabled,
+        base::Bind(&SystemTrayDelegate::UpdatePerformanceTracing,
+                   base::Unretained(this)));
 
     UpdateClockType();
     UpdateShowLogoutButtonInTray();
+    UpdatePerformanceTracing();
     search_key_mapped_to_ =
         profile->GetPrefs()->GetInteger(prefs::kLanguageRemapSearchKeyTo);
   }
@@ -1145,6 +1155,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   void OnAccessibilityModeChanged(
       ash::AccessibilityNotificationVisibility notify) {
     GetSystemTrayNotifier()->NotifyAccessibilityModeChanged(notify);
+  }
+
+  void UpdatePerformanceTracing() {
+    if (!user_pref_registrar_)
+      return;
+    bool value =
+        user_pref_registrar_->prefs()->GetBoolean(
+            prefs::kPerformanceTracingEnabled);
+    GetSystemTrayNotifier()->NotifyTracingModeChanged(value);
   }
 
   // Overridden from InputMethodManager::Observer.

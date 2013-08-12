@@ -42,6 +42,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void ShowNetworkSettings(const std::string& service_path) OVERRIDE;
   virtual void ShowBluetoothSettings() OVERRIDE;
   virtual void ShowDisplaySettings() OVERRIDE;
+  virtual void ShowChromeSlow() OVERRIDE;
   virtual bool ShouldShowDisplayNotification() OVERRIDE;
   virtual void ShowDriveSettings() OVERRIDE;
   virtual void ShowIMESettings() OVERRIDE;

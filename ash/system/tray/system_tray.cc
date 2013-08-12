@@ -11,6 +11,7 @@
 #include "ash/shell_window_ids.h"
 #include "ash/system/bluetooth/tray_bluetooth.h"
 #include "ash/system/brightness/tray_brightness.h"
+#include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
@@ -167,6 +168,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   tray_accessibility_ = new internal::TrayAccessibility(this);
   AddTrayItem(tray_accessibility_);
 #if defined(OS_CHROMEOS)
+  AddTrayItem(new internal::TrayTracing(this));
   AddTrayItem(
       new internal::TrayPower(this, message_center::MessageCenter::Get()));
 #endif

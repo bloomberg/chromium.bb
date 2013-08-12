@@ -45,6 +45,7 @@ void ShowFeedbackPage(Browser* browser,
 
 void ShowHelp(Browser* browser, HelpSource source);
 void ShowPolicy(Browser* browser);
+void ShowSlow(Browser* browser);
 
 // Various things that open in a settings UI.
 void ShowSettings(Browser* browser);

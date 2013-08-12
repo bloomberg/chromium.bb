@@ -169,6 +169,9 @@ class SystemTrayDelegate {
   // Shows settings related to multiple displays.
   virtual void ShowDisplaySettings() = 0;
 
+  // Shows the page that lets you disable performance tracing.
+  virtual void ShowChromeSlow() = 0;
+
   // Returns true if the notification for the display configuration change
   // should appear.
   virtual bool ShouldShowDisplayNotification() = 0;

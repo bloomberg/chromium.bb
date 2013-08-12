@@ -14,6 +14,7 @@
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
 #include "ash/system/chromeos/network/sms_observer.h"
+#include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
@@ -74,6 +75,9 @@ public:
   void AddSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
   void RemoveSessionLengthLimitObserver(SessionLengthLimitObserver* observer);
 
+  void AddTracingObserver(TracingObserver* observer);
+  void RemoveTracingObserver(TracingObserver* observer);
+
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
 
@@ -99,6 +103,7 @@ public:
 
   void NotifyAccessibilityModeChanged(
       AccessibilityNotificationVisibility notify);
+  void NotifyTracingModeChanged(bool value);
   void NotifyRefreshBluetooth();
   void NotifyBluetoothDiscoveringChanged();
   void NotifyBrightnessChanged(double level, bool user_initialted);
@@ -151,6 +156,7 @@ public:
   ObserverList<LocaleObserver> locale_observers_;
   ObserverList<LogoutButtonObserver> logout_button_observers_;
   ObserverList<SessionLengthLimitObserver> session_length_limit_observers_;
+  ObserverList<TracingObserver> tracing_observers_;
   ObserverList<UpdateObserver> update_observers_;
   ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)

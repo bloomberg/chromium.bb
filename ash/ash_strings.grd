@@ -285,6 +285,9 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCOVERING" desc="The label used in the tray popup to show bluetooth is discovering devices.">
         Scanning for devices...
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_TRACING" desc="The status tray item indicating that performance tracing is running.">
+        Performance tracing enabled
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
         Restart to update

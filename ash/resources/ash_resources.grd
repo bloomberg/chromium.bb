@@ -159,6 +159,7 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN" file="cros/status/status_shutdown.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SHUTDOWN_HOVER" file="cros/status/status_shutdown_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SMS" file="cros/status/status_sms.png" />
+      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_TRACING" file="cros/status/status_tracing.png" />
 
       <!-- ChromeOS specific icons -->
       <if expr="pp_ifdef('chromeos')">

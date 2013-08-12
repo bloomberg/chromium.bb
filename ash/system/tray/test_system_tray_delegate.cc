@@ -127,6 +127,9 @@ void TestSystemTrayDelegate::ShowBluetoothSettings() {
 void TestSystemTrayDelegate::ShowDisplaySettings() {
 }
 
+void TestSystemTrayDelegate::ShowChromeSlow() {
+}
+
 bool TestSystemTrayDelegate::ShouldShowDisplayNotification() {
   return should_show_display_notification_;
 }

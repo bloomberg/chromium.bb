@@ -106,6 +106,14 @@ void SystemTrayNotifier::RemoveSessionLengthLimitObserver(
   session_length_limit_observers_.RemoveObserver(observer);
 }
 
+void SystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
+  tracing_observers_.AddObserver(observer);
+}
+
+void SystemTrayNotifier::RemoveTracingObserver(TracingObserver* observer) {
+  tracing_observers_.RemoveObserver(observer);
+}
+
 void SystemTrayNotifier::AddUpdateObserver(UpdateObserver* observer) {
   update_observers_.AddObserver(observer);
 }
@@ -177,6 +185,13 @@ void SystemTrayNotifier::NotifyAccessibilityModeChanged(
       AccessibilityObserver,
       accessibility_observers_,
       OnAccessibilityModeChanged(notify));
+}
+
+void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
+  FOR_EACH_OBSERVER(
+      TracingObserver,
+      tracing_observers_,
+      OnTracingModeChanged(value));
 }
 
 void SystemTrayNotifier::NotifyRefreshBluetooth() {
