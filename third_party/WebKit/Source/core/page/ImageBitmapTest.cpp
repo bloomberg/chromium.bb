@@ -51,24 +51,22 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency)
     SkBitmap bitmap;
     bitmap.setConfig(SkBitmap::kARGB_8888_Config, 10, 10);
     bitmap.allocPixels();
-    int width = bitmap.width();
-    int height = bitmap.height();
-    for (int y = 0; y < height; ++y)
-        for (int x = 0; x < width; ++x)
-            *bitmap.getAddr32(x, y) = 0xFFFFFFFF;
+    bitmap.eraseColor(0xFFFFFFFF);
 
     RefPtr<HTMLImageElement> imageElement = HTMLImageElement::create(Document::create().get());
     imageElement->setImageResource(new ImageResource(BitmapImage::create(NativeImageSkia::create(bitmap)).get()));
 
-    RefPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(), IntRect(0, 0, width, height));
-    RefPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(width / 2, height / 2, width / 2, height / 2));
-    RefPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(-width / 2, -height / 2, width, height));
-    RefPtr<ImageBitmap> imageBitmapOutsideImageRect = ImageBitmap::create(imageElement.get(), IntRect(-width, -height, width, height));
+    RefPtr<ImageBitmap> imageBitmapNoCrop = ImageBitmap::create(imageElement.get(), IntRect(0, 0, bitmap.width(), bitmap.height()));
+    RefPtr<ImageBitmap> imageBitmapInteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(bitmap.width() / 2, bitmap.height() / 2, bitmap.width() / 2, bitmap.height() / 2));
+    RefPtr<ImageBitmap> imageBitmapExteriorCrop = ImageBitmap::create(imageElement.get(), IntRect(-bitmap.width() / 2, -bitmap.height() / 2, bitmap.width(), bitmap.height()));
+    RefPtr<ImageBitmap> imageBitmapOutsideCrop = ImageBitmap::create(imageElement.get(), IntRect(-bitmap.width(), -bitmap.height(), bitmap.width(), bitmap.height()));
 
     ASSERT_EQ(imageBitmapNoCrop->bitmapImage().get(), imageElement->cachedImage()->image());
     ASSERT_EQ(imageBitmapInteriorCrop->bitmapImage().get(), imageElement->cachedImage()->image());
     ASSERT_EQ(imageBitmapExteriorCrop->bitmapImage().get(), imageElement->cachedImage()->image());
-    ASSERT_EQ(imageBitmapOutsideImageRect->bitmapImage().get(), imageElement->cachedImage()->image());
+
+    RefPtr<Image> emptyImage = imageBitmapOutsideCrop->bitmapImage();
+    ASSERT_NE(emptyImage.get(), imageElement->cachedImage()->image());
 }
 
 } // namespace

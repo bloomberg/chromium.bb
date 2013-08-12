@@ -34,13 +34,17 @@ static inline PassRefPtr<Image> cropImage(Image* image, const IntRect& cropRect)
 
 ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect)
     : m_cropRect(cropRect)
+    , m_bitmap(0)
     , m_imageElement(image)
 {
-    m_imageElement->addClient(this);
-
     IntRect srcRect = intersection(cropRect, IntRect(0, 0, image->width(), image->height()));
     m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())), srcRect.size());
     m_bitmapOffset = srcRect.location();
+
+    if (!srcRect.width() || !srcRect.height())
+        m_imageElement = 0;
+    else
+        m_imageElement->addClient(this);
 
     ScriptWrappable::init(this);
 }
@@ -101,6 +105,7 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
 
 ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
     : m_cropRect(cropRect)
+    , m_bitmap(0)
     , m_imageElement(bitmap->imageElement())
     , m_bitmapOffset(IntPoint())
 {
@@ -110,12 +115,12 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
 
     if (m_imageElement) {
         m_imageElement->addClient(this);
-        m_bitmap = 0;
         m_bitmapOffset = srcRect.location();
-    } else {
+    } else if (bitmap->bitmapImage()) {
         IntRect adjustedCropRect(IntPoint(cropRect.x() -oldBitmapRect.x(), cropRect.y() - oldBitmapRect.y()), cropRect.size());
         m_bitmap = cropImage(bitmap->bitmapImage().get(), adjustedCropRect);
     }
+
     ScriptWrappable::init(this);
 }
 
@@ -169,7 +174,7 @@ void ImageBitmap::notifyImageSourceChanged()
 
 PassRefPtr<Image> ImageBitmap::bitmapImage() const
 {
-    ASSERT((m_imageElement || m_bitmap) && (!m_imageElement || !m_bitmap));
+    ASSERT((m_imageElement || m_bitmap || !m_bitmapRect.width() || !m_bitmapRect.height()) && (!m_imageElement || !m_bitmap));
     if (m_imageElement)
         return m_imageElement->cachedImage()->image();
     return m_bitmap;
