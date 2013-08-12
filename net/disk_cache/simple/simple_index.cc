@@ -359,18 +359,24 @@ void SimpleIndex::MergeInitializingSet(
     index_file_entries->erase(*it);
   }
 
-  // Recalculate the cache size while merging the two sets.
-  for (EntrySet::const_iterator it = index_file_entries->begin();
-       it != index_file_entries->end(); ++it) {
-    // If there is already an entry in the current entries_set_, we need to
-    // merge the new data there with the data loaded in the initialization.
-    EntrySet::iterator current_entry = entries_set_.find(it->first);
-    // When Merging, existing data in the |current_entry| will prevail.
-    if (current_entry == entries_set_.end()) {
-      InsertInEntrySet(it->first, it->second, &entries_set_);
-      cache_size_ += it->second.GetEntrySize();
-    }
+  for (EntrySet::const_iterator it = entries_set_.begin();
+       it != entries_set_.end(); ++it) {
+    const uint64 entry_hash = it->first;
+    std::pair<EntrySet::iterator, bool> insert_result =
+        index_file_entries->insert(EntrySet::value_type(entry_hash,
+                                                        EntryMetadata()));
+    EntrySet::iterator& possibly_inserted_entry = insert_result.first;
+    possibly_inserted_entry->second = it->second;
   }
+
+  uint64 merged_cache_size = 0;
+  for (EntrySet::iterator it = index_file_entries->begin();
+       it != index_file_entries->end(); ++it) {
+    merged_cache_size += it->second.GetEntrySize();
+  }
+
+  entries_set_.swap(*index_file_entries);
+  cache_size_ = merged_cache_size;
   initialized_ = true;
   removed_entries_.clear();
 

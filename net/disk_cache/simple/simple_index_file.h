@@ -97,6 +97,10 @@ class NET_EXPORT_PRIVATE SimpleIndexFile {
  private:
   friend class WrappedSimpleIndexFile;
 
+  // When loading the entries from disk, add this many extra hash buckets to
+  // prevent reallocation on the IO thread when merging in new live entries.
+  static const int kExtraSizeForMerge = 512;
+
   // Synchronous (IO performing) implementation of LoadIndexEntries.
   static void SyncLoadIndexEntries(base::Time cache_last_modified,
                                    const base::FilePath& cache_directory,

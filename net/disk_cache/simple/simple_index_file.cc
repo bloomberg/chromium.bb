@@ -8,6 +8,7 @@
 
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
+#include "base/files/memory_mapped_file.h"
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
@@ -254,14 +255,16 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
                                        SimpleIndexLoadResult* out_result) {
   out_result->Reset();
 
-  std::string contents;
-  if (!file_util::ReadFileToString(index_filename, &contents)) {
-    LOG(WARNING) << "Could not read Simple Index file.";
+  base::MemoryMappedFile index_file_map;
+  if (!index_file_map.Initialize(index_filename)) {
+    LOG(WARNING) << "Could not map Simple Index file.";
     base::DeleteFile(index_filename, false);
     return;
   }
 
-  SimpleIndexFile::Deserialize(contents.data(), contents.size(), out_result);
+  SimpleIndexFile::Deserialize(
+      reinterpret_cast<const char*>(index_file_map.data()),
+      index_file_map.length(), out_result);
 
   if (!out_result->did_load)
     base::DeleteFile(index_filename, false);
@@ -322,6 +325,10 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
     return;
   }
 
+#if !defined(OS_WIN)
+  // TODO(gavinp): Consider using std::unordered_map.
+  entries->resize(index_metadata.GetNumberOfEntries() + kExtraSizeForMerge);
+#endif
   while (entries->size() < index_metadata.GetNumberOfEntries()) {
     uint64 hash_key;
     EntryMetadata entry_metadata;

@@ -197,12 +197,15 @@ TEST_F(SimpleIndexTest, IndexSizeCorrectOnMerge) {
   {
     scoped_ptr<SimpleIndexLoadResult> result(new SimpleIndexLoadResult());
     result->did_load = true;
-    const uint64 hash_key = simple_util::GetEntryHashKey("eleven");
+    const uint64 new_hash_key = simple_util::GetEntryHashKey("eleven");
     result->entries.insert(
-        std::make_pair(hash_key, EntryMetadata(base::Time::Now(), 11)));
+        std::make_pair(new_hash_key, EntryMetadata(base::Time::Now(), 11)));
+    const uint64 redundant_hash_key = simple_util::GetEntryHashKey("seven");
+    result->entries.insert(std::make_pair(redundant_hash_key,
+                                          EntryMetadata(base::Time::Now(), 7)));
     index()->MergeInitializingSet(result.Pass());
   }
-  EXPECT_EQ(25U, index()->cache_size_);
+  EXPECT_EQ(2U + 5U + 7U + 11U, index()->cache_size_);
 }
 
 // State of index changes as expected with an insert and a remove.
