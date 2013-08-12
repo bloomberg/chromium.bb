@@ -144,10 +144,13 @@ std::string MakeTaskID(const std::string& extension_id,
                             action_id.c_str());
 }
 
-bool CrackTaskID(const std::string& task_id,
-                 std::string* extension_id,
-                 std::string* task_type,
-                 std::string* action_id) {
+std::string MakeDriveAppTaskId(const std::string& app_id) {
+  return MakeTaskID(app_id, kDriveTaskType, "open-with");
+}
+
+bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
+  DCHECK(task);
+
   std::vector<std::string> result;
   int count = Tokenize(task_id, std::string("|"), &result);
 
@@ -157,21 +160,14 @@ bool CrackTaskID(const std::string& task_id,
   // TODO(satorux): We should get rid of this code: crbug.com/267359.
   if (count == 2) {
     if (StartsWithASCII(result[0], kDriveTaskExtensionPrefix, true)) {
-      if (task_type)
-        *task_type = kDriveTaskType;
-
-      if (extension_id)
-        *extension_id = result[0].substr(kDriveTaskExtensionPrefixLength);
+      task->task_type = kDriveTaskType;
+      task->app_id = result[0].substr(kDriveTaskExtensionPrefixLength);
     } else {
-      if (task_type)
-        *task_type = kFileBrowserHandlerTaskType;
-
-      if (extension_id)
-        *extension_id = result[0];
+      task->task_type = kFileBrowserHandlerTaskType;
+      task->app_id = result[0];
     }
 
-    if (action_id)
-      *action_id = result[1];
+    task->action_id = result[1];
 
     return true;
   }
@@ -179,18 +175,12 @@ bool CrackTaskID(const std::string& task_id,
   if (count != 3)
     return false;
 
-  if (extension_id)
-    *extension_id = result[0];
-
-  if (task_type) {
-    *task_type = result[1];
-    DCHECK(*task_type == kFileBrowserHandlerTaskType ||
-           *task_type == kDriveTaskType ||
-           *task_type == kFileHandlerTaskType);
-  }
-
-  if (action_id)
-    *action_id = result[2];
+ task->app_id = result[0];
+ task->task_type = result[1];
+ DCHECK(task->task_type == kFileBrowserHandlerTaskType ||
+        task->task_type == kDriveTaskType ||
+        task->task_type == kFileHandlerTaskType);
+ task->action_id = result[2];
 
   return true;
 }
@@ -199,9 +189,7 @@ bool ExecuteFileTask(Profile* profile,
                      const GURL& source_url,
                      const std::string& file_browser_id,
                      int32 tab_id,
-                     const std::string& app_id,
-                     const std::string& task_type,
-                     const std::string& action_id,
+                     const TaskDescriptor& task,
                      const std::vector<FileSystemURL>& file_urls,
                      const FileTaskFinishedCallback& done) {
   if (!FileBrowserHasAccessPermissionForFiles(profile, source_url,
@@ -209,10 +197,10 @@ bool ExecuteFileTask(Profile* profile,
     return false;
 
   // drive::FileTaskExecutor is responsible to handle drive tasks.
-  if (task_type == kDriveTaskType) {
-    DCHECK_EQ("open-with", action_id);
+  if (task.task_type == kDriveTaskType) {
+    DCHECK_EQ("open-with", task.action_id);
     drive::FileTaskExecutor* executor =
-        new drive::FileTaskExecutor(profile, app_id);
+        new drive::FileTaskExecutor(profile, task.app_id);
     executor->Execute(file_urls, done);
     return true;
   }
@@ -221,22 +209,23 @@ bool ExecuteFileTask(Profile* profile,
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
   const Extension* extension = service ?
-      service->GetExtensionById(app_id, false) : NULL;
+      service->GetExtensionById(task.app_id, false) : NULL;
   if (!extension)
     return false;
 
   // Execute the task.
-  if (task_type == kFileBrowserHandlerTaskType) {
-    return file_browser_handlers::ExecuteFileBrowserHandler(profile,
-                                                            extension,
-                                                            tab_id,
-                                                            action_id,
-                                                            file_urls,
-                                                            done);
-  } else if (task_type == kFileHandlerTaskType) {
+  if (task.task_type == kFileBrowserHandlerTaskType) {
+    return file_browser_handlers::ExecuteFileBrowserHandler(
+        profile,
+        extension,
+        tab_id,
+        task.action_id,
+        file_urls,
+        done);
+  } else if (task.task_type == kFileHandlerTaskType) {
     for (size_t i = 0; i != file_urls.size(); ++i) {
       apps::LaunchPlatformAppWithFileHandler(
-          profile, extension, action_id, file_urls[i].path());
+          profile, extension, task.action_id, file_urls[i].path());
     }
 
     if (!done.is_null())

@@ -141,9 +141,11 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
         profile_,
         file_specific_info.content_mime_type(),
         file_path_.Extension());
-    std::string default_app_id;
-    file_tasks::CrackTaskID(
-        default_task_id, &default_app_id, NULL, NULL);
+    file_tasks::TaskDescriptor default_task;
+    if (!file_tasks::ParseTaskID(default_task_id, &default_task)) {
+      LOG(WARNING) << "Invalid task ID: " << default_task_id;
+      return;
+    }
 
     ListValue* apps = new ListValue();
     properties_->Set("driveApps", apps);
@@ -163,7 +165,8 @@ void GetDriveEntryPropertiesFunction::OnGetFileInfo(
       if (!doc_icon.is_empty())
         app->SetString("docIcon", doc_icon.spec());
       app->SetString("objectType", app_info->object_type);
-      app->SetBoolean("isPrimary", default_app_id == app_info->app_id);
+      app->SetBoolean("isPrimary",
+                      default_task.app_id == app_info->app_id);
       apps->Append(app);
     }
   }

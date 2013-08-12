@@ -74,14 +74,6 @@ void LogDefaultTask(const std::set<std::string>& mime_types,
   }
 }
 
-// Returns a task id for the Drive app with |app_id|.
-std::string MakeDriveAppTaskId(const std::string& app_id) {
-  // TODO(gspencer): For now, the action id is always "open-with", but we
-  // could add any actions that the drive app supports.
-  return file_tasks::MakeTaskID(
-      app_id, file_tasks::kDriveTaskType, "open-with");
-}
-
 // Gets the mime types for the given file paths.
 void GetMimeTypesForFileURLs(const std::vector<base::FilePath>& file_paths,
                              PathAndMimeTypeSet* files) {
@@ -147,11 +139,8 @@ bool ExecuteTaskFunction::RunImpl() {
   if (!args_->GetList(1, &files_list))
     return false;
 
-  std::string extension_id;
-  std::string task_type;
-  std::string action_id;
-  if (!file_tasks::CrackTaskID(
-          task_id, &extension_id, &task_type, &action_id)) {
+  file_tasks::TaskDescriptor task;
+  if (!file_tasks::ParseTaskID(task_id, &task)) {
     LOG(WARNING) << "Invalid task " << task_id;
     return false;
   }
@@ -185,9 +174,7 @@ bool ExecuteTaskFunction::RunImpl() {
       source_url(),
       extension_->id(),
       tab_id,
-      extension_id,
-      task_type,
-      action_id,
+      task,
       file_urls,
       base::Bind(&ExecuteTaskFunction::OnTaskExecuted, this));
 }
@@ -244,7 +231,7 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
         GURL icon_url = util::FindPreferredIcon(app_info.app_icons,
                                                 util::kPreferredIconSize);
         task_info_map->insert(std::pair<std::string, TaskInfo>(
-            MakeDriveAppTaskId(app_info.app_id),
+            file_tasks::MakeDriveAppTaskId(app_info.app_id),
             TaskInfo(app_info.app_name, icon_url)));
       }
     } else {
@@ -252,7 +239,8 @@ void GetFileTasksFunction::GetAvailableDriveTasks(
       // based on the task id.
       std::set<std::string> task_id_set;
       for (size_t j = 0; j < app_info_list.size(); ++j) {
-        task_id_set.insert(MakeDriveAppTaskId(app_info_list[j]->app_id));
+        task_id_set.insert(
+            file_tasks::MakeDriveAppTaskId(app_info_list[j]->app_id));
       }
       for (TaskInfoMap::iterator iter = task_info_map->begin();
            iter != task_info_map->end(); ) {
