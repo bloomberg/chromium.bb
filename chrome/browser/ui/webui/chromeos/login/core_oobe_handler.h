@@ -44,8 +44,6 @@ class CoreOobeHandler : public BaseScreenHandler,
   // VersionInfoUpdater::Delegate implementation:
   virtual void OnOSVersionLabelTextUpdated(
       const std::string& os_version_label_text) OVERRIDE;
-  virtual void OnBootTimesLabelTextUpdated(
-      const std::string& boot_times_label_text) OVERRIDE;
   virtual void OnEnterpriseInfoUpdated(
       const std::string& message_text) OVERRIDE;
 

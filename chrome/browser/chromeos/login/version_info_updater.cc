@@ -66,11 +66,6 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
         base::Bind(&VersionInfoUpdater::OnVersion,
                    weak_pointer_factory_.GetWeakPtr()),
         &tracker_);
-    boot_times_loader_.GetBootTimes(
-        base::Bind(is_official_build ? &VersionInfoUpdater::OnBootTimesNoop
-                                     : &VersionInfoUpdater::OnBootTimes,
-                   weak_pointer_factory_.GetWeakPtr()),
-        &tracker_);
   } else {
     UpdateVersionLabel();
   }
@@ -129,39 +124,6 @@ void VersionInfoUpdater::SetEnterpriseInfo(const std::string& domain_name) {
 void VersionInfoUpdater::OnVersion(const std::string& version) {
   version_text_ = version;
   UpdateVersionLabel();
-}
-
-void VersionInfoUpdater::OnBootTimesNoop(
-    const BootTimesLoader::BootTimes& boot_times) {}
-
-void VersionInfoUpdater::OnBootTimes(
-    const BootTimesLoader::BootTimes& boot_times) {
-  const char* kBootTimesNoChromeExec =
-      "Non-firmware boot took %.2f seconds (kernel %.2fs, system %.2fs)";
-  const char* kBootTimesChromeExec =
-      "Non-firmware boot took %.2f seconds "
-      "(kernel %.2fs, system %.2fs, chrome %.2fs)";
-  std::string boot_times_text;
-
-  if (boot_times.chrome > 0) {
-    boot_times_text =
-        base::StringPrintf(
-            kBootTimesChromeExec,
-            boot_times.total,
-            boot_times.pre_startup,
-            boot_times.system,
-            boot_times.chrome);
-  } else {
-    boot_times_text =
-        base::StringPrintf(
-            kBootTimesNoChromeExec,
-            boot_times.total,
-            boot_times.pre_startup,
-            boot_times.system);
-  }
-  // Use UTF8ToWide once this string is localized.
-  if (delegate_)
-    delegate_->OnBootTimesLabelTextUpdated(boot_times_text);
 }
 
 void VersionInfoUpdater::OnStoreLoaded(policy::CloudPolicyStore* store) {

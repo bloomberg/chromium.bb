@@ -272,11 +272,6 @@ void CoreOobeHandler::OnOSVersionLabelTextUpdated(
   UpdateLabel("version", os_version_label_text);
 }
 
-void CoreOobeHandler::OnBootTimesLabelTextUpdated(
-    const std::string& boot_times_label_text) {
-  UpdateLabel("boot-times", boot_times_label_text);
-}
-
 void CoreOobeHandler::OnEnterpriseInfoUpdated(
     const std::string& message_text) {
   CallJS("setEnterpriseInfo", message_text);

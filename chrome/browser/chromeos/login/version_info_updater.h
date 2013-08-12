@@ -30,10 +30,6 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer,
     virtual void OnOSVersionLabelTextUpdated(
         const std::string& os_version_label_text) = 0;
 
-    // Called when boot times label should be updated.
-    virtual void OnBootTimesLabelTextUpdated(
-        const std::string& boot_times_label_text) = 0;
-
     // Called when the enterprise info notice should be updated.
     virtual void OnEnterpriseInfoUpdated(
         const std::string& enterprise_info) = 0;
@@ -71,10 +67,6 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer,
 
   // Callback from chromeos::VersionLoader giving the version.
   void OnVersion(const std::string& version);
-  // Callback from chromeos::InfoLoader giving the boot times.
-  void OnBootTimes(const BootTimesLoader::BootTimes& boot_times);
-  // Null callback from chromeos::InfoLoader.
-  void OnBootTimesNoop(const BootTimesLoader::BootTimes& boot_times);
 
   // Handles asynchronously loading the version.
   VersionLoader version_loader_;

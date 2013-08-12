@@ -34,37 +34,7 @@ class BootTimesLoader : public content::NotificationObserver {
   BootTimesLoader();
   virtual ~BootTimesLoader();
 
-  // All fields are 0.0 if they couldn't be found.
-  typedef struct BootTimes {
-    double firmware;           // Time from power button to kernel being loaded.
-    double pre_startup;        // Time from kernel to system code being called.
-    double x_started;          // Time X server is ready to be connected to.
-    double chrome_exec;        // Time session manager executed Chrome.
-    double chrome_main;        // Time chrome's main() was called.
-    double login_prompt_ready; // Time login (or OOB) panel is displayed.
-    double system;             // Time system took to start chrome.
-    double chrome;             // Time chrome took to display login panel.
-    double total;              // Time from power button to login panel.
-
-    BootTimes() : firmware(0),
-                  pre_startup(0),
-                  x_started(0),
-                  chrome_exec(0),
-                  chrome_main(0),
-                  login_prompt_ready(0),
-                  system(0),
-                  chrome(0),
-                  total(0) {}
-  } BootTimes;
-
   static BootTimesLoader* Get();
-
-  typedef base::Callback<void(const BootTimes&)> GetBootTimesCallback;
-
-  // Asynchronously requests the info.
-  CancelableTaskTracker::TaskId GetBootTimes(
-      const GetBootTimesCallback& callback,
-      CancelableTaskTracker* tracker);
 
   // Add a time marker for login. A timeline will be dumped to
   // /tmp/login-times-sent after login is done. If |send_to_uma| is true
@@ -112,10 +82,6 @@ class BootTimesLoader : public content::NotificationObserver {
   class Backend : public base::RefCountedThreadSafe<Backend> {
    public:
     Backend() {}
-
-    void GetBootTimesAndRunCallback(
-        const CancelableTaskTracker::IsCanceledCallback& is_canceled_cb,
-        const GetBootTimesCallback& callback);
 
    private:
     friend class base::RefCountedThreadSafe<Backend>;
