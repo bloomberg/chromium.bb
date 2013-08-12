@@ -11,4 +11,11 @@ bool BrowserPluginGuestDelegate::HandleKeyboardEvent(
   return false;
 }
 
+bool BrowserPluginGuestDelegate::RequestPermission(
+    BrowserPluginPermissionType permission_type,
+    const base::DictionaryValue& request_info,
+    const PermissionResponseCallback& callback) {
+  return false;
+}
+
 }  // namespace content

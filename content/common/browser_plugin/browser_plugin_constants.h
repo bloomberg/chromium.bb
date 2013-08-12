@@ -25,7 +25,6 @@ extern const char kMethodTerminate[];
 extern const char kMethodInternalAttach[];
 extern const char kMethodInternalAttachWindowTo[];
 extern const char kMethodInternalTrackObjectLifetime[];
-extern const char kMethodInternalSetPermission[];
 
 // Internal events
 extern const char kEventInternalInstanceIDAllocated[];
@@ -44,12 +43,7 @@ extern const char kAttributePartition[];
 extern const char kAttributeSrc[];
 
 // Events.
-extern const char kEventDialog[];
-extern const char kEventNewWindow[];
-extern const char kEventRequestPermission[];
-extern const char kEventResponsive[];
 extern const char kEventSizeChanged[];
-extern const char kEventUnresponsive[];
 
 // Parameters/properties on events.
 extern const char kDefaultPromptText[];
@@ -89,6 +83,7 @@ extern const char kErrorCannotRemovePartition[];
 // Other.
 extern const char kBrowserPluginGuestManagerKeyName[];
 extern const int kInstanceIDNone;
+extern const int kInvalidPermissionRequestID;
 
 }  // namespace browser_plugin
 

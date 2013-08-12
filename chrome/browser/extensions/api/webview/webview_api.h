@@ -96,6 +96,22 @@ class WebviewReloadFunction : public AsyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(WebviewReloadFunction);
 };
 
+class WebviewSetPermissionFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webview.setPermission", WEBVIEW_SETPERMISSION);
+
+  WebviewSetPermissionFunction();
+
+ protected:
+  virtual ~WebviewSetPermissionFunction();
+
+  // ExtensionFunction implementation.
+  virtual bool RunImpl() OVERRIDE;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebviewSetPermissionFunction);
+};
+
 class WebviewStopFunction : public AsyncExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("webview.stop", WEBVIEW_STOP);

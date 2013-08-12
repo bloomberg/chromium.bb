@@ -12,10 +12,10 @@
 #include "base/values.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/compositor_frame_ack.h"
-#include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/edit_command.h"
+#include "content/public/common/browser_plugin_permission_type.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/drop_data.h"
 #include "ipc/ipc_channel_handle.h"
@@ -34,7 +34,6 @@
 #define IPC_MESSAGE_START BrowserPluginMsgStart
 
 
-IPC_ENUM_TRAITS(BrowserPluginPermissionType)
 IPC_ENUM_TRAITS(WebKit::WebDragStatus)
 
 IPC_STRUCT_BEGIN(BrowserPluginHostMsg_AutoSize_Params)
@@ -248,19 +247,6 @@ IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_SetName,
                     int /* instance_id */,
                     std::string /* name */)
 
-// Tells the guest that its request for an API permission has been allowed or
-// denied.
-// Note that |allow| = true does not readily mean that the guest will be granted
-// permission, since a security check in the embedder might follow. For example
-// for media access permission, the guest will be granted permission only if its
-// embedder also has access. For certain APIs, such as the Dialog API,
-// additional information may be passed by the developer through |user_input|.
-IPC_MESSAGE_ROUTED4(BrowserPluginHostMsg_RespondPermission,
-                    int /* instance_id */,
-                    int /* request_id */,
-                    bool /* allow */,
-                    std::string /* user_input */)
-
 // Sends a PointerLock Lock ACK to the BrowserPluginGuest.
 IPC_MESSAGE_ROUTED2(BrowserPluginHostMsg_LockMouse_ACK,
                     int /* instance_id */,
@@ -362,14 +348,6 @@ IPC_MESSAGE_CONTROL5(BrowserPluginMsg_CompositorFrameSwapped,
                      int /* route_id */,
                      uint32 /* output_surface_id */,
                      int /* renderer_host_id */)
-
-// When the guest requests permission, the browser process forwards this
-// request to the embeddder through this message.
-IPC_MESSAGE_CONTROL4(BrowserPluginMsg_RequestPermission,
-                     int /* instance_id */,
-                     BrowserPluginPermissionType /* permission_type */,
-                     int /* request_id */,
-                     base::DictionaryValue /* request_info */)
 
 // Forwards a PointerLock Unlock request to the BrowserPlugin.
 IPC_MESSAGE_CONTROL2(BrowserPluginMsg_SetMouseLock,

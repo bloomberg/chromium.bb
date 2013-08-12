@@ -47,13 +47,14 @@ var WEB_VIEW_EXT_EVENTS = {
     fields: ['url', 'isTopLevel', 'reason']
   },
   'loadcommit': {
-    customHandler: function(webview, event) {
+    customHandler: function(webview, event, webviewEvent) {
       webview.currentEntryIndex_ = event.currentEntryIndex;
       webview.entryCount_ = event.entryCount;
       webview.processId_ = event.processId;
       if (event.isTopLevel) {
         webview.browserPluginNode_.setAttribute('src', event.url);
       }
+      webview.webviewNode_.dispatchEvent(webviewEvent);
     },
     evt: createEvent('webview.onLoadCommit'),
     fields: ['url', 'isTopLevel']
@@ -69,6 +70,34 @@ var WEB_VIEW_EXT_EVENTS = {
   'loadstop': {
     evt: createEvent('webview.onLoadStop'),
     fields: []
+  },
+  'newwindow': {
+    cancelable: true,
+    customHandler: function(webview, event, webviewEvent) {
+      webview.setupExtNewWindowEvent_(event, webviewEvent);
+    },
+    evt: createEvent('webview.onNewWindow'),
+    fields: [
+      'initialHeight',
+      'initialWidth',
+      'targetUrl',
+      'windowOpenDisposition',
+      'name'
+    ]
+  },
+  'permissionrequest': {
+    cancelable: true,
+    customHandler: function(webview, event, webviewEvent) {
+      webview.setupExtPermissionEvent_(event, webviewEvent);
+    },
+    evt: createEvent('webview.onPermissionRequest'),
+    fields: [
+      'lastUnlockedBySelf',
+      'permission',
+      'requestMethod',
+      'url',
+      'userGesture'
+    ]
   },
   'responsive': {
     evt: createEvent('webview.onResponsive'),
@@ -343,6 +372,17 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
 /**
  * @private
  */
+WebView.prototype.getWebviewExtEvents_ = function() {
+  var experimentalExtEvents = this.maybeGetWebviewExperimentalExtEvents_();
+  for (var eventName in experimentalExtEvents) {
+    WEB_VIEW_EXT_EVENTS[eventName] = experimentalExtEvents[eventName];
+  }
+  return WEB_VIEW_EXT_EVENTS;
+};
+
+/**
+ * @private
+ */
 WebView.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
   this.viewInstanceId_ = ++webViewInstanceIdCounter;
@@ -355,8 +395,9 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
     };
     self.browserPluginNode_['-internal-attach'](params);
 
-    for (var eventName in WEB_VIEW_EXT_EVENTS) {
-      self.setupExtEvent_(eventName, WEB_VIEW_EXT_EVENTS[eventName]);
+    var extEvents = self.getWebviewExtEvents_();
+    for (var eventName in extEvents) {
+      self.setupExtEvent_(eventName, extEvents[eventName]);
     }
   };
   this.browserPluginNode_.addEventListener('-internal-instanceid-allocated',
@@ -365,8 +406,6 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
   for (var eventName in WEB_VIEW_EVENTS) {
     this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
   }
-  this.setupNewWindowEvent_();
-  this.setupPermissionEvent_();
 };
 
 /**
@@ -376,12 +415,18 @@ WebView.prototype.setupExtEvent_ = function(eventName, eventInfo) {
   var self = this;
   var webviewNode = this.webviewNode_;
   eventInfo.evt.addListener(function(event) {
-    var webviewEvent = new Event(eventName, {bubbles: true});
+    var details = {bubbles:true};
+    if (eventInfo.cancelable)
+      details.cancelable = true;
+    var webviewEvent = new Event(eventName, details);
     $Array.forEach(eventInfo.fields, function(field) {
-      webviewEvent[field] = event[field];
+      if (event[field] !== undefined) {
+        webviewEvent[field] = event[field];
+      }
     });
     if (eventInfo.customHandler) {
-      eventInfo.customHandler(self, event);
+      eventInfo.customHandler(self, event, webviewEvent);
+      return;
     }
     webviewNode.dispatchEvent(webviewEvent);
   }, {instanceId: self.instanceId_});
@@ -406,7 +451,7 @@ WebView.prototype.setupEvent_ = function(eventName, attribs) {
 /**
  * @private
  */
-WebView.prototype.setupNewWindowEvent_ = function() {
+WebView.prototype.setupExtNewWindowEvent_ = function(event, webviewEvent) {
   var ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN = '<webview>: ' +
       'An action has already been taken for this "newwindow" event.';
 
@@ -420,98 +465,85 @@ WebView.prototype.setupNewWindowEvent_ = function() {
     console.warn(WARNING_MSG_NEWWINDOW_BLOCKED);
   };
 
-  var NEW_WINDOW_EVENT_ATTRIBUTES = [
-    'initialHeight',
-    'initialWidth',
-    'targetUrl',
-    'windowOpenDisposition',
-    'name'
-  ];
-
   var self = this;
-  var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
+  var webviewNode = this.webviewNode_;
+
+  var requestId = event.requestId;
+  var actionTaken = false;
 
   var onTrackedObjectGone = function(requestId, e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     if (detail.id != requestId) {
       return;
     }
-    // If the request was pending then show a warning indiciating that a dialog
-    // was blocked.
-    if (browserPluginNode['-internal-setPermission'](requestId, false, '')) {
-      showWarningMessage();
-    }
-  };
 
-  browserPluginNode.addEventListener('-internal-newwindow', function(e) {
-    var evt = new Event('newwindow', { bubbles: true, cancelable: true });
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-
-    $Array.forEach(NEW_WINDOW_EVENT_ATTRIBUTES, function(attribName) {
-      evt[attribName] = detail[attribName];
-    });
-    var requestId = detail.requestId;
-    var actionTaken = false;
-
-    var validateCall = function () {
-      if (actionTaken) {
-        throw new Error(ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN);
-      }
-      actionTaken = true;
-    };
-
-    var window = {
-      attach: function(webview) {
-        validateCall();
-        if (!webview)
-          throw new Error(ERROR_MSG_WEBVIEW_EXPECTED);
-        // Attach happens asynchronously to give the tagWatcher an opportunity
-        // to pick up the new webview before attach operates on it, if it hasn't
-        // been attached to the DOM already.
-        // Note: Any subsequent errors cannot be exceptions because they happen
-        // asynchronously.
-        setTimeout(function() {
-          var attached =
-              browserPluginNode['-internal-attachWindowTo'](webview,
-                                                            detail.windowId);
-          if (!attached) {
-            console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
-          }
-          // If the object being passed into attach is not a valid <webview>
-          // then we will fail and it will be treated as if the new window
-          // was rejected. The permission API plumbing is used here to clean
-          // up the state created for the new window if attaching fails.
-          browserPluginNode['-internal-setPermission'](requestId, attached, '');
-        }, 0);
-      },
-      discard: function() {
-        validateCall();
-        browserPluginNode['-internal-setPermission'](requestId, false, '');
-      }
-    };
-    evt.window = window;
-
-    var defaultPrevented = !node.dispatchEvent(evt);
+    // Avoid showing a warning message if the decision has already been made.
     if (actionTaken) {
       return;
     }
 
-    if (defaultPrevented) {
-      // Make browser plugin track lifetime of |window|.
-      var onTrackedObjectGoneWithRequestId =
-          $Function.bind(onTrackedObjectGone, self, requestId);
-      browserPluginNode.addEventListener('-internal-trackedobjectgone',
-          onTrackedObjectGoneWithRequestId);
-      browserPluginNode['-internal-trackObjectLifetime'](window, requestId);
-    } else {
-      actionTaken = true;
-      // The default action is to discard the window.
-      browserPluginNode['-internal-setPermission'](requestId, false, '');
-      showWarningMessage();
-    }
+    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    showWarningMessage();
+  };
 
-  });
+
+  var validateCall = function () {
+    if (actionTaken) {
+      throw new Error(ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN);
+    }
+    actionTaken = true;
+  };
+
+  var window = {
+    attach: function(webview) {
+      validateCall();
+      if (!webview)
+        throw new Error(ERROR_MSG_WEBVIEW_EXPECTED);
+      // Attach happens asynchronously to give the tagWatcher an opportunity
+      // to pick up the new webview before attach operates on it, if it hasn't
+      // been attached to the DOM already.
+      // Note: Any subsequent errors cannot be exceptions because they happen
+      // asynchronously.
+      setTimeout(function() {
+        var attached =
+            browserPluginNode['-internal-attachWindowTo'](webview,
+                                                          event.windowId);
+        if (!attached) {
+          console.error(ERROR_MSG_NEWWINDOW_UNABLE_TO_ATTACH);
+        }
+        // If the object being passed into attach is not a valid <webview>
+        // then we will fail and it will be treated as if the new window
+        // was rejected. The permission API plumbing is used here to clean
+        // up the state created for the new window if attaching fails.
+        chrome.webview.setPermission(self.instanceId_, requestId, attached, '');
+      }, 0);
+    },
+    discard: function() {
+      validateCall();
+      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    }
+  };
+  webviewEvent.window = window;
+
+  var defaultPrevented = !webviewNode.dispatchEvent(webviewEvent);
+  if (actionTaken) {
+    return;
+  }
+
+  if (defaultPrevented) {
+    // Make browser plugin track lifetime of |window|.
+    var onTrackedObjectGoneWithRequestId =
+        $Function.bind(onTrackedObjectGone, self, requestId);
+    browserPluginNode.addEventListener('-internal-trackedobjectgone',
+        onTrackedObjectGoneWithRequestId);
+    browserPluginNode['-internal-trackObjectLifetime'](window, requestId);
+  } else {
+    actionTaken = true;
+    // The default action is to discard the window.
+    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    showWarningMessage();
+  }
 };
 
 /**
@@ -543,10 +575,13 @@ WebView.prototype.setupExecuteCodeAPI_ = function() {
 };
 
 /**
- * @param {!Object} detail The event details, originated from <object>.
  * @private
  */
-WebView.prototype.setupPermissionEvent_ = function() {
+WebView.prototype.getPermissionTypes_ = function() {
+  return ['media', 'geolocation', 'pointerLock', 'download'];
+};
+
+WebView.prototype.setupExtPermissionEvent_ = function(event, webviewEvent) {
   var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
       'Permission has already been decided for this "permissionrequest" event.';
 
@@ -556,89 +591,68 @@ WebView.prototype.setupPermissionEvent_ = function() {
     console.warn(WARNING_MSG_PERMISSION_DENIED.replace('%1', permission));
   };
 
-  var PERMISSION_TYPES = ['media', 'geolocation', 'pointerLock', 'download'];
-
-  var EXPOSED_PERMISSION_EVENT_ATTRIBS = [
-      'lastUnlockedBySelf',
-      'permission',
-      'requestMethod',
-      'url',
-      'userGesture'
-  ];
+  var PERMISSION_TYPES = this.getPermissionTypes_();
 
   var self = this;
-  var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
-  var internalevent = '-internal-permissionrequest';
+  var webviewNode = this.webviewNode_;
+
+  var requestId = event.requestId;
+  var decisionMade = false;
 
   var onTrackedObjectGone = function(requestId, permission, e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    if (detail.id != requestId)
-      return;
-    // If the request was pending then show a warning indiciating that the
-    // permission was denied.
-    if (browserPluginNode['-internal-setPermission'](requestId, false, '')) {
-      showWarningMessage(permission);
-    }
-  };
-
-  browserPluginNode.addEventListener(internalevent, function(e) {
-    var evt = new Event('permissionrequest', {bubbles: true, cancelable: true});
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-    $Array.forEach(EXPOSED_PERMISSION_EVENT_ATTRIBS, function(attribName) {
-      if (detail[attribName] !== undefined)
-        evt[attribName] = detail[attribName];
-    });
-    var requestId = detail.requestId;
-
-    if (detail.requestId == undefined ||
-        PERMISSION_TYPES.indexOf(detail.permission) < 0) {
+    if (detail.id != requestId) {
       return;
     }
 
-    // TODO(lazyboy): Also fill in evt.details (see webview specs).
-    // http://crbug.com/141197.
-    var decisionMade = false;
-
-    var validateCall = function() {
-      if (decisionMade) {
-        throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
-      }
-      decisionMade = true;
-    };
-
-    // Construct the event.request object.
-    var request = {
-      allow: function() {
-        validateCall();
-        browserPluginNode['-internal-setPermission'](requestId, true, '');
-      },
-      deny: function() {
-        validateCall();
-        browserPluginNode['-internal-setPermission'](requestId, false, '');
-      }
-    };
-    evt.request = request;
-
-    var defaultPrevented = !node.dispatchEvent(evt);
+    // Avoid showing a warning message if the decision has already been made.
     if (decisionMade) {
       return;
     }
 
-    if (defaultPrevented) {
-      // Make browser plugin track lifetime of |request|.
-      var onTrackedObjectGoneWithRequestId =
-          $Function.bind(
-              onTrackedObjectGone, self, requestId, detail.permission);
-      browserPluginNode.addEventListener('-internal-trackedobjectgone',
-          onTrackedObjectGoneWithRequestId);
-      browserPluginNode['-internal-trackObjectLifetime'](request, requestId);
-    } else {
-      decisionMade = true;
-      browserPluginNode['-internal-setPermission'](requestId, false, '');
-      showWarningMessage(detail.permission);
+    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    showWarningMessage(permission);
+  };
+
+  var validateCall = function() {
+    if (decisionMade) {
+      throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
     }
-  });
+    decisionMade = true;
+  };
+
+  // Construct the event.request object.
+  var request = {
+    allow: function() {
+      validateCall();
+      chrome.webview.setPermission(self.instanceId_, requestId, true, '');
+    },
+    deny: function() {
+      validateCall();
+      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    }
+  };
+  webviewEvent.request = request;
+
+  var defaultPrevented = !webviewNode.dispatchEvent(webviewEvent);
+  if (decisionMade) {
+    return;
+  }
+
+  if (defaultPrevented) {
+    // Make browser plugin track lifetime of |request|.
+    var onTrackedObjectGoneWithRequestId =
+        $Function.bind(
+            onTrackedObjectGone, self, requestId, event.permission);
+    browserPluginNode.addEventListener('-internal-trackedobjectgone',
+        onTrackedObjectGoneWithRequestId);
+    browserPluginNode['-internal-trackObjectLifetime'](request, requestId);
+  } else {
+    decisionMade = true;
+    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    showWarningMessage(event.permission);
+  }
 };
 
 /**
@@ -647,4 +661,17 @@ WebView.prototype.setupPermissionEvent_ = function() {
  */
 WebView.prototype.maybeSetupExperimentalAPI_ = function() {};
 
+/**
+ * Implemented when the experimental API is available.
+ * @private
+ */
+WebView.prototype.maybeSetupExtDialogEvent_ = function() {};
+
+/**
+ * Implemented when the experimental API is available.
+ * @private
+ */
+WebView.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {};
+
 exports.WebView = WebView;
+exports.CreateEvent = createEvent;

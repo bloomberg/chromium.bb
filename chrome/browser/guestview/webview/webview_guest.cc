@@ -43,6 +43,28 @@ static std::string TerminationStatusToString(base::TerminationStatus status) {
   return "unknown";
 }
 
+static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
+  switch (type) {
+    case BROWSER_PLUGIN_PERMISSION_TYPE_DOWNLOAD:
+      return webview::kPermissionTypeDownload;
+    case BROWSER_PLUGIN_PERMISSION_TYPE_GEOLOCATION:
+      return webview::kPermissionTypeGeolocation;
+    case BROWSER_PLUGIN_PERMISSION_TYPE_MEDIA:
+      return webview::kPermissionTypeMedia;
+    case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW:
+      return webview::kPermissionTypeNewWindow;
+    case BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK:
+      return webview::kPermissionTypePointerLock;
+    case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG:
+      return webview::kPermissionTypeDialog;
+    case BROWSER_PLUGIN_PERMISSION_TYPE_UNKNOWN:
+    default:
+      NOTREACHED();
+      break;
+  }
+  return std::string();
+}
+
 void RemoveWebViewEventListenersOnIOThread(
     void* profile,
     const std::string& extension_id,
@@ -59,7 +81,8 @@ WebViewGuest::WebViewGuest(WebContents* guest_web_contents)
     : GuestView(guest_web_contents),
       WebContentsObserver(guest_web_contents),
       script_executor_(new extensions::ScriptExecutor(guest_web_contents,
-                                                      &script_observers_)) {
+                                                      &script_observers_)),
+      next_permission_request_id_(0) {
   notification_registrar_.Add(
       this, content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
       content::Source<WebContents>(guest_web_contents));
@@ -175,6 +198,36 @@ void WebViewGuest::RendererUnresponsive() {
   DispatchEvent(new GuestView::Event(webview::kEventUnresponsive, args.Pass()));
 }
 
+bool WebViewGuest::RequestPermission(
+    BrowserPluginPermissionType permission_type,
+    const base::DictionaryValue& request_info,
+    const PermissionResponseCallback& callback) {
+  int request_id = next_permission_request_id_++;
+  pending_permission_requests_[request_id] = callback;
+  scoped_ptr<base::DictionaryValue> args(request_info.DeepCopy());
+  args->SetInteger(webview::kRequestId, request_id);
+  switch (permission_type) {
+    case BROWSER_PLUGIN_PERMISSION_TYPE_NEW_WINDOW: {
+      DispatchEvent(new GuestView::Event(webview::kEventNewWindow,
+                                         args.Pass()));
+      break;
+    }
+    case BROWSER_PLUGIN_PERMISSION_TYPE_JAVASCRIPT_DIALOG: {
+      DispatchEvent(new GuestView::Event(webview::kEventDialog,
+                                         args.Pass()));
+      break;
+    }
+    default: {
+      args->SetString(webview::kPermission,
+                      PermissionTypeToString(permission_type));
+      DispatchEvent(new GuestView::Event(webview::kEventPermissionRequest,
+                                         args.Pass()));
+      break;
+    }
+  }
+  return true;
+}
+
 void WebViewGuest::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
@@ -213,6 +266,20 @@ void WebViewGuest::Reload() {
   // Chromium's repost warning. We might want to implement a separate API
   // for registering a callback if a repost is about to happen.
   guest_web_contents()->GetController().Reload(false);
+}
+
+bool WebViewGuest::SetPermission(int request_id,
+                                 bool should_allow,
+                                 const std::string& user_input) {
+  RequestMap::iterator request_itr =
+      pending_permission_requests_.find(request_id);
+
+  if (request_itr == pending_permission_requests_.end())
+    return false;
+
+  request_itr->second.Run(should_allow, user_input);
+  pending_permission_requests_.erase(request_itr);
+  return true;
 }
 
 void WebViewGuest::Stop() {

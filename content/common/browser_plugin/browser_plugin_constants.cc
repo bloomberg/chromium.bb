@@ -25,7 +25,6 @@ const char kMethodInternalAttach[] = "-internal-attach";
 const char kMethodInternalAttachWindowTo[] = "-internal-attachWindowTo";
 const char kMethodInternalTrackObjectLifetime[] =
     "-internal-trackObjectLifetime";
-const char kMethodInternalSetPermission[] = "-internal-setPermission";
 
 // Internal events.
 const char kEventInternalInstanceIDAllocated[] = "instanceid-allocated";
@@ -44,9 +43,6 @@ const char kAttributePartition[] = "partition";
 const char kAttributeSrc[] = "src";
 
 // Events.
-const char kEventDialog[] = "dialog";
-const char kEventNewWindow[] = "newwindow";
-const char kEventRequestPermission[] = "permissionrequest";
 const char kEventSizeChanged[] = "sizechanged";
 
 // Parameters/properties on events.
@@ -90,6 +86,7 @@ const char kErrorCannotRemovePartition[] =
 // Other.
 const char kBrowserPluginGuestManagerKeyName[] = "browser_plugin_guest_manager";
 const int kInstanceIDNone = 0;
+const int kInvalidPermissionRequestID = 0;
 
 }  // namespace browser_plugin
 

@@ -49,6 +49,10 @@ class WebViewGuest : public GuestView,
       const content::NativeWebKeyboardEvent& event) OVERRIDE;
   virtual void RendererResponsive() OVERRIDE;
   virtual void RendererUnresponsive() OVERRIDE;
+  virtual bool RequestPermission(
+      BrowserPluginPermissionType permission_type,
+      const base::DictionaryValue& request_info,
+      const PermissionResponseCallback& callback) OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,
@@ -61,6 +65,13 @@ class WebViewGuest : public GuestView,
 
   // Reload the guest.
   void Reload();
+
+  // Responds to the permission request |request_id| with |should_allow| and
+  // |user_input|. Returns whether there was a pending request for the provided
+  // |request_id|.
+  bool SetPermission(int request_id,
+                     bool should_allow,
+                     const std::string& user_input);
 
   // Stop loading the guest.
   void Stop();
@@ -119,6 +130,14 @@ class WebViewGuest : public GuestView,
   scoped_ptr<extensions::ScriptExecutor> script_executor_;
 
   content::NotificationRegistrar notification_registrar_;
+
+  // A counter to generate a unique request id for a permission request.
+  // We only need the ids to be unique for a given WebViewGuest.
+  int next_permission_request_id_;
+
+  // A map to store the callback for a request keyed by the request's id.
+  typedef std::map<int, PermissionResponseCallback> RequestMap;
+  RequestMap pending_permission_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewGuest);
 };

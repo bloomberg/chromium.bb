@@ -29,7 +29,6 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/common/edit_command.h"
 #include "content/port/common/input_event_ack_state.h"
 #include "content/public/browser/browser_plugin_guest_delegate.h"
@@ -39,6 +38,7 @@
 #include "content/public/browser/render_view_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_plugin_permission_type.h"
 #include "third_party/WebKit/public/web/WebDragOperation.h"
 #include "third_party/WebKit/public/web/WebDragStatus.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
@@ -282,6 +282,10 @@ class CONTENT_EXPORT BrowserPluginGuest
   // |this| takes ownership of |delegate|.
   void SetDelegate(BrowserPluginGuestDelegate* delegate);
 
+  void RespondToPermissionRequest(int request_id,
+                                  bool should_allow,
+                                  const std::string& user_input);
+
  private:
   class EmbedderRenderViewHostObserver;
   friend class TestBrowserPluginGuest;
@@ -339,12 +343,6 @@ class CONTENT_EXPORT BrowserPluginGuest
                             int renderer_host_id,
                             const cc::CompositorFrameAck& ack);
 
-  // Allows or denies a permission request access, after the embedder has had a
-  // chance to decide.
-  void OnRespondPermission(int instance_id,
-                           int request_id,
-                           bool should_allow,
-                           const std::string& user_input);
   // Handles drag events from the embedder.
   // When dragging, the drag events go to the embedder first, and if the drag
   // happens on the browser plugin, then the plugin sends a corresponding

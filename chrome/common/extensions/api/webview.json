@@ -96,6 +96,28 @@
         ]
       },
       {
+        "name": "setPermission",
+        "type": "function",
+        "parameters": [
+          {
+            "type": "integer",
+            "name": "instanceId"
+          },
+          {
+            "type": "integer",
+            "name": "requestId"
+          },
+          {
+            "type": "boolean",
+            "name": "shouldAllow"
+          },
+          {
+            "type": "string",
+            "name": "userInput"
+          }
+        ]
+      },
+      {
         "name": "stop",
         "type": "function",
         "parameters": [

@@ -108,25 +108,6 @@ bool WebviewGoFunction::RunImpl() {
   return true;
 }
 
-WebviewStopFunction::WebviewStopFunction() {
-}
-
-WebviewStopFunction::~WebviewStopFunction() {
-}
-
-bool WebviewStopFunction::RunImpl() {
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
-
-  WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
-  if (!guest)
-    return false;
-
-  guest->Stop();
-  return true;
-}
-
 WebviewReloadFunction::WebviewReloadFunction() {
 }
 
@@ -143,6 +124,54 @@ bool WebviewReloadFunction::RunImpl() {
     return false;
 
   guest->Reload();
+  return true;
+}
+
+WebviewSetPermissionFunction::WebviewSetPermissionFunction() {
+}
+
+WebviewSetPermissionFunction::~WebviewSetPermissionFunction() {
+}
+
+bool WebviewSetPermissionFunction::RunImpl() {
+  int instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+
+  int request_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &request_id));
+
+  bool should_allow = false;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(2, &should_allow));
+
+  std::string user_input;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &user_input));
+
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  EXTENSION_FUNCTION_VALIDATE(
+      guest->SetPermission(request_id, should_allow, user_input));
+  return true;
+}
+
+WebviewStopFunction::WebviewStopFunction() {
+}
+
+WebviewStopFunction::~WebviewStopFunction() {
+}
+
+bool WebviewStopFunction::RunImpl() {
+  int instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+
+  WebViewGuest* guest = WebViewGuest::From(
+      render_view_host()->GetProcess()->GetID(), instance_id);
+  if (!guest)
+    return false;
+
+  guest->Stop();
   return true;
 }
 

@@ -14,7 +14,7 @@
 #include "base/memory/shared_memory.h"
 #endif
 #include "base/values.h"
-#include "content/common/browser_plugin/browser_plugin_message_enums.h"
+#include "content/public/common/browser_plugin_permission_type.h"
 #include "content/renderer/browser_plugin/browser_plugin_backing_store.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
@@ -119,13 +119,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // This is used to track permission request objects, and new window API
   // window objects.
   void TrackObjectLifetime(const NPVariant* request, int id);
-
-  // If the request with id |request_id| is pending then informs the
-  // BrowserPlugin that the guest's permission request has been allowed or
-  // denied by the embedder. Returns whether the request was pending.
-  bool RespondPermissionIfRequestIsPending(int request_id,
-                                           bool allow,
-                                           const std::string& user_input);
 
   // Returns true if |point| lies within the bounds of the plugin rectangle.
   // Not OK to use this function for making security-sensitive decision since it
@@ -290,14 +283,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool UsesPendingDamageBuffer(
       const BrowserPluginMsg_UpdateRect_Params& params);
 
-  void AddPermissionRequestToSet(int request_id);
-
-  // Informs the BrowserPlugin that the guest's permission request has been
-  // allowed or denied by the embedder.
-  void RespondPermission(int request_id,
-                         bool allow,
-                         const std::string& user_input);
-
   // Called when the tracked object of |id| ID becomes unreachable in
   // JavaScript.
   void OnTrackedObjectGarbageCollected(int id);
@@ -317,13 +302,6 @@ class CONTENT_EXPORT BrowserPlugin :
   void OnGuestContentWindowReady(int instance_id,
                                  int content_window_routing_id);
   void OnGuestGone(int instance_id);
-  void OnGuestResponsive(int instance_id, int process_id);
-  void OnGuestUnresponsive(int instance_id, int process_id);
-  // Requests permission from the embedder.
-  void OnRequestPermission(int instance_id,
-                           BrowserPluginPermissionType permission_type,
-                           int request_id,
-                           const base::DictionaryValue& request_info);
   void OnSetCursor(int instance_id, const WebCursor& cursor);
   void OnSetMouseLock(int instance_id, bool enable);
   void OnShouldAcceptTouchEvents(int instance_id, bool accept);
@@ -368,10 +346,6 @@ class CONTENT_EXPORT BrowserPlugin :
   bool size_changed_in_flight_;
   bool before_first_navigation_;
   bool mouse_locked_;
-
-  // The set of permission request IDs that have not yet been processed.
-  typedef std::set<int> PendingPermissionRequests;
-  PendingPermissionRequests pending_permission_requests_;
 
   typedef std::pair<int, base::WeakPtr<BrowserPlugin> > TrackedV8ObjectID;
   std::map<int, TrackedV8ObjectID*> tracked_v8_objects_;

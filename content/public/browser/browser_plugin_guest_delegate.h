@@ -5,9 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_PLUGIN_GUEST_DELEGATE_H_
 
+#include "base/callback_forward.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
+#include "base/values.h"
 #include "content/common/content_export.h"
+#include "content/public/common/browser_plugin_permission_type.h"
 
 namespace content {
 
@@ -41,6 +44,19 @@ class CONTENT_EXPORT BrowserPluginGuestDelegate {
 
   // Notification that the guest is hung.
   virtual void RendererUnresponsive() {}
+
+  typedef base::Callback<void(bool /* allow */,
+                              const std::string& /* user_input */)>
+      PermissionResponseCallback;
+
+  // Request permission from the delegate to perform an action of the provided
+  // |permission_type|. Details of the permission request are found in
+  // |request_info|. A |callback| is provided to make the decision.
+  // Returns whether the delegate has, or will handle the permission request.
+  virtual bool RequestPermission(
+      BrowserPluginPermissionType permission_type,
+      const base::DictionaryValue& request_info,
+      const PermissionResponseCallback& callback);
 };
 
 }  // namespace content

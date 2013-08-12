@@ -13,12 +13,15 @@ namespace webview {
 extern const char kEventClose[];
 extern const char kEventConsoleMessage[];
 extern const char kEventContentLoad[];
+extern const char kEventDialog[];
 extern const char kEventExit[];
 extern const char kEventLoadAbort[];
 extern const char kEventLoadCommit[];
 extern const char kEventLoadRedirect[];
 extern const char kEventLoadStart[];
 extern const char kEventLoadStop[];
+extern const char kEventNewWindow[];
+extern const char kEventPermissionRequest[];
 extern const char kEventResponsive[];
 extern const char kEventUnresponsive[];
 
@@ -28,8 +31,16 @@ extern const char kLine[];
 extern const char kMessage[];
 extern const char kNewURL[];
 extern const char kOldURL[];
+extern const char kPermission[];
+extern const char kPermissionTypeDialog[];
+extern const char kPermissionTypeDownload[];
+extern const char kPermissionTypeGeolocation[];
+extern const char kPermissionTypeMedia[];
+extern const char kPermissionTypeNewWindow[];
+extern const char kPermissionTypePointerLock[];
 extern const char kProcessId[];
 extern const char kReason[];
+extern const char kRequestId[];
 extern const char kSourceId[];
 
 // Internal parameters/properties on events.

@@ -11,17 +11,28 @@
 // permission API would only be available for channels CHANNEL_DEV and
 // CHANNEL_CANARY.
 
+var createEvent = require('webView').CreateEvent;
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
 var WebView = require('webView').WebView;
+
+var WEB_VIEW_EXPERIMENTAL_EXT_EVENTS = {
+  'dialog': {
+    cancelable: true,
+    customHandler: function(webview, event, webviewEvent) {
+      webview.maybeSetupExtDialogEvent_(event, webviewEvent);
+    },
+    evt: createEvent('webview.onDialog'),
+    fields: ['defaultPromptText', 'messageText', 'messageType', 'url']
+  }
+};
 
 /**
  * @private
  */
 WebView.prototype.maybeSetupExperimentalAPI_ = function() {
   this.setupWebRequestEvents_();
-  this.setupDialogEvent_();
 };
 
 /**
@@ -78,90 +89,87 @@ WebView.prototype.setupWebRequestEvents_ = function() {
 /**
  * @private
  */
-WebView.prototype.setupDialogEvent_ = function() {
-  var ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN = '<webview>: ' +
-      'An action has already been taken for this "dialog" event.';
-
+WebView.prototype.maybeSetupExtDialogEvent_ = function(event, webviewEvent) {
   var showWarningMessage = function(dialogType) {
     var VOWELS = ['a', 'e', 'i', 'o', 'u'];
     var WARNING_MSG_DIALOG_BLOCKED = '<webview>: %1 %2 dialog was blocked.';
     var article = (VOWELS.indexOf(dialogType.charAt(0)) >= 0) ? 'An' : 'A';
     var output = WARNING_MSG_DIALOG_BLOCKED.replace('%1', article);
     output = output.replace('%2', dialogType);
-    console.log(output);
+    console.warn(output);
   };
 
-  var DIALOG_EVENT_ATTRIBUTES = [
-    'defaultPromptText',
-    'messageText',
-    'messageType',
-    'url'
-  ];
-
   var self = this;
-  var node = this.webviewNode_;
   var browserPluginNode = this.browserPluginNode_;
+  var webviewNode = this.webviewNode_;
+
+  var requestId = event.requestId;
+  var actionTaken = false;
 
   var onTrackedObjectGone = function(requestId, dialogType, e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
-    if (detail.id != requestId)
+    if (detail.id != requestId) {
       return;
-    // If the request was pending then show a warning indiciating that a new
-    // window was blocked.
-    if (browserPluginNode['-internal-setPermission'](requestId, false, '')) {
-      showWarningMessage(dialogType);
     }
-  };
 
-  browserPluginNode.addEventListener('-internal-dialog', function(e) {
-    var evt = new Event('dialog', { bubbles: true, cancelable: true });
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-
-    $Array.forEach(DIALOG_EVENT_ATTRIBUTES, function(attribName) {
-      evt[attribName] = detail[attribName];
-    });
-    var requestId = detail.requestId;
-    var actionTaken = false;
-
-    var validateCall = function() {
-      if (actionTaken) {
-        throw new Error(ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN);
-      }
-      actionTaken = true;
-    };
-
-    var dialog = {
-      ok: function(user_input) {
-        validateCall();
-        browserPluginNode['-internal-setPermission'](
-            requestId, true, user_input);
-      },
-      cancel: function() {
-        validateCall();
-        browserPluginNode['-internal-setPermission'](requestId, false, '');
-      }
-    };
-    evt.dialog = dialog;
-
-    var defaultPrevented = !node.dispatchEvent(evt);
+    // Avoid showing a warning message if the decision has already been made.
     if (actionTaken) {
       return;
     }
 
-    if (defaultPrevented) {
-      // Tell the JavaScript garbage collector to track lifetime of |dialog| and
-      // call back when the dialog object has been collected.
-      var onTrackedObjectGoneWithRequestId =
-          $Function.bind(
-              onTrackedObjectGone, self, requestId, detail.messageType);
-      browserPluginNode.addEventListener('-internal-trackedobjectgone',
-          onTrackedObjectGoneWithRequestId);
-      browserPluginNode['-internal-trackObjectLifetime'](dialog, requestId);
-    } else {
-      actionTaken = true;
-      // The default action is equivalent to canceling the dialog.
-      browserPluginNode['-internal-setPermission'](requestId, false, '');
-      showWarningMessage(detail.messageType);
+    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    showWarningMessage(dialogType);
+  }
+
+  var validateCall = function() {
+    var ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN = '<webview>: ' +
+        'An action has already been taken for this "dialog" event.';
+
+    if (actionTaken) {
+      throw new Error(ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN);
     }
-  });
+    actionTaken = true;
+  };
+
+  var dialog = {
+    ok: function(user_input) {
+      validateCall();
+      user_input = user_input || '';
+      chrome.webview.setPermission(
+          self.instanceId_, requestId, true, user_input);
+    },
+    cancel: function() {
+      validateCall();
+      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    }
+  };
+  webviewEvent.dialog = dialog;
+
+  var defaultPrevented = !webviewNode.dispatchEvent(webviewEvent);
+  if (actionTaken) {
+    return;
+  }
+
+  if (defaultPrevented) {
+    // Tell the JavaScript garbage collector to track lifetime of |dialog| and
+    // call back when the dialog object has been collected.
+    var onTrackedObjectGoneWithRequestId =
+        $Function.bind(
+            onTrackedObjectGone, self, requestId, event.messageType);
+    browserPluginNode.addEventListener('-internal-trackedobjectgone',
+        onTrackedObjectGoneWithRequestId);
+    browserPluginNode['-internal-trackObjectLifetime'](dialog, requestId);
+  } else {
+    actionTaken = true;
+    // The default action is equivalent to canceling the dialog.
+    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+    showWarningMessage(event.messageType);
+  }
+};
+
+/**
+ * @private
+ */
+WebView.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {
+  return WEB_VIEW_EXPERIMENTAL_EXT_EVENTS;
 };

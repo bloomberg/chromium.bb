@@ -59,28 +59,6 @@ static std::string GetInternalEventName(const char* event_name) {
   return base::StringPrintf("-internal-%s", event_name);
 }
 
-static std::string PermissionTypeToString(BrowserPluginPermissionType type) {
-  switch (type) {
-    case BrowserPluginPermissionTypeDownload:
-      return browser_plugin::kPermissionTypeDownload;
-    case BrowserPluginPermissionTypeGeolocation:
-      return browser_plugin::kPermissionTypeGeolocation;
-    case BrowserPluginPermissionTypeMedia:
-      return browser_plugin::kPermissionTypeMedia;
-    case BrowserPluginPermissionTypeNewWindow:
-      return browser_plugin::kPermissionTypeNewWindow;
-    case BrowserPluginPermissionTypePointerLock:
-      return browser_plugin::kPermissionTypePointerLock;
-    case BrowserPluginPermissionTypeJavaScriptDialog:
-      return browser_plugin::kPermissionTypeDialog;
-    case BrowserPluginPermissionTypeUnknown:
-    default:
-      NOTREACHED();
-      break;
-  }
-  return std::string();
-}
-
 typedef std::map<WebKit::WebPluginContainer*,
                  BrowserPlugin*> PluginContainerMap;
 static base::LazyInstance<PluginContainerMap> g_plugin_container_map =
@@ -146,7 +124,6 @@ bool BrowserPlugin::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestContentWindowReady,
                         OnGuestContentWindowReady)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_GuestGone, OnGuestGone)
-    IPC_MESSAGE_HANDLER(BrowserPluginMsg_RequestPermission, OnRequestPermission)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_SetMouseLock, OnSetMouseLock)
     IPC_MESSAGE_HANDLER(BrowserPluginMsg_ShouldAcceptTouchEvents,
@@ -480,38 +457,6 @@ void BrowserPlugin::OnGuestGone(int guest_instance_id) {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void BrowserPlugin::OnRequestPermission(
-    int guest_instance_id,
-    BrowserPluginPermissionType permission_type,
-    int request_id,
-    const base::DictionaryValue& request_info) {
-  // The New Window API is very similiar to the permission API in structure,
-  // but exposes a slightly different interface to the developer and so we put
-  // it in a separate event.
-  const char* event_name = NULL;
-  if (permission_type == BrowserPluginPermissionTypeNewWindow) {
-    event_name = browser_plugin::kEventNewWindow;
-  } else if (permission_type == BrowserPluginPermissionTypeJavaScriptDialog) {
-    event_name = browser_plugin::kEventDialog;
-  } else {
-    event_name = browser_plugin::kEventRequestPermission;
-  }
-  AddPermissionRequestToSet(request_id);
-
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kPermission] =
-      base::Value::CreateStringValue(PermissionTypeToString(permission_type));
-  props[browser_plugin::kRequestId] =
-      base::Value::CreateIntegerValue(request_id);
-
-  // Fill in the info provided by the browser.
-  for (DictionaryValue::Iterator iter(request_info); !iter.IsAtEnd();
-           iter.Advance()) {
-    props[iter.key()] = iter.value().DeepCopy();
-  }
-  TriggerEvent(event_name, &props);
-}
-
 void BrowserPlugin::OnSetCursor(int guest_instance_id,
                                 const WebCursor& cursor) {
   cursor_ = cursor;
@@ -544,11 +489,6 @@ void BrowserPlugin::OnShouldAcceptTouchEvents(int guest_instance_id,
 void BrowserPlugin::OnUpdatedName(int guest_instance_id,
                                   const std::string& name) {
   UpdateDOMAttribute(browser_plugin::kAttributeName, name);
-}
-
-void BrowserPlugin::AddPermissionRequestToSet(int request_id) {
-  DCHECK(!pending_permission_requests_.count(request_id));
-  pending_permission_requests_.insert(request_id);
 }
 
 void BrowserPlugin::OnUpdateRect(
@@ -965,26 +905,6 @@ WebKit::WebPluginContainer* BrowserPlugin::container() const {
   return container_;
 }
 
-void BrowserPlugin::RespondPermission(
-    int request_id, bool allow, const std::string& user_input) {
-  browser_plugin_manager()->Send(
-      new BrowserPluginHostMsg_RespondPermission(
-          render_view_routing_id_, guest_instance_id_,
-          request_id, allow, user_input));
-}
-
-bool BrowserPlugin::RespondPermissionIfRequestIsPending(
-    int request_id, bool allow, const std::string& user_input) {
-  PendingPermissionRequests::iterator iter =
-      pending_permission_requests_.find(request_id);
-  if (iter == pending_permission_requests_.end())
-    return false;
-
-  pending_permission_requests_.erase(iter);
-  RespondPermission(request_id, allow, user_input);
-  return true;
-}
-
 bool BrowserPlugin::initialize(WebPluginContainer* container) {
   if (!container)
     return false;
@@ -1149,7 +1069,6 @@ bool BrowserPlugin::ShouldForwardToBrowserPlugin(
     case BrowserPluginMsg_CompositorFrameSwapped::ID:
     case BrowserPluginMsg_GuestContentWindowReady::ID:
     case BrowserPluginMsg_GuestGone::ID:
-    case BrowserPluginMsg_RequestPermission::ID:
     case BrowserPluginMsg_SetCursor::ID:
     case BrowserPluginMsg_SetMouseLock::ID:
     case BrowserPluginMsg_ShouldAcceptTouchEvents::ID:

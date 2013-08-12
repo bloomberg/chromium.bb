@@ -327,32 +327,6 @@ class BrowserPluginBindingTrackObjectLifetime
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingTrackObjectLifetime);
 };
 
-// Note: This is a method that is used internally by the <webview> shim only.
-// This should not be exposed to developers.
-class BrowserPluginBindingSetPermission : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingSetPermission()
-      : BrowserPluginMethodBinding(
-          browser_plugin::kMethodInternalSetPermission, 3) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    int request_id = IntFromNPVariant(args[0]);
-    bool allow = NPVARIANT_TO_BOOLEAN(args[1]);
-    std::string user_input = StringFromNPVariant(args[2]);
-    bool request_was_pending =
-        bindings->instance()->RespondPermissionIfRequestIsPending(
-            request_id, allow, user_input);
-    BOOLEAN_TO_NPVARIANT(request_was_pending, *result);
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingSetPermission);
-};
-
 // BrowserPluginPropertyBinding ------------------------------------------------
 
 class BrowserPluginPropertyBinding {
@@ -712,7 +686,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
   method_bindings_.push_back(new BrowserPluginBindingAttach);
   method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
   method_bindings_.push_back(new BrowserPluginBindingGetGuestInstanceID);
-  method_bindings_.push_back(new BrowserPluginBindingSetPermission);
   method_bindings_.push_back(new BrowserPluginBindingTrackObjectLifetime);
 
   property_bindings_.push_back(new BrowserPluginPropertyBindingAutoSize);
