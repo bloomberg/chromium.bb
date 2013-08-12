@@ -70,7 +70,7 @@ static const char *const irt_interface_whitelist[] = {
   NACL_IRT_CLOCK_v0_1,
   /* Allowed for debugging purposes: */
   NACL_IRT_DEV_FDIO_v0_1,
-  NACL_IRT_DEV_FILENAME_v0_1,
+  NACL_IRT_DEV_FILENAME_v0_2,
 };
 
 /* Use local strcmp to avoid dependency on libc. */

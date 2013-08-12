@@ -43,10 +43,10 @@ EXTERN_C_BEGIN
 #define USE_WRAP(group, name) \
   __libnacl_irt_##group.name = (typeof(REAL(name))) WRAP(name); \
 
-
+extern void __libnacl_irt_filename_init(void);
 
 extern struct nacl_irt_fdio __libnacl_irt_fdio;
-extern struct nacl_irt_filename __libnacl_irt_filename;
+extern struct nacl_irt_dev_filename __libnacl_irt_dev_filename;
 extern struct nacl_irt_memory __libnacl_irt_memory;
 
 // Create function pointers to the REAL implementation
@@ -59,8 +59,8 @@ extern struct nacl_irt_memory __libnacl_irt_memory;
   OP(fdio, read); \
   OP(fdio, seek); \
   OP(fdio, write); \
-  OP(filename, open); \
-  OP(filename, stat); \
+  OP(dev_filename, open); \
+  OP(dev_filename, stat); \
   OP(memory, mmap); \
   OP(memory, munmap);
 
@@ -199,6 +199,7 @@ static bool s_assigned = false;
 void kernel_wrap_init() {
   if (!s_wrapped) {
     if (!s_assigned) {
+      __libnacl_irt_filename_init();
       EXPAND_SYMBOL_LIST_OPERATION(ASSIGN_REAL_PTR)
       s_assigned = true;
     }
