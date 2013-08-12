@@ -7,11 +7,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-// OmniboxPopupCell overrides how backgrounds are displayed to
-// handle hover versus selected.  So long as we're in there, it also
-// provides some default initialization.
+#include "base/mac/scoped_nsobject.h"
+
+// Draws a single row in the omnibox popup.
 @interface OmniboxPopupCell : NSButtonCell {
+  base::scoped_nsobject<NSAttributedString> contentText_;
+  base::scoped_nsobject<NSAttributedString> descriptionText_;
 }
+
+- (void)setContentText:(NSAttributedString*)contentText;
+- (void)setDescriptionText:(NSAttributedString*)descriptionText;
 
 @end
 
