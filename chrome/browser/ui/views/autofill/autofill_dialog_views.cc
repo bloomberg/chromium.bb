@@ -1679,8 +1679,10 @@ void AutofillDialogViews::OnDidChangeFocus(
   }
 
   // Show an error bubble when the user focuses the input.
-  if (focused_now)
+  if (focused_now) {
+    focused_now->ScrollRectToVisible(focused_now->GetLocalBounds());
     ShowErrorBubbleForViewIfNecessary(focused_now);
+  }
 }
 
 void AutofillDialogViews::OnSelectedIndexChanged(views::Combobox* combobox) {
@@ -2015,14 +2017,13 @@ void AutofillDialogViews::ShowErrorBubbleForViewIfNecessary(views::View* view) {
   if (!view->GetWidget())
     return;
 
-  if (error_bubble_ && error_bubble_->anchor() == view)
-    return;
-
   std::map<views::View*, base::string16>::iterator error_message =
       validity_map_.find(view);
   if (error_message != validity_map_.end()) {
     view->ScrollRectToVisible(view->GetLocalBounds());
-    error_bubble_.reset(new ErrorBubble(view, error_message->second));
+
+    if (!error_bubble_ || error_bubble_->anchor() != view)
+      error_bubble_.reset(new ErrorBubble(view, error_message->second));
   }
 }
 
