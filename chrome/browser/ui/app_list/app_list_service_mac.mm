@@ -59,11 +59,11 @@ class AppListServiceMac : public AppListServiceImpl,
                      LeakySingletonTraits<AppListServiceMac> >::get();
   }
 
-  void CreateAppList(Profile* profile);
   void ShowWindowNearDock();
 
   // AppListService overrides:
   virtual void Init(Profile* initial_profile) OVERRIDE;
+  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
   virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
@@ -268,22 +268,6 @@ void AppListControllerDelegateCocoa::LaunchApp(
       profile, extension, NEW_FOREGROUND_TAB));
 }
 
-void AppListServiceMac::CreateAppList(Profile* requested_profile) {
-  if (profile() == requested_profile)
-    return;
-
-  // The Objective C objects might be released at some unknown point in the
-  // future, so explicitly clear references to C++ objects.
-  [[window_controller_ appListViewController]
-      setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
-
-  SetProfile(requested_profile);
-  scoped_ptr<app_list::AppListViewDelegate> delegate(
-      new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile()));
-  window_controller_.reset([[AppListWindowController alloc] init]);
-  [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
-}
-
 void AppListServiceMac::Init(Profile* initial_profile) {
   // On Mac, Init() is called multiple times for a process: any time there is no
   // browser window open and a new window is opened, and during process startup
@@ -311,6 +295,22 @@ void AppListServiceMac::Init(Profile* initial_profile) {
                                         AppListServiceMac::GetInstance());
 }
 
+void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
+  if (profile() == requested_profile)
+    return;
+
+  // The Objective C objects might be released at some unknown point in the
+  // future, so explicitly clear references to C++ objects.
+  [[window_controller_ appListViewController]
+      setDelegate:scoped_ptr<app_list::AppListViewDelegate>()];
+
+  SetProfile(requested_profile);
+  scoped_ptr<app_list::AppListViewDelegate> delegate(
+      new AppListViewDelegate(new AppListControllerDelegateCocoa(), profile()));
+  window_controller_.reset([[AppListWindowController alloc] init]);
+  [[window_controller_ appListViewController] setDelegate:delegate.Pass()];
+}
+
 void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
   InvalidatePendingProfileLoads();
 
@@ -322,7 +322,7 @@ void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
   SetProfilePath(requested_profile->GetPath());
 
   DismissAppList();
-  CreateAppList(requested_profile);
+  CreateForProfile(requested_profile);
   ShowWindowNearDock();
 }
 

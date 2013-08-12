@@ -439,6 +439,7 @@ class AppListController : public AppListServiceImpl {
   // AppListService overrides:
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
+  virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
   virtual void ShowForProfile(Profile* requested_profile) OVERRIDE;
   virtual void DismissAppList() OVERRIDE;
   virtual bool IsAppListVisible() const OVERRIDE;
@@ -463,10 +464,6 @@ class AppListController : public AppListServiceImpl {
   // be shown.
   void LoadProfileForWarmup();
   void OnLoadProfileForWarmup(Profile* initial_profile);
-
-  // Create or recreate, and initialize |current_view_| from
-  // |requested_profile|.
-  void PopulateViewFromProfile(Profile* requested_profile);
 
   // Creates an AppListView.
   app_list::AppListView* CreateAppListView();
@@ -650,7 +647,7 @@ void AppListController::ShowForProfile(Profile* requested_profile) {
   SetProfilePath(requested_profile->GetPath());
 
   DismissAppList();
-  PopulateViewFromProfile(requested_profile);
+  CreateForProfile(requested_profile);
 
   DCHECK(current_view_);
   EnsureHaveKeepAliveForView();
@@ -668,7 +665,7 @@ void AppListController::ShowAppListDuringModeSwitch(
   activation_tracker_->RegainNextLostFocus();
 }
 
-void AppListController::PopulateViewFromProfile(Profile* requested_profile) {
+void AppListController::CreateForProfile(Profile* requested_profile) {
   // Aura has problems with layered windows and bubble delegates. The app
   // launcher has a trick where it only hides the window when it is dismissed,
   // reshowing it again later. This does not work with win aura for some
@@ -879,7 +876,7 @@ void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
   if (!IsWarmupNeeded())
     return;
 
-  PopulateViewFromProfile(initial_profile);
+  CreateForProfile(initial_profile);
   current_view_->Prerender();
 }
 

@@ -31,6 +31,7 @@ class AppListServiceDisabled : public AppListService {
   virtual void SetProfilePath(const base::FilePath& profile_path) OVERRIDE {}
 
   virtual void Show() OVERRIDE {}
+  virtual void CreateForProfile(Profile* profile) OVERRIDE {}
   virtual void ShowForProfile(Profile* profile) OVERRIDE {}
   virtual void DismissAppList() OVERRIDE {}
 

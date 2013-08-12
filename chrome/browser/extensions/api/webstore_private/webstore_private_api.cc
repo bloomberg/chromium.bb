@@ -571,10 +571,12 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
   if (approval_->enable_launcher)
     AppListService::Get()->EnableAppList(profile());
 
-  if (apps::IsAppLauncherEnabled()) {
+  if (apps::IsAppLauncherEnabled() && approval_->manifest->is_app()) {
     // Show the app list to show download is progressing. Don't show the app
     // list on first app install so users can be trained to open it themselves.
-    if (approval_->manifest->is_app() && !approval_->enable_launcher)
+    if (approval_->enable_launcher)
+      AppListService::Get()->CreateForProfile(profile());
+    else
       AppListService::Get()->ShowForProfile(profile());
   }
 

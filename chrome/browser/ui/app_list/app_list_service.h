@@ -48,6 +48,9 @@ class AppListService {
   // current browser process.
   virtual void Show() = 0;
 
+  // Create the app list UI, and maintain its state, but do not show it.
+  virtual void CreateForProfile(Profile* requested_profile) = 0;
+
   // Show the app list for the given profile. If it differs from the profile the
   // app list is currently showing, repopulate the app list and save the new
   // profile to local prefs as the default app list profile.
