@@ -64,6 +64,7 @@ void BuiltinProviderTest::RunTest(test_data<ResultType>* builtin_cases,
       for (size_t j = 0; j < builtin_cases[i].num_results; ++j) {
         EXPECT_EQ(builtin_cases[i].output[j], matches[j].*member) <<
                 ASCIIToUTF16("Input was: ") << builtin_cases[i].input;
+        EXPECT_FALSE(matches[j].allowed_to_be_default_match);
       }
     }
   }

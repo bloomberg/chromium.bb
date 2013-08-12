@@ -160,21 +160,18 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
 }
 
 TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
-  // Must be the same as kBundledExperimentFieldTrialName
-  // defined in omnibox_field_trial.cc.
-  const std::string kTrialName = "OmniboxBundledExperimentV1";
-  // Must be the same as kDemoteByTypeRule defined in
-  // omnibox_field_trial.cc.
-  const std::string kRuleName = "DemoteByType";
   {
     std::map<std::string, std::string> params;
-    params[kRuleName + ":1:*"] = "1:50,2:0";
-    params[kRuleName + ":3:*"] = "5:100";
-    params[kRuleName + ":*:*"] = "1:25";
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":1:*"] =
+        "1:50,2:0";
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
+        "5:100";
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":*:*"] = "1:25";
     ASSERT_TRUE(chrome_variations::AssociateVariationParams(
-        kTrialName, "A", params));
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
-  base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
   OmniboxFieldTrial::DemotionMultipliers demotions_by_type;
   OmniboxFieldTrial::GetDemotionsByType(
       AutocompleteInput::NEW_TAB_PAGE, &demotions_by_type);
@@ -195,9 +192,6 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   // This test starts with Instant Extended off (the default state), then
   // enables Instant Extended and tests again on the same rules.
 
-  // Must be the same as kBundledExperimentFieldTrialName
-  // defined in omnibox_field_trial.cc.
-  const std::string kTrialName = "OmniboxBundledExperimentV1";
   {
     std::map<std::string, std::string> params;
     // Rule 1 has some exact matches and fallbacks at every level.
@@ -218,10 +212,11 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
     // Add a malformed rule to make sure it doesn't screw things up.
     params["unrecognized"] = "unrecognized-value";
     ASSERT_TRUE(chrome_variations::AssociateVariationParams(
-        kTrialName, "A", params));
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
 
-  base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
   // Tests with Instant Extended disabled.
   // Tests for rule 1.

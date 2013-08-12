@@ -255,6 +255,12 @@ void ShortcutsProviderTest::RunTest(const string16 text,
                       ac_matches_.end(), AutocompleteMatch::MoreRelevant);
     EXPECT_EQ(expected_top_result, ac_matches_[0].destination_url.spec());
   }
+
+  // No shortcuts matches are allowed to be inlined no matter how highly
+  // they score.
+  for (ACMatches::const_iterator it = ac_matches_.begin();
+       it != ac_matches_.end(); ++it)
+    EXPECT_FALSE(it->allowed_to_be_default_match);
 }
 
 TEST_F(ShortcutsProviderTest, SimpleSingleMatch) {

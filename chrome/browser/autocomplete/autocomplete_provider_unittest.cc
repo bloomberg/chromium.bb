@@ -128,6 +128,7 @@ void TestProvider::AddResultsWithSearchTermsArgs(
 
     match.fill_into_edit = prefix_ + UTF8ToUTF16(base::IntToString(i));
     match.destination_url = GURL(UTF16ToUTF8(match.fill_into_edit));
+    match.allowed_to_be_default_match = true;
 
     match.contents = match.fill_into_edit;
     match.contents_class.push_back(
@@ -345,6 +346,8 @@ void AutocompleteProviderTest::RunRedundantKeywordTest(
   ACMatches matches;
   for (size_t i = 0; i < size; ++i) {
     AutocompleteMatch match;
+    match.relevance = 1000;  // Arbitrary non-zero value.
+    match.allowed_to_be_default_match = true;
     match.fill_into_edit = match_data[i].fill_into_edit;
     match.transition = content::PAGE_TRANSITION_KEYWORD;
     match.keyword = match_data[i].keyword;
@@ -370,6 +373,7 @@ void AutocompleteProviderTest::RunAssistedQueryStatsTest(
   for (size_t i = 0; i < size; ++i) {
     AutocompleteMatch match(NULL, kMaxRelevance - i, false,
                             aqs_test_data[i].match_type);
+    match.allowed_to_be_default_match = true;
     match.keyword = ASCIIToUTF16(kTestTemplateURLKeyword);
     match.search_terms_args.reset(
         new TemplateURLRef::SearchTermsArgs(string16()));
@@ -508,9 +512,6 @@ TEST_F(AutocompleteProviderTest, ExtraQueryParams) {
 // Test that redundant associated keywords are removed.
 TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
   ResetControllerWithKeywordProvider();
-
-  // Get the controller's internal members in the correct state.
-  RunQuery(ASCIIToUTF16("fo"));
 
   {
     KeywordTestData duplicate_url[] = {

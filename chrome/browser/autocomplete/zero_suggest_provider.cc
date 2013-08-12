@@ -464,6 +464,7 @@ AutocompleteMatch ZeroSuggestProvider::MatchForCurrentURL() {
       HistoryURLProvider::SuggestExactInput(this, input,
                                             !HasHTTPScheme(input.text())));
   match.is_history_what_you_typed_match = false;
+  match.allowed_to_be_default_match = true;
 
   // The placeholder suggestion for the current URL has high relevance so
   // that it is in the first suggestion slot and inline autocompleted. It

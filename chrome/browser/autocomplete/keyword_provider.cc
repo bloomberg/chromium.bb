@@ -211,13 +211,14 @@ string16 KeywordProvider::GetKeywordForText(const string16& text) const {
   return keyword;
 }
 
-AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
+AutocompleteMatch KeywordProvider::CreateVerbatimMatch(
     const string16& text,
     const string16& keyword,
     const AutocompleteInput& input) {
+  // A verbatim match is allowed to be the default match.
   return CreateAutocompleteMatch(
       GetTemplateURLService()->GetTemplateURLForKeyword(keyword), input,
-      keyword.length(), SplitReplacementStringFromInput(text, true), 0);
+      keyword.length(), SplitReplacementStringFromInput(text, true), true, 0);
 }
 
 void KeywordProvider::Start(const AutocompleteInput& input,
@@ -318,8 +319,12 @@ void KeywordProvider::Start(const AutocompleteInput& input,
 
     // TODO(pkasting): We should probably check that if the user explicitly
     // typed a scheme, that scheme matches the one in |template_url|.
+
+    // When creating an exact match (either for the keyword itself, no
+    // remaining query or an extension keyword, possibly with remaining
+    // input), allow the match to be the default match.
     matches_.push_back(CreateAutocompleteMatch(
-        template_url, input, keyword.length(), remaining_input, -1));
+        template_url, input, keyword.length(), remaining_input, true, -1));
 
     if (profile_ && is_extension_keyword) {
       if (input.matches_requested() == AutocompleteInput::ALL_MATCHES) {
@@ -365,7 +370,7 @@ void KeywordProvider::Start(const AutocompleteInput& input,
     for (TemplateURLService::TemplateURLVector::const_iterator i(
          matches.begin()); i != matches.end(); ++i) {
       matches_.push_back(CreateAutocompleteMatch(
-          *i, input, keyword.length(), remaining_input, -1));
+          *i, input, keyword.length(), remaining_input, false, -1));
     }
   }
 }
@@ -420,6 +425,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
     const AutocompleteInput& input,
     size_t prefix_length,
     const string16& remaining_input,
+    bool allowed_to_be_default_match,
     int relevance) {
   DCHECK(template_url);
   const bool supports_replacement =
@@ -442,6 +448,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
   AutocompleteMatch match(this, relevance, false,
       supports_replacement ? AutocompleteMatchType::SEARCH_OTHER_ENGINE :
                              AutocompleteMatchType::HISTORY_KEYWORD);
+  match.allowed_to_be_default_match = allowed_to_be_default_match;
   match.fill_into_edit = keyword;
   if (!remaining_input.empty() || !keyword_complete || supports_replacement)
     match.fill_into_edit.push_back(L' ');
@@ -567,13 +574,17 @@ void KeywordProvider::Observe(int type,
         // We want to order these suggestions in descending order, so start with
         // the relevance of the first result (added synchronously in Start()),
         // and subtract 1 for each subsequent suggestion from the extension.
-        // We know that |complete| is true, because we wouldn't get results from
-        // the extension unless the full keyword had been typed.
+        // We recompute the first match's relevance; we know that |complete|
+        // is true, because we wouldn't get results from the extension unless
+        // the full keyword had been typed.
         int first_relevance = CalculateRelevance(input.type(), true, true,
             input.prefer_keyword(), input.allow_exact_keyword_match());
+        // Because these matches are async, we should never let them become the
+        // default match, lest we introduce race conditions in the omnibox user
+        // interaction.
         extension_suggest_matches_.push_back(CreateAutocompleteMatch(
             template_url, input, keyword.length(),
-            UTF8ToUTF16(suggestion.content), first_relevance - (i + 1)));
+            UTF8ToUTF16(suggestion.content), false, first_relevance - (i + 1)));
 
         AutocompleteMatch* match = &extension_suggest_matches_.back();
         match->contents.assign(UTF8ToUTF16(suggestion.description));

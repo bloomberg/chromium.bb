@@ -79,6 +79,7 @@ AutocompleteMatch ExtensionAppProvider::CreateAutocompleteMatch(
   match.fill_into_edit =
       app.should_match_against_launch_url ? app.launch_url : input.text();
   match.destination_url = GURL(app.launch_url);
+  match.allowed_to_be_default_match = true;
   match.contents = AutocompleteMatch::SanitizeString(app.name);
   AutocompleteMatch::ClassifyLocationInString(name_match_index,
       input.text().length(), app.name.length(), ACMatchClassification::NONE,

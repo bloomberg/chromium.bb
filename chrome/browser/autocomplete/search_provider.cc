@@ -309,10 +309,11 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
       }
     }
   } else {
-    // Otherwise, we're dealing with the "default search" result which has no
-    // completion.
+    // Otherwise, |match| is a verbatim (what-you-typed) match, either for the
+    // default provider or a keyword search provider.
     match.contents_class.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
+    match.allowed_to_be_default_match = true;
   }
 
   // When the user forced a query, we need to make sure all the fill_into_edit
@@ -325,6 +326,7 @@ AutocompleteMatch SearchProvider::CreateSearchSuggestion(
   if (!input.prevent_inline_autocomplete() &&
       StartsWith(query_string, input_text, false)) {
     match.inline_autocompletion = query_string.substr(input_text.length());
+    match.allowed_to_be_default_match = true;
   }
   match.fill_into_edit.append(query_string);
 
@@ -510,6 +512,7 @@ void SearchProvider::Start(const AutocompleteInput& input,
       match.contents_class.push_back(
           ACMatchClassification(0, ACMatchClassification::NONE));
       match.keyword = providers_.default_provider();
+      match.allowed_to_be_default_match = true;
       matches_.push_back(match);
     }
     Stop(false);
@@ -1064,15 +1067,21 @@ bool SearchProvider::IsTopMatchSearchWithURLInput() const {
          matches_.front().type != AutocompleteMatchType::NAVSUGGEST;
 }
 
-bool SearchProvider::IsTopMatchNotInlinable() const {
-  // Note: this test assumes the SEARCH_OTHER_ENGINE match corresponds to
-  // the verbatim search query on the keyword engine.  SearchProvider should
-  // not create any other match of type SEARCH_OTHER_ENGINE.
-  return
-      matches_.front().type != AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED &&
-      matches_.front().type != AutocompleteMatchType::SEARCH_OTHER_ENGINE &&
-      matches_.front().inline_autocompletion.empty() &&
-      matches_.front().fill_into_edit != input_.text();
+bool SearchProvider::HasValidDefaultMatch(
+    bool autocomplete_result_will_reorder_for_default_match) const {
+  // One of the SearchProvider matches may need to be the overall default.  If
+  // AutocompleteResult is allowed to reorder matches, this means we simply
+  // need at least one match in the list to be |allowed_to_be_default_match|.
+  // If no reordering is possible, however, then our first match needs to have
+  // this flag.
+  for (ACMatches::const_iterator it = matches_.begin(); it != matches_.end();
+       ++it) {
+    if (it->allowed_to_be_default_match)
+      return true;
+    if (!autocomplete_result_will_reorder_for_default_match)
+      return false;
+  }
+  return false;
 }
 
 void SearchProvider::UpdateMatches() {
@@ -1097,11 +1106,20 @@ void SearchProvider::UpdateMatches() {
       ConvertResultsToAutocompleteMatches();
       DCHECK(!IsTopMatchNavigationInKeywordMode());
     }
-    if (IsTopMatchScoreTooLow()) {
+    // True if the omnibox will reorder matches as necessary to make the top
+    // one something that is allowed to be the default match.
+    const bool omnibox_will_reorder_for_legal_default_match =
+        OmniboxFieldTrial::ReorderForLegalDefaultMatch(
+            input_.current_page_classification());
+    if (!omnibox_will_reorder_for_legal_default_match &&
+        IsTopMatchScoreTooLow()) {
       // Disregard the suggested verbatim relevance if the top score is below
       // the usual verbatim value. For example, a BarProvider may rely on
-      // SearchProvider's verbatim or inlineable matches for input "foo" to
-      // always outrank its own lowly-ranked non-inlineable "bar" match.
+      // SearchProvider's verbatim or inlineable matches for input "foo" (all
+      // allowed to be default match) to always outrank its own lowly-ranked
+      // "bar" matches that shouldn't be the default match.  This only needs
+      // to be enforced when the omnibox will not reorder results to make a
+      // legal default match first.
       default_results_.verbatim_relevance = -1;
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
@@ -1117,18 +1135,25 @@ void SearchProvider::UpdateMatches() {
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
-    if (IsTopMatchNotInlinable()) {
-      // Disregard suggested relevances if the top match is not a verbatim match
-      // or inlinable.  For example, input "foo" should not invoke a search for
-      // "bar", which would happen if the "bar" search match outranked all other
-      // matches.
+    if (!HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match)) {
+      // If the omnibox is not going to reorder results to put a legal default
+      // match at the top, then this provider needs to guarantee that its top
+      // scoring result is a legal default match (i.e., it's either a verbatim
+      // match or inlinable).  For example, input "foo" should not invoke a
+      // search for "bar", which would happen if the "bar" search match
+      // outranked all other matches.  On the other hand, if the omnibox will
+      // reorder matches as necessary to put a legal default match at the top,
+      // all we need to guarantee is that SearchProvider returns a legal
+      // default match.  (The omnibox always needs at least one legal default
+      // match, and it relies on SearchProvider to always return one.)
       ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
     DCHECK(!IsTopMatchNavigationInKeywordMode());
-    DCHECK(!IsTopMatchScoreTooLow());
+    DCHECK(omnibox_will_reorder_for_legal_default_match ||
+        !IsTopMatchScoreTooLow());
     DCHECK(!IsTopMatchSearchWithURLInput());
-    DCHECK(!IsTopMatchNotInlinable());
+    DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
   }
 
   UpdateStarredStateOfMatches();
@@ -1464,6 +1489,7 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   if (!input_.prevent_inline_autocomplete() &&
       (inline_autocomplete_offset != string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
+    match.allowed_to_be_default_match = true;
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
   }

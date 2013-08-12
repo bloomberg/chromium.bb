@@ -156,8 +156,20 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
   // Sort and trim to the most relevant kMaxMatches matches.
   size_t max_num_matches = std::min(kMaxMatches, matches_.size());
   CompareWithDemoteByType comparing_object(input.current_page_classification());
-  std::partial_sort(matches_.begin(), matches_.begin() + max_num_matches,
-                    matches_.end(), comparing_object);
+  std::sort(matches_.begin(), matches_.end(), comparing_object);
+  if (!matches_.empty() && !matches_.begin()->allowed_to_be_default_match &&
+      OmniboxFieldTrial::ReorderForLegalDefaultMatch(
+          input.current_page_classification())) {
+    // Top match is not allowed to be the default match.  Find the most
+    // relevant legal match and shift it to the front.
+    for (AutocompleteResult::iterator it = matches_.begin() + 1;
+         it != matches_.end(); ++it) {
+      if (it->allowed_to_be_default_match) {
+        std::rotate(matches_.begin(), it, it + 1);
+        break;
+      }
+    }
+  }
   // In the process of trimming, drop all matches with a demoted relevance
   // score of 0.
   size_t num_matches;
@@ -166,10 +178,12 @@ void AutocompleteResult::SortAndCull(const AutocompleteInput& input,
        ++num_matches) {}
   matches_.resize(num_matches);
 
-  default_match_ = begin();
+  default_match_ = matches_.begin();
+  DCHECK((default_match_ == matches_.end()) ||
+      default_match_->allowed_to_be_default_match);
 
   // Set the alternate nav URL.
-  alternate_nav_url_ = (default_match_ == end()) ?
+  alternate_nav_url_ = (default_match_ == matches_.end()) ?
       GURL() : ComputeAlternateNavUrl(input, *default_match_);
 }
 

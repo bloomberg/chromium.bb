@@ -24,12 +24,6 @@ const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
-const char kBundledExperimentFieldTrialName[] = "OmniboxBundledExperimentV1";
-
-// Rule names used by the bundled experiment.
-const char kShortcutsScoringMaxRelevanceRule[] = "ShortcutsScoringMaxRelevance";
-const char kSearchHistoryRule[] = "SearchHistory";
-const char kDemoteByTypeRule[] = "DemoteByType";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -258,6 +252,24 @@ void OmniboxFieldTrial::GetDemotionsByType(
     }
   }
 }
+
+bool OmniboxFieldTrial::ReorderForLegalDefaultMatch(
+    AutocompleteInput::PageClassification current_page_classification) {
+  return OmniboxFieldTrial::GetValueForRuleInContext(
+      kReorderForLegalDefaultMatchRule, current_page_classification) ==
+      kReorderForLegalDefaultMatchRuleEnabled;
+}
+
+const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
+    "OmniboxBundledExperimentV1";
+const char OmniboxFieldTrial::kShortcutsScoringMaxRelevanceRule[] =
+    "ShortcutsScoringMaxRelevance";
+const char OmniboxFieldTrial::kSearchHistoryRule[] = "SearchHistory";
+const char OmniboxFieldTrial::kDemoteByTypeRule[] = "DemoteByType";
+const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRule[] =
+    "ReorderForLegalDefaultMatch";
+const char OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled[] =
+    "ReorderForLegalDefaultMatch";
 
 // Background and implementation details:
 //

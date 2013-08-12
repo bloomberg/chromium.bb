@@ -260,6 +260,17 @@ struct AutocompleteMatch {
   // omnibox, if this match becomes the default match.  It may be empty.
   string16 inline_autocompletion;
 
+  // If false, the omnibox should prevent this match from being the
+  // default match.  Providers should set this to true only if the
+  // user's input, plus any inline autocompletion on this match, would
+  // lead the user to expect a navigation to this match's destination.
+  // For example, with input "foo", a search for "bar" or navigation
+  // to "bar.com" should not set this flag; a navigation to "foo.com"
+  // should only set this flag if ".com" will be inline autocompleted;
+  // and a navigation to "foo/" (an intranet host) or search for "foo"
+  // should set this flag.
+  bool allowed_to_be_default_match;
+
   // The URL to actually load when the autocomplete item is selected. This URL
   // should be canonical so we can compare URLs with strcmp to avoid dupes.
   // It may be empty if there is no possible navigation.

@@ -376,7 +376,8 @@ class SearchProvider : public AutocompleteProvider,
   bool IsTopMatchNavigationInKeywordMode() const;
   bool IsTopMatchScoreTooLow() const;
   bool IsTopMatchSearchWithURLInput() const;
-  bool IsTopMatchNotInlinable() const;
+  bool HasValidDefaultMatch(
+      bool autocomplete_result_will_reorder_for_default_match) const;
 
   // Updates |matches_| from the latest results; applies calculated relevances
   // if suggested relevances cause undesriable behavior. Updates |done_|.

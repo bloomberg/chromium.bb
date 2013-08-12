@@ -288,6 +288,7 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
     best_score = actual->relevance;
   }
 
+  EXPECT_EQ(can_inline_top_result, ac_matches_[0].allowed_to_be_default_match);
   if (can_inline_top_result) {
     // When the top scorer is inline-able make sure we get the expected
     // fill_into_edit and autocomplete offset.
@@ -302,6 +303,9 @@ void HistoryQuickProviderTest::RunTest(const string16 text,
     // When the top scorer is not inline-able autocomplete offset must be npos.
     EXPECT_TRUE(ac_matches_[0].inline_autocompletion.empty());
     // Also, the score must be too low to be inlineable.
+    // TODO(mpearson): when the controller reorders for inlining, there's no
+    // longer any connection between scores and what's inlineable / allowed
+    // to be the default match.  Remove this test.
     EXPECT_LT(ac_matches_[0].relevance,
               AutocompleteResult::kLowestDefaultScore);
   }

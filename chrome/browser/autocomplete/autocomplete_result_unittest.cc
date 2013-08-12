@@ -5,12 +5,14 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 
 #include "base/memory/scoped_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
+#include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
@@ -94,6 +96,7 @@ void AutocompleteResultTest::PopulateAutocompleteMatch(
   std::string url_id(1, data.url_id + 'a');
   match->destination_url = GURL("http://" + url_id);
   match->relevance = data.relevance;
+  match->allowed_to_be_default_match = true;
 }
 
 // static
@@ -162,6 +165,7 @@ TEST_F(AutocompleteResultTest, Swap) {
   ACMatches matches;
   AutocompleteMatch match;
   match.relevance = 1;
+  match.allowed_to_be_default_match = true;
   AutocompleteInput input(ASCIIToUTF16("a"), string16::npos, string16(), GURL(),
                           AutocompleteInput::INVALID_SPEC, false, false, false,
                           AutocompleteInput::ALL_MATCHES);
@@ -314,6 +318,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
     AutocompleteMatch match;
     match.destination_url = GURL("http://history-url/");
     match.relevance = 1400;
+    match.allowed_to_be_default_match = true;
     match.type = AutocompleteMatchType::HISTORY_URL;
     matches.push_back(match);
   }
@@ -321,6 +326,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
     AutocompleteMatch match;
     match.destination_url = GURL("http://search-what-you-typed/");
     match.relevance = 1300;
+    match.allowed_to_be_default_match = true;
     match.type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
     matches.push_back(match);
   }
@@ -328,6 +334,7 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
     AutocompleteMatch match;
     match.destination_url = GURL("http://history-title/");
     match.relevance = 1200;
+    match.allowed_to_be_default_match = true;
     match.type = AutocompleteMatchType::HISTORY_TITLE;
     matches.push_back(match);
   }
@@ -335,24 +342,21 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
     AutocompleteMatch match;
     match.destination_url = GURL("http://search-history/");
     match.relevance = 500;
+    match.allowed_to_be_default_match = true;
     match.type = AutocompleteMatchType::SEARCH_HISTORY;
     matches.push_back(match);
   }
 
   // Add a rule demoting history-url and killing history-title.
-  // Must be the same as kBundledExperimentFieldTrialName
-  // defined in omnibox_field_trial.cc.
-  const std::string kTrialName = "OmniboxBundledExperimentV1";
-  // Must be the same as kDemoteByTypeRule defined in
-  // omnibox_field_trial.cc.
-  const std::string kRuleName = "DemoteByType";
   {
     std::map<std::string, std::string> params;
-    params[kRuleName + ":3:*"] = "1:50,7:100,2:0";  // 3 == HOMEPAGE
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
+        "1:50,7:100,2:0";  // 3 == HOMEPAGE
     ASSERT_TRUE(chrome_variations::AssociateVariationParams(
-        kTrialName, "A", params));
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
   }
-  base::FieldTrialList::CreateFieldTrial(kTrialName, "A");
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
   AutocompleteResult result;
   result.AppendMatches(matches);
@@ -371,4 +375,56 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
             result.match_at(1)->destination_url.spec());
   EXPECT_EQ("http://search-history/",
             result.match_at(2)->destination_url.spec());
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
+  TestData data[] = {
+    { 0, 0, 1300 },
+    { 1, 0, 1200 },
+    { 2, 0, 1100 },
+    { 3, 0, 1000 }
+  };
+
+  std::map<std::string, std::string> params;
+  // Enable reorder for omnibox inputs on the user's homepage.
+  params[std::string(OmniboxFieldTrial::kReorderForLegalDefaultMatchRule) +
+         ":3:*"] = OmniboxFieldTrial::kReorderForLegalDefaultMatchRuleEnabled;
+  ASSERT_TRUE(chrome_variations::AssociateVariationParams(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  {
+    // Check that reorder doesn't do anything if the top result
+    // is already a legal default match (which is the default from
+    // PopulateAutocompleteMatches()).
+    ACMatches matches;
+    PopulateAutocompleteMatches(data, arraysize(data), &matches);
+    AutocompleteResult result;
+    result.AppendMatches(matches);
+    AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+                            AutocompleteInput::HOMEPAGE, false, false, false,
+                            AutocompleteInput::ALL_MATCHES);
+    result.SortAndCull(input, test_util_.profile());
+    AssertResultMatches(result, data, 4);
+  }
+
+  {
+    // Check that reorder swaps up a result appropriately.
+    ACMatches matches;
+    PopulateAutocompleteMatches(data, arraysize(data), &matches);
+    matches[0].allowed_to_be_default_match = false;
+    matches[1].allowed_to_be_default_match = false;
+    AutocompleteResult result;
+    result.AppendMatches(matches);
+    AutocompleteInput input(string16(), string16::npos, string16(), GURL(),
+                            AutocompleteInput::HOMEPAGE, false, false, false,
+                            AutocompleteInput::ALL_MATCHES);
+    result.SortAndCull(input, test_util_.profile());
+    ASSERT_EQ(4U, result.size());
+    EXPECT_EQ("http://c/", result.match_at(0)->destination_url.spec());
+    EXPECT_EQ("http://a/", result.match_at(1)->destination_url.spec());
+    EXPECT_EQ("http://b/", result.match_at(2)->destination_url.spec());
+    EXPECT_EQ("http://d/", result.match_at(3)->destination_url.spec());
+  }
 }

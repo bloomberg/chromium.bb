@@ -277,6 +277,7 @@ TEST_F(ContactProviderTest, Relevance) {
       EXPECT_LE(matches[i].relevance, previous_relevance)
           << "Match " << i << " has greater relevance than previous match";
     }
+    EXPECT_FALSE(matches[i].allowed_to_be_default_match);
     previous_relevance = matches[i].relevance;
   }
 }

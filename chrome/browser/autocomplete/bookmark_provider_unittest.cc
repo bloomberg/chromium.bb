@@ -338,6 +338,7 @@ TEST_F(BookmarkProviderTest, Rankings) {
       EXPECT_EQ(query_data[i].matches[j], UTF16ToUTF8(matches[j].description))
           << "    Mismatch at [" << base::IntToString(j) << "] for query '"
           << query_data[i].query << "'.";
+      EXPECT_FALSE(matches[j].allowed_to_be_default_match);
     }
   }
 }

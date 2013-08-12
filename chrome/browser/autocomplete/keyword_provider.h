@@ -84,9 +84,9 @@ class KeywordProvider : public AutocompleteProvider,
   string16 GetKeywordForText(const string16& text) const;
 
   // Creates a fully marked-up AutocompleteMatch for a specific keyword.
-  AutocompleteMatch CreateAutocompleteMatch(const string16& text,
-                                            const string16& keyword,
-                                            const AutocompleteInput& input);
+  AutocompleteMatch CreateVerbatimMatch(const string16& text,
+                                        const string16& keyword,
+                                        const AutocompleteInput& input);
 
   // AutocompleteProvider:
   virtual void Start(const AutocompleteInput& input,
@@ -127,6 +127,7 @@ class KeywordProvider : public AutocompleteProvider,
                                             const AutocompleteInput& input,
                                             size_t prefix_length,
                                             const string16& remaining_input,
+                                            bool allowed_to_be_default_match,
                                             int relevance);
 
   // Fills in the "destination_url" and "contents" fields of |match| with the

@@ -208,7 +208,7 @@ void HistoryQuickProvider::DoAutocomplete() {
   // general or the current best suggestion isn't inlineable,
   // artificially reduce the starting |max_match_score| (which
   // therefore applies to all results) to something low enough that
-  // guarantees no result will be offered as an autocomplete
+  // guarantees no result will be offered as an inline autocomplete
   // suggestion.  Also do a similar reduction if we think there will be
   // a URL-what-you-typed match.  (We want URL-what-you-typed matches for
   // visited URLs to beat out any longer URLs, no matter how frequently
@@ -220,10 +220,13 @@ void HistoryQuickProvider::DoAutocomplete() {
       TemplateURLServiceFactory::GetForProfile(profile_);
   TemplateURL* template_url = template_url_service ?
       template_url_service->GetDefaultSearchProvider() : NULL;
-  int max_match_score = (PreventInlineAutocomplete(autocomplete_input_) ||
-      !matches.begin()->can_inline) ?
-      (AutocompleteResult::kLowestDefaultScore - 1) :
-      matches.begin()->raw_score;
+  int max_match_score =
+      (OmniboxFieldTrial::ReorderForLegalDefaultMatch(
+         autocomplete_input_.current_page_classification()) ||
+       (!PreventInlineAutocomplete(autocomplete_input_) &&
+        matches.begin()->can_inline)) ?
+      matches.begin()->raw_score :
+      (AutocompleteResult::kLowestDefaultScore - 1);
   if (will_have_url_what_you_typed_match_first) {
     max_match_score = std::min(max_match_score,
         url_what_you_typed_match_score - 1);
@@ -272,7 +275,9 @@ AutocompleteMatch HistoryQuickProvider::QuickMatchToACMatch(
   match.contents_class =
       SpansFromTermMatch(new_matches, match.contents.length(), true);
 
-  if (history_match.can_inline) {
+  match.allowed_to_be_default_match = history_match.can_inline &&
+      !PreventInlineAutocomplete(autocomplete_input_);
+  if (match.allowed_to_be_default_match) {
     DCHECK(!new_matches.empty());
     size_t inline_autocomplete_offset = new_matches[0].offset +
         new_matches[0].length;

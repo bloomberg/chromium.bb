@@ -474,8 +474,8 @@ void AutocompleteController::UpdateAssociatedKeywords(
 
       if (!match->associated_keyword.get())
         match->associated_keyword.reset(new AutocompleteMatch(
-            keyword_provider_->CreateAutocompleteMatch(match->fill_into_edit,
-                                                       keyword, input_)));
+            keyword_provider_->CreateVerbatimMatch(match->fill_into_edit,
+                                                   keyword, input_)));
     } else {
       match->associated_keyword.reset();
     }

@@ -349,6 +349,7 @@ AutocompleteMatch HistoryURLProvider::SuggestExactInput(
     match.fill_into_edit =
         AutocompleteInput::FormattedStringWithEquivalentMeaning(url,
                                                                 display_string);
+    match.allowed_to_be_default_match = true;
     // NOTE: Don't set match.inline_autocompletion to something non-empty here;
     // it's surprising and annoying.
 
@@ -1065,6 +1066,11 @@ AutocompleteMatch HistoryURLProvider::HistoryMatchToACMatch(
     match.inline_autocompletion =
         match.fill_into_edit.substr(inline_autocomplete_offset);
   }
+  // The latter part of the test effectively asks "is the inline completion
+  // empty?" (i.e., is this match effectively the what-you-typed match?).
+  match.allowed_to_be_default_match = !params->prevent_inline_autocomplete ||
+      ((inline_autocomplete_offset != string16::npos) &&
+       (inline_autocomplete_offset >= match.fill_into_edit.length()));
 
   size_t match_start = history_match.input_location;
   match.contents = net::FormatUrl(info.url(), languages,
