@@ -1276,7 +1276,8 @@ void WebViewImpl::animateDoubleTapZoom(const IntPoint& point)
     bool isAnimating;
 
     if (doubleTapShouldZoomOut) {
-        isAnimating = startPageScaleAnimation(mainFrameImpl()->frameView()->windowToContents(point), true, minimumPageScaleFactor(), doubleTapZoomAnimationDurationInSeconds);
+        scale = minimumPageScaleFactor();
+        isAnimating = startPageScaleAnimation(mainFrameImpl()->frameView()->windowToContents(point), true, scale, doubleTapZoomAnimationDurationInSeconds);
     } else {
         isAnimating = startPageScaleAnimation(scroll, false, scale, doubleTapZoomAnimationDurationInSeconds);
     }
