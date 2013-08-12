@@ -127,10 +127,10 @@ void GraphicsContextAnnotation::asAnnotationList(AnnotationList &list) const
     list.clear();
 
     if (m_rendererName)
-        list.append(std::make_pair(AnnotationKeyRendererName, ASCIILiteral(m_rendererName)));
+        list.append(std::make_pair(AnnotationKeyRendererName, m_rendererName));
 
     if (m_paintPhase)
-        list.append(std::make_pair(AnnotationKeyPaintPhase, ASCIILiteral(m_paintPhase)));
+        list.append(std::make_pair(AnnotationKeyPaintPhase, m_paintPhase));
 
     if (!m_elementId.isEmpty())
         list.append(std::make_pair(AnnotationKeyElementId, m_elementId));

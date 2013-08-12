@@ -1686,7 +1686,7 @@ bool EventHandler::handlePasteGlobalSelection(const PlatformMouseEvent& mouseEve
     Frame* focusFrame = m_frame->page()->focusController()->focusedOrMainFrame();
     // Do not paste here if the focus was moved somewhere else.
     if (m_frame == focusFrame && m_frame->editor()->client()->supportsGlobalSelection())
-        return m_frame->editor()->command(ASCIILiteral("PasteGlobalSelection")).execute();
+        return m_frame->editor()->command("PasteGlobalSelection").execute();
 
     return false;
 }

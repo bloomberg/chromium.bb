@@ -51,11 +51,11 @@ String SourceInfo::kind() const
 {
     switch (m_webSourceInfo.kind()) {
     case WebKit::WebSourceInfo::SourceKindAudio:
-        return ASCIILiteral("audio");
+        return "audio";
     case WebKit::WebSourceInfo::SourceKindVideo:
-        return ASCIILiteral("video");
+        return "video";
     case WebKit::WebSourceInfo::SourceKindNone:
-        return ASCIILiteral("none");
+        return "none";
     }
 
     ASSERT_NOT_REACHED();
@@ -73,9 +73,9 @@ String SourceInfo::facing() const
     case WebKit::WebSourceInfo::VideoFacingModeNone:
         return String();
     case WebKit::WebSourceInfo::VideoFacingModeUser:
-        return ASCIILiteral("user");
+        return "user";
     case WebKit::WebSourceInfo::VideoFacingModeEnvironment:
-        return ASCIILiteral("environment");
+        return "environment";
     }
 
     ASSERT_NOT_REACHED();

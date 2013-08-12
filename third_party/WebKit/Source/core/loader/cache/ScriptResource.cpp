@@ -36,7 +36,7 @@ namespace WebCore {
 
 ScriptResource::ScriptResource(const ResourceRequest& resourceRequest, const String& charset)
     : Resource(resourceRequest, Script)
-    , m_decoder(TextResourceDecoder::create(ASCIILiteral("application/javascript"), charset))
+    , m_decoder(TextResourceDecoder::create("application/javascript", charset))
 {
     DEFINE_STATIC_LOCAL(const AtomicString, acceptScript, ("*/*", AtomicString::ConstructFromLiteral));
 

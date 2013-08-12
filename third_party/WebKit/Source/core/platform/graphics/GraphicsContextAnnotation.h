@@ -62,8 +62,8 @@ class GraphicsContextAnnotation {
 public:
     GraphicsContextAnnotation(const PaintInfo&, const RenderObject*);
 
-    String rendererName() const { return ASCIILiteral(m_rendererName); }
-    String paintPhase() const { return ASCIILiteral(m_paintPhase); }
+    String rendererName() const { return m_rendererName; }
+    String paintPhase() const { return m_paintPhase; }
     String elementId() const { return m_elementId; }
     String elementClass() const { return m_elementClass; }
     String elementTag() const { return m_elementTag; }

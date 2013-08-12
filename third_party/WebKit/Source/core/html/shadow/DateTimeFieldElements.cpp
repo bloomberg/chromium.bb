@@ -79,7 +79,7 @@ DateTimeDayFieldElement::DateTimeDayFieldElement(Document* document, FieldOwner&
 PassRefPtr<DateTimeDayFieldElement> DateTimeDayFieldElement::create(Document* document, FieldOwner& fieldOwner, const String& placeholder, const Range& range)
 {
     DEFINE_STATIC_LOCAL(AtomicString, dayPsuedoId, ("-webkit-datetime-edit-day-field", AtomicString::ConstructFromLiteral));
-    RefPtr<DateTimeDayFieldElement> field = adoptRef(new DateTimeDayFieldElement(document, fieldOwner, placeholder.isEmpty() ? ASCIILiteral("--") : placeholder, range));
+    RefPtr<DateTimeDayFieldElement> field = adoptRef(new DateTimeDayFieldElement(document, fieldOwner, placeholder.isEmpty() ? "--" : placeholder, range));
     field->initialize(dayPsuedoId, AXDayOfMonthFieldText());
     return field.release();
 }
@@ -405,7 +405,7 @@ DateTimeMonthFieldElement::DateTimeMonthFieldElement(Document* document, FieldOw
 PassRefPtr<DateTimeMonthFieldElement> DateTimeMonthFieldElement::create(Document* document, FieldOwner& fieldOwner, const String& placeholder, const Range& range)
 {
     DEFINE_STATIC_LOCAL(AtomicString, monthPsuedoId, ("-webkit-datetime-edit-month-field", AtomicString::ConstructFromLiteral));
-    RefPtr<DateTimeMonthFieldElement> field = adoptRef(new DateTimeMonthFieldElement(document, fieldOwner, placeholder.isEmpty() ? ASCIILiteral("--") : placeholder, range));
+    RefPtr<DateTimeMonthFieldElement> field = adoptRef(new DateTimeMonthFieldElement(document, fieldOwner, placeholder.isEmpty() ? "--" : placeholder, range));
     field->initialize(monthPsuedoId, AXMonthFieldText());
     return field.release();
 }
@@ -565,7 +565,7 @@ void DateTimeWeekFieldElement::setValueAsDateTimeFieldsState(const DateTimeField
 // ----------------------------
 
 DateTimeYearFieldElement::DateTimeYearFieldElement(Document* document, FieldOwner& fieldOwner, const DateTimeYearFieldElement::Parameters& parameters)
-    : DateTimeNumericFieldElement(document, fieldOwner, Range(parameters.minimumYear, parameters.maximumYear), Range(DateComponents::minimumYear(), DateComponents::maximumYear()), parameters.placeholder.isEmpty() ? ASCIILiteral("----") : parameters.placeholder)
+    : DateTimeNumericFieldElement(document, fieldOwner, Range(parameters.minimumYear, parameters.maximumYear), Range(DateComponents::minimumYear(), DateComponents::maximumYear()), parameters.placeholder.isEmpty() ? "----" : parameters.placeholder)
     , m_minIsSpecified(parameters.minIsSpecified)
     , m_maxIsSpecified(parameters.maxIsSpecified)
 {

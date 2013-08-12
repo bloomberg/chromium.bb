@@ -64,7 +64,7 @@ private:
 };
 
 CompressionMessageExtensionProcessor::CompressionMessageExtensionProcessor(WebSocketPerMessageDeflate& compress)
-    : WebSocketExtensionProcessor(ASCIILiteral("permessage-deflate"))
+    : WebSocketExtensionProcessor("permessage-deflate")
     , m_compress(compress)
     , m_responseProcessed(false)
 {
@@ -72,7 +72,7 @@ CompressionMessageExtensionProcessor::CompressionMessageExtensionProcessor(WebSo
 
 String CompressionMessageExtensionProcessor::handshakeString()
 {
-    return ASCIILiteral("permessage-deflate; c2s_max_window_bits");
+    return "permessage-deflate; c2s_max_window_bits";
 }
 
 bool CompressionMessageExtensionProcessor::processResponse(const HashMap<String, String>& parameters)

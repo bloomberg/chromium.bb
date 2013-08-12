@@ -268,34 +268,6 @@ private:
 };
 
 template<>
-class StringTypeAdapter<ASCIILiteral> {
-public:
-    StringTypeAdapter<ASCIILiteral>(ASCIILiteral buffer)
-        : m_buffer(reinterpret_cast<const LChar*>(static_cast<const char*>(buffer)))
-        , m_length(strlen(buffer))
-    {
-    }
-
-    size_t length() { return m_length; }
-
-    bool is8Bit() { return true; }
-
-    void writeTo(LChar* destination)
-    {
-        memcpy(destination, m_buffer, static_cast<size_t>(m_length));
-    }
-
-    void writeTo(UChar* destination)
-    {
-        StringImpl::copyChars(destination, m_buffer, m_length);
-    }
-
-private:
-    const LChar* m_buffer;
-    unsigned m_length;
-};
-
-template<>
 class StringTypeAdapter<Vector<char> > {
 public:
     StringTypeAdapter<Vector<char> >(const Vector<char>& buffer)

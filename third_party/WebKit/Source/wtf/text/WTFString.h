@@ -82,16 +82,6 @@ enum TrailingZerosTruncatingPolicy {
 template<bool isSpecialCharacter(UChar), typename CharacterType>
 bool isAllSpecialCharacters(const CharacterType*, size_t);
 
-// FIXME: Remove this class once all callers are gone.
-class ASCIILiteral {
-public:
-    explicit ASCIILiteral(const char* characters) : m_characters(characters) { }
-    operator const char*() { return m_characters; }
-
-private:
-    const char* m_characters;
-};
-
 // You can find documentation about this class in this doc:
 // https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT String {
@@ -131,7 +121,6 @@ public:
     // FIXME: Remove this API once all callers are gone.
     enum ConstructFromLiteralTag { ConstructFromLiteral };
     String(const char* characters, ConstructFromLiteralTag) : m_impl(StringImpl::create(reinterpret_cast<const LChar*>(characters))) { }
-    String(ASCIILiteral literal) : m_impl(StringImpl::create(reinterpret_cast<const LChar*>(static_cast<const char*>(literal)))) { }
 
 #if COMPILER_SUPPORTS(CXX_RVALUE_REFERENCES)
     // We have to declare the copy constructor and copy assignment operator as well, otherwise
@@ -726,7 +715,6 @@ using WTF::find;
 using WTF::isAllSpecialCharacters;
 using WTF::isSpaceOrNewline;
 using WTF::reverseFind;
-using WTF::ASCIILiteral;
 
 #include "wtf/text/AtomicString.h"
 #endif

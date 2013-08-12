@@ -30,67 +30,67 @@ namespace WebCore {
 
 const String& DiagnosticLoggingKeys::mediaLoadedKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("mediaLoaded")));
+    DEFINE_STATIC_LOCAL(const String, key, ("mediaLoaded"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::mediaLoadingFailedKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("mediaFailedLoading")));
+    DEFINE_STATIC_LOCAL(const String, key, ("mediaFailedLoading"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::pluginLoadedKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("pluginLoaded")));
+    DEFINE_STATIC_LOCAL(const String, key, ("pluginLoaded"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::pluginLoadingFailedKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("pluginFailedLoading")));
+    DEFINE_STATIC_LOCAL(const String, key, ("pluginFailedLoading"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::pageContainsPluginKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("pageContainsPlugin")));
+    DEFINE_STATIC_LOCAL(const String, key, ("pageContainsPlugin"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::pageContainsAtLeastOnePluginKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("pageContainsAtLeastOnePlugin")));
+    DEFINE_STATIC_LOCAL(const String, key, ("pageContainsAtLeastOnePlugin"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::pageContainsMediaEngineKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("pageContainsMediaEngine")));
+    DEFINE_STATIC_LOCAL(const String, key, ("pageContainsMediaEngine"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::pageContainsAtLeastOneMediaEngineKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("pageContainsAtLeastOneMediaEngine")));
+    DEFINE_STATIC_LOCAL(const String, key, ("pageContainsAtLeastOneMediaEngine"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::passKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("pass")));
+    DEFINE_STATIC_LOCAL(const String, key, ("pass"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::failKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("fail")));
+    DEFINE_STATIC_LOCAL(const String, key, ("fail"));
     return key;
 }
 
 const String& DiagnosticLoggingKeys::noopKey()
 {
-    DEFINE_STATIC_LOCAL(const String, key, (ASCIILiteral("noop")));
+    DEFINE_STATIC_LOCAL(const String, key, ("noop"));
     return key;
 }
 

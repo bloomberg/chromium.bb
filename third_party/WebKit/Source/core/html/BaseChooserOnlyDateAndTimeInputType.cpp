@@ -75,7 +75,7 @@ void BaseChooserOnlyDateAndTimeInputType::updateAppearance()
     String displayValue = visibleValue();
     if (displayValue.isEmpty()) {
         // Need to put something to keep text baseline.
-        displayValue = ASCIILiteral(" ");
+        displayValue = " ";
     }
     toHTMLElement(node)->setInnerText(displayValue, ASSERT_NO_EXCEPTION);
 }

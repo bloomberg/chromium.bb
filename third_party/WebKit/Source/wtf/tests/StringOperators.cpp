@@ -46,7 +46,7 @@ TEST(WTF, DISABLED_StringOperators)
 {
     String string("String");
     AtomicString atomicString("AtomicString");
-    ASCIILiteral literal("ASCIILiteral");
+    const char* literal = "ASCIILiteral";
 
     EXPECT_EQ(0, wtfStringCopyCount);
 

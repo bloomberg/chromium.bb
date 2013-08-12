@@ -100,8 +100,8 @@ PassRefPtr<DOMException> DOMException::create(ExceptionCode ec, const String& me
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
     return adoptRef(new DOMException(entry->code,
-        ASCIILiteral(entry->name ? entry->name : "Error"),
-        message.isNull() ? String(ASCIILiteral(entry->message)) : message));
+        entry->name ? entry->name : "Error",
+        message.isNull() ? String(entry->message) : message));
 }
 
 String DOMException::toString() const
@@ -114,9 +114,9 @@ String DOMException::getErrorName(ExceptionCode ec)
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
     if (!entry)
-        return ASCIILiteral("UnknownError");
+        return "UnknownError";
 
-    return ASCIILiteral(entry->name);
+    return entry->name;
 }
 
 String DOMException::getErrorMessage(ExceptionCode ec)
@@ -124,9 +124,9 @@ String DOMException::getErrorMessage(ExceptionCode ec)
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
     if (!entry)
-        return ASCIILiteral("Unknown error.");
+        return "Unknown error.";
 
-    return ASCIILiteral(entry->message);
+    return entry->message;
 }
 
 unsigned short DOMException::getLegacyErrorCode(ExceptionCode ec)

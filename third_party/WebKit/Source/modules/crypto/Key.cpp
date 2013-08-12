@@ -101,7 +101,7 @@ Key::Key(const WebKit::WebCryptoKey& key)
 
 String Key::type() const
 {
-    return ASCIILiteral(keyTypeToString(m_key.type()));
+    return keyTypeToString(m_key.type());
 }
 
 bool Key::extractable() const
@@ -126,7 +126,7 @@ Vector<String> Key::usages() const
     for (int i = 0; i < WTF_ARRAY_LENGTH(keyUsageMappings); ++i) {
         WebKit::WebCryptoKeyUsage usage = keyUsageMappings[i].value;
         if (m_key.usages() & usage)
-            result.append(ASCIILiteral(keyUsageToString(usage)));
+            result.append(keyUsageToString(usage));
     }
     return result;
 }

@@ -64,7 +64,7 @@ bool UserContentURLPattern::matchesPatterns(const KURL& url, const Vector<String
 
 bool UserContentURLPattern::parse(const String& pattern)
 {
-    DEFINE_STATIC_LOCAL(const String, schemeSeparator, (ASCIILiteral("://")));
+    DEFINE_STATIC_LOCAL(const String, schemeSeparator, ("://"));
 
     size_t schemeEndPos = pattern.find(schemeSeparator);
     if (schemeEndPos == notFound)

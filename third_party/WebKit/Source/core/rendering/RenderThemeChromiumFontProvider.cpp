@@ -48,7 +48,7 @@ float RenderThemeChromiumFontProvider::s_defaultFontSize = 16.0;
 // sizes (e.g. 15px). So, for now we just use Arial.
 const String& RenderThemeChromiumFontProvider::defaultGUIFont()
 {
-    DEFINE_STATIC_LOCAL(String, fontFace, (ASCIILiteral("Arial")));
+    DEFINE_STATIC_LOCAL(String, fontFace, ("Arial"));
     return fontFace;
 }
 

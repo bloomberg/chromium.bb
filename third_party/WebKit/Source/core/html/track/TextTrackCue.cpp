@@ -57,19 +57,19 @@ static const int autoSize = 0;
 
 static const String& startKeyword()
 {
-    DEFINE_STATIC_LOCAL(const String, start, (ASCIILiteral("start")));
+    DEFINE_STATIC_LOCAL(const String, start, ("start"));
     return start;
 }
 
 static const String& middleKeyword()
 {
-    DEFINE_STATIC_LOCAL(const String, middle, (ASCIILiteral("middle")));
+    DEFINE_STATIC_LOCAL(const String, middle, ("middle"));
     return middle;
 }
 
 static const String& endKeyword()
 {
-    DEFINE_STATIC_LOCAL(const String, end, (ASCIILiteral("end")));
+    DEFINE_STATIC_LOCAL(const String, end, ("end"));
     return end;
 }
 
@@ -80,13 +80,13 @@ static const String& horizontalKeyword()
 
 static const String& verticalGrowingLeftKeyword()
 {
-    DEFINE_STATIC_LOCAL(const String, verticalrl, (ASCIILiteral("rl")));
+    DEFINE_STATIC_LOCAL(const String, verticalrl, ("rl"));
     return verticalrl;
 }
 
 static const String& verticalGrowingRightKeyword()
 {
-    DEFINE_STATIC_LOCAL(const String, verticallr, (ASCIILiteral("lr")));
+    DEFINE_STATIC_LOCAL(const String, verticallr, ("lr"));
     return verticallr;
 }
 
@@ -608,7 +608,7 @@ static bool isCueParagraphSeparator(UChar character)
 
 void TextTrackCue::determineTextDirection()
 {
-    DEFINE_STATIC_LOCAL(const String, rtTag, (ASCIILiteral("rt")));
+    DEFINE_STATIC_LOCAL(const String, rtTag, ("rt"));
     createWebVTTNodeTree();
 
     // Apply the Unicode Bidirectional Algorithm's Paragraph Level steps to the
@@ -739,7 +739,7 @@ void TextTrackCue::calculateDisplayParameters()
 
 void TextTrackCue::markFutureAndPastNodes(ContainerNode* root, double previousTimestamp, double movieTime)
 {
-    DEFINE_STATIC_LOCAL(const String, timestampTag, (ASCIILiteral("timestamp")));
+    DEFINE_STATIC_LOCAL(const String, timestampTag, ("timestamp"));
 
     bool isPastNode = true;
     double currentTimestamp = previousTimestamp;
@@ -879,13 +879,13 @@ std::pair<double, double> TextTrackCue::getPositionCoordinates() const
 
 TextTrackCue::CueSetting TextTrackCue::settingName(const String& name)
 {
-    DEFINE_STATIC_LOCAL(const String, verticalKeyword, (ASCIILiteral("vertical")));
-    DEFINE_STATIC_LOCAL(const String, lineKeyword, (ASCIILiteral("line")));
-    DEFINE_STATIC_LOCAL(const String, positionKeyword, (ASCIILiteral("position")));
-    DEFINE_STATIC_LOCAL(const String, sizeKeyword, (ASCIILiteral("size")));
-    DEFINE_STATIC_LOCAL(const String, alignKeyword, (ASCIILiteral("align")));
+    DEFINE_STATIC_LOCAL(const String, verticalKeyword, ("vertical"));
+    DEFINE_STATIC_LOCAL(const String, lineKeyword, ("line"));
+    DEFINE_STATIC_LOCAL(const String, positionKeyword, ("position"));
+    DEFINE_STATIC_LOCAL(const String, sizeKeyword, ("size"));
+    DEFINE_STATIC_LOCAL(const String, alignKeyword, ("align"));
 #if ENABLE(WEBVTT_REGIONS)
-    DEFINE_STATIC_LOCAL(const String, regionIdKeyword, (ASCIILiteral("region")));
+    DEFINE_STATIC_LOCAL(const String, regionIdKeyword, ("region"));
 #endif
 
     if (name == verticalKeyword)

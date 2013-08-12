@@ -91,7 +91,7 @@ CSSPropertySourceData::CSSPropertySourceData()
 
 String CSSPropertySourceData::toString() const
 {
-    DEFINE_STATIC_LOCAL(String, emptyValue, (ASCIILiteral("e")));
+    DEFINE_STATIC_LOCAL(String, emptyValue, ("e"));
     if (!name && value == emptyValue)
         return String();
 

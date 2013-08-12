@@ -136,7 +136,7 @@ bool CSSAnimationData::animationsMatch(const CSSAnimationData* o, bool matchPlay
 
 const String& CSSAnimationData::initialAnimationName()
 {
-    DEFINE_STATIC_LOCAL(String, initialValue, (ASCIILiteral("none")));
+    DEFINE_STATIC_LOCAL(String, initialValue, ("none"));
     return initialValue;
 }
 

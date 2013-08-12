@@ -900,8 +900,8 @@ Frame* InspectorPageAgent::assertFrame(ErrorString* errorString, const String& f
 
 String InspectorPageAgent::resourceSourceMapURL(const String& url)
 {
-    DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, (ASCIILiteral("SourceMap")));
-    DEFINE_STATIC_LOCAL(String, deprecatedSourceMapHttpHeader, (ASCIILiteral("X-SourceMap")));
+    DEFINE_STATIC_LOCAL(String, sourceMapHttpHeader, ("SourceMap"));
+    DEFINE_STATIC_LOCAL(String, deprecatedSourceMapHttpHeader, ("X-SourceMap"));
     if (url.isEmpty())
         return String();
     Frame* frame = mainFrame();

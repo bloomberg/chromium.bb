@@ -311,14 +311,14 @@ String LocaleICU::dateFormat()
     if (!m_dateFormat.isNull())
         return m_dateFormat;
     if (!initializeShortDateFormat())
-        return ASCIILiteral("yyyy-MM-dd");
+        return "yyyy-MM-dd";
     m_dateFormat = getDateFormatPattern(m_shortDateFormat);
     return m_dateFormat;
 }
 
 static String getFormatForSkeleton(const char* locale, const String& skeleton)
 {
-    String format = ASCIILiteral("yyyy-MM");
+    String format = "yyyy-MM";
     UErrorCode status = U_ZERO_ERROR;
     UDateTimePatternGenerator* patternGenerator = udatpg_open(locale, &status);
     if (!patternGenerator)
@@ -344,7 +344,7 @@ String LocaleICU::monthFormat()
         return m_monthFormat;
     // Gets a format for "MMMM" because Windows API always provides formats for
     // "MMMM" in some locales.
-    m_monthFormat = getFormatForSkeleton(m_locale.data(), ASCIILiteral("yyyyMMMM"));
+    m_monthFormat = getFormatForSkeleton(m_locale.data(), "yyyyMMMM");
     return m_monthFormat;
 }
 
@@ -352,7 +352,7 @@ String LocaleICU::shortMonthFormat()
 {
     if (!m_shortMonthFormat.isNull())
         return m_shortMonthFormat;
-    m_shortMonthFormat = getFormatForSkeleton(m_locale.data(), ASCIILiteral("yyyyMMM"));
+    m_shortMonthFormat = getFormatForSkeleton(m_locale.data(), "yyyyMMM");
     return m_shortMonthFormat;
 }
 

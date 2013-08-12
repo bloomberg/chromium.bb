@@ -42,8 +42,8 @@ const QualifiedName& pseudoElementTagName()
 
 String PseudoElement::pseudoElementNameForEvents(PseudoId pseudoId)
 {
-    DEFINE_STATIC_LOCAL(const String, after, (ASCIILiteral("::after")));
-    DEFINE_STATIC_LOCAL(const String, before, (ASCIILiteral("::before")));
+    DEFINE_STATIC_LOCAL(const String, after, ("::after"));
+    DEFINE_STATIC_LOCAL(const String, before, ("::before"));
     switch (pseudoId) {
     case AFTER:
         return after;

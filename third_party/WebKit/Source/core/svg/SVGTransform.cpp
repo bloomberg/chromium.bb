@@ -133,27 +133,27 @@ const String& SVGTransform::transformTypePrefixForParsing(SVGTransformType type)
     case SVG_TRANSFORM_UNKNOWN:
         return emptyString();
     case SVG_TRANSFORM_MATRIX: {
-        DEFINE_STATIC_LOCAL(String, matrixString, (ASCIILiteral("matrix(")));
+        DEFINE_STATIC_LOCAL(String, matrixString, ("matrix("));
         return matrixString;
     }
     case SVG_TRANSFORM_TRANSLATE: {
-        DEFINE_STATIC_LOCAL(String, translateString, (ASCIILiteral("translate(")));
+        DEFINE_STATIC_LOCAL(String, translateString, ("translate("));
         return translateString;
     }
     case SVG_TRANSFORM_SCALE: {
-        DEFINE_STATIC_LOCAL(String, scaleString, (ASCIILiteral("scale(")));
+        DEFINE_STATIC_LOCAL(String, scaleString, ("scale("));
         return scaleString;
     }
     case SVG_TRANSFORM_ROTATE: {
-        DEFINE_STATIC_LOCAL(String, rotateString, (ASCIILiteral("rotate(")));
+        DEFINE_STATIC_LOCAL(String, rotateString, ("rotate("));
         return rotateString;
     }
     case SVG_TRANSFORM_SKEWX: {
-        DEFINE_STATIC_LOCAL(String, skewXString, (ASCIILiteral("skewX(")));
+        DEFINE_STATIC_LOCAL(String, skewXString, ("skewX("));
         return skewXString;
     }
     case SVG_TRANSFORM_SKEWY: {
-        DEFINE_STATIC_LOCAL(String, skewYString, (ASCIILiteral("skewY(")));
+        DEFINE_STATIC_LOCAL(String, skewYString, ("skewY("));
         return skewYString;
     }
     }

@@ -45,8 +45,8 @@ namespace WebCore {
 
 static const String& eventParameterName(bool isSVGEvent)
 {
-    DEFINE_STATIC_LOCAL(const String, eventString, (ASCIILiteral("event")));
-    DEFINE_STATIC_LOCAL(const String, evtString, (ASCIILiteral("evt")));
+    DEFINE_STATIC_LOCAL(const String, eventString, ("event"));
+    DEFINE_STATIC_LOCAL(const String, evtString, ("evt"));
     return isSVGEvent ? evtString : eventString;
 }
 

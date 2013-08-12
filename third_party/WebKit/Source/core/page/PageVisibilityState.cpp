@@ -35,10 +35,10 @@ namespace WebCore {
 
 String pageVisibilityStateString(PageVisibilityState state)
 {
-    DEFINE_STATIC_LOCAL(const String, visible, (ASCIILiteral("visible")));
-    DEFINE_STATIC_LOCAL(const String, hidden, (ASCIILiteral("hidden")));
-    DEFINE_STATIC_LOCAL(const String, prerender, (ASCIILiteral("prerender")));
-    DEFINE_STATIC_LOCAL(const String, preview, (ASCIILiteral("preview")));
+    DEFINE_STATIC_LOCAL(const String, visible, ("visible"));
+    DEFINE_STATIC_LOCAL(const String, hidden, ("hidden"));
+    DEFINE_STATIC_LOCAL(const String, prerender, ("prerender"));
+    DEFINE_STATIC_LOCAL(const String, preview, ("preview"));
 
     switch (state) {
     case PageVisibilityStateVisible:

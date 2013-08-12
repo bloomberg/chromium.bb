@@ -61,8 +61,8 @@ MediaStreamTrack::~MediaStreamTrack()
 
 String MediaStreamTrack::kind() const
 {
-    DEFINE_STATIC_LOCAL(String, audioKind, (ASCIILiteral("audio")));
-    DEFINE_STATIC_LOCAL(String, videoKind, (ASCIILiteral("video")));
+    DEFINE_STATIC_LOCAL(String, audioKind, ("audio"));
+    DEFINE_STATIC_LOCAL(String, videoKind, ("video"));
 
     switch (m_component->source()->type()) {
     case MediaStreamSource::TypeAudio:
@@ -106,15 +106,15 @@ void MediaStreamTrack::setEnabled(bool enabled)
 String MediaStreamTrack::readyState() const
 {
     if (m_stopped)
-        return ASCIILiteral("ended");
+        return "ended";
 
     switch (m_component->source()->readyState()) {
     case MediaStreamSource::ReadyStateLive:
-        return ASCIILiteral("live");
+        return "live";
     case MediaStreamSource::ReadyStateMuted:
-        return ASCIILiteral("muted");
+        return "muted";
     case MediaStreamSource::ReadyStateEnded:
-        return ASCIILiteral("ended");
+        return "ended";
     }
 
     ASSERT_NOT_REACHED();

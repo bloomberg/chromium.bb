@@ -66,7 +66,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     String type;
-    String endings = ASCIILiteral("transparent");
+    String endings = "transparent";
 
     if (args.Length() > 1) {
         if (!args[1]->IsObject()) {

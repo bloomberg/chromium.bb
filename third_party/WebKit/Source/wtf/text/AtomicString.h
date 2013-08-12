@@ -160,9 +160,6 @@ public:
 #endif
 
 private:
-    // The explicit constructors with AtomicString::ConstructFromLiteral must be used for literals.
-    AtomicString(ASCIILiteral);
-
     String m_string;
 
     static PassRefPtr<StringImpl> add(const LChar*);

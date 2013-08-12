@@ -328,10 +328,10 @@ static PassRefPtr<IDBKey> idbKeyFromInspectorObject(JSONObject* key)
     if (!key->getString("type", &type))
         return 0;
 
-    DEFINE_STATIC_LOCAL(String, number, (ASCIILiteral("number")));
-    DEFINE_STATIC_LOCAL(String, string, (ASCIILiteral("string")));
-    DEFINE_STATIC_LOCAL(String, date, (ASCIILiteral("date")));
-    DEFINE_STATIC_LOCAL(String, array, (ASCIILiteral("array")));
+    DEFINE_STATIC_LOCAL(String, number, ("number"));
+    DEFINE_STATIC_LOCAL(String, string, ("string"));
+    DEFINE_STATIC_LOCAL(String, date, ("date"));
+    DEFINE_STATIC_LOCAL(String, array, ("array"));
 
     if (type == number) {
         double number;

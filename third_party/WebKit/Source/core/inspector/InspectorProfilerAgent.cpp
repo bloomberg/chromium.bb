@@ -139,7 +139,7 @@ String InspectorProfilerAgent::getCurrentUserInitiatedProfileName(bool increment
     if (incrementProfileNumber)
         m_currentUserInitiatedProfileNumber = m_nextUserInitiatedProfileNumber++;
 
-    return String(ASCIILiteral(userInitiatedProfileName)) + "." + String::number(m_currentUserInitiatedProfileNumber);
+    return String(userInitiatedProfileName) + "." + String::number(m_currentUserInitiatedProfileNumber);
 }
 
 void InspectorProfilerAgent::getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::Profiler::ProfileHeader> >& headers)

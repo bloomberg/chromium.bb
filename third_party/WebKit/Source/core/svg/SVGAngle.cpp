@@ -114,15 +114,15 @@ String SVGAngle::valueAsString() const
 {
     switch (m_unitType) {
     case SVG_ANGLETYPE_DEG: {
-        DEFINE_STATIC_LOCAL(String, degString, (ASCIILiteral("deg")));
+        DEFINE_STATIC_LOCAL(String, degString, ("deg"));
         return String::number(m_valueInSpecifiedUnits) + degString;
     }
     case SVG_ANGLETYPE_RAD: {
-        DEFINE_STATIC_LOCAL(String, radString, (ASCIILiteral("rad")));
+        DEFINE_STATIC_LOCAL(String, radString, ("rad"));
         return String::number(m_valueInSpecifiedUnits) + radString;
     }
     case SVG_ANGLETYPE_GRAD: {
-        DEFINE_STATIC_LOCAL(String, gradString, (ASCIILiteral("grad")));
+        DEFINE_STATIC_LOCAL(String, gradString, ("grad"));
         return String::number(m_valueInSpecifiedUnits) + gradString;
     }
     case SVG_ANGLETYPE_UNSPECIFIED:

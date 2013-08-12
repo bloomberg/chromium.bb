@@ -294,7 +294,7 @@ WebString WebPageSerializer::generateMarkOfTheWebDeclaration(const WebURL& url)
 WebString WebPageSerializer::generateBaseTagDeclaration(const WebString& baseTarget)
 {
     if (baseTarget.isEmpty())
-        return String(ASCIILiteral("<base href=\".\">"));
+        return String("<base href=\".\">");
     String baseString = "<base href=\".\" target=\"" + static_cast<const String&>(baseTarget) + "\">";
     return baseString;
 }

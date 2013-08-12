@@ -302,17 +302,17 @@ String RTCPeerConnection::signalingState() const
 {
     switch (m_signalingState) {
     case SignalingStateStable:
-        return ASCIILiteral("stable");
+        return "stable";
     case SignalingStateHaveLocalOffer:
-        return ASCIILiteral("have-local-offer");
+        return "have-local-offer";
     case SignalingStateHaveRemoteOffer:
-        return ASCIILiteral("have-remote-offer");
+        return "have-remote-offer";
     case SignalingStateHaveLocalPrAnswer:
-        return ASCIILiteral("have-local-pranswer");
+        return "have-local-pranswer";
     case SignalingStateHaveRemotePrAnswer:
-        return ASCIILiteral("have-remote-pranswer");
+        return "have-remote-pranswer";
     case SignalingStateClosed:
-        return ASCIILiteral("closed");
+        return "closed";
     }
 
     ASSERT_NOT_REACHED();
@@ -323,11 +323,11 @@ String RTCPeerConnection::iceGatheringState() const
 {
     switch (m_iceGatheringState) {
     case IceGatheringStateNew:
-        return ASCIILiteral("new");
+        return "new";
     case IceGatheringStateGathering:
-        return ASCIILiteral("gathering");
+        return "gathering";
     case IceGatheringStateComplete:
-        return ASCIILiteral("complete");
+        return "complete";
     }
 
     ASSERT_NOT_REACHED();
@@ -338,19 +338,19 @@ String RTCPeerConnection::iceConnectionState() const
 {
     switch (m_iceConnectionState) {
     case IceConnectionStateNew:
-        return ASCIILiteral("new");
+        return "new";
     case IceConnectionStateChecking:
-        return ASCIILiteral("checking");
+        return "checking";
     case IceConnectionStateConnected:
-        return ASCIILiteral("connected");
+        return "connected";
     case IceConnectionStateCompleted:
-        return ASCIILiteral("completed");
+        return "completed";
     case IceConnectionStateFailed:
-        return ASCIILiteral("failed");
+        return "failed";
     case IceConnectionStateDisconnected:
-        return ASCIILiteral("disconnected");
+        return "disconnected";
     case IceConnectionStateClosed:
-        return ASCIILiteral("closed");
+        return "closed";
     }
 
     ASSERT_NOT_REACHED();

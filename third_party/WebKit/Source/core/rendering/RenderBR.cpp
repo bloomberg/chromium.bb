@@ -28,7 +28,7 @@ namespace WebCore {
 
 static PassRefPtr<StringImpl> newlineString()
 {
-    DEFINE_STATIC_LOCAL(const String, string, (ASCIILiteral("\n")));
+    DEFINE_STATIC_LOCAL(const String, string, ("\n"));
     return string.impl();
 }
 

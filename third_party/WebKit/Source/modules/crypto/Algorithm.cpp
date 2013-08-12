@@ -68,7 +68,7 @@ Algorithm::Algorithm(const WebKit::WebCryptoAlgorithm& algorithm)
 
 String Algorithm::name()
 {
-    return ASCIILiteral(m_algorithm.name());
+    return m_algorithm.name();
 }
 
 } // namespace WebCore

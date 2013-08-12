@@ -114,13 +114,13 @@ String RTCDataChannel::readyState() const
 {
     switch (m_readyState) {
     case ReadyStateConnecting:
-        return ASCIILiteral("connecting");
+        return "connecting";
     case ReadyStateOpen:
-        return ASCIILiteral("open");
+        return "open";
     case ReadyStateClosing:
-        return ASCIILiteral("closing");
+        return "closing";
     case ReadyStateClosed:
-        return ASCIILiteral("closed");
+        return "closed";
     }
 
     ASSERT_NOT_REACHED();
@@ -136,9 +136,9 @@ String RTCDataChannel::binaryType() const
 {
     switch (m_binaryType) {
     case BinaryTypeBlob:
-        return ASCIILiteral("blob");
+        return "blob";
     case BinaryTypeArrayBuffer:
-        return ASCIILiteral("arraybuffer");
+        return "arraybuffer";
     }
     ASSERT_NOT_REACHED();
     return String();

@@ -646,7 +646,7 @@ void XMLHttpRequest::send(DOMFormData* body, ExceptionState& es)
 
         String contentType = getRequestHeader("Content-Type");
         if (contentType.isEmpty()) {
-            contentType = String(ASCIILiteral("multipart/form-data; boundary=")) + m_requestEntityBody->boundary().data();
+            contentType = String("multipart/form-data; boundary=") + m_requestEntityBody->boundary().data();
             setRequestHeaderInternal("Content-Type", contentType);
         }
     }

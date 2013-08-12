@@ -33,23 +33,23 @@ static String ErrorCodeToString(SpeechRecognitionError::ErrorCode code)
 {
     switch (code) {
     case SpeechRecognitionError::ErrorCodeOther:
-        return ASCIILiteral("other");
+        return "other";
     case SpeechRecognitionError::ErrorCodeNoSpeech:
-        return ASCIILiteral("no-speech");
+        return "no-speech";
     case SpeechRecognitionError::ErrorCodeAborted:
-        return ASCIILiteral("aborted");
+        return "aborted";
     case SpeechRecognitionError::ErrorCodeAudioCapture:
-        return ASCIILiteral("audio-capture");
+        return "audio-capture";
     case SpeechRecognitionError::ErrorCodeNetwork:
-        return ASCIILiteral("network");
+        return "network";
     case SpeechRecognitionError::ErrorCodeNotAllowed:
-        return ASCIILiteral("not-allowed");
+        return "not-allowed";
     case SpeechRecognitionError::ErrorCodeServiceNotAllowed:
-        return ASCIILiteral("service-not-allowed");
+        return "service-not-allowed";
     case SpeechRecognitionError::ErrorCodeBadGrammar:
-        return ASCIILiteral("bad-grammar");
+        return "bad-grammar";
     case SpeechRecognitionError::ErrorCodeLanguageNotSupported:
-        return ASCIILiteral("language-not-supported");
+        return "language-not-supported";
     }
 
     ASSERT_NOT_REACHED();

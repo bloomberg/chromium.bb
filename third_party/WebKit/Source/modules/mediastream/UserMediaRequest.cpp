@@ -65,11 +65,11 @@ static PassRefPtr<MediaConstraintsImpl> parseOptions(const Dictionary& options, 
 
 PassRefPtr<UserMediaRequest> UserMediaRequest::create(ScriptExecutionContext* context, UserMediaController* controller, const Dictionary& options, PassRefPtr<NavigatorUserMediaSuccessCallback> successCallback, PassRefPtr<NavigatorUserMediaErrorCallback> errorCallback, ExceptionState& es)
 {
-    RefPtr<MediaConstraintsImpl> audio = parseOptions(options, ASCIILiteral("audio"), es);
+    RefPtr<MediaConstraintsImpl> audio = parseOptions(options, "audio", es);
     if (es.hadException())
         return 0;
 
-    RefPtr<MediaConstraintsImpl> video = parseOptions(options, ASCIILiteral("video"), es);
+    RefPtr<MediaConstraintsImpl> video = parseOptions(options, "video", es);
     if (es.hadException())
         return 0;
 
@@ -154,7 +154,7 @@ void UserMediaRequest::fail(const String& description)
         return;
 
     if (m_errorCallback) {
-        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(ASCIILiteral("PERMISSION_DENIED"), description, String());
+        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create("PERMISSION_DENIED", description, String());
         m_errorCallback->handleEvent(error.get());
     }
 }
@@ -166,7 +166,7 @@ void UserMediaRequest::failConstraint(const String& constraintName, const String
         return;
 
     if (m_errorCallback) {
-        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create(ASCIILiteral("CONSTRAINT_NOT_SATISFIED"), description, constraintName);
+        RefPtr<NavigatorUserMediaError> error = NavigatorUserMediaError::create("CONSTRAINT_NOT_SATISFIED", description, constraintName);
         m_errorCallback->handleEvent(error.get());
     }
 }

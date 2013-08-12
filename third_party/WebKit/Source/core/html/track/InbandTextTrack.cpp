@@ -162,11 +162,11 @@ void InbandTextTrack::addGenericCue(InbandTextTrackPrivate* trackPrivate, Generi
         cue->setForegroundColor(cueData->foregroundColor().rgb());
 
     if (cueData->align() == GenericCueData::Start)
-        cue->setAlign(ASCIILiteral("start"), IGNORE_EXCEPTION);
+        cue->setAlign("start", IGNORE_EXCEPTION);
     else if (cueData->align() == GenericCueData::Middle)
-        cue->setAlign(ASCIILiteral("middle"), IGNORE_EXCEPTION);
+        cue->setAlign("middle", IGNORE_EXCEPTION);
     else if (cueData->align() == GenericCueData::End)
-        cue->setAlign(ASCIILiteral("end"), IGNORE_EXCEPTION);
+        cue->setAlign("end", IGNORE_EXCEPTION);
     cue->setSnapToLines(false);
 
     if (hasCue(cue.get())) {

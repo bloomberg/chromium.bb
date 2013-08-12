@@ -35,7 +35,7 @@ namespace {
 
 TEST(WTF, StringCreationFromLiteral)
 {
-    String stringFromLiteral(ASCIILiteral("Explicit construction syntax"));
+    String stringFromLiteral("Explicit construction syntax");
     ASSERT_EQ(strlen("Explicit construction syntax"), stringFromLiteral.length());
     ASSERT_TRUE(stringFromLiteral == "Explicit construction syntax");
     ASSERT_TRUE(stringFromLiteral.is8Bit());
@@ -61,7 +61,7 @@ TEST(WTF, StringASCII)
     ASSERT_STREQ("", output.data());
 
     // Regular String.
-    output = String(ASCIILiteral("foobar")).ascii();
+    output = String("foobar").ascii();
     ASSERT_STREQ("foobar", output.data());
 }
 

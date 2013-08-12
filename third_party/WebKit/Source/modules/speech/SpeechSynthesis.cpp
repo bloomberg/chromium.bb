@@ -161,8 +161,8 @@ void SpeechSynthesis::handleSpeakingCompleted(SpeechSynthesisUtterance* utteranc
 
 void SpeechSynthesis::boundaryEventOccurred(PassRefPtr<PlatformSpeechSynthesisUtterance> utterance, SpeechBoundary boundary, unsigned charIndex)
 {
-    DEFINE_STATIC_LOCAL(const String, wordBoundaryString, (ASCIILiteral("word")));
-    DEFINE_STATIC_LOCAL(const String, sentenceBoundaryString, (ASCIILiteral("sentence")));
+    DEFINE_STATIC_LOCAL(const String, wordBoundaryString, ("word"));
+    DEFINE_STATIC_LOCAL(const String, sentenceBoundaryString, ("sentence"));
 
     switch (boundary) {
     case SpeechWordBoundary:

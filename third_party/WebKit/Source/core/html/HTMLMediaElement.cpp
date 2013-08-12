@@ -188,7 +188,7 @@ private:
 
 static bool canLoadURL(const KURL& url, const ContentType& contentType, const String& keySystem)
 {
-    DEFINE_STATIC_LOCAL(const String, codecs, (ASCIILiteral("codecs")));
+    DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
     String contentMIMEType = contentType.type().lower();
     String contentTypeCodecs = contentType.parameter(codecs);
@@ -216,7 +216,7 @@ static bool canLoadURL(const KURL& url, const ContentType& contentType, const St
 
 WebMimeRegistry::SupportsType HTMLMediaElement::supportsType(const ContentType& contentType, const String& keySystem)
 {
-    DEFINE_STATIC_LOCAL(const String, codecs, (ASCIILiteral("codecs")));
+    DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
 
     if (!RuntimeEnabledFeatures::mediaEnabled())
         return WebMimeRegistry::IsNotSupported;
@@ -620,10 +620,10 @@ String HTMLMediaElement::canPlayType(const String& mimeType, const String& keySy
             canPlay = emptyString();
             break;
         case WebMimeRegistry::MayBeSupported:
-            canPlay = ASCIILiteral("maybe");
+            canPlay = "maybe";
             break;
         case WebMimeRegistry::IsSupported:
-            canPlay = ASCIILiteral("probably");
+            canPlay = "probably";
             break;
     }
 
@@ -2126,13 +2126,13 @@ String HTMLMediaElement::preload() const
 {
     switch (m_preload) {
     case MediaPlayer::None:
-        return ASCIILiteral("none");
+        return "none";
         break;
     case MediaPlayer::MetaData:
-        return ASCIILiteral("metadata");
+        return "metadata";
         break;
     case MediaPlayer::Auto:
-        return ASCIILiteral("auto");
+        return "auto";
         break;
     }
 

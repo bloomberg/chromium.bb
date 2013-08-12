@@ -61,9 +61,9 @@ String MIDIPort::type() const
 {
     switch (m_type) {
     case MIDIPortTypeInput:
-        return ASCIILiteral("input");
+        return "input";
     case MIDIPortTypeOutput:
-        return ASCIILiteral("output");
+        return "output";
     default:
         ASSERT_NOT_REACHED();
     }
