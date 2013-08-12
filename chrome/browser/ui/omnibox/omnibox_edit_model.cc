@@ -1032,10 +1032,15 @@ bool OmniboxEditModel::OnAfterPossibleChange(const string16& old_text,
 
   if (text_differs || selection_differs) {
     // Record current focus state for this input if we haven't already.
-    DCHECK_NE(OMNIBOX_FOCUS_NONE, focus_state_);
     if (focus_source_ == INVALID) {
-      focus_source_ = (focus_state_ == OMNIBOX_FOCUS_VISIBLE) ?
-          OMNIBOX : FAKEBOX;
+      // We should generally expect the omnibox to have focus at this point, but
+      // it doesn't always on Linux. This is because, unlike other platforms,
+      // right clicking in the omnibox on Linux doesn't focus it. So pasting via
+      // right-click can change the contents without focusing the omnibox.
+      // TODO(samarth): fix Linux focus behavior and add a DCHECK here to
+      // check that the omnibox does have focus.
+      focus_source_ = (focus_state_ == OMNIBOX_FOCUS_INVISIBLE) ?
+          FAKEBOX : OMNIBOX;
     }
 
     // Restore caret visibility whenever the user changes text or selection in
