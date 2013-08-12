@@ -3184,7 +3184,7 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
         m_frame->contentRenderer()->hitTest(request, result);
         Node* node = result.innerNode();
         if (node)
-            dragState().m_dragSrc = m_frame->page()->dragController()->draggableNode(m_frame, node, m_mouseDownPos, dragState());
+            dragState().m_dragSrc = m_frame->page()->dragController().draggableNode(m_frame, node, m_mouseDownPos, dragState());
         else
             dragState().m_dragSrc = 0;
 
@@ -3271,9 +3271,8 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
         }
     }
 
-    DragController* dragController = m_frame->page()->dragController();
-    ASSERT(dragController);
-    if (!dragController->populateDragClipboard(m_frame, dragState(), m_mouseDownPos))
+    DragController& dragController = m_frame->page()->dragController();
+    if (!dragController.populateDragClipboard(m_frame, dragState(), m_mouseDownPos))
         return false;
     m_mouseDownMayStartDrag = dispatchDragSrcEvent(eventNames().dragstartEvent, m_mouseDown)
         && !m_frame->selection()->isInPasswordField();
@@ -3290,7 +3289,7 @@ bool EventHandler::tryStartDrag(const MouseEventWithHitTestResults& event)
         dragState().m_dragClipboard->setDragHasStarted();
 
         // Dispatching the event could cause Page to go away. Make sure it's still valid before trying to use DragController.
-        m_didStartDrag = m_frame->page() && dragController->startDrag(m_frame, dragState(), event.event(), m_mouseDownPos);
+        m_didStartDrag = m_frame->page() && dragController.startDrag(m_frame, dragState(), event.event(), m_mouseDownPos);
         // FIXME: This seems pretty useless now. The gesture code uses this as a signal for
         // whether or not the drag started, but perhaps it can simply use the return value from
         // handleDrag(), even though it doesn't mean exactly the same thing.

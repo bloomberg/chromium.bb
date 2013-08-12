@@ -192,14 +192,14 @@ bool DragController::dragIsMove(FrameSelection* selection, DragData* dragData)
 // FIXME: This method is poorly named.  We're just clearing the selection from the document this drag is exiting.
 void DragController::cancelDrag()
 {
-    m_page->dragCaretController()->clear();
+    m_page->dragCaretController().clear();
 }
 
 void DragController::dragEnded()
 {
     m_dragInitiator = 0;
     m_didInitiateDrag = false;
-    m_page->dragCaretController()->clear();
+    m_page->dragCaretController().clear();
 }
 
 DragSession DragController::dragEntered(DragData* dragData)
@@ -361,7 +361,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
         return false;
 
     if (isHandlingDrag) {
-        m_page->dragCaretController()->clear();
+        m_page->dragCaretController().clear();
         return true;
     }
 
@@ -379,7 +379,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
         }
 
         if (!m_fileInputElementUnderMouse)
-            m_page->dragCaretController()->setCaretPosition(m_documentUnderMouse->frame()->visiblePositionForPoint(point));
+            m_page->dragCaretController().setCaretPosition(m_documentUnderMouse->frame()->visiblePositionForPoint(point));
 
         Frame* innerFrame = element->document()->frame();
         dragSession.operation = dragIsMove(innerFrame->selection(), dragData) ? DragOperationMove : DragOperationCopy;
@@ -410,7 +410,7 @@ bool DragController::tryDocumentDrag(DragData* dragData, DragDestinationAction a
     }
 
     // We are not over an editable region. Make sure we're clearing any prior drag cursor.
-    m_page->dragCaretController()->clear();
+    m_page->dragCaretController().clear();
     if (m_fileInputElementUnderMouse)
         m_fileInputElementUnderMouse->setCanReceiveDroppedFiles(false);
     m_fileInputElementUnderMouse = 0;
@@ -440,9 +440,9 @@ static bool setSelectionToDragCaret(Frame* frame, VisibleSelection& dragCaret, R
 
 bool DragController::dispatchTextInputEventFor(Frame* innerFrame, DragData* dragData)
 {
-    ASSERT(m_page->dragCaretController()->hasCaret());
-    String text = m_page->dragCaretController()->isContentRichlyEditable() ? "" : dragData->asPlainText(innerFrame);
-    Node* target = innerFrame->editor()->findEventTargetFrom(m_page->dragCaretController()->caretPosition());
+    ASSERT(m_page->dragCaretController().hasCaret());
+    String text = m_page->dragCaretController().isContentRichlyEditable() ? "" : dragData->asPlainText(innerFrame);
+    Node* target = innerFrame->editor()->findEventTargetFrom(m_page->dragCaretController().caretPosition());
     return target->dispatchEvent(TextEvent::createForDrop(innerFrame->domWindow(), text), IGNORE_EXCEPTION);
 }
 
@@ -466,7 +466,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
     RefPtr<Frame> innerFrame = element->ownerDocument()->frame();
     ASSERT(innerFrame);
 
-    if (m_page->dragCaretController()->hasCaret() && !dispatchTextInputEventFor(innerFrame.get(), dragData))
+    if (m_page->dragCaretController().hasCaret() && !dispatchTextInputEventFor(innerFrame.get(), dragData))
         return true;
 
     if (dragData->containsFiles() && fileInput) {
@@ -479,13 +479,13 @@ bool DragController::concludeEditDrag(DragData* dragData)
         return fileInput->receiveDroppedFiles(dragData);
     }
 
-    if (!m_page->dragController()->canProcessDrag(dragData)) {
-        m_page->dragCaretController()->clear();
+    if (!m_page->dragController().canProcessDrag(dragData)) {
+        m_page->dragCaretController().clear();
         return false;
     }
 
-    VisibleSelection dragCaret = m_page->dragCaretController()->caretPosition();
-    m_page->dragCaretController()->clear();
+    VisibleSelection dragCaret = m_page->dragCaretController().caretPosition();
+    m_page->dragCaretController().clear();
     RefPtr<Range> range = dragCaret.toNormalizedRange();
     RefPtr<Element> rootEditableElement = innerFrame->selection()->rootEditableElement();
 

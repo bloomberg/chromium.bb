@@ -140,8 +140,8 @@ public:
     int subframeCount() const { checkSubframeCountConsistency(); return m_subframeCount; }
 
     Chrome& chrome() const { return *m_chrome; }
-    DragCaretController* dragCaretController() const { return m_dragCaretController.get(); }
-    DragController* dragController() const { return m_dragController.get(); }
+    DragCaretController& dragCaretController() const { return *m_dragCaretController; }
+    DragController& dragController() const { return *m_dragController; }
     FocusController& focusController() const { return *m_focusController; }
     ContextMenuController* contextMenuController() const { return m_contextMenuController.get(); }
     InspectorController* inspectorController() const { return m_inspectorController.get(); }
@@ -263,9 +263,8 @@ private:
 
     OwnPtr<AutoscrollController> m_autoscrollController;
     OwnPtr<Chrome> m_chrome;
-    OwnPtr<DragCaretController> m_dragCaretController;
-
-    OwnPtr<DragController> m_dragController;
+    const OwnPtr<DragCaretController> m_dragCaretController;
+    const OwnPtr<DragController> m_dragController;
     OwnPtr<FocusController> m_focusController;
     OwnPtr<ContextMenuController> m_contextMenuController;
     OwnPtr<InspectorController> m_inspectorController;

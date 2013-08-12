@@ -3175,7 +3175,7 @@ void WebViewImpl::dragSourceSystemDragEnded()
     // It's possible for us to get this callback while not doing a drag if
     // it's from a previous page that got unloaded.
     if (m_doingDragAndDrop) {
-        m_page->dragController()->dragEnded();
+        m_page->dragController().dragEnded();
         m_doingDragAndDrop = false;
     }
 }
@@ -3216,7 +3216,7 @@ void WebViewImpl::dragTargetDragLeave()
         IntPoint(),
         static_cast<DragOperation>(m_operationsAllowed));
 
-    m_page->dragController()->dragExited(&dragData);
+    m_page->dragController().dragExited(&dragData);
 
     // FIXME: why is the drag scroll timer not stopped here?
 
@@ -3249,7 +3249,7 @@ void WebViewImpl::dragTargetDrop(const WebPoint& clientPoint,
         screenPoint,
         static_cast<DragOperation>(m_operationsAllowed));
 
-    m_page->dragController()->performDrag(&dragData);
+    m_page->dragController().performDrag(&dragData);
 
     m_dragOperation = WebDragOperationNone;
     m_currentDragData = 0;
@@ -3279,9 +3279,9 @@ WebDragOperation WebViewImpl::dragTargetDragEnterOrOver(const WebPoint& clientPo
 
     DragSession dragSession;
     if (dragAction == DragEnter)
-        dragSession = m_page->dragController()->dragEntered(&dragData);
+        dragSession = m_page->dragController().dragEntered(&dragData);
     else
-        dragSession = m_page->dragController()->dragUpdated(&dragData);
+        dragSession = m_page->dragController().dragUpdated(&dragData);
 
     DragOperation dropEffect = dragSession.operation;
 
