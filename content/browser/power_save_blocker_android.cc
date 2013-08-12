@@ -70,6 +70,9 @@ PowerSaveBlockerImpl::~PowerSaveBlockerImpl() {
 }
 
 void PowerSaveBlockerImpl::InitDisplaySleepBlocker(NativeView view_android) {
+  if (!view_android)
+    return;
+
   delegate_ = new Delegate(view_android);
   // This may be called on any thread.
   BrowserThread::PostTask(
