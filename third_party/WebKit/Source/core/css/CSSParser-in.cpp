@@ -11297,6 +11297,9 @@ CSSParserSelector* CSSParser::rewriteSpecifiersWithElementName(const AtomicStrin
 
 CSSParserSelector* CSSParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, const AtomicString& elementName, CSSParserSelector* specifiers, bool tagIsForNamespaceRule)
 {
+    if (m_useCounter && specifiers->pseudoType() == CSSSelector::PseudoUserAgentCustomElement)
+        m_useCounter->count(UseCounter::CSSPseudoElementUserAgentCustomPseudo);
+
     CSSParserSelector* lastShadowPseudo = specifiers;
     CSSParserSelector* history = specifiers;
     while (history->tagHistory()) {
