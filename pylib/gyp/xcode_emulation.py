@@ -39,6 +39,15 @@ class XcodeSettings(object):
                                              None):
         self.isIOS = True
 
+      # If you need this, speak up at http://crbug.com/122592
+      conditional_keys = [key for key in self.xcode_settings[configname]
+                          if key.endswith(']')]
+      if conditional_keys:
+        print 'Warning: Conditional keys not implemented, ignoring:', \
+              ' '.join(conditional_keys)
+        for key in conditional_keys:
+          del self.xcode_settings[configname][key]
+
     # This is only non-None temporarily during the execution of some methods.
     self.configname = None
 
