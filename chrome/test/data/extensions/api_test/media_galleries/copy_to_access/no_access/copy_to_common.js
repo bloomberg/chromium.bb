@@ -4,18 +4,24 @@
 
 var mediaGalleries = chrome.mediaGalleries;
 
-function getOnwriteendCallbackExpectFailure(testImageFileEntry, galleries) {
+function getOnwriteendCallbackExpectFailure(testImageFileEntry, galleries,
+                                            filename) {
   return function() {
-    testImageFileEntry.copyTo(galleries[0].root, this.filename,
+    testImageFileEntry.copyTo(
+        galleries[0].root,
+        filename,
         chrome.test.fail,
-        chrome.test.callbackPass(function() {}));
+        chrome.test.succeed);
   };
 }
 
-function getOnwriteendCallbackExpectSuccess(testImageFileEntry, galleries) {
+function getOnwriteendCallbackExpectSuccess(testImageFileEntry, galleries,
+                                            filename) {
   return function() {
-    testImageFileEntry.copyTo(galleries[0].root, this.filename,
-        chrome.test.callbackPass(function() {}),
+    testImageFileEntry.copyTo(
+        galleries[0].root,
+        filename,
+        chrome.test.succeed,
         chrome.test.fail);
   };
 }
@@ -39,8 +45,7 @@ function runTest(testCase, getOnwriteendCallback) {
   var testImageFileEntry;
 
   function getMediaFileSystemsList() {
-    mediaGalleries.getMediaFileSystems(
-        chrome.test.callbackPass(testGalleries));
+    mediaGalleries.getMediaFileSystems(testGalleries);
   }
 
   function testGalleries(results) {
@@ -50,21 +55,19 @@ function runTest(testCase, getOnwriteendCallback) {
 
     // Create a temporary file system and an image for copying-into test.
     window.webkitRequestFileSystem(window.TEMPORARY, 1024*1024,
-        chrome.test.callbackPass(temporaryFileSystemCallback),
-        chrome.test.fail);
+                                   temporaryFileSystemCallback,
+                                   chrome.test.fail);
   }
 
   function temporaryFileSystemCallback(filesystem) {
     filesystem.root.getFile(testCase.filename, {create:true, exclusive: false},
-        chrome.test.callbackPass(temporaryImageCallback),
-        chrome.test.fail);
+                            temporaryImageCallback,
+                            chrome.test.fail);
   }
 
   function temporaryImageCallback(entry) {
     testImageFileEntry = entry;
-    entry.createWriter(
-        chrome.test.callbackPass(imageWriterCallback),
-        chrome.test.fail);
+    entry.createWriter(imageWriterCallback, chrome.test.fail);
   }
 
   function imageWriterCallback(writer) {
@@ -79,8 +82,8 @@ function runTest(testCase, getOnwriteendCallback) {
       chrome.test.fail("Unable to write test image: " + e.toString());
     }
 
-    writer.onwriteend = chrome.test.callbackPass(
-      getOnwriteendCallback(testImageFileEntry, galleries));
+    writer.onwriteend = getOnwriteendCallback(testImageFileEntry, galleries,
+                                              testCase.filename);
 
     writer.write(blob);
   }
@@ -93,3 +96,19 @@ function createTest(testCase, getOnwriteendCallback) {
     runTest(testCase, getOnwriteendCallback);
   };
 }
+
+// Create a dummy window to prevent the ExtensionProcessManager from suspending
+// the chrome-test app. Needed because the writer.onerror and writer.onwriteend
+// events do not qualify as pending callbacks, so the app looks dormant.
+chrome.app.runtime.onLaunched.addListener(function() {
+  chrome.app.window.create('dummy.html', {
+    bounds: {
+      width: 800,
+      height: 600,
+      left: 100,
+      top: 100
+    },
+    minWidth: 800,
+    minHeight: 600
+  });
+});

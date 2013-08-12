@@ -133,9 +133,8 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
       kTestGalleries, media_directories.num_galleries())));
 }
 
-// Flakily times out: http://crbug.com/268481
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
-                       DISABLED_MediaGalleriesCopyTo) {
+                       MediaGalleriesCopyTo) {
   chrome::EnsureMediaDirectoriesExists media_directories;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
