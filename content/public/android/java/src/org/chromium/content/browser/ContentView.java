@@ -285,10 +285,6 @@ public class ContentView extends FrameLayout
         mContentViewCore.clearHistory();
     }
 
-    String getSelectedText() {
-        return mContentViewCore.getSelectedText();
-    }
-
     /**
      * Start profiling the update speed. You must call {@link #stopFpsProfiling}
      * to stop profiling.

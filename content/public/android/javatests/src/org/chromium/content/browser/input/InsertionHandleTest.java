@@ -63,22 +63,11 @@ public class InsertionHandleTest extends ContentShellTestBase {
     private static final int HANDLE_POSITION_TOLERANCE = 20;
     private static final String PASTE_TEXT = "**test text to paste**";
 
-    // TODO(cjhopman): Due to http://crbug.com/179511, these tests must wait for the ContentViewCore
-    // to have the correct page scale factor (otherwise clicks will be sent to the wrong
-    // coordinates). This workaround should be removed when that bug is fixed.
-    private void assertWaitForPageScaleFactor(final float scale) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getContentViewCore().getScale() == scale;
-            }
-        }));
-    }
 
     public void launchWithUrl(String url) throws Throwable {
-        super.launchContentShellWithUrl(url);
+        launchContentShellWithUrl(url);
         assertTrue("Page failed to load", waitForActiveShellToBeDoneLoading());
-        assertWaitForPageScaleFactor(1);
+        assertWaitForPageScaleFactorMatch(1.0f);
 
         // The TestInputMethodManagerWrapper intercepts showSoftInput so that a keyboard is never
         // brought up.

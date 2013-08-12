@@ -6,6 +6,8 @@ package org.chromium.content.browser.input;
 
 import android.view.View;
 
+import com.google.common.annotations.VisibleForTesting;
+
 /**
  * CursorController for selecting a range of text.
  */
@@ -173,6 +175,16 @@ public abstract class SelectionHandleController implements CursorController {
     public void showHandles(int startDir, int endDir) {
         createHandlesIfNeeded(startDir, endDir);
         showHandlesIfNeeded();
+    }
+
+    @VisibleForTesting
+    public HandleView getStartHandleViewForTest() {
+        return mStartHandle;
+    }
+
+    @VisibleForTesting
+    public HandleView getEndHandleViewForTest() {
+        return mEndHandle;
     }
 
     private void createHandlesIfNeeded(int startDir, int endDir) {

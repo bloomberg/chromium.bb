@@ -1195,8 +1195,18 @@ import java.util.Map;
         if (mNativeContentViewCore != 0) nativeClearHistory(mNativeContentViewCore);
     }
 
-    String getSelectedText() {
+    /**
+     * @return The selected text (empty if no text selected).
+     */
+    public String getSelectedText() {
         return mHasSelection ? mLastSelectedText : "";
+    }
+
+    /**
+     * @return Whether the current selection is editable (false if no text selected).
+     */
+    public boolean isSelectionEditable() {
+        return mHasSelection ? mSelectionEditable : false;
     }
 
     // End FrameLayout overrides.
@@ -1435,6 +1445,10 @@ import java.util.Map;
             mActionMode.finish();
             mActionMode = null;
         }
+    }
+
+    public boolean isSelectActionBarShowing() {
+        return mActionMode != null;
     }
 
     private void resetGestureDetectors() {
@@ -2010,8 +2024,14 @@ import java.util.Map;
         return mInsertionHandleController;
     }
 
+    @VisibleForTesting
     public InsertionHandleController getInsertionHandleControllerForTest() {
         return mInsertionHandleController;
+    }
+
+    @VisibleForTesting
+    public SelectionHandleController getSelectionHandleControllerForTest() {
+        return mSelectionHandleController;
     }
 
     private void updateHandleScreenPositions() {

@@ -185,4 +185,20 @@ public class ContentShellTestBase extends ActivityInstrumentationTestCase2<Conte
         callbackHelper.waitForCallback(
                 currentCallCount, 1, WAIT_PAGE_LOADING_TIMEOUT_SECONDS, TimeUnit.SECONDS);
     }
+
+    // TODO(aelias): This method needs to be removed once http://crbug.com/179511 is fixed.
+    // Meanwhile, we have to wait if the page has the <meta viewport> tag.
+    /**
+     * Waits till the ContentViewCore receives the expected page scale factor
+     * from the compositor and asserts that this happens.
+     */
+    protected void assertWaitForPageScaleFactorMatch(final float expectedScale)
+            throws InterruptedException {
+        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getContentViewCore().getScale() == expectedScale;
+            }
+        }));
+    }
 }
