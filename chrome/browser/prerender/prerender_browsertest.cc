@@ -2475,7 +2475,8 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearHistory) {
 
 // Checks that when the cache is cleared, prerenders are cancelled but
 // prerendering history is not cleared.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderClearCache) {
+// Flaky/times out on linux_aura, win, mac - http://crbug.com/270948
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, DISABLED_PrerenderClearCache) {
   PrerenderTestURL("files/prerender/prerender_page.html",
                    FINAL_STATUS_CACHE_OR_HISTORY_CLEARED,
                    1);
