@@ -80,11 +80,6 @@ specific_include_rules = {
     "+chrome/common/pref_names.h",
   ],
 
-  r"configuration_policy_pref_store\.cc": [
-    "+chrome/browser/browser_process.h",
-    "+content/public/browser/browser_thread.h",
-  ],
-
   r"configuration_policy_pref_store_unittest\.cc": [
     "+chrome/browser/prefs/incognito_mode_prefs.h",
     "+chrome/browser/prefs/proxy_config_dictionary.h",

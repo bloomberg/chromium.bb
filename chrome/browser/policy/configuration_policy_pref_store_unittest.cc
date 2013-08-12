@@ -11,6 +11,7 @@
 #include "base/prefs/pref_store_observer_mock.h"
 #include "base/run_loop.h"
 #include "chrome/browser/policy/configuration_policy_handler.h"
+#include "chrome/browser/policy/configuration_policy_handler_list.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
@@ -55,6 +56,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
     providers.push_back(&provider_);
     policy_service_.reset(new PolicyServiceImpl(providers));
     store_ = new ConfigurationPolicyPrefStore(policy_service_.get(),
+                                              &handler_list_,
                                               POLICY_LEVEL_MANDATORY);
   }
 
@@ -68,6 +70,7 @@ class ConfigurationPolicyPrefStoreTest : public testing::Test {
     loop.RunUntilIdle();
   }
 
+  ConfigurationPolicyHandlerList handler_list_;
   MockConfigurationPolicyProvider provider_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
   scoped_refptr<ConfigurationPolicyPrefStore> store_;

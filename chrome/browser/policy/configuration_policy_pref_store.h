@@ -14,10 +14,13 @@
 #include "base/values.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/policy_types.h"
 
 class PrefValueMap;
 
 namespace policy {
+
+class ConfigurationPolicyHandlerList;
 
 // An implementation of PrefStore that bridges policy settings as read from the
 // PolicyService to preferences. Converts POLICY_DOMAIN_CHROME policies a given
@@ -26,9 +29,12 @@ class ConfigurationPolicyPrefStore
     : public PrefStore,
       public PolicyService::Observer {
  public:
-  // Does not take ownership of |service|. Only policies of the given |level|
-  // will be mapped.
-  ConfigurationPolicyPrefStore(PolicyService* service, PolicyLevel level);
+  // Does not take ownership of |service| nor |handler_list|, which must outlive
+  // the store. Only policies of the given |level| will be mapped.
+  ConfigurationPolicyPrefStore(
+      PolicyService* service,
+      const ConfigurationPolicyHandlerList* handler_list,
+      PolicyLevel level);
 
   // PrefStore methods:
   virtual void AddObserver(PrefStore::Observer* observer) OVERRIDE;
@@ -44,16 +50,6 @@ class ConfigurationPolicyPrefStore
                                const PolicyMap& current) OVERRIDE;
   virtual void OnPolicyServiceInitialized(PolicyDomain domain) OVERRIDE;
 
-  // Creates a ConfigurationPolicyPrefStore that only provides policies that
-  // have POLICY_LEVEL_MANDATORY level.
-  static ConfigurationPolicyPrefStore* CreateMandatoryPolicyPrefStore(
-      PolicyService* policy_service);
-
-  // Creates a ConfigurationPolicyPrefStore that only provides policies that
-  // have POLICY_LEVEL_RECOMMENDED level.
-  static ConfigurationPolicyPrefStore* CreateRecommendedPolicyPrefStore(
-      PolicyService* policy_service);
-
  private:
   virtual ~ConfigurationPolicyPrefStore();
 
@@ -67,6 +63,10 @@ class ConfigurationPolicyPrefStore
 
   // The PolicyService from which policy settings are read.
   PolicyService* policy_service_;
+
+  // The policy handlers used to convert policies into their corresponding
+  // preferences.
+  const ConfigurationPolicyHandlerList* handler_list_;
 
   // The policy level that this PrefStore uses.
   PolicyLevel level_;

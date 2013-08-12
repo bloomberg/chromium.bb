@@ -9,17 +9,13 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_value_map.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/configuration_policy_handler_list.h"
 #include "chrome/browser/policy/policy_error_map.h"
-#include "content/public/browser/browser_thread.h"
 #include "policy/policy_constants.h"
-
-using content::BrowserThread;
 
 namespace policy {
 
@@ -40,8 +36,10 @@ void LogErrors(PolicyErrorMap* errors) {
 
 ConfigurationPolicyPrefStore::ConfigurationPolicyPrefStore(
     PolicyService* service,
+    const ConfigurationPolicyHandlerList* handler_list,
     PolicyLevel level)
     : policy_service_(service),
+      handler_list_(handler_list),
       level_(level) {
   // Read initial policy.
   prefs_.reset(CreatePreferencesFromPolicies());
@@ -93,22 +91,6 @@ void ConfigurationPolicyPrefStore::OnPolicyServiceInitialized(
   }
 }
 
-// static
-ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateMandatoryPolicyPrefStore(
-    PolicyService* policy_service) {
-  return new ConfigurationPolicyPrefStore(policy_service,
-                                          POLICY_LEVEL_MANDATORY);
-}
-
-// static
-ConfigurationPolicyPrefStore*
-ConfigurationPolicyPrefStore::CreateRecommendedPolicyPrefStore(
-    PolicyService* policy_service) {
-  return new ConfigurationPolicyPrefStore(policy_service,
-                                          POLICY_LEVEL_RECOMMENDED);
-}
-
 ConfigurationPolicyPrefStore::~ConfigurationPolicyPrefStore() {
   policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, this);
 }
@@ -137,18 +119,14 @@ PrefValueMap* ConfigurationPolicyPrefStore::CreatePreferencesFromPolicies() {
 
   scoped_ptr<PolicyErrorMap> errors(new PolicyErrorMap);
 
-  const ConfigurationPolicyHandlerList* handler_list =
-      g_browser_process->browser_policy_connector()->GetHandlerList();
-  handler_list->ApplyPolicySettings(filtered_policies,
-                                    prefs.get(),
-                                    errors.get());
+  handler_list_->ApplyPolicySettings(filtered_policies,
+                                     prefs.get(),
+                                     errors.get());
 
   // Retrieve and log the errors once the UI loop is ready. This is only an
   // issue during startup.
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&LogErrors,
-                                     base::Owned(errors.release())));
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::Bind(&LogErrors, base::Owned(errors.release())));
 
   return prefs.release();
 }

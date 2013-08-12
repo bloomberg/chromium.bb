@@ -8,11 +8,17 @@
 #include "base/prefs/default_pref_store.h"
 #include "base/prefs/pref_notifier_impl.h"
 #include "base/prefs/pref_value_store.h"
-#include "chrome/browser/policy/configuration_policy_pref_store.h"
-#include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/command_line_pref_store.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "components/user_prefs/pref_registry_syncable.h"
+
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/configuration_policy_pref_store.h"
+#include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/policy_types.h"
+#endif
 
 PrefServiceSyncableBuilder::PrefServiceSyncableBuilder() {
 }
@@ -24,14 +30,18 @@ PrefServiceSyncableBuilder::~PrefServiceSyncableBuilder() {
 PrefServiceSyncableBuilder& PrefServiceSyncableBuilder::WithManagedPolicies(
     policy::PolicyService* service) {
   WithManagedPrefs(new policy::ConfigurationPolicyPrefStore(
-      service, policy::POLICY_LEVEL_MANDATORY));
+      service,
+      g_browser_process->browser_policy_connector()->GetHandlerList(),
+      policy::POLICY_LEVEL_MANDATORY));
   return *this;
 }
 
 PrefServiceSyncableBuilder& PrefServiceSyncableBuilder::WithRecommendedPolicies(
     policy::PolicyService* service) {
   WithRecommendedPrefs(new policy::ConfigurationPolicyPrefStore(
-      service, policy::POLICY_LEVEL_RECOMMENDED));
+      service,
+      g_browser_process->browser_policy_connector()->GetHandlerList(),
+      policy::POLICY_LEVEL_RECOMMENDED));
   return *this;
 }
 #endif
