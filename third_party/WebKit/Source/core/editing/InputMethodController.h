@@ -45,6 +45,7 @@ public:
     // international text input composition
     bool hasComposition() const { return m_compositionNode; }
     void setComposition(const String&, const Vector<CompositionUnderline>&, unsigned selectionStart, unsigned selectionEnd);
+    void setCompositionFromExistingText(const Vector<CompositionUnderline>&, unsigned compositionStart, unsigned compositionEnd);
     // Inserts the text that is being composed as a regular text.
     // This method does nothing if composition node is not present.
     void confirmComposition();

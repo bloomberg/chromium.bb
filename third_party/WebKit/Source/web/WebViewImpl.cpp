@@ -2346,14 +2346,7 @@ bool WebViewImpl::setCompositionFromExistingText(int compositionStart, int compo
     if (compositionStart == compositionEnd)
         return true;
 
-    size_t location;
-    size_t length;
-    caretOrSelectionRange(&location, &length);
-    Editor::RevealSelectionScope revealSelectionScope(editor);
-    editor->setSelectionOffsets(compositionStart, compositionEnd);
-    String text = focused->selectedText();
-    inputMethodController.setComposition(text, CompositionUnderlineVectorBuilder(underlines), 0, 0);
-    editor->setSelectionOffsets(location, location + length);
+    inputMethodController.setCompositionFromExistingText(CompositionUnderlineVectorBuilder(underlines), compositionStart, compositionEnd);
 
     return true;
 }

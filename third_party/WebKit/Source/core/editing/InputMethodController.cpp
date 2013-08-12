@@ -280,6 +280,32 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
     }
 }
 
+void InputMethodController::setCompositionFromExistingText(const Vector<CompositionUnderline>& underlines, unsigned compositionStart, unsigned compositionEnd)
+{
+    m_compositionNode = 0;
+    m_customCompositionUnderlines.clear();
+
+    Position base = m_frame->selection()->base().downstream();
+    if (base.anchorType() != Position::PositionIsOffsetInAnchor)
+        return;
+    Node* baseNode = base.anchorNode();
+    unsigned baseOffset = base.offsetInContainerNode();
+    if (!baseNode || baseNode != m_frame->selection()->extent().anchorNode() || !baseNode->isTextNode())
+        return;
+
+    m_compositionNode = toText(baseNode);
+    m_compositionStart = compositionStart;
+    m_compositionEnd = compositionEnd;
+    m_customCompositionUnderlines = underlines;
+    size_t numUnderlines = m_customCompositionUnderlines.size();
+    for (size_t i = 0; i < numUnderlines; ++i) {
+        m_customCompositionUnderlines[i].startOffset += baseOffset;
+        m_customCompositionUnderlines[i].endOffset += baseOffset;
+    }
+    if (baseNode->renderer())
+        baseNode->renderer()->repaint();
+}
+
 PassRefPtr<Range> InputMethodController::compositionRange() const
 {
     if (!m_compositionNode)

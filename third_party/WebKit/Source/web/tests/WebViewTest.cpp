@@ -1011,7 +1011,7 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextTriggersAutofillTextChange)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));
     MockAutofillClient client;
-    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "input_field_populated.html");
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "input_field_populated.html", true);
     webView->setAutofillClient(&client);
     webView->setInitialFocus(false);
 
@@ -1026,7 +1026,10 @@ TEST_F(WebViewTest, SetCompositionFromExistingTextTriggersAutofillTextChange)
     EXPECT_EQ(12, info.compositionEnd);
 
     EXPECT_EQ(0, client.textChangesWhileIgnored());
-    EXPECT_EQ(1, client.textChangesWhileNotIgnored());
+    EXPECT_EQ(0, client.textChangesWhileNotIgnored());
+
+    WebDocument document = webView->mainFrame()->document();
+    EXPECT_EQ(WebString::fromUTF8("none"),  document.getElementById("inputEvent").firstChild().nodeValue());
 
     webView->setAutofillClient(0);
     webView->close();
