@@ -1,0 +1,69 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/debugger-test.js"></script>
+<script src="../debugger/resources/edit-me.js"></script>
+
+<script>
+
+function test()
+{
+    var textEditor;
+    WebInspector.showPanel("scripts");
+    InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
+
+    function showReplaceField()
+    {
+        WebInspector.searchController.showSearchField();
+        document.getElementById("search-replace-trigger").click();
+    }
+
+    function runReplaceAll(searchValue, replaceValue)
+    {
+        WebInspector.searchController._searchInputElement.value = searchValue;
+        WebInspector.searchController._replaceInputElement.value = replaceValue;
+        WebInspector.searchController._replaceAll();
+    }
+
+    function dumpTextEditor(message)
+    {
+        InspectorTest.addResult(message);
+        InspectorTest.addResult(textEditor.text());
+    }
+
+    function didShowScriptSource(sourceFrame)
+    {
+        textEditor = sourceFrame._textEditor;
+        showReplaceField();
+
+        InspectorTest.runTestSuite([
+            function testReplaceAll(next)
+            {
+                var source = "// var a1, a2, a3;\nconst  a1, a2, a3;\n";
+                sourceFrame.setContent(source, false, "text/javascript");
+
+                dumpTextEditor("--- Before replace ---");
+
+                runReplaceAll("a1", "a$$");
+                runReplaceAll("a2", "b$&");
+                runReplaceAll("a3", "a3 /* $0 $1 $2 $& $$ \\0 \\1 */");
+                runReplaceAll("/\\b(const)(\\s)+/", "/** @$1 */ var$2");
+                runReplaceAll("//", "//=");
+
+                dumpTextEditor("--- After replace ---");
+
+                next();
+            },
+        ]);
+    }
+};
+
+</script>
+
+</head>
+
+<body onload="runTest()">
+<p>Tests the search replace functionality.</p>
+
+</body>
+</html>
