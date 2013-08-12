@@ -228,7 +228,7 @@
     'rendering': [ 'eae+blinkwatch@chromium.org', 'jchaffraix+rendering@chromium.org', 'leviw+renderwatch@chromium.org' ],
     'content_security_policy': [ 'mkwst+watchlist@chromium.org' ],
     'prerender': [ 'gavinp+prerender@chromium.org' ],
-    'track': ['vcarbune@chromium.org'],
+    'track': [ 'vcarbune@chromium.org', 'silviapf@chromium.org' ],
     'media': [ 'feature-media-reviews@chromium.org' ],
     'media_queries': [ 'kenneth.christiansen@gmail.com' ],
     'fileapi': [ 'kinuko@chromium.org' ],
