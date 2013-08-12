@@ -787,7 +787,8 @@ void BrowserOptionsHandler::InitializePage() {
 #if defined(OS_CHROMEOS)
   SetupAccessibilityFeatures();
   if (!g_browser_process->browser_policy_connector()->IsEnterpriseManaged() &&
-      !chromeos::UserManager::Get()->IsLoggedInAsGuest()) {
+      !chromeos::UserManager::Get()->IsLoggedInAsGuest() &&
+      !chromeos::UserManager::Get()->IsLoggedInAsLocallyManagedUser()) {
     web_ui()->CallJavascriptFunction(
         "BrowserOptions.enableFactoryResetSection");
   }
