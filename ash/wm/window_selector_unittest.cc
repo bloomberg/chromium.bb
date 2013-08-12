@@ -107,6 +107,27 @@ class WindowSelectorTest : public test::AshTestBase {
     }
   }
 
+  void Cycle(WindowSelector::Direction direction) {
+    if (!IsSelecting()) {
+      std::vector<aura::Window*> windows = ash::Shell::GetInstance()->
+          mru_window_tracker()->BuildMruWindowList();
+      ScopedVector<LayerAnimationObserver> animations;
+      for (size_t i = 0; i < windows.size(); ++i)
+        animations.push_back(new LayerAnimationObserver(windows[i]->layer()));
+      ash::Shell::GetInstance()->window_selector_controller()->
+          HandleCycleWindow(direction);
+      for (size_t i = 0; i < animations.size(); ++i)
+        animations[i]->WaitUntilDone();
+    } else {
+      ash::Shell::GetInstance()->window_selector_controller()->
+          HandleCycleWindow(direction);
+    }
+  }
+
+  void StopCycling() {
+    ash::Shell::GetInstance()->window_selector_controller()->AltKeyReleased();
+  }
+
   gfx::RectF GetTransformedBounds(aura::Window* window) {
     gfx::RectF bounds(window->layer()->bounds());
     window->layer()->transform().TransformRect(&bounds);
@@ -123,6 +144,11 @@ class WindowSelectorTest : public test::AshTestBase {
     aura::test::EventGenerator event_generator(window->GetRootWindow(), window);
     gfx::RectF target = GetTransformedBounds(window);
     event_generator.ClickLeftButton();
+  }
+
+  bool IsSelecting() {
+    return ash::Shell::GetInstance()->window_selector_controller()->
+        IsSelecting();
   }
 
  private:
@@ -151,6 +177,29 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
 }
 
+// Tests entering overview mode with three windows and cycling through them.
+TEST_F(WindowSelectorTest, BasicCycle) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window3(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window2.get());
+  wm::ActivateWindow(window1.get());
+  EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window3.get()));
+
+  Cycle(WindowSelector::FORWARD);
+  EXPECT_TRUE(IsSelecting());
+  Cycle(WindowSelector::FORWARD);
+  StopCycling();
+  EXPECT_FALSE(IsSelecting());
+  EXPECT_FALSE(wm::IsActiveWindow(window1.get()));
+  EXPECT_FALSE(wm::IsActiveWindow(window2.get()));
+  EXPECT_TRUE(wm::IsActiveWindow(window3.get()));
+}
+
 // Tests that overview mode is exited if the last remaining window is destroyed.
 TEST_F(WindowSelectorTest, LastWindowDestroyed) {
   gfx::Rect bounds(0, 0, 400, 400);
@@ -160,8 +209,7 @@ TEST_F(WindowSelectorTest, LastWindowDestroyed) {
 
   window1.reset();
   window2.reset();
-  EXPECT_FALSE(ash::Shell::GetInstance()->window_selector_controller()->
-               IsSelecting());
+  EXPECT_FALSE(IsSelecting());
 }
 
 // Tests that windows remain on the display they are currently on in overview

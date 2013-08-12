@@ -94,6 +94,12 @@ bool HandleCycleWindowMRU(WindowCycleController::Direction direction,
   return true;
 }
 
+bool HandleCycleWindowOverviewMRU(WindowSelector::Direction direction) {
+  Shell::GetInstance()->
+      window_selector_controller()->HandleCycleWindow(direction);
+  return true;
+}
+
 void HandleCycleWindowLinear(CycleDirection direction) {
   Shell::GetInstance()->
       window_cycle_controller()->HandleLinearCycleWindow();
@@ -518,11 +524,19 @@ bool AcceleratorController::PerformAction(int action,
     case CYCLE_BACKWARD_MRU:
       if (key_code == ui::VKEY_TAB)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_PREVWINDOW_TAB);
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAshEnableOverviewMode)) {
+        return HandleCycleWindowOverviewMRU(WindowSelector::BACKWARD);
+      }
       return HandleCycleWindowMRU(WindowCycleController::BACKWARD,
                                   accelerator.IsAltDown());
     case CYCLE_FORWARD_MRU:
       if (key_code == ui::VKEY_TAB)
         shell->delegate()->RecordUserMetricsAction(UMA_ACCEL_NEXTWINDOW_TAB);
+      if (CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kAshEnableOverviewMode)) {
+        return HandleCycleWindowOverviewMRU(WindowSelector::FORWARD);
+      }
       return HandleCycleWindowMRU(WindowCycleController::FORWARD,
                                   accelerator.IsAltDown());
     case CYCLE_BACKWARD_LINEAR:
