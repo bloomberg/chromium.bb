@@ -61,7 +61,7 @@ bool FrameLoaderStateMachine::isDisplayingInitialEmptyDocument() const
 
 void FrameLoaderStateMachine::advanceTo(State state)
 {
-    ASSERT(State(m_state + 1) == state);
+    ASSERT(m_state < state);
     m_state = state;
 }
 
