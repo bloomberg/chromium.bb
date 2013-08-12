@@ -217,6 +217,12 @@ using content::WebContents;
   }
 }
 
+- (CGFloat)splitView:(NSSplitView *)splitView
+    constrainSplitPosition:(CGFloat)proposedPosition
+               ofSubviewAt:(NSInteger)dividerIndex {
+  return round(proposedPosition);
+}
+
 -(void)splitViewWillResizeSubviews:(NSNotification *)notification {
   [[splitView_ window] disableScreenUpdatesUntilFlush];
 }
