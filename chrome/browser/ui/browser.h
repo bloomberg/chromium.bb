@@ -320,7 +320,7 @@ class Browser : public TabStripModelObserver,
   DownloadClosePreventionType OkToCloseWithInProgressDownloads(
       int* num_downloads_blocking) const;
 
-  // Tab adding/showing functions /////////////////////////////////////////////
+  // External state change handling ////////////////////////////////////////////
 
   // Invoked when the fullscreen state of the window changes.
   // BrowserWindow::EnterFullscreen invokes this after the window has become
@@ -329,6 +329,11 @@ class Browser : public TabStripModelObserver,
 
   // Invoked when visible SSL state (as defined by SSLStatus) changes.
   void VisibleSSLStateChanged(content::WebContents* web_contents);
+
+  // Invoked when the |web_contents| no longer supports Instant. Refreshes the
+  // omnibox so it no longer shows search terms.
+  void OnWebContentsInstantSupportDisabled(
+      const content::WebContents* web_contents);
 
   // Assorted browser commands ////////////////////////////////////////////////
 

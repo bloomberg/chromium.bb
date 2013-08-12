@@ -11,6 +11,7 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -72,6 +73,34 @@ const char kDisablingSuffix[] = "DISABLED";
 
 // Remember if we reported metrics about opt-in/out state.
 bool instant_extended_opt_in_state_gate = false;
+
+// Used to set the Instant support state of the Navigation entry.
+const char kInstantSupportStateKey[] = "instant_support_state";
+
+const char kInstantSupportEnabled[] = "Instant support enabled";
+const char kInstantSupportDisabled[] = "Instant support disabled";
+const char kInstantSupportUnknown[] = "Instant support unknown";
+
+InstantSupportState StringToInstantSupportState(const string16& value) {
+  if (value == ASCIIToUTF16(kInstantSupportEnabled))
+    return INSTANT_SUPPORT_YES;
+  else if (value == ASCIIToUTF16(kInstantSupportDisabled))
+    return INSTANT_SUPPORT_NO;
+  else
+    return INSTANT_SUPPORT_UNKNOWN;
+}
+
+string16 InstantSupportStateToString(InstantSupportState state) {
+  switch (state) {
+    case INSTANT_SUPPORT_NO:
+      return ASCIIToUTF16(kInstantSupportDisabled);
+    case INSTANT_SUPPORT_YES:
+      return ASCIIToUTF16(kInstantSupportEnabled);
+    case INSTANT_SUPPORT_UNKNOWN:
+      return ASCIIToUTF16(kInstantSupportUnknown);
+  }
+  return ASCIIToUTF16(kInstantSupportUnknown);
+}
 
 TemplateURL* GetDefaultSearchProviderTemplateURL(Profile* profile) {
   TemplateURLService* template_url_service =
@@ -197,7 +226,7 @@ bool IsInstantURL(const GURL& url, Profile* profile) {
 
 string16 GetSearchTermsImpl(const content::WebContents* contents,
                             const content::NavigationEntry* entry) {
-  if (!IsQueryExtractionEnabled())
+  if (!contents || !IsQueryExtractionEnabled())
     return string16();
 
   // For security reasons, don't extract search terms if the page is not being
@@ -298,6 +327,14 @@ string16 GetSearchTerms(const content::WebContents* contents) {
       contents->GetController().GetVisibleEntry();
   if (!entry)
     return string16();
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  // iOS and Android doesn't use the Instant framework, disable this check for
+  // the two platforms.
+  InstantSupportState state = GetInstantSupportStateFromNavigationEntry(*entry);
+  if (state == INSTANT_SUPPORT_NO)
+    return string16();
+#endif  // !defined(OS_IOS) && !defined(OS_ANDROID)
 
   return GetSearchTermsImpl(contents, entry);
 }
@@ -556,6 +593,23 @@ bool HandleNewTabURLReverseRewrite(GURL* url,
   return true;
 }
 
+void SetInstantSupportStateInNavigationEntry(InstantSupportState state,
+                                             content::NavigationEntry* entry) {
+  if (!entry)
+    return;
+
+  entry->SetExtraData(kInstantSupportStateKey,
+                      InstantSupportStateToString(state));
+}
+
+InstantSupportState GetInstantSupportStateFromNavigationEntry(
+    const content::NavigationEntry& entry) {
+  string16 value;
+  if (!entry.GetExtraData(kInstantSupportStateKey, &value))
+    return INSTANT_SUPPORT_UNKNOWN;
+
+  return StringToInstantSupportState(value);
+}
 
 void EnableInstantExtendedAPIForTesting() {
   CommandLine* cl = CommandLine::ForCurrentProcess();

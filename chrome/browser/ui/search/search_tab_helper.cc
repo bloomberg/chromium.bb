@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/search/search_tab_helper.h"
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
@@ -55,6 +58,20 @@ bool InInstantProcess(Profile* profile,
   return instant_service &&
       instant_service->IsInstantProcess(
           contents->GetRenderProcessHost()->GetID());
+}
+
+// Updates the location bar to reflect |contents| Instant support state.
+void UpdateLocationBar(content::WebContents* contents) {
+// iOS and Android doesn't use the Instant framework.
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+  if (!contents)
+    return;
+
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  if (!browser)
+    return;
+  browser->OnWebContentsInstantSupportDisabled(contents);
+#endif
 }
 
 }  // namespace
@@ -107,8 +124,18 @@ void SearchTabHelper::InstantSupportChanged(bool instant_support) {
   if (!is_search_enabled_)
     return;
 
-  model_.SetInstantSupportState(instant_support ? INSTANT_SUPPORT_YES :
-                                                  INSTANT_SUPPORT_NO);
+  InstantSupportState new_state = instant_support ? INSTANT_SUPPORT_YES :
+      INSTANT_SUPPORT_NO;
+
+  model_.SetInstantSupportState(new_state);
+
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (entry) {
+    chrome::SetInstantSupportStateInNavigationEntry(new_state, entry);
+    if (!instant_support)
+      UpdateLocationBar(web_contents_);
+  }
 }
 
 bool SearchTabHelper::SupportsInstant() const {
@@ -127,6 +154,10 @@ void SearchTabHelper::Observe(
 
   UpdateMode(true, false);
 
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetVisibleEntry();
+  DCHECK(entry);
+
   // Already determined the instant support state for this page, do not reset
   // the instant support state.
   //
@@ -139,11 +170,22 @@ void SearchTabHelper::Observe(
   // crbug.com/251330 for more details.
   if (load_details->is_in_page ||
       load_details->type == content::NAVIGATION_TYPE_IN_PAGE) {
+    // When an "in-page" navigation happens, we will not receive a
+    // DidFinishLoad() event. Therefore, we will not determine the Instant
+    // support for the navigated page. So, copy over the Instant support from
+    // the previous entry. If the page does not support Instant, update the
+    // location bar from here to turn off search terms replacement.
+    chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
+                                                    entry);
+    if (model_.instant_support() == INSTANT_SUPPORT_NO)
+      UpdateLocationBar(web_contents_);
     return;
   }
 
   model_.SetInstantSupportState(INSTANT_SUPPORT_UNKNOWN);
   model_.SetVoiceSearchSupported(false);
+  chrome::SetInstantSupportStateInNavigationEntry(model_.instant_support(),
+                                                  entry);
 }
 
 void SearchTabHelper::DidNavigateMainFrame(
