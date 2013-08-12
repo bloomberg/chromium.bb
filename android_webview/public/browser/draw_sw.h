@@ -35,8 +35,6 @@ struct AwPixelInfo {
   float matrix[9];      // The matrix currently in effect on the canvas.
   int clip_rect_count;  // Number of rects in |clip_rects|.
   int* clip_rects;      // Clip area: 4 ints per rect in {x,y,w,h} format.
-  void* clip_region;    // TODO(joth): remove clip_region and clip_region_size.
-  size_t clip_region_size;
   // NOTE: If you add more members, bump kAwPixelInfoVersion.
 };
 

@@ -497,12 +497,7 @@ bool InProcessViewRenderer::RenderViaAuxilaryBitmapIfNeeded(
   SkCanvas canvas(&device);
   canvas.setMatrix(matrix);
 
-  if (pixels->clip_region) {
-    SkRegion clip_region;
-    size_t bytes_read = clip_region.readFromMemory(pixels->clip_region);
-    DCHECK_EQ(pixels->clip_region_size, bytes_read);
-    canvas.setClipRegion(clip_region);
-  } else if (pixels->clip_rect_count) {
+  if (pixels->clip_rect_count) {
     SkRegion clip;
     for (int i = 0; i < pixels->clip_rect_count; ++i) {
       clip.op(SkIRect::MakeXYWH(pixels->clip_rects[i + 0],
