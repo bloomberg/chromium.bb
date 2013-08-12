@@ -251,10 +251,10 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
   return true;
 }
 
-// Executes handler specified with |task| for |url|.
-void ExecuteHandler(Profile* profile,
-                    const file_tasks::TaskDescriptor& task,
-                    const GURL& url) {
+// Opens the file specified by |url| with |task|.
+void OpenFileWithTask(Profile* profile,
+                      const file_tasks::TaskDescriptor& task,
+                      const GURL& url) {
   // If File Browser has not been open yet then it did not request access
   // to the file system. Do it now.
   if (!GrantFileSystemAccessToFileBrowser(profile))
@@ -279,8 +279,14 @@ void ExecuteHandler(Profile* profile,
       file_tasks::FileTaskFinishedCallback());
 }
 
-void OpenFileBrowserImpl(const base::FilePath& path,
-                         const std::string& action_id) {
+// Opens the file specified with |path|. Used to implement internal handlers
+// of special action IDs such as "auto-open", "open", and "select".
+void OpenFileWithInternalActionId(const base::FilePath& path,
+                                  const std::string& action_id) {
+  DCHECK(action_id == "auto-open" ||
+         action_id == "open" ||
+         action_id == "select");
+
   content::RecordAction(UserMetricsAction("ShowFileBrowserFullTab"));
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
@@ -291,7 +297,7 @@ void OpenFileBrowserImpl(const base::FilePath& path,
   file_tasks::TaskDescriptor task(kFileBrowserDomain,
                                   file_tasks::kFileBrowserHandlerTaskType,
                                   action_id);
-  ExecuteHandler(profile, task, url);
+  OpenFileWithTask(profile, task, url);
 }
 
 Browser* GetBrowserForUrl(GURL target_url) {
@@ -308,7 +314,10 @@ Browser* GetBrowserForUrl(GURL target_url) {
   return NULL;
 }
 
-bool ExecuteDefaultAppHandler(Profile* profile,
+// Opens the file specified by |path| and |url| with a file handler,
+// preferably the default handler for the type of the file.  Returns false if
+// no file handler is found.
+bool OpenFileWithFileHandler(Profile* profile,
                               const base::FilePath& path,
                               const GURL& url,
                               const std::string& mime_type,
@@ -353,7 +362,7 @@ bool ExecuteDefaultAppHandler(Profile* profile,
         file_tasks::TaskDescriptor task(extension->id(),
                                         file_tasks::kFileHandlerTaskType,
                                         handler->id);
-        ExecuteHandler(profile, task, url);
+        OpenFileWithTask(profile, task, url);
         return true;
 
       } else if (!first_handler) {
@@ -366,16 +375,32 @@ bool ExecuteDefaultAppHandler(Profile* profile,
     file_tasks::TaskDescriptor task(extension_for_first_handler->id(),
                                     file_tasks::kFileHandlerTaskType,
                                     first_handler->id);
-    ExecuteHandler(profile, task, url);
+    OpenFileWithTask(profile, task, url);
     return true;
   }
   return false;
 }
 
-bool ExecuteExtensionHandler(Profile* profile,
-                             const base::FilePath& path,
-                             const FileBrowserHandler& handler,
-                             const GURL& url) {
+// Returns true if |action_id| indicates that the file currently being
+// handled should be opened with the browser (i.e. should be opened with
+// OpenFileWithBrowser()).
+bool ShouldBeOpenedWithBrowser(const std::string& action_id) {
+  return (action_id == "view-pdf" ||
+          action_id == "view-swf" ||
+          action_id == "view-in-browser" ||
+          action_id == "install-crx" ||
+          action_id == "open-hosted-generic" ||
+          action_id == "open-hosted-gdoc" ||
+          action_id == "open-hosted-gsheet" ||
+          action_id == "open-hosted-gslides");
+}
+
+// Opens the file specified by |path| and |url| with the file browser handler
+// specified by |handler|. Returns false if failed to open the file.
+bool OpenFileWithFileBrowserHandler(Profile* profile,
+                                    const base::FilePath& path,
+                                    const FileBrowserHandler& handler,
+                                    const GURL& url) {
   std::string extension_id = handler.extension_id();
   std::string action_id = handler.id();
   Browser* browser = chrome::FindLastActiveWithProfile(profile,
@@ -386,28 +411,26 @@ bool ExecuteExtensionHandler(Profile* profile,
   if (!browser)
     return true;
 
-  if (extension_id == kFileBrowserDomain) {
-    if (action_id == kFileBrowserGalleryTaskId ||
-        action_id == kFileBrowserMountArchiveTaskId ||
-        action_id == kFileBrowserPlayTaskId ||
-        action_id == kFileBrowserWatchTaskId) {
-      file_tasks::TaskDescriptor task(extension_id,
-                                      file_tasks::kFileBrowserHandlerTaskType,
-                                      action_id);
-      ExecuteHandler(profile, task, url);
-      return true;
-    }
-    return ExecuteBuiltinHandler(browser, path);
+  // Some action IDs of the file manager's file browser handlers require the
+  // file to be directly opened with the browser.
+  if (extension_id == kFileBrowserDomain &&
+      ShouldBeOpenedWithBrowser(action_id)) {
+    return OpenFileWithBrowser(browser, path);
   }
 
   file_tasks::TaskDescriptor task(extension_id,
                                   file_tasks::kFileBrowserHandlerTaskType,
                                   action_id);
-  ExecuteHandler(profile, task, url);
+  OpenFileWithTask(profile, task, url);
   return true;
 }
 
-bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
+// Opens the file specified by |path| with a handler (either of file browser
+// handler or file handler, preferably the default handler for the type of
+// the file), or opens the file with the browser. Returns false if failed to
+// open the file.
+bool OpenFileWithHandlerOrBrowser(Profile* profile,
+                                  const base::FilePath& path) {
   GURL url;
   if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
     return false;
@@ -418,17 +441,17 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
 
   // We choose the file handler from the following in decreasing priority or
   // fail if none support the file type:
-  // 1. default extension
-  // 2. default app
+  // 1. default file browser handler
+  // 2. default file handler
   // 3. a fallback handler (e.g. opening in the browser)
-  // 4. non-default app
-  // 5. non-default extension
+  // 4. non-default file handler
+  // 5. non-default file browser handler
   // Note that there can be at most one of default extension and default app.
   const FileBrowserHandler* handler =
       file_browser_handlers::FindFileBrowserHandlerForURLAndPath(
           profile, url, path);
   if (!handler) {
-    return ExecuteDefaultAppHandler(
+    return OpenFileWithFileHandler(
         profile, path, url, mime_type, default_task_id);
   }
 
@@ -438,11 +461,11 @@ bool ExecuteDefaultHandler(Profile* profile, const base::FilePath& path) {
         handler->id());
   if (handler_task_id != default_task_id &&
       !file_browser_handlers::IsFallbackFileBrowserHandler(handler) &&
-      ExecuteDefaultAppHandler(
+      OpenFileWithFileHandler(
           profile, path, url, mime_type, default_task_id)) {
     return true;
   }
-  return ExecuteExtensionHandler(profile, path, *handler, url);
+  return OpenFileWithFileBrowserHandler(profile, path, *handler, url);
 }
 
 // Reads the alternate URL from a GDoc file. When it fails, returns a file URL
@@ -462,10 +485,11 @@ void ContinueViewItem(Profile* profile,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error == base::PLATFORM_FILE_OK) {
-    // A directory exists at |path|. Open it with FileBrowser.
-    OpenFileBrowserImpl(path, "open");
+    // A directory exists at |path|. Open it with the file manager.
+    OpenFileWithInternalActionId(path, "open");
   } else {
-    if (!ExecuteDefaultHandler(profile, path))
+    // |path| should be a file. Open it with a handler or the browser.
+    if (!OpenFileWithHandlerOrBrowser(profile, path))
       ShowWarningMessageBox(profile, path);
   }
 }
@@ -669,7 +693,7 @@ string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
 }
 
 void ViewRemovableDrive(const base::FilePath& path) {
-  OpenFileBrowserImpl(path, "auto-open");
+  OpenFileWithInternalActionId(path, "auto-open");
 }
 
 void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
@@ -739,10 +763,10 @@ void ViewItem(const base::FilePath& path) {
 
 void ShowFileInFolder(const base::FilePath& path) {
   // This action changes the selection so we do not reuse existing tabs.
-  OpenFileBrowserImpl(path, "select");
+  OpenFileWithInternalActionId(path, "select");
 }
 
-bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path) {
+bool OpenFileWithBrowser(Browser* browser, const base::FilePath& path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   Profile* profile = browser->profile();

@@ -633,7 +633,7 @@ bool ViewFilesFunction::RunImpl() {
 
   if (browser) {
     for (size_t i = 0; i < files.size(); ++i) {
-      bool handled = util::ExecuteBuiltinHandler(browser, files[i]);
+      bool handled = util::OpenFileWithBrowser(browser, files[i]);
       if (!handled && files.size() == 1)
         success = false;
     }

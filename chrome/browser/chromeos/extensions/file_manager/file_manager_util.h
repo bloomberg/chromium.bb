@@ -73,15 +73,27 @@ void ViewRemovableDrive(const base::FilePath& path);
 // flag to the dialog. If it is enabled, then auto-choice gets disabled.
 void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode);
 
-// Opens item with the default File Browser handler.
+// Opens an item (file or directory). If the target is a directory, the
+// directory will be opened in the file manager. If the target is a file, the
+// file will be opened using a file handler, a file browser handler, or the
+// browser (open in a tab). The default handler has precedence over other
+// handlers, if defined for the type of the target file.
 void ViewItem(const base::FilePath& path);
 
 // Opens file browser on the folder containing the file, with the file selected.
 void ShowFileInFolder(const base::FilePath& path);
 
-// Executes the built-in File Manager handler or tries to open |path| directly
-// in the browser. Returns false if neither is possible.
-bool ExecuteBuiltinHandler(Browser* browser, const base::FilePath& path);
+// Opens the file specified by |path| with the browser. This function takes
+// care of the following intricacies:
+//
+// - If the file is a Drive hosted document, the hosted document will be
+//   opened in the browser by extracting the right URL for the file.
+// - If the file is a CRX file, the CRX file will be installed.
+// - If the file is on Drive, the file will be downloaded from Drive as
+//   needed.
+//
+// Returns false if failed to open. This happens if the file type is unknown.
+bool OpenFileWithBrowser(Browser* browser, const base::FilePath& path);
 
 // Checks whether a pepper plugin for |file_extension| is enabled.
 bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension);
