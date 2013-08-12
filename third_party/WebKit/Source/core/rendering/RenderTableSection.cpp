@@ -736,6 +736,11 @@ int RenderTableSection::distributeExtraLogicalHeightToRows(int extraLogicalHeigh
     return extraLogicalHeight - remainingExtraLogicalHeight;
 }
 
+static bool shouldFlexCellChild(RenderObject* cellDescendant)
+{
+    return cellDescendant->isReplaced() || (cellDescendant->isBox() && toRenderBox(cellDescendant)->scrollsOverflow());
+}
+
 void RenderTableSection::layoutRows()
 {
 #ifndef NDEBUG
@@ -795,33 +800,24 @@ void RenderTableSection::layoutRows()
             bool flexAllChildren = cell->style()->logicalHeight().isFixed()
                 || (!table()->style()->logicalHeight().isAuto() && rHeight != cell->logicalHeight());
 
-            for (RenderObject* o = cell->firstChild(); o; o = o->nextSibling()) {
-                if (!o->isText() && o->style()->logicalHeight().isPercent() && (flexAllChildren || o->isReplaced() || (o->isBox() && toRenderBox(o)->scrollsOverflow()))) {
-                    // Tables with no sections do not flex.
-                    if (!o->isTable() || toRenderTable(o)->hasSections()) {
-                        o->setNeedsLayout(MarkOnlyThis);
-                        cellChildrenFlex = true;
-                    }
+            for (RenderObject* child = cell->firstChild(); child; child = child->nextSibling()) {
+                if (!child->isText() && child->style()->logicalHeight().isPercent()
+                    && (flexAllChildren || shouldFlexCellChild(child))
+                    && (!child->isTable() || toRenderTable(child)->hasSections())) {
+                    cellChildrenFlex = true;
+                    break;
                 }
             }
 
-            if (TrackedRendererListHashSet* percentHeightDescendants = cell->percentHeightDescendants()) {
-                TrackedRendererListHashSet::iterator end = percentHeightDescendants->end();
-                for (TrackedRendererListHashSet::iterator it = percentHeightDescendants->begin(); it != end; ++it) {
-                    RenderBox* box = *it;
-                    if (!box->isReplaced() && !box->scrollsOverflow() && !flexAllChildren)
-                        continue;
-
-                    while (box != cell) {
-                        if (box->normalChildNeedsLayout())
+            if (!cellChildrenFlex) {
+                if (TrackedRendererListHashSet* percentHeightDescendants = cell->percentHeightDescendants()) {
+                    TrackedRendererListHashSet::iterator end = percentHeightDescendants->end();
+                    for (TrackedRendererListHashSet::iterator it = percentHeightDescendants->begin(); it != end; ++it) {
+                        if (flexAllChildren || shouldFlexCellChild(*it)) {
+                            cellChildrenFlex = true;
                             break;
-                        box->setChildNeedsLayout(MarkOnlyThis);
-                        box = box->containingBlock();
-                        ASSERT(box);
-                        if (!box)
-                            break;
+                        }
                     }
-                    cellChildrenFlex = true;
                 }
             }
 
