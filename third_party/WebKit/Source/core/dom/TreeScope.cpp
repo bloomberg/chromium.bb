@@ -55,7 +55,7 @@ namespace WebCore {
 
 struct SameSizeAsTreeScope {
     virtual ~SameSizeAsTreeScope();
-    void* pointers[9];
+    void* pointers[8];
     int ints[1];
 };
 
@@ -151,15 +151,6 @@ Element* TreeScope::getElementById(const AtomicString& elementId) const
     return m_elementsById->getElementById(elementId.impl(), this);
 }
 
-const Vector<Element*>* TreeScope::getAllElementsById(const AtomicString& elementId) const
-{
-    if (elementId.isEmpty())
-        return 0;
-    if (!m_elementsById)
-        return 0;
-    return m_elementsById->getAllElementsById(elementId.impl(), this);
-}
-
 void TreeScope::addElementById(const AtomicString& elementId, Element* element)
 {
     if (!m_elementsById)
@@ -174,29 +165,6 @@ void TreeScope::removeElementById(const AtomicString& elementId, Element* elemen
         return;
     m_elementsById->remove(elementId.impl(), element);
     m_idTargetObserverRegistry->notifyObservers(elementId);
-}
-
-Element* TreeScope::getElementByName(const AtomicString& name) const
-{
-    if (name.isEmpty())
-        return 0;
-    if (!m_elementsByName)
-        return 0;
-    return m_elementsByName->getElementByName(name.impl(), this);
-}
-
-void TreeScope::addElementByName(const AtomicString& name, Element* element)
-{
-    if (!m_elementsByName)
-        m_elementsByName = adoptPtr(new DocumentOrderedMap);
-    m_elementsByName->add(name.impl(), element);
-}
-
-void TreeScope::removeElementByName(const AtomicString& name, Element* element)
-{
-    if (!m_elementsByName)
-        return;
-    m_elementsByName->remove(name.impl(), element);
 }
 
 Node* TreeScope::ancestorInThisScope(Node* node) const

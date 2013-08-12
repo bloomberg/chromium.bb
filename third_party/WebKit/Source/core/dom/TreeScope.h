@@ -56,17 +56,10 @@ public:
 
     Element* adjustedFocusedElement();
     Element* getElementById(const AtomicString&) const;
-    const Vector<Element*>* getAllElementsById(const AtomicString&) const;
-    bool hasElementWithId(StringImpl*) const; // FIXME: The argument should have type "const AtomicString&"" rather than "StringImpl*".
-    bool containsMultipleElementsWithId(const AtomicString&) const;
-    void addElementById(const AtomicString&, Element*);
-    void removeElementById(const AtomicString&, Element*);
-
-    Element* getElementByName(const AtomicString&) const;
-    bool hasElementWithName(const AtomicString&) const;
-    bool containsMultipleElementsWithName(const AtomicString&) const;
-    void addElementByName(const AtomicString&, Element*);
-    void removeElementByName(const AtomicString&, Element*);
+    bool hasElementWithId(StringImpl* id) const;
+    bool containsMultipleElementsWithId(const AtomicString& id) const;
+    void addElementById(const AtomicString& elementId, Element*);
+    void removeElementById(const AtomicString& elementId, Element*);
 
     Document* documentScope() const { return m_documentScope; }
 
@@ -174,7 +167,6 @@ private:
     int m_guardRefCount;
 
     OwnPtr<DocumentOrderedMap> m_elementsById;
-    OwnPtr<DocumentOrderedMap> m_elementsByName;
     OwnPtr<DocumentOrderedMap> m_imageMapsByName;
     OwnPtr<DocumentOrderedMap> m_labelsByForAttribute;
 
@@ -192,18 +184,6 @@ inline bool TreeScope::hasElementWithId(StringImpl* id) const
 inline bool TreeScope::containsMultipleElementsWithId(const AtomicString& id) const
 {
     return m_elementsById && m_elementsById->containsMultiple(id.impl());
-}
-
-inline bool TreeScope::hasElementWithName(const AtomicString& id) const
-{
-    ASSERT(id.impl());
-    return m_elementsByName && m_elementsByName->contains(id.impl());
-}
-
-inline bool TreeScope::containsMultipleElementsWithName(const AtomicString& name) const
-{
-    ASSERT(name.impl());
-    return m_elementsByName && m_elementsByName->containsMultiple(name.impl());
 }
 
 Node* nodeFromPoint(Document*, int x, int y, LayoutPoint* localPoint = 0);
