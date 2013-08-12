@@ -241,7 +241,7 @@ bool AppListControllerDelegateCocoa::CanPin() {
 
 bool AppListControllerDelegateCocoa::CanDoCreateShortcutsFlow(
     bool is_platform_app) {
-  return is_platform_app && apps::IsAppShimsEnabled();
+  return false;
 }
 
 void AppListControllerDelegateCocoa::DoCreateShortcutsFlow(
