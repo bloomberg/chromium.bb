@@ -38,7 +38,7 @@ class DevToolsProtocol {
    public:
     // Takes ownership of |params|.
     Command(int id, const std::string& method, base::DictionaryValue* params);
-    virtual  ~Command();
+    virtual ~Command();
 
     int id() { return id_; }
     std::string Serialize();
@@ -47,6 +47,23 @@ class DevToolsProtocol {
     int id_;
 
     DISALLOW_COPY_AND_ASSIGN(Command);
+  };
+
+  class Response {
+   public:
+    virtual ~Response();
+
+    int id() { return id_; }
+    int error_code() { return error_code_; }
+
+   private:
+    friend class DevToolsProtocol;
+
+    Response(int id, int error_code);
+    int id_;
+    int error_code_;
+
+    DISALLOW_COPY_AND_ASSIGN(Response);
   };
 
   class Notification : public Message {
@@ -63,7 +80,11 @@ class DevToolsProtocol {
     DISALLOW_COPY_AND_ASSIGN(Notification);
   };
 
+  // Result ownership is passed to the caller.
   static Notification* ParseNotification(const std::string& json);
+
+  // Result ownership is passed to the caller.
+  static Response* ParseResponse(const std::string& json);
 
  private:
 

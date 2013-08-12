@@ -30,6 +30,14 @@ namespace {
 
 const int kBufferSize = 16 * 1024;
 
+enum {
+  kStatusError = -3,
+  kStatusDisconnecting = -2,
+  kStatusConnecting = -1,
+  kStatusOK = 0,
+  // Positive values are used to count open connections.
+};
+
 static const char kPortAttribute[] = "port";
 static const char kConnectionIdAttribute[] = "connectionId";
 static const char kTetheringAccepted[] = "Tethering.accepted";
@@ -41,10 +49,14 @@ static const char kDevToolsRemoteBrowserTarget[] = "/devtools/browser";
 
 class SocketTunnel {
  public:
-  explicit SocketTunnel(const std::string& location)
+  typedef base::Callback<void(int)> CounterCallback;
+
+  SocketTunnel(const std::string& location, const CounterCallback& callback)
       : location_(location),
         pending_writes_(0),
-        pending_destruction_(false) {
+        pending_destruction_(false),
+        callback_(callback) {
+    callback_.Run(1);
   }
 
   void Start(int result, net::StreamSocket* socket) {
@@ -93,6 +105,7 @@ class SocketTunnel {
       host_socket_->Disconnect();
     if (remote_socket_)
       remote_socket_->Disconnect();
+    callback_.Run(-1);
   }
 
   void OnConnected(int result) {
@@ -188,6 +201,7 @@ class SocketTunnel {
   net::AddressList address_list_;
   int pending_writes_;
   bool pending_destruction_;
+  CounterCallback callback_;
 };
 
 }  // namespace
@@ -272,16 +286,103 @@ void TetheringAdbFilter::SendCommand(const std::string& method, int port) {
   base::DictionaryValue params;
   params.SetInteger(kPortAttribute, port);
   DevToolsProtocol::Command command(++command_id_, method, &params);
+
+  if (method == kTetheringBind) {
+    pending_responses_[command.id()] =
+        base::Bind(&TetheringAdbFilter::ProcessBindResponse,
+                   weak_factory_.GetWeakPtr(), port);
+#if defined(DEBUG_DEVTOOLS)
+    port_status_[port] = kStatusConnecting;
+    UpdatePortStatusMap();
+#endif  // defined(DEBUG_DEVTOOLS)
+  } else {
+    DCHECK_EQ(kTetheringUnbind, method);
+
+    PortStatusMap::iterator it = port_status_.find(port);
+    if (it != port_status_.end() && it->second == kStatusError) {
+      // The bind command failed on this port, do not attempt unbind.
+      port_status_.erase(it);
+      UpdatePortStatusMap();
+      return;
+    }
+
+    pending_responses_[command.id()] =
+        base::Bind(&TetheringAdbFilter::ProcessUnbindResponse,
+                   weak_factory_.GetWeakPtr(), port);
+#if defined(DEBUG_DEVTOOLS)
+    port_status_[port] = kStatusDisconnecting;
+    UpdatePortStatusMap();
+#endif  // defined(DEBUG_DEVTOOLS)
+  }
+
   web_socket_->SendFrameOnHandlerThread(command.Serialize());
+}
+
+bool TetheringAdbFilter::ProcessResponse(const std::string& message) {
+  scoped_ptr<DevToolsProtocol::Response> response(
+      DevToolsProtocol::ParseResponse(message));
+  if (!response)
+    return false;
+
+  CommandCallbackMap::iterator it = pending_responses_.find(response->id());
+  if (it == pending_responses_.end())
+    return false;
+
+  it->second.Run(response->error_code() ? kStatusError : kStatusOK);
+  pending_responses_.erase(it);
+  return true;
+}
+
+void TetheringAdbFilter::ProcessBindResponse(int port, PortStatus status) {
+  port_status_[port] = status;
+  UpdatePortStatusMap();
+}
+
+void TetheringAdbFilter::ProcessUnbindResponse(int port, PortStatus status) {
+  PortStatusMap::iterator it = port_status_.find(port);
+  if (it == port_status_.end())
+    return;
+  if (status == kStatusError)
+    it->second = status;
+  else
+    port_status_.erase(it);
+  UpdatePortStatusMap();
+}
+
+void TetheringAdbFilter::UpdateSocketCount(int port, int increment) {
+#if defined(DEBUG_DEVTOOLS)
+  PortStatusMap::iterator it = port_status_.find(port);
+  if (it == port_status_.end())
+    return;
+  if (it->second < 0 || (it->second == 0 && increment < 0))
+    return;
+  it->second += increment;
+  UpdatePortStatusMap();
+#endif  // defined(DEBUG_DEVTOOLS)
+}
+
+void TetheringAdbFilter::UpdatePortStatusMap() {
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+     base::Bind(&TetheringAdbFilter::UpdatePortStatusMapOnUIThread,
+        weak_factory_.GetWeakPtr(), port_status_));
+}
+
+void TetheringAdbFilter::UpdatePortStatusMapOnUIThread(
+    const PortStatusMap& status_map) {
+  port_status_on_ui_thread_ = status_map;
+}
+
+const TetheringAdbFilter::PortStatusMap&
+TetheringAdbFilter::GetPortStatusMap() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return port_status_on_ui_thread_;
 }
 
 bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
   DCHECK_EQ(base::MessageLoop::current(), adb_message_loop_);
 
-  // Only parse messages that might be Tethering.accepted event.
-  if (message.length() > 200 ||
-      message.find(kTetheringAccepted) == std::string::npos)
-    return false;
+  if (ProcessResponse(message))
+    return true;
 
   scoped_ptr<DevToolsProtocol::Notification> notification(
       DevToolsProtocol::ParseNotification(message));
@@ -307,7 +408,11 @@ bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
 
   std::string location = it->second;
 
-  SocketTunnel* tunnel = new SocketTunnel(location);
+  SocketTunnel* tunnel = new SocketTunnel(location,
+      base::Bind(&TetheringAdbFilter::UpdateSocketCount,
+                weak_factory_.GetWeakPtr(),
+                port));
+
   device_->OpenSocket(connection_id.c_str(),
       base::Bind(&SocketTunnel::Start, base::Unretained(tunnel)));
   return true;
@@ -322,6 +427,8 @@ class PortForwardingController::Connection : public AdbWebSocket::Delegate {
       PrefService* pref_service);
 
   void Shutdown();
+
+  TetheringAdbFilter::PortStatusMap port_status();
 
  private:
   virtual ~Connection();
@@ -359,6 +466,14 @@ void PortForwardingController::Connection::Shutdown() {
   registry_ = NULL;
   // This will have no effect if the socket is not connected yet.
   web_socket_->Disconnect();
+}
+
+TetheringAdbFilter::PortStatusMap
+PortForwardingController::Connection::port_status() {
+  if (tethering_adb_filter_)
+    return tethering_adb_filter_->GetPortStatusMap();
+  else
+    return TetheringAdbFilter::PortStatusMap();
 }
 
 PortForwardingController::Connection::~Connection() {
@@ -411,10 +526,13 @@ void PortForwardingController::UpdateDeviceList(
     const DevToolsAdbBridge::RemoteDevices& devices) {
   for (DevToolsAdbBridge::RemoteDevices::const_iterator it = devices.begin();
        it != devices.end(); ++it) {
-    if (registry_.find((*it)->serial()) == registry_.end()) {
+    Registry::iterator rit = registry_.find((*it)->serial());
+    if (rit == registry_.end()) {
       // Will delete itself when disconnected.
       new Connection(
           &registry_, (*it)->device(), adb_message_loop_, pref_service_);
+    } else {
+      (*it)->set_port_status((*rit).second->port_status());
     }
   }
 }

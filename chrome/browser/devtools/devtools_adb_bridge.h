@@ -162,6 +162,9 @@ class DevToolsAdbBridge
 
   class RemoteDevice : public base::RefCounted<RemoteDevice> {
    public:
+    typedef int PortStatus;
+    typedef std::map<int, PortStatus> PortStatusMap;
+
     explicit RemoteDevice(scoped_refptr<DevToolsAdbBridge> bridge,
                           scoped_refptr<AndroidDevice> device);
 
@@ -174,6 +177,11 @@ class DevToolsAdbBridge
       browsers_.push_back(browser);
     }
 
+    const PortStatusMap& port_status() { return port_status_; }
+    void set_port_status(const PortStatusMap& port_status) {
+      port_status_ = port_status;
+    }
+
    private:
     friend class base::RefCounted<RemoteDevice>;
     virtual ~RemoteDevice();
@@ -181,6 +189,7 @@ class DevToolsAdbBridge
     scoped_refptr<DevToolsAdbBridge> bridge_;
     scoped_refptr<AndroidDevice> device_;
     RemoteBrowsers browsers_;
+    PortStatusMap port_status_;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteDevice);
   };

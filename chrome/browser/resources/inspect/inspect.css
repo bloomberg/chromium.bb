@@ -74,13 +74,59 @@ img {
   padding-bottom: 4px;
 }
 
-.section {
-  font-size: 150%;
+.device-header {
+  -webkit-box-align: baseline;
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
   margin: 10px 0 0;
   padding: 2px 0;
 }
 
-.small-section {
+.device-name {
+  font-size: 150%;
+}
+
+.device-serial {
+  color: #888;
+  font-size: 80%;
+  margin-left: 6px;
+}
+
+.device-ports {
+  -webkit-box-orient: horizontal;
+  display: -webkit-box;
+  margin-left: 8px;
+}
+
+.port-icon {
+  -webkit-border-radius: 6px;
+  background-color: rgb(64, 192, 64);
+  border: 0 solid transparent;
+  height: 12px;
+  margin: 2px;
+  width: 12px;
+}
+
+.port-icon.error {
+  background-color: rgb(224, 32, 32);
+}
+
+.port-icon.connected {
+  -webkit-transform: scale(1.2);
+  background-color: rgb(0, 255, 0);
+}
+
+.port-icon.transient {
+  -webkit-transform: scale(1.2);
+  background-color: orange;
+}
+
+.port-number {
+  height: 16px;
+  margin-right: 5px;
+}
+
+.browser-header {
   font-weight: bold;
   margin: 5px 0 0;
   padding: 2px 0;

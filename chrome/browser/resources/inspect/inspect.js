@@ -113,9 +113,11 @@ function populateDeviceLists(devices) {
   for (var d = 0; d < devices.length; d++) {
     var device = devices[d];
 
+    var devicePorts;
     var browserList;
     var deviceSection = $(device.adbGlobalId);
     if (deviceSection) {
+      devicePorts = deviceSection.querySelector('.device-ports');
       browserList = deviceSection.querySelector('.browsers');
     } else {
       deviceSection = document.createElement('div');
@@ -124,9 +126,24 @@ function populateDeviceLists(devices) {
       deviceList.appendChild(deviceSection);
 
       var deviceHeader = document.createElement('div');
-      deviceHeader.className = 'section';
-      deviceHeader.textContent = device.adbModel;
+      deviceHeader.className = 'device-header';
       deviceSection.appendChild(deviceHeader);
+
+      var deviceName = document.createElement('div');
+      deviceName.className = 'device-name';
+      deviceName.textContent = device.adbModel;
+      deviceHeader.appendChild(deviceName);
+
+      if (device.adbSerial) {
+        var deviceSerial = document.createElement('div');
+        deviceSerial.className = 'device-serial';
+        deviceSerial.textContent = '#' + device.adbSerial.toUpperCase();
+        deviceHeader.appendChild(deviceSerial);
+      }
+
+      devicePorts = document.createElement('div');
+      devicePorts.className = 'device-ports';
+      deviceHeader.appendChild(devicePorts);
 
       browserList = document.createElement('div');
       browserList.className = 'browsers';
@@ -135,6 +152,29 @@ function populateDeviceLists(devices) {
 
     if (alreadyDisplayed(deviceSection, device))
       continue;
+
+    devicePorts.textContent = '';
+    if (device.adbPortStatus) {
+      for (var port in device.adbPortStatus) {
+        var status = device.adbPortStatus[port];
+        var portIcon = document.createElement('div');
+        portIcon.className = 'port-icon';
+        if (status > 0)
+          portIcon.classList.add('connected');
+        else if (status == -1 || status == -2)
+          portIcon.classList.add('transient');
+        else if (status < 0)
+          portIcon.classList.add('error');
+        devicePorts.appendChild(portIcon);
+
+        var portNumber = document.createElement('div');
+        portNumber.className = 'port-number';
+        portNumber.textContent = ':' + port;
+        if (status > 0)
+          portNumber.textContent += '(' + status + ')';
+        devicePorts.appendChild(portNumber);
+      }
+    }
 
     var newBrowserIds =
         device.browsers.map(function(b) { return b.adbGlobalId });
@@ -149,7 +189,6 @@ function populateDeviceLists(devices) {
       var browserSection = $(browser.adbGlobalId);
       if (browserSection) {
         pageList = browserSection.querySelector('.pages');
-        pageList.textContent = '';
       } else {
         browserSection = document.createElement('div');
         browserSection.id = browser.adbGlobalId;
@@ -157,7 +196,7 @@ function populateDeviceLists(devices) {
         browserList.appendChild(browserSection);
 
         var browserHeader = document.createElement('div');
-        browserHeader.className = 'small-section';
+        browserHeader.className = 'browser-header';
         browserHeader.textContent = browser.adbBrowserName;
         browserSection.appendChild(browserHeader);
 
@@ -193,6 +232,7 @@ function populateDeviceLists(devices) {
       if (alreadyDisplayed(browserSection, browser))
         continue;
 
+      pageList.textContent = '';
       for (var p = 0; p < browser.pages.length; p++) {
         var page = browser.pages[p];
         var row = addTargetToList(

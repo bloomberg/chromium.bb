@@ -96,6 +96,7 @@ static const char kAdbBrowserNameField[] = "adbBrowserName";
 static const char kAdbGlobalIdField[] = "adbGlobalId";
 static const char kAdbBrowsersField[] = "browsers";
 static const char kAdbPagesField[] = "pages";
+static const char kAdbPortStatus[] = "adbPortStatus";
 
 DictionaryValue* BuildTargetDescriptor(
     const std::string& target_type,
@@ -624,6 +625,17 @@ void InspectUI::RemoteDevicesChanged(
       }
       browser_list->Append(browser_data);
     }
+
+    DictionaryValue* port_status_dict = new DictionaryValue();
+    typedef DevToolsAdbBridge::RemoteDevice::PortStatusMap StatusMap;
+    const StatusMap& port_status = device->port_status();
+    for (StatusMap::const_iterator it = port_status.begin();
+         it != port_status.end(); ++it) {
+      port_status_dict->SetInteger(
+          base::StringPrintf("%d", it->first), it->second);
+    }
+    device_data->Set(kAdbPortStatus, port_status_dict);
+
     device_list.Append(device_data);
   }
   web_ui()->CallJavascriptFunction("populateDeviceLists", device_list);
