@@ -21,6 +21,7 @@
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/autocomplete/autocomplete_provider.h"
 #include "chrome/browser/autocomplete/autocomplete_provider_listener.h"
+#include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/in_memory_url_index.h"
 #include "chrome/browser/history/shortcuts_backend.h"
@@ -574,37 +575,38 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
       spans_description, base::Time::Now(), 1);
 
   // Maximal score.
+  const int max_relevance = AutocompleteResult::kLowestDefaultScore - 1;
   const int kMaxScore = provider_->CalculateScore(
-      ASCIIToUTF16("test"), shortcut);
+      ASCIIToUTF16("test"), shortcut, max_relevance);
 
   // Score decreases as percent of the match is decreased.
   int score_three_quarters =
-      provider_->CalculateScore(ASCIIToUTF16("tes"), shortcut);
+      provider_->CalculateScore(ASCIIToUTF16("tes"), shortcut, max_relevance);
   EXPECT_LT(score_three_quarters, kMaxScore);
   int score_one_half =
-      provider_->CalculateScore(ASCIIToUTF16("te"), shortcut);
+      provider_->CalculateScore(ASCIIToUTF16("te"), shortcut, max_relevance);
   EXPECT_LT(score_one_half, score_three_quarters);
   int score_one_quarter =
-      provider_->CalculateScore(ASCIIToUTF16("t"), shortcut);
+      provider_->CalculateScore(ASCIIToUTF16("t"), shortcut, max_relevance);
   EXPECT_LT(score_one_quarter, score_one_half);
 
   // Should decay with time - one week.
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(7);
   int score_week_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut);
+      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
   EXPECT_LT(score_week_old, kMaxScore);
 
   // Should decay more in two weeks.
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(14);
   int score_two_weeks_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut);
+      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
   EXPECT_LT(score_two_weeks_old, score_week_old);
 
   // But not if it was activly clicked on. 2 hits slow decaying power.
   shortcut.number_of_hits = 2;
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(14);
   int score_popular_two_weeks_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut);
+      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
   EXPECT_LT(score_two_weeks_old, score_popular_two_weeks_old);
   // But still decayed.
   EXPECT_LT(score_popular_two_weeks_old, kMaxScore);
@@ -613,7 +615,7 @@ TEST_F(ShortcutsProviderTest, CalculateScore) {
   shortcut.number_of_hits = 3;
   shortcut.last_access_time = base::Time::Now() - base::TimeDelta::FromDays(14);
   int score_more_popular_two_weeks_old =
-      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut);
+      provider_->CalculateScore(ASCIIToUTF16("test"), shortcut, max_relevance);
   EXPECT_LT(score_two_weeks_old, score_more_popular_two_weeks_old);
   EXPECT_LT(score_popular_two_weeks_old, score_more_popular_two_weeks_old);
   // But still decayed.

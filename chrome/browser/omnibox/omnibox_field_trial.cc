@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/common/metrics/metrics_util.h"
 #include "chrome/common/metrics/variations/variation_ids.h"
@@ -23,10 +24,10 @@ const char kHUPCullRedirectsFieldTrialName[] = "OmniboxHUPCullRedirects";
 const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
-const char kShortcutsScoringFieldTrialName[] = "OmniboxShortcutsScoring";
 const char kBundledExperimentFieldTrialName[] = "OmniboxBundledExperimentV1";
 
 // Rule names used by the bundled experiment.
+const char kShortcutsScoringMaxRelevanceRule[] = "ShortcutsScoringMaxRelevance";
 const char kSearchHistoryRule[] = "SearchHistory";
 const char kDemoteByTypeRule[] = "DemoteByType";
 
@@ -135,14 +136,9 @@ int OmniboxFieldTrial::GetDisabledProviderTypes() {
       continue;
     int types = 0;
     if (!base::StringToInt(base::StringPiece(
-            group_name.substr(strlen(kDisabledProviders))), &types)) {
-      LOG(WARNING) << "Malformed DisabledProviders string: " << group_name;
+            group_name.substr(strlen(kDisabledProviders))), &types))
       continue;
-    }
-    if (types == 0)
-      LOG(WARNING) << "Expecting a non-zero bitmap; group = " << group_name;
-    else
-      provider_types |= types;
+    provider_types |= types;
   }
   return provider_types;
 }
@@ -207,20 +203,18 @@ bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
   return false;
 }
 
-// If the active group name starts with "MaxRelevance_", extract the
-// int that immediately following that, returning true on success.
-bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(int* max_relevance) {
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kShortcutsScoringFieldTrialName);
-  const char kMaxRelevanceGroupPrefix[] = "MaxRelevance_";
-  if (!StartsWithASCII(group_name, kMaxRelevanceGroupPrefix, true))
+bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(
+    AutocompleteInput::PageClassification current_page_classification,
+    int* max_relevance) {
+  // The value of the rule is a string that encodes an integer containing
+  // the max relevance.
+  const std::string& max_relevance_str =
+      OmniboxFieldTrial::GetValueForRuleInContext(
+          kShortcutsScoringMaxRelevanceRule, current_page_classification);
+  if (max_relevance_str.empty())
     return false;
-  if (!base::StringToInt(base::StringPiece(
-          group_name.substr(strlen(kMaxRelevanceGroupPrefix))),
-                         max_relevance)) {
-    LOG(WARNING) << "Malformed MaxRelevance string: " << group_name;
+  if (!base::StringToInt(max_relevance_str, max_relevance))
     return false;
-  }
   return true;
 }
 

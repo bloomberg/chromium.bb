@@ -94,20 +94,22 @@ class OmniboxFieldTrial {
   static bool InZeroSuggestFieldTrial();
 
   // ---------------------------------------------------------
-  // For the ShortcutsScoring field trial.
+  // For the ShortcutsScoringMaxRelevance experiment that's part of the
+  // bundled omnibox field trial.
 
-  // If the field trial is active and the user is in an experiment
-  // group, extract from the experiment group name the maximum
-  // relevance score ShortcutsProvider:: CalculateScore() can return.
-  // Returns true on a successful extraction.  If the extraction failed,
-  // if the field trial is not active, etc., returns false.
-  // CalculateScore()'s return value is a product of this maximum
-  // relevance score and some attenuating factors that are all between
-  // 0 and 1.  (Note that Shortcuts results may have their scores
-  // reduced later if the assigned score is higher than allowed for
-  // non-inlineable results.  Shortcuts results are not allowed to be
+  // If the user is in an experiment group that, given the provided
+  // |current_page_classification| context, changes the maximum relevance
+  // ShortcutsProvider::CalculateScore() is supposed to assign, extract
+  // that maximum relevance score and put in in |max_relevance|.  Returns
+  // true on a successful extraction.  CalculateScore()'s return value is
+  // a product of this maximum relevance score and some attenuating factors
+  // that are all between 0 and 1.  (Note that Shortcuts results may have
+  // their scores reduced later if the assigned score is higher than allowed
+  // for non-inlineable results.  Shortcuts results are not allowed to be
   // inlined.)
-  static bool ShortcutsScoringMaxRelevance(int* max_relevance);
+  static bool ShortcutsScoringMaxRelevance(
+      AutocompleteInput::PageClassification current_page_classification,
+      int* max_relevance);
 
   // ---------------------------------------------------------
   // For the SearchHistory experiment that's part of the bundled omnibox
