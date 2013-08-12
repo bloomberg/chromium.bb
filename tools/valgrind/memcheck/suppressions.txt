@@ -4221,14 +4221,6 @@
    fun:_ZN7WebCore19V8HTMLCanvasElement18getContextCallbackERKN2v89ArgumentsE
 }
 {
-   bug_109495g
-   Memcheck:Leak
-   ...
-   fun:_ZN9TCompiler22InitBuiltInSymbolTableERK18ShBuiltInResources
-   fun:_ZN9TCompiler4InitERK18ShBuiltInResources
-   fun:ShConstructCompiler
-}
-{
    bug_109496
    Memcheck:Uninitialized
    ...
