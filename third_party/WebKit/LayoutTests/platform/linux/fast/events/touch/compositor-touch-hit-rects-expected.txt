@@ -1,47 +1,47 @@
 This tests verifies the hit test regions given to the compositor. It can only be run in DumpRenderTree. The outputted rects should cover the hit test regions of all the listed elements. Enable visualize mode to quickly validate graphically.
 
-normalFlow[0]: #document (13, 128, 290, 12)
+normalFlow: #document (13, 128, 290, 12)
 
-inlineOverflow[0]: #document (13, 145, 17, 22)
-inlineOverflow[1]: #document (14, 146, 151, 10)
-inlineOverflow[2]: #document (14, 156, 41, 10)
-inlineOverflow[3]: #document (14, 145, 151, 12)
-inlineOverflow[4]: #document (14, 155, 41, 12)
+inlineOverflow: #document (13, 145, 17, 22)
+inlineOverflow: #document (14, 145, 151, 12)
+inlineOverflow: #document (14, 146, 151, 10)
+inlineOverflow: #document (14, 155, 41, 12)
+inlineOverflow: #document (14, 156, 41, 10)
 
-absoluteChildContainer[0]: #document (13, 172, 290, 12)
-absoluteChildContainer[1]: #document (320, 173, 142, 12)
+absoluteChildContainer: #document (13, 172, 290, 12)
+absoluteChildContainer: #document (320, 173, 142, 12)
 
-relativeChildContainer[0]: #document (13, 189, 290, 22)
-relativeChildContainer[1]: #document (314, 199, 142, 12)
+relativeChildContainer: #document (13, 189, 290, 22)
+relativeChildContainer: #document (314, 199, 142, 12)
 
-translate[0]: #document (13, 216, 290, 14)
-translate[1]: #document (314, 219, 288, 12)
+translate: #document (13, 216, 290, 14)
+translate: #document (314, 219, 288, 12)
 
-transform2d[0]: #document (16, 236, 284, 20)
+transform2d: #document (16, 236, 284, 20)
 
-overhangingContainer[0]: #document (13, 262, 290, 12)
-overhangingContainer[1]: #document (14, 263, 102, 42)
-overhangingContainer[2]: #document (15, 284, 110, 10)
+overhangingContainer: #document (13, 262, 290, 12)
+overhangingContainer: #document (14, 263, 102, 42)
+overhangingContainer: #document (15, 284, 110, 10)
 
-transform3d[0]: DIV#transform3dChild (0, 0, 288, 12)
-transform3d[1]: #document (13, 315, 290, 14)
+transform3d: DIV#transform3dChild (0, 0, 288, 12)
+transform3d: #document (13, 315, 290, 14)
 
-continuation[0]: #document (13, 338, 101, 12)
-continuation[1]: #document (13, 349, 290, 12)
-continuation[2]: #document (13, 360, 121, 12)
+continuation: #document (13, 338, 101, 12)
+continuation: #document (13, 349, 290, 12)
+continuation: #document (13, 360, 121, 12)
 
-inlineAbsoluteChildContainer[0]: #document (13, 375, 262, 12)
-inlineAbsoluteChildContainer[1]: #document (320, 376, 252, 12)
+inlineAbsoluteChildContainer: #document (13, 375, 262, 12)
+inlineAbsoluteChildContainer: #document (320, 376, 252, 12)
 
-list[0]: #document (13, 396, 290, 14)
-list[1]: #document (341, 397, 261, 12)
+list: #document (13, 396, 290, 14)
+list: #document (341, 397, 261, 12)
 
-styleModified[0]: #document (13, 420, 290, 22)
+styleModified: #document (13, 420, 290, 22)
 
-scrollContent[0]: #document (14, 461, 273, 12)
+scrollContent: #document (14, 461, 273, 12)
 
-containsSvg[0]: #document (13, 477, 290, 16)
+containsSvg: #document (13, 477, 290, 16)
 
-svgline[0]: #document (13, 498, 100, 10)
+svgline: #document (13, 498, 100, 10)
 
 

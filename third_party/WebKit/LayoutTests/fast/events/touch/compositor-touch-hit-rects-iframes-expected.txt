@@ -1,11 +1,11 @@
 This tests verifies the hit test regions given to the compositor when non-composited iframes are involved. It can only be run in DumpRenderTree. The outputted rects should cover the hit test regions of all the listed elements. Enable visualize mode to quickly validate graphically.
 
-iframe[0]: #document (23, 123, 290, 22)
+iframe: #document (23, 123, 290, 22)
 
-iframe-nested[0]: #document (33, 161, 290, 22)
+iframe-nested: #document (33, 161, 290, 22)
 
-iframe-transform[0]: #document (34, 199, 320, 31)
+iframe-transform: #document (34, 199, 320, 31)
 
-iframe-doc[0]: #document (10, 253, 385, 58)
+iframe-doc: #document (10, 253, 385, 58)
 
 

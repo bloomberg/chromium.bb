@@ -7,8 +7,19 @@ function log(msg) {
     span.innerHTML = msg + '<br />';
 }
 
+function nameForNode(node) {
+    var name = node.nodeName;
+    if (node.id)
+        name += '#' + node.id;
+   return name;
+}
+
 function sortRects(a, b) {
-    return a.layerRelativeRect.left - b.layerRelativeRect.left;
+    return a.layerRelativeRect.top - b.layerRelativeRect.top
+        || a.layerRelativeRect.left - b.layerRelativeRect.left
+        || a.layerRelativeRect.width - b.layerRelativeRect.width
+        || a.layerRelativeRect.height - b.layerRelativeRect.right
+        || nameForNode(a.layerRootNode).localeCompare(nameForNode(b.layerRootNode));
 }
 
 var preRunHandlerForTest = {};
@@ -41,11 +52,8 @@ function logRects(testName, opt_noOverlay) {
     sortedRects.sort(sortRects);
     for ( var i = 0; i < sortedRects.length; ++i) {
         var node = sortedRects[i].layerRootNode;
-        var name = node.nodeName;
-        if (node.id)
-            name += '#' + node.id;
         var r = sortedRects[i].layerRelativeRect;
-        log(testName + "[" + i + "]: " + name + " (" + r.left + ", " + r.top + ", " + r.width + ", " + r.height + ")");
+        log(testName + ": " + nameForNode(node) + " (" + r.left + ", " + r.top + ", " + r.width + ", " + r.height + ")");
 
         if (visualize && !opt_noOverlay && window.location.hash != '#nooverlay') {
             var patch = document.createElement("div");
