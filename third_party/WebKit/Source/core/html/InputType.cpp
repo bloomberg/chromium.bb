@@ -474,12 +474,6 @@ void InputType::destroyShadowSubtree()
     }
 }
 
-Element* InputType::elementById(const AtomicString& id) const
-{
-    ShadowRoot* shadowRoot = element()->userAgentShadowRoot();
-    return shadowRoot ? shadowRoot->getElementById(id) : 0;
-}
-
 Decimal InputType::parseToNumber(const String&, const Decimal& defaultValue) const
 {
     ASSERT_NOT_REACHED();

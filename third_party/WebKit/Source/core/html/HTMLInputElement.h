@@ -122,8 +122,6 @@ public:
     virtual HTMLElement* innerTextElement() const;
     HTMLElement* innerBlockElement() const;
     HTMLElement* innerSpinButtonElement() const;
-    HTMLElement* searchDecorationElement() const;
-    HTMLElement* cancelButtonElement() const;
 #if ENABLE(INPUT_SPEECH)
     HTMLElement* speechButtonElement() const;
 #endif

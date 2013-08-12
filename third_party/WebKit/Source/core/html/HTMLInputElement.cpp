@@ -188,16 +188,6 @@ HTMLElement* HTMLInputElement::innerSpinButtonElement() const
     return m_inputType->innerSpinButtonElement();
 }
 
-HTMLElement* HTMLInputElement::searchDecorationElement() const
-{
-    return m_inputType->searchDecorationElement();
-}
-
-HTMLElement* HTMLInputElement::cancelButtonElement() const
-{
-    return m_inputType->cancelButtonElement();
-}
-
 #if ENABLE(INPUT_SPEECH)
 HTMLElement* HTMLInputElement::speechButtonElement() const
 {

@@ -36,6 +36,7 @@
 #include "core/dom/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/rendering/RenderSearchField.h"
 #include "wtf/PassOwnPtr.h"
@@ -46,8 +47,6 @@ using namespace HTMLNames;
 
 inline SearchInputType::SearchInputType(HTMLInputElement* element)
     : BaseTextInputType(element)
-    , m_searchDecoration(0)
-    , m_cancelButton(0)
     , m_searchEventTimer(this, &SearchInputType::searchEventTimerFired)
 {
 }
@@ -90,32 +89,14 @@ bool SearchInputType::needsContainer() const
 
 void SearchInputType::createShadowSubtree()
 {
-    ASSERT(!m_searchDecoration);
-    ASSERT(!m_cancelButton);
-
     TextFieldInputType::createShadowSubtree();
     HTMLElement* container = containerElement();
     HTMLElement* textWrapper = innerBlockElement();
     ASSERT(container);
     ASSERT(textWrapper);
 
-    RefPtr<SearchFieldDecorationElement> searchDecoration = SearchFieldDecorationElement::create(element()->document());
-    m_searchDecoration = searchDecoration.get();
-    container->insertBefore(m_searchDecoration, textWrapper, IGNORE_EXCEPTION);
-
-    RefPtr<SearchFieldCancelButtonElement> cancelButton = SearchFieldCancelButtonElement::create(element()->document());
-    m_cancelButton = cancelButton.get();
-    container->insertBefore(m_cancelButton, textWrapper->nextSibling(), IGNORE_EXCEPTION);
-}
-
-HTMLElement* SearchInputType::searchDecorationElement() const
-{
-    return m_searchDecoration;
-}
-
-HTMLElement* SearchInputType::cancelButtonElement() const
-{
-    return m_cancelButton;
+    container->insertBefore(SearchFieldDecorationElement::create(element()->document()), textWrapper, IGNORE_EXCEPTION);
+    container->insertBefore(SearchFieldCancelButtonElement::create(element()->document()), textWrapper->nextSibling(), IGNORE_EXCEPTION);
 }
 
 void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
@@ -134,13 +115,6 @@ void SearchInputType::handleKeydownEvent(KeyboardEvent* event)
         return;
     }
     TextFieldInputType::handleKeydownEvent(event);
-}
-
-void SearchInputType::destroyShadowSubtree()
-{
-    TextFieldInputType::destroyShadowSubtree();
-    m_searchDecoration = 0;
-    m_cancelButton = 0;
 }
 
 void SearchInputType::startSearchEventTimer()
@@ -176,7 +150,7 @@ bool SearchInputType::searchEventsShouldBeDispatched() const
 
 void SearchInputType::didSetValueByUserEdit(ValueChangeState state)
 {
-    if (m_cancelButton)
+    if (element()->uaShadowElementById(ShadowElementNames::clearButton()))
         toRenderSearchField(element()->renderer())->updateCancelButtonVisibility();
 
     // If the incremental attribute is set, then dispatch the search event

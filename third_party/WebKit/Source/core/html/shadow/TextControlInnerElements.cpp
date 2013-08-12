@@ -35,6 +35,7 @@
 #include "core/dom/TextEvent.h"
 #include "core/dom/TextEventInputType.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/page/SpeechInput.h"
@@ -131,7 +132,9 @@ inline SearchFieldDecorationElement::SearchFieldDecorationElement(Document* docu
 
 PassRefPtr<SearchFieldDecorationElement> SearchFieldDecorationElement::create(Document* document)
 {
-    return adoptRef(new SearchFieldDecorationElement(document));
+    RefPtr<SearchFieldDecorationElement> element = adoptRef(new SearchFieldDecorationElement(document));
+    element->setAttribute(idAttr, ShadowElementNames::searchDecoration());
+    return element.release();
 }
 
 const AtomicString& SearchFieldDecorationElement::part() const
@@ -181,6 +184,7 @@ PassRefPtr<SearchFieldCancelButtonElement> SearchFieldCancelButtonElement::creat
 {
     RefPtr<SearchFieldCancelButtonElement> element = adoptRef(new SearchFieldCancelButtonElement(document));
     element->setPart(AtomicString("-webkit-search-cancel-button", AtomicString::ConstructFromLiteral));
+    element->setAttribute(idAttr, ShadowElementNames::clearButton());
     return element.release();
 }
 

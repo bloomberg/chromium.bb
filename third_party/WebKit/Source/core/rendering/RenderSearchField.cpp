@@ -25,6 +25,7 @@
 #include "core/rendering/RenderSearchField.h"
 
 #include "core/html/HTMLInputElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 
 using namespace std;
 
@@ -44,25 +45,25 @@ RenderSearchField::~RenderSearchField()
 {
 }
 
-inline HTMLElement* RenderSearchField::searchDecorationElement() const
+inline Element* RenderSearchField::searchDecorationElement() const
 {
-    return inputElement()->searchDecorationElement();
+    return inputElement()->uaShadowElementById(ShadowElementNames::searchDecoration());
 }
 
-inline HTMLElement* RenderSearchField::cancelButtonElement() const
+inline Element* RenderSearchField::cancelButtonElement() const
 {
-    return inputElement()->cancelButtonElement();
+    return inputElement()->uaShadowElementById(ShadowElementNames::clearButton());
 }
 
 LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
 {
-    HTMLElement* searchDecoration = searchDecorationElement();
+    Element* searchDecoration = searchDecorationElement();
     if (RenderBox* decorationRenderer = searchDecoration ? searchDecoration->renderBox() : 0) {
         decorationRenderer->updateLogicalHeight();
         nonContentHeight = max(nonContentHeight, decorationRenderer->borderAndPaddingLogicalHeight() + decorationRenderer->marginLogicalHeight());
         lineHeight = max(lineHeight, decorationRenderer->logicalHeight());
     }
-    HTMLElement* cancelButton = cancelButtonElement();
+    Element* cancelButton = cancelButtonElement();
     if (RenderBox* cancelRenderer = cancelButton ? cancelButton->renderBox() : 0) {
         cancelRenderer->updateLogicalHeight();
         nonContentHeight = max(nonContentHeight, cancelRenderer->borderAndPaddingLogicalHeight() + cancelRenderer->marginLogicalHeight());

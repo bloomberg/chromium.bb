@@ -208,14 +208,11 @@ public:
 
     virtual void createShadowSubtree();
     virtual void destroyShadowSubtree();
-    Element* elementById(const AtomicString& id) const;
 
     virtual HTMLElement* containerElement() const { return 0; }
     virtual HTMLElement* innerBlockElement() const { return 0; }
     virtual HTMLElement* innerTextElement() const { return 0; }
     virtual HTMLElement* innerSpinButtonElement() const { return 0; }
-    virtual HTMLElement* searchDecorationElement() const { return 0; }
-    virtual HTMLElement* cancelButtonElement() const { return 0; }
 #if ENABLE(INPUT_SPEECH)
     virtual HTMLElement* speechButtonElement() const { return 0; }
 #endif

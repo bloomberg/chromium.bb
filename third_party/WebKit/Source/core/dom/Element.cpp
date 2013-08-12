@@ -1645,6 +1645,12 @@ ShadowRoot* Element::ensureUserAgentShadowRoot()
     return shadowRoot;
 }
 
+Element* Element::uaShadowElementById(const AtomicString& id) const
+{
+    ShadowRoot* shadowRoot = userAgentShadowRoot();
+    return shadowRoot ? shadowRoot->getElementById(id) : 0;
+}
+
 bool Element::supportsShadowElementForUserAgentShadow() const
 {
     return true;

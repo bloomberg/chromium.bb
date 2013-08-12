@@ -45,8 +45,8 @@ private:
     virtual void updateFromElement() OVERRIDE;
     EVisibility visibilityForCancelButton() const;
 
-    HTMLElement* searchDecorationElement() const;
-    HTMLElement* cancelButtonElement() const;
+    Element* searchDecorationElement() const;
+    Element* cancelButtonElement() const;
 };
 
 inline RenderSearchField* toRenderSearchField(RenderObject* object)
