@@ -5,18 +5,14 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_STAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_STAR_VIEW_H_
 
-#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
 class CommandUpdater;
 
-class StarView : public views::ImageView, public TouchableLocationBarView {
+class StarView : public views::ImageView {
  public:
   explicit StarView(CommandUpdater* command_updater);
   virtual ~StarView();
-
-  // TouchableLocationBarView:
-  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
   // Toggles the star on or off.
   void SetToggled(bool on);
@@ -30,7 +26,7 @@ class StarView : public views::ImageView, public TouchableLocationBarView {
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
-  // ui::EventHandler overrides:
+  // ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
   // The CommandUpdater for the Browser object that owns the location bar.

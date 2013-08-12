@@ -11,6 +11,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/accessibility/accessible_view_state.h"
@@ -24,14 +25,10 @@ StarView::StarView(CommandUpdater* command_updater)
   set_id(VIEW_ID_STAR_BUTTON);
   SetToggled(false);
   set_accessibility_focusable(true);
-  TouchableLocationBarView::Init(this);
+  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 StarView::~StarView() {
-}
-
-int StarView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void StarView::SetToggled(bool on) {

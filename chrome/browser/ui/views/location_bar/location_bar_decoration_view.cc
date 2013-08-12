@@ -4,12 +4,13 @@
 
 #include "chrome/browser/ui/views/location_bar/location_bar_decoration_view.h"
 
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/events/event.h"
 
 LocationBarDecorationView::LocationBarDecorationView()
     : could_handle_click_(true) {
   set_accessibility_focusable(true);
-  TouchableLocationBarView::Init(this);
+  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 LocationBarDecorationView::~LocationBarDecorationView() {}
@@ -46,10 +47,6 @@ void LocationBarDecorationView::OnGestureEvent(ui::GestureEvent* event) {
     OnClick();
     event->SetHandled();
   }
-}
-
-int LocationBarDecorationView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
 }
 
 bool LocationBarDecorationView::CanHandleClick() const {

@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_PAGE_ACTION_WITH_BADGE_VIEW_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/gfx/size.h"
 #include "ui/views/view.h"
 
@@ -18,20 +17,15 @@ class WebContents;
 }
 
 // A container for the PageActionImageView plus its badge.
-class PageActionWithBadgeView
-    : public views::View,
-      public TouchableLocationBarView {
+class PageActionWithBadgeView : public views::View {
  public:
   explicit PageActionWithBadgeView(PageActionImageView* image_view);
 
   PageActionImageView* image_view() { return image_view_; }
 
-  // View overrides:
+  // views::View:
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual gfx::Size GetPreferredSize() OVERRIDE;
-
-  // TouchableLocationBarView.
-  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
   void UpdateVisibility(content::WebContents* contents, const GURL& url);
 

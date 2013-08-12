@@ -83,7 +83,7 @@ ContentSettingImageView::ContentSettingImageView(
   text_label_->SetElideBehavior(views::Label::NO_ELIDE);
   AddChildView(text_label_);
 
-  TouchableLocationBarView::Init(this);
+  LocationBarView::InitTouchableLocationBarChildView(this);
 
   slide_animator_.SetSlideDuration(kAnimationDurationMS);
   slide_animator_.SetTweenType(ui::Tween::LINEAR);
@@ -92,10 +92,6 @@ ContentSettingImageView::ContentSettingImageView(
 ContentSettingImageView::~ContentSettingImageView() {
   if (bubble_widget_)
     bubble_widget_->RemoveObserver(this);
-}
-
-int ContentSettingImageView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void ContentSettingImageView::Update(content::WebContents* web_contents) {

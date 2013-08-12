@@ -42,7 +42,6 @@ class GeneratedCreditCardView;
 class InstantController;
 class KeywordHintView;
 class LocationIconView;
-class MicSearchView;
 class OpenPDFInReaderView;
 class PageActionWithBadgeView;
 class PageActionImageView;
@@ -55,6 +54,7 @@ class ZoomView;
 
 namespace views {
 class BubbleDelegateView;
+class ImageButton;
 class Label;
 class Widget;
 }
@@ -139,6 +139,12 @@ class LocationBarView : public LocationBar,
                   bool is_popup_mode);
 
   virtual ~LocationBarView();
+
+  // Uses GetBuiltInHorizontalPaddingForChildViews() to optionally add
+  // additional padding (via an empty border) to |view|. This should be called
+  // during creation on all child views which are potentially touchable so that
+  // when touch is enabled they will have sufficient padding.
+  static void InitTouchableLocationBarChildView(views::View* view);
 
   // Initializes the LocationBarView.
   void Init();
@@ -332,11 +338,10 @@ class LocationBarView : public LocationBar,
   // Returns the position and width that the popup should be, and also the left
   // edge that the results should align themselves to (which will leave some
   // border on the left of the popup).
-  void GetOmniboxPopupPositioningInfo(
-      gfx::Point* top_left_screen_coord,
-      int* popup_width,
-      int* left_margin,
-      int* right_margin);
+  void GetOmniboxPopupPositioningInfo(gfx::Point* top_left_screen_coord,
+                                      int* popup_width,
+                                      int* left_margin,
+                                      int* right_margin);
 
   // Space between items in the location bar, as well as between items and the
   // edges.
@@ -360,6 +365,11 @@ class LocationBarView : public LocationBar,
   friend class PageActionImageView;
   friend class PageActionWithBadgeView;
   typedef std::vector<PageActionWithBadgeView*> PageActionViews;
+
+  // Returns the number of pixels of built-in padding to the left and right for
+  // child views. This is nonzero when touch UI is enabled so as to space out
+  // child views for easier targeting. See InitTouchableLocationBarChildView().
+  static int GetBuiltInHorizontalPaddingForChildViews();
 
   // Returns the thickness of any visible left and right edge, in pixels.
   int GetHorizontalEdgeThickness() const;
@@ -474,7 +484,7 @@ class LocationBarView : public LocationBar,
   KeywordHintView* keyword_hint_view_;
 
   // The voice search icon.
-  MicSearchView* mic_search_view_;
+  views::ImageButton* mic_search_view_;
 
   // The content setting views.
   ContentSettingViews content_setting_views_;

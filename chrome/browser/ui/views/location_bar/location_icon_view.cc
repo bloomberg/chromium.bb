@@ -5,13 +5,14 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 LocationIconView::LocationIconView(LocationBarView* location_bar)
     : page_info_helper_(this, location_bar) {
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
-  TouchableLocationBarView::Init(this);
+  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 LocationIconView::~LocationIconView() {
@@ -34,14 +35,7 @@ void LocationIconView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-int LocationIconView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
-}
-
 void LocationIconView::ShowTooltip(bool show) {
-  if (show) {
-    SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON));
-  } else {
-    SetTooltipText(string16());
-  }
+  SetTooltipText(show ?
+      l10n_util::GetStringUTF16(IDS_TOOLTIP_LOCATION_ICON) : base::string16());
 }

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 
 #include "chrome/browser/ui/pdf/pdf_tab_helper.h"
+#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/open_pdf_in_reader_bubble_view.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -18,12 +19,10 @@ OpenPDFInReaderView::OpenPDFInReaderView(LocationBarView* location_bar_view)
       bubble_(NULL),
       model_(NULL) {
   set_accessibility_focusable(true);
-  SetImage(
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          IDR_OMNIBOX_PDF_ICON));
-  SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_OPEN_IN_READER_LINK));
-  TouchableLocationBarView::Init(this);
+  SetImage(ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      IDR_OMNIBOX_PDF_ICON));
+  SetTooltipText(l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_OPEN_IN_READER_LINK));
+  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 OpenPDFInReaderView::~OpenPDFInReaderView() {
@@ -39,10 +38,6 @@ void OpenPDFInReaderView::Update(content::WebContents* web_contents) {
   }
 
   SetVisible(!!model_);
-}
-
-int OpenPDFInReaderView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void OpenPDFInReaderView::ShowBubble() {

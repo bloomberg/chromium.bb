@@ -22,7 +22,7 @@ ZoomView::ZoomView(ToolbarModel* toolbar_model,
       location_bar_delegate_(location_bar_delegate) {
   set_accessibility_focusable(true);
   Update(NULL);
-  TouchableLocationBarView::Init(this);
+  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 ZoomView::~ZoomView() {
@@ -78,10 +78,6 @@ void ZoomView::OnGestureEvent(ui::GestureEvent* event) {
     ActivateBubble();
     event->SetHandled();
   }
-}
-
-int ZoomView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void ZoomView::ActivateBubble() {

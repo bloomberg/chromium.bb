@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_CONTENT_SETTING_IMAGE_VIEW_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "chrome/common/content_settings_types.h"
 #include "ui/base/animation/animation_delegate.h"
 #include "ui/base/animation/slide_animation.h"
@@ -30,8 +29,7 @@ class Label;
 // The ContentSettingImageView displays an icon and optional text label for
 // various content settings affordances in the location bar (i.e. plugin
 // blocking, geolocation).
-class ContentSettingImageView : public TouchableLocationBarView,
-                                public ui::AnimationDelegate,
+class ContentSettingImageView : public ui::AnimationDelegate,
                                 public views::View,
                                 public views::WidgetObserver {
  public:
@@ -42,9 +40,6 @@ class ContentSettingImageView : public TouchableLocationBarView,
                           SkColor text_color,
                           SkColor parent_background_color);
   virtual ~ContentSettingImageView();
-
-  // TouchableLocationBarView:
-  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
   // Update the decoration from the shown WebContents.
   void Update(content::WebContents* web_contents);

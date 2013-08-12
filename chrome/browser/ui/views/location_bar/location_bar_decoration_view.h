@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -18,8 +17,7 @@
 //  in the omnibox (like the bookmarks star or SSL lock).
 //
 ////////////////////////////////////////////////////////////////////////////////
-class LocationBarDecorationView : public views::ImageView,
-                                  public TouchableLocationBarView {
+class LocationBarDecorationView : public views::ImageView {
  public:
   LocationBarDecorationView();
   virtual ~LocationBarDecorationView();
@@ -29,9 +27,6 @@ class LocationBarDecorationView : public views::ImageView,
   virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
   virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-
-  // TouchableLocationBarView:
-  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
  protected:
   // Whether this icon should currently be able to process a mouse click. Called

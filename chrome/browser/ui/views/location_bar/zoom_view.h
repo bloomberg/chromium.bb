@@ -8,15 +8,13 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/touchable_location_bar_view.h"
 #include "ui/views/controls/image_view.h"
 
 class ToolbarModel;
 class ZoomController;
 
 // View for the zoom icon in the Omnibox.
-class ZoomView : public views::ImageView,
-                 public TouchableLocationBarView {
+class ZoomView : public views::ImageView {
  public:
   // Clicking on the ZoomView shows a ZoomBubbleView, which requires the current
   // WebContents. Because the current WebContents changes as the user switches
@@ -42,9 +40,6 @@ class ZoomView : public views::ImageView,
 
   // ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
-
-  // TouchableLocationBarView.
-  virtual int GetBuiltInHorizontalPadding() const OVERRIDE;
 
   // Helper method to show and focus the zoom bubble associated with this
   // widget.

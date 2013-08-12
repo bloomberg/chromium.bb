@@ -25,14 +25,10 @@ ScriptBubbleIconView::ScriptBubbleIconView(
   set_id(VIEW_ID_SCRIPT_BUBBLE);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_SCRIPT_BUBBLE));
   set_accessibility_focusable(true);
-  TouchableLocationBarView::Init(this);
+  LocationBarView::InitTouchableLocationBarChildView(this);
 }
 
 ScriptBubbleIconView::~ScriptBubbleIconView() {
-}
-
-int ScriptBubbleIconView::GetBuiltInHorizontalPadding() const {
-  return GetBuiltInHorizontalPaddingImpl();
 }
 
 void ScriptBubbleIconView::SetScriptCount(size_t script_count) {
