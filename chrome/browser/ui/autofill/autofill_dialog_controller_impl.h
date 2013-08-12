@@ -399,9 +399,9 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // abidged overview of the currently used suggestion. Extra text is used when
   // part of a section is suggested but part must be manually input (e.g. during
   // a CVC challenge or when using Autofill's CC section [never stores CVC]).
-  string16 SuggestionTextForSection(DialogSection section);
-  gfx::Font::FontStyle SuggestionTextStyleForSection(DialogSection section)
-      const;
+  bool SuggestionTextForSection(DialogSection section,
+                                base::string16* vertically_compact,
+                                base::string16* horizontally_compact);
   string16 RequiredActionTextForSection(DialogSection section) const;
   gfx::Image SuggestionIconForSection(DialogSection section);
   string16 ExtraSuggestionTextForSection(DialogSection section) const;

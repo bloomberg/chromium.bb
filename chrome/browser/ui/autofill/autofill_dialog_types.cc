@@ -229,13 +229,17 @@ string16 DialogAutocheckoutStep::GetDisplayText() const {
 
 SkColor const kWarningColor = SkColorSetRGB(0xde, 0x49, 0x32);
 
-SuggestionState::SuggestionState(const string16& text,
-                                 gfx::Font::FontStyle text_style,
+SuggestionState::SuggestionState()
+    : visible(false) {}
+SuggestionState::SuggestionState(bool visible,
+                                 const string16& vertically_compact_text,
+                                 const string16& horizontally_compact_text,
                                  const gfx::Image& icon,
                                  const string16& extra_text,
                                  const gfx::Image& extra_icon)
-    : text(text),
-      text_style(text_style),
+    : visible(visible),
+      vertically_compact_text(vertically_compact_text),
+      horizontally_compact_text(horizontally_compact_text),
       icon(icon),
       extra_text(extra_text),
       extra_icon(extra_icon) {}

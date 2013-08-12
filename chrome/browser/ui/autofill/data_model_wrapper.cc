@@ -24,19 +24,25 @@ namespace autofill {
 
 DataModelWrapper::~DataModelWrapper() {}
 
-string16 DataModelWrapper::GetDisplayText() {
-  string16 comma = ASCIIToUTF16(", ");
-  string16 label =
-      GetInfo(AutofillType(NAME_FULL)) + comma +
-      GetInfo(AutofillType(ADDRESS_HOME_LINE1));
-  string16 address2 = GetInfo(AutofillType(ADDRESS_HOME_LINE2));
-  if (!address2.empty())
-    label += comma + address2;
-  label += ASCIIToUTF16("\n") +
-      GetInfo(AutofillType(ADDRESS_HOME_CITY)) + comma +
-      GetInfo(AutofillType(ADDRESS_HOME_STATE)) + ASCIIToUTF16(" ") +
-      GetInfo(AutofillType(ADDRESS_HOME_ZIP));
-  return label;
+gfx::Image DataModelWrapper::GetIcon() {
+  return gfx::Image();
+}
+
+void DataModelWrapper::FillInputs(DetailInputs* inputs) {
+  for (size_t i = 0; i < inputs->size(); ++i) {
+    (*inputs)[i].initial_value = GetInfo(AutofillType((*inputs)[i].type));
+  }
+}
+
+bool DataModelWrapper::GetDisplayText(
+    base::string16* vertically_compact,
+    base::string16* horizontally_compact) {
+  base::string16 comma = ASCIIToUTF16(", ");
+  base::string16 newline = ASCIIToUTF16("\n");
+
+  *vertically_compact = GetAddressDisplayText(comma);
+  *horizontally_compact = GetAddressDisplayText(newline);
+  return true;
 }
 
 bool DataModelWrapper::FillFormStructure(
@@ -57,20 +63,31 @@ bool DataModelWrapper::FillFormStructure(
   return filled_something;
 }
 
-void DataModelWrapper::FillInputs(DetailInputs* inputs) {
-  for (size_t i = 0; i < inputs->size(); ++i) {
-    (*inputs)[i].initial_value = GetInfo(AutofillType((*inputs)[i].type));
-  }
-}
+DataModelWrapper::DataModelWrapper() {}
 
 void DataModelWrapper::FillFormField(AutofillField* field) const {
   field->value = GetInfo(field->Type());
 }
 
-DataModelWrapper::DataModelWrapper() {}
+base::string16 DataModelWrapper::GetAddressDisplayText(
+    const base::string16& separator) {
+  base::string16 address = GetInfo(AutofillType(NAME_FULL)) + separator +
+      GetInfo(AutofillType(ADDRESS_HOME_LINE1));
+  base::string16 address2 = GetInfo(AutofillType(ADDRESS_HOME_LINE2));
+  if (!address2.empty())
+    address += separator + address2;
 
-gfx::Image DataModelWrapper::GetIcon() {
-  return gfx::Image();
+  base::string16 comma = ASCIIToUTF16(", ");
+  base::string16 newline = ASCIIToUTF16("\n");
+  address += separator +
+      GetInfo(AutofillType(ADDRESS_HOME_CITY)) + comma +
+      GetInfo(AutofillType(ADDRESS_HOME_STATE)) + ASCIIToUTF16(" ") +
+      GetInfo(AutofillType(ADDRESS_HOME_ZIP));
+
+  // TODO(estade): email?
+  address += newline + GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER));
+
+  return address;
 }
 
 // EmptyDataModelWrapper
@@ -78,8 +95,8 @@ gfx::Image DataModelWrapper::GetIcon() {
 EmptyDataModelWrapper::EmptyDataModelWrapper() {}
 EmptyDataModelWrapper::~EmptyDataModelWrapper() {}
 
-string16 EmptyDataModelWrapper::GetInfo(const AutofillType& type) const {
-  return string16();
+base::string16 EmptyDataModelWrapper::GetInfo(const AutofillType& type) const {
+  return base::string16();
 }
 
 void EmptyDataModelWrapper::FillFormField(AutofillField* field) const {}
@@ -94,7 +111,8 @@ AutofillDataModelWrapper::AutofillDataModelWrapper(
 
 AutofillDataModelWrapper::~AutofillDataModelWrapper() {}
 
-string16 AutofillDataModelWrapper::GetInfo(const AutofillType& type) const {
+base::string16 AutofillDataModelWrapper::GetInfo(const AutofillType& type)
+    const {
   return data_model_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
@@ -115,7 +133,7 @@ AutofillProfileWrapper::~AutofillProfileWrapper() {}
 void AutofillProfileWrapper::FillInputs(DetailInputs* inputs) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   for (size_t j = 0; j < inputs->size(); ++j) {
-    std::vector<string16> values;
+    std::vector<base::string16> values;
     profile_->GetMultiInfo(
         AutofillType((*inputs)[j].type), app_locale, &values);
     (*inputs)[j].initial_value = values[variant()];
@@ -148,7 +166,8 @@ AutofillCreditCardWrapper::AutofillCreditCardWrapper(const CreditCard* card)
 
 AutofillCreditCardWrapper::~AutofillCreditCardWrapper() {}
 
-string16 AutofillCreditCardWrapper::GetInfo(const AutofillType& type) const {
+base::string16 AutofillCreditCardWrapper::GetInfo(const AutofillType& type)
+    const {
   if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(card_->expiration_month());
 
@@ -160,11 +179,14 @@ gfx::Image AutofillCreditCardWrapper::GetIcon() {
   return rb.GetImageNamed(CreditCard::IconResourceId(card_->type()));
 }
 
-string16 AutofillCreditCardWrapper::GetDisplayText() {
+bool AutofillCreditCardWrapper::GetDisplayText(
+    base::string16* vertically_compact,
+    base::string16* horizontally_compact) {
   if (!card_->IsValid())
-    return string16();
+    return false;
 
-  return card_->TypeAndLastFourDigits();
+  *vertically_compact = *horizontally_compact = card_->TypeAndLastFourDigits();
+  return true;
 }
 
 // WalletAddressWrapper
@@ -174,17 +196,20 @@ WalletAddressWrapper::WalletAddressWrapper(
 
 WalletAddressWrapper::~WalletAddressWrapper() {}
 
-string16 WalletAddressWrapper::GetInfo(const AutofillType& type) const {
+base::string16 WalletAddressWrapper::GetInfo(const AutofillType& type) const {
   return address_->GetInfo(type, g_browser_process->GetApplicationLocale());
 }
 
-string16 WalletAddressWrapper::GetDisplayText() {
+bool WalletAddressWrapper::GetDisplayText(
+    base::string16* vertically_compact,
+    base::string16* horizontally_compact) {
   if (!address_->is_complete_address() ||
       GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
-    return string16();
+    return false;
   }
 
-  return DataModelWrapper::GetDisplayText();
+  return DataModelWrapper::GetDisplayText(vertically_compact,
+                                          horizontally_compact);
 }
 
 // WalletInstrumentWrapper
@@ -195,7 +220,8 @@ WalletInstrumentWrapper::WalletInstrumentWrapper(
 
 WalletInstrumentWrapper::~WalletInstrumentWrapper() {}
 
-string16 WalletInstrumentWrapper::GetInfo(const AutofillType& type) const {
+base::string16 WalletInstrumentWrapper::GetInfo(const AutofillType& type)
+    const {
   if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(instrument_->expiration_month());
 
@@ -206,18 +232,23 @@ gfx::Image WalletInstrumentWrapper::GetIcon() {
   return instrument_->CardIcon();
 }
 
-string16 WalletInstrumentWrapper::GetDisplayText() {
+bool WalletInstrumentWrapper::GetDisplayText(
+    base::string16* vertically_compact,
+    base::string16* horizontally_compact) {
   // TODO(dbeam): handle other instrument statuses? http://crbug.com/233048
   if (instrument_->status() == wallet::WalletItems::MaskedInstrument::EXPIRED ||
       !instrument_->address().is_complete_address() ||
       GetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER)).empty()) {
-    return string16();
+    return false;
   }
 
+  DataModelWrapper::GetDisplayText(vertically_compact, horizontally_compact);
   // TODO(estade): descriptive_name() is user-provided. Should we use it or
   // just type + last 4 digits?
-  string16 line1 = instrument_->descriptive_name();
-  return line1 + ASCIIToUTF16("\n") + DataModelWrapper::GetDisplayText();
+  base::string16 line1 = instrument_->descriptive_name() + ASCIIToUTF16("\n");
+  *vertically_compact = line1 + *vertically_compact;
+  *horizontally_compact = line1 + *horizontally_compact;
+  return true;
 }
 
 // FullWalletBillingWrapper
@@ -230,7 +261,8 @@ FullWalletBillingWrapper::FullWalletBillingWrapper(
 
 FullWalletBillingWrapper::~FullWalletBillingWrapper() {}
 
-string16 FullWalletBillingWrapper::GetInfo(const AutofillType& type) const {
+base::string16 FullWalletBillingWrapper::GetInfo(const AutofillType& type)
+    const {
   if (type.GetStorableType() == CREDIT_CARD_EXP_MONTH)
     return MonthComboboxModel::FormatMonth(full_wallet_->expiration_month());
 
@@ -241,12 +273,15 @@ string16 FullWalletBillingWrapper::GetInfo(const AutofillType& type) const {
       type, g_browser_process->GetApplicationLocale());
 }
 
-string16 FullWalletBillingWrapper::GetDisplayText() {
+bool FullWalletBillingWrapper::GetDisplayText(
+    base::string16* vertically_compact,
+    base::string16* horizontally_compact) {
   // TODO(dbeam): handle other required actions? http://crbug.com/163508
   if (full_wallet_->HasRequiredAction(wallet::UPDATE_EXPIRATION_DATE))
-    return string16();
+    return false;
 
-  return DataModelWrapper::GetDisplayText();
+  return DataModelWrapper::GetDisplayText(vertically_compact,
+                                          horizontally_compact);
 }
 
 // FullWalletShippingWrapper
@@ -259,7 +294,8 @@ FullWalletShippingWrapper::FullWalletShippingWrapper(
 
 FullWalletShippingWrapper::~FullWalletShippingWrapper() {}
 
-string16 FullWalletShippingWrapper::GetInfo(const AutofillType& type) const {
+base::string16 FullWalletShippingWrapper::GetInfo(
+    const AutofillType& type) const {
   return full_wallet_->shipping_address()->GetInfo(
       type, g_browser_process->GetApplicationLocale());
 }

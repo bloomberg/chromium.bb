@@ -24,8 +24,9 @@ MockAutofillDialogViewDelegate::MockAutofillDialogViewDelegate() {
   DefaultValue<ValidityData>::Set(ValidityData());
   DefaultValue<DialogSignedInState>::Set(REQUIRES_RESPONSE);
   DefaultValue<gfx::Image>::Set(gfx::Image());
-  DefaultValue<SuggestionState>::Set(SuggestionState(string16(),
-                                                     gfx::Font::NORMAL,
+  DefaultValue<SuggestionState>::Set(SuggestionState(false,
+                                                     string16(),
+                                                     string16(),
                                                      gfx::Image(),
                                                      string16(),
                                                      gfx::Image()));

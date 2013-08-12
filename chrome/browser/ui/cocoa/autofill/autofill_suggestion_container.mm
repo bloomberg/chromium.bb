@@ -87,8 +87,7 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 }
 
 - (void)setSuggestionText:(NSString*)line1
-                    line2:(NSString*)line2
-                 withFont:(NSFont*)font {
+                    line2:(NSString*)line2 {
   [label_ setStringValue:line1];
   [label2_ setStringValue:line2];
   [label2_ setHidden:![line2 length]];

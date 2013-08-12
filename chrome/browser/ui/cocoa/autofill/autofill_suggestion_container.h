@@ -42,8 +42,7 @@ namespace autofill {
 
 // Set the main suggestion text and the font used to render that text.
 - (void)setSuggestionText:(NSString*)line1
-                    line2:(NSString*)line2
-                 withFont:(NSFont*)font;
+                    line2:(NSString*)line2;
 
 // Shows an auxiliary textfield to the right of the suggestion icon and
 // text. This is currently only used to show a CVC field for the CC section.

@@ -152,8 +152,20 @@ class SectionRowView : public views::View {
 
   // views::View implementation:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    // Only the height matters anyway.
-    return child_at(2)->GetPreferredSize();
+    int height = 0;
+    int width = 0;
+    for (int i = 0; i < child_count(); ++i) {
+      if (child_at(i)->visible()) {
+        if (width > 0)
+          width += kAroundTextPadding;
+
+        gfx::Size size = child_at(i)->GetPreferredSize();
+        height = std::max(height, size.height());
+        width += size.width();
+      }
+    }
+
+    return gfx::Size(width, height);
   }
 
   virtual void Layout() OVERRIDE {
@@ -588,16 +600,16 @@ AutofillDialogViews::OverlayView::OverlayView(views::ButtonListener* listener)
 
 AutofillDialogViews::OverlayView::~OverlayView() {}
 
-int AutofillDialogViews::OverlayView::GetHeightForContentsForWidth(int w) {
+int AutofillDialogViews::OverlayView::GetHeightForContentsForWidth(int width) {
   // In this case, 0 means "no preference".
   if (!message_stack_->visible())
     return 0;
 
   return kOverlayImageBottomMargin +
       views::kButtonVEdgeMarginNew +
-      message_stack_->GetHeightForWidth(w) +
-      image_view_->GetHeightForWidth(w) +
-      (button_->visible() ? button_->GetHeightForWidth(w) +
+      message_stack_->GetHeightForWidth(width) +
+      image_view_->GetHeightForWidth(width) +
+      (button_->visible() ? button_->GetHeightForWidth(width) +
           views::kButtonVEdgeMarginNew : 0);
 }
 
@@ -986,12 +998,10 @@ ui::MouseEvent AutofillDialogViews::SectionContainer::ProxyEvent(
 // AutofilDialogViews::SuggestionView ------------------------------------------
 
 AutofillDialogViews::SuggestionView::SuggestionView(
-    const base::string16& edit_label,
     AutofillDialogViews* autofill_dialog)
     : label_(new views::Label()),
       label_line_2_(new views::Label()),
       icon_(new views::ImageView()),
-      label_container_(new SectionRowView()),
       decorated_(
           new DecoratedTextfield(base::string16(),
                                  base::string16(),
@@ -1000,16 +1010,20 @@ AutofillDialogViews::SuggestionView::SuggestionView(
   set_border(
       views::Border::CreateSolidSidedBorder(1, 0, 0, 0, SK_ColorLTGRAY));
 
-  // Label and icon.
-  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label_container_->AddChildView(icon_);
-  label_container_->AddChildView(label_);
-  label_container_->AddChildView(decorated_);
-  decorated_->SetVisible(false);
-  // TODO(estade): get the sizing and spacing right on this textfield.
-  decorated_->set_default_width_in_chars(10);
-  AddChildView(label_container_);
+  SectionRowView* label_container = new SectionRowView();
+  AddChildView(label_container);
 
+  // Label and icon.
+  label_container->AddChildView(icon_);
+  label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label_container->AddChildView(label_);
+
+  // TODO(estade): get the sizing and spacing right on this textfield.
+  decorated_->SetVisible(false);
+  decorated_->set_default_width_in_chars(10);
+  label_container->AddChildView(decorated_);
+
+  // TODO(estade): need to get the line height right.
   label_line_2_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_line_2_->SetVisible(false);
   label_line_2_->SetMultiLine(true);
@@ -1021,12 +1035,74 @@ AutofillDialogViews::SuggestionView::SuggestionView(
 
 AutofillDialogViews::SuggestionView::~SuggestionView() {}
 
-void AutofillDialogViews::SuggestionView::SetSuggestionText(
-    const base::string16& text,
-    gfx::Font::FontStyle text_style) {
-  label_->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont).DeriveFont(0, text_style));
+gfx::Size AutofillDialogViews::SuggestionView::GetPreferredSize() {
+  // There's no preferred width. The parent's layout should get the preferred
+  // height from GetHeightForWidth().
+  return gfx::Size();
+}
 
+int AutofillDialogViews::SuggestionView::GetHeightForWidth(int width) {
+  int height = 0;
+  CanUseVerticallyCompactText(width, &height);
+  return height;
+}
+
+bool AutofillDialogViews::SuggestionView::CanUseVerticallyCompactText(
+    int available_width,
+    int* resulting_height) {
+  // This calculation may be costly, avoid doing it more than once per width.
+  if (!calculated_heights_.count(available_width)) {
+    // Changing the state of |this| now will lead to extra layouts and
+    // paints we don't want, so create another SuggestionView to calculate
+    // which label we have room to show.
+    SuggestionView sizing_view(NULL);
+    sizing_view.SetLabelText(state_.vertically_compact_text);
+    sizing_view.SetIcon(state_.icon);
+    sizing_view.SetTextfield(state_.extra_text, state_.extra_icon);
+
+    // Shortcut |sizing_view|'s GetHeightForWidth() to avoid an infinite loop.
+    // Its BoxLayout must do these calculations for us.
+    views::LayoutManager* layout = sizing_view.GetLayoutManager();
+    if (layout->GetPreferredSize(&sizing_view).width() <= available_width) {
+      calculated_heights_[available_width] = std::make_pair(
+          true,
+          layout->GetPreferredHeightForWidth(&sizing_view, available_width));
+    } else {
+      sizing_view.SetLabelText(state_.horizontally_compact_text);
+      calculated_heights_[available_width] = std::make_pair(
+          false,
+          layout->GetPreferredHeightForWidth(&sizing_view, available_width));
+    }
+  }
+
+  const std::pair<bool, int>& values = calculated_heights_[available_width];
+  *resulting_height = values.second;
+  return values.first;
+}
+
+void AutofillDialogViews::SuggestionView::OnBoundsChanged(
+    const gfx::Rect& previous_bounds) {
+  int unused;
+  SetLabelText(CanUseVerticallyCompactText(width(), &unused) ?
+      state_.vertically_compact_text :
+      state_.horizontally_compact_text);
+}
+
+void AutofillDialogViews::SuggestionView::SetState(
+    const SuggestionState& state) {
+  calculated_heights_.clear();
+  state_ = state;
+  SetVisible(state_.visible);
+  // Set to the more compact text for now. |this| will optionally switch to
+  // the more vertically expanded view when the bounds are set.
+  SetLabelText(state_.vertically_compact_text);
+  SetIcon(state_.icon);
+  SetTextfield(state_.extra_text, state_.extra_icon);
+  PreferredSizeChanged();
+}
+
+void AutofillDialogViews::SuggestionView::SetLabelText(
+    const base::string16& text) {
   // TODO(estade): does this localize well?
   base::string16 line_return(ASCIIToUTF16("\n"));
   size_t position = text.find(line_return);
@@ -1040,21 +1116,18 @@ void AutofillDialogViews::SuggestionView::SetSuggestionText(
   }
 }
 
-void AutofillDialogViews::SuggestionView::SetSuggestionIcon(
+void AutofillDialogViews::SuggestionView::SetIcon(
     const gfx::Image& image) {
   icon_->SetVisible(!image.IsEmpty());
   icon_->SetImage(image.AsImageSkia());
 }
 
-void AutofillDialogViews::SuggestionView::ShowTextfield(
+void AutofillDialogViews::SuggestionView::SetTextfield(
     const base::string16& placeholder_text,
     const gfx::Image& icon) {
   decorated_->set_placeholder_text(placeholder_text);
   decorated_->SetIcon(icon);
-  decorated_->SetVisible(true);
-  // The textfield will increase the height of the first row and cause the
-  // label to be aligned properly, so the border is not necessary.
-  label_->set_border(NULL);
+  decorated_->SetVisible(!placeholder_text.empty());
 }
 
 // AutofillDialogViews::AutocheckoutStepsArea ---------------------------------
@@ -1465,15 +1538,15 @@ void AutofillDialogViews::Layout() {
 
   const int x = content_bounds.x();
   const int y = content_bounds.y();
-  const int w = content_bounds.width();
+  const int width = content_bounds.width();
   // Layout notification area at top of dialog.
-  int notification_height = notification_area_->GetHeightForWidth(w);
-  notification_area_->SetBounds(x, y, w, notification_height);
+  int notification_height = notification_area_->GetHeightForWidth(width);
+  notification_area_->SetBounds(x, y, width, notification_height);
 
   // Layout Autocheckout steps at bottom of dialog.
-  int steps_height = autocheckout_steps_area_->GetHeightForWidth(w);
+  int steps_height = autocheckout_steps_area_->GetHeightForWidth(width);
   autocheckout_steps_area_->SetBounds(x, content_bounds.bottom() - steps_height,
-                                      w, steps_height);
+                                      width, steps_height);
 
   // The rest (the |scrollable_area_|) takes up whatever's left.
   if (scrollable_area_->visible()) {
@@ -1486,7 +1559,7 @@ void AutofillDialogViews::Layout() {
       scroll_bottom -= steps_height + views::kRelatedControlVerticalSpacing;
 
     scrollable_area_->contents()->SizeToPreferredSize();
-    scrollable_area_->SetBounds(x, scroll_y, w, scroll_bottom - scroll_y);
+    scrollable_area_->SetBounds(x, scroll_y, width, scroll_bottom - scroll_y);
   }
 
   if (loading_shield_->visible())
@@ -1806,8 +1879,7 @@ views::View* AutofillDialogViews::CreateInputsContainer(DialogSection section) {
 
   views::View* manual_inputs = InitInputsView(section);
   info_view->AddChildView(manual_inputs);
-  SuggestionView* suggested_info =
-      new SuggestionView(delegate_->EditSuggestionText(), this);
+  SuggestionView* suggested_info = new SuggestionView(this);
   info_view->AddChildView(suggested_info);
 
   // TODO(estade): It might be slightly more OO if this button were created
@@ -1963,19 +2035,8 @@ void AutofillDialogViews::UpdateSectionImpl(
 void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   const SuggestionState& suggestion_state =
       delegate_->SuggestionStateForSection(group.section);
-  bool show_suggestions = !suggestion_state.text.empty();
-  group.suggested_info->SetVisible(show_suggestions);
-  group.suggested_info->SetSuggestionText(suggestion_state.text,
-                                          suggestion_state.text_style);
-  group.suggested_info->SetSuggestionIcon(suggestion_state.icon);
-
-  if (!suggestion_state.extra_text.empty()) {
-    group.suggested_info->ShowTextfield(
-        suggestion_state.extra_text,
-        suggestion_state.extra_icon);
-  }
-
-  group.manual_input->SetVisible(!show_suggestions);
+  group.suggested_info->SetState(suggestion_state);
+  group.manual_input->SetVisible(!suggestion_state.visible);
 
   UpdateButtonStripExtraView();
 
@@ -1985,7 +2046,8 @@ void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
     group.suggested_button->SetVisible(has_menu);
 
   if (group.container) {
-    group.container->SetForwardMouseEvents(has_menu && show_suggestions);
+    group.container->SetForwardMouseEvents(
+        has_menu && suggestion_state.visible);
     group.container->SetVisible(delegate_->SectionIsActive(group.section));
     if (group.container->visible())
       ValidateGroup(group, VALIDATE_EDIT);

@@ -283,20 +283,18 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 - (void)updateSuggestionState {
   const autofill::SuggestionState& suggestionState =
       delegate_->SuggestionStateForSection(section_);
-  bool showSuggestions = !suggestionState.text.empty();
+  // TODO(estade): use |vertically_compact_text| when it fits.
+  const base::string16& text = suggestionState.horizontally_compact_text;
+  bool showSuggestions = suggestionState.visible;
 
   [[suggestContainer_ view] setHidden:!showSuggestions];
   [inputs_ setHidden:showSuggestions];
 
-  string16 line1;
-  string16 line2;
-  BreakSuggestionText(suggestionState.text, &line1, &line2);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  gfx::Font font = rb.GetFont(ui::ResourceBundle::BaseFont).DeriveFont(
-      0, suggestionState.text_style);
+  base::string16 line1;
+  base::string16 line2;
+  BreakSuggestionText(text, &line1, &line2);
   [suggestContainer_ setSuggestionText:base::SysUTF16ToNSString(line1)
-                                 line2:base::SysUTF16ToNSString(line2)
-                              withFont:font.GetNativeFont()];
+                                 line2:base::SysUTF16ToNSString(line2)];
   [suggestContainer_ setIcon:suggestionState.icon.AsNSImage()];
   if (!suggestionState.extra_text.empty()) {
     NSString* extraText =

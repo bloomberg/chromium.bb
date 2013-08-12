@@ -112,7 +112,8 @@ void NewCreditCardBubbleController::SetupAndShow(
   card_desc_.name = new_card_->TypeAndLastFourDigits();
 
   AutofillProfileWrapper wrapper(billing_profile_.get(), 0);
-  card_desc_.description = wrapper.GetDisplayText();
+  base::string16 unused;
+  wrapper.GetDisplayText(&card_desc_.description, &unused);
 
   bubble_ = CreateBubble();
   if (!bubble_) {

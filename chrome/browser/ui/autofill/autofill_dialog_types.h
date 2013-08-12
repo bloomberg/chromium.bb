@@ -188,14 +188,22 @@ enum AutocheckoutState {
 };
 
 struct SuggestionState {
-  SuggestionState(const string16& text,
-                  gfx::Font::FontStyle text_style,
+  SuggestionState();
+  SuggestionState(bool visible,
+                  const string16& vertically_compact_text,
+                  const string16& horizontally_compact_text,
                   const gfx::Image& icon,
                   const string16& extra_text,
                   const gfx::Image& extra_icon);
   ~SuggestionState();
-  string16 text;
-  gfx::Font::FontStyle text_style;
+  // Whether a suggestion should be shown.
+  bool visible;
+  // Text to be shown for the suggestion. This should be preferred over
+  // |horizontally_compact_text| when there's enough horizontal space available
+  // to display it. When there's not enough space, fall back to
+  // |horizontally_compact_text|.
+  base::string16 vertically_compact_text;
+  base::string16 horizontally_compact_text;
   gfx::Image icon;
   string16 extra_text;
   gfx::Image extra_icon;

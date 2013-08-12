@@ -902,10 +902,12 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
 
   email_model->ActivatedAt(0);
   EXPECT_EQ(kEmail1,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
+            controller()->SuggestionStateForSection(SECTION_EMAIL).
+                vertically_compact_text);
   email_model->ActivatedAt(1);
   EXPECT_EQ(kEmail2,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
+            controller()->SuggestionStateForSection(SECTION_EMAIL).
+                vertically_compact_text);
 
   controller()->EditClickedForSection(SECTION_EMAIL);
   const DetailInputs& inputs =
@@ -933,7 +935,8 @@ TEST_F(AutofillDialogControllerTest, SuggestValidEmail) {
 
   controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(0);
   EXPECT_EQ(kValidEmail,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
+            controller()->SuggestionStateForSection(SECTION_EMAIL).
+                vertically_compact_text);
 }
 
 TEST_F(AutofillDialogControllerTest, DoNotSuggestInvalidEmail) {
@@ -1476,22 +1479,23 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(string16(), inputs0[0].initial_value);
   EXPECT_EQ(kEmail,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
+            controller()->SuggestionStateForSection(SECTION_EMAIL).
+                vertically_compact_text);
 
   // When edited, the initial_value should contain the value.
   controller()->EditClickedForSection(SECTION_EMAIL);
   const DetailInputs& inputs1 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail, inputs1[0].initial_value);
-  EXPECT_EQ(string16(),
-            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
+  EXPECT_FALSE(controller()->SuggestionStateForSection(SECTION_EMAIL).visible);
 
   // When edit is cancelled, the initial_value should be empty.
   controller()->EditCancelledForSection(SECTION_EMAIL);
   const DetailInputs& inputs2 =
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).text);
+            controller()->SuggestionStateForSection(SECTION_EMAIL).
+                vertically_compact_text);
   EXPECT_EQ(string16(), inputs2[0].initial_value);
 }
 

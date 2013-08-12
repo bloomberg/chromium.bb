@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
@@ -60,7 +61,6 @@ namespace autofill {
 
 class AutofillDialogSignInDelegate;
 class DecoratedTextfield;
-struct DetailInput;
 
 // Views toolkit implementation of the Autofill dialog that handles the
 // imperative autocomplete API call.
@@ -250,7 +250,7 @@ class AutofillDialogViews : public AutofillDialogView,
     // Returns a height which should be used when the contents view has width
     // |w|. Note that the value returned should be used as the height of the
     // dialog's contents.
-    int GetHeightForContentsForWidth(int w);
+    int GetHeightForContentsForWidth(int width);
 
     // Sets properties that should be displayed.
     void SetState(const DialogOverlayState& state,
@@ -380,33 +380,51 @@ class AutofillDialogViews : public AutofillDialogView,
   // edit the suggestion.
   class SuggestionView : public views::View {
    public:
-    SuggestionView(const base::string16& edit_label,
-                   AutofillDialogViews* autofill_dialog);
+    explicit SuggestionView(AutofillDialogViews* autofill_dialog);
     virtual ~SuggestionView();
 
-    // Sets the display text of the suggestion.
-    void SetSuggestionText(const base::string16& text,
-                           gfx::Font::FontStyle style);
+    void SetState(const SuggestionState& state);
 
-    // Sets the icon which should be displayed ahead of the text.
-    void SetSuggestionIcon(const gfx::Image& image);
-
-    // Shows an auxiliary textfield to the right of the suggestion icon and
-    // text. This is currently only used to show a CVC field for the CC section.
-    void ShowTextfield(const base::string16& placeholder_text,
-                       const gfx::Image& icon);
+    // views::View implementation.
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
+    virtual int GetHeightForWidth(int width) OVERRIDE;
+    virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
     DecoratedTextfield* decorated_textfield() { return decorated_; }
 
    private:
+    // Returns whether there's room to display |state_.vertically_compact_text|
+    // without resorting to an ellipsis for a pixel width of |available_width|.
+    // Fills in |resulting_height| with the amount of space required to display
+    // |vertically_compact_text| or |horizontally_compact_text| as the case may
+    // be.
+    bool CanUseVerticallyCompactText(int available_width,
+                                     int* resulting_height);
+
+    // Sets the display text of the suggestion.
+    void SetLabelText(const base::string16& text);
+
+    // Sets the icon which should be displayed ahead of the text.
+    void SetIcon(const gfx::Image& image);
+
+    // Shows an auxiliary textfield to the right of the suggestion icon and
+    // text. This is currently only used to show a CVC field for the CC section.
+    void SetTextfield(const base::string16& placeholder_text,
+                      const gfx::Image& icon);
+
+    // The state of |this|.
+    SuggestionState state_;
+
+    // This caches preferred heights for given widths. The key is a preferred
+    // width, the value is a cached result of CanUseVerticallyCompactText.
+    std::map<int, std::pair<bool, int> > calculated_heights_;
+
     // The label that holds the suggestion description text.
     views::Label* label_;
     // The second (and greater) line of text that describes the suggestion.
     views::Label* label_line_2_;
     // The icon that comes just before |label_|.
     views::ImageView* icon_;
-    // A view to contain |label_| and |icon_|.
-    views::View* label_container_;
     // The input set by ShowTextfield.
     DecoratedTextfield* decorated_;
     // An "Edit" link that flips to editable inputs rather than suggestion text.

@@ -1010,8 +1010,9 @@ void AutofillDialogControllerImpl::ShowEditUiIfBadSuggestion(
   // If the chosen item in |model| yields an empty suggestion text, it is
   // invalid. In this case, show the edit UI and highlight invalid fields.
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  string16 unused, unused2;
   if (IsASuggestionItemKey(model->GetItemKeyForCheckedItem()) &&
-      SuggestionTextForSection(section).empty()) {
+      !SuggestionTextForSection(section, &unused, &unused2)) {
     SetEditingExistingData(section, true);
   }
 
@@ -1236,50 +1237,53 @@ string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
 
 SuggestionState AutofillDialogControllerImpl::SuggestionStateForSection(
     DialogSection section) {
-  return SuggestionState(SuggestionTextForSection(section),
-                         SuggestionTextStyleForSection(section),
+  string16 vertically_compact, horizontally_compact;
+  bool show_suggestion = SuggestionTextForSection(section,
+                                                  &vertically_compact,
+                                                  &horizontally_compact);
+  return SuggestionState(show_suggestion,
+                         vertically_compact,
+                         horizontally_compact,
                          SuggestionIconForSection(section),
                          ExtraSuggestionTextForSection(section),
                          ExtraSuggestionIconForSection(section));
 }
 
-string16 AutofillDialogControllerImpl::SuggestionTextForSection(
-    DialogSection section) {
-  string16 action_text = RequiredActionTextForSection(section);
-  if (!action_text.empty())
-    return action_text;
+bool AutofillDialogControllerImpl::SuggestionTextForSection(
+    DialogSection section,
+    base::string16* vertically_compact,
+    base::string16* horizontally_compact) {
+  base::string16 action_text = RequiredActionTextForSection(section);
+  if (!action_text.empty()) {
+    *vertically_compact = *horizontally_compact = action_text;
+    return true;
+  }
 
   // When the user has clicked 'edit' or a suggestion is somehow invalid (e.g. a
   // user selects a credit card that has expired), don't show a suggestion (even
   // though there is a profile selected in the model).
   if (IsEditingExistingData(section))
-    return string16();
+    return false;
 
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string item_key = model->GetItemKeyForCheckedItem();
   if (item_key == kSameAsBillingKey) {
-    return l10n_util::GetStringUTF16(
+    *vertically_compact = *horizontally_compact = l10n_util::GetStringUTF16(
         IDS_AUTOFILL_DIALOG_USING_BILLING_FOR_SHIPPING);
+    return true;
   }
 
   if (!IsASuggestionItemKey(item_key))
-    return string16();
+    return false;
 
-  if (section == SECTION_EMAIL)
-    return model->GetLabelAt(model->checked_item());
+  if (section == SECTION_EMAIL) {
+    *vertically_compact = *horizontally_compact =
+        model->GetLabelAt(model->checked_item());
+    return true;
+  }
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
-  return wrapper->GetDisplayText();
-}
-
-gfx::Font::FontStyle
-    AutofillDialogControllerImpl::SuggestionTextStyleForSection(
-        DialogSection section) const {
-  const SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
-  if (model->GetItemKeyForCheckedItem() == kSameAsBillingKey)
-    return gfx::Font::ITALIC;
-
-  return gfx::Font::NORMAL;
+  return wrapper->GetDisplayText(vertically_compact, horizontally_compact);
 }
 
 string16 AutofillDialogControllerImpl::RequiredActionTextForSection(
