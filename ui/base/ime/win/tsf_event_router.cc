@@ -193,6 +193,7 @@ void TSFEventRouter::Delegate::SetManager(
 
   base::win::ScopedComPtr<ITfDocumentMgr> document_manager;
   if (FAILED(thread_manager->GetFocus(document_manager.Receive())) ||
+      !document_manager.get() ||
       FAILED(document_manager->GetBase(context_.Receive())) ||
       FAILED(context_source_.QueryFrom(context_)))
     return;

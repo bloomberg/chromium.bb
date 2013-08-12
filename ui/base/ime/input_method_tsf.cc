@@ -6,12 +6,35 @@
 
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_bridge.h"
+#include "ui/base/ime/win/tsf_event_router.h"
 
 namespace ui {
 
+class InputMethodTSF::TSFEventObserver : public TSFEventRouterObserver {
+ public:
+  TSFEventObserver() : is_candidate_popup_open_(false) {}
+
+  // Returns true if we know for sure that a candidate window (or IME suggest,
+  // etc.) is open.
+  bool IsCandidatePopupOpen() const { return is_candidate_popup_open_; }
+
+  // Overridden from TSFEventRouterObserver:
+  virtual void OnCandidateWindowCountChanged(size_t window_count) OVERRIDE {
+    is_candidate_popup_open_ = (window_count != 0);
+  }
+
+ private:
+  // True if we know for sure that a candidate window is open.
+  bool is_candidate_popup_open_;
+
+  DISALLOW_COPY_AND_ASSIGN(TSFEventObserver);
+};
+
 InputMethodTSF::InputMethodTSF(internal::InputMethodDelegate* delegate,
                                HWND toplevel_window_handle)
-    : InputMethodWin(delegate, toplevel_window_handle) {
+    : InputMethodWin(delegate, toplevel_window_handle),
+      tsf_event_observer_(new TSFEventObserver()),
+      tsf_event_router_(new TSFEventRouter(tsf_event_observer_.get())) {
   // In non-Aura environment, appropriate callbacks to OnFocus() and OnBlur()
   // are not implemented yet. To work around this limitation, here we use
   // "always focused" model.
@@ -20,16 +43,23 @@ InputMethodTSF::InputMethodTSF(internal::InputMethodDelegate* delegate,
   InputMethodWin::OnFocus();
 }
 
+InputMethodTSF::~InputMethodTSF() {}
+
 void InputMethodTSF::OnFocus() {
-  // Ignore OnFocus event for "always focused" model. See the comment in the
-  // constructor.
+  // Do not call baseclass' OnFocus() and discard the event being in
+  // "always focused" model.  See the comment in the constructor.
   // TODO(ime): Implement OnFocus once the callers are fixed.
+
+  tsf_event_router_->SetManager(
+      ui::TSFBridge::GetInstance()->GetThreadManager());
 }
 
 void InputMethodTSF::OnBlur() {
-  // Ignore OnBlur event for "always focused" model. See the comment in the
-  // constructor.
+  // Do not call baseclass' OnBlur() and discard the event being in
+  // "always focused" model.  See the comment in the constructor.
   // TODO(ime): Implement OnFocus once the callers are fixed.
+
+  tsf_event_router_->SetManager(NULL);
 }
 
 bool InputMethodTSF::OnUntranslatedIMEMessage(
@@ -99,8 +129,7 @@ void InputMethodTSF::SetFocusedTextInputClient(TextInputClient* client) {
 }
 
 bool InputMethodTSF::IsCandidatePopupOpen() const {
-  // TODO(yukishiino): Implement this method.
-  return false;
+  return tsf_event_observer_->IsCandidatePopupOpen();
 }
 
 void InputMethodTSF::OnWillChangeFocusedClient(TextInputClient* focused_before,
