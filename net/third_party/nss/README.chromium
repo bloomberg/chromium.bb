@@ -93,6 +93,10 @@ Patches:
   * Add the Application Layer Protocol Negotiation extension.
     patches/alpn.patch
 
+  * Fix an issue with allocating an SSL socket when under memory pressure.
+    https://bugzilla.mozilla.org/show_bug.cgi?id=903565
+    patches/sslsock_903565.patch
+
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.
 

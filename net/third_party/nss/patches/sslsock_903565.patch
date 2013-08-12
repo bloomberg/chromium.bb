@@ -1,0 +1,20 @@
+diff --git a/net/third_party/nss/ssl/sslsock.c b/net/third_party/nss/ssl/sslsock.c
+index fd71aee..db0da5f 100644
+--- a/net/third_party/nss/ssl/sslsock.c
++++ b/net/third_party/nss/ssl/sslsock.c
+@@ -3057,6 +3057,7 @@ ssl_NewSocket(PRBool makeLocks, SSLProtocolVariant protocolVariant)
+ 	ss->opt.useSocks       = PR_FALSE;
+ 	ss->opt.noLocks        = !makeLocks;
+ 	ss->vrange             = *VERSIONS_DEFAULTS(protocolVariant);
++	ss->protocolVariant    = protocolVariant;
+ 
+ 	ss->peerID             = NULL;
+ 	ss->rTimeout	       = PR_INTERVAL_NO_TIMEOUT;
+@@ -3117,7 +3118,6 @@ loser:
+ 	    PORT_Free(ss);
+ 	    ss = NULL;
+ 	}
+-	ss->protocolVariant = protocolVariant;
+     }
+     return ss;
+ }
