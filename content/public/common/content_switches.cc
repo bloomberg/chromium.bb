@@ -531,8 +531,6 @@ const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
 // Enables experimental features for the geolocation API.
 // Current features:
 // - CoreLocation support for Mac OS X 10.6
-// - Gateway location for Linux and Windows
-// - Location platform support for Windows 7
 const char kExperimentalLocationFeatures[]  = "experimental-location-features";
 
 // Load NPAPI plugins from the specified directory.

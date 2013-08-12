@@ -308,8 +308,6 @@
         'browser/geolocation/wifi_data_provider_common_unittest.cc',
         'browser/geolocation/wifi_data_provider_linux_unittest.cc',
         'browser/geolocation/wifi_data_provider_unittest_win.cc',
-        'browser/geolocation/win7_location_api_unittest_win.cc',
-        'browser/geolocation/win7_location_provider_unittest_win.cc',
         'browser/gpu/shader_disk_cache_unittest.cc',
         'browser/host_zoom_map_impl_unittest.cc',
         'browser/indexed_db/indexed_db_backing_store_unittest.cc',

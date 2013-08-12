@@ -160,7 +160,11 @@ LocationProvider* GeolocationArbitratorImpl::NewNetworkLocationProvider(
 }
 
 LocationProvider* GeolocationArbitratorImpl::NewSystemLocationProvider() {
+#if defined(OS_WIN)
+  return NULL;
+#else
   return content::NewSystemLocationProvider();
+#endif
 }
 
 base::Time GeolocationArbitratorImpl::GetTimeNow() const {
