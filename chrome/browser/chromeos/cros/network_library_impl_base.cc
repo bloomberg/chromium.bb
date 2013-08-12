@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/cros/network_constants.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
-#include "chrome/browser/chromeos/network_login_observer.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
@@ -66,8 +65,6 @@ NetworkLibraryImplBase::NetworkLibraryImplBase()
       is_locked_(false),
       sim_operation_(SIM_OPERATION_NONE),
       notify_manager_weak_factory_(this) {
-  network_login_observer_.reset(new NetworkLoginObserver());
-  AddNetworkManagerObserver(network_login_observer_.get());
 }
 
 NetworkLibraryImplBase::~NetworkLibraryImplBase() {

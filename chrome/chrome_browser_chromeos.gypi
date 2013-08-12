@@ -608,8 +608,6 @@
         'browser/chromeos/net/onc_utils.h',
         'browser/chromeos/net/proxy_config_handler.cc',
         'browser/chromeos/net/proxy_config_handler.h',
-        'browser/chromeos/network_login_observer.cc',
-        'browser/chromeos/network_login_observer.h',
         'browser/chromeos/notifications/balloon_view_host_chromeos.cc',
         'browser/chromeos/notifications/balloon_view_host_chromeos.h',
         'browser/chromeos/offline/offline_load_page.cc',

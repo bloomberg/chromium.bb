@@ -13,8 +13,6 @@
 
 namespace chromeos {
 
-class NetworkLoginObserver;
-
 class NetworkLibraryImplBase : public NetworkLibrary {
  public:
   NetworkLibraryImplBase();
@@ -350,9 +348,6 @@ class NetworkLibraryImplBase : public NetworkLibrary {
 
   // Network device observer map.
   NetworkDeviceObserverMap network_device_observers_;
-
-  // Network login observer.
-  scoped_ptr<NetworkLoginObserver> network_login_observer_;
 
   // List of profiles.
   NetworkProfileList profile_list_;
