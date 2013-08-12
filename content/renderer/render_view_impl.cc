@@ -3546,6 +3546,9 @@ void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   if (enable_viewport)
     return;
 
+  // When navigating to a new page, reset the page scale factor to be 1.0.
+  webview()->setInitialPageScaleOverride(1.f);
+
   if (enable_fixed_layout) {
     std::string str =
         command_line.GetSwitchValueASCII(switches::kEnableFixedLayout);
