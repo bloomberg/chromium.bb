@@ -24,6 +24,9 @@ class SearchResultViewDelegate {
   // Called when the app represented by the search result is installed.
   virtual void OnSearchResultInstalled(SearchResultView* view) = 0;
 
+  // Called when the app represented by the search result is uninstalled.
+  virtual void OnSearchResultUninstalled(SearchResultView* view) = 0;
+
  protected:
   virtual ~SearchResultViewDelegate() {}
 };

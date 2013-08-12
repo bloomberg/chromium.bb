@@ -229,4 +229,8 @@ void AppListMainView::OnResultInstalled(SearchResult* result) {
   search_box_view_->ClearSearch();
 }
 
+void AppListMainView::OnResultUninstalled(SearchResult* result) {
+  QueryChanged(search_box_view_);
+}
+
 }  // namespace app_list

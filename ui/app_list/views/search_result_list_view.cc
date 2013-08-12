@@ -173,4 +173,9 @@ void SearchResultListView::OnSearchResultInstalled(SearchResultView* view) {
     delegate_->OnResultInstalled(view->result());
 }
 
+void SearchResultListView::OnSearchResultUninstalled(SearchResultView* view) {
+  if (delegate_ && view->result())
+    delegate_->OnResultUninstalled(view->result());
+}
+
 }  // namespace app_list

@@ -26,6 +26,9 @@ class APP_LIST_EXPORT SearchResultObserver {
   // Invoked when the item represented by the SearchResult is installed.
   virtual void OnItemInstalled() = 0;
 
+  // Invoked when the item represented by the SearchResult is uninstalled.
+  virtual void OnItemUninstalled() = 0;
+
  protected:
   virtual ~SearchResultObserver() {}
 };

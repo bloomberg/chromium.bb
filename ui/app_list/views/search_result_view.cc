@@ -279,6 +279,10 @@ void SearchResultView::OnItemInstalled() {
   delegate_->OnSearchResultInstalled(this);
 }
 
+void SearchResultView::OnItemUninstalled() {
+  delegate_->OnSearchResultUninstalled(this);
+}
+
 void SearchResultView::OnSearchResultActionActivated(size_t index,
                                                      int event_flags) {
   DCHECK(result_);

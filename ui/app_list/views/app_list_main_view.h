@@ -85,6 +85,7 @@ class AppListMainView : public views::View,
                                   int action_index,
                                   int event_flags) OVERRIDE;
   virtual void OnResultInstalled(SearchResult* result) OVERRIDE;
+  virtual void OnResultUninstalled(SearchResult* result) OVERRIDE;
 
   AppListViewDelegate* delegate_;
   AppListModel* model_;

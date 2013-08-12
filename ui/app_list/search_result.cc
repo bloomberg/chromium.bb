@@ -63,9 +63,11 @@ void SearchResult::SetPercentDownloaded(int percent_downloaded) {
 }
 
 void SearchResult::NotifyItemInstalled() {
-  FOR_EACH_OBSERVER(SearchResultObserver,
-                    observers_,
-                    OnItemInstalled());
+  FOR_EACH_OBSERVER(SearchResultObserver, observers_, OnItemInstalled());
+}
+
+void SearchResult::NotifyItemUninstalled() {
+  FOR_EACH_OBSERVER(SearchResultObserver, observers_, OnItemUninstalled());
 }
 
 void SearchResult::AddObserver(SearchResultObserver* observer) {

@@ -6,6 +6,8 @@
 
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/install_tracker.h"
+#include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -24,7 +26,8 @@ AppResult::AppResult(Profile* profile,
                      AppListControllerDelegate* controller)
     : profile_(profile),
       app_id_(app_id),
-      controller_(controller) {
+      controller_(controller),
+      install_tracker_(NULL) {
   set_id(extensions::Extension::GetBaseURLFromExtensionId(app_id_).spec());
 
   const extensions::Extension* extension =
@@ -42,8 +45,12 @@ AppResult::AppResult(Profile* profile,
       extensions::IconsInfo::GetDefaultAppIcon(),
       this));
   SetIcon(icon_->image_skia());
+  StartObservingInstall();
 }
-AppResult::~AppResult() {}
+
+AppResult::~AppResult() {
+  StopObservingInstall();
+}
 
 void AppResult::UpdateFromMatch(const TokenizedString& title,
                                 const TokenizedStringMatch& match) {
@@ -97,8 +104,21 @@ ui::MenuModel* AppResult::GetContextMenuModel() {
   return context_menu_->GetMenuModel();
 }
 
-void AppResult::OnExtensionIconImageChanged(
-    extensions::IconImage* image) {
+void AppResult::StartObservingInstall() {
+  DCHECK(!install_tracker_);
+
+  install_tracker_ = extensions::InstallTrackerFactory::GetForProfile(profile_);
+  install_tracker_->AddObserver(this);
+}
+
+void AppResult::StopObservingInstall() {
+  if (install_tracker_)
+    install_tracker_->RemoveObserver(this);
+
+  install_tracker_ = NULL;
+}
+
+void AppResult::OnExtensionIconImageChanged(extensions::IconImage* image) {
   DCHECK_EQ(icon_.get(), image);
   SetIcon(icon_->image_skia());
 }
@@ -106,5 +126,35 @@ void AppResult::OnExtensionIconImageChanged(
 void AppResult::ExecuteLaunchCommand(int event_flags) {
   Open(event_flags);
 }
+
+void AppResult::OnBeginExtensionInstall(const std::string& extension_id,
+                                        const std::string& extension_name,
+                                        const gfx::ImageSkia& installing_icon,
+                                        bool is_app,
+                                        bool is_platform_app) {}
+
+void AppResult::OnDownloadProgress(const std::string& extension_id,
+                                   int percent_downloaded) {}
+
+void AppResult::OnInstallFailure(const std::string& extension_id) {}
+
+void AppResult::OnExtensionInstalled(const extensions::Extension* extension) {}
+
+void AppResult::OnExtensionLoaded(const extensions::Extension* extension) {}
+
+void AppResult::OnExtensionUnloaded(const extensions::Extension* extension) {}
+
+void AppResult::OnExtensionUninstalled(const extensions::Extension* extension) {
+  if (extension->id() != app_id_)
+    return;
+
+  NotifyItemUninstalled();
+}
+
+void AppResult::OnAppsReordered() {}
+
+void AppResult::OnAppInstalledToAppList(const std::string& extension_id) {}
+
+void AppResult::OnShutdown() { StopObservingInstall(); }
 
 }  // namespace app_list

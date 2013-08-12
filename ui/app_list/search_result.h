@@ -101,6 +101,7 @@ class APP_LIST_EXPORT SearchResult {
   void SetPercentDownloaded(int percent_downloaded);
 
   void NotifyItemInstalled();
+  void NotifyItemUninstalled();
 
   void AddObserver(SearchResultObserver* observer);
   void RemoveObserver(SearchResultObserver* observer);
