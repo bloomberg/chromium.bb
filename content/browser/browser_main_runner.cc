@@ -19,6 +19,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/metro.h"
+#include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
@@ -103,6 +104,13 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     if (result_code > 0)
       return result_code;
 
+#if defined(OS_WIN)
+    // The process should crash when going through abnormal termination.
+    // Make sure this is done only when Shutdown() will be called.
+    base::win::SetShouldCrashOnProcessDetach(true);
+    base::win::SetAbortBehaviorForCrashReporting();
+#endif
+
     // Return -1 to indicate no early termination.
     return -1;
   }
@@ -129,6 +137,10 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
     main_loop_.reset(NULL);
 
     notification_service_.reset(NULL);
+
+#if defined(OS_WIN)
+    base::win::SetShouldCrashOnProcessDetach(false);
+#endif
 
     is_shutdown_ = true;
   }
