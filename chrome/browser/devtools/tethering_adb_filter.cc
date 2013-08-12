@@ -28,7 +28,6 @@ using content::BrowserThread;
 
 namespace {
 
-const int kAdbPort = 5037;
 const int kBufferSize = 16 * 1024;
 
 static const char kPortAttribute[] = "port";
@@ -36,7 +35,6 @@ static const char kConnectionIdAttribute[] = "connectionId";
 static const char kTetheringAccepted[] = "Tethering.accepted";
 static const char kTetheringBind[] = "Tethering.bind";
 static const char kTetheringUnbind[] = "Tethering.unbind";
-static const char kLocalAbstractCommand[] = "localabstract:%s";
 
 static const char kDevToolsRemoteSocketName[] = "chrome_devtools_remote";
 static const char kDevToolsRemoteBrowserTarget[] = "/devtools/browser";
@@ -194,13 +192,12 @@ class SocketTunnel {
 
 }  // namespace
 
-TetheringAdbFilter::TetheringAdbFilter(int adb_port,
-                                       const std::string& serial,
-                                       base::MessageLoop* adb_message_loop,
-                                       PrefService* pref_service,
-                                       scoped_refptr<AdbWebSocket> web_socket)
-    : adb_port_(adb_port),
-      serial_(serial),
+TetheringAdbFilter::TetheringAdbFilter(
+    scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
+    base::MessageLoop* adb_message_loop,
+    PrefService* pref_service,
+    scoped_refptr<AdbWebSocket> web_socket)
+    : device_(device),
       adb_message_loop_(adb_message_loop),
       web_socket_(web_socket),
       command_id_(0),
@@ -311,10 +308,7 @@ bool TetheringAdbFilter::ProcessIncomingMessage(const std::string& message) {
   std::string location = it->second;
 
   SocketTunnel* tunnel = new SocketTunnel(location);
-  std::string command = base::StringPrintf(kLocalAbstractCommand,
-                                           connection_id.c_str());
-  AdbClientSocket::TransportQuery(
-      adb_port_, serial_, command,
+  device_->OpenSocket(connection_id.c_str(),
       base::Bind(&SocketTunnel::Start, base::Unretained(tunnel)));
   return true;
 }
@@ -338,7 +332,7 @@ class PortForwardingController::Connection : public AdbWebSocket::Delegate {
   virtual bool ProcessIncomingMessage(const std::string& message) OVERRIDE;
 
   Registry* registry_;
-  const std::string serial_;
+  scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
   base::MessageLoop* adb_message_loop_;
   PrefService* pref_service_;
 
@@ -352,10 +346,10 @@ PortForwardingController::Connection::Connection(
     base::MessageLoop* adb_message_loop,
     PrefService* pref_service)
     : registry_(registry),
-      serial_(device->serial()),
+      device_(device),
       adb_message_loop_(adb_message_loop),
       pref_service_(pref_service) {
-   (*registry_)[serial_] = this;
+   (*registry_)[device_->serial()] = this;
    web_socket_ = new AdbWebSocket(
         device, kDevToolsRemoteSocketName, kDevToolsRemoteBrowserTarget,
         adb_message_loop_, this);
@@ -370,8 +364,8 @@ void PortForwardingController::Connection::Shutdown() {
 PortForwardingController::Connection::~Connection() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (registry_) {
-    DCHECK(registry_->find(serial_) != registry_->end());
-    registry_->erase(serial_);
+    DCHECK(registry_->find(device_->serial()) != registry_->end());
+    registry_->erase(device_->serial());
   }
 }
 
@@ -383,7 +377,7 @@ void PortForwardingController::Connection::OnSocketOpened() {
   }
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   tethering_adb_filter_.reset(new TetheringAdbFilter(
-      kAdbPort, serial_, adb_message_loop_, pref_service_, web_socket_));
+      device_, adb_message_loop_, pref_service_, web_socket_));
 }
 
 void PortForwardingController::Connection::OnFrameRead(

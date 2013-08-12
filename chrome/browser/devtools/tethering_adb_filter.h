@@ -22,8 +22,7 @@ class MessageLoop;
 
 class TetheringAdbFilter {
  public:
-  TetheringAdbFilter(int adb_port,
-                     const std::string& serial,
+  TetheringAdbFilter(scoped_refptr<DevToolsAdbBridge::AndroidDevice> device,
                      base::MessageLoop* adb_message_loop,
                      PrefService* pref_service,
                      scoped_refptr<AdbWebSocket> web_socket);
@@ -44,8 +43,7 @@ class TetheringAdbFilter {
 
   void SendCommand(const std::string& method, int port);
 
-  int adb_port_;
-  std::string serial_;
+  scoped_refptr<DevToolsAdbBridge::AndroidDevice> device_;
   base::MessageLoop* adb_message_loop_;
   PrefChangeRegistrar pref_change_registrar_;
   scoped_refptr<AdbWebSocket> web_socket_;
