@@ -89,6 +89,8 @@ const char kCustomPageUrlParameter[] = "customPageUrl=";
 const char kTimestampParameter[] = "timestamp=";
 const char kTraceIdParameter[] = "traceId=";
 
+const char kPerformanceCategoryTag[] = "Performance";
+
 const size_t kMaxSavedScreenshots = 2;
 size_t kMaxNumScanFiles = 1000;
 
@@ -623,6 +625,8 @@ void FeedbackHandler::HandleSendReport(const ListValue* list_value) {
   (*i++)->GetAsString(&trace_id_str);
   int trace_id = 0;
   base::StringToInt(trace_id_str, &trace_id);
+  if (trace_id)
+    category_tag = kPerformanceCategoryTag;
 
   std::string attached_filename;
   scoped_ptr<std::string> attached_filedata;
