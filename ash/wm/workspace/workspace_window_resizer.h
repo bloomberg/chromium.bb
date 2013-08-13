@@ -41,6 +41,10 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // this close to an edge of the screen it snaps to the edge.
   static const int kScreenEdgeInset;
 
+  // Distance in pixels that the cursor must move past an edge for a window
+  // to move or resize beyond that edge.
+  static const int kStickyDistancePixels;
+
   virtual ~WorkspaceWindowResizer();
 
   static WorkspaceWindowResizer* Create(

@@ -7,6 +7,7 @@
 #include "ash/screen_ash.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
+#include "ash/wm/coordinate_conversion.h"
 #include "ash/wm/dock/docked_window_layout_manager.h"
 #include "ash/wm/property_util.h"
 #include "ash/wm/window_util.h"
@@ -180,14 +181,6 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     return details.initial_bounds_in_parent;
 
   gfx::Point location = passed_location;
-  aura::Window* dock_container = Shell::GetContainer(
-      details.window->GetRootWindow(),
-      internal::kShellWindowId_DockedContainer);
-  DCHECK_EQ(dock_container->id(), internal::kShellWindowId_DockedContainer);
-  internal::DockedWindowLayoutManager* dock_layout =
-      static_cast<internal::DockedWindowLayoutManager*>(
-          dock_container->layout_manager());
-
   int delta_x = location.x() - details.initial_location_in_parent.x();
   int delta_y = location.y() - details.initial_location_in_parent.y();
 
@@ -206,6 +199,13 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   if (details.bounds_change & kBoundsChange_Resizes) {
     gfx::Rect work_area =
         Shell::GetScreen()->GetDisplayNearestWindow(details.window).work_area();
+    aura::Window* dock_container = Shell::GetContainer(
+        details.window->GetRootWindow(),
+        internal::kShellWindowId_DockedContainer);
+    internal::DockedWindowLayoutManager* dock_layout =
+        static_cast<internal::DockedWindowLayoutManager*>(
+            dock_container->layout_manager());
+
     work_area.Union(dock_layout->docked_bounds());
     work_area = ScreenAsh::ConvertRectFromScreen(details.window->parent(),
                                                  work_area);
@@ -265,6 +265,13 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
         ScreenAsh::ConvertRectToScreen(parent, new_bounds);
     const gfx::Display& display =
         Shell::GetScreen()->GetDisplayMatching(new_bounds_in_screen);
+    aura::Window* dock_container = Shell::GetContainer(
+        wm::GetRootWindowMatching(new_bounds_in_screen),
+        internal::kShellWindowId_DockedContainer);
+    internal::DockedWindowLayoutManager* dock_layout =
+        static_cast<internal::DockedWindowLayoutManager*>(
+            dock_container->layout_manager());
+
     gfx::Rect screen_work_area = display.work_area();
     screen_work_area.Union(dock_layout->docked_bounds());
     screen_work_area.Inset(kMinimumOnScreenArea, 0);

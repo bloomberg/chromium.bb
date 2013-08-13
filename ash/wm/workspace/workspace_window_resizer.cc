@@ -87,8 +87,13 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     window_resizer = PanelWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component, source);
   }
-  if (window_resizer) {
-    window_resizer = DockedWindowResizer::Create(
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableDockedWindows) &&
+      window_resizer && window->parent() &&
+      (window->parent()->id() == internal::kShellWindowId_DefaultContainer ||
+       window->parent()->id() == internal::kShellWindowId_DockedContainer ||
+       window->parent()->id() == internal::kShellWindowId_PanelContainer)) {
+    window_resizer = internal::DockedWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component, source);
   }
   return make_scoped_ptr<WindowResizer>(window_resizer);
@@ -97,10 +102,6 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
 namespace internal {
 
 namespace {
-
-// Distance in pixels that the cursor must move past an edge for a window
-// to move or resize beyond that edge.
-const int kStickyDistancePixels = 64;
 
 // Snapping distance used instead of WorkspaceWindowResizer::kScreenEdgeInset
 // when resizing a window using touchscreen.
@@ -258,6 +259,9 @@ const int WorkspaceWindowResizer::kMinOnscreenHeight = 32;
 
 // static
 const int WorkspaceWindowResizer::kScreenEdgeInset = 8;
+
+// static
+const int WorkspaceWindowResizer::kStickyDistancePixels = 64;
 
 // Represents the width or height of a window with constraints on its minimum
 // and maximum size. 0 represents a lack of a constraint.

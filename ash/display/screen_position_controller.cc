@@ -170,10 +170,6 @@ void ScreenPositionController::SetBounds(aura::Window* window,
     aura::Window* dst_container = NULL;
     if (dst_root != window->GetRootWindow()) {
       int container_id = window->parent()->id();
-      // Dragging a docked window to another root window should show it floating
-      // rather than docked in another screen's dock.
-      if (container_id == kShellWindowId_DockedContainer)
-        container_id = kShellWindowId_DefaultContainer;
       // All containers that uses screen coordinates must have valid window ids.
       DCHECK_GE(container_id, 0);
       // Don't move modal background.

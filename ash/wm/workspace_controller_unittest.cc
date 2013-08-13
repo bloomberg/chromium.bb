@@ -1118,8 +1118,16 @@ class DragMaximizedNonTrackedWindowObserver
   }
 
   // aura::WindowObserver overrides:
+  // Counts number of times a window is reparented. Ignores reparenting into and
+  // from a docked container which is expected when a tab is dragged.
   virtual void OnWindowHierarchyChanged(
       const HierarchyChangeParams& params) OVERRIDE {
+    if ((params.old_parent->id() == kShellWindowId_DefaultContainer &&
+         params.new_parent->id() == kShellWindowId_DockedContainer) ||
+        (params.old_parent->id() == kShellWindowId_DockedContainer &&
+         params.new_parent->id() == kShellWindowId_DefaultContainer)) {
+      return;
+    }
     change_count_++;
   }
 
