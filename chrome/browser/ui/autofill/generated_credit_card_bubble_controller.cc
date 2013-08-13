@@ -223,6 +223,8 @@ void GeneratedCreditCardBubbleController::SetupAndShow(
 }
 
 void GeneratedCreditCardBubbleController::Show(bool was_anchor_click) {
+  Hide();
+
   if (!CanShow())
     return;
 
