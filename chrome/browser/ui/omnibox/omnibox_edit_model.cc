@@ -812,7 +812,14 @@ void OmniboxEditModel::OnSetFocus(bool control_down) {
   SetFocusState(OMNIBOX_FOCUS_VISIBLE, OMNIBOX_FOCUS_CHANGE_EXPLICIT);
   control_key_state_ = control_down ? DOWN_WITHOUT_CHANGE : UP;
 
-  if (delegate_->CurrentPageExists()) {
+  // Try to get ZeroSuggest suggestions if a page is loaded and the user has
+  // not been typing in the omnibox.  The |user_input_in_progress_| check is
+  // used to detect the case where this function is called after right-clicking
+  // in the omnibox and selecting paste in Linux (in which case we actually get
+  // the OnSetFocus() call after the process of handling the paste has kicked
+  // off).
+  // TODO(hfung): Remove this when crbug/271590 is fixed.
+  if (delegate_->CurrentPageExists() && !user_input_in_progress_) {
     // TODO(jered): We may want to merge this into Start() and just call that
     // here rather than having a special entry point for zero-suggest.  Note
     // that we avoid PermanentURL() here because it's not guaranteed to give us
