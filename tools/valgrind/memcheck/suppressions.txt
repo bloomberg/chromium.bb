@@ -7209,3 +7209,23 @@
    fun:_ZN14message_center17MessageCenterViewC1EPNS_13MessageCenterEPNS_17MessageCenterTrayEibb
    fun:_ZN14message_center21MessageCenterViewTest5SetUpEv
 }
+{
+   bug_272179_a
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7WebCore14HarfBuzzShaper17shapeHarfBuzzRuns*
+}
+{
+   bug_272179_b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN7WebCore14HarfBuzzShaper19collectHarfBuzzRunsEv
+}
+{
+   bug_272179_c 
+   Memcheck:Param
+   sendmsg(msg.msg_iov[0])
+   obj:/lib/x86_64-linux-gnu/libpthread-2.15.so
+   ...
+   fun:_ZN7WebCore14HarfBuzzShaper19collectHarfBuzzRunsEv
+}
