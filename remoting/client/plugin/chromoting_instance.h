@@ -31,7 +31,7 @@
 #include "remoting/client/client_context.h"
 #include "remoting/client/client_user_interface.h"
 #include "remoting/client/key_event_mapper.h"
-#include "remoting/client/plugin/mac_key_event_processor.h"
+#include "remoting/client/plugin/normalizing_input_filter.h"
 #include "remoting/client/plugin/pepper_input_handler.h"
 #include "remoting/client/plugin/pepper_plugin_thread_delegate.h"
 #include "remoting/proto/event.pb.h"
@@ -248,10 +248,8 @@ class ChromotingInstance :
   // Input pipeline components, in reverse order of distance from input source.
   protocol::MouseInputFilter mouse_input_filter_;
   protocol::InputEventTracker input_tracker_;
-#if defined(OS_MACOSX)
-  MacKeyEventProcessor mac_key_event_processor_;
-#endif
   KeyEventMapper key_mapper_;
+  scoped_ptr<protocol::InputFilter> normalizing_input_filter_;
   PepperInputHandler input_handler_;
 
   // PIN Fetcher.
