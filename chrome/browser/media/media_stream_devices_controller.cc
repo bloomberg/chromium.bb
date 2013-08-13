@@ -60,30 +60,37 @@ MediaStreamDevicesController::MediaStreamDevicesController(
     const content::MediaResponseCallback& callback)
     : web_contents_(web_contents),
       request_(request),
-      callback_(callback),
-      // For MEDIA_OPEN_DEVICE requests (Pepper) we always request both webcam
-      // and microphone to avoid popping two infobars.
-      microphone_requested_(
-          request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
-          request.request_type == content::MEDIA_OPEN_DEVICE),
-      webcam_requested_(
-          request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
-          request.request_type == content::MEDIA_OPEN_DEVICE) {
+      callback_(callback) {
   profile_ = Profile::FromBrowserContext(web_contents->GetBrowserContext());
   content_settings_ = TabSpecificContentSettings::FromWebContents(web_contents);
 
-  // Don't call GetDevicePolicy from the initializer list since the
-  // implementation depends on member variables.
-  if (microphone_requested_ &&
-      GetDevicePolicy(prefs::kAudioCaptureAllowed,
-                      prefs::kAudioCaptureAllowedUrls) == ALWAYS_DENY) {
-    microphone_requested_ = false;
+  // For MEDIA_OPEN_DEVICE requests (Pepper) we always request both webcam
+  // and microphone to avoid popping two infobars.
+  // We start with setting the requested media type to allowed or blocked
+  // depending on the policy. If not blocked by policy it may be blocked later
+  // in the two remaining filtering steps (by user setting or by user when
+  // clicking the infobar).
+  // TODO(grunell): It's not the nicest solution to let the MEDIA_OPEN_DEVICE
+  // case take a ride on the MEDIA_DEVICE_*_CAPTURE permission. Should be fixed.
+  if (request.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE ||
+      request.request_type == content::MEDIA_OPEN_DEVICE) {
+    if (GetDevicePolicy(prefs::kAudioCaptureAllowed,
+                        prefs::kAudioCaptureAllowedUrls) == ALWAYS_DENY) {
+      request_permissions_[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+          MEDIA_BLOCKED_BY_POLICY;
+    } else {
+      request_permissions_[content::MEDIA_DEVICE_AUDIO_CAPTURE] = MEDIA_ALLOWED;
+    }
   }
-
-  if (webcam_requested_ &&
-      GetDevicePolicy(prefs::kVideoCaptureAllowed,
-                      prefs::kVideoCaptureAllowedUrls) == ALWAYS_DENY) {
-    webcam_requested_ = false;
+  if (request.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE ||
+      request.request_type == content::MEDIA_OPEN_DEVICE) {
+    if (GetDevicePolicy(prefs::kVideoCaptureAllowed,
+                        prefs::kVideoCaptureAllowedUrls) == ALWAYS_DENY) {
+      request_permissions_[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+          MEDIA_BLOCKED_BY_POLICY;
+    } else {
+      request_permissions_[content::MEDIA_DEVICE_VIDEO_CAPTURE] = MEDIA_ALLOWED;
+    }
   }
 }
 
@@ -155,6 +162,14 @@ bool MediaStreamDevicesController::DismissInfoBarAndTakeActionOnSettings() {
   return false;
 }
 
+bool MediaStreamDevicesController::HasAudio() const {
+  return IsDeviceAudioCaptureRequestedAndAllowed();
+}
+
+bool MediaStreamDevicesController::HasVideo() const {
+  return IsDeviceVideoCaptureRequestedAndAllowed();
+}
+
 const std::string& MediaStreamDevicesController::GetSecurityOriginSpec() const {
   return request_.security_origin.spec();
 }
@@ -164,7 +179,9 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
 
   // Get the default devices for the request.
   content::MediaStreamDevices devices;
-  if (microphone_requested_ || webcam_requested_) {
+  bool audio_allowed = IsDeviceAudioCaptureRequestedAndAllowed();
+  bool video_allowed = IsDeviceVideoCaptureRequestedAndAllowed();
+  if (audio_allowed || video_allowed) {
     switch (request_.request_type) {
       case content::MEDIA_OPEN_DEVICE: {
         const content::MediaStreamDevice* device = NULL;
@@ -192,8 +209,8 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
           devices.push_back(*device);
         break;
       } case content::MEDIA_GENERATE_STREAM: {
-        bool needs_audio_device = microphone_requested_;
-        bool needs_video_device = webcam_requested_;
+        bool needs_audio_device = audio_allowed;
+        bool needs_video_device = video_allowed;
 
         // Get the exact audio or video device if an id is specified.
         if (!request_.requested_audio_device_id.empty()) {
@@ -229,8 +246,8 @@ void MediaStreamDevicesController::Accept(bool update_content_setting) {
         // Get the default devices for the request.
         MediaCaptureDevicesDispatcher::GetInstance()->
             GetDefaultDevicesForProfile(profile_,
-                                        microphone_requested_,
-                                        webcam_requested_,
+                                        audio_allowed,
+                                        video_allowed,
                                         &devices);
         break;
       case content::MEDIA_ENUMERATE_DEVICES:
@@ -325,9 +342,9 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
     const char* list_policy_name;
     ContentSettingsType settings_type;
   } device_checks[] = {
-    { microphone_requested_, prefs::kAudioCaptureAllowed,
+    { IsDeviceAudioCaptureRequestedAndAllowed(), prefs::kAudioCaptureAllowed,
       prefs::kAudioCaptureAllowedUrls, CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC },
-    { webcam_requested_, prefs::kVideoCaptureAllowed,
+    { IsDeviceVideoCaptureRequestedAndAllowed(), prefs::kVideoCaptureAllowed,
       prefs::kVideoCaptureAllowedUrls,
       CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA },
   };
@@ -364,25 +381,32 @@ bool MediaStreamDevicesController::IsRequestAllowedByDefault() const {
 }
 
 int MediaStreamDevicesController::FilterBlockedByDefaultDevices() {
-  int requested_devices = microphone_requested_ + webcam_requested_;
-  if (microphone_requested_ &&
-      profile_->GetHostContentSettingsMap()->GetContentSetting(
-          request_.security_origin,
-          request_.security_origin,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
-          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
-    requested_devices--;
-    microphone_requested_ = false;
+  int requested_devices = 0;
+
+  if (IsDeviceAudioCaptureRequestedAndAllowed()) {
+    if (profile_->GetHostContentSettingsMap()->GetContentSetting(
+        request_.security_origin,
+        request_.security_origin,
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+        NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
+      request_permissions_[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+          MEDIA_BLOCKED_BY_USER_SETTING;
+    } else {
+      ++requested_devices;
+    }
   }
 
-  if (webcam_requested_ &&
-      profile_->GetHostContentSettingsMap()->GetContentSetting(
-          request_.security_origin,
-          request_.security_origin,
-          CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
-          NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
-    requested_devices--;
-    webcam_requested_ = false;
+  if (IsDeviceVideoCaptureRequestedAndAllowed()) {
+    if (profile_->GetHostContentSettingsMap()->GetContentSetting(
+        request_.security_origin,
+        request_.security_origin,
+        CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+        NO_RESOURCE_IDENTIFIER) == CONTENT_SETTING_BLOCK) {
+      request_permissions_[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+          MEDIA_BLOCKED_BY_USER_SETTING;
+    } else {
+      ++requested_devices;
+    }
   }
 
   return requested_devices;
@@ -427,7 +451,8 @@ void MediaStreamDevicesController::SetPermission(bool allowed) const {
 
   ContentSetting content_setting = allowed ?
       CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK;
-  if (microphone_requested_) {
+  if (request_permissions_.find(content::MEDIA_DEVICE_AUDIO_CAPTURE) !=
+      request_permissions_.end()) {
       profile_->GetHostContentSettingsMap()->SetContentSetting(
         primary_pattern,
         ContentSettingsPattern::Wildcard(),
@@ -435,7 +460,8 @@ void MediaStreamDevicesController::SetPermission(bool allowed) const {
         std::string(),
         content_setting);
   }
-  if (webcam_requested_) {
+  if (request_permissions_.find(content::MEDIA_DEVICE_VIDEO_CAPTURE) !=
+      request_permissions_.end()) {
     profile_->GetHostContentSettingsMap()->SetContentSetting(
         primary_pattern,
         ContentSettingsPattern::Wildcard(),
@@ -449,42 +475,37 @@ void MediaStreamDevicesController::NotifyUIRequestAccepted() const {
   if (!content_settings_)
     return;
 
-  // We need to figure out which part of the request is accepted or denied here.
-  // For example, when the request contains both audio and video, but audio is
-  // blocked by the policy, then we will prompt the infobar to ask for video
-  // permission. In case the users approve the permission,
-  // we need to show an allowed icon for video but blocked icon for audio.
-  if (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE) {
-    // The request might contain audio while |webcam_requested_| is false,
-    // this happens when the policy is blocking the audio.
-    if (microphone_requested_)
-      content_settings_->OnMicrophoneAccessed();
-    else
-      content_settings_->OnMicrophoneAccessBlocked();
-  }
-
-  if (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE) {
-    // The request might contain video while |webcam_requested_| is false,
-    // this happens when the policy is blocking the video.
-    if (webcam_requested_)
-      content_settings_->OnCameraAccessed();
-    else
-      content_settings_->OnCameraAccessBlocked();
-  }
+  content_settings_->OnMediaStreamPermissionSet(request_.security_origin,
+                                                request_permissions_);
 }
 
-void MediaStreamDevicesController::NotifyUIRequestDenied() const {
+void MediaStreamDevicesController::NotifyUIRequestDenied() {
   if (!content_settings_)
     return;
 
-  // Do not show the block icons for tab capture.
-  if (request_.audio_type == content::MEDIA_TAB_AUDIO_CAPTURE ||
-      request_.video_type == content::MEDIA_TAB_VIDEO_CAPTURE) {
-      return;
+  if (IsDeviceAudioCaptureRequestedAndAllowed()) {
+    request_permissions_[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+        MEDIA_BLOCKED_BY_USER;
+  }
+  if (IsDeviceVideoCaptureRequestedAndAllowed()) {
+    request_permissions_[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+        MEDIA_BLOCKED_BY_USER;
   }
 
-  if (request_.audio_type == content::MEDIA_DEVICE_AUDIO_CAPTURE)
-    content_settings_->OnMicrophoneAccessBlocked();
-  if (request_.video_type == content::MEDIA_DEVICE_VIDEO_CAPTURE)
-    content_settings_->OnCameraAccessBlocked();
+  content_settings_->OnMediaStreamPermissionSet(request_.security_origin,
+                                                request_permissions_);
+}
+
+bool MediaStreamDevicesController::IsDeviceAudioCaptureRequestedAndAllowed()
+    const {
+  MediaStreamTypePermissionMap::const_iterator it =
+      request_permissions_.find(content::MEDIA_DEVICE_AUDIO_CAPTURE);
+  return it != request_permissions_.end() && it->second == MEDIA_ALLOWED;
+}
+
+bool MediaStreamDevicesController::IsDeviceVideoCaptureRequestedAndAllowed()
+    const {
+  MediaStreamTypePermissionMap::const_iterator it =
+      request_permissions_.find(content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  return it != request_permissions_.end() && it->second == MEDIA_ALLOWED;
 }

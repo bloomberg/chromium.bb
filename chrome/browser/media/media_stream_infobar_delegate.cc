@@ -63,7 +63,7 @@ MediaStreamInfoBarDelegate::MediaStreamInfoBarDelegate(
     : ConfirmInfoBarDelegate(infobar_service),
       controller_(controller.Pass()) {
   DCHECK(controller_.get());
-  DCHECK(controller_->has_audio() || controller_->has_video());
+  DCHECK(controller_->HasAudio() || controller_->HasVideo());
 }
 
 void MediaStreamInfoBarDelegate::InfoBarDismissed() {
@@ -75,7 +75,7 @@ void MediaStreamInfoBarDelegate::InfoBarDismissed() {
 }
 
 int MediaStreamInfoBarDelegate::GetIconID() const {
-  return controller_->has_video() ?
+  return controller_->HasVideo() ?
       IDR_INFOBAR_MEDIA_STREAM_CAMERA : IDR_INFOBAR_MEDIA_STREAM_MIC;
 }
 
@@ -90,9 +90,9 @@ MediaStreamInfoBarDelegate*
 
 string16 MediaStreamInfoBarDelegate::GetMessageText() const {
   int message_id = IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO;
-  if (!controller_->has_audio())
+  if (!controller_->HasAudio())
     message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY;
-  else if (!controller_->has_video())
+  else if (!controller_->HasVideo())
     message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY;
   return l10n_util::GetStringFUTF16(
       message_id, UTF8ToUTF16(controller_->GetSecurityOriginSpec()));

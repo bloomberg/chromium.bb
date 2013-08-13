@@ -320,7 +320,8 @@ void TabSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
   DCHECK(type != CONTENT_SETTINGS_TYPE_GEOLOCATION)
       << "Geolocation settings handled by OnGeolocationPermissionSet";
   bool access_changed = false;
-  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM) {
+  if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+      type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
     // The setting for media is overwritten here because media does not need to
     // reload the page to have the new setting kick in. See issue/175993.
     if (content_blocked_[type]) {
@@ -483,20 +484,44 @@ TabSpecificContentSettings::GetMicrophoneCameraState() const {
   return MICROPHONE_CAMERA_NOT_ACCESSED;
 }
 
-void TabSpecificContentSettings::OnMicrophoneAccessed() {
-  OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
-}
+void TabSpecificContentSettings::OnMediaStreamPermissionSet(
+    const GURL& request_origin,
+    const MediaStreamDevicesController::MediaStreamTypePermissionMap&
+        request_permissions) {
+  media_stream_access_origin_ = request_origin;
 
-void TabSpecificContentSettings::OnMicrophoneAccessBlocked() {
-  OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC, std::string());
-}
+  MediaStreamDevicesController::MediaStreamTypePermissionMap::const_iterator
+      it = request_permissions.find(content::MEDIA_DEVICE_AUDIO_CAPTURE);
+  if (it != request_permissions.end()) {
+    switch (it->second) {
+      case MediaStreamDevicesController::MEDIA_ALLOWED:
+        OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC);
+        break;
+      // TODO(grunell): UI should show for what reason access has been blocked.
+      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_POLICY:
+      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER_SETTING:
+      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER:
+        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC,
+                         std::string());
+        break;
+    }
+  }
 
-void TabSpecificContentSettings::OnCameraAccessed() {
-  OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
-}
-
-void TabSpecificContentSettings::OnCameraAccessBlocked() {
-  OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA, std::string());
+  it = request_permissions.find(content::MEDIA_DEVICE_VIDEO_CAPTURE);
+  if (it != request_permissions.end()) {
+    switch (it->second) {
+      case MediaStreamDevicesController::MEDIA_ALLOWED:
+        OnContentAllowed(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA);
+        break;
+      // TODO(grunell): UI should show for what reason access has been blocked.
+      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_POLICY:
+      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER_SETTING:
+      case MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER:
+        OnContentBlocked(CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,
+                         std::string());
+        break;
+    }
+  }
 }
 
 void TabSpecificContentSettings::OnMIDISysExAccessed(

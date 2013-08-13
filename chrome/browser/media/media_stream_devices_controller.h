@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_MEDIA_STREAM_DEVICES_CONTROLLER_H_
 #define CHROME_BROWSER_MEDIA_MEDIA_STREAM_DEVICES_CONTROLLER_H_
 
+#include <map>
 #include <string>
 
 #include "content/public/browser/web_contents_delegate.h"
@@ -22,6 +23,17 @@ class PrefRegistrySyncable;
 
 class MediaStreamDevicesController {
  public:
+  // Permissions for media stream types.
+  enum MediaStreamTypePermission {
+    MEDIA_ALLOWED,
+    MEDIA_BLOCKED_BY_POLICY,
+    MEDIA_BLOCKED_BY_USER_SETTING,
+    MEDIA_BLOCKED_BY_USER,
+  };
+
+  typedef std::map<content::MediaStreamType, MediaStreamTypePermission>
+      MediaStreamTypePermissionMap;
+
   MediaStreamDevicesController(content::WebContents* web_contents,
                                const content::MediaStreamRequest& request,
                                const content::MediaResponseCallback& callback);
@@ -41,8 +53,8 @@ class MediaStreamDevicesController {
   bool DismissInfoBarAndTakeActionOnSettings();
 
   // Public methods to be called by MediaStreamInfoBarDelegate;
-  bool has_audio() const { return microphone_requested_; }
-  bool has_video() const { return webcam_requested_; }
+  bool HasAudio() const;
+  bool HasVideo() const;
   const std::string& GetSecurityOriginSpec() const;
   void Accept(bool update_content_setting);
   void Deny(bool update_content_setting);
@@ -91,7 +103,16 @@ class MediaStreamDevicesController {
 
   // Notifies the content setting UI that the media stream access request or
   // part of the request is denied.
-  void NotifyUIRequestDenied() const;
+  void NotifyUIRequestDenied();
+
+  // Return true if the type has been requested and permission is currently set
+  // to allowed. Note that it does not reflect the final permission decision.
+  // This function is called during the filtering steps to check if the type has
+  // been blocked yet or not and the permission may be changed to blocked during
+  // these filterings. See also the initialization in the constructor and
+  // comments on that.
+  bool IsDeviceAudioCaptureRequestedAndAllowed() const;
+  bool IsDeviceVideoCaptureRequestedAndAllowed() const;
 
   content::WebContents* web_contents_;
 
@@ -112,8 +133,12 @@ class MediaStreamDevicesController {
   // audio/video devices was granted or not.
   content::MediaResponseCallback callback_;
 
-  bool microphone_requested_;
-  bool webcam_requested_;
+  // Holds the requested media types and the permission for each type. It is
+  // passed to the tab specific content settings when the permissions have been
+  // resolved. Currently only used by MEDIA_DEVICE_AUDIO_CAPTURE and
+  // MEDIA_DEVICE_VIDEO_CAPTURE since those are the only types that require
+  // updates in the settings.
+  MediaStreamTypePermissionMap request_permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesController);
 };

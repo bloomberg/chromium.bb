@@ -118,8 +118,16 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMicAndCamera) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->OnMicrophoneAccessed();
-  content_settings->OnCameraAccessed();
+  std::string request_host = "google.com";
+  GURL security_origin("http://" + request_host);
+  MediaStreamDevicesController::MediaStreamTypePermissionMap
+      request_permissions;
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_ALLOWED;
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_ALLOWED;
+  content_settings->OnMediaStreamPermissionSet(security_origin,
+                                               request_permissions);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -133,7 +141,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMicAndCamera) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION,
-                UTF8ToUTF16(web_contents()->GetURL().spec())));
+                UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_BLOCK));
@@ -173,8 +181,13 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastreamMicAndCamera) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->OnMicrophoneAccessBlocked();
-  content_settings->OnCameraAccessBlocked();
+  MediaStreamDevicesController::MediaStreamTypePermissionMap
+      request_permissions;
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  content_settings->OnMediaStreamPermissionSet(url, request_permissions);
   {
     scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
         ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -239,7 +252,14 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->OnMicrophoneAccessed();
+  std::string request_host = "google.com";
+  GURL security_origin("http://" + request_host);
+  MediaStreamDevicesController::MediaStreamTypePermissionMap
+      request_permissions;
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_ALLOWED;
+  content_settings->OnMediaStreamPermissionSet(security_origin,
+                                               request_permissions);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -253,7 +273,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION,
-                UTF8ToUTF16(web_contents()->GetURL().spec())));
+                UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK));
@@ -266,7 +286,10 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
             bubble_content.media_menus.begin()->first);
 
   // Change the microphone access.
-  content_settings->OnMicrophoneAccessBlocked();
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  content_settings->OnMediaStreamPermissionSet(security_origin,
+                                               request_permissions);
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           NULL, web_contents(), profile(),
@@ -279,7 +302,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamMic) {
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_BLOCKED_MEDIASTREAM_MIC_ASK,
-                UTF8ToUTF16(web_contents()->GetURL().spec())));
+                UTF8ToUTF16(request_host)));
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_BLOCKED_MEDIASTREAM_MIC_NO_ACTION));
@@ -299,7 +322,14 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->OnCameraAccessed();
+  std::string request_host = "google.com";
+  GURL security_origin("http://" + request_host);
+  MediaStreamDevicesController::MediaStreamTypePermissionMap
+      request_permissions;
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_ALLOWED;
+  content_settings->OnMediaStreamPermissionSet(security_origin,
+                                               request_permissions);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -313,7 +343,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_CAMERA_NO_ACTION,
-                UTF8ToUTF16(web_contents()->GetURL().spec())));
+                UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_CAMERA_BLOCK));
@@ -326,7 +356,10 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
             bubble_content.media_menus.begin()->first);
 
   // Change the camera access.
-  content_settings->OnCameraAccessBlocked();
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_BLOCKED_BY_USER;
+  content_settings->OnMediaStreamPermissionSet(security_origin,
+                                               request_permissions);
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
           NULL, web_contents(), profile(),
@@ -339,7 +372,7 @@ TEST_F(ContentSettingBubbleModelTest, MediastreamCamera) {
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_BLOCKED_MEDIASTREAM_CAMERA_ASK,
-                UTF8ToUTF16(web_contents()->GetURL().spec())));
+                UTF8ToUTF16(request_host)));
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_BLOCKED_MEDIASTREAM_CAMERA_NO_ACTION));
@@ -359,9 +392,16 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents());
+  std::string request_host = "google.com";
+  GURL security_origin("http://" + request_host);
 
   // Firstly, add microphone access.
-  content_settings->OnMicrophoneAccessed();
+  MediaStreamDevicesController::MediaStreamTypePermissionMap
+      request_permissions;
+  request_permissions[content::MEDIA_DEVICE_AUDIO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_ALLOWED;
+  content_settings->OnMediaStreamPermissionSet(security_origin,
+                                               request_permissions);
 
   scoped_ptr<ContentSettingBubbleModel> content_setting_bubble_model(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -375,7 +415,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   EXPECT_EQ(bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_NO_ACTION,
-                UTF8ToUTF16(web_contents()->GetURL().spec())));
+                UTF8ToUTF16(request_host)));
   EXPECT_EQ(bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_BLOCK));
@@ -385,7 +425,10 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
             bubble_content.media_menus.begin()->first);
 
   // Then add camera access.
-  content_settings->OnCameraAccessed();
+  request_permissions[content::MEDIA_DEVICE_VIDEO_CAPTURE] =
+      MediaStreamDevicesController::MEDIA_ALLOWED;
+  content_settings->OnMediaStreamPermissionSet(security_origin,
+                                               request_permissions);
 
   content_setting_bubble_model.reset(
       ContentSettingBubbleModel::CreateContentSettingBubbleModel(
@@ -399,7 +442,7 @@ TEST_F(ContentSettingBubbleModelTest, AccumulateMediastreamMicAndCamera) {
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[0],
             l10n_util::GetStringFUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_NO_ACTION,
-                UTF8ToUTF16(web_contents()->GetURL().spec())));
+                UTF8ToUTF16(request_host)));
   EXPECT_EQ(new_bubble_content.radio_group.radio_items[1],
             l10n_util::GetStringUTF8(
                 IDS_ALLOWED_MEDIASTREAM_MIC_AND_CAMERA_BLOCK));

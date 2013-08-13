@@ -717,7 +717,9 @@ void ContentSettingMediaStreamBubbleModel::SetTitle() {
 }
 
 void ContentSettingMediaStreamBubbleModel::SetRadioGroup() {
-  GURL url = web_contents()->GetURL();
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents());
+  GURL url = content_settings->media_stream_access_origin();
   RadioGroup radio_group;
   radio_group.url = url;
 
@@ -804,12 +806,15 @@ void ContentSettingMediaStreamBubbleModel::UpdateSettings(
   if (profile()) {
     HostContentSettingsMap* content_settings =
         profile()->GetHostContentSettingsMap();
+    TabSpecificContentSettings* tab_content_settings =
+        TabSpecificContentSettings::FromWebContents(web_contents());
     // The same patterns must be used as in other places (e.g. the infobar) in
     // order to override the existing rule. Otherwise a new rule is created.
     // TODO(markusheintz): Extract to a helper so that there is only a single
     // place to touch.
     ContentSettingsPattern primary_pattern =
-        ContentSettingsPattern::FromURLNoWildcard(web_contents()->GetURL());
+        ContentSettingsPattern::FromURLNoWildcard(
+            tab_content_settings->media_stream_access_origin());
     ContentSettingsPattern secondary_pattern =
         ContentSettingsPattern::Wildcard();
     if (state_ == TabSpecificContentSettings::MICROPHONE_ACCESSED ||
