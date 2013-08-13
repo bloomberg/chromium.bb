@@ -1070,7 +1070,6 @@ void InitCrashReporter() {
     g_breakpad->set_handle_debug_exceptions(true);
 
 #ifndef _WIN64
-    std::string headless;
     if (process_type != L"browser" &&
         !breakpad::GetBreakpadClient()->IsRunningUnattended()) {
       // Initialize the hook TerminateProcess to catch unexpected exits.
