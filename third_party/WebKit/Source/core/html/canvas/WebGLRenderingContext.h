@@ -526,12 +526,19 @@ public:
     RefPtr<WebGLCompressedTextureS3TC> m_webglCompressedTextureS3TC;
     RefPtr<WebGLDepthTexture> m_webglDepthTexture;
 
+    enum ExtensionFlags {
+        ApprovedExtension   = 0x00,
+        DraftExtension      = 0x01,
+        PrivilegedExtension = 0x02,
+        PrefixedExtension   = 0x04,
+    };
+
     class ExtensionTracker {
     public:
-        ExtensionTracker(bool privileged, bool draft, bool prefixed, const char** prefixes)
-            : m_privileged(privileged)
-            , m_draft(draft)
-            , m_prefixed(prefixed)
+        ExtensionTracker(ExtensionFlags flags, const char** prefixes)
+            : m_privileged(flags & PrivilegedExtension)
+            , m_draft(flags & DraftExtension)
+            , m_prefixed(flags & PrefixedExtension)
             , m_prefixes(prefixes)
         {
         }
@@ -572,8 +579,8 @@ public:
     template <typename T>
     class TypedExtensionTracker : public ExtensionTracker {
     public:
-        TypedExtensionTracker(RefPtr<T>& extensionField, bool privileged, bool draft, bool prefixed, const char** prefixes)
-            : ExtensionTracker(privileged, draft, prefixed, prefixes)
+        TypedExtensionTracker(RefPtr<T>& extensionField, ExtensionFlags flags, const char** prefixes)
+            : ExtensionTracker(flags, prefixes)
             , m_extensionField(extensionField)
         {
         }
@@ -620,9 +627,9 @@ public:
     Vector<ExtensionTracker*> m_extensions;
 
     template <typename T>
-    void registerExtension(RefPtr<T>& extensionPtr, bool privileged, bool draft, bool prefixed, const char** prefixes)
+    void registerExtension(RefPtr<T>& extensionPtr, ExtensionFlags flags = ApprovedExtension, const char** prefixes = 0)
     {
-        m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, privileged, draft, prefixed, prefixes));
+        m_extensions.append(new TypedExtensionTracker<T>(extensionPtr, flags, prefixes));
     }
 
     // Errors raised by synthesizeGLError() while the context is lost.

@@ -576,32 +576,31 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     }
 
     // Register extensions.
-    static const char* unprefixed[] = { "", 0, };
     static const char* webkitPrefix[] = { "WEBKIT_", 0, };
     static const char* bothPrefixes[] = { "", "WEBKIT_", 0, };
 
-    registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays, false, false, false, unprefixed);
-    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, false, false, true, webkitPrefix);
-    registerExtension<OESElementIndexUint>(m_oesElementIndexUint, false, false, false, unprefixed);
-    registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives, false, false, false, unprefixed);
-    registerExtension<OESTextureFloat>(m_oesTextureFloat, false, false, false, unprefixed);
-    registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear, false, false, false, unprefixed);
-    registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat, false, false, false, unprefixed);
-    registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear, false, false, false, unprefixed);
-    registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject, false, false, false, unprefixed);
-    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, false, false, true, webkitPrefix);
-    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, false, false, true, webkitPrefix);
-    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, false, false, true, bothPrefixes);
-    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, false, false, true, bothPrefixes);
-    registerExtension<WebGLLoseContext>(m_webglLoseContext, false, false, false, bothPrefixes);
+    registerExtension<ANGLEInstancedArrays>(m_angleInstancedArrays);
+    registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic, PrefixedExtension, webkitPrefix);
+    registerExtension<OESElementIndexUint>(m_oesElementIndexUint);
+    registerExtension<OESStandardDerivatives>(m_oesStandardDerivatives);
+    registerExtension<OESTextureFloat>(m_oesTextureFloat);
+    registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
+    registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat);
+    registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear);
+    registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject);
+    registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC, PrefixedExtension, webkitPrefix);
+    registerExtension<WebGLCompressedTexturePVRTC>(m_webglCompressedTexturePVRTC, PrefixedExtension, webkitPrefix);
+    registerExtension<WebGLCompressedTextureS3TC>(m_webglCompressedTextureS3TC, PrefixedExtension, bothPrefixes);
+    registerExtension<WebGLDepthTexture>(m_webglDepthTexture, PrefixedExtension, bothPrefixes);
+    registerExtension<WebGLLoseContext>(m_webglLoseContext, ApprovedExtension, bothPrefixes);
 
     // Register draft extensions.
-    registerExtension<EXTFragDepth>(m_extFragDepth, false, true, false, unprefixed);
-    registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers, false, true, false, unprefixed);
+    registerExtension<EXTFragDepth>(m_extFragDepth, DraftExtension);
+    registerExtension<WebGLDrawBuffers>(m_webglDrawBuffers, DraftExtension);
 
     // Register privileged extensions.
-    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, true, false, false, unprefixed);
-    registerExtension<WebGLDebugShaders>(m_webglDebugShaders, true, false, false, unprefixed);
+    registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo, PrivilegedExtension);
+    registerExtension<WebGLDebugShaders>(m_webglDebugShaders, PrivilegedExtension);
 }
 
 void WebGLRenderingContext::initializeNewContext()
@@ -2110,7 +2109,9 @@ GC3Denum WebGLRenderingContext::getError()
 
 bool WebGLRenderingContext::ExtensionTracker::matchesNameWithPrefixes(const String& name) const
 {
-    const char** prefixes = m_prefixes;
+    static const char* unprefixed[] = { "", 0, };
+
+    const char** prefixes = m_prefixes ? m_prefixes : unprefixed;
     for (; *prefixes; ++prefixes) {
         String prefixedName = String(*prefixes) + getExtensionName();
         if (equalIgnoringCase(prefixedName, name)) {
