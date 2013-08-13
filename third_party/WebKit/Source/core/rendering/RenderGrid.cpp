@@ -595,6 +595,9 @@ void RenderGrid::resolveContentBasedTrackSizingFunctionsForItems(TrackSizingDire
         tracks.append(&track);
     }
 
+    if (tracks.isEmpty())
+        return;
+
     LayoutUnit additionalBreadthSpace = (this->*sizingFunction)(gridItem, direction, columnTracks);
     for (size_t trackIndexForSpace = initialTrackIndex; trackIndexForSpace <= finalTrackIndex; ++trackIndexForSpace) {
         GridTrack& track = (direction == ForColumns) ? columnTracks[trackIndexForSpace] : rowTracks[trackIndexForSpace];
