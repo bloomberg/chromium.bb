@@ -97,18 +97,22 @@ void LocallyManagedUserCreationController::StartCreation() {
   UserManager::Get()->StartLocallyManagedUserCreationTransaction(
       creation_context_->display_name);
 
-  std::string new_id = UserManager::Get()->GenerateUniqueLocallyManagedUserId();
+  creation_context_->local_user_id =
+        UserManager::Get()->GenerateUniqueLocallyManagedUserId();
+  creation_context_->sync_user_id =
+      ManagedUserRegistrationUtility::GenerateNewManagedUserId();
 
-  const User* user = UserManager::Get()->CreateLocallyManagedUserRecord(
-      creation_context_->manager_id, new_id, creation_context_->display_name);
-
-  creation_context_->user_id = user->email();
+  UserManager::Get()->CreateLocallyManagedUserRecord(
+      creation_context_->manager_id,
+      creation_context_->local_user_id,
+      creation_context_->sync_user_id,
+      creation_context_->display_name);
 
   UserManager::Get()->SetLocallyManagedUserCreationTransactionUserId(
-      creation_context_->user_id);
+      creation_context_->local_user_id);
   VLOG(1) << "Creating cryptohome";
   authenticator_ = new ManagedUserAuthenticator(this);
-  authenticator_->AuthenticateToCreate(user->email(),
+  authenticator_->AuthenticateToCreate(creation_context_->local_user_id,
                                        creation_context_->password);
 }
 
@@ -144,7 +148,7 @@ void LocallyManagedUserCreationController::OnMountSuccess(
       reinterpret_cast<const void*>(master_key_bytes),
       sizeof(master_key_bytes)));
   VLOG(1) << "Adding master key";
-  authenticator_->AddMasterKey(creation_context_->user_id,
+  authenticator_->AddMasterKey(creation_context_->local_user_id,
                                creation_context_->password,
                                creation_context_->master_key);
 }
@@ -158,7 +162,7 @@ void LocallyManagedUserCreationController::OnAddKeySuccess() {
   ManagedUserRegistrationInfo info(creation_context_->display_name);
   info.master_key = creation_context_->master_key;
   creation_context_->registration_utility->Register(
-      ManagedUserRegistrationUtility::GenerateNewManagedUserId(),
+      creation_context_->sync_user_id,
       info,
       base::Bind(&LocallyManagedUserCreationController::RegistrationCallback,
                  weak_factory_.GetWeakPtr()));
@@ -194,7 +198,7 @@ void LocallyManagedUserCreationController::CancelCreation() {
 
 std::string LocallyManagedUserCreationController::GetManagedUserId() {
   DCHECK(creation_context_);
-  return creation_context_->user_id;
+  return creation_context_->local_user_id;
 }
 
 void LocallyManagedUserCreationController::TokenFetched(
@@ -223,7 +227,7 @@ void LocallyManagedUserCreationController::OnManagedUserFilesStored(
   }
   // Assume that new token is valid. It will be automatically invalidated if
   // sync service fails to use it.
-  UserManager::Get()->SaveUserOAuthStatus(creation_context_->user_id,
+  UserManager::Get()->SaveUserOAuthStatus(creation_context_->local_user_id,
                                           User::OAUTH2_TOKEN_STATUS_VALID);
   UserManager::Get()->CommitLocallyManagedUserCreationTransaction();
   if (consumer_)

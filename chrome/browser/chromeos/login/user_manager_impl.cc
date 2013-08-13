@@ -68,6 +68,10 @@ const char kRegularUsers[] = "LoggedInUsers";
 // A vector pref of the public accounts defined on this device.
 const char kPublicAccounts[] = "PublicAccounts";
 
+// A map from locally managed user local user id to sync user id.
+const char kManagedUserSyncId[] =
+    "ManagedUserSyncId";
+
 // A map from locally managed user id to manager user id.
 const char kManagedUserManagers[] =
     "ManagedUserManagers";
@@ -202,6 +206,7 @@ void UserManager::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kUserOAuthTokenStatus);
   registry->RegisterDictionaryPref(kUserDisplayName);
   registry->RegisterDictionaryPref(kUserDisplayEmail);
+  registry->RegisterDictionaryPref(kManagedUserSyncId);
   registry->RegisterDictionaryPref(kManagedUserManagers);
   registry->RegisterDictionaryPref(kManagedUserManagerNames);
   registry->RegisterDictionaryPref(kManagedUserManagerDisplayEmails);
@@ -450,7 +455,8 @@ std::string UserManagerImpl::GenerateUniqueLocallyManagedUserId() {
 
 const User* UserManagerImpl::CreateLocallyManagedUserRecord(
       const std::string& manager_id,
-      const std::string& e_mail,
+      const std::string& local_user_id,
+      const std::string& sync_user_id,
       const string16& display_name) {
   const User* user = FindLocallyManagedUser(display_name);
   DCHECK(!user);
@@ -459,32 +465,45 @@ const User* UserManagerImpl::CreateLocallyManagedUserRecord(
 
   PrefService* local_state = g_browser_process->local_state();
 
-  User* new_user = User::CreateLocallyManagedUser(e_mail);
+  User* new_user = User::CreateLocallyManagedUser(local_user_id);
   ListPrefUpdate prefs_users_update(local_state, kRegularUsers);
-  prefs_users_update->Insert(0, new base::StringValue(e_mail));
+  prefs_users_update->Insert(0, new base::StringValue(local_user_id));
   ListPrefUpdate prefs_new_users_update(local_state,
                                         kLocallyManagedUsersFirstRun);
-  prefs_new_users_update->Insert(0, new base::StringValue(e_mail));
+  prefs_new_users_update->Insert(0, new base::StringValue(local_user_id));
   users_.insert(users_.begin(), new_user);
 
   const User* manager = FindUser(manager_id);
   CHECK(manager);
 
+  DictionaryPrefUpdate sync_id_update(local_state, kManagedUserSyncId);
   DictionaryPrefUpdate manager_update(local_state, kManagedUserManagers);
   DictionaryPrefUpdate manager_name_update(local_state,
                                            kManagedUserManagerNames);
   DictionaryPrefUpdate manager_email_update(local_state,
                                             kManagedUserManagerDisplayEmails);
-  manager_update->SetWithoutPathExpansion(e_mail,
+  sync_id_update->SetWithoutPathExpansion(local_user_id,
+      new base::StringValue(sync_user_id));
+  manager_update->SetWithoutPathExpansion(local_user_id,
       new base::StringValue(manager->email()));
-  manager_name_update->SetWithoutPathExpansion(e_mail,
+  manager_name_update->SetWithoutPathExpansion(local_user_id,
       new base::StringValue(manager->GetDisplayName()));
-  manager_email_update->SetWithoutPathExpansion(e_mail,
+  manager_email_update->SetWithoutPathExpansion(local_user_id,
       new base::StringValue(manager->display_email()));
 
-  SaveUserDisplayName(e_mail, display_name);
+  SaveUserDisplayName(local_user_id, display_name);
   g_browser_process->local_state()->CommitPendingWrite();
   return new_user;
+}
+
+std::string UserManagerImpl::GetManagedUserSyncId(
+    const std::string& managed_user_id) const {
+  PrefService* local_state = g_browser_process->local_state();
+  const DictionaryValue* sync_user_ids =
+      local_state->GetDictionary(kManagedUserSyncId);
+  std::string result;
+  sync_user_ids->GetStringWithoutPathExpansion(managed_user_id, &result);
+  return result;
 }
 
 string16 UserManagerImpl::GetManagerDisplayNameForManagedUser(

@@ -79,7 +79,8 @@ class LocallyManagedUserCreationController
 
     string16 display_name;
     std::string manager_id;
-    std::string user_id;
+    std::string local_user_id; // Used to identify cryptohome.
+    std::string sync_user_id;  // Used to identify user in manager's sync data.
     std::string password;
     std::string mount_hash;
     std::string master_key;

@@ -84,6 +84,8 @@ class UserManagerImpl
                                     const std::string& display_email) OVERRIDE;
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const OVERRIDE;
+  virtual std::string GetManagedUserSyncId(
+      const std::string& managed_user_id) const OVERRIDE;
   virtual string16 GetManagerDisplayNameForManagedUser(
       const std::string& managed_user_id) const OVERRIDE;
   virtual std::string GetManagerUserIdForManagedUser(
@@ -118,7 +120,8 @@ class UserManagerImpl
   virtual void NotifyLocalStateChanged() OVERRIDE;
   virtual const User* CreateLocallyManagedUserRecord(
       const std::string& manager_id,
-      const std::string& e_mail,
+      const std::string& local_user_id,
+      const std::string& sync_user_id,
       const string16& display_name) OVERRIDE;
   virtual std::string GenerateUniqueLocallyManagedUserId() OVERRIDE;
   virtual void StartLocallyManagedUserCreationTransaction(

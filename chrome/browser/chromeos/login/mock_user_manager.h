@@ -74,12 +74,13 @@ class MockUserManager : public UserManager {
   MOCK_METHOD1(SetMergeSessionState, void(MergeSessionState));
   MOCK_METHOD2(SetUserFlow, void(const std::string&, UserFlow*));
   MOCK_METHOD1(ResetUserFlow, void(const std::string&));
-  MOCK_CONST_METHOD1(GetManagerForManagedUser, std::string(
-      const std::string& managed_user_id));
-  MOCK_METHOD3(CreateLocallyManagedUserRecord, const User*(
+  MOCK_METHOD4(CreateLocallyManagedUserRecord, const User*(
+      const std::string&,
       const std::string&,
       const std::string&,
       const string16&));
+  MOCK_CONST_METHOD1(GetManagedUserSyncId, std::string(
+      const std::string& managed_user_id));
   MOCK_CONST_METHOD1(GetManagerDisplayNameForManagedUser, string16(
       const std::string&));
   MOCK_CONST_METHOD1(GetManagerUserIdForManagedUser, std::string(

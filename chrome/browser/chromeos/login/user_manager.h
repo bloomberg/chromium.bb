@@ -152,13 +152,16 @@ class UserManager {
   // and notifies observers.
   virtual void RestoreActiveSessions() = 0;
 
-  // Creates locally managed user with given display name, and id (e-mail), and
-  // sets |display_name| for created user and stores it to
-  // persistent list. Returns created user, or existing user if there already
+  // Creates locally managed user with given |display_name| and|local_user_id|
+  // and persists that to user list. Also links this user identified by
+  // |sync_user_id| to manager with a |manager_id|.
+  // Returns created user, or existing user if there already
   // was locally managed user with such display name.
+  // TODO(antrim): Refactor into a single struct to have only 1 getter.
   virtual const User* CreateLocallyManagedUserRecord(
       const std::string& manager_id,
-      const std::string& e_mail,
+      const std::string& local_user_id,
+      const std::string& sync_user_id,
       const string16& display_name) = 0;
 
   // Generates unique username for locally managed user.
@@ -225,6 +228,12 @@ class UserManager {
   // Otherwise, returns |username| itself.
   virtual std::string GetUserDisplayEmail(
       const std::string& username) const = 0;
+
+  // Returns sync_user_id for locally managed user with |managed_user_id| or
+  // empty string if such user is not found or it doesn't have
+  // sync_user_id defined.
+  virtual std::string GetManagedUserSyncId(
+        const std::string& managed_user_id) const = 0;
 
   // Returns the display name for manager of user |managed_user_id| if it is
   // known (was previously set by a |SaveUserDisplayName| call).
