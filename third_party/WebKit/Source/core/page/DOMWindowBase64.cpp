@@ -65,7 +65,7 @@ String atob(void*, const String& encodedString, ExceptionState& es)
     }
 
     Vector<char> out;
-    if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacter, Base64StrictPaddingValidation)) {
+    if (!base64Decode(encodedString, out, Base64FailOnInvalidCharacterOrExcessPadding)) {
         es.throwDOMException(InvalidCharacterError, "'atob' failed: The string to be decoded is not correctly encoded.");
         return String();
     }

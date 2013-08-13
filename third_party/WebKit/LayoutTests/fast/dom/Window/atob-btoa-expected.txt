@@ -39,6 +39,7 @@ PASS window.atob("zzz=") is "Ï<"
 PASS window.atob("zzz==") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
 PASS window.atob("zzz===") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
 PASS window.atob("zzz====") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
+PASS window.atob("zzz=====") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
 PASS window.atob("zzzz") is "Ï<ó"
 PASS window.atob("zzzzz") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
 PASS window.atob("z=zz") threw exception InvalidCharacterError: 'atob' failed: The string to be decoded is not correctly encoded..
