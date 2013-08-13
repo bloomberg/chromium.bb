@@ -32,6 +32,7 @@
 // 'strict mode' is invoked for this scope.
 
 //<include src="../file_type.js">
+//<include src="../async_util.js">
 //<include src="../util.js">
 //<include src="../volume_manager.js">
 

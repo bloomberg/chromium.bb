@@ -147,8 +147,10 @@ NavigationListItem.prototype.decorate = function() {
 /**
  * Associate a path with this item.
  * @param {string} path Path of this item.
+ * @param {string=} opt_deviceType The type of the device. Available iff the
+ *     path represents removable storage.
  */
-NavigationListItem.prototype.setPath = function(path) {
+NavigationListItem.prototype.setPath = function(path, opt_deviceType) {
   if (this.path_)
     console.warn('NavigationListItem.setPath should be called only once.');
 
@@ -157,9 +159,8 @@ NavigationListItem.prototype.setPath = function(path) {
   var rootType = PathUtil.getRootType(path);
 
   this.iconDiv_.setAttribute('volume-type-icon', rootType);
-  if (rootType === RootType.REMOVABLE) {
-    this.iconDiv_.setAttribute('volume-subtype',
-        VolumeManager.getInstance().getDeviceType(path));
+  if (opt_deviceType) {
+    this.iconDiv_.setAttribute('volume-subtype', opt_deviceType);
   }
 
   this.label_.textContent = PathUtil.getFolderLabel(path);
@@ -242,24 +243,26 @@ NavigationList.prototype = {
 
 /**
  * @param {HTMLElement} el Element to be DirectoryItem.
+ * @param {VolumeManager} volumeManager The VolumeManager of the system.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  *     folders.
  */
-NavigationList.decorate = function(el, directoryModel) {
+NavigationList.decorate = function(el, volumeManager, directoryModel) {
   el.__proto__ = NavigationList.prototype;
-  el.decorate(directoryModel);
+  el.decorate(volumeManager, directoryModel);
 };
 
 /**
+ * @param {VolumeManager} volumeManager The VolumeManager of the system.
  * @param {DirectoryModel} directoryModel Current DirectoryModel.
  */
-NavigationList.prototype.decorate = function(directoryModel) {
+NavigationList.prototype.decorate = function(volumeManager, directoryModel) {
   cr.ui.List.decorate(this);
   this.__proto__ = NavigationList.prototype;
 
   this.fileManager_ = null;
   this.directoryModel_ = directoryModel;
-  this.volumeManager_ = VolumeManager.getInstance();
+  this.volumeManager_ = volumeManager;
   this.selectionModel = new cr.ui.ListSingleSelectionModel();
 
   this.directoryModel_.addEventListener('directory-changed',
@@ -313,7 +316,7 @@ NavigationList.prototype.removeChild = function(item) {
  */
 NavigationList.prototype.renderRoot_ = function(path) {
   var item = new NavigationListItem();
-  item.setPath(path);
+  item.setPath(path, this.volumeManager_.getDeviceType(path));
 
   var handleClick = function() {
     if (item.selected && path !== this.directoryModel_.getCurrentDirPath()) {

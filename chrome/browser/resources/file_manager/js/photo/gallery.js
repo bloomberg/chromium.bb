@@ -44,15 +44,17 @@ function unload(opt_exiting) { Gallery.instance.onUnload(opt_exiting) }
  *     {string} readonlyDirName Directory name for readonly warning or null.
  *     {DirEntry} saveDirEntry Directory to save to.
  *     {function(string)} displayStringFunction.
+ * @param {VolumeManager} volumeManager The VolumeManager instance of the
+ *      system.
  * @class
  * @constructor
  */
-function Gallery(context) {
+function Gallery(context, volumeManager) {
   this.container_ = document.querySelector('.gallery');
   this.document_ = document;
   this.context_ = context;
   this.metadataCache_ = context.metadataCache;
-  this.volumeManager_ = VolumeManager.getInstance();
+  this.volumeManager_ = volumeManager;
 
   this.dataModel_ = new cr.ui.ArrayDataModel([]);
   this.selectionModel_ = new cr.ui.ListSelectionModel();
@@ -71,11 +73,12 @@ Gallery.prototype.__proto__ = cr.EventTarget.prototype;
  * Create and initialize a Gallery object based on a context.
  *
  * @param {Object} context Gallery context.
+ * @param {VolumeManager} volumeManager VolumeManager of the system.
  * @param {Array.<string>} urls Array of urls.
  * @param {Array.<string>} selectedUrls Array of selected urls.
  */
-Gallery.open = function(context, urls, selectedUrls) {
-  Gallery.instance = new Gallery(context);
+Gallery.open = function(context, volumeManager, urls, selectedUrls) {
+  Gallery.instance = new Gallery(context, volumeManager);
   Gallery.instance.load(urls, selectedUrls);
 };
 
@@ -143,21 +146,23 @@ Gallery.openStandalone = function(path, pageState, opt_callback) {
   function open() {
     urls.sort();
     Gallery.getFileBrowserPrivate().getStrings(function(strings) {
-      loadTimeData.data = strings;
-      var context = {
-        readonlyDirName: null,
-        curDirEntry: currentDir,
-        saveDirEntry: null,
-        metadataCache: MetadataCache.createFull(),
-        pageState: pageState,
-        appWindow: appWindow,
-        onBack: onBack,
-        onClose: onClose,
-        onMaximize: onMaximize,
-        displayStringFunction: strf
-      };
-      Gallery.open(context, urls, selectedUrls);
-      if (opt_callback) opt_callback();
+      VolumeManager.getInstance(function(volumeManager) {
+        loadTimeData.data = strings;
+        var context = {
+          readonlyDirName: null,
+          curDirEntry: currentDir,
+          saveDirEntry: null,
+          metadataCache: MetadataCache.createFull(),
+          pageState: pageState,
+          appWindow: appWindow,
+          onBack: onBack,
+          onClose: onClose,
+          onMaximize: onMaximize,
+          displayStringFunction: strf
+        };
+        Gallery.open(context, volumeManager, urls, selectedUrls);
+        if (opt_callback) opt_callback();
+      });
     });
   }
 };

@@ -580,7 +580,8 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
       onMaximize: onMaximize,
       displayStringFunction: strf
     };
-    galleryFrame.contentWindow.Gallery.open(context, allUrls, urls);
+    galleryFrame.contentWindow.Gallery.open(
+        context, fm.volumeManager_, allUrls, urls);
   }.bind(this);
 
   galleryFrame.src = 'gallery.html';

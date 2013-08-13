@@ -7,10 +7,19 @@
 /**
  * VolumeManager is responsible for tracking list of mounted volumes.
  *
+ * @param {Entry} root The root of file system.
  * @constructor
  * @extends {cr.EventTarget}
  */
-function VolumeManager() {
+function VolumeManager(root) {
+  /**
+   * Root enty of the whole file system.
+   * TODO(hidehiko): Remove this when multi-file system is supported.
+   * @type {Entry}
+   * @private
+   */
+  this.root_ = root;
+
   /**
    * The list of archives requested to mount. We will show contents once
    * archive is mounted, but only for mounts from within this filebrowser tab.
@@ -139,11 +148,38 @@ VolumeManager.TIMEOUT = 15 * 60 * 1000;
 VolumeManager.MOUNTING_DELAY = 500;
 
 /**
- * @return {VolumeManager} Singleton instance.
+ * The singleton instance of VolumeManager. Initialized by the first invocation
+ * of getInstance().
+ * @type {VolumeManager}
+ * @private
  */
-VolumeManager.getInstance = function() {
-  return VolumeManager.instance_ = VolumeManager.instance_ ||
-                                   new VolumeManager();
+VolumeManager.instance_ = null;
+
+/**
+ * The queue of pending getInstance invocations.
+ * @type {AsyncUtil.Queue}
+ * @private
+ */
+VolumeManager.getInstanceQueue_ = new AsyncUtil.Queue();
+
+/**
+ * @param {function(VolumeManager)} callback Callback to obtain VolumeManager
+ *     instance.
+ */
+VolumeManager.getInstance = function(callback) {
+  VolumeManager.getInstanceQueue_.run(function(completionCallback) {
+    if (VolumeManager.instance_) {
+      callback(VolumeManager.instance_);
+      completionCallback();
+      return;
+    }
+
+    chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
+      VolumeManager.instance_ = new VolumeManager(filesystem.root);
+      callback(VolumeManager.instance_);
+      completionCallback();
+    });
+  });
 };
 
 /**
@@ -310,22 +346,21 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
  * @private
  */
 VolumeManager.prototype.waitDriveLoaded_ = function(mountPath, callback) {
-  chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
-    filesystem.root.getDirectory(mountPath, {},
-        function(entry) {
-          // After file system is mounted, we need to "read" drive grand root
-          // entry at first. It loads mydrive root entry as a part of
-          // 'fast-fetch' quickly, and starts full feed fetch in parallel.
-          // Without this read, accessing mydrive root will be 'full-fetch'
-          // rather than 'fast-fetch' on the current architecture.
-          // Just "getting" the grand root entry doesn't trigger it. Rather,
-          // it starts when the entry is "read".
-          entry.createReader().readEntries(
-              callback.bind(null, true),
-              callback.bind(null, false));
-        },
-        callback.bind(null, false));
-  });
+  this.root_.getDirectory(
+      mountPath, {},
+      function(entry) {
+        // After file system is mounted, we need to "read" drive grand root
+        // entry at first. It loads mydrive root entry as a part of
+        // 'fast-fetch' quickly, and starts full feed fetch in parallel.
+        // Without this read, accessing mydrive root will be 'full-fetch'
+        // rather than 'fast-fetch' on the current architecture.
+        // Just "getting" the grand root entry doesn't trigger it. Rather,
+        // it starts when the entry is "read".
+        entry.createReader().readEntries(
+            callback.bind(null, true),
+            callback.bind(null, false));
+      },
+      callback.bind(null, false));
 };
 
 /**
