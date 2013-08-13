@@ -1,0 +1,22 @@
+Initial layer tree
+#document (0)
+    div#a 200x200 (1)
+        div#b1 100x150 (2)
+        div#b2 110x140 (2)
+            div#c 90x100 (3)
+            div#b3 110x140 (3)
+Updated layer tree
+#document (0)
+    div#a 200x200 (1)
+        div#b2 110x140 (2)
+            div#c 90x100 (3)
+                div#b1 100x150
+        div#b4 0x0
+Updated layer geometry
+#document (0)
+    div#a 200x200 (1)
+        div#b2 110x140 (2)
+            div#c 90x80 (3)
+                div#b1 100x150
+        div#b4 0x0
+

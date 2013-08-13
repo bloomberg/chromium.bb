@@ -1,0 +1,129 @@
+<html>
+<head>
+<style>
+.layer {
+    position: absolute;
+    -webkit-transform: translateZ(10px);
+    opacity: 0.8;
+}
+</style>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script>
+
+function updateTree()
+{
+    document.getElementById("c").appendChild(document.getElementById("b1"));
+    var b3 = document.getElementById("b3");
+    b3.parentElement.removeChild(b3);
+    var b4 = document.createElement("div");
+    b4.id = "b4";
+    b4.className = "layer";
+    document.getElementById("a").appendChild(b4);
+    if (window.testRunner)
+        testRunner.display();
+}
+
+function updateGeometry()
+{
+    document.getElementById("c").style.width = "80px";
+    if (window.testRunner)
+        testRunner.display();
+}
+
+function initialize_LayerTreeTests()
+{
+    // FIXME: remove once out of experimental.
+    WebInspector.inspectorView.addPanel(new WebInspector.LayersPanelDescriptor());
+    InspectorTest._layerTreeModel = WebInspector.showPanel("layers")._model;
+
+    InspectorTest.labelForLayer = function(layer)
+    {
+        var node = WebInspector.domAgent.nodeForId(layer.nodeIdForSelfOrAncestor());
+        var label = node.appropriateSelectorFor(false);
+        var height = layer.height();
+        var width = layer.width();
+        if (height <= 200 && width <= 200)
+            label += " " + height + "x" + width;
+        if (typeof layer.__extraData !== "undefined")
+            label += " (" + layer.__extraData + ")";
+        return label;
+    }
+
+    InspectorTest.dumpLayerTree = function(prefix, root)
+    {
+        if (!prefix)
+            prefix = "";
+        if (!root) {
+            root = InspectorTest._layerTreeModel.root();
+            if (!root) {
+                InspectorTest.addResult("No layer root, perhaps not in the composited mode! ");
+                InspectorTest.completeTest();
+                return;
+            }
+        }
+        InspectorTest.addResult(prefix + InspectorTest.labelForLayer(root));
+        root.children().forEach(InspectorTest.dumpLayerTree.bind(InspectorTest, prefix + "    "));
+    }
+
+    InspectorTest.evaluateAndRunWhenTreeChanges = function(expression, callback)
+    {
+        function eventHandler()
+        {
+            InspectorTest._layerTreeModel.removeEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
+            callback();
+        }
+        InspectorTest._layerTreeModel.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, eventHandler);
+        InspectorTest.evaluateInPage(expression, function() {});
+    }
+}
+
+
+function test()
+{
+    function addDepthMarker(layer)
+    {
+        layer.__extraData = layer.parent() ? layer.parent().__extraData + 1 : 0;
+    }
+
+    function step1()
+    {
+        InspectorTest._layerTreeModel.requestLayers(step2);
+    }
+
+    function step2()
+    {
+         // Assure layer objects are not re-created during updates.
+         InspectorTest._layerTreeModel.forEachLayer(addDepthMarker);
+         InspectorTest.addResult("Initial layer tree");
+         InspectorTest.dumpLayerTree();
+         InspectorTest.evaluateAndRunWhenTreeChanges("updateTree()", step3);
+    }
+
+    function step3()
+    {
+         InspectorTest.addResult("Updated layer tree");
+         InspectorTest.dumpLayerTree();
+         InspectorTest.evaluateAndRunWhenTreeChanges("updateGeometry()", step4);
+    }
+
+    function step4()
+    {
+         InspectorTest.addResult("Updated layer geometry");
+         InspectorTest.dumpLayerTree();
+         InspectorTest.completeTest();
+    }
+
+    step1();
+}
+
+</script>
+</html>
+<body onload="runTest()">
+<div id="a" style="width: 200px; height: 200px" class="layer">
+<div class="layer" id="b1" style="width: 150; height: 100"></div>
+<div id="b2" class="layer" style="width: 140; height: 110">
+<div id="c" class="layer" style="width: 100; height: 90"></div>
+<div id="b3" class="layer" style="width: 140; height: 110">
+</div>
+</div>
+</body>
