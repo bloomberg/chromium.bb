@@ -617,27 +617,24 @@ void PictureLayerImpl::SetIsMask(bool is_mask) {
 ResourceProvider::ResourceId PictureLayerImpl::ContentsResourceId() const {
   gfx::Rect content_rect(content_bounds());
   float scale = contents_scale_x();
-  for (PictureLayerTilingSet::CoverageIterator
-           iter(tilings_.get(), scale, content_rect, ideal_contents_scale_);
-       iter;
-       ++iter) {
-    // Mask resource not ready yet.
-    if (!*iter)
-      return 0;
+  PictureLayerTilingSet::CoverageIterator iter(
+      tilings_.get(), scale, content_rect, ideal_contents_scale_);
 
-    const ManagedTileState::TileVersion& tile_version =
-        iter->GetTileVersionForDrawing();
-    if (!tile_version.IsReadyToDraw() ||
-        tile_version.mode() != ManagedTileState::TileVersion::RESOURCE_MODE)
-      return 0;
+  // Mask resource not ready yet.
+  if (!iter || !*iter)
+    return 0;
 
-    // Masks only supported if they fit on exactly one tile.
-    if (iter.geometry_rect() != content_rect)
-      return 0;
+  // Masks only supported if they fit on exactly one tile.
+  if (iter.geometry_rect() != content_rect)
+    return 0;
 
-    return tile_version.get_resource_id();
-  }
-  return 0;
+  const ManagedTileState::TileVersion& tile_version =
+      iter->GetTileVersionForDrawing();
+  if (!tile_version.IsReadyToDraw() ||
+      tile_version.mode() != ManagedTileState::TileVersion::RESOURCE_MODE)
+    return 0;
+
+  return tile_version.get_resource_id();
 }
 
 void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
