@@ -31,5 +31,6 @@
 [
 ] interface LayerRect {
     readonly attribute Node layerRootNode;
+    readonly attribute DOMString layerType;
     readonly attribute ClientRect layerRelativeRect;
 };

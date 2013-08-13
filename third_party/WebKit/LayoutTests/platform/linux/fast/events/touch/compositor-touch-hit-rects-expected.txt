@@ -2,11 +2,8 @@ This tests verifies the hit test regions given to the compositor. It can only be
 
 normalFlow: #document (13, 128, 290, 12)
 
-inlineOverflow: #document (13, 145, 17, 22)
-inlineOverflow: #document (14, 145, 151, 12)
-inlineOverflow: #document (14, 146, 151, 10)
-inlineOverflow: #document (14, 155, 41, 12)
-inlineOverflow: #document (14, 156, 41, 10)
+inlineOverflow: #document (13, 145, 152, 12)
+inlineOverflow: #document (13, 157, 42, 10)
 
 absoluteChildContainer: #document (13, 172, 290, 12)
 absoluteChildContainer: #document (320, 173, 142, 12)
@@ -20,28 +17,36 @@ translate: #document (314, 219, 288, 12)
 transform2d: #document (16, 236, 284, 20)
 
 overhangingContainer: #document (13, 262, 290, 12)
-overhangingContainer: #document (14, 263, 102, 42)
-overhangingContainer: #document (15, 284, 110, 10)
+overhangingContainer: #document (14, 274, 102, 10)
+overhangingContainer: #document (14, 284, 111, 10)
+overhangingContainer: #document (14, 294, 102, 11)
 
 transform3d: DIV#transform3dChild (0, 0, 288, 12)
 transform3d: #document (13, 315, 290, 14)
 
-continuation: #document (13, 338, 101, 12)
+continuation: DIV#transform3dChild (0, 0, 288, 12)
+continuation: #document (13, 338, 101, 11)
 continuation: #document (13, 349, 290, 12)
-continuation: #document (13, 360, 121, 12)
+continuation: #document (13, 361, 121, 11)
 
+inlineAbsoluteChildContainer: DIV#transform3dChild (0, 0, 288, 12)
 inlineAbsoluteChildContainer: #document (13, 375, 262, 12)
 inlineAbsoluteChildContainer: #document (320, 376, 252, 12)
 
+list: DIV#transform3dChild (0, 0, 288, 12)
 list: #document (13, 396, 290, 14)
 list: #document (341, 397, 261, 12)
 
+styleModified: DIV#transform3dChild (0, 0, 288, 12)
 styleModified: #document (13, 420, 290, 22)
 
+scrollContent: DIV#transform3dChild (0, 0, 288, 12)
 scrollContent: #document (14, 461, 273, 12)
 
+containsSvg: DIV#transform3dChild (0, 0, 288, 12)
 containsSvg: #document (13, 477, 290, 16)
 
+svgline: DIV#transform3dChild (0, 0, 288, 12)
 svgline: #document (13, 498, 100, 10)
 
 

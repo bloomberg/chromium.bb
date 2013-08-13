@@ -35,6 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -50,7 +51,7 @@ public:
 
     unsigned length() const;
     LayerRect* item(unsigned index);
-    void append(PassRefPtr<Node> layerRootNode, PassRefPtr<ClientRect> layerRelativeRect);
+    void append(PassRefPtr<Node> layerRootNode, const String& layerName, PassRefPtr<ClientRect> layerRelativeRect);
 
 private:
     LayerRectList();

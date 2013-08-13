@@ -58,9 +58,9 @@ LayerRect* LayerRectList::item(unsigned index)
     return m_list[index].get();
 }
 
-void LayerRectList::append(PassRefPtr<Node> layerRootNode, PassRefPtr<ClientRect> layerRelativeRect)
+void LayerRectList::append(PassRefPtr<Node> layerRootNode, const String& layerType, PassRefPtr<ClientRect> layerRelativeRect)
 {
-    m_list.append(LayerRect::create(layerRootNode, layerRelativeRect));
+    m_list.append(LayerRect::create(layerRootNode, layerType, layerRelativeRect));
 }
 
 } // namespace WebCore

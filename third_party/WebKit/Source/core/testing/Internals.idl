@@ -142,7 +142,7 @@
     [RaisesException] unsigned long wheelEventHandlerCount(Document document);
     [RaisesException] unsigned long touchEventHandlerCount(Document document);
     [RaisesException] LayerRectList touchEventTargetLayerRects(Document document);
-    [RaisesException] unsigned long touchEventTargetLayerRectsUpdateCount(Document document);
+
 
     [RaisesException] NodeList nodesFromRect(Document document, long x, long y,
         unsigned long topPadding, unsigned long rightPadding, unsigned long bottomPadding, unsigned long leftPadding,

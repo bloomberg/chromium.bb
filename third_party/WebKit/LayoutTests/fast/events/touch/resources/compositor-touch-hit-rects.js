@@ -8,6 +8,8 @@ function log(msg) {
 }
 
 function nameForNode(node) {
+    if (!node)
+        return "[unknown-node]";
     var name = node.nodeName;
     if (node.id)
         name += '#' + node.id;
@@ -19,7 +21,8 @@ function sortRects(a, b) {
         || a.layerRelativeRect.left - b.layerRelativeRect.left
         || a.layerRelativeRect.width - b.layerRelativeRect.width
         || a.layerRelativeRect.height - b.layerRelativeRect.right
-        || nameForNode(a.layerRootNode).localeCompare(nameForNode(b.layerRootNode));
+        || nameForNode(a.layerRootNode).localeCompare(nameForNode(b.layerRootNode))
+        || a.layerType.localeCompare(b.layerType);
 }
 
 var preRunHandlerForTest = {};
@@ -53,9 +56,13 @@ function logRects(testName, opt_noOverlay) {
     for ( var i = 0; i < sortedRects.length; ++i) {
         var node = sortedRects[i].layerRootNode;
         var r = sortedRects[i].layerRelativeRect;
-        log(testName + ": " + nameForNode(node) + " (" + r.left + ", " + r.top + ", " + r.width + ", " + r.height + ")");
+        var nameSuffix = "";
+        if (sortedRects[i].layerType)
+            nameSuffix = " " + sortedRects[i].layerType;
+        log(testName + ": " + nameForNode(node) + nameSuffix + " ("
+            + r.left + ", " + r.top + ", " + r.width + ", " + r.height + ")");
 
-        if (visualize && !opt_noOverlay && window.location.hash != '#nooverlay') {
+        if (visualize && node && !opt_noOverlay && window.location.hash != '#nooverlay') {
             var patch = document.createElement("div");
             patch.className = "overlay generated display-when-done";
             patch.style.left = r.left + "px";

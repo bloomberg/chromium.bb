@@ -131,9 +131,7 @@ to quickly validate graphically.</p>
 <script>
 preRunHandlerForTest['styleModified'] = function(e) {
   // Adding padding to the element should force the rects to be recomputed.
-  checkForRectUpdate(true, function() {
-    e.style.padding = '5px';
-  });
+  e.style.padding = '5px';
 };
 
 if (window.internals) {

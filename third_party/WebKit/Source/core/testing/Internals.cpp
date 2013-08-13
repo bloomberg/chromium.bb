@@ -110,7 +110,9 @@
 #include "core/platform/graphics/filters/FilterOperations.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTreeAsText.h"
@@ -119,6 +121,7 @@
 #include "core/workers/WorkerThread.h"
 #include "modules/speech/DOMWindowSpeechSynthesis.h"
 #include "modules/speech/SpeechSynthesis.h"
+#include "public/platform/WebLayer.h"
 #include "weborigin/SchemeRegistry.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
@@ -183,9 +186,6 @@ PassRefPtr<Internals> Internals::create(Document* document)
 
 Internals::~Internals()
 {
-    if (m_scrollingCoordinator) {
-        m_scrollingCoordinator->removeTouchEventTargetRectsObserver(this);
-    }
 }
 
 void Internals::resetToConsistentState(Page* page)
@@ -211,11 +211,7 @@ Internals::Internals(Document* document)
     : ContextLifecycleObserver(document)
     , m_runtimeFlags(InternalRuntimeFlags::create())
     , m_scrollingCoordinator(document->page()->scrollingCoordinator())
-    , m_touchEventTargetRectUpdateCount(0)
 {
-    if (m_scrollingCoordinator) {
-        m_scrollingCoordinator->addTouchEventTargetRectsObserver(this);
-    }
 }
 
 Document* Internals::contextDocument() const
@@ -1297,7 +1293,105 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& e
     return count;
 }
 
-LayerRectList* Internals::touchEventTargetLayerRects(Document* document, ExceptionState& es)
+static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, String* layerType)
+{
+    if (searchRoot->backing() && graphicsLayer == searchRoot->backing()->graphicsLayer())
+        return searchRoot;
+
+    if (graphicsLayer == searchRoot->layerForScrolling()) {
+        *layerType = "scrolling";
+        return searchRoot;
+    }
+
+    if (graphicsLayer == searchRoot->layerForHorizontalScrollbar()) {
+        *layerType = "horizontalScrollbar";
+        return searchRoot;
+    }
+
+    if (graphicsLayer == searchRoot->layerForVerticalScrollbar()) {
+        *layerType = "verticalScrollbar";
+        return searchRoot;
+    }
+
+    if (graphicsLayer == searchRoot->layerForScrollCorner()) {
+        *layerType = "scrollCorner";
+        return searchRoot;
+    }
+
+    for (RenderLayer* child = searchRoot->firstChild(); child; child = child->nextSibling()) {
+        RenderLayer* foundLayer = findRenderLayerForGraphicsLayer(child, graphicsLayer, layerType);
+        if (foundLayer)
+            return foundLayer;
+    }
+
+    return 0;
+}
+
+// Given a vector of rects, merge those that are adjacent, leaving empty rects
+// in the place of no longer used slots. This is intended to simplify the list
+// of rects returned by an SkRegion (which have been split apart for sorting
+// purposes). No attempt is made to do this efficiently (eg. by relying on the
+// sort criteria of SkRegion).
+static void mergeRects(WebKit::WebVector<WebKit::WebRect>& rects)
+{
+    for (size_t i = 0; i < rects.size(); ++i) {
+        if (rects[i].isEmpty())
+            continue;
+        bool updated;
+        do {
+            updated = false;
+            for (size_t j = i+1; j < rects.size(); ++j) {
+                if (rects[j].isEmpty())
+                    continue;
+                // Try to merge rects[j] into rects[i] along the 4 possible edges.
+                if (rects[i].y == rects[j].y && rects[i].height == rects[j].height) {
+                    if (rects[i].x + rects[i].width == rects[j].x) {
+                        rects[i].width += rects[j].width;
+                        rects[j] = WebKit::WebRect();
+                        updated = true;
+                    } else if (rects[i].x == rects[j].x + rects[j].width) {
+                        rects[i].x = rects[j].x;
+                        rects[i].width += rects[j].width;
+                        rects[j] = WebKit::WebRect();
+                        updated = true;
+                    }
+                } else if (rects[i].x == rects[j].x && rects[i].width == rects[j].width) {
+                    if (rects[i].y + rects[i].height == rects[j].y) {
+                        rects[i].height += rects[j].height;
+                        rects[j] = WebKit::WebRect();
+                        updated = true;
+                    } else if (rects[i].y == rects[j].y + rects[j].height) {
+                        rects[i].y = rects[j].y;
+                        rects[i].height += rects[j].height;
+                        rects[j] = WebKit::WebRect();
+                        updated = true;
+                    }
+                }
+            }
+        } while (updated);
+    }
+}
+
+static void accumulateLayerRectList(RenderLayerCompositor* compositor, GraphicsLayer* graphicsLayer, LayerRectList* rects)
+{
+    WebKit::WebVector<WebKit::WebRect> layerRects = graphicsLayer->platformLayer()->touchEventHandlerRegion();
+    if (!layerRects.isEmpty()) {
+        mergeRects(layerRects);
+        String layerType;
+        RenderLayer* renderLayer = findRenderLayerForGraphicsLayer(compositor->rootRenderLayer(), graphicsLayer, &layerType);
+        Node* node = renderLayer ? renderLayer->renderer()->node() : 0;
+        for (size_t i = 0; i < layerRects.size(); ++i) {
+            if (!layerRects[i].isEmpty())
+                rects->append(node, layerType, ClientRect::create(layerRects[i]));
+        }
+    }
+
+    size_t numChildren = graphicsLayer->children().size();
+    for (size_t i = 0; i < numChildren; ++i)
+        accumulateLayerRectList(compositor, graphicsLayer->children()[i], rects);
+}
+
+PassRefPtr<LayerRectList> Internals::touchEventTargetLayerRects(Document* document, ExceptionState& es)
 {
     if (!document || !document->view() || !document->page() || document != contextDocument()) {
         es.throwDOMException(InvalidAccessError);
@@ -1307,38 +1401,18 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
     // Do any pending layouts (which may call touchEventTargetRectsChange) to ensure this
     // really takes any previous changes into account.
     document->updateLayout();
-    return m_currentTouchEventRects.get();
-}
 
-unsigned Internals::touchEventTargetLayerRectsUpdateCount(Document* document, ExceptionState& es)
-{
-    if (!document || !document->view() || !document->page() || document != contextDocument()) {
-        es.throwDOMException(InvalidAccessError);
-        return 0;
-    }
-
-    // Do any pending layouts to ensure this really takes any previous changes into account.
-    document->updateLayout();
-
-    return m_touchEventTargetRectUpdateCount;
-}
-
-void Internals::touchEventTargetRectsChanged(const LayerHitTestRects& rects)
-{
-    // When profiling content_shell, it can be handy to exclude this time (since it's only
-    // present for testing / debugging).
-    TRACE_EVENT0("input", "Internals::touchEventTargetRectsChanged");
-
-    m_touchEventTargetRectUpdateCount++;
-
-    // Since it's not safe to hang onto the pointers in a LayerHitTestRects, we immediately
-    // copy into a LayerRectList.
-    m_currentTouchEventRects = LayerRectList::create();
-    for (LayerHitTestRects::const_iterator iter = rects.begin(); iter != rects.end(); ++iter) {
-        for (size_t i = 0; i < iter->value.size(); ++i) {
-            m_currentTouchEventRects->append(iter->key->renderer()->node(), ClientRect::create(enclosingIntRect(iter->value[i])));
+    if (RenderView* view = document->renderView()) {
+        if (RenderLayerCompositor* compositor = view->compositor()) {
+            if (GraphicsLayer* rootLayer = compositor->rootGraphicsLayer()) {
+                RefPtr<LayerRectList> rects = LayerRectList::create();
+                accumulateLayerRectList(compositor, rootLayer, rects.get());
+                return rects;
+            }
         }
     }
+
+    return 0;
 }
 
 PassRefPtr<NodeList> Internals::nodesFromRect(Document* document, int centerX, int centerY, unsigned topPadding, unsigned rightPadding,

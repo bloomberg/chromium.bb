@@ -67,8 +67,7 @@ class ShadowRoot;
 class TypeConversions;
 
 class Internals : public RefCounted<Internals>
-    , public ContextLifecycleObserver
-    , public ScrollingCoordinator::TouchEventTargetRectsObserver {
+    , public ContextLifecycleObserver {
 public:
     static PassRefPtr<Internals> create(Document*);
     virtual ~Internals();
@@ -182,9 +181,7 @@ public:
 
     unsigned wheelEventHandlerCount(Document*, ExceptionState&);
     unsigned touchEventHandlerCount(Document*, ExceptionState&);
-    LayerRectList* touchEventTargetLayerRects(Document*, ExceptionState&);
-    unsigned touchEventTargetLayerRectsUpdateCount(Document*, ExceptionState&);
-    virtual void touchEventTargetRectsChanged(const LayerHitTestRects&);
+    PassRefPtr<LayerRectList> touchEventTargetLayerRects(Document*, ExceptionState&);
 
     // This is used to test rect based hit testing like what's done on touch screens.
     PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
@@ -307,8 +304,6 @@ private:
     OwnPtr<InspectorFrontendChannelDummy> m_frontendChannel;
     RefPtr<InternalRuntimeFlags> m_runtimeFlags;
     RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
-    int m_touchEventTargetRectUpdateCount;
-    RefPtr<LayerRectList> m_currentTouchEventRects;
     RefPtr<InternalProfilers> m_profilers;
 };
 
