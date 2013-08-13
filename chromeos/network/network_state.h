@@ -12,6 +12,7 @@
 #include "chromeos/network/managed_state.h"
 #include "chromeos/network/network_ui_data.h"
 #include "chromeos/network/onc/onc_constants.h"
+#include "url/gurl.h"
 
 namespace chromeos {
 
@@ -57,6 +58,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   const std::string& gateway() const { return gateway_; }
   const std::vector<std::string>& dns_servers() const { return dns_servers_; }
   const int prefix_length() const { return prefix_length_; }
+  const GURL& web_proxy_auto_discovery_url() const {
+    return web_proxy_auto_discovery_url_;
+  }
   // Wireless property accessors
   int signal_strength() const { return signal_strength_; }
   bool connectable() const { return connectable_; }
@@ -144,6 +148,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string gateway_;
   std::vector<std::string> dns_servers_;
   int prefix_length_;
+  GURL web_proxy_auto_discovery_url_;
   // Wireless properties
   int signal_strength_;
   bool connectable_;

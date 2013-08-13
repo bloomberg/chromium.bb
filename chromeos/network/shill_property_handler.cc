@@ -566,6 +566,8 @@ void ShillPropertyHandler::GetIPConfigCallback(
                          flimflam::kPrefixlenProperty);
   UpdateIPConfigProperty(service_path, properties,
                          flimflam::kGatewayProperty);
+  UpdateIPConfigProperty(service_path, properties,
+                         shill::kWebProxyAutoDiscoveryUrlProperty);
 }
 
 void ShillPropertyHandler::UpdateIPConfigProperty(

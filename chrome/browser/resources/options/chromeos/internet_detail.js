@@ -589,6 +589,7 @@ cr.define('options.internet', function() {
     $('buyplan-details').hidden = true;
     $('activate-details').hidden = true;
     $('view-account-details').hidden = true;
+    $('web-proxy-auto-discovery').hidden = true;
     detailsPage.cellular = false;
     detailsPage.wireless = false;
     detailsPage.vpn = false;
@@ -887,6 +888,7 @@ cr.define('options.internet', function() {
       $('details-internet-configure').hidden = false;
     else
       $('details-internet-configure').hidden = true;
+    $('web-proxy-auto-discovery').hidden = true;
 
     detailsPage.deviceConnected = data.deviceConnected;
     detailsPage.connecting = data.connecting;
@@ -911,6 +913,11 @@ cr.define('options.internet', function() {
       inetNetmask.value = data.ipconfig.value.netmask;
       inetGateway.automatic = data.ipconfig.value.gateway;
       inetGateway.value = data.ipconfig.value.gateway;
+      if (data.ipconfig.value.webProxyAutoDiscoveryUrl) {
+        $('web-proxy-auto-discovery').hidden = false;
+        $('web-proxy-auto-discovery-url').value =
+            data.ipconfig.value.webProxyAutoDiscoveryUrl;
+      }
     }
 
     // Override the "automatic" values with the real saved DHCP values,

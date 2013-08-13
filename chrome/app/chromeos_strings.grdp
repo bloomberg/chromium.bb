@@ -2534,6 +2534,9 @@ Battery full
   <message name="IDS_PROXY_BYPASS" desc="Label for the proxy bypass list.">
     Do not use the proxy settings for these hosts and domains:
   </message>
+  <message name="IDS_PROXY_WEB_PROXY_AUTO_DISCOVERY" desc="Label for the web proxy auto discovery url.">
+    Web Proxy Auto Discovery URL
+  </message>
 
   <!-- Accessibility strings, to be spoken -->
   <message name="IDS_CHROMEOS_ACC_BUTTON" desc="Label indicating that a control is a pushbutton.">

@@ -296,6 +296,8 @@
         'network/shill_property_handler.h',
         'network/sms_watcher.cc',
         'network/sms_watcher.h',
+        'network/dhcp_proxy_script_fetcher_chromeos.cc',
+        'network/dhcp_proxy_script_fetcher_chromeos.h',
         'process_proxy/process_output_watcher.cc',
         'process_proxy/process_output_watcher.h',
         'process_proxy/process_proxy.cc',

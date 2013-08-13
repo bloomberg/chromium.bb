@@ -22,6 +22,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
+#include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
@@ -121,15 +122,21 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
 #if defined(OS_IOS)
     NOTREACHED();
 #else
+    net::DhcpProxyScriptFetcher* dhcp_proxy_script_fetcher;
+#if defined(OS_CHROMEOS)
+    dhcp_proxy_script_fetcher =
+        new chromeos::DhcpProxyScriptFetcherChromeos(context);
+#else
     net::DhcpProxyScriptFetcherFactory dhcp_factory;
-    if (command_line.HasSwitch(switches::kDisableDhcpWpad)) {
+    if (command_line.HasSwitch(switches::kDisableDhcpWpad))
       dhcp_factory.set_enabled(false);
-    }
+    dhcp_proxy_script_fetcher = dhcp_factory.Create(context);
+#endif
 
     proxy_service = net::CreateProxyServiceUsingV8ProxyResolver(
         proxy_config_service,
         new net::ProxyScriptFetcherImpl(context),
-        dhcp_factory.Create(context),
+        dhcp_proxy_script_fetcher,
         context->host_resolver(),
         net_log,
         network_delegate);

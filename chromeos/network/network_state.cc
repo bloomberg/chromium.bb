@@ -132,6 +132,24 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return true;
   } else if (key == IPConfigProperty(flimflam::kPrefixlenProperty)) {
     return GetIntegerValue(key, value, &prefix_length_);
+  } else if (key == IPConfigProperty(
+      shill::kWebProxyAutoDiscoveryUrlProperty)) {
+    std::string url_string;
+    if (!GetStringValue(key, value, &url_string))
+      return false;
+    if (url_string.empty()) {
+      web_proxy_auto_discovery_url_ = GURL();
+    } else {
+      GURL gurl(url_string);
+      if (!gurl.is_valid()) {
+        web_proxy_auto_discovery_url_ = gurl;
+      } else {
+        NET_LOG_ERROR("Invalid WebProxyAutoDiscoveryUrl: " + url_string,
+                      path());
+        web_proxy_auto_discovery_url_ = GURL();
+      }
+    }
+    return true;
   } else if (key == flimflam::kActivationStateProperty) {
     return GetStringValue(key, value, &activation_state_);
   } else if (key == flimflam::kRoamingStateProperty) {
@@ -242,7 +260,9 @@ void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
                                                name_servers);
   ipconfig_properties->SetIntegerWithoutPathExpansion(
       flimflam::kPrefixlenProperty, prefix_length_);
-
+  ipconfig_properties->SetStringWithoutPathExpansion(
+      shill::kWebProxyAutoDiscoveryUrlProperty,
+      web_proxy_auto_discovery_url_.spec());
   dictionary->SetWithoutPathExpansion(shill::kIPConfigProperty,
                                       ipconfig_properties);
 

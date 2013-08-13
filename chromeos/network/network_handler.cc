@@ -24,7 +24,8 @@ namespace chromeos {
 
 static NetworkHandler* g_network_handler = NULL;
 
-NetworkHandler::NetworkHandler() {
+NetworkHandler::NetworkHandler()
+    : message_loop_(base::MessageLoopProxy::current()) {
   CHECK(DBusThreadManager::IsInitialized());
 
   network_event_log::Initialize();

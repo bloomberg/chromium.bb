@@ -6,7 +6,9 @@
 #define CHROMEOS_NETWORK_NETWORK_HANDLER_H_
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "chromeos/chromeos_export.h"
 
 namespace chromeos {
@@ -39,6 +41,10 @@ class CHROMEOS_EXPORT NetworkHandler {
   // Returns true if the global instance has been initialized.
   static bool IsInitialized();
 
+  // Returns the MessageLoopProxy for posting NetworkHandler calls from
+  // other threads.
+  base::MessageLoopProxy* message_loop() { return message_loop_.get(); }
+
   // Do not use these accessors within this module; all dependencies should be
   // explicit so that classes can be constructed explicitly in tests without
   // NetworkHandler.
@@ -58,6 +64,7 @@ class CHROMEOS_EXPORT NetworkHandler {
   void Init();
 
   // The order of these determines the (inverse) destruction order.
+  scoped_refptr<base::MessageLoopProxy> message_loop_;
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkDeviceHandler> network_device_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;
