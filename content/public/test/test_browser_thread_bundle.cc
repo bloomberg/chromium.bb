@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/browser/browser_thread_impl.h"
 #include "content/public/test/test_browser_thread.h"
 
 namespace content {
@@ -19,6 +20,12 @@ TestBrowserThreadBundle::TestBrowserThreadBundle(int options) {
 }
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
+  // To avoid memory leaks, we must ensure that any tasks posted to the blocking
+  // pool via PostTaskAndReply are able to reply back to the originating thread.
+  // Thus we must flush the blocking pool while the browser threads still exist.
+  base::RunLoop().RunUntilIdle();
+  BrowserThreadImpl::FlushThreadPoolHelper();
+
   // To ensure a clean teardown, each thread's message loop must be flushed
   // just before the thread is destroyed. But destroying a fake thread does not
   // automatically flush the message loop, so we have to do it manually.
@@ -35,6 +42,11 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   file_thread_.reset();
   base::RunLoop().RunUntilIdle();
   db_thread_.reset();
+  base::RunLoop().RunUntilIdle();
+  // This is the point at which we normally shut down the thread pool. So flush
+  // it again in case any shutdown tasks have been posted to the pool from the
+  // threads above.
+  BrowserThreadImpl::FlushThreadPoolHelper();
   base::RunLoop().RunUntilIdle();
   ui_thread_.reset();
   base::RunLoop().RunUntilIdle();

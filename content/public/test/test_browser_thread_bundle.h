@@ -17,6 +17,14 @@
 // Unit tests should use base::RunLoop (e.g., base::RunLoop().RunUntilIdle()).
 // TODO(phajdan.jr): Revise this comment after switch to Aura.
 //
+// The TestBrowserThreadBundle will also flush the blocking pool on destruction.
+// We do this to avoid memory leaks, particularly in the case of threads posting
+// tasks to the blocking pool via PostTaskAndReply. By ensuring that the tasks
+// are run while the originating TestBroswserThreads still exist, we prevent
+// leakage of PostTaskAndReplyRelay objects. We also flush the blocking pool
+// again at the point where it would normally be shut down, to better simulate
+// the normal thread shutdown process.
+//
 // Some tests using the IO thread expect a MessageLoopForIO. Passing
 // IO_MAINLOOP will use a MessageLoopForIO for the main MessageLoop.
 // Most of the time, this avoids needing to use a REAL_IO_THREAD.
