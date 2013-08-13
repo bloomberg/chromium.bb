@@ -4,7 +4,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 PASS destroyed context
-PASS caught expected exception "InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."
+PASS caught expected exception "InvalidStateError: Failed to call 'register' on 'Document' for type 'x-a': the context is no longer valid."
 PASS child done
 PASS successfullyParsed is true
 

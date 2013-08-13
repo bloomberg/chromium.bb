@@ -5,19 +5,19 @@
 </head>
 <body>
 <script>
-description("Using document.register() for extending HTML and non-HTML elements.");
+description('Using document.register() for extending HTML and non-HTML elements.');
 
 function createElementFromHTML(html)
 {
-    var container = document.createElement("div");
+    var container = document.createElement('div');
     container.innerHTML = html;
     return container.firstChild;
 }
 
 function createElementFromSVG(svg)
 {
-    var container = document.createElement("div");
-    container.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg'>" + svg + "</svg>";
+    var container = document.createElement('div');
+    container.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg">' + svg + '</svg>';
     return container.firstChild.firstChild;
 }
 
@@ -25,46 +25,46 @@ CustomHTMLElement = document.register('html-foo', { prototype: Object.create(HTM
 CustomSVGElement = document.register('svg-foo', { prototype: Object.create(SVGElement.prototype) });
 
 var html1 = new CustomHTMLElement();
-shouldBe("html1.namespaceURI", "'http://www.w3.org/1999/xhtml'");
-var html2 = document.createElement("html-foo");
-shouldBe("html2.namespaceURI", "'http://www.w3.org/1999/xhtml'");
-var html3 = document.createElementNS("http://www.w3.org/1999/xhtml", "html-foo");
-shouldBe("html3.namespaceURI", "'http://www.w3.org/1999/xhtml'");
-var html4 = createElementFromHTML("<html-foo></html-foo>");
-shouldBe("html4.namespaceURI", "'http://www.w3.org/1999/xhtml'");
+shouldBe('html1.namespaceURI', '"http://www.w3.org/1999/xhtml"');
+var html2 = document.createElement('html-foo');
+shouldBe('html2.namespaceURI', '"http://www.w3.org/1999/xhtml"');
+var html3 = document.createElementNS('http://www.w3.org/1999/xhtml', 'html-foo');
+shouldBe('html3.namespaceURI', '"http://www.w3.org/1999/xhtml"');
+var html4 = createElementFromHTML('<html-foo></html-foo>');
+shouldBe('html4.namespaceURI', '"http://www.w3.org/1999/xhtml"');
 
-var notHTML = document.createElementNS("http://www.example.com/", "html-foo");
-shouldBe("notHTML.namespaceURI", "'http://www.example.com/'");
-shouldBeFalse("notHTML instanceof CustomHTMLElement");
-shouldBeFalse("notHTML instanceof HTMLElement");
+var notHTML = document.createElementNS('http://www.example.com/', 'html-foo');
+shouldBe('notHTML.namespaceURI', '"http://www.example.com/"');
+shouldBeFalse('notHTML instanceof CustomHTMLElement');
+shouldBeFalse('notHTML instanceof HTMLElement');
 
 var svg1 = new CustomSVGElement();
-shouldBe("svg1.tagName", "'svg-foo'");
-shouldBe("svg1.namespaceURI", "'http://www.w3.org/2000/svg'");
-var svg2 = document.createElementNS("http://www.w3.org/2000/svg", "svg-foo");
-shouldBe("svg2.tagName", "'svg-foo'");
-shouldBe("svg2.namespaceURI", "'http://www.w3.org/2000/svg'");
-var svg3 = createElementFromSVG("<svg-foo></svg-foo>");
-shouldBe("svg3.tagName", "'svg-foo'");
-shouldBe("svg3.namespaceURI", "'http://www.w3.org/2000/svg'");
+shouldBe('svg1.tagName', '"svg-foo"');
+shouldBe('svg1.namespaceURI', '"http://www.w3.org/2000/svg"');
+var svg2 = document.createElementNS('http://www.w3.org/2000/svg', 'svg-foo');
+shouldBe('svg2.tagName', '"svg-foo"');
+shouldBe('svg2.namespaceURI', '"http://www.w3.org/2000/svg"');
+var svg3 = createElementFromSVG('<svg-foo></svg-foo>');
+shouldBe('svg3.tagName', '"svg-foo"');
+shouldBe('svg3.namespaceURI', '"http://www.w3.org/2000/svg"');
 
-var notSVG1 = document.createElement("svg-foo");
-shouldBe("notSVG1.namespaceURI", "'http://www.w3.org/1999/xhtml'");
-shouldBeFalse("notSVG1 instanceof CustomSVGElement");
-shouldBeFalse("notSVG1 instanceof HTMLUnknownElement");
-shouldBeTrue("notSVG1 instanceof HTMLElement");
-shouldBe("Object.getPrototypeOf(notSVG1)", "HTMLElement.prototype");
-var notSVG2 = createElementFromHTML("<svg-foo></svg-foo>");
-shouldBe("notSVG2.namespaceURI", "'http://www.w3.org/1999/xhtml'");
-shouldBeFalse("notSVG2 instanceof CustomSVGElement");
-shouldBeFalse("notSVG2 instanceof HTMLUnknownElement");
-shouldBeTrue("notSVG2 instanceof HTMLElement");
-shouldBe("Object.getPrototypeOf(notSVG2)", "HTMLElement.prototype");
+var notSVG1 = document.createElement('svg-foo');
+shouldBe('notSVG1.namespaceURI', '"http://www.w3.org/1999/xhtml"');
+shouldBeFalse('notSVG1 instanceof CustomSVGElement');
+shouldBeFalse('notSVG1 instanceof HTMLUnknownElement');
+shouldBeTrue('notSVG1 instanceof HTMLElement');
+shouldBe('Object.getPrototypeOf(notSVG1)', 'HTMLElement.prototype');
+var notSVG2 = createElementFromHTML('<svg-foo></svg-foo>');
+shouldBe('notSVG2.namespaceURI', '"http://www.w3.org/1999/xhtml"');
+shouldBeFalse('notSVG2 instanceof CustomSVGElement');
+shouldBeFalse('notSVG2 instanceof HTMLUnknownElement');
+shouldBeTrue('notSVG2 instanceof HTMLElement');
+shouldBe('Object.getPrototypeOf(notSVG2)', 'HTMLElement.prototype');
 
 // Trying to extend something outside HTML or SVG should throw a NAMESPACE_ERR
 shouldThrow(
-    "document.register('xml-foo', { prototype: Object.create(Element.prototype) })",
-    "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
+    'document.register("xml-foo", { prototype: Object.create(Element.prototype) })',
+    '"NamespaceError: Failed to call \'register\' on \'Document\' for type \'xml-foo\': the prototype does not extend an HTML or SVG element."');
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

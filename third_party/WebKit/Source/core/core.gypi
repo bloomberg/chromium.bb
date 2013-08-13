@@ -1754,6 +1754,8 @@
             'dom/CustomElementDefinition.h',
             'dom/CustomElementDescriptor.h',
             'dom/CustomElementDescriptorHash.h',
+            'dom/CustomElementException.cpp',
+            'dom/CustomElementException.h',
             'dom/CustomElementLifecycleCallbacks.h',
             'dom/CustomElementRegistrationContext.cpp',
             'dom/CustomElementRegistrationContext.h',

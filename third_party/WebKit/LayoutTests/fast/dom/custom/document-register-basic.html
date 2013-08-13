@@ -6,7 +6,7 @@
 <body>
 <div id="container"></div>
 <script>
-description("Testing document.register() basic behaviors.");
+description('Testing document.register() basic behaviors.');
 
 if (window.testRunner)
     testRunner.dumpAsText();
@@ -18,89 +18,89 @@ function createRegisterParameters()
     };
 }
 
-var fooConstructor = document.register("x-foo", createRegisterParameters());
-shouldBe("typeof fooConstructor", "'function'");
-shouldBe("fooConstructor.prototype.__proto__", "HTMLElement.prototype");
-shouldBeTrue("fooConstructor.prototype.thisIsPrototype");
+var fooConstructor = document.register('x-foo', createRegisterParameters());
+shouldBe('typeof fooConstructor', '"function"');
+shouldBe('fooConstructor.prototype.__proto__', 'HTMLElement.prototype');
+shouldBeTrue('fooConstructor.prototype.thisIsPrototype');
 
-// Bad prototype: prototype is alcreated a built-in interface prototype object
-shouldThrow("document.register('x-bad-a', HTMLElement)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
-// Bad prototype: prototype is alcreated a Custom Element interface prototype object
-shouldThrow("document.register('x-bad-b', fooConstructor)", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+// Bad prototype: prototype is already a built-in interface prototype object
+shouldThrow('document.register("x-bad-a", HTMLElement)', '"NotSupportedError: Failed to call \'register\' on \'Document\' for type \'x-bad-a\': prototype is already in-use as an interface prototype object."');
+// Bad prototype: prototype is already a Custom Element interface prototype object
+shouldThrow('document.register("x-bad-b", fooConstructor)', '"NotSupportedError: Failed to call \'register\' on \'Document\' for type \'x-bad-b\': prototype is already in-use as an interface prototype object."');
 // Bad prototype: 'constructor' is not configurable
 var proto = Object.create(HTMLElement.prototype, {
   constructor: {configurable: false, writable: true}
 });
-shouldThrow("document.register('x-bad-c', { prototype: proto })", "'NotSupportedError: The implementation did not support the requested type of object or operation.'");
+shouldThrow('document.register("x-bad-c", { prototype: proto })', '"NotSupportedError: Failed to call \'register\' on \'Document\' for type \'x-bad-c\': prototype constructor property is not configurable."');
 // Bad prototype: missing __proto__
-shouldThrow("document.register('x-bad-d', { prototype: {} })", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
+shouldThrow('document.register("x-bad-d", { prototype: {} })', '"InvalidStateError: Failed to call \'register\' on \'Document\' for type \'x-bad-d\': the prototype does not extend an HTML or SVG element."');
 // Bad prototype: wrong __proto__
-shouldThrow("document.register('x-bad-e', { prototype: Object.create(Document.prototype) })", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
+shouldThrow('document.register("x-bad-e", { prototype: Object.create(Document.prototype) })', '"InvalidStateError: Failed to call \'register\' on \'Document\' for type \'x-bad-e\': the prototype does not extend an HTML or SVG element."');
 // Call as function
-shouldThrow("fooConstructor()", "'TypeError: DOM object constructor cannot be called as a function.'")
+shouldThrow('fooConstructor()', '"TypeError: DOM object constructor cannot be called as a function."')
 
 // Constructor initiated instantiation
 var createdFoo = new fooConstructor();
 
 // JS built-in properties
-shouldBe("createdFoo.__proto__", "fooConstructor.prototype");
-shouldBe("createdFoo.constructor", "fooConstructor");
+shouldBe('createdFoo.__proto__', 'fooConstructor.prototype');
+shouldBe('createdFoo.constructor', 'fooConstructor');
 
 // Native getter
-shouldBe("createdFoo.tagName", "'X-FOO'");
+shouldBe('createdFoo.tagName', '"X-FOO"');
 
 // Native setter
-createdFoo.innerHTML = "Hello";
-shouldBe("createdFoo.textContent", "'Hello'");
+createdFoo.innerHTML = 'Hello';
+shouldBe('createdFoo.textContent', '"Hello"');
 
 // Native method
-var childDiv = document.createElement("div");
+var childDiv = document.createElement('div');
 createdFoo.appendChild(childDiv);
-shouldBe("createdFoo.lastChild", "childDiv");
+shouldBe('createdFoo.lastChild', 'childDiv');
 
 // Parser initiated instantiation
-var container = document.getElementById("container");
-container.innerHTML = "<x-foo></x-foo>";
+var container = document.getElementById('container');
+container.innerHTML = '<x-foo></x-foo>';
 parsedFoo = container.firstChild;
 
-shouldBe("parsedFoo.__proto__", "fooConstructor.prototype");
-shouldBe("parsedFoo.tagName", "'X-FOO'");
+shouldBe('parsedFoo.__proto__', 'fooConstructor.prototype');
+shouldBe('parsedFoo.tagName', '"X-FOO"');
 
 // Ensuring the wrapper is retained
-parsedFoo.someProperty = "hello";
-shouldBe("parsedFoo.someProperty", "container.firstChild.someProperty");
+parsedFoo.someProperty = 'hello';
+shouldBe('parsedFoo.someProperty', 'container.firstChild.someProperty');
 
 // Having another constructor
-var barConstructor = document.register("x-bar", createRegisterParameters());
-shouldBeTrue("barConstructor !== fooConstructor");
+var barConstructor = document.register('x-bar', createRegisterParameters());
+shouldBeTrue('barConstructor !== fooConstructor');
 var createdBar = new barConstructor();
-shouldBe("createdBar.tagName", "'X-BAR'");
+shouldBe('createdBar.tagName', '"X-BAR"');
 
 // Having a subclass
-var bazConstructor = document.register("x-baz", { prototype: Object.create(fooConstructor.prototype, { thisIsAlsoPrototype: { value: true } }) });
+var bazConstructor = document.register('x-baz', { prototype: Object.create(fooConstructor.prototype, { thisIsAlsoPrototype: { value: true } }) });
 var createdBaz = new bazConstructor();
-shouldBe("createdBaz.tagName", "'X-BAZ'");
-shouldBeTrue("createdBaz.thisIsPrototype");
-shouldBeTrue("createdBaz.thisIsAlsoPrototype");
+shouldBe('createdBaz.tagName', '"X-BAZ"');
+shouldBeTrue('createdBaz.thisIsPrototype');
+shouldBeTrue('createdBaz.thisIsAlsoPrototype');
 
 // With irregular cases
-var createdUpperBar = document.createElement("X-BAR");
-var createdMixedBar = document.createElement("X-Bar");
-shouldBe("createdUpperBar.constructor", "barConstructor");
-shouldBe("createdUpperBar.tagName", "'X-BAR'");
-shouldBe("createdMixedBar.constructor", "barConstructor");
-shouldBe("createdMixedBar.tagName", "'X-BAR'");
+var createdUpperBar = document.createElement('X-BAR');
+var createdMixedBar = document.createElement('X-Bar');
+shouldBe('createdUpperBar.constructor', 'barConstructor');
+shouldBe('createdUpperBar.tagName', '"X-BAR"');
+shouldBe('createdMixedBar.constructor', 'barConstructor');
+shouldBe('createdMixedBar.tagName', '"X-BAR"');
 
-container.innerHTML = "<X-BAR></X-BAR><X-Bar></X-Bar>";
-shouldBe("container.firstChild.constructor", "barConstructor");
-shouldBe("container.firstChild.tagName", "'X-BAR'");
-shouldBe("container.lastChild.constructor", "barConstructor");
-shouldBe("container.lastChild.tagName", "'X-BAR'");
+container.innerHTML = '<X-BAR></X-BAR><X-Bar></X-Bar>';
+shouldBe('container.firstChild.constructor', 'barConstructor');
+shouldBe('container.firstChild.tagName', '"X-BAR"');
+shouldBe('container.lastChild.constructor', 'barConstructor');
+shouldBe('container.lastChild.tagName', '"X-BAR"');
 
-// Constructor shouldn't interfere each otehr
-shouldBe("(new fooConstructor).tagName", "'X-FOO'");
-shouldBe("(new barConstructor).tagName", "'X-BAR'");
-shouldBe("(new bazConstructor).tagName", "'X-BAZ'");
+// Constructors shouldn't interfere with each other
+shouldBe('(new fooConstructor).tagName', '"X-FOO"');
+shouldBe('(new barConstructor).tagName', '"X-BAR"');
+shouldBe('(new bazConstructor).tagName', '"X-BAZ"');
 
 </script>
 <script src="../../js/resources/js-test-post.js"></script>

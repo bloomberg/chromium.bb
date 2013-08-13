@@ -47,6 +47,7 @@
 #include "core/dom/CustomElementCallbackDispatcher.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementDescriptor.h"
+#include "core/dom/CustomElementException.h"
 #include "core/dom/Document.h"
 #include "wtf/Assertions.h"
 
@@ -68,7 +69,7 @@ bool CustomElementConstructorBuilder::isFeatureAllowed() const
     return !DOMWrapperWorld::isolatedWorld(m_context);
 }
 
-bool CustomElementConstructorBuilder::validateOptions()
+bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, ExceptionState& es)
 {
     ASSERT(m_prototype.IsEmpty());
 
@@ -79,17 +80,21 @@ bool CustomElementConstructorBuilder::validateOptions()
         // is HTMLSpanElement.prototype, has an ambiguity about its
         // behavior. The spec should be fixed before WebKit implements
         // it. https://www.w3.org/Bugs/Public/show_bug.cgi?id=20801
+        CustomElementException::throwException(CustomElementException::NotYetImplemented, type, es);
         return false;
     }
 
     v8::Handle<v8::Value> prototypeValue = prototypeScriptValue.v8Value();
-    if (prototypeValue.IsEmpty() || !prototypeValue->IsObject())
+    if (prototypeValue.IsEmpty() || !prototypeValue->IsObject()) {
+        CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, es);
         return false;
+    }
     m_prototype = prototypeValue.As<v8::Object>();
 
     V8PerContextData* perContextData;
     if (!(perContextData = V8PerContextData::from(m_context))) {
         // FIXME: This should generate an InvalidContext exception at a later point.
+        CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, es);
         return false;
     }
 
@@ -109,6 +114,7 @@ bool CustomElementConstructorBuilder::validateOptions()
         return true;
     }
 
+    CustomElementException::throwException(CustomElementException::PrototypeDoesNotExtendHTMLElementSVGElementPrototype, type, es);
     return false;
 }
 
@@ -170,7 +176,7 @@ v8::Handle<v8::Function> CustomElementConstructorBuilder::retrieveCallback(v8::I
     return value.As<v8::Function>();
 }
 
-bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition)
+bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition, ExceptionState& es)
 {
     ASSERT(!m_prototype.IsEmpty());
     ASSERT(m_constructor.IsEmpty());
@@ -178,14 +184,16 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
     v8::Isolate* isolate = m_context->GetIsolate();
 
-    if (!prototypeIsValid())
+    if (!prototypeIsValid(definition->descriptor().type(), es))
         return false;
 
     v8::Local<v8::FunctionTemplate> constructorTemplate = v8::FunctionTemplate::New();
     constructorTemplate->SetCallHandler(constructCustomElement);
     m_constructor = constructorTemplate->GetFunction();
-    if (m_constructor.IsEmpty())
+    if (m_constructor.IsEmpty()) {
+        CustomElementException::throwException(CustomElementException::ContextDestroyedRegisteringDefinition, definition->descriptor().type(), es);
         return false;
+    }
 
     const CustomElementDescriptor& descriptor = definition->descriptor();
 
@@ -220,15 +228,15 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     return true;
 }
 
-bool CustomElementConstructorBuilder::prototypeIsValid() const
+bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type, ExceptionState& es) const
 {
     if (m_prototype->InternalFieldCount() || !m_prototype->GetHiddenValue(V8HiddenPropertyName::customElementIsInterfacePrototypeObject()).IsEmpty()) {
-        // Alcreated an interface prototype object.
+        CustomElementException::throwException(CustomElementException::PrototypeInUse, type, es);
         return false;
     }
 
     if (m_prototype->GetPropertyAttributes(v8String("constructor", m_context->GetIsolate())) & v8::DontDelete) {
-        // "constructor" is not configurable.
+        CustomElementException::throwException(CustomElementException::ConstructorPropertyNotConfigurable, type, es);
         return false;
     }
 
