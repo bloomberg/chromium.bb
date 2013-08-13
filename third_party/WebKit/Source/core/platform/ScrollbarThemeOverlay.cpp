@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/ScrollbarThemeChromiumOverlay.h"
+#include "core/platform/ScrollbarThemeOverlay.h"
 
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
@@ -40,17 +40,17 @@ namespace WebCore {
 static const int scrollbarWidth = 3;
 static const int scrollbarMargin = 4;
 
-int ScrollbarThemeChromiumOverlay::scrollbarThickness(ScrollbarControlSize controlSize)
+int ScrollbarThemeOverlay::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     return scrollbarWidth + scrollbarMargin;
 }
 
-bool ScrollbarThemeChromiumOverlay::usesOverlayScrollbars() const
+bool ScrollbarThemeOverlay::usesOverlayScrollbars() const
 {
     return true;
 }
 
-int ScrollbarThemeChromiumOverlay::thumbPosition(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeOverlay::thumbPosition(ScrollbarThemeClient* scrollbar)
 {
     if (!scrollbar->totalSize())
         return 0;
@@ -60,7 +60,7 @@ int ScrollbarThemeChromiumOverlay::thumbPosition(ScrollbarThemeClient* scrollbar
     return round(proportion * trackLen);
 }
 
-int ScrollbarThemeChromiumOverlay::thumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeOverlay::thumbLength(ScrollbarThemeClient* scrollbar)
 {
     int trackLen = trackLength(scrollbar);
 
@@ -73,22 +73,22 @@ int ScrollbarThemeChromiumOverlay::thumbLength(ScrollbarThemeClient* scrollbar)
     return length;
 }
 
-bool ScrollbarThemeChromiumOverlay::hasThumb(ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeOverlay::hasThumb(ScrollbarThemeClient* scrollbar)
 {
     return true;
 }
 
-IntRect ScrollbarThemeChromiumOverlay::backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
+IntRect ScrollbarThemeOverlay::backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
 {
     return IntRect();
 }
 
-IntRect ScrollbarThemeChromiumOverlay::forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
+IntRect ScrollbarThemeOverlay::forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool)
 {
     return IntRect();
 }
 
-IntRect ScrollbarThemeChromiumOverlay::trackRect(ScrollbarThemeClient* scrollbar, bool)
+IntRect ScrollbarThemeOverlay::trackRect(ScrollbarThemeClient* scrollbar, bool)
 {
     IntRect rect = scrollbar->frameRect();
     if (scrollbar->orientation() == HorizontalScrollbar)
@@ -98,7 +98,7 @@ IntRect ScrollbarThemeChromiumOverlay::trackRect(ScrollbarThemeClient* scrollbar
     return rect;
 }
 
-void ScrollbarThemeChromiumOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeOverlay::paintThumb(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     IntRect thumbRect = rect;
     if (scrollbar->orientation() == HorizontalScrollbar)

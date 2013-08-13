@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeMac_h
-#define ScrollbarThemeMac_h
+#ifndef ScrollbarThemeMacCommon_h
+#define ScrollbarThemeMacCommon_h
 
 #include "core/platform/ScrollbarTheme.h"
 
@@ -63,4 +63,4 @@ protected:
 
 }
 
-#endif
+#endif // ScrollbarThemeMacCommon_h

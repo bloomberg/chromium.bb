@@ -29,38 +29,38 @@
  */
 
 #include "config.h"
-#include "core/platform/chromium/ScrollbarThemeChromiumDefault.h"
+#include "core/platform/ScrollbarThemeAuraOrGtk.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/Scrollbar.h"
-#include "core/platform/chromium/ScrollbarThemeChromiumOverlay.h"
+#include "core/platform/ScrollbarThemeOverlay.h"
 #include "core/platform/graphics/GraphicsContext.h"
-#include "public/platform/default/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/default/WebThemeEngine.h"
 
 namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
     if (RuntimeEnabledFeatures::overlayScrollbarsEnabled()) {
-        DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumOverlay, theme, ());
+        DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, ());
         return &theme;
     }
 
-    DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumDefault, theme, ());
+    DEFINE_STATIC_LOCAL(ScrollbarThemeAuraOrGtk, theme, ());
     return &theme;
 }
 
-int ScrollbarThemeChromiumDefault::scrollbarThickness(ScrollbarControlSize controlSize)
+int ScrollbarThemeAuraOrGtk::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     // Horiz and Vert scrollbars are the same thickness.
     IntSize scrollbarSize = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarVerticalTrack);
     return scrollbarSize.width();
 }
 
-void ScrollbarThemeChromiumDefault::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
+void ScrollbarThemeAuraOrGtk::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
     WebKit::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? WebKit::WebThemeEngine::StateHover : WebKit::WebThemeEngine::StateNormal;
     IntRect alignRect = trackRect(scrollbar, false);
@@ -73,7 +73,7 @@ void ScrollbarThemeChromiumDefault::paintTrackPiece(GraphicsContext* gc, Scrollb
     WebKit::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebKit::WebThemeEngine::PartScrollbarHorizontalTrack : WebKit::WebThemeEngine::PartScrollbarVerticalTrack, state, WebKit::WebRect(rect), &extraParams);
 }
 
-void ScrollbarThemeChromiumDefault::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void ScrollbarThemeAuraOrGtk::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     WebKit::WebThemeEngine::Part paintPart;
     WebKit::WebThemeEngine::State state = WebKit::WebThemeEngine::StateNormal;
@@ -109,7 +109,7 @@ void ScrollbarThemeChromiumDefault::paintButton(GraphicsContext* gc, ScrollbarTh
     WebKit::Platform::current()->themeEngine()->paint(canvas, paintPart, state, WebKit::WebRect(rect), 0);
 }
 
-void ScrollbarThemeChromiumDefault::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeAuraOrGtk::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     WebKit::WebThemeEngine::State state;
     WebKit::WebCanvas* canvas = gc->canvas();
@@ -122,12 +122,12 @@ void ScrollbarThemeChromiumDefault::paintThumb(GraphicsContext* gc, ScrollbarThe
     WebKit::Platform::current()->themeEngine()->paint(canvas, scrollbar->orientation() == HorizontalScrollbar ? WebKit::WebThemeEngine::PartScrollbarHorizontalThumb : WebKit::WebThemeEngine::PartScrollbarVerticalThumb, state, WebKit::WebRect(rect), 0);
 }
 
-bool ScrollbarThemeChromiumDefault::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
+bool ScrollbarThemeAuraOrGtk::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
 {
     return (evt.shiftKey() && evt.button() == LeftButton) || (evt.button() == MiddleButton);
 }
 
-IntSize ScrollbarThemeChromiumDefault::buttonSize(ScrollbarThemeClient* scrollbar)
+IntSize ScrollbarThemeAuraOrGtk::buttonSize(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarUpArrow);
@@ -139,7 +139,7 @@ IntSize ScrollbarThemeChromiumDefault::buttonSize(ScrollbarThemeClient* scrollba
     return IntSize(scrollbar->width() < 2 * size.width() ? scrollbar->width() / 2 : size.width(), size.height());
 }
 
-int ScrollbarThemeChromiumDefault::minimumThumbLength(ScrollbarThemeClient* scrollbar)
+int ScrollbarThemeAuraOrGtk::minimumThumbLength(ScrollbarThemeClient* scrollbar)
 {
     if (scrollbar->orientation() == VerticalScrollbar) {
         IntSize size = WebKit::Platform::current()->themeEngine()->getSize(WebKit::WebThemeEngine::PartScrollbarVerticalThumb);
