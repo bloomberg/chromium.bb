@@ -69,14 +69,6 @@ class WebrtcBrowserTest : public WebRtcTestBase {
     base::Closure on_channel_closing_;
   };
 
-  virtual void SetUp() OVERRIDE {
-    // TODO(phoglund): Remove this when the bots enable real GPU with the
-    // command line. crbug.com/271504
-    UseRealGLBindings();
-
-    WebRtcTestBase::SetUp();
-  }
-
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     PeerConnectionServerRunner::KillAllPeerConnectionServersOnCurrentSystem();
     peerconnection_server_.Start();
@@ -96,6 +88,9 @@ class WebrtcBrowserTest : public WebRtcTestBase {
         switches::kUseFakeDeviceForMediaStream));
     EXPECT_FALSE(command_line->HasSwitch(
         switches::kUseFakeUIForMediaStream));
+
+    // The video playback will not work without a GPU, so force its use here.
+    command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
   // Convenience method which executes the provided javascript in the context

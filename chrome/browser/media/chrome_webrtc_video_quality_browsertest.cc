@@ -126,6 +126,9 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
     EXPECT_FALSE(
         command_line->HasSwitch(switches::kUseFakeDeviceForMediaStream))
         << "You cannot run this test with fake devices.";
+
+    // The video playback will not work without a GPU, so force its use here.
+    command_line->AppendSwitch(switches::kUseGpuInTests);
   }
 
   void StartPyWebSocketServer() {
