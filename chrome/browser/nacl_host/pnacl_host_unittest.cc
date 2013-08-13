@@ -215,7 +215,8 @@ TEST_F(PnaclHostTest, OverlappedMissesAfterTempReturn) {
   EXPECT_EQ(0U, host_->pending_translations());
 }
 
-TEST_F(PnaclHostTest, OverlappedMissesBeforeTempReturn) {
+// crbug.com/272492; flaky on all platforms.
+TEST_F(PnaclHostTest, DISABLED_OverlappedMissesBeforeTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, false, info, false);
   // Send the 2nd fd request before the first one returns a temp file.
