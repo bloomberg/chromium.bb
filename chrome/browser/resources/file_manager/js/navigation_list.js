@@ -316,7 +316,9 @@ NavigationList.prototype.removeChild = function(item) {
  */
 NavigationList.prototype.renderRoot_ = function(path) {
   var item = new NavigationListItem();
-  item.setPath(path, this.volumeManager_.getDeviceType(path));
+  var deviceType =
+      PathUtil.isRootPath(path) && this.volumeManager_.getDeviceType(path);
+  item.setPath(path, deviceType);
 
   var handleClick = function() {
     if (item.selected && path !== this.directoryModel_.getCurrentDirPath()) {
