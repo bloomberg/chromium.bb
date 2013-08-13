@@ -199,7 +199,8 @@ cr.define('login', function() {
       } else {
         $('ok-button').disabled = false;
         chrome.send('selectImage',
-                    [imageGrid.selectedItemUrl, imageGrid.selectionType]);
+                    [imageGrid.selectedItemUrl, imageGrid.selectionType,
+                     !imageGrid.inProgramSelection]);
       }
       // Start/stop camera on (de)selection.
       if (!imageGrid.inProgramSelection &&
@@ -384,7 +385,7 @@ cr.define('login', function() {
         item.author = data.author || '';
         item.website = data.website || '';
       }
-      this.classList.remove('loading');
+      chrome.send('screenReady');
     },
 
     /**
@@ -396,6 +397,15 @@ cr.define('login', function() {
       var imageGrid = $('user-image-grid');
       imageGrid.selectedItemUrl = url;
       imageGrid.focus();
+    },
+
+    /**
+     * Hides curtain with spinner.
+     * @private
+     */
+    hideCurtain_: function() {
+      this.classList.remove('loading');
+      Oobe.getInstance().updateScreenSize(this);
     },
 
     /**
@@ -432,6 +442,7 @@ cr.define('login', function() {
     'setProfilePictureEnabled',
     'setProfileImage',
     'setSelectedImage',
+    'hideCurtain'
   ].forEach(function(name) {
     UserImageScreen[name] = function(value) {
       $('user-image')[name + '_'](value);

@@ -34,6 +34,7 @@ class RegularUser : public User {
 
   // Overridden from User:
   virtual UserType GetType() const OVERRIDE;
+  virtual bool CanSyncImage() const OVERRIDE;
   virtual bool can_lock() const OVERRIDE;
 
  private:
@@ -151,6 +152,10 @@ bool User::HasDefaultImage() const {
   return image_index_ >= 0 && image_index_ < kDefaultImagesCount;
 }
 
+bool User::CanSyncImage() const {
+  return false;
+}
+
 std::string User::display_email() const {
   return display_email_;
 }
@@ -236,6 +241,10 @@ RegularUser::~RegularUser() {}
 
 User::UserType RegularUser::GetType() const {
   return USER_TYPE_REGULAR;
+}
+
+bool RegularUser::CanSyncImage() const {
+  return true;
 }
 
 bool RegularUser::can_lock() const {

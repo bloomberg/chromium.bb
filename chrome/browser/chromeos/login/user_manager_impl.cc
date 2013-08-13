@@ -269,6 +269,7 @@ void UserManagerImpl::Shutdown() {
 
   if (observed_sync_service_)
     observed_sync_service_->RemoveObserver(this);
+  user_image_manager_->Shutdown();
 }
 
 UserImageManager* UserManagerImpl::GetUserImageManager() {

@@ -23,13 +23,17 @@ class UserImageScreenActor {
    public:
     virtual ~Delegate() {}
 
+    // Called when UI ready to be shown.
+    virtual void OnScreenReady() = 0;
     // Called when user accepts photo as login user image.
     virtual void OnPhotoTaken(const std::string& raw_data) = 0;
     // Called to check camera presence.
     virtual void CheckCameraPresence() = 0;
-    // Called when user selects some image
+    // Called when some image was selected. |is_user_selection| indicates if
+    // it was user selection or image was selected programmatically.
     virtual void OnImageSelected(const std::string& image_url,
-                                 const std::string& image_type) = 0;
+                                 const std::string& image_type,
+                                 bool is_user_selection) = 0;
     // Called when user accepts currently selected image
     virtual void OnImageAccepted() = 0;
 
@@ -70,6 +74,9 @@ class UserImageScreenActor {
 
   // Sends result of camera check
   virtual void SetCameraPresent(bool enabled) = 0;
+
+  // Hides curtain with spinner.
+  virtual void HideCurtain() = 0;
 };
 
 }  // namespace chromeos

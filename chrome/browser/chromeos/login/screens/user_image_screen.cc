@@ -6,6 +6,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/metrics/histogram.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/camera_detector.h"
@@ -36,6 +37,10 @@ namespace {
 // Time histogram suffix for profile image download.
 const char kProfileDownloadReason[] = "OOBE";
 
+// Maximum ammount of time to wait for the user image to sync.
+// The screen is shown iff sync failed or time limit exceeded.
+const int kSyncTimeoutSeconds = 10;
+
 }  // namespace
 
 UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
@@ -47,9 +52,13 @@ UserImageScreen::UserImageScreen(ScreenObserver* screen_observer,
       selected_image_(User::kInvalidImageIndex),
       profile_picture_enabled_(false),
       profile_picture_data_url_(content::kAboutBlankURL),
-      profile_picture_absent_(false) {
+      profile_picture_absent_(false),
+      is_screen_ready_(false),
+      user_has_selected_image_(false) {
   actor_->SetDelegate(this);
   SetProfilePictureEnabled(true);
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+      content::NotificationService::AllSources());
 }
 
 UserImageScreen::~UserImageScreen() {
@@ -57,6 +66,24 @@ UserImageScreen::~UserImageScreen() {
     actor_->SetDelegate(NULL);
   if (image_decoder_.get())
     image_decoder_->set_delegate(NULL);
+}
+
+void UserImageScreen::OnScreenReady() {
+  is_screen_ready_ = true;
+  if (actor_ && !IsWaitingForSync())
+    actor_->HideCurtain();
+}
+
+void UserImageScreen::OnPhotoTaken(const std::string& raw_data) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  user_photo_ = gfx::ImageSkia();
+  if (image_decoder_.get())
+    image_decoder_->set_delegate(NULL);
+  image_decoder_ = new ImageDecoder(this, raw_data,
+                                    ImageDecoder::DEFAULT_CODEC);
+  scoped_refptr<base::MessageLoopProxy> task_runner =
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
+  image_decoder_->Start(task_runner);
 }
 
 void UserImageScreen::CheckCameraPresence() {
@@ -72,17 +99,6 @@ void UserImageScreen::OnCameraPresenceCheckDone() {
   }
 }
 
-void UserImageScreen::OnPhotoTaken(const std::string& raw_data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  user_photo_ = gfx::ImageSkia();
-  if (image_decoder_.get())
-    image_decoder_->set_delegate(NULL);
-  image_decoder_ = new ImageDecoder(this, raw_data,
-                                    ImageDecoder::DEFAULT_CODEC);
-  scoped_refptr<base::MessageLoopProxy> task_runner =
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI);
-  image_decoder_->Start(task_runner);
-}
 
 void UserImageScreen::OnImageDecoded(const ImageDecoder* decoder,
                                      const SkBitmap& decoded_image) {
@@ -96,8 +112,38 @@ void UserImageScreen::OnDecodeImageFailed(const ImageDecoder* decoder) {
   NOTREACHED() << "Failed to decode PNG image from WebUI";
 }
 
+void UserImageScreen::OnInitialSync(bool local_image_updated) {
+  DCHECK(sync_timer_.get());
+  sync_timer_->Stop();
+  sync_timer_.reset();
+  UserManager::Get()->GetUserImageManager()->GetSyncObserver()->
+      RemoveObserver(this);
+  if (!local_image_updated) {
+    if (is_screen_ready_ && actor_)
+      actor_->HideCurtain();
+    return;
+  }
+  get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+}
+
+void UserImageScreen::OnSyncTimeout() {
+  sync_timer_.reset();
+  UserManager::Get()->GetUserImageManager()->GetSyncObserver()->
+      RemoveObserver(this);
+  if (is_screen_ready_ && actor_)
+    actor_->HideCurtain();
+}
+
+bool UserImageScreen::IsWaitingForSync() const {
+  return sync_timer_.get() && sync_timer_->IsRunning();
+}
+
 void UserImageScreen::OnImageSelected(const std::string& image_type,
-                                      const std::string& image_url) {
+                                      const std::string& image_url,
+                                      bool is_user_selection) {
+  if (is_user_selection) {
+    user_has_selected_image_ = true;
+  }
   if (image_url.empty())
     return;
   int user_image_index = User::kInvalidImageIndex;
@@ -139,9 +185,11 @@ void UserImageScreen::OnImageAccepted() {
       uma_index = GetDefaultImageHistogramValue(selected_image_);
       break;
   }
-  UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
-                            uma_index,
-                            kHistogramImagesCount);
+  if (user_has_selected_image_) {
+    UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
+                              uma_index,
+                              kHistogramImagesCount);
+  }
   get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
 }
 
@@ -186,7 +234,23 @@ const User* UserImageScreen::GetUser() {
 void UserImageScreen::Show() {
   if (!actor_)
     return;
-
+  if (GetUser()->CanSyncImage()) {
+    if (UserImageSyncObserver* sync_observer =
+          UserManager::Get()->GetUserImageManager()->GetSyncObserver()) {
+      // We have synced image already.
+      if (sync_observer->is_synced()) {
+        get_screen_observer()->OnExit(ScreenObserver::USER_IMAGE_SELECTED);
+        return;
+      }
+      sync_observer->AddObserver(this);
+      sync_timer_.reset(new base::Timer(
+            FROM_HERE,
+            base::TimeDelta::FromSeconds(kSyncTimeoutSeconds),
+            base::Bind(&UserImageScreen::OnSyncTimeout, base::Unretained(this)),
+            false));
+      sync_timer_->Reset();
+    }
+  }
   actor_->Show();
   actor_->SetProfilePictureEnabled(profile_picture_enabled_);
 
@@ -235,6 +299,11 @@ void UserImageScreen::Observe(int type,
       profile_picture_absent_ = true;
       if (actor_)
         actor_->OnProfileImageAbsent();
+      break;
+    }
+    case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
+      if (actor_)
+        actor_->SelectImage(GetUser()->image_index());
       break;
     }
     default:

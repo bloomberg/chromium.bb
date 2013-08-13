@@ -112,6 +112,9 @@ class User {
   // Whether the user has a default image.
   bool HasDefaultImage() const;
 
+  // True if user image can be synced.
+  virtual bool CanSyncImage() const;
+
   int image_index() const { return image_index_; }
   bool has_raw_image() const { return user_image_.has_raw_image(); }
   // Returns raw representation of static user image.

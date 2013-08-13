@@ -1610,6 +1610,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kDisableAppList)
   },
 #endif
+#if defined(OS_CHROMEOS)
+  {
+    "disable-user-image-sync",
+    IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_NAME,
+    IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableUserImageSync)
+  },
+#endif
 };
 
 const Experiment* experiments = kExperiments;

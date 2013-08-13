@@ -338,12 +338,12 @@ void TestingAutomationProvider::PickUserImage(DictionaryValue* args,
   WizardControllerObserver* observer =
       new WizardControllerObserver(wizard_controller, this, reply_message);
   if (image_type == "profile") {
-    image_screen->OnImageSelected("", image_type);
+    image_screen->OnImageSelected("", image_type, true);
     image_screen->OnImageAccepted();
   } else if (image_type.empty() && image_number >= 0 &&
              image_number < chromeos::kDefaultImagesCount) {
     image_screen->OnImageSelected(
-        chromeos::GetDefaultImageUrl(image_number), image_type);
+        chromeos::GetDefaultImageUrl(image_number), image_type, true);
     image_screen->OnImageAccepted();
   } else {
     AutomationJSONReply(this, reply_message).SendError(

@@ -4,9 +4,9 @@
  */
 
 #gaia-signin {
-  height: 609px;
+  height: 609px; /* Should be the same as #user-image.loading min-heigth. */
   padding: 70px 17px 69px;    /* Screen has no controls. */
-  width: 722px;
+  width: 722px; /* Should be the same as #user-image.loading width. */
 }
 
 #gaia-signin.no-right-panel {
@@ -119,3 +119,4 @@
 #createManagedUserNoManagerText {
   margin-top: 10px;
 }
+

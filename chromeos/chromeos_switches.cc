@@ -195,5 +195,8 @@ const char kStubCrosSettings[]              = "stub-cros-settings";
 const char kUseNewNetworkConfigurationHandlers[] =
     "use-new-network-configuration-handlers";
 
+// Disables user image sync.
+const char kDisableUserImageSync[] = "disable-user-image-sync";
+
 }  // namespace switches
 }  // namespace chromeos

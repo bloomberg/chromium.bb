@@ -572,6 +572,8 @@
         'browser/chromeos/login/user_image_manager.cc',
         'browser/chromeos/login/user_image_manager_impl.cc',
         'browser/chromeos/login/user_image_manager_impl.h',
+        'browser/chromeos/login/user_image_sync_observer.cc',
+        'browser/chromeos/login/user_image_sync_observer.h',
         'browser/chromeos/login/user_flow.cc',
         'browser/chromeos/login/user_flow.h',
         'browser/chromeos/login/user_manager.cc',

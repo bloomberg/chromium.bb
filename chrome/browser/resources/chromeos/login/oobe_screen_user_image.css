@@ -9,6 +9,11 @@
   width: 702px;
 }
 
+#user-image.loading {
+  min-height: 609px; /* Should be the same as #gaia-signin height. */
+  width: 722px; /* Should be the same as #gaia-signin width. */
+}
+
 #user-image-screen-curtain {
   -webkit-margin-start: 8px;
 }

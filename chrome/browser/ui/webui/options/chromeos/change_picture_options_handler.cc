@@ -79,6 +79,8 @@ ChangePictureOptionsHandler::ChangePictureOptionsHandler()
       content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_IMAGE_UPDATE_FAILED,
       content::NotificationService::AllSources());
+  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED,
+      content::NotificationService::AllSources());
 }
 
 ChangePictureOptionsHandler::~ChangePictureOptionsHandler() {
@@ -411,6 +413,11 @@ void ChangePictureOptionsHandler::Observe(
     // User profile image has been updated.
     SendProfileImage(*content::Details<const gfx::ImageSkia>(details).ptr(),
                      false);
+  } else if (type == chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED) {
+    // Not initialized yet.
+    if (previous_image_index_ == User::kInvalidImageIndex)
+      return;
+    SendSelectedImage();
   }
 }
 

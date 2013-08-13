@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -22,11 +23,14 @@
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_image.h"
+#include "chrome/browser/chromeos/login/user_image_sync_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile_downloader.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "chromeos/chromeos_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
@@ -266,12 +270,11 @@ void UserImageManagerImpl::LoadUserImages(const UserList& users) {
 void UserImageManagerImpl::UserLoggedIn(const std::string& email,
                                         bool user_is_new,
                                         bool user_is_local) {
+  User* user = UserManager::Get()->GetLoggedInUser();
   if (user_is_new) {
     if (!user_is_local)
       SetInitialUserImage(email);
   } else {
-    User* user = UserManager::Get()->GetLoggedInUser();
-
     if (!user_is_local) {
       // If current user image is profile image, it needs to be refreshed.
       bool download_profile_image =
@@ -333,6 +336,14 @@ void UserImageManagerImpl::UserLoggedIn(const std::string& email,
     profile_download_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kProfileRefreshIntervalSec),
         this, &UserImageManagerImpl::DownloadProfileDataScheduled);
+  }
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (user->CanSyncImage() &&
+      !command_line->HasSwitch(chromeos::switches::kDisableUserImageSync)) {
+    if (user_image_sync_observer_.get() &&
+        !command_line->HasSwitch(::switches::kMultiProfiles))
+      NOTREACHED() << "User logged in second time.";
+    user_image_sync_observer_.reset(new UserImageSyncObserver(user));
   }
 }
 
@@ -399,6 +410,14 @@ void UserImageManagerImpl::DeleteUserImage(const std::string& username) {
 
 void UserImageManagerImpl::DownloadProfileImage(const std::string& reason) {
   DownloadProfileData(reason, true);
+}
+
+UserImageSyncObserver* UserImageManagerImpl::GetSyncObserver() const {
+  return user_image_sync_observer_.get();
+}
+
+void UserImageManagerImpl::Shutdown() {
+  user_image_sync_observer_.reset();
 }
 
 const gfx::ImageSkia& UserImageManagerImpl::DownloadedProfileImage() const {

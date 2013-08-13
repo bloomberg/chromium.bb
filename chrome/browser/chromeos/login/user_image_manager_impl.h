@@ -26,6 +26,10 @@ class FilePath;
 }
 
 namespace chromeos {
+class UserImageSyncObserver;
+}
+
+namespace chromeos {
 
 class UserImageManagerImpl : public UserImageManager,
                              public ProfileDownloaderDelegate {
@@ -49,6 +53,8 @@ class UserImageManagerImpl : public UserImageManager,
   virtual void DeleteUserImage(const std::string& username) OVERRIDE;
   virtual void DownloadProfileImage(const std::string& reason) OVERRIDE;
   virtual const gfx::ImageSkia& DownloadedProfileImage() const OVERRIDE;
+  virtual UserImageSyncObserver* GetSyncObserver() const OVERRIDE;
+  virtual void Shutdown() OVERRIDE;
 
  private:
   friend class UserImageManagerTest;
@@ -174,6 +180,9 @@ class UserImageManagerImpl : public UserImageManager,
 
   // If |true|, current user image should be migrated right after it is loaded.
   bool migrate_current_user_on_load_;
+
+  // Sync observer attached to current user.
+  scoped_ptr<UserImageSyncObserver> user_image_sync_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserImageManagerImpl);
 };

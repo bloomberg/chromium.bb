@@ -30,7 +30,8 @@ namespace chromeos {
 UserImageScreenHandler::UserImageScreenHandler()
     : BaseScreenHandler(kJsScreenPath),
       screen_(NULL),
-      show_on_init_(false) {
+      show_on_init_(false),
+      is_ready_(false) {
 }
 
 UserImageScreenHandler::~UserImageScreenHandler() {
@@ -62,6 +63,8 @@ void UserImageScreenHandler::Show() {
   if (!screen_)
     return;
   screen_->CheckCameraPresence();
+  if (is_ready_)
+    screen_->OnScreenReady();
 }
 
 void UserImageScreenHandler::Hide() {
@@ -94,6 +97,7 @@ void UserImageScreenHandler::DeclareLocalizedValues(
 
 void UserImageScreenHandler::RegisterMessages() {
   AddCallback("getImages", &UserImageScreenHandler::HandleGetImages);
+  AddCallback("screenReady", &UserImageScreenHandler::HandleScreenReady);
   AddCallback("photoTaken", &UserImageScreenHandler::HandlePhotoTaken);
   AddCallback("selectImage", &UserImageScreenHandler::HandleSelectImage);
   AddCallback("checkCameraPresence",
@@ -146,6 +150,12 @@ void UserImageScreenHandler::HandleGetImages() {
     OnProfileImageAbsent();
 }
 
+void UserImageScreenHandler::HandleScreenReady() {
+  is_ready_ = true;
+  if (screen_)
+    screen_->OnScreenReady();
+}
+
 void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
   std::string mime_type, charset, raw_data;
   if (!net::DataURL::Parse(GURL(image_url), &mime_type, &charset, &raw_data))
@@ -163,9 +173,10 @@ void UserImageScreenHandler::HandleCheckCameraPresence() {
 }
 
 void UserImageScreenHandler::HandleSelectImage(const std::string& image_url,
-                                               const std::string& image_type) {
+                                               const std::string& image_type,
+                                               bool is_user_selection) {
   if (screen_)
-    screen_->OnImageSelected(image_type, image_url);
+    screen_->OnImageSelected(image_type, image_url, is_user_selection);
 }
 
 void UserImageScreenHandler::HandleImageAccepted() {
@@ -183,6 +194,10 @@ void UserImageScreenHandler::HandleScreenShown() {
 
 void UserImageScreenHandler::SetCameraPresent(bool present) {
   CallJS("setCameraPresent", present);
+}
+
+void UserImageScreenHandler::HideCurtain() {
+  CallJS("hideCurtain");
 }
 
 void UserImageScreenHandler::SetProfilePictureEnabled(bool enabled) {
