@@ -179,6 +179,7 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
 
     textfield_view_ = static_cast<NativeTextfieldViews*>(
         textfield_->GetNativeWrapperForTesting());
+    DCHECK(textfield_view_);
     textfield_view_->SetBoundsRect(params.bounds);
     textfield_->set_id(1);
 
@@ -188,7 +189,6 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
       textfield->set_id(i + 1);
     }
 
-    DCHECK(textfield_view_);
     model_ = textfield_view_->model_.get();
     model_->ClearEditHistory();
 
