@@ -338,18 +338,6 @@ TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTray) {
   EXPECT_EQ(work_area.ToString(), GetPopupWorkArea().ToString());
 }
 
-TEST_F(WebNotificationTrayTest, PopupAndSystemTrayAlignment) {
-  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
-      SetAlignment(SHELF_ALIGNMENT_LEFT);
-  AddNotification("test_id");
-  gfx::Rect work_area = GetPopupWorkArea();
-
-  // System tray is created, but the work area is not affected since the tray
-  // appears at the left-bottom while the popups appear at the right bottom.
-  GetSystemTray()->ShowDefaultView(BUBBLE_CREATE_NEW);
-  EXPECT_EQ(work_area.ToString(), GetPopupWorkArea().ToString());
-}
-
 TEST_F(WebNotificationTrayTest, MAYBE_PopupAndSystemTrayMultiDisplay) {
   UpdateDisplay("800x600,600x400");
 

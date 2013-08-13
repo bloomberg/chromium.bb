@@ -132,38 +132,16 @@ void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
         ShelfLayoutManager::kAutoHideSize :
         ShelfLayoutManager::GetPreferredShelfSize();
   }
-  switch (shelf_->GetAlignment()) {
-    case SHELF_ALIGNMENT_BOTTOM:
-      work_area.Inset(0, 0, 0, width);
-      if (system_tray_height_ > 0) {
-        work_area.set_height(
-            std::max(0, work_area.height() - system_tray_height_));
-      }
-      break;
-    case SHELF_ALIGNMENT_LEFT:
-      work_area.Inset(width, 0, 0, 0);
-      // Popups appear on the left bottom only when UI is RTL.
-      if (base::i18n::IsRTL() && system_tray_height_ > 0) {
-        work_area.set_height(
-            std::max(0, work_area.height() - system_tray_height_));
-      }
-      break;
-    case SHELF_ALIGNMENT_RIGHT:
-      work_area.Inset(0, 0, width, 0);
-      // Popups appear on the right bottom only when UI isn't RTL.
-      if (!base::i18n::IsRTL() && system_tray_height_ > 0) {
-        work_area.set_height(
-            std::max(0, work_area.height() - system_tray_height_));
-      }
-      break;
-    case SHELF_ALIGNMENT_TOP:
-      work_area.Inset(0, width, 0, 0);
-      if (system_tray_height_ > 0) {
-        work_area.set_y(work_area.y() + system_tray_height_);
-        work_area.set_height(
-            std::max(0, work_area.height() - system_tray_height_));
-      }
-      break;
+  work_area.Inset(shelf_->SelectValueForShelfAlignment(
+      gfx::Insets(0, 0, width, 0),
+      gfx::Insets(0, width, 0, 0),
+      gfx::Insets(0, 0, 0, width),
+      gfx::Insets(width, 0, 0, 0)));
+  if (system_tray_height_ > 0) {
+    work_area.set_height(
+        std::max(0, work_area.height() - system_tray_height_));
+    if (shelf_->GetAlignment() == SHELF_ALIGNMENT_TOP)
+      work_area.set_y(work_area.y() + system_tray_height_);
   }
   collection_->SetDisplayInfo(work_area, display.bounds());
 }
