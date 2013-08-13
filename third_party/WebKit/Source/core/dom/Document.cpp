@@ -1295,6 +1295,7 @@ void Document::updateTitle(const StringWithDirection& title)
 
     m_rawTitle = title;
 
+    StringWithDirection oldTitle = m_title;
     if (m_rawTitle.string().isEmpty())
         m_title = StringWithDirection();
     else {
@@ -1303,8 +1304,11 @@ void Document::updateTitle(const StringWithDirection& title)
         else
             m_title = canonicalizedTitle<UChar>(this, m_rawTitle);
     }
-    if (Frame* f = frame())
-        f->loader()->setTitle(m_title);
+
+    if (!m_frame || oldTitle == m_title)
+        return;
+    m_frame->loader()->history()->setCurrentItemTitle(m_title);
+    m_frame->loader()->client()->dispatchDidReceiveTitle(m_title);
 }
 
 void Document::setTitle(const String& title)
