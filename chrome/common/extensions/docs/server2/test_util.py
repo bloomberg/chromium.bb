@@ -11,12 +11,12 @@ import sys
 def EnableLogging(name):
   '''Returns the output of the log with |name| to stdout.
   '''
-  return _ReplaceLogging(name, lambda message: print(message))
+  return _ReplaceLogging(name, lambda message, *args: print(message % args))
 
 def DisableLogging(name):
   '''Disables the log with |name| for the duration of the decorated function.
   '''
-  return _ReplaceLogging(name, lambda _: None)
+  return _ReplaceLogging(name, lambda _, *args: None)
 
 def _ReplaceLogging(name, replacement):
   def decorator(fn):

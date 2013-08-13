@@ -5,7 +5,6 @@
 from fnmatch import fnmatch
 import logging
 import mimetypes
-import traceback
 from urlparse import urlsplit
 
 from file_system import FileNotFoundError
@@ -79,16 +78,16 @@ class RenderServlet(Servlet):
       elif path.endswith('.html'):
         content = templates.Render(path)
         content_type = 'text/html'
+      else:
+        logging.warning('Nothing can handle %s' % path)
+        content = None
     except FileNotFoundError:
-      logging.warning(traceback.format_exc())
       content = None
 
     headers = {'x-frame-options': 'sameorigin'}
     if content is None:
-      doc_class = path.split('/', 1)[0]
-      content = templates.Render('%s/404' % doc_class)
-      if not content:
-        content = templates.Render('extensions/404')
+      content = (templates.Render('%s/404' % path.split('/', 1)[0]) or
+                 templates.Render('extensions/404'))
       return Response.NotFound(content, headers=headers)
 
     if not content:
