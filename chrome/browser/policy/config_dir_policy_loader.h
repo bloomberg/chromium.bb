@@ -23,11 +23,13 @@ namespace policy {
 // last value read takes precedence in case of policy key collisions.
 class ConfigDirPolicyLoader : public AsyncPolicyLoader {
  public:
-  ConfigDirPolicyLoader(const base::FilePath& config_dir, PolicyScope scope);
+  ConfigDirPolicyLoader(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                        const base::FilePath& config_dir,
+                        PolicyScope scope);
   virtual ~ConfigDirPolicyLoader();
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnFile() OVERRIDE;
+  virtual void InitOnBackgroundThread() OVERRIDE;
   virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
   virtual base::Time LastModificationTime() OVERRIDE;
 

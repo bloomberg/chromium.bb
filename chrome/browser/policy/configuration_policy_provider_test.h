@@ -9,15 +9,16 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/policy/policy_types.h"
-#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+class SequencedTaskRunner;
 class Value;
 }
 
@@ -55,9 +56,6 @@ class PolicyTestBase : public testing::Test {
   base::MessageLoopForIO loop_;
 
  private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(PolicyTestBase);
 };
 
@@ -76,6 +74,7 @@ class PolicyProviderTestHarness {
 
   // Create a new policy provider.
   virtual ConfigurationPolicyProvider* CreateProvider(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_definition_list) = 0;
 
   // Returns the policy level and scope set by the policy provider.

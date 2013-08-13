@@ -17,6 +17,7 @@
 class MacPreferences;
 
 namespace base {
+class SequencedTaskRunner;
 class Value;
 }  // namespace base
 
@@ -31,12 +32,13 @@ struct PolicyDefinitionList;
 // watches the managed preferences files for updates.
 class PolicyLoaderMac : public AsyncPolicyLoader {
  public:
-  PolicyLoaderMac(const PolicyDefinitionList* policy_list,
+  PolicyLoaderMac(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                  const PolicyDefinitionList* policy_list,
                   MacPreferences* preferences);
   virtual ~PolicyLoaderMac();
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnFile() OVERRIDE;
+  virtual void InitOnBackgroundThread() OVERRIDE;
   virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
   virtual base::Time LastModificationTime() OVERRIDE;
 

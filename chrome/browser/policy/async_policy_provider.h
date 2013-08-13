@@ -21,9 +21,9 @@ namespace policy {
 class AsyncPolicyLoader;
 class PolicyBundle;
 
-// A policy provider that loads its policies asynchronously on the FILE thread.
-// Platform-specific providers are created by passing an implementation of
-// AsyncPolicyLoader to a new AsyncPolicyProvider.
+// A policy provider that loads its policies asynchronously on a background
+// thread. Platform-specific providers are created by passing an implementation
+// of AsyncPolicyLoader to a new AsyncPolicyProvider.
 class AsyncPolicyProvider : public ConfigurationPolicyProvider,
                             public base::NonThreadSafe {
  public:
@@ -45,23 +45,23 @@ class AsyncPolicyProvider : public ConfigurationPolicyProvider,
   void OnLoaderReloaded(scoped_ptr<PolicyBundle> bundle);
 
   // Callback passed to the loader that it uses to pass back the current policy
-  // bundle to the provider. This is invoked on the FILE thread and forwards
-  // to OnLoaderReloaded() on the loop that owns the provider, if |weak_this| is
-  // still valid.
+  // bundle to the provider. This is invoked on the background thread and
+  // forwards to OnLoaderReloaded() on the loop that owns the provider,
+  // if |weak_this| is still valid.
   static void LoaderUpdateCallback(scoped_refptr<base::MessageLoopProxy> loop,
                                    base::WeakPtr<AsyncPolicyProvider> weak_this,
                                    scoped_ptr<PolicyBundle> bundle);
 
   // The |loader_| that does the platform-specific policy loading. It lives
-  // on the FILE thread but is owned by |this|.
+  // on the background thread but is owned by |this|.
   AsyncPolicyLoader* loader_;
 
   // Used to get a WeakPtr to |this| for the update callback given to the
   // loader.
   base::WeakPtrFactory<AsyncPolicyProvider> weak_factory_;
 
-  // Callback used to synchronize RefreshPolicies() calls with the FILE thread.
-  // See the implementation for the details.
+  // Callback used to synchronize RefreshPolicies() calls with the background
+  // thread. See the implementation for the details.
   base::CancelableClosure refresh_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPolicyProvider);

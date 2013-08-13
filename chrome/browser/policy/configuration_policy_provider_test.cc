@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/values.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
@@ -16,7 +16,6 @@
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using content::BrowserThread;
 using ::testing::Mock;
 using ::testing::_;
 
@@ -44,9 +43,7 @@ const PolicyDefinitionList kList = {
 
 }  // namespace test_policy_definitions
 
-PolicyTestBase::PolicyTestBase()
-    : ui_thread_(BrowserThread::UI, &loop_),
-      file_thread_(BrowserThread::FILE, &loop_) {}
+PolicyTestBase::PolicyTestBase() {}
 
 PolicyTestBase::~PolicyTestBase() {}
 
@@ -83,8 +80,8 @@ void ConfigurationPolicyProviderTest::SetUp() {
   test_harness_.reset((*GetParam())());
   test_harness_->SetUp();
 
-  provider_.reset(
-      test_harness_->CreateProvider(&test_policy_definitions::kList));
+  provider_.reset(test_harness_->CreateProvider(
+      loop_.message_loop_proxy(), &test_policy_definitions::kList));
   provider_->Init();
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.

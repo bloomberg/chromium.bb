@@ -6,7 +6,10 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/async_policy_provider.h"
@@ -30,6 +33,7 @@ class TestHarness : public PolicyProviderTestHarness {
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_definition_list) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
@@ -78,9 +82,10 @@ void TestHarness::SetUp() {
 }
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_definition_list) {
-  scoped_ptr<AsyncPolicyLoader> loader(
-      new ConfigDirPolicyLoader(test_dir(), POLICY_SCOPE_MACHINE));
+  scoped_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
+      task_runner, test_dir(), POLICY_SCOPE_MACHINE));
   return new AsyncPolicyProvider(loader.Pass());
 }
 
@@ -181,7 +186,8 @@ class ConfigDirPolicyLoaderTest : public PolicyTestBase {
 // The preferences dictionary is expected to be empty when there are no files to
 // load.
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
-  ConfigDirPolicyLoader loader(harness_.test_dir(), POLICY_SCOPE_MACHINE);
+  ConfigDirPolicyLoader loader(
+      loop_.message_loop_proxy(), harness_.test_dir(), POLICY_SCOPE_MACHINE);
   scoped_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   const PolicyBundle kEmptyBundle;
@@ -193,7 +199,8 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsEmpty) {
 TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsNonExistentDirectory) {
   base::FilePath non_existent_dir(
       harness_.test_dir().Append(FILE_PATH_LITERAL("not_there")));
-  ConfigDirPolicyLoader loader(non_existent_dir, POLICY_SCOPE_MACHINE);
+  ConfigDirPolicyLoader loader(
+      loop_.message_loop_proxy(), non_existent_dir, POLICY_SCOPE_MACHINE);
   scoped_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   const PolicyBundle kEmptyBundle;
@@ -216,7 +223,8 @@ TEST_F(ConfigDirPolicyLoaderTest, ReadPrefsMergePrefs) {
   for (unsigned int i = 5; i <= 8; ++i)
     harness_.WriteConfigFile(test_dict_bar, base::IntToString(i));
 
-  ConfigDirPolicyLoader loader(harness_.test_dir(), POLICY_SCOPE_USER);
+  ConfigDirPolicyLoader loader(
+      loop_.message_loop_proxy(), harness_.test_dir(), POLICY_SCOPE_USER);
   scoped_ptr<PolicyBundle> bundle(loader.Load());
   ASSERT_TRUE(bundle.get());
   PolicyBundle expected_bundle;

@@ -14,6 +14,10 @@
 #include "base/time/time.h"
 #include "chrome/browser/policy/policy_service.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
+
 namespace policy {
 
 class PolicyBundle;
@@ -24,31 +28,36 @@ class PolicyDomainDescriptor;
 // periodic reloads, watching file changes, refreshing policies and object
 // lifetime.
 //
-// All methods are invoked on the FILE thread, including the destructor.
-// The only exceptions are the constructor (which may be called on any thread),
-// and the initial Load() which is called on the thread that owns the provider.
+// All methods are invoked on the background |task_runner_|, including the
+// destructor. The only exceptions are the constructor (which may be called on
+// any thread), and the initial Load() which is called on the thread that owns
+// the provider.
 // LastModificationTime() is also invoked once on that thread at startup.
 class AsyncPolicyLoader {
  public:
-  AsyncPolicyLoader();
+  explicit AsyncPolicyLoader(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~AsyncPolicyLoader();
 
+  // Gets a SequencedTaskRunner backed by the background thread.
+  base::SequencedTaskRunner* task_runner() const { return task_runner_.get(); }
+
   // Returns the currently configured policies. Load() is always invoked on
-  // the FILE thread, except for the initial Load() at startup which is invoked
-  // from the thread that owns the provider.
+  // the background thread, except for the initial Load() at startup which is
+  // invoked from the thread that owns the provider.
   virtual scoped_ptr<PolicyBundle> Load() = 0;
 
-  // Allows implementations to finalize their initialization on the FILE
+  // Allows implementations to finalize their initialization on the background
   // thread (e.g. setup file watchers).
-  virtual void InitOnFile() = 0;
+  virtual void InitOnBackgroundThread() = 0;
 
   // Implementations should return the time of the last modification detected,
   // or base::Time() if it doesn't apply, which is the default.
   virtual base::Time LastModificationTime();
 
   // Implementations should invoke Reload() when a change is detected. This
-  // must be invoked from the FILE thread and will trigger a Load(), and pass
-  // the returned bundle to the provider.
+  // must be invoked from the background thread and will trigger a Load(),
+  // and pass the returned bundle to the provider.
   // The load is immediate when |force| is true. Otherwise, the loader
   // reschedules the reload until the LastModificationTime() is a couple of
   // seconds in the past. This mitigates the problem of reading files that are
@@ -82,7 +91,7 @@ class AsyncPolicyLoader {
   scoped_ptr<PolicyBundle> InitialLoad();
 
   // Used by the AsyncPolicyProvider to install the |update_callback_|.
-  // Invoked on the FILE thread.
+  // Invoked on the background thread.
   void Init(const UpdateCallback& update_callback);
 
   // Cancels any pending periodic reload and posts one |delay| time units from
@@ -93,6 +102,9 @@ class AsyncPolicyLoader {
   // LastModificationTime(). |delay| is updated with a suggested time to wait
   // before retrying when this returns false.
   bool IsSafeToReload(const base::Time& now, base::TimeDelta* delay);
+
+  // Task runner to run background threads.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // Callback for updates, passed in Init().
   UpdateCallback update_callback_;

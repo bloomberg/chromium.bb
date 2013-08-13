@@ -10,12 +10,17 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "base/win/object_watcher.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/policy_types.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace policy {
 
@@ -45,17 +50,19 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   // The PReg file name used by GPO.
   static const base::FilePath::CharType kPRegFileName[];
 
-  explicit PolicyLoaderWin(const PolicyDefinitionList* policy_list,
-                           const string16& chrome_policy_key,
-                           AppliedGPOListProvider* gpo_provider);
+  PolicyLoaderWin(scoped_refptr<base::SequencedTaskRunner> task_runner,
+                  const PolicyDefinitionList* policy_list,
+                  const string16& chrome_policy_key,
+                  AppliedGPOListProvider* gpo_provider);
   virtual ~PolicyLoaderWin();
 
   // Creates a policy loader that uses the Win API to access GPO.
   static scoped_ptr<PolicyLoaderWin> Create(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_list);
 
   // AsyncPolicyLoader implementation.
-  virtual void InitOnFile() OVERRIDE;
+  virtual void InitOnBackgroundThread() OVERRIDE;
   virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
 
  private:

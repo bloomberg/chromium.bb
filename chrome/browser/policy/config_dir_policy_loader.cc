@@ -57,14 +57,15 @@ PolicyLoadStatus JsonErrorToPolicyLoadStatus(int status) {
 
 }  // namespace
 
-ConfigDirPolicyLoader::ConfigDirPolicyLoader(const base::FilePath& config_dir,
-                                             PolicyScope scope)
-    : config_dir_(config_dir),
-      scope_(scope) {}
+ConfigDirPolicyLoader::ConfigDirPolicyLoader(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::FilePath& config_dir,
+    PolicyScope scope)
+    : AsyncPolicyLoader(task_runner), config_dir_(config_dir), scope_(scope) {}
 
 ConfigDirPolicyLoader::~ConfigDirPolicyLoader() {}
 
-void ConfigDirPolicyLoader::InitOnFile() {
+void ConfigDirPolicyLoader::InitOnBackgroundThread() {
   base::FilePathWatcher::Callback callback =
       base::Bind(&ConfigDirPolicyLoader::OnFileUpdated, base::Unretained(this));
   mandatory_watcher_.Watch(config_dir_.Append(kMandatoryConfigDir), false,

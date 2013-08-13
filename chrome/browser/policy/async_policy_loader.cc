@@ -5,13 +5,13 @@
 #include "chrome/browser/policy/async_policy_loader.h"
 
 #include "base/bind.h"
+#include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "content/public/browser/browser_thread.h"
 
 using base::Time;
 using base::TimeDelta;
-using content::BrowserThread;
 
 namespace policy {
 
@@ -28,8 +28,10 @@ const int kReloadIntervalSeconds = 15 * 60;
 
 }  // namespace
 
-AsyncPolicyLoader::AsyncPolicyLoader()
-    : weak_factory_(this) {}
+AsyncPolicyLoader::AsyncPolicyLoader(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(task_runner),
+      weak_factory_(this) {}
 
 AsyncPolicyLoader::~AsyncPolicyLoader() {}
 
@@ -38,7 +40,7 @@ base::Time AsyncPolicyLoader::LastModificationTime() {
 }
 
 void AsyncPolicyLoader::Reload(bool force) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   TimeDelta delay;
   Time now = Time::Now();
@@ -83,12 +85,12 @@ scoped_ptr<PolicyBundle> AsyncPolicyLoader::InitialLoad() {
 }
 
 void AsyncPolicyLoader::Init(const UpdateCallback& update_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(update_callback_.is_null());
   DCHECK(!update_callback.is_null());
   update_callback_ = update_callback;
 
-  InitOnFile();
+  InitOnBackgroundThread();
 
   // There might have been changes to the underlying files since the initial
   // load and before the watchers have been created.
@@ -100,14 +102,13 @@ void AsyncPolicyLoader::Init(const UpdateCallback& update_callback) {
 }
 
 void AsyncPolicyLoader::ScheduleNextReload(TimeDelta delay) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
   weak_factory_.InvalidateWeakPtrs();
-  BrowserThread::PostDelayedTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&AsyncPolicyLoader::Reload,
-                 weak_factory_.GetWeakPtr(),
-                 false  /* force */),
-      delay);
+  task_runner_->PostDelayedTask(FROM_HERE,
+                                base::Bind(&AsyncPolicyLoader::Reload,
+                                           weak_factory_.GetWeakPtr(),
+                                           false /* force */),
+                                delay);
 }
 
 bool AsyncPolicyLoader::IsSafeToReload(const Time& now, TimeDelta* delay) {

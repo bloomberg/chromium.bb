@@ -12,6 +12,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
@@ -80,15 +81,18 @@ void ArrayEntryToValue(const void* value, void* context) {
 
 }  // namespace
 
-PolicyLoaderMac::PolicyLoaderMac(const PolicyDefinitionList* policy_list,
-                                 MacPreferences* preferences)
-    : policy_list_(policy_list),
+PolicyLoaderMac::PolicyLoaderMac(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const PolicyDefinitionList* policy_list,
+    MacPreferences* preferences)
+    : AsyncPolicyLoader(task_runner),
+      policy_list_(policy_list),
       preferences_(preferences),
       managed_policy_path_(GetManagedPolicyPath()) {}
 
 PolicyLoaderMac::~PolicyLoaderMac() {}
 
-void PolicyLoaderMac::InitOnFile() {
+void PolicyLoaderMac::InitOnBackgroundThread() {
   if (!managed_policy_path_.empty()) {
     watcher_.Watch(
         managed_policy_path_, false,

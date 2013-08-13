@@ -5,13 +5,14 @@
 #include "chrome/browser/policy/async_policy_provider.h"
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +39,8 @@ void SetPolicy(PolicyBundle* bundle,
 
 class MockPolicyLoader : public AsyncPolicyLoader {
  public:
-  MockPolicyLoader();
+  explicit MockPolicyLoader(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
   virtual ~MockPolicyLoader();
 
   // Load() returns a scoped_ptr<PolicyBundle> but it can't be mocked because
@@ -48,14 +50,16 @@ class MockPolicyLoader : public AsyncPolicyLoader {
   virtual scoped_ptr<PolicyBundle> Load() OVERRIDE;
 
   MOCK_METHOD0(MockLoad, const PolicyBundle*());
-  MOCK_METHOD0(InitOnFile, void());
+  MOCK_METHOD0(InitOnBackgroundThread, void());
   MOCK_METHOD0(LastModificationTime, base::Time());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPolicyLoader);
 };
 
-MockPolicyLoader::MockPolicyLoader() {}
+MockPolicyLoader::MockPolicyLoader(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : AsyncPolicyLoader(task_runner) {}
 
 MockPolicyLoader::~MockPolicyLoader() {}
 
@@ -79,31 +83,25 @@ class AsyncPolicyProviderTest : public testing::Test {
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  base::MessageLoop loop_;
   PolicyBundle initial_bundle_;
   MockPolicyLoader* loader_;
   scoped_ptr<AsyncPolicyProvider> provider_;
 
-  base::MessageLoop loop_;
-
  private:
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
-
   DISALLOW_COPY_AND_ASSIGN(AsyncPolicyProviderTest);
 };
 
-AsyncPolicyProviderTest::AsyncPolicyProviderTest()
-    : ui_thread_(content::BrowserThread::UI, &loop_),
-      file_thread_(content::BrowserThread::FILE, &loop_) {}
+AsyncPolicyProviderTest::AsyncPolicyProviderTest() {}
 
 AsyncPolicyProviderTest::~AsyncPolicyProviderTest() {}
 
 void AsyncPolicyProviderTest::SetUp() {
   SetPolicy(&initial_bundle_, "policy", "initial");
-  loader_ = new MockPolicyLoader();
+  loader_ = new MockPolicyLoader(loop_.message_loop_proxy());
   EXPECT_CALL(*loader_, LastModificationTime())
       .WillRepeatedly(Return(base::Time()));
-  EXPECT_CALL(*loader_, InitOnFile()).Times(1);
+  EXPECT_CALL(*loader_, InitOnBackgroundThread()).Times(1);
   EXPECT_CALL(*loader_, MockLoad()).WillOnce(Return(&initial_bundle_));
 
   provider_.reset(
@@ -151,7 +149,7 @@ TEST_F(AsyncPolicyProviderTest, RefreshPoliciesTwice) {
   provider_->AddObserver(&observer);
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(0);
   provider_->RefreshPolicies();
-  // Doesn't refresh before going through the FILE thread.
+  // Doesn't refresh before going through the background thread.
   Mock::VerifyAndClearExpectations(&observer);
 
   // Doesn't refresh if another RefreshPolicies request is made.
@@ -190,7 +188,7 @@ TEST_F(AsyncPolicyProviderTest, RefreshPoliciesDuringReload) {
   loader_->Reload(true);
   Mock::VerifyAndClearExpectations(&observer);
 
-  // Doesn't refresh before going through the FILE thread.
+  // Doesn't refresh before going through the background thread.
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(0);
   provider_->RefreshPolicies();
   Mock::VerifyAndClearExpectations(&observer);

@@ -6,14 +6,13 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "content/public/browser/browser_thread.h"
-
-using content::BrowserThread;
 
 namespace policy {
 
@@ -41,8 +40,8 @@ void AsyncPolicyProvider::Init() {
       base::Bind(&AsyncPolicyProvider::LoaderUpdateCallback,
                  base::MessageLoopProxy::current(),
                  weak_factory_.GetWeakPtr());
-  bool post = BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
+  bool post = loader_->task_runner()->PostTask(
+      FROM_HERE,
       base::Bind(&AsyncPolicyLoader::Init,
                  base::Unretained(loader_),
                  callback));
@@ -52,13 +51,14 @@ void AsyncPolicyProvider::Init() {
 void AsyncPolicyProvider::Shutdown() {
   DCHECK(CalledOnValidThread());
   // Note on the lifetime of |loader_|:
-  // The |loader_| lives on the FILE thread, and is deleted from here. This
-  // means that posting tasks on the |loader_| to FILE from the
-  // AsyncPolicyProvider is always safe, since a potential DeleteSoon() is only
-  // posted from here. The |loader_| posts back to the AsyncPolicyProvider
-  // through the |update_callback_|, which has a WeakPtr to |this|.
-  if (!BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE, loader_)) {
-    // The FILE thread doesn't exist; this only happens on unit tests.
+  // The |loader_| lives on the background thread, and is deleted from here.
+  // This means that posting tasks on the |loader_| to the background thread
+  // from the AsyncPolicyProvider is always safe, since a potential DeleteSoon()
+  // is only posted from here. The |loader_| posts back to the
+  // AsyncPolicyProvider through the |update_callback_|, which has a WeakPtr to
+  // |this|.
+  if (!loader_->task_runner()->DeleteSoon(FROM_HERE, loader_)) {
+    // The background thread doesn't exist; this only happens on unit tests.
     delete loader_;
   }
   loader_ = NULL;
@@ -75,14 +75,16 @@ void AsyncPolicyProvider::RefreshPolicies() {
   // should already be provided.
   // However, it's also possible that an asynchronous Reload() is in progress
   // and just posted OnLoaderReloaded(). Therefore a task is posted to the
-  // FILE thread before posting the next Reload, to prevent a potential
+  // background thread before posting the next Reload, to prevent a potential
   // concurrent Reload() from triggering a notification too early. If another
   // refresh task has been posted, it is invalidated now.
+  if (!loader_)
+    return;
   refresh_callback_.Reset(
       base::Bind(&AsyncPolicyProvider::ReloadAfterRefreshSync,
                  weak_factory_.GetWeakPtr()));
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
+  loader_->task_runner()->PostTaskAndReply(
+      FROM_HERE,
       base::Bind(base::DoNothing),
       refresh_callback_.callback());
 }
@@ -90,11 +92,11 @@ void AsyncPolicyProvider::RefreshPolicies() {
 void AsyncPolicyProvider::RegisterPolicyDomain(
     scoped_refptr<const PolicyDomainDescriptor> descriptor) {
   if (loader_) {
-    BrowserThread::PostTask(BrowserThread::FILE,
-                            FROM_HERE,
-                            base::Bind(&AsyncPolicyLoader::RegisterPolicyDomain,
-                                       base::Unretained(loader_),
-                                       descriptor));
+    loader_->task_runner()->PostTask(
+        FROM_HERE,
+        base::Bind(&AsyncPolicyLoader::RegisterPolicyDomain,
+                   base::Unretained(loader_),
+                   descriptor));
   }
 }
 
@@ -112,11 +114,10 @@ void AsyncPolicyProvider::ReloadAfterRefreshSync() {
   if (!loader_)
     return;
 
-  BrowserThread::PostTask(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&AsyncPolicyLoader::Reload,
-                 base::Unretained(loader_),
-                 true  /* force */));
+  loader_->task_runner()->PostTask(FROM_HERE,
+                                   base::Bind(&AsyncPolicyLoader::Reload,
+                                              base::Unretained(loader_),
+                                              true /* force */));
 }
 
 void AsyncPolicyProvider::OnLoaderReloaded(scoped_ptr<PolicyBundle> bundle) {
@@ -132,7 +133,6 @@ void AsyncPolicyProvider::LoaderUpdateCallback(
     scoped_refptr<base::MessageLoopProxy> loop,
     base::WeakPtr<AsyncPolicyProvider> weak_this,
     scoped_ptr<PolicyBundle> bundle) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   loop->PostTask(FROM_HERE,
                  base::Bind(&AsyncPolicyProvider::OnLoaderReloaded,
                             weak_this,

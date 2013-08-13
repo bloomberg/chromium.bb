@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
@@ -460,18 +461,24 @@ void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
 ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
-  scoped_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(policy_list));
+  scoped_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      policy_list));
   return new AsyncPolicyProvider(loader.Pass());
 #elif defined(OS_MACOSX)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
-  scoped_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderMac(policy_list, new MacPreferences()));
+  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+      policy_list,
+      new MacPreferences()));
   return new AsyncPolicyProvider(loader.Pass());
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   base::FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
-    scoped_ptr<AsyncPolicyLoader> loader(
-        new ConfigDirPolicyLoader(config_dir_path, POLICY_SCOPE_MACHINE));
+    scoped_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
+        BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+        config_dir_path,
+        POLICY_SCOPE_MACHINE));
     return new AsyncPolicyProvider(loader.Pass());
   } else {
     return NULL;

@@ -31,19 +31,6 @@ specific_include_rules = {
   ],
 
   # TODO(joaodasilva): remove these exceptions.
-  r"async_policy_loader\.cc": [
-    "+content/public/browser/browser_thread.h",
-  ],
-
-  r"async_policy_provider\.cc": [
-    "+content/public/browser/browser_thread.h",
-  ],
-
-  r"async_policy_provider_unittest\.cc": [
-    "+content/public/browser/browser_thread.h",
-    "+content/public/test/test_browser_thread.h",
-  ],
-
   r"configuration_policy_handler_android\.cc": [
     "+chrome/common/net/url_fixer_upper.h",
     "+chrome/common/pref_names.h",
@@ -85,10 +72,6 @@ specific_include_rules = {
     "+chrome/browser/prefs/proxy_config_dictionary.h",
     "+chrome/common/content_settings.h",
     "+chrome/common/pref_names.h",
-  ],
-
-  r"configuration_policy_provider_test\.h": [
-    "+content/public/test/test_browser_thread.h",
   ],
 
   r"policy_domain_descriptor\.cc": [

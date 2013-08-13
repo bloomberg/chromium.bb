@@ -252,6 +252,7 @@ class RegistryTestHarness : public PolicyProviderTestHarness,
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_list) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
@@ -302,6 +303,7 @@ class PRegTestHarness : public PolicyProviderTestHarness,
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_list) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
@@ -418,9 +420,10 @@ RegistryTestHarness::~RegistryTestHarness() {}
 void RegistryTestHarness::SetUp() {}
 
 ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_list) {
-  scoped_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderWin(policy_list, kRegistryChromePolicyKey, this));
+  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(
+      task_runner, policy_list, kRegistryChromePolicyKey, this));
   return new AsyncPolicyProvider(loader.Pass());
 }
 
@@ -549,9 +552,10 @@ void PRegTestHarness::SetUp() {
 }
 
 ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_list) {
-  scoped_ptr<AsyncPolicyLoader> loader(
-      new PolicyLoaderWin(policy_list, kRegistryChromePolicyKey, this));
+  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(
+      task_runner, policy_list, kRegistryChromePolicyKey, this));
   return new AsyncPolicyProvider(loader.Pass());
 }
 
@@ -815,7 +819,8 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   }
 
   bool Matches(const PolicyBundle& expected) {
-    PolicyLoaderWin loader(&test_policy_definitions::kList, kTestPolicyKey,
+    PolicyLoaderWin loader(loop_.message_loop_proxy(),
+                           &test_policy_definitions::kList, kTestPolicyKey,
                            this);
     scoped_ptr<PolicyBundle> loaded(loader.Load());
     return loaded->Equals(expected);
