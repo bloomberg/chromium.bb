@@ -322,15 +322,6 @@ Node* InspectorController::highlightedNode() const
     return m_overlay->highlightedNode();
 }
 
-bool InspectorController::handleGestureEvent(Frame* frame, const PlatformGestureEvent& event)
-{
-    // Overlay should not consume events.
-    m_overlay->handleGestureEvent(event);
-    if (InspectorDOMAgent* domAgent = m_instrumentingAgents->inspectorDOMAgent())
-        return domAgent->handleGestureEvent(frame, event);
-    return false;
-}
-
 bool InspectorController::handleMouseEvent(Frame* frame, const PlatformMouseEvent& event)
 {
     // Overlay should not consume events.

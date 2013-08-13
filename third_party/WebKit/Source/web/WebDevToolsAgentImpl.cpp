@@ -468,10 +468,6 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
     if (!ic)
         return false;
 
-    if (WebInputEvent::isGestureEventType(inputEvent.type)) {
-        PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(page->mainFrame()->view(), *static_cast<const WebGestureEvent*>(&inputEvent));
-        return ic->handleGestureEvent(page->mainFrame(), gestureEvent);
-    }
     if (WebInputEvent::isMouseEventType(inputEvent.type) && inputEvent.type != WebInputEvent::MouseEnter) {
         // PlatformMouseEventBuilder does not work with MouseEnter type, so we filter it out manually.
         PlatformMouseEvent mouseEvent = PlatformMouseEventBuilder(page->mainFrame()->view(), *static_cast<const WebMouseEvent*>(&inputEvent));

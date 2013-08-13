@@ -49,7 +49,6 @@ class InspectorOverlayHost;
 class JSONValue;
 class Node;
 class Page;
-class PlatformGestureEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
 
@@ -127,7 +126,6 @@ public:
     void drawOutline(GraphicsContext*, const LayoutRect&, const Color&);
     void getHighlight(Highlight*) const;
     void resize(const IntSize&);
-    bool handleGestureEvent(const PlatformGestureEvent&);
     bool handleMouseEvent(const PlatformMouseEvent&);
     bool handleTouchEvent(const PlatformTouchEvent&);
 

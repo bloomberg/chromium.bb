@@ -60,7 +60,6 @@ class InspectorPageAgent;
 class InspectorState;
 class InstrumentingAgents;
 class Node;
-class PlatformGestureEvent;
 class PlatformTouchEvent;
 class RevalidateStyleAttributeTask;
 class ShadowRoot;
@@ -181,7 +180,6 @@ public:
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
     bool handleMousePress();
-    bool handleGestureEvent(Frame*, const PlatformGestureEvent&);
     bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
     void handleMouseMove(Frame*, const PlatformMouseEvent&);
 

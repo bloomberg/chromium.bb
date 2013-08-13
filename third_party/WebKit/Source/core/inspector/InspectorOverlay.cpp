@@ -255,14 +255,6 @@ void InspectorOverlay::invalidate()
     m_client->highlight();
 }
 
-bool InspectorOverlay::handleGestureEvent(const PlatformGestureEvent& event)
-{
-    if (isEmpty())
-        return false;
-
-    return overlayPage()->mainFrame()->eventHandler()->handleGestureEvent(event);
-}
-
 bool InspectorOverlay::handleMouseEvent(const PlatformMouseEvent& event)
 {
     if (isEmpty())

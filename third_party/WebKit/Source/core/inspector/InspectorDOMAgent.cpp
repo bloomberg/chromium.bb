@@ -70,7 +70,6 @@
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
-#include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformTouchEvent.h"
 #include "core/rendering/HitTestResult.h"
@@ -161,11 +160,6 @@ static Node* hoveredNodeForPoint(Frame* frame, const IntPoint& point, bool ignor
     while (node && node->nodeType() == Node::TEXT_NODE)
         node = node->parentNode();
     return node;
-}
-
-static Node* hoveredNodeForEvent(Frame* frame, const PlatformGestureEvent& event, bool ignorePointerEventsNone)
-{
-    return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
 }
 
 static Node* hoveredNodeForEvent(Frame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
@@ -1053,19 +1047,6 @@ bool InspectorDOMAgent::handleMousePress()
         return false;
 
     if (Node* node = m_overlay->highlightedNode()) {
-        inspect(node);
-        return true;
-    }
-    return false;
-}
-
-bool InspectorDOMAgent::handleGestureEvent(Frame* frame, const PlatformGestureEvent& event)
-{
-    if (m_searchingForNode == NotSearching || event.type() != PlatformEvent::GestureTap)
-        return false;
-    Node* node = hoveredNodeForEvent(frame, event, false);
-    if (node && m_inspectModeHighlightConfig) {
-        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig);
         inspect(node);
         return true;
     }
