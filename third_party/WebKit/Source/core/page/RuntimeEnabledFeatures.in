@@ -33,6 +33,7 @@ Database status=stable
 DataListElement status=stable
 DeviceMotion status=test
 DeviceOrientation status=stable
+DevicePixelRatioIncludesZoom status=experimental
 DialogElement status=experimental
 DirectoryUpload status=stable
 EncodingAPI status=experimental

@@ -1258,6 +1258,9 @@ double DOMWindow::devicePixelRatio() const
     if (!page)
         return 0.0;
 
+    if (RuntimeEnabledFeatures::devicePixelRatioIncludesZoomEnabled())
+        return page->deviceScaleFactor() * m_frame->pageZoomFactor();
+
     return page->deviceScaleFactor();
 }
 
