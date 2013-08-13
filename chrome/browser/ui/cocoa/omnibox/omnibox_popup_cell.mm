@@ -79,6 +79,11 @@ void DrawFadeTruncatingTitle(NSAttributedString* title,
 }
 
 - (void)setDescriptionText:(NSAttributedString*)descriptionText {
+  if (![descriptionText length]) {
+    descriptionText_.reset();
+    return;
+  }
+
   base::scoped_nsobject<NSMutableAttributedString> dashDescriptionText(
       [[NSMutableAttributedString alloc]
           initWithAttributedString:descriptionText]);
