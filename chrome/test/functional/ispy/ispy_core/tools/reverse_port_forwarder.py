@@ -14,7 +14,6 @@ sys.path.append(os.path.join(os.path.abspath(os.path.dirname(__file__)),
                              os.pardir, os.pardir, 'build', 'android'))
 from pylib import android_commands
 from pylib import forwarder
-from pylib import valgrind_tools
 
 
 class ReversePortForwarder(object):
@@ -54,16 +53,15 @@ class ReversePortForwarder(object):
     self._adb = android_commands.AndroidCommands(self._device_serial)
     self._adb.StartAdbServer()
     # Begin forwarding the device_ports to the host_ports.
-    self._forwarder = forwarder.Forwarder(self._cmd, 'Release')
-    self._forwarder.Run([
-        (self._device_http, self._host_http),
-        (self._device_https, self._host_https)],
-                        valgrind_tools.BaseTool())
+    forwarder.Forwarder.Map([(self._device_http, self._host_http),
+                             (self._device_https, self._host_https)],
+                            self._adb, build_type='Release', tool=None)
 
   def Stop(self):
     """Cleans up after the start call by closing the forwarder."""
     # shut down the forwarder.
-    self._forwarder.Close()
+    forwarder.Forwarder.UnmapDevicePort(self._device_http, self._cmd)
+    forwarder.Forwarder.UnmapDevicePort(self._device_https, self._cmd)
 
   def GetChromeArgs(self):
     """Makes a list of arguments to enable reverse port forwarding on chrome.
@@ -73,5 +71,5 @@ class ReversePortForwarder(object):
     """
     args = ['testing-fixed-http-port=%s' % self._device_http,
             'testing-fixed-https-port=%s' % self._device_https,
-            'host-resolver-rules=\'MAP * 127.0.0.1,EXCEPT, localhost\'']
+            'host-resolver-rules=\"MAP * 127.0.0.1,EXCEPT, localhost\"']
     return args
