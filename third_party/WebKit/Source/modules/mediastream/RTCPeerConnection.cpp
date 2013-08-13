@@ -100,7 +100,7 @@ PassRefPtr<RTCConfiguration> RTCPeerConnection::parseConfiguration(const Diction
             return 0;
         }
         KURL url(KURL(), urlString);
-        if (!url.isValid() || !(url.protocolIs("turn") || url.protocolIs("stun"))) {
+        if (!url.isValid() || !(url.protocolIs("turn") || url.protocolIs("turns") || url.protocolIs("stun"))) {
             es.throwDOMException(TypeMismatchError);
             return 0;
         }
