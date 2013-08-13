@@ -269,7 +269,7 @@ surface_attach(struct wl_client *client,
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
 	struct nested *nested = surface->nested;
-	struct wl_buffer *buffer = wl_resource_get_user_data(buffer_resource);
+	void *buffer = wl_resource_get_user_data(buffer_resource);
 	EGLint format, width, height;
 	cairo_device_t *device;
 
