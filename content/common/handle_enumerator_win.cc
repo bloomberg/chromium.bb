@@ -174,8 +174,6 @@ string16 GetAccessString(HandleType handle_type,
         output.append(ASCIIToUTF16("\tFILE_WRITE_DATA\n"));
       if (access & FILE_WRITE_EA)
         output.append(ASCIIToUTF16("\tFILE_WRITE_EA\n"));
-      if (access & FILE_WRITE_EA)
-        output.append(ASCIIToUTF16("\tFILE_WRITE_EA\n"));
       break;
     case DirectoryHandle:
       if (access & FILE_ADD_FILE)
