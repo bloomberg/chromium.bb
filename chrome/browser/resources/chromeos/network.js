@@ -17,6 +17,13 @@ var NetworkUI = function() {
     'Debug': 'network-log-level-debug'
   };
 
+  var LOG_LEVEL_CHECKBOX = {
+    'Error': 'log-error',
+    'User': 'log-user',
+    'Event': 'log-event',
+    'Debug': 'log-debug'
+  };
+
   /**
    * Create a tag of log level.
    *
@@ -39,6 +46,9 @@ var NetworkUI = function() {
    * @return {DOMElement}  The created p element that represents the log entry.
    */
   var createLogEntryText = function(logEntry) {
+    var level = logEntry['level'];
+    if (!$(LOG_LEVEL_CHECKBOX[level]).checked)
+      return null;
     var res = document.createElement('p');
     var textWrapper = document.createElement('span');
     textWrapper.textContent = loadTimeData.getStringF(
@@ -46,7 +56,7 @@ var NetworkUI = function() {
       logEntry['timestamp'],
       logEntry['event'],
       logEntry['description']);
-    res.appendChild(createLevelTag(logEntry['level']));
+    res.appendChild(createLevelTag(level));
     res.appendChild(textWrapper);
     return res;
   };
@@ -60,8 +70,10 @@ var NetworkUI = function() {
   var createEventLog = function(logEntries) {
     var container = $('network-log-container');
     container.textContent = '';
-    for (var i = 0; i < logEntries.length; i++) {
-      container.appendChild(createLogEntryText(JSON.parse(logEntries[i])));
+    for (var i = 0; i < logEntries.length; ++i) {
+      var entry = createLogEntryText(JSON.parse(logEntries[i]));
+      if (entry)
+        container.appendChild(entry);
     }
   };
 
@@ -88,7 +100,7 @@ var NetworkUI = function() {
   var createStatusTableRow = function(path, status) {
     var row = document.createElement('tr');
     row.className = 'network-status-table-row';
-    for (var i = 0; i < NETWORK_STATE_FIELDS.length; i++) {
+    for (var i = 0; i < NETWORK_STATE_FIELDS.length; ++i) {
       row.appendChild(createStatusTableCell(status[NETWORK_STATE_FIELDS[i]]));
     }
     row.appendChild(createStatusTableCell(path));
@@ -103,8 +115,8 @@ var NetworkUI = function() {
   var createNetworkTable = function(networkStatuses) {
     var table = $('network-status-table');
     var oldRows = table.querySelectorAll('.network-status-table-row');
-    while (oldRows.length)
-      table.removeChild(oldRows[0]);
+    for (var i = 0; i < oldRows.length; ++i)
+      table.removeChild(oldRows[i]);
     for (var path in networkStatuses)
       table.appendChild(
           createStatusTableRow(path, networkStatuses[path]));
@@ -122,23 +134,36 @@ var NetworkUI = function() {
   };
 
   /**
+   * Sends a refresh request.
+   */
+  var sendRefresh = function() {
+    chrome.send('requestNetworkInfo');
+  }
+
+  /**
    * Sets refresh rate if the interval is found in the url.
    */
   var setRefresh = function() {
     var interval = parseQueryParams(window.location)['refresh'];
-    if (interval && interval != '') {
-      setInterval(function() {
-        chrome.send('requestNetworkInfo');
-      }, parseInt(interval) * 1000);
-    }
+    if (interval && interval != '')
+      setInterval(sendRefresh, parseInt(interval) * 1000);
   };
 
   /**
    * Get network information from WebUI.
    */
   document.addEventListener('DOMContentLoaded', function() {
-    chrome.send('requestNetworkInfo');
+    $('log-refresh').onclick = sendRefresh;
+    $('log-error').checked = true;
+    $('log-error').onclick = sendRefresh;
+    $('log-user').checked = true;
+    $('log-user').onclick = sendRefresh;
+    $('log-event').checked = true;
+    $('log-event').onclick = sendRefresh;
+    $('log-debug').checked = false;
+    $('log-debug').onclick = sendRefresh;
     setRefresh();
+    sendRefresh();
   });
 
   return {

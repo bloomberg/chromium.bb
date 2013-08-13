@@ -14892,6 +14892,24 @@ Do you accept?
       <message name="IDS_NETWORK_AUTO_REFRESH" desc="A instruction of how to auto-refresh the page">
         Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;
       </message>
+      <message name="IDS_NETWORK_LOG_REFRESH" desc="Button to refresh network log">
+        Refresh
+      </message>
+      <message name="IDS_NETWORK_LOG_LEVEL_SHOW" desc="'Show' label before logging level checkboxes">
+        Show:
+      </message>
+      <message name="IDS_NETWORK_LOG_LEVEL_ERROR" desc="Error logging level checkbox">
+        Error
+      </message>
+      <message name="IDS_NETWORK_LOG_LEVEL_USER" desc="User logging level checkbox">
+        User
+      </message>
+      <message name="IDS_NETWORK_LOG_LEVEL_EVENT" desc="Event logging level checkbox">
+        Event
+      </message>
+      <message name="IDS_NETWORK_LOG_LEVEL_DEBUG" desc="Debug logging level checkbox">
+        Debug
+      </message>
       <message name="IDS_NETWORK_LOG_ENTRY" desc="The log entry displayed in network event log table.">
         [<ph name="TIMESTAMP">$1<ex>Timestamp</ex></ph>]
         <ph name="EVENT_NAME">$2<ex>Event Name</ex></ph>

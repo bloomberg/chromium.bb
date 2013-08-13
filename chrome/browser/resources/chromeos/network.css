@@ -3,6 +3,20 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+
+#log-level-container {
+  margin: 5px;
+}
+
+#log-level-container label {
+  vertical-align: middle;
+}
+
+#log-level-container input {
+  margin-bottom: 1px;
+  vertical-align: middle;
+}
+
 #network-log-container {
   border: 1px solid rgb(220, 220, 220);
   font-size: 12px;
@@ -13,6 +27,7 @@
 }
 
 #network-log-container p {
+  font-family: monospace;
   line-height: 20px;
   margin: 2px;
 }

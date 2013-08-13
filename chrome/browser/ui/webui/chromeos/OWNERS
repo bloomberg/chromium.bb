@@ -4,5 +4,5 @@ nkostylev@chromium.org
 achuith@chromium.org
 satorux@chromium.org
 
-per-file about_network.*=stevenjb@chromium.org
+per-file network_ui.*=stevenjb@chromium.org
 per-file sim_unlock_ui.*=stevenjb@chromium.org

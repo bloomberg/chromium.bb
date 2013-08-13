@@ -12,6 +12,18 @@
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
   <p i18n-content="autoRefreshText"></p>
   <h3>Event Log (Newest first):</h3>
+  <div id="log-level-container">
+    <button id="log-refresh" i18n-content="logRefreshText"></button>
+    <label i18n-content="logLevelShowText"></label>
+    <input id="log-error" type="checkbox">
+    <label for="log-error" i18n-content="logLevelErrorText"></label>
+    <input id="log-user" type="checkbox">
+    <label for="log-user" i18n-content="logLevelUserText"></label>
+    <input id="log-event" type="checkbox">
+    <label for="log-event" i18n-content="logLevelEventText"></label>
+    <input id="log-debug" type="checkbox">
+    <label for="log-debug" i18n-content="logLevelDebugText"></label>
+  </div>
   <div id="network-log-container">
   </div>
   <h3>Networks: </h3>

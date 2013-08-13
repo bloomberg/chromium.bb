@@ -26,6 +26,11 @@ namespace chromeos {
 namespace {
 
 const char kStringsJsFile[] = "strings.js";
+const char kRequestNetworkInfoCallback[] = "requestNetworkInfo";
+const char kNetworkEventLogTag[] = "networkEventLog";
+const char kNetworkStateTag[] = "networkState";
+const char kOnNetworkInfoReceivedFunction[] = "NetworkUI.onNetworkInfoReceived";
+const char kLevelDebugTag[] = "Debug";
 
 class NetworkMessageHandler : public content::WebUIMessageHandler {
  public:
@@ -52,7 +57,7 @@ NetworkMessageHandler::~NetworkMessageHandler() {
 
 void NetworkMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "requestNetworkInfo",
+      kRequestNetworkInfoCallback,
       base::Bind(&NetworkMessageHandler::CollectNetworkInfo,
                  base::Unretained(this)));
 }
@@ -60,16 +65,16 @@ void NetworkMessageHandler::RegisterMessages() {
 void NetworkMessageHandler::CollectNetworkInfo(
     const base::ListValue* value) const {
   base::DictionaryValue data;
-  data.SetString("networkEventLog", GetNetworkEventLog());
+  data.SetString(kNetworkEventLogTag, GetNetworkEventLog());
   base::DictionaryValue* networkState = new base::DictionaryValue;
   GetNetworkState(networkState);
-  data.Set("networkState", networkState);
+  data.Set(kNetworkStateTag, networkState);
   RespondToPage(data);
 }
 
 void NetworkMessageHandler::RespondToPage(
     const base::DictionaryValue& value) const {
-  web_ui()->CallJavascriptFunction("NetworkUI.onNetworkInfoReceived", value);
+  web_ui()->CallJavascriptFunction(kOnNetworkInfoReceivedFunction, value);
 }
 
 std::string NetworkMessageHandler::GetNetworkEventLog() const {
@@ -77,7 +82,7 @@ std::string NetworkMessageHandler::GetNetworkEventLog() const {
   return chromeos::network_event_log::GetAsString(
       chromeos::network_event_log::NEWEST_FIRST,
       format,
-      chromeos::network_event_log::LOG_LEVEL_EVENT,
+      chromeos::network_event_log::LOG_LEVEL_DEBUG,
       0);
 }
 
@@ -110,6 +115,12 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
 
   html->AddLocalizedString("titleText", IDS_NETWORK_TITLE);
   html->AddLocalizedString("autoRefreshText", IDS_NETWORK_AUTO_REFRESH);
+  html->AddLocalizedString("logRefreshText", IDS_NETWORK_LOG_REFRESH);
+  html->AddLocalizedString("logLevelShowText", IDS_NETWORK_LOG_LEVEL_SHOW);
+  html->AddLocalizedString("logLevelErrorText", IDS_NETWORK_LOG_LEVEL_ERROR);
+  html->AddLocalizedString("logLevelUserText", IDS_NETWORK_LOG_LEVEL_USER);
+  html->AddLocalizedString("logLevelEventText", IDS_NETWORK_LOG_LEVEL_EVENT);
+  html->AddLocalizedString("logLevelDebugText", IDS_NETWORK_LOG_LEVEL_DEBUG);
   html->AddLocalizedString("logEntryFormat", IDS_NETWORK_LOG_ENTRY);
   html->SetJsonPath(kStringsJsFile);
 
