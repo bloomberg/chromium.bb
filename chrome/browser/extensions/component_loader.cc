@@ -470,7 +470,15 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(ENABLE_GOOGLE_NOW)
-  if (base::FieldTrialList::FindFullName("GoogleNow") == "Enable" ||
+  const char kEnablePrefix[] = "Enable";
+  const char kFieldTrialName[] = "GoogleNow";
+  std::string enable_prefix(kEnablePrefix);
+  std::string field_trial_result =
+      base::FieldTrialList::FindFullName(kFieldTrialName);
+  if ((field_trial_result.compare(
+          0,
+          enable_prefix.length(),
+          enable_prefix) == 0) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGoogleNowIntegration)) {
     Add(IDR_GOOGLE_NOW_MANIFEST,

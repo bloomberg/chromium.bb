@@ -118,6 +118,7 @@ var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
 tasks.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
+tasks.instrumentChromeApiFunction('metricsPrivate.getFieldTrial', 1);
 tasks.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
 tasks.instrumentChromeApiFunction('notifications.create', 2);
 tasks.instrumentChromeApiFunction('notifications.update', 2);
@@ -133,6 +134,9 @@ tasks.instrumentChromeApiFunction(
 tasks.instrumentChromeApiFunction(
     'preferencesPrivate.googleGeolocationAccessEnabled.onChange.addListener',
     0);
+tasks.instrumentChromeApiFunction('permissions.contains', 1);
+tasks.instrumentChromeApiFunction('permissions.remove', 1);
+tasks.instrumentChromeApiFunction('permissions.request', 1);
 tasks.instrumentChromeApiFunction('runtime.onInstalled.addListener', 0);
 tasks.instrumentChromeApiFunction('runtime.onStartup.addListener', 0);
 tasks.instrumentChromeApiFunction('tabs.create', 1);
@@ -762,6 +766,36 @@ function setToastVisible(visibleRequest, callback) {
 }
 
 /**
+ * Enables or disables the Google Now background permission.
+ * @param {boolean} backgroundEnable true to run in the background.
+ *     false to not run in the background.
+ * @param {function} callback Called on completion.
+ */
+function setBackgroundEnable(backgroundEnable, callback) {
+  instrumented.permissions.contains({permissions: ['background']},
+      function(hasPermission) {
+        if (backgroundEnable != hasPermission) {
+          console.log('Action Taken setBackgroundEnable=' + backgroundEnable);
+          if (backgroundEnable)
+            instrumented.permissions.request(
+                {permissions: ['background']},
+                function() {
+                  callback();
+                });
+          else
+            instrumented.permissions.remove(
+                {permissions: ['background']},
+                function() {
+                  callback();
+                });
+        } else {
+          console.log('Action Ignored setBackgroundEnable=' + backgroundEnable);
+          callback();
+        }
+      });
+}
+
+/**
  * Does the actual work of deciding what Google Now should do
  * based off of the current state of Chrome.
  * @param {boolean} signedIn true if the user is signed in.
@@ -769,12 +803,15 @@ function setToastVisible(visibleRequest, callback) {
  *     the geolocation option is enabled.
  * @param {boolean} userRespondedToToast true if
  *     the user has responded to the toast.
+ * @param {boolean} enableBackground true if
+ *     the background permission should be requested.
  * @param {function()} callback Call this function on completion.
  */
 function updateRunningState(
     signedIn,
     geolocationEnabled,
     userRespondedToToast,
+    enableBackground,
     callback) {
 
   console.log(
@@ -784,6 +821,7 @@ function updateRunningState(
 
   var shouldSetToastVisible = false;
   var shouldPollCards = false;
+  var shouldSetBackground = false;
 
   if (signedIn) {
     if (geolocationEnabled) {
@@ -793,6 +831,9 @@ function updateRunningState(
         // We do not want to show it again.
         chrome.storage.local.set({userRespondedToToast: true});
       }
+
+      if (enableBackground)
+        shouldSetBackground = true;
 
       shouldPollCards = true;
     } else {
@@ -807,11 +848,14 @@ function updateRunningState(
   }
 
   console.log(
-      'Requested Actions setToastVisible=' + shouldSetToastVisible + ' ' +
+      'Requested Actions shouldSetBackground=' + shouldSetBackground + ' ' +
+      'setToastVisible=' + shouldSetToastVisible + ' ' +
       'setShouldPollCards=' + shouldPollCards);
 
-  setToastVisible(shouldSetToastVisible, function() {
-    setShouldPollCards(shouldPollCards, callback);
+  setBackgroundEnable(shouldSetBackground, function() {
+    setToastVisible(shouldSetToastVisible, function() {
+      setShouldPollCards(shouldPollCards, callback);
+    });
   });
 }
 
@@ -824,24 +868,31 @@ function onStateChange() {
     tasks.debugSetStepName('onStateChange-isSignedIn');
     authenticationManager.isSignedIn(function(token) {
       var signedIn = !!token && !!NOTIFICATION_CARDS_URL;
-      tasks.debugSetStepName(
-          'onStateChange-get-googleGeolocationAccessEnabledPref');
-      instrumented.
-          preferencesPrivate.
-          googleGeolocationAccessEnabled.
-          get({}, function(prefValue) {
-            var geolocationEnabled = !!prefValue.value;
+      instrumented.metricsPrivate.getFieldTrial(
+          'GoogleNow',
+          function(response) {
+            console.log('Experiment Status: ' + response);
+            var enableBackground = (response != 'EnableWithoutBackground');
             tasks.debugSetStepName(
-              'onStateChange-get-userRespondedToToast');
-            instrumented.storage.local.get(
-                'userRespondedToToast',
-                function(items) {
-                  var userRespondedToToast = !!items.userRespondedToToast;
-                  updateRunningState(
-                      signedIn,
-                      geolocationEnabled,
-                      userRespondedToToast,
-                      callback);
+                'onStateChange-get-googleGeolocationAccessEnabledPref');
+            instrumented.
+                preferencesPrivate.
+                googleGeolocationAccessEnabled.
+                get({}, function(prefValue) {
+                  var geolocationEnabled = !!prefValue.value;
+                  tasks.debugSetStepName(
+                    'onStateChange-get-userRespondedToToast');
+                  instrumented.storage.local.get(
+                      'userRespondedToToast',
+                      function(items) {
+                        var userRespondedToToast = !!items.userRespondedToToast;
+                        updateRunningState(
+                            signedIn,
+                            geolocationEnabled,
+                            userRespondedToToast,
+                            enableBackground,
+                            callback);
+                      });
                 });
           });
     });

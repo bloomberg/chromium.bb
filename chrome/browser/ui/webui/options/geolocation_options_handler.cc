@@ -22,7 +22,15 @@ void GeolocationOptionsHandler::GetLocalizedValues(
 void GeolocationOptionsHandler::InitializePage() {
   DCHECK(web_ui());
 
-  if ((base::FieldTrialList::FindFullName("GoogleNow") == "Enable") ||
+  const char kEnablePrefix[] = "Enable";
+  const char kFieldTrialName[] = "GoogleNow";
+  std::string enable_prefix(kEnablePrefix);
+  std::string field_trial_result =
+      base::FieldTrialList::FindFullName(kFieldTrialName);
+  if ((field_trial_result.compare(
+          0,
+          enable_prefix.length(),
+          enable_prefix) == 0) ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableGoogleNowIntegration)) {
     web_ui()->CallJavascriptFunction(

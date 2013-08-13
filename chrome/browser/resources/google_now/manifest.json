@@ -17,6 +17,7 @@
     "<all_urls>",
     "identity"
   ],
+  "optional_permissions": ["background"],
   "manifest_version": 2,
   "background": {
     "scripts": ["utility.js", "cards.js", "background.js"],
