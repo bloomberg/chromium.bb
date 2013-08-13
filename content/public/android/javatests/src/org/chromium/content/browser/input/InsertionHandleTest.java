@@ -87,8 +87,12 @@ public class InsertionHandleTest extends ContentShellTestBase {
     }
 
 
-    @MediumTest
-    @Feature({"TextSelection", "TextInput", "Main"})
+    /**
+     * @MediumTest
+     * @Feature({"TextSelection", "TextInput", "Main"})
+     * http://crbug.com/169648
+     */
+    @DisabledTest
     public void testKeyEventHidesHandle() throws Throwable {
         launchWithUrl(TEXTAREA_DATA_URL);
         clickNodeToShowInsertionHandle(TEXTAREA_ID);
