@@ -114,6 +114,13 @@ class DriveFileSyncService : public RemoteFileSyncService,
   virtual SyncStatusCode SetConflictResolutionPolicy(
       ConflictResolutionPolicy policy) OVERRIDE;
   virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const OVERRIDE;
+  virtual void GetRemoteVersions(
+      const fileapi::FileSystemURL& url,
+      const RemoteVersionsCallback& callback) OVERRIDE;
+  virtual void DownloadRemoteVersion(
+      const fileapi::FileSystemURL& url,
+      const std::string& version_id,
+      const DownloadVersionCallback& callback) OVERRIDE;
 
   // LocalChangeProcessor overrides.
   virtual void ApplyLocalChange(
@@ -208,6 +215,28 @@ class DriveFileSyncService : public RemoteFileSyncService,
       const SyncFileMetadata& local_file_metadata,
       const fileapi::FileSystemURL& url,
       const SyncStatusCallback& callback);
+
+  void DoGetRemoteVersions(
+      const fileapi::FileSystemURL& url,
+      const RemoteVersionsCallback& callback,
+      const SyncStatusCallback& completion_callback);
+  void DidGetEntryForRemoteVersions(
+      const RemoteVersionsCallback& callback,
+      google_apis::GDataErrorCode error,
+      scoped_ptr<google_apis::ResourceEntry> entry);
+
+  void DoDownloadRemoteVersion(
+      const fileapi::FileSystemURL& url,
+      const std::string& version_id,
+      const DownloadVersionCallback& callback,
+      const SyncStatusCallback& completion_callback);
+  void DidDownloadVersion(
+      const DownloadVersionCallback& download_callback,
+      google_apis::GDataErrorCode error,
+      const std::string& file_md5,
+      int64 file_size,
+      const base::Time& last_updated,
+      scoped_ptr<webkit_blob::ScopedFile> downloaded);
 
   void UpdateRegisteredOrigins();
 

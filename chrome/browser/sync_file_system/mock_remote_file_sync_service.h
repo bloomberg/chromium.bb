@@ -57,6 +57,13 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                SyncStatusCode(ConflictResolutionPolicy));
   MOCK_CONST_METHOD0(GetConflictResolutionPolicy,
                      ConflictResolutionPolicy());
+  MOCK_METHOD2(GetRemoteVersions,
+               void(const fileapi::FileSystemURL&,
+                    const RemoteVersionsCallback&));
+  MOCK_METHOD3(DownloadRemoteVersion,
+               void(const fileapi::FileSystemURL&,
+                    const std::string&,
+                    const DownloadVersionCallback&));
 
   virtual scoped_ptr<base::ListValue> DumpFiles(const GURL& origin) OVERRIDE;
 

@@ -7,16 +7,22 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync_file_system/conflict_resolution_policy.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 
 class GURL;
 
 namespace base {
 class ListValue;
+}
+
+namespace webkit_blob {
+class ScopedFile;
 }
 
 namespace sync_file_system {
@@ -79,6 +85,22 @@ class RemoteFileSyncService {
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
+
+  struct Version {
+    std::string id;
+    SyncFileMetadata metadata;
+  };
+
+  // For GetOriginStatusMap.
+  typedef std::map<GURL, std::string> OriginStatusMap;
+
+  // For GetRemoteVersions.
+  typedef base::Callback<void(SyncStatusCode status,
+                              const std::vector<Version>& versions)>
+      RemoteVersionsCallback;
+  typedef base::Callback<void(SyncStatusCode status,
+                              scoped_ptr<webkit_blob::ScopedFile> downloaded)>
+      DownloadVersionCallback;
 
   RemoteFileSyncService() {}
   virtual ~RemoteFileSyncService() {}
@@ -145,7 +167,6 @@ class RemoteFileSyncService {
 
   // Returns all origins along with an arbitrary string description of their
   // corresponding sync statuses.
-  typedef std::map<GURL, std::string> OriginStatusMap;
   virtual void GetOriginStatusMap(OriginStatusMap* status_map) = 0;
 
   // Returns file metadata for |origin|.
@@ -167,6 +188,19 @@ class RemoteFileSyncService {
 
   // Gets the conflict resolution policy.
   virtual ConflictResolutionPolicy GetConflictResolutionPolicy() const = 0;
+
+  // Returns a list of remote versions with their metadata.
+  // This method is typically called for a file which is in conflicting state.
+  virtual void GetRemoteVersions(
+      const fileapi::FileSystemURL& url,
+      const RemoteVersionsCallback& callback) = 0;
+
+  // Downloads the remote image.  The |id| should be the ID string for a
+  // version returned by GetRemoteVersions.
+  virtual void DownloadRemoteVersion(
+      const fileapi::FileSystemURL& url,
+      const std::string& id,
+      const DownloadVersionCallback& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RemoteFileSyncService);
