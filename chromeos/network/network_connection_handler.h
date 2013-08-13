@@ -139,7 +139,7 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   void Init(NetworkStateHandler* network_state_handler,
             NetworkConfigurationHandler* network_configuration_handler);
 
-  ConnectRequest* pending_request(const std::string& service_path);
+  ConnectRequest* GetPendingRequest(const std::string& service_path);
 
   // Callback from Shill.Service.GetProperties. Parses |properties| to verify
   // whether or not the network appears to be configured. If configured,

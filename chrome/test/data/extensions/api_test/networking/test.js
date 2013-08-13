@@ -71,7 +71,7 @@ var availableTests = [
   function startConnectNonexistent() {
     chrome.networkingPrivate.startConnect(
       "nonexistent_path",
-      callbackFail("not-found"));
+      callbackFail("configure-failed"));
   },
   function startDisconnectNonexistent() {
     chrome.networkingPrivate.startDisconnect(
