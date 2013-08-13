@@ -44,7 +44,7 @@ public:
     virtual ~InsertionPoint();
 
     bool hasDistribution() const { return !m_distribution.isEmpty(); }
-    void setDistribution(ContentDistribution& distribution) { m_distribution.swap(distribution); }
+    void setDistribution(ContentDistribution&);
     void clearDistribution() { m_distribution.clear(); }
     bool isActive() const;
 

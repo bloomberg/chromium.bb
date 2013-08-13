@@ -52,6 +52,48 @@ InsertionPoint::~InsertionPoint()
 {
 }
 
+void InsertionPoint::setDistribution(ContentDistribution& distribution)
+{
+    if (shouldUseFallbackElements()) {
+        for (Node* child = firstChild(); child; child = child->nextSibling())
+            child->lazyReattachIfAttached();
+    }
+
+    // Attempt not to reattach nodes that would be distributed to the exact same
+    // location by comparing the old and new distributions.
+
+    size_t i = 0;
+    size_t j = 0;
+
+    for ( ; i < m_distribution.size() && j < distribution.size(); ++i, ++j) {
+        if (m_distribution.size() < distribution.size()) {
+            // If the new distribution is larger than the old one, reattach all nodes in
+            // the new distribution that were inserted.
+            for ( ; j < distribution.size() && m_distribution.at(i) != distribution.at(j); ++j)
+                distribution.at(j)->lazyReattachIfAttached();
+        } else if (m_distribution.size() > distribution.size()) {
+            // If the old distribution is larger than the new one, reattach all nodes in
+            // the old distribution that were removed.
+            for ( ; i < m_distribution.size() && m_distribution.at(i) != distribution.at(j); ++i)
+                m_distribution.at(i)->lazyReattachIfAttached();
+        } else if (m_distribution.at(i) != distribution.at(j)) {
+            // If both distributions are the same length reattach both old and new.
+            m_distribution.at(i)->lazyReattachIfAttached();
+            distribution.at(j)->lazyReattachIfAttached();
+        }
+    }
+
+    // If we hit the end of either list above we need to reattach all remaining nodes.
+
+    for ( ; i < m_distribution.size(); ++i)
+        m_distribution.at(i)->lazyReattachIfAttached();
+
+    for ( ; j < distribution.size(); ++j)
+        distribution.at(j)->lazyReattachIfAttached();
+
+    m_distribution.swap(distribution);
+}
+
 void InsertionPoint::attach(const AttachContext& context)
 {
     for (size_t i = 0; i < m_distribution.size(); ++i) {
