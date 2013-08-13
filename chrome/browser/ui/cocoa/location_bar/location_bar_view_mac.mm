@@ -38,6 +38,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/mic_search_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/page_action_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/star_decoration.h"
@@ -96,6 +97,7 @@ LocationBarViewMac::LocationBarViewMac(
       star_decoration_(new StarDecoration(command_updater)),
       zoom_decoration_(new ZoomDecoration(this)),
       keyword_hint_decoration_(new KeywordHintDecoration()),
+      mic_search_decoration_(new MicSearchDecoration(command_updater)),
       profile_(profile),
       browser_(browser),
       toolbar_model_(toolbar_model),
@@ -123,11 +125,15 @@ LocationBarViewMac::LocationBarViewMac(
       profile_->GetPrefs(),
       base::Bind(&LocationBarViewMac::OnEditBookmarksEnabledChanged,
                  base::Unretained(this)));
+
+  browser_->search_model()->AddObserver(this);
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
   // Disconnect from cell in case it outlives us.
   [[field_ cell] clearDecorations];
+
+  browser_->search_model()->RemoveObserver(this);
 }
 
 void LocationBarViewMac::ShowFirstRunBubble() {
@@ -184,10 +190,8 @@ void LocationBarViewMac::FocusSearch() {
 }
 
 void LocationBarViewMac::UpdateContentSettingsIcons() {
-  if (RefreshContentSettingsDecorations()) {
-    [field_ updateMouseTracking];
-    [field_ setNeedsDisplay:YES];
-  }
+  if (RefreshContentSettingsDecorations())
+    OnDecorationsChanged();
 }
 
 void LocationBarViewMac::UpdatePageActions() {
@@ -237,6 +241,7 @@ void LocationBarViewMac::Update(const WebContents* contents,
   UpdateZoomDecoration();
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
+  UpdateMicSearchDecorationVisibility();
   // OmniboxView restores state if the tab is non-NULL.
   omnibox_view_->Update(should_restore_state ? contents : NULL);
   OnChanged();
@@ -561,6 +566,12 @@ void LocationBarViewMac::Observe(int type,
   }
 }
 
+void LocationBarViewMac::ModelChanged(const SearchModel::State& old_state,
+                                      const SearchModel::State& new_state) {
+  if (UpdateMicSearchDecorationVisibility())
+    Layout();
+}
+
 void LocationBarViewMac::OnEditBookmarksEnabledChanged() {
   UpdateStarDecorationVisibility();
   OnChanged();
@@ -650,6 +661,7 @@ void LocationBarViewMac::Layout() {
   }
 
   [cell addRightDecoration:keyword_hint_decoration_.get()];
+  [cell addRightDecoration:mic_search_decoration_.get()];
 
   // By default only the location icon is visible.
   location_icon_decoration_->SetVisible(true);
@@ -719,4 +731,13 @@ void LocationBarViewMac::UpdateZoomDecoration() {
 
 void LocationBarViewMac::UpdateStarDecorationVisibility() {
   star_decoration_->SetVisible(IsStarEnabled());
+}
+
+bool LocationBarViewMac::UpdateMicSearchDecorationVisibility() {
+  bool is_visible = !toolbar_model_->GetInputInProgress() &&
+                    browser_->search_model()->voice_search_supported();
+  if (mic_search_decoration_->IsVisible() == is_visible)
+    return false;
+  mic_search_decoration_->SetVisible(is_visible);
+  return true;
 }

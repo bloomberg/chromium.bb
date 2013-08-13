@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_edit_controller.h"
+#include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/browser/ui/toolbar/toolbar_model.h"
 #include "chrome/common/content_settings_types.h"
 
@@ -27,6 +28,7 @@ class EVBubbleDecoration;
 class KeywordHintDecoration;
 class LocationBarDecoration;
 class LocationIconDecoration;
+class MicSearchDecoration;
 class PageActionDecoration;
 class Profile;
 class SelectedKeywordDecoration;
@@ -42,7 +44,8 @@ class ZoomDecorationTest;
 class LocationBarViewMac : public LocationBar,
                            public LocationBarTesting,
                            public OmniboxEditController,
-                           public content::NotificationObserver {
+                           public content::NotificationObserver,
+                           public SearchModelObserver {
  public:
   LocationBarViewMac(AutocompleteTextField* field,
                      CommandUpdater* command_updater,
@@ -164,6 +167,10 @@ class LocationBarViewMac : public LocationBar,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // SearchModelObserver:
+  virtual void ModelChanged(const SearchModel::State& old_state,
+                            const SearchModel::State& new_state) OVERRIDE;
+
   Browser* browser() const { return browser_; }
   ToolbarModel* toolbar_model() const { return toolbar_model_; }
 
@@ -199,6 +206,10 @@ class LocationBarViewMac : public LocationBar,
 
   // Ensures the star decoration is visible or hidden, as required.
   void UpdateStarDecorationVisibility();
+
+  // Updates the voice search decoration. Returns true if the visible state was
+  // changed.
+  bool UpdateMicSearchDecorationVisibility();
 
   scoped_ptr<OmniboxViewMac> omnibox_view_;
 
@@ -242,6 +253,9 @@ class LocationBarViewMac : public LocationBar,
 
   // Keyword hint decoration displayed on the right-hand side.
   scoped_ptr<KeywordHintDecoration> keyword_hint_decoration_;
+
+  // The voice search icon.
+  scoped_ptr<MicSearchDecoration> mic_search_decoration_;
 
   Profile* profile_;
 

@@ -776,6 +776,8 @@
         'browser/ui/cocoa/location_bar/location_bar_view_mac.mm',
         'browser/ui/cocoa/location_bar/location_icon_decoration.h',
         'browser/ui/cocoa/location_bar/location_icon_decoration.mm',
+        'browser/ui/cocoa/location_bar/mic_search_decoration.h',
+        'browser/ui/cocoa/location_bar/mic_search_decoration.mm',
         'browser/ui/cocoa/location_bar/page_action_decoration.h',
         'browser/ui/cocoa/location_bar/page_action_decoration.mm',
         'browser/ui/cocoa/location_bar/selected_keyword_decoration.h',
