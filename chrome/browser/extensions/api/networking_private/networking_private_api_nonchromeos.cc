@@ -307,7 +307,7 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
       api::StartConnect::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
   if (params->network_guid == "nonexistent_path") {
-    error_ = "not-found";
+    error_ = "configure-failed";
     SendResponse(false);
   } else {
     SendResponse(true);
