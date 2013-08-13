@@ -5,19 +5,10 @@
 #ifndef WEBKIT_SUPPORT_WEBKIT_SUPPORT_H_
 #define WEBKIT_SUPPORT_WEBKIT_SUPPORT_H_
 
-// This package provides functions used by DumpRenderTree/chromium.
+// This package provides functions used by webkit_unit_tests.
 namespace webkit_support {
 
-// Initializes or terminates a test environment.
-// |unit_test_mode| should be set to true when running in a TestSuite, in which
-// case no AtExitManager is created and ICU is not initialized (as it is already
-// done by the TestSuite).
-// SetUpTestEnvironment() and SetUpTestEnvironmentForUnitTests() calls
-// WebKit::initialize().
-// TearDownTestEnvironment() calls WebKit::shutdown().
-// SetUpTestEnvironmentForUnitTests() should be used when running in a
-// TestSuite, in which case no AtExitManager is created and ICU is not
-// initialized (as it is already done by the TestSuite).
+// Initializes or terminates a test environment for unit tests.
 void SetUpTestEnvironmentForUnitTests();
 void TearDownTestEnvironment();
 

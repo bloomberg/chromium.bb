@@ -45,13 +45,6 @@
         'UNIT_TEST'
       ],
       'sources': [
-        'drt_application_mac.h',
-        'drt_application_mac.mm',
-        'platform_support.h',
-        'platform_support_android.cc',
-        'platform_support_linux.cc',
-        'platform_support_mac.mm',
-        'platform_support_win.cc',
         'test_webkit_platform_support.cc',
         'test_webkit_platform_support.h',
         'webkit_support.cc',
@@ -107,8 +100,6 @@
         '<(DEPTH)/base/base.gyp:base',
       ],
       'sources': [
-        '<(DEPTH)/webkit/support/mac/DumpRenderTreePasteboard.h',
-        '<(DEPTH)/webkit/support/mac/DumpRenderTreePasteboard.m',
         '<(DEPTH)/webkit/support/mock_webclipboard_impl.cc',
         '<(DEPTH)/webkit/support/mock_webclipboard_impl.h',
       ],

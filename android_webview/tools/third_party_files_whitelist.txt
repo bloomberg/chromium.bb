@@ -196,7 +196,3 @@ webkit/child/multipart_response_delegate.h
 # Copyright Tim Copperfield and Christian Dywan; LGPL license. Not used on
 # Android.
 webkit/common/cursors/webcursor_gtk_data.h
-# Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only
-webkit/support/mac/DumpRenderTreePasteboard.h
-# Copyright Apple, Inc, Graham Dennis and Eric Seidel; BSD license. Tool only
-webkit/support/mac/DumpRenderTreePasteboard.m
