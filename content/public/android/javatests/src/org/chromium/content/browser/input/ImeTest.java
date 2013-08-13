@@ -61,7 +61,7 @@ public class ImeTest extends ContentShellTestBase {
         mContentView = getActivity().getActiveContentView();
         mCallbackContainer = new TestCallbackHelperContainer(mContentView);
         // TODO(aurimas) remove this wait once crbug.com/179511 is fixed.
-        assertWaitForPageScaleFactor(1);
+        assertWaitForPageScaleFactorMatch(1);
         DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_text");
         assertWaitForKeyboardStatus(true);
 
@@ -284,17 +284,6 @@ public class ImeTest extends ContentShellTestBase {
                         inputConnection.performEditorAction(EditorInfo.IME_ACTION_GO);
                     }
                 });
-    }
-
-
-
-    private void assertWaitForPageScaleFactor(final float scale) throws InterruptedException {
-        assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return getContentViewCore().getScale() == scale;
-            }
-        }));
     }
 
     private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
