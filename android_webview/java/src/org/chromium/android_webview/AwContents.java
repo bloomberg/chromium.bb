@@ -937,7 +937,7 @@ public class AwContents {
      * @see View#overlayHorizontalScrollbar()
      */
     public boolean overlayHorizontalScrollbar() {
-        return mOverlayVerticalScrollbar;
+        return mOverlayHorizontalScrollbar;
     }
 
     /**
