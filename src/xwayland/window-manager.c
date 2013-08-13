@@ -610,10 +610,14 @@ static void
 weston_wm_window_activate(struct wl_listener *listener, void *data)
 {
 	struct weston_surface *surface = data;
-	struct weston_wm_window *window = get_wm_window(surface);
+	struct weston_wm_window *window = NULL;
 	struct weston_wm *wm =
 		container_of(listener, struct weston_wm, activate_listener);
 	xcb_client_message_event_t client_message;
+
+	if (surface) {
+		window = get_wm_window(surface);
+	}
 
 	if (window) {
 		client_message.response_type = XCB_CLIENT_MESSAGE;
