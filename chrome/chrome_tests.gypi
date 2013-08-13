@@ -3271,7 +3271,6 @@
             '../base/base.gyp:base_java_test_support',
             '../content/content.gyp:content_java_test_support',
             '../sync/sync.gyp:sync_javatests',
-            '../tools/android/forwarder/forwarder.gyp:forwarder',
           ],
           'variables': {
             'apk_name': 'ChromiumTestShellTest',

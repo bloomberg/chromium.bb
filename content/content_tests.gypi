@@ -1238,7 +1238,6 @@
             '../media/media.gyp:media_test_support',
             '../net/net.gyp:net_java',
             '../net/net.gyp:net_javatests',
-            '../tools/android/forwarder2/forwarder.gyp:forwarder2',
           ],
           'variables': {
             'apk_name': 'ContentShellTest',

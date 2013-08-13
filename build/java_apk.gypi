@@ -371,6 +371,11 @@
         },
       ],
     }],
+    ['is_test_apk == 1', {
+      'dependencies': [
+        '<(DEPTH)/tools/android/android_tools.gyp:android_tools',
+      ]
+    }],
   ],
   'actions': [
     {
