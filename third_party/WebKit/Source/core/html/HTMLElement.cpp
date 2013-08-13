@@ -1080,6 +1080,11 @@ void HTMLElement::handleKeypressEvent(KeyboardEvent* event)
 {
     if (!document()->settings() || !document()->settings()->spatialNavigationEnabled() || !supportsFocus())
         return;
+    // if the element is a text form control (like <input type=text> or <textarea>)
+    // or has contentEditable attribute on, we should enter a space or newline
+    // even in spatial navigation mode instead of handling it as a "click" action.
+    if (isTextFormControl() || isContentEditable())
+        return;
     int charCode = event->charCode();
     if (charCode == '\r' || charCode == ' ') {
         dispatchSimulatedClick(event);

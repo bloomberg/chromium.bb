@@ -67,8 +67,15 @@
 
     function testCompleted()
     {
-      if (window.testRunner)
-        testRunner.notifyDone();
+      if (!window.testRunner)
+        return;
+
+      var text = 'A text containing a space';
+      for (var i = 0; i < text.length; ++i)
+        eventSender.keyDown(text.charAt(i));
+      shouldBeEqualToString("document.getElementById('start').value", text);
+
+      testRunner.notifyDone();
     }
 
     window.onload = runTest;
