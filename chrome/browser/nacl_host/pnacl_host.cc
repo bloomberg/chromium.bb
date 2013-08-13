@@ -120,9 +120,8 @@ base::PlatformFile PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir) {
   bool rv = temp_dir.empty()
                 ? file_util::CreateTemporaryFile(&file_path)
                 : file_util::CreateTemporaryFileInDir(temp_dir, &file_path);
-
   if (!rv) {
-    LOG(ERROR) << "PnaclHost:: Temp file creation failed.";
+    PLOG(ERROR) << "Temp file creation failed.";
     return base::kInvalidPlatformFileValue;
   }
   base::PlatformFileError error;
@@ -135,7 +134,7 @@ base::PlatformFile PnaclHost::DoCreateTemporaryFile(base::FilePath temp_dir) {
       &error));
 
   if (error != base::PLATFORM_FILE_OK) {
-    LOG(ERROR) << "PnaclHost: Temp file open failed: " << error;
+    PLOG(ERROR) << "Temp file open failed: " << error;
     return base::kInvalidPlatformFileValue;
   }
 
@@ -187,13 +186,13 @@ void PnaclHost::GetNexeFd(int render_process_id,
   PendingTranslationMap::iterator entry = pending_translations_.find(id);
   if (entry != pending_translations_.end()) {
     // Existing translation must have been abandonded. Clean it up.
-    LOG(ERROR) << "PnaclHost::GetNexeFd for already-pending translation";
+    LOG(ERROR) << "GetNexeFd for already-pending translation";
     pending_translations_.erase(entry);
   }
 
   std::string cache_key(disk_cache_->GetKey(cache_info));
   if (cache_key.empty()) {
-    LOG(ERROR) << "PnaclHost::GetNexeFd: Invalid cache info";
+    LOG(ERROR) << "GetNexeFd: Invalid cache info";
     cb.Run(base::kInvalidPlatformFileValue, false);
     return;
   }
@@ -235,7 +234,7 @@ void PnaclHost::OnCacheQueryReturn(
   DCHECK(thread_checker_.CalledOnValidThread());
   PendingTranslationMap::iterator entry(pending_translations_.find(id));
   if (entry == pending_translations_.end()) {
-    LOG(ERROR) << "PnaclHost::OnCacheQueryReturn: id not found";
+    LOG(ERROR) << "OnCacheQueryReturn: id not found";
     return;
   }
   PendingTranslation* pt = &entry->second;
@@ -258,7 +257,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
   if (entry == pending_translations_.end()) {
     // The renderer may have signaled an error or closed while the temp
     // file was being created.
-    LOG(ERROR) << "PnaclHost::OnTempFileReturn: id not found";
+    LOG(ERROR) << "OnTempFileReturn: id not found";
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE, base::Bind(base::IgnoreResult(base::ClosePlatformFile), fd));
     return;
@@ -266,7 +265,7 @@ void PnaclHost::OnTempFileReturn(const TranslationID& id,
   if (fd == base::kInvalidPlatformFileValue) {
     // This translation will fail, but we need to retry any translation
     // waiting for its result.
-    LOG(ERROR) << "PnaclHost::OnTempFileReturn: temp file creation failed";
+    LOG(ERROR) << "OnTempFileReturn: temp file creation failed";
     std::string key(entry->second.cache_key);
     bool is_incognito = entry->second.is_incognito;
     entry->second.callback.Run(fd, false);
@@ -345,14 +344,14 @@ scoped_refptr<net::DrainableIOBuffer> PnaclHost::CopyFileToBuffer(
   bool error = false;
   if (!base::GetPlatformFileInfo(fd, &info) ||
       info.size >= std::numeric_limits<int>::max()) {
-    LOG(ERROR) << "PnaclHost: GetPlatformFileInfo failed";
+    PLOG(ERROR) << "GetPlatformFileInfo failed";
     error = true;
   } else {
     buffer = new net::DrainableIOBuffer(
         new net::IOBuffer(static_cast<int>(info.size)), info.size);
     if (base::ReadPlatformFile(fd, 0, buffer->data(), buffer->size()) !=
         info.size) {
-      LOG(ERROR) << "PnaclHost: CopyFileToBuffer write failed";
+      PLOG(ERROR) << "CopyFileToBuffer file read failed";
       error = true;
     }
   }
@@ -477,7 +476,10 @@ void PnaclHost::RequeryMatchingTranslations(const std::string& key) {
 // static
 int PnaclHost::CopyBufferToFile(base::PlatformFile fd,
                                 scoped_refptr<net::DrainableIOBuffer> buffer) {
-  return base::WritePlatformFile(fd, 0, buffer->data(), buffer->size());
+  int rv = base::WritePlatformFile(fd, 0, buffer->data(), buffer->size());
+  if (rv == -1)
+    PLOG(ERROR) << "CopyBufferToFile write error";
+  return rv;
 }
 
 void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
@@ -489,7 +491,6 @@ void PnaclHost::OnBufferCopiedToTempFile(const TranslationID& id,
   }
   if (file_error == -1) {
     // Write error on the temp file. Request a new file and start over.
-    LOG(ERROR) << "PnaclHost::OnBufferCopiedToTempFile write error";
     BrowserThread::PostBlockingPoolTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(base::ClosePlatformFile),

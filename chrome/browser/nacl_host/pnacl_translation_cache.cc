@@ -199,8 +199,7 @@ void PnaclTranslationCacheEntry::ReadEntry(int offset, int len) {
 void PnaclTranslationCacheEntry::CloseEntry(int rv) {
   DCHECK(entry_);
   if (rv < 0) {
-    LOG(ERROR) << "PnaclTranslationCache: failed to close entry: "
-               << net::ErrorToString(rv);
+    LOG(ERROR) << "Failed to close entry: " << net::ErrorToString(rv);
     entry_->Doom();
   }
   BrowserThread::PostTask(
@@ -230,7 +229,7 @@ void PnaclTranslationCacheEntry::DispatchNext(int rv) {
 
   switch (step_) {
     case UNINITIALIZED:
-      LOG(ERROR) << "PnaclTranslationCache: DispatchNext called uninitialized";
+      LOG(ERROR) << "DispatchNext called uninitialized";
       break;
 
     case OPEN_ENTRY:
@@ -247,8 +246,7 @@ void PnaclTranslationCacheEntry::DispatchNext(int rv) {
       } else {
         if (rv != net::ERR_FAILED) {
           // ERROR_FAILED is what we expect if the entry doesn't exist.
-          LOG(ERROR) << "PnaclTranslationCache: OpenEntry failed: "
-                     << net::ErrorToString(rv);
+          LOG(ERROR) << "OpenEntry failed: " << net::ErrorToString(rv);
         }
         if (is_read_) {
           // Just a cache miss, not necessarily an error.
@@ -266,8 +264,7 @@ void PnaclTranslationCacheEntry::DispatchNext(int rv) {
         step_ = TRANSFER_ENTRY;
         WriteEntry(io_buf_->BytesConsumed(), io_buf_->BytesRemaining());
       } else {
-        LOG(ERROR) << "PnaclTranslationCache: Failed to Create Entry: "
-                   << net::ErrorToString(rv);
+        LOG(ERROR) << "Failed to Create Entry: " << net::ErrorToString(rv);
         Finish(rv);
       }
       break;
@@ -277,8 +274,7 @@ void PnaclTranslationCacheEntry::DispatchNext(int rv) {
         // We do not call DispatchNext directly if WriteEntry/ReadEntry returns
         // ERR_IO_PENDING, and the callback should not return that value either.
         LOG(ERROR)
-            << "PnaclTranslationCache: Failed to complete write to entry: "
-            << net::ErrorToString(rv);
+            << "Failed to complete write to entry: " << net::ErrorToString(rv);
         step_ = CLOSE_ENTRY;
         CloseEntry(rv);
         break;
@@ -352,8 +348,7 @@ int PnaclTranslationCache::Init(net::CacheType cache_type,
 
 void PnaclTranslationCache::OnCreateBackendComplete(int rv) {
   if (rv < 0) {
-    LOG(ERROR) << "PnaclTranslationCache: backend init failed:"
-               << net::ErrorToString(rv);
+    LOG(ERROR) << "Backend init failed:" << net::ErrorToString(rv);
   }
   // Invoke our client's callback function.
   if (!init_callback_.is_null()) {
