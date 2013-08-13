@@ -141,6 +141,10 @@
     "dependencies": ["permission:declarativeWebRequest"],
     "contexts": ["blessed_extension"]
   },
+  "desktopCapture": {
+    "dependencies": ["permission:desktopCapture"],
+    "contexts": ["blessed_extension"]
+  },
   "developerPrivate": {
     "dependencies": ["permission:developerPrivate"],
     "contexts": ["blessed_extension"]

@@ -30,6 +30,7 @@ class PermissionMessage {
     kTabs,
     kManagement,
     kDebugger,
+    kDesktopCapture,
     kHosts1,
     kHosts2,
     kHosts3,

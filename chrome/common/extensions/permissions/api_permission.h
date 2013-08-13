@@ -64,6 +64,7 @@ class APIPermission {
     kDeclarative,
     kDeclarativeContent,
     kDeclarativeWebRequest,
+    kDesktopCapture,
     kDeveloperPrivate,
     kDevtools,
     kDownloads,

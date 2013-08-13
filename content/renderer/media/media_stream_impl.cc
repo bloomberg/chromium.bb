@@ -75,6 +75,11 @@ void UpdateRequestOptions(
       options->video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
       options->video_device_id =
           DesktopMediaID(DesktopMediaID::TYPE_SCREEN, 0).ToString();
+    } else if (video_stream_source == kMediaStreamSourceDesktop) {
+      options->video_type = content::MEDIA_DESKTOP_VIDEO_CAPTURE;
+      options->video_device_id = GetStreamConstraint(
+          user_media_request.videoConstraints(),
+          kMediaStreamSourceId, true);
     }
   }
 }

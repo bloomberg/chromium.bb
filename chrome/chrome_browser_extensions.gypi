@@ -197,6 +197,8 @@
         'browser/extensions/api/declarative_webrequest/webrequest_constants.h',
         'browser/extensions/api/declarative_webrequest/webrequest_rules_registry.cc',
         'browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h',
+        'browser/extensions/api/desktop_capture/desktop_capture_api.cc',
+        'browser/extensions/api/desktop_capture/desktop_capture_api.h',
         'browser/extensions/api/developer_private/developer_private_api.cc',
         'browser/extensions/api/developer_private/developer_private_api.h',
         'browser/extensions/api/developer_private/developer_private_api_factory.cc',

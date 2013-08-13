@@ -970,6 +970,8 @@
         'browser/media/chrome_midi_permission_context.h',
         'browser/media/chrome_midi_permission_context_factory.cc',
         'browser/media/chrome_midi_permission_context_factory.h',
+        'browser/media/desktop_streams_registry.cc',
+        'browser/media/desktop_streams_registry.h',
         'browser/media/desktop_media_picker.h',
         'browser/media/desktop_media_picker_model.cc',
         'browser/media/desktop_media_picker_model.h',

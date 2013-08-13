@@ -187,6 +187,10 @@
       "whitelist": ["heildphpnddilhkemkielfhnkaagiabh"]
     }
   ],
+  "desktopCapture": {
+    "channel": "trunk",
+    "extension_types": ["extension", "platform_app"]
+  },
   "downloads": {
     "channel": "stable",
     "extension_types": ["extension"]

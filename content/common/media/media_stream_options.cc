@@ -13,6 +13,7 @@ const char kMediaStreamSourceId[] = "chromeMediaSourceId";
 const char kMediaStreamSourceInfoId[] = "sourceId";
 const char kMediaStreamSourceTab[] = "tab";
 const char kMediaStreamSourceScreen[] = "screen";
+const char kMediaStreamSourceDesktop[] = "desktop";
 const char kMediaStreamSourceSystem[] = "system";
 
 StreamOptions::StreamOptions()
