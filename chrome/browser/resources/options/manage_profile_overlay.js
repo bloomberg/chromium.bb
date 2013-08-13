@@ -305,7 +305,9 @@ cr.define('options', function() {
       if (newName == oldName) {
         this.hideErrorBubble_(mode);
       } else if (this.profileNames_[newName] != undefined) {
-        this.showErrorBubble_('manageProfilesDuplicateNameError', mode, true);
+        var errorText =
+            loadTimeData.getString('manageProfilesDuplicateNameError');
+        this.showErrorBubble_(errorText, mode, true);
       } else {
         this.hideErrorBubble_(mode);
 
