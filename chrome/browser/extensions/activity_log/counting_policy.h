@@ -92,7 +92,9 @@ class CountingPolicy : public ActivityLogDatabasePolicy {
   // on the first database flush, and then every 12 hours subsequently.
   base::Time last_database_cleaning_time_;
 
+  friend class CountingPolicyTest;
   FRIEND_TEST_ALL_PREFIXES(CountingPolicyTest, MergingAndExpiring);
+  FRIEND_TEST_ALL_PREFIXES(CountingPolicyTest, StringTableCleaning);
 };
 
 }  // namespace extensions

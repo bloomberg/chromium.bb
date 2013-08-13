@@ -61,12 +61,22 @@ class CountingPolicyTest : public testing::Test {
     *CommandLine::ForCurrentProcess() = saved_cmdline_;
   }
 
+  // Wait for the task queue for the specified thread to empty.
+  void WaitOnThread(const content::BrowserThread::ID& thread) {
+    BrowserThread::PostTaskAndReply(
+        thread,
+        FROM_HERE,
+        base::Bind(&base::DoNothing),
+        base::MessageLoop::current()->QuitClosure());
+    base::MessageLoop::current()->Run();
+  }
+
   // A helper function to call ReadData on a policy object and wait for the
   // results to be processed.
   void CheckReadData(
       ActivityLogPolicy* policy,
       const std::string& extension_id,
-      const int day,
+      int day,
       const base::Callback<void(scoped_ptr<Action::ActionVector>)>& checker) {
     // Submit a request to the policy to read back some data, and call the
     // checker function when results are available.  This will happen on the
@@ -90,6 +100,23 @@ class CountingPolicyTest : public testing::Test {
     base::MessageLoop::current()->Run();
 
     timeout.Cancel();
+  }
+
+  // A helper function which verifies that the string_ids and url_ids tables in
+  // the database have the specified sizes.
+  static void CheckStringTableSizes(CountingPolicy* policy,
+                                    int string_size,
+                                    int url_size) {
+    sql::Connection* db = policy->GetDatabaseConnection();
+    sql::Statement statement1(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), "SELECT COUNT(*) FROM string_ids"));
+    ASSERT_TRUE(statement1.Step());
+    ASSERT_EQ(string_size, statement1.ColumnInt(0));
+
+    sql::Statement statement2(db->GetCachedStatement(
+        sql::StatementID(SQL_FROM_HERE), "SELECT COUNT(*) FROM url_ids"));
+    ASSERT_TRUE(statement2.Step());
+    ASSERT_EQ(url_size, statement2.ColumnInt(0));
   }
 
   static void CheckWrapper(
@@ -400,6 +427,56 @@ TEST_F(CountingPolicyTest, MergingAndExpiring) {
                 "punky",
                 2,
                 base::Bind(&CountingPolicyTest::Arguments_CheckMergeCount, 1));
+
+  policy->Close();
+}
+
+// Test cleaning of old data in the string and URL tables.
+TEST_F(CountingPolicyTest, StringTableCleaning) {
+  CountingPolicy* policy = new CountingPolicy(profile_.get());
+  // Initially disable expiration by setting a retention time before any
+  // actions we generate.
+  policy->set_retention_time(base::TimeDelta::FromDays(14));
+
+  base::SimpleTestClock* mock_clock = new base::SimpleTestClock();
+  mock_clock->SetNow(base::Time::Now());
+  policy->SetClockForTesting(scoped_ptr<base::Clock>(mock_clock));
+
+  // Insert an action; this should create entries in both the string table (for
+  // the extension and API name) and the URL table (for page_url).
+  scoped_refptr<Action> action =
+      new Action("punky",
+                 mock_clock->Now() - base::TimeDelta::FromDays(7),
+                 Action::ACTION_API_CALL,
+                 "brewster");
+  action->set_page_url(GURL("http://www.google.com/"));
+  policy->ProcessAction(action);
+
+  // Add an action which will not be expired, so that some strings will remain
+  // in use.
+  action = new Action(
+      "punky", mock_clock->Now(), Action::ACTION_API_CALL, "tabs.create");
+  policy->ProcessAction(action);
+
+  // There should now be three strings ("punky", "brewster", "tabs.create") and
+  // one URL in the tables.
+  policy->ScheduleAndForget(policy,
+                            &CountingPolicyTest::CheckStringTableSizes,
+                            3,
+                            1);
+  WaitOnThread(BrowserThread::DB);
+
+  // Trigger a cleaning.  The oldest action is expired when we submit a
+  // duplicate of the newer action.  After this, there should be two strings
+  // and no URLs.
+  policy->set_retention_time(base::TimeDelta::FromDays(2));
+  policy->last_database_cleaning_time_ = base::Time();
+  policy->ProcessAction(action);
+  policy->ScheduleAndForget(policy,
+                            &CountingPolicyTest::CheckStringTableSizes,
+                            2,
+                            0);
+  WaitOnThread(BrowserThread::DB);
 
   policy->Close();
 }

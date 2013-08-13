@@ -107,14 +107,21 @@ static const char kPolicyMiscSetup[] =
 static const char kStringTableCleanup[] =
     "DELETE FROM string_ids WHERE id NOT IN\n"
     "(SELECT extension_id_x FROM activitylog_compressed\n"
+    "    WHERE extension_id_x IS NOT NULL\n"
     " UNION SELECT api_name_x FROM activitylog_compressed\n"
+    "    WHERE api_name_x IS NOT NULL\n"
     " UNION SELECT args_x FROM activitylog_compressed\n"
+    "    WHERE args_x IS NOT NULL\n"
     " UNION SELECT page_title_x FROM activitylog_compressed\n"
-    " UNION SELECT other_x FROM activitylog_compressed)";
+    "    WHERE page_title_x IS NOT NULL\n"
+    " UNION SELECT other_x FROM activitylog_compressed\n"
+    "    WHERE other_x IS NOT NULL)";
 static const char kUrlTableCleanup[] =
     "DELETE FROM url_ids WHERE id NOT IN\n"
     "(SELECT page_url_x FROM activitylog_compressed\n"
-    " UNION SELECT arg_url_x FROM activitylog_compressed)";
+    "    WHERE page_url_x IS NOT NULL\n"
+    " UNION SELECT arg_url_x FROM activitylog_compressed\n"
+    "    WHERE arg_url_x IS NOT NULL)";
 
 }  // namespace
 
