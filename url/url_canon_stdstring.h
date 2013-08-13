@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/compiler_specific.h"
 #include "url/url_canon.h"
 
 namespace url_canon {
@@ -51,7 +52,7 @@ class StdStringCanonOutput : public CanonOutput {
     buffer_len_ = cur_len_;
   }
 
-  virtual void Resize(int sz) {
+  virtual void Resize(int sz) OVERRIDE {
     str_->resize(sz);
     buffer_ = str_->empty() ? NULL : &(*str_)[0];
     buffer_len_ = sz;
