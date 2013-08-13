@@ -6,15 +6,28 @@
   width: 722px;
 }
 
+#managed-user-learn-more-content-area {
+  padding: 20px;
+}
+
+#managed-user-learn-more-title {
+  padding: 0 0 20px 0;
+}
+
 #managed-user-learn-more-text {
-  margin-top: 10px;
+  padding: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
 
 #managed-user-learn-more-image {
+  -webkit-border-radius: 3px 3px 0 0;
   background-image: -webkit-image-set(
       url('../../../../ui/resources/default_100_percent/supervised_illustration_start.png') 1x,
       url('../../../../ui/resources/default_200_percent/supervised_illustration_start.png') 2x);
   height: 344px;
+}
+
+#managed-user-learn-more-action-area {
+  padding: 20px 0 0 0;
 }

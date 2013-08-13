@@ -7,10 +7,16 @@
 }
 
 #managed-user-created-title {
+  padding: 0 0 20px 0;
   word-wrap: break-word;
 }
 
+#managed-user-created-content-area {
+  padding: 20px;
+}
+
 #managed-user-created-image {
+  -webkit-border-radius: 3px 3px 0 0;
   background-image: -webkit-image-set(
       url('../../../../ui/resources/default_100_percent/supervised_illustration_done.png') 1x,
       url('../../../../ui/resources/default_200_percent/supervised_illustration_done.png') 2x);
@@ -18,7 +24,7 @@
 }
 
 #managed-user-created-text {
-  margin-top: 10px;
+  padding: 0;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
@@ -26,4 +32,8 @@
 #managed-user-created-switch {
   max-width: 600px;
   word-wrap: break-word;
+}
+
+#managed-user-created-action-area {
+  padding: 20px 0 0 0;
 }
