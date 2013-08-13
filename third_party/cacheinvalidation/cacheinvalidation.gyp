@@ -89,6 +89,7 @@
         'src/google/cacheinvalidation/impl/recurring-task.h',
         'src/google/cacheinvalidation/impl/registration-manager.cc',
         'src/google/cacheinvalidation/impl/registration-manager.h',
+        'src/google/cacheinvalidation/impl/repeated-field-namespace-fix.h',
         'src/google/cacheinvalidation/impl/run-state.h',
         'src/google/cacheinvalidation/impl/safe-storage.cc',
         'src/google/cacheinvalidation/impl/safe-storage.h',
