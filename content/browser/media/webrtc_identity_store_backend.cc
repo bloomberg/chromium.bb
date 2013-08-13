@@ -194,10 +194,13 @@ bool WebRTCIdentityStoreBackend::FindIdentity(
 
     // Kick off loading the DB.
     scoped_ptr<IdentityMap> out_map(new IdentityMap());
+    base::Closure task(
+        base::Bind(&SqlLiteStorage::Load, sql_lite_storage_, out_map.get()));
+    // |out_map| will be NULL after this call.
     if (BrowserThread::PostTaskAndReply(
             BrowserThread::DB,
             FROM_HERE,
-            base::Bind(&SqlLiteStorage::Load, sql_lite_storage_, out_map.get()),
+            task,
             base::Bind(&WebRTCIdentityStoreBackend::OnLoaded,
                        this,
                        base::Passed(&out_map)))) {
