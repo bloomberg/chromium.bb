@@ -32,7 +32,7 @@ class PageCyclerIntlArFaHe(test.Test):
 
 class PageCyclerIntlEsFrPtBr(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/intel_es_fr_pt-BR.json'
+  page_set = 'page_sets/intl_es_fr_pt-BR.json'
   options = {'pageset_repeat_iters': 10}
 
 
@@ -56,7 +56,7 @@ class PageCyclerIntlKoThVi(test.Test):
 
 class PageCyclerMorejs(test.Test):
   test = page_cycler.PageCycler
-  page_set = 'page_sets/morejs.json'
+  page_set = 'page_sets/page_cycler/morejs.json'
   options = {'pageset_repeat_iters': 10}
 
 
@@ -69,7 +69,7 @@ class PageCyclerMoz(test.Test):
 class PageCyclerNetsimTop25(test.Test):
   """Measures load time of the top 25 sites under simulated cable network."""
   test = page_cycler.PageCycler
-  page_set = 'tools/perf/page_sets/top_25.json'
+  page_set = 'page_sets/top_25.json'
   options = {
     'extra_wpr_args': [
       '--shaping_type=proxy',
