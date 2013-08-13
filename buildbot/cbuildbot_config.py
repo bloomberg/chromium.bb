@@ -1220,23 +1220,22 @@ internal_paladin.add_config('lumpy-paladin',
   upload_hw_test_artifacts=True,
 )
 
-# x86 full unit tests
 internal_paladin.add_config('parrot-paladin',
   boards=['parrot'],
   paladin_builder_name='parrot paladin',
-  quick_unit=False,
+  upload_hw_test_artifacts=True,
 )
 
+# x86 full unit tests
 internal_paladin.add_config('parrot32-paladin',
   boards=['parrot32'],
   paladin_builder_name='parrot32 paladin',
-  important=False,
+  quick_unit=False,
 )
 
 internal_paladin.add_config('parrot64-paladin',
   boards=['parrot64'],
   paladin_builder_name='parrot64 paladin',
-  important=False,
 )
 
 internal_paladin.add_config('peppy-paladin',
@@ -1265,7 +1264,6 @@ internal_paladin.add_config('stout-paladin',
 internal_paladin.add_config('stout32-paladin',
   boards=['stout32'],
   paladin_builder_name='stout32 paladin',
-  important=False,
 )
 
 internal_paladin.add_config('stumpy-paladin',
@@ -1278,7 +1276,6 @@ internal_paladin.add_config('stumpy-paladin',
 internal_paladin.add_config('wolf-paladin',
   boards=['wolf'],
   paladin_builder_name='wolf paladin',
-  important=False,
 )
 
 internal_paladin.add_config('zgb-paladin',
