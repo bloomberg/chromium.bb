@@ -132,7 +132,7 @@
 #include "media/base/filter_collection.h"
 #include "media/base/media_switches.h"
 #include "media/filters/audio_renderer_impl.h"
-#include "media/filters/gpu_video_decoder_factories.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 #include "net/base/data_url.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -3070,7 +3070,7 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
     DVLOG(1) << "Using AudioRendererMixerManager-provided sink: " << sink.get();
   }
 
-  scoped_refptr<media::GpuVideoDecoderFactories> gpu_factories =
+  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories =
       RenderThreadImpl::current()->GetGpuFactories(
           RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy());
 

@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/mock_gpu_video_decoder_factories.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 
 namespace media {
 
-MockGpuVideoDecoderFactories::MockGpuVideoDecoderFactories() {}
-
-MockGpuVideoDecoderFactories::~MockGpuVideoDecoderFactories() {}
+GpuVideoAcceleratorFactories::~GpuVideoAcceleratorFactories() {}
 
 }  // namespace media

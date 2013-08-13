@@ -11,23 +11,19 @@
 #include "third_party/libjingle/source/talk/media/webrtc/webrtcvideodecoderfactory.h"
 #include "third_party/webrtc/modules/video_coding/codecs/interface/video_codec_interface.h"
 
-namespace media {
-class GpuVideoDecoderFactories;
-}
-
 namespace webrtc {
 class VideoDecoder;
 }
 
 namespace content {
-class RendererGpuVideoDecoderFactories;
+class RendererGpuVideoAcceleratorFactories;
 
 // TODO(wuchengli): add unittest.
 class CONTENT_EXPORT RTCVideoDecoderFactory
     : NON_EXPORTED_BASE(public cricket::WebRtcVideoDecoderFactory) {
  public:
   explicit RTCVideoDecoderFactory(
-      const scoped_refptr<RendererGpuVideoDecoderFactories>& gpu_factories);
+      const scoped_refptr<RendererGpuVideoAcceleratorFactories>& gpu_factories);
   virtual ~RTCVideoDecoderFactory();
 
   // Runs on Chrome_libJingle_WorkerThread. The child thread is blocked while
@@ -40,7 +36,7 @@ class CONTENT_EXPORT RTCVideoDecoderFactory
   virtual void DestroyVideoDecoder(webrtc::VideoDecoder* decoder) OVERRIDE;
 
  private:
-  scoped_refptr<RendererGpuVideoDecoderFactories> gpu_factories_;
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoderFactory);
 };

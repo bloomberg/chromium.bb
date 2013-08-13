@@ -56,7 +56,7 @@ class MessageLoopProxy;
 namespace media {
 class ChunkDemuxer;
 class FFmpegDemuxer;
-class GpuVideoDecoderFactories;
+class GpuVideoAcceleratorFactories;
 class MediaLog;
 }
 
@@ -318,8 +318,8 @@ class WebMediaPlayerImpl
 
   bool incremented_externally_allocated_memory_;
 
-  // Factories for supporting GpuVideoDecoder. May be null.
-  scoped_refptr<media::GpuVideoDecoderFactories> gpu_factories_;
+  // Factories for supporting video accelerators. May be null.
+  scoped_refptr<media::GpuVideoAcceleratorFactories> gpu_factories_;
 
   // Routes audio playback to either AudioRendererSink or WebAudio.
   scoped_refptr<WebAudioSourceProviderImpl> audio_source_provider_;

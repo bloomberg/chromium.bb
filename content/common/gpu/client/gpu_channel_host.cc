@@ -13,6 +13,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/gpu_video_encode_accelerator_host.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ipc/ipc_sync_message_filter.h"
@@ -182,6 +183,21 @@ scoped_ptr<media::VideoDecodeAccelerator> GpuChannelHost::CreateVideoDecoder(
   DCHECK(it != proxies_.end());
   CommandBufferProxyImpl* proxy = it->second;
   return proxy->CreateVideoDecoder(profile, client).Pass();
+}
+
+scoped_ptr<media::VideoEncodeAccelerator> GpuChannelHost::CreateVideoEncoder(
+    media::VideoEncodeAccelerator::Client* client) {
+  TRACE_EVENT0("gpu", "GpuChannelHost::CreateVideoEncoder");
+
+  scoped_ptr<media::VideoEncodeAccelerator> vea;
+  int32 route_id = MSG_ROUTING_NONE;
+  if (!Send(new GpuChannelMsg_CreateVideoEncoder(&route_id)))
+    return vea.Pass();
+  if (route_id == MSG_ROUTING_NONE)
+    return vea.Pass();
+
+  vea.reset(new GpuVideoEncodeAcceleratorHost(client, this, route_id));
+  return vea.Pass();
 }
 
 void GpuChannelHost::DestroyCommandBuffer(

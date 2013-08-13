@@ -13,7 +13,7 @@
 #include "base/task_runner_util.h"
 #include "content/child/child_thread.h"
 #include "media/base/bind_to_loop.h"
-#include "media/filters/gpu_video_decoder_factories.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 #include "third_party/webrtc/system_wrappers/interface/ref_count.h"
 
 namespace content {
@@ -69,7 +69,7 @@ RTCVideoDecoder::BufferData::BufferData() {}
 RTCVideoDecoder::BufferData::~BufferData() {}
 
 RTCVideoDecoder::RTCVideoDecoder(
-    const scoped_refptr<media::GpuVideoDecoderFactories>& factories)
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories)
     : weak_factory_(this),
       weak_this_(weak_factory_.GetWeakPtr()),
       factories_(factories),
@@ -122,7 +122,7 @@ RTCVideoDecoder::~RTCVideoDecoder() {
 
 scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
     webrtc::VideoCodecType type,
-    const scoped_refptr<media::GpuVideoDecoderFactories>& factories) {
+    const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories) {
   scoped_ptr<RTCVideoDecoder> decoder;
   // Convert WebRTC codec type to media codec profile.
   media::VideoCodecProfile profile;
@@ -136,8 +136,8 @@ scoped_ptr<RTCVideoDecoder> RTCVideoDecoder::Create(
   }
 
   decoder.reset(new RTCVideoDecoder(factories));
-  decoder->vda_
-      .reset(factories->CreateVideoDecodeAccelerator(profile, decoder.get()));
+  decoder->vda_ =
+      factories->CreateVideoDecodeAccelerator(profile, decoder.get()).Pass();
   // vda can be NULL if VP8 is not supported.
   if (decoder->vda_ != NULL) {
     decoder->state_ = INITIALIZED;
@@ -397,7 +397,7 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
       visible_rect,
       natural_size,
       timestamp_ms,
-      base::Bind(&media::GpuVideoDecoderFactories::ReadPixels,
+      base::Bind(&media::GpuVideoAcceleratorFactories::ReadPixels,
                  factories_,
                  pb.texture_id(),
                  decoder_texture_target_,

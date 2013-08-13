@@ -16,6 +16,7 @@
 #include "content/renderer/media/rtc_peer_connection_handler.h"
 #include "content/renderer/media/rtc_video_capturer.h"
 #include "content/renderer/media/rtc_video_decoder_factory.h"
+#include "content/renderer/media/rtc_video_encoder_factory.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webaudio_capturer_source.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
@@ -27,7 +28,7 @@
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "jingle/glue/thread_wrapper.h"
-#include "media/filters/gpu_video_decoder_factories.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -488,27 +489,32 @@ bool MediaStreamDependencyFactory::CreatePeerConnectionFactory() {
     audio_device_ = new WebRtcAudioDeviceImpl();
 
     scoped_ptr<cricket::WebRtcVideoDecoderFactory> decoder_factory;
+    scoped_ptr<cricket::WebRtcVideoEncoderFactory> encoder_factory;
 
     const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding)) {
-      scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
-          RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy();
-      scoped_refptr<RendererGpuVideoDecoderFactories> gpu_factories =
-          RenderThreadImpl::current()->GetGpuFactories(media_loop_proxy);
-      if (gpu_factories.get() != NULL)
+    scoped_refptr<base::MessageLoopProxy> media_loop_proxy =
+        RenderThreadImpl::current()->GetMediaThreadMessageLoopProxy();
+    scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories =
+        RenderThreadImpl::current()->GetGpuFactories(media_loop_proxy);
+#if !defined(GOOGLE_TV)
+    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWDecoding))
+      if (gpu_factories)
         decoder_factory.reset(new RTCVideoDecoderFactory(gpu_factories));
-    }
-#if defined(GOOGLE_TV)
+#else
     // PeerConnectionFactory will hold the ownership of this
     // VideoDecoderFactory.
-    decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv);
+    decoder_factory.reset(decoder_factory_tv_ = new RTCVideoDecoderFactoryTv());
 #endif
+
+    if (cmd_line->HasSwitch(switches::kEnableWebRtcHWEncoding))
+      if (gpu_factories)
+        encoder_factory.reset(new RTCVideoEncoderFactory(gpu_factories));
 
     scoped_refptr<webrtc::PeerConnectionFactoryInterface> factory(
         webrtc::CreatePeerConnectionFactory(worker_thread_,
                                             signaling_thread_,
                                             audio_device_.get(),
-                                            NULL,
+                                            encoder_factory.release(),
                                             decoder_factory.release()));
     if (factory.get())
       pc_factory_ = factory;

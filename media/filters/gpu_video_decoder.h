@@ -26,7 +26,7 @@ class SharedMemory;
 namespace media {
 
 class DecoderBuffer;
-class GpuVideoDecoderFactories;
+class GpuVideoAcceleratorFactories;
 
 // GPU-accelerated video decoder implementation.  Relies on
 // AcceleratedVideoDecoderMsg_Decode and friends.
@@ -36,7 +36,7 @@ class MEDIA_EXPORT GpuVideoDecoder
  public:
   // The message loop of |factories| will be saved to |gvd_loop_proxy_|.
   explicit GpuVideoDecoder(
-      const scoped_refptr<GpuVideoDecoderFactories>& factories);
+      const scoped_refptr<GpuVideoAcceleratorFactories>& factories);
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
@@ -117,7 +117,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   base::WeakPtrFactory<GpuVideoDecoder> weak_factory_;
   base::WeakPtr<GpuVideoDecoder> weak_this_;
 
-  scoped_refptr<GpuVideoDecoderFactories> factories_;
+  scoped_refptr<GpuVideoAcceleratorFactories> factories_;
 
   // Populated during Initialize() (on success) and unchanged until an error
   // occurs.

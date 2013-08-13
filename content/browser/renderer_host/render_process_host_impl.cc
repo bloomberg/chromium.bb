@@ -943,6 +943,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableWebRtcAecRecordings,
     switches::kEnableWebRtcTcpServerSocket,
     switches::kEnableWebRtcHWDecoding,
+    switches::kEnableWebRtcHWEncoding,
 #endif
     switches::kDisableWebKitMediaSource,
     switches::kEnableOverscrollNotifications,

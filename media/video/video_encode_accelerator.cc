@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/filters/gpu_video_decoder_factories.h"
+#include "media/video/video_encode_accelerator.h"
 
 namespace media {
 
-GpuVideoDecoderFactories::~GpuVideoDecoderFactories() {}
+VideoEncodeAccelerator::~VideoEncodeAccelerator() {}
 
 }  // namespace media

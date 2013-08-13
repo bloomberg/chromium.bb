@@ -17,7 +17,7 @@
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
-#include "media/filters/gpu_video_decoder_factories.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 
 namespace media {
 
@@ -52,7 +52,7 @@ GpuVideoDecoder::BufferData::BufferData(
 GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
-    const scoped_refptr<GpuVideoDecoderFactories>& factories)
+    const scoped_refptr<GpuVideoAcceleratorFactories>& factories)
     : needs_bitstream_conversion_(false),
       gvd_loop_proxy_(factories->GetMessageLoop()),
       weak_factory_(this),
@@ -173,7 +173,8 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
     return;
   }
 
-  vda_.reset(factories_->CreateVideoDecodeAccelerator(config.profile(), this));
+  vda_ =
+      factories_->CreateVideoDecodeAccelerator(config.profile(), this).Pass();
   if (!vda_) {
     status_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
     return;
@@ -435,7 +436,7 @@ void GpuVideoDecoder::PictureReady(const media::Picture& picture) {
       visible_rect,
       natural_size,
       timestamp,
-      base::Bind(&GpuVideoDecoderFactories::ReadPixels,
+      base::Bind(&GpuVideoAcceleratorFactories::ReadPixels,
                  factories_,
                  pb.texture_id(),
                  decoder_texture_target_,

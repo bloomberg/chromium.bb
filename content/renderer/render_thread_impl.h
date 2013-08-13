@@ -19,7 +19,7 @@
 #include "content/common/gpu/client/gpu_channel_host.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
 #include "content/public/renderer/render_thread.h"
-#include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
+#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -55,7 +55,6 @@ class ForwardingMessageFilter;
 
 namespace media {
 class AudioHardwareConfig;
-class GpuVideoDecoderFactories;
 }
 
 namespace v8 {
@@ -258,9 +257,8 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // not sent for at least one notification delay.
   void PostponeIdleNotification();
 
-  // Gets gpu factories, which will run on |factories_loop|. Returns NULL if VDA
-  // is disabled or a graphics context cannot be obtained.
-  scoped_refptr<RendererGpuVideoDecoderFactories> GetGpuFactories(
+  // Gets gpu factories, which will run on |factories_loop|.
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> GetGpuFactories(
       const scoped_refptr<base::MessageLoopProxy>& factories_loop);
 
   // Returns a graphics context shared among all

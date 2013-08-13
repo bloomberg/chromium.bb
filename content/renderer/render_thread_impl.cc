@@ -87,7 +87,7 @@
 #include "ipc/ipc_platform_file.h"
 #include "media/base/audio_hardware_config.h"
 #include "media/base/media.h"
-#include "media/filters/gpu_video_decoder_factories.h"
+#include "media/filters/gpu_video_accelerator_factories.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -887,22 +887,20 @@ void RenderThreadImpl::PostponeIdleNotification() {
   idle_notifications_to_skip_ = 2;
 }
 
-scoped_refptr<RendererGpuVideoDecoderFactories>
+scoped_refptr<RendererGpuVideoAcceleratorFactories>
 RenderThreadImpl::GetGpuFactories(
     const scoped_refptr<base::MessageLoopProxy>& factories_loop) {
   DCHECK(IsMainThread());
 
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-  scoped_refptr<RendererGpuVideoDecoderFactories> gpu_factories;
+  scoped_refptr<RendererGpuVideoAcceleratorFactories> gpu_factories;
   WebGraphicsContext3DCommandBufferImpl* context3d = NULL;
   if (!cmd_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     context3d = GetGpuVDAContext3D();
-  if (context3d) {
-    GpuChannelHost* gpu_channel_host = GetGpuChannel();
-    if (gpu_channel_host) {
-      gpu_factories = new RendererGpuVideoDecoderFactories(
-          gpu_channel_host, factories_loop, context3d);
-    }
+  GpuChannelHost* gpu_channel_host = GetGpuChannel();
+  if (gpu_channel_host) {
+    gpu_factories = new RendererGpuVideoAcceleratorFactories(
+        gpu_channel_host, factories_loop, context3d);
   }
   return gpu_factories;
 }

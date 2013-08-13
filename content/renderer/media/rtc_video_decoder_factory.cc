@@ -6,14 +6,13 @@
 
 #include "base/location.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/renderer/media/renderer_gpu_video_decoder_factories.h"
+#include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/rtc_video_decoder.h"
-#include "media/filters/gpu_video_decoder_factories.h"
 
 namespace content {
 
 RTCVideoDecoderFactory::RTCVideoDecoderFactory(
-    const scoped_refptr<RendererGpuVideoDecoderFactories>& gpu_factories)
+    const scoped_refptr<RendererGpuVideoAcceleratorFactories>& gpu_factories)
     : gpu_factories_(gpu_factories) {
   DVLOG(2) << "RTCVideoDecoderFactory";
 }
@@ -25,7 +24,7 @@ RTCVideoDecoderFactory::~RTCVideoDecoderFactory() {
 webrtc::VideoDecoder* RTCVideoDecoderFactory::CreateVideoDecoder(
     webrtc::VideoCodecType type) {
   DVLOG(2) << "CreateVideoDecoder";
-  // RendererGpuVideoDecoderFactories is not thread safe. It cannot be shared
+  // GpuVideoAcceleratorFactories is not thread safe. It cannot be shared
   // by different decoders. This method runs on Chrome_libJingle_WorkerThread
   // and the child thread is blocked while this runs. We cannot create new gpu
   // factories here. Clone one instead.

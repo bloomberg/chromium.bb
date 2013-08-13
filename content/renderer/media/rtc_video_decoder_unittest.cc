@@ -8,7 +8,7 @@
 #include "base/threading/thread.h"
 #include "content/renderer/media/rtc_video_decoder.h"
 #include "media/base/gmock_callback_support.h"
-#include "media/filters/mock_gpu_video_decoder_factories.h"
+#include "media/filters/mock_gpu_video_accelerator_factories.h"
 #include "media/video/mock_video_decode_accelerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +25,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
                             webrtc::DecodedImageCallback {
  public:
   RTCVideoDecoderTest()
-      : mock_gpu_factories_(new media::MockGpuVideoDecoderFactories),
+      : mock_gpu_factories_(new media::MockGpuVideoAcceleratorFactories),
         vda_thread_("vda_thread"),
         idle_waiter_(false, false) {
     memset(&codec_, 0, sizeof(codec_));
@@ -37,11 +37,11 @@ class RTCVideoDecoderTest : public ::testing::Test,
     mock_vda_ = new media::MockVideoDecodeAccelerator;
     EXPECT_CALL(*mock_gpu_factories_, GetMessageLoop())
         .WillRepeatedly(Return(vda_loop_proxy_));
-    EXPECT_CALL(*mock_gpu_factories_, CreateVideoDecodeAccelerator(_, _))
+    EXPECT_CALL(*mock_gpu_factories_, DoCreateVideoDecodeAccelerator(_, _))
         .WillRepeatedly(
              Return(static_cast<media::VideoDecodeAccelerator*>(NULL)));
     EXPECT_CALL(*mock_gpu_factories_,
-                CreateVideoDecodeAccelerator(media::VP8PROFILE_MAIN, _))
+                DoCreateVideoDecodeAccelerator(media::VP8PROFILE_MAIN, _))
         .WillRepeatedly(Return(mock_vda_));
     EXPECT_CALL(*mock_gpu_factories_, Abort()).WillRepeatedly(Return());
     EXPECT_CALL(*mock_gpu_factories_, CreateSharedMemory(_))
@@ -94,7 +94,7 @@ class RTCVideoDecoderTest : public ::testing::Test,
   }
 
  protected:
-  scoped_refptr<media::MockGpuVideoDecoderFactories> mock_gpu_factories_;
+  scoped_refptr<media::MockGpuVideoAcceleratorFactories> mock_gpu_factories_;
   media::MockVideoDecodeAccelerator* mock_vda_;
   scoped_ptr<RTCVideoDecoder> rtc_decoder_;
   webrtc::VideoCodec codec_;

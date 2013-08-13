@@ -23,7 +23,9 @@
 #include "gpu/ipc/gpu_command_buffer_traits.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message_macros.h"
+#include "media/base/video_frame.h"
 #include "media/video/video_decode_accelerator.h"
+#include "media/video/video_encode_accelerator.h"
 #include "ui/base/latency_info.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
@@ -216,6 +218,10 @@ IPC_STRUCT_TRAITS_BEGIN(content::GpuRenderingStats)
   IPC_STRUCT_TRAITS_MEMBER(global_total_processing_commands_time)
   IPC_STRUCT_TRAITS_MEMBER(total_processing_commands_time)
 IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS(media::VideoFrame::Format)
+
+IPC_ENUM_TRAITS(media::VideoEncodeAccelerator::Error)
 
 //------------------------------------------------------------------------------
 // GPU Messages
@@ -446,6 +452,12 @@ IPC_MESSAGE_CONTROL1(GpuChannelMsg_GenerateMailboxNamesAsync,
 // Reply to GpuChannelMsg_GenerateMailboxNamesAsync.
 IPC_MESSAGE_CONTROL1(GpuChannelMsg_GenerateMailboxNamesReply,
                      std::vector<gpu::Mailbox> /* mailbox_names */)
+
+// Create a new GPU-accelerated video encoder.
+IPC_SYNC_MESSAGE_CONTROL0_1(GpuChannelMsg_CreateVideoEncoder,
+                            int32 /* route_id */)
+
+IPC_MESSAGE_CONTROL1(GpuChannelMsg_DestroyVideoEncoder, int32 /* route_id */)
 
 #if defined(OS_ANDROID)
 // Register the StreamTextureProxy class with the GPU process, so that
@@ -690,3 +702,64 @@ IPC_MESSAGE_ROUTED0(AcceleratedVideoDecoderHostMsg_ResetDone)
 // Video decoder has encountered an error.
 IPC_MESSAGE_ROUTED1(AcceleratedVideoDecoderHostMsg_ErrorNotification,
                     uint32) /* Error ID */
+
+//------------------------------------------------------------------------------
+// Accelerated Video Encoder Messages
+// These messages are sent from the Renderer process to GPU process.
+
+// Initialize the accelerated encoder.
+IPC_MESSAGE_ROUTED4(AcceleratedVideoEncoderMsg_Initialize,
+                    media::VideoFrame::Format /* input_format */,
+                    gfx::Size /* input_visible_size */,
+                    media::VideoCodecProfile /* output_profile */,
+                    uint32 /* initial_bitrate */)
+
+// Queue a input buffer to the encoder to encode. |frame_id| will be returned by
+// AcceleratedVideoEncoderHostMsg_NotifyEncodeDone.
+IPC_MESSAGE_ROUTED4(AcceleratedVideoEncoderMsg_Encode,
+                    int32 /* frame_id */,
+                    base::SharedMemoryHandle /* buffer_handle */,
+                    uint32 /* buffer_size */,
+                    bool /* force_keyframe */)
+
+// Queue a buffer to the encoder for use in returning output.  |buffer_id| will
+// be returned by AcceleratedVideoEncoderHostMsg_BitstreamBufferReady.
+IPC_MESSAGE_ROUTED3(AcceleratedVideoEncoderMsg_UseOutputBitstreamBuffer,
+                    int32 /* buffer_id */,
+                    base::SharedMemoryHandle /* buffer_handle */,
+                    uint32 /* buffer_size */)
+
+// Request a runtime encoding parameter change.
+IPC_MESSAGE_ROUTED2(AcceleratedVideoEncoderMsg_RequestEncodingParametersChange,
+                    uint32 /* bitrate */,
+                    uint32 /* framerate */)
+
+//------------------------------------------------------------------------------
+// Accelerated Video Encoder Host Messages
+// These messages are sent from GPU process to Renderer process.
+
+// Notify of the completion of initialization.
+IPC_MESSAGE_ROUTED0(AcceleratedVideoEncoderHostMsg_NotifyInitializeDone)
+
+// Notify renderer of the input/output buffer requirements of the encoder.
+IPC_MESSAGE_ROUTED3(AcceleratedVideoEncoderHostMsg_RequireBitstreamBuffers,
+                    uint32 /* input_count */,
+                    gfx::Size /* input_coded_size */,
+                    uint32 /* output_buffer_size */)
+
+// Notify the renderer that the encoder has finished using an input buffer.
+// There is no congruent entry point in the media::VideoEncodeAccelerator
+// interface, in VEA this same done condition is indicated by dropping the
+// reference to the media::VideoFrame passed to VEA::Encode().
+IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyInputDone,
+                    int32 /* frame_id */)
+
+// Notify the renderer that an output buffer has been filled with encoded data.
+IPC_MESSAGE_ROUTED3(AcceleratedVideoEncoderHostMsg_BitstreamBufferReady,
+                    int32 /* bitstream_buffer_id */,
+                    uint32 /* payload_size */,
+                    bool /* key_frame */)
+
+// Report error condition.
+IPC_MESSAGE_ROUTED1(AcceleratedVideoEncoderHostMsg_NotifyError,
+                    media::VideoEncodeAccelerator::Error /* error */)
