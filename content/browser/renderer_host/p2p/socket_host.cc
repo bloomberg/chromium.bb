@@ -88,10 +88,12 @@ P2PSocketHost* P2PSocketHost::Create(
 
     case P2P_SOCKET_TCP_CLIENT:
     case P2P_SOCKET_SSLTCP_CLIENT:
+    case P2P_SOCKET_TLS_CLIENT:
       return new P2PSocketHostTcp(message_sender, id, type, url_context);
 
     case P2P_SOCKET_STUN_TCP_CLIENT:
     case P2P_SOCKET_STUN_SSLTCP_CLIENT:
+    case P2P_SOCKET_STUN_TLS_CLIENT:
       return new P2PSocketHostStunTcp(message_sender, id, type, url_context);
   }
 

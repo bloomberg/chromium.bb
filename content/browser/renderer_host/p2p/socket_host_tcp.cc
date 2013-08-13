@@ -12,7 +12,11 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/socket/client_socket_factory.h"
+#include "net/socket/client_socket_handle.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace {
@@ -23,7 +27,12 @@ const int kReadBufferSize = 4096;
 const int kPacketLengthOffset = 2;
 const int kTurnChannelDataHeaderSize = 4;
 
-bool IsSslClientSocket(content::P2PSocketType type) {
+bool IsTlsClientSocket(content::P2PSocketType type) {
+  return (type == content::P2P_SOCKET_STUN_TLS_CLIENT ||
+          type == content::P2P_SOCKET_TLS_CLIENT);
+}
+
+bool IsPseudoTlsClientSocket(content::P2PSocketType type) {
   return (type == content::P2P_SOCKET_SSLTCP_CLIENT ||
           type == content::P2P_SOCKET_STUN_SSLTCP_CLIENT);
 }
@@ -82,9 +91,6 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
                     url_context_,
                     ssl_config,
                     dest_host_port_pair));
-  if (IsSslClientSocket(type_)) {
-    socket_.reset(new jingle_glue::FakeSSLClientSocket(socket_.release()));
-  }
 
   int status = socket_->Connect(
       base::Bind(&P2PSocketHostTcpBase::OnConnected,
@@ -109,7 +115,7 @@ void P2PSocketHostTcpBase::OnError() {
   socket_.reset();
 
   if (state_ == STATE_UNINITIALIZED || state_ == STATE_CONNECTING ||
-      state_ == STATE_OPEN) {
+      state_ == STATE_TLS_CONNECTING || state_ == STATE_OPEN) {
     message_sender_->Send(new P2PMsg_OnError(id_));
   }
 
@@ -125,19 +131,88 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
     return;
   }
 
+  if (IsTlsClientSocket(type_)) {
+    state_ = STATE_TLS_CONNECTING;
+    StartTls();
+  } else {
+    if (IsPseudoTlsClientSocket(type_)) {
+      socket_.reset(new jingle_glue::FakeSSLClientSocket(socket_.release()));
+    }
+
+    // If we are not doing TLS, we are ready to send data now.
+    // In case of TLS, SignalConnect will be sent only after TLS handshake is
+    // successfull. So no buffering will be done at socket handlers if any
+    // packets sent before that by the application.
+    state_ = STATE_OPEN;
+    DoSendSocketCreateMsg();
+    DoRead();
+  }
+}
+
+void P2PSocketHostTcpBase::StartTls() {
+  DCHECK_EQ(state_, STATE_TLS_CONNECTING);
+  DCHECK(socket_.get());
+
+  scoped_ptr<net::ClientSocketHandle> socket_handle(
+      new net::ClientSocketHandle());
+  socket_handle->set_socket(socket_.release());
+
+  net::SSLClientSocketContext context;
+  context.cert_verifier = url_context_->GetURLRequestContext()->cert_verifier();
+  context.transport_security_state =
+      url_context_->GetURLRequestContext()->transport_security_state();
+  DCHECK(context.transport_security_state);
+
+  // Default ssl config.
+  const net::SSLConfig ssl_config;
+  net::HostPortPair dest_host_port_pair =
+      net::HostPortPair::FromIPEndPoint(remote_address_);
+  net::ClientSocketFactory* socket_factory =
+      net::ClientSocketFactory::GetDefaultFactory();
+  DCHECK(socket_factory);
+
+  socket_.reset(socket_factory->CreateSSLClientSocket(
+      socket_handle.release(), dest_host_port_pair, ssl_config, context));
+  int status = socket_->Connect(
+      base::Bind(&P2PSocketHostTcpBase::ProcessTlsConnectDone,
+                 base::Unretained(this)));
+  if (status != net::ERR_IO_PENDING) {
+    ProcessTlsConnectDone(status);
+  }
+}
+
+void P2PSocketHostTcpBase::ProcessTlsConnectDone(int status) {
+  DCHECK_NE(status, net::ERR_IO_PENDING);
+  DCHECK_EQ(state_, STATE_TLS_CONNECTING);
+  if (status != net::OK) {
+    OnError();
+    return;
+  }
+
+  state_ = STATE_OPEN;
+  DoSendSocketCreateMsg();
+  DoRead();
+}
+
+void P2PSocketHostTcpBase::DoSendSocketCreateMsg() {
+  DCHECK(socket_.get());
+
   net::IPEndPoint address;
-  result = socket_->GetLocalAddress(&address);
+  int result = socket_->GetLocalAddress(&address);
   if (result < 0) {
-    LOG(ERROR) << "P2PSocket::Init(): unable to get local address: "
-               << result;
+    LOG(ERROR) << "P2PSocketHostTcpBase::OnConnected: unable to get local"
+               << " address: " << result;
     OnError();
     return;
   }
 
   VLOG(1) << "Local address: " << address.ToString();
-  state_ = STATE_OPEN;
+
+  // If we are not doing TLS, we are ready to send data now.
+  // In case of TLS SignalConnect will be sent only after TLS handshake is
+  // successfull. So no buffering will be done at socket handlers if any
+  // packets sent before that by the application.
   message_sender_->Send(new P2PMsg_OnSocketCreated(id_, address));
-  DoRead();
 }
 
 void P2PSocketHostTcpBase::DoRead() {
@@ -307,7 +382,9 @@ P2PSocketHostTcp::P2PSocketHostTcp(
     IPC::Sender* message_sender, int id,
     P2PSocketType type, net::URLRequestContextGetter* url_context)
     : P2PSocketHostTcpBase(message_sender, id, type, url_context) {
-  DCHECK(type == P2P_SOCKET_TCP_CLIENT || type == P2P_SOCKET_SSLTCP_CLIENT);
+  DCHECK(type == P2P_SOCKET_TCP_CLIENT ||
+         type == P2P_SOCKET_SSLTCP_CLIENT ||
+         type == P2P_SOCKET_TLS_CLIENT);
 }
 
 P2PSocketHostTcp::~P2PSocketHostTcp() {
@@ -345,7 +422,8 @@ P2PSocketHostStunTcp::P2PSocketHostStunTcp(
     P2PSocketType type, net::URLRequestContextGetter* url_context)
     : P2PSocketHostTcpBase(message_sender, id, type, url_context) {
   DCHECK(type == P2P_SOCKET_STUN_TCP_CLIENT ||
-         type == P2P_SOCKET_STUN_SSLTCP_CLIENT);
+         type == P2P_SOCKET_STUN_SSLTCP_CLIENT ||
+         type == P2P_SOCKET_STUN_TLS_CLIENT);
 }
 
 P2PSocketHostStunTcp::~P2PSocketHostStunTcp() {

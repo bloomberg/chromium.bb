@@ -59,6 +59,10 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   friend class P2PSocketHostTcpTestBase;
   friend class P2PSocketHostTcpServerTest;
 
+  // SSL/TLS connection functions.
+  void StartTls();
+  void ProcessTlsConnectDone(int status);
+
   void DidCompleteRead(int result);
   void DoRead();
 
@@ -69,6 +73,8 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   void OnConnected(int result);
   void OnRead(int result);
   void OnWritten(int result);
+
+  void DoSendSocketCreateMsg();
 
   net::IPEndPoint remote_address_;
 

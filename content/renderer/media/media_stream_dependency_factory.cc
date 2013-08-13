@@ -117,6 +117,7 @@ class P2PPortAllocatorFactory : public webrtc::PortAllocatorFactoryInterface {
       relay_config.username = turn_configurations[i].username;
       relay_config.password = turn_configurations[i].password;
       relay_config.transport_type = turn_configurations[i].transport_type;
+      relay_config.secure = turn_configurations[i].secure;
       config.relays.push_back(relay_config);
     }
 

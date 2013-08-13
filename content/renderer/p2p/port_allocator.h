@@ -40,6 +40,7 @@ class P2PPortAllocator : public cricket::BasicPortAllocator {
       std::string server_address;
       int port;
       std::string transport_type;
+      bool secure;
     };
 
     // STUN server address and port.

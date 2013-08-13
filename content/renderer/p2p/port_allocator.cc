@@ -385,7 +385,9 @@ void P2PPortAllocatorSession::AddConfig() {
       }
 
       relay_server.ports.push_back(cricket::ProtocolAddress(
-          relay_info.resolved_relay_address, protocol));
+          relay_info.resolved_relay_address,
+          protocol,
+          relay_info.config.secure));
       relay_server.credentials = credentials;
       port_config->AddRelay(relay_server);
     }
