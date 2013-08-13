@@ -4248,7 +4248,7 @@ static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int ob
 }
 
 template<>
-bool RenderBlock::FloatIntervalSearchAdapter<RenderBlock::FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject) const
+bool RenderBlock::FloatIntervalSearchAdapter<RenderBlock::FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
     LayoutUnit logicalRight = m_renderer->logicalRightForFloat(floatingObject);
     if (logicalRight > m_offset) {
@@ -4259,7 +4259,7 @@ bool RenderBlock::FloatIntervalSearchAdapter<RenderBlock::FloatingObject::FloatL
 }
 
 template<>
-bool RenderBlock::FloatIntervalSearchAdapter<RenderBlock::FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject) const
+bool RenderBlock::FloatIntervalSearchAdapter<RenderBlock::FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
     LayoutUnit logicalLeft = m_renderer->logicalLeftForFloat(floatingObject);
     if (logicalLeft < m_offset) {

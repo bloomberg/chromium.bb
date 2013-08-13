@@ -1201,7 +1201,7 @@ protected:
         LayoutUnit getHeightRemaining() const;
 
     private:
-        bool updateOffsetIfNeeded(const FloatingObject*) const;
+        bool updateOffsetIfNeeded(const FloatingObject*);
 
         const RenderBlock* m_renderer;
         int m_lowValue;
