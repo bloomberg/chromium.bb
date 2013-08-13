@@ -90,4 +90,47 @@ TEST_F(DocumentTimelineTest, PauseForTesting)
     EXPECT_FLOAT_EQ(seekTime, player2->currentTime());
 }
 
+TEST_F(DocumentTimelineTest, NumberOfActiveAnimations)
+{
+    Timing timingForwardFill;
+    timingForwardFill.hasIterationDuration = true;
+    timingForwardFill.iterationDuration = 2;
+
+    Timing timingNoFill;
+    timingNoFill.hasIterationDuration = true;
+    timingNoFill.iterationDuration = 2;
+    timingNoFill.fillMode = Timing::FillModeNone;
+
+    Timing timingBackwardFillDelay;
+    timingBackwardFillDelay.hasIterationDuration = true;
+    timingBackwardFillDelay.iterationDuration = 1;
+    timingBackwardFillDelay.fillMode = Timing::FillModeBackwards;
+    timingBackwardFillDelay.startDelay = 1;
+
+    Timing timingNoFillDelay;
+    timingNoFillDelay.hasIterationDuration = true;
+    timingNoFillDelay.iterationDuration = 1;
+    timingNoFillDelay.fillMode = Timing::FillModeNone;
+    timingNoFillDelay.startDelay = 1;
+
+    RefPtr<Animation> anim1 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingForwardFill);
+    RefPtr<Animation> anim2 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingNoFill);
+    RefPtr<Animation> anim3 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingBackwardFillDelay);
+    RefPtr<Animation> anim4 = Animation::create(element.get(), KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector()), timingNoFillDelay);
+
+    RefPtr<Player> player1 = timeline->play(anim1.get());
+    RefPtr<Player> player2 = timeline->play(anim2.get());
+    RefPtr<Player> player3 = timeline->play(anim3.get());
+    RefPtr<Player> player4 = timeline->play(anim4.get());
+
+    timeline->serviceAnimations(0);
+    EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    timeline->serviceAnimations(0.5);
+    EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    timeline->serviceAnimations(1.5);
+    EXPECT_EQ(4U, timeline->numberOfActiveAnimationsForTesting());
+    timeline->serviceAnimations(3);
+    EXPECT_EQ(1U, timeline->numberOfActiveAnimationsForTesting());
+}
+
 }

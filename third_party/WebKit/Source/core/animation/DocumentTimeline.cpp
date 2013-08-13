@@ -90,4 +90,11 @@ void DocumentTimeline::dispatchEvents()
     m_events.clear();
 }
 
+size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
+{
+    // Includes all players whose directly associated timed items
+    // are current or in effect.
+    return isNull(m_currentTime) ? 0 : m_players.size();
+}
+
 } // namespace

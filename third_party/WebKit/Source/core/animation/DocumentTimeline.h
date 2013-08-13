@@ -53,6 +53,7 @@ public:
     PassRefPtr<Player> play(TimedItem*);
     double currentTime() { return m_currentTime; }
     void pauseAnimationsForTesting(double);
+    size_t numberOfActiveAnimationsForTesting() const;
     AnimationStack* animationStack(const Element* element) const
     {
         if (ActiveAnimations* animations = element->activeAnimations())

@@ -415,10 +415,10 @@ unsigned short Internals::compareTreeScopePosition(const Node* node1, const Node
 unsigned Internals::numberOfActiveAnimations() const
 {
     Frame* contextFrame = frame();
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled()) {
-        if (AnimationController* controller = contextFrame->animation())
-            return controller->numberOfActiveAnimations(contextFrame->document());
-    }
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+        return frame()->document()->timeline()->numberOfActiveAnimationsForTesting();
+    if (AnimationController* controller = contextFrame->animation())
+        return controller->numberOfActiveAnimations(contextFrame->document());
     return 0;
 }
 
