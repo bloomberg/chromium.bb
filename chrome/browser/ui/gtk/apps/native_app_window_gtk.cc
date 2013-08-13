@@ -612,6 +612,10 @@ void NativeAppWindowGtk::HandleKeyboardEvent(
   // No-op.
 }
 
+void NativeAppWindowGtk::UpdateInputRegion(scoped_ptr<SkRegion> region) {
+  NOTIMPLEMENTED();
+}
+
 void NativeAppWindowGtk::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.

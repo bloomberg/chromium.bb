@@ -602,6 +602,14 @@ views::NonClientFrameView* NativeAppWindowViews::CreateNonClientFrameView(
   return views::WidgetDelegateView::CreateNonClientFrameView(widget);
 }
 
+bool NativeAppWindowViews::WidgetHasHitTestMask() const {
+  return input_region_ != NULL;
+}
+
+void NativeAppWindowViews::GetWidgetHitTestMask(gfx::Path* mask) const {
+  input_region_->getBoundaryPath(mask);
+}
+
 bool NativeAppWindowViews::ShouldDescendIntoChildForEventHandling(
     gfx::NativeView child,
     const gfx::Point& location) {
@@ -739,6 +747,10 @@ void NativeAppWindowViews::UpdateWindowIcon() {
 
 void NativeAppWindowViews::UpdateWindowTitle() {
   window_->UpdateWindowTitle();
+}
+
+void NativeAppWindowViews::UpdateInputRegion(scoped_ptr<SkRegion> region) {
+  input_region_ = region.Pass();
 }
 
 void NativeAppWindowViews::UpdateDraggableRegions(

@@ -22,6 +22,10 @@ class NativeAppWindow : public ui::BaseWindow,
   virtual void UpdateDraggableRegions(
       const std::vector<extensions::DraggableRegion>& regions) = 0;
 
+  // Called when the region that accepts input events is changed.
+  // If |region| is NULL, then the entire window will accept input events.
+  virtual void UpdateInputRegion(scoped_ptr<SkRegion> region) = 0;
+
   virtual void SetFullscreen(bool fullscreen) = 0;
   virtual bool IsFullscreenOrPending() const = 0;
 

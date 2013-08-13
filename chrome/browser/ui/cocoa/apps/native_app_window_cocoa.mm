@@ -530,6 +530,10 @@ void NativeAppWindowCocoa::UpdateWindowTitle() {
   [window() setTitle:base::SysUTF16ToNSString(title)];
 }
 
+void NativeAppWindowCocoa::UpdateInputRegion(scoped_ptr<SkRegion> region) {
+  NOTIMPLEMENTED();
+}
+
 void NativeAppWindowCocoa::UpdateDraggableRegions(
     const std::vector<extensions::DraggableRegion>& regions) {
   // Draggable region is not supported for non-frameless window.

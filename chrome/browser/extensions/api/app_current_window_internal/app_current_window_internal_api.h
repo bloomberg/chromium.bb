@@ -144,6 +144,17 @@ class AppCurrentWindowInternalSetIconFunction
   virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
 };
 
+class AppCurrentWindowInternalSetInputRegionFunction
+    : public AppCurrentWindowInternalExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("app.currentWindowInternal.setInputRegion",
+                             APP_CURRENTWINDOWINTERNAL_SETINPUTREGION)
+
+ protected:
+  virtual ~AppCurrentWindowInternalSetInputRegionFunction() {}
+  virtual bool RunWithWindow(apps::ShellWindow* window) OVERRIDE;
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_APP_CURRENT_WINDOW_INTERNAL_APP_CURRENT_WINDOW_INTERNAL_API_H_

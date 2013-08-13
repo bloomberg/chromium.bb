@@ -16,6 +16,16 @@
     long? height;
   };
 
+  dictionary RegionRect {
+    long left;
+    long top;
+    long width;
+    long height;
+  };
+
+  dictionary Region {
+    RegionRect[]? rects;
+  };
 
   interface Functions {
     static void focus();
@@ -29,6 +39,7 @@
     static void hide();
     static void setBounds(Bounds bounds);
     static void setIcon(DOMString icon_url);
+    static void setInputRegion(Region region);
   };
 
   interface Events {
