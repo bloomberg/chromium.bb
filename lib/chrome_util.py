@@ -317,8 +317,6 @@ _COPY_PATHS = (
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
   Path('content_shell.pak',
        cond=C.StagingFlagSet(_CONTENT_SHELL_FLAG)),
-  Path('extensions/',
-       cond=C.StagingFlagSet(_CHROME_INTERNAL_FLAG)),
   Path('keyboard_resources.pak'),
   Path('lib/*.so',
        exe=True,
