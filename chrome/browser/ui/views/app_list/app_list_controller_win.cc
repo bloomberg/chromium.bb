@@ -873,6 +873,9 @@ void AppListController::OnSigninStatusChanged() {
 
 void AppListController::ShowForProfile(Profile* requested_profile) {
   DCHECK(requested_profile);
+  if (requested_profile->IsManaged())
+    return;
+
   ScopedKeepAlive show_app_list_keepalive;
 
   content::BrowserThread::PostBlockingPoolTask(

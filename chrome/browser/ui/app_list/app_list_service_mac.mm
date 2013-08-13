@@ -312,6 +312,9 @@ void AppListServiceMac::CreateForProfile(Profile* requested_profile) {
 }
 
 void AppListServiceMac::ShowForProfile(Profile* requested_profile) {
+  if (requested_profile->IsManaged())
+    return;
+
   InvalidatePendingProfileLoads();
 
   if (IsAppListVisible() && (requested_profile == profile())) {
