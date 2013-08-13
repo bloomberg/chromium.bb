@@ -9,6 +9,9 @@
 
 var addTagWatcher = require('tagWatcher').addTagWatcher;
 var eventBindings = require('event_bindings');
+var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
+var webRequestSchema =
+    requireNative('schema_registry').GetSchema('webRequest');
 
 /** @type {Array.<string>} */
 var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
@@ -134,9 +137,6 @@ function WebView(webviewNode) {
   this.setupWebviewNodeProperties_();
   this.setupWebviewNodeAttributes_();
   this.setupWebviewNodeEvents_();
-
-  // Experimental API
-  this.maybeSetupExperimentalAPI_();
 }
 
 /**
@@ -402,6 +402,7 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
   };
   this.browserPluginNode_.addEventListener('-internal-instanceid-allocated',
                                            onInstanceIdAllocated);
+  this.setupWebRequestEvents_();
 };
 
 /**
@@ -636,10 +637,49 @@ WebView.prototype.setupExtPermissionEvent_ = function(event, webviewEvent) {
 };
 
 /**
- * Implemented when the experimental API is available.
  * @private
  */
-WebView.prototype.maybeSetupExperimentalAPI_ = function() {};
+WebView.prototype.setupWebRequestEvents_ = function() {
+  var self = this;
+  var request = {};
+  var createWebRequestEvent = function(webRequestEvent) {
+    return function() {
+      if (!self[webRequestEvent.name + '_']) {
+        self[webRequestEvent.name + '_'] =
+            new WebRequestEvent(
+                'webview.' + webRequestEvent.name,
+                webRequestEvent.parameters,
+                webRequestEvent.extraParameters, null,
+                self.viewInstanceId_);
+      }
+      return self[webRequestEvent.name + '_'];
+    };
+  };
+
+  // Populate the WebRequest events from the API definition.
+  for (var i = 0; i < webRequestSchema.events.length; ++i) {
+    var webRequestEvent = createWebRequestEvent(webRequestSchema.events[i]);
+    Object.defineProperty(
+        request,
+        webRequestSchema.events[i].name,
+        {
+          get: webRequestEvent,
+          enumerable: true
+        }
+    );
+    this.maybeAttachWebRequestEventToWebview_(webRequestSchema.events[i].name,
+                                              webRequestEvent);
+  }
+  Object.defineProperty(
+      this.webviewNode_,
+      'request',
+      {
+        value: request,
+        enumerable: true,
+        writable: false
+      }
+  );
+};
 
 /**
  * Implemented when the experimental API is available.
@@ -652,6 +692,12 @@ WebView.prototype.maybeSetupExtDialogEvent_ = function() {};
  * @private
  */
 WebView.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {};
+
+/**
+ * Implemented when the experimental API is available.
+ * @private
+ */
+WebView.prototype.maybeAttachWebRequestEventToWebview_ = function() {};
 
 exports.WebView = WebView;
 exports.CreateEvent = createEvent;

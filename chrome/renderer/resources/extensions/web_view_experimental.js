@@ -12,9 +12,6 @@
 // CHANNEL_CANARY.
 
 var createEvent = require('webView').CreateEvent;
-var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
-var webRequestSchema =
-    requireNative('schema_registry').GetSchema('webRequest');
 var WebView = require('webView').WebView;
 
 var WEB_VIEW_EXPERIMENTAL_EXT_EVENTS = {
@@ -31,57 +28,14 @@ var WEB_VIEW_EXPERIMENTAL_EXT_EVENTS = {
 /**
  * @private
  */
-WebView.prototype.maybeSetupExperimentalAPI_ = function() {
-  this.setupWebRequestEvents_();
-};
-
-/**
- * @private
- */
-WebView.prototype.setupWebRequestEvents_ = function() {
-  var self = this;
-  var request = {};
-  var createWebRequestEvent = function(webRequestEvent) {
-    return function() {
-      if (!self[webRequestEvent.name + '_']) {
-        self[webRequestEvent.name + '_'] =
-            new WebRequestEvent(
-                'webview.' + webRequestEvent.name,
-                webRequestEvent.parameters,
-                webRequestEvent.extraParameters, null,
-                self.viewInstanceId_);
-      }
-      return self[webRequestEvent.name + '_'];
-    };
-  };
-
-  // Populate the WebRequest events from the API definition.
-  for (var i = 0; i < webRequestSchema.events.length; ++i) {
-    var webRequestEvent = createWebRequestEvent(webRequestSchema.events[i]);
-    Object.defineProperty(
-        request,
-        webRequestSchema.events[i].name,
-        {
-          get: webRequestEvent,
-          enumerable: true
-        }
-    );
-    Object.defineProperty(
-        this.webviewNode_,
-        webRequestSchema.events[i].name,
-        {
-          get: webRequestEvent,
-          enumerable: true
-        }
-    );
-  }
+WebView.prototype.maybeAttachWebRequestEventToWebview_ =
+    function(eventName, webRequestEvent) {
   Object.defineProperty(
       this.webviewNode_,
-      'request',
+      eventName,
       {
-        value: request,
-        enumerable: true,
-        writable: false
+        get: webRequestEvent,
+        enumerable: true
       }
   );
 };
