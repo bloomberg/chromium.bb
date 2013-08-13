@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../js/resources/js-test-pre.js"></script>
 <style>
 #drag {
     border: 1px solid black;
@@ -14,20 +15,6 @@
 }
 </style>
 <script>
-function assertEq(left, right)
-{
-    if (left === right)
-        log('PASS: ' + left + " === " + right);
-    else
-        log('FAIL: ' + left + "(of type " + (typeof left) + ") !== " + right + "(of type " + (typeof right) + ")");
-}
-function log(str)
-{
-    var result = document.getElementById('result');
-    result.appendChild(document.createTextNode(str));
-    result.appendChild(document.createElement('br'));
-}
-
 function legacyDragStart(dataTransfer)
 {
     dataTransfer.setData('text', 'sample');
@@ -36,8 +23,12 @@ function legacyDragStart(dataTransfer)
     dataTransfer.setData('custom-data', 'hello world');
 }
 
+var testDataTransfer;
 function itemListDragStart(dataTransfer)
 {
+    testDataTransfer = dataTransfer;
+    shouldThrow('testDataTransfer.items.add()', '"TypeError: Not enough arguments"');
+    shouldThrow('testDataTransfer.items.add("sample")', '"TypeError: Type error"');
     dataTransfer.items.add('sample', 'text/plain');
     dataTransfer.items.add('http://www.google.com/', 'text/uri-list');
     dataTransfer.items.add('<em>Markup</em>', 'text/html');
@@ -65,39 +56,39 @@ function dragover(event)
 
 function legacyDrop(dataTransfer)
 {
-    assertEq(4, dataTransfer.types.length);
-    if (dataTransfer.types.indexOf('text/plain') < 0)
-        log('FAIL: types array did not contain "text"');
-    if (dataTransfer.types.indexOf('text/uri-list') < 0)
-        log('FAIL: types array did not contain "text/uri-list"');
-    if (dataTransfer.types.indexOf('text/html') < 0)
-        log('FAIL: types array did not contain "text/html"');
-    if (dataTransfer.types.indexOf('custom-data') < 0)
-        log('FAIL: types array did not contain "custom-data"');
-    assertEq('sample', dataTransfer.getData('text'));
-    assertEq('http://www.google.com/', dataTransfer.getData('url'));
-    assertEq('<em>Markup</em>', dataTransfer.getData('text/html'));
-    assertEq('hello world', dataTransfer.getData('custom-data'));
-    runNext();
+    testDataTransfer = dataTransfer;
+    shouldBe('testDataTransfer.types.length', '4');
+    shouldBeTrue('testDataTransfer.types.indexOf("text/plain") >= 0');
+    shouldBeTrue('testDataTransfer.types.indexOf("text/uri-list") >= 0');
+    shouldBeTrue('testDataTransfer.types.indexOf("text/html") >= 0');
+    shouldBeTrue('testDataTransfer.types.indexOf("custom-data") >= 0');
+    shouldBeEqualToString('testDataTransfer.getData("text")', 'sample');
+    shouldBeEqualToString('testDataTransfer.getData("url")', 'http://www.google.com/');
+    shouldBeEqualToString('testDataTransfer.getData("text/html")', '<em>Markup</em>');
+    shouldBeEqualToString('testDataTransfer.getData("custom-data")', 'hello world');
+    setTimeout(runNext, 0);
 }
 
 var outstandingRequests;
+var types, expectedTypes;
+var testData, expectedTestData;
 function itemListDrop(dataTransfer)
 {
+    testDataTransfer = dataTransfer;
     outstandingRequests = 0;
-    assertEq(4, dataTransfer.items.length);
-    var types = [];
+    shouldBe('testDataTransfer.items.length', '4');
+    types = [];
     for (var i = 0; i < dataTransfer.items.length; ++i) {
         types.push({kind: dataTransfer.items[i].kind, type: dataTransfer.items[i].type});
     }
     types.sort(function (a, b) { return a.type.localeCompare(b.type); });
-    var expectedTypes = [
+    expectedTypes = [
         { kind: 'string', type: 'custom-data'},
         { kind: 'string', type: 'text/html'},
         { kind: 'string', type: 'text/plain'},
         { kind: 'string', type: 'text/uri-list'},
     ];
-    assertEq(JSON.stringify(expectedTypes), JSON.stringify(types));
+    shouldBe('JSON.stringify(expectedTypes)', 'JSON.stringify(types)');
     var expectedResults = {
         'custom-data': 'hello world',
         'text/html': '<em>Markup</em>',
@@ -108,9 +99,11 @@ function itemListDrop(dataTransfer)
     {
         ++outstandingRequests;
         return function (data) {
-            assertEq(expectedData, data);
+            expectedTestData = expectedData;
+            testData = data;
+            shouldBe('testData', 'expectedTestData');
             if (--outstandingRequests == 0)
-                window.setTimeout(runNext, 0);
+                setTimeout(runNext, 0);
         }
     }
     // We use this funky loop to make sure we always print out results in the same order.
@@ -140,7 +133,7 @@ function runTest(dragMethodIndex, dropMethodIndex)
     var dropMethod = document.getElementById('dropMethod');
     dragMethod.selectedIndex = dragMethodIndex;
     dropMethod.selectedIndex = dropMethodIndex;
-    log('Running test with ' + dragMethod.value + ' drag handler and ' + dropMethod.value + ' drop handler');
+    debug('Running test with ' + dragMethod.value + ' drag handler and ' + dropMethod.value + ' drop handler');
 
     var dragElement = document.getElementById('drag');
     eventSender.mouseMoveTo(dragElement.offsetLeft + dragElement.offsetWidth / 2,
@@ -167,17 +160,7 @@ function runNext()
     if (testCase)
         runTest.apply(null, testCase);
     else
-        testRunner.notifyDone();
-}
-
-window.onload = function()
-{
-    if (!window.testRunner)
-        return;
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-
-    runNext();
+        finishJSTest();
 }
 </script>
 </head>
@@ -188,6 +171,13 @@ window.onload = function()
 </div>
 <div>Drag handler: <select id="dragMethod"><option>Legacy</option><option>DataTransferItemList</option></select></div>
 <div>Drop handler: <select id="dropMethod"><option>Legacy</option><option>DataTransferItemList</option></select></div>
-<div id="result"></div>
+<div id="console"></div>
+<script>
+description("Tests drag'n drop and well as DataTransferItemList");
+window.jsTestIsAsync = true;
+
+runNext();
+</script>
+<script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>
