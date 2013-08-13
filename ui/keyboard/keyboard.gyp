@@ -92,14 +92,13 @@
         'keyboard_test_suite.cc',
       ],
       'conditions': [
-        [ 'os_posix == 1 and OS != "mac" and OS != "android" and OS != "ios"', {
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
+        ['OS=="linux" and linux_use_tcmalloc==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
           ],
+          'link_settings': {
+            'ldflags': ['-rdynamic'],
+          },
         }],
       ],
     },
