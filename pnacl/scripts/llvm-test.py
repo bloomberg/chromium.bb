@@ -237,11 +237,19 @@ def LlvmRegression(env, options):
     os.chdir(env['TC_BUILD_LLVM'])
     make_pipe = subprocess.Popen(['make', 'check-all', 'VERBOSE=1'],
                                  stdout=subprocess.PIPE)
-    make_stdout = make_pipe.communicate()[0]
-    if env['PNACL_BUILDBOT'] != 'false':
-      # The buildbots need to be fully verbose and print all output
-      # from "make check-all".
-      print make_stdout
+    lines = []
+    # When run by a buildbot, we need to incrementally tee the 'make'
+    # stdout to our stdout, rather than collect its entire stdout and
+    # print it at the end.  Otherwise the watchdog may try to kill the
+    # process after too long without any output.
+    for line in make_pipe.stdout:
+      if env['PNACL_BUILDBOT'] != 'false':
+        # The buildbots need to be fully verbose and print all output
+        # from "make check-all".
+        print line,
+      lines.append(line)
+    make_pipe.wait()
+    make_stdout = ''.join(lines)
     parse_options = vars(options)
     parse_options['lit'] = True
     parse_options['excludes'].append(env['LIT_KNOWN_FAILURES'])
