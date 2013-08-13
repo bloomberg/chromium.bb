@@ -662,7 +662,6 @@ void ChromeMainDelegate::PreSandboxStartup() {
     ResourceBundle::InitSharedInstanceWithPakFile(locale_pak_fd, false);
 
     int extra_pak_keys[] = {
-      kAndroidChromePakDescriptor,
       kAndroidChrome100PercentPakDescriptor,
       kAndroidUIResourcesPakDescriptor,
     };

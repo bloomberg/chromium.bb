@@ -5,7 +5,6 @@
   'variables': {
     'chrome_android_pak_output_folder': '<@(PRODUCT_DIR)/../assets/<(package_name)',
     'chrome_android_pak_input_resources': [
-      '<(PRODUCT_DIR)/chrome.pak',
       '<(PRODUCT_DIR)/resources.pak',
       '<(PRODUCT_DIR)/chrome_100_percent.pak',
       '<(PRODUCT_DIR)/locales/am.pak',
@@ -54,7 +53,6 @@
       '<(PRODUCT_DIR)/locales/zh-TW.pak',
     ],
     'chrome_android_pak_output_resources': [
-      '<(chrome_android_pak_output_folder)/chrome.pak',
       '<(chrome_android_pak_output_folder)/resources.pak',
       '<(chrome_android_pak_output_folder)/chrome_100_percent.pak',
       '<(chrome_android_pak_output_folder)/am.pak',

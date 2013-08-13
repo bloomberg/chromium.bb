@@ -49,8 +49,6 @@ base::FilePath GetResourcesPakFilePath(NSString* name, NSString* mac_locale) {
 }  // namespace
 
 void ResourceBundle::LoadCommonResources() {
-  AddDataPackFromPath(GetResourcesPakFilePath(@"chrome", nil),
-                      SCALE_FACTOR_NONE);
   AddDataPackFromPath(GetResourcesPakFilePath(@"chrome_100_percent",
                         nil), SCALE_FACTOR_100P);
   AddDataPackFromPath(GetResourcesPakFilePath(@"webkit_resources_100_percent",

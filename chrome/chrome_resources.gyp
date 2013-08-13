@@ -319,9 +319,6 @@
       ],
       'actions': [
         {
-          'includes': ['chrome_repack_chrome.gypi']
-        },
-        {
           'includes': ['chrome_repack_locales.gypi']
         },
         {
@@ -370,12 +367,6 @@
           # since the framework build phase will copy them into the framework
           # bundle directly.
           'copies': [
-            {
-              'destination': '<(PRODUCT_DIR)',
-              'files': [
-                '<(SHARED_INTERMEDIATE_DIR)/repack/chrome.pak'
-              ],
-            },
             {
               'destination': '<(PRODUCT_DIR)',
               'files': [

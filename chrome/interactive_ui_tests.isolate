@@ -14,7 +14,6 @@
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
-          '<(PRODUCT_DIR)/chrome.pak',
           '<(PRODUCT_DIR)/libffmpegsumo.so',
           '<(PRODUCT_DIR)/pyproto/google/__init__.py',
           '<(PRODUCT_DIR)/xdisplaycheck<(EXECUTABLE_SUFFIX)',
