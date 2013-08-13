@@ -172,8 +172,6 @@
       'test/skia_common.h',
       'test/test_tile_priorities.cc',
       'test/test_tile_priorities.h',
-      'test/test_web_graphics_context_3d.cc',
-      'test/test_web_graphics_context_3d.h',
       'test/tiled_layer_test_common.cc',
       'test/tiled_layer_test_common.h',
     ],

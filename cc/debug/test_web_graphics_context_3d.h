@@ -1,9 +1,9 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
-#define CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#ifndef CC_DEBUG_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#define CC_DEBUG_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
 
 #include <vector>
 
@@ -15,18 +15,16 @@
 #include "base/memory/weak_ptr.h"
 #include "base/stl_util.h"
 #include "base/synchronization/lock.h"
+#include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_hash_map.h"
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-namespace WebKit {
-class WebGraphicsContext3D;
-struct WebGraphicsMemoryAllocation;
-}
+namespace WebKit { struct WebGraphicsMemoryAllocation; }
 
 namespace cc {
 
-class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
+class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
  public:
   static scoped_ptr<TestWebGraphicsContext3D> Create();
   static base::Callback<
@@ -294,4 +292,4 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
 }  // namespace cc
 
-#endif  // CC_TEST_TEST_WEB_GRAPHICS_CONTEXT_3D_H_
+#endif  // CC_DEBUG_TEST_WEB_GRAPHICS_CONTEXT_3D_H_

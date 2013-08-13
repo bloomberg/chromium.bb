@@ -7,11 +7,11 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {

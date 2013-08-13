@@ -5,6 +5,7 @@
 #include "cc/layers/scrollbar_layer.h"
 
 #include "cc/animation/scrollbar_animation_controller.h"
+#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/scrollbar_layer_impl.h"
 #include "cc/quads/solid_color_draw_quad.h"
@@ -19,7 +20,6 @@
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/test/mock_quad_culler.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/tree_synchronizer.h"

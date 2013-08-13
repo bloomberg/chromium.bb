@@ -56,9 +56,6 @@
         'scoped_animation_duration_scale_mode.h',
         'scoped_layer_animation_settings.cc',
         'scoped_layer_animation_settings.h',
-        # UI tests need TestWebGraphicsContext3D, so we always build it.
-        'test_web_graphics_context_3d.cc',
-        'test_web_graphics_context_3d.h',
         'transform_animation_curve_adapter.cc',
         'transform_animation_curve_adapter.h',
       ],

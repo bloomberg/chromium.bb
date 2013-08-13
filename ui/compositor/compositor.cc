@@ -17,6 +17,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "cc/debug/fake_context_provider.h"
+#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/output/context_provider.h"
@@ -28,7 +29,6 @@
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/reflector.h"
-#include "ui/compositor/test_web_graphics_context_3d.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface.h"
@@ -166,7 +166,9 @@ TestContextFactory::~TestContextFactory() {}
 
 scoped_ptr<cc::OutputSurface> TestContextFactory::CreateOutputSurface(
     Compositor* compositor) {
-  return make_scoped_ptr(new cc::OutputSurface(CreateOffscreenContext()));
+  scoped_ptr<WebKit::WebGraphicsContext3D> context(
+      cc::TestWebGraphicsContext3D::Create());
+  return make_scoped_ptr(new cc::OutputSurface(context.Pass()));
 }
 
 scoped_refptr<Reflector> TestContextFactory::CreateReflector(
@@ -183,7 +185,7 @@ TestContextFactory::OffscreenContextProviderForMainThread() {
   if (!offscreen_contexts_main_thread_.get() ||
       offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_main_thread_ = cc::FakeContextProvider::Create(
-        base::Bind(&TestContextFactory::CreateOffscreenContext));
+        cc::TestWebGraphicsContext3D::CreateBaseFactory());
     CHECK(offscreen_contexts_main_thread_->BindToCurrentThread());
   }
   return offscreen_contexts_main_thread_;
@@ -194,7 +196,7 @@ TestContextFactory::OffscreenContextProviderForCompositorThread() {
   if (!offscreen_contexts_compositor_thread_.get() ||
       offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_compositor_thread_ = cc::FakeContextProvider::Create(
-        base::Bind(&TestContextFactory::CreateOffscreenContext));
+        cc::TestWebGraphicsContext3D::CreateBaseFactory());
   }
   return offscreen_contexts_compositor_thread_;
 }
@@ -203,15 +205,6 @@ void TestContextFactory::RemoveCompositor(Compositor* compositor) {
 }
 
 bool TestContextFactory::DoesCreateTestContexts() { return true; }
-
-// static
-scoped_ptr<WebKit::WebGraphicsContext3D>
-TestContextFactory::CreateOffscreenContext() {
-  scoped_ptr<ui::TestWebGraphicsContext3D> context(
-      new ui::TestWebGraphicsContext3D);
-  context->Initialize();
-  return context.PassAs<WebKit::WebGraphicsContext3D>();
-}
 
 Texture::Texture(bool flipped, const gfx::Size& size, float device_scale_factor)
     : size_(size),

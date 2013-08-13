@@ -88,6 +88,8 @@
         'debug/rendering_stats_instrumentation.cc',
         'debug/rendering_stats_instrumentation.h',
         'debug/ring_buffer.h',
+        'debug/test_web_graphics_context_3d.cc',
+        'debug/test_web_graphics_context_3d.h',
         'debug/traced_picture.cc',
         'debug/traced_picture.h',
         'debug/traced_value.cc',

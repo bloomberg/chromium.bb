@@ -1,8 +1,8 @@
-// Copyright 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/debug/test_web_graphics_context_3d.h"
 
 #include <algorithm>
 #include <string>
@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using WebKit::WGC3Dboolean;
@@ -274,7 +273,7 @@ WebGLId TestWebGraphicsContext3D::createFramebuffer() {
 }
 
 void TestWebGraphicsContext3D::deleteFramebuffer(WebGLId id) {
-  EXPECT_EQ(kFramebufferId | context_id_ << 16, id);
+  DCHECK_EQ(kFramebufferId | context_id_ << 16, id);
 }
 
 WebGLId TestWebGraphicsContext3D::createProgram() {
@@ -282,7 +281,7 @@ WebGLId TestWebGraphicsContext3D::createProgram() {
 }
 
 void TestWebGraphicsContext3D::deleteProgram(WebGLId id) {
-  EXPECT_EQ(kProgramId | context_id_ << 16, id);
+  DCHECK_EQ(kProgramId | context_id_ << 16, id);
 }
 
 WebGLId TestWebGraphicsContext3D::createRenderbuffer() {
@@ -290,7 +289,7 @@ WebGLId TestWebGraphicsContext3D::createRenderbuffer() {
 }
 
 void TestWebGraphicsContext3D::deleteRenderbuffer(WebGLId id) {
-  EXPECT_EQ(kRenderbufferId | context_id_ << 16, id);
+  DCHECK_EQ(kRenderbufferId | context_id_ << 16, id);
 }
 
 WebGLId TestWebGraphicsContext3D::createShader(WGC3Denum) {
@@ -298,7 +297,7 @@ WebGLId TestWebGraphicsContext3D::createShader(WGC3Denum) {
 }
 
 void TestWebGraphicsContext3D::deleteShader(WebGLId id) {
-  EXPECT_EQ(kShaderId | context_id_ << 16, id);
+  DCHECK_EQ(kShaderId | context_id_ << 16, id);
 }
 
 WebGLId TestWebGraphicsContext3D::createTexture() {
@@ -318,28 +317,28 @@ void TestWebGraphicsContext3D::deleteTexture(WebGLId texture_id) {
 }
 
 void TestWebGraphicsContext3D::attachShader(WebGLId program, WebGLId shader) {
-  EXPECT_EQ(kProgramId | context_id_ << 16, program);
-  EXPECT_EQ(kShaderId | context_id_ << 16, shader);
+  DCHECK_EQ(kProgramId | context_id_ << 16, program);
+  DCHECK_EQ(kShaderId | context_id_ << 16, shader);
 }
 
 void TestWebGraphicsContext3D::useProgram(WebGLId program) {
   if (!program)
     return;
-  EXPECT_EQ(kProgramId | context_id_ << 16, program);
+  DCHECK_EQ(kProgramId | context_id_ << 16, program);
 }
 
 void TestWebGraphicsContext3D::bindFramebuffer(
     WGC3Denum target, WebGLId framebuffer) {
   if (!framebuffer)
     return;
-  EXPECT_EQ(kFramebufferId | context_id_ << 16, framebuffer);
+  DCHECK_EQ(kFramebufferId | context_id_ << 16, framebuffer);
 }
 
 void TestWebGraphicsContext3D::bindRenderbuffer(
       WGC3Denum target, WebGLId renderbuffer) {
   if (!renderbuffer)
     return;
-  EXPECT_EQ(kRenderbufferId | context_id_ << 16, renderbuffer);
+  DCHECK_EQ(kRenderbufferId | context_id_ << 16, renderbuffer);
 }
 
 void TestWebGraphicsContext3D::bindTexture(

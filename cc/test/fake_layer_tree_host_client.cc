@@ -4,9 +4,9 @@
 
 #include "cc/test/fake_layer_tree_host_client.h"
 
+#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/output/context_provider.h"
 #include "cc/test/fake_output_surface.h"
-#include "cc/test/test_web_graphics_context_3d.h"
 
 namespace cc {
 
