@@ -10,7 +10,7 @@
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
-#include "cc/debug/fake_context_provider.h"
+#include "cc/debug/test_context_provider.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/layer.h"
@@ -615,8 +615,7 @@ scoped_refptr<cc::ContextProvider> LayerTreeTest::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_contexts_.get() ||
       main_thread_contexts_->DestroyedOnMainThread()) {
-    main_thread_contexts_ = FakeContextProvider::Create(
-        TestWebGraphicsContext3D::CreateBaseFactory());
+    main_thread_contexts_ = TestContextProvider::Create();
     if (!main_thread_contexts_->BindToCurrentThread())
       main_thread_contexts_ = NULL;
   }
@@ -627,8 +626,7 @@ scoped_refptr<cc::ContextProvider> LayerTreeTest::
     OffscreenContextProviderForCompositorThread() {
   if (!compositor_thread_contexts_.get() ||
       compositor_thread_contexts_->DestroyedOnMainThread())
-    compositor_thread_contexts_ = FakeContextProvider::Create(
-        TestWebGraphicsContext3D::CreateBaseFactory());
+    compositor_thread_contexts_ = TestContextProvider::Create();
   return compositor_thread_contexts_;
 }
 

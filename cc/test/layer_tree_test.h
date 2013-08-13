@@ -15,13 +15,13 @@
 namespace Webkit { class WebGraphicsContext3D; }
 
 namespace cc {
-class FakeContextProvider;
 class FakeLayerTreeHostClient;
 class FakeOutputSurface;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
+class TestContextProvider;
 
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public AnimationDelegate {
@@ -184,8 +184,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   base::CancelableClosure timeout_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;
   base::WeakPtrFactory<LayerTreeTest> weak_factory_;
-  scoped_refptr<FakeContextProvider> main_thread_contexts_;
-  scoped_refptr<FakeContextProvider> compositor_thread_contexts_;
+  scoped_refptr<TestContextProvider> main_thread_contexts_;
+  scoped_refptr<TestContextProvider> compositor_thread_contexts_;
 };
 
 }  // namespace cc

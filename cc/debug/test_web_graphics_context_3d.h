@@ -29,8 +29,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   static scoped_ptr<TestWebGraphicsContext3D> Create();
   static base::Callback<
     scoped_ptr<TestWebGraphicsContext3D>()> CreateFactory();
-  static base::Callback<
-    scoped_ptr<WebKit::WebGraphicsContext3D>()> CreateBaseFactory();
 
   virtual ~TestWebGraphicsContext3D();
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_DEBUG_FAKE_CONTEXT_PROVIDER_H_
-#define CC_DEBUG_FAKE_CONTEXT_PROVIDER_H_
+#ifndef CC_DEBUG_TEST_CONTEXT_PROVIDER_H_
+#define CC_DEBUG_TEST_CONTEXT_PROVIDER_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,24 +15,17 @@
 namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
+class TestWebGraphicsContext3D;
 
-class CC_EXPORT FakeContextProvider
+class CC_EXPORT TestContextProvider
     : public NON_EXPORTED_BASE(cc::ContextProvider) {
  public:
-  typedef base::Callback<scoped_ptr<WebKit::WebGraphicsContext3D>(void)>
+  typedef base::Callback<scoped_ptr<TestWebGraphicsContext3D>(void)>
     CreateCallback;
 
-  static scoped_refptr<FakeContextProvider> Create() {
-    return Create(CreateCallback());
-  }
-
-  static scoped_refptr<FakeContextProvider> Create(
-      const CreateCallback& create_callback) {
-    scoped_refptr<FakeContextProvider> provider = new FakeContextProvider;
-    if (!provider->InitializeOnMainThread(create_callback))
-      return NULL;
-    return provider;
-  }
+  static scoped_refptr<TestContextProvider> Create();
+  static scoped_refptr<TestContextProvider> Create(
+      const CreateCallback& create_callback);
 
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
@@ -41,13 +34,15 @@ class CC_EXPORT FakeContextProvider
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE;
 
+  TestWebGraphicsContext3D* TestContext3d() { return context3d_.get(); }
+
  protected:
-  FakeContextProvider();
-  virtual ~FakeContextProvider();
+  TestContextProvider();
+  virtual ~TestContextProvider();
 
   bool InitializeOnMainThread(const CreateCallback& create_callback);
 
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
+  scoped_ptr<TestWebGraphicsContext3D> context3d_;
   bool bound_;
 
   base::ThreadChecker main_thread_checker_;
@@ -59,5 +54,5 @@ class CC_EXPORT FakeContextProvider
 
 }  // namespace cc
 
-#endif  // CC_DEBUG_FAKE_CONTEXT_PROVIDER_H_
+#endif  // CC_DEBUG_TEST_CONTEXT_PROVIDER_H_
 

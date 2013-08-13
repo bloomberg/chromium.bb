@@ -16,7 +16,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
-#include "cc/debug/fake_context_provider.h"
+#include "cc/debug/test_context_provider.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
@@ -184,8 +184,7 @@ scoped_refptr<cc::ContextProvider>
 TestContextFactory::OffscreenContextProviderForMainThread() {
   if (!offscreen_contexts_main_thread_.get() ||
       offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_main_thread_ = cc::FakeContextProvider::Create(
-        cc::TestWebGraphicsContext3D::CreateBaseFactory());
+    offscreen_contexts_main_thread_ = cc::TestContextProvider::Create();
     CHECK(offscreen_contexts_main_thread_->BindToCurrentThread());
   }
   return offscreen_contexts_main_thread_;
@@ -195,8 +194,7 @@ scoped_refptr<cc::ContextProvider>
 TestContextFactory::OffscreenContextProviderForCompositorThread() {
   if (!offscreen_contexts_compositor_thread_.get() ||
       offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-    offscreen_contexts_compositor_thread_ = cc::FakeContextProvider::Create(
-        cc::TestWebGraphicsContext3D::CreateBaseFactory());
+    offscreen_contexts_compositor_thread_ = cc::TestContextProvider::Create();
   }
   return offscreen_contexts_compositor_thread_;
 }

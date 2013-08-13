@@ -31,10 +31,10 @@ class RunLoop;
 
 namespace cc {
 class ContextProvider;
-class FakeContextProvider;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
+class TestContextProvider;
 }
 
 namespace gfx {
@@ -164,8 +164,8 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   virtual bool DoesCreateTestContexts() OVERRIDE;
 
  private:
-  scoped_refptr<cc::FakeContextProvider> offscreen_contexts_main_thread_;
-  scoped_refptr<cc::FakeContextProvider> offscreen_contexts_compositor_thread_;
+  scoped_refptr<cc::TestContextProvider> offscreen_contexts_main_thread_;
+  scoped_refptr<cc::TestContextProvider> offscreen_contexts_compositor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextFactory);
 };

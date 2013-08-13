@@ -6,7 +6,7 @@
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "cc/debug/fake_context_provider.h"
+#include "cc/debug/test_context_provider.h"
 #include "cc/input/input_handler.h"
 #include "cc/trees/layer_tree_host.h"
 
@@ -50,8 +50,8 @@ class FakeLayerTreeHostClient : public LayerTreeHostClient {
   bool use_software_rendering_;
   bool use_delegating_renderer_;
 
-  scoped_refptr<FakeContextProvider> main_thread_contexts_;
-  scoped_refptr<FakeContextProvider> compositor_thread_contexts_;
+  scoped_refptr<TestContextProvider> main_thread_contexts_;
+  scoped_refptr<TestContextProvider> compositor_thread_contexts_;
 };
 
 }  // namespace cc

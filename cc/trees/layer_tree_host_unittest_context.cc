@@ -5,7 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/basictypes.h"
-#include "cc/debug/fake_context_provider.h"
+#include "cc/debug/test_context_provider.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/heads_up_display_layer.h"
@@ -115,16 +115,16 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         context3d.PassAs<WebGraphicsContext3D>()).PassAs<OutputSurface>();
   }
 
-  scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext3d() {
+  scoped_ptr<TestWebGraphicsContext3D> CreateOffscreenContext3d() {
     if (!context3d_)
-      return scoped_ptr<WebKit::WebGraphicsContext3D>();
+      return scoped_ptr<TestWebGraphicsContext3D>();
 
     ++times_offscreen_created_;
 
     if (times_to_fail_create_offscreen_) {
       --times_to_fail_create_offscreen_;
       ExpectCreateToFail();
-      return scoped_ptr<WebKit::WebGraphicsContext3D>();
+      return scoped_ptr<TestWebGraphicsContext3D>();
     }
 
     scoped_ptr<TestWebGraphicsContext3D> offscreen_context3d =
@@ -132,7 +132,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     DCHECK(offscreen_context3d);
     context3d_->add_share_group_context(offscreen_context3d.get());
 
-    return offscreen_context3d.PassAs<WebKit::WebGraphicsContext3D>();
+    return offscreen_context3d.Pass();
   }
 
   virtual scoped_refptr<cc::ContextProvider>
@@ -141,7 +141,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     if (!offscreen_contexts_main_thread_.get() ||
         offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_main_thread_ = FakeContextProvider::Create(
+      offscreen_contexts_main_thread_ = TestContextProvider::Create(
           base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
                      base::Unretained(this)));
       if (offscreen_contexts_main_thread_.get() &&
@@ -157,7 +157,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     if (!offscreen_contexts_compositor_thread_.get() ||
         offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_compositor_thread_ = FakeContextProvider::Create(
+      offscreen_contexts_compositor_thread_ = TestContextProvider::Create(
           base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
                      base::Unretained(this)));
     }
@@ -236,8 +236,8 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   bool context_should_support_io_surface_;
   bool fallback_context_works_;
 
-  scoped_refptr<FakeContextProvider> offscreen_contexts_main_thread_;
-  scoped_refptr<FakeContextProvider> offscreen_contexts_compositor_thread_;
+  scoped_refptr<TestContextProvider> offscreen_contexts_main_thread_;
+  scoped_refptr<TestContextProvider> offscreen_contexts_compositor_thread_;
 };
 
 class LayerTreeHostContextTestLostContextSucceeds

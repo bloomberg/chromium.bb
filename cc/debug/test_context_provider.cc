@@ -2,26 +2,40 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/debug/fake_context_provider.h"
+#include "cc/debug/test_context_provider.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "cc/debug/test_web_graphics_context_3d.h"
 
 namespace cc {
 
-FakeContextProvider::FakeContextProvider()
+// static
+scoped_refptr<TestContextProvider> TestContextProvider::Create() {
+  return Create(TestWebGraphicsContext3D::CreateFactory());
+}
+
+// static
+scoped_refptr<TestContextProvider> TestContextProvider::Create(
+    const CreateCallback& create_callback) {
+  scoped_refptr<TestContextProvider> provider = new TestContextProvider;
+  if (!provider->InitializeOnMainThread(create_callback))
+    return NULL;
+  return provider;
+}
+
+TestContextProvider::TestContextProvider()
     : bound_(false),
       destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   context_thread_checker_.DetachFromThread();
 }
 
-FakeContextProvider::~FakeContextProvider() {
+TestContextProvider::~TestContextProvider() {
   DCHECK(main_thread_checker_.CalledOnValidThread() ||
          context_thread_checker_.CalledOnValidThread());
 }
 
-bool FakeContextProvider::InitializeOnMainThread(
+bool TestContextProvider::InitializeOnMainThread(
     const CreateCallback& create_callback) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -31,7 +45,7 @@ bool FakeContextProvider::InitializeOnMainThread(
   return context3d_;
 }
 
-bool FakeContextProvider::BindToCurrentThread() {
+bool TestContextProvider::BindToCurrentThread() {
   DCHECK(context3d_);
 
   // This is called on the thread the context will be used.
@@ -49,7 +63,7 @@ bool FakeContextProvider::BindToCurrentThread() {
   return true;
 }
 
-WebKit::WebGraphicsContext3D* FakeContextProvider::Context3d() {
+WebKit::WebGraphicsContext3D* TestContextProvider::Context3d() {
   DCHECK(context3d_);
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -57,16 +71,16 @@ WebKit::WebGraphicsContext3D* FakeContextProvider::Context3d() {
   return context3d_.get();
 }
 
-class GrContext* FakeContextProvider::GrContext() {
+class GrContext* TestContextProvider::GrContext() {
   DCHECK(context3d_);
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  // TODO(danakj): Make a fake GrContext that works with a fake Context3d.
+  // TODO(danakj): Make a test GrContext that works with a test Context3d.
   return NULL;
 }
 
-void FakeContextProvider::VerifyContexts() {
+void TestContextProvider::VerifyContexts() {
   DCHECK(context3d_);
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
@@ -77,14 +91,14 @@ void FakeContextProvider::VerifyContexts() {
   }
 }
 
-bool FakeContextProvider::DestroyedOnMainThread() {
+bool TestContextProvider::DestroyedOnMainThread() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   base::AutoLock lock(destroyed_lock_);
   return destroyed_;
 }
 
-void FakeContextProvider::SetLostContextCallback(
+void TestContextProvider::SetLostContextCallback(
     const LostContextCallback& cb) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
   NOTIMPLEMENTED();

@@ -40,8 +40,7 @@ scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_contexts_.get() ||
       main_thread_contexts_->DestroyedOnMainThread()) {
-    main_thread_contexts_ = FakeContextProvider::Create(
-        TestWebGraphicsContext3D::CreateBaseFactory());
+    main_thread_contexts_ = TestContextProvider::Create();
     if (!main_thread_contexts_->BindToCurrentThread())
       main_thread_contexts_ = NULL;
   }
@@ -52,8 +51,7 @@ scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForCompositorThread() {
   if (!compositor_thread_contexts_.get() ||
       compositor_thread_contexts_->DestroyedOnMainThread())
-    compositor_thread_contexts_ = FakeContextProvider::Create(
-        TestWebGraphicsContext3D::CreateBaseFactory());
+    compositor_thread_contexts_ = TestContextProvider::Create();
   return compositor_thread_contexts_;
 }
 
