@@ -177,7 +177,7 @@ void ClientSession::SetCapabilities(
 
 void ClientSession::RequestPairing(
     const protocol::PairingRequest& pairing_request) {
-  if (pairing_request.has_client_name()) {
+  if (pairing_registry_ && pairing_request.has_client_name()) {
     protocol::PairingRegistry::Pairing pairing =
         pairing_registry_->CreatePairing(pairing_request.client_name());
     protocol::PairingResponse pairing_response;
