@@ -324,6 +324,11 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
     update_statement.BindInt64(1, day_start.ToInternalValue());
     update_statement.BindInt64(2, next_day.ToInternalValue());
     for (size_t j = 0; j < matched_values.size(); j++) {
+      // A call to BindNull when matched_values contains -1 is likely not
+      // necessary as parameters default to null before they are explicitly
+      // bound.  But to be completely clear, and in case a cached statement
+      // ever comes with some values already bound, we bind all parameters
+      // (even null ones) explicitly.
       if (matched_values[j] == -1)
         update_statement.BindNull(j + 3);
       else
@@ -347,7 +352,7 @@ bool CountingPolicy::FlushDatabase(sql::Connection* db) {
     insert_statement.BindInt64(0, action.time().ToInternalValue());
     for (size_t j = 0; j < matched_values.size(); j++) {
       if (matched_values[j] == -1)
-        update_statement.BindNull(j + 1);
+        insert_statement.BindNull(j + 1);
       else
         insert_statement.BindInt64(j + 1, matched_values[j]);
     }
