@@ -36,7 +36,7 @@ std::string GetExampleOfBadInput(const std::string& input) {
   }
   TrimWhitespaceASCII(result, TRIM_ALL, &result);
 
-  const int kMaxSize = 50;
+  const size_t kMaxSize = 50;
   if (result.size() > kMaxSize) {
     trimmed = true;
     result.resize(kMaxSize);

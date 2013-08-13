@@ -84,11 +84,9 @@ void NinjaToolchainWriter::WriteRules() {
 
 void NinjaToolchainWriter::WriteSubninjas() {
   for (size_t i = 0; i < targets_.size(); i++) {
-    if (targets_[i]->output_type() != Target::NONE) {
-      out_ << "subninja ";
-      path_output_.WriteFile(out_, helper_.GetNinjaFileForTarget(targets_[i]));
-      out_ << std::endl;
-    }
+    out_ << "subninja ";
+    path_output_.WriteFile(out_, helper_.GetNinjaFileForTarget(targets_[i]));
+    out_ << std::endl;
   }
   out_ << std::endl;
 }

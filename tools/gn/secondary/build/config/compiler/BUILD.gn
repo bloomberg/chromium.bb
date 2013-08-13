@@ -11,67 +11,93 @@ config("compiler") {
       "/Od", "/WX", "/Zi", "/Gy", "/GS", "/RTC1", "/EHsc",
     ]
   } else {
+    # Common GCC compiler flags setup.
+    # --------------------------------
     cflags = [
-      # TODO(brettw) obviously this needs to be parameterized.
-      "-arch i386",
-
-      # See http://crbug.com/32204
-      "-fno-strict-aliasing",
-
+      "-fno-strict-aliasing",  # See http://crbug.com/32204
       "-fno-threadsafe-statics",
-      "-fstack-protector-all",
       "-fvisibility=hidden",
       "-fvisibility-inlines-hidden",
-    ]
-    # !!! Please keep additions sorted alphabetically.
 
-    # TODO(brettw) these should be clang-only.
-    # if (is_clang) {
+      # GCC turns on -Wsign-compare for C++ under -Wall, but clang doesn't,
+      # so we specify it explicitly.
+      # TODO(fischman): remove this if http://llvm.org/PR10448 obsoletes it.
+      # http://code.google.com/p/chromium/issues/detail?id=90453
+      "-Wsign-compare",
+    ]
+    cflags_c = [
+    ]
+    cflags_cc = [
+      "-fno-exceptions",
+    ]
+    ldflags = [
+    ]
+
+    # Stack protection.
+    # TODO(brettw) why do we have different values for all of these cases?
+    if (is_mac) {
+      cflags += "-fstack-protector-all"
+    } else if (is_chromeos) {
+      cflags += "-fstack-protector-strong"
+    } else if (is_linux) {
+      cflags += [ "-fstack-protector", "--param=ssp-buffer-size=4" ]
+    }
+
+    # Mac-specific compiler flags setup.
+    # ----------------------------------
+    if (is_mac) {
+      # These flags are shared between the C compiler and linker.
+      common_mac_flags = [
+        # TODO(brettw) obviously this arch flag needs to be parameterized.
+        "-arch i386",
+
+        # Set which SDK to use.
+        # TODO(brettw) this needs to be configurable somehow.
+        "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk",
+
+        "-mmacosx-version-min=10.6",
+      ]
+
+      cflags += common_mac_flags + [
+        # Without this, the constructors and destructors of a C++ object inside
+        # an Objective C struct won't be called, which is very bad.
+        "-fobjc-call-cxx-cdtors",
+      ]
+
+      cflags_c += [ "-std=c99" ]
+      cflags_cc += [ "-std=gnu++11" ]
+
+      ldflags += common_mac_flags + [
+        "-L.",
+
+        # TODO(brettW) I don't understand these options.
+        "-Wl,-rpath,@loader_path/.",
+        "-Wl,-rpath,@loader_path/../../..",
+      ]
+    }
+
+    # Linux-specific compiler flags setup.
+    # ------------------------------------
+    if (is_linux) {
+      cflags += [
+        "-pthread",
+        "-pipe",  # Use pipes for communicating between sub-processes. Faster.
+      ]
+      ldflags += [
+        "-pthread",
+        "-Wl,-z,noexecstack",
+      ]
+    }
+
+    # Clang-specific compiler flags setup.
+    # ------------------------------------
+    # TODO(brettw) these should be clang-only. For now, make it mac-only since
+    # that's where we always use clang.
+    if (is_mac) { # if (is_clang) {
       cflags += [
         "-fcolor-diagnostics",
       ]
-    #}
-
-    cflags_c = [
-      "-std=c99",
-    ]
-
-    cflags_cc = [
-      "-fno-exceptions",
-      "-std=gnu++11",
-    ]
-  }
-
-  if (is_mac) {
-    # These are used for both compiler and linker flags on Mac.
-    common_mac_flags = [
-      # TODO(brettw) obviously this needs to be parameterized.
-      "-arch i386",
-
-      # Set which SDK to use.
-      # TODO(brettw) this needs to be configurable somehow.
-      "-isysroot", "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk",
-
-      "-mmacosx-version-min=10.6",
-    ]
-
-    # Mac compiler flags.
-    cflags += [
-      # Without this, the constructors and destructors of a C++ object inside
-      # an Objective C struct won't be called, which is very bad.
-      "-fobjc-call-cxx-cdtors",
-    ]
-    cflags += common_mac_flags
-
-    # Mac linker flags.
-    ldflags = [
-      "-L.",
-
-      # TODO(brettW) I don't understand these options.
-      "-Wl,-rpath,@loader_path/.",
-      "-Wl,-rpath,@loader_path/../../..",
-    ]
-    ldflags += common_mac_flags
+    }
   }
 }
 
@@ -134,7 +160,7 @@ config("chromium_code") {
     cflags = [
       "/W4",  # Warning level 4.
     ]
-  } else if (is_mac) {
+  } else {
     cflags = [
       "-Wall",
       "-Werror",
@@ -211,26 +237,26 @@ config("default_warnings") {
       "/wd4706",  # Assignment within conditional expression.
       "/wd4819",  # Character not in the current code page.
     ]
-  }
-
-  # TODO(brettw) this should probably be if(clang).
-  if (is_mac) {
+  } else {
+    # Common GCC warning setup.
     cflags = [
-      # Warn for weird old-style text after an #endif.
-      "-Wendif-labels",
+      # Enables.
+      "-Wendif-labels",  # Weird old-style text after an #endif.
 
-      "-Wnewline-eof",
-
-      # Don't warn about the "struct foo f = {0};" initialization pattern.
-      "-Wno-missing-field-initializers",
-
-      # Don't warn about unused function parameters.
-      "-Wno-unused-parameter",
+      # Disables.
+      "-Wno-missing-field-initializers",  # "struct foo f = {0};"
+      "-Wno-unused-parameter",  # Unused function parameters.
     ]
+
+    if (is_mac) {
+      cflags += [
+        "-Wnewline-eof",
+      ]
+    }
 
     # TODO(brettw) Ones below here should be clang-only when we have a flag
     # for it.
-    #if (is_clang) {
+    if (is_mac) { #if (is_clang) {
       cflags += [
         "-Wheader-hygiene",
 
@@ -260,6 +286,6 @@ config("default_warnings") {
         # Warns when a const char[] is converted to bool.
         "-Wstring-conversion",
       ]
-    #}  #is_clang
+    }
   }
 }

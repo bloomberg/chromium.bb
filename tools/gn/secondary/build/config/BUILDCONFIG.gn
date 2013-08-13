@@ -197,6 +197,8 @@ set_defaults("shared_library") {
 
 if (is_win) {
   set_default_toolchain("//build/config/win:32")
+} else if (is_linux) {
+  set_default_toolchain("//build/config/linux:gcc")
 } else if (is_mac) {
   set_default_toolchain("//build/config/mac:clang")
 }

@@ -9,7 +9,6 @@ config("mac_dynamic_flags") {
   ]
 }
 
-
 cc = "../../third_party/llvm-build/Release+Asserts/bin/clang"
 cxx = "../../third_party/llvm-build/Release+Asserts/bin/clang++"
 ld = cxx

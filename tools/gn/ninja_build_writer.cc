@@ -143,8 +143,6 @@ void NinjaBuildWriter::WritePhonyAndAllRules() {
   // we'll get naming conflicts).
   for (size_t i = 0; i < default_toolchain_targets_.size(); i++) {
     const Target* target = default_toolchain_targets_[i];
-    if (target->output_type() == Target::NONE)
-      continue;  // Nothing to generate.
 
     OutputFile target_file = helper_.GetTargetOutputFile(target);
     if (target_file.value() != target->label().name()) {

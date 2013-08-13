@@ -16,6 +16,7 @@
 #include "base/synchronization/lock.h"
 #include "tools/gn/config_values.h"
 #include "tools/gn/item.h"
+#include "tools/gn/script_values.h"
 #include "tools/gn/source_file.h"
 
 class InputFile;
@@ -25,11 +26,11 @@ class Token;
 class Target : public Item {
  public:
   enum OutputType {
-    NONE,
+    UNKNOWN,
+    GROUP,
     EXECUTABLE,
     SHARED_LIBRARY,
     STATIC_LIBRARY,
-    LOADABLE_MODULE,
     COPY_FILES,
     CUSTOM,
   };
@@ -102,19 +103,11 @@ class Target : public Item {
   ConfigValues& config_values() { return config_values_; }
   const ConfigValues& config_values() const { return config_values_; }
 
+  ScriptValues& script_values() { return script_values_; }
+  const ScriptValues& script_values() const { return script_values_; }
+
   const SourceDir& destdir() const { return destdir_; }
   void set_destdir(const SourceDir& d) { destdir_ = d; }
-
-  const SourceFile& script() const { return script_; }
-  void set_script(const SourceFile& s) { script_ = s; }
-
-  const std::vector<std::string>& script_args() const { return script_args_; }
-  void swap_in_script_args(std::vector<std::string>* sa) {
-    script_args_.swap(*sa);
-  }
-
-  const FileList& outputs() const { return outputs_; }
-  void swap_in_outputs(FileList* s) { outputs_.swap(*s); }
 
  private:
   const Settings* settings_;
@@ -133,14 +126,10 @@ class Target : public Item {
   // pushed beyond shared library boundaries.
   std::set<const Target*> inherited_libraries_;
 
-  ConfigValues config_values_;
+  ConfigValues config_values_;  // Used for all binary targets.
+  ScriptValues script_values_;  // Used for script (CUSTOM) targets.
 
   SourceDir destdir_;
-
-  // Script target stuff.
-  SourceFile script_;
-  std::vector<std::string> script_args_;
-  FileList outputs_;
 
   bool generated_;
   const Token* generator_function_;  // Who generated this: for error messages.

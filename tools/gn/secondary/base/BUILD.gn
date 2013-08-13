@@ -689,6 +689,10 @@ component("base") {
     "sys_info_openbsd.cc",
   ]
 
+  # So we can append below without worrying about whether it has been
+  # previously defined or not.
+  all_dependent_configs = []
+
   if (!is_chromeos) {
     sources -= [
       "sys_info_chromeos.cc",
@@ -729,6 +733,17 @@ component("base") {
     ]
   } else {
     sources -= "files/file_path_watcher_kqueue.cc"
+  }
+
+  if (is_linux) {
+    # TODO(brettw) these will need to be parameterized at some point.
+    linux_configs = [
+      "//build/config/linux/system:glib",
+      "//build/config/linux/system:gtk",
+      "//build/config/linux/system:x11",
+    ]
+    configs += linux_configs
+    all_dependent_configs += linux_configs
   }
 
   # Non-Mac Unix stuff.

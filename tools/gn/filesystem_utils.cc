@@ -102,17 +102,12 @@ const char* GetExtensionForOutputType(Target::OutputType type,
   switch (os) {
     case Settings::MAC:
       switch (type) {
-        case Target::NONE:
-          NOTREACHED();
-          return "";
         case Target::EXECUTABLE:
           return "";
         case Target::SHARED_LIBRARY:
           return "dylib";
         case Target::STATIC_LIBRARY:
           return "a";
-        case Target::LOADABLE_MODULE:
-          return "dylib";  // TODO(brettw) what's this?
         default:
           NOTREACHED();
       }
@@ -120,17 +115,25 @@ const char* GetExtensionForOutputType(Target::OutputType type,
 
     case Settings::WIN:
       switch (type) {
-        case Target::NONE:
-          NOTREACHED();
-          return "";
         case Target::EXECUTABLE:
           return "exe";
         case Target::SHARED_LIBRARY:
           return "dll.lib";  // Extension of import library.
         case Target::STATIC_LIBRARY:
           return "lib";
-        case Target::LOADABLE_MODULE:
-          return "dll";  // TODO(brettw) what's this?
+        default:
+          NOTREACHED();
+      }
+      break;
+
+    case Settings::LINUX:
+      switch (type) {
+        case Target::EXECUTABLE:
+          return "";
+        case Target::SHARED_LIBRARY:
+          return "so";
+        case Target::STATIC_LIBRARY:
+          return "a";
         default:
           NOTREACHED();
       }
