@@ -203,6 +203,13 @@ class TextureAttachment
     uint32 need = GLES2Util::GetChannelsNeededForAttachmentType(
         attachment_type, max_color_attachments);
     uint32 have = GLES2Util::GetChannelsForFormat(internal_format);
+
+    // Workaround for NVIDIA drivers that incorrectly expose these formats as
+    // renderable:
+    if (internal_format == GL_LUMINANCE || internal_format == GL_ALPHA ||
+        internal_format == GL_LUMINANCE_ALPHA) {
+      return false;
+    }
     return (need & have) != 0;
   }
 
