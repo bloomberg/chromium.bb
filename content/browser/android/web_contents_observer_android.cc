@@ -66,8 +66,8 @@ void WebContentsObserverAndroid::DidStartLoading(
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, web_contents()->GetURL().spec()));
+  ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
+      env, web_contents()->GetVisibleURL().spec()));
   Java_WebContentsObserverAndroid_didStartLoading(
       env, obj.obj(), jstring_url.obj());
 }
@@ -78,8 +78,8 @@ void WebContentsObserverAndroid::DidStopLoading(
   ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
   if (obj.is_null())
     return;
-  ScopedJavaLocalRef<jstring> jstring_url(
-      ConvertUTF8ToJavaString(env, web_contents()->GetURL().spec()));
+  ScopedJavaLocalRef<jstring> jstring_url(ConvertUTF8ToJavaString(
+      env, web_contents()->GetLastCommittedURL().spec()));
   Java_WebContentsObserverAndroid_didStopLoading(
       env, obj.obj(), jstring_url.obj());
 }

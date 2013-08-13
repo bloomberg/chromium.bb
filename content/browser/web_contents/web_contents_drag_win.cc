@@ -163,7 +163,7 @@ void WebContentsDragWin::StartDragging(const DropData& drop_data,
 
   drag_source_ = new WebDragSource(source_window_, web_contents_);
 
-  const GURL& page_url = web_contents_->GetURL();
+  const GURL& page_url = web_contents_->GetLastCommittedURL();
   const std::string& page_encoding = web_contents_->GetEncoding();
 
   // If it is not drag-out, do the drag-and-drop in the current UI thread.

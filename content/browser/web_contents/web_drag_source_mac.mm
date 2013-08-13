@@ -383,7 +383,8 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
         filePath,
         fileStream.Pass(),
         downloadURL_,
-        content::Referrer(contents_->GetURL(), dropData_->referrer_policy),
+        content::Referrer(contents_->GetLastCommittedURL(),
+                          dropData_->referrer_policy),
         contents_->GetEncoding(),
         contents_));
 

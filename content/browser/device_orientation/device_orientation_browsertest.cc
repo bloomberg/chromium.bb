@@ -71,7 +71,7 @@ IN_PROC_BROWSER_TEST_F(DeviceOrientationBrowserTest, BasicTest) {
 
   // Check that the page got the event it expected and that the provider
   // saw requests for adding and removing an observer.
-  EXPECT_EQ("pass", shell()->web_contents()->GetURL().ref());
+  EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   EXPECT_TRUE(provider->added_observer_);
   EXPECT_TRUE(provider->removed_observer_);
 }

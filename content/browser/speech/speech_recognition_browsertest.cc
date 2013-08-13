@@ -69,7 +69,7 @@ class SpeechRecognitionBrowserTest : public ContentBrowserTest {
     // then sets the URL fragment as 'pass' if it received the expected string.
     LoadAndStartSpeechRecognitionTest(filename);
 
-    EXPECT_EQ("pass", shell()->web_contents()->GetURL().ref());
+    EXPECT_EQ("pass", shell()->web_contents()->GetLastCommittedURL().ref());
   }
 
   // ContentBrowserTest methods.

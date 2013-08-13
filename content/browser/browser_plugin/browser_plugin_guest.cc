@@ -127,7 +127,7 @@ class BrowserPluginGuest::GeolocationRequest : public PermissionRequest {
               // in the fact whether the embedder/app has geolocation
               // permission. Therefore we use an invalid |bridge_id|.
               -1 /* bridge_id */,
-              web_contents->GetURL(),
+              web_contents->GetLastCommittedURL(),
               geolocation_callback);
           return;
         }
@@ -1260,7 +1260,7 @@ void BrowserPluginGuest::OnLockMouse(bool user_gesture,
                    base::Value::CreateBooleanValue(last_unlocked_by_target));
   request_info.Set(browser_plugin::kURL,
                    base::Value::CreateStringValue(
-                       web_contents()->GetURL().spec()));
+                       web_contents()->GetLastCommittedURL().spec()));
 
   RequestPermission(BROWSER_PLUGIN_PERMISSION_TYPE_POINTER_LOCK,
                     new PointerLockRequest(this),

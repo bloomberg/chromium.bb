@@ -434,7 +434,7 @@ TEST_F(SavePackageTest, TestGetUrlToBeSavedViewSource) {
                         base::FilePath(kTestDir).Append(file_name));
   NavigateAndCommit(view_source_url);
   EXPECT_EQ(actual_url, GetUrlToBeSaved());
-  EXPECT_EQ(view_source_url, contents()->GetURL());
+  EXPECT_EQ(view_source_url, contents()->GetLastCommittedURL());
 }
 
 }  // namespace content

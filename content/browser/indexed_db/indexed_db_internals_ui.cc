@@ -278,7 +278,7 @@ void IndexedDBInternalsUI::OnDownloadDataReady(
       DownloadUrlParameters::FromWebContents(web_ui()->GetWebContents(), url));
   DownloadManager* dlm = BrowserContext::GetDownloadManager(browser_context);
 
-  const GURL referrer(web_ui()->GetWebContents()->GetURL());
+  const GURL referrer(web_ui()->GetWebContents()->GetLastCommittedURL());
   dl_params->set_referrer(
       content::Referrer(referrer, WebKit::WebReferrerPolicyDefault));
 
