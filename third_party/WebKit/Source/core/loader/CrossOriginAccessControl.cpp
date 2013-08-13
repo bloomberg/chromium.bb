@@ -148,17 +148,24 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
 
     // FIXME: Access-Control-Allow-Origin can contain a list of origins.
     if (accessControlOriginString != securityOrigin->toString()) {
-        if (accessControlOriginString == "*")
-            errorDescription = "Cannot use wildcard in Access-Control-Allow-Origin when credentials flag is true.";
-        else
-            errorDescription =  "Origin " + securityOrigin->toString() + " is not allowed by Access-Control-Allow-Origin.";
+        if (accessControlOriginString == "*") {
+            errorDescription = "Wildcards cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+        } else if (accessControlOriginString.isEmpty()) {
+            errorDescription = "No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+        } else {
+            KURL headerOrigin(KURL(), accessControlOriginString);
+            if (!headerOrigin.isValid())
+                errorDescription = "The 'Access-Control-Allow-Origin' header contains the invalid value '" + accessControlOriginString + "'. Origin '" + securityOrigin->toString() + "' is therefore not allowed access.";
+            else
+                errorDescription = "The 'Access-Control-Allow-Origin' whitelists only '" + accessControlOriginString + "'. Origin '" + securityOrigin->toString() + "' is not in the list, and is therefore not allowed access.";
+        }
         return false;
     }
 
     if (includeCredentials == AllowStoredCredentials) {
         const String& accessControlCredentialsString = response.httpHeaderField(accessControlAllowCredentials);
         if (accessControlCredentialsString != "true") {
-            errorDescription = "Credentials flag is true, but Access-Control-Allow-Credentials is not \"true\".";
+            errorDescription = "Credentials flag is 'true', but the 'Access-Control-Allow-Credentials' header is '" + accessControlCredentialsString + "'. It must be 'true' to allow credentials.";
             return false;
         }
     }

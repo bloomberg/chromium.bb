@@ -326,7 +326,7 @@ crbug.com/7482 [ Win Lion MountainLion ] http/tests/misc/timer-vs-loading.html [
 crbug.com/27569 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-tripmine.html [ Pass Timeout ]
 
 crbug.com/9798 [ Win ] http/tests/misc/redirect-with-quotes.php [ Pass Timeout ]
-crbug.com/9798 [ Win ] http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html [ Pass Timeout ]
+crbug.com/9798 [ Win ] http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-timeout.html [ Pass Timeout NeedsRebaseline ]
 crbug.com/9797 crbug.com/9798 [ Win ] http/tests/xmlhttprequest/state-after-network-error.html [ Pass Timeout ]
 # This test definitely times out (i.e. is not just slow).
 crbug.com/9798 [ Win Release ] http/tests/xmlhttprequest/small-chunks-response-text.html [ Pass Timeout ]
@@ -631,7 +631,7 @@ webkit.org/b/88939 fast/events/before-unload-adopt-subframe-to-outside.html [ Fa
 # The test has its own notion of timeouts that manifest timeouts as FAIL.
 webkit.org/b/88833 media/video-played-collapse.html [ Failure Pass ]
 
-webkit.org/b/88832 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html [ Pass Timeout ]
+webkit.org/b/88832 [ Win ] http/tests/xmlhttprequest/origin-exact-matching.html [ Pass Timeout NeedsRebaseline ]
 
 webkit.org/b/89702 virtual/softwarecompositing/scaling/tiled-layer-recursion.html [ ImageOnlyFailure Pass ]
 
@@ -1198,3 +1198,6 @@ crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
 # This test loads acid3-expected.png as part of the test. WTF?
 Bug(ojan) http/tests/misc/slow-loading-image-in-pattern.html [ ImageOnlyFailure ]
+
+Bug(mkwst) [ Linux Mac ] http/tests/xmlhttprequest/origin-exact-matching.html [ NeedsRebaseline ]
+Bug(mkwst) [ Win ] http/tests/xmlhttprequest/access-control-basic-allow-preflight-cache-invalidation-by-method.html [ NeedsRebaseline ]
