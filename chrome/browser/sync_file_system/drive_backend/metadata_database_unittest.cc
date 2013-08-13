@@ -625,24 +625,24 @@ TEST_F(MetadataDatabaseTest, AppManagementTest) {
   VerifyTracker(folder_tracker);
 
   folder_tracker.set_app_id("foo");
+  EXPECT_EQ(SYNC_STATUS_OK, RegisterApp(
+      folder_tracker.app_id(), folder.file_id()));
   folder_tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
   folder_tracker.set_active(true);
   folder_tracker.set_dirty(true);
   folder_tracker.set_needs_folder_listing(true);
-  EXPECT_EQ(SYNC_STATUS_OK, RegisterApp(
-      folder_tracker.app_id(), folder.file_id()));
   VerifyFile(folder);
   VerifyTracker(folder_tracker);
   VerifyReloadConsistency();
 
   EXPECT_EQ(SYNC_STATUS_OK, DisableApp(folder_tracker.app_id()));
-  folder_tracker.set_active(false);
+  folder_tracker.set_tracker_kind(TRACKER_KIND_DISABLED_APP_ROOT);
   VerifyFile(folder);
   VerifyTracker(folder_tracker);
   VerifyReloadConsistency();
 
   EXPECT_EQ(SYNC_STATUS_OK, EnableApp(folder_tracker.app_id()));
-  folder_tracker.set_active(true);
+  folder_tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
   VerifyFile(folder);
   VerifyTracker(folder_tracker);
   VerifyReloadConsistency();

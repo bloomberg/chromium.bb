@@ -19,6 +19,7 @@ enum FileKind {
 enum TrackerKind {
   TRACKER_KIND_REGULAR = 0;
   TRACKER_KIND_APP_ROOT = 1;
+  TRACKER_KIND_DISABLED_APP_ROOT = 2;
 }
 
 message ServiceMetadata {

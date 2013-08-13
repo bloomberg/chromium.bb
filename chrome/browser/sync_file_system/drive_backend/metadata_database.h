@@ -113,6 +113,7 @@ class MetadataDatabase {
       void(SyncStatusCode status, scoped_ptr<MetadataDatabase> instance)>
       CreateCallback;
 
+  // The entry point of the MetadataDatabase for production code.
   static void Create(base::SequencedTaskRunner* task_runner,
                      const base::FilePath& database_path,
                      const CreateCallback& callback);
@@ -211,6 +212,8 @@ class MetadataDatabase {
                                 leveldb::WriteBatch* batch);
   void MakeTrackerActive(int64 tracker_id, leveldb::WriteBatch* batch);
   void MakeTrackerInactive(int64 tracker_id, leveldb::WriteBatch* batch);
+  void MakeAppRootDisabled(int64 tracker_id, leveldb::WriteBatch* batch);
+  void MakeAppRootEnabled(int64 tracker_id, leveldb::WriteBatch* batch);
 
   void UnregisterTrackerAsAppRoot(const std::string& app_id,
                                   leveldb::WriteBatch* batch);
@@ -240,6 +243,9 @@ class MetadataDatabase {
                              leveldb::WriteBatch* batch);
 
   int64 GetNextTrackerID(leveldb::WriteBatch* batch);
+
+  void RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
+                                   leveldb::WriteBatch* batch);
 
   void WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
                        const SyncStatusCallback& callback);
