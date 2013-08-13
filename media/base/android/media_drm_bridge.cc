@@ -4,11 +4,15 @@
 
 #include "media/base/android/media_drm_bridge.h"
 
+#include "base/android/build_info.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "jni/MediaDrmBridge_jni.h"
 #include "media/base/android/media_player_manager.h"
 
+using base::android::AttachCurrentThread;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::JavaByteArrayToByteVector;
 using base::android::ScopedJavaLocalRef;
@@ -135,53 +139,83 @@ static bool GetPsshData(const uint8* data, int data_size,
 }
 
 // static
-bool MediaDrmBridge::IsAvailable() {
-  return false;
-}
-
 MediaDrmBridge* MediaDrmBridge::Create(int media_keys_id,
-                                       const std::vector<uint8>& uuid,
+                                       const std::vector<uint8>& scheme_uuid,
                                        MediaPlayerManager* manager) {
-  if (!IsAvailable())
+  if (!IsAvailable() || scheme_uuid.empty())
     return NULL;
 
   // TODO(qinmin): check whether the uuid is valid.
-  return new MediaDrmBridge(media_keys_id, uuid, manager);
+  return new MediaDrmBridge(media_keys_id, scheme_uuid, manager);
+}
+
+bool MediaDrmBridge::IsAvailable() {
+  return base::android::BuildInfo::GetInstance()->sdk_int() >= 18;
+}
+
+bool MediaDrmBridge::RegisterMediaDrmBridge(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 MediaDrmBridge::MediaDrmBridge(int media_keys_id,
-                               const std::vector<uint8>& uuid,
+                               const std::vector<uint8>& scheme_uuid,
                                MediaPlayerManager* manager)
-    : media_keys_id_(media_keys_id), uuid_(uuid), manager_(manager) {
-  // TODO(qinmin): pass the uuid to DRM engine.
+    : media_keys_id_(media_keys_id),
+      scheme_uuid_(scheme_uuid),
+      manager_(manager) {
+  JNIEnv* env = AttachCurrentThread();
+  CHECK(env);
+
+  ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
+      base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
+  j_media_drm_.Reset(Java_MediaDrmBridge_create(
+      env, j_scheme_uuid.obj(), reinterpret_cast<intptr_t>(this)));
 }
 
-MediaDrmBridge::~MediaDrmBridge() {}
+MediaDrmBridge::~MediaDrmBridge() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_MediaDrmBridge_release(env, j_media_drm_.obj());
+}
 
 bool MediaDrmBridge::GenerateKeyRequest(const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
   std::vector<uint8> pssh_data;
-  if (!GetPsshData(init_data, init_data_length, uuid_, &pssh_data))
+  if (!GetPsshData(init_data, init_data_length, scheme_uuid_, &pssh_data))
     return false;
 
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void MediaDrmBridge::CancelKeyRequest(const std::string& session_id) {
-  NOTIMPLEMENTED();
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_pssh_data =
+      base::android::ToJavaByteArray(env, &pssh_data[0], pssh_data.size());
+  ScopedJavaLocalRef<jstring> j_mime = ConvertUTF8ToJavaString(env, type);
+  Java_MediaDrmBridge_generateKeyRequest(
+      env, j_media_drm_.obj(), j_pssh_data.obj(), j_mime.obj());
+  return true;
 }
 
 void MediaDrmBridge::AddKey(const uint8* key, int key_length,
                             const uint8* init_data, int init_data_length,
                             const std::string& session_id) {
-  NOTIMPLEMENTED();
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jbyteArray> j_key_data =
+      base::android::ToJavaByteArray(env, key, key_length);
+  ScopedJavaLocalRef<jstring> j_session_id =
+      ConvertUTF8ToJavaString(env, session_id);
+  Java_MediaDrmBridge_addKey(
+      env, j_media_drm_.obj(), j_session_id.obj(), j_key_data.obj());
 }
 
 ScopedJavaLocalRef<jobject> MediaDrmBridge::GetMediaCrypto() {
-  NOTIMPLEMENTED();
-  return ScopedJavaLocalRef<jobject>();
+  JNIEnv* env = AttachCurrentThread();
+  return Java_MediaDrmBridge_getMediaCrypto(env, j_media_drm_.obj());
+}
+
+void MediaDrmBridge::CancelKeyRequest(const std::string& session_id) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> j_session_id =
+      ConvertUTF8ToJavaString(env, session_id);
+  Java_MediaDrmBridge_cancelKeyRequest(
+      env, j_media_drm_.obj(), j_session_id.obj());
 }
 
 void MediaDrmBridge::OnKeyMessage(JNIEnv* env,
@@ -197,13 +231,14 @@ void MediaDrmBridge::OnKeyMessage(JNIEnv* env,
   manager_->OnKeyMessage(media_keys_id_, session_id, message, destination_url);
 }
 
-void MediaDrmBridge::OnDrmEvent(JNIEnv* env,
-                                jobject j_media_drm,
-                                jstring session_id,
-                                jint event,
-                                jint extra,
-                                jstring data) {
-  NOTIMPLEMENTED();
+void MediaDrmBridge::OnKeyAdded(JNIEnv* env, jobject, jstring j_session_id) {
+  std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
+  manager_->OnKeyAdded(media_keys_id_, session_id);
+}
+
+void MediaDrmBridge::OnKeyError(JNIEnv* env, jobject, jstring j_session_id) {
+  std::string session_id = ConvertJavaStringToUTF8(env, j_session_id);
+  manager_->OnKeyError(media_keys_id_, session_id, MediaKeys::kUnknownError, 0);
 }
 
 }  // namespace media

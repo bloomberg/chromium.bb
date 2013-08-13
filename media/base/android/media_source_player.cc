@@ -847,11 +847,11 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   if (video_decoder_job_ && !reconfig_video_decoder_)
     return;
 
-  base::android::ScopedJavaLocalRef<jobject> media_codec;
+  base::android::ScopedJavaLocalRef<jobject> media_crypto;
   if (is_video_encrypted_) {
     if (drm_bridge_) {
-      media_codec = drm_bridge_->GetMediaCrypto();
-      DCHECK(!media_codec.is_null());
+      media_crypto = drm_bridge_->GetMediaCrypto();
+      DCHECK(!media_crypto.is_null());
     } else {
       LOG(INFO) << "MediaDrmBridge is not available when creating decoder "
                 << "for encrypted video stream.";
@@ -865,7 +865,7 @@ void MediaSourcePlayer::ConfigureVideoDecoderJob() {
   // Create the new VideoDecoderJob.
   video_decoder_job_.reset(VideoDecoderJob::Create(
       video_codec_, gfx::Size(width_, height_), surface_.j_surface().obj(),
-      media_codec.obj()));
+      media_crypto.obj()));
   if (video_decoder_job_)
     reconfig_video_decoder_ = false;
 

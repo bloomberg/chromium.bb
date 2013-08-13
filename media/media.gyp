@@ -1479,6 +1479,7 @@
           'sources': [
             'base/android/java/src/org/chromium/media/AudioManagerAndroid.java',
             'base/android/java/src/org/chromium/media/MediaCodecBridge.java',
+            'base/android/java/src/org/chromium/media/MediaDrmBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerBridge.java',
             'base/android/java/src/org/chromium/media/MediaPlayerListener.java',
             'base/android/java/src/org/chromium/media/WebAudioMediaCodecBridge.java',
