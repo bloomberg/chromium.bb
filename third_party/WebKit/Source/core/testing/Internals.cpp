@@ -41,6 +41,7 @@
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8ThrowException.h"
+#include "core/animation/DocumentTimeline.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
@@ -460,7 +461,9 @@ void Internals::pauseAnimations(double pauseTime, ExceptionState& es)
         return;
     }
 
-    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+    if (RuntimeEnabledFeatures::webAnimationsCSSEnabled())
+        frame()->document()->timeline()->pauseAnimationsForTesting(pauseTime);
+    else
         frame()->animation()->pauseAnimationsForTesting(pauseTime);
 }
 
