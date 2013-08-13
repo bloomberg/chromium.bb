@@ -572,7 +572,6 @@ cr.define('options', function() {
       $('customize-sync-preferences').hidden = false;
 
       $('sync-custom-passphrase-container').hidden = false;
-      $('sync-custom-passphrase').hidden = true;
       $('sync-new-encryption-section-container').hidden = false;
       $('customize-sync-encryption-new').hidden = false;
 
