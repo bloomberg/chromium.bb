@@ -46,8 +46,14 @@ class RenderWidgetHostBrowserTest : public ContentBrowserTest {
   base::FilePath test_dir_;
 };
 
+// Disabled on Windows and CrOS because it is flaky: crbug.com/272379.
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+#define MAYBE_GetSnapshotFromRendererTest DISABLED_GetSnapshotFromRendererTest
+#else
+#define MAYBE_GetSnapshotFromRendererTest GetSnapshotFromRendererTest
+#endif
 IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
-                       GetSnapshotFromRendererTest) {
+                       MAYBE_GetSnapshotFromRendererTest) {
   base::RunLoop run_loop;
 
   NavigateToURL(shell(), GURL(net::FilePathToFileURL(
