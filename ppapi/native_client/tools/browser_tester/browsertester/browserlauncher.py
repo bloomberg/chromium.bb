@@ -9,6 +9,7 @@ import shutil
 import sys
 import tempfile
 import time
+import urlparse
 
 import browserprocess
 
@@ -105,7 +106,7 @@ class BrowserLauncher(object):
   def CreateProfile(self):
     raise NotImplementedError
 
-  def MakeCmd(self, url):
+  def MakeCmd(self, url, host, port):
     raise NotImplementedError
 
   def CreateToolLogDir(self):
@@ -205,12 +206,12 @@ class BrowserLauncher(object):
   def GetReturnCode(self):
     return self.browser_process.GetReturnCode()
 
-  def Run(self, url, port):
+  def Run(self, url, host, port):
     self.binary = EscapeSpaces(self.FindBinary())
     self.profile = self.CreateProfile()
     if self.options.tool is not None:
       self.tool_log_dir = self.CreateToolLogDir()
-    cmd = self.MakeCmd(url, port)
+    cmd = self.MakeCmd(url, host, port)
     self.Launch(cmd, MakeEnv(self.options))
 
 
@@ -262,7 +263,7 @@ class ChromeLauncher(BrowserLauncher):
   def NetLogName(self):
     return os.path.join(self.profile, 'netlog.json')
 
-  def MakeCmd(self, url, port):
+  def MakeCmd(self, url, host, port):
     cmd = [self.binary,
             # Note that we do not use "--enable-logging" here because
             # it actually turns off logging to the Buildbot logs on
@@ -335,6 +336,8 @@ class ChromeLauncher(BrowserLauncher):
              '--log-file=%s/log.%%p' % (self.tool_log_dir,)] + cmd
     elif self.options.tool != None:
       raise LaunchFailure('Invalid tool name "%s"' % (self.options.tool,))
+    if self.options.enable_sockets:
+      cmd.append('--allow-nacl-socket-api=%s' % host)
     cmd.extend(self.options.browser_flags)
     cmd.append(url)
     return cmd

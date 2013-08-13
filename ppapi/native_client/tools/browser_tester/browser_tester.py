@@ -138,6 +138,10 @@ def BuildArgParser():
   parser.add_option('--enable_crash_reporter', dest='enable_crash_reporter',
                     action='store_true', default=False,
                     help='Force crash reporting on.')
+  parser.add_option('--enable_sockets', dest='enable_sockets',
+                    action='store_true', default=False,
+                    help='Pass --allow-nacl-socket-api=<host> to Chrome, where '
+                    '<host> is the name of the browser tester\'s web server.')
 
   return parser
 
@@ -242,7 +246,7 @@ def RunTestsOnce(url, options):
   full_url = 'http://%s:%d/%s' % (host, port, url)
   if len(options.test_args) > 0:
     full_url += '?' + urllib.urlencode(options.test_args)
-  browser.Run(full_url, port)
+  browser.Run(full_url, host, port)
   server.TestingBegun(0.125)
 
   # In Python 2.5, server.handle_request may block indefinitely.  Serving pages
