@@ -2687,6 +2687,10 @@ void RenderViewImpl::showContextMenu(
       RenderViewObserver, observers_, DidRequestShowContextMenu(frame, data));
 }
 
+void RenderViewImpl::clearContextMenu() {
+  context_menu_node_.reset();
+}
+
 void RenderViewImpl::setStatusText(const WebString& text) {
 }
 
