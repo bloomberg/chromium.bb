@@ -61,11 +61,11 @@
     [CustomElementCallbacks=Enable] void normalize();
 
     // Introduced in DOM Level 2:
-     boolean isSupported([Default=Undefined] optional DOMString feature,
-                                       [TreatNullAs=NullString,Default=Undefined] optional DOMString version);
+    [MeasureAs=NodeIsSupported] boolean isSupported([Default=Undefined] optional DOMString feature,
+                                                    [TreatNullAs=NullString,Default=Undefined] optional DOMString version); // Removed in DOM4.
 
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        namespaceURI;
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString        prefix;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Removed from DOM4.
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, MeasureAs=NodePrefix] attribute DOMString prefix; // Removed from DOM4.
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        localName;
 
     // Introduced in DOM Level 3:
@@ -74,7 +74,7 @@
              // FIXME: the spec says this can also raise on retrieval.
              [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, CustomElementCallbacks=Enable] attribute DOMString       textContent;
 
-    boolean            isSameNode([Default=Undefined] optional Node other);
+    [MeasureAs=NodeIsSameNode] boolean isSameNode([Default=Undefined] optional Node other); // Removed in DOM4.
     boolean            isEqualNode([Default=Undefined] optional Node other);
     [TreatReturnedNullStringAs=Null] DOMString          lookupPrefix([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI);
     boolean            isDefaultNamespace([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI);
