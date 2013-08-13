@@ -27,6 +27,8 @@ using fileapi::FileSystemURL;
 namespace file_manager {
 namespace file_tasks {
 
+namespace {
+
 // The values "file" and "app" are confusing, but cannot be changed easily as
 // these are used in default task IDs stored in preferences.
 //
@@ -35,9 +37,34 @@ namespace file_tasks {
 // chrome.storage crbug.com/267359
 const char kFileBrowserHandlerTaskType[] = "file";
 const char kFileHandlerTaskType[] = "app";
-const char kDriveTaskType[] = "drive";
+const char kDriveAppTaskType[] = "drive";
 
-namespace {
+// Converts a TaskType to a string.
+std::string TaskTypeToString(TaskType task_type) {
+  switch (task_type) {
+    case TASK_TYPE_FILE_BROWSER_HANDLER:
+      return kFileBrowserHandlerTaskType;
+    case TASK_TYPE_FILE_HANDLER:
+      return kFileHandlerTaskType;
+    case TASK_TYPE_DRIVE_APP:
+      return kDriveAppTaskType;
+    case TASK_TYPE_UNKNOWN:
+      break;
+  }
+  NOTREACHED();
+  return "";
+}
+
+// Converts a string to a TaskType. Returns TASK_TYPE_UNKNOWN on error.
+TaskType StringToTaskType(const std::string& str) {
+  if (str == kFileBrowserHandlerTaskType)
+    return TASK_TYPE_FILE_BROWSER_HANDLER;
+  if (str == kFileHandlerTaskType)
+    return TASK_TYPE_FILE_HANDLER;
+  if (str == kDriveAppTaskType)
+    return TASK_TYPE_DRIVE_APP;
+  return TASK_TYPE_UNKNOWN;
+}
 
 // Legacy Drive task extension prefix, used by CrackTaskID.
 const char kDriveTaskExtensionPrefix[] = "drive-app:";
@@ -133,19 +160,16 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
 }
 
 std::string MakeTaskID(const std::string& extension_id,
-                       const std::string& task_type,
+                       TaskType task_type,
                        const std::string& action_id) {
-  DCHECK(task_type == kFileBrowserHandlerTaskType ||
-         task_type == kDriveTaskType ||
-         task_type == kFileHandlerTaskType);
   return base::StringPrintf("%s|%s|%s",
                             extension_id.c_str(),
-                            task_type.c_str(),
+                            TaskTypeToString(task_type).c_str(),
                             action_id.c_str());
 }
 
 std::string MakeDriveAppTaskId(const std::string& app_id) {
-  return MakeTaskID(app_id, kDriveTaskType, "open-with");
+  return MakeTaskID(app_id, TASK_TYPE_DRIVE_APP, "open-with");
 }
 
 bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
@@ -160,10 +184,10 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
   // TODO(satorux): We should get rid of this code: crbug.com/267359.
   if (count == 2) {
     if (StartsWithASCII(result[0], kDriveTaskExtensionPrefix, true)) {
-      task->task_type = kDriveTaskType;
+      task->task_type = TASK_TYPE_DRIVE_APP;
       task->app_id = result[0].substr(kDriveTaskExtensionPrefixLength);
     } else {
-      task->task_type = kFileBrowserHandlerTaskType;
+      task->task_type = TASK_TYPE_FILE_BROWSER_HANDLER;
       task->app_id = result[0];
     }
 
@@ -175,12 +199,13 @@ bool ParseTaskID(const std::string& task_id, TaskDescriptor* task) {
   if (count != 3)
     return false;
 
- task->app_id = result[0];
- task->task_type = result[1];
- DCHECK(task->task_type == kFileBrowserHandlerTaskType ||
-        task->task_type == kDriveTaskType ||
-        task->task_type == kFileHandlerTaskType);
- task->action_id = result[2];
+  TaskType task_type = StringToTaskType(result[1]);
+  if (task_type == TASK_TYPE_UNKNOWN)
+    return false;
+
+  task->app_id = result[0];
+  task->task_type = task_type;
+  task->action_id = result[2];
 
   return true;
 }
@@ -197,7 +222,7 @@ bool ExecuteFileTask(Profile* profile,
     return false;
 
   // drive::FileTaskExecutor is responsible to handle drive tasks.
-  if (task.task_type == kDriveTaskType) {
+  if (task.task_type == TASK_TYPE_DRIVE_APP) {
     DCHECK_EQ("open-with", task.action_id);
     drive::FileTaskExecutor* executor =
         new drive::FileTaskExecutor(profile, task.app_id);
@@ -214,7 +239,7 @@ bool ExecuteFileTask(Profile* profile,
     return false;
 
   // Execute the task.
-  if (task.task_type == kFileBrowserHandlerTaskType) {
+  if (task.task_type == TASK_TYPE_FILE_BROWSER_HANDLER) {
     return file_browser_handlers::ExecuteFileBrowserHandler(
         profile,
         extension,
@@ -222,7 +247,7 @@ bool ExecuteFileTask(Profile* profile,
         task.action_id,
         file_urls,
         done);
-  } else if (task.task_type == kFileHandlerTaskType) {
+  } else if (task.task_type == TASK_TYPE_FILE_HANDLER) {
     for (size_t i = 0; i != file_urls.size(); ++i) {
       apps::LaunchPlatformAppWithFileHandler(
           profile, extension, task.action_id, file_urls[i].path());

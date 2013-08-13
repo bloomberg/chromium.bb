@@ -295,7 +295,7 @@ void OpenFileWithInternalActionId(const base::FilePath& path,
     return;
 
   file_tasks::TaskDescriptor task(kFileBrowserDomain,
-                                  file_tasks::kFileBrowserHandlerTaskType,
+                                  file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                                   action_id);
   OpenFileWithTask(profile, task, url);
 }
@@ -356,11 +356,11 @@ bool OpenFileWithFileHandler(Profile* profile,
       const extensions::FileHandlerInfo* handler = *i;
       std::string task_id = file_tasks::MakeTaskID(
           extension->id(),
-          file_tasks::kFileHandlerTaskType,
+          file_tasks::TASK_TYPE_FILE_HANDLER,
           handler->id);
       if (task_id == default_task_id) {
         file_tasks::TaskDescriptor task(extension->id(),
-                                        file_tasks::kFileHandlerTaskType,
+                                        file_tasks::TASK_TYPE_FILE_HANDLER,
                                         handler->id);
         OpenFileWithTask(profile, task, url);
         return true;
@@ -373,7 +373,7 @@ bool OpenFileWithFileHandler(Profile* profile,
   }
   if (first_handler) {
     file_tasks::TaskDescriptor task(extension_for_first_handler->id(),
-                                    file_tasks::kFileHandlerTaskType,
+                                    file_tasks::TASK_TYPE_FILE_HANDLER,
                                     first_handler->id);
     OpenFileWithTask(profile, task, url);
     return true;
@@ -419,7 +419,7 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
   }
 
   file_tasks::TaskDescriptor task(extension_id,
-                                  file_tasks::kFileBrowserHandlerTaskType,
+                                  file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                                   action_id);
   OpenFileWithTask(profile, task, url);
   return true;
@@ -457,7 +457,7 @@ bool OpenFileWithHandlerOrBrowser(Profile* profile,
 
   std::string handler_task_id = file_tasks::MakeTaskID(
         handler->extension_id(),
-        file_tasks::kFileBrowserHandlerTaskType,
+        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
         handler->id());
   if (handler_task_id != default_task_id &&
       !file_browser_handlers::IsFallbackFileBrowserHandler(handler) &&

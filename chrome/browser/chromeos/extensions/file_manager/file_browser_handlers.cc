@@ -509,7 +509,7 @@ FileBrowserHandlerList FindDefaultFileBrowserHandlers(
     const FileBrowserHandler* handler = common_handlers[i];
     std::string task_id = file_tasks::MakeTaskID(
         handler->extension_id(),
-        file_tasks::kFileBrowserHandlerTaskType,
+        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
         handler->id());
     std::set<std::string>::iterator default_iter = default_ids.find(task_id);
     if (default_iter != default_ids.end()) {

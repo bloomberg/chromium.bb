@@ -127,17 +127,19 @@ class FileSystemURL;
 namespace file_manager {
 namespace file_tasks {
 
-// Task types encoded in task IDs. See also the comment at the beginning of
-// the file about <task-type>.
-extern const char kFileBrowserHandlerTaskType[];
-extern const char kFileHandlerTaskType[];
-extern const char kDriveTaskType[];
+// Task types as explained in the comment above. Search for <task-type>.
+enum TaskType {
+  TASK_TYPE_FILE_BROWSER_HANDLER,
+  TASK_TYPE_FILE_HANDLER,
+  TASK_TYPE_DRIVE_APP,
+  TASK_TYPE_UNKNOWN,  // Used only for handling errors.
+};
 
 // Describes a task.
 // See the comment above for <app-id>, <task-type>, and <action-id>.
 struct TaskDescriptor {
   TaskDescriptor(const std::string& in_app_id,
-                 const std::string& in_task_type,
+                 TaskType in_task_type,
                  const std::string& in_action_id)
       : app_id(in_app_id),
         task_type(in_task_type),
@@ -147,7 +149,7 @@ struct TaskDescriptor {
   }
 
   std::string app_id;
-  std::string task_type;
+  TaskType task_type;
   std::string action_id;
 };
 
@@ -167,11 +169,12 @@ std::string GetDefaultTaskIdFromPrefs(Profile* profile,
                                       const std::string& suffix);
 
 // Generates task id for the task specified by |app_id|, |task_type| and
-// |action_id|. The |task_type| must be one of kFileBrowserHandlerTaskType,
-// kDriveTaskType or kFileHandlerTaskType.
-// <app-id> is either of Chrome Extension/App ID or Drive App ID.
+// |action_id|.
+//
+// |app_id| is either of Chrome Extension/App ID or Drive App ID.
+// |action_id| is a free-form string ID for the action.
 std::string MakeTaskID(const std::string& extension_id,
-                       const std::string& task_type,
+                       TaskType task_type,
                        const std::string& action_id);
 
 // Returns a task id for the Drive app with |app_id|.

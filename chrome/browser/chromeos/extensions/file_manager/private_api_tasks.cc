@@ -378,7 +378,7 @@ void GetFileTasksFunction::FindFileHandlerTasks(
          i != file_handlers.end(); ++i) {
       DictionaryValue* task = new DictionaryValue;
       std::string task_id = file_tasks::MakeTaskID(
-          extension->id(), file_tasks::kFileHandlerTaskType, (*i)->id);
+          extension->id(), file_tasks::TASK_TYPE_FILE_HANDLER, (*i)->id);
       task->SetString("taskId", task_id);
       task->SetString("title", (*i)->title);
       if (!(*default_already_set) && ContainsKey(default_tasks, task_id)) {
@@ -435,7 +435,9 @@ void GetFileTasksFunction::FindFileBrowserHandlerTasks(
     CHECK(extension);
     DictionaryValue* task = new DictionaryValue;
     task->SetString("taskId", file_tasks::MakeTaskID(
-        extension_id, file_tasks::kFileBrowserHandlerTaskType, handler->id()));
+        extension_id,
+        file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
+        handler->id()));
     task->SetString("title", handler->title());
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
