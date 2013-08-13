@@ -637,9 +637,10 @@ HRESULT ChromeAppViewAsh::OnPointerMoved(winui::Core::ICoreWindow* sender,
     return hr;
 
   if (pointer.IsMouse()) {
-    ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(pointer.x(),
-                                                        pointer.y(),
-                                                        mouse_down_flags_));
+    ui_channel_->Send(new MetroViewerHostMsg_MouseMoved(
+        pointer.x(),
+        pointer.y(),
+        mouse_down_flags_ | GetKeyboardEventFlags()));
   } else {
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchMoved(pointer.x(),
@@ -665,11 +666,13 @@ HRESULT ChromeAppViewAsh::OnPointerPressed(
 
   if (pointer.IsMouse()) {
     mouse_down_flags_ = pointer.flags();
-    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(),
-                                                         pointer.y(),
-                                                         0,
-                                                         ui::ET_MOUSE_PRESSED,
-                                                         mouse_down_flags_));
+    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(
+        pointer.x(),
+        pointer.y(),
+        0,
+        ui::ET_MOUSE_PRESSED,
+        static_cast<ui::EventFlags>(
+            mouse_down_flags_ | GetKeyboardEventFlags())));
   } else {
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchDown(pointer.x(),
@@ -690,11 +693,13 @@ HRESULT ChromeAppViewAsh::OnPointerReleased(
 
   if (pointer.IsMouse()) {
     mouse_down_flags_ = ui::EF_NONE;
-    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(pointer.x(),
-                                                         pointer.y(),
-                                                         0,
-                                                         ui::ET_MOUSE_RELEASED,
-                                                         pointer.flags()));
+    ui_channel_->Send(new MetroViewerHostMsg_MouseButton(
+        pointer.x(),
+        pointer.y(),
+        0,
+        ui::ET_MOUSE_RELEASED,
+        static_cast<ui::EventFlags>(
+            pointer.flags() | GetKeyboardEventFlags())));
   } else {
     DCHECK(pointer.IsTouch());
     ui_channel_->Send(new MetroViewerHostMsg_TouchUp(pointer.x(),
