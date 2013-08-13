@@ -89,7 +89,8 @@ bool TrayTracing::GetInitialVisibility() {
 
 views::View* TrayTracing::CreateDefaultView(user::LoginStatus status) {
   CHECK(default_ == NULL);
-  default_ = new tray::DefaultTracingView();
+  if (tray_view() && tray_view()->visible())
+    default_ = new tray::DefaultTracingView();
   return default_;
 }
 
