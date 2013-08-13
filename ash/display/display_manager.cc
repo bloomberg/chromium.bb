@@ -876,6 +876,9 @@ bool DisplayManager::UpdateSecondaryDisplayBoundsForLayout(
       primary_index = 1;
       secondary_index = 0;
     }
+    // This function may be called before the secondary display is
+    // registered. The bounds is empty in that case and will
+    // return true.
     gfx::Rect bounds =
         GetDisplayForId(displays->at(secondary_index).id()).bounds();
     UpdateDisplayBoundsForLayout(
