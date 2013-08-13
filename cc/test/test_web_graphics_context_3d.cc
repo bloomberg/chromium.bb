@@ -54,6 +54,28 @@ TestWebGraphicsContext3D::Namespace::~Namespace() {
     shared_namespace_ = NULL;
 }
 
+// static
+scoped_ptr<TestWebGraphicsContext3D> TestWebGraphicsContext3D::Create() {
+  return make_scoped_ptr(new TestWebGraphicsContext3D());
+}
+
+// static
+base::Callback<scoped_ptr<TestWebGraphicsContext3D>()>
+TestWebGraphicsContext3D::CreateFactory() {
+  return base::Bind(&TestWebGraphicsContext3D::Create);
+}
+
+static scoped_ptr<WebKit::WebGraphicsContext3D> CreateBaseFactory() {
+  return scoped_ptr<WebKit::WebGraphicsContext3D>(
+      TestWebGraphicsContext3D::Create());
+}
+
+// static
+base::Callback<scoped_ptr<WebKit::WebGraphicsContext3D>()>
+TestWebGraphicsContext3D::CreateBaseFactory() {
+  return base::Bind(&cc::CreateBaseFactory);
+}
+
 TestWebGraphicsContext3D::TestWebGraphicsContext3D()
     : FakeWebGraphicsContext3D(),
       context_id_(s_context_id++),

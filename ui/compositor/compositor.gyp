@@ -30,8 +30,6 @@
         'compositor_observer.h',
         'compositor_switches.cc',
         'compositor_switches.h',
-        'context_provider_from_context_factory.cc',
-        'context_provider_from_context_factory.h',
         'debug_utils.cc',
         'debug_utils.h',
         'dip_util.cc',

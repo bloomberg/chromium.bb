@@ -71,6 +71,8 @@
         'debug/debug_rect_history.cc',
         'debug/debug_rect_history.h',
         'debug/devtools_instrumentation.h',
+        'debug/fake_context_provider.cc',
+        'debug/fake_context_provider.h',
         'debug/fake_web_graphics_context_3d.cc',
         'debug/fake_web_graphics_context_3d.h',
         'debug/frame_rate_counter.cc',

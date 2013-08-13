@@ -6,12 +6,12 @@
 #define CC_TEST_FAKE_LAYER_TREE_HOST_CLIENT_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "cc/debug/fake_context_provider.h"
 #include "cc/input/input_handler.h"
-#include "cc/test/fake_context_provider.h"
-#include "cc/test/fake_output_surface.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
+class OutputSurface;
 
 class FakeLayerTreeHostClient : public LayerTreeHostClient {
  public:

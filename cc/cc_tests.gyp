@@ -100,8 +100,6 @@
       'test/fake_content_layer_client.h',
       'test/fake_content_layer_impl.cc',
       'test/fake_content_layer_impl.h',
-      'test/fake_context_provider.cc',
-      'test/fake_context_provider.h',
       'test/fake_delegated_renderer_layer.cc',
       'test/fake_delegated_renderer_layer.h',
       'test/fake_delegated_renderer_layer_impl.cc',

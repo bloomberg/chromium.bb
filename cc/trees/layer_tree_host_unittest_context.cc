@@ -5,6 +5,7 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/basictypes.h"
+#include "cc/debug/fake_context_provider.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/io_surface_layer.h"
@@ -19,7 +20,6 @@
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_content_layer_impl.h"
-#include "cc/test/fake_context_provider.h"
 #include "cc/test/fake_delegated_renderer_layer.h"
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -115,16 +115,16 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         context3d.PassAs<WebGraphicsContext3D>()).PassAs<OutputSurface>();
   }
 
-  scoped_ptr<TestWebGraphicsContext3D> CreateOffscreenContext3d() {
+  scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext3d() {
     if (!context3d_)
-      return scoped_ptr<TestWebGraphicsContext3D>();
+      return scoped_ptr<WebKit::WebGraphicsContext3D>();
 
     ++times_offscreen_created_;
 
     if (times_to_fail_create_offscreen_) {
       --times_to_fail_create_offscreen_;
       ExpectCreateToFail();
-      return scoped_ptr<TestWebGraphicsContext3D>();
+      return scoped_ptr<WebKit::WebGraphicsContext3D>();
     }
 
     scoped_ptr<TestWebGraphicsContext3D> offscreen_context3d =
@@ -132,7 +132,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     DCHECK(offscreen_context3d);
     context3d_->add_share_group_context(offscreen_context3d.get());
 
-    return offscreen_context3d.Pass();
+    return offscreen_context3d.PassAs<WebKit::WebGraphicsContext3D>();
   }
 
   virtual scoped_refptr<cc::ContextProvider>

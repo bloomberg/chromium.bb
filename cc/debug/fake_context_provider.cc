@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/test/fake_context_provider.h"
+#include "cc/debug/fake_context_provider.h"
 
-#include "cc/test/test_web_graphics_context_3d.h"
+#include "base/logging.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 
@@ -25,10 +26,8 @@ bool FakeContextProvider::InitializeOnMainThread(
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   DCHECK(!context3d_);
-  if (create_callback.is_null())
-    context3d_ = TestWebGraphicsContext3D::Create().Pass();
-  else
-    context3d_ = create_callback.Run();
+  DCHECK(!create_callback.is_null());
+  context3d_ = create_callback.Run();
   return context3d_;
 }
 
@@ -57,12 +56,13 @@ WebKit::WebGraphicsContext3D* FakeContextProvider::Context3d() {
 
   return context3d_.get();
 }
+
 class GrContext* FakeContextProvider::GrContext() {
   DCHECK(context3d_);
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());
 
-  // TODO(danakj): Make a fake GrContext.
+  // TODO(danakj): Make a fake GrContext that works with a fake Context3d.
   return NULL;
 }
 

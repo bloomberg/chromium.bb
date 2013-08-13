@@ -17,11 +17,11 @@ namespace Webkit { class WebGraphicsContext3D; }
 namespace cc {
 class FakeContextProvider;
 class FakeLayerTreeHostClient;
+class FakeOutputSurface;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeHostClient;
 class LayerTreeHostImpl;
-class FakeOutputSurface;
 
 // Used by test stubs to notify the test when something interesting happens.
 class TestHooks : public AnimationDelegate {

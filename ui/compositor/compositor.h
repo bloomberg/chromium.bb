@@ -31,6 +31,7 @@ class RunLoop;
 
 namespace cc {
 class ContextProvider;
+class FakeContextProvider;
 class Layer;
 class LayerTreeDebugState;
 class LayerTreeHost;
@@ -47,6 +48,12 @@ class Size;
 
 namespace WebKit {
 class WebGraphicsContext3D;
+}
+
+namespace webkit {
+namespace gpu {
+class ContextProviderInProcess;
+}
 }
 
 namespace ui {
@@ -80,10 +87,6 @@ class COMPOSITOR_EXPORT ContextFactory {
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       Compositor* compositor) = 0;
 
-  // Creates a context used for offscreen rendering. This context can be shared
-  // with all compositors.
-  virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext() = 0;
-
   // Creates a reflector that copies the content of the |mirrored_compositor|
   // onto |mirroing_layer|.
   virtual scoped_refptr<Reflector> CreateReflector(
@@ -114,8 +117,6 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   // ContextFactory implementation
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
-  virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext()
-      OVERRIDE;
 
   virtual scoped_refptr<Reflector> CreateReflector(
       Compositor* compositor,
@@ -132,13 +133,9 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   bool Initialize();
 
  private:
-  scoped_ptr<WebKit::WebGraphicsContext3D> CreateContextCommon(
-      Compositor* compositor,
-      bool offscreen);
-
-  scoped_refptr<ContextProviderFromContextFactory>
+  scoped_refptr<webkit::gpu::ContextProviderInProcess>
       offscreen_contexts_main_thread_;
-  scoped_refptr<ContextProviderFromContextFactory>
+  scoped_refptr<webkit::gpu::ContextProviderInProcess>
       offscreen_contexts_compositor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultContextFactory);
@@ -153,8 +150,6 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   // ContextFactory implementation
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(
       Compositor* compositor) OVERRIDE;
-  virtual scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext()
-      OVERRIDE;
 
   virtual scoped_refptr<Reflector> CreateReflector(
       Compositor* mirrored_compositor,
@@ -169,10 +164,10 @@ class COMPOSITOR_EXPORT TestContextFactory : public ContextFactory {
   virtual bool DoesCreateTestContexts() OVERRIDE;
 
  private:
-  scoped_refptr<ContextProviderFromContextFactory>
-      offscreen_contexts_main_thread_;
-  scoped_refptr<ContextProviderFromContextFactory>
-      offscreen_contexts_compositor_thread_;
+  static scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext();
+
+  scoped_refptr<cc::FakeContextProvider> offscreen_contexts_main_thread_;
+  scoped_refptr<cc::ContextProvider> offscreen_contexts_compositor_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(TestContextFactory);
 };

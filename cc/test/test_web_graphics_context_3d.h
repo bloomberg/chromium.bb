@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -18,19 +19,21 @@
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-namespace WebKit { struct WebGraphicsMemoryAllocation; }
+namespace WebKit {
+class WebGraphicsContext3D;
+struct WebGraphicsMemoryAllocation;
+}
 
 namespace cc {
 
 class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
  public:
-  static scoped_ptr<TestWebGraphicsContext3D> Create() {
-    return make_scoped_ptr(new TestWebGraphicsContext3D());
-  }
-  static scoped_ptr<TestWebGraphicsContext3D> Create(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes) {
-    return make_scoped_ptr(new TestWebGraphicsContext3D(attributes));
-  }
+  static scoped_ptr<TestWebGraphicsContext3D> Create();
+  static base::Callback<
+    scoped_ptr<TestWebGraphicsContext3D>()> CreateFactory();
+  static base::Callback<
+    scoped_ptr<WebKit::WebGraphicsContext3D>()> CreateBaseFactory();
+
   virtual ~TestWebGraphicsContext3D();
 
   virtual bool makeContextCurrent();

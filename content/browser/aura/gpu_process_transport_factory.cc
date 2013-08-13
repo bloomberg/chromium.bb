@@ -199,12 +199,6 @@ GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
   return CreateContextCommon(swap_client, 0);
 }
 
-scoped_ptr<WebKit::WebGraphicsContext3D>
-GpuProcessTransportFactory::CreateOffscreenContext() {
-  return CreateOffscreenCommandBufferContext()
-      .PassAs<WebKit::WebGraphicsContext3D>();
-}
-
 scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
     ui::Compositor* compositor) {
 #if defined(OS_WIN)

@@ -2,21 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TEST_FAKE_CONTEXT_PROVIDER_H_
-#define CC_TEST_FAKE_CONTEXT_PROVIDER_H_
+#ifndef CC_DEBUG_FAKE_CONTEXT_PROVIDER_H_
+#define CC_DEBUG_FAKE_CONTEXT_PROVIDER_H_
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "cc/base/cc_export.h"
 #include "cc/output/context_provider.h"
 
-namespace cc {
-class TestWebGraphicsContext3D;
+namespace WebKit { class WebGraphicsContext3D; }
 
-class FakeContextProvider : public cc::ContextProvider {
+namespace cc {
+
+class CC_EXPORT FakeContextProvider
+    : public NON_EXPORTED_BASE(cc::ContextProvider) {
  public:
-  typedef base::Callback<scoped_ptr<TestWebGraphicsContext3D>(void)>
+  typedef base::Callback<scoped_ptr<WebKit::WebGraphicsContext3D>(void)>
     CreateCallback;
 
   static scoped_refptr<FakeContextProvider> Create() {
@@ -56,5 +59,5 @@ class FakeContextProvider : public cc::ContextProvider {
 
 }  // namespace cc
 
-#endif  // CC_TEST_FAKE_CONTEXT_PROVIDER_H_
+#endif  // CC_DEBUG_FAKE_CONTEXT_PROVIDER_H_
 

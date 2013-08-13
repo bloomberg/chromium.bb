@@ -5,6 +5,7 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 
 #include "cc/output/context_provider.h"
+#include "cc/test/fake_output_surface.h"
 #include "cc/test/test_web_graphics_context_3d.h"
 
 namespace cc {
@@ -39,7 +40,8 @@ scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_contexts_.get() ||
       main_thread_contexts_->DestroyedOnMainThread()) {
-    main_thread_contexts_ = FakeContextProvider::Create();
+    main_thread_contexts_ = FakeContextProvider::Create(
+        TestWebGraphicsContext3D::CreateBaseFactory());
     if (!main_thread_contexts_->BindToCurrentThread())
       main_thread_contexts_ = NULL;
   }
@@ -50,7 +52,8 @@ scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForCompositorThread() {
   if (!compositor_thread_contexts_.get() ||
       compositor_thread_contexts_->DestroyedOnMainThread())
-    compositor_thread_contexts_ = FakeContextProvider::Create();
+    compositor_thread_contexts_ = FakeContextProvider::Create(
+        TestWebGraphicsContext3D::CreateBaseFactory());
   return compositor_thread_contexts_;
 }
 
