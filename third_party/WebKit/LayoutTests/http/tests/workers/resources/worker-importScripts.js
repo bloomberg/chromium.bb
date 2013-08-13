@@ -36,7 +36,7 @@ function runTests()
 
         try {
             importScripts(differentOrigin)
-        } catch(e) {
+        } catch (e) {
             postMessage("FAIL: Threw " + e + " when attempting cross origin load");
         }
         if (differentOriginLoaded)
@@ -46,7 +46,7 @@ function runTests()
 
         try {
             importScripts(differentRedirectOrigin)
-        } catch(e) {
+        } catch (e) {
             postMessage("FAIL: Threw " + e + " when attempting load from different origin through a redirect");
         }
         if (differentOriginLoaded)
@@ -87,7 +87,7 @@ function runTests()
         postMessage("Testing multiple arguments, with different origin for one argument:");
         try {
             importScripts(source1, differentOrigin, source2);
-        } catch(e) {
+        } catch (e) {
             postMessage("FAIL: Threw " + e + " when attempt cross origin load");
         }
         if (loadedSource1 && loadedSource2 && differentOriginLoaded)
@@ -99,7 +99,7 @@ function runTests()
 
         try {
             importScripts(source1, fakeSource, source2);
-        } catch(e) {
+        } catch (e) {
             postMessage("PASS: Threw " + e + " when load failed");
         }
         if (!loadedSource1 && !loadedSource2)
@@ -111,7 +111,7 @@ function runTests()
 
         try {
             importScripts(source1, syntaxErrorSource, source2);
-        } catch(e) {
+        } catch (e) {
             postMessage("PASS: Threw " + e + " when encountering a syntax error in imported script");
         }
         if (!loadedSource1 && !loadedSource2)
@@ -125,7 +125,7 @@ function runTests()
         firstShouldThrow = true;
         try {
             importScripts(source1, source2);
-        } catch(e) {
+        } catch (e) {
             postMessage("PASS: Propagated '" + e + "' from script");
         }
         firstShouldThrow = false;
@@ -142,7 +142,7 @@ function runTests()
         secondShouldThrow = true;
         try {
             importScripts(source1, source2);
-        } catch(e) {
+        } catch (e) {
             postMessage("PASS: Propagated '" + e + "' from script");
         }
         secondShouldThrow = false;
@@ -153,7 +153,23 @@ function runTests()
 
         resetLoadFlags();
 
-    } catch(e) {
+        postMessage("Testing multiple arguments, with second argument throwing in toString():");
+        try {
+            importScripts(source1, {toString: function() { throw new Error("user error"); }}, source2);
+        } catch (e) {
+            if (e.message == "user error")
+                postMessage("PASS: User error recieved in toString");
+            else
+                postMessage("FAIL: Unexpected error: " + e);
+        }
+        if (loadedSource1 || loadedSource2)
+            postMessage("FAIL: scripts should not have been executed");
+        else
+            postMessage("PASS: No script was executed");
+
+        resetLoadFlags();
+
+    } catch (e) {
         postMessage("FAIL: Unexpected exception: " + e);
     } finally {
         postMessage("DONE");

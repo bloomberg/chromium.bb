@@ -94,26 +94,6 @@ void SetTimeoutOrInterval(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     v8SetReturnValue(args, timerId);
 }
 
-void V8WorkerGlobalScope::importScriptsMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
-{
-    if (!args.Length())
-        return;
-
-    Vector<String> urls;
-    for (int i = 0; i < args.Length(); i++) {
-        V8TRYCATCH_VOID(v8::Handle<v8::String>, scriptUrl, args[i]->ToString());
-        if (scriptUrl.IsEmpty())
-            return;
-        urls.append(toWebCoreString(scriptUrl));
-    }
-
-    WorkerGlobalScope* workerGlobalScope = V8WorkerGlobalScope::toNative(args.Holder());
-
-    ExceptionState es(args.GetIsolate());
-    workerGlobalScope->importScripts(urls, es);
-    es.throwIfNeeded();
-}
-
 void V8WorkerGlobalScope::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
     return SetTimeoutOrInterval(args, true);
