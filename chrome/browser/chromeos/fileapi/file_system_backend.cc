@@ -142,6 +142,13 @@ bool FileSystemBackend::IsAccessAllowed(
     return false;
 
   std::string extension_id = origin_url.host();
+  // TODO(mtomasz): Temporarily whitelist TimeScapes. Remove this in M-31.
+  // See: crbug.com/271946
+  if (extension_id == "mppoamgbcpnkpacolchbacppkflagjbp" &&
+      url.mount_type() == fileapi::kFileSystemTypeRestrictedNativeLocal) {
+    return true;
+  }
+
   // Check first to make sure this extension has fileBrowserHander permissions.
   if (!special_storage_policy_->IsFileHandler(extension_id))
     return false;
