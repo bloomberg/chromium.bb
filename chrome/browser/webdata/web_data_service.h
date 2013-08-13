@@ -148,53 +148,6 @@ class WebDataService : public WebDataServiceBase {
   // specified web app.
   Handle GetWebAppImages(const GURL& app_url, WebDataServiceConsumer* consumer);
 
-#if defined(ENABLE_WEB_INTENTS)
-  //////////////////////////////////////////////////////////////////////////////
-  //
-  // Web Intents
-  //
-  //////////////////////////////////////////////////////////////////////////////
-
-  // Adds a web intent service registration.
-  void AddWebIntentService(const webkit_glue::WebIntentServiceData& service);
-
-  // Removes a web intent service registration.
-  void RemoveWebIntentService(const webkit_glue::WebIntentServiceData& service);
-
-  // Get all web intent services registered for the specified |action|.
-  // |consumer| must not be NULL.
-  Handle GetWebIntentServicesForAction(const string16& action,
-                                       WebDataServiceConsumer* consumer);
-
-  // Get all web intent services registered using the specified |service_url|.
-  // |consumer| must not be NULL.
-  Handle GetWebIntentServicesForURL(const string16& service_url,
-                                    WebDataServiceConsumer* consumer);
-
-  // Get all web intent services registered. |consumer| must not be NULL.
-  Handle GetAllWebIntentServices(WebDataServiceConsumer* consumer);
-
-  // Adds a default web intent service entry.
-  void AddDefaultWebIntentService(const DefaultWebIntentService& service);
-
-  // Removes a default web intent service entry. Removes entries matching
-  // the |action|, |type|, and |url_pattern| of |service|.
-  void RemoveDefaultWebIntentService(const DefaultWebIntentService& service);
-
-  // Removes all default web intent service entries associated with
-  // |service_url|
-  void RemoveWebIntentServiceDefaults(const GURL& service_url);
-
-    // Get a list of all web intent service defaults for the given |action|.
-  // |consumer| must not be null.
-  Handle GetDefaultWebIntentServicesForAction(const string16& action,
-                                              WebDataServiceConsumer* consumer);
-
-  // Get a list of all registered web intent service defaults.
-  // |consumer| must not be null.
-  Handle GetAllDefaultWebIntentServices(WebDataServiceConsumer* consumer);
-#endif
-
 #if defined(OS_WIN)
   //////////////////////////////////////////////////////////////////////////////
   //
