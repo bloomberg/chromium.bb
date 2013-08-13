@@ -71,11 +71,11 @@ void ResolutionChangeNotificationDelegate::Error() {
 
 void ResolutionChangeNotificationDelegate::Close(bool by_user) {
   if (by_user)
-    controller_->AcceptResolutionChange();
+    controller_->AcceptResolutionChange(false);
 }
 
 void ResolutionChangeNotificationDelegate::Click() {
-  controller_->AcceptResolutionChange();
+  controller_->AcceptResolutionChange(true);
 }
 
 bool ResolutionChangeNotificationDelegate::HasClickedListener() {
@@ -86,7 +86,7 @@ void ResolutionChangeNotificationDelegate::ButtonClick(int button_index) {
   // If there's the timeout, the first button is "Accept". Otherwise the
   // button click should be "Revert".
   if (has_timeout_ && button_index == 0)
-    controller_->AcceptResolutionChange();
+    controller_->AcceptResolutionChange(true);
   else
     controller_->RevertResolutionChange();
 }
@@ -243,9 +243,12 @@ void ResolutionNotificationController::OnTimerTick() {
     CreateOrUpdateNotification();
 }
 
-void ResolutionNotificationController::AcceptResolutionChange() {
-  message_center::MessageCenter::Get()->RemoveNotification(
-      kNotificationId, false /* by_user */);
+void ResolutionNotificationController::AcceptResolutionChange(
+    bool close_notification) {
+  if (close_notification) {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        kNotificationId, false /* by_user */);
+  }
   base::Closure callback = change_info_->accept_callback;
   change_info_.reset();
   callback.Run();

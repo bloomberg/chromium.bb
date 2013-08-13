@@ -68,6 +68,11 @@ class ResolutionNotificationControllerTest : public ash::test::AshTestBase {
         ResolutionNotificationController::kNotificationId, index);
   }
 
+  void CloseNotification() {
+    message_center::MessageCenter::Get()->RemoveNotification(
+        ResolutionNotificationController::kNotificationId, true /* by_user */);
+  }
+
   bool IsNotificationVisible() {
     return message_center::MessageCenter::Get()->HasNotification(
         ResolutionNotificationController::kNotificationId);
@@ -192,6 +197,35 @@ TEST_F(ResolutionNotificationControllerTest, AcceptButton) {
   EXPECT_EQ(1, accept_count());
   EXPECT_FALSE(display_manager->GetSelectedResolutionForDisplayId(
       display.id(), &resolution));
+}
+
+TEST_F(ResolutionNotificationControllerTest, Close) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("100x100,150x150#150x150|200x200");
+  int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
+  ash::internal::DisplayManager* display_manager =
+      ash::Shell::GetInstance()->display_manager();
+  ASSERT_EQ(0, accept_count());
+  EXPECT_FALSE(IsNotificationVisible());
+
+  // Changes the resolution and apply the result.
+  SetDisplayResolutionAndNotify(
+      ScreenAsh::GetSecondaryDisplay(), gfx::Size(200, 200));
+  EXPECT_TRUE(IsNotificationVisible());
+  EXPECT_FALSE(controller()->DoesNotificationTimeout());
+  gfx::Size resolution;
+  EXPECT_TRUE(
+      display_manager->GetSelectedResolutionForDisplayId(id2, &resolution));
+  EXPECT_EQ("200x200", resolution.ToString());
+
+  // Close the notification (imitates clicking [x] button). Also verifies if
+  // this does not cause a crash.  See crbug.com/271784
+  CloseNotification();
+  RunAllPendingInMessageLoop();
+  EXPECT_FALSE(IsNotificationVisible());
+  EXPECT_EQ(1, accept_count());
 }
 
 TEST_F(ResolutionNotificationControllerTest, Timeout) {

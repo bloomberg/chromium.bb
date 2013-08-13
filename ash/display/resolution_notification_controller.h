@@ -50,8 +50,9 @@ class ASH_EXPORT ResolutionNotificationController
   bool DoesNotificationTimeout();
 
   // Called by the notification delegate when the user accepts the display
-  // resolution change.
-  void AcceptResolutionChange();
+  // resolution change. Set |close_notification| to true when the notification
+  // should be removed.
+  void AcceptResolutionChange(bool close_notification);
 
   // Called by the notification delegate when the user wants to revert the
   // display resolution change.
