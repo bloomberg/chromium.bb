@@ -290,7 +290,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.grid_.startBatchUpdates();
 
     this.initFileList_();
-    this.setupCurrentDirectory_(true /* page loading */);
+    this.setupCurrentDirectory_();
 
     // PyAuto tests monitor this state by polling this variable
     this.__defineGetter__('workerInitialized_', function() {
@@ -1596,17 +1596,12 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * Default path may also contain a file name. Freshly opened file manager
    * window has neither.
    *
-   * @param {boolean} pageLoading True if the page is loading,
-   *                              false if popping state.
    * @private
    */
-  FileManager.prototype.setupCurrentDirectory_ = function(pageLoading) {
+  FileManager.prototype.setupCurrentDirectory_ = function() {
     var path = location.hash ?  // Location hash has the highest priority.
         decodeURIComponent(location.hash.substr(1)) :
         this.defaultPath;
-
-    if (!pageLoading && path == this.directoryModel_.getCurrentDirPath())
-      return;
 
     if (!path) {
       path = PathUtil.DEFAULT_DIRECTORY;
@@ -1615,21 +1610,15 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       path = PathUtil.DEFAULT_DIRECTORY + '/' + path;
     }
 
-    // In the FULL_PAGE mode if the hash path points to a file we might have
-    // to invoke a task after selecting it.
-    // If the file path is in params_ we only want to select the file.
-    var invokeHandlers = pageLoading && (this.params_.action != 'select') &&
-        this.dialogType == DialogType.FULL_PAGE;
-
     if (PathUtil.getRootType(path) === RootType.DRIVE) {
       if (!this.isDriveEnabled()) {
         var leafName = path.substr(path.indexOf('/') + 1);
         path = this.directoryModel_.getDefaultDirectory() + '/' + leafName;
-        this.finishSetupCurrentDirectory_(path, invokeHandlers);
+        this.finishSetupCurrentDirectory_(path);
         return;
       }
       if (this.volumeManager_.isMounted(RootDirectory.DRIVE)) {
-        this.finishSetupCurrentDirectory_(path, invokeHandlers);
+        this.finishSetupCurrentDirectory_(path);
         return;
       }
 
@@ -1641,36 +1630,37 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.volumeManager_.mountDrive(function() {
         tracker.stop();
         if (!tracker.hasChanged)
-          this.finishSetupCurrentDirectory_(path, invokeHandlers);
+          this.finishSetupCurrentDirectory_(path);
       }.bind(this), function(error) {
         tracker.stop();
       });
     } else {
-      this.finishSetupCurrentDirectory_(path, invokeHandlers);
+      this.finishSetupCurrentDirectory_(path);
     }
   };
 
   /**
    * @param {string} path Path to setup.
-   * @param {boolean} invokeHandlers If thrue and |path| points to a file
-   *     then default handler is triggered.
-   *
    * @private
    */
-  FileManager.prototype.finishSetupCurrentDirectory_ = function(
-      path, invokeHandlers) {
-    if (invokeHandlers) {
-      var onResolve = function(baseName, leafName, exists) {
-        var urls = null;
-        var action = null;
+  FileManager.prototype.finishSetupCurrentDirectory_ = function(path) {
+    this.directoryModel_.setupPath(path, function(baseName, leafName, exists) {
+      if (this.dialogType == DialogType.FULL_PAGE) {
+        // In the FULL_PAGE mode if the hash path points to a file we might have
+        // to invoke a task after selecting it.
+        // If the file path is in params_ we only want to select the file.
+        if (this.params_.action == 'select')
+          return;
 
+        var task = null;
         if (!exists || leafName == '') {
           // Non-existent file or a directory.
           if (this.params_.gallery) {
             // Reloading while the Gallery is open with empty or multiple
             // selection. Open the Gallery when the directory is scanned.
-            urls = [];
-            action = 'gallery';
+            task = function() {
+              new FileTasks(this, this.params_).openGallery([]);
+            }.bind(this);
           }
         } else {
           // There are 3 ways we can get here:
@@ -1680,44 +1670,38 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
           // 3. A user manually entered a URL pointing to a file.
           // We call the appropriate methods of FileTasks directly as we do
           // not need any of the preparations that |execute| method does.
-          if (FileType.isImageOrVideo(path)) {
-            urls = [util.makeFilesystemUrl(path)];
-            action = 'gallery';
-          }
-          if (FileType.getMediaType(path) == 'archive') {
-            urls = [util.makeFilesystemUrl(path)];
-            action = 'archives';
+          var mediaType = FileType.getMediaType(path);
+          if (mediaType == 'image' || mediaType == 'video') {
+            task = function() {
+              new FileTasks(this, this.params_).openGallery(
+                  [util.makeFilesystemUrl(path)]);
+            }.bind(this);
+          } else if (mediaType == 'archive') {
+            task = function() {
+              new FileTasks(this, this.params_).mountArchives(
+                  [util.makeFilesystemUrl(path)]);
+            }.bind(this);
           }
         }
 
-        if (urls) {
+        // If there is a task to be run, run it after the scan is completed.
+        if (task) {
           var listener = function() {
-            this.directoryModel_.removeEventListener(
+            this.directoryModel_.removeElementListener(
                 'scan-completed', listener);
-            var tasks = new FileTasks(this, this.params_);
-            if (action == 'gallery') {
-              tasks.openGallery(urls);
-            } else if (action == 'archives') {
-              tasks.mountArchives(urls);
-            }
+            task();
           }.bind(this);
           this.directoryModel_.addEventListener('scan-completed', listener);
         }
-      }.bind(this);
+        return;
+      }
 
-      this.directoryModel_.setupPath(path, onResolve);
-      return;
-    }
-
-    if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
-      this.directoryModel_.setupPath(path, function(basePath, leafName) {
+      if (this.dialogType == DialogType.SELECT_SAVEAS_FILE) {
         this.filenameInput_.value = leafName;
         this.selectDefaultPathInFilenameInput_();
-      }.bind(this));
-      return;
-    }
-
-    this.directoryModel_.setupPath(path);
+        return;
+      }
+    }.bind(this));
   };
 
   /**
