@@ -21,7 +21,7 @@ Fail: Valid protocol "ssh" failed.
 Fail: Valid protocol "tel" failed.
 Fail: Valid protocol "urn" failed.
 Fail: Valid protocol "webcal" failed.
-Fail: Valid protocol "webtai" failed.
+Fail: Valid protocol "wtai" failed.
 Fail: Valid protocol "xmpp" failed.
 Fail: Invalid url "" allowed.
 Fail: Invalid url "%S" allowed.

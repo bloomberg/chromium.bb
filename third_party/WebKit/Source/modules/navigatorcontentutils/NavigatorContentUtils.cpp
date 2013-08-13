@@ -62,7 +62,7 @@ static void initProtocolHandlerWhitelist()
         "tel",
         "urn",
         "webcal",
-        "webtai",
+        "wtai",
         "xmpp",
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(protocols); ++i)
