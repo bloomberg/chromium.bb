@@ -2,11 +2,11 @@ CONSOLE MESSAGE: Unable to post message to asdf://. Recipient has origin http://
 
 window.location.href = http://127.0.0.1:8000/security/postMessage/invalid-origin-throws-exception.html
 waiting...
-Encountered exception SyntaxError: An invalid or illegal string was specified. while posting message to ''.
-Encountered exception SyntaxError: An invalid or illegal string was specified. while posting message to 'asdf'.
-Encountered exception SyntaxError: An invalid or illegal string was specified. while posting message to '/tmp/foo'.
-Encountered exception SyntaxError: An invalid or illegal string was specified. while posting message to '//localhost'.
+Encountered exception "SyntaxError: Invalid target origin '' in a call to 'postMessage'." while posting message to ''.
+Encountered exception "SyntaxError: Invalid target origin 'asdf' in a call to 'postMessage'." while posting message to 'asdf'.
+Encountered exception "SyntaxError: Invalid target origin '/tmp/foo' in a call to 'postMessage'." while posting message to '/tmp/foo'.
+Encountered exception "SyntaxError: Invalid target origin '//localhost' in a call to 'postMessage'." while posting message to '//localhost'.
 Posted message to 'asdf:' without any exceptions.
-Encountered exception SyntaxError: An invalid or illegal string was specified. while posting message to 'http:'.
+Encountered exception "SyntaxError: Invalid target origin 'http:' in a call to 'postMessage'." while posting message to 'http:'.
 Received message: data="Received message: data="done" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
 

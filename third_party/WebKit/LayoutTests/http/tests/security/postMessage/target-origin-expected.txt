@@ -13,9 +13,9 @@ CONSOLE MESSAGE: Unable to post message to http://www.example.com. Recipient has
 window.location.href = http://127.0.0.1:8000/security/postMessage/target-origin.html
 
 waiting...
-Error sending message to null. SyntaxError: An invalid or illegal string was specified.
-Error sending message to undefined. SyntaxError: An invalid or illegal string was specified.
-Error sending message to //. SyntaxError: An invalid or illegal string was specified.
+Error sending message to null. SyntaxError: Invalid target origin '' in a call to 'postMessage'.
+Error sending message to undefined. SyntaxError: Invalid target origin '' in a call to 'postMessage'.
+Error sending message to //. SyntaxError: Invalid target origin '//' in a call to 'postMessage'.
 Received message: data="Received message: data="Trying origin=http://localhost:8000" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
 Received message: data="Received message: data="Trying origin=http://localhost:8000/" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"
 Received message: data="Received message: data="Trying origin=http://localhost:8000/foo" origin="http://127.0.0.1:8000"" origin="http://localhost:8000"

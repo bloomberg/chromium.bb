@@ -15,7 +15,7 @@ function tryPostMessage(origin) {
     win.postMessage("Trying origin=" + origin, origin);
     document.getElementById("result").innerHTML += "<br>Posted message to '" + origin + "' without any exceptions.";
   } catch(ex) {
-    document.getElementById("result").innerHTML += "<br>Encountered exception " + ex + " while posting message to '" + origin + "'.";
+    document.getElementById("result").innerHTML += "<br>Encountered exception \"" + ex + "\" while posting message to '" + origin + "'.";
   }
 }
 
