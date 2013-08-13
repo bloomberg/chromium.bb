@@ -39,8 +39,6 @@ WorkspaceController::WorkspaceController(aura::Window* viewport)
       event_handler_(new WorkspaceEventHandler(viewport_)) {
   SetWindowVisibilityAnimationTransition(
       viewport_, views::corewm::ANIMATE_NONE);
-  // Do this so when animating out windows don't extend beyond the bounds.
-  viewport_->layer()->SetMasksToBounds(true);
 
   // The layout-manager cannot be created in the initializer list since it
   // depends on the window to have been initialized.
