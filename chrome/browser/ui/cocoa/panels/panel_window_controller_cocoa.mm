@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/mac_util.h"
@@ -31,7 +30,6 @@
 #include "chrome/browser/ui/panels/panel_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
-#include "chrome/common/chrome_version_info.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
@@ -809,23 +807,32 @@ NSCursor* LoadWebKitCursor(WebKit::WebCursorInfo::Type type) {
 }
 
 - (void)windowDidResize:(NSNotification*)notification {
-  // This is a temporary check to track down a crash that occurs occasionally
-  // (http://crbug.com/265932).
-  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
-  if (channel == chrome::VersionInfo::CHANNEL_CANARY &&
-      CommandLine::ForCurrentProcess()->HasSwitch("enable-panel-experiment"))
+  // Remove the web contents view from the view hierarchy when the panel is not
+  // taller than the titlebar. Put it back when the panel grows taller than
+  // the titlebar. Note that RenderWidgetHostViewMac works for the case that
+  // the web contents view does not exist in the view hierarchy (i.e. the tab
+  // is not the main one), but it does not work well, like causing occasional
+  // crashes (http://crbug.com/265932), if the web contents view is made hidden.
+  //
+  // The reason for doing this is to ensure that our titlebar view, that is
+  // somewhat taller than the standard titlebar, does not overlap with the web
+  // contents view because the the web contents view assumes that its view will
+  // never overlap with another view in order to paint the web contents view
+  // directly. If we do not do this, some part of the web contents view will
+  // become visible and overlap the bottom area of the titlebar.
+  content::WebContents* webContents = windowShim_->panel()->GetWebContents();
+  if (!webContents)
     return;
-  // Hide the web contents view when the panel is not taller than the titlebar.
-  // This is to ensure that the titlebar view is not overlapped with the web
-  // contents view because the the web contents view assumes that its
-  // view will never be overlapped by another view in order to perform
-  // optimization. If we do not do this, some part of the web contents view
-  // will become visible and overlapp the bottom area of the titlebar.
-  if (WebContents* contents = windowShim_->panel()->GetWebContents()) {
-    BOOL hideContents =
-        NSHeight([self contentRectForFrameRect:[[self window] frame]]) <=
-        panel::kTitlebarHeight;
-    [contents->GetView()->GetNativeView() setHidden:hideContents];
+  NSView* contentView = webContents->GetView()->GetNativeView();
+  if (NSHeight([self contentRectForFrameRect:[[self window] frame]]) <=
+      panel::kTitlebarHeight) {
+    // No need to retain the view before it is removed from its superview
+    // because WebContentsView keeps a reference to this view.
+    if ([contentView superview])
+      [contentView removeFromSuperview];
+  } else {
+    if (![contentView superview])
+      [[[self window] contentView] addSubview:contentView];
   }
 }
 
