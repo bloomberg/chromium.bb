@@ -36,7 +36,7 @@ void KeyframeValue::addProperties(const StylePropertySet* propertySet)
         CSSPropertyID property = propertySet->propertyAt(i).id();
         // Timing-function within keyframes is special, because it is not animated; it just
         // describes the timing function between this keyframe and the next.
-        if (property != CSSPropertyWebkitAnimationTimingFunction)
+        if (property != CSSPropertyWebkitAnimationTimingFunction && property != CSSPropertyAnimationTimingFunction)
             addProperty(property);
     }
 }

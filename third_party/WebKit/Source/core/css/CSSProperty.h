@@ -22,6 +22,7 @@
 #define CSSProperty_h
 
 #include "CSSPropertyNames.h"
+#include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSValue.h"
 #include "core/platform/text/TextDirection.h"
 #include "core/platform/text/WritingMode.h"
@@ -89,8 +90,38 @@ private:
 
 inline CSSPropertyID prefixingVariantForPropertyId(CSSPropertyID propId)
 {
+    if (!RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled() && (propId >= CSSPropertyWebkitAnimation && propId <= CSSPropertyAnimationTimingFunction))
+        return propId;
+
     CSSPropertyID propertyId = CSSPropertyInvalid;
     switch (propId) {
+    case CSSPropertyAnimation:
+        propertyId = CSSPropertyWebkitAnimation;
+        break;
+    case CSSPropertyAnimationDelay:
+        propertyId = CSSPropertyWebkitAnimationDelay;
+        break;
+    case CSSPropertyAnimationDirection:
+        propertyId = CSSPropertyWebkitAnimationDirection;
+        break;
+    case CSSPropertyAnimationDuration:
+        propertyId = CSSPropertyWebkitAnimationDuration;
+        break;
+    case CSSPropertyAnimationFillMode:
+        propertyId = CSSPropertyWebkitAnimationFillMode;
+        break;
+    case CSSPropertyAnimationIterationCount:
+        propertyId = CSSPropertyWebkitAnimationIterationCount;
+        break;
+    case CSSPropertyAnimationName:
+        propertyId = CSSPropertyWebkitAnimationName;
+        break;
+    case CSSPropertyAnimationPlayState:
+        propertyId = CSSPropertyWebkitAnimationPlayState;
+        break;
+    case CSSPropertyAnimationTimingFunction:
+        propertyId = CSSPropertyWebkitAnimationTimingFunction;
+        break;
     case CSSPropertyTransitionDelay:
         propertyId = CSSPropertyWebkitTransitionDelay;
         break;
@@ -105,6 +136,33 @@ inline CSSPropertyID prefixingVariantForPropertyId(CSSPropertyID propId)
         break;
     case CSSPropertyTransition:
         propertyId = CSSPropertyWebkitTransition;
+        break;
+    case CSSPropertyWebkitAnimation:
+        propertyId = CSSPropertyAnimation;
+        break;
+    case CSSPropertyWebkitAnimationDelay:
+        propertyId = CSSPropertyAnimationDelay;
+        break;
+    case CSSPropertyWebkitAnimationDirection:
+        propertyId = CSSPropertyAnimationDirection;
+        break;
+    case CSSPropertyWebkitAnimationDuration:
+        propertyId = CSSPropertyAnimationDuration;
+        break;
+    case CSSPropertyWebkitAnimationFillMode:
+        propertyId = CSSPropertyAnimationFillMode;
+        break;
+    case CSSPropertyWebkitAnimationIterationCount:
+        propertyId = CSSPropertyAnimationIterationCount;
+        break;
+    case CSSPropertyWebkitAnimationName:
+        propertyId = CSSPropertyAnimationName;
+        break;
+    case CSSPropertyWebkitAnimationPlayState:
+        propertyId = CSSPropertyAnimationPlayState;
+        break;
+    case CSSPropertyWebkitAnimationTimingFunction:
+        propertyId = CSSPropertyAnimationTimingFunction;
         break;
     case CSSPropertyWebkitTransitionDelay:
         propertyId = CSSPropertyTransitionDelay;

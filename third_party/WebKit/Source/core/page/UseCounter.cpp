@@ -485,6 +485,15 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyTouchAction: return 421;
     case CSSPropertyGridArea: return 422;
     case CSSPropertyGridTemplate: return 423;
+    case CSSPropertyAnimation: return 424;
+    case CSSPropertyAnimationDelay: return 425;
+    case CSSPropertyAnimationDirection: return 426;
+    case CSSPropertyAnimationDuration: return 427;
+    case CSSPropertyAnimationFillMode: return 428;
+    case CSSPropertyAnimationIterationCount: return 429;
+    case CSSPropertyAnimationName: return 430;
+    case CSSPropertyAnimationPlayState: return 431;
+    case CSSPropertyAnimationTimingFunction: return 432;
 
     // Add new features above this line (don't change the assigned numbers of the existing
     // items) and update maximumCSSSampleId() with the new maximum value.
@@ -499,7 +508,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     return 0;
 }
 
-static int maximumCSSSampleId() { return 423; }
+static int maximumCSSSampleId() { return 432; }
 
 UseCounter::UseCounter()
 {
