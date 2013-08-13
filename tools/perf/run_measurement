@@ -78,8 +78,8 @@ def main():
     "scrolling_benchmark": "smoothness",
     "smoothness_benchmark": "smoothness",
     "smoothness_measurement": "smoothness",
-    "startup_benchmark": "startup_warm",
-    "startup_measurement": "startup_warm",
+    "startup_benchmark": "startup_warm_blank_page",
+    "startup_measurement": "startup",
     "tab_switching_measurement": "tab_switching",
   }
 
