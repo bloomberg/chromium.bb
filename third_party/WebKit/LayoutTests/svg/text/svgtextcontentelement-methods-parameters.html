@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="help" href="http://www.w3.org/TR/SVG2/text.html#InterfaceSVGTextContentElement">
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+description("Check that SVGTextContentElement methods' parameters are correctly validated");
+
+var svgNS = "http://www.w3.org/2000/svg";
+
+var svgRoot = document.createElementNS(svgNS, "svg");
+document.documentElement.appendChild(svgRoot);
+
+var svgText = document.createElementNS(svgNS, "text");
+svgText.style.fontFamily = "Ahem";
+svgText.style.fontSize = "20px";
+svgText.appendChild(document.createTextNode("abcdefg"));
+svgRoot.appendChild(svgText);
+
+var actualTestPoint, expectedTestPoint;
+function shouldBeEqualToSVGPoint(actualPoint, expectedPoint)
+{
+    actualTestPoint = actualPoint;
+    expectedTestPoint = expectedPoint;
+    shouldBe("actualTestPoint.x", "expectedTestPoint.x");
+    shouldBe("actualTestPoint.y", "expectedTestPoint.y");
+}
+
+var actualTestRect, expectedTestRect;
+function shouldBeEqualToSVGRect(actualRect, expectedRect)
+{
+    actualTestRect = actualRect;
+    expectedTestRect = expectedRect;
+    shouldBe("actualTestRect.x", "expectedTestRect.x");
+    shouldBe("actualTestRect.y", "expectedTestRect.y");
+    shouldBe("actualTestRect.width", "expectedTestRect.width");
+    shouldBe("actualTestRect.height", "expectedTestRect.height");
+}
+
+// Arguments should be mandatory.
+shouldThrow("svgText.getSubStringLength()", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.getSubStringLength(2)", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.getStartPositionOfChar()", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.getEndPositionOfChar()", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.getExtentOfChar()", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.getRotationOfChar()", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.getCharNumAtPosition()", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.selectSubString()", "'TypeError: Not enough arguments'");
+shouldThrow("svgText.selectSubString(2)", "'TypeError: Not enough arguments'");
+
+// Should throw an IndexSizeError if charnum is greater than or equal to the number of characters at this node.
+shouldThrow("svgText.getSubStringLength(999, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getStartPositionOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getEndPositionOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getExtentOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getRotationOfChar(999)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.selectSubString(999, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+
+// Should not throw if charnum is negative and wraps to a valid positive index (-4294967294 wraps to 2).
+shouldBe("svgText.getSubStringLength(-4294967294, 2)", "svgText.getSubStringLength(2, 2)");
+shouldBeEqualToSVGPoint("svgText.getStartPositionOfChar(-4294967294)", "svgText.getStartPositionOfChar(2)");
+shouldBeEqualToSVGPoint("svgText.getEndPositionOfChar(-4294967294)", "svgText.getEndPositionOfChar(2)");
+shouldBeEqualToSVGRect("svgText.getExtentOfChar(-4294967294)", "svgText.getExtentOfChar(2)");
+shouldBe("svgText.getRotationOfChar(-4294967294)", "svgText.getRotationOfChar(2)");
+shouldNotThrow("svgText.selectSubString(-4294967294, 2)");
+
+// Should throw an IndexSizeError if charnum is negative and wraps to an invalid positive index.
+shouldThrow("svgText.getSubStringLength(-1, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getStartPositionOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getEndPositionOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getExtentOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getRotationOfChar(-1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.selectSubString(-1, 2)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+
+// We should not throw if nchars is negative or too large.
+// If nchars specifies more characters than are available, then the substring will consist of all characters
+// starting with charnum until the end of the list of characters.
+shouldBe("svgText.getSubStringLength(2, 999)", "svgText.getSubStringLength(2, 5)");
+shouldBe("svgText.getSubStringLength(2, -1)", "svgText.getSubStringLength(2, 5)");
+shouldBe("svgText.getSubStringLength(2, 2)", "svgText.getSubStringLength(2, -4294967294)");
+shouldNotThrow("svgText.selectSubString(2, 999)");
+shouldNotThrow("svgText.selectSubString(2, -1)");
+shouldNotThrow("svgText.selectSubString(2, -4294967294)");
+
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>

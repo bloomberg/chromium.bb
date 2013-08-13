@@ -9,8 +9,8 @@ PASS svgText.getSubStringLength(0, 1) is 20
 PASS svgText.getSubStringLength(1, 1) is 20
 PASS svgText.getSubStringLength(2, 1) is 20
 PASS svgText.getSubStringLength(0, 3) is 60
-PASS svgText.getSubStringLength(1, -1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
-PASS svgText.getSubStringLength(2, -1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getSubStringLength(1, -1) did not throw exception.
+PASS svgText.getSubStringLength(2, -1) did not throw exception.
 PASS svgText.getSubStringLength(3, -1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS svgText.getSubStringLength(3, -3) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS successfullyParsed is true

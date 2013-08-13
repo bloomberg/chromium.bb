@@ -1,0 +1,47 @@
+Check that SVGTextContentElement methods' parameters are correctly validated
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS svgText.getSubStringLength() threw exception TypeError: Not enough arguments.
+PASS svgText.getSubStringLength(2) threw exception TypeError: Not enough arguments.
+PASS svgText.getStartPositionOfChar() threw exception TypeError: Not enough arguments.
+PASS svgText.getEndPositionOfChar() threw exception TypeError: Not enough arguments.
+PASS svgText.getExtentOfChar() threw exception TypeError: Not enough arguments.
+PASS svgText.getRotationOfChar() threw exception TypeError: Not enough arguments.
+PASS svgText.getCharNumAtPosition() threw exception TypeError: Not enough arguments.
+PASS svgText.selectSubString() threw exception TypeError: Not enough arguments.
+PASS svgText.selectSubString(2) threw exception TypeError: Not enough arguments.
+PASS svgText.getSubStringLength(999, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getStartPositionOfChar(999) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getEndPositionOfChar(999) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getExtentOfChar(999) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getRotationOfChar(999) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.selectSubString(999, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getSubStringLength(-4294967294, 2) is svgText.getSubStringLength(2, 2)
+PASS actualTestPoint.x is expectedTestPoint.x
+PASS actualTestPoint.y is expectedTestPoint.y
+PASS actualTestPoint.x is expectedTestPoint.x
+PASS actualTestPoint.y is expectedTestPoint.y
+PASS actualTestRect.x is expectedTestRect.x
+PASS actualTestRect.y is expectedTestRect.y
+PASS actualTestRect.width is expectedTestRect.width
+PASS actualTestRect.height is expectedTestRect.height
+PASS svgText.getRotationOfChar(-4294967294) is svgText.getRotationOfChar(2)
+PASS svgText.selectSubString(-4294967294, 2) did not throw exception.
+PASS svgText.getSubStringLength(-1, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getStartPositionOfChar(-1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getEndPositionOfChar(-1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getExtentOfChar(-1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getRotationOfChar(-1) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.selectSubString(-1, 2) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS svgText.getSubStringLength(2, 999) is svgText.getSubStringLength(2, 5)
+PASS svgText.getSubStringLength(2, -1) is svgText.getSubStringLength(2, 5)
+PASS svgText.getSubStringLength(2, 2) is svgText.getSubStringLength(2, -4294967294)
+PASS svgText.selectSubString(2, 999) did not throw exception.
+PASS svgText.selectSubString(2, -1) did not throw exception.
+PASS svgText.selectSubString(2, -4294967294) did not throw exception.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+abcdefg

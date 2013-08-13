@@ -23,10 +23,10 @@ shouldBe("svgText.getSubStringLength(1, 1)", "20");
 shouldBe("svgText.getSubStringLength(2, 1)", "20");
 shouldBe("svgText.getSubStringLength(0, 3)", "60");
 
-shouldThrow("svgText.getSubStringLength(1, -1)");
-shouldThrow("svgText.getSubStringLength(2, -1)");
-shouldThrow("svgText.getSubStringLength(3, -1)");
-shouldThrow("svgText.getSubStringLength(3, -3)");
+shouldNotThrow("svgText.getSubStringLength(1, -1)");
+shouldNotThrow("svgText.getSubStringLength(2, -1)");
+shouldThrow("svgText.getSubStringLength(3, -1)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldThrow("svgText.getSubStringLength(3, -3)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
 
 // cleanup
 document.documentElement.removeChild(svgRoot);

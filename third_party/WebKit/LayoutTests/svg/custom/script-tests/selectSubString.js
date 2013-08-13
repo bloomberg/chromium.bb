@@ -9,9 +9,9 @@ svgText.style.fontSize = "20px";
 svgText.appendChild(document.createTextNode("abc"));
 svgRoot.appendChild(svgText);
 
-shouldThrow("svgText.selectSubString(-1, 0)");
-shouldThrow("svgText.getSubStringLength(0, -1)");
-shouldThrow("svgText.getSubStringLength(3, 0)");
+shouldThrow("svgText.selectSubString(-1, 0)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
+shouldNotThrow("svgText.getSubStringLength(0, -1)");
+shouldThrow("svgText.getSubStringLength(3, 0)", "'IndexSizeError: Index or size was negative, or greater than the allowed value.'");
 
 // cleanup
 document.documentElement.removeChild(svgRoot);
