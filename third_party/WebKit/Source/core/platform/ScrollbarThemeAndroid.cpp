@@ -24,16 +24,15 @@
  */
 
 #include "config.h"
-
 #include "core/platform/ScrollbarTheme.h"
 
-#include "core/platform/chromium/ScrollbarThemeChromiumOverlay.h"
+#include "core/platform/ScrollbarThemeOverlay.h"
 
 namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
-    DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumOverlay, theme, ());
+    DEFINE_STATIC_LOCAL(ScrollbarThemeOverlay, theme, ());
     return &theme;
 }
 

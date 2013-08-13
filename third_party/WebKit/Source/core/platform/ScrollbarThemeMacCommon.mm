@@ -20,16 +20,18 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
-#include "core/platform/mac/ScrollbarThemeMac.h"
+#include "core/platform/ScrollbarThemeMacCommon.h"
 
 #include <Carbon/Carbon.h>
 #include "core/page/FrameView.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollView.h"
+#include "core/platform/ScrollbarThemeMacNonOverlayAPI.h"
+#include "core/platform/ScrollbarThemeMacOverlayAPI.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
@@ -39,8 +41,6 @@
 #include "core/platform/mac/LocalCurrentGraphicsContext.h"
 #include "core/platform/mac/NSScrollerImpDetails.h"
 #include "core/platform/mac/ScrollAnimatorMac.h"
-#include "core/platform/mac/ScrollbarThemeMacNonOverlayAPI.h"
-#include "core/platform/mac/ScrollbarThemeMacOverlayAPI.h"
 #include "public/platform/mac/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"

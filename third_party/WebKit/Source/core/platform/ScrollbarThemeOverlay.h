@@ -23,8 +23,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeChromiumOverlay_h
-#define ScrollbarThemeChromiumOverlay_h
+#ifndef ScrollbarThemeOverlay_h
+#define ScrollbarThemeOverlay_h
 
 #include "core/platform/ScrollbarTheme.h"
 
@@ -32,7 +32,7 @@ namespace WebCore {
 
 // This scrollbar theme is used to get overlay scrollbar for platforms other
 // than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
-class ScrollbarThemeChromiumOverlay : public ScrollbarTheme {
+class ScrollbarThemeOverlay : public ScrollbarTheme {
 public:
     virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
     virtual bool usesOverlayScrollbars() const OVERRIDE;

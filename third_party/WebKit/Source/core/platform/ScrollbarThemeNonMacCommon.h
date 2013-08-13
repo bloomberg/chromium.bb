@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Google Inc. All rights reserved.
+ * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,24 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeChromiumDefault_h
-#define ScrollbarThemeChromiumDefault_h
+#ifndef ScrollbarThemeNonMacCommon_h
+#define ScrollbarThemeNonMacCommon_h
 
-#include "core/platform/chromium/ScrollbarThemeChromium.h"
+#include "core/platform/ScrollbarTheme.h"
 
 namespace WebCore {
 
-class ScrollbarThemeChromiumDefault : public ScrollbarThemeChromium {
-public:
-    virtual int scrollbarThickness(ScrollbarControlSize);
+class PlatformMouseEvent;
 
+class ScrollbarThemeNonMacCommon : public ScrollbarTheme {
 protected:
-    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart);
-    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart);
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&);
-    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&);
-    virtual IntSize buttonSize(ScrollbarThemeClient*);
-    virtual int minimumThumbLength(ScrollbarThemeClient*);
+    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return true; }
+    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
+
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
+
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+
+    virtual IntSize buttonSize(ScrollbarThemeClient*) = 0;
 };
 
 } // namespace WebCore

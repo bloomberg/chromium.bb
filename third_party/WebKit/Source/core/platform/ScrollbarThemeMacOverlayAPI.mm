@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "core/platform/mac/ScrollbarThemeMacOverlayAPI.h"
+#include "core/platform/ScrollbarThemeMacOverlayAPI.h"
 
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
