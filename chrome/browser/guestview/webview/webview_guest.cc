@@ -406,3 +406,13 @@ void WebViewGuest::RemoveWebViewFromExtensionRendererState(
           web_contents->GetRenderProcessHost()->GetID(),
           web_contents->GetRoutingID()));
 }
+
+void WebViewGuest::SizeChanged(const gfx::Size& old_size,
+                               const gfx::Size& new_size) {
+  scoped_ptr<DictionaryValue> args(new DictionaryValue());
+  args->SetInteger(webview::kOldHeight, old_size.height());
+  args->SetInteger(webview::kOldWidth, old_size.width());
+  args->SetInteger(webview::kNewHeight, new_size.height());
+  args->SetInteger(webview::kNewWidth, new_size.width());
+  DispatchEvent(new GuestView::Event(webview::kEventSizeChanged, args.Pass()));
+}

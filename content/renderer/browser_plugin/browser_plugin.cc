@@ -85,7 +85,6 @@ BrowserPlugin::BrowserPlugin(
       content_window_routing_id_(MSG_ROUTING_NONE),
       plugin_focused_(false),
       visible_(true),
-      size_changed_in_flight_(false),
       before_first_navigation_(true),
       mouse_locked_(false),
       browser_plugin_manager_(render_view->GetBrowserPluginManager()),
@@ -330,21 +329,6 @@ void BrowserPlugin::UpdateGuestAutoSizeState(bool current_auto_size) {
                                            resize_guest_params));
 }
 
-void BrowserPlugin::SizeChangedDueToAutoSize(const gfx::Size& old_view_size) {
-  size_changed_in_flight_ = false;
-
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kOldHeight] =
-      new base::FundamentalValue(old_view_size.height());
-  props[browser_plugin::kOldWidth] =
-      new base::FundamentalValue(old_view_size.width());
-  props[browser_plugin::kNewHeight] =
-      new base::FundamentalValue(last_view_size_.height());
-  props[browser_plugin::kNewWidth] =
-      new base::FundamentalValue(last_view_size_.width());
-  TriggerEvent(browser_plugin::kEventSizeChanged, &props);
-}
-
 // static
 bool BrowserPlugin::UsesDamageBuffer(
     const BrowserPluginMsg_UpdateRect_Params& params) {
@@ -515,8 +499,9 @@ void BrowserPlugin::OnUpdateRect(
   // In HW mode, we need to do it here so we can continue sending
   // resize messages when needed.
   if (params.is_resize_ack ||
-      (!params.needs_ack && (auto_size || auto_size_ack_pending_)))
+      (!params.needs_ack && (auto_size || auto_size_ack_pending_))) {
     resize_ack_received_ = true;
+  }
 
   auto_size_ack_pending_ = false;
 
@@ -559,24 +544,7 @@ void BrowserPlugin::OnUpdateRect(
   if (auto_size && (params.view_size != last_view_size_)) {
     if (backing_store_)
       backing_store_->Clear(SK_ColorWHITE);
-    gfx::Size old_view_size = last_view_size_;
     last_view_size_ = params.view_size;
-    // Schedule a SizeChanged instead of calling it directly to ensure that
-    // the backing store has been updated before the developer attempts to
-    // resize to avoid flicker. |size_changed_in_flight_| acts as a form of
-    // flow control for SizeChanged events. If the guest's view size is changing
-    // rapidly before a SizeChanged event fires, then we avoid scheduling
-    // another SizeChanged event. SizeChanged reads the new size from
-    // |last_view_size_| so we can be sure that it always fires an event
-    // with the last seen view size.
-    if (container_ && !size_changed_in_flight_) {
-      size_changed_in_flight_ = true;
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&BrowserPlugin::SizeChangedDueToAutoSize,
-                     base::Unretained(this),
-                     old_view_size));
-    }
   }
 
   if (UsesDamageBuffer(params)) {

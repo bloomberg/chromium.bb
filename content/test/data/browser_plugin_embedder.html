@@ -1,9 +1,4 @@
 <script type="text/javascript">
-function sizeChanged(evt) {
-  var data = JSON.parse(evt.detail);
-  document.title = "AutoSize(" + data.newWidth + ", " + data.newHeight + ")";
-}
-
 function SetSrc(src) {
   var plugin = document.getElementById('plugin');
   plugin.src = src;
@@ -57,7 +52,6 @@ function receiveMessage(event) {
 
 var plugin = document.getElementById('plugin');
 window.addEventListener('message', receiveMessage, false);
-plugin.addEventListener('-internal-sizechanged', sizeChanged);
 plugin.addEventListener('-internal-instanceid-allocated', function(e) {
   plugin['-internal-attach']({});
 });

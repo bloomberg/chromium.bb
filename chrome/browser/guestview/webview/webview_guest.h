@@ -53,6 +53,8 @@ class WebViewGuest : public GuestView,
       BrowserPluginPermissionType permission_type,
       const base::DictionaryValue& request_info,
       const PermissionResponseCallback& callback) OVERRIDE;
+  virtual void SizeChanged(const gfx::Size& old_size, const gfx::Size& new_size)
+      OVERRIDE;
 
   // NotificationObserver implementation.
   virtual void Observe(int type,

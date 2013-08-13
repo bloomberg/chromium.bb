@@ -42,9 +42,6 @@ extern const char kAttributeName[];
 extern const char kAttributePartition[];
 extern const char kAttributeSrc[];
 
-// Events.
-extern const char kEventSizeChanged[];
-
 // Parameters/properties on events.
 extern const char kDefaultPromptText[];
 extern const char kId[];
@@ -54,10 +51,6 @@ extern const char kLastUnlockedBySelf[];
 extern const char kMessageText[];
 extern const char kMessageType[];
 extern const char kName[];
-extern const char kNewHeight[];
-extern const char kNewWidth[];
-extern const char kOldHeight[];
-extern const char kOldWidth[];
 extern const char kPermission[];
 extern const char kPermissionTypeDialog[];
 extern const char kPermissionTypeDownload[];

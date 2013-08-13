@@ -20,13 +20,17 @@ const char kEventLoadStop[] = "webview.onLoadStop";
 const char kEventNewWindow[] = "webview.onNewWindow";
 const char kEventPermissionRequest[] = "webview.onPermissionRequest";
 const char kEventResponsive[] = "webview.onResponsive";
+const char kEventSizeChanged[] = "webview.onSizeChanged";
 const char kEventUnresponsive[] = "webview.onUnresponsive";
 
 // Parameters/properties on events.
 const char kLevel[] = "level";
 const char kLine[] = "line";
 const char kMessage[] = "message";
+const char kNewHeight[] = "newHeight";
 const char kNewURL[] = "newUrl";
+const char kNewWidth[] = "newWidth";
+const char kOldHeight[] = "oldHeight";
 const char kOldURL[] = "oldUrl";
 const char kPermission[] = "permission";
 const char kPermissionTypeDialog[] = "dialog";
@@ -35,6 +39,7 @@ const char kPermissionTypeGeolocation[] = "geolocation";
 const char kPermissionTypeMedia[] = "media";
 const char kPermissionTypeNewWindow[] = "newwindow";
 const char kPermissionTypePointerLock[] = "pointerLock";
+const char kOldWidth[] = "oldWidth";
 const char kProcessId[] = "processId";
 const char kReason[] = "reason";
 const char kRequestId[] = "requestId";

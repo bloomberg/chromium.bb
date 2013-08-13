@@ -23,13 +23,17 @@ extern const char kEventLoadStop[];
 extern const char kEventNewWindow[];
 extern const char kEventPermissionRequest[];
 extern const char kEventResponsive[];
+extern const char kEventSizeChanged[];
 extern const char kEventUnresponsive[];
 
 // Parameters/properties on events.
 extern const char kLevel[];
 extern const char kLine[];
 extern const char kMessage[];
+extern const char kNewHeight[];
 extern const char kNewURL[];
+extern const char kNewWidth[];
+extern const char kOldHeight[];
 extern const char kOldURL[];
 extern const char kPermission[];
 extern const char kPermissionTypeDialog[];
@@ -38,6 +42,7 @@ extern const char kPermissionTypeGeolocation[];
 extern const char kPermissionTypeMedia[];
 extern const char kPermissionTypeNewWindow[];
 extern const char kPermissionTypePointerLock[];
+extern const char kOldWidth[];
 extern const char kProcessId[];
 extern const char kReason[];
 extern const char kRequestId[];

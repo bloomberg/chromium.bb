@@ -270,9 +270,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // Informs the guest of an updated autosize state.
   void UpdateGuestAutoSizeState(bool current_auto_size);
 
-  // Informs the BrowserPlugin that guest has changed its size in autosize mode.
-  void SizeChangedDueToAutoSize(const gfx::Size& old_view_size);
-
   // Indicates whether a damage buffer was used by the guest process for the
   // provided |params|.
   static bool UsesDamageBuffer(
@@ -343,7 +340,6 @@ class CONTENT_EXPORT BrowserPlugin :
   WebCursor cursor_;
 
   gfx::Size last_view_size_;
-  bool size_changed_in_flight_;
   bool before_first_navigation_;
   bool mouse_locked_;
 

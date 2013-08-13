@@ -347,7 +347,8 @@ BrowserPluginGuest::BrowserPluginGuest(
       pending_lock_request_(false),
       embedder_visible_(true),
       next_permission_request_id_(browser_plugin::kInvalidPermissionRequestID),
-      has_render_view_(has_render_view) {
+      has_render_view_(has_render_view),
+      last_seen_auto_size_enabled_(false) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
   if (opener)
@@ -1316,6 +1317,13 @@ void BrowserPluginGuest::OnResizeGuest(
       render_widget_host->NotifyScreenInfoChanged();
     }
   }
+  // When autosize is turned off and as a result there is a layout change, we
+  // send a sizechanged event.
+  if (!auto_size_enabled_ && last_seen_auto_size_enabled_ &&
+      !params.view_rect.size().IsEmpty() && delegate_) {
+    delegate_->SizeChanged(last_seen_view_size_, params.view_rect.size());
+    last_seen_auto_size_enabled_ = false;
+  }
   // Invalid damage buffer means we are in HW compositing mode,
   // so just resize the WebContents and repaint if needed.
   if (!base::SharedMemory::IsHandleValid(params.damage_buffer_handle)) {
@@ -1577,6 +1585,16 @@ void BrowserPluginGuest::OnUpdateRect(
   relay_params.is_resize_ack = ViewHostMsg_UpdateRect_Flags::is_resize_ack(
       params.flags);
   relay_params.needs_ack = params.needs_ack;
+
+  bool size_changed = last_seen_view_size_ != params.view_size;
+  gfx::Size old_size = last_seen_view_size_;
+  last_seen_view_size_ = params.view_size;
+
+  if ((auto_size_enabled_ || last_seen_auto_size_enabled_) &&
+      size_changed && delegate_) {
+    delegate_->SizeChanged(old_size, last_seen_view_size_);
+  }
+  last_seen_auto_size_enabled_ = auto_size_enabled_;
 
   // HW accelerated case, acknowledge resize only
   if (!params.needs_ack || !damage_buffer_) {

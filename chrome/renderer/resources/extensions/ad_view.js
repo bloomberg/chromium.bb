@@ -65,13 +65,6 @@ var AD_VIEW_API_METHODS = [
  // Empty for now.
 ];
 
-/**
- * List of events to blindly forward from the browser plugin to the <adview>.
- */
-var AD_VIEW_EVENTS = {
-  'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
-};
-
 var createEvent = function(name) {
   var eventOpts = {supportsListeners: true, supportsFilters: true};
   return new eventBindings.Event(name, undefined, eventOpts);
@@ -468,10 +461,6 @@ AdView.prototype.setupAdviewNodeEvents_ = function() {
   };
   this.browserPluginNode_.addEventListener('-internal-instanceid-allocated',
                                            onInstanceIdAllocated);
-
-  for (var eventName in AD_VIEW_EVENTS) {
-    this.setupEvent_(eventName, AD_VIEW_EVENTS[eventName]);
-  }
 }
 
 /**
@@ -491,22 +480,6 @@ AdView.prototype.setupExtEvent_ = function(eventName, eventInfo) {
     adviewNode.dispatchEvent(adviewEvent);
   }, {instanceId: self.instanceId_});
 };
-
-/**
- * @private
- */
-AdView.prototype.setupEvent_ = function(eventname, attribs) {
-  var adviewNode = this.adviewNode_;
-  var internalname = '-internal-' + eventname;
-  this.browserPluginNode_.addEventListener(internalname, function(e) {
-    var evt = new Event(eventname, { bubbles: true });
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-    $Array.forEach(attribs, function(attribName) {
-      evt[attribName] = detail[attribName];
-    });
-    adviewNode.dispatchEvent(evt);
-  });
-}
 
 /**
  * @public

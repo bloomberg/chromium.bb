@@ -14,10 +14,6 @@ var eventBindings = require('event_bindings');
 var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
     'minwidth', 'maxheight', 'maxwidth'];
 
-var WEB_VIEW_EVENTS = {
-  'sizechanged': ['oldHeight', 'oldWidth', 'newHeight', 'newWidth'],
-};
-
 var webViewInstanceIdCounter = 0;
 
 var createEvent = function(name) {
@@ -102,6 +98,10 @@ var WEB_VIEW_EXT_EVENTS = {
   'responsive': {
     evt: createEvent('webview.onResponsive'),
     fields: ['processId']
+  },
+  'sizechanged': {
+    evt: createEvent('webview.onSizeChanged'),
+    fields: ['oldHeight', 'oldWidth', 'newHeight', 'newWidth']
   },
   'unresponsive': {
     evt: createEvent('webview.onUnresponsive'),
@@ -402,10 +402,6 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
   };
   this.browserPluginNode_.addEventListener('-internal-instanceid-allocated',
                                            onInstanceIdAllocated);
-
-  for (var eventName in WEB_VIEW_EVENTS) {
-    this.setupEvent_(eventName, WEB_VIEW_EVENTS[eventName]);
-  }
 };
 
 /**
@@ -430,22 +426,6 @@ WebView.prototype.setupExtEvent_ = function(eventName, eventInfo) {
     }
     webviewNode.dispatchEvent(webviewEvent);
   }, {instanceId: self.instanceId_});
-};
-
-/**
- * @private
- */
-WebView.prototype.setupEvent_ = function(eventName, attribs) {
-  var webviewNode = this.webviewNode_;
-  var internalname = '-internal-' + eventName;
-  this.browserPluginNode_.addEventListener(internalname, function(e) {
-    var evt = new Event(eventName, { bubbles: true });
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-    $Array.forEach(attribs, function(attribName) {
-      evt[attribName] = detail[attribName];
-    });
-    webviewNode.dispatchEvent(evt);
-  });
 };
 
 /**

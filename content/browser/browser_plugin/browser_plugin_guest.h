@@ -515,6 +515,11 @@ class CONTENT_EXPORT BrowserPluginGuest
   // this guest is attached.
   bool has_render_view_;
 
+  // Last seen size of guest contents (by OnUpdateRect).
+  gfx::Size last_seen_view_size_;
+  // Last seen autosize attribute state (by OnUpdateRect).
+  bool last_seen_auto_size_enabled_;
+
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.
   std::queue<IPC::Message*> pending_messages_;
