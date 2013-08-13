@@ -445,6 +445,16 @@ evdev_handle_device(struct evdev_device *device)
 
 		ioctl(device->fd, EVIOCGBIT(EV_ABS, sizeof(abs_bits)),
 		      abs_bits);
+
+		if (TEST_BIT(abs_bits, ABS_WHEEL) ||
+		    TEST_BIT(abs_bits, ABS_GAS) ||
+		    TEST_BIT(abs_bits, ABS_BRAKE) ||
+		    TEST_BIT(abs_bits, ABS_HAT0X)) {
+			weston_log("device %s is a joystick, ignoring\n",
+				   device->devnode);
+			return 0;
+		}
+
 		if (TEST_BIT(abs_bits, ABS_X)) {
 			ioctl(device->fd, EVIOCGABS(ABS_X), &absinfo);
 			device->abs.min_x = absinfo.minimum;
