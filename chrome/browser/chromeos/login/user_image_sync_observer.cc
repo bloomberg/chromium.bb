@@ -37,9 +37,10 @@ bool IsIndexSupported(int index) {
 
 Profile* GetUserProfile() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (!profile_manager)
+  if (!profile_manager || !profile_manager->IsLoggedIn())
     return NULL;
-  base::FilePath profile_path = profile_manager->GetInitialProfileDir();
+  base::FilePath profile_path = profile_manager->user_data_dir().Append(
+      profile_manager->GetInitialProfileDir());
   return profile_manager->GetProfileByPath(profile_path);
 }
 
