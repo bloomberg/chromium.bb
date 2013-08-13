@@ -455,6 +455,7 @@ public:
     }
     ShapeInsideInfo* layoutShapeInsideInfo() const;
     bool allowsShapeInsideInfoSharing() const { return !isInline() && !isFloating(); }
+    virtual void imageChanged(WrappedImagePtr, const IntRect* = 0) OVERRIDE;
 
 protected:
     virtual void willBeDestroyed();

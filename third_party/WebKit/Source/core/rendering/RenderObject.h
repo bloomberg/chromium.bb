@@ -664,6 +664,7 @@ public:
 
     void updateFillImages(const FillLayer*, const FillLayer*);
     void updateImage(StyleImage*, StyleImage*);
+    void updateShapeImage(const ShapeValue*, const ShapeValue*);
 
     virtual void paint(PaintInfo&, const LayoutPoint&);
 
@@ -1070,6 +1071,8 @@ private:
             styleColor = object->style()->visitedDependentColor(CSSPropertyColor);
         return styleColor;
     }
+
+    void removeShapeImageClient(ShapeValue*);
 
 #ifndef NDEBUG
     void checkBlockPositionedObjectsNeedLayout();

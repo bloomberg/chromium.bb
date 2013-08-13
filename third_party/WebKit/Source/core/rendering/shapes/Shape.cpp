@@ -31,9 +31,12 @@
 #include "core/rendering/shapes/Shape.h"
 
 #include "core/css/LengthFunctions.h"
+#include "core/fetch/ImageResource.h"
 #include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/WindRule.h"
 #include "core/rendering/shapes/PolygonShape.h"
+#include "core/rendering/shapes/RasterShape.h"
 #include "core/rendering/shapes/RectangleShape.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"
@@ -196,6 +199,47 @@ PassOwnPtr<Shape> Shape::createShape(const BasicShape* basicShape, const LayoutS
     shape->m_padding = floatValueForLength(padding, 0);
 
     return shape.release();
+}
+
+PassOwnPtr<Shape> Shape::createShape(const StyleImage* styleImage, float threshold, const LayoutSize&, WritingMode writingMode, Length margin, Length padding)
+{
+    ASSERT(styleImage && styleImage->isImageResource() && styleImage->cachedImage() && styleImage->cachedImage()->image());
+
+    OwnPtr<RasterShapeIntervals> intervals = adoptPtr(new RasterShapeIntervals());
+
+    Image* image = styleImage->cachedImage()->image();
+    const IntSize& imageSize = image->size();
+    OwnPtr<ImageBuffer> imageBuffer = ImageBuffer::create(imageSize);
+    if (imageBuffer) {
+        GraphicsContext* graphicsContext = imageBuffer->context();
+        graphicsContext->drawImage(image, IntPoint());
+
+        RefPtr<Uint8ClampedArray> pixelArray = imageBuffer->getUnmultipliedImageData(IntRect(IntPoint(), imageSize));
+        unsigned pixelArrayLength = pixelArray->length();
+        unsigned pixelArrayOffset = 3; // Each pixel is four bytes: RGBA.
+        uint8_t alphaPixelThreshold = threshold * 255;
+
+        ASSERT(static_cast<unsigned>(imageSize.width() * imageSize.height() * 4) == pixelArrayLength);
+
+        for (int y = 0; y < imageSize.height(); ++y) {
+            int startX = -1;
+            for (int x = 0; x < imageSize.width() && pixelArrayOffset < pixelArrayLength; ++x, pixelArrayOffset += 4) {
+                uint8_t alpha = pixelArray->item(pixelArrayOffset);
+                if ((startX == -1) && alpha > alphaPixelThreshold) {
+                    startX = x;
+                } else if (startX != -1 && (alpha <= alphaPixelThreshold || x == imageSize.width() - 1)) {
+                    intervals->addInterval(y, startX, x);
+                    startX = -1;
+                }
+            }
+        }
+    }
+
+    OwnPtr<RasterShape> rasterShape = adoptPtr(new RasterShape(intervals.release()));
+    rasterShape->m_writingMode = writingMode;
+    rasterShape->m_margin = floatValueForLength(margin, 0);
+    rasterShape->m_padding = floatValueForLength(padding, 0);
+    return rasterShape.release();
 }
 
 } // namespace WebCore

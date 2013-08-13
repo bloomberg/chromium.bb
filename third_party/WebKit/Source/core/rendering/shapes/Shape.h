@@ -33,6 +33,7 @@
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/text/WritingMode.h"
 #include "core/rendering/style/BasicShapes.h"
+#include "core/rendering/style/StyleImage.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
@@ -60,6 +61,7 @@ typedef Vector<LineSegment> SegmentList;
 class Shape {
 public:
     static PassOwnPtr<Shape> createShape(const BasicShape*, const LayoutSize& logicalBoxSize, WritingMode, Length margin, Length padding);
+    static PassOwnPtr<Shape> createShape(const StyleImage*, float threshold, const LayoutSize& logicalBoxSize, WritingMode, Length margin, Length padding);
 
     virtual ~Shape() { }
 

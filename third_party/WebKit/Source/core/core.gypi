@@ -1506,6 +1506,8 @@
             'rendering/break_lines.h',
             'rendering/shapes/PolygonShape.cpp',
             'rendering/shapes/PolygonShape.h',
+            'rendering/shapes/RasterShape.cpp',
+            'rendering/shapes/RasterShape.h',
             'rendering/shapes/RectangleShape.cpp',
             'rendering/shapes/RectangleShape.h',
             'rendering/shapes/Shape.cpp',

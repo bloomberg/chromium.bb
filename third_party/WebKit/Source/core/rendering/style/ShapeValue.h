@@ -30,6 +30,7 @@
 #ifndef ShapeValue_h
 #define ShapeValue_h
 
+#include "core/fetch/ImageResource.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/style/StyleImage.h"
 #include "wtf/PassRefPtr.h"
@@ -62,9 +63,12 @@ public:
 
     ShapeValueType type() const { return m_type; }
     BasicShape* shape() const { return m_shape.get(); }
+
     StyleImage* image() const { return m_image.get(); }
+    bool isImageValid() const { return image() && image()->cachedImage() && image()->cachedImage()->hasImage(); }
     void setImage(PassRefPtr<StyleImage> image)
     {
+        ASSERT(type() == Image);
         if (m_image != image)
             m_image = image;
     }
