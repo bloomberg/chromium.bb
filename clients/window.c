@@ -130,6 +130,7 @@ struct display {
 	void *dummy_surface_data;
 
 	int has_rgb565;
+	int seat_version;
 };
 
 enum {
@@ -3395,8 +3396,16 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	}
 }
 
+static void
+seat_handle_name(void *data, struct wl_seat *seat,
+		 const char *name)
+{
+
+}
+
 static const struct wl_seat_listener seat_listener = {
 	seat_handle_capabilities,
+	seat_handle_name
 };
 
 void
@@ -4937,6 +4946,8 @@ fini_xkb(struct input *input)
 	xkb_map_unref(input->xkb.keymap);
 }
 
+#define MAX(a,b) ((a) > (b) ? a : b)
+
 static void
 display_add_input(struct display *d, uint32_t id)
 {
@@ -4944,7 +4955,8 @@ display_add_input(struct display *d, uint32_t id)
 
 	input = xzalloc(sizeof *input);
 	input->display = d;
-	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
+	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface,
+				       MAX(d->seat_version, 3));
 	input->touch_focus = NULL;
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
@@ -4982,6 +4994,14 @@ input_destroy(struct input *input)
 		data_offer_destroy(input->selection_offer);
 
 	wl_data_device_destroy(input->data_device);
+
+	if (input->display->seat_version >= 3) {
+		if (input->pointer)
+			wl_pointer_release(input->pointer);
+		if (input->keyboard)
+			wl_keyboard_release(input->keyboard);
+	}
+
 	fini_xkb(input);
 
 	wl_surface_destroy(input->pointer_surface);
@@ -5036,6 +5056,7 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 	} else if (strcmp(interface, "wl_output") == 0) {
 		display_add_output(d, id);
 	} else if (strcmp(interface, "wl_seat") == 0) {
+		d->seat_version = version;
 		display_add_input(d, id);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		d->shell = wl_registry_bind(registry,
