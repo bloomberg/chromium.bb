@@ -101,6 +101,296 @@ static float ConvertSampleToFloat(int16_t sample) {
   return sample * (sample < 0 ? kMinScale : kMaxScale);
 }
 
+// A basic WAVE file decoder.  See
+// https://ccrma.stanford.edu/courses/422/projects/WaveFormat/ for a
+// basic guide to the WAVE file format.
+class WAVEDecoder {
+ public:
+  WAVEDecoder(const uint8* data, size_t data_size);
+  ~WAVEDecoder();
+
+  // Try to decode the data as a WAVE file.  If the data is a supported
+  // WAVE file, |destination_bus| is filled with the decoded data and
+  // DecodeWAVEFile returns true.  Otherwise, DecodeWAVEFile returns
+  // false.
+  bool DecodeWAVEFile(WebKit::WebAudioBus* destination_bus);
+
+ private:
+  // Minimum number of bytes in a WAVE file to hold all of the data we
+  // need to interpret it as a WAVE file.
+  static const unsigned kMinimumWAVLength = 44;
+
+  // Number of bytes in the chunk ID field.
+  static const unsigned kChunkIDLength = 4;
+
+  // Number of bytes in the chunk size field.
+  static const unsigned kChunkSizeLength = 4;
+
+  // Number of bytes in the format field of the "RIFF" chunk.
+  static const unsigned kFormatFieldLength = 4;
+
+  // Number of bytes in a valid "fmt" chunk.
+  static const unsigned kFMTChunkLength = 16;
+
+  // Supported audio format in a WAVE file.
+  // TODO(rtoy): Consider supporting other formats here, if necessary.
+  static const int16_t kAudioFormatPCM = 1;
+
+  // Maximum number (inclusive) of bytes per sample supported by this
+  // decoder.
+  static const unsigned kMaximumBytesPerSample = 3;
+
+  // Read an unsigned integer of |length| bytes from |buffer|.  The
+  // integer is interpreted as being in little-endian order.
+  uint32_t ReadUnsignedInteger(const uint8_t* buffer, size_t length);
+
+  // Read a PCM sample from the WAVE data at |pcm_data|.
+  int16_t ReadPCMSample(const uint8_t* pcm_data);
+
+  // Read a WAVE chunk header including the chunk ID and chunk size.
+  // Returns false if the header could not be read.
+  bool ReadChunkHeader();
+
+  // Read and parse the "fmt" chunk.  Returns false if the fmt chunk
+  // could not be read or contained unsupported formats.
+  bool ReadFMTChunk();
+
+  // Read data chunk and save it to |destination_bus|.  Returns false
+  // if the data chunk could not be read correctly.
+  bool CopyDataChunkToBus(WebKit::WebAudioBus* destination_bus);
+
+  // The WAVE chunk ID that identifies the chunk.
+  uint8_t chunk_id_[kChunkIDLength];
+
+  // The number of bytes in the data portion of the chunk.
+  size_t chunk_size_;
+
+  // The current position within the WAVE file.
+  const uint8_t* buffer_;
+
+  // Points one byte past the end of the in-memory WAVE file.  Used for
+  // detecting if we've reached the end of the file.
+  const uint8_t* buffer_end_;
+
+  size_t bytes_per_sample_;
+
+  uint16_t number_of_channels_;
+
+  // Sample rate of the WAVE data, in Hz.
+  uint32_t sample_rate_;
+
+  DISALLOW_COPY_AND_ASSIGN(WAVEDecoder);
+};
+
+WAVEDecoder::WAVEDecoder(const uint8_t* encoded_data, size_t data_size)
+    : buffer_(encoded_data),
+      buffer_end_(encoded_data + 1),
+      bytes_per_sample_(0),
+      number_of_channels_(0),
+      sample_rate_(0) {
+  if (buffer_ + data_size > buffer_)
+    buffer_end_ = buffer_ + data_size;
+}
+
+WAVEDecoder::~WAVEDecoder() {}
+
+uint32_t WAVEDecoder::ReadUnsignedInteger(const uint8_t* buffer,
+                                          size_t length) {
+  unsigned value = 0;
+
+  if (length == 0 || length > sizeof(value)) {
+    DCHECK(false) << "ReadUnsignedInteger: Invalid length: " << length;
+    return 0;
+  }
+
+  // All integer fields in a WAVE file are little-endian.
+  for (size_t k = length; k > 0; --k)
+    value = (value << 8) + buffer[k - 1];
+
+  return value;
+}
+
+int16_t WAVEDecoder::ReadPCMSample(const uint8_t* pcm_data) {
+  uint32_t unsigned_sample = ReadUnsignedInteger(pcm_data, bytes_per_sample_);
+  int16_t sample;
+
+  // Convert the unsigned data into a 16-bit PCM sample.
+  switch (bytes_per_sample_) {
+    case 1:
+      sample = (unsigned_sample - 128) << 8;
+      break;
+    case 2:
+      sample = static_cast<int16_t>(unsigned_sample);
+      break;
+    case 3:
+      // Android currently converts 24-bit WAVE data into 16-bit
+      // samples by taking the high-order 16 bits without rounding.
+      // We do the same here for consistency.
+      sample = static_cast<int16_t>(unsigned_sample >> 8);
+      break;
+    default:
+      sample = 0;
+      break;
+  }
+  return sample;
+}
+
+bool WAVEDecoder::ReadChunkHeader() {
+  if (buffer_ + kChunkIDLength + kChunkSizeLength >= buffer_end_)
+    return false;
+
+  memcpy(chunk_id_, buffer_, kChunkIDLength);
+
+  chunk_size_ = ReadUnsignedInteger(buffer_ + kChunkIDLength, kChunkSizeLength);
+
+  // Adjust for padding
+  if (chunk_size_ % 2)
+    ++chunk_size_;
+
+  return true;
+}
+
+bool WAVEDecoder::ReadFMTChunk() {
+  // The fmt chunk has basic info about the format of the audio
+  // data.  Only a basic PCM format is supported.
+  if (chunk_size_ < kFMTChunkLength) {
+    DVLOG(1) << "FMT chunk too short: " << chunk_size_;
+    return 0;
+  }
+
+  uint16_t audio_format = ReadUnsignedInteger(buffer_, 2);
+
+  if (audio_format != kAudioFormatPCM) {
+    DVLOG(1) << "Audio format not supported: " << audio_format;
+    return false;
+  }
+
+  number_of_channels_ = ReadUnsignedInteger(buffer_ + 2, 2);
+  sample_rate_ = ReadUnsignedInteger(buffer_ + 4, 4);
+  unsigned bits_per_sample = ReadUnsignedInteger(buffer_ + 14, 2);
+
+  // Sanity checks.
+
+  if (!number_of_channels_ ||
+      number_of_channels_ > media::limits::kMaxChannels) {
+    DVLOG(1) << "Unsupported number of channels: " << number_of_channels_;
+    return false;
+  }
+
+  if (sample_rate_ < media::limits::kMinSampleRate ||
+      sample_rate_ > media::limits::kMaxSampleRate) {
+    DVLOG(1) << "Unsupported sample rate: " << sample_rate_;
+    return false;
+  }
+
+  // We only support 8, 16, and 24 bits per sample.
+  if (bits_per_sample == 8 || bits_per_sample == 16 || bits_per_sample == 24) {
+    bytes_per_sample_ = bits_per_sample / 8;
+    return true;
+  }
+
+  DVLOG(1) << "Unsupported bits per sample: " << bits_per_sample;
+  return false;
+}
+
+bool WAVEDecoder::CopyDataChunkToBus(WebKit::WebAudioBus* destination_bus) {
+  // The data chunk contains the audio data itself.
+  if (!bytes_per_sample_ || bytes_per_sample_ > kMaximumBytesPerSample) {
+    DVLOG(1) << "WARNING: data chunk without preceeding fmt chunk,"
+             << " or invalid bytes per sample.";
+    return false;
+  }
+
+  VLOG(0) << "Decoding WAVE file: " << number_of_channels_ << " channels, "
+          << sample_rate_ << " kHz, "
+          << chunk_size_ / bytes_per_sample_ / number_of_channels_
+          << " frames, " << 8 * bytes_per_sample_ << " bits/sample";
+
+  // Create the destination bus of the appropriate size and then decode
+  // the data into the bus.
+  size_t number_of_frames =
+      chunk_size_ / bytes_per_sample_ / number_of_channels_;
+
+  destination_bus->initialize(
+      number_of_channels_, number_of_frames, sample_rate_);
+
+  for (size_t m = 0; m < number_of_frames; ++m) {
+    for (uint16_t k = 0; k < number_of_channels_; ++k) {
+      int16_t sample = ReadPCMSample(buffer_);
+
+      buffer_ += bytes_per_sample_;
+      destination_bus->channelData(k)[m] = ConvertSampleToFloat(sample);
+    }
+  }
+
+  return true;
+}
+
+bool WAVEDecoder::DecodeWAVEFile(WebKit::WebAudioBus* destination_bus) {
+  // Parse and decode WAVE file. If we can't parse it, return false.
+
+  if (buffer_ + kMinimumWAVLength > buffer_end_) {
+    DVLOG(1) << "Buffer too small to contain full WAVE header: ";
+    return false;
+  }
+
+  // Do we have a RIFF file?
+  ReadChunkHeader();
+  if (memcmp(chunk_id_, "RIFF", kChunkIDLength) != 0) {
+    DVLOG(1) << "RIFF missing";
+    return false;
+  }
+  buffer_ += kChunkIDLength + kChunkSizeLength;
+
+  // Check the format field of the RIFF chunk
+  memcpy(chunk_id_, buffer_, kFormatFieldLength);
+  if (memcmp(chunk_id_, "WAVE", kFormatFieldLength) != 0) {
+    DVLOG(1) << "Invalid WAVE file:  missing WAVE header";
+    return false;
+  }
+  // Advance past the format field
+  buffer_ += kFormatFieldLength;
+
+  // We have a WAVE file.  Start parsing the chunks.
+
+  while (buffer_ < buffer_end_) {
+    if (!ReadChunkHeader()) {
+      DVLOG(1) << "Couldn't read chunk header";
+      return false;
+    }
+
+    // Consume the chunk ID and chunk size
+    buffer_ += kChunkIDLength + kChunkSizeLength;
+
+    // Make sure we can read all chunk_size bytes.
+    if (buffer_ + chunk_size_ > buffer_end_) {
+      DVLOG(1) << "Insufficient bytes to read chunk of size " << chunk_size_;
+      return false;
+    }
+
+    if (memcmp(chunk_id_, "fmt ", kChunkIDLength) == 0) {
+      if (!ReadFMTChunk())
+        return false;
+    } else if (memcmp(chunk_id_, "data", kChunkIDLength) == 0) {
+      // Return after reading the data chunk, whether we succeeded or
+      // not.
+      return CopyDataChunkToBus(destination_bus);
+    } else {
+      // Ignore these chunks that we don't know about.
+      VLOG(0) << "Ignoring WAVE chunk `" << chunk_id_ << "' size "
+              << chunk_size_;
+    }
+
+    // Advance to next chunk.
+    buffer_ += chunk_size_;
+  }
+
+  // If we get here, that means we didn't find a data chunk, so we
+  // couldn't handle this WAVE file.
+
+  return false;
+}
+
 // The number of frames is known so preallocate the destination
 // bus and copy the pcm data to the destination bus as it's being
 // received.
@@ -178,6 +468,14 @@ static void BufferAndCopyPcmDataToBus(int input_fd,
   }
 }
 
+static bool TryWAVEFileDecoder(WebKit::WebAudioBus* destination_bus,
+                               const uint8_t* encoded_data,
+                               size_t data_size) {
+  WAVEDecoder decoder(encoded_data, data_size);
+
+  return decoder.DecodeWAVEFile(destination_bus);
+}
+
 // To decode audio data, we want to use the Android MediaCodec class.
 // But this can't run in a sandboxed process so we need initiate the
 // request to MediaCodec in the browser.  To do this, we create a
@@ -188,6 +486,13 @@ static void BufferAndCopyPcmDataToBus(int input_fd,
 bool DecodeAudioFileData(WebKit::WebAudioBus* destination_bus, const char* data,
                          size_t data_size, double sample_rate,
                          scoped_refptr<ThreadSafeSender> sender) {
+  // Try to decode the data as a WAVE file first.  If it can't be
+  // decoded, use MediaCodec.  See crbug.com/259048.
+  if (TryWAVEFileDecoder(
+          destination_bus, reinterpret_cast<const uint8_t*>(data), data_size)) {
+    return true;
+  }
+
   AudioDecoderIO audio_decoder(data, data_size);
 
   if (!audio_decoder.IsValid())
