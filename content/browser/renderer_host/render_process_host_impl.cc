@@ -932,6 +932,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
     switches::kEnableGpuBenchmarking,
+#if defined(OS_WIN)
+    switches::kEnableHighResolutionTime,
+#endif
     switches::kEnableMemoryBenchmarking,
     switches::kEnableOverlayScrollbars,
     switches::kEnableSkiaBenchmarking,

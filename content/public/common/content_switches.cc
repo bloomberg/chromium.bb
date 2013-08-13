@@ -399,6 +399,11 @@ const char kEnableGpuClientTracing[]        = "enable-gpu-client-tracing";
 const char kEnableHighDpiCompositingForFixedPosition[] =
      "enable-high-dpi-fixed-position-compositing";
 
+#if defined(OS_WIN)
+// Use high resolution timers for TimeTicks.
+const char kEnableHighResolutionTime[]      = "enable-high-resolution-time";
+#endif
+
 // Enable HTML Imports
 extern const char kEnableHTMLImports[]      = "enable-html-imports";
 
