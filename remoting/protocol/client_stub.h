@@ -18,6 +18,7 @@ namespace remoting {
 namespace protocol {
 
 class Capabilities;
+class ExtensionMessage;
 class PairingResponse;
 
 class ClientStub : public ClipboardStub,
@@ -31,6 +32,9 @@ class ClientStub : public ClipboardStub,
 
   // Passes a pairing response message to the client.
   virtual void SetPairingResponse(const PairingResponse& pairing_response) = 0;
+
+  // Deliver an extension message from the host to the client.
+  virtual void DeliverHostMessage(const ExtensionMessage& message) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ClientStub);

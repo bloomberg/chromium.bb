@@ -144,7 +144,7 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
     "notifyClientDimensions notifyClientResolution pauseVideo pauseAudio "
-    "asyncPin thirdPartyAuth pinlessAuth";
+    "asyncPin thirdPartyAuth pinlessAuth extensionMessage";
 
 const char ChromotingInstance::kRequestedCapabilities[] = "";
 const char ChromotingInstance::kSupportedCapabilities[] = "desktopShape";
@@ -433,6 +433,13 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
       return;
     }
     RequestPairing(client_name);
+  } else if (method == "extensionMessage") {
+    std::string type, message;
+    if (!data->GetString("type", &type) || !data->GetString("data", &message)) {
+      LOG(ERROR) << "Invalid extensionMessage.";
+      return;
+    }
+    SendClientMessage(type, message);
   }
 }
 
@@ -535,6 +542,14 @@ void ChromotingInstance::SetPairingResponse(
   data->SetString("clientId", pairing_response.client_id());
   data->SetString("sharedSecret", pairing_response.shared_secret());
   PostChromotingMessage("pairingResponse", data.Pass());
+}
+
+void ChromotingInstance::DeliverHostMessage(
+    const protocol::ExtensionMessage& message) {
+  scoped_ptr<base::DictionaryValue> data(new base::DictionaryValue());
+  data->SetString("type", message.type());
+  data->SetString("data", message.data());
+  PostChromotingMessage("extensionMessage", data.Pass());
 }
 
 void ChromotingInstance::FetchSecretFromDialog(
@@ -837,6 +852,17 @@ void ChromotingInstance::RequestPairing(const std::string& client_name) {
   protocol::PairingRequest pairing_request;
   pairing_request.set_client_name(client_name);
   host_connection_->host_stub()->RequestPairing(pairing_request);
+}
+
+void ChromotingInstance::SendClientMessage(const std::string& type,
+                                           const std::string& data) {
+  if (!IsConnected()) {
+    return;
+  }
+  protocol::ExtensionMessage message;
+  message.set_type(type);
+  message.set_data(data);
+  host_connection_->host_stub()->DeliverClientMessage(message);
 }
 
 ChromotingStats* ChromotingInstance::GetStats() {

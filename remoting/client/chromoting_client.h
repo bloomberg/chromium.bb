@@ -67,6 +67,8 @@ class ChromotingClient : public protocol::ConnectionToHost::HostEventCallback,
       const protocol::Capabilities& capabilities) OVERRIDE;
   virtual void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) OVERRIDE;
+  virtual void DeliverHostMessage(
+      const protocol::ExtensionMessage& message) OVERRIDE;
 
   // ClipboardStub implementation for receiving clipboard data from host.
   virtual void InjectClipboardEvent(

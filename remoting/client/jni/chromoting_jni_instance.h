@@ -78,6 +78,8 @@ class ChromotingJniInstance
   virtual void SetCapabilities(const std::string& capabilities) OVERRIDE;
   virtual void SetPairingResponse(
       const protocol::PairingResponse& response) OVERRIDE;
+  virtual void DeliverHostMessage(
+      const protocol::ExtensionMessage& message) OVERRIDE;
   virtual protocol::ClipboardStub* GetClipboardStub() OVERRIDE;
   virtual protocol::CursorShapeStub* GetCursorShapeStub() OVERRIDE;
   virtual scoped_ptr<protocol::ThirdPartyClientAuthenticator::TokenFetcher>

@@ -74,6 +74,13 @@ void ClientControlDispatcher::RequestPairing(
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void ClientControlDispatcher::DeliverClientMessage(
+    const ExtensionMessage& message) {
+  ControlMessage control_message;
+  control_message.mutable_extension_message()->CopyFrom(message);
+  writer_.Write(SerializeAndFrameMessage(control_message), base::Closure());
+}
+
 void ClientControlDispatcher::OnMessageReceived(
     scoped_ptr<ControlMessage> message, const base::Closure& done_task) {
   DCHECK(client_stub_);
@@ -88,6 +95,8 @@ void ClientControlDispatcher::OnMessageReceived(
     client_stub_->SetCursorShape(message->cursor_shape());
   } else if (message->has_pairing_response()) {
     client_stub_->SetPairingResponse(message->pairing_response());
+  } else if (message->has_extension_message()) {
+    client_stub_->DeliverHostMessage(message->extension_message());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

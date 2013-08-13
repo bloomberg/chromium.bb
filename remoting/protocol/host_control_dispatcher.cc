@@ -46,6 +46,13 @@ void HostControlDispatcher::SetPairingResponse(
   writer_.Write(SerializeAndFrameMessage(message), base::Closure());
 }
 
+void HostControlDispatcher::DeliverHostMessage(
+    const ExtensionMessage& message) {
+  ControlMessage control_message;
+  control_message.mutable_extension_message()->CopyFrom(message);
+  writer_.Write(SerializeAndFrameMessage(control_message), base::Closure());
+}
+
 void HostControlDispatcher::InjectClipboardEvent(const ClipboardEvent& event) {
   ControlMessage message;
   message.mutable_clipboard_event()->CopyFrom(event);
@@ -78,6 +85,8 @@ void HostControlDispatcher::OnMessageReceived(
     host_stub_->SetCapabilities(message->capabilities());
   } else if (message->has_pairing_request()) {
     host_stub_->RequestPairing(message->pairing_request());
+  } else if (message->has_extension_message()) {
+    host_stub_->DeliverClientMessage(message->extension_message());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

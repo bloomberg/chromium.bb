@@ -119,6 +119,13 @@ void ChromotingClient::SetPairingResponse(
   user_interface_->SetPairingResponse(pairing_response);
 }
 
+void ChromotingClient::DeliverHostMessage(
+    const protocol::ExtensionMessage& message) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  user_interface_->DeliverHostMessage(message);
+}
+
 void ChromotingClient::InjectClipboardEvent(
     const protocol::ClipboardEvent& event) {
   DCHECK(task_runner_->BelongsToCurrentThread());

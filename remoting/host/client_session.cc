@@ -187,6 +187,13 @@ void ClientSession::RequestPairing(
   }
 }
 
+void ClientSession::DeliverClientMessage(
+    const protocol::ExtensionMessage& message) {
+  // No messages are currently supported.
+  LOG(INFO) << "Unexpected message received: "
+            << message.type() << ": " << message.data();
+}
+
 void ClientSession::OnConnectionAuthenticated(
     protocol::ConnectionToClient* connection) {
   DCHECK(CalledOnValidThread());

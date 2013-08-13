@@ -313,6 +313,10 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
       return;
     }
     this.onPairingComplete_(clientId, sharedSecret);
+  } else if (message.method == 'extensionMessage') {
+    // No messages currently supported.
+    console.log('Unexpected message received: ' +
+                message.data.type + ': ' + message.data.data);
   }
 };
 
@@ -604,6 +608,23 @@ remoting.ClientPluginAsync.prototype.requestPairing =
   this.onPairingComplete_ = onDone;
   this.plugin.postMessage(JSON.stringify(
       { method: 'requestPairing', data: { clientName: clientName } }));
+};
+
+/**
+ * Send an extension message to the host.
+ *
+ * @param {string} type The message type.
+ * @param {Object} message The message payload.
+ */
+remoting.ClientPluginAsync.prototype.sendClientMessage =
+    function(type, message) {
+  if (!this.hasFeature(remoting.ClientPlugin.Feature.EXTENSION_MESSAGE)) {
+    return;
+  }
+  this.plugin.postMessage(JSON.stringify(
+    { method: 'extensionMessage',
+      data: { type: type, data: JSON.stringify(message) } }));
+
 };
 
 /**

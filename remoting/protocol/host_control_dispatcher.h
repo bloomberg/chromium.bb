@@ -37,6 +37,8 @@ class HostControlDispatcher : public ChannelDispatcherBase,
   virtual void SetCapabilities(const Capabilities& capabilities) OVERRIDE;
   virtual void SetPairingResponse(
       const PairingResponse& pairing_response) OVERRIDE;
+  virtual void DeliverHostMessage(
+      const ExtensionMessage& message) OVERRIDE;
 
   // ClipboardStub implementation for sending clipboard data to client.
   virtual void InjectClipboardEvent(const ClipboardEvent& event) OVERRIDE;

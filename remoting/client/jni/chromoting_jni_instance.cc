@@ -176,6 +176,11 @@ void ChromotingJniInstance::SetPairingResponse(
                  response.shared_secret()));
 }
 
+void ChromotingJniInstance::DeliverHostMessage(
+    const protocol::ExtensionMessage& message) {
+  NOTIMPLEMENTED();
+}
+
 protocol::ClipboardStub* ChromotingJniInstance::GetClipboardStub() {
   return this;
 }

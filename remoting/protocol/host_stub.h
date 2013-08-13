@@ -17,6 +17,7 @@ namespace protocol {
 class AudioControl;
 class Capabilities;
 class ClientResolution;
+class ExtensionMessage;
 class PairingResponse;
 class PairingRequest;
 class VideoControl;
@@ -42,6 +43,9 @@ class HostStub {
 
   // Requests pairing between the host and client for PIN-less authentication.
   virtual void RequestPairing(const PairingRequest& pairing_request) = 0;
+
+  // Deliver an extension message from the client to the host.
+  virtual void DeliverClientMessage(const ExtensionMessage& message) = 0;
 
  protected:
   virtual ~HostStub() {}

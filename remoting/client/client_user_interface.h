@@ -42,6 +42,10 @@ class ClientUserInterface {
   virtual void SetPairingResponse(
       const protocol::PairingResponse& pairing_response) = 0;
 
+  // Deliver an extension message from the host to the client.
+  virtual void DeliverHostMessage(
+      const protocol::ExtensionMessage& message) = 0;
+
   // Get the view's ClipboardStub implementation.
   virtual protocol::ClipboardStub* GetClipboardStub() = 0;
 

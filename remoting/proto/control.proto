@@ -66,3 +66,14 @@ message PairingResponse {
   // Shared secret for this client.
   optional string shared_secret = 2;
 }
+
+message ExtensionMessage {
+  // The message type. This is used to dispatch the message to the correct
+  // recipient.
+  optional string type = 1;
+
+  // String-encoded message data. The client and host must agree on the encoding
+  // for each message type; different message types need not shared the same
+  // encoding.
+  optional string data = 2;
+}

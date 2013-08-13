@@ -67,7 +67,8 @@ remoting.ClientPlugin.Feature = {
   SEND_CLIPBOARD_ITEM: 'sendClipboardItem',
   THIRD_PARTY_AUTH: 'thirdPartyAuth',
   TRAP_KEY: 'trapKey',
-  PINLESS_AUTH: 'pinlessAuth'
+  PINLESS_AUTH: 'pinlessAuth',
+  EXTENSION_MESSAGE: 'extensionMessage'
 };
 
 /**

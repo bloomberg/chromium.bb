@@ -111,6 +111,8 @@ class ClientSession
       const protocol::Capabilities& capabilities) OVERRIDE;
   virtual void RequestPairing(
       const remoting::protocol::PairingRequest& pairing_request) OVERRIDE;
+  virtual void DeliverClientMessage(
+      const protocol::ExtensionMessage& message) OVERRIDE;
 
   // protocol::ConnectionToClient::EventHandler interface.
   virtual void OnConnectionAuthenticated(
