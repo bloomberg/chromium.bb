@@ -247,6 +247,10 @@ class WebNotificationButton : public views::CustomButton {
     return gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize);
   }
 
+  virtual int GetHeightForWidth(int width) OVERRIDE {
+    return GetPreferredSize().height();
+  }
+
  private:
   void UpdateIconVisibility() {
     unread_label_->SetEnabledColor(
