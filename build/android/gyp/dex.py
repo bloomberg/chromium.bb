@@ -15,10 +15,7 @@ from util import md5_check
 
 def DoDex(options, paths):
   dx_binary = os.path.join(options.android_sdk_tools, 'dx')
-
-  # See http://crbug.com/272064 for context on --force-jumbo.
-  dex_cmd = [dx_binary, '--dex', '--force-jumbo', '--output',
-             options.dex_path] + paths
+  dex_cmd = [dx_binary, '--dex', '--output', options.dex_path] + paths
 
   record_path = '%s.md5.stamp' % options.dex_path
   md5_check.CallAndRecordIfStale(
