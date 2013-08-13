@@ -19,3 +19,6 @@ implementations at run time.
 Local Modifications:
 Ensure no rwx pages remain after mach_override_ptr:
 https://codereview.chromium.org/21208002/ 
+
+Randomize mach_override_ptr trampoline addresses on 32-bit:
+https://codereview.chromium.org/22798004/

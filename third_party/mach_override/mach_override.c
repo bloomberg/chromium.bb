@@ -11,6 +11,7 @@
 #include <mach/mach_host.h>
 #include <mach/mach_init.h>
 #include <mach/vm_map.h>
+#include <mach/vm_statistics.h>
 #include <sys/mman.h>
 
 #include <CoreServices/CoreServices.h>
@@ -379,15 +380,22 @@ allocateBranchIsland(
 	assert( island );
 	
 	assert( sizeof( BranchIsland ) <= kPageSize );
+#if defined(__i386__)
+	vm_address_t page = 0;
+	mach_error_t err = vm_allocate( mach_task_self(), &page, kPageSize, VM_FLAGS_ANYWHERE );
+	if( err == err_none ) {
+		*island = (BranchIsland*) page;
+		return err_none;
+	}
+	return err;
+#else
+
 #if defined(__ppc__) || defined(__POWERPC__)
 	vm_address_t first = 0xfeffffff;
 	vm_address_t last = 0xfe000000 + kPageSize;
 #elif defined(__x86_64__)
 	vm_address_t first = ((uint64_t)originalFunctionAddress & ~(uint64_t)(((uint64_t)1 << 31) - 1)) | ((uint64_t)1 << 31); // start in the middle of the page?
 	vm_address_t last = 0x0;
-#else
-	vm_address_t first = 0xffc00000;
-	vm_address_t last = 0xfffe0000;
 #endif
 
 	vm_address_t page = first;
@@ -410,6 +418,7 @@ allocateBranchIsland(
 	}
 
 	return KERN_NO_SPACE;
+#endif
 }
 
 /***************************************************************************//**
