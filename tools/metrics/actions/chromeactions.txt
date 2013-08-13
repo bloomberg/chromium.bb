@@ -9,6 +9,7 @@
 0x4e8fe1c674de45dd	AboutFlags_conflicting-modules-check
 0x4ebeea0717b98e89	AboutFlags_disable-chrome-to-mobile
 0xe9d2339d6b9225c7	AboutFlags_disable-outdated-plugins
+0x40c0bddfe31a67c2	AboutFlags_disable-pnacl
 0xf73b5212b48e2a75	AboutFlags_disable-print-preview
 0x088990bbea59a185	AboutFlags_disable-website-settings
 0xdddbf34cee2c636c	AboutFlags_dns-server
@@ -67,6 +68,7 @@
 0x5e6bce93ecde1df8	Accel_NewTab_T
 0x5a27559e6846a75e	Accel_NextWindow_F5
 0xc217e3bb30e9a004	Accel_NextWindow_Tab
+0x450e0851cdca9dba	Accel_Overview_F5
 0x2e92845dc8edee91	Accel_PrevWindow_F5
 0x49b33857117c4c43	Accel_PrevWindow_Tab
 0xa2654c422408df28	Accel_Reload_F3
@@ -1186,6 +1188,8 @@
 0xfc8e40d96ab33f1b	NTPPromoClosed
 0x0cdd043c5d63d234	NTPPromoShown
 0xdcf1af37de1d8dd0	NativeUI_Applications
+0x08b0a573ad336d14	NavEntryCommitted
+0xcace6bb1e166082f	NavEntryCommitted.SRP
 0x3c6e0d9310ba3a20	NewIncognitoWindow
 0xeddaa38a10bf8374	NewProfileWindowByIndex
 0x290eb683f96572f1	NewTab
@@ -1242,6 +1246,7 @@
 0x3f92cd6678d2f595	Options_DefaultHandlersSettingChanged
 0x5dfe307474e6b526	Options_DefaultImagesSettingChanged
 0x8ac0134529158dae	Options_DefaultJavaScriptSettingChanged
+0x3a8bb054f5841f1a	Options_DefaultMIDISysExSettingChanged
 0x04303682ca0b2a8d	Options_DefaultMediaStreamMicSettingChanged
 0x6a97ed68e3457d0e	Options_DefaultMediaStreamSettingChanged
 0xfca02a749fa0f811	Options_DefaultMouseLockSettingChanged
