@@ -77,13 +77,6 @@ using fileapi::FileSystemURL;
 
 const char kFileBrowserDomain[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
 
-const char kFileBrowserGalleryTaskId[] = "gallery";
-const char kFileBrowserMountArchiveTaskId[] = "mount-archive";
-const char kFileBrowserWatchTaskId[] = "watch";
-const char kFileBrowserPlayTaskId[] = "play";
-
-const char kVideoPlayerAppName[] = "videoplayer";
-
 namespace file_manager {
 namespace util {
 namespace {

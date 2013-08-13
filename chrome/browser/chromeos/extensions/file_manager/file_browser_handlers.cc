@@ -558,12 +558,13 @@ FileBrowserHandlerList FindCommonFileBrowserHandlers(
     }
   }
 
+  // "watch" and "gallery" are defined in the file manager's manifest.json.
   FileBrowserHandlerList::iterator watch_iter =
       FindFileBrowserHandlerForExtensionIdAndActionId(
-          &common_handlers, kFileBrowserDomain, kFileBrowserWatchTaskId);
+          &common_handlers, kFileBrowserDomain, "watch");
   FileBrowserHandlerList::iterator gallery_iter =
       FindFileBrowserHandlerForExtensionIdAndActionId(
-          &common_handlers, kFileBrowserDomain, kFileBrowserGalleryTaskId);
+          &common_handlers, kFileBrowserDomain, "gallery");
   if (watch_iter != common_handlers.end() &&
       gallery_iter != common_handlers.end()) {
     // Both "watch" and "gallery" actions are applicable which means that the

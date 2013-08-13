@@ -15,8 +15,6 @@ class GURL;
 class Profile;
 
 extern const char kFileBrowserDomain[];
-extern const char kFileBrowserGalleryTaskId[];
-extern const char kFileBrowserWatchTaskId[];
 
 // File manager helper methods.
 namespace file_manager {
