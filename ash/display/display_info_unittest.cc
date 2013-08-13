@@ -43,6 +43,14 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ("10,20 300x400", info.bounds_in_pixel().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_270, info.rotation());
   EXPECT_EQ(1.5f, info.ui_scale());
+
+  info = DisplayInfo::CreateFromSpecWithID(
+      "200x200#300x200|200x200|100x100", 10);
+  EXPECT_EQ("0,0 200x200", info.bounds_in_pixel().ToString());
+  EXPECT_EQ(3u, info.resolutions().size());
+  EXPECT_EQ("300x200", info.resolutions()[0].size.ToString());
+  EXPECT_EQ("200x200", info.resolutions()[1].size.ToString());
+  EXPECT_EQ("100x100", info.resolutions()[2].size.ToString());
 }
 
 }  // namespace internal

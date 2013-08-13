@@ -72,6 +72,14 @@ struct DisplayInfoSortFunctor {
   }
 };
 
+struct ResolutionMatcher {
+  ResolutionMatcher(const gfx::Size& size) : size(size) {}
+  bool operator()(const Resolution& resolution) {
+    return resolution.size == size;
+  }
+  gfx::Size size;
+};
+
 struct ScaleComparator {
   ScaleComparator(float s) : scale(s) {}
 
@@ -326,7 +334,23 @@ void DisplayManager::SetDisplayResolution(int64 display_id,
   DCHECK_NE(gfx::Display::InternalDisplayId(), display_id);
   if (gfx::Display::InternalDisplayId() == display_id)
     return;
-  resolutions_[display_id] = resolution;
+  const DisplayInfo& display_info = GetDisplayInfo(display_id);
+  const std::vector<Resolution>& resolutions = display_info.resolutions();
+  DCHECK_NE(0u, resolutions.size());
+  std::vector<Resolution>::const_iterator iter =
+      std::find_if(resolutions.begin(),
+                   resolutions.end(),
+                   ResolutionMatcher(resolution));
+  if (iter == resolutions.end()) {
+    LOG(WARNING) << "Unsupported resolution was requested:"
+                 << resolution.ToString();
+    return;
+  } else if (iter == resolutions.begin()) {
+    // The best resolution was set, so forget it.
+    resolutions_.erase(display_id);
+  } else {
+    resolutions_[display_id] = resolution;
+  }
 #if defined(OS_CHROMEOS) && defined(USE_X11)
   if (base::chromeos::IsRunningOnChromeOS())
     Shell::GetInstance()->output_configurator()->ScheduleConfigureOutputs();
@@ -733,7 +757,7 @@ void DisplayManager::SetMirrorMode(bool mirrored) {
 void DisplayManager::AddRemoveDisplay() {
   DCHECK(!displays_.empty());
   std::vector<DisplayInfo> new_display_info_list;
-  DisplayInfo first_display = GetDisplayInfo(displays_[0].id());
+  const DisplayInfo& first_display = GetDisplayInfo(displays_[0].id());
   new_display_info_list.push_back(first_display);
   // Add if there is only one display connected.
   if (num_connected_displays() == 1) {

@@ -36,7 +36,8 @@ class ASH_EXPORT DisplayInfo {
   // whose size is 1440x800 at the location (100, 200) in host coordinates.
   // The format is
   //
-  // [origin-]widthxheight[*device_scale_factor][/<properties>][@ui-scale]
+  // [origin-]widthxheight[*device_scale_factor][#resolutions list]
+  //     [/<properties>][@ui-scale]
   //
   // where [] are optional:
   // - |origin| is given in x+y- format.
@@ -46,6 +47,8 @@ class ASH_EXPORT DisplayInfo {
   //   (to the 'r'ight) 'u' is 180 degrees ('u'pside-down) and 'l' is
   //   270 degrees (to the 'l'eft).
   // - ui-scale is floating value, e.g. @1.5 or @1.25.
+  // - |resolution list| is the list of size that is given in
+  //   |width x height| separated by '|'.
   //
   // A couple of examples:
   // "100x100"
@@ -61,6 +64,9 @@ class ASH_EXPORT DisplayInfo {
   // "10+20-300x200/u@1.5"
   //      300x200 window at 10,20 origin. 1x device scale factor.
   //      no overscan. flipped upside-down (180 degree) and 1.5 ui scale.
+  // "200x100#300x200|200x100|100x100"
+  //      200x100 window at 0,0 origin, with 3 possible resolutions,
+  //      300x200, 200x100 and 100x100.
   static DisplayInfo CreateFromSpec(const std::string& spec);
 
   // Creates a DisplayInfo from string spec using given |id|.

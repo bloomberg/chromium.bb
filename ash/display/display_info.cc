@@ -96,6 +96,20 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
              &device_scale_factor) >= 4) {
     bounds_in_pixel.SetRect(x, y, width, height);
   }
+
+  std::vector<Resolution> resolutions;
+  if (Tokenize(main_spec, "#", &parts) == 2) {
+    main_spec = parts[0];
+    std::string resolution_list = parts[1];
+    count = Tokenize(resolution_list, "|", &parts);
+    for (size_t i = 0; i < count; ++i) {
+      std::string resolution = parts[i];
+      int width, height;
+      if (sscanf(resolution.c_str(), "%dx%d", &width, &height) == 2)
+        resolutions.push_back(Resolution(gfx::Size(width, height), false));
+    }
+  }
+
   if (id == gfx::Display::kInvalidDisplayID)
     id = synthesized_display_id++;
   DisplayInfo display_info(
@@ -104,6 +118,7 @@ DisplayInfo DisplayInfo::CreateFromSpecWithID(const std::string& spec,
   display_info.set_rotation(rotation);
   display_info.set_ui_scale(ui_scale);
   display_info.SetBounds(bounds_in_pixel);
+  display_info.set_resolutions(resolutions);
 
   // To test the overscan, it creates the default 5% overscan.
   if (has_overscan) {
