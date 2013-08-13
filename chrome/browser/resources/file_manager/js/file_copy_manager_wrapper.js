@@ -24,16 +24,13 @@ function FileCopyManagerWrapper() {
   this.pendingTasks_ = [];
 
   chrome.runtime.getBackgroundPage(function(backgroundPage) {
-    var fileCopyManager = backgroundPage.FileCopyManager.getInstance();
-    fileCopyManager.initialize(function() {
-      // Here the fileCopyManager is initialized. Keep the instance, and run
-      // pending tasks.
-      this.fileCopyManager_ = fileCopyManager;
-      for (var i = 0; i < this.pendingTasks_.length; i++) {
-        this.pendingTasks_[i](fileCopyManager);
-      }
-      this.pendingTasks_ = [];
-    }.bind(this));
+    this.fileCopyManager_ = backgroundPage.FileCopyManager.getInstance();
+
+    // Run pending tasks.
+    for (var i = 0; i < this.pendingTasks_.length; i++) {
+      this.pendingTasks_[i](this.fileCopyManager_);
+    }
+    this.pendingTasks_ = [];
   }.bind(this));
 }
 

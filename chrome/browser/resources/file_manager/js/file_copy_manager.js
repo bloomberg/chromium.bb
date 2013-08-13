@@ -581,22 +581,6 @@ FileCopyManager.Error = function(code, data) {
 // FileCopyManager methods.
 
 /**
- * Initializes the filesystem if it is not done yet.
- * @param {function()} callback Completion callback.
- */
-FileCopyManager.prototype.initialize = function(callback) {
-  // Already initialized.
-  if (this.root_) {
-    callback();
-    return;
-  }
-  chrome.fileBrowserPrivate.requestFileSystem(function(filesystem) {
-    this.root_ = filesystem.root;
-    callback();
-  }.bind(this));
-};
-
-/**
  * Called before a new method is run in the manager. Prepares the manager's
  * state for running a new method.
  */
@@ -764,75 +748,71 @@ FileCopyManager.prototype.maybeCancel_ = function() {
 /**
  * Kick off pasting.
  *
- * @param {Array.<string>} files Pathes of source files.
- * @param {Array.<string>} directories Pathes of source directories.
- * @param {boolean} isCut If the source items are removed from original
- *     location.
- * @param {string} targetPath Target path.
+ * @param {Array.<string>} sourcePaths Path of the source files.
+ * @param {string} targetPath The destination path of the target directory.
+ * @param {boolean} isMove True if the operation is "move", otherwise (i.e.
+ *     if the operation is "copy") false.
  */
-FileCopyManager.prototype.paste = function(
-    files, directories, isCut, targetPath) {
-  var self = this;
+FileCopyManager.prototype.paste = function(sourcePaths, targetPath, isMove) {
+  // Do nothing if sourcePaths is empty.
+  if (sourcePaths.length == 0)
+    return;
+
+  var errorCallback = function(error) {
+    this.eventRouter_.sendProgressEvent(
+        'ERROR',
+        this.getStatus(),
+        new FileCopyManager.Error(
+            util.FileOperationErrorType.FILESYSTEM_ERROR, error));
+  }.bind(this);
+
+  var targetEntry = null;
   var entries = [];
-  var added = 0;
-  var total;
 
-  var steps = {
-    start: function() {
-      // Filter entries.
-      var entryFilterFunc = function(entry) {
-        if (entry == '')
-          return false;
-        if (isCut && entry.replace(/\/[^\/]+$/, '') == targetPath)
-          // Moving to the same directory is a redundant operation.
-          return false;
-        return true;
-      };
-      directories = directories ? directories.filter(entryFilterFunc) : [];
-      files = files ? files.filter(entryFilterFunc) : [];
+  // Resolve paths to entries.
+  var resolveGroup = new AsyncUtil.Group();
+  resolveGroup.add(function(callback) {
+    webkitResolveLocalFileSystemURL(
+        util.makeFilesystemUrl(targetPath),
+        function(entry) {
+          if (!entry.isDirectory) {
+            // Found a non directory entry.
+            errorCallback(util.createFileError(FileError.TYPE_MISMATCH_ERR));
+            return;
+          }
 
-      // Check the number of filtered entries.
-      total = directories.length + files.length;
-      if (total == 0)
+          targetEntry = entry;
+          callback();
+        },
+        errorCallback);
+  });
+
+  for (var i = 0; i < sourcePaths.length; i++) {
+    resolveGroup.add(function(sourcePath, callback) {
+      webkitResolveLocalFileSystemURL(
+          util.makeFilesystemUrl(sourcePath),
+          function(entry) {
+            entries.push(entry);
+            callback();
+          },
+          errorCallback);
+    }.bind(this, sourcePaths[i]));
+  }
+
+  resolveGroup.run(function() {
+    if (isMove) {
+      // Moving to the same directory is a redundant operation.
+      entries = entries.filter(function(entry) {
+        return targetEntry.fullPath + '/' + entry.name != entry.fullPath;
+      });
+
+      // Do nothing, if we have no entries to be moved.
+      if (entries.length == 0)
         return;
-
-      // Retrieve entries.
-      util.getDirectories(self.root_, {create: false}, directories,
-                          steps.onEntryFound, steps.onPathError);
-      util.getFiles(self.root_, {create: false}, files,
-                    steps.onEntryFound, steps.onPathError);
-    },
-
-    onEntryFound: function(entry) {
-      // When getDirectories/getFiles finish, they call addEntry with null.
-      // We don't want to add null to our entries.
-      if (entry == null)
-        return;
-      entries.push(entry);
-      added++;
-      if (added == total)
-        steps.onSourceEntriesFound();
-    },
-
-    onSourceEntriesFound: function() {
-      self.root_.getDirectory(targetPath, {},
-                              steps.onTargetEntryFound, steps.onPathError);
-    },
-
-    onTargetEntryFound: function(targetEntry) {
-      self.queueCopy_(targetEntry, entries, isCut);
-    },
-
-    onPathError: function(err) {
-      self.eventRouter_.sendProgressEvent(
-          'ERROR',
-          self.getStatus(),
-          new FileCopyManager.Error(
-              util.FileOperationErrorType.FILESYSTEM_ERROR, err));
     }
-  };
 
-  steps.start();
+    this.queueCopy_(targetEntry, entries, isMove);
+  }.bind(this));
 };
 
 /**

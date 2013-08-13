@@ -141,19 +141,13 @@ FileTransferController.prototype = {
    *     |dataTransfer.effectAllowed| property ('move', 'copy', 'copyMove').
    */
   cutOrCopy_: function(dataTransfer, effectAllowed) {
-    var directories = [];
-    var files = [];
-    var entries = this.selectedEntries_;
-    for (var i = 0; i < entries.length; i++) {
-      (entries[i].isDirectory ? directories : files).push(entries[i].fullPath);
-    }
-
     // Tag to check it's filemanager data.
     dataTransfer.setData('fs/tag', 'filemanager-data');
     dataTransfer.setData('fs/sourceRoot',
                          this.directoryModel_.getCurrentRootPath());
-    dataTransfer.setData('fs/directories', directories.join('\n'));
-    dataTransfer.setData('fs/files', files.join('\n'));
+    var sourcePaths =
+        this.selectedEntries_.map(function(e) { return e.fullPath; });
+    dataTransfer.setData('fs/sources', sourcePaths.join('\n'));
     dataTransfer.effectAllowed = effectAllowed;
     dataTransfer.setData('fs/effectallowed', effectAllowed);
 
@@ -201,21 +195,18 @@ FileTransferController.prototype = {
    * @return {string} Either "copy" or "move".
    */
   paste: function(dataTransfer, opt_destinationPath, opt_effect) {
+    var sourcePaths = (dataTransfer.getData('fs/sources') || '').split('\n');
     var destinationPath = opt_destinationPath ||
                           this.currentDirectoryContentPath;
     // effectAllowed set in copy/pase handlers stay uninitialized. DnD handlers
     // work fine.
-    var files = (dataTransfer.getData('fs/files') || '').split('\n');
-    var directories =
-        (dataTransfer.getData('fs/directories') || '').split('\n');
     var effectAllowed = dataTransfer.effectAllowed != 'uninitialized' ?
         dataTransfer.effectAllowed : dataTransfer.getData('fs/effectallowed');
     var toMove = effectAllowed == 'move' ||
         (effectAllowed == 'copyMove' && opt_effect == 'move');
-    this.copyManager_.paste(files,
-                            directories,
-                            toMove,
-                            destinationPath);
+
+    // Start the pasting operation.
+    this.copyManager_.paste(sourcePaths, destinationPath, toMove);
     return toMove ? 'move' : 'copy';
   },
 
