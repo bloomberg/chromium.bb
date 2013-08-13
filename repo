@@ -2,7 +2,7 @@
 
 ## repo default configuration
 ##
-REPO_URL='https://git.chromium.org/git/external/repo'
+REPO_URL='https://chromium.googlesource.com/external/repo'
 REPO_REV='stable'
 
 # Copyright (C) 2008 Google Inc.
@@ -31,7 +31,7 @@ del magic
 VERSION = (1, 18)
 
 # increment this if the MAINTAINER_KEYS block is modified
-KEYRING_VERSION = (1,1)
+KEYRING_VERSION = (1,2)
 MAINTAINER_KEYS = """
 
      Repo Maintainer <repo@android.kernel.org>
@@ -106,6 +106,37 @@ vbm5PdM91jOsDQYqRu6YOoYBnDnEhB2wL2bPh34HWwwrA+LwB8hlcAV2z1bdwyfl
 fTQeIu/yASZnsLBqr6SJEGwYBoWcyjG++k4fyw8ocOAo4uGDYbxgN7yYfNQ0OH7o
 V6pfUgqKLWa/aK7/N1ZHnPdFLD8Xt0Dmy4BPwrKC
 =O7am
+-----END PGP PUBLIC KEY BLOCK-----
+
+     Stefan Zager <szager@chromium.org>
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+mQINBFIJOcgBEADwZIq4GRGoO1RJFKlrtVK501cwT5H+Acbizc9N5RxTkFmqxDjb
+9ApUaPW6S1b8+nrzE9P1Ri5erfzipuStfaZ/Wl3mP1JjKulibddmgnPOEbAJ673k
+Vj85RUO4rt2oZAHnZN3D3gFJzVY8JVlZ47Enj9fTqzcW78FVsPCpIT9P2LpTLWeE
+jX9Cjxeimy6VvyJstIcDLYhlpUN5UWen79L4LFAkHf3luLuU4W3p9NriqUsy5UG2
+8vO6QdhKrCr5wsjDFFeVnpMtjlSeZJAWH+XhFFibMX1xP5R9BTuJfzw3kOVKvcE0
+e9ClxgoulepXPv2xnDkqO3pG2gQVzl8LA+Aol8/IXfa7KP5FBkxK/g1cDuDtXRk4
+YLpLaLYeeKEhhOHLpsKYkK2DXTIcN+56UnTLGolummpZnCM8UUSZxQgbkFgk4YJL
+Elip0hgLZzqEl5h9vjmnQp89AZIHKcgNmzn+szLTOR9x24joaLyQ534x8OSC8lmu
+tJv2tQjDOVGWVwvY4gOTpyxCWMwur6WOiMk/TPWdiVRFWAGrAHwf0/CTBEqNhosh
+sVXfPeMADBA0PorDbJ6kwcOkLUTGf8CT7OG1R9TuKPEmSjK7BYu/pT4DXitaRCiv
+uPVlwbVFpLFr0/jwaKJVMLUjL5MaYwzjJqI2c4RdROZhpMhkn4LvCMmFSQARAQAB
+tCJTdGVmYW4gWmFnZXIgPHN6YWdlckBjaHJvbWl1bS5vcmc+iQI4BBMBAgAiBQJS
+CTnIAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRDcuoHPGCdZNU0UD/9y
+0zwwOJH2UGPAzZ0YVzr7p0HtKedoxuFvPkdQxlBIaUOueMzFRmNQu3GI9irAu3MQ
+Jkip8/gi7dnLVmJyS/zWARBaRGwSVd1++87XDjw8n7l181p7394X0Agq/heri599
+YheHXkxXKVMPqByWNEPHu4eDbxeJTaDIjcKC2pzKQkm6HbWgW4wA9gCh1TRki8FP
+LMv1Fu/dr13STCR9P2evsTRZ+ZSJhTSboHNHeEAJGiGZQAsN94oht7647lYj+AyR
+ThzyHDMXXiDr8jPJIkyRilY+y82bCOatOfPoCkce3VI+LRUGJ19hJY01m4RRneIE
+55l7fXR3zggcsONjV5b+oLcGQPGgX9w64BJ7khT7Wb9+kuyrdJBIBzJsaACFEbri
+pPi02FS/HahYpLC3J66REAeNyofgVXau6WQsHrHMGsBTL9aAr0nrCrkF4Nyyc2Jd
+do6nYuljuUhORqbEECmmBM2eBtkL6Ac92D6WMBIwBOC5tCNHO2YFIvi8Y8EuE8sc
+1zB5U5Ai4SIu2icRAhzAhCRaUq02cMWuELKH6Vuh9nzgEefFWty6vPbKEyZLu19D
+B80aqP1cTN88FjtKQ/eTF29TUB6AefUeBS17e2e3WUMy4nc8tduuOFYfiHP40ScP
+wOoatwfzpiTIPGbocUEPL+pS0O/Xy8SINxFMCud3zA==
+=Vd2S
 -----END PGP PUBLIC KEY BLOCK-----
 """
 
@@ -717,6 +748,9 @@ def main(orig_args):
       repo_main, rel_repo_dir = _FindRepo()
     else:
       _NoCommands(cmd)
+
+  if cmd == 'sync' and NeedSetupGnuPG():
+    SetupGnuPG(False)
 
   if my_main:
     repo_main = my_main
