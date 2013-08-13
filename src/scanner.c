@@ -606,7 +606,7 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		exit(EXIT_FAILURE);
 	}
 
-	if (!has_destructor && strcmp(interface->name, "wl_display") != 0)
+	if (!has_destroy && strcmp(interface->name, "wl_display") != 0)
 		printf("static inline void\n"
 		       "%s_destroy(struct %s *%s)\n"
 		       "{\n"
