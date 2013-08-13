@@ -78,7 +78,7 @@ public:
     bool isEmpty() const { return m_animations.isEmpty(); }
     void cancel();
 private:
-    typedef HashMap<StringImpl*, Player*> AnimationMap;
+    typedef HashMap<StringImpl*, RefPtr<Player> > AnimationMap;
     AnimationMap m_animations;
     class EventDelegate FINAL : public TimedItemEventDelegate {
     public:
