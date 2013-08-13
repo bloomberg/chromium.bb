@@ -10,6 +10,7 @@
 #include <set>
 #include <utility>
 
+#include "ash/ash_switches.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
@@ -1009,7 +1010,9 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_NAME,
     IDS_FLAGS_SHOW_SHELF_ALIGNMENT_MENU_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kShowShelfAlignmentMenu)
+    ENABLE_DISABLE_VALUE_TYPE(
+        ash::switches::kShowShelfAlignmentMenu,
+        ash::switches::kHideShelfAlignmentMenu)
   },
   {
     "disable-minimize-on-second-launcher-item-click",

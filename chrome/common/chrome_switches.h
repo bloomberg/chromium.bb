@@ -339,7 +339,6 @@ extern const char kSilentLaunch[];
 extern const char kSetToken[];
 extern const char kShowAppList[];
 extern const char kShowIcons[];
-extern const char kShowShelfAlignmentMenu[];
 extern const char kSigninProcess[];
 extern const char kSilentDumpOnDCHECK[];
 extern const char kSimulateUpgrade[];

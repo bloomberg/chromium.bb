@@ -1260,9 +1260,6 @@ const char kShowAppList[]                   = "show-app-list";
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 
-// If true the alignment of the shelf can be changed.
-const char kShowShelfAlignmentMenu[]        = "show-launcher-alignment-menu";
-
 // Marks a renderer as the signin process.
 const char kSigninProcess[]                 = "signin-process";
 
