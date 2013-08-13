@@ -13,7 +13,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/common/json_schema/json_schema_validator.h"
 #include "chrome/common/web_application_info.h"
 #include "grit/common_resources.h"
 #include "grit/generated_resources.h"

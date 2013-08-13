@@ -15,6 +15,7 @@
     'breakpad.gypi',
     'browser_context_keyed_service.gypi',
     'components_tests.gypi',
+    'json_schema.gypi',
     'navigation_interception.gypi',
     'sessions.gypi',
     'user_prefs.gypi',

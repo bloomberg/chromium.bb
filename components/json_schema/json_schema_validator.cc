@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/json_schema/json_schema_validator.h"
+#include "components/json_schema/json_schema_validator.h"
 
 #include <algorithm>
 #include <cfloat>
@@ -13,7 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/json_schema/json_schema_constants.h"
+#include "components/json_schema/json_schema_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace schema = json_schema_constants;
@@ -579,7 +579,7 @@ void JSONSchemaValidator::ValidateArray(const base::ListValue* instance,
     for (size_t i = 0; i < instance_size; ++i) {
       const base::Value* item = NULL;
       CHECK(instance->Get(i, &item));
-      std::string i_str = base::UintToString(i);
+      std::string i_str = base::Uint64ToString(i);
       std::string item_path = path.empty() ? i_str : (path + "." + i_str);
       Validate(item, single_type, item_path);
     }
@@ -600,7 +600,7 @@ void JSONSchemaValidator::ValidateTuple(const base::ListValue* instance,
   size_t tuple_size = tuple_type ? tuple_type->GetSize() : 0;
   if (tuple_type) {
     for (size_t i = 0; i < tuple_size; ++i) {
-      std::string i_str = base::UintToString(i);
+      std::string i_str = base::Uint64ToString(i);
       std::string item_path = path.empty() ? i_str : (path + "." + i_str);
       const base::DictionaryValue* item_schema = NULL;
       CHECK(tuple_type->GetDictionary(i, &item_schema));
@@ -628,7 +628,7 @@ void JSONSchemaValidator::ValidateTuple(const base::ListValue* instance,
     // Any additional properties must validate against the additionalProperties
     // schema.
     for (size_t i = tuple_size; i < instance_size; ++i) {
-      std::string i_str = base::UintToString(i);
+      std::string i_str = base::Uint64ToString(i);
       std::string item_path = path.empty() ? i_str : (path + "." + i_str);
       const base::Value* item_value = NULL;
       CHECK(instance->Get(i, &item_value));
@@ -636,7 +636,7 @@ void JSONSchemaValidator::ValidateTuple(const base::ListValue* instance,
     }
   } else if (instance_size > tuple_size) {
     errors_.push_back(Error(path, FormatErrorMessage(
-        kArrayMaxItems, base::UintToString(tuple_size))));
+        kArrayMaxItems, base::Uint64ToString(tuple_size))));
   }
 }
 

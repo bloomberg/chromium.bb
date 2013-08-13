@@ -1,13 +1,14 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/json_schema/json_schema_validator_unittest_base.h"
+#include "components/json_schema/json_schema_validator_unittest_base.h"
 
 #include <cfloat>
 #include <cmath>
 #include <limits>
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
@@ -15,9 +16,8 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
-#include "chrome/common/json_schema/json_schema_constants.h"
-#include "chrome/common/json_schema/json_schema_validator.h"
+#include "components/json_schema/json_schema_constants.h"
+#include "components/json_schema/json_schema_validator.h"
 
 namespace schema = json_schema_constants;
 
@@ -27,8 +27,12 @@ namespace {
 
 base::Value* LoadValue(const std::string& filename) {
   base::FilePath path;
-  PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("json_schema_validator").AppendASCII(filename);
+  PathService::Get(base::DIR_SOURCE_ROOT, &path);
+  path = path.AppendASCII("components")
+             .AppendASCII("test")
+             .AppendASCII("data")
+             .AppendASCII("json_schema")
+             .AppendASCII(filename);
   EXPECT_TRUE(base::PathExists(path));
 
   std::string error_message;

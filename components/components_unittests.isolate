@@ -8,6 +8,9 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/content_resources.pak',
         ],
+        'isolate_dependency_untracked': [
+          'test/data/',
+        ],
       },
     }],
   ],

@@ -34,7 +34,7 @@
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preg_parser_win.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/json_schema/json_schema_constants.h"
+#include "components/json_schema/json_schema_constants.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

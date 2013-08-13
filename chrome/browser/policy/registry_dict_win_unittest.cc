@@ -5,7 +5,7 @@
 #include "chrome/browser/policy/registry_dict_win.h"
 
 #include "base/values.h"
-#include "chrome/common/json_schema/json_schema_constants.h"
+#include "components/json_schema/json_schema_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace schema = json_schema_constants;

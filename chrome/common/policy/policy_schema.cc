@@ -7,8 +7,8 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
-#include "chrome/common/json_schema/json_schema_constants.h"
-#include "chrome/common/json_schema/json_schema_validator.h"
+#include "components/json_schema/json_schema_constants.h"
+#include "components/json_schema/json_schema_validator.h"
 
 namespace policy {
 

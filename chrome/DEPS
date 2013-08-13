@@ -28,6 +28,7 @@ include_rules = [
   "-chrome",
   "+chrome/common",
   "+chrome/test",
+  "+components/json_schema",
   "+components/sessions",
   "+components/visitedlink/common",
   "+content/public/common",

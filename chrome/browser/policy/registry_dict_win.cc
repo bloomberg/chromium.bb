@@ -12,7 +12,7 @@
 #include "base/sys_byteorder.h"
 #include "base/values.h"
 #include "base/win/registry.h"
-#include "chrome/common/json_schema/json_schema_constants.h"
+#include "components/json_schema/json_schema_constants.h"
 
 namespace schema = json_schema_constants;
 
