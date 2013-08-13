@@ -199,7 +199,7 @@ var TypeUtils = {
     }
 }
 
-/** @typedef {{name: string, value: *, values: (!Array.<TypeUtils.InternalResourceStateDescriptor>|undefined), isArray:(boolean|undefined)}} */
+/** @typedef {{name:string, valueIsEnum:(boolean|undefined), value:*, values:(!Array.<TypeUtils.InternalResourceStateDescriptor>|undefined), isArray:(boolean|undefined)}} */
 TypeUtils.InternalResourceStateDescriptor;
 
 /**
@@ -485,6 +485,13 @@ Call.prototype = {
      */
     replay: function(replayableCall, cache)
     {
+        var replayableResult = replayableCall.result();
+        if (replayableResult instanceof ReplayableResource && !cache.has(replayableResult.id())) {
+            var resource = replayableResult.replay(cache);
+            console.assert(resource.calls().length > 0, "Expected create* call for the Resource");
+            return resource.calls()[0];
+        }
+
         var replayObject = ReplayableResource.replay(replayableCall.replayableResource(), cache);
         var replayArgs = replayableCall.args().map(function(obj) {
             return ReplayableResource.replay(obj, cache);
@@ -497,8 +504,9 @@ Call.prototype = {
             var replayFunction = replayObject[replayableCall.functionName()];
             console.assert(typeof replayFunction === "function", "Expected a function to replay");
             replayResult = replayFunction.apply(replayObject, replayArgs);
-            if (replayableCall.result() instanceof ReplayableResource) {
-                var resource = replayableCall.result().replay(cache);
+
+            if (replayableResult instanceof ReplayableResource) {
+                var resource = replayableResult.replay(cache);
                 if (!resource.wrappedObject())
                     resource.setWrappedObject(replayResult);
             }
@@ -513,6 +521,11 @@ Call.prototype = {
         var attachments = replayableCall.attachments();
         if (attachments)
             this._attachments = TypeUtils.cloneObject(attachments);
+
+        var thisResource = Resource.forObject(replayObject);
+        if (thisResource)
+            thisResource.onCallReplayed(this);
+
         return this;
     }
 }
@@ -778,7 +791,7 @@ Resource.prototype = {
     },
 
     /**
-     * @return {!Array.<Call>}
+     * @return {!Array.<!Call>}
      */
     calls: function()
     {
@@ -909,6 +922,14 @@ Resource.prototype = {
     {
         call.freeze();
         this._calls.push(call);
+    },
+
+    /**
+     * @param {!Call} call
+     */
+    onCallReplayed: function(call)
+    {
+        // Ignore by default.
     },
 
     /**
@@ -1419,7 +1440,7 @@ WebGLTextureResource.prototype = {
             console.error("ASSERT_NOT_REACHED: unknown texture target " + target);
             return result;
         }
-        result.push({ name: "target", value: target });
+        result.push({ name: "target", value: target, valueIsEnum: true });
 
         var oldTexture = /** @type {WebGLTexture} */ (gl.getParameter(bindingParameter));
         if (oldTexture !== texture)
@@ -1540,29 +1561,97 @@ WebGLProgramResource.prototype = {
      */
     currentState: function()
     {
+        /**
+         * @param {!Object} obj
+         * @param {!Array.<TypeUtils.InternalResourceStateDescriptor>} output
+         */
+        function convertToStateDescriptors(obj, output)
+        {
+            for (var pname in obj)
+                output.push({ name: pname, value: obj[pname], valueIsEnum: (pname === "type") });
+        }
+
         var result = [];
         var program = this.wrappedObject();
         if (!program)
             return result;
         var glResource = WebGLRenderingContextResource.forObject(this);
         var gl = glResource.wrappedObject();
-        var programParameters = ["DELETE_STATUS", "LINK_STATUS", "VALIDATE_STATUS", "ACTIVE_ATTRIBUTES", "ACTIVE_UNIFORMS"];
+        var programParameters = ["DELETE_STATUS", "LINK_STATUS", "VALIDATE_STATUS"];
         glResource.queryStateValues(gl.getProgramParameter, program, programParameters, result);
         result.push({ name: "getProgramInfoLog", value: gl.getProgramInfoLog(program) });
         result.push({ name: "isProgram", value: gl.isProgram(program) });
         result.push({ name: "context", value: this.contextResource() });
 
         // ATTACHED_SHADERS
+        var callFormatter = CallFormatter.forResource(this);
         var shaders = gl.getAttachedShaders(program) || [];
         var shaderDescriptors = [];
         for (var i = 0, n = shaders.length; i < n; ++i) {
             var shaderResource = Resource.forObject(shaders[i]);
-            // FIXME: pname -> "VERTEX_SHADER" or "FRAGMENT_SHADER".
-            var pname = "" + i;
+            var pname = callFormatter.enumNameForValue(shaderResource.type());
             shaderDescriptors.push({ name: pname, value: shaderResource });
         }
         result.push({ name: "ATTACHED_SHADERS", values: shaderDescriptors, isArray: true });
+
+        // ACTIVE_UNIFORMS
+        var uniformDescriptors = [];
+        var uniforms = this._activeUniforms(true);
+        for (var i = 0, n = uniforms.length; i < n; ++i) {
+            var pname = "" + i;
+            var values = [];
+            convertToStateDescriptors(uniforms[i], values);
+            uniformDescriptors.push({ name: pname, values: values });
+        }
+        result.push({ name: "ACTIVE_UNIFORMS", values: uniformDescriptors, isArray: true });
+
+        // ACTIVE_ATTRIBUTES
+        var attributesCount = /** @type {number} */ (gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES));
+        var attributeDescriptors = [];
+        for (var i = 0; i < attributesCount; ++i) {
+            var activeInfo = gl.getActiveAttrib(program, i);
+            if (!activeInfo)
+                continue;
+            var pname = "" + i;
+            var values = [];
+            convertToStateDescriptors(activeInfo, values);
+            attributeDescriptors.push({ name: pname, values: values });
+        }
+        result.push({ name: "ACTIVE_ATTRIBUTES", values: attributeDescriptors, isArray: true });
+
         return result;
+    },
+
+    /**
+     * @param {boolean=} includeAllInfo
+     * @return {!Array.<{name:string, type:number, value:*, size:(number|undefined)}>}
+     */
+    _activeUniforms: function(includeAllInfo)
+    {
+        var uniforms = [];
+        var program = this.wrappedObject();
+        if (!program)
+            return uniforms;
+
+        var gl = WebGLRenderingContextResource.forObject(this).wrappedObject();
+        var uniformsCount = /** @type {number} */ (gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS));
+        for (var i = 0; i < uniformsCount; ++i) {
+            var activeInfo = gl.getActiveUniform(program, i);
+            if (!activeInfo)
+                continue;
+            var uniformLocation = gl.getUniformLocation(program, activeInfo.name);
+            if (!uniformLocation)
+                continue;
+            var value = gl.getUniform(program, uniformLocation);
+            var item = Object.create(null);
+            item.name = activeInfo.name;
+            item.type = activeInfo.type;
+            item.value = value;
+            if (includeAllInfo)
+                item.size = activeInfo.size;
+            uniforms.push(item);
+        }
+        return uniforms;
     },
 
     /**
@@ -1573,29 +1662,8 @@ WebGLProgramResource.prototype = {
     _populateReplayableData: function(data, cache)
     {
         var glResource = WebGLRenderingContextResource.forObject(this);
-        var gl = glResource.wrappedObject();
-        var program = this.wrappedObject();
-
         var originalErrors = glResource.getAllErrors();
-
-        var uniforms = [];
-        var uniformsCount = /** @type {number} */ (gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS));
-        for (var i = 0; i < uniformsCount; ++i) {
-            var activeInfo = gl.getActiveUniform(program, i);
-            if (!activeInfo)
-                continue;
-            var uniformLocation = gl.getUniformLocation(program, activeInfo.name);
-            if (!uniformLocation)
-                continue;
-            var value = gl.getUniform(program, uniformLocation);
-            uniforms.push({
-                name: activeInfo.name,
-                type: activeInfo.type,
-                value: value
-            });
-        }
-        data.uniforms = uniforms;
-
+        data.uniforms = this._activeUniforms();
         glResource.restoreErrors(originalErrors);
     },
 
@@ -1730,7 +1798,15 @@ WebGLShaderResource.prototype = {
         result.push({ name: "getShaderSource", value: gl.getShaderSource(shader) });
         result.push({ name: "isShader", value: gl.isShader(shader) });
         result.push({ name: "context", value: this.contextResource() });
-        // FIXME: Add info from gl.getShaderPrecisionFormat() for the specific shader type.
+
+        // getShaderPrecisionFormat
+        var shaderType = this.type();
+        var precisionValues = [];
+        var precisionParameters = ["LOW_FLOAT", "MEDIUM_FLOAT", "HIGH_FLOAT", "LOW_INT", "MEDIUM_INT", "HIGH_INT"];
+        for (var i = 0, pname; pname = precisionParameters[i]; ++i)
+            precisionValues.push({ name: pname, value: gl.getShaderPrecisionFormat(shaderType, gl[pname]) });
+        result.push({ name: "getShaderPrecisionFormat", values: precisionValues });
+
         return result;
     },
 
@@ -1800,7 +1876,7 @@ WebGLBufferResource.prototype = {
             console.error("ASSERT_NOT_REACHED: unknown buffer target " + target);
             return result;
         }
-        result.push({ name: "target", value: target });
+        result.push({ name: "target", value: target, valueIsEnum: true });
 
         var oldBuffer = /** @type {WebGLBuffer} */ (gl.getParameter(bindingParameter));
         if (oldBuffer !== buffer)
@@ -1872,7 +1948,7 @@ WebGLFramebufferResource.prototype = {
             for (var j = 0, pname; pname = framebufferParameters[j]; ++j) {
                 var value = gl.getFramebufferAttachmentParameter(gl.FRAMEBUFFER, gl[attachment], gl[pname]);
                 value = Resource.forObject(value) || value;
-                values.push({ name: pname, value: value });
+                values.push({ name: pname, value: value, valueIsEnum: WebGLRenderingContextResource.GetResultIsEnum[pname] });
             }
             result.push({ name: attachment, values: values });
         }
@@ -2019,11 +2095,56 @@ WebGLUniformLocationResource.prototype = {
             return result;
         var gl = WebGLRenderingContextResource.forObject(this).wrappedObject();
         var uniformValue = gl.getUniform(program, location);
-        result.push({ name: "name", value: this.name() });
+        var name = this.name();
+        result.push({ name: "name", value: name });
         result.push({ name: "program", value: programResource });
         result.push({ name: "value", value: uniformValue });
         result.push({ name: "context", value: this.contextResource() });
+
+        if (typeof this._type !== "number") {
+            var altName = name + "[0]";
+            var uniformsCount = /** @type {number} */ (gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS));
+            for (var i = 0; i < uniformsCount; ++i) {
+                var activeInfo = gl.getActiveUniform(program, i);
+                if (!activeInfo)
+                    continue;
+                if (activeInfo.name === name || activeInfo.name === altName) {
+                    this._type = activeInfo.type;
+                    this._size = activeInfo.size;
+                    if (activeInfo.name === name)
+                        break;
+                }
+            }
+        }
+        if (typeof this._type === "number")
+            result.push({ name: "type", value: this._type, valueIsEnum: true });
+        if (typeof this._size === "number")
+            result.push({ name: "size", value: this._size });
+
         return result;
+    },
+
+    /**
+     * @override
+     * @param {!Object} data
+     * @param {!Cache.<ReplayableResource>} cache
+     */
+    _populateReplayableData: function(data, cache)
+    {
+        data.type = this._type;
+        data.size = this._size;
+    },
+
+    /**
+     * @override
+     * @param {!Object} data
+     * @param {!Cache.<Resource>} cache
+     */
+    _doReplayCalls: function(data, cache)
+    {
+        this._type = data.type;
+        this._size = data.size;
+        Resource.prototype._doReplayCalls.call(this, data, cache);
     },
 
     __proto__: Resource.prototype
@@ -2126,6 +2247,50 @@ WebGLRenderingContextResource.StateParameters = [
     "UNPACK_PREMULTIPLY_ALPHA_WEBGL",
     "VIEWPORT"
 ];
+
+/**
+ * True for those enums that return also an enum via a getter API method (e.g. getParameter, getShaderParameter, etc.).
+ * @const
+ * @type {!Object.<string, boolean>}
+ */
+WebGLRenderingContextResource.GetResultIsEnum = TypeUtils.createPrefixedPropertyNamesSet([
+    // gl.getParameter()
+    "ACTIVE_TEXTURE",
+    "BLEND_DST_ALPHA",
+    "BLEND_DST_RGB",
+    "BLEND_EQUATION_ALPHA",
+    "BLEND_EQUATION_RGB",
+    "BLEND_SRC_ALPHA",
+    "BLEND_SRC_RGB",
+    "CULL_FACE_MODE",
+    "DEPTH_FUNC",
+    "FRONT_FACE",
+    "GENERATE_MIPMAP_HINT",
+    "STENCIL_BACK_FAIL",
+    "STENCIL_BACK_FUNC",
+    "STENCIL_BACK_PASS_DEPTH_FAIL",
+    "STENCIL_BACK_PASS_DEPTH_PASS",
+    "STENCIL_FAIL",
+    "STENCIL_FUNC",
+    "STENCIL_PASS_DEPTH_FAIL",
+    "STENCIL_PASS_DEPTH_PASS",
+    "UNPACK_COLORSPACE_CONVERSION_WEBGL",
+    // gl.getBufferParameter()
+    "BUFFER_USAGE",
+    // gl.getFramebufferAttachmentParameter()
+    "FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE",
+    // gl.getRenderbufferParameter()
+    "RENDERBUFFER_INTERNAL_FORMAT",
+    // gl.getTexParameter()
+    "TEXTURE_MAG_FILTER",
+    "TEXTURE_MIN_FILTER",
+    "TEXTURE_WRAP_S",
+    "TEXTURE_WRAP_T",
+    // gl.getShaderParameter()
+    "SHADER_TYPE",
+    // gl.getVertexAttrib()
+    "VERTEX_ATTRIB_ARRAY_TYPE"
+]);
 
 /**
  * @const
@@ -2263,7 +2428,7 @@ WebGLRenderingContextResource.prototype = {
         var gl = this.wrappedObject();
         for (var i = 0, pname; pname = pnames[i]; ++i) {
             var value = func.call(gl, targetOrWebGLObject, gl[pname]);
-            output.push({ name: pname, value: value });
+            output.push({ name: pname, value: value, valueIsEnum: WebGLRenderingContextResource.GetResultIsEnum[pname] });
         }
     },
 
@@ -2280,7 +2445,7 @@ WebGLRenderingContextResource.prototype = {
         function convertToStateDescriptors(obj, output)
         {
             for (var pname in obj)
-                output.push({ name: pname, value: obj[pname] });
+                output.push({ name: pname, value: obj[pname], valueIsEnum: WebGLRenderingContextResource.GetResultIsEnum[pname] });
         }
 
         var glState = this._internalCurrentState(null);
@@ -2322,7 +2487,6 @@ WebGLRenderingContextResource.prototype = {
     },
 
     /**
-     * @override
      * @param {?Cache.<ReplayableResource>} cache
      * @return {!Object.<string, *>}
      */
@@ -2558,6 +2722,27 @@ WebGLRenderingContextResource.prototype = {
 
     /**
      * @override
+     * @param {!Call} call
+     */
+    onCallReplayed: function(call)
+    {
+        // Update BINDING state for Resources in the replay world.
+        var functionName = call.functionName();
+        switch (functionName) {
+        case "bindBuffer":
+        case "bindFramebuffer":
+        case "bindRenderbuffer":
+        case "bindTexture":
+            var args = call.args();
+            var resource = Resource.forObject(args[1]);
+            if (resource)
+                resource.pushBinding(args[0], functionName);
+            break;
+        }
+    },
+
+    /**
+     * @override
      * @return {!Object.<string, Function>}
      */
     _customWrapFunctions: function()
@@ -2688,6 +2873,7 @@ WebGLRenderingContextResource.prototype = {
              */
             wrapFunctions["bindBuffer"] = wrapFunctions["bindFramebuffer"] = wrapFunctions["bindRenderbuffer"] = function(target, obj)
             {
+                this._resource.currentBinding(target); // To call WebGLBoundResource.prototype.pushBinding().
                 this._resource._registerBoundResource("__bindBuffer_" + target, obj);
             }
             /**
@@ -2697,6 +2883,7 @@ WebGLRenderingContextResource.prototype = {
              */
             wrapFunctions["bindTexture"] = function(target, obj)
             {
+                this._resource.currentBinding(target); // To call WebGLBoundResource.prototype.pushBinding().
                 var gl = /** @type {WebGLRenderingContext} */ (this._originalObject);
                 var currentTextureBinding = /** @type {number} */ (gl.getParameter(gl.ACTIVE_TEXTURE));
                 this._resource._registerBoundResource("__bindTexture_" + target + "_" + currentTextureBinding, obj);
@@ -3165,31 +3352,36 @@ function CallFormatter(drawingMethodNames)
 CallFormatter.prototype = {
     /**
      * @param {!ReplayableCall} replayableCall
+     * @param {string=} objectGroup
      * @return {!Object}
      */
-    formatCall: function(replayableCall)
+    formatCall: function(replayableCall, objectGroup)
     {
         var result = {};
         var functionName = replayableCall.functionName();
         if (functionName) {
             result.functionName = functionName;
-            result.arguments = replayableCall.args().map(this.formatValue.bind(this));
+            result.arguments = [];
+            var args = replayableCall.args();
+            for (var i = 0, n = args.length; i < n; ++i)
+                result.arguments.push(this.formatValue(args[i], objectGroup));
             if (replayableCall.result() !== undefined)
-                result.result = this.formatValue(replayableCall.result());
+                result.result = this.formatValue(replayableCall.result(), objectGroup);
             if (this._drawingMethodNames[functionName])
                 result.isDrawingCall = true;
         } else {
             result.property = replayableCall.propertyName();
-            result.value = this.formatValue(replayableCall.propertyValue());
+            result.value = this.formatValue(replayableCall.propertyValue(), objectGroup);
         }
         return result;
     },
 
     /**
      * @param {*} value
+     * @param {string=} objectGroup
      * @return {!CanvasAgent.CallArgument}
      */
-    formatValue: function(value)
+    formatValue: function(value, objectGroup)
     {
         if (value instanceof Resource || value instanceof ReplayableResource) {
             return {
@@ -3198,15 +3390,21 @@ CallFormatter.prototype = {
             };
         }
 
-        var remoteObject = injectedScript.wrapObject(value, "", true, false);
+        var remoteObject = injectedScript.wrapObject(value, objectGroup || "", true, false);
+        var description = remoteObject.description || ("" + value);
+
         var result = {
-            description: remoteObject.description || ("" + value),
+            description: description,
             type: /** @type {CanvasAgent.CallArgumentType} */ (remoteObject.type)
         };
         if (remoteObject.subtype)
             result.subtype = /** @type {CanvasAgent.CallArgumentSubtype} */ (remoteObject.subtype);
-        if (remoteObject.objectId)
-            injectedScript.releaseObject(remoteObject.objectId);
+        if (remoteObject.objectId) {
+            if (objectGroup)
+                result.remoteObject = remoteObject;
+            else
+                injectedScript.releaseObject(remoteObject.objectId);
+        }
         return result;
     },
 
@@ -3220,17 +3418,36 @@ CallFormatter.prototype = {
     },
 
     /**
+     * @param {number} value
+     * @param {Array.<string>=} options
+     * @return {?string}
+     */
+    enumNameForValue: function(value, options)
+    {
+        return null;
+    },
+
+    /**
      * @param {!Array.<TypeUtils.InternalResourceStateDescriptor>} descriptors
+     * @param {string=} objectGroup
      * @return {!Array.<!CanvasAgent.ResourceStateDescriptor>}
      */
-    formatResourceStateDescriptors: function(descriptors)
+    formatResourceStateDescriptors: function(descriptors, objectGroup)
     {
         var result = [];
         for (var i = 0, n = descriptors.length; i < n; ++i) {
             var d = descriptors[i];
-            var item = d.values ?
-                { name: d.name, values: this.formatResourceStateDescriptors(d.values) } :
-                { name: d.name, value: this.formatValue(d.value) };
+            var item;
+            if (d.values)
+                item = { name: d.name, values: this.formatResourceStateDescriptors(d.values, objectGroup) };
+            else {
+                item = { name: d.name, value: this.formatValue(d.value, objectGroup) };
+                if (d.valueIsEnum && typeof d.value === "number") {
+                    var enumName = this.enumNameForValue(d.value);
+                    if (enumName)
+                        item.value.enumName = enumName;
+                }
+            }
             var enumValue = this.enumValueForName(d.name);
             if (enumValue)
                 item.enumValueForName = enumValue;
@@ -3359,11 +3576,12 @@ WebGLCallFormatter.prototype = {
     /**
      * @override
      * @param {!ReplayableCall} replayableCall
+     * @param {string=} objectGroup
      * @return {!Object}
      */
-    formatCall: function(replayableCall)
+    formatCall: function(replayableCall, objectGroup)
     {
-        var result = CallFormatter.prototype.formatCall.call(this, replayableCall);
+        var result = CallFormatter.prototype.formatCall.call(this, replayableCall, objectGroup);
         if (!result.functionName)
             return result;
         var enumsInfo = this._findEnumsInfo(replayableCall);
@@ -3399,6 +3617,26 @@ WebGLCallFormatter.prototype = {
         if (name in this._enumNameToValue)
             return "" + this._enumNameToValue[name];
         return null;
+    },
+
+    /**
+     * @override
+     * @param {number} value
+     * @param {Array.<string>=} options
+     * @return {?string}
+     */
+    enumNameForValue: function(value, options)
+    {
+        this._initialize();
+        options = options || [];
+        for (var i = 0, n = options.length; i < n; ++i) {
+            if (this._enumNameToValue[options[i]] === value)
+                return options[i];
+        }
+        var names = this._enumValueToNames[value];
+        if (!names || names.length !== 1)
+            return null;
+        return names[0];
     },
 
     /**
@@ -3444,19 +3682,9 @@ WebGLCallFormatter.prototype = {
             return;
         this._initialize();
         var value = +callArgument.description;
-        options = options || [];
-        for (var i = 0, n = options.length; i < n; ++i) {
-            if (this._enumNameToValue[options[i]] === value) {
-                callArgument.enumName = options[i];
-                return;
-            }
-        }
-        var names = this._enumValueToNames[value];
-        if (!names || names.length !== 1) {
-            console.warn("Ambiguous WebGL enum names for value " + value + ": " + names);
-            return;
-        }
-        callArgument.enumName = names[0];
+        var enumName = this.enumNameForValue(value, options);
+        if (enumName)
+            callArgument.enumName = enumName;
     },
 
     /**
@@ -3949,6 +4177,7 @@ InjectedCanvasModule.prototype = {
             this._manager.dropTraceLog(traceLog);
         delete this._traceLogs[id];
         delete this._traceLogPlayers[id];
+        injectedScript.releaseObjectGroup(id);
     },
 
     /**
@@ -4020,6 +4249,8 @@ InjectedCanvasModule.prototype = {
         if (!traceLog)
             return "Error: Trace log with the given ID not found.";
         this._traceLogPlayers[traceLogId] = this._traceLogPlayers[traceLogId] || new TraceLogPlayer(traceLog);
+
+        injectedScript.releaseObjectGroup(traceLogId);
 
         var beforeTime = TypeUtils.now();
         var lastCall = this._traceLogPlayers[traceLogId].stepTo(stepNo);
@@ -4125,7 +4356,7 @@ InjectedCanvasModule.prototype = {
         };
         if (resource) {
             result.imageURL = overrideImageURL || resource.toDataURL();
-            result.descriptors = CallFormatter.forResource(resource).formatResourceStateDescriptors(resource.currentState());
+            result.descriptors = CallFormatter.forResource(resource).formatResourceStateDescriptors(resource.currentState(), traceLogId);
         }
         return result;
     },

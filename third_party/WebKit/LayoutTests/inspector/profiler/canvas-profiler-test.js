@@ -46,6 +46,11 @@ InspectorTest.disableCanvasAgent = function(callback)
     }
 };
 
+InspectorTest.callArgumentDescription = function(callArg)
+{
+    return callArg.enumName || callArg.description;
+};
+
 InspectorTest.dumpTraceLogCall = function(call, indent, filter)
 {
     indent = indent || "";
@@ -57,18 +62,14 @@ InspectorTest.dumpTraceLogCall = function(call, indent, filter)
     {
         return url ? "\"" + url.replace(/^.*\/([^\/]+)\/?$/, "$1") + "\"" : "null";
     }
-    function callArgumentDescription(callArg)
-    {
-        return callArg.enumName || callArg.description;
-    }
-    var args = (call.arguments || []).map(callArgumentDescription);
+    var args = (call.arguments || []).map(InspectorTest.callArgumentDescription);
     var properties = [
         "{Call}",
         (show("functionName") && call.functionName) ? "functionName:\"" + call.functionName + "\"" : "",
         (show("arguments") && call.arguments) ? "arguments:[" + args.join(",") + "]" : "",
-        (show("result") && call.result) ? "result:" + callArgumentDescription(call.result) : "",
+        (show("result") && call.result) ? "result:" + InspectorTest.callArgumentDescription(call.result) : "",
         (show("property") && call.property) ? "property:\"" + call.property + "\"" : "",
-        (show("value") && call.value) ? "value:" + callArgumentDescription(call.value) : "",
+        (show("value") && call.value) ? "value:" + InspectorTest.callArgumentDescription(call.value) : "",
         (show("isDrawingCall") && call.isDrawingCall) ? "isDrawingCall:true" : "",
         (show("isFrameEndCall") && call.isFrameEndCall) ? "isFrameEndCall:true" : "",
         show("sourceURL") ? "sourceURL:" + formatSourceURL(call.sourceURL) : "",
@@ -119,13 +120,16 @@ InspectorTest.dumpResourceStateDescriptor = function(descriptor, indent)
 {
     indent = indent || "";
     if (descriptor.values) {
-        InspectorTest.addResult(indent + descriptor.name);
+        var name = descriptor.name;
+        if (descriptor.isArray)
+            name += "[" + descriptor.values.length + "]";
+        InspectorTest.addResult(indent + name);
         var descriptors = descriptor.values;
         InspectorTest.sortResourceStateDescriptors(descriptors);
         for (var i = 0, n = descriptors.length; i < n; ++i)
             InspectorTest.dumpResourceStateDescriptor(descriptors[i], indent + "  ");
     } else
-        InspectorTest.addResult(indent + descriptor.name + ": " + descriptor.value.description);
+        InspectorTest.addResult(indent + descriptor.name + ": " + InspectorTest.callArgumentDescription(descriptor.value));
 };
 
 InspectorTest.dumpResourceState = function(resourceState, indent)

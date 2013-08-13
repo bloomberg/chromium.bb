@@ -939,7 +939,7 @@ InjectedScript.RemoteObject.prototype = {
      * @param {Object} object
      * @param {Array.<string>=} firstLevelKeys
      * @param {?Array.<string>=} secondLevelKeys
-     * @return {Object} preview
+     * @return {!RuntimeAgent.ObjectPreview} preview
      */
     _generatePreview: function(object, firstLevelKeys, secondLevelKeys)
     {
@@ -956,20 +956,20 @@ InjectedScript.RemoteObject.prototype = {
             indexes: isTableRowsRequest ? 1000 : Math.max(100, firstLevelKeysCount)
         };
         for (var o = object; injectedScript._isDefined(o); o = o.__proto__)
-            this._generateProtoPreview(o, preview, propertiesThreshold, firstLevelKeys, secondLevelKeys);
+            this._generateProtoPreview(/** @type {!Object} */ (o), preview, propertiesThreshold, firstLevelKeys, secondLevelKeys);
         return preview;
     },
 
     /**
-     * @param {Object} object
-     * @param {Object} preview
-     * @param {Object} propertiesThreshold
+     * @param {!Object} object
+     * @param {!RuntimeAgent.ObjectPreview} preview
+     * @param {!Object} propertiesThreshold
      * @param {Array.<string>=} firstLevelKeys
      * @param {Array.<string>=} secondLevelKeys
      */
     _generateProtoPreview: function(object, preview, propertiesThreshold, firstLevelKeys, secondLevelKeys)
     {
-        var propertyNames = firstLevelKeys ? firstLevelKeys : Object.keys(/** @type {!Object} */ (object));
+        var propertyNames = firstLevelKeys ? firstLevelKeys : Object.keys(object);
         try {
             for (var i = 0; i < propertyNames.length; ++i) {
                 if (!propertiesThreshold.properties || !propertiesThreshold.indexes) {
@@ -981,7 +981,7 @@ InjectedScript.RemoteObject.prototype = {
                 if (this.subtype === "array" && name === "length")
                     continue;
 
-                var descriptor = Object.getOwnPropertyDescriptor(/** @type {!Object} */ (object), name);
+                var descriptor = Object.getOwnPropertyDescriptor(object, name);
                 if (!("value" in descriptor) || !descriptor.enumerable) {
                     preview.lossless = false;
                     continue;
@@ -1036,9 +1036,9 @@ InjectedScript.RemoteObject.prototype = {
     },
 
     /**
-     * @param {Object} preview
-     * @param {Object} property
-     * @param {Object} propertiesThreshold
+     * @param {!RuntimeAgent.ObjectPreview} preview
+     * @param {!Object} property
+     * @param {!Object} propertiesThreshold
      */
     _appendPropertyPreview: function(preview, property, propertiesThreshold)
     {
