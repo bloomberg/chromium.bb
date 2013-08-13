@@ -2351,10 +2351,22 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             const CSSAnimationDataList* t = style->animations();
             if (t) {
                 for (size_t i = 0; i < t->size(); ++i) {
-                    if (t->animation(i)->direction())
-                        list->append(cssValuePool().createIdentifierValue(CSSValueAlternate));
-                    else
+                    switch (t->animation(i)->direction()) {
+                    case CSSAnimationData::AnimationDirectionNormal:
                         list->append(cssValuePool().createIdentifierValue(CSSValueNormal));
+                        break;
+                    case CSSAnimationData::AnimationDirectionAlternate:
+                        list->append(cssValuePool().createIdentifierValue(CSSValueAlternate));
+                        break;
+                    case CSSAnimationData::AnimationDirectionReverse:
+                        list->append(cssValuePool().createIdentifierValue(CSSValueReverse));
+                        break;
+                    case CSSAnimationData::AnimationDirectionAlternateReverse:
+                        list->append(cssValuePool().createIdentifierValue(CSSValueAlternateReverse));
+                        break;
+                    default:
+                        ASSERT_NOT_REACHED();
+                    }
                 }
             } else
                 list->append(cssValuePool().createIdentifierValue(CSSValueNormal));

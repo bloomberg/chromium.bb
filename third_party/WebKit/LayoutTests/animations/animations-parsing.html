@@ -572,10 +572,9 @@ style.animationDirection = "reverse";
 shouldNotBe("Object.keys(style).indexOf('animationDirection')", "-1");
 shouldNotBe("Object.keys(style).indexOf('webkitAnimationDirection')", "-1");
 shouldBe("style.animationDirection", "'reverse'");
-// FIXME : https://code.google.com/p/chromium/issues/detail?id=271573
-//shouldBe("computedStyle.animationDirection", "'reverse'");
+shouldBe("computedStyle.animationDirection", "'reverse'");
 shouldBe("style.webkitAnimationDirection", "'reverse'");
-//shouldBe("computedStyle.webkitAnimationDirection", "'reverse'");
+shouldBe("computedStyle.webkitAnimationDirection", "'reverse'");
 
 style.animationDirection = "normal";
 shouldBe("style.animationDirection", "'normal'");
@@ -597,10 +596,9 @@ shouldBe("computedStyle.webkitAnimationDirection", "'alternate'");
 
 style.animationDirection = "alternate-reverse";
 shouldBe("style.animationDirection", "'alternate-reverse'");
-// FIXME : https://code.google.com/p/chromium/issues/detail?id=271573
-//shouldBe("computedStyle.animationDirection", "'alternate-reverse'");
+shouldBe("computedStyle.animationDirection", "'alternate-reverse'");
 shouldBe("style.webkitAnimationDirection", "'alternate-reverse'");
-//shouldBe("computedStyle.webkitAnimationDirection", "'alternate-reverse'");
+shouldBe("computedStyle.webkitAnimationDirection", "'alternate-reverse'");
 
 debug("Invalid animation-direction values.");
 style.animationDirection = "";
