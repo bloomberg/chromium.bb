@@ -109,6 +109,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // Generates a name from properties."Wifi.HexSSID" if present, otherwise
   // validates properties.Name and returns a valid utf8 version.
   static std::string GetNameFromProperties(
+      const std::string& service_path,
       const base::DictionaryValue& properties);
 
  private:

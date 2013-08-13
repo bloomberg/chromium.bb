@@ -57,7 +57,8 @@ void GetPropertiesCallback(
     const base::DictionaryValue& properties) {
   // Get the correct name from WifiHex if necessary.
   scoped_ptr<base::DictionaryValue> properties_copy(properties.DeepCopy());
-  std::string name = NetworkState::GetNameFromProperties(properties);
+  std::string name = NetworkState::GetNameFromProperties(
+      service_path, properties);
   if (!name.empty()) {
     properties_copy->SetStringWithoutPathExpansion(
         flimflam::kNameProperty, name);

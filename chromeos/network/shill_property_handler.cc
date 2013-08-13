@@ -399,7 +399,6 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
       new_observed[path] = new ShillPropertyObserver(
           type, path, base::Bind(
               &ShillPropertyHandler::PropertyChangedCallback, AsWeakPtr()));
-      NET_LOG_DEBUG("StartObserving", path);
     }
     observer_map.erase(path);
     // Limit the number of observed services.
@@ -409,7 +408,6 @@ void ShillPropertyHandler::UpdateObserved(ManagedState::ManagedType type,
   // Delete network service observers still in observer_map.
   for (ShillPropertyObserverMap::iterator iter =  observer_map.begin();
        iter != observer_map.end(); ++iter) {
-    NET_LOG_DEBUG("StopObserving", iter->first);
     delete iter->second;
   }
   observer_map.swap(new_observed);
