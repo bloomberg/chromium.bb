@@ -20,8 +20,8 @@
 #ifndef SVGTextPathElement_h
 #define SVGTextPathElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGTextContentElement.h"
-
 #include "core/svg/SVGURIReference.h"
 
 namespace WebCore {
@@ -139,6 +139,12 @@ private:
         DECLARE_ANIMATED_STRING(Href, href)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGTextPathElement* toSVGTextPathElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::textPathTag));
+    return static_cast<SVGTextPathElement*>(node);
+}
 
 } // namespace WebCore
 
