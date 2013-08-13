@@ -20,7 +20,10 @@
  * OF THIS SOFTWARE.
  */
 
+#include "config.h"
+
 #include <stdint.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -73,6 +76,21 @@ display_handle_geometry(void *data,
 		output->offset_x = x;
 		output->offset_y = y;
 	}
+}
+
+static void *
+xmalloc(size_t size)
+{
+	void *p;
+
+	p = malloc(size);
+	if (p == NULL) {
+		fprintf(stderr, "%s: out of memory\n",
+			program_invocation_short_name);
+		exit(EXIT_FAILURE);
+	}
+
+	return p;
 }
 
 static void
@@ -185,7 +203,7 @@ write_png(int width, int height)
 
 	buffer_stride = width * 4;
 
-	data = malloc(buffer_stride * height);
+	data = xmalloc(buffer_stride * height);
 	if (!data)
 		return;
 

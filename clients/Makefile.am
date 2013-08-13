@@ -109,8 +109,10 @@ weston_flower_LDADD = libtoytoolkit.la
 weston_screenshooter_SOURCES =			\
 	screenshot.c				\
 	screenshooter-protocol.c		\
-	screenshooter-client-protocol.h
-weston_screenshooter_LDADD = libtoytoolkit.la
+	screenshooter-client-protocol.h		\
+	../shared/os-compatibility.c		\
+	../shared/os-compatibility.h
+weston_screenshooter_LDADD = $(CLIENT_LIBS)
 
 weston_terminal_SOURCES = terminal.c
 weston_terminal_LDADD = libtoytoolkit.la -lutil
