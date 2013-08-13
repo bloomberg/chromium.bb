@@ -20,12 +20,15 @@ var NOTIFICATION_CARDS_URL = localStorage['server_url'];
 var DEBUG_MODE = localStorage['debug_mode'];
 
 /**
- * Shows a message popup in debug mode.
- * @param {string} message Diagnostic message.
+ * Builds an error object with a message that may be sent to the server.
+ * @param {string} message Error message. This message may be sent to the
+ *     server.
+ * @return {Error} Error object.
  */
-function debugAlert(message) {
-  if (DEBUG_MODE)
-    alert(message);
+function buildErrorWithMessageForServer(message) {
+  var error = new Error(message);
+  error.canSendMessageToServer = true;
+  return error;
 }
 
 /**
@@ -36,7 +39,7 @@ function debugAlert(message) {
  */
 function verify(condition, message) {
   if (!condition)
-    throw new Error('\nASSERT: ' + message);
+    throw buildErrorWithMessageForServer('ASSERT: ' + message);
 }
 
 /**
@@ -105,12 +108,8 @@ function buildTaskManager(areConflicting) {
    */
   function checkInInstrumentedCallback() {
     if (!isInInstrumentedCallback) {
-      // Cannot use verify() since no one will catch the exception.
-      // This check will detect bugs at the development stage, and is very
-      // unlikely to be seen by users.
-      var error = 'Not in instrumented callback: ' + new Error().stack;
-      console.error(error);
-      debugAlert(error);
+      reportError(buildErrorWithMessageForServer(
+          'Not in instrumented callback'));
     }
   }
 
@@ -196,29 +195,45 @@ function buildTaskManager(areConflicting) {
 
   /**
    * Sends an error report to the server.
-   * @param {Error} error Error to report.
+   * @param {Error} error Error to send.
    */
   function sendErrorReport(error) {
-    var filteredStack = error.stack.replace(/.*\n/, '\n');
+    var filteredStack = error.canSendMessageToServer ?
+        error.stack : error.stack.replace(/.*\n/, '(message removed)\n');
     var file;
     var line;
-    var topFrameMatches = filteredStack.match(/\(.*\)/);
-    // topFrameMatches's example:
-    // (chrome-extension://pmofbkohncoogjjhahejjfbppikbjigm/utility.js:308:19)
-    var crashLocation = topFrameMatches && topFrameMatches[0];
-    if (crashLocation) {
-      var topFrameElements =
-          crashLocation.substring(1, crashLocation.length - 1).split(':');
-      // topFrameElements for the above example will look like:
-      // [0] chrome-extension
-      // [1] //pmofbkohncoogjjhahejjfbppikbjigm/utility.js
-      // [2] 308
-      // [3] 19
+    var topFrameLineMatch = filteredStack.match(/\n    at .*\n/);
+    var topFrame = topFrameLineMatch && topFrameLineMatch[0];
+    if (topFrame) {
+      // Examples of a frame:
+      // 1. '\n    at someFunction (chrome-extension://
+      //     pmofbkohncoogjjhahejjfbppikbjigm/background.js:915:15)\n'
+      // 2. '\n    at chrome-extension://pmofbkohncoogjjhahejjfbppikbjigm/
+      //     utility.js:269:18\n'
+      // 3. '\n    at Function.target.(anonymous function) (extensions::
+      //     SafeBuiltins:19:14)\n'
+      // 4. '\n    at Event.dispatchToListener (event_bindings:382:22)\n'
+      var errorLocation;
+      // Find the the parentheses at the end of the line, if any.
+      var parenthesesMatch = topFrame.match(/\(.*\)\n/);
+      if (parenthesesMatch && parenthesesMatch[0]) {
+        errorLocation =
+            parenthesesMatch[0].substring(1, parenthesesMatch[0].length - 2);
+      } else {
+        errorLocation = topFrame;
+      }
+
+      var topFrameElements = errorLocation.split(':');
+      // topFrameElements is an array that ends like:
+      // [N-3] //pmofbkohncoogjjhahejjfbppikbjigm/utility.js
+      // [N-2] 308
+      // [N-1] 19
       if (topFrameElements.length >= 3) {
-        file = topFrameElements[0] + ':' + topFrameElements[1];
-        line = topFrameElements[2];
+        file = topFrameElements[topFrameElements.length - 3];
+        line = topFrameElements[topFrameElements.length - 2];
       }
     }
+
     var requestParameters =
         'error=' + encodeURIComponent(error.name) +
         '&script=' + encodeURIComponent(file) +
@@ -230,6 +245,24 @@ function buildTaskManager(areConflicting) {
       console.log('sendErrorReport status: ' + request.status);
     };
     request.send(requestParameters);
+  }
+
+  /**
+   * Reports an error to the server and the user, as appropriate.
+   * @param {Error} error Error to report.
+   */
+  function reportError(error) {
+    var message = 'Critical error:\n' + error.stack;
+    console.error(message);
+    if (!errorReported) {
+      errorReported = true;
+      chrome.metricsPrivate.getIsCrashReportingEnabled(function(isEnabled) {
+        if (isEnabled)
+          sendErrorReport(error);
+        if (DEBUG_MODE)
+          alert(message);
+      });
+    }
   }
 
   /**
@@ -284,16 +317,7 @@ function buildTaskManager(areConflicting) {
                'Instrumented callback is not instrumented upon exit');
         isInInstrumentedCallback = false;
       } catch (error) {
-        var message = 'Uncaught exception:\n' + error.stack;
-        console.error(message);
-        if (!errorReported) {
-          errorReported = true;
-          chrome.metricsPrivate.getIsCrashReportingEnabled(function(isEnabled) {
-            if (isEnabled)
-              sendErrorReport(error);
-          });
-          debugAlert(message);
-        }
+        reportError(error);
       }
     };
   }
@@ -315,9 +339,10 @@ function buildTaskManager(areConflicting) {
       // the original function.
       var callback = arguments[callbackParameter];
       if (typeof callback != 'function') {
-        debugAlert('Argument ' + callbackParameter + ' of ' +
-                   functionIdentifierParts.join('.') + '.' + functionName +
-                   ' is not a function');
+        reportError(buildErrorWithMessageForServer(
+            'Argument ' + callbackParameter + ' of ' +
+            functionIdentifierParts.join('.') + '.' + functionName +
+            ' is not a function'));
       }
       arguments[callbackParameter] = wrapCallback(
           callback, functionName == 'addListener');
@@ -346,6 +371,11 @@ function buildTaskManager(areConflicting) {
     var instrumentedContainer = instrumented;
     functionIdentifierParts.map(function(fragment) {
       chromeContainer = chromeContainer[fragment];
+      if (!chromeContainer) {
+        reportError(buildErrorWithMessageForServer(
+            'Cannot instrument ' + functionIdentifier));
+      }
+
       if (!(fragment in instrumentedContainer))
         instrumentedContainer[fragment] = {};
 
@@ -353,9 +383,10 @@ function buildTaskManager(areConflicting) {
     });
 
     var targetFunction = chromeContainer[functionName];
-
-    if (!targetFunction)
-      debugAlert('Cannot instrument ' + functionName);
+    if (!targetFunction) {
+      reportError(buildErrorWithMessageForServer(
+          'Cannot instrument ' + functionIdentifier));
+    }
 
     instrumentedContainer[functionName] = createInstrumentedFunction(
         functionIdentifierParts,
