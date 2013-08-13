@@ -198,8 +198,12 @@ bool OmniboxViewViews::OnMouseDragged(const ui::MouseEvent& event) {
 
 void OmniboxViewViews::OnMouseReleased(const ui::MouseEvent& event) {
   views::Textfield::OnMouseReleased(event);
+  // When the user has clicked and released to give us focus, select all unless
+  // we're doing search term replacement (in which case refining the existing
+  // query is common enough that we do click-to-place-cursor).
   if ((event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton()) &&
-      select_all_on_mouse_release_) {
+      select_all_on_mouse_release_ &&
+      !toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
     SelectAll(true);

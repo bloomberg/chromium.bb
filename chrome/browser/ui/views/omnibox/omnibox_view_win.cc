@@ -2797,9 +2797,12 @@ void OmniboxViewWin::BuildContextMenu() {
 
 void OmniboxViewWin::SelectAllIfNecessary(MouseButton button,
                                           const CPoint& point) {
-  // When the user has clicked and released to give us focus, select all.
+  // When the user has clicked and released to give us focus, select all unless
+  // we're doing search term replacement (in which case refining the existing
+  // query is common enough that we do click-to-place-cursor).
   if (tracking_click_[button] &&
-      !IsDrag(click_point_[button], point)) {
+      !IsDrag(click_point_[button], point) &&
+      !toolbar_model()->WouldReplaceSearchURLWithSearchTerms(false)) {
     // Select all in the reverse direction so as not to scroll the caret
     // into view and shift the contents jarringly.
     SelectAll(true);
