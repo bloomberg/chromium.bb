@@ -29,7 +29,6 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/page/FrameView.h"
 #include "core/platform/Logging.h"
-#include "core/platform/chromium/TraceEvent.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
@@ -561,7 +560,6 @@ void MemoryCache::evictResources()
 
 void MemoryCache::prune()
 {
-    TRACE_EVENT0("renderer", "MemoryCache::prune()");
     if (m_liveSize + m_deadSize <= m_capacity && m_maxDeadCapacity && m_deadSize <= m_maxDeadCapacity) // Fast path.
         return;
     if (m_inPruneResources)
