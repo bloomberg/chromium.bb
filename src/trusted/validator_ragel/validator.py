@@ -109,8 +109,8 @@ class Validator(object):
       self._ValidateChunkAMD64 = validator_dll.ValidateChunkAMD64
 
       self._ValidateChunkIA32.argtypes = self._ValidateChunkAMD64.argtypes = [
-          ctypes.POINTER(ctypes.c_uint8),  # data
-          ctypes.c_uint32,  # size
+          ctypes.POINTER(ctypes.c_uint8),  # codeblock
+          ctypes.c_size_t,  # size
           ctypes.c_uint32,  # options
           ctypes.c_void_p,  # CPU features
           CALLBACK_TYPE,  # callback
@@ -119,12 +119,24 @@ class Validator(object):
       self._ValidateChunkIA32.restype = ctypes.c_bool  # Bool
       self._ValidateChunkAMD64.restype = ctypes.c_bool  # Bool
 
+      self._ValidateAndGetFinalRestrictedRegister = (
+          validator_dll.ValidateAndGetFinalRestrictedRegister)
+      self._ValidateAndGetFinalRestrictedRegister.argtypes = [
+          ctypes.POINTER(ctypes.c_uint8),  # codeblock
+          ctypes.c_size_t,  # size
+          ctypes.c_size_t,  # actual_size
+          ctypes.c_uint32,  # initial_restricted_register
+          ctypes.c_void_p,  # CPU features
+          ctypes.POINTER(ctypes.c_uint32), # resulting_restricted_register
+      ]
+      self._ValidateChunkIA32.restype = ctypes.c_bool  # Bool
+
     if decoder_dll is not None:
       decoder_dll = ctypes.cdll.LoadLibrary(decoder_dll)
       self.DisassembleChunk_ = decoder_dll.DisassembleChunk
       self.DisassembleChunk_.argtypes = [
           ctypes.POINTER(ctypes.c_uint8),  # data
-          ctypes.c_uint32,  # size
+          ctypes.c_size_t,  # size
           ctypes.c_int,  # bitness
       ]
       self.DisassembleChunk_.restype = ctypes.c_char_p
@@ -192,6 +204,31 @@ class Validator(object):
         None)
 
     return bool(result)
+
+  def ValidateAndGetFinalRestrictedRegister(
+      self, data, actual_size, initial_rr):
+    assert initial_rr is None or initial_rr in ALL_REGISTERS
+    if initial_rr is None:
+      initial_rr = NO_REG
+
+    data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))
+
+    p = ctypes.pointer(ctypes.c_uint32(0))
+    result = self._ValidateAndGetFinalRestrictedRegister(
+        data_ptr, len(data),
+        actual_size,
+        initial_rr,
+        self.GetFullCPUIDFeatures(),
+        p)
+
+    if result:
+      if p[0] == NO_REG:
+        resulting_rr = None
+      else:
+        resulting_rr = p[0]
+      return True, resulting_rr
+    else:
+      return False, None
 
   def DisassembleChunk(self, data, bitness):
     data_ptr = ctypes.cast(data, ctypes.POINTER(ctypes.c_uint8))

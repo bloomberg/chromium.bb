@@ -104,11 +104,11 @@ else:
       dll_env.ComponentObject('validator_features_validator.c')
   ]
 
-nacl_log_for_dll_dll = dll_env.ComponentObject('nacl_log_for_dll.c')
+dll_utils = dll_env.ComponentObject('dll_utils.c')
 
 validator_dll = dll_env.ComponentLibrary(
     'rdfa_validator_dll',
-    [validator32_dll, validator64_dll, nacl_log_for_dll_dll] + features_dll)
+    [validator32_dll, validator64_dll, dll_utils] + features_dll)
 
 # Here for simplicity we make assumption that python used to run scons
 # is the same as the one invoked by scons to run tests.

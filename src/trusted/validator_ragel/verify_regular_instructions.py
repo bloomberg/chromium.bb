@@ -50,8 +50,8 @@ def ConditionToRestrictedRegisterNumber(condition):
 
 
 def RestrictedRegisterNumberToCondition(rr):
-  assert rr is not None
-  if rr == validator.NO_REG:
+  assert rr is None or rr in validator.ALL_REGISTERS, rr
+  if rr is None:
     return spec.Condition()
   elif rr == validator.REG_RBP:
     return spec.Condition(restricted_instead_of_sandboxed='%rbp')
@@ -61,11 +61,14 @@ def RestrictedRegisterNumberToCondition(rr):
     return spec.Condition(validator.REGISTER_NAMES[rr])
 
 
-def ValidateAndGetPostcondition(chunk, precondition, validator_inst):
+def ValidateAndGetPostcondition(
+    bundle, actual_size, precondition, validator_inst):
   """Validate single x86-64 instruction and get postcondition for it.
 
   Args:
-    chunk: sequence of bytes representing single instruction.
+    bundle: sequence of bytes (as python string)
+    actual_size: size of the instruction in the beginning of the bundle
+                 (remaining bytes are expected to be NOPS)
     precondition: instance of spec.Condition representing precondition validator
     is allowed to assume.
     validator_inst: implementation of validator.
@@ -76,39 +79,15 @@ def ValidateAndGetPostcondition(chunk, precondition, validator_inst):
     for this instruction established by validator.
   """
 
-  valid = [True]
-  final_restricted_register = [None]
+  valid, final_rr = validator_inst.ValidateAndGetFinalRestrictedRegister(
+      bundle,
+      actual_size,
+      initial_rr=ConditionToRestrictedRegisterNumber(precondition))
 
-  def Callback(begin, end, info):
-    if begin == 0:
-      assert end == len(chunk)
-      final_restricted_register[0] = (
-          (info & validator.RESTRICTED_REGISTER_MASK) >>
-          validator.RESTRICTED_REGISTER_SHIFT)
-
-      if info & validator.VALIDATION_ERRORS_MASK != 0:
-        valid[0] = False
-
-    else:
-      assert bundle[begin:end] == [NOP]
-
-  bundle = PadToBundleSize(chunk)
-  validator_inst.ValidateChunk(
-    ''.join(map(chr, bundle)),
-    bitness=64,
-    callback=Callback,
-    on_each_instruction=True,
-    restricted_register=ConditionToRestrictedRegisterNumber(precondition))
-
-  (valid,) = valid
-
-  if not valid:
+  if valid:
+    return True, RestrictedRegisterNumberToCondition(final_rr)
+  else:
     return False, None
-
-  (final_restricted_register,) = final_restricted_register
-  postcondition = RestrictedRegisterNumberToCondition(final_restricted_register)
-
-  return True, postcondition
 
 
 def CheckValid64bitInstruction(
@@ -117,18 +96,19 @@ def CheckValid64bitInstruction(
     precondition,
     postcondition,
     validator_inst):
+  bundle = ''.join(map(chr, PadToBundleSize(instruction)))
   for conflicting_precondition in spec.Condition.All():
     if conflicting_precondition.Implies(precondition):
       continue  # not conflicting
     result, _ = ValidateAndGetPostcondition(
-        instruction, conflicting_precondition, validator_inst)
+        bundle, len(instruction), conflicting_precondition, validator_inst)
     assert not result, (
         'validator incorrectly accepted %s with precondition %s, '
         'while specification requires precondition %s'
         % (dis, conflicting_precondition, precondition))
 
   result, actual_postcondition = ValidateAndGetPostcondition(
-      instruction, precondition, validator_inst)
+      bundle, len(instruction), precondition, validator_inst)
   if not result:
     print 'warning: validator rejected %s with precondition %s' % (
         dis, precondition)
@@ -156,11 +136,12 @@ def CheckValid64bitInstruction(
 def CheckInvalid64bitInstruction(
     instruction,
     dis,
-    sandboxing_error,
-    validator_inst):
+    validator_inst,
+    sandboxing_error):
+  bundle = ''.join(map(chr, PadToBundleSize(instruction)))
   for precondition in spec.Condition.All():
     result, _ = ValidateAndGetPostcondition(
-        instruction, precondition, validator_inst)
+        bundle, len(instruction), precondition, validator_inst)
     assert not result, (
         'validator incorrectly accepted %s with precondition %s, '
         'while specification rejected because %s'
