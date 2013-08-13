@@ -103,7 +103,6 @@ var WaterfallRow = (function() {
       parentNode.innerHTML = '';
     },
 
-    // TODO(viona): Create popup at mouse location.
     createPopup_: function(parentNode, event, eventType, duration, mouse) {
       var tableStart = this.parentView_.getStartTime();
 
@@ -179,7 +178,9 @@ var WaterfallRow = (function() {
       this.tableRow = tr;
 
       var idCell = addNode(tr, 'td');
-      addTextNode(idCell, this.sourceEntry_.getSourceId());
+      var idValue = this.sourceEntry_.getSourceId();
+      var idLink = addNodeWithText(idCell, 'a', idValue);
+      idLink.href = '#events&s=' + idValue;
 
       var urlCell = addNode(tr, 'td');
       urlCell.classList.add('waterfall-view-url-cell');
@@ -200,10 +201,14 @@ var WaterfallRow = (function() {
 
     // Generates nodes.
     createNode_: function(parentNode, duration, eventType, event) {
+      var linkNode = addNode(parentNode, 'a');
+      linkNode.href = '#events&s=' + this.sourceEntry_.getSourceId();
+
       var scale = this.parentView_.getScaleFactor();
-      var newNode = addNode(parentNode, 'div');
+      var newNode = addNode(linkNode, 'div');
       setNodeWidth(newNode, duration * scale);
       newNode.classList.add(eventType);
+      newNode.classList.add('waterfall-view-bar-component');
       newNode.addEventListener(
           'mouseover',
           this.createPopup_.bind(this, newNode, event, eventType, duration),

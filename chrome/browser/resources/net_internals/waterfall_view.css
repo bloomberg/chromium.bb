@@ -30,7 +30,7 @@
   padding-top: 0;
 }
 
-.waterfall-view-bar > * {
+.waterfall-view-bar-component {
   height: 15px;
 }
 
