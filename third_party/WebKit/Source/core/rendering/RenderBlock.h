@@ -1172,22 +1172,22 @@ protected:
     typedef PODFreeListArena<PODRedBlackTree<FloatingObjectInterval>::Node> IntervalArena;
 
     template <FloatingObject::Type FloatTypeValue>
-    class FloatIntervalSearchAdapter {
+    class ComputeFloatOffsetAdapter {
     public:
         typedef FloatingObjectInterval IntervalType;
 
-        FloatIntervalSearchAdapter(const RenderBlock* renderer, int lowValue, int highValue, LayoutUnit& offset)
+        ComputeFloatOffsetAdapter(const RenderBlock* renderer, int lineTop, int lineBottom, LayoutUnit& offset)
             : m_renderer(renderer)
-            , m_lowValue(lowValue)
-            , m_highValue(highValue)
+            , m_lineTop(lineTop)
+            , m_lineBottom(lineBottom)
             , m_offset(offset)
             , m_last(0)
             , m_floatForHeight(0)
         {
         }
 
-        inline int lowValue() const { return m_lowValue; }
-        inline int highValue() const { return m_highValue; }
+        inline int lowValue() const { return m_lineTop; }
+        inline int highValue() const { return m_lineBottom; }
         void collectIfNeeded(const IntervalType&);
 
         // When computing the offset caused by the floats on a given line, if
@@ -1204,8 +1204,8 @@ protected:
         bool updateOffsetIfNeeded(const FloatingObject*);
 
         const RenderBlock* m_renderer;
-        int m_lowValue;
-        int m_highValue;
+        int m_lineTop;
+        int m_lineBottom;
         LayoutUnit& m_offset;
         const FloatingObject* m_last;
         const FloatingObject* m_floatForHeight;
