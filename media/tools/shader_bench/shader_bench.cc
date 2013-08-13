@@ -138,7 +138,6 @@ int main(int argc, char** argv) {
   context->SetSwapInterval(0);
 
   // Initialize and name GPU painters.
-  static const int kNumPainters = 3;
   static const struct {
     const char* name;
     GPUPainter* painter;
@@ -148,7 +147,7 @@ int main(int argc, char** argv) {
   };
 
   // Run GPU painter tests.
-  for (int i = 0; i < kNumPainters; i++) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(painters); i++) {
     scoped_ptr<GPUPainter> painter(painters[i].painter);
     painter->LoadFrames(&frames);
     painter->SetGLContext(surface, context);
