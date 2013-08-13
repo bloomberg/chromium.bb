@@ -1030,6 +1030,33 @@ bool Node::containsIncludingHostElements(const Node* node) const
     return false;
 }
 
+inline void Node::detachNode(Node* root, const AttachContext& context)
+{
+    Node* node = root;
+    while (node) {
+        if (node->styleChangeType() == LazyAttachStyleChange) {
+            // FIXME: This is needed because Node::lazyAttach marks nodes as being attached even
+            // though they've never been through attach(). This allows us to avoid doing all the
+            // virtual calls to detach() and other associated work.
+            node->clearAttached();
+            node->clearChildNeedsStyleRecalc();
+
+            for (ShadowRoot* shadowRoot = node->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot())
+                detachNode(shadowRoot, context);
+
+            node = NodeTraversal::next(node, root);
+            continue;
+        }
+        // Handle normal reattaches from style recalc (ex. display type changes)
+        // or descendants of lazy attached nodes that got actually attached, for example,
+        // by innerHTML or editing.
+        // FIXME: innerHTML and editing should also lazyAttach.
+        if (node->attached())
+            node->detach(context);
+        node = NodeTraversal::nextSkippingChildren(node, root);
+    }
+}
+
 void Node::reattach(const AttachContext& context)
 {
     // FIXME: Text::updateTextRenderer calls reattach outside a style recalc.
@@ -1037,8 +1064,7 @@ void Node::reattach(const AttachContext& context)
     AttachContext reattachContext(context);
     reattachContext.performingReattach = true;
 
-    if (attached())
-        detach(reattachContext);
+    detachNode(this, reattachContext);
     attach(reattachContext);
 }
 
@@ -1110,7 +1136,7 @@ void Node::detach(const AttachContext& context)
         }
     }
 
-    clearFlag(IsAttachedFlag);
+    clearAttached();
 
 #ifndef NDEBUG
     detachingNode = 0;

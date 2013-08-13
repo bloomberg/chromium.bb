@@ -839,6 +839,9 @@ private:
 
     void setStyleChange(StyleChangeType);
 
+    void detachNode(Node*, const AttachContext&);
+    void clearAttached() { clearFlag(IsAttachedFlag); }
+
     // Used to share code between lazyAttach and setNeedsStyleRecalc.
     void markAncestorsWithChildNeedsStyleRecalc();
 

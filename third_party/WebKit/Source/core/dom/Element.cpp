@@ -1318,6 +1318,16 @@ void Element::attach(const AttachContext& context)
     StyleResolverParentPusher parentPusher(this);
     WidgetHierarchyUpdatesSuspensionScope suspendWidgetHierarchyUpdates;
 
+    // We've already been through detach when doing a lazyAttach, but we might
+    // need to clear any state that's been added since then.
+    if (hasRareData() && styleChangeType() == LazyAttachStyleChange) {
+        ElementRareData* data = elementRareData();
+        data->clearComputedStyle();
+        data->resetDynamicRestyleObservations();
+        if (!context.resolvedStyle)
+            data->resetStyleState();
+    }
+
     NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
 
     createPseudoElementIfNeeded(BEFORE);
