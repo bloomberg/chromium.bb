@@ -44,6 +44,8 @@ class TtsMessageFilter
   void OnResume();
   void OnCancel();
 
+  void OnChannelClosingInUIThread();
+
   int render_process_id_;
   Profile* profile_;
 
