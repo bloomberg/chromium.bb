@@ -133,6 +133,12 @@ class XmlWriter {
     return xmlTextWriterEndElement(writer_) >= 0;
   }
 
+  // Appends to the content of the current open element.
+  bool AppendElementContent(const std::string& content) {
+    return xmlTextWriterWriteString(writer_,
+                                    BAD_CAST content.c_str()) >= 0;
+  }
+
   // Adds an attribute to the current open element. Returns false on error.
   bool AddAttribute(const std::string& attribute_name,
                     const std::string& attribute_value) {
