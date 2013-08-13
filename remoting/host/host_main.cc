@@ -234,14 +234,15 @@ int HostMain(int argc, char** argv) {
     // missing and the first argument looks like an origin that represents
     // an extension.
     CommandLine::StringVector args = command_line->GetArgs();
+    if (!args.empty()) {
 #if defined(OS_WIN)
-    std::string origin = UTF16ToUTF8(args[0]);
+      std::string origin = UTF16ToUTF8(args[0]);
 #else
-    std::string origin = args[0];
+      std::string origin = args[0];
 #endif
-    if (!args.empty() &&
-        StartsWithASCII(origin, kExtensionOriginPrefix, true)) {
-      process_type = kProcessTypeNativeMessagingHost;
+      if (StartsWithASCII(origin, kExtensionOriginPrefix, true)) {
+        process_type = kProcessTypeNativeMessagingHost;
+      }
     }
   }
 
