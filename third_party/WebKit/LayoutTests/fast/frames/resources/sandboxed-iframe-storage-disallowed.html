@@ -42,7 +42,7 @@ function shouldThrow(_a, _e)
 
   if (exception) {
     if (typeof _e == "undefined" || exception == _ev)
-      testPassed(_a + " threw exception " + exception + ".");
+      testPassed(_a + " threw exception \"" + exception + "\".");
     else
       testFailed(_a + " should throw " + (typeof _e == "undefined" ? "an exception" : _ev) + ". Threw exception " + exception + ".");
   } else if (typeof _av == "undefined")
@@ -54,9 +54,9 @@ function shouldThrow(_a, _e)
 <script>
 
 window.onload = function() {
-    shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)", "'SecurityError: An attempt was made to break through the security policy of the user agent.'");
-    shouldThrow("window.localStorage", "'SecurityError: An attempt was made to break through the security policy of the user agent.'");
-    shouldThrow("window.sessionStorage", "'SecurityError: An attempt was made to break through the security policy of the user agent.'");
+    shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)");
+    shouldThrow("window.localStorage");
+    shouldThrow("window.sessionStorage");
 }
 
 </script>

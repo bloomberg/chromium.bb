@@ -639,14 +639,20 @@ Storage* DOMWindow::sessionStorage(ExceptionState& es) const
     if (!document)
         return 0;
 
+    String accessDeniedMessage = "Access to 'sessionStorage' is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
-        es.throwDOMException(SecurityError);
+        if (document->isSandboxed(SandboxOrigin))
+            es.throwDOMException(SecurityError, accessDeniedMessage + " The document is sandboxed and lacks the \"allow-same-origin\" flag.");
+        else if (document->url().protocolIs("data"))
+            es.throwDOMException(SecurityError, accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
+        else
+            es.throwDOMException(SecurityError, accessDeniedMessage);
         return 0;
     }
 
     if (m_sessionStorage) {
         if (!m_sessionStorage->area()->canAccessStorage(m_frame)) {
-            es.throwDOMException(SecurityError);
+            es.throwDOMException(SecurityError, accessDeniedMessage);
             return 0;
         }
         return m_sessionStorage.get();
@@ -658,7 +664,7 @@ Storage* DOMWindow::sessionStorage(ExceptionState& es) const
 
     OwnPtr<StorageArea> storageArea = page->sessionStorage()->storageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, accessDeniedMessage);
         return 0;
     }
 
@@ -675,14 +681,20 @@ Storage* DOMWindow::localStorage(ExceptionState& es) const
     if (!document)
         return 0;
 
+    String accessDeniedMessage = "Access to 'localStorage' is denied for this document.";
     if (!document->securityOrigin()->canAccessLocalStorage()) {
-        es.throwDOMException(SecurityError);
+        if (document->isSandboxed(SandboxOrigin))
+            es.throwDOMException(SecurityError, accessDeniedMessage + " The document is sandboxed and lacks the \"allow-same-origin\" flag.");
+        else if (document->url().protocolIs("data"))
+            es.throwDOMException(SecurityError, accessDeniedMessage + " Storage is disabled inside 'data:' URLs.");
+        else
+            es.throwDOMException(SecurityError, accessDeniedMessage);
         return 0;
     }
 
     if (m_localStorage) {
         if (!m_localStorage->area()->canAccessStorage(m_frame)) {
-            es.throwDOMException(SecurityError);
+            es.throwDOMException(SecurityError, accessDeniedMessage);
             return 0;
         }
         return m_localStorage.get();
@@ -697,7 +709,7 @@ Storage* DOMWindow::localStorage(ExceptionState& es) const
 
     OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());
     if (!storageArea->canAccessStorage(m_frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, accessDeniedMessage);
         return 0;
     }
 

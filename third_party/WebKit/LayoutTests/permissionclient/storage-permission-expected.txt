@@ -5,5 +5,5 @@ Length is 1
 Value for FOO is BAR
 Key for index 0 is FOO
 Disabling localStorage access.
-Caught exception trying to get frame localStorage: SecurityError: An attempt was made to break through the security policy of the user agent.
+Caught exception trying to get frame localStorage: SecurityError: Access to 'localStorage' is denied for this document.
 
