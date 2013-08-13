@@ -1,21 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../js/resources/js-test-pre.js"></script>
 <script>
-function assertEq(left, right)
-{
-    if (left === right)
-        log('PASS: ' + left + " === " + right);
-    else
-        log('FAIL: ' + left + "(of type " + (typeof left) + ") !== " + right + "(of type " + (typeof right) + ")");
-}
-function log(str)
-{
-    var result = document.getElementById('result');
-    result.appendChild(document.createTextNode(str));
-    result.appendChild(document.createElement('br'));
-}
-
 function legacyCopyStart(dataTransfer)
 {
     dataTransfer.setData('text', 'sample');
@@ -24,8 +11,11 @@ function legacyCopyStart(dataTransfer)
     dataTransfer.setData('custom-data', 'hello world');
 }
 
+var testDataTransfer;
 function itemListCopyStart(dataTransfer)
 {
+    testDataTransfer = dataTransfer;
+    shouldBeUndefined('testDataTransfer.items.item');
     dataTransfer.items.add('sample', 'text/plain');
     dataTransfer.items.add('http://www.google.com/', 'text/uri-list');
     dataTransfer.items.add('<em>Markup</em>', 'text/html');
@@ -44,39 +34,39 @@ function copy(event)
 
 function legacyPaste(dataTransfer)
 {
-    assertEq(4, dataTransfer.types.length);
-     if (dataTransfer.types.indexOf('text/plain') < 0)
-        log('FAIL: types array did not contain "text"');
-    if (dataTransfer.types.indexOf('text/uri-list') < 0)
-        log('FAIL: types array did not contain "text/uri-list"');
-    if (dataTransfer.types.indexOf('text/html') < 0)
-        log('FAIL: types array did not contain "text/html"');
-     if (dataTransfer.types.indexOf('custom-data') < 0)
-        log('FAIL: types array did not contain "custom-data"');
-    assertEq('sample', dataTransfer.getData('text'));
-    assertEq('http://www.google.com/', dataTransfer.getData('url'));
-    assertEq('<em>Markup</em>', dataTransfer.getData('text/html'));
-    assertEq('hello world', dataTransfer.getData('custom-data'));
-    runNext();
+    testDataTransfer = dataTransfer;
+    shouldBe('testDataTransfer.types.length', '4');
+    shouldBeTrue('testDataTransfer.types.indexOf("text/plain") >= 0');
+    shouldBeTrue('testDataTransfer.types.indexOf("text/uri-list") >= 0');
+    shouldBeTrue('testDataTransfer.types.indexOf("text/html") >= 0');
+    shouldBeTrue('testDataTransfer.types.indexOf("custom-data") >= 0');
+    shouldBeEqualToString('testDataTransfer.getData("text")', 'sample');
+    shouldBeEqualToString('testDataTransfer.getData("url")', 'http://www.google.com/');
+    shouldBeEqualToString('testDataTransfer.getData("text/html")', '<em>Markup</em>');
+    shouldBeEqualToString('testDataTransfer.getData("custom-data")', 'hello world');
+    setTimeout(runNext, 0);
 }
 
+var testData, expectedTestData;
+var types, expectedTypes;
 var outstandingRequests;
 function itemListPaste(dataTransfer)
 {
+    testDataTransfer = dataTransfer;
     outstandingRequests = 0;
-    assertEq(4, dataTransfer.items.length);
-    var types = [];
+    shouldBe('testDataTransfer.items.length', '4');
+    types = [];
     for (var i = 0; i < dataTransfer.items.length; ++i) {
         types.push({kind: dataTransfer.items[i].kind, type: dataTransfer.items[i].type});
     }
     types.sort(function (a, b) { return a.type.localeCompare(b.type); });
-    var expectedTypes = [
+    expectedTypes = [
         { kind: 'string', type: 'custom-data'},
         { kind: 'string', type: 'text/html'},
         { kind: 'string', type: 'text/plain'},
         { kind: 'string', type: 'text/uri-list'},
     ];
-    assertEq(JSON.stringify(expectedTypes), JSON.stringify(types));
+    shouldBe('JSON.stringify(expectedTypes)', 'JSON.stringify(types)');
     var expectedResults = {
         'custom-data': 'hello world',
         'text/html': '<em>Markup</em>',
@@ -87,9 +77,11 @@ function itemListPaste(dataTransfer)
     {
         ++outstandingRequests;
         return function (data) {
-            assertEq(expectedData, data);
+            expectedTestData = expectedData;
+            testData = data;
+            shouldBe('testData', 'expectedTestData');
             if (--outstandingRequests == 0)
-                window.setTimeout(runNext, 0);
+                setTimeout(runNext, 0);
         }
     }
     // We use this funky loop to make sure we always print out results in the same order.
@@ -118,7 +110,7 @@ function runTest(copyMethodIndex, pasteMethodIndex)
     var pasteMethod = document.getElementById('pasteMethod');
     copyMethod.selectedIndex = copyMethodIndex;
     pasteMethod.selectedIndex = pasteMethodIndex;
-    log('Running test with ' + copyMethod.value + ' copy handler and ' + pasteMethod.value + ' paste handler');
+    debug('Running test with ' + copyMethod.value + ' copy handler and ' + pasteMethod.value + ' paste handler');
 
     document.execCommand('copy');
     document.execCommand('paste');
@@ -138,24 +130,23 @@ function runNext()
     if (testCase)
         runTest.apply(null, testCase);
     else
-        testRunner.notifyDone();
+        finishJSTest();
 }
 
-window.onload = function()
-{
-    if (!window.testRunner)
-        return;
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-
-    runNext();
-}
 </script>
 </head>
 <body oncopy="copy(event)" onpaste="paste(event)">
 <p>To manually test, press your browser shortcut for copy and then for paste.  Several lines that say 'PASS' should appear below.
 <div>Copy handler: <select id="copyMethod"><option>Legacy</option><option>DataTransferItemList</option></select></div>
 <div>Paste handler: <select id="pasteMethod"><option>Legacy</option><option>DataTransferItemList</option></select></div>
-<div id="result"></div>
+<div id="console"></div>
+<script>
+description("Tests copy / paste and DataTransferItemList");
+
+window.jsTestIsAsync = true;
+
+runNext();
+</script>
+<script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>

@@ -30,7 +30,7 @@
 
 interface DataTransferItemList {
     readonly attribute long length;
-    getter DataTransferItem item([Default=Undefined] optional unsigned long index);
+    [ImplementedAs=item] getter DataTransferItem (unsigned long index);
 
     [RaisesException, ImplementedAs=deleteItem] void remove(unsigned long index);
     void clear();

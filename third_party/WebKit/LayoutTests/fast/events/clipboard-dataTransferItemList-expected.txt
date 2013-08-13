@@ -2,30 +2,48 @@ To manually test, press your browser shortcut for copy and then for paste. Sever
 
 Copy handler: 
 Paste handler: 
+Tests copy / paste and DataTransferItemList
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
 Running test with Legacy copy handler and Legacy paste handler
-PASS: 4 === 4
-PASS: sample === sample
-PASS: http://www.google.com/ === http://www.google.com/
-PASS: <em>Markup</em> === <em>Markup</em>
-PASS: hello world === hello world
+PASS testDataTransfer.types.length is 4
+PASS testDataTransfer.types.indexOf("text/plain") >= 0 is true
+PASS testDataTransfer.types.indexOf("text/uri-list") >= 0 is true
+PASS testDataTransfer.types.indexOf("text/html") >= 0 is true
+PASS testDataTransfer.types.indexOf("custom-data") >= 0 is true
+PASS testDataTransfer.getData("text") is "sample"
+PASS testDataTransfer.getData("url") is "http://www.google.com/"
+PASS testDataTransfer.getData("text/html") is "<em>Markup</em>"
+PASS testDataTransfer.getData("custom-data") is "hello world"
 Running test with Legacy copy handler and DataTransferItemList paste handler
-PASS: 4 === 4
-PASS: [{"kind":"string","type":"custom-data"},{"kind":"string","type":"text/html"},{"kind":"string","type":"text/plain"},{"kind":"string","type":"text/uri-list"}] === [{"kind":"string","type":"custom-data"},{"kind":"string","type":"text/html"},{"kind":"string","type":"text/plain"},{"kind":"string","type":"text/uri-list"}]
-PASS: hello world === hello world
-PASS: <em>Markup</em> === <em>Markup</em>
-PASS: sample === sample
-PASS: http://www.google.com/ === http://www.google.com/
+PASS testDataTransfer.items.length is 4
+PASS JSON.stringify(expectedTypes) is JSON.stringify(types)
+PASS testData is expectedTestData
+PASS testData is expectedTestData
+PASS testData is expectedTestData
+PASS testData is expectedTestData
 Running test with DataTransferItemList copy handler and Legacy paste handler
-PASS: 4 === 4
-PASS: sample === sample
-PASS: http://www.google.com/ === http://www.google.com/
-PASS: <em>Markup</em> === <em>Markup</em>
-PASS: hello world === hello world
+PASS testDataTransfer.items.item is undefined.
+PASS testDataTransfer.types.length is 4
+PASS testDataTransfer.types.indexOf("text/plain") >= 0 is true
+PASS testDataTransfer.types.indexOf("text/uri-list") >= 0 is true
+PASS testDataTransfer.types.indexOf("text/html") >= 0 is true
+PASS testDataTransfer.types.indexOf("custom-data") >= 0 is true
+PASS testDataTransfer.getData("text") is "sample"
+PASS testDataTransfer.getData("url") is "http://www.google.com/"
+PASS testDataTransfer.getData("text/html") is "<em>Markup</em>"
+PASS testDataTransfer.getData("custom-data") is "hello world"
 Running test with DataTransferItemList copy handler and DataTransferItemList paste handler
-PASS: 4 === 4
-PASS: [{"kind":"string","type":"custom-data"},{"kind":"string","type":"text/html"},{"kind":"string","type":"text/plain"},{"kind":"string","type":"text/uri-list"}] === [{"kind":"string","type":"custom-data"},{"kind":"string","type":"text/html"},{"kind":"string","type":"text/plain"},{"kind":"string","type":"text/uri-list"}]
-PASS: hello world === hello world
-PASS: <em>Markup</em> === <em>Markup</em>
-PASS: sample === sample
-PASS: http://www.google.com/ === http://www.google.com/
+PASS testDataTransfer.items.item is undefined.
+PASS testDataTransfer.items.length is 4
+PASS JSON.stringify(expectedTypes) is JSON.stringify(types)
+PASS testData is expectedTestData
+PASS testData is expectedTestData
+PASS testData is expectedTestData
+PASS testData is expectedTestData
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
