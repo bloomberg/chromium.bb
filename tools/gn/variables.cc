@@ -8,10 +8,10 @@ namespace variables {
 
 // Built-in variables ----------------------------------------------------------
 
-extern const char kCurrentToolchain[] = "current_toolchain";
-extern const char kCurrentToolchain_HelpShort[] =
+const char kCurrentToolchain[] = "current_toolchain";
+const char kCurrentToolchain_HelpShort[] =
     "current_toolchain: [string] Label of the current toolchain.";
-extern const char kCurrentToolchain_Help[] =
+const char kCurrentToolchain_Help[] =
     "current_toolchain: Label of the current toolchain.\n"
     "\n"
     "  A fully-qualified label representing the current toolchain. You can\n"
@@ -24,29 +24,51 @@ extern const char kCurrentToolchain_Help[] =
     "    executable(\"output_thats_64_bit_only\") {\n"
     "      ...\n";
 
-extern const char kDefaultToolchain[] = "default_toolchain";
-extern const char kDefaultToolchain_HelpShort[] =
+const char kDefaultToolchain[] = "default_toolchain";
+const char kDefaultToolchain_HelpShort[] =
     "default_toolchain: [string] Label of the default toolchain.";
-extern const char kDefaultToolchain_Help[] =
+const char kDefaultToolchain_Help[] =
     "default_toolchain: [string] Label of the default toolchain.\n"
     "\n"
     "  A fully-qualified label representing the default toolchain, which may\n"
     "  not necessarily be the current one (see \"current_toolchain\").\n";
 
-extern const char kPythonPath[] = "python_path";
-extern const char kPythonPath_HelpShort[] =
+const char kPythonPath[] = "python_path";
+const char kPythonPath_HelpShort[] =
     "python_path: [string] Absolute path of Python.";
-extern const char kPythonPath_Help[] =
+const char kPythonPath_Help[] =
     "python_path: Absolute path of Python.\n"
     "\n"
     "  Normally used in toolchain definitions if running some command\n"
     "  requires Python. You will normally not need this when invoking scripts\n"
     "  since GN automatically finds it for you.\n";
 
-extern const char kRelativeRootGenDir[] = "relative_root_gen_dir";
-extern const char kRelativeRootGenDir_HelpShort[] =
+const char kRelativeBuildToSourceRootDir[] =
+    "relative_build_to_source_root_dir";
+const char kRelativeBuildToSourceRootDir_HelpShort[] =
+    "relative_build_to_source_root_dir: [string] Relative location of root";
+const char kRelativeBuildToSourceRootDir_Help[] =
+    "relative_build_to_source_root_dir: Relative location of root.\n"
+    "\n"
+    "  A relative path from the build directory to the root of the source\n"
+    "  tree, with no terminating slash. The build directory will be the\n"
+    "  directory when executing normal build commands (except for scripts).\n"
+    "\n"
+    "  If the checkout is in \"/foo/src/\" and the build directory is in\n"
+    "  \"/foo/src/out/Debug/\" then the relative build to source root dir\n"
+    "  will be \"../..\".\n"
+    "\n"
+    "Example:\n"
+    "  This is typically used to invoke tools checked out in the tree:\n"
+    "\n"
+    "  tool(\"link\") {\n"
+    "    command = \"$relative_build_to_source_root_dir/third_party/gold/ld\n"
+    "  }\n";
+
+const char kRelativeRootGenDir[] = "relative_root_gen_dir";
+const char kRelativeRootGenDir_HelpShort[] =
     "relative_root_gen_dir: [string] Relative root dir for generated files.";
-extern const char kRelativeRootGenDir_Help[] =
+const char kRelativeRootGenDir_Help[] =
     "relative_root_gen_dir: Relative root for generated files.\n"
     "\n"
     "  Relative path from the directory of the current build file to the\n"
@@ -60,10 +82,10 @@ extern const char kRelativeRootGenDir_Help[] =
     "  If your current build file is in \"//tools\", you might write\n"
     "  args = [ \"$relative_root_gen_dir/output.txt\" ]\n";
 
-extern const char kRelativeRootOutputDir[] = "relative_root_output_dir";
-extern const char kRelativeRootOutputDir_HelpShort[] =
+const char kRelativeRootOutputDir[] = "relative_root_output_dir";
+const char kRelativeRootOutputDir_HelpShort[] =
     "relative_root_output_dir: [string] Relative dir for output files.";
-extern const char kRelativeRootOutputDir_Help[] =
+const char kRelativeRootOutputDir_Help[] =
     "relative_root_output_dir: Relative dir for output files.\n"
     "\n"
     "  Relative path from the directory of the current build file to the\n"
@@ -71,10 +93,10 @@ extern const char kRelativeRootOutputDir_Help[] =
     "\n"
     "  Generally scripts should use \"relative_target_output_dir\" instead.\n";
 
-extern const char kRelativeTargetGenDir[] = "relative_target_gen_dir";
-extern const char kRelativeTargetGenDir_HelpShort[] =
+const char kRelativeTargetGenDir[] = "relative_target_gen_dir";
+const char kRelativeTargetGenDir_HelpShort[] =
     "relative_target_gen_dir: [string] Relative dir for generated files.";
-extern const char kRelativeTargetGenDir_Help[] =
+const char kRelativeTargetGenDir_Help[] =
     "relative_target_gen_dir: Relative dir for generated files.\n"
     "\n"
     "  Relative path from the directory of the current build file to the\n"
@@ -91,10 +113,10 @@ extern const char kRelativeTargetGenDir_Help[] =
     "  If your current build file is in \"//tools\", you might write\n"
     "  args = [ \"$relative_root_gen_dir/output.txt\" ]\n";
 
-extern const char kRelativeTargetOutputDir[] = "relative_target_output_dir";
-extern const char kRelativeTargetOutputDir_HelpShort[] =
+const char kRelativeTargetOutputDir[] = "relative_target_output_dir";
+const char kRelativeTargetOutputDir_HelpShort[] =
     "relative_target_output_dir: [string] Relative dir for build results.";
-extern const char kRelativeTargetOutputDir_Help[] =
+const char kRelativeTargetOutputDir_Help[] =
     "relative_target_output_dir: Relative dir for build results."
     "\n"
     "  Relative path from the directory of the current build file to the\n"
@@ -138,6 +160,12 @@ const char kCflags[] = "cflags";
 const char kCflags_HelpShort[] =
     "cflags: [string list] Flags passed to all C compiler variants.";
 // Avoid writing long help for each variant.
+#define COMMON_FLAGS_HELP \
+    "\n"\
+    "  Flags are never quoted. If your flag includes a string that must be\n"\
+    "  quoted, you must do it yourself. This also means that you can\n"\
+    "  specify more than one flag in a string if necessary (\"--foo --bar\")\n"\
+    "  and have them be seen as separate by the tool.\n"
 const char kCommonCflagsHelp[] =
     "cflags*: Flags passed to the C compiler.\n"
     "\n"
@@ -148,7 +176,8 @@ const char kCommonCflagsHelp[] =
     "\n"
     "  To target one of these variants individually, use \"cflags_c\",\n"
     "  \"cflags_cc\", \"cflags_objc\", and \"cflags_objcc\", respectively.\n"
-    "  These variant-specific versions will be appended to the \"cflags\".\n";
+    "  These variant-specific versions will be appended to the \"cflags\".\n"
+    COMMON_FLAGS_HELP;
 const char* kCflags_Help = kCommonCflagsHelp;
 
 const char kCflagsC[] = "cflags_c";
@@ -271,7 +300,8 @@ const char kLdflags_Help[] =
     "\n"
     "  A list of strings.\n"
     "\n"
-    "  These flags are passed on the command-line to the linker.\n";
+    "  These flags are passed on the command-line to the linker.\n"
+    COMMON_FLAGS_HELP;
 
 const char kSources[] = "sources";
 const char kSources_HelpShort[] =

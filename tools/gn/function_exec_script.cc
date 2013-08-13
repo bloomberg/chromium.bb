@@ -294,7 +294,7 @@ Value RunExecScript(Scope* scope,
 
   // Add all dependencies of this script, including the script itself, to the
   // build deps.
-  g_scheduler->AddGenDependency(script_source);
+  g_scheduler->AddGenDependency(script_path);
   if (args.size() == 4) {
     const Value& deps_value = args[3];
     if (!deps_value.VerifyTypeIs(Value::LIST, err))
@@ -303,8 +303,9 @@ Value RunExecScript(Scope* scope,
     for (size_t i = 0; i < deps_value.list_value().size(); i++) {
       if (!deps_value.list_value()[0].VerifyTypeIs(Value::STRING, err))
         return Value();
-      g_scheduler->AddGenDependency(cur_dir.ResolveRelativeFile(
-          deps_value.list_value()[0].string_value()));
+      g_scheduler->AddGenDependency(
+          build_settings->GetFullPath(cur_dir.ResolveRelativeFile(
+              deps_value.list_value()[0].string_value())));
     }
   }
 

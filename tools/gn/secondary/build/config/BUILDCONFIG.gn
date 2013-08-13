@@ -177,6 +177,8 @@ set_defaults("executable") {
   configs = native_compiler_configs
   if (is_mac) {
     configs += "//build/config/mac:mac_dynamic_flags"
+  } else if (is_linux) {
+    configs += "//build/config/linux:executable_ldconfig"
   }
 }
 
@@ -198,7 +200,7 @@ set_defaults("shared_library") {
 if (is_win) {
   set_default_toolchain("//build/config/win:32")
 } else if (is_linux) {
-  set_default_toolchain("//build/config/linux:gcc")
+  set_default_toolchain("//build/config/linux/toolchain:gcc")
 } else if (is_mac) {
   set_default_toolchain("//build/config/mac:clang")
 }

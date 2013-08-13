@@ -1,5 +1,11 @@
 # found in the LICENSE file.
 
+config("base_libs") {
+  if (!is_win) {
+    ldflags = [ "-ldl" ]
+  }
+}
+
 component("base") {
   sources = [
     "../build/build_config.h",
@@ -8,18 +14,6 @@ component("base") {
     "third_party/dmg_fp/dtoa_wrapper.cc",
     "third_party/icu/icu_utf.cc",
     "third_party/icu/icu_utf.h",
-    "third_party/nspr/prcpucfg.h",
-    "third_party/nspr/prcpucfg_freebsd.h",
-    "third_party/nspr/prcpucfg_linux.h",
-    "third_party/nspr/prcpucfg_mac.h",
-    "third_party/nspr/prcpucfg_nacl.h",
-    "third_party/nspr/prcpucfg_openbsd.h",
-    "third_party/nspr/prcpucfg_solaris.h",
-    "third_party/nspr/prcpucfg_win.h",
-    "third_party/nspr/prtime.cc",
-    "third_party/nspr/prtime.h",
-    "third_party/nspr/prtypes.h",
-    "third_party/xdg_mime/xdgmime.h",
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
     "allocator/type_profiler_control.cc",
@@ -139,6 +133,8 @@ component("base") {
     "debug/trace_event_impl.cc",
     "debug/trace_event_impl.h",
     "debug/trace_event_impl_constants.cc",
+    "debug/trace_event_memory.cc",
+    "debug/trace_event_memory.h",
     "debug/trace_event_win.cc",
     "deferred_sequenced_task_runner.cc",
     "deferred_sequenced_task_runner.h",
@@ -672,10 +668,6 @@ component("base") {
     # TODO(brettw) do these properly.
     "message_loop/message_pump_aurax11.cc",
     "message_loop/message_pump_aurax11.h",
-    "message_loop/message_pump_glib.cc",
-    "message_loop/message_pump_glib.h",
-    "message_loop/message_pump_gtk.cc",
-    "message_loop/message_pump_gtk.h",
     "message_loop/message_pump_ozone.cc",
     "message_loop/message_pump_ozone.h",
 
@@ -689,9 +681,22 @@ component("base") {
     "sys_info_openbsd.cc",
   ]
 
+  defines = [
+    "BASE_IMPLEMENTATION",
+  ]
+
+  deps = [
+    ":base_static",
+    "//base/allocator:allocator_extension_thunks",
+    "//base/third_party/dynamic_annotations",
+    "//base/third_party/nspr",
+    "//third_party/modp_b64",
+  ]
+
   # So we can append below without worrying about whether it has been
   # previously defined or not.
-  all_dependent_configs = []
+  all_dependent_configs = [ ":base_libs" ]
+  ldflags = []
 
   if (!is_chromeos) {
     sources -= [
@@ -705,7 +710,6 @@ component("base") {
       "os_compat_nacl.cc",
       "os_compat_nacl.h",
       "rand_util_nacl.cc",
-      "third_party/nspr/prcpucfg_nacl.h",
       "memory/shared_memory_nacl.cc",
     ]
   }
@@ -722,6 +726,9 @@ component("base") {
     if (is_component_build) {
       sources -= "debug/debug_on_start_win.cc"
     }
+  } else {
+    # Non-Windows.
+    deps += "//third_party/libevent"
   }
 
   # Mac.
@@ -731,10 +738,13 @@ component("base") {
       "native_library_posix.cc",
       "strings/sys_string_conversions_posix.cc",
     ]
+    deps += "//third_party/mach_override"
   } else {
+    # Non-Mac.
     sources -= "files/file_path_watcher_kqueue.cc"
   }
 
+  # Linux.
   if (is_linux) {
     # TODO(brettw) these will need to be parameterized at some point.
     linux_configs = [
@@ -744,6 +754,20 @@ component("base") {
     ]
     configs += linux_configs
     all_dependent_configs += linux_configs
+
+    deps += [
+      "//base/third_party/symbolize",
+      "//base/third_party/xdg_mime",
+      "//base/third_party/xdg_user_dirs",
+    ]
+  } else {
+    # Non-Linux.
+    sources -= [
+      "message_loop/message_pump_glib.cc",
+      "message_loop/message_pump_glib.h",
+      "message_loop/message_pump_gtk.cc",
+      "message_loop/message_pump_gtk.h",
+    ]
   }
 
   # Non-Mac Unix stuff.
@@ -755,24 +779,6 @@ component("base") {
       "nix/xdg_util.h",
       "third_party/xdg_mime/xdgmime.h",
     ]
-  }
-
-  defines = [
-    "BASE_IMPLEMENTATION",
-  ]
-
-  deps = [
-    ":base_static",
-    "//base/allocator:allocator_extension_thunks",
-    "//third_party/modp_b64",
-    "//base/third_party/dynamic_annotations",
-  ]
-
-  if (!is_win) {
-    deps += "//third_party/libevent"
-  }
-  if (is_mac) {
-    deps += "//third_party/mach_override"
   }
 }
 

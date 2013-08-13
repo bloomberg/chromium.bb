@@ -117,11 +117,9 @@ void NinjaBuildWriter::WriteNinjaRules() {
     out_ << " " << EscapeString(FilePathToUTF8(input_files[i]), ninja_options);
 
   // Other files read by the build.
-  std::vector<SourceFile> other_files = g_scheduler->GetGenDependencies();
-  for (size_t i = 0; i < other_files.size(); i++) {
-    out_ << " ";
-    path_output_.WriteFile(out_, other_files[i]);
-  }
+  std::vector<base::FilePath> other_files = g_scheduler->GetGenDependencies();
+  for (size_t i = 0; i < other_files.size(); i++)
+    out_ << " " << EscapeString(FilePathToUTF8(other_files[i]), ninja_options);
 
   out_ << std::endl << std::endl;
 }

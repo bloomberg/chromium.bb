@@ -32,7 +32,8 @@ static_library("libevent") {
 
   if (is_mac) {
     includes = [ "mac" ]
-  } else {
+  } else if (is_linux) {
+    includes = [ "linux" ]
     sources -= [ "kqueue.c" ]
   }
 

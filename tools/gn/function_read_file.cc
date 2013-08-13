@@ -56,7 +56,7 @@ Value RunReadFile(Scope* scope,
       scope->settings()->build_settings()->GetFullPath(source_file);
 
   // Ensure that everything is recomputed if the read file changes.
-  g_scheduler->AddGenDependency(source_file);
+  g_scheduler->AddGenDependency(file_path);
 
   // Read contents.
   std::string file_contents;

@@ -7,6 +7,7 @@
 
 #include "base/atomic_ref_count.h"
 #include "base/basictypes.h"
+#include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
@@ -46,8 +47,8 @@ class Scheduler {
   // TODO(brettw) this is global rather than per-BuildSettings. If we
   // start using >1 build settings, then we probably want this to take a
   // BuildSettings object so we know the depdency on a per-build basis.
-  void AddGenDependency(const SourceFile& source_file);
-  std::vector<SourceFile> GetGenDependencies() const;
+  void AddGenDependency(const base::FilePath& file);
+  std::vector<base::FilePath> GetGenDependencies() const;
 
   // We maintain a count of the things we need to do that works like a
   // refcount. When this reaches 0, the program exits.
@@ -79,7 +80,7 @@ class Scheduler {
   bool is_failed_;
 
   // Additional input dependencies. Protected by the lock.
-  std::vector<SourceFile> gen_dependencies_;
+  std::vector<base::FilePath> gen_dependencies_;
 
   DISALLOW_COPY_AND_ASSIGN(Scheduler);
 };

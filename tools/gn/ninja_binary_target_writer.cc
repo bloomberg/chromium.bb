@@ -6,9 +6,23 @@
 
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
+#include "tools/gn/escape.h"
 #include "tools/gn/string_utils.h"
 
 namespace {
+
+// Returns the proper escape options for writing compiler and linker flags.
+EscapeOptions GetFlagOptions() {
+  EscapeOptions opts;
+  opts.mode = ESCAPE_NINJA;
+
+  // Some flag strings are actually multiple flags that expect to be just
+  // added to the command line. We assume that quoting is done by the
+  // buildfiles if it wants such things quoted.
+  opts.inhibit_quoting = true;
+
+  return opts;
+}
 
 struct DefineWriter {
   void operator()(const std::string& s, std::ostream& out) const {
@@ -82,9 +96,11 @@ void NinjaBinaryTargetWriter::WriteCompilerVars() {
   out_ << std::endl;
 
   // C flags and friends.
+  EscapeOptions flag_escape_options = GetFlagOptions();
 #define WRITE_FLAGS(name) \
     out_ << #name " ="; \
-    RecursiveTargetConfigStringsToStream(target_, &ConfigValues::name, out_); \
+    RecursiveTargetConfigStringsToStream(target_, &ConfigValues::name, \
+                                         flag_escape_options, out_); \
     out_ << std::endl;
 
   WRITE_FLAGS(cflags)
@@ -144,7 +160,8 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
 
   // Linker flags, append manifest flag on Windows to reference our file.
   out_ << "ldflags =";
-  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags, out_);
+  RecursiveTargetConfigStringsToStream(target_, &ConfigValues::ldflags,
+                                       GetFlagOptions(), out_);
   // HACK ERASEME BRETTW FIXME
   if (settings_->IsWin()) {
     out_ << " /MANIFEST /ManifestFile:";
@@ -183,17 +200,20 @@ void NinjaBinaryTargetWriter::WriteLinkerStuff(
   WriteLinkCommand(external_output_file, internal_output_file, object_files);
 
   if (target_->output_type() == Target::SHARED_LIBRARY) {
+    // The shared object name doesn't include a path.
     out_ << "  soname = ";
-    path_output_.WriteFile(out_, internal_output_file);
+    out_ << FindFilename(&internal_output_file.value());
     out_ << std::endl;
 
     out_ << "  lib = ";
     path_output_.WriteFile(out_, internal_output_file);
     out_ << std::endl;
 
-    out_ << "  dll = ";
-    path_output_.WriteFile(out_, internal_output_file);
-    out_ << std::endl;
+    if (settings_->IsWin()) {
+      out_ << "  dll = ";
+      path_output_.WriteFile(out_, internal_output_file);
+      out_ << std::endl;
+    }
 
     if (settings_->IsWin()) {
       out_ << "  implibflag = /IMPLIB:";

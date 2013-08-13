@@ -15,23 +15,29 @@ config("compiler") {
     # --------------------------------
     cflags = [
       "-fno-strict-aliasing",  # See http://crbug.com/32204
-      "-fno-threadsafe-statics",
       "-fvisibility=hidden",
-      "-fvisibility-inlines-hidden",
-
-      # GCC turns on -Wsign-compare for C++ under -Wall, but clang doesn't,
-      # so we specify it explicitly.
-      # TODO(fischman): remove this if http://llvm.org/PR10448 obsoletes it.
-      # http://code.google.com/p/chromium/issues/detail?id=90453
-      "-Wsign-compare",
+      "-g",  # Debug symbols.
     ]
     cflags_c = [
     ]
     cflags_cc = [
       "-fno-exceptions",
+      "-fno-threadsafe-statics",
+      "-fvisibility-inlines-hidden",
     ]
     ldflags = [
+      "-Wl,-z,now",
+      "-Wl,-z,relro",
     ]
+
+    # Optimization.
+    if (is_debug) {
+      cflags += [
+        "-O0"  # No optimization.
+      ]
+    } else {
+      # TODO(brettw) release optimization.
+    }
 
     # Stack protection.
     # TODO(brettw) why do we have different values for all of these cases?
@@ -80,12 +86,34 @@ config("compiler") {
     # ------------------------------------
     if (is_linux) {
       cflags += [
+        "-fPIC",
         "-pthread",
         "-pipe",  # Use pipes for communicating between sub-processes. Faster.
       ]
       ldflags += [
+        # Use Gold for linking: it is checked out in the source tree.
+        "-B$relative_build_to_source_root_dir/third_party/gold",
+
+        "-fPIC",
         "-pthread",
         "-Wl,-z,noexecstack",
+
+        # TODO(brettw) gold linker flags, only target.
+        # There seems to be a conflict of --icf and -pie in gold which can
+        # generate crashy binaries. As a security measure, -pie takes
+        # precendence for now.
+        # TODO(brettw) common.gypi has this only for target toolset.
+        #"-Wl,--icf=safe",
+        "-Wl,--icf=none",
+
+        # TODO(brettw) gold linker flags, only target.
+        # Experimentation found that using four linking threads
+        # saved ~20% of link time.
+        # https://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/281527606915bb36
+        # Only apply this to the target linker, since the host
+        # linker might not be gold, but isn't used much anyway.
+        "-Wl,--threads",
+        "-Wl,--thread-count=4",
       ]
     }
 
@@ -164,8 +192,26 @@ config("chromium_code") {
     cflags = [
       "-Wall",
       "-Werror",
-      "-Wextra",
+
+      # GCC turns on -Wsign-compare for C++ under -Wall, but clang doesn't,
+      # so we specify it explicitly.
+      # TODO(fischman): remove this if http://llvm.org/PR10448 obsoletes it.
+      # http://code.google.com/p/chromium/issues/detail?id=90453
+      "-Wsign-compare",
     ]
+
+    # In Chromium code, we define __STDC_foo_MACROS in order to get the
+    # C99 macros on Mac and Linux.
+    defines = [
+      "__STDC_CONSTANT_MACROS",
+      "__STDC_FORMAT_MACROS",
+    ]
+
+    # TODO(brettw) this should also be enabled on Linux but some files
+    # currently fail.
+    if (is_mac) {
+      cflags += "-Wextra"
+    }
   }
 }
 config("no_chromium_code") {
@@ -246,6 +292,7 @@ config("default_warnings") {
       # Disables.
       "-Wno-missing-field-initializers",  # "struct foo f = {0};"
       "-Wno-unused-parameter",  # Unused function parameters.
+      "-Wno-write-strings",
     ]
 
     if (is_mac) {
