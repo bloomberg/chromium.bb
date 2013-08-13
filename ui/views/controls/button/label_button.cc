@@ -128,7 +128,7 @@ void LabelButton::SetIsDefault(bool is_default) {
   // STYLE_BUTTON uses bold text to indicate default buttons.
   if (style_ == STYLE_BUTTON) {
     int style = label_->font().GetStyle();
-    style = is_default ? style | gfx::Font::BOLD : style & !gfx::Font::BOLD;
+    style = is_default ? style | gfx::Font::BOLD : style & ~gfx::Font::BOLD;
     label_->SetFont(label_->font().DeriveFont(0, style));
   }
 }
