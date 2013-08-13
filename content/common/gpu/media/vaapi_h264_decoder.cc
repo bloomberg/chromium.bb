@@ -1441,6 +1441,10 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
   size_t max_dpb_size = std::min(max_dpb_mbs / (width_mb * height_mb),
                                  static_cast<int>(H264DPB::kDPBMaxSize));
   DVLOG(1) << "Codec level: " << level << ", DPB size: " << max_dpb_size;
+  if (max_dpb_size == 0) {
+    DVLOG(1) << "Invalid DPB Size";
+    return false;
+  }
 
   dpb_.set_max_num_pics(max_dpb_size);
 
