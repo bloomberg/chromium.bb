@@ -37,11 +37,17 @@ class ASH_EXPORT TrayDisplay : public SystemTrayItem,
 
   typedef std::map<int64, DisplayInfo> DisplayInfoMap;
 
-  // Checks the current display settings and determine what message should be
-  // shown for notification. Returns true if there's a meaningful change. Note
-  // that it's possible to return true and set |message| to empty, which means
-  // the notification should be removed.
-  bool GetDisplayMessageForNotification(base::string16* message);
+  // Scans the current display info and updates |display_info_|. Sets the
+  // previous data to |old_info| if it's not NULL.
+  void UpdateDisplayInfo(DisplayInfoMap* old_info);
+
+  // Compares the current display settings with |old_info| and determine what
+  // message should be shown for notification. Returns true if there's a
+  // meaningful change. Note that it's possible to return true and set |message|
+  // to empty, which means the notification should be removed.
+  bool GetDisplayMessageForNotification(
+      base::string16* message,
+      const DisplayInfoMap& old_info);
 
   // Overridden from SystemTrayItem.
   virtual views::View* CreateDefaultView(user::LoginStatus status) OVERRIDE;

@@ -326,21 +326,28 @@ TrayDisplay::TrayDisplay(SystemTray* system_tray)
     : SystemTrayItem(system_tray),
       default_(NULL) {
   Shell::GetInstance()->display_controller()->AddObserver(this);
+  UpdateDisplayInfo(NULL);
 }
 
 TrayDisplay::~TrayDisplay() {
   Shell::GetInstance()->display_controller()->RemoveObserver(this);
 }
 
-bool TrayDisplay::GetDisplayMessageForNotification(base::string16* message) {
+void TrayDisplay::UpdateDisplayInfo(TrayDisplay::DisplayInfoMap* old_info) {
+  if (old_info)
+    old_info->swap(display_info_);
+  display_info_.clear();
+
   DisplayManager* display_manager = GetDisplayManager();
-  DisplayInfoMap old_info;
-  old_info.swap(display_info_);
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     int64 id = display_manager->GetDisplayAt(i).id();
     display_info_[id] = display_manager->GetDisplayInfo(id);
   }
+}
 
+bool TrayDisplay::GetDisplayMessageForNotification(
+    base::string16* message,
+    const TrayDisplay::DisplayInfoMap& old_info) {
   // Display is added or removed. Use the same message as the one in
   // the system tray.
   if (display_info_.size() != old_info.size()) {
@@ -405,13 +412,16 @@ void TrayDisplay::DestroyDefaultView() {
 }
 
 void TrayDisplay::OnDisplayConfigurationChanged() {
+  DisplayInfoMap old_info;
+  UpdateDisplayInfo(&old_info);
+
   if (!Shell::GetInstance()->system_tray_delegate()->
           ShouldShowDisplayNotification()) {
     return;
   }
 
   base::string16 message;
-  if (GetDisplayMessageForNotification(&message))
+  if (GetDisplayMessageForNotification(&message, old_info))
     UpdateDisplayNotification(message);
 }
 

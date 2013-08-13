@@ -437,5 +437,24 @@ TEST_F(TrayDisplayTest, DisplayConfigurationChangedTwice) {
   EXPECT_TRUE(GetDisplayNotificationText().empty());
 }
 
+TEST_F(TrayDisplayTest, UpdateAfterSuppressDisplayNotification) {
+  UpdateDisplay("400x400,200x200");
+
+  test::TestSystemTrayDelegate* tray_delegate =
+      static_cast<test::TestSystemTrayDelegate*>(
+          Shell::GetInstance()->system_tray_delegate());
+  tray_delegate->set_should_show_display_notification(true);
+
+  // rotate the second.
+  UpdateDisplay("400x400,200x200/r");
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_DISPLAY_ROTATED,
+          GetSecondDisplayName(),
+          l10n_util::GetStringUTF16(
+              IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90)),
+      GetDisplayNotificationText());
+}
+
 }  // namespace internal
 }  // namespace ash
