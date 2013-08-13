@@ -1289,10 +1289,12 @@ bool BatchShortcutAction(const ShortcutFilterCallback& shortcut_filter,
   return success;
 }
 
-// Removes folder spsecified by {|location|, |dist|, |level|}.
-bool RemoveShortcutFolder(ShellUtil::ShortcutLocation location,
-                          BrowserDistribution* dist,
-                          ShellUtil::ShellChange level) {
+// If the folder specified by {|location|, |dist|, |level|} is empty, remove it.
+// Otherwise do nothing. Returns true on success, including the vacuous case
+// where no deletion occurred because the directory is non-empty.
+bool RemoveShortcutFolderIfEmpty(ShellUtil::ShortcutLocation location,
+                                 BrowserDistribution* dist,
+                                 ShellUtil::ShellChange level) {
 
   // Explicitly whitelist locations, since accidental calls can be very harmful.
   if (location != ShellUtil::SHORTCUT_LOCATION_START_MENU &&
@@ -1306,7 +1308,8 @@ bool RemoveShortcutFolder(ShellUtil::ShortcutLocation location,
     LOG(WARNING) << "Cannot find path at location " << location;
     return false;
   }
-  if (!base::DeleteFile(shortcut_folder, true)) {
+  if (file_util::IsDirectoryEmpty(shortcut_folder) &&
+      !base::DeleteFile(shortcut_folder, true)) {
     LOG(ERROR) << "Cannot remove folder " << shortcut_folder.value();
     return false;
   }
@@ -2029,8 +2032,13 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
 
   switch (location) {
     case SHORTCUT_LOCATION_START_MENU:  // Falls through.
-    case SHORTCUT_LOCATION_APP_SHORTCUTS:
-      return RemoveShortcutFolder(location, dist, level);
+    case SHORTCUT_LOCATION_APP_SHORTCUTS: {
+      bool delete_success =
+          BatchShortcutAction(base::Bind(&ShortcutOpDelete), location,
+                                         dist, level, target_exe);
+      bool rmdir_success = RemoveShortcutFolderIfEmpty(location, dist, level);
+      return delete_success && rmdir_success;
+    }
 
     case SHORTCUT_LOCATION_TASKBAR_PINS:
       return BatchShortcutAction(FilterTargetEq(target_exe).
