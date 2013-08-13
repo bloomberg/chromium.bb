@@ -16,6 +16,8 @@
 #include "ash/system/tray/tray_notification_view.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_handler.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,12 +37,15 @@ const int kMessageListMinHeight = 200;
 // Top/bottom padding of the text items.
 const int kPaddingVertical = 10;
 
+const char kSmsNumberKey[] = "number";
+const char kSmsTextKey[] = "text";
+
 bool GetMessageFromDictionary(const base::DictionaryValue* message,
                               std::string* number,
                               std::string* text) {
-  if (!message->GetStringWithoutPathExpansion(ash::kSmsNumberKey, number))
+  if (!message->GetStringWithoutPathExpansion(kSmsNumberKey, number))
     return false;
-  if (!message->GetStringWithoutPathExpansion(ash::kSmsTextKey, text))
+  if (!message->GetStringWithoutPathExpansion(kSmsTextKey, text))
     return false;
   return true;
 }
@@ -281,11 +286,14 @@ TraySms::TraySms(SystemTray* system_tray)
       default_(NULL),
       detailed_(NULL),
       notification_(NULL) {
-  Shell::GetInstance()->system_tray_notifier()->AddSmsObserver(this);
+  // TODO(armansito): SMS could be a special case for cellular that requires a
+  // user (perhaps the owner) to be logged in. If that is the case, then an
+  // additional check should be done before subscribing for SMS notifications.
+  chromeos::NetworkHandler::Get()->network_sms_handler()->AddObserver(this);
 }
 
 TraySms::~TraySms() {
-  Shell::GetInstance()->system_tray_notifier()->RemoveSmsObserver(this);
+  chromeos::NetworkHandler::Get()->network_sms_handler()->RemoveObserver(this);
 }
 
 views::View* TraySms::CreateDefaultView(user::LoginStatus status) {
@@ -327,8 +335,35 @@ void TraySms::DestroyNotificationView() {
   notification_ = NULL;
 }
 
-void TraySms::AddMessage(const base::DictionaryValue& message) {
-  messages_.Append(message.DeepCopy());
+void TraySms::MessageReceived(const base::DictionaryValue& message) {
+
+  std::string message_text;
+  if (!message.GetStringWithoutPathExpansion(
+          chromeos::NetworkSmsHandler::kTextKey, &message_text)) {
+    NET_LOG_ERROR("SMS message contains no content.", "");
+    return;
+  }
+  // TODO(armansito): A message might be due to a special "Message Waiting"
+  // state that the message is in. Once SMS handling moves to shill, such
+  // messages should be filtered there so that this check becomes unnecessary.
+  if (message_text.empty()) {
+    NET_LOG_DEBUG("SMS has empty content text. Ignoring.", "");
+    return;
+  }
+  std::string message_number;
+  if (!message.GetStringWithoutPathExpansion(
+          chromeos::NetworkSmsHandler::kNumberKey, &message_number)) {
+    NET_LOG_DEBUG("SMS contains no number. Ignoring.", "");
+    return;
+  }
+
+  NET_LOG_DEBUG("Received SMS from: " + message_number + " with text: " +
+                message_text, "");
+
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString(kSmsNumberKey, message_number);
+  dict->SetString(kSmsTextKey, message_text);
+  messages_.Append(dict);
   Update(true);
 }
 

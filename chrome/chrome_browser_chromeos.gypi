@@ -756,8 +756,6 @@
         'browser/chromeos/settings/system_settings_provider.h',
         'browser/chromeos/sim_dialog_delegate.cc',
         'browser/chromeos/sim_dialog_delegate.h',
-        'browser/chromeos/sms_observer.cc',
-        'browser/chromeos/sms_observer.h',
         'browser/chromeos/status/data_promo_notification.cc',
         'browser/chromeos/status/data_promo_notification.h',
         'browser/chromeos/status/network_menu.cc',

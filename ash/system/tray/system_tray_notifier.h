@@ -13,7 +13,6 @@
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/chromeos/enterprise/enterprise_domain_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
-#include "ash/system/chromeos/network/sms_observer.h"
 #include "ash/system/chromeos/tray_tracing.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
@@ -29,7 +28,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/network/network_observer.h"
-#include "ash/system/chromeos/network/sms_observer.h"
 #include "ash/system/chromeos/screen_security/screen_capture_observer.h"
 #include "ash/system/chromeos/screen_security/screen_share_observer.h"
 #endif
@@ -88,9 +86,6 @@ public:
   void AddNetworkObserver(NetworkObserver* observer);
   void RemoveNetworkObserver(NetworkObserver* observer);
 
-  void AddSmsObserver(SmsObserver* observer);
-  void RemoveSmsObserver(SmsObserver* observer);
-
   void AddEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
   void RemoveEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
 
@@ -131,7 +126,6 @@ public:
                                const std::vector<base::string16>& links);
   void NotifyClearNetworkMessage(NetworkObserver::MessageType message_type);
   void NotifyRequestToggleWifi();
-  void NotifyAddSmsMessage(const base::DictionaryValue& message);
   void NotifyEnterpriseDomainChanged();
   void NotifyScreenCaptureStart(const base::Closure& stop_callback,
                                 const base::string16& sharing_app_name);
@@ -161,7 +155,6 @@ public:
   ObserverList<UserObserver> user_observers_;
 #if defined(OS_CHROMEOS)
   ObserverList<NetworkObserver> network_observers_;
-  ObserverList<SmsObserver> sms_observers_;
   ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
   ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   ObserverList<ScreenShareObserver> screen_share_observers_;

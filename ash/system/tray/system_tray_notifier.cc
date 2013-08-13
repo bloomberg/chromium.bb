@@ -140,14 +140,6 @@ void SystemTrayNotifier::RemoveNetworkObserver(NetworkObserver* observer) {
   network_observers_.RemoveObserver(observer);
 }
 
-void SystemTrayNotifier::AddSmsObserver(SmsObserver* observer) {
-  sms_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveSmsObserver(SmsObserver* observer) {
-  sms_observers_.RemoveObserver(observer);
-}
-
 void SystemTrayNotifier::AddEnterpriseDomainObserver(
     EnterpriseDomainObserver* observer) {
   enterprise_domain_observers_.AddObserver(observer);
@@ -324,11 +316,6 @@ void SystemTrayNotifier::NotifyRequestToggleWifi() {
   FOR_EACH_OBSERVER(NetworkObserver,
                     network_observers_,
                     RequestToggleWifi());
-}
-
-void SystemTrayNotifier::NotifyAddSmsMessage(
-    const base::DictionaryValue& message) {
-  FOR_EACH_OBSERVER(SmsObserver, sms_observers_, AddMessage(message));
 }
 
 void SystemTrayNotifier::NotifyEnterpriseDomainChanged() {

@@ -7,15 +7,15 @@
 
 #include <string>
 
-#include "ash/system/chromeos/network/sms_observer.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "base/values.h"
+#include "chromeos/network/network_sms_handler.h"
 
 namespace ash {
 namespace internal {
 
 class TraySms : public SystemTrayItem,
-                public SmsObserver {
+                public chromeos::NetworkSmsHandler::Observer {
  public:
   explicit TraySms(SystemTray* system_tray);
   virtual ~TraySms();
@@ -29,8 +29,8 @@ class TraySms : public SystemTrayItem,
   virtual void DestroyDetailedView() OVERRIDE;
   virtual void DestroyNotificationView() OVERRIDE;
 
-  // Overridden from SmsObserver.
-  virtual void AddMessage(const base::DictionaryValue& message) OVERRIDE;
+  // Overridden from chromeos::NetworkSmsHandler::Observer.
+  virtual void MessageReceived(const base::DictionaryValue& message) OVERRIDE;
 
  protected:
   class SmsDefaultView;
@@ -45,7 +45,8 @@ class TraySms : public SystemTrayItem,
   // Removes message at |index| from message list.
   void RemoveMessage(size_t index);
 
-  // Called when sms messages have changed (by tray::SmsObserver).
+  // Called when sms messages have changed (through
+  // chromeos::NetworkSmsHandler::Observer).
   void Update(bool notify);
 
   base::ListValue& messages() { return messages_; }

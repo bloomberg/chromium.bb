@@ -18,6 +18,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "chromeos/network/network_handler.h"
 #endif
 
 #if defined(USE_X11)
@@ -29,7 +30,8 @@ namespace test {
 
 AshTestHelper::AshTestHelper(base::MessageLoopForUI* message_loop)
     : message_loop_(message_loop),
-      test_shell_delegate_(NULL) {
+      test_shell_delegate_(NULL),
+      tear_down_network_handler_(false) {
   CHECK(message_loop_);
 #if defined(USE_X11)
   aura::test::SetUseOverrideRedirectWindowByDefault(true);
@@ -56,8 +58,16 @@ void AshTestHelper::SetUp(bool start_session) {
   // Create CrasAudioHandler for testing since g_browser_process is not
   // created in AshTestBase tests.
   chromeos::CrasAudioHandler::InitializeForTesting();
-#endif
 
+  // Some tests may not initialize NetworkHandler. Initialize it here if that
+  // is the case.
+  if (!chromeos::NetworkHandler::IsInitialized()) {
+    tear_down_network_handler_ = true;
+    chromeos::NetworkHandler::Initialize();
+  }
+
+  RunAllPendingInMessageLoop();
+#endif
   ash::Shell::CreateInstance(test_shell_delegate_);
   Shell* shell = Shell::GetInstance();
   if (start_session) {
@@ -80,6 +90,8 @@ void AshTestHelper::TearDown() {
   message_center::MessageCenter::Shutdown();
 
 #if defined(OS_CHROMEOS)
+  if (tear_down_network_handler_ && chromeos::NetworkHandler::IsInitialized())
+    chromeos::NetworkHandler::Shutdown();
   chromeos::CrasAudioHandler::Shutdown();
 #endif
 

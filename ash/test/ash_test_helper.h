@@ -55,6 +55,9 @@ class AshTestHelper {
   TestShellDelegate* test_shell_delegate_;  // Owned by ash::Shell.
   scoped_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_mode_;
 
+  // true, if NetworkHandler was initialized by this instance.
+  bool tear_down_network_handler_;
+
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };
 

@@ -8,9 +8,7 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -106,11 +104,6 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
   profile->InitChromeOSPreferences();
 
   if (process_startup) {
-    static chromeos::SmsObserver* sms_observer =
-        new chromeos::SmsObserver();
-    chromeos::NetworkLibrary::Get()->
-        AddNetworkManagerObserver(sms_observer);
-
     profile->SetupChromeOSEnterpriseExtensionObserver();
   }
 }

@@ -36,7 +36,6 @@ class UpdateObserver;
 class UserObserver;
 #if defined(OS_CHROMEOS)
 class NetworkObserver;
-class SmsObserver;
 #endif
 
 class SystemTrayItem;
