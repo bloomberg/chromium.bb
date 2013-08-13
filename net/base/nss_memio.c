@@ -149,7 +149,7 @@ static int memio_buffer_put(struct memio_buffer *mb, const char *buf, int n)
             mb->tail += len;
             if (mb->tail == mb->bufsize)
                 mb->tail = 0;
-                transferred += len;
+            transferred += len;
         }
     }
 
@@ -177,11 +177,11 @@ static int memio_buffer_get(struct memio_buffer *mb, char *buf, int n)
         /* Handle part after wrap */
         len = PR_MIN(n, memio_buffer_used_contiguous(mb));
         if (len) {
-        memcpy(buf, &mb->buf[mb->head], len);
-        mb->head += len;
+            memcpy(buf, &mb->buf[mb->head], len);
+            mb->head += len;
             if (mb->head == mb->bufsize)
                 mb->head = 0;
-                transferred += len;
+            transferred += len;
         }
     }
 
