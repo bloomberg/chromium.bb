@@ -1197,7 +1197,5 @@ crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-co
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
 
-Bug(esprehn) fast/html/details-remove-child-2.html [ NeedsRebaseline ]
-
 # This test loads acid3-expected.png as part of the test. WTF?
 Bug(ojan) http/tests/misc/slow-loading-image-in-pattern.html [ ImageOnlyFailure ]
