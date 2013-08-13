@@ -55,6 +55,7 @@ class InspectorState;
 class InstrumentingAgents;
 class IntSize;
 class Page;
+class PlatformGestureEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
 class PostWorkerNotificationToFrontendTask;
@@ -94,6 +95,7 @@ public:
     void hideHighlight();
     Node* highlightedNode() const;
 
+    bool handleGestureEvent(Frame*, const PlatformGestureEvent&);
     bool handleMouseEvent(Frame*, const PlatformMouseEvent&);
     bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
 
