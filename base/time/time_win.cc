@@ -322,12 +322,6 @@ TimeDelta RolloverProtectedNow() {
   return TimeDelta::FromMilliseconds(now + rollover_ms);
 }
 
-bool IsBuggyAthlon(const base::CPU& cpu) {
-  // On Athlon X2 CPUs (e.g. model 15) QueryPerformanceCounter is
-  // unreliable.  Fallback to low-res clock.
-  return cpu.vendor_name() == "AuthenticAMD" && cpu.family() == 15;
-}
-
 // Overview of time counters:
 // (1) CPU cycle counter. (Retrieved via RDTSC)
 // The CPU counter provides the highest resolution time stamp and is the least
@@ -404,8 +398,10 @@ class HighResNowSingleton {
       skew_(0) {
     InitializeClock();
 
+    // On Athlon X2 CPUs (e.g. model 15) QueryPerformanceCounter is
+    // unreliable.  Fallback to low-res clock.
     base::CPU cpu;
-    if (IsBuggyAthlon(cpu))
+    if (cpu.vendor_name() == "AuthenticAMD" && cpu.family() == 15)
       DisableHighResClock();
   }
 
@@ -437,24 +433,6 @@ class HighResNowSingleton {
   friend struct DefaultSingletonTraits<HighResNowSingleton>;
 };
 
-TimeDelta HighResNowWrapper() {
-  return HighResNowSingleton::GetInstance()->Now();
-}
-
-typedef TimeDelta (*NowFunction)(void);
-NowFunction now_function = RolloverProtectedNow;
-
-bool CPUReliablySupportsHighResTime() {
-  base::CPU cpu;
-  if (!cpu.has_non_stop_time_stamp_counter())
-    return false;
-
-  if (IsBuggyAthlon(cpu))
-    return false;
-
-  return true;
-}
-
 }  // namespace
 
 // static
@@ -469,18 +447,8 @@ TimeTicks::TickFunctionType TimeTicks::SetMockTickFunction(
 }
 
 // static
-bool TimeTicks::SetNowIsHighResNowIfSupported() {
-  if (!CPUReliablySupportsHighResTime()) {
-    return false;
-  }
-
-  now_function = HighResNowWrapper;
-  return true;
-}
-
-// static
 TimeTicks TimeTicks::Now() {
-  return TimeTicks() + now_function();
+  return TimeTicks() + RolloverProtectedNow();
 }
 
 // static
@@ -513,14 +481,6 @@ TimeTicks TimeTicks::FromQPCValue(LONGLONG qpc_value) {
 // static
 bool TimeTicks::IsHighResClockWorking() {
   return HighResNowSingleton::GetInstance()->IsUsingHighResClock();
-}
-
-TimeTicks TimeTicks::UnprotectedNow() {
-  if (now_function == HighResNowWrapper) {
-    return Now();
-  } else {
-    return TimeTicks() + TimeDelta::FromMilliseconds(timeGetTime());
-  }
 }
 
 // TimeDelta ------------------------------------------------------------------
