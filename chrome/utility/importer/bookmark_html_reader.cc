@@ -112,6 +112,16 @@ void ImportBookmarksFile(
     std::string line;
     TrimString(lines[i], " ", &line);
 
+    // Remove "<HR>" if |line| starts with it. "<HR>" is the bookmark entries
+    // separator in Firefox that Chrome does not support. Note that there can be
+    // multiple "<HR>" tags at the beginning of a single line.
+    // See http://crbug.com/257474.
+    static const char kHrTag[] = "<HR>";
+    while (StartsWithASCII(line, kHrTag, false)) {
+      line.erase(0, arraysize(kHrTag) - 1);
+      TrimString(line, " ", &line);
+    }
+
     // Get the encoding of the bookmark file.
     if (internal::ParseCharsetFromLine(line, &charset))
       continue;
