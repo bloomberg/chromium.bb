@@ -19,6 +19,7 @@ import os
 import sys
 
 from metrics import histogram
+from metrics import io
 from metrics import memory
 from metrics import network
 from telemetry.core import util
@@ -91,35 +92,6 @@ class PageCycler(page_measurement.PageMeasurement):
       print 'typical_25 is currently disabled on mac. Skipping test.'
       sys.exit(0)
 
-  def MeasureIO(self, tab, results):
-    io_stats = tab.browser.io_stats
-    if not io_stats['Browser']:
-      return
-
-    def AddSummariesForProcessType(process_type_io, process_type_trace):
-      if 'ReadOperationCount' in io_stats[process_type_io]:
-        results.AddSummary('read_operations_' + process_type_trace, '',
-                           io_stats[process_type_io]
-                           ['ReadOperationCount'],
-                           data_type='unimportant')
-      if 'WriteOperationCount' in io_stats[process_type_io]:
-        results.AddSummary('write_operations_' + process_type_trace, '',
-                           io_stats[process_type_io]
-                           ['WriteOperationCount'],
-                           data_type='unimportant')
-      if 'ReadTransferCount' in io_stats[process_type_io]:
-        results.AddSummary('read_bytes_' + process_type_trace, 'kb',
-                           io_stats[process_type_io]
-                           ['ReadTransferCount'] / 1024,
-                           data_type='unimportant')
-      if 'WriteTransferCount' in io_stats[process_type_io]:
-        results.AddSummary('write_bytes_' + process_type_trace, 'kb',
-                           io_stats[process_type_io]
-                           ['WriteTransferCount'] / 1024,
-                           data_type='unimportant')
-    AddSummariesForProcessType('Browser', 'browser')
-    AddSummariesForProcessType('Renderer', 'renderer')
-    AddSummariesForProcessType('Gpu', 'gpu')
 
   def MeasurePage(self, page, tab, results):
     def _IsDone():
@@ -139,5 +111,5 @@ class PageCycler(page_measurement.PageMeasurement):
   def DidRunTest(self, tab, results):
     self._memory_metric.Stop()
     self._memory_metric.AddResults(tab, results)
-    self.MeasureIO(tab, results)
+    io.IOMetric().AddSummaryResults(tab, results)
 
