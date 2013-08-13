@@ -43,6 +43,9 @@ class CallbacksMap;
 base::LazyInstance<base::ThreadLocalPointer<CallbacksMap> >::Leaky
     g_callbacks_map_tls = LAZY_INSTANCE_INITIALIZER;
 
+base::LazyInstance<base::ThreadLocalPointer<WebFileSystemImpl> >::Leaky
+    g_webfilesystem_tls = LAZY_INSTANCE_INITIALIZER;
+
 // TODO(kinuko): Integrate this into WebFileSystemImpl when blink side
 // becomes ready to make WebFileSystemImpl thread-local.
 class CallbacksMap : public WorkerTaskRunner::Observer {
@@ -312,11 +315,33 @@ void CreateSnapshotFileCallbackAdapter(
 
 }  // namespace
 
-WebFileSystemImpl::~WebFileSystemImpl() {
+WebFileSystemImpl* WebFileSystemImpl::ThreadSpecificInstance(
+    base::MessageLoopProxy* main_thread_loop) {
+  if (g_webfilesystem_tls.Pointer()->Get())
+    return g_webfilesystem_tls.Pointer()->Get();
+  WebFileSystemImpl* filesystem = new WebFileSystemImpl(main_thread_loop);
+  if (WorkerTaskRunner::Instance()->CurrentWorkerId())
+    WorkerTaskRunner::Instance()->AddStopObserver(filesystem);
+  return filesystem;
+}
+
+void WebFileSystemImpl::DeleteThreadSpecificInstance() {
+  DCHECK(!WorkerTaskRunner::Instance()->CurrentWorkerId());
+  if (g_webfilesystem_tls.Pointer()->Get())
+    delete g_webfilesystem_tls.Pointer()->Get();
 }
 
 WebFileSystemImpl::WebFileSystemImpl(base::MessageLoopProxy* main_thread_loop)
     : main_thread_loop_(main_thread_loop) {
+  g_webfilesystem_tls.Pointer()->Set(this);
+}
+
+WebFileSystemImpl::~WebFileSystemImpl() {
+  g_webfilesystem_tls.Pointer()->Set(NULL);
+}
+
+void WebFileSystemImpl::OnWorkerRunLoopStopped() {
+  delete this;
 }
 
 void WebFileSystemImpl::move(
