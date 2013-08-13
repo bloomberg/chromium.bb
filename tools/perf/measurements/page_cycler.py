@@ -21,7 +21,6 @@ import sys
 from metrics import histogram
 from metrics import io
 from metrics import memory
-from metrics import network
 from telemetry.core import util
 from telemetry.page import page_measurement
 
@@ -42,7 +41,6 @@ class PageCycler(page_measurement.PageMeasurement):
 
     self._memory_metric = None
     self._histograms = None
-    self._network_metric = network.NetworkMetric()
 
   def AddCommandLineOptions(self, parser):
     # The page cyclers should default to 10 iterations. In order to change the
@@ -68,7 +66,6 @@ class PageCycler(page_measurement.PageMeasurement):
 
   def WillNavigateToPage(self, page, tab):
     page.script_to_evaluate_on_commit = self._page_cycler_js
-    self._network_metric.Start(page, tab)
 
   def DidNavigateToPage(self, page, tab):
     for h in self._histograms:
@@ -81,11 +78,6 @@ class PageCycler(page_measurement.PageMeasurement):
 
     # Old commandline flags used for reference builds.
     options.AppendExtraBrowserArg('--dom-automation')
-
-    # TODO(tonyg): NetworkMetric should be responsible for setting these.
-    # http://crbug.com/271177
-    options.AppendExtraBrowserArg('--enable-benchmarking')
-    options.AppendExtraBrowserArg('--enable-stats-table')
 
     # Temporarily disable typical_25 page set on mac.
     if sys.platform == 'darwin' and sys.argv[-1].endswith('/typical_25.json'):
@@ -100,9 +92,6 @@ class PageCycler(page_measurement.PageMeasurement):
 
     for h in self._histograms:
       h.GetValue(page, tab, results)
-
-    self._network_metric.Stop(page, tab)
-    self._network_metric.AddResults(tab, results)
 
     results.Add('page_load_time', 'ms',
                 int(float(tab.EvaluateJavaScript('__pc_load_time'))),
