@@ -86,7 +86,7 @@ void ExpectEquivalent(const FileTracker* left, const FileTracker* right) {
   EXPECT_EQ(left->parent_tracker_id(), right->parent_tracker_id());
   EXPECT_EQ(left->file_id(), right->file_id());
   EXPECT_EQ(left->app_id(), right->app_id());
-  EXPECT_EQ(left->is_app_root(), right->is_app_root());
+  EXPECT_EQ(left->tracker_kind(), right->tracker_kind());
   ExpectEquivalent(&left->synced_details(), &right->synced_details());
   EXPECT_EQ(left->dirty(), right->dirty());
   EXPECT_EQ(left->active(), right->active());
@@ -294,7 +294,7 @@ class MetadataDatabaseTest : public testing::Test {
     tracker.set_parent_tracker_id(parent_tracker.tracker_id());
     tracker.set_file_id(file.file_id());
     tracker.set_app_id(parent_tracker.app_id());
-    tracker.set_is_app_root(false);
+    tracker.set_tracker_kind(TRACKER_KIND_REGULAR);
     tracker.set_dirty(false);
     tracker.set_active(true);
     tracker.set_needs_folder_listing(false);
@@ -526,7 +526,7 @@ TEST_F(MetadataDatabaseTest, InitializationTest_SimpleTree) {
   FileTracker app_root_tracker(
       CreateTracker(sync_root_tracker, app_root));
   app_root_tracker.set_app_id(app_root.details().title());
-  app_root_tracker.set_is_app_root(true);
+  app_root_tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
   FileMetadata file(CreateFileMetadata(app_root, "file"));
   FileTracker file_tracker(CreateTracker(app_root_tracker, file));
@@ -591,7 +591,7 @@ TEST_F(MetadataDatabaseTest, AppManagementTest) {
   FileTracker app_root_tracker(
       CreateTracker(sync_root_tracker, app_root));
   app_root_tracker.set_app_id(app_root.details().title());
-  app_root_tracker.set_is_app_root(true);
+  app_root_tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
   FileMetadata file(CreateFileMetadata(app_root, "file"));
   FileTracker file_tracker(CreateTracker(app_root_tracker, file));
@@ -625,7 +625,7 @@ TEST_F(MetadataDatabaseTest, AppManagementTest) {
   VerifyTracker(folder_tracker);
 
   folder_tracker.set_app_id("foo");
-  folder_tracker.set_is_app_root(true);
+  folder_tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
   folder_tracker.set_active(true);
   folder_tracker.set_dirty(true);
   folder_tracker.set_needs_folder_listing(true);
@@ -649,7 +649,7 @@ TEST_F(MetadataDatabaseTest, AppManagementTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, UnregisterApp(folder_tracker.app_id()));
   folder_tracker.set_app_id(std::string());
-  folder_tracker.set_is_app_root(false);
+  folder_tracker.set_tracker_kind(TRACKER_KIND_REGULAR);
   folder_tracker.set_active(false);
   VerifyFile(folder);
   VerifyTracker(folder_tracker);
@@ -657,7 +657,7 @@ TEST_F(MetadataDatabaseTest, AppManagementTest) {
 
   EXPECT_EQ(SYNC_STATUS_OK, UnregisterApp(app_root_tracker.app_id()));
   app_root_tracker.set_app_id(std::string());
-  app_root_tracker.set_is_app_root(false);
+  app_root_tracker.set_tracker_kind(TRACKER_KIND_REGULAR);
   app_root_tracker.set_active(false);
   app_root_tracker.set_dirty(true);
   VerifyFile(app_root);
@@ -676,7 +676,7 @@ TEST_F(MetadataDatabaseTest, BuildPathTest) {
   FileTracker app_root_tracker(
       CreateTracker(sync_root_tracker, app_root));
   app_root_tracker.set_app_id(app_root.details().title());
-  app_root_tracker.set_is_app_root(true);
+  app_root_tracker.set_tracker_kind(TRACKER_KIND_APP_ROOT);
 
   FileMetadata folder(CreateFolderMetadata(app_root, "folder"));
   FileTracker folder_tracker(CreateTracker(app_root_tracker, folder));

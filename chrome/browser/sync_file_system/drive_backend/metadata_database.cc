@@ -50,6 +50,10 @@ typedef MetadataDatabase::TrackerByID TrackerByID;
 typedef MetadataDatabase::TrackersByParentAndTitle TrackersByParentAndTitle;
 typedef MetadataDatabase::TrackersByTitle TrackersByTitle;
 
+bool IsAppRoot(const FileTracker& tracker) {
+  return tracker.tracker_kind() == TRACKER_KIND_APP_ROOT;
+}
+
 std::string RemovePrefix(const std::string& str, const std::string& prefix) {
   if (StartsWithASCII(str, prefix, true))
     return str.substr(prefix.size());
@@ -374,7 +378,7 @@ SyncStatusCode RemoveUnreachableItems(DatabaseContents* contents,
       unvisited_trackers.erase(found);
       reachable_trackers.push_back(tracker);
 
-      if (!tracker->active() && !tracker->is_app_root())
+      if (!tracker->active() && !IsAppRoot(*tracker))
         continue;
     }
 
@@ -605,7 +609,7 @@ bool MetadataDatabase::BuildPathForTracker(int64 tracker_id,
     return false;
 
   std::vector<base::FilePath> components;
-  while (!current.is_app_root()) {
+  while (!IsAppRoot(current)) {
     std::string title = GetTrackerTitle(current);
     if (title.empty())
       return false;
@@ -753,7 +757,7 @@ void MetadataDatabase::BuildIndexes(DatabaseContents* contents) {
     tracker_by_id_[tracker->tracker_id()] = tracker;
     trackers_by_file_id_[tracker->file_id()].Insert(tracker);
 
-    if (tracker->is_app_root())
+    if (IsAppRoot(*tracker))
       app_root_by_app_id_[tracker->app_id()] = tracker;
 
     if (tracker->parent_tracker_id()) {
@@ -776,7 +780,7 @@ void MetadataDatabase::RegisterTrackerAsAppRoot(
   FileTracker* tracker = tracker_by_id_[tracker_id];
   DCHECK(tracker);
   tracker->set_app_id(app_id);
-  tracker->set_is_app_root(true);
+  tracker->set_tracker_kind(TRACKER_KIND_APP_ROOT);
   app_root_by_app_id_[app_id] = tracker;
 
   MakeTrackerActive(tracker->tracker_id(), batch);
@@ -787,7 +791,7 @@ void MetadataDatabase::UnregisterTrackerAsAppRoot(
     leveldb::WriteBatch* batch) {
   FileTracker* tracker = FindAndEraseItem(&app_root_by_app_id_, app_id);
   tracker->set_app_id(std::string());
-  tracker->set_is_app_root(false);
+  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
 
   // Inactivate the tracker to drop all descendant.
   // (Note that we set is_app_root to false before calling this.)
@@ -826,7 +830,7 @@ void MetadataDatabase::MakeTrackerInactive(int64 tracker_id,
 
   // Keep the folder tree under an app-root, since we keep the local files of
   // SyncFileSystem.
-  if (!tracker->is_app_root())
+  if (!IsAppRoot(*tracker))
     RemoveAllDescendantTrackers(tracker_id, batch);
   MarkTrackersDirtyByFileID(tracker->file_id(), batch);
   if (parent_tracker_id)
@@ -844,7 +848,7 @@ void MetadataDatabase::CreateTrackerForParentAndFileID(
   tracker->set_parent_tracker_id(parent_tracker.tracker_id());
   tracker->set_file_id(file_id);
   tracker->set_app_id(parent_tracker.app_id());
-  tracker->set_is_app_root(false);
+  tracker->set_tracker_kind(TRACKER_KIND_REGULAR);
   tracker->set_dirty(true);
   tracker->set_active(false);
   tracker->set_needs_folder_listing(false);
@@ -869,7 +873,7 @@ void MetadataDatabase::RemoveTrackerIgnoringSiblings(
     return;
 
   EraseTrackerFromFileIDIndex(tracker, batch);
-  if (tracker->is_app_root())
+  if (IsAppRoot(*tracker))
     app_root_by_app_id_.erase(tracker->app_id());
   EraseTrackerFromPathIndex(tracker);
 
@@ -905,7 +909,7 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
          itr != found->second.end(); ++itr) {
       FileTracker* parent_tracker = *itr;
       int64 parent_tracker_id = parent_tracker->tracker_id();
-      if (!parent_tracker->active() && !parent_tracker->is_app_root())
+      if (!parent_tracker->active() && !IsAppRoot(*parent_tracker))
         continue;
 
       if (ContainsKey(known_parents, parent_tracker_id))

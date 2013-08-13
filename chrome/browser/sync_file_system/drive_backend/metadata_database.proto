@@ -16,6 +16,11 @@ enum FileKind {
   FILE_KIND_FOLDER = 2;
 }
 
+enum TrackerKind {
+  TRACKER_KIND_REGULAR = 0;
+  TRACKER_KIND_APP_ROOT = 1;
+}
+
 message ServiceMetadata {
   optional int64 largest_change_id = 1;
   optional int64 sync_root_tracker_id = 2;
@@ -61,7 +66,7 @@ message FileTracker {
   required string file_id = 3;
 
   optional string app_id = 4;
-  optional bool is_app_root = 5;
+  optional TrackerKind tracker_kind = 5;
 
   optional FileDetails synced_details = 6;
 
