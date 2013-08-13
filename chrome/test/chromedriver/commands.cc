@@ -88,7 +88,7 @@ Status CreateSessionOnSessionThreadHelper(
     return Status(kUnknownError, "cannot find dict 'desiredCapabilities'");
 
   Capabilities capabilities;
-  Status status = capabilities.Parse(*desired_caps);
+  Status status = capabilities.Parse(*desired_caps, bound_params.log);
   if (status.IsError())
     return status;
 

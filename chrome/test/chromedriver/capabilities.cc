@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/test/chromedriver/chrome/log.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
 namespace {
@@ -22,6 +23,17 @@ Status ParseDetach(
     Capabilities* capabilities) {
   if (!option.GetAsBoolean(&capabilities->detach))
     return Status(kUnknownError, "'detach' must be a boolean");
+  return Status(kOk);
+}
+
+Status IgnoreDeprecatedOption(
+    Log* log,
+    const char* option_name,
+    const base::Value& option,
+    Capabilities* capabilities) {
+  log->AddEntry(Log::kWarning,
+                base::StringPrintf("deprecated chrome option is ignored: '%s'",
+                                   option_name));
   return Status(kOk);
 }
 
@@ -171,6 +183,7 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
 }
 
 Status ParseDesktopChromeCapabilities(
+    Log* log,
     const base::Value& capability,
     Capabilities* capabilities) {
   const base::DictionaryValue* chrome_options = NULL;
@@ -180,6 +193,8 @@ Status ParseDesktopChromeCapabilities(
   std::map<std::string, Parser> parser_map;
 
   parser_map["detach"] = base::Bind(&ParseDetach);
+  parser_map["loadAsync"] =
+      base::Bind(&IgnoreDeprecatedOption, log, "loadAsync");
   parser_map["binary"] = base::Bind(&ParseChromeBinary);
   parser_map["logPath"] = base::Bind(&ParseLogPath);
   parser_map["args"] = base::Bind(&ParseArgs, false);
@@ -284,7 +299,9 @@ bool Capabilities::IsAndroid() const {
   return !android_package.empty();
 }
 
-Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
+Status Capabilities::Parse(
+    const base::DictionaryValue& desired_caps,
+    Log* log) {
   Status status = ParseLoggingPrefs(desired_caps, this);
   if (status.IsError())
     return status;
@@ -296,7 +313,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
 
   std::map<std::string, Parser> parser_map;
   parser_map["proxy"] = base::Bind(&ParseProxy);
-  parser_map["chromeOptions"] = base::Bind(&ParseDesktopChromeCapabilities);
+  parser_map["chromeOptions"] =
+      base::Bind(&ParseDesktopChromeCapabilities, log);
   for (std::map<std::string, Parser>::iterator it = parser_map.begin();
        it != parser_map.end(); ++it) {
     const base::Value* capability = NULL;

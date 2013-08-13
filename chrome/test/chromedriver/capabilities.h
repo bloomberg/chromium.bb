@@ -16,6 +16,7 @@ namespace base {
 class DictionaryValue;
 }
 
+class Log;
 class Status;
 
 struct Capabilities {
@@ -25,7 +26,7 @@ struct Capabilities {
   // Return true if android package is specified.
   bool IsAndroid() const;
 
-  Status Parse(const base::DictionaryValue& desired_caps);
+  Status Parse(const base::DictionaryValue& desired_caps, Log* log);
 
   // Whether the lifetime of the started Chrome browser process should be
   // bound to ChromeDriver's process. If true, Chrome will not quit if
