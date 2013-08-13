@@ -25,11 +25,8 @@ class GeolocationProviderTest;
 // This is the main API to the geolocation subsystem. The application will hold
 // a single instance of this class and can register multiple clients to be
 // notified of location changes:
-// * Observers are registered by AddLocationUpdateCallback() and will keep
-//   receiving updates
-//   until unregistered by RemoveLocationUpdateCallback().
-// * Callbacks are registered by RequestCallback() and will be called exactly
-//   once when the next update becomes available.
+// * Callbacks are registered by AddLocationUpdateCallback() and will keep
+//   receiving updates until unregistered by RemoveLocationUpdateCallback().
 // The application must instantiate the GeolocationProvider on the IO thread and
 // must communicate with it on the same thread.
 // The underlying location arbitrator will only be enabled whilst there is at
