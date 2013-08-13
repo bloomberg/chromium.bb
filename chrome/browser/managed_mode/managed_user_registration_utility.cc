@@ -113,7 +113,7 @@ void ManagedUserRegistrationUtility::OnManagedUserAcknowledged(
 
 void ManagedUserRegistrationUtility::OnManagedUsersSyncingStopped() {
   AbortPendingRegistration(
-      true,   // Run the callback.
+      true,  // Run the callback.
       GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
 }
 
