@@ -1,8 +1,8 @@
-// Copyright 2013 The Chromium Authors. All rights reserved.
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/client/plugin/normalizing_input_filter.h"
+#include "remoting/client/plugin/mac_key_event_processor.h"
 #include "remoting/proto/event.pb.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,10 +44,9 @@ KeyEvent MakeKeyEvent(uint32 keycode, bool pressed) {
 }  // namespace
 
 // Test CapsLock press/release.
-TEST(NormalizingInputFilterMacTest, CapsLock) {
+TEST(MacKeyEventProcessorTest, CapsLock) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  MacKeyEventProcessor processor(&stub);
 
   {
     InSequence s;
@@ -58,14 +57,13 @@ TEST(NormalizingInputFilterMacTest, CapsLock) {
   }
 
   // Injecting a CapsLock down event with NumLock on.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbCapsLock, true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbCapsLock, true));
 }
 
 // Test without pressing command key.
-TEST(NormalizingInputFilterMacTest, NoInjection) {
+TEST(MacKeyEventProcessorTest, NoInjection) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  MacKeyEventProcessor processor(&stub);
 
   {
     InSequence s;
@@ -77,15 +75,14 @@ TEST(NormalizingInputFilterMacTest, NoInjection) {
   }
 
   // C Down and C Up.
-  processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent('C', false));
+  processor.InjectKeyEvent(MakeKeyEvent('C', true));
+  processor.InjectKeyEvent(MakeKeyEvent('C', false));
 }
 
 // Test pressing command key and other normal keys.
-TEST(NormalizingInputFilterMacTest, CmdKey) {
+TEST(MacKeyEventProcessorTest, CmdKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  MacKeyEventProcessor processor(&stub);
 
   {
     InSequence s;
@@ -126,27 +123,26 @@ TEST(NormalizingInputFilterMacTest, CmdKey) {
   }
 
   // Left command key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent('C', true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
 
   // Right command key.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent('C', true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
 
   // More than one keys after CMD.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent('V', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent('C', true));
+  processor.InjectKeyEvent(MakeKeyEvent('V', true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
 }
 
 // Test pressing command and special keys.
-TEST(NormalizingInputFilterMacTest, SpecialKeys) {
+TEST(MacKeyEventProcessorTest, SpecialKeys) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  MacKeyEventProcessor processor(&stub);
 
   {
     InSequence s;
@@ -173,23 +169,22 @@ TEST(NormalizingInputFilterMacTest, SpecialKeys) {
   }
 
   // Command + Shift.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftShift, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftShift, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftShift, true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftShift, false));
 
   // Command + Option.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOption, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftOption, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftOption, true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftOption, false));
 }
 
 // Test pressing multiple command keys.
-TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
+TEST(MacKeyEventProcessorTest, MultipleCmdKeys) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  MacKeyEventProcessor processor(&stub);
 
   {
     InSequence s;
@@ -208,17 +203,16 @@ TEST(NormalizingInputFilterMacTest, MultipleCmdKeys) {
 
   // Test multiple CMD keys at the same time.
   // L CMD Down, C Down, R CMD Down, L CMD Up.
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent('C', true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbLeftCmd, false));
 }
 
 // Test press C key before command key.
-TEST(NormalizingInputFilterMacTest, BeforeCmdKey) {
+TEST(MacKeyEventProcessorTest, BeforeCmdKey) {
   MockInputStub stub;
-  scoped_ptr<protocol::InputFilter> processor =
-      CreateNormalizingInputFilter(&stub);
+  MacKeyEventProcessor processor(&stub);
 
   {
     InSequence s;
@@ -236,10 +230,10 @@ TEST(NormalizingInputFilterMacTest, BeforeCmdKey) {
   }
 
   // Press C before command key.
-  processor->InjectKeyEvent(MakeKeyEvent('C', true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
-  processor->InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
-  processor->InjectKeyEvent(MakeKeyEvent('C', false));
+  processor.InjectKeyEvent(MakeKeyEvent('C', true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, true));
+  processor.InjectKeyEvent(MakeKeyEvent(kUsbRightCmd, false));
+  processor.InjectKeyEvent(MakeKeyEvent('C', false));
 }
 
 }  // namespace remoting

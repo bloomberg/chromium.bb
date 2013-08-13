@@ -174,9 +174,15 @@ ChromotingInstance::ChromotingInstance(PP_Instance pp_instance)
       plugin_task_runner_(new PluginThreadTaskRunner(&plugin_thread_delegate_)),
       context_(plugin_task_runner_.get()),
       input_tracker_(&mouse_input_filter_),
+#if defined(OS_MACOSX)
+      // On Mac we need an extra filter to inject missing keyup events.
+      // See remoting/client/plugin/mac_key_event_processor.h for more details.
+      mac_key_event_processor_(&input_tracker_),
+      key_mapper_(&mac_key_event_processor_),
+#else
       key_mapper_(&input_tracker_),
-      normalizing_input_filter_(CreateNormalizingInputFilter(&key_mapper_)),
-      input_handler_(normalizing_input_filter_.get()),
+#endif
+      input_handler_(&key_mapper_),
       use_async_pin_dialog_(false),
       weak_factory_(this) {
   RequestInputEvents(PP_INPUTEVENT_CLASS_MOUSE | PP_INPUTEVENT_CLASS_WHEEL);
