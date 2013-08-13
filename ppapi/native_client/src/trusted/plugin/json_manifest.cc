@@ -173,6 +173,15 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
     urlSpecPlusOptional = kPnaclUrlSpecPlusOptional;
     urlSpecPlusOptionalLength = NACL_ARRAY_SIZE(kPnaclUrlSpecPlusOptional);
   } else {
+    // URL specifications must not contain "pnacl-translate" keys.
+    // This prohibits NaCl clients from invoking PNaCl.
+    if (url_spec.isMember(kPnaclTranslateKey)) {
+      nacl::stringstream error_stream;
+      error_stream << "PNaCl-like NMF with application/x-nacl mimetype instead "
+                   << "of x-pnacl mimetype (has " << kPnaclTranslateKey << ").";
+      *error_string = error_stream.str();
+      return false;
+    }
     urlSpecPlusOptional = kManifestUrlSpecRequired;
     urlSpecPlusOptionalLength = NACL_ARRAY_SIZE(kManifestUrlSpecRequired);
   }
@@ -182,16 +191,6 @@ bool IsValidUrlSpec(const Json::Value& url_spec,
                          kManifestUrlSpecRequired,
                          NACL_ARRAY_SIZE(kManifestUrlSpecRequired),
                          error_string)) {
-    return false;
-  }
-  // URL specifications must not contain "pnacl-translate" keys.
-  // This prohibits NaCl clients from invoking PNaCl.
-  Json::Value translate = url_spec[kPnaclTranslateKey];
-  if (!translate.empty()) {
-    nacl::stringstream error_stream;
-    error_stream << parent_key << " property '" << container_key <<
-        "' has '" << kPnaclTranslateKey << "' inside URL spec.";
-    *error_string = error_stream.str();
     return false;
   }
   // Verify the correct types of the fields if they exist.

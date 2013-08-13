@@ -146,6 +146,7 @@
           'pnacl_error_handling/bad.pexe',
           'pnacl_error_handling/pnacl_bad_pexe.nmf',
           'pnacl_error_handling/pnacl_bad_doesnotexist.nmf',
+          'pnacl_error_handling/pnacl_illformed_manifest.nmf',
         ],
       },
       'dependencies': [

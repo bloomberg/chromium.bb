@@ -39,6 +39,27 @@ function declareTests(tester) {
       'NaCl module load failed: PnaclCoordinator: ' +
       'pexe load failed (pp_error=-2).');
 
+  // 'illformed_manifest' loads a manifest that isn't quite right for pexes
+  // (looks like the format for NaCl portable data files).
+  badLoadTest(
+      tester,
+      'illformed_manifest',
+      'pnacl_illformed_manifest.nmf',
+      'application/x-pnacl',
+      'NaCl module load failed: manifest: program property \'portable\' does ' +
+      'not have required key: \'pnacl-translate\'.');
+
+  // 'wrong_mimetype' loads an okay manifest, but with the wrong mimetype
+  // (the NaCl mimetype instead of PNaCl mimetype).
+  badLoadTest(
+      tester,
+      'wrong_mimetype',
+      'pnacl_bad_pexe.nmf',
+      'application/x-nacl',
+      'NaCl module load failed: manifest: PNaCl-like NMF with ' +
+      'application/x-nacl mimetype instead of x-pnacl mimetype ' +
+      '(has pnacl-translate).');
+
   tester.addAsyncTest('Test clean directory',
     // All that should be left after all tests run is empty directories.
     // This means we will need to update this test with a whitelist,
