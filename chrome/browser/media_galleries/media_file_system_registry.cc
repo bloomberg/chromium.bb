@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -150,6 +151,10 @@ class RPHReferenceManager : public content::NotificationObserver {
         break;
       }
       case content::NOTIFICATION_NAV_ENTRY_COMMITTED: {
+        content::LoadCommittedDetails* load_details =
+            content::Details<content::LoadCommittedDetails>(details).ptr();
+        if (load_details->is_in_page)
+          break;
         NavigationController* controller =
             content::Source<NavigationController>(source).ptr();
         WebContents* contents = controller->GetWebContents();
