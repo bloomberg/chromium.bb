@@ -45,11 +45,9 @@ void ZoomDecoration::Update(ZoomController* zoom_controller) {
   [bubble_ onZoomChanged];
 }
 
-void ZoomDecoration::ToggleBubble(BOOL auto_close) {
-  if (bubble_) {
-    [bubble_ close];
+void ZoomDecoration::ShowBubble(BOOL auto_close) {
+  if (bubble_)
     return;
-  }
 
   content::WebContents* web_contents = owner_->GetWebContents();
   if (!web_contents)
@@ -85,6 +83,10 @@ void ZoomDecoration::ToggleBubble(BOOL auto_close) {
                     autoClose:auto_close];
 }
 
+void ZoomDecoration::CloseBubble() {
+  [bubble_ close];
+}
+
 NSPoint ZoomDecoration::GetBubblePointInFrame(NSRect frame) {
   return NSMakePoint(NSMaxX(frame), NSMaxY(frame));
 }
@@ -111,7 +113,10 @@ bool ZoomDecoration::AcceptsMousePress() {
 }
 
 bool ZoomDecoration::OnMousePressed(NSRect frame) {
-  ToggleBubble(NO);
+  if (bubble_)
+    CloseBubble();
+  else
+    ShowBubble(NO);
   return true;
 }
 

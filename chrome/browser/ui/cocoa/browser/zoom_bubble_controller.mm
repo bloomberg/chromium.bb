@@ -82,6 +82,7 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   if ((self = [super initWithWindow:window
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
+    [self setShouldOpenAsKeyWindow:NO];
     closeObserver_.reset(Block_copy(closeObserver));
 
     ui::NativeTheme* nativeTheme = ui::NativeTheme::instance();

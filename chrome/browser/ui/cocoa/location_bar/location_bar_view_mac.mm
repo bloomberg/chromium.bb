@@ -494,7 +494,7 @@ void LocationBarViewMac::ZoomChangedForActiveTab(bool can_show_bubble) {
   OnDecorationsChanged();
 
   if (can_show_bubble && zoom_decoration_->IsVisible())
-    zoom_decoration_->ToggleBubble(YES);
+    zoom_decoration_->ShowBubble(YES);
 }
 
 NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {

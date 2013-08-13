@@ -27,9 +27,11 @@ class ZoomDecoration : public ImageDecoration {
   void Update(ZoomController* zoom_controller);
 
   // Shows the zoom bubble for this decoration. If |auto_close| is YES, then
-  // the bubble will automatically close after a fixed period of time. Closes
-  // the bubble if it was already visible.
-  void ToggleBubble(BOOL auto_close);
+  // the bubble will automatically close after a fixed period of time.
+  void ShowBubble(BOOL auto_close);
+
+  // Closes the zoom bubble.
+  void CloseBubble();
 
  private:
   friend ZoomDecorationTest;

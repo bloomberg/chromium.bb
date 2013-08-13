@@ -59,10 +59,6 @@ class ZoomDecorationTest : public InProcessBrowserTest {
     return [controller locationBarBridge]->zoom_decoration_.get();
   }
 
-  ZoomBubbleController* GetBubble() const {
-    return GetZoomDecoration()->bubble_;
-  }
-
   void Zoom(content::PageZoom zoom) {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
@@ -103,12 +99,12 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, BubbleAtDefaultZoom) {
   // Zoom in and show bubble then reset.
   Zoom(content::PAGE_ZOOM_IN);
   EXPECT_TRUE(zoom_decoration->IsVisible());
-  zoom_decoration->ToggleBubble(false);
+  zoom_decoration->ShowBubble(false);
   Zoom(content::PAGE_ZOOM_RESET);
   EXPECT_TRUE(zoom_decoration->IsVisible());
 
   // Hide bubble and verify the decoration is hidden.
-  [GetBubble() close];
+  zoom_decoration->CloseBubble();
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }
 
@@ -130,7 +126,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, CloseBrowserWithOpenBubble) {
   // Create a new browser so that it can be closed properly.
   Browser* browser2 = CreateBrowser(browser()->profile());
   ZoomDecoration* zoom_decoration = GetZoomDecorationForBrowser(browser2);
-  zoom_decoration->ToggleBubble(true);
+  zoom_decoration->ShowBubble(true);
 
   // Test shouldn't crash.
   browser2->window()->Close();
