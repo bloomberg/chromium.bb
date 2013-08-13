@@ -103,6 +103,9 @@ class LayoutTestResults(object):
     def run_was_interrupted(self):
         return self._results["interrupted"]
 
+    def builder_name(self):
+        return self._results["builder_name"]
+
     def blink_revision(self):
         return int(self._results["blink_revision"])
 

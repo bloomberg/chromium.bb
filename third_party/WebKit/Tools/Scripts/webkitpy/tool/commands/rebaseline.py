@@ -32,6 +32,7 @@ import optparse
 import re
 import sys
 import time
+import urllib
 import urllib2
 
 from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
@@ -566,18 +567,71 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             self.no_optimize_option,
             # FIXME: Remove this option.
             self.results_directory_option,
+            optparse.make_option("--log-server", help="Server to send logs to.")
             ])
 
-    def latest_revision_processed_on_all_bots(self):
+    def _log_to_server(self, log_server, query):
+        if not log_server:
+            return
+        urllib2.urlopen("http://" + log_server + "/updatelog", data=urllib.urlencode(query))
+
+    # Logs when there are no NeedsRebaseline lines in TestExpectations.
+    # These entries overwrite the existing log entry if the existing
+    # entry is also a noneedsrebaseline entry. This is special cased
+    # so that the log doesn't get bloated with entries like this
+    # when there are no tests that needs rebaselining.
+    def _log_no_needs_rebaseline_lines(self, log_server):
+        self._log_to_server(log_server, {
+            "noneedsrebaseline": "on",
+        })
+
+    # Uploaded log entries append to the existing entry unless the
+    # newentry flag is set. In that case it starts a new entry to
+    # start appending to. So, we need to call this on any fresh run
+    # that is going to end up logging stuff (i.e. any run that isn't
+    # a noneedsrebaseline run).
+    def _start_new_log_entry(self, log_server):
+        self._log_to_server(log_server, {
+            "log": "",
+            "newentry": "on",
+        })
+
+    def _configure_logging(self, log_server):
+        if not log_server:
+            return
+
+        def _log_alias(query):
+            self._log_to_server(log_server, query)
+
+        class LogHandler(logging.Handler):
+            def __init__(self):
+                logging.Handler.__init__(self)
+                self._records = []
+
+            # Since this does not have the newentry flag, it will append
+            # to the most recent log entry (i.e. the one created by
+            # _start_new_log_entry.
+            def emit(self, record):
+                _log_alias({
+                    "log": record.getMessage(),
+                })
+
+        handler = LogHandler()
+        _log.setLevel(logging.DEBUG)
+        handler.setLevel(logging.DEBUG)
+        _log.addHandler(handler)
+
+    def latest_revision_processed_on_all_bots(self, log_server):
         revisions = []
         for result in self.builder_data().values():
             if result.run_was_interrupted():
-                _log.error("Can't rebaseline. The latest run on %s did not complete." % builder_name)
+                self._start_new_log_entry(log_server)
+                _log.error("Can't rebaseline because the latest run on %s exited early." % result.builder_name())
                 return 0
             revisions.append(result.blink_revision())
         return int(min(revisions))
 
-    def tests_to_rebaseline(self, tool, min_revision, print_revisions):
+    def tests_to_rebaseline(self, tool, min_revision, print_revisions, log_server):
         port = tool.port_factory.get()
         expectations_file_path = port.path_to_generic_test_expectations_file()
 
@@ -585,10 +639,16 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         revision = None
         author = None
         bugs = set()
+        has_any_needs_rebaseline_lines = False
 
         for line in tool.scm().blame(expectations_file_path).split("\n"):
             if "NeedsRebaseline" not in line:
                 continue
+
+            if not has_any_needs_rebaseline_lines:
+                self._start_new_log_entry(log_server)
+            has_any_needs_rebaseline_lines = True
+
             parsed_line = re.match("^(\S*)[^(]*\((\S*).*?([^ ]*)\ \[[^[]*$", line)
 
             commit_hash = parsed_line.group(1)
@@ -615,7 +675,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 _log.info("Too many tests to rebaseline in one patch. Doing the first %d." % self.MAX_LINES_TO_REBASELINE)
                 break
 
-        return tests, revision, author, bugs
+        return tests, revision, author, bugs, has_any_needs_rebaseline_lines
 
     def link_to_patch(self, revision):
         return "http://src.chromium.org/viewvc/blink?view=revision&revision=" + str(revision)
@@ -678,14 +738,21 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             _log.error("Cannot proceed with working directory changes. Clean working directory first.")
             return
 
-        min_revision = self.latest_revision_processed_on_all_bots()
+        self._configure_logging(options.log_server)
+
+        min_revision = self.latest_revision_processed_on_all_bots(options.log_server)
         if not min_revision:
+            return
+
+        tests, revision, author, bugs, has_any_needs_rebaseline_lines = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose, log_server=options.log_server)
+
+        if not has_any_needs_rebaseline_lines:
+            self._log_no_needs_rebaseline_lines(options.log_server)
             return
 
         if options.verbose:
             _log.info("Bot min revision is %s." % min_revision)
 
-        tests, revision, author, bugs = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose)
         test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
 
         if not tests:
@@ -711,6 +778,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             self._update_expectations_files(lines_to_remove)
 
             tool.scm().commit_locally_with_message(self.commit_message(author, revision, bugs))
+
+            # FIXME: Log the upload, pull and dcommit stdout/stderr to the log-server.
 
             # FIXME: It would be nice if we could dcommit the patch without uploading, but still
             # go through all the precommit hooks. For rebaselines with lots of files, uploading
@@ -739,7 +808,7 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
     def execute(self, options, args, tool):
         while True:
             tool.executive.run_command(['git', 'pull'])
-            rebaseline_command = [tool.filesystem.join(tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline']
+            rebaseline_command = [tool.filesystem.join(tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline', '--log-server', 'blinkrebaseline.appspot.com']
             if options.verbose:
                 rebaseline_command.append('--verbose')
             # Use call instead of run_command so that stdout doesn't get swallowed.

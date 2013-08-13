@@ -591,7 +591,7 @@ class TestAutoRebaseline(_BaseTestCase):
 
     def setUp(self):
         super(TestAutoRebaseline, self).setUp()
-        self.command.latest_revision_processed_on_all_bots = lambda: 9000
+        self.command.latest_revision_processed_on_all_bots = lambda log_server: 9000
 
     def test_tests_to_rebaseline(self):
         def blame(path):
@@ -607,11 +607,12 @@ class TestAutoRebaseline(_BaseTestCase):
         self.tool.scm().blame = blame
 
         min_revision = 9000
-        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
+        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False, log_server=None), (
                 set(['path/to/rebaseline-without-bug-number.html', 'path/to/rebaseline-with-modifiers.html', 'path/to/rebaseline-without-modifiers.html']),
                 5678,
                 'foobarbaz1@chromium.org',
-                set(['24182', '234'])))
+                set(['24182', '234']),
+                True))
 
     def test_tests_to_rebaseline_over_limit(self):
         def blame(path):
@@ -626,11 +627,12 @@ class TestAutoRebaseline(_BaseTestCase):
             expected_list_of_tests.append("path/to/rebaseline-%s.html" % i)
 
         min_revision = 9000
-        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False), (
+        self.assertEqual(self.command.tests_to_rebaseline(self.tool, min_revision, print_revisions=False, log_server=None), (
                 set(expected_list_of_tests),
                 5678,
                 'foobarbaz1@chromium.org',
-                set(['24182'])))
+                set(['24182']),
+                True))
 
     def test_commit_message(self):
         author = "foo@chromium.org"
@@ -661,7 +663,7 @@ TBR=foo@chromium.org
 """
         self.tool.scm().blame = blame
 
-        self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
+        self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
         self.assertEqual(self.tool.executive.calls, [])
 
     def test_execute(self):
@@ -738,13 +740,13 @@ crbug.com/24182 path/to/locally-changed-lined.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'closed'
-            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [])
 
             self.command.tree_status = lambda: 'open'
 
             self.tool.executive.calls = []
-            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 [
                     ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-chocolate.html'],
@@ -826,7 +828,7 @@ Bug(foo) fast/dom/prototype-taco.html [ NeedsRebaseline ]
             }
 
             self.command.tree_status = lambda: 'open'
-            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False), [], self.tool)
+            self.command.execute(MockOptions(optimize=True, verbose=False, move_overwritten_baselines=False, results_directory=False, log_server=None), [], self.tool)
             self.assertEqual(self.tool.executive.calls, [
                 [
                     ['echo', 'copy-existing-baselines-internal', '--suffixes', 'txt', '--builder', 'MOCK Leopard', '--test', 'fast/dom/prototype-taco.html'],
