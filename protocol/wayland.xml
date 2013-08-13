@@ -1235,7 +1235,7 @@
     </request>
    </interface>
 
-  <interface name="wl_seat" version="2">
+  <interface name="wl_seat" version="3">
     <description summary="group of input devices">
       A seat is a group of keyboards, pointer and touch devices. This
       object is published as a global during start up, or when such a
@@ -1308,7 +1308,7 @@
 
   </interface>
 
-  <interface name="wl_pointer" version="1">
+  <interface name="wl_pointer" version="3">
     <description summary="pointer input device">
       The wl_pointer interface represents one or more input devices,
       such as mice, which control the pointer location and pointer_focus
@@ -1355,6 +1355,10 @@
       <arg name="surface" type="object" interface="wl_surface" allow-null="true"/>
       <arg name="hotspot_x" type="int" summary="x coordinate in surface-relative coordinates"/>
       <arg name="hotspot_y" type="int" summary="y coordinate in surface-relative coordinates"/>
+    </request>
+
+    <request name="release" type="destructor" since="3">
+      <description summary="release the pointer object"/>
     </request>
 
     <event name="enter">
@@ -1456,11 +1460,15 @@
     </event>
   </interface>
 
-  <interface name="wl_keyboard" version="1">
+  <interface name="wl_keyboard" version="3">
     <description summary="keyboard input device">
       The wl_keyboard interface represents one or more keyboards
       associated with a seat.
     </description>
+
+    <request name="release" type="destructor" since="3">
+      <description summary="release the keyboard object"/>
+    </request>
 
     <enum name="keymap_format">
       <description summary="keyboard mapping format">
@@ -1539,7 +1547,7 @@
     </event>
   </interface>
 
-  <interface name="wl_touch" version="1">
+  <interface name="wl_touch" version="3">
     <description summary="touchscreen input device">
       The wl_touch interface represents a touchscreen
       associated with a seat.
@@ -1550,6 +1558,10 @@
       and ending with an up event. Events relating to the same
       contact point can be identified by the ID of the sequence.
     </description>
+
+    <request name="release" type="destructor" since="3">
+      <description summary="release the touch object"/>
+    </request>
 
     <event name="down">
       <description summary="touch down event and beginning of a touch sequence">
