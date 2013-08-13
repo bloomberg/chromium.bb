@@ -1003,29 +1003,33 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
     }
   };
 
-  var onEntryServiced = function() {
-    task.entryIndex++;
+  AsyncUtil.forEach(
+      task.entries,
+      function(callback, entry, index) {
+        task.entryIndex = index;  // Keep the current index for status update.
+        if (this.cancelRequested_) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              util.createFileError(FileError.ABORT_ERR)));
+          return;
+        }
+        progressCallback();
+        this.processCopyEntry_(task, entry, entryChangedCallback,
+                               progressCallback, callback, errorCallback);
 
-    // We should not dispatch a PROGRESS event when there is no pending items
-    // in the task.
-    if (task.entryIndex >= task.entries.length) {
-      if (task.deleteAfterCopy) {
-        deleteOriginals();
-      } else {
-        successCallback();
-      }
-      return;
-    }
+      },
+      function() {
+        // Hack: Mark all entries are completed.
+        // TODO(hidehiko): remove this.
+        task.entryIndex = task.entries.length;
 
-    progressCallback();
-    self.processCopyEntry_(
-        task, task.entries[task.entryIndex], entryChangedCallback,
-        progressCallback, onEntryServiced, errorCallback);
-  };
-
-  this.processCopyEntry_(
-      task, task.entries[task.entryIndex], entryChangedCallback,
-      progressCallback, onEntryServiced, errorCallback);
+        if (task.deleteAfterCopy) {
+          deleteOriginals();
+        } else {
+          successCallback();
+        }
+      },
+      this);
 };
 
 /**
@@ -1045,9 +1049,6 @@ FileCopyManager.prototype.serviceCopyTask_ = function(
 FileCopyManager.prototype.processCopyEntry_ = function(
     task, sourceEntry, entryChangedCallback, progressCallback, successCallback,
     errorCallback) {
-  if (this.maybeCancel_())
-    return;
-
   var self = this;
 
   // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
@@ -1137,25 +1138,27 @@ FileCopyManager.prototype.serviceMoveTask_ = function(
     return;
   }
 
-  this.processMoveEntry_(
-      task, task.entries[task.entryIndex], entryChangedCallback,
-      (function onCompleted() {
-        task.entryIndex++;
-
-        // We should not dispatch a PROGRESS event when there is no pending
-        // items in the task.
-        if (task.entryIndex >= task.entries.length) {
-          successCallback();
+  AsyncUtil.forEach(
+      task.entries,
+      function(callback, entry, index) {
+        task.entryIndex = index;  // Keep the index for status update.
+        if (this.cancelRequested_) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              util.createFileError(FileError.ABORT_ERR)));
           return;
         }
-
-        // Move the next entry.
         progressCallback();
         this.processMoveEntry_(
-            task, task.entries[task.entryIndex], entryChangedCallback,
-            onCompleted.bind(this), errorCallback);
-      }).bind(this),
-      errorCallback);
+            task, entry, entryChangedCallback, callback, errorCallback);
+      },
+      function() {
+        // Hack: Mark all entries are completed.
+        // TODO(hidehiko): remove this.
+        task.entryIndex = task.entries.length;
+        successCallback();
+      },
+      this);
 };
 
 /**
@@ -1181,9 +1184,6 @@ FileCopyManager.prototype.serviceMoveTask_ = function(
  */
 FileCopyManager.prototype.processMoveEntry_ = function(
     task, sourceEntry, entryChangedCallback, successCallback, errorCallback) {
-  if (this.maybeCancel_())
-    return;
-
   // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
   var sourcePath = sourceEntry.originalSourcePath;
   if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {

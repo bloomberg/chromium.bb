@@ -10,6 +10,38 @@
 var AsyncUtil = {};
 
 /**
+ * Asynchronous version of Array.forEach.
+ * This executes a provided function callback once per array element, then
+ * run completionCallback to notify the completion.
+ * The callback can be an asynchronous function, but the execution is
+ * sequentially done.
+ *
+ * @param {Array.<T>} array The array to be iterated.
+ * @param {function(function(), T, number, Array.<T>} callback The iteration
+ *     callback. The first argument is a callback to notify the completion of
+ *     the iteration.
+ * @param {function()} completionCallback Called when all iterations are
+ *     completed.
+ * @param {Object=} opt_thisObject Bound to callback if given.
+ * @template T
+ */
+AsyncUtil.forEach = function(
+    array, callback, completionCallback, opt_thisObject) {
+  if (opt_thisObject)
+    callback = callback.bind(opt_thisObject);
+
+  var queue = new AsyncUtil.Queue();
+  for (var i = 0; i < array.length; i++) {
+    queue.run(function(element, index, iterationCompletionCallback) {
+      callback(iterationCompletionCallback, element, index, array);
+    }.bind(null, array[i], i));
+  }
+  queue.run(function(iterationCompletionCallback) {
+    completionCallback();  // Don't pass iteration completion callback.
+  });
+};
+
+/**
  * Creates a class for executing several asynchronous closures in a fifo queue.
  * Added tasks will be executed sequentially in order they were added.
  *
