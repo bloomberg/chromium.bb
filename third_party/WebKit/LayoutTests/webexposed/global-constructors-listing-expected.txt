@@ -61,6 +61,7 @@ DOMSettableTokenList
 DOMStringList
 DOMStringMap
 DOMTokenList
+DataTransferItemList
 DataView
 Date
 DelayNode
