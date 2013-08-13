@@ -605,14 +605,16 @@ ChromeURLRequestContext*
 ProfileImplIOData::InitializeMediaRequestContext(
     ChromeURLRequestContext* original_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
-  // If this is for a in_memory partition, we can simply use the original
-  // context (like off-the-record mode).
-  if (partition_descriptor.in_memory)
-    return original_context;
-
   // Copy most state from the original context.
   MediaRequestContext* context = new MediaRequestContext(load_time_stats());
   context->CopyFrom(original_context);
+
+  // For in-memory context, return immediately after creating the new
+  // context before attaching a separate cache. It is important to return
+  // a new context rather than just reusing |original_context| because
+  // the caller expects to take ownership of the pointer.
+  if (partition_descriptor.in_memory)
+    return context;
 
   using content::StoragePartition;
   base::FilePath cache_path;
