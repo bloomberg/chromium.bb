@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,43 +28,32 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeMacOverlayAPI_h
-#define ScrollbarThemeMacOverlayAPI_h
+#ifndef ScrollbarThemeChromium_h
+#define ScrollbarThemeChromium_h
 
-#include "core/platform/ScrollbarThemeMacCommon.h"
-
-typedef id ScrollbarPainter;
+#include "core/platform/ScrollbarTheme.h"
 
 namespace WebCore {
 
-class ScrollbarThemeMacOverlayAPI : public ScrollbarThemeMacCommon {
-public:
-    virtual void updateEnabledState(ScrollbarThemeClient*) OVERRIDE;
-    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) OVERRIDE;
-    virtual bool usesOverlayScrollbars() const OVERRIDE;
-    virtual void updateScrollbarOverlayStyle(ScrollbarThemeClient*) OVERRIDE;
-    virtual ScrollbarButtonsPlacement buttonsPlacement() const OVERRIDE;
+class PlatformMouseEvent;
 
-    virtual void registerScrollbar(ScrollbarThemeClient*) OVERRIDE;
-    virtual void unregisterScrollbar(ScrollbarThemeClient*) OVERRIDE;
-
-    void setNewPainterForScrollbar(ScrollbarThemeClient*, ScrollbarPainter);
-    ScrollbarPainter painterForScrollbar(ScrollbarThemeClient*);
-
-    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-
+// This class contains the scrollbar code which is shared between Chromium
+// Windows and Linux.
+class ScrollbarThemeChromium : public ScrollbarTheme {
 protected:
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
-
-    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return false; }
+    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return true; }
     virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
 
-    virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
+
+    virtual void paintTrackBackground(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+    virtual void paintTickmarks(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
+
+    virtual IntSize buttonSize(ScrollbarThemeClient*) = 0;
 };
 
-}
+} // namespace WebCore
 
 #endif

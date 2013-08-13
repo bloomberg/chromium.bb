@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/ScrollbarThemeNonMacCommon.h"
+#include "core/platform/chromium/ScrollbarThemeChromium.h"
 
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/ScrollableArea.h"
@@ -33,16 +33,21 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 
+// -----------------------------------------------------------------------------
+// This file contains scrollbar theme code that is cross platform. Additional
+// members of ScrollbarThemeChromium can be found in the platform specific files
+// -----------------------------------------------------------------------------
+
 namespace WebCore {
 
-bool ScrollbarThemeNonMacCommon::hasThumb(ScrollbarThemeClient* scrollbar)
+bool ScrollbarThemeChromium::hasThumb(ScrollbarThemeClient* scrollbar)
 {
     // This method is just called as a paint-time optimization to see if
-    // painting the thumb can be skipped. We don't have to be exact here.
+    // painting the thumb can be skipped.  We don't have to be exact here.
     return thumbLength(scrollbar) > 0;
 }
 
-IntRect ScrollbarThemeNonMacCommon::backButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
+IntRect ScrollbarThemeChromium::backButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
 {
     // Windows and Linux just have single arrows.
     if (part == BackButtonEndPart)
@@ -52,7 +57,7 @@ IntRect ScrollbarThemeNonMacCommon::backButtonRect(ScrollbarThemeClient* scrollb
     return IntRect(scrollbar->x(), scrollbar->y(), size.width(), size.height());
 }
 
-IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
+IntRect ScrollbarThemeChromium::forwardButtonRect(ScrollbarThemeClient* scrollbar, ScrollbarPart part, bool)
 {
     // Windows and Linux just have single arrows.
     if (part == ForwardButtonStartPart)
@@ -70,7 +75,7 @@ IntRect ScrollbarThemeNonMacCommon::forwardButtonRect(ScrollbarThemeClient* scro
     return IntRect(x, y, size.width(), size.height());
 }
 
-IntRect ScrollbarThemeNonMacCommon::trackRect(ScrollbarThemeClient* scrollbar, bool)
+IntRect ScrollbarThemeChromium::trackRect(ScrollbarThemeClient* scrollbar, bool)
 {
     IntSize bs = buttonSize(scrollbar);
     int thickness = scrollbarThickness(scrollbar->controlSize());
@@ -86,20 +91,20 @@ IntRect ScrollbarThemeNonMacCommon::trackRect(ScrollbarThemeClient* scrollbar, b
     return IntRect(scrollbar->x(), scrollbar->y() + bs.height(), thickness, scrollbar->height() - 2 * bs.height());
 }
 
-void ScrollbarThemeNonMacCommon::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeChromium::paintTrackBackground(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
-    // Just assume a forward track part. We only paint the track as a single piece when there is no thumb.
+    // Just assume a forward track part.  We only paint the track as a single piece when there is no thumb.
     if (!hasThumb(scrollbar))
         paintTrackPiece(context, scrollbar, rect, ForwardTrackPart);
 }
 
-void ScrollbarThemeNonMacCommon::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeChromium::paintTickmarks(GraphicsContext* context, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     if (scrollbar->orientation() != VerticalScrollbar)
         return;
 
     if (rect.height() <= 0 || rect.width() <= 0)
-        return;
+        return;  // nothing to draw on.
 
     // Get the tickmarks for the frameview.
     Vector<IntRect> tickmarks;

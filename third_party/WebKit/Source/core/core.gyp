@@ -623,6 +623,27 @@
         ['exclude', 'platform/graphics/cpu/arm/filters/.*NEON\\.(cpp|h)'],
       ],
       'conditions': [
+        ['use_default_render_theme==1', {
+          'sources/': [
+            ['exclude', 'platform/chromium/PlatformThemeChromiumWin.h'],
+            ['exclude', 'platform/chromium/PlatformThemeChromiumWin.cpp'],
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumWin.cpp'],
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumWin.h'],
+          ],
+        }, { # use_default_render_theme==0
+          'sources/': [
+            ['exclude', 'platform/chromium/PlatformThemeChromiumDefault.cpp'],
+            ['exclude', 'platform/chromium/PlatformThemeChromiumDefault.h'],
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumDefault.cpp'],
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumDefault.h'],
+          ],
+        }],
+        ['use_default_render_theme==0 and OS!="android"', {
+          'sources/': [
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumOverlay.cpp'],
+            ['exclude', 'platform/chromium/ScrollbarThemeChromiumOverlay.h'],
+          ]
+        }],
         ['OS=="linux" or OS=="android"', {
           'sources/': [
             # Cherry-pick files excluded by the broader regular expressions above.
@@ -649,9 +670,14 @@
             ['exclude', 'Linux\\.cpp$'],
           ],
         }],
-        ['toolkit_uses_gtk == 0', {
+        ['toolkit_uses_gtk == 1', {
           'sources/': [
-            ['exclude', 'platform/chromium/KeyCodeConversionGtk\\.cpp$'],
+            # Cherry-pick files excluded by the broader regular expressions above.
+            ['include', 'platform/chromium/KeyCodeConversionGtk\\.cpp$'],
+          ],
+        }, { # toolkit_uses_gtk==0
+          'sources/': [
+            ['exclude', 'Gtk\\.cpp$'],
           ],
         }],
         ['OS=="mac"', {
@@ -690,6 +716,9 @@
             ['include', 'platform/mac/KillRingMac\\.mm$'],
             ['include', 'platform/mac/LocalCurrentGraphicsContext\\.mm$'],
             ['include', 'platform/mac/NSScrollerImpDetails\\.mm$'],
+            ['include', 'platform/mac/ScrollbarThemeMac\\.mm$'],
+            ['include', 'platform/mac/ScrollbarThemeMacNonOverlayAPI\\.mm$'],
+            ['include', 'platform/mac/ScrollbarThemeMacOverlayAPI\\.mm$'],
             ['include', 'platform/mac/ScrollAnimatorMac\\.mm$'],
             ['include', 'platform/mac/ScrollElasticityController\\.mm$'],
             ['include', 'platform/mac/ThemeMac\\.h$'],
@@ -715,7 +744,9 @@
             # included by regex above, instead.
             ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
 
-            ['exclude', 'platform/ScrollbarThemeNonMacCommon\\.(cpp|h)$'],
+            # The Mac currently uses ScrollbarThemeChromiumMac.mm, which is not
+            # related to ScrollbarThemeChromium.cpp.
+            ['exclude', 'platform/chromium/ScrollbarThemeChromium\\.cpp$'],
 
             # Mac uses only ScrollAnimatorMac.
             ['exclude', 'platform/ScrollAnimatorNone\\.cpp$'],
@@ -740,7 +771,6 @@
         },{ # OS!="mac"
           'sources/': [
             ['exclude', 'Mac\\.(cpp|mm?)$'],
-            ['exclude', 'ScrollbarThemeMac'],
 
             # FIXME: We will eventually compile this too, but for now it's
             # only used on mac.
@@ -756,10 +786,9 @@
           'sources/': [
             ['exclude', 'Posix\\.cpp$'],
 
-            ['include', 'platform/ScrollbarThemeWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/chromium/TransparencyWin\\.(cpp|h)$'],
-            ['include', 'platform/graphics/opentype/'],
-            ['include', 'platform/graphics/skia/SkiaFontWin\\.(cpp|h)$'],
+            ['include', '/opentype/'],
+            ['include', '/SkiaFontWin\\.cpp$'],
+            ['include', '/TransparencyWin\\.cpp$'],
 
             ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
 
@@ -814,22 +843,6 @@
           'sources/': [
             ['exclude', 'Android\\.cpp$'],
           ],
-        }],
-        ['use_default_render_theme==1', {
-          'sources/': [
-            ['exclude', 'platform/ScrollbarThemeWin\\.(cpp|h)'],
-            ['exclude', 'platform/chromium/PlatformThemeChromiumWin\\.(cpp|h)'],
-          ],
-        }, { # use_default_render_theme==0
-          'sources/': [
-            ['exclude', 'platform/ScrollbarThemeAuraOrGtk\\.(cpp|h)'],
-            ['exclude', 'platform/chromium/PlatformThemeChromiumDefault\\.(cpp|h)'],
-          ],
-        }],
-        ['use_default_render_theme==0 and OS!="android"', {
-          'sources/': [
-            ['exclude', 'platform/ScrollbarThemeOverlay\\.(cpp|h)'],
-          ]
         }],
       ],
     },

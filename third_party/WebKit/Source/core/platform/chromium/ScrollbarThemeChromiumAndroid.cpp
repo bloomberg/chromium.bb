@@ -23,33 +23,18 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeOverlay_h
-#define ScrollbarThemeOverlay_h
+#include "config.h"
 
 #include "core/platform/ScrollbarTheme.h"
 
+#include "core/platform/chromium/ScrollbarThemeChromiumOverlay.h"
+
 namespace WebCore {
 
-// This scrollbar theme is used to get overlay scrollbar for platforms other
-// than Mac. Mac's overlay scrollbars are in ScrollbarThemeMac*.
-class ScrollbarThemeOverlay : public ScrollbarTheme {
-public:
-    virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
-    virtual bool usesOverlayScrollbars() const OVERRIDE;
-
-    virtual int thumbPosition(ScrollbarThemeClient*) OVERRIDE;
-    virtual int thumbLength(ScrollbarThemeClient*) OVERRIDE;
-
-    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE { return false; };
-    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
-
-    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
-    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
-    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
-
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-};
+ScrollbarTheme* ScrollbarTheme::nativeTheme()
+{
+    DEFINE_STATIC_LOCAL(ScrollbarThemeChromiumOverlay, theme, ());
+    return &theme;
+}
 
 } // namespace WebCore
-
-#endif

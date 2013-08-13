@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/ScrollbarThemeWin.h"
+#include "core/platform/chromium/ScrollbarThemeChromiumWin.h"
 
 #include <windows.h>
 #include <vsstyle.h>
@@ -38,27 +38,28 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/win/WebThemeEngine.h"
+
 namespace WebCore {
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
-    static ScrollbarThemeWin theme;
+    static ScrollbarThemeChromiumWin theme;
     return &theme;
 }
 
 // The scrollbar size in DumpRenderTree on the Mac - so we can match their
-// layout results. Entries are for regular, small, and mini scrollbars.
+// layout results.  Entries are for regular, small, and mini scrollbars.
 // Metrics obtained using [NSScroller scrollerWidthForControlSize:]
 static const int kMacScrollbarSize[3] = { 15, 11, 15 };
 
 // Constants used to figure the drag rect outside which we should snap the
-// scrollbar thumb back to its origin. These calculations are based on
+// scrollbar thumb back to its origin.  These calculations are based on
 // observing the behavior of the MSVC8 main window scrollbar + some
 // guessing/extrapolation.
 static const int kOffEndMultiplier = 3;
 static const int kOffSideMultiplier = 8;
 
-int ScrollbarThemeWin::scrollbarThickness(ScrollbarControlSize controlSize)
+int ScrollbarThemeChromiumWin::scrollbarThickness(ScrollbarControlSize controlSize)
 {
     static int thickness;
     if (!thickness) {
@@ -69,12 +70,12 @@ int ScrollbarThemeWin::scrollbarThickness(ScrollbarControlSize controlSize)
     return thickness;
 }
 
-bool ScrollbarThemeWin::invalidateOnMouseEnterExit()
+bool ScrollbarThemeChromiumWin::invalidateOnMouseEnterExit()
 {
     return windowsVersion() >= WindowsVista;
 }
 
-bool ScrollbarThemeWin::shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
+bool ScrollbarThemeChromiumWin::shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollbar, const PlatformMouseEvent& evt)
 {
     // Find the rect within which we shouldn't snap, by expanding the track rect
     // in both dimensions.
@@ -92,7 +93,7 @@ bool ScrollbarThemeWin::shouldSnapBackToDragOrigin(ScrollbarThemeClient* scrollb
     return !rect.contains(mousePosition);
 }
 
-void ScrollbarThemeWin::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
+void ScrollbarThemeChromiumWin::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
     bool horz = scrollbar->orientation() == HorizontalScrollbar;
 
@@ -109,7 +110,7 @@ void ScrollbarThemeWin::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClien
     WebKit::Platform::current()->themeEngine()->paintScrollbarTrack(canvas, partId, getThemeState(scrollbar, partType), getClassicThemeState(scrollbar, partType), WebKit::WebRect(rect), WebKit::WebRect(alignRect));
 }
 
-void ScrollbarThemeWin::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
+void ScrollbarThemeChromiumWin::paintButton(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart part)
 {
     bool horz = scrollbar->orientation() == HorizontalScrollbar;
 
@@ -124,7 +125,7 @@ void ScrollbarThemeWin::paintButton(GraphicsContext* gc, ScrollbarThemeClient* s
     WebKit::Platform::current()->themeEngine()->paintScrollbarArrow(canvas, getThemeArrowState(scrollbar, part), partId | getClassicThemeState(scrollbar, part), WebKit::WebRect(rect));
 }
 
-void ScrollbarThemeWin::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
+void ScrollbarThemeChromiumWin::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect)
 {
     bool horz = scrollbar->orientation() == HorizontalScrollbar;
 
@@ -136,10 +137,10 @@ void ScrollbarThemeWin::paintThumb(GraphicsContext* gc, ScrollbarThemeClient* sc
     WebKit::Platform::current()->themeEngine()->paintScrollbarThumb(canvas, horz ? SBP_GRIPPERHORZ : SBP_GRIPPERVERT, getThemeState(scrollbar, ThumbPart), getClassicThemeState(scrollbar, ThumbPart), WebKit::WebRect(rect));
 }
 
-int ScrollbarThemeWin::getThemeState(ScrollbarThemeClient* scrollbar, ScrollbarPart part) const
+int ScrollbarThemeChromiumWin::getThemeState(ScrollbarThemeClient* scrollbar, ScrollbarPart part) const
 {
     // When dragging the thumb, draw thumb pressed and other segments normal
-    // regardless of where the cursor actually is. See also four places in
+    // regardless of where the cursor actually is.  See also four places in
     // getThemeArrowState().
     if (scrollbar->pressedPart() == ThumbPart) {
         if (part == ThumbPart)
@@ -155,7 +156,7 @@ int ScrollbarThemeWin::getThemeState(ScrollbarThemeClient* scrollbar, ScrollbarP
     return (scrollbar->pressedPart() == part) ? SCRBS_PRESSED : SCRBS_NORMAL;
 }
 
-int ScrollbarThemeWin::getThemeArrowState(ScrollbarThemeClient* scrollbar, ScrollbarPart part) const
+int ScrollbarThemeChromiumWin::getThemeArrowState(ScrollbarThemeClient* scrollbar, ScrollbarPart part) const
 {
     // We could take advantage of knowing the values in the state enum to write
     // some simpler code, but treating the state enum as a black box seems
@@ -205,7 +206,7 @@ int ScrollbarThemeWin::getThemeArrowState(ScrollbarThemeClient* scrollbar, Scrol
     return (scrollbar->pressedPart() == part) ? ABS_DOWNPRESSED : ABS_DOWNNORMAL;
 }
 
-int ScrollbarThemeWin::getClassicThemeState(ScrollbarThemeClient* scrollbar, ScrollbarPart part) const
+int ScrollbarThemeChromiumWin::getClassicThemeState(ScrollbarThemeClient* scrollbar, ScrollbarPart part) const
 {
     // When dragging the thumb, draw the buttons normal even when hovered.
     if (scrollbar->pressedPart() == ThumbPart)
@@ -219,24 +220,24 @@ int ScrollbarThemeWin::getClassicThemeState(ScrollbarThemeClient* scrollbar, Scr
     return (scrollbar->pressedPart() == part) ? (DFCS_PUSHED | DFCS_FLAT) : 0;
 }
 
-bool ScrollbarThemeWin::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
+bool ScrollbarThemeChromiumWin::shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent& evt)
 {
     return evt.shiftKey() && evt.button() == LeftButton;
 }
 
-IntSize ScrollbarThemeWin::buttonSize(ScrollbarThemeClient* scrollbar)
+IntSize ScrollbarThemeChromiumWin::buttonSize(ScrollbarThemeClient* scrollbar)
 {
     // Our desired rect is essentially thickness by thickness.
 
     // Our actual rect will shrink to half the available space when we have < 2
-    // times thickness pixels left. This allows the scrollbar to scale down
+    // times thickness pixels left.  This allows the scrollbar to scale down
     // and function even at tiny sizes.
 
     int thickness = scrollbarThickness(scrollbar->controlSize());
 
     // In layout test mode, we force the button "girth" (i.e., the length of
     // the button along the axis of the scrollbar) to be a fixed size.
-    // FIXME: This is retarded! scrollbarThickness is already fixed in layout
+    // FIXME: This is retarded!  scrollbarThickness is already fixed in layout
     // test mode so that should be enough to result in repeatable results, but
     // preserving this hack avoids having to rebaseline pixel tests.
     const int kLayoutTestModeGirth = 17;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009, Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,32 +28,34 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScrollbarThemeWin_h
-#define ScrollbarThemeWin_h
+#ifndef ScrollbarThemeMacNonOverlayAPI_h
+#define ScrollbarThemeMacNonOverlayAPI_h
 
-#include "core/platform/ScrollbarThemeNonMacCommon.h"
+#include "core/platform/mac/ScrollbarThemeMac.h"
 
 namespace WebCore {
 
-class ScrollbarThemeWin : public ScrollbarThemeNonMacCommon {
+class ScrollbarThemeMacNonOverlayAPI : public ScrollbarThemeMacCommon {
 public:
-    virtual int scrollbarThickness(ScrollbarControlSize) OVERRIDE;
-    virtual bool invalidateOnMouseEnterExit() OVERRIDE;
-    virtual bool shouldSnapBackToDragOrigin(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
+    virtual int scrollbarThickness(ScrollbarControlSize = RegularScrollbar) OVERRIDE;
+    virtual bool usesOverlayScrollbars() const OVERRIDE { return false; }
+    virtual ScrollbarButtonsPlacement buttonsPlacement() const OVERRIDE;
+
+    virtual bool paint(ScrollbarThemeClient*, GraphicsContext*, const IntRect& damageRect) OVERRIDE;
 
 protected:
-    virtual void paintTrackPiece(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
-    virtual void paintButton(GraphicsContext*, ScrollbarThemeClient*, const IntRect&, ScrollbarPart) OVERRIDE;
-    virtual void paintThumb(GraphicsContext*, ScrollbarThemeClient*, const IntRect&) OVERRIDE;
-    virtual bool shouldCenterOnThumb(ScrollbarThemeClient*, const PlatformMouseEvent&) OVERRIDE;
-    virtual IntSize buttonSize(ScrollbarThemeClient*) OVERRIDE;
+    virtual IntRect trackRect(ScrollbarThemeClient*, bool painting = false) OVERRIDE;
+    virtual IntRect backButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
+    virtual IntRect forwardButtonRect(ScrollbarThemeClient*, ScrollbarPart, bool painting = false) OVERRIDE;
 
-private:
-    int getThemeState(ScrollbarThemeClient*, ScrollbarPart) const;
-    int getThemeArrowState(ScrollbarThemeClient*, ScrollbarPart) const;
-    int getClassicThemeState(ScrollbarThemeClient*, ScrollbarPart) const;
+    virtual void updateButtonPlacement() OVERRIDE;
+
+    virtual bool hasButtons(ScrollbarThemeClient*) OVERRIDE;
+    virtual bool hasThumb(ScrollbarThemeClient*) OVERRIDE;
+
+    virtual int minimumThumbLength(ScrollbarThemeClient*) OVERRIDE;
 };
 
-} // namespace WebCore
+}
 
 #endif
