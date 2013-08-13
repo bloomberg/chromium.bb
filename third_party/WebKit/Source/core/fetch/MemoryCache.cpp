@@ -32,6 +32,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerThread.h"
+#include "public/platform/Platform.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityOriginHash.h"
 #include "wtf/Assertions.h"
@@ -560,6 +561,8 @@ void MemoryCache::evictResources()
 
 void MemoryCache::prune()
 {
+    ASSERT(WebKit::Platform::current()); // This method should not be called after WebKit::shutdown().
+
     if (m_liveSize + m_deadSize <= m_capacity && m_maxDeadCapacity && m_deadSize <= m_maxDeadCapacity) // Fast path.
         return;
     if (m_inPruneResources)
