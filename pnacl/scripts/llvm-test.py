@@ -242,13 +242,15 @@ def LlvmRegression(env, options):
     # stdout to our stdout, rather than collect its entire stdout and
     # print it at the end.  Otherwise the watchdog may try to kill the
     # process after too long without any output.
-    for line in make_pipe.stdout:
+    for line in iter(make_pipe.stdout.readline, ''):
       if env['PNACL_BUILDBOT'] != 'false':
         # The buildbots need to be fully verbose and print all output
         # from "make check-all".
         print line,
       lines.append(line)
+    print 'Calling pipe.wait()...'
     make_pipe.wait()
+    print 'Finished calling pipe.wait()'
     make_stdout = ''.join(lines)
     parse_options = vars(options)
     parse_options['lit'] = True
