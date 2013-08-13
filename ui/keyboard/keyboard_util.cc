@@ -118,6 +118,7 @@ const GritResourceMap* GetKeyboardExtensionResources(size_t* size) {
     {"keyboard/elements/kb-altkey-set.html", IDR_KEYBOARD_ELEMENTS_ALTKEY_SET},
     {"keyboard/elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY},
     {"keyboard/elements/kb-key-base.html", IDR_KEYBOARD_ELEMENTS_KEY_BASE},
+    {"keyboard/elements/kb-key-codes.html", IDR_KEYBOARD_ELEMENTS_KEY_CODES},
     {"keyboard/elements/kb-key-import.html",
         IDR_KEYBOARD_ELEMENTS_KEY_IMPORT},
     {"keyboard/elements/kb-key-sequence.html",

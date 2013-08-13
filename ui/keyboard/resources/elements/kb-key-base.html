@@ -110,7 +110,7 @@
       },
       down: function(event) {
         var detail = {
-            char: this.char || this.textContent,
+            char: this.charValue,
             toLayout: this.toLayout,
             repeat: this.repeat
         };
@@ -121,7 +121,7 @@
         this.fire('key-down', detail);
         this.longPressTimer = this.asyncMethod(function() {
           var detail = {
-            char: this.char || this.textContent,
+            char: this.charValue,
             superscript: this.superscript
           };
           if (this.keysetRules && this.keysetRules.long != undefined) {
@@ -137,7 +137,7 @@
       up: function(event) {
         clearTimeout(this.longPressTimer);
         var detail = {
-            char: this.char || this.textContent,
+            char: this.charValue,
             toLayout: this.toLayout
         };
         if (this.keysetRules && this.keysetRules.up != undefined) {
@@ -145,7 +145,17 @@
           detail.nextKeyset = this.keysetRules.up[NEXT_KEYSET - OFFSET];
         }
         this.fire('key-up', detail);
-      }
+      },
+
+      /**
+       * Character value associated with the key. Typically, the value is a
+       * single charcater, but may be multi-character in cases like a ".com"
+       * button.
+       * @type {string}
+       */
+      get charValue() {
+        return this.char || this.textContent;
+      },
     });
   </script>
 </polymer-element>

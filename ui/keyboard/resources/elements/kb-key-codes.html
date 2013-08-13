@@ -1,0 +1,172 @@
+<!--
+  -- Copyright 2013 The Chromium Authors. All rights reserved.
+  -- Use of this source code is governed by a BSD-style license that can be
+  -- found in the LICENSE file.
+  -->
+
+<polymer-element name="kb-key-codes">
+<script>
+  (function() {
+    // Keycodes have been deprecated in the KeyEvent specification, but are
+    // nonetheless required to support legacy web content.  The Keycodes in the
+    // following table are based on subset of US-EN 101-key keyboard. These
+    // codes are used in the absence of explicit keycodes for kb-key and
+    // kb-keysequence elements. Keyboard layout authors may explicitly set the
+    // keyCode attribute for kb-key or kb-keysequence elements to refer to
+    // indices in this table in order to emulate a physical keyboard with an
+    // alternate layout.  Not all keys on a virtual keyboard are required to
+    // have keyCodes.
+    var keyCodes = {
+      '\b': {keyCode: 0x08, shiftModifier: false},
+      '\t': {keyCode: 0x09, shiftModifier: false},
+      '\n': {keyCode: 0x0D, shiftModifier: false},
+      ' ': {keyCode: 0x20, shiftModifier: false},
+      '0': {keyCode: 0x30, shiftModifier: false},
+      ')': {keyCode: 0x30, shiftModifier: true},
+      '1': {keyCode: 0x31, shiftModifier: false},
+      '!': {keyCode: 0x31, shiftModifier: true},
+      '2': {keyCode: 0x32, shiftModifier: false},
+      '@': {keyCode: 0x32, shiftModifier: true},
+      '3': {keyCode: 0x33, shiftModifier: false},
+      '#': {keyCode: 0x33, shiftModifier: true},
+      '4': {keyCode: 0x34, shiftModifier: false},
+      '$': {keyCode: 0x34, shiftModifier: true},
+      '5': {keyCode: 0x35, shiftModifier: false},
+      '%': {keyCode: 0x35, shiftModifier: true},
+      '6': {keyCode: 0x36, shiftModifier: false},
+      '^': {keyCode: 0x36, shiftModifier: true},
+      '7': {keyCode: 0x37, shiftModifier: false},
+      '&': {keyCode: 0x37, shiftModifier: true},
+      '8': {keyCode: 0x38, shiftModifier: false},
+      '*': {keyCode: 0x38, shiftModifier: true},
+      '9': {keyCode: 0x39, shiftModifier: false},
+      '(': {keyCode: 0x39, shiftModifier: true},
+      'a': {keyCode: 0x41, shiftModifier: false},
+      'A': {keyCode: 0x41, shiftModifier: true},
+      'b': {keyCode: 0x42, shiftModifier: false},
+      'B': {keyCode: 0x42, shiftModifier: true},
+      'c': {keyCode: 0x43, shiftModifier: false},
+      'C': {keyCode: 0x43, shiftModifier: true},
+      'd': {keyCode: 0x44, shiftModifier: false},
+      'D': {keyCode: 0x44, shiftModifier: true},
+      'e': {keyCode: 0x45, shiftModifier: false},
+      'E': {keyCode: 0x45, shiftModifier: true},
+      'f': {keyCode: 0x46, shiftModifier: false},
+      'F': {keyCode: 0x46, shiftModifier: true},
+      'g': {keyCode: 0x47, shiftModifier: false},
+      'G': {keyCode: 0x47, shiftModifier: true},
+      'h': {keyCode: 0x48, shiftModifier: false},
+      'H': {keyCode: 0x48, shiftModifier: true},
+      'i': {keyCode: 0x49, shiftModifier: false},
+      'I': {keyCode: 0x49, shiftModifier: true},
+      'j': {keyCode: 0x4A, shiftModifier: false},
+      'J': {keyCode: 0x4A, shiftModifier: true},
+      'k': {keyCode: 0x4B, shiftModifier: false},
+      'K': {keyCode: 0x4B, shiftModifier: true},
+      'l': {keyCode: 0x4C, shiftModifier: false},
+      'L': {keyCode: 0x4C, shiftModifier: true},
+      'm': {keyCode: 0x4D, shiftModifier: false},
+      'M': {keyCode: 0x4D, shiftModifier: true},
+      'n': {keyCode: 0x4E, shiftModifier: false},
+      'N': {keyCode: 0x4E, shiftModifier: true},
+      'o': {keyCode: 0x4F, shiftModifier: false},
+      'O': {keyCode: 0x4F, shiftModifier: true},
+      'p': {keyCode: 0x50, shiftModifier: false},
+      'P': {keyCode: 0x50, shiftModifier: true},
+      'q': {keyCode: 0x51, shiftModifier: false},
+      'Q': {keyCode: 0x51, shiftModifier: true},
+      'r': {keyCode: 0x52, shiftModifier: false},
+      'R': {keyCode: 0x52, shiftModifier: true},
+      's': {keyCode: 0x53, shiftModifier: false},
+      'S': {keyCode: 0x53, shiftModifier: true},
+      't': {keyCode: 0x54, shiftModifier: false},
+      'T': {keyCode: 0x54, shiftModifier: true},
+      'u': {keyCode: 0x55, shiftModifier: false},
+      'U': {keyCode: 0x55, shiftModifier: true},
+      'v': {keyCode: 0x56, shiftModifier: false},
+      'V': {keyCode: 0x56, shiftModifier: true},
+      'w': {keyCode: 0x57, shiftModifier: false},
+      'W': {keyCode: 0x57, shiftModifier: true},
+      'x': {keyCode: 0x58, shiftModifier: false},
+      'X': {keyCode: 0x58, shiftModifier: true},
+      'y': {keyCode: 0x59, shiftModifier: false},
+      'Y': {keyCode: 0x59, shiftModifier: true},
+      'z': {keyCode: 0x5A, shiftModifier: false},
+      'Z': {keyCode: 0x5A, shiftModifier: true},
+      ';': {keyCode: 0xBA, shiftModifier: false},
+      ':': {keyCode: 0xBA, shiftModifier: true},
+      '=': {keyCode: 0xBB, shiftModifier: false},
+      '+': {keyCode: 0xBB, shiftModifier: true},
+      ',': {keyCode: 0xBC, shiftModifier: false},
+      '<': {keyCode: 0xBC, shiftModifier: true},
+      '-': {keyCode: 0xBD, shiftModifier: false},
+      '_': {keyCode: 0xBD, shiftModifier: true},
+      '.': {keyCode: 0xBE, shiftModifier: false}, 
+      '>': {keyCode: 0xBE, shiftModifier: true}, 
+      '/': {keyCode: 0xBF, shiftModifier: false},
+      '?': {keyCode: 0xBF, shiftModifier: true}, 
+      '`': {keyCode: 0xC0, shiftModifier: false},
+      '~': {keyCode: 0xC0, shiftModifier: true},
+      '[': {keyCode: 0xDB, shiftModifier: false},
+      '{': {keyCode: 0xDB, shiftModifier: true},
+      '\\': {keyCode: 0xDC, shiftModifier: false},
+      '|': {keyCode: 0xDC, shiftModifier: true}, 
+      ']': {keyCode: 0xDD, shiftModifier: false},
+      '}': {keyCode: 0xDD, shiftModifier: true},
+      '\'': {keyCode: 0xDE, shiftModifier: false},
+      '"': {keyCode: 0xDE, shiftModifier: true},
+    };
+
+    Polymer('kb-key-codes', {
+      /**
+       * Retrieves the keyCode and status of the shift modifier.
+       * @param {string} id ID of an entry in the code table.
+       * @return {keyCode: numeric, shiftModifier: boolean}
+       */
+      GetKeyCodeAndModifiers: function(id) {
+        var entry = keyCodes[id];
+        if (entry) {
+          return {
+            keyCode: entry.keyCode,
+            shiftModifier: entry.shiftModifier
+          };
+        }
+        return {
+          keyCode: 0,
+          shiftModifier: false
+        };
+      },
+
+     /**
+      * Creates a virtual key event for use with the keyboard extension API.
+      * @param {kb-key} key Instance of the kb-key element being pressed or
+      *     released.
+      * @param {string} type The type of key event, which may be keydown
+      *     or keyreleased.
+      * @return {keyCode: numeric,
+      *          modifiers: Array.<string>,
+      *          type: string,
+      *          value: string}
+      */
+     CreateVirtualKeyEvent: function(key, type) {
+       var keyCode = key.keyCode;
+       var shiftModifier = key.shiftModifier;
+       if (keyCode == undefined) {
+         var state = this.GetKeyCodeAndModifiers(key.charValue);
+         keyCode = state.keyCode;
+         shiftModifier = state.shiftModifier;
+       }
+       var modifiers = [];
+       if (shiftModifier)
+         modifiers.push('shiftKey');
+       return {
+         keyCode: keyCode,
+         modifiers: modifiers,
+         type: type,
+         value: key.charValue,
+       };
+     },
+    });
+  })();
+</script>
+</polymer-element>

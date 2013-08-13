@@ -30,6 +30,8 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   source->AddResourcePath("elements/kb-key.html", IDR_KEYBOARD_ELEMENTS_KEY);
   source->AddResourcePath("elements/kb-key-base.html",
                           IDR_KEYBOARD_ELEMENTS_KEY_BASE);
+  source->AddResourcePath("elements/kb-key-codes.html",
+                          IDR_KEYBOARD_ELEMENTS_KEY_CODES);
   source->AddResourcePath("elements/kb-keyboard.html",
                           IDR_KEYBOARD_ELEMENTS_KEYBOARD);
   source->AddResourcePath("elements/kb-keyset.html",

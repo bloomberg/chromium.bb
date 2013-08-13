@@ -23,6 +23,7 @@
       <include name="IDR_KEYBOARD_ELEMENTS_ALTKEY_SET" file="resources/elements/kb-altkey-set.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEY" file="resources/elements/kb-key.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEY_BASE" file="resources/elements/kb-key-base.html" type="BINDATA" />
+      <include name="IDR_KEYBOARD_ELEMENTS_KEY_CODES" file="resources/elements/kb-key-codes.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEY_IMPORT" file="resources/elements/kb-key-import.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEY_SEQUENCE" file="resources/elements/kb-key-sequence.html" type="BINDATA" />
       <include name="IDR_KEYBOARD_ELEMENTS_KEYBOARD" file="resources/elements/kb-keyboard.html" type="BINDATA" />
