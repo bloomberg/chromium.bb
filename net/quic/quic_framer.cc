@@ -103,11 +103,6 @@ size_t QuicFramer::GetMinStreamFrameSize(QuicVersion version,
                                          QuicStreamId stream_id,
                                          QuicStreamOffset offset,
                                          bool last_frame_in_packet) {
-  if (version == QUIC_VERSION_6) {
-    return kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-        kQuicStreamFinSize + kQuicMaxStreamOffsetSize +
-        kQuicStreamPayloadLengthSize;
-  }
   return kQuicFrameTypeSize + GetStreamIdSize(stream_id) +
       GetStreamOffsetSize(offset) +
       (last_frame_in_packet ? 0 : kQuicStreamPayloadLengthSize);
@@ -283,15 +278,9 @@ SerializedPacket QuicFramer::BuildDataPacket(
         writer.WritePadding();
         break;
       case STREAM_FRAME:
-        if (quic_version_ == QUIC_VERSION_6) {
-          if (!AppendV6StreamFramePayload(*frame.stream_frame, &writer)) {
-            return kNoPacket;
-          }
-        } else {
-          if (!AppendStreamFramePayload(
-              *frame.stream_frame, last_frame_in_packet, &writer)) {
-            return kNoPacket;
-          }
+        if (!AppendStreamFramePayload(
+            *frame.stream_frame, last_frame_in_packet, &writer)) {
+          return kNoPacket;
         }
         break;
       case ACK_FRAME:
@@ -898,97 +887,55 @@ bool QuicFramer::ProcessFrameData() {
       return RaiseError(QUIC_INVALID_FRAME_DATA);
     }
 
-    if (quic_version_ >= QUIC_VERSION_7) {
-      if ((frame_type & kQuicFrameType0BitMask) == 0) {
-        QuicStreamFrame frame;
-        if (!ProcessStreamFrame(frame_type, &frame)) {
-          return RaiseError(QUIC_INVALID_FRAME_DATA);
-        }
-        if (!visitor_->OnStreamFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
-          // Returning true since there was no parsing error.
-          return true;
-        }
-        continue;
+    if ((frame_type & kQuicFrameType0BitMask) == 0) {
+      QuicStreamFrame frame;
+      if (!ProcessStreamFrame(frame_type, &frame)) {
+        return RaiseError(QUIC_INVALID_FRAME_DATA);
       }
-
-      frame_type >>= 1;
-      if ((frame_type & kQuicFrameType0BitMask) == 0) {
-        QuicAckFrame frame;
-        if (!ProcessAckFrame(&frame)) {
-          return RaiseError(QUIC_INVALID_FRAME_DATA);
-        }
-        if (!visitor_->OnAckFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
-          // Returning true since there was no parsing error.
-          return true;
-        }
-        continue;
+      if (!visitor_->OnStreamFrame(frame)) {
+        DLOG(INFO) << "Visitor asked to stop further processing.";
+        // Returning true since there was no parsing error.
+        return true;
       }
-
-      frame_type >>= 1;
-      if ((frame_type & kQuicFrameType0BitMask) == 0) {
-        QuicCongestionFeedbackFrame frame;
-        if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
-          return RaiseError(QUIC_INVALID_FRAME_DATA);
-        }
-        if (!visitor_->OnCongestionFeedbackFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
-          // Returning true since there was no parsing error.
-          return true;
-        }
-        continue;
-      }
-
-      frame_type >>= 1;
+      continue;
     }
 
+    frame_type >>= 1;
+    if ((frame_type & kQuicFrameType0BitMask) == 0) {
+      QuicAckFrame frame;
+      if (!ProcessAckFrame(&frame)) {
+        return RaiseError(QUIC_INVALID_FRAME_DATA);
+      }
+      if (!visitor_->OnAckFrame(frame)) {
+        DLOG(INFO) << "Visitor asked to stop further processing.";
+        // Returning true since there was no parsing error.
+        return true;
+      }
+      continue;
+    }
+
+    frame_type >>= 1;
+    if ((frame_type & kQuicFrameType0BitMask) == 0) {
+      QuicCongestionFeedbackFrame frame;
+      if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
+        return RaiseError(QUIC_INVALID_FRAME_DATA);
+      }
+      if (!visitor_->OnCongestionFeedbackFrame(frame)) {
+        DLOG(INFO) << "Visitor asked to stop further processing.";
+        // Returning true since there was no parsing error.
+        return true;
+      }
+      continue;
+    }
+
+    frame_type >>= 1;
+
     switch (frame_type) {
+      // STREAM_FRAME, ACK_FRAME, and CONGESTION_FEEDBACK_FRAME are handled
+      // above.
       case PADDING_FRAME:
         // We're done with the packet
         return true;
-      // STREAM_FRAME, ACK_FRAME, and CONGESTION_FEEDBACK handled above for
-      // QUIC_VERSION_7 and later.
-      case STREAM_FRAME: {
-        QuicStreamFrame frame;
-        if (!ProcessV6StreamFrame(&frame)) {
-          return RaiseError(QUIC_INVALID_FRAME_DATA);
-        }
-        if (!visitor_->OnStreamFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
-          // Returning true since there was no parsing error.
-          return true;
-        }
-        continue;
-      }
-
-      case ACK_FRAME: {
-        QuicAckFrame frame;
-        if (!ProcessAckFrame(&frame)) {
-          return RaiseError(QUIC_INVALID_FRAME_DATA);
-        }
-        if (!visitor_->OnAckFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
-          // Returning true since there was no parsing error.
-          // TODO(ianswett): Consider continuing to process frames, since there
-          // was not a parsing error.
-          return true;
-        }
-        continue;
-      }
-
-      case CONGESTION_FEEDBACK_FRAME: {
-        QuicCongestionFeedbackFrame frame;
-        if (!ProcessQuicCongestionFeedbackFrame(&frame)) {
-          return RaiseError(QUIC_INVALID_FRAME_DATA);
-        }
-        if (!visitor_->OnCongestionFeedbackFrame(frame)) {
-          DLOG(INFO) << "Visitor asked to stop further processing.";
-          // Returning true since there was no parsing error.
-          return true;
-        }
-        continue;
-      }
 
       case RST_STREAM_FRAME: {
         QuicRstStreamFrame frame;
@@ -1088,36 +1035,6 @@ bool QuicFramer::ProcessStreamFrame(uint8 frame_type,
       set_detailed_error("Unable to read frame data.");
       return false;
     }
-  }
-
-  return true;
-}
-
-bool QuicFramer::ProcessV6StreamFrame(QuicStreamFrame* frame) {
-  if (!reader_->ReadUInt32(&frame->stream_id)) {
-    set_detailed_error("Unable to read stream_id.");
-    return false;
-  }
-
-  uint8 fin;
-  if (!reader_->ReadBytes(&fin, 1)) {
-    set_detailed_error("Unable to read fin.");
-    return false;
-  }
-  if (fin > 1) {
-    set_detailed_error("Invalid fin value.");
-    return false;
-  }
-  frame->fin = (fin == 1);
-
-  if (!reader_->ReadUInt64(&frame->offset)) {
-    set_detailed_error("Unable to read offset.");
-    return false;
-  }
-
-  if (!reader_->ReadStringPiece16(&frame->data)) {
-    set_detailed_error("Unable to read frame data.");
-    return false;
   }
 
   return true;
@@ -1602,10 +1519,6 @@ size_t QuicFramer::ComputeFrameLength(const QuicFrame& frame,
 bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
                                 bool last_frame_in_packet,
                                 QuicDataWriter* writer) {
-  if (quic_version_ == QUIC_VERSION_6) {
-    return writer->WriteUInt8(frame.type);
-  }
-
   uint8 type_byte = 0;
   switch (frame.type) {
     case STREAM_FRAME: {
@@ -1699,27 +1612,6 @@ bool QuicFramer::AppendStreamFramePayload(
     if (!writer->WriteUInt16(frame.data.size())) {
       return false;
     }
-  }
-  if (!writer->WriteBytes(frame.data.data(), frame.data.size())) {
-    return false;
-  }
-  return true;
-}
-
-bool QuicFramer::AppendV6StreamFramePayload(
-    const QuicStreamFrame& frame,
-    QuicDataWriter* writer) {
-  if (!writer->WriteUInt32(frame.stream_id)) {
-    return false;
-  }
-  if (!writer->WriteUInt8(frame.fin)) {
-    return false;
-  }
-  if (!writer->WriteUInt64(frame.offset)) {
-    return false;
-  }
-  if (!writer->WriteUInt16(frame.data.size())) {
-    return false;
   }
   if (!writer->WriteBytes(frame.data.data(), frame.data.size())) {
     return false;

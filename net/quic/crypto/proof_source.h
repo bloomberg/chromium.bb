@@ -28,11 +28,11 @@ class NET_EXPORT_PRIVATE ProofSource {
   //
   // The signature uses SHA-256 as the hash function when the key is ECDSA.
   //
-  // If |ecdsa_ok| is true, the signature may use an ECDSA key. Otherwise, the
-  // signature must use an RSA key.
-  //
   // |version| is the QUIC version for the connection. TODO(wtc): Remove once
   // QUIC_VERSION_7 and before are removed.
+  //
+  // If |ecdsa_ok| is true, the signature may use an ECDSA key. Otherwise, the
+  // signature must use an RSA key.
   //
   // |out_certs| is a pointer to a pointer, not a pointer to an array.
   //

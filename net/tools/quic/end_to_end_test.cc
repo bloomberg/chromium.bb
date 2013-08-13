@@ -212,10 +212,10 @@ class EndToEndTest : public ::testing::TestWithParam<QuicVersion> {
   QuicVersion version_;
 };
 
-// Run all end to end tests with QUIC version 6 and 7.
+// Run all end to end tests with all supported versions.
 INSTANTIATE_TEST_CASE_P(EndToEndTests,
                         EndToEndTest,
-                        ::testing::Values(QUIC_VERSION_6, QUIC_VERSION_7));
+                        ::testing::ValuesIn(kSupportedQuicVersions));
 
 TEST_P(EndToEndTest, SimpleRequestResponse) {
   // TODO(rtenneti): Delete this when NSS is supported.

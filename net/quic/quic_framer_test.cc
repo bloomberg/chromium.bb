@@ -43,8 +43,6 @@ const size_t kGuidOffset = kPublicFlagsSize;
 // Index into the version string in the header. (if present).
 const size_t kVersionOffset = kGuidOffset + PACKET_8BYTE_GUID;
 
-// Size in bytes of the stream frame fields for an arbitrary StreamID and
-// offset and the last frame in a packet.
 // Index into the sequence number offset in the header.
 size_t GetSequenceNumberOffset(QuicGuidLength guid_length,
                                bool include_version) {
@@ -421,10 +419,10 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
   test::TestEntropyCalculator entropy_calculator_;
 };
 
-// Run all framer tests with QUIC version 6 and 7.
+// Run all framer tests with all supported versions of QUIC.
 INSTANTIATE_TEST_CASE_P(QuicFramerTests,
                         QuicFramerTest,
-                        ::testing::Values(QUIC_VERSION_6, QUIC_VERSION_7));
+                        ::testing::ValuesIn(kSupportedQuicVersions));
 
 TEST_P(QuicFramerTest, CalculatePacketSequenceNumberFromWireNearEpochStart) {
   // A few quick manual sanity checks
@@ -1098,7 +1096,7 @@ TEST_P(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x00 : 0x07),
+    0x07,
   };
   QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
   EXPECT_TRUE(framer_.ProcessPacket(encrypted));
@@ -1181,7 +1179,7 @@ TEST_P(QuicFramerTest, PaddingFrame) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x00 : 0x07),
+    0x07,
     // Ignored data (which in this case is a stream frame)
     0x01,
     0x04, 0x03, 0x02, 0x01,
@@ -1210,83 +1208,7 @@ TEST_P(QuicFramerTest, PaddingFrame) {
       "Unable to read frame type.", QUIC_INVALID_FRAME_DATA);
 }
 
-TEST_P(QuicFramerTest, StreamFrameVersion6) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_6);
-
-  unsigned char packet[] = {
-    // public flags (8 byte guid)
-    0x3C,
-    // guid
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-
-  ASSERT_EQ(1u, visitor_.stream_frames_.size());
-  EXPECT_EQ(0u, visitor_.ack_frames_.size());
-  EXPECT_EQ(static_cast<uint64>(0x01020304),
-            visitor_.stream_frames_[0]->stream_id);
-  EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
-  EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
-            visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
-
-  // Now test framing boundaries
-  for (size_t i = 0; i < GetMinStreamFrameSize(framer_.version()); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-               kQuicStreamFinSize) {
-      expected_error = "Unable to read fin.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-               kQuicStreamFinSize + kQuicMaxStreamOffsetSize) {
-      expected_error = "Unable to read offset.";
-    } else {
-      expected_error = "Unable to read frame data.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
-  }
-}
-
 TEST_P(QuicFramerTest, StreamFrame) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1354,9 +1276,6 @@ TEST_P(QuicFramerTest, StreamFrame) {
 }
 
 TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1425,9 +1344,6 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
 }
 
 TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1496,9 +1412,6 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
 }
 
 TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char packet[] = {
     // public flags (8 byte guid)
     0x3C,
@@ -1563,83 +1476,6 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
         i + GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                                 PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
                                 expected_error, QUIC_INVALID_FRAME_DATA);
-  }
-}
-
-TEST_P(QuicFramerTest, StreamFrameWithVersion6) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_6);
-
-  unsigned char packet[] = {
-    // public flags (version, 8 byte guid)
-    0x3D,
-    // guid
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // version tag
-    'Q', '0', '0', '6',
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags
-    0x00,
-
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(visitor_.header_.get()->public_header.version_flag);
-  EXPECT_EQ(QUIC_VERSION_6, visitor_.header_.get()->public_header.versions[0]);
-  EXPECT_TRUE(CheckDecryption(encrypted, kIncludeVersion));
-
-  ASSERT_EQ(1u, visitor_.stream_frames_.size());
-  EXPECT_EQ(0u, visitor_.ack_frames_.size());
-  EXPECT_EQ(static_cast<uint64>(0x01020304),
-            visitor_.stream_frames_[0]->stream_id);
-  EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
-  EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
-            visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
-
-  // Now test framing boundaries
-  for (size_t i = 0; i < GetMinStreamFrameSize(framer_.version()); ++i) {
-    string expected_error;
-    if (i < kQuicFrameTypeSize) {
-      expected_error = "Unable to read frame type.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize) {
-      expected_error = "Unable to read stream_id.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-               kQuicStreamFinSize) {
-      expected_error = "Unable to read fin.";
-    } else if (i < kQuicFrameTypeSize + kQuicMaxStreamIdSize +
-               kQuicStreamFinSize + kQuicMaxStreamOffsetSize) {
-      expected_error = "Unable to read offset.";
-    } else {
-      expected_error = "Unable to read frame data.";
-    }
-    CheckProcessingFails(
-        packet,
-        i + GetPacketHeaderSize(PACKET_8BYTE_GUID, kIncludeVersion,
-                                PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP),
-        expected_error, QUIC_INVALID_FRAME_DATA);
   }
 }
 
@@ -1757,9 +1593,6 @@ TEST_P(QuicFramerTest, RejectPacket) {
 }
 
 TEST_P(QuicFramerTest, RevivedStreamFrame) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_7);
-
   unsigned char payload[] = {
     // frame type (stream frame with fin)
     0xFE,
@@ -1805,64 +1638,6 @@ TEST_P(QuicFramerTest, RevivedStreamFrame) {
             visitor_.header_->packet_sequence_number);
   EXPECT_EQ(NOT_IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
   EXPECT_EQ(0x00u, visitor_.header_->fec_group);
-
-  ASSERT_EQ(1u, visitor_.stream_frames_.size());
-  EXPECT_EQ(0u, visitor_.ack_frames_.size());
-  EXPECT_EQ(GG_UINT64_C(0x01020304), visitor_.stream_frames_[0]->stream_id);
-  EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
-  EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
-            visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
-}
-TEST_P(QuicFramerTest, StreamFrameInFecGroupVersion6) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_6);
-
-  unsigned char packet[] = {
-    // public flags (8 byte guid)
-    0x3C,
-    // guid
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x12, 0x34,
-    // private flags (fec group)
-    0x02,
-    // first fec protected packet offset
-    0x02,
-
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(CheckDecryption(encrypted, !kIncludeVersion));
-  EXPECT_EQ(IN_FEC_GROUP, visitor_.header_->is_in_fec_group);
-  EXPECT_EQ(GG_UINT64_C(0x341256789ABA),
-            visitor_.header_->fec_group);
-  const size_t fec_offset = GetStartOfFecProtectedData(
-      PACKET_8BYTE_GUID, !kIncludeVersion, PACKET_6BYTE_SEQUENCE_NUMBER);
-  EXPECT_EQ(
-      string(AsChars(packet) + fec_offset, arraysize(packet) - fec_offset),
-      visitor_.fec_protected_payload_);
 
   ASSERT_EQ(1u, visitor_.stream_frames_.size());
   EXPECT_EQ(0u, visitor_.ack_frames_.size());
@@ -1944,7 +1719,7 @@ TEST_P(QuicFramerTest, AckFrame) {
     0x00,
 
     // frame type (ack frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x02 : 0x01),
+    static_cast<unsigned char>(0x01),
     // entropy hash of sent packets till least awaiting - 1.
     0xAB,
     // least packet sequence number awaiting an ack
@@ -2276,7 +2051,7 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
     0x00,
 
     // frame type (rst stream frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x04 : 0x27),
+    static_cast<unsigned char>(0x27),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // error code
@@ -2335,7 +2110,7 @@ TEST_P(QuicFramerTest, ConnectionCloseFrame) {
     0x00,
 
     // frame type (connection close frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x05 : 0x2F),
+    static_cast<unsigned char>(0x2F),
     // error code
     0x11, 0x00, 0x00, 0x00,
 
@@ -2422,7 +2197,7 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
     0x00,
 
     // frame type (go away frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x06 : 0x37),
+    static_cast<unsigned char>(0x37),
     // error code
     0x09, 0x00, 0x00, 0x00,
     // stream id
@@ -2626,7 +2401,7 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x00 : 0x07),
+    static_cast<unsigned char>(0x07),
   };
 
   uint64 header_size =
@@ -2671,7 +2446,7 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x00 : 0x07),
+    static_cast<unsigned char>(0x07),
   };
 
   uint64 header_size =
@@ -2716,7 +2491,7 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x00 : 0x07),
+    static_cast<unsigned char>(0x07),
   };
 
   uint64 header_size =
@@ -2761,73 +2536,13 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
     0x00,
 
     // frame type (padding frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x00 : 0x07),
+    static_cast<unsigned char>(0x07),
   };
 
   uint64 header_size =
       GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
                           PACKET_1BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP);
   memset(packet + header_size + 1, 0x00, kMaxPacketSize - header_size - 1);
-
-  scoped_ptr<QuicPacket> data(
-      framer_.BuildUnsizedDataPacket(header, frames).packet);
-  ASSERT_TRUE(data != NULL);
-
-  test::CompareCharArraysWithHexError("constructed packet",
-                                      data->data(), data->length(),
-                                      AsChars(packet), arraysize(packet));
-}
-
-TEST_P(QuicFramerTest, BuildStreamFramePacketVersion6) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_6);
-
-  QuicPacketHeader header;
-  header.public_header.guid = GG_UINT64_C(0xFEDCBA9876543210);
-  header.public_header.reset_flag = false;
-  header.public_header.version_flag = false;
-  header.fec_flag = false;
-  header.entropy_flag = true;
-  header.packet_sequence_number = GG_UINT64_C(0x77123456789ABC);
-  header.fec_group = 0;
-
-  QuicStreamFrame stream_frame;
-  stream_frame.stream_id = 0x01020304;
-  stream_frame.fin = true;
-  stream_frame.offset = GG_UINT64_C(0xBA98FEDC32107654);
-  stream_frame.data = "hello world!";
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&stream_frame));
-
-  unsigned char packet[] = {
-    // public flags (8 byte guid)
-    0x3C,
-    // guid
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags (entropy)
-    0x01,
-
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
 
   scoped_ptr<QuicPacket> data(
       framer_.BuildUnsizedDataPacket(header, frames).packet);
@@ -2965,12 +2680,10 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
     0x10, 0x32, 0x54, 0x76,
     0x98, 0xBA, 0xDC, 0xFE,
     // version tag
-    'Q', '0', '0', '6',
     'Q', '0', '0', '7',
   };
 
   QuicVersionVector versions;
-  versions.push_back(QUIC_VERSION_6);
   versions.push_back(QUIC_VERSION_7);
   scoped_ptr<QuicEncryptedPacket> data(
       framer_.BuildVersionNegotiationPacket(header, versions));
@@ -3015,7 +2728,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacket) {
     0x01,
 
     // frame type (ack frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x02 : 0x01),
+    static_cast<unsigned char>(0x01),
     // entropy hash of sent packets till least awaiting - 1.
     0x14,
     // least packet sequence number awaiting an ack
@@ -3263,7 +2976,7 @@ TEST_P(QuicFramerTest, BuildRstFramePacket) {
     0x00,
 
     // frame type (rst stream frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x04 : 0x27),
+    static_cast<unsigned char>(0x27),
     // stream id
     0x04, 0x03, 0x02, 0x01,
     // error code
@@ -3326,7 +3039,7 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
     0x01,
 
     // frame type (connection close frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x05 : 0x2F),
+    static_cast<unsigned char>(0x2F),
     // error code
     0x08, 0x07, 0x06, 0x05,
     // error details length
@@ -3397,7 +3110,7 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
     0x01,
 
     // frame type (go away frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x06 : 0x37),
+    static_cast<unsigned char>(0x37),
     // error code
     0x08, 0x07, 0x06, 0x05,
     // stream id
@@ -3724,48 +3437,6 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   EXPECT_EQ(original_raw_length, raw_close_packet->length());
 }
 
-TEST_P(QuicFramerTest, EntropyFlagTestVersion6) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_6);
-
-  unsigned char packet[] = {
-    // public flags (8 byte guid)
-    0x3C,
-    // guid
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags (Entropy)
-    0x01,
-
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(visitor_.header_->entropy_flag);
-  EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
-  EXPECT_FALSE(visitor_.header_->fec_flag);
-};
-
 TEST_P(QuicFramerTest, EntropyFlagTest) {
   // Set a specific version.
   framer_.set_version(QUIC_VERSION_7);
@@ -3802,50 +3473,6 @@ TEST_P(QuicFramerTest, EntropyFlagTest) {
   EXPECT_TRUE(visitor_.header_->entropy_flag);
   EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
   EXPECT_FALSE(visitor_.header_->fec_flag);
-};
-
-TEST_P(QuicFramerTest, FecEntropyTestVersion6) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_6);
-
-  unsigned char packet[] = {
-    // public flags (8 byte guid)
-    0x3C,
-    // guid
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // private flags (Entropy & fec group & FEC)
-    0x07,
-    // first fec protected packet offset
-    0xFF,
-
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-  ASSERT_TRUE(visitor_.header_.get());
-  EXPECT_TRUE(visitor_.header_->fec_flag);
-  EXPECT_TRUE(visitor_.header_->entropy_flag);
-  EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
 };
 
 TEST_P(QuicFramerTest, FecEntropyTest) {
@@ -3887,70 +3514,6 @@ TEST_P(QuicFramerTest, FecEntropyTest) {
   EXPECT_TRUE(visitor_.header_->entropy_flag);
   EXPECT_EQ(1 << 4, visitor_.header_->entropy_hash);
 };
-
-TEST_P(QuicFramerTest, StopPacketProcessingVersion6) {
-  // Set a specific version.
-  framer_.set_version(QUIC_VERSION_6);
-
-  unsigned char packet[] = {
-    // public flags (8 byte guid)
-    0x3C,
-    // guid
-    0x10, 0x32, 0x54, 0x76,
-    0x98, 0xBA, 0xDC, 0xFE,
-    // packet sequence number
-    0xBC, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // Entropy
-    0x01,
-
-    // frame type (stream frame)
-    0x01,
-    // stream id
-    0x04, 0x03, 0x02, 0x01,
-    // fin
-    0x01,
-    // offset
-    0x54, 0x76, 0x10, 0x32,
-    0xDC, 0xFE, 0x98, 0xBA,
-    // data length
-    0x0c, 0x00,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-
-    // frame type (ack frame)
-    0x02,
-    // entropy hash of sent packets till least awaiting - 1.
-    0x14,
-    // least packet sequence number awaiting an ack
-    0xA0, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // entropy hash of all received packets.
-    0x43,
-    // largest observed packet sequence number
-    0xBF, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-    // num missing packets
-    0x01,
-    // missing packet
-    0xBE, 0x9A, 0x78, 0x56,
-    0x34, 0x12,
-  };
-
-  MockFramerVisitor visitor;
-  framer_.set_visitor(&visitor);
-  EXPECT_CALL(visitor, OnPacket());
-  EXPECT_CALL(visitor, OnPacketHeader(_));
-  EXPECT_CALL(visitor, OnStreamFrame(_)).WillOnce(Return(false));
-  EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
-  EXPECT_CALL(visitor, OnPacketComplete());
-
-  QuicEncryptedPacket encrypted(AsChars(packet), arraysize(packet), false);
-  EXPECT_TRUE(framer_.ProcessPacket(encrypted));
-  EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
-}
 
 TEST_P(QuicFramerTest, StopPacketProcessing) {
   // Set a specific version.
@@ -4028,7 +3591,7 @@ TEST_P(QuicFramerTest, ConnectionCloseWithInvalidAck) {
     0x00,
 
     // frame type (connection close frame)
-    static_cast<unsigned char>((version_ == QUIC_VERSION_6) ? 0x05 : 0x2F),
+    static_cast<unsigned char>(0x2F),
     // error code
     0x11, 0x00, 0x00, 0x00,
     // error details length

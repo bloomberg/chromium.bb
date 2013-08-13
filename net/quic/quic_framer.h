@@ -35,9 +35,6 @@ const size_t kQuicErrorDetailsLengthSize = 2;
 
 // Maximum number of bytes reserved for stream id.
 const size_t kQuicMaxStreamIdSize = 4;
-// Number of bytes reserved for fin flag in stream frame.
-// TODO(ianswett): Remove once QUIC_VERSION_6 and before are removed.
-const size_t kQuicStreamFinSize = 1;
 // Maximum number of bytes reserved for byte offset in stream frame.
 const size_t kQuicMaxStreamOffsetSize = 8;
 // Number of bytes reserved to store payload length in stream frame.
@@ -365,7 +362,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
       QuicPacketSequenceNumber* sequence_number);
   bool ProcessFrameData();
   bool ProcessStreamFrame(uint8 frame_type, QuicStreamFrame* frame);
-  bool ProcessV6StreamFrame(QuicStreamFrame* frame);
   bool ProcessAckFrame(QuicAckFrame* frame);
   bool ProcessReceivedInfo(ReceivedPacketInfo* received_info);
   bool ProcessSentInfo(SentPacketInfo* sent_info);
@@ -398,8 +394,6 @@ class NET_EXPORT_PRIVATE QuicFramer {
   bool AppendStreamFramePayload(const QuicStreamFrame& frame,
                                 bool last_frame_in_packet,
                                 QuicDataWriter* builder);
-  bool AppendV6StreamFramePayload(const QuicStreamFrame& frame,
-                                  QuicDataWriter* builder);
   bool AppendAckFramePayload(const QuicAckFrame& frame,
                              QuicDataWriter* builder);
   bool AppendQuicCongestionFeedbackFramePayload(

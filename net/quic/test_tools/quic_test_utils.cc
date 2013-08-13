@@ -423,10 +423,10 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
           PACKET_6BYTE_SEQUENCE_NUMBER, is_in_fec_group);
 }
 
+// Size in bytes of the stream frame fields for an arbitrary StreamID and
+// offset and the last frame in a packet.
 size_t GetMinStreamFrameSize(QuicVersion version) {
-  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize +
-      (version == QUIC_VERSION_6 ?
-          (kQuicStreamFinSize + kQuicStreamPayloadLengthSize) : 0);
+  return kQuicFrameTypeSize + kQuicMaxStreamIdSize + kQuicMaxStreamOffsetSize;
 }
 
 QuicPacketEntropyHash TestEntropyCalculator::EntropyHash(

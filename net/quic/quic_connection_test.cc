@@ -2373,26 +2373,28 @@ TEST_F(QuicConnectionTest, DontProcessFramesIfPacketClosedConnection) {
   connection_.ProcessUdpPacket(IPEndPoint(), IPEndPoint(), *encrypted);
 }
 
-// The QUIC_VERSION_X versions are deliberately set, rather than using all
-// values in kSupportedQuicVersions.
 TEST_F(QuicConnectionTest, SelectMutualVersion) {
-  // Set the connection to speak QUIC_VERSION_6.
-  connection_.set_version(QUIC_VERSION_6);
-  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
+  // Set the connection to speak the lowest quic version.
+  connection_.set_version(QuicVersionMin());
+  EXPECT_EQ(QuicVersionMin(), connection_.version());
 
   // Pass in available versions which includes a higher mutually supported
   // version.  The higher mutually supported version should be selected.
-  QuicVersionVector available_versions;
-  available_versions.push_back(QUIC_VERSION_6);
-  available_versions.push_back(QUIC_VERSION_7);
-  EXPECT_TRUE(connection_.SelectMutualVersion(available_versions));
-  EXPECT_EQ(connection_.version(), QUIC_VERSION_7);
+  QuicVersionVector supported_versions;
+  for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
+    supported_versions.push_back(kSupportedQuicVersions[i]);
+  }
+  EXPECT_TRUE(connection_.SelectMutualVersion(supported_versions));
+  EXPECT_EQ(QuicVersionMax(), connection_.version());
 
-  // Expect that the lower version is selected.
-  QuicVersionVector lower_version;
-  lower_version.push_back(QUIC_VERSION_6);
-  EXPECT_TRUE(connection_.SelectMutualVersion(lower_version));
-  EXPECT_EQ(connection_.version(), QUIC_VERSION_6);
+  // Expect that the lowest version is selected.
+  // Ensure the lowest supported version is less than the max, unless they're
+  // the same.
+  EXPECT_LE(QuicVersionMin(), QuicVersionMax());
+  QuicVersionVector lowest_version_vector;
+  lowest_version_vector.push_back(QuicVersionMin());
+  EXPECT_TRUE(connection_.SelectMutualVersion(lowest_version_vector));
+  EXPECT_EQ(QuicVersionMin(), connection_.version());
 
   // Shouldn't be able to find a mutually supported version.
   QuicVersionVector unsupported_version;

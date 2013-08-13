@@ -187,7 +187,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_6 = 6,
   QUIC_VERSION_7 = 7,
   QUIC_VERSION_8 = 8,  // Current version.
 };
@@ -197,12 +196,15 @@ enum QuicVersion {
 // element, with subsequent elements in descending order (versions can be
 // skipped as necessary).
 static const QuicVersion kSupportedQuicVersions[] =
-    {QUIC_VERSION_8, QUIC_VERSION_7, QUIC_VERSION_6};
+    {QUIC_VERSION_8, QUIC_VERSION_7};
 
 typedef std::vector<QuicVersion> QuicVersionVector;
 
 // Upper limit on versions we support.
 NET_EXPORT_PRIVATE QuicVersion QuicVersionMax();
+
+// Lower limit on versions we support.
+NET_EXPORT_PRIVATE QuicVersion QuicVersionMin();
 
 // QuicTag is written to and read from the wire, but we prefer to use
 // the more readable QuicVersion at other levels.
