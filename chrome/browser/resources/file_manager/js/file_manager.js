@@ -2591,20 +2591,39 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       // case of success.
       nameNode.textContent = newName;
 
-      this.directoryModel_.doesExist(entry, newName, function(exists, isFile) {
-        if (!exists) {
-          var onError = function(err) {
-            this.alert.show(strf('ERROR_RENAMING', entry.name,
-                                 util.getFileErrorString(err.code)));
-          }.bind(this);
-          this.directoryModel_.renameEntry(entry, newName, onError.bind(this));
-        } else {
-          nameNode.textContent = entry.name;
-          var message = isFile ? 'FILE_ALREADY_EXISTS' :
-                                 'DIRECTORY_ALREADY_EXISTS';
-          this.alert.show(strf(message, newName));
-        }
-      }.bind(this));
+      util.rename(
+          entry, newName,
+          function(newEntry) {
+            this.directoryModel_.onRenameEntry(entry, newEntry);
+          }.bind(this),
+          function(error) {
+            // Write back to the old name.
+            nameNode.textContent = entry.name;
+
+            // Show error dialog.
+            var message;
+            if (error.code == FileError.PATH_EXISTS_ERR ||
+                error.code == FileError.TYPE_MISMATCH_ERR) {
+              // Check the existing entry is file or not.
+              // 1) If the entry is a file:
+              //   a) If we get PATH_EXISTS_ERR, a file exists.
+              //   b) If we get TYPE_MISMATCH_ERR, a directory exists.
+              // 2) If the entry is a directory:
+              //   a) If we get PATH_EXISTS_ERR, a directory exists.
+              //   b) If we get TYPE_MISMATCH_ERR, a file exists.
+              message = strf(
+                  (entry.isFile && error.code == FileError.PATH_EXISTS_ERR) ||
+                  (!entry.isFile && error.code == FileError.TYPE_MISMATCH_ERR) ?
+                      'FILE_ALREADY_EXISTS' :
+                      'DIRECTORY_ALREADY_EXISTS',
+                  newName);
+            } else {
+              message = strf('ERROR_RENAMING', entry.name,
+                             util.getFileErrorString(err.code));
+            }
+
+            this.alert.show(message);
+          }.bind(this));
     };
 
     // TODO(haruki): this.getCurrentDirectoryURL() might not return the actual

@@ -141,8 +141,13 @@ var pyautoAPI = {
    */
   renameItem: function(name) {
     var entry = fileManager.getSelection().entries[0];
-    fileManager.directoryModel_.renameEntry(entry, name, pyautoAPI.sendDone_,
-        pyautoAPI.sendDone_);
+    util.rename(entry, name,
+                function(newEntry) {
+                  // Update directory model on success.
+                  fileManager.directoryModel_.onRenameEntry(
+                      entry, newEntry, pyautoAPI.sendDone_);
+                },
+                pyautoAPI.sendDone_);
   },
 
   /**

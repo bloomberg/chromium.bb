@@ -753,99 +753,61 @@ DirectoryModel.prototype.onEntryChanged = function(type, entry) {
 };
 
 /**
- * TODO(hidehiko): Migrate this method into findIndexByEntry_ defined below.
- * @param {string} name Filename.
- * @return {number} The index in the fileList.
- * @private
- */
-DirectoryModel.prototype.findIndexByName_ = function(name) {
-  var fileList = this.getFileList();
-  for (var i = 0; i < fileList.length; i++)
-    if (fileList.item(i).name == name)
-      return i;
-  return -1;
-};
-
-/**
  * @param {Entry} entry The entry to be searched.
  * @return {number} The index in the fileList, or -1 if not found.
  * @private
  */
 DirectoryModel.prototype.findIndexByEntry_ = function(entry) {
   var fileList = this.getFileList();
-  for (var i = 0; i < fileList.length; i++)
-    if (fileList.item(i).fullPath == entry.fullPath)
+  for (var i = 0; i < fileList.length; i++) {
+    if (util.isSameEntry(fileList.item(i), entry))
       return i;
+  }
   return -1;
 };
 
 /**
- * Rename the entry in the filesystem and update the file list.
- * @param {Entry} entry Entry to rename.
- * @param {string} newName New name.
- * @param {function(FileError)} errorCallback Called on error.
- * @param {function()=} opt_successCallback Called on success.
+ * Called when rename is done successfully.
+ * Note: conceptually, DirectoryModel should work without this, because entries
+ * can be renamed by other systems anytime and Files.app should reflect it
+ * correctly.
+ * TODO(hidehiko): investigate more background, and remove this if possible.
+ *
+ * @param {Entry} oldEntry The old entry.
+ * @param {Entry} newEntry The new entry.
+ * @param {function()} opt_callback Called on completion.
  */
-DirectoryModel.prototype.renameEntry = function(entry, newName,
-                                                errorCallback,
-                                                opt_successCallback) {
-  var currentDirPath = this.getCurrentDirPath();
-  var onSuccess = function(newEntry) {
-    this.currentDirContents_.prefetchMetadata([newEntry], function() {
-      // If the current directory is the old entry, then quietly change to the
-      // new one.
-      if (entry.fullPath == this.getCurrentDirPath())
-        this.changeDirectory(newEntry.fullPath);
+DirectoryModel.prototype.onRenameEntry = function(
+    oldEntry, newEntry, opt_callback) {
+  this.currentDirContents_.prefetchMetadata([newEntry], function() {
+    // If the current directory is the old entry, then quietly change to the
+    // new one.
+    if (util.isSameEntry(oldEntry, this.getCurrentDirEntry()))
+      this.changeDirectory(newEntry.fullPath);
 
-      // Update selection and call the success callback if still in the same
-      // directory as while started renaming.
-      if (currentDirPath != this.getCurrentDirPath())
-        return;
-
-      var index = this.findIndexByName_(entry.name);
-
-      if (index >= 0) {
-        var wasSelected = this.fileListSelection_.getIndexSelected(index);
-
-        this.getFileList().splice(index, 1, newEntry);
-
-        if (wasSelected)
-          this.fileListSelection_.setIndexSelected(
-              this.findIndexByName_(newName), true);
+    // Look for the old entry.
+    // If the entry doesn't exist in the list, it has been updated from
+    // outside (probably by directory rescan).
+    var index = this.findIndexByEntry_(oldEntry);
+    if (index >= 0) {
+      // Update the content list and selection status.
+      var wasSelected = this.fileListSelection_.getIndexSelected(index);
+      this.fileListSelection_.beginChange();
+      this.fileListSelection_.setIndexSelected(index, false);
+      this.getFileList().splice(index, 1, newEntry);
+      if (wasSelected) {
+        // We re-search the index, because splice may trigger sorting so that
+        // index may be stale.
+        this.fileListSelection_.setIndexSelected(
+            this.findIndexByEntry_(newEntry), true);
       }
+      this.fileListSelection_.endChange();
+    }
 
-      // If the entry doesn't exist in the list it mean that it updated from
-      // outside (probably by directory rescan).
-      if (opt_successCallback)
-         opt_successCallback();
-    }.bind(this));
-  }.bind(this);
-
-  var onParentFound = function(parentEntry) {
-    entry.moveTo(parentEntry, newName, onSuccess, errorCallback);
-  };
-
-  entry.getParent(onParentFound, errorCallback);
-};
-
-/**
- * Checks if current directory contains a file or directory with this name.
- * @param {string} entry Entry to which newName will be given.
- * @param {string} name Name to check.
- * @param {function(boolean, boolean?)} callback Called when the result's
- *     available. First parameter is true if the entry exists and second
- *     is true if it's a file.
- */
-DirectoryModel.prototype.doesExist = function(entry, name, callback) {
-  var onParentFound = function(parentEntry) {
-    util.resolvePath(parentEntry, name,
-        function(foundEntry) {
-          callback(true, foundEntry.isFile);
-        },
-        callback.bind(window, false));
-  };
-
-  entry.getParent(onParentFound, callback.bind(window, false));
+    // Run callback, finally.
+    if (opt_callback)
+      opt_callback();
+  }.bind(this));
 };
 
 /**

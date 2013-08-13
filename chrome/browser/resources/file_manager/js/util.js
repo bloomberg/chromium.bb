@@ -444,6 +444,42 @@ util.getOrCreateDirectory = function(root, path, successCallback,
 };
 
 /**
+ * Renames the entry to newName.
+ * @param {Entry} entry The entry to be renamed.
+ * @param {string} newName The new name.
+ * @param {function(Entry)} successCallback Callback invoked when the rename
+ *     is successfully done.
+ * @param {function(FileError)} errorCallback Callback invoked when an error
+ *     is found.
+ */
+util.rename = function(entry, newName, successCallback, errorCallback) {
+  entry.getParent(function(parent) {
+    // Before moving, we need to check if there is an existing entry at
+    // parent/newName, since moveTo will overwrite it.
+    // Note that this way has some timing issue. After existing check,
+    // a new entry may be create on background. However, there is no way not to
+    // overwrite the existing file, unfortunately. The risk should be low,
+    // assuming the unsafe period is very short.
+    (entry.isFile ? parent.getFile : parent.getDirectory).call(
+        parent, newName, {create: false},
+        function(entry) {
+          // The entry with the name already exists.
+          errorCallback(util.createFileError(FileError.PATH_EXISTS_ERR));
+        },
+        function(error) {
+          if (error.code != FileError.NOT_FOUND_ERR) {
+            // Unexpected error is found.
+            errorCallback(error);
+            return;
+          }
+
+          // No existing entry is found.
+          entry.moveTo(parent, newName, successCallback, errorCallback);
+        });
+  }, errorCallback);
+};
+
+/**
  * Remove a file or a directory.
  * @param {Entry} entry The entry to remove.
  * @param {function()} onSuccess The success callback.
