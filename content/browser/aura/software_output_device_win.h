@@ -28,6 +28,7 @@ class SoftwareOutputDeviceWin : public cc::SoftwareOutputDevice {
   virtual void Resize(gfx::Size viewport_size) OVERRIDE;
   virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
+  virtual void CopyToBitmap(gfx::Rect rect, SkBitmap* output) OVERRIDE;
 
  private:
   HWND hwnd_;
