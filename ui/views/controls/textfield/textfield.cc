@@ -28,7 +28,6 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "base/win/win_util.h"
 // TODO(beng): this should be removed when the OS_WIN hack from
 // ViewHierarchyChanged is removed.
@@ -63,13 +62,6 @@ bool Textfield::IsViewsTextfieldEnabled() {
     return false;
   if (command_line->HasSwitch(switches::kEnableViewsTextfield))
     return true;
-  // Non-Aura Windows 8 Metro TSF is broken for Views Textfields. This temporary
-  // workaround reverts to the Windows native textfield controls in that case
-  // instead of disabling Views Textfields everywhere: http://crbug.com/259125
-  // The appropriate long-term fix to add that support for Views Textfields via
-  // InputMethodBridge is currently a work in progress: http://crbug.com/239690
-  if (base::win::IsMetroProcess())
-    return false;
   // The new dialog style cannot host native Windows textfield controls.
   if (switches::IsNewDialogStyleEnabled())
     return true;
