@@ -60,15 +60,7 @@ struct FormatType {
 
 }  // anonymous namespace
 
-// crbug.com/135229
-// Fails on all Windows platforms and on Linux Intel.
-#if defined(OS_WIN) || (defined(OS_LINUX) && defined(NDEBUG))
-#define MAYBE_RenderTo DISABLED_RenderTo
-#else
-#define MAYBE_RenderTo RenderTo
-#endif
-
-TEST_F(DepthTextureTest, MAYBE_RenderTo) {
+TEST_F(DepthTextureTest, RenderTo) {
   if (!GLTestHelper::HasExtension("GL_CHROMIUM_depth_texture")) {
     return;
   }
@@ -200,19 +192,17 @@ TEST_F(DepthTextureTest, MAYBE_RenderTo) {
       continue;
     }
 
-    // Check that each pixel's RGB are the same and that it's value is less
-    // than the previous pixel in either direction. Basically verify we have a
-    // gradient.
+    // Check that each pixel's red value is less than the previous pixel in
+    // either direction. Basically verify we have a gradient. No assumption is
+    // made about the other channels green, blue and alpha since, according to
+    // the GL_CHROMIUM_depth_texture spec, they have undefined values for
+    // depth textures.
     int bad_count = 0;  // used to not spam the log with too many messages.
     for (GLint yy = 0; bad_count < 16 && yy < kResolution; ++yy) {
       for (GLint xx = 0; bad_count < 16 && xx < kResolution; ++xx) {
         const uint8* actual = &actual_pixels[(yy * kResolution + xx) * 4];
         const uint8* left = actual - 4;
         const uint8* down = actual - kResolution * 4;
-
-        EXPECT_EQ(actual[0], actual[1]) << "pixel at " << xx << ", " << yy;
-        EXPECT_EQ(actual[1], actual[2]) << "pixel at " << xx << ", " << yy;
-        bad_count += (actual[0] == actual[1] ? 0 : 1);
 
         // NOTE: Qualcomm on Nexus 4 the right most column has the same
         // values as the next to right most column. (bad interpolator?)
@@ -230,10 +220,6 @@ TEST_F(DepthTextureTest, MAYBE_RenderTo) {
           EXPECT_GT(actual[0], down[0]) << "pixel at " << xx << ", " << yy;
           bad_count += (actual[0] > down[0] ? 0 : 1);
         }
-
-        EXPECT_TRUE(actual[3] == actual[0] || actual[3] == 0xFF)
-            << "pixel at " << xx << ", " << yy;
-        bad_count += ((actual[3] == actual[0] || actual[3] == 0xFF) ? 0 : 1);
       }
     }
 
