@@ -32,6 +32,7 @@
 #include "core/css/resolver/AnimatedStyleBuilder.h"
 
 #include "core/animation/AnimatableNumber.h"
+#include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/animation/AnimatableValue.h"
 #include "core/css/resolver/StyleBuilder.h"
@@ -121,6 +122,9 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         return;
     case CSSPropertyWebkitPerspectiveOriginY:
         style->setPerspectiveOriginY(animatableValueToLength(value, state));
+        return;
+    case CSSPropertyWebkitTransform:
+        style->setTransform(toAnimatableTransform(value)->transformOperations());
         return;
     case CSSPropertyWebkitTransformOriginX:
         style->setTransformOriginX(animatableValueToLength(value, state));

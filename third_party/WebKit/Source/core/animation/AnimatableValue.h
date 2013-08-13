@@ -50,12 +50,14 @@ public:
 
     bool isNumber() const { return m_type == TypeNumber; }
     bool isNeutral() const { return m_type == TypeNeutral; }
+    bool isTransform() const { return m_type == TypeTransform; }
     bool isUnknown() const { return m_type == TypeUnknown; }
 
 protected:
     enum AnimatableType {
         TypeNeutral,
         TypeNumber,
+        TypeTransform,
         TypeUnknown,
     };
 

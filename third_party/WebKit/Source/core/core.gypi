@@ -525,6 +525,8 @@
             'animation/AnimatableNeutral.h',
             'animation/AnimatableNumber.cpp',
             'animation/AnimatableNumber.h',
+            'animation/AnimatableTransform.cpp',
+            'animation/AnimatableTransform.h',
             'animation/AnimatableUnknown.h',
             'animation/AnimatableValue.cpp',
             'animation/AnimatableValue.h',

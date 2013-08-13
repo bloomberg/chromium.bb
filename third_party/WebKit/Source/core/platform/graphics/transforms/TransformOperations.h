@@ -75,6 +75,7 @@ public:
     TransformOperations blendByMatchingOperations(const TransformOperations& from, const double& progress) const;
     TransformOperations blendByUsingMatrixInterpolation(const TransformOperations& from, double progress) const;
     TransformOperations blend(const TransformOperations& from, double progress) const;
+    TransformOperations add(const TransformOperations& addend) const;
 
 private:
     Vector<RefPtr<TransformOperation> > m_operations;

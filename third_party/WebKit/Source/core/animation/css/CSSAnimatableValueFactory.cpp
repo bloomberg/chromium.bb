@@ -33,6 +33,7 @@
 
 #include "CSSValueKeywords.h"
 #include "core/animation/AnimatableNumber.h"
+#include "core/animation/AnimatableTransform.h"
 #include "core/animation/AnimatableUnknown.h"
 #include "core/platform/Length.h"
 #include "core/rendering/style/RenderStyle.h"
@@ -112,7 +113,6 @@ namespace WebCore {
 // CSSPropertyWebkitShapeInside
 // CSSPropertyWebkitTextFillColor
 // CSSPropertyWebkitTextStrokeColor
-// CSSPropertyWebkitTransform
 // CSSPropertyWebkitTransformOriginZ
 // CSSPropertyWidows
 // CSSPropertyWordSpacing
@@ -207,6 +207,8 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
         return createFromLength(style->perspectiveOriginX(), style);
     case CSSPropertyWebkitPerspectiveOriginY:
         return createFromLength(style->perspectiveOriginY(), style);
+    case CSSPropertyWebkitTransform:
+        return AnimatableTransform::create(style->transform());
     case CSSPropertyWebkitTransformOriginX:
         return createFromLength(style->transformOriginX(), style);
     case CSSPropertyWebkitTransformOriginY:
