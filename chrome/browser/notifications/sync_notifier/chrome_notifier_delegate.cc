@@ -35,6 +35,7 @@ void ChromeNotifierDelegate::Click() {
 
   GURL destination = notification->GetDefaultDestinationUrl();
   NavigateToUrl(destination);
+  chrome_notifier_->MarkNotificationAsRead(notification_id_);
 }
 
 // TODO(petewil) Add the ability to do URL actions also.
@@ -44,6 +45,7 @@ void ChromeNotifierDelegate::ButtonClick(int button_index) {
   if (notification) {
     GURL destination = notification->GetButtonUrl(button_index);
     NavigateToUrl(destination);
+    chrome_notifier_->MarkNotificationAsRead(notification_id_);
   }
 }
 
