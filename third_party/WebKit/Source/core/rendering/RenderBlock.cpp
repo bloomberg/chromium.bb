@@ -4288,15 +4288,13 @@ inline void RenderBlock::ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNee
 
     bool floatIsNewExtreme = updateOffsetIfNeeded(floatingObject);
     if (floatIsNewExtreme)
-        m_floatForHeight = floatingObject;
-
-    m_last = floatingObject;
+        m_outermostFloat = floatingObject;
 }
 
 template <RenderBlock::FloatingObject::Type FloatTypeValue>
 LayoutUnit RenderBlock::ComputeFloatOffsetAdapter<FloatTypeValue>::getHeightRemaining() const
 {
-    return m_floatForHeight ? m_renderer->logicalBottomForFloat(m_floatForHeight) - m_lineTop : LayoutUnit(1);
+    return m_outermostFloat ? m_renderer->logicalBottomForFloat(m_outermostFloat) - m_lineTop : LayoutUnit(1);
 }
 
 LayoutUnit RenderBlock::textIndentOffset() const
@@ -4339,10 +4337,10 @@ LayoutUnit RenderBlock::logicalLeftFloatOffsetForLine(LayoutUnit logicalTop, Lay
         if (heightRemaining)
             *heightRemaining = adapter.getHeightRemaining();
 
-        const FloatingObject* lastFloat = adapter.lastFloat();
-        if (offsetMode == ShapeOutsideFloatShapeOffset && lastFloat) {
-            if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
-                shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, logicalTopForFloat(lastFloat), logicalHeight);
+        const FloatingObject* outermostFloat = adapter.outermostFloat();
+        if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
+            if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
+                shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, logicalTopForFloat(outermostFloat), logicalHeight);
                 left += shapeOutside->rightSegmentMarginBoxDelta();
             }
         }
@@ -4400,10 +4398,10 @@ LayoutUnit RenderBlock::logicalRightFloatOffsetForLine(LayoutUnit logicalTop, La
         if (heightRemaining)
             *heightRemaining = adapter.getHeightRemaining();
 
-        const FloatingObject* lastFloat = adapter.lastFloat();
-        if (offsetMode == ShapeOutsideFloatShapeOffset && lastFloat) {
-            if (ShapeOutsideInfo* shapeOutside = lastFloat->renderer()->shapeOutsideInfo()) {
-                shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, logicalTopForFloat(lastFloat), logicalHeight);
+        const FloatingObject* outermostFloat = adapter.outermostFloat();
+        if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
+            if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
+                shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, logicalTopForFloat(outermostFloat), logicalHeight);
                 rightFloatOffset += shapeOutside->leftSegmentMarginBoxDelta();
             }
         }

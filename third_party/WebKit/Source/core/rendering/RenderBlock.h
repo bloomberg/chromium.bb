@@ -1181,8 +1181,7 @@ protected:
             , m_lineTop(lineTop)
             , m_lineBottom(lineBottom)
             , m_offset(offset)
-            , m_last(0)
-            , m_floatForHeight(0)
+            , m_outermostFloat(0)
         {
         }
 
@@ -1194,9 +1193,7 @@ protected:
         // the outermost float on that line has a shape-outside, the inline
         // content that butts up against that float must be positioned using
         // the contours of the shape, not the margin box of the float.
-        // We save the last float encountered so that the offset can be
-        // computed correctly by the code using this adapter.
-        const FloatingObject* lastFloat() const { return m_last; }
+        const FloatingObject* outermostFloat() const { return m_outermostFloat; }
 
         LayoutUnit getHeightRemaining() const;
 
@@ -1207,8 +1204,7 @@ protected:
         int m_lineTop;
         int m_lineBottom;
         LayoutUnit& m_offset;
-        const FloatingObject* m_last;
-        const FloatingObject* m_floatForHeight;
+        const FloatingObject* m_outermostFloat;
     };
 
     void createFloatingObjects();
