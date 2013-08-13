@@ -324,6 +324,7 @@ public:
     EmptyContextMenuClient() { }
     virtual ~EmptyContextMenuClient() {  }
     virtual void showContextMenu(const ContextMenu*) OVERRIDE { }
+    virtual void clearContextMenu() OVERRIDE { }
 };
 
 class EmptyDragClient : public DragClient {

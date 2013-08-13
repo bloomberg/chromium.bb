@@ -47,6 +47,7 @@
 #include "core/page/PageLifecycleNotifier.h"
 #include "core/page/PointerLockController.h"
 #include "core/page/Settings.h"
+#include "core/page/ValidationMessageClient.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/network/NetworkStateNotifier.h"
 #include "core/plugins/PluginData.h"
@@ -260,6 +261,14 @@ void Page::setMainFrame(PassRefPtr<Frame> mainFrame)
 {
     ASSERT(!m_mainFrame); // Should only be called during initialization
     m_mainFrame = mainFrame;
+}
+
+void Page::documentDetached(Document* document)
+{
+    m_pointerLockController->documentDetached(document);
+    m_contextMenuController->documentDetached(document);
+    if (m_validationMessageClient)
+        m_validationMessageClient->documentDetached(*document);
 }
 
 bool Page::openedByDOM() const

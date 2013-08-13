@@ -118,6 +118,8 @@ public:
     void setMainFrame(PassRefPtr<Frame>);
     Frame* mainFrame() const { return m_mainFrame.get(); }
 
+    void documentDetached(Document*);
+
     bool openedByDOM() const;
     void setOpenedByDOM();
 

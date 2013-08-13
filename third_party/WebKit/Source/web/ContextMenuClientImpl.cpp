@@ -368,6 +368,12 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         m_webView->client()->showContextMenu(selected_web_frame, data);
 }
 
+void ContextMenuClientImpl::clearContextMenu()
+{
+    if (m_webView->client())
+        m_webView->client()->clearContextMenu();
+}
+
 static void populateSubMenuItems(const Vector<ContextMenuItem>& inputMenu, WebVector<WebMenuItemInfo>& subMenuItems)
 {
     Vector<WebMenuItemInfo> subItems;
