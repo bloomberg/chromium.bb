@@ -468,6 +468,8 @@ void SigninScreenHandler::DeclareLocalizedValues(
       g_browser_process->browser_policy_connector()->IsEnterpriseManaged() ?
           IDS_DISABLED_ADD_USER_TOOLTIP_ENTERPRISE :
           IDS_DISABLED_ADD_USER_TOOLTIP);
+  builder->Add("supervisedUserExpiredTokenWarning",
+               IDS_SUPERVISED_USER_EXPIRED_TOKEN_WARNING);
 
   // Strings used by password changed dialog.
   builder->Add("passwordChangedTitle", IDS_LOGIN_PASSWORD_CHANGED_TITLE);
@@ -1338,13 +1340,21 @@ void SigninScreenHandler::FillUserDictionary(User* user,
       user->GetType() == User::USER_TYPE_PUBLIC_ACCOUNT;
   bool is_locally_managed_user =
       user->GetType() == User::USER_TYPE_LOCALLY_MANAGED;
+  User::OAuthTokenStatus token_status = user->oauth_token_status();
+
+  // If supervised user has unknown token status consider that as valid token.
+  // It will be invalidated inside session in case it has been revoked.
+  if (is_locally_managed_user &&
+      token_status == User::OAUTH_TOKEN_STATUS_UNKNOWN) {
+    token_status = User::OAUTH2_TOKEN_STATUS_VALID;
+  }
 
   user_dict->SetString(kKeyUsername, email);
   user_dict->SetString(kKeyEmailAddress, user->display_email());
   user_dict->SetString(kKeyDisplayName, user->GetDisplayName());
   user_dict->SetBoolean(kKeyPublicAccount, is_public_account);
   user_dict->SetBoolean(kKeyLocallyManagedUser, is_locally_managed_user);
-  user_dict->SetInteger(kKeyOauthTokenStatus, user->oauth_token_status());
+  user_dict->SetInteger(kKeyOauthTokenStatus, token_status);
   user_dict->SetBoolean(kKeySignedIn, user->is_logged_in());
   user_dict->SetBoolean(kKeyIsOwner, is_owner);
 

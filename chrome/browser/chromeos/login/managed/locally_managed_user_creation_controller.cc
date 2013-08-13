@@ -221,6 +221,10 @@ void LocallyManagedUserCreationController::OnManagedUserFilesStored(
       consumer_->OnCreationError(TOKEN_WRITE_FAILED);
     return;
   }
+  // Assume that new token is valid. It will be automatically invalidated if
+  // sync service fails to use it.
+  UserManager::Get()->SaveUserOAuthStatus(creation_context_->user_id,
+                                          User::OAUTH2_TOKEN_STATUS_VALID);
   UserManager::Get()->CommitLocallyManagedUserCreationTransaction();
   if (consumer_)
     consumer_->OnCreationSuccess();

@@ -741,7 +741,6 @@ void UserManagerImpl::Observe(int type,
     case chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED:
       if (IsUserLoggedIn() &&
           !IsLoggedInAsGuest() &&
-          !IsLoggedInAsLocallyManagedUser() &&
           !IsLoggedInAsKioskApp()) {
         Profile* profile = content::Details<Profile>(details).ptr();
         if (!profile->IsOffTheRecord() &&
@@ -1022,12 +1021,11 @@ void UserManagerImpl::EnsureUsersLoaded() {
        it != regular_users.end(); ++it) {
     User* user = NULL;
     const std::string domain = gaia::ExtractDomainName(*it);
-    if (domain == UserManager::kLocallyManagedUserDomain) {
+    if (domain == UserManager::kLocallyManagedUserDomain)
       user = User::CreateLocallyManagedUser(*it);
-    } else {
+    else
       user = User::CreateRegularUser(*it);
-      user->set_oauth_token_status(LoadUserOAuthStatus(*it));
-    }
+    user->set_oauth_token_status(LoadUserOAuthStatus(*it));
     users_.push_back(user);
 
     string16 display_name;

@@ -336,7 +336,7 @@ cr.define('login', function() {
       this.nameElement.textContent = this.user_.displayName;
       this.signedInIndicatorElement.hidden = !this.user_.signedIn;
 
-      var needSignin = this.needGaiaSignin;
+      var needSignin = this.needSignin;
       this.passwordElement.hidden = needSignin;
       this.signinButtonElement.hidden = !needSignin;
 
@@ -381,15 +381,14 @@ cr.define('login', function() {
     },
 
     /**
-     * Whether Gaia signin is required for this user.
+     * Whether signin is required for this user.
      */
-    get needGaiaSignin() {
-      // Gaia signin is performed if the user has an invalid oauth token and is
+    get needSignin() {
+      // Signin is performed if the user has an invalid oauth token and is
       // not currently signed in (i.e. not the lock screen).
-      // Locally managed users never require GAIA signin.
       return this.user.oauthTokenStatus != OAuthTokenStatus.VALID_OLD &&
           this.user.oauthTokenStatus != OAuthTokenStatus.VALID_NEW &&
-          !this.user.signedIn && !this.user.locallyManagedUser;
+          !this.user.signedIn;
     },
 
     /**
@@ -460,7 +459,7 @@ cr.define('login', function() {
      * Focuses on input element.
      */
     focusInput: function() {
-      var needSignin = this.needGaiaSignin;
+      var needSignin = this.needSignin;
       this.signinButtonElement.hidden = !needSignin;
       this.passwordElement.hidden = needSignin;
 
@@ -476,7 +475,6 @@ cr.define('login', function() {
      */
     activate: function() {
       if (!this.signinButtonElement.hidden) {
-        // Switch to Gaia signin.
         this.showSigninUI();
       } else if (!this.passwordElement.value) {
         return false;
@@ -489,11 +487,26 @@ cr.define('login', function() {
       return true;
     },
 
+    showSupervisedUserSigninWarning: function() {
+      // Locally managed user token has been invalidated.
+      // Make sure that pod is focused i.e. "Sign in" button is seen.
+      this.parentNode.focusPod(this);
+      $('bubble').showTextForElement(
+          this.signinButtonElement,
+          loadTimeData.getString('supervisedUserExpiredTokenWarning'),
+          cr.ui.Bubble.Attachment.TOP,
+          24, 4);
+    },
+
     /**
      * Shows signin UI for this user.
      */
     showSigninUI: function() {
-      this.parentNode.showSigninUI(this.user.emailAddress);
+      if (this.user.locallyManagedUser) {
+        this.showSupervisedUserSigninWarning();
+      } else {
+        this.parentNode.showSigninUI(this.user.emailAddress);
+      }
     },
 
     /**
@@ -697,7 +710,7 @@ cr.define('login', function() {
     },
 
     /** @override */
-    get needGaiaSignin() {
+    get needSignin() {
       return false;
     },
 
