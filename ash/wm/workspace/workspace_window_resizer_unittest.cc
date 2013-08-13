@@ -842,8 +842,12 @@ TEST_F(WorkspaceWindowResizerTest, SnapToEdge) {
   Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
       SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
+  // Click 50px to the right so that the mouse pointer does not leave the
+  // workspace ensuring sticky behavior.
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-      window_.get(), gfx::Point(), HTCAPTION,
+      window_.get(),
+      window_->bounds().origin() + gfx::Vector2d(50, 0),
+      HTCAPTION,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
   ASSERT_TRUE(resizer.get());
   // Move to an x-coordinate of 15, which should not snap.
@@ -958,8 +962,12 @@ TEST_F(WorkspaceWindowResizerTestSticky, StickToEdge) {
   Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
       SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
   window_->SetBounds(gfx::Rect(96, 112, 320, 160));
+  // Click 50px to the right so that the mouse pointer does not leave the
+  // workspace ensuring sticky behavior.
   scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
-      window_.get(), gfx::Point(), HTCAPTION,
+      window_.get(),
+      window_->bounds().origin() + gfx::Vector2d(50, 0),
+      HTCAPTION,
       aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
   ASSERT_TRUE(resizer.get());
   // Move to an x-coordinate of 15, which should not stick.
@@ -992,6 +1000,22 @@ TEST_F(WorkspaceWindowResizerTestSticky, StickToEdge) {
   EXPECT_EQ("96,539 320x160", window_->bounds().ToString());
 
   // No need to test dragging < 0 as we force that to 0.
+}
+
+// Verifies not sticking to edges when a mouse pointer is outside of work area.
+TEST_F(WorkspaceWindowResizerTestSticky, NoStickToEdgeWhenOutside) {
+  Shell::GetPrimaryRootWindowController()->GetShelfLayoutManager()->
+      SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  window_->SetBounds(gfx::Rect(96, 112, 320, 160));
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION,
+      aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  // Move to an x-coordinate of 15, which should not stick.
+  resizer->Drag(CalculateDragPoint(*resizer, 15 - 96, 0), 0);
+  // Move to -15, should still stick to 0.
+  resizer->Drag(CalculateDragPoint(*resizer, -15 - 96, 0), 0);
+  EXPECT_EQ("-15,112 320x160", window_->bounds().ToString());
 }
 
 // Verifies a resize sticks when dragging TOPLEFT.

@@ -116,7 +116,7 @@ bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
            distance_from_edge > -sticky_size;
   }
   return distance_from_edge < sticky_size &&
-                              distance_from_edge > -sticky_size * 2;
+         distance_from_edge > -sticky_size * 2;
 }
 
 // Returns the coordinate along the secondary axis to snap to.
@@ -746,8 +746,12 @@ void WorkspaceWindowResizer::AdjustBoundsForMainWindow(
     }
 
     if (sticky_size > 0) {
-      if (!StickToWorkAreaOnMove(work_area, sticky_size, bounds))
+      // Possibly stick to edge except when a mouse pointer is outside the
+      // work area.
+      if (!(display.work_area().Contains(last_mouse_location_in_screen) &&
+            StickToWorkAreaOnMove(work_area, sticky_size, bounds))) {
         MagneticallySnapToOtherWindows(bounds);
+      }
     }
   } else if (sticky_size > 0) {
     MagneticallySnapResizeToOtherWindows(bounds);

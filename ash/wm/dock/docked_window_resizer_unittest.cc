@@ -824,7 +824,7 @@ TEST_P(DockedWindowResizerTest, AttachOneTestSticky)
 
   // Drag w2 by a bit more - it should resist the drag (stuck edges)
   int start_x = w2->bounds().x();
-  ASSERT_NO_FATAL_FAILURE(DragStart(w2.get()));
+  ASSERT_NO_FATAL_FAILURE(DragStartAtOffsetFromwindowOrigin(w2.get(), 100, 5));
   DragMove(-2, 0);
   // Window should not actually move.
   EXPECT_EQ(start_x, w2->bounds().x());
