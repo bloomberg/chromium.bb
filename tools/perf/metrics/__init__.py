@@ -11,6 +11,17 @@ class Metric(object):
   about one thing.
   """
 
+  def CustomizeBrowserOptions(self, options):
+    """Add browser options that are required by this metric.
+
+    Some metrics do not have any special browser options that need
+    to be added, and they do not need to override this method; by
+    default, no browser options are added.
+
+    To add options here, call options.AppendExtraBrowserArg(arg).
+    """
+    pass
+
   def Start(self, page, tab):
     """Start collecting data for this metric."""
     raise NotImplementedError()
