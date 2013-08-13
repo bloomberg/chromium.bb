@@ -231,44 +231,42 @@ void NetworkConnectionHandler::ConnectToNetwork(
 
   // Check cached network state for connected, connecting, or unactivated
   // networks. These states will not be affected by a recent configuration.
-  // Note: NetworkState may not exist for a network that was recently
-  // configured, in which case these checks do not apply anyway.
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
+  if (!network) {
+    InvokeErrorCallback(service_path, error_callback, kErrorNotFound);
+    return;
+  }
+  if (network->IsConnectedState()) {
+    InvokeErrorCallback(service_path, error_callback, kErrorConnected);
+    return;
+  }
+  if (network->IsConnectingState()) {
+    InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
+    return;
+  }
+  if (NetworkRequiresActivation(network)) {
+    InvokeErrorCallback(service_path, error_callback, kErrorActivationRequired);
+    return;
+  }
 
-  if (network) {
-    // For existing networks, perform some immediate consistency checks.
-    if (network->IsConnectedState()) {
-      InvokeErrorCallback(service_path, error_callback, kErrorConnected);
+  if (check_error_state) {
+    const std::string& error = network->error();
+    if (error == flimflam::kErrorConnectFailed) {
+      InvokeErrorCallback(
+          service_path, error_callback, kErrorPassphraseRequired);
       return;
     }
-    if (network->IsConnectingState()) {
-      InvokeErrorCallback(service_path, error_callback, kErrorConnecting);
-      return;
-    }
-    if (NetworkRequiresActivation(network)) {
-      InvokeErrorCallback(service_path, error_callback,
-                          kErrorActivationRequired);
+    if (error == flimflam::kErrorBadPassphrase) {
+      InvokeErrorCallback(
+          service_path, error_callback, kErrorPassphraseRequired);
       return;
     }
 
-    if (check_error_state) {
-      const std::string& error = network->error();
-      if (error == flimflam::kErrorConnectFailed) {
-        InvokeErrorCallback(
-            service_path, error_callback, kErrorPassphraseRequired);
-        return;
-      }
-      if (error == flimflam::kErrorBadPassphrase) {
-        InvokeErrorCallback(
-            service_path, error_callback, kErrorPassphraseRequired);
-        return;
-      }
-      if (IsAuthenticationError(error)) {
-        InvokeErrorCallback(
-            service_path, error_callback, kErrorAuthenticationRequired);
-        return;
-      }
+    if (IsAuthenticationError(error)) {
+      InvokeErrorCallback(
+          service_path, error_callback, kErrorAuthenticationRequired);
+      return;
     }
   }
 
@@ -279,8 +277,16 @@ void NetworkConnectionHandler::ConnectToNetwork(
 
   // Connect immediately to 'connectable' networks.
   // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
-  if (network &&
-      network->connectable() && network->type() != flimflam::kTypeVPN) {
+  if (network->connectable() && network->type() != flimflam::kTypeVPN) {
+    CallShillConnect(service_path);
+    return;
+  }
+
+  if (network->type() == flimflam::kTypeCellular ||
+      (network->type() == flimflam::kTypeWifi &&
+       network->security() == flimflam::kSecurityNone)) {
+    NET_LOG_ERROR("Network has no security but is not 'Connectable'",
+                  service_path);
     CallShillConnect(service_path);
     return;
   }
@@ -289,7 +295,7 @@ void NetworkConnectionHandler::ConnectToNetwork(
   // use only these properties, not cached properties, to ensure that they
   // are up to date after any recent configuration.
   network_configuration_handler_->GetProperties(
-      service_path,
+      network->path(),
       base::Bind(&NetworkConnectionHandler::VerifyConfiguredAndConnect,
                  AsWeakPtr(), check_error_state),
       base::Bind(&NetworkConnectionHandler::HandleConfigurationFailure,
@@ -345,7 +351,8 @@ void NetworkConnectionHandler::NetworkPropertiesUpdated(
 }
 
 NetworkConnectionHandler::ConnectRequest*
-NetworkConnectionHandler::GetPendingRequest(const std::string& service_path) {
+NetworkConnectionHandler::pending_request(
+    const std::string& service_path) {
   std::map<std::string, ConnectRequest>::iterator iter =
       pending_requests_.find(service_path);
   return iter != pending_requests_.end() ? &(iter->second) : NULL;
@@ -369,22 +376,9 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
     return;
   }
 
-  std::string type, security;
+  std::string type;
   service_properties.GetStringWithoutPathExpansion(
       flimflam::kTypeProperty, &type);
-  service_properties.GetStringWithoutPathExpansion(
-      flimflam::kSecurityProperty, &security);
-  bool connectable = false;
-  service_properties.GetBooleanWithoutPathExpansion(
-      flimflam::kConnectableProperty, &connectable);
-
-  // In case NetworkState was not available in ConnectToNetwork (e.g. it had
-  // been recently configured), we need to check Connectable again.
-  if (connectable && type != flimflam::kTypeVPN) {
-    // TODO(stevenjb): Shill needs to properly set Connectable for VPN.
-    CallShillConnect(service_path);
-    return;
-  }
 
   // Get VPN provider type and host (required for configuration) and ensure
   // that required VPN non-cert properties are set.
@@ -415,12 +409,11 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
   client_cert::ConfigType client_cert_type = client_cert::CONFIG_TYPE_NONE;
   if (type == flimflam::kTypeVPN) {
-    if (vpn_provider_type == flimflam::kProviderOpenVpn)
-      client_cert_type = client_cert::CONFIG_TYPE_OPENVPN;
-    else
-      client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
-  } else if (type == flimflam::kTypeWifi &&
-             security == flimflam::kSecurity8021x) {
+      if (vpn_provider_type == flimflam::kProviderOpenVpn)
+        client_cert_type = client_cert::CONFIG_TYPE_OPENVPN;
+      else
+        client_cert_type = client_cert::CONFIG_TYPE_IPSEC;
+  } else if (type == flimflam::kTypeWifi) {
     client_cert_type = client_cert::CONFIG_TYPE_EAP;
   }
 
@@ -444,11 +437,8 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
 
       // If certificates have not been loaded yet, queue the connect request.
       if (!certificates_loaded_) {
-        ConnectRequest* request = GetPendingRequest(service_path);
-        if (!request) {
-          NET_LOG_ERROR("No pending request to queue", service_path);
-          return;
-        }
+        ConnectRequest* request = pending_request(service_path);
+        DCHECK(request);
         NET_LOG_EVENT("Connect Request Queued", service_path);
         queued_connect_.reset(new ConnectRequest(
             service_path, request->success_callback, request->error_callback));
@@ -493,8 +483,8 @@ void NetworkConnectionHandler::VerifyConfiguredAndConnect(
       config_properties.SetStringWithoutPathExpansion(
           flimflam::kProviderHostProperty, vpn_provider_host);
     } else if (type == flimflam::kTypeWifi) {
-      config_properties.SetStringWithoutPathExpansion(
-          flimflam::kSecurityProperty, security);
+      CopyStringFromDictionary(service_properties, flimflam::kSecurityProperty,
+                               &config_properties);
     }
 
     network_configuration_handler_->SetProperties(
@@ -532,12 +522,8 @@ void NetworkConnectionHandler::HandleConfigurationFailure(
     const std::string& service_path,
     const std::string& error_name,
     scoped_ptr<base::DictionaryValue> error_data) {
-  ConnectRequest* request = GetPendingRequest(service_path);
-  if (!request) {
-    NET_LOG_ERROR("HandleConfigurationFailure called with no pending request.",
-                  service_path);
-    return;
-  }
+  ConnectRequest* request = pending_request(service_path);
+  DCHECK(request);
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
   if (!error_callback.is_null())
@@ -546,12 +532,8 @@ void NetworkConnectionHandler::HandleConfigurationFailure(
 
 void NetworkConnectionHandler::HandleShillConnectSuccess(
     const std::string& service_path) {
-  ConnectRequest* request = GetPendingRequest(service_path);
-  if (!request) {
-    NET_LOG_ERROR("HandleShillConnectSuccess called with no pending request.",
-                  service_path);
-    return;
-  }
+  ConnectRequest* request = pending_request(service_path);
+  DCHECK(request);
   request->connect_state = ConnectRequest::CONNECT_STARTED;
   NET_LOG_EVENT("Connect Request Acknowledged", service_path);
   // Do not call success_callback here, wait for one of the following
@@ -565,12 +547,8 @@ void NetworkConnectionHandler::HandleShillConnectFailure(
     const std::string& service_path,
     const std::string& dbus_error_name,
     const std::string& dbus_error_message) {
-  ConnectRequest* request = GetPendingRequest(service_path);
-  if (!request) {
-    NET_LOG_ERROR("HandleShillConnectFailure called with no pending request.",
-                  service_path);
-    return;
-  }
+  ConnectRequest* request = pending_request(service_path);
+  DCHECK(request);
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);
   network_handler::ShillErrorCallbackFunction(
@@ -580,15 +558,16 @@ void NetworkConnectionHandler::HandleShillConnectFailure(
 
 void NetworkConnectionHandler::CheckPendingRequest(
     const std::string service_path) {
-  ConnectRequest* request = GetPendingRequest(service_path);
+  ConnectRequest* request = pending_request(service_path);
   DCHECK(request);
   if (request->connect_state == ConnectRequest::CONNECT_REQUESTED)
     return;  // Request has not started, ignore update
   const NetworkState* network =
       network_state_handler_->GetNetworkState(service_path);
-  if (!network)
-    return;  // NetworkState may not be be updated yet.
-
+  if (!network) {
+    ErrorCallbackForPendingRequest(service_path, kErrorNotFound);
+    return;
+  }
   if (network->IsConnectingState()) {
     request->connect_state = ConnectRequest::CONNECT_CONNECTING;
     return;
@@ -657,12 +636,8 @@ std::string NetworkConnectionHandler::CertificateIsConfigured(
 void NetworkConnectionHandler::ErrorCallbackForPendingRequest(
     const std::string& service_path,
     const std::string& error_name) {
-  ConnectRequest* request = GetPendingRequest(service_path);
-  if (!request) {
-    NET_LOG_ERROR("ErrorCallbackForPendingRequest with no pending request.",
-                  service_path);
-    return;
-  }
+  ConnectRequest* request = pending_request(service_path);
+  DCHECK(request);
   // Remove the entry before invoking the callback in case it triggers a retry.
   network_handler::ErrorCallback error_callback = request->error_callback;
   pending_requests_.erase(service_path);

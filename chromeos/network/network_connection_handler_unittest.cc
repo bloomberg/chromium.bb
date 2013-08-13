@@ -167,8 +167,7 @@ TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectSuccess) {
 // Handles basic failure cases.
 TEST_F(NetworkConnectionHandlerTest, NetworkConnectionHandlerConnectFailure) {
   Connect("no-network");
-  EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
-            GetResultAndReset());
+  EXPECT_EQ(NetworkConnectionHandler::kErrorNotFound, GetResultAndReset());
 
   EXPECT_TRUE(Configure(kConfigConnected));
   Connect("wifi1");
@@ -222,8 +221,7 @@ TEST_F(NetworkConnectionHandlerTest,
 TEST_F(NetworkConnectionHandlerTest,
        NetworkConnectionHandlerDisconnectFailure) {
   Connect("no-network");
-  EXPECT_EQ(NetworkConnectionHandler::kErrorConfigureFailed,
-            GetResultAndReset());
+  EXPECT_EQ(NetworkConnectionHandler::kErrorNotFound, GetResultAndReset());
 
   EXPECT_TRUE(Configure(kConfigConnectable));
   Disconnect("wifi0");
