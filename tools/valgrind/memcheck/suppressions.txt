@@ -6641,6 +6641,17 @@
    fun:_ZN7WebCore14NodeV8InternalL37appendChildMethodCallbackForMainWorldERKN2v820FunctionCallbackInfoINS1_5ValueEEE
 }
 {
+   bug_241892d
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN3WTF10fastMallocEm
+   fun:_ZN3WTF10RefCountedIN7WebCore11CSSSelector8RareDataEEnwEm
+   fun:_ZN7WebCore11CSSSelector8RareData6createEN3WTF10PassRefPtrINS2_10StringImplEEE
+   fun:_ZN7WebCore11CSSSelector14createRareDataEv
+   ...
+   fun:_Z10cssyyparsePN7WebCore9CSSParserE
+}
+{
    bug_241932
    Memcheck:Leak
    fun:calloc

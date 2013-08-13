@@ -849,3 +849,9 @@
    fun:MessageCenterView
    fun:message_center::MessageCenterViewTest::SetUp
 }
+{
+   bug_272083
+   Heapcheck:Leak
+   fun:ThemeService::SetManagedUserTheme
+   fun:ThemeService::OnManagedUserInitialized
+}
