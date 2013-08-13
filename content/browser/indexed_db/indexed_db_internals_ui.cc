@@ -257,9 +257,6 @@ void IndexedDBInternalsUI::ForceCloseOriginOnIndexedDBThread(
 void IndexedDBInternalsUI::OnForcedClose(const base::FilePath& partition_path,
                                          const GURL& origin_url,
                                          size_t connection_count) {
-
-  scoped_refptr<IndexedDBContextImpl> context;
-
   web_ui()->CallJavascriptFunction(
       "indexeddb.onForcedClose",
       base::StringValue(partition_path.value()),

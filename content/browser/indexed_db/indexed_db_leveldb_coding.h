@@ -402,7 +402,9 @@ class IndexDataKey {
   CONTENT_EXPORT static std::string EncodeMaxKey(int64 database_id,
                                                  int64 object_store_id,
                                                  int64 index_id);
-  int Compare(const IndexDataKey& other, bool ignore_duplicates, bool* ok);
+  int Compare(const IndexDataKey& other,
+              bool only_compare_index_keys,
+              bool* ok);
   int64 DatabaseId() const;
   int64 ObjectStoreId() const;
   int64 IndexId() const;

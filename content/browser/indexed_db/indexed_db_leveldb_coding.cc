@@ -744,7 +744,10 @@ int CompareEncodedIDBKeys(const std::string& key_a,
 namespace {
 
 template <typename KeyType>
-int Compare(const StringPiece& a, const StringPiece& b, bool, bool* ok) {
+int Compare(const StringPiece& a,
+            const StringPiece& b,
+            bool only_compare_index_keys,
+            bool* ok) {
   KeyType key_a;
   KeyType key_b;
 
@@ -766,7 +769,7 @@ int Compare(const StringPiece& a, const StringPiece& b, bool, bool* ok) {
 template <>
 int Compare<ExistsEntryKey>(const StringPiece& a,
                             const StringPiece& b,
-                            bool,
+                            bool only_compare_index_keys,
                             bool* ok) {
   KeyPrefix prefix_a;
   KeyPrefix prefix_b;
@@ -793,7 +796,7 @@ int Compare<ExistsEntryKey>(const StringPiece& a,
 template <>
 int Compare<ObjectStoreDataKey>(const StringPiece& a,
                                 const StringPiece& b,
-                                bool,
+                                bool only_compare_index_keys,
                                 bool* ok) {
   KeyPrefix prefix_a;
   KeyPrefix prefix_b;
@@ -820,7 +823,7 @@ int Compare<ObjectStoreDataKey>(const StringPiece& a,
 template <>
 int Compare<IndexDataKey>(const StringPiece& a,
                           const StringPiece& b,
-                          bool ignore_duplicates,
+                          bool only_compare_index_keys,
                           bool* ok) {
   KeyPrefix prefix_a;
   KeyPrefix prefix_b;
@@ -845,7 +848,7 @@ int Compare<IndexDataKey>(const StringPiece& a,
   int result = CompareEncodedIDBKeys(&slice_a, &slice_b, ok);
   if (!*ok || result)
     return result;
-  if (ignore_duplicates)
+  if (only_compare_index_keys)
     return 0;
 
   // sequence number [optional]
@@ -877,7 +880,7 @@ int Compare<IndexDataKey>(const StringPiece& a,
 
 int Compare(const StringPiece& a,
             const StringPiece& b,
-            bool index_keys,
+            bool only_compare_index_keys,
             bool* ok) {
   StringPiece slice_a(a);
   StringPiece slice_b(b);
@@ -918,11 +921,12 @@ int Compare(const StringPiece& a,
       if (type_byte_a < kMaxSimpleGlobalMetaDataTypeByte)
         return 0;
 
-      const bool ignore_duplicates = false;
       if (type_byte_a == kDatabaseFreeListTypeByte)
-        return Compare<DatabaseFreeListKey>(a, b, ignore_duplicates, ok);
+        return Compare<DatabaseFreeListKey>(
+            a, b, only_compare_index_keys, ok);
       if (type_byte_a == kDatabaseNameTypeByte)
-        return Compare<DatabaseNameKey>(a, b, ignore_duplicates, ok);
+        return Compare<DatabaseNameKey>(
+            a, b, /*only_compare_index_keys*/ false, ok);
       break;
     }
 
@@ -947,19 +951,24 @@ int Compare(const StringPiece& a,
       if (type_byte_a < DatabaseMetaDataKey::MAX_SIMPLE_METADATA_TYPE)
         return 0;
 
-      const bool ignore_duplicates = false;
       if (type_byte_a == kObjectStoreMetaDataTypeByte)
-        return Compare<ObjectStoreMetaDataKey>(a, b, ignore_duplicates, ok);
+        return Compare<ObjectStoreMetaDataKey>(
+            a, b, only_compare_index_keys, ok);
       if (type_byte_a == kIndexMetaDataTypeByte)
-        return Compare<IndexMetaDataKey>(a, b, ignore_duplicates, ok);
+        return Compare<IndexMetaDataKey>(
+            a, b, /*only_compare_index_keys*/ false, ok);
       if (type_byte_a == kObjectStoreFreeListTypeByte)
-        return Compare<ObjectStoreFreeListKey>(a, b, ignore_duplicates, ok);
+        return Compare<ObjectStoreFreeListKey>(
+            a, b, only_compare_index_keys, ok);
       if (type_byte_a == kIndexFreeListTypeByte)
-        return Compare<IndexFreeListKey>(a, b, ignore_duplicates, ok);
+        return Compare<IndexFreeListKey>(
+            a, b, /*only_compare_index_keys*/ false, ok);
       if (type_byte_a == kObjectStoreNamesTypeByte)
-        return Compare<ObjectStoreNamesKey>(a, b, ignore_duplicates, ok);
+        return Compare<ObjectStoreNamesKey>(
+            a, b, only_compare_index_keys, ok);
       if (type_byte_a == kIndexNamesKeyTypeByte)
-        return Compare<IndexNamesKey>(a, b, ignore_duplicates, ok);
+        return Compare<IndexNamesKey>(
+            a, b, /*only_compare_index_keys*/ false, ok);
       break;
     }
 
@@ -969,8 +978,8 @@ int Compare(const StringPiece& a,
       // TODO(jsbell): This case of non-existing user keys should not have to be
       // handled this way.
 
-      const bool ignore_duplicates = false;
-      return Compare<ObjectStoreDataKey>(a, b, ignore_duplicates, ok);
+      return Compare<ObjectStoreDataKey>(
+          a, b, /*only_compare_index_keys*/ false, ok);
     }
 
     case KeyPrefix::EXISTS_ENTRY: {
@@ -979,8 +988,8 @@ int Compare(const StringPiece& a,
       // TODO(jsbell): This case of non-existing user keys should not have to be
       // handled this way.
 
-      const bool ignore_duplicates = false;
-      return Compare<ExistsEntryKey>(a, b, ignore_duplicates, ok);
+      return Compare<ExistsEntryKey>(
+          a, b, /*only_compare_index_keys*/ false, ok);
     }
 
     case KeyPrefix::INDEX_DATA: {
@@ -989,8 +998,7 @@ int Compare(const StringPiece& a,
       // TODO(jsbell): This case of non-existing user keys should not have to be
       // handled this way.
 
-      bool ignore_duplicates = index_keys;
-      return Compare<IndexDataKey>(a, b, ignore_duplicates, ok);
+      return Compare<IndexDataKey>(a, b, only_compare_index_keys, ok);
     }
 
     case KeyPrefix::INVALID_TYPE:
@@ -1004,9 +1012,11 @@ int Compare(const StringPiece& a,
 
 }  // namespace
 
-int Compare(const StringPiece& a, const StringPiece& b, bool index_keys) {
+int Compare(const StringPiece& a,
+            const StringPiece& b,
+            bool only_compare_index_keys) {
   bool ok;
-  int result = Compare(a, b, index_keys, &ok);
+  int result = Compare(a, b, only_compare_index_keys, &ok);
   DCHECK(ok);
   if (!ok)
     return 0;
@@ -1782,7 +1792,7 @@ std::string IndexDataKey::EncodeMaxKey(int64 database_id,
 }
 
 int IndexDataKey::Compare(const IndexDataKey& other,
-                          bool ignore_duplicates,
+                          bool only_compare_index_keys,
                           bool* ok) {
   DCHECK_GE(database_id_, 0);
   DCHECK_GE(object_store_id_, 0);
@@ -1791,7 +1801,7 @@ int IndexDataKey::Compare(const IndexDataKey& other,
       CompareEncodedIDBKeys(encoded_user_key_, other.encoded_user_key_, ok);
   if (!*ok || result)
     return result;
-  if (ignore_duplicates)
+  if (only_compare_index_keys)
     return 0;
   result = CompareEncodedIDBKeys(
       encoded_primary_key_, other.encoded_primary_key_, ok);
