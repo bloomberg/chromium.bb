@@ -143,12 +143,23 @@ void ChangeListProcessor::ApplyEntryMap(
     ApplyEntry(util::CreateMyDriveRootEntry(about_resource->root_folder_id()));
   }
 
-  // Apply all entries to the metadata.
+  // Apply all entries except deleted ones to the metadata.
+  std::vector<ResourceEntry> deleted_entries;
+  deleted_entries.reserve(entry_map_.size());
   while (!entry_map_.empty()) {
+    ResourceEntryMap::iterator it = entry_map_.begin();
+
+    // Process deleted entries later to avoid deleting moved entries under it.
+    if (it->second.deleted()) {
+      deleted_entries.push_back(ResourceEntry());
+      deleted_entries.back().Swap(&it->second);
+      entry_map_.erase(it);
+      continue;
+    }
+
     // Start from entry_map_.begin() and traverse ancestors.
     std::vector<ResourceEntryMap::iterator> entries;
-    for (ResourceEntryMap::iterator it = entry_map_.begin();
-         it != entry_map_.end();
+    for (; it != entry_map_.end();
          it = entry_map_.find(it->second.parent_resource_id())) {
       DCHECK_EQ(it->first, it->second.resource_id());
       entries.push_back(it);
@@ -162,6 +173,10 @@ void ChangeListProcessor::ApplyEntryMap(
       entry_map_.erase(it);
     }
   }
+
+  // Apply deleted entries.
+  for (size_t i = 0; i < deleted_entries.size(); ++i)
+    ApplyEntry(deleted_entries[i]);
 }
 
 void ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
