@@ -319,7 +319,7 @@ void WorkspaceLayoutManager::UpdateBoundsFromShowState(Window* window) {
       break;
     case ui::SHOW_STATE_FULLSCREEN:
       MoveToDisplayForRestore(window);
-      CrossFadeToBounds(window, ScreenAsh::GetDisplayBoundsInParent(
+      SetChildBoundsDirect(window, ScreenAsh::GetDisplayBoundsInParent(
           window->parent()->parent()));
       break;
     default:
