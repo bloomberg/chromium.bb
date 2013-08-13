@@ -18,6 +18,8 @@ namespace drive {
 class ResourceEntry;
 
 // Converts a google_apis::ResourceEntry into a drive::ResourceEntry.
+// If the conversion succeeded, return true and sets the result to |output|.
+// If failed, it returns false and keeps |*output| untouched.
 bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
                             ResourceEntry* output);
 
