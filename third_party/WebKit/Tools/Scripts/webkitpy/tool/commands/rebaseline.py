@@ -32,6 +32,7 @@ import optparse
 import re
 import sys
 import time
+import traceback
 import urllib
 import urllib2
 
@@ -813,10 +814,14 @@ class RebaselineOMatic(AbstractDeclarativeCommand):
 
     def execute(self, options, args, tool):
         while True:
-            tool.executive.run_command(['git', 'pull'])
-            rebaseline_command = [tool.filesystem.join(tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline', '--log-server', 'blinkrebaseline.appspot.com']
-            if options.verbose:
-                rebaseline_command.append('--verbose')
-            # Use call instead of run_command so that stdout doesn't get swallowed.
-            tool.executive.call(rebaseline_command)
+            try:
+                tool.executive.run_command(['git', 'pull'])
+                rebaseline_command = [tool.filesystem.join(tool.scm().checkout_root, 'Tools', 'Scripts', 'webkit-patch'), 'auto-rebaseline', '--log-server', 'blinkrebaseline.appspot.com']
+                if options.verbose:
+                    rebaseline_command.append('--verbose')
+                # Use call instead of run_command so that stdout doesn't get swallowed.
+                tool.executive.call(rebaseline_command)
+            except:
+                traceback.print_exc(file=sys.stderr)
+
             time.sleep(self.SLEEP_TIME_IN_SECONDS)
