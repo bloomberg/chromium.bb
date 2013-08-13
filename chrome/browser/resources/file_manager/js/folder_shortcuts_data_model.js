@@ -35,6 +35,9 @@ function FolderShortcutsDataModel() {
     if (list instanceof Array) {
       list = filter(list);
 
+      // Record metrics.
+      metrics.recordSmallCount('FolderShortcut.Count', list.length);
+
       var permutation = this.calculatePermitation_(this.array_, list);
       this.array_ = list;
       this.firePermutedEvent_(permutation);
@@ -160,6 +163,7 @@ FolderShortcutsDataModel.prototype = {
     this.firePermutedEvent_(
         this.calculatePermitation_(oldArray, this.array_));
     this.save_();
+    metrics.recordUserAction('FolderShortcut.Add');
     return addedIndex;
   },
 
@@ -184,6 +188,7 @@ FolderShortcutsDataModel.prototype = {
       this.firePermutedEvent_(
           this.calculatePermitation_(oldArray, this.array_));
       this.save_();
+      metrics.recordUserAction('FolderShortcut.Remove');
       return removedIndex;
     }
 

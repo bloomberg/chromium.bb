@@ -3885,6 +3885,34 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="FileBrowser.FolderShortcut.Add">
+  <summary>
+    Chrome OS File Browser: this is recorded when the user adds a folder
+    shortcut.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.FolderShortcut.Count">
+  <summary>
+    Chrome OS File Browser: number of saved folder shorcuts. This is recorded
+    when Files.app is launched.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.FolderShortcut.Navigate">
+  <summary>
+    Chrome OS File Browser: this is recorded when the user clicks or selects a
+    folder shortcut and is navigated to the target folder.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.FolderShortcut.Remove">
+  <summary>
+    Chrome OS File Browser: this is recorded when the user removes a folder
+    shortcut.
+  </summary>
+</histogram>
+
 <histogram name="FileBrowser.Load" units="milliseconds">
   <summary>
     Chrome OS File Browser is an built-in extension without a background page.

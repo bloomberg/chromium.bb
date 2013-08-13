@@ -316,8 +316,10 @@ NavigationList.prototype.renderRoot_ = function(path) {
   item.setPath(path);
 
   var handleClick = function() {
-    if (item.selected && path !== this.directoryModel_.getCurrentDirPath())
+    if (item.selected && path !== this.directoryModel_.getCurrentDirPath()) {
+      metrics.recordUserAction('FolderShortcut.Navigate');
       this.changeDirectory_(path);
+    }
   }.bind(this);
   item.addEventListener('click', handleClick);
 
@@ -371,6 +373,7 @@ NavigationList.prototype.setContextMenu = function(menu) {
 
 /**
  * Selects the n-th item from the list.
+ *
  * @param {number} index Item index.
  * @return {boolean} True for success, otherwise false.
  */
@@ -383,9 +386,12 @@ NavigationList.prototype.selectByIndex = function(index) {
     return false;
 
   // Prevents double-moving to the current directory.
+  // eg. When user clicks the item, changing directory has already been done in
+  //     click handler.
   if (this.directoryModel_.getCurrentDirEntry().fullPath == newPath)
     return false;
 
+  metrics.recordUserAction('FolderShortcut.Navigate');
   this.changeDirectory_(newPath);
   return true;
 };
