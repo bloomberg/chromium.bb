@@ -2,14 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/basictypes.h"
 #include "net/cert/x509_cert_types.h"
+
+#include "base/basictypes.h"
+#include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "net/test/test_certificate_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
-#if defined(OS_MACOSX)
+namespace {
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
 TEST(X509TypesTest, Matching) {
   CertPrincipal spamco;
   spamco.common_name = "SpamCo Dept. Of Certificization";
@@ -48,6 +53,7 @@ TEST(X509TypesTest, Matching) {
 }
 #endif
 
+#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 TEST(X509TypesTest, ParseDNVerisign) {
   CertPrincipal verisign;
   EXPECT_TRUE(verisign.ParseDistinguishedName(VerisignDN, sizeof(VerisignDN)));
@@ -135,5 +141,103 @@ TEST(X509TypesTest, ParseDNEntrust) {
   EXPECT_EQ("(c) 1999 Entrust.net Limited",
             entrust.organization_unit_names[1]);
 }
+#endif
+
+const struct CertDateTestData {
+  CertDateFormat format;
+  const char* date_string;
+  bool is_valid;
+  base::Time::Exploded expected_result;
+} kCertDateTimeData[] = {
+  { CERT_DATE_FORMAT_UTC_TIME,
+    "120101000000Z",
+    true,
+    { 2012, 1, 0, 1, 0, 0, 0 } },
+  { CERT_DATE_FORMAT_GENERALIZED_TIME,
+    "20120101000000Z",
+    true,
+    { 2012, 1, 0, 1, 0, 0, 0 } },
+  { CERT_DATE_FORMAT_UTC_TIME,
+    "490101000000Z",
+    true,
+    { 2049, 1, 0, 1, 0, 0, 0 } },
+  { CERT_DATE_FORMAT_UTC_TIME,
+    "500101000000Z",
+    true,
+    { 1950, 1, 0, 1, 0, 0, 0 } },
+  { CERT_DATE_FORMAT_GENERALIZED_TIME,
+    "19500101000000Z",
+    true,
+    { 1950, 1, 0, 1, 0, 0, 0 } },
+  { CERT_DATE_FORMAT_UTC_TIME,
+    "AB0101000000Z",
+    false,
+    { 0 } },
+  { CERT_DATE_FORMAT_GENERALIZED_TIME,
+    "19AB0101000000Z",
+    false,
+    { 0 } },
+  { CERT_DATE_FORMAT_UTC_TIME,
+    "",
+    false,
+    { 0 } },
+  { CERT_DATE_FORMAT_UTC_TIME,
+    "A",
+    false,
+    { 0 } },
+ { CERT_DATE_FORMAT_GENERALIZED_TIME,
+    "20121301000000Z",
+    false,
+    { 0 } },
+ { CERT_DATE_FORMAT_GENERALIZED_TIME,
+    "20120101123000Z",
+    true,
+    { 2012, 1, 0, 1, 12, 30, 0 } },
+};
+
+// GTest pretty printer.
+void PrintTo(const CertDateTestData& data, std::ostream* os) {
+  *os << " format: " << data.format
+      << "; date string: " << base::StringPiece(data.date_string)
+      << "; valid: " << data.is_valid
+      << "; expected date: "
+      << (data.is_valid ?
+              base::Time::FromUTCExploded(data.expected_result)
+                  .ToInternalValue() :
+              0U);
+}
+
+class X509CertTypesDateTest : public testing::TestWithParam<CertDateTestData> {
+  public:
+    virtual ~X509CertTypesDateTest() {}
+    virtual void SetUp() {
+      test_data_ = GetParam();
+    }
+
+  protected:
+    CertDateTestData test_data_;
+};
+
+TEST_P(X509CertTypesDateTest, Parse) {
+  base::Time parsed_date;
+  bool parsed = ParseCertificateDate(
+      test_data_.date_string, test_data_.format, &parsed_date);
+  EXPECT_EQ(test_data_.is_valid, parsed);
+  if (!test_data_.is_valid)
+    return;
+  // Convert the expected value to a base::Time(). This ensures that systems
+  // systems that only support 32-bit times will pass the tests, by ensuring at
+  // least that the times have the same truncating behaviour.
+  // Note: Compared as internal values so that mismatches can be cleanly
+  // printed by GTest (eg: without PrintTo overrides).
+  EXPECT_EQ(base::Time::FromUTCExploded(test_data_.expected_result)
+                .ToInternalValue(),
+            parsed_date.ToInternalValue());
+}
+INSTANTIATE_TEST_CASE_P(,
+                        X509CertTypesDateTest,
+                        testing::ValuesIn(kCertDateTimeData));
+
+}  // namespace
 
 }  // namespace net
