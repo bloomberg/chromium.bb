@@ -8,6 +8,7 @@
 
 #include "ash/caps_lock_delegate_stub.h"
 #include "ash/host/root_window_host_factory.h"
+#include "ash/keyboard_controller_proxy_stub.h"
 #include "ash/session_state_delegate.h"
 #include "ash/session_state_delegate_stub.h"
 #include "ash/shell/context_menu.h"
@@ -18,39 +19,9 @@
 #include "ash/wm/window_util.h"
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window.h"
-#include "ui/keyboard/keyboard_controller_proxy.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
 namespace ash {
-
-namespace {
-
-class DummyKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
- public:
-  DummyKeyboardControllerProxy() {}
-  virtual ~DummyKeyboardControllerProxy() {}
-
- private:
-  // Overridden from keyboard::KeyboardControllerProxy:
-  virtual content::BrowserContext* GetBrowserContext() OVERRIDE {
-    return Shell::GetInstance()->browser_context();
-  }
-
-  virtual ui::InputMethod* GetInputMethod() OVERRIDE {
-    return Shell::GetInstance()->input_method_filter()->input_method();
-  }
-
-  virtual void RequestAudioInput(content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) OVERRIDE {
-    return;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(DummyKeyboardControllerProxy);
-};
-
-}  // namespace
-
 namespace shell {
 
 ShellDelegateImpl::ShellDelegateImpl()
@@ -128,7 +99,7 @@ void ShellDelegateImpl::ShowKeyboardOverlay() {
 
 keyboard::KeyboardControllerProxy*
     ShellDelegateImpl::CreateKeyboardControllerProxy() {
-  return new DummyKeyboardControllerProxy();
+  return new KeyboardControllerProxyStub();
 }
 
 void ShellDelegateImpl::ShowTaskManager() {

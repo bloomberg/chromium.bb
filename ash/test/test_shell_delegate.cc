@@ -8,6 +8,7 @@
 
 #include "ash/caps_lock_delegate_stub.h"
 #include "ash/host/root_window_host_factory.h"
+#include "ash/keyboard_controller_proxy_stub.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -87,7 +88,7 @@ void TestShellDelegate::ShowKeyboardOverlay() {
 
 keyboard::KeyboardControllerProxy*
     TestShellDelegate::CreateKeyboardControllerProxy() {
-  return NULL;
+  return new KeyboardControllerProxyStub();
 }
 
 void TestShellDelegate::ShowTaskManager() {

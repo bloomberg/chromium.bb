@@ -13,6 +13,7 @@
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
+#include "base/command_line.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -22,6 +23,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/keyboard/keyboard_switches.h"
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -78,6 +80,36 @@ class DeleteOnBlurDelegate : public aura::test::TestWindowDelegate,
   aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteOnBlurDelegate);
+};
+
+class ClickTestWindow : public views::WidgetDelegateView {
+ public:
+  ClickTestWindow() : mouse_presses_(0) {}
+  virtual ~ClickTestWindow() {}
+
+  // Overridden from views::WidgetDelegate:
+  virtual views::View* GetContentsView() OVERRIDE {
+    return this;
+  }
+
+  aura::Window* CreateTestWindowWithParent(aura::Window* parent) {
+    DCHECK(parent);
+    views::Widget* widget = Widget::CreateWindowWithParent(this, parent);
+    return widget->GetNativeView();
+  }
+
+  // Overridden from views::View:
+  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE {
+    mouse_presses_++;
+    return false;
+  }
+
+  int mouse_presses() const { return mouse_presses_; }
+
+ private:
+  int mouse_presses_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClickTestWindow);
 };
 
 }  // namespace
@@ -490,6 +522,53 @@ TEST_F(NoSessionRootWindowControllerTest, Event) {
   EXPECT_EQ(event_target,
             root->GetEventHandlerForPoint(
                 gfx::Point(size.width() - 1, size.height() - 1)));
+}
+
+class VirtualKeyboardRootWindowControllerTest : public test::AshTestBase {
+ public:
+  VirtualKeyboardRootWindowControllerTest() {};
+  virtual ~VirtualKeyboardRootWindowControllerTest() {};
+
+  virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        keyboard::switches::kEnableVirtualKeyboard);
+    test::AshTestBase::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardRootWindowControllerTest);
+};
+
+// Test for http://crbug.com/263599. Virtual keyboard should be able to receive
+// events at blocked user session.
+TEST_F(VirtualKeyboardRootWindowControllerTest,
+       ClickVirtualKeyboardInBlockedWindow) {
+  aura::RootWindow* root_window = ash::Shell::GetPrimaryRootWindow();
+  aura::Window* keyboard_container = Shell::GetContainer(root_window,
+      internal::kShellWindowId_VirtualKeyboardContainer);
+  ASSERT_TRUE(keyboard_container);
+  keyboard_container->Show();
+
+  ClickTestWindow* main_delegate = new ClickTestWindow();
+  scoped_ptr<aura::Window> keyboard_window(
+      main_delegate->CreateTestWindowWithParent(keyboard_container));
+  keyboard_container->layout_manager()->OnWindowResized();
+  keyboard_window->Show();
+  aura::test::EventGenerator event_generator(root_window,
+                                             keyboard_window.get());
+  event_generator.ClickLeftButton();
+  int expected_mouse_presses = 1;
+  EXPECT_EQ(expected_mouse_presses, main_delegate->mouse_presses());
+
+  for (int block_reason = FIRST_BLOCK_REASON;
+       block_reason < NUMBER_OF_BLOCK_REASONS;
+       ++block_reason) {
+    BlockUserSession(static_cast<UserSessionBlockReason>(block_reason));
+    event_generator.ClickLeftButton();
+    expected_mouse_presses++;
+    EXPECT_EQ(expected_mouse_presses, main_delegate->mouse_presses());
+    UnblockUserSession();
+  }
 }
 
 }  // namespace test

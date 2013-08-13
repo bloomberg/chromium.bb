@@ -487,6 +487,7 @@ void RootWindowController::InitKeyboard() {
 
     aura::Window* keyboard_container =
         keyboard_controller_->GetContainerWindow();
+    keyboard_container->set_id(kShellWindowId_VirtualKeyboardContainer);
     parent->AddChild(keyboard_container);
     keyboard_container->SetBounds(parent->bounds());
   }

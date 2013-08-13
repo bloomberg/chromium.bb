@@ -130,6 +130,8 @@
         'host/root_window_host_factory.cc',
         'host/root_window_host_factory.h',
         'host/root_window_host_factory_win.cc',
+        'keyboard_controller_proxy_stub.cc',
+        'keyboard_controller_proxy_stub.h',
         'keyboard_overlay/keyboard_overlay_delegate.cc',
         'keyboard_overlay/keyboard_overlay_delegate.h',
         'keyboard_overlay/keyboard_overlay_view.cc',
