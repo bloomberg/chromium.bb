@@ -163,6 +163,9 @@ public:
         PrefixedShadowRootConstructor,
         ConsoleMarkTimeline,
         CSSPseudoElementUserAgentCustomPseudo,
+        DocumentTypeEntities, // Removed from DOM4.
+        DocumentTypeInternalSubset, // Removed from DOM4.
+        DocumentTypeNotations, // Removed from DOM4.
         // Add new features immediately above this line. Don't change assigned
         // numbers of each items, and don't reuse unused slots.
         NumberOfFeatures, // This enum value must be last.
