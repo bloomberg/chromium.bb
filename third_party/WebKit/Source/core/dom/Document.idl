@@ -33,10 +33,10 @@ callback CustomElementConstructor = Element ();
     DocumentFragment   createDocumentFragment();
     [PerWorldBindings] Text createTextNode([Default=Undefined] optional DOMString data);
     Comment createComment([Default=Undefined] optional DOMString data);
-    [RaisesException] CDATASection createCDATASection([Default=Undefined] optional DOMString data);
+    [RaisesException, MeasureAs=DocumentCreateCDATASection] CDATASection createCDATASection([Default=Undefined] optional DOMString data); // Removed from DOM4.
     [RaisesException] ProcessingInstruction createProcessingInstruction([Default=Undefined] optional DOMString target,
                                                                                  [Default=Undefined] optional DOMString data);
-    [RaisesException] Attr createAttribute([Default=Undefined] optional DOMString name);
+    [RaisesException, MeasureAs=DocumentCreateAttribute] Attr createAttribute([Default=Undefined] optional DOMString name); // Removed from DOM4.
     [PerWorldBindings] NodeList           getElementsByTagName([Default=Undefined] optional DOMString tagname);
 
     // Introduced in DOM Level 2:
@@ -45,19 +45,19 @@ callback CustomElementConstructor = Element ();
                     optional boolean deep);
     [CustomElementCallbacks=Enable, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Element createElementNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                             [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName);
-    [RaisesException] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                                                          [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName);
+    [RaisesException, MeasureAs=DocumentCreateAttributeNS] Attr createAttributeNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
+                                                                                  [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName); // Removed from DOM4.
      NodeList getElementsByTagNameNS([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
                                                    [Default=Undefined] optional DOMString localName);
     [PerWorldBindings] Element            getElementById([Default=Undefined] optional DOMString elementId);
 
     // DOM Level 3 Core
 
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString inputEncoding;
+    [TreatReturnedNullStringAs=Null, MeasureAs=DocumentInputEncoding] readonly attribute DOMString inputEncoding; // Removed from DOM4.
 
-    [TreatReturnedNullStringAs=Null] readonly attribute DOMString xmlEncoding;
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException] attribute DOMString xmlVersion;
-             [SetterRaisesException] attribute boolean xmlStandalone;
+    [TreatReturnedNullStringAs=Null, MeasureAs=DocumentXMLEncoding] readonly attribute DOMString xmlEncoding; // Removed from DOM4.
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException, MeasureAs=DocumentXMLVersion] attribute DOMString xmlVersion; // Removed from DOM4.
+    [SetterRaisesException, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone; // Removed from DOM4.
 
     [RaisesException, CustomElementCallbacks=Enable] Node               adoptNode([Default=Undefined] optional Node source);
 
