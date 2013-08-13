@@ -31,11 +31,11 @@
 #include "core/fetch/ResourcePtr.h"
 #include "core/platform/text/SegmentedString.h"
 #include "core/xml/XMLErrors.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringHash.h"
 #include <libxml/tree.h>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringHash.h>
 
 namespace WebCore {
 

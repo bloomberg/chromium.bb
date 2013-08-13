@@ -34,8 +34,8 @@
 #include "core/xml/XPathNSResolver.h"
 #include "core/xml/XPathPath.h"
 #include "core/xml/XPathStep.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringHash.h"
 
 using namespace WebCore;
 using namespace WTF;

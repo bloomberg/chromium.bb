@@ -28,10 +28,10 @@
 #define WorkerEventQueue_h
 
 #include "core/dom/EventQueue.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

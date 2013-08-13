@@ -21,18 +21,8 @@
  */
 
 #include "config.h"
-
 #include "core/xml/XSLTProcessor.h"
 
-#include <libxslt/imports.h>
-#include <libxslt/security.h>
-#include <libxslt/variables.h>
-#include <libxslt/xsltutils.h>
-#include <wtf/Assertions.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/unicode/UTF8.h>
-#include <wtf/Vector.h>
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
@@ -48,6 +38,15 @@
 #include "core/xml/XSLTUnicodeSort.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/Assertions.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/unicode/UTF8.h"
+#include <libxslt/imports.h>
+#include <libxslt/security.h>
+#include <libxslt/variables.h>
+#include <libxslt/xsltutils.h>
 
 namespace WebCore {
 

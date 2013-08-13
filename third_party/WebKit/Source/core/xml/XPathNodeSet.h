@@ -26,8 +26,8 @@
 #ifndef XPathNodeSet_h
 #define XPathNodeSet_h
 
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 #include "core/dom/Node.h"
 

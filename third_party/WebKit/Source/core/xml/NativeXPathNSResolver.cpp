@@ -28,7 +28,7 @@
 
 #include "XMLNames.h"
 #include "core/dom/Node.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

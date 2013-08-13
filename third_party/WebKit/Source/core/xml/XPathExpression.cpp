@@ -34,7 +34,7 @@
 #include "core/xml/XPathParser.h"
 #include "core/xml/XPathResult.h"
 #include "core/xml/XPathUtil.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -29,9 +29,9 @@
 
 #include "core/dom/Node.h"
 #include "core/xml/XPathValue.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

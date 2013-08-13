@@ -31,9 +31,9 @@
 #ifndef SharedWorkerRepository_h
 #define SharedWorkerRepository_h
 
-#include <wtf/Forward.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

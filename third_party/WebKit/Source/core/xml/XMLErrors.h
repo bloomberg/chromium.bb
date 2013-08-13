@@ -29,8 +29,8 @@
 #ifndef XMLErrors_h
 #define XMLErrors_h
 
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/TextPosition.h>
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

@@ -32,8 +32,8 @@
 #define WorkerLoaderProxy_h
 
 #include "core/dom/ScriptExecutionContext.h"
-#include <wtf/Forward.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebKit {
 class WebWorkerBase;

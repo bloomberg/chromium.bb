@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/xml/XSLTUnicodeSort.h"
 
+#include "wtf/text/WTFString.h"
+#include "wtf/unicode/Collator.h"
 #include <libxslt/templates.h>
 #include <libxslt/xsltutils.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/Collator.h>
 
 namespace WebCore {
 

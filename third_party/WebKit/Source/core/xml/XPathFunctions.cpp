@@ -34,8 +34,8 @@
 #include "core/dom/TreeScope.h"
 #include "core/xml/XPathUtil.h"
 #include "core/xml/XPathValue.h"
-#include <wtf/MathExtras.h>
-#include <wtf/text/StringBuilder.h>
+#include "wtf/MathExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 namespace XPath {

@@ -26,8 +26,7 @@
 #ifndef XMLDocumentParserScope_h
 #define XMLDocumentParserScope_h
 
-#include <wtf/Noncopyable.h>
-
+#include "wtf/Noncopyable.h"
 #include <libxml/xmlerror.h>
 
 namespace WebCore {

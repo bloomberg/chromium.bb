@@ -30,8 +30,8 @@
 #include "core/dom/EventNames.h"
 #include "core/xml/XMLHttpRequest.h"
 #include "core/xml/XMLHttpRequestProgressEvent.h"
-#include <wtf/Assertions.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

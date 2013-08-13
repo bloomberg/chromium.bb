@@ -21,7 +21,7 @@
 
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

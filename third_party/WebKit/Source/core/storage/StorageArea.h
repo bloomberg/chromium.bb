@@ -26,8 +26,8 @@
 #ifndef StorageArea_h
 #define StorageArea_h
 
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

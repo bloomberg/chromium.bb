@@ -26,15 +26,6 @@
 #include "config.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
-#include <libxml/parser.h>
-#include <libxml/parserInternals.h>
-#include <libxslt/xslt.h>
-#include <wtf/StringExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/Threading.h>
-#include <wtf/unicode/UTF8.h>
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
 #include "HTMLNames.h"
 #include "XMLNSNames.h"
 #include "bindings/v8/ExceptionState.h"
@@ -67,7 +58,16 @@
 #include "core/xml/parser/XMLDocumentParserScope.h"
 #include "core/xml/parser/XMLParserInput.h"
 #include "weborigin/SecurityOrigin.h"
+#include "wtf/StringExtras.h"
 #include "wtf/TemporaryChange.h"
+#include "wtf/Threading.h"
+#include "wtf/UnusedParam.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
+#include "wtf/unicode/UTF8.h"
+#include <libxml/parser.h>
+#include <libxml/parserInternals.h>
+#include <libxslt/xslt.h>
 
 using namespace std;
 

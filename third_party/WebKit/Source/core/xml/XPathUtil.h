@@ -27,8 +27,8 @@
 #ifndef XPathUtil_h
 #define XPathUtil_h
 
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

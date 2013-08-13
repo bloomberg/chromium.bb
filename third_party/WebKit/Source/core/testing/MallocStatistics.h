@@ -26,9 +26,9 @@
 #ifndef MallocStatistics_h
 #define MallocStatistics_h
 
-#include <wtf/FastMalloc.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/FastMalloc.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

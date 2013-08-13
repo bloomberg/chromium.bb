@@ -34,10 +34,10 @@
 #include "core/dom/MessagePort.h"
 #include "core/workers/AbstractWorker.h"
 #include "core/workers/WorkerScriptLoaderClient.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

@@ -49,7 +49,7 @@
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThreadStartupData.h"
-#include <wtf/MainThread.h>
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

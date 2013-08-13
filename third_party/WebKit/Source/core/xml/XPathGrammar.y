@@ -36,7 +36,7 @@
 #include "core/xml/XPathPredicate.h"
 #include "core/xml/XPathStep.h"
 #include "core/xml/XPathVariableReference.h"
-#include <wtf/FastMalloc.h>
+#include "wtf/FastMalloc.h"
 
 #define YYMALLOC fastMalloc
 #define YYFREE fastFree
