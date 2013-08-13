@@ -218,22 +218,23 @@ process_options() {
 #  > make
 ################################################################################
 sdk_build_init() {
-  export ANDROID_SDK_VERSION=18
-  export ANDROID_SDK_BUILD_TOOLS_VERSION=18.0.1
 
-  # If ANDROID_NDK_ROOT is set when envsetup is run, use the ndk pointed to by
-  # the environment variable.  Otherwise, use the default ndk from the tree.
+  # Allow the caller to override a few environment variables. If any of them is
+  # unset, we default to a sane value that's known to work. This allows for
+  # experimentation with a custom SDK.
   if [[ -z "${ANDROID_NDK_ROOT}" || ! -d "${ANDROID_NDK_ROOT}" ]]; then
     export ANDROID_NDK_ROOT="${CHROME_SRC}/third_party/android_tools/ndk/"
   fi
-
-  # If ANDROID_SDK_ROOT is set when envsetup is run, and if it has the
-  # right SDK-compatible directory layout, use the sdk pointed to by the
-  # environment variable.  Otherwise, use the default sdk from the tree.
+  if [[ -z "${ANDROID_SDK_VERSION}" ]]; then
+    export ANDROID_SDK_VERSION=18
+  fi
   local sdk_suffix=platforms/android-${ANDROID_SDK_VERSION}
   if [[ -z "${ANDROID_SDK_ROOT}" || \
        ! -d "${ANDROID_SDK_ROOT}/${sdk_suffix}" ]]; then
     export ANDROID_SDK_ROOT="${CHROME_SRC}/third_party/android_tools/sdk/"
+  fi
+  if [[ -z "${ANDROID_SDK_BUILD_TOOLS_VERSION}" ]]; then
+    export ANDROID_SDK_BUILD_TOOLS_VERSION=18.0.1
   fi
 
   unset ANDROID_BUILD_TOP
