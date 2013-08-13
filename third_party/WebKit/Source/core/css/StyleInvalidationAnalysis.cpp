@@ -88,18 +88,34 @@ static bool hasDistributedRule(StyleSheetContents* styleSheetContents)
     return false;
 }
 
+static bool hasAtHostRule(StyleSheetContents* styleSheetContents)
+{
+    const Vector<RefPtr<StyleRuleBase> >& rules = styleSheetContents->childRules();
+    for (unsigned i = 0; i < rules.size(); i++) {
+        const StyleRuleBase* rule = rules[i].get();
+        if (rule->isHostRule())
+            return true;
+    }
+    return false;
+}
+
 static Node* determineScopingNodeForStyleScoped(HTMLStyleElement* ownerElement, StyleSheetContents* styleSheetContents)
 {
     ASSERT(ownerElement && ownerElement->isRegisteredAsScoped());
 
-    if (ownerElement->isInShadowTree() && hasDistributedRule(styleSheetContents)) {
-        ContainerNode* scope = ownerElement;
-        do {
-            scope = scope->containingShadowRoot()->shadowHost();
-        } while (scope->isInShadowTree());
+    if (ownerElement->isInShadowTree()) {
+        if (hasDistributedRule(styleSheetContents)) {
+            ContainerNode* scope = ownerElement;
+            do {
+                scope = scope->containingShadowRoot()->shadowHost();
+            } while (scope->isInShadowTree());
 
-        return scope;
+            return scope;
+        }
+        if (ownerElement->isRegisteredAsScoped() && hasAtHostRule(styleSheetContents))
+            return ownerElement->containingShadowRoot()->shadowHost();
     }
+
     return ownerElement->isRegisteredInShadowRoot() ? ownerElement->containingShadowRoot()->shadowHost() : ownerElement->parentNode();
 }
 

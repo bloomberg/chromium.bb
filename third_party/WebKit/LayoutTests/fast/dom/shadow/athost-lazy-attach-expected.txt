@@ -1,0 +1,8 @@
+Test for crbug.com/271823: @host rules do not apply when doing lazyAttach.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS getComputedStyle(host).color is "rgb(0, 0, 255)"
+PASS getComputedStyle(host).color is "rgb(0, 0, 255)"
+Hello

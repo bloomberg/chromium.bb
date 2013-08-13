@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script src="resources/shadow-dom.js"></script>
+</head>
+<body>
+<div id="parent"></div>
+<script>
+description('Test for crbug.com/271823: @host rules do not apply when doing lazyAttach.');
+
+onload = function() {
+    var parent = document.getElementById("parent");
+
+    // This is very similar to athost-atrules.html steps:
+    //   testHostWithSelector();
+    //   testPseudoHostWithScoped();
+    // but it uses lazyAttach (appendChild) on the style and div.
+
+    var style = document.createElement('style');
+    style.scoped = true;
+    parent.appendChild(style);
+    style.remove();
+
+    var div = document.createElement('div');
+    div.id = 'host';
+    div.textContent = 'Hello';
+    parent.appendChild(div);
+
+    host = document.getElementById("host");
+    shadow = host.createShadowRoot();
+    shadow.appendChild(
+        createDOM('div', {},
+            createDOM('style', {'scoped': 'scoped'},
+                document.createTextNode('@host { div { color: red; } }')),
+            createDOM('shadow', {}),
+            createDOM('div', {},
+                createDOM('style', {'scoped': 'scoped'},
+                    document.createTextNode('@host { div { color: blue; } }')))));
+
+    // Style is wrong, we didn't recalc the right nodes.
+    shouldBeEqualToString("getComputedStyle(host).color", "rgb(0, 0, 255)");
+
+    // Reattach everything.
+    document.body.style.display = 'none';
+    document.body.offsetLeft;
+    document.body.style.display = '';
+    document.body.offsetLeft;
+
+    // Style is now right since we reattached all nodes.
+    shouldBeEqualToString("getComputedStyle(host).color", "rgb(0, 0, 255)");
+}
+</script>
+</body>
+</html>
+
