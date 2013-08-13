@@ -287,6 +287,7 @@ weston_surface_create(struct weston_compositor *compositor)
 
 	surface->compositor = compositor;
 	surface->alpha = 1.0;
+	surface->ref_count = 1;
 
 	if (compositor->renderer->create_surface(surface) < 0) {
 		free(surface);
@@ -1003,10 +1004,13 @@ struct weston_frame_callback {
 WL_EXPORT void
 weston_surface_destroy(struct weston_surface *surface)
 {
-	wl_signal_emit(&surface->destroy_signal, &surface->resource);
-
 	struct weston_compositor *compositor = surface->compositor;
 	struct weston_frame_callback *cb, *next;
+
+	if (--surface->ref_count > 0)
+		return;
+
+	wl_signal_emit(&surface->destroy_signal, &surface->resource);
 
 	assert(wl_list_empty(&surface->geometry.child_list));
 	assert(wl_list_empty(&surface->subsurface_list_pending));

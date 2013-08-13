@@ -709,6 +709,7 @@ struct weston_surface {
 	struct wl_list layer_link;
 	float alpha;                     /* part of geometry, see below */
 	struct weston_plane *plane;
+	int32_t ref_count;
 
 	void *renderer_state;
 
