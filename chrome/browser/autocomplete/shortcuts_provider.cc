@@ -129,7 +129,10 @@ void ShortcutsProvider::OnShortcutsLoaded() {
 }
 
 void ShortcutsProvider::DeleteMatchesWithURLs(const std::set<GURL>& urls) {
-  std::remove_if(matches_.begin(), matches_.end(), RemoveMatchPredicate(urls));
+  matches_.erase(
+      std::remove_if(
+          matches_.begin(), matches_.end(), RemoveMatchPredicate(urls)),
+      matches_.end());
   listener_->OnProviderUpdate(true);
 }
 
