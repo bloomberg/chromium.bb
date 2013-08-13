@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebCache.h"
 
-#include "core/loader/cache/MemoryCache.h"
+#include "core/fetch/MemoryCache.h"
 
 using WebCore::MemoryCache;
 

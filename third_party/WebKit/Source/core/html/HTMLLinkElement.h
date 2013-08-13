@@ -26,14 +26,14 @@
 
 #include "core/css/CSSStyleSheet.h"
 #include "core/dom/IconURL.h"
+#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/StyleSheetResourceClient.h"
 #include "core/html/DOMSettableTokenList.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/html/LinkResource.h"
 #include "core/loader/LinkLoader.h"
 #include "core/loader/LinkLoaderClient.h"
-#include "core/loader/cache/ResourcePtr.h"
-#include "core/loader/cache/StyleSheetResourceClient.h"
 
 namespace WebCore {
 

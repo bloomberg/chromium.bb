@@ -44,7 +44,6 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ProgressTracker.h"
-#include "core/loader/ResourceLoader.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameView.h"

@@ -27,8 +27,8 @@
 
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/loader/cache/ResourceClient.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/platform/text/SegmentedString.h"
 #include "core/xml/XMLErrors.h"
 #include <libxml/tree.h>

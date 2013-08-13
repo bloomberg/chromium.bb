@@ -28,8 +28,8 @@
 
 #include <limits>
 #include "core/dom/Document.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/inspector/InspectorInstrumentation.h"
-#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"

@@ -26,8 +26,8 @@
 #ifndef HTMLResourcePreloader_h
 #define HTMLResourcePreloader_h
 
-#include "core/loader/cache/FetchRequest.h"
-#include "core/loader/cache/Resource.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/Resource.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/TextPosition.h"
 

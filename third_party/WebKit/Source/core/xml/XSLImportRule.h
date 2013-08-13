@@ -23,8 +23,8 @@
 #ifndef XSLImportRule_h
 #define XSLImportRule_h
 
-#include "core/loader/cache/ResourcePtr.h"
-#include "core/loader/cache/StyleSheetResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/StyleSheetResourceClient.h"
 #include "core/xml/XSLStyleSheet.h"
 #include <wtf/PassOwnPtr.h>
 

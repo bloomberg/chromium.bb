@@ -32,10 +32,10 @@
 #include "core/html/HTMLImportLoader.h"
 
 #include "core/dom/Document.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLImportLoaderClient.h"
 #include "core/loader/DocumentWriter.h"
-#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/ContentSecurityPolicyResponseHeaders.h"
 
 namespace WebCore {

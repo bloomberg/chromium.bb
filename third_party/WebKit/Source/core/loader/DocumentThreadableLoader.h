@@ -32,9 +32,9 @@
 #ifndef DocumentThreadableLoader_h
 #define DocumentThreadableLoader_h
 
+#include "core/fetch/RawResource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/loader/cache/RawResource.h"
-#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "wtf/Forward.h"

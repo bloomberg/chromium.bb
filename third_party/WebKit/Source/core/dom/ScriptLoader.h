@@ -21,8 +21,8 @@
 #ifndef ScriptLoader_h
 #define ScriptLoader_h
 
-#include "core/loader/cache/ResourceClient.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"
 

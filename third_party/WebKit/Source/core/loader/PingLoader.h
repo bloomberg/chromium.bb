@@ -32,7 +32,7 @@
 #ifndef PingLoader_h
 #define PingLoader_h
 
-#include "core/loader/ResourceLoaderOptions.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/platform/Timer.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Noncopyable.h"

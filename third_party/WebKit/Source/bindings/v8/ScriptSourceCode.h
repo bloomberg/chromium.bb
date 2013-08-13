@@ -31,8 +31,8 @@
 #ifndef ScriptSourceCode_h
 #define ScriptSourceCode_h
 
-#include "core/loader/cache/ResourcePtr.h"
-#include "core/loader/cache/ScriptResource.h"
+#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/ScriptResource.h"
 #include "weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"

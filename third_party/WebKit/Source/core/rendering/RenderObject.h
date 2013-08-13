@@ -29,7 +29,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Element.h"
 #include "core/dom/Position.h"
-#include "core/loader/cache/ImageResourceClient.h"
+#include "core/fetch/ImageResourceClient.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"

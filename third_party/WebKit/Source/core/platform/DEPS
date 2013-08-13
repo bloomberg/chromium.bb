@@ -17,7 +17,7 @@ include_rules = [
     "!core/fileapi",
     "!core/html",
     "!core/inspector",
-    "!core/loader/cache",
+    "!core/fetch",
     "!core/page",
     "!core/plugins",
     "!core/rendering",

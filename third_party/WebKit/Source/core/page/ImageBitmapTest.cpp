@@ -32,8 +32,8 @@
 #include "core/page/ImageBitmap.h"
 
 #include "core/dom/Document.h"
+#include "core/fetch/ImageResource.h"
 #include "core/html/HTMLImageElement.h"
-#include "core/loader/cache/ImageResource.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 

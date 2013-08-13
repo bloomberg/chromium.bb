@@ -30,7 +30,7 @@
 #ifndef StyleFetchedShader_h
 #define StyleFetchedShader_h
 
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/rendering/style/StyleShader.h"
 
 namespace WebCore {

@@ -30,8 +30,8 @@
 #include "core/inspector/NetworkResourcesData.h"
 
 #include "core/dom/DOMImplementation.h"
+#include "core/fetch/Resource.h"
 #include "core/loader/TextResourceDecoder.h"
-#include "core/loader/cache/Resource.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceResponse.h"
 

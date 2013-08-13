@@ -30,11 +30,11 @@
 
 #include "HTMLNames.h"
 #include "core/editing/FrameSelection.h"
+#include "core/fetch/ImageResource.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMapElement.h"
-#include "core/loader/cache/ImageResource.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/Font.h"

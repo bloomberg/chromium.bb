@@ -27,7 +27,7 @@
 #ifndef CrossOriginPreflightResultCache_h
 #define CrossOriginPreflightResultCache_h
 
-#include "core/loader/ResourceLoaderOptions.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "weborigin/KURLHash.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"

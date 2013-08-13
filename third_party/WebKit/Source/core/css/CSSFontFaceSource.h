@@ -26,8 +26,8 @@
 #ifndef CSSFontFaceSource_h
 #define CSSFontFaceSource_h
 
-#include "core/loader/cache/FontResource.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/FontResource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"

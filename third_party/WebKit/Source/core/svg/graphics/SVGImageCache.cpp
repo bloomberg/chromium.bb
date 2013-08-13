@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/svg/graphics/SVGImageCache.h"
 
-#include "core/loader/cache/ImageResource.h"
+#include "core/fetch/ImageResource.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"

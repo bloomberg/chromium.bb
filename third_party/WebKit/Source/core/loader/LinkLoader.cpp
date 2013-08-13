@@ -34,10 +34,10 @@
 
 #include "FetchInitiatorTypeNames.h"
 #include "core/dom/Document.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/Prerenderer.h"
-#include "core/loader/cache/FetchRequest.h"
-#include "core/loader/cache/ResourceFetcher.h"
 #include "core/page/Settings.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/network/DNS.h"

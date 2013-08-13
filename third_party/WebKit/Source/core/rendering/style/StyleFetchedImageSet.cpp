@@ -27,7 +27,7 @@
 #include "core/rendering/style/StyleFetchedImageSet.h"
 
 #include "core/css/CSSImageSetValue.h"
-#include "core/loader/cache/ImageResource.h"
+#include "core/fetch/ImageResource.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

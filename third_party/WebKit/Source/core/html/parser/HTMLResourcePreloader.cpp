@@ -27,9 +27,9 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
+#include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/html/HTMLImport.h"
-#include "core/loader/cache/FetchInitiatorInfo.h"
-#include "core/loader/cache/ResourceFetcher.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/platform/HistogramSupport.h"

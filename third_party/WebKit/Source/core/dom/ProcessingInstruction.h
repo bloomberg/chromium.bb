@@ -23,8 +23,8 @@
 #define ProcessingInstruction_h
 
 #include "core/dom/Node.h"
-#include "core/loader/cache/ResourcePtr.h"
-#include "core/loader/cache/StyleSheetResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/StyleSheetResourceClient.h"
 
 namespace WebCore {
 

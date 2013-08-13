@@ -25,13 +25,13 @@
 
 #include "HTMLNames.h"
 #include "core/dom/MouseEvent.h"
+#include "core/fetch/ImageResource.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageLoader.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
-#include "core/loader/cache/ImageResource.h"
 #include "core/rendering/RenderImage.h"
 #include "wtf/PassOwnPtr.h"
 

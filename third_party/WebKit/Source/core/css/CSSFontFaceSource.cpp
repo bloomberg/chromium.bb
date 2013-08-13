@@ -28,7 +28,7 @@
 
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/loader/cache/FontResource.h"
+#include "core/fetch/FontResource.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"

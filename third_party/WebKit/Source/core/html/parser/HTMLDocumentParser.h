@@ -28,6 +28,7 @@
 
 #include "core/dom/ParserContentPolicy.h"
 #include "core/dom/ScriptableDocumentParser.h"
+#include "core/fetch/ResourceClient.h"
 #include "core/html/parser/BackgroundHTMLInputStream.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLInputStream.h"
@@ -40,7 +41,6 @@
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
-#include "core/loader/cache/ResourceClient.h"
 #include "core/platform/text/SegmentedString.h"
 #include "wtf/Deque.h"
 #include "wtf/OwnPtr.h"

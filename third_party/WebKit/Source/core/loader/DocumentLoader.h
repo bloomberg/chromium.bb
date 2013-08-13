@@ -30,13 +30,13 @@
 #ifndef DocumentLoader_h
 #define DocumentLoader_h
 
+#include "core/fetch/RawResource.h"
+#include "core/fetch/ResourceLoaderOptions.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/NavigationAction.h"
-#include "core/loader/ResourceLoaderOptions.h"
 #include "core/loader/SubstituteData.h"
-#include "core/loader/cache/RawResource.h"
-#include "core/loader/cache/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"

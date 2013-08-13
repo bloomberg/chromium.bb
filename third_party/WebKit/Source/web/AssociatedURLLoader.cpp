@@ -37,7 +37,6 @@
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
-#include "core/loader/ResourceLoader.h"
 #include "core/platform/Timer.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"

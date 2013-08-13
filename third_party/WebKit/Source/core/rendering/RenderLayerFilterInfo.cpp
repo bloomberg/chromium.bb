@@ -31,8 +31,8 @@
 
 #include "core/rendering/RenderLayerFilterInfo.h"
 
-#include "core/loader/cache/DocumentResource.h"
-#include "core/loader/cache/DocumentResourceReference.h"
+#include "core/fetch/DocumentResource.h"
+#include "core/fetch/DocumentResourceReference.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/FilterEffectRenderer.h"

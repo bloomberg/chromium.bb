@@ -22,7 +22,7 @@
 #define SVGUseElement_h
 
 #include "SVGNames.h"
-#include "core/loader/cache/DocumentResource.h"
+#include "core/fetch/DocumentResource.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"

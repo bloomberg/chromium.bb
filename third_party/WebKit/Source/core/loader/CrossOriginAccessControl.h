@@ -27,7 +27,7 @@
 #ifndef CrossOriginAccessControl_h
 #define CrossOriginAccessControl_h
 
-#include "core/loader/ResourceLoaderOptions.h"
+#include "core/fetch/ResourceLoaderOptions.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"

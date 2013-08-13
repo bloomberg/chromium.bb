@@ -27,7 +27,7 @@
 #include "core/dom/PendingScript.h"
 
 #include "core/dom/Element.h"
-#include "core/loader/cache/ScriptResource.h"
+#include "core/fetch/ScriptResource.h"
 
 namespace WebCore {
 

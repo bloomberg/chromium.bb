@@ -27,9 +27,9 @@
 #include "XLinkNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/FetchRequest.h"
-#include "core/loader/cache/FontResource.h"
-#include "core/loader/cache/ResourceFetcher.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/FontResource.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/svg/SVGFontFaceElement.h"
 
 namespace WebCore {

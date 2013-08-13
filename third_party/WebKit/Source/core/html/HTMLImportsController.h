@@ -31,9 +31,9 @@
 #ifndef HTMLImportsController_h
 #define HTMLImportsController_h
 
+#include "core/fetch/RawResource.h"
 #include "core/html/HTMLImport.h"
 #include "core/html/LinkResource.h"
-#include "core/loader/cache/RawResource.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/Timer.h"
 #include "wtf/FastAllocBase.h"

@@ -26,10 +26,10 @@
 #ifndef TextTrackLoader_h
 #define TextTrackLoader_h
 
+#include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
+#include "core/fetch/TextTrackResource.h"
 #include "core/html/track/WebVTTParser.h"
-#include "core/loader/cache/ResourceClient.h"
-#include "core/loader/cache/ResourcePtr.h"
-#include "core/loader/cache/TextTrackResource.h"
 #include "core/platform/Timer.h"
 #include "wtf/OwnPtr.h"
 

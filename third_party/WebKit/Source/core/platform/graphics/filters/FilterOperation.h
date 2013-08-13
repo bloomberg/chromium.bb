@@ -26,7 +26,7 @@
 #ifndef FilterOperation_h
 #define FilterOperation_h
 
-#include "core/loader/cache/DocumentResourceReference.h"
+#include "core/fetch/DocumentResourceReference.h"
 #include "core/platform/Length.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/filters/Filter.h"

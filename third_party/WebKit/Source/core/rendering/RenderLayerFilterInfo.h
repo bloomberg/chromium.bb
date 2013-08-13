@@ -31,7 +31,7 @@
 #define RenderLayerFilterInfo_h
 
 #include "core/dom/Element.h"
-#include "core/loader/cache/DocumentResource.h"
+#include "core/fetch/DocumentResource.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"

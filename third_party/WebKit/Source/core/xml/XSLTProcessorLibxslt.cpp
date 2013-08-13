@@ -36,7 +36,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
-#include "core/loader/cache/ResourceFetcher.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"

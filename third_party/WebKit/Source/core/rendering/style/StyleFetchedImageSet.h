@@ -26,8 +26,8 @@
 #ifndef StyleFetchedImageSet_h
 #define StyleFetchedImageSet_h
 
-#include "core/loader/cache/ImageResourceClient.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"
 

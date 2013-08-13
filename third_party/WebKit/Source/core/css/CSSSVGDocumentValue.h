@@ -26,8 +26,8 @@
 #define CSSSVGDocumentValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/loader/cache/DocumentResource.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/DocumentResource.h"
+#include "core/fetch/ResourcePtr.h"
 
 namespace WebCore {
 

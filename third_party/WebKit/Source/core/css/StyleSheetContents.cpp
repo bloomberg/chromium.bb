@@ -28,7 +28,7 @@
 #include "core/css/StyleRule.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/dom/Node.h"
-#include "core/loader/cache/CSSStyleSheetResource.h"
+#include "core/fetch/CSSStyleSheetResource.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 

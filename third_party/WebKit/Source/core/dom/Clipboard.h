@@ -27,7 +27,7 @@
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/ClipboardAccessPolicy.h"
 #include "core/dom/Node.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/page/DragActions.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/graphics/IntPoint.h"

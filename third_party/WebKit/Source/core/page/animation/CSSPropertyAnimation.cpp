@@ -36,7 +36,7 @@
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/loader/cache/ImageResource.h"
+#include "core/fetch/ImageResource.h"
 #include "core/page/animation/AnimationBase.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/ClipPathOperation.h"

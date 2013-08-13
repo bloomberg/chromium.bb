@@ -25,9 +25,9 @@
 #include "FetchInitiatorTypeNames.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/Document.h"
-#include "core/loader/cache/CSSStyleSheetResource.h"
-#include "core/loader/cache/FetchRequest.h"
-#include "core/loader/cache/ResourceFetcher.h"
+#include "core/fetch/CSSStyleSheetResource.h"
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/ResourceFetcher.h"
 
 namespace WebCore {
 

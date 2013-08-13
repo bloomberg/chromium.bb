@@ -31,7 +31,7 @@
 #ifndef LinkResource_h
 #define LinkResource_h
 
-#include "core/loader/cache/FetchRequest.h"
+#include "core/fetch/FetchRequest.h"
 #include "weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

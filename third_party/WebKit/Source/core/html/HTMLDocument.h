@@ -24,7 +24,7 @@
 #define HTMLDocument_h
 
 #include "core/dom/Document.h"
-#include "core/loader/cache/ResourceClient.h"
+#include "core/fetch/ResourceClient.h"
 #include "wtf/HashCountedSet.h"
 
 namespace WebCore {

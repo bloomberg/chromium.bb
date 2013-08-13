@@ -29,7 +29,7 @@
 #include "core/css/CSSSVGDocumentValue.h"
 #include "core/css/CSSShaderValue.h"
 #include "core/css/resolver/ElementStyleResources.h"
-#include "core/loader/cache/ResourceFetcher.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"

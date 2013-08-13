@@ -32,7 +32,7 @@
 
 #include "core/dom/Clipboard.h"
 #include "core/dom/DataTransferItem.h"
-#include "core/loader/cache/ImageResourceClient.h"
+#include "core/fetch/ImageResourceClient.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 
 namespace WebCore {

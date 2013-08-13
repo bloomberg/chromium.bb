@@ -26,8 +26,8 @@
 #ifndef RenderImageResource_h
 #define RenderImageResource_h
 
-#include "core/loader/cache/ImageResource.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ImageResource.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"

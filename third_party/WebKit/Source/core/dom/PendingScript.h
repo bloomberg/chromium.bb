@@ -26,8 +26,8 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
-#include "core/loader/cache/ResourceClient.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/TextPosition.h"

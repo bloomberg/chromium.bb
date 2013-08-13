@@ -26,7 +26,7 @@
 #ifndef CSSFontSelector_h
 #define CSSFontSelector_h
 
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ResourcePtr.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "wtf/Forward.h"

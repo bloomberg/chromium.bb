@@ -22,7 +22,7 @@
 #define CSSImageValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/loader/cache/ResourceFetcher.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {

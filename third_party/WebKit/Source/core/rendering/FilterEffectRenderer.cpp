@@ -29,8 +29,8 @@
 #include "core/rendering/FilterEffectRenderer.h"
 
 #include "core/dom/Document.h"
-#include "core/loader/cache/DocumentResource.h"
-#include "core/loader/cache/DocumentResourceReference.h"
+#include "core/fetch/DocumentResource.h"
+#include "core/fetch/DocumentResourceReference.h"
 #include "core/page/Page.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/ColorSpace.h"

@@ -31,8 +31,8 @@
 #ifndef PasswordGeneratorButtonElement_h
 #define PasswordGeneratorButtonElement_h
 
+#include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/loader/cache/ResourcePtr.h"
 
 namespace WebCore {
 

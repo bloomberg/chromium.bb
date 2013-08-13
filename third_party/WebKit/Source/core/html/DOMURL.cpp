@@ -29,10 +29,10 @@
 #include "core/html/DOMURL.h"
 
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/fetch/MemoryCache.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/BlobURL.h"
 #include "core/html/PublicURLManager.h"
-#include "core/loader/cache/MemoryCache.h"
 #include "weborigin/KURL.h"
 #include "wtf/MainThread.h"
 

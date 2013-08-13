@@ -32,10 +32,10 @@
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/Microtask.h"
 #include "core/dom/ScriptLoader.h"
+#include "core/fetch/ScriptResource.h"
 #include "core/html/parser/HTMLInputStream.h"
 #include "core/html/parser/HTMLScriptRunnerHost.h"
 #include "core/html/parser/NestingLevelIncrementer.h"
-#include "core/loader/cache/ScriptResource.h"
 #include "core/page/Frame.h"
 #include "core/platform/NotImplemented.h"
 

@@ -23,9 +23,9 @@
 #ifndef ImageLoader_h
 #define ImageLoader_h
 
-#include "core/loader/cache/ImageResource.h"
-#include "core/loader/cache/ImageResourceClient.h"
-#include "core/loader/cache/ResourcePtr.h"
+#include "core/fetch/ImageResource.h"
+#include "core/fetch/ImageResourceClient.h"
+#include "core/fetch/ResourcePtr.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 
