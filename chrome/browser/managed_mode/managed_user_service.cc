@@ -615,7 +615,7 @@ void ManagedUserService::RegisterAndInitSync(
     ManagedUserRegistrationUtility* registration_utility,
     Profile* custodian_profile,
     const std::string& managed_user_id,
-    const ProfileManager::CreateCallback& callback) {
+    const AuthErrorCallback& callback) {
   DCHECK(ProfileIsManaged());
   DCHECK(!custodian_profile->IsManaged());
 
@@ -646,23 +646,21 @@ void ManagedUserService::OnCustodianProfileDownloaded(
 }
 
 void ManagedUserService::OnManagedUserRegistered(
-    const ProfileManager::CreateCallback& callback,
+    const AuthErrorCallback& callback,
     Profile* custodian_profile,
     const GoogleServiceAuthError& auth_error,
     const std::string& token) {
-  if (auth_error.state() != GoogleServiceAuthError::NONE) {
-    LOG(ERROR) << "Managed user OAuth error: " << auth_error.ToString();
+  if (auth_error.state() == GoogleServiceAuthError::NONE) {
+    InitSync(token);
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(custodian_profile);
+    profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianEmail,
+                                    signin->GetAuthenticatedUsername());
+  } else {
     DCHECK_EQ(std::string(), token);
-    callback.Run(profile_, Profile::CREATE_STATUS_REMOTE_FAIL);
-    return;
   }
 
-  InitSync(token);
-  SigninManagerBase* signin =
-      SigninManagerFactory::GetForProfile(custodian_profile);
-  profile_->GetPrefs()->SetString(prefs::kManagedUserCustodianEmail,
-                                  signin->GetAuthenticatedUsername());
-  callback.Run(profile_, Profile::CREATE_STATUS_INITIALIZED);
+  callback.Run(auth_error);
 }
 
 void ManagedUserService::UpdateManualHosts() {

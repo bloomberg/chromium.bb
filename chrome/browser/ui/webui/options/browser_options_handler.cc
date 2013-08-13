@@ -1134,11 +1134,6 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
   if (create_shortcut)
     callbacks.push_back(base::Bind(&CreateDesktopShortcutForProfile));
 
-  ProfileManager::CreateCallback show_user_feedback =
-      base::Bind(&BrowserOptionsHandler::ShowProfileCreationFeedback,
-                 weak_ptr_factory_.GetWeakPtr(), GetDesktopType(),
-                 managed_user);
-
   if (managed_user && ManagedUserService::AreManagedUsersEnabled()) {
     if (!IsValidExistingManagedUserId(managed_user_id))
       return;
@@ -1150,10 +1145,13 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
     callbacks.push_back(
         base::Bind(&BrowserOptionsHandler::RegisterManagedUser,
                    weak_ptr_factory_.GetWeakPtr(),
-                   show_user_feedback,
+                   GetDesktopType(),
                    managed_user_id));
   } else {
-    callbacks.push_back(show_user_feedback);
+    callbacks.push_back(
+        base::Bind(&BrowserOptionsHandler::ShowProfileCreationFeedback,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   GetDesktopType()));
   }
 
   ProfileMetrics::LogProfileAddNewUser(ProfileMetrics::ADD_NEW_USER_DIALOG);
@@ -1164,13 +1162,16 @@ void BrowserOptionsHandler::CreateProfile(const ListValue* args) {
 }
 
 void BrowserOptionsHandler::RegisterManagedUser(
-    const ProfileManager::CreateCallback& callback,
+    chrome::HostDesktopType desktop_type,
     const std::string& managed_user_id,
     Profile* new_profile,
     Profile::CreateStatus status) {
-  DCHECK(profile_path_being_created_ == new_profile->GetPath());
-  if (status != Profile::CREATE_STATUS_INITIALIZED)
+  DCHECK_EQ(profile_path_being_created_.value(),
+            new_profile->GetPath().value());
+  if (status != Profile::CREATE_STATUS_INITIALIZED) {
+    ShowProfileCreationFeedback(desktop_type, new_profile, status);
     return;
+  }
 
   ManagedUserService* managed_user_service =
       ManagedUserServiceFactory::GetForProfile(new_profile);
@@ -1182,7 +1183,10 @@ void BrowserOptionsHandler::RegisterManagedUser(
       managed_user_registration_utility_.get(),
       Profile::FromWebUI(web_ui()),
       managed_user_id,
-      callback);
+      base::Bind(&BrowserOptionsHandler::OnManagedUserRegistered,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 desktop_type,
+                 new_profile));
 }
 
 void BrowserOptionsHandler::RecordProfileCreationMetrics(
@@ -1195,28 +1199,40 @@ void BrowserOptionsHandler::RecordProfileCreationMetrics(
       base::TimeTicks::Now() - profile_creation_start_time_);
 }
 
+void BrowserOptionsHandler::OnManagedUserRegistered(
+    chrome::HostDesktopType desktop_type,
+    Profile* profile,
+    const GoogleServiceAuthError& error) {
+  GoogleServiceAuthError::State state = error.state();
+  if (state == GoogleServiceAuthError::NONE) {
+    ShowProfileCreationSuccess(profile, desktop_type, true);
+    return;
+  }
+
+  string16 error_msg;
+  if (state == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS ||
+      state == GoogleServiceAuthError::USER_NOT_SIGNED_UP ||
+      state == GoogleServiceAuthError::ACCOUNT_DELETED ||
+      state == GoogleServiceAuthError::ACCOUNT_DISABLED) {
+    error_msg = l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_SIGN_IN_ERROR);
+  } else {
+    error_msg = l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_REMOTE_ERROR);
+  }
+  ShowProfileCreationError(profile, error_msg);
+}
+
 void BrowserOptionsHandler::ShowProfileCreationFeedback(
     chrome::HostDesktopType desktop_type,
-    bool is_managed,
     Profile* profile,
     Profile::CreateStatus status) {
-  DCHECK(profile_path_being_created_ == profile->GetPath());
   if (status != Profile::CREATE_STATUS_CREATED)
     RecordProfileCreationMetrics(status);
 
   switch (status) {
     case Profile::CREATE_STATUS_LOCAL_FAIL: {
-      profile_path_being_created_.clear();
-      web_ui()->CallJavascriptFunction(
-          "BrowserOptions.showCreateProfileLocalError");
-      DeleteProfileAtPath(profile->GetPath());
-      break;
-    }
-    case Profile::CREATE_STATUS_REMOTE_FAIL: {
-      profile_path_being_created_.clear();
-      web_ui()->CallJavascriptFunction(
-          "BrowserOptions.showCreateProfileRemoteError");
-      DeleteProfileAtPath(profile->GetPath());
+      string16 error =
+          l10n_util::GetStringUTF16(IDS_PROFILES_CREATE_LOCAL_ERROR);
+      ShowProfileCreationError(profile, error);
       break;
     }
     case Profile::CREATE_STATUS_CREATED: {
@@ -1224,35 +1240,57 @@ void BrowserOptionsHandler::ShowProfileCreationFeedback(
       break;
     }
     case Profile::CREATE_STATUS_INITIALIZED: {
-      profile_path_being_created_.clear();
-      DictionaryValue dict;
-      dict.SetString("name",
-                     profile->GetPrefs()->GetString(prefs::kProfileName));
-      dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
-      dict.SetBoolean("isManaged", is_managed);
-      web_ui()->CallJavascriptFunction(
-          "BrowserOptions.showCreateProfileSuccess", dict);
-
-      // If the new profile is a managed user, instead of opening a new window
-      // right away, a confirmation overlay will be shown from the creation
-      // dialog.
-      if (!is_managed) {
-        // Opening the new window must be the last action, after all callbacks
-        // have been run, to give them a chance to initialize the profile.
-        OpenNewWindowForProfile(desktop_type,
-                                profile,
-                                Profile::CREATE_STATUS_INITIALIZED);
-      }
+      // Managed user registration success is handled in
+      // OnManagedUserRegistered().
+      ShowProfileCreationSuccess(profile, desktop_type, false);
       break;
     }
     // User-initiated cancellation is handled in CancelProfileRegistration and
     // does not call this callback.
     case Profile::CREATE_STATUS_CANCELED:
+    // Managed user registration errors are handled in
+    // OnManagedUserRegistered().
+    case Profile::CREATE_STATUS_REMOTE_FAIL:
     case Profile::MAX_CREATE_STATUS: {
       NOTREACHED();
       break;
     }
   }
+}
+
+void BrowserOptionsHandler::ShowProfileCreationError(Profile* profile,
+                                                     const string16& error) {
+  profile_path_being_created_.clear();
+  web_ui()->CallJavascriptFunction("BrowserOptions.showCreateProfileError",
+                                   base::StringValue(error));
+  DeleteProfileAtPath(profile->GetPath());
+}
+
+void BrowserOptionsHandler::ShowProfileCreationSuccess(
+    Profile* profile,
+    chrome::HostDesktopType desktop_type,
+    bool is_managed) {
+  DCHECK_EQ(profile_path_being_created_.value(), profile->GetPath().value());
+  profile_path_being_created_.clear();
+  DictionaryValue dict;
+  dict.SetString("name",
+                 profile->GetPrefs()->GetString(prefs::kProfileName));
+  dict.Set("filePath", base::CreateFilePathValue(profile->GetPath()));
+  dict.SetBoolean("isManaged", is_managed);
+  web_ui()->CallJavascriptFunction(
+      "BrowserOptions.showCreateProfileSuccess", dict);
+
+  // If the new profile is a managed user, instead of opening a new window
+  // right away, a confirmation overlay will be shown from the creation
+  // dialog.
+  if (is_managed)
+    return;
+
+  // Opening the new window must be the last action, after all callbacks
+  // have been run, to give them a chance to initialize the profile.
+  OpenNewWindowForProfile(desktop_type,
+                          profile,
+                          Profile::CREATE_STATUS_INITIALIZED);
 }
 
 void BrowserOptionsHandler::DeleteProfile(const ListValue* args) {

@@ -260,7 +260,7 @@ cr.define('options', function() {
 
     /**
      * Display the error bubble, with |errorText| in the bubble.
-     * @param {string} errorText The localized string id to display as an error.
+     * @param {string} errorText The string to display as an error.
      * @param {string} mode A label that specifies the type of dialog
      *     box which is currently being viewed (i.e. 'create' or
      *     'manage').
@@ -272,7 +272,7 @@ cr.define('options', function() {
     showErrorBubble_: function(errorText, mode, disableOKButton) {
       var nameErrorEl = $(mode + '-profile-error-bubble');
       nameErrorEl.hidden = false;
-      nameErrorEl.textContent = loadTimeData.getString(errorText);
+      nameErrorEl.textContent = errorText;
 
       if (disableOKButton)
         $(mode + '-profile-ok').disabled = true;
@@ -558,25 +558,14 @@ cr.define('options', function() {
     },
 
     /**
-     * Shows an error message describing a local error (most likely a disk
-     * error) when creating a new profile. Called by BrowserOptions via the
-     * BrowserOptionsHandler.
+     * Shows an error message describing an error when creating a new profile.
+     * Called by BrowserOptions via the BrowserOptionsHandler.
+     * @param {string} error The error message to display.
      * @private
      */
-    onLocalError_: function() {
+    onError_: function(error) {
       this.updateCreateInProgress_(false);
-      this.showErrorBubble_('createProfileLocalError');
-    },
-
-    /**
-     * Shows an error message describing a remote error (most likely a network
-     * error) when creating a new profile. Called by BrowserOptions via the
-     * BrowserOptionsHandler.
-     * @private
-     */
-    onRemoteError_: function() {
-      this.updateCreateInProgress_(false);
-      this.showErrorBubble_('createProfileRemoteError');
+      this.showErrorBubble_(error);
     },
 
     /**
@@ -706,8 +695,7 @@ cr.define('options', function() {
   // Forward public APIs to private implementations.
   [
     'cancelCreateProfile',
-    'onLocalError',
-    'onRemoteError',
+    'onError',
     'onSuccess',
     'receiveExistingManagedUsers',
     'updateCreateInProgress',

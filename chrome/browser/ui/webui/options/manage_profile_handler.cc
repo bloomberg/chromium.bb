@@ -117,8 +117,6 @@ void ManageProfileHandler::GetLocalizedValues(
     { "createProfileTitle", IDS_PROFILES_CREATE_TITLE },
     { "createProfileInstructions", IDS_PROFILES_CREATE_INSTRUCTIONS },
     { "createProfileConfirm", IDS_PROFILES_CREATE_CONFIRM },
-    { "createProfileLocalError", IDS_PROFILES_CREATE_LOCAL_ERROR },
-    { "createProfileRemoteError", IDS_PROFILES_CREATE_REMOTE_ERROR },
     { "createProfileShortcutCheckbox", IDS_PROFILES_CREATE_SHORTCUT_CHECKBOX },
     { "createProfileShortcutButton", IDS_PROFILES_CREATE_SHORTCUT_BUTTON },
     { "removeProfileShortcutButton", IDS_PROFILES_REMOVE_SHORTCUT_BUTTON },

@@ -174,12 +174,7 @@ TEST_F('ManageProfileUITest', 'NoCreateConfirmationOnError', function() {
   var errorBubble = $('create-profile-error-bubble');
   assertTrue(errorBubble.hidden);
 
-  CreateProfileOverlay.onLocalError();
-  assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
-  assertFalse(errorBubble.hidden);
-
-  errorBubble.hidden = true;
-  CreateProfileOverlay.onRemoteError();
+  CreateProfileOverlay.onError('An Error Message!');
   assertEquals('createProfile', OptionsPage.getTopmostVisiblePage().name);
   assertFalse(errorBubble.hidden);
 });

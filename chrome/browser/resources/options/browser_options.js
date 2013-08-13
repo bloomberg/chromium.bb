@@ -1067,21 +1067,12 @@ cr.define('options', function() {
     },
 
     /**
-     * Reports a local error (e.g., disk full) to the "create" overlay during
-     * profile creation.
+     * Reports an error to the "create" overlay during profile creation.
+     * @param {string} error The error message to display.
      * @private
      */
-    showCreateProfileLocalError_: function() {
-      CreateProfileOverlay.onLocalError();
-    },
-
-    /**
-    * Reports a remote error (e.g., a network error during managed-user
-    * registration) to the "create" overlay during profile creation.
-    * @private
-    */
-    showCreateProfileRemoteError_: function() {
-      CreateProfileOverlay.onRemoteError();
+    showCreateProfileError_: function(error) {
+      CreateProfileOverlay.onError(error);
     },
 
     /**
@@ -1479,8 +1470,7 @@ cr.define('options', function() {
     'setupPageZoomSelector',
     'setupProxySettingsSection',
     'showBluetoothSettings',
-    'showCreateProfileLocalError',
-    'showCreateProfileRemoteError',
+    'showCreateProfileError',
     'showCreateProfileSuccess',
     'showMouseControls',
     'showTouchpadControls',

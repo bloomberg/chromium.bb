@@ -15,8 +15,8 @@
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
 #include "chrome/browser/managed_mode/managed_users.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -48,6 +48,7 @@ class ManagedUserService : public BrowserContextKeyedService,
  public:
   typedef std::vector<string16> CategoryList;
   typedef base::Callback<void(content::WebContents*)> NavigationBlockedCallback;
+  typedef base::Callback<void(const GoogleServiceAuthError&)> AuthErrorCallback;
 
   enum ManualBehavior {
     MANUAL_NONE = 0,
@@ -131,7 +132,7 @@ class ManagedUserService : public BrowserContextKeyedService,
   void RegisterAndInitSync(ManagedUserRegistrationUtility* registration_utility,
                            Profile* custodian_profile,
                            const std::string& managed_user_id,
-                           const ProfileManager::CreateCallback& callback);
+                           const AuthErrorCallback& callback);
 
   // Returns a pseudo-email address for systems that expect well-formed email
   // addresses (like Sync), even though we're not signed in.
@@ -208,7 +209,7 @@ class ManagedUserService : public BrowserContextKeyedService,
 
   void OnCustodianProfileDownloaded(const string16& full_name);
 
-  void OnManagedUserRegistered(const ProfileManager::CreateCallback& callback,
+  void OnManagedUserRegistered(const AuthErrorCallback& callback,
                                Profile* custodian_profile,
                                const GoogleServiceAuthError& auth_error,
                                const std::string& token);

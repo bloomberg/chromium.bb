@@ -14,7 +14,6 @@
 #include "base/prefs/pref_member.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/sync/profile_sync_service_observer.h"
@@ -30,6 +29,7 @@
 class AutocompleteController;
 class CloudPrintSetupHandler;
 class CustomHomePagesTableModel;
+class GoogleServiceAuthError;
 class ManagedUserRegistrationUtility;
 class TemplateURLService;
 
@@ -155,10 +155,15 @@ class BrowserOptionsHandler
 
   // After a new managed-user profile has been created, registers the user with
   // the management server.
-  void RegisterManagedUser(const ProfileManager::CreateCallback& callback,
+  void RegisterManagedUser(chrome::HostDesktopType desktop_type,
                            const std::string& managed_user_id,
                            Profile* new_profile,
                            Profile::CreateStatus status);
+
+  // Called back with the result of the managed user registration.
+  void OnManagedUserRegistered(chrome::HostDesktopType desktop_type,
+                               Profile* profile,
+                               const GoogleServiceAuthError& error);
 
   // Records UMA histograms relevant to profile creation.
   void RecordProfileCreationMetrics(Profile::CreateStatus status);
@@ -166,9 +171,16 @@ class BrowserOptionsHandler
   // Updates the UI as the final task after a new profile has been created.
   void ShowProfileCreationFeedback(
       chrome::HostDesktopType desktop_type,
-      bool is_managed,
       Profile* profile,
       Profile::CreateStatus status);
+
+  // Updates the UI to show an error when creating a profile.
+  void ShowProfileCreationError(Profile* profile, const string16& error);
+
+  // Updates the UI to indicate success when creating a profile.
+  void ShowProfileCreationSuccess(Profile* profile,
+                                  chrome::HostDesktopType desktop_type,
+                                  bool is_managed);
 
   // Deletes the given profile. Expects one argument:
   //   0: profile file path (string)
