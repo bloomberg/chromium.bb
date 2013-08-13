@@ -18,7 +18,6 @@ void CopyNaClCommandLineArguments(CommandLine* cmd_line) {
   // TODO(gregoryd): check which flags of those below can be supported.
   static const char* const kSwitchNames[] = {
     switches::kNoSandbox,
-    switches::kTestNaClSandbox,
     switches::kDisableBreakpad,
     switches::kFullMemoryCrashReport,
     switches::kEnableLogging,

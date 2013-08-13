@@ -36,7 +36,4 @@ const char kNaClLoaderCmdPrefix[]           = "nacl-loader-cmd-prefix";
 // Causes the process to run as a NativeClient loader.
 const char kNaClLoaderProcess[]             = "nacl-loader";
 
-// Runs the security test for the NaCl loader sandbox.
-const char kTestNaClSandbox[]               = "test-nacl-sandbox";
-
 }  // namespace switches

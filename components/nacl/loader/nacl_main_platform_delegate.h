@@ -5,11 +5,8 @@
 #ifndef CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
 #define CHROME_NACL_NACL_MAIN_PLATFORM_DELEGATE_H_
 
-#include "base/native_library.h"
+#include "base/basictypes.h"
 #include "content/public/common/main_function_params.h"
-
-typedef bool (*RunNaClLoaderTests)(void);
-const char kNaClLoaderTestCall[] = "RunNaClLoaderTests";
 
 class NaClMainPlatformDelegate {
  public:
@@ -17,26 +14,11 @@ class NaClMainPlatformDelegate {
       const content::MainFunctionParams& parameters);
   ~NaClMainPlatformDelegate();
 
-  // Called first thing and last thing in the process' lifecycle, i.e. before
-  // the sandbox is enabled.
-  void PlatformInitialize();
-  void PlatformUninitialize();
-
-  // Gives us an opportunity to initialize state used for tests before enabling
-  // the sandbox.
-  void InitSandboxTests(bool no_sandbox);
-
   // Initiate Lockdown.
   void EnableSandbox();
 
-  // Runs the sandbox tests for the NaCl Loader, if tests supplied.
-  // Cannot run again, after this (resources freed).
-  // Returns false if the tests are supplied and fail.
-  bool RunSandboxTests();
-
  private:
   const content::MainFunctionParams& parameters_;
-  base::NativeLibrary sandbox_test_module_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClMainPlatformDelegate);
 };

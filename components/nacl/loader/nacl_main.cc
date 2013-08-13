@@ -29,10 +29,7 @@ int NaClMain(const content::MainFunctionParams& parameters) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
   NaClMainPlatformDelegate platform(parameters);
-
-  platform.PlatformInitialize();
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
-  platform.InitSandboxTests(no_sandbox);
 
 #if defined(OS_POSIX)
   // The number of cores must be obtained before the invocation of
@@ -43,25 +40,14 @@ int NaClMain(const content::MainFunctionParams& parameters) {
   if (!no_sandbox) {
     platform.EnableSandbox();
   }
-  bool sandbox_test_result = platform.RunSandboxTests();
-
-  if (sandbox_test_result) {
-    NaClListener listener;
+  NaClListener listener;
 #if defined(OS_POSIX)
-    listener.set_number_of_cores(number_of_cores);
+  listener.set_number_of_cores(number_of_cores);
 #endif
-    listener.Listen();
-  } else {
-    // This indirectly prevents the test-harness-success-cookie from being set,
-    // as a way of communicating test failure, because the nexe won't reply.
-    // TODO(jvoung): find a better way to indicate failure that doesn't
-    // require waiting for a timeout.
-    VLOG(1) << "Sandbox test failed: Not launching NaCl process";
-  }
+
+  listener.Listen();
 #else
   NOTIMPLEMENTED() << " not implemented startup, plugin startup dialog etc.";
 #endif
-
-  platform.PlatformUninitialize();
   return 0;
 }

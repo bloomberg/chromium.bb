@@ -4,26 +4,12 @@
 
 #include "components/nacl/loader/nacl_main_platform_delegate.h"
 
-#include "base/command_line.h"
-
 NaClMainPlatformDelegate::NaClMainPlatformDelegate(
     const content::MainFunctionParams& parameters)
-    : parameters_(parameters), sandbox_test_module_(NULL) {
+    : parameters_(parameters) {
 }
 
 NaClMainPlatformDelegate::~NaClMainPlatformDelegate() {
-}
-
-void NaClMainPlatformDelegate::PlatformInitialize() {
-}
-
-void NaClMainPlatformDelegate::PlatformUninitialize() {
-}
-
-void NaClMainPlatformDelegate::InitSandboxTests(bool no_sandbox) {
-  // The sandbox is started in the zygote process: zygote_main_linux.cc
-  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
-  return;
 }
 
 void NaClMainPlatformDelegate::EnableSandbox() {
@@ -42,10 +28,4 @@ void NaClMainPlatformDelegate::EnableSandbox() {
   // http://code.google.com/p/nativeclient/issues/list?q=label:Seccomp
   // At best, NaCl will not work.  At worst, enabling the seccomp sandbox
   // could create a hole in the NaCl sandbox.
-}
-
-bool NaClMainPlatformDelegate::RunSandboxTests() {
-  // The sandbox is started in the zygote process: zygote_main_linux.cc
-  // http://code.google.com/p/chromium/wiki/LinuxSUIDSandbox
-  return true;
 }
