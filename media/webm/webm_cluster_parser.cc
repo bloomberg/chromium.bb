@@ -214,7 +214,7 @@ bool WebMClusterParser::ParseBlock(bool is_simple_block, const uint8* buf,
 
   // Sign extend negative timecode offsets.
   if (timecode & 0x8000)
-    timecode |= (-1 << 16);
+    timecode |= ~0xffff;
 
   const uint8* frame_data = buf + 4;
   int frame_size = size - (frame_data - buf);
@@ -277,6 +277,8 @@ bool WebMClusterParser::OnBlock(bool is_simple_block, int track_num,
     return false;
   }
 
+  // TODO(acolwell): Should relative negative timecode offsets be rejected?  Or
+  // only when the absolute timecode is negative?  See http://crbug.com/271794
   if (timecode < 0) {
     MEDIA_LOG(log_cb_) << "Got a block with negative timecode offset "
                        << timecode;
