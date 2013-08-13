@@ -85,9 +85,10 @@ void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)
 
 void DocumentTimeline::dispatchEvents()
 {
-    for (size_t i = 0; i < m_events.size(); i++)
-        m_events[i].target->dispatchEvent(m_events[i].event.release());
+    Vector<EventToDispatch> events = m_events;
     m_events.clear();
+    for (size_t i = 0; i < events.size(); i++)
+        events[i].target->dispatchEvent(events[i].event.release());
 }
 
 size_t DocumentTimeline::numberOfActiveAnimationsForTesting() const
