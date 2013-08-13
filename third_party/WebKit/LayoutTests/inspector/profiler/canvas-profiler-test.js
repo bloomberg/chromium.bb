@@ -57,16 +57,18 @@ InspectorTest.dumpTraceLogCall = function(call, indent, filter)
     {
         return url ? "\"" + url.replace(/^.*\/([^\/]+)\/?$/, "$1") + "\"" : "null";
     }
-    var args = (call.arguments || []).map(function(arg) {
-        return arg.description;
-    });
+    function callArgumentDescription(callArg)
+    {
+        return callArg.enumName || callArg.description;
+    }
+    var args = (call.arguments || []).map(callArgumentDescription);
     var properties = [
         "{Call}",
         (show("functionName") && call.functionName) ? "functionName:\"" + call.functionName + "\"" : "",
         (show("arguments") && call.arguments) ? "arguments:[" + args.join(",") + "]" : "",
-        (show("result") && call.result) ? "result:" + call.result.description : "",
+        (show("result") && call.result) ? "result:" + callArgumentDescription(call.result) : "",
         (show("property") && call.property) ? "property:\"" + call.property + "\"" : "",
-        (show("value") && call.value) ? "value:" + call.value.description : "",
+        (show("value") && call.value) ? "value:" + callArgumentDescription(call.value) : "",
         (show("isDrawingCall") && call.isDrawingCall) ? "isDrawingCall:true" : "",
         (show("isFrameEndCall") && call.isFrameEndCall) ? "isFrameEndCall:true" : "",
         show("sourceURL") ? "sourceURL:" + formatSourceURL(call.sourceURL) : "",

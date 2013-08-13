@@ -6,7 +6,8 @@ Stopped capturing.
 Number of trace log calls received: 20
 
 --- Canvas 2D initial state ---
-{ResourceState}  length(descriptors):19  length(imageURL):1594
+{ResourceState}  length(descriptors):20  length(imageURL):1594
+  context: CanvasRenderingContext2D@1
   fillStyle: #000000
   font: 10px sans-serif
   globalAlpha: 1
@@ -28,7 +29,8 @@ Number of trace log calls received: 20
   webkitImageSmoothingEnabled: true
 
 --- Canvas 2D state after canvas calls ---
-{ResourceState}  length(descriptors):19  length(imageURL):1594
+{ResourceState}  length(descriptors):20  length(imageURL):1594
+  context: CanvasRenderingContext2D@1
   fillStyle: #ff0000
   font: 13px sans-serif
   globalAlpha: 0
