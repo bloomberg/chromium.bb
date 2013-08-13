@@ -422,6 +422,7 @@ EncodedProgram* AssemblyProgram::Encode() const {
         const uint8* byte_values =
           static_cast<BytesInstruction*>(instruction)->byte_values();
         uint32 len = static_cast<BytesInstruction*>(instruction)->len();
+
         if (!encoded->AddCopy(len, byte_values))
           return NULL;
         break;
