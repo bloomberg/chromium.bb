@@ -122,6 +122,19 @@ foo/missing
       dirlist = ['foo/bar/baz\\foo']
       Verify('linux', rules, dirlist)
 
+  def testNestedGlobs(self):
+    rules = """\
+foo/*
+foo/bar/*"""
+    dirlist = ['foo/file', 'foo/bar/file']
+    Verify('linux', rules, dirlist)
+
+    rules = """\
+foo/bar/*
+foo/*"""
+    dirlist = ['foo/file', 'foo/bar/file']
+    Verify('linux', rules, dirlist)
+
 
 if __name__ == '__main__':
   unittest.main()

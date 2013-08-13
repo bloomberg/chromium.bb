@@ -90,6 +90,14 @@ class Rules(object):
       # Remove the *
       pattern = pattern[:-1]
       self.glob_prefixes.append(pattern)
+      # Sort by longest prefix first; otherwise the rules:
+      #
+      # foo/*
+      # foo/bar/*
+      #
+      # Won't work properly. A file "foo/bar/baz" will match the first rule,
+      # not the second.
+      self.glob_prefixes.sort(cmp=lambda x, y: cmp(len(y), len(x)))
     else:
       self.exact_filenames.add(pattern)
 
