@@ -148,7 +148,7 @@ public:
 
 private:
     CSSAnimationData();
-    CSSAnimationData(const CSSAnimationData& o);
+    explicit CSSAnimationData(const CSSAnimationData&);
 
     AtomicString m_name;
     CSSPropertyID m_property;

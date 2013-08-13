@@ -164,7 +164,7 @@ private:
     {
     }
 
-    CSSLinearGradientValue(const CSSLinearGradientValue& other)
+    explicit CSSLinearGradientValue(const CSSLinearGradientValue& other)
         : CSSGradientValue(other, LinearGradientClass, other.gradientType())
         , m_angle(other.m_angle)
     {
@@ -207,7 +207,7 @@ private:
     {
     }
 
-    CSSRadialGradientValue(const CSSRadialGradientValue& other)
+    explicit CSSRadialGradientValue(const CSSRadialGradientValue& other)
         : CSSGradientValue(other, RadialGradientClass, other.gradientType())
         , m_firstRadius(other.m_firstRadius)
         , m_secondRadius(other.m_secondRadius)

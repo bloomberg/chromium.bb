@@ -66,8 +66,8 @@ public:
     bool equals(const CSSFilterValue&) const;
 
 private:
-    CSSFilterValue(FilterOperationType);
-    CSSFilterValue(const CSSFilterValue& cloneFrom);
+    explicit CSSFilterValue(FilterOperationType);
+    explicit CSSFilterValue(const CSSFilterValue& cloneFrom);
 
     FilterOperationType m_type;
 };

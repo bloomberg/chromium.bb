@@ -50,7 +50,7 @@ public:
 
 private:
     CSSArrayFunctionValue();
-    CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneFrom);
+    explicit CSSArrayFunctionValue(const CSSArrayFunctionValue& cloneFrom);
 };
 
 } // namespace WebCore

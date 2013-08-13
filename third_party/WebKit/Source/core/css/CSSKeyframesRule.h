@@ -58,7 +58,7 @@ public:
 
 private:
     StyleRuleKeyframes();
-    StyleRuleKeyframes(const StyleRuleKeyframes&);
+    explicit StyleRuleKeyframes(const StyleRuleKeyframes&);
 
     Vector<RefPtr<StyleKeyframe> > m_keyframes;
     AtomicString m_name;

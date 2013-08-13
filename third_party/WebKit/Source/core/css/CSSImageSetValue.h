@@ -66,7 +66,7 @@ protected:
 
 private:
     CSSImageSetValue();
-    CSSImageSetValue(const CSSImageSetValue& cloneFrom);
+    explicit CSSImageSetValue(const CSSImageSetValue& cloneFrom);
 
     void fillImageSet();
     static inline bool compareByScaleFactor(ImageWithScale first, ImageWithScale second) { return first.scaleFactor < second.scaleFactor; }

@@ -74,7 +74,7 @@ public:
     void beginLoadingFontSoon(FontResource*);
 
 private:
-    CSSFontSelector(Document*);
+    explicit CSSFontSelector(Document*);
 
     void dispatchInvalidationCallbacks();
 

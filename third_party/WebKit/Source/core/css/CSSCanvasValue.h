@@ -50,7 +50,7 @@ public:
     bool equals(const CSSCanvasValue&) const;
 
 private:
-    CSSCanvasValue(const String& name)
+    explicit CSSCanvasValue(const String& name)
         : CSSImageGeneratorValue(CanvasClass)
         , m_canvasObserver(this)
         , m_name(name)
