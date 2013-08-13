@@ -127,113 +127,7 @@ _PATH_RULES_SPECIFIER = [
     # discipline as WebCore.
 
     ([# There is no clean way to avoid "yy_*" names used by flex.
-      "Source/WebCore/css/CSSParser.cpp",
-      # Qt code uses '_' in some places (such as private slots
-      # and on test xxx_data methos on tests)
-      "Source/JavaScriptCore/qt/",
-      "Source/WebKit/qt/tests/",
-      "Source/WebKit/qt/declarative/",
-      "Source/WebKit/qt/examples/"],
-     ["-readability/naming"]),
-
-    ([# The Qt APIs use Qt declaration style, it puts the * to
-      # the variable name, not to the class.
-      "Source/WebKit/qt/Api/",
-      "Source/WebKit/qt/WidgetApi/"],
-     ["-readability/naming",
-      "-whitespace/declaration"]),
-
-     ([# Qt's MiniBrowser has no config.h
-       "Tools/MiniBrowser/qt",
-       "Tools/MiniBrowser/qt/raw"],
-      ["-build/include"]),
-
-    ([# The Qt APIs use Qt/QML naming style, which includes
-      # naming parameters in h files.
-      "Source/WebKit2/UIProcess/API/qt"],
-     ["-readability/parameter_name"]),
-
-    ([# The GTK+ port uses the autotoolsconfig.h header in some C sources
-      # to serve the same purpose of config.h.
-      "Tools/GtkLauncher/main.c"],
-     ["-build/include_order"]),
-
-    ([# The GTK+ APIs use GTK+ naming style, which includes
-      # lower-cased, underscore-separated values, whitespace before
-      # parens for function calls, and always having variable names.
-      # Also, GTK+ allows the use of NULL.
-      "Source/WebCore/bindings/scripts/test/GObject",
-      "Source/WebKit/gtk/webkit/",
-      "Tools/DumpRenderTree/gtk/"],
-     ["-readability/naming",
-      "-readability/parameter_name",
-      "-readability/null",
-      "-readability/enum_casing",
-      "-whitespace/parens"]),
-
-    ([# The GTK+ API use upper case, underscore separated, words in
-      # certain types of enums (e.g. signals, properties).
-      "Source/WebKit2/UIProcess/API/gtk",
-      "Source/WebKit2/WebProcess/InjectedBundle/API/gtk"],
-     ["-readability/enum_casing"]),
-
-    ([# Header files in ForwardingHeaders have no header guards or
-      # exceptional header guards (e.g., WebCore_FWD_Debugger_h).
-      "/ForwardingHeaders/"],
-     ["-build/header_guard"]),
-    ([# assembler has lots of opcodes that use underscores, so
-      # we don't check for underscores in that directory.
-      "Source/JavaScriptCore/assembler/",
-      "Source/JavaScriptCore/jit/JIT"],
-     ["-readability/naming/underscores"]),
-    ([# JITStubs has an usual syntax which causes false alarms for a few checks.
-      "JavaScriptCore/jit/JITStubs.cpp"],
-     ["-readability/parameter_name",
-      "-whitespace/parens"]),
-
-    ([# The EFL APIs use EFL naming style, which includes
-      # both lower-cased and camel-cased, underscore-sparated
-      # values.
-      "Source/WebKit/efl/ewk/",
-      "Source/WebKit2/UIProcess/API/efl/"],
-     ["-readability/naming",
-      "-readability/parameter_name"]),
-    ([# EWebLauncher and MiniBrowser are EFL simple application.
-      # They need to use efl coding style and they don't have config.h.
-      "Tools/EWebLauncher/",
-      "Tools/MiniBrowser/efl/"],
-     ["-readability/naming",
-      "-readability/parameter_name",
-      "-whitespace/declaration",
-      "-build/include_order"]),
-
-    # WebKit2 rules:
-    # WebKit2 and certain directories have idiosyncracies.
-    ([# NPAPI has function names with underscores.
-      "Source/WebKit2/WebProcess/Plugins/Netscape"],
-     ["-readability/naming"]),
-    ([# The WebKit2 C API has names with underscores and whitespace-aligned
-      # struct members. Also, we allow unnecessary parameter names in
-      # WebKit2 APIs because we're matching CF's header style.
-      # Additionally, we use word which starts with non-capital letter 'k'
-      # for types of enums.
-      "Source/WebKit2/UIProcess/API/C/",
-      "Source/WebKit2/Shared/API/c/",
-      "Source/WebKit2/WebProcess/InjectedBundle/API/c/"],
-     ["-readability/enum_casing",
-      "-readability/naming",
-      "-readability/parameter_name",
-      "-whitespace/declaration"]),
-    ([# These files define GObjects, which implies some definitions of
-      # variables and functions containing underscores.
-      "Source/WebCore/platform/graphics/clutter/GraphicsLayerActor.cpp",
-      "Source/WebCore/platform/graphics/clutter/GraphicsLayerActor.h",
-      "Source/WebCore/platform/graphics/gstreamer/VideoSinkGStreamer1.cpp",
-      "Source/WebCore/platform/graphics/gstreamer/VideoSinkGStreamer.cpp",
-      "Source/WebCore/platform/graphics/gstreamer/WebKitWebSourceGStreamer.cpp",
-      "Source/WebCore/platform/audio/gstreamer/WebKitWebAudioSourceGStreamer.cpp",
-      "Source/WebCore/platform/network/soup/ProxyResolverSoup.cpp",
-      "Source/WebCore/platform/network/soup/ProxyResolverSoup.h"],
+      "Source/core/css/CSSParser-in.cpp"],
      ["-readability/naming"]),
 
     # For third-party Python code, keep only the following checks--
@@ -247,22 +141,6 @@ _PATH_RULES_SPECIFIER = [
       "+pep8/W191",  # Tabs
       "+pep8/W291",  # Trailing white space
       "+whitespace/carriage_return"]),
-
-    ([# glu's libtess is third-party code, and doesn't follow WebKit style.
-      "Source/ThirdParty/glu"],
-     ["-readability",
-      "-whitespace",
-      "-build/header_guard",
-      "-build/include_order"]),
-
-    ([# There is no way to avoid the symbols __jit_debug_register_code
-      # and __jit_debug_descriptor when integrating with gdb.
-      "Source/JavaScriptCore/jit/GDBInterface.cpp"],
-     ["-readability/naming"]),
-
-    ([# On some systems the trailing CR is causing parser failure.
-      "Source/JavaScriptCore/parser/Keywords.table"],
-     ["+whitespace/carriage_return"]),
 
     ([# Jinja templates: files have .cpp or .h extensions, but contain
       # template code, which can't be handled, so disable tests.
