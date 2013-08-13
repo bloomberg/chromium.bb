@@ -1160,8 +1160,15 @@ pointer_set_cursor(struct wl_client *client, struct wl_resource *resource,
 								weston_surface_buffer_height(surface));
 }
 
+static void
+pointer_release(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
 static const struct wl_pointer_interface pointer_interface = {
-	pointer_set_cursor
+	pointer_set_cursor,
+	pointer_release
 };
 
 static void
@@ -1204,6 +1211,16 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
+keyboard_release(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static const struct wl_keyboard_interface keyboard_interface = {
+	keyboard_release
+};
+
+static void
 seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t id)
 {
@@ -1221,7 +1238,8 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	wl_list_insert(&seat->keyboard->resource_list, wl_resource_get_link(cr));
-	wl_resource_set_implementation(cr, NULL, seat, unbind_resource);
+	wl_resource_set_implementation(cr, &keyboard_interface,
+				       seat, unbind_resource);
 
 	if (seat->compositor->use_xkbcommon) {
 		wl_keyboard_send_keymap(cr, WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
@@ -1244,6 +1262,16 @@ seat_get_keyboard(struct wl_client *client, struct wl_resource *resource,
 }
 
 static void
+touch_release(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static const struct wl_touch_interface touch_interface = {
+	touch_release
+};
+
+static void
 seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 	       uint32_t id)
 {
@@ -1261,7 +1289,8 @@ seat_get_touch(struct wl_client *client, struct wl_resource *resource,
 	}
 
 	wl_list_insert(&seat->touch->resource_list, wl_resource_get_link(cr));
-	wl_resource_set_implementation(cr, NULL, seat, unbind_resource);
+	wl_resource_set_implementation(cr, &touch_interface,
+				       seat, unbind_resource);
 }
 
 static const struct wl_seat_interface seat_interface = {
@@ -1278,7 +1307,7 @@ bind_seat(struct wl_client *client, void *data, uint32_t version, uint32_t id)
 	enum wl_seat_capability caps = 0;
 
 	resource = wl_resource_create(client,
-				      &wl_seat_interface, MIN(version, 2), id);
+				      &wl_seat_interface, MIN(version, 3), id);
 	wl_list_insert(&seat->base_resource_list, wl_resource_get_link(resource));
 	wl_resource_set_implementation(resource, &seat_interface, data,
 				       unbind_resource);
@@ -1545,7 +1574,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 	wl_list_init(&seat->drag_resource_list);
 	wl_signal_init(&seat->destroy_signal);
 
-	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 2,
+	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 3,
 					seat, bind_seat);
 
 	seat->compositor = ec;
