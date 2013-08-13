@@ -11,6 +11,7 @@
 
 namespace content {
 
+class RenderWidgetHostImpl;
 class RenderWidgetHostViewAndroid;
 struct NativeWebKeyboardEvent;
 
@@ -58,6 +59,8 @@ class ImeAdapterAndroid {
   void CancelComposition();
 
  private:
+  RenderWidgetHostImpl* GetRenderWidgetHostImpl();
+
   RenderWidgetHostViewAndroid* rwhva_;
   JavaObjectWeakGlobalRef java_ime_adapter_;
 };

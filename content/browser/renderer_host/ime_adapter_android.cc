@@ -140,8 +140,7 @@ bool ImeAdapterAndroid::SendKeyEvent(JNIEnv* env, jobject,
 
 void ImeAdapterAndroid::SetComposingText(JNIEnv* env, jobject, jstring text,
                                          int new_cursor_pos) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -162,8 +161,7 @@ void ImeAdapterAndroid::SetComposingText(JNIEnv* env, jobject, jstring text,
 void ImeAdapterAndroid::ImeBatchStateChanged(JNIEnv* env,
                                              jobject,
                                              jboolean is_begin) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -171,8 +169,7 @@ void ImeAdapterAndroid::ImeBatchStateChanged(JNIEnv* env,
 }
 
 void ImeAdapterAndroid::CommitText(JNIEnv* env, jobject, jstring text) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -181,8 +178,7 @@ void ImeAdapterAndroid::CommitText(JNIEnv* env, jobject, jstring text) {
 }
 
 void ImeAdapterAndroid::FinishComposingText(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -202,8 +198,7 @@ void ImeAdapterAndroid::CancelComposition() {
 
 void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,
                                                     int start, int end) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -213,8 +208,7 @@ void ImeAdapterAndroid::SetEditableSelectionOffsets(JNIEnv*, jobject,
 
 void ImeAdapterAndroid::SetComposingRegion(JNIEnv*, jobject,
                                            int start, int end) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -228,8 +222,7 @@ void ImeAdapterAndroid::SetComposingRegion(JNIEnv*, jobject,
 
 void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*, jobject,
                                               int before, int after) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -238,8 +231,7 @@ void ImeAdapterAndroid::DeleteSurroundingText(JNIEnv*, jobject,
 }
 
 void ImeAdapterAndroid::Unselect(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -247,8 +239,7 @@ void ImeAdapterAndroid::Unselect(JNIEnv* env, jobject) {
 }
 
 void ImeAdapterAndroid::SelectAll(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -256,8 +247,7 @@ void ImeAdapterAndroid::SelectAll(JNIEnv* env, jobject) {
 }
 
 void ImeAdapterAndroid::Cut(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -265,8 +255,7 @@ void ImeAdapterAndroid::Cut(JNIEnv* env, jobject) {
 }
 
 void ImeAdapterAndroid::Copy(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -274,8 +263,7 @@ void ImeAdapterAndroid::Copy(JNIEnv* env, jobject) {
 }
 
 void ImeAdapterAndroid::Paste(JNIEnv* env, jobject) {
-  RenderWidgetHostImpl* rwhi = RenderWidgetHostImpl::From(
-      rwhva_->GetRenderWidgetHost());
+  RenderWidgetHostImpl* rwhi = GetRenderWidgetHostImpl();
   if (!rwhi)
     return;
 
@@ -284,6 +272,15 @@ void ImeAdapterAndroid::Paste(JNIEnv* env, jobject) {
 
 void ImeAdapterAndroid::ResetImeAdapter(JNIEnv* env, jobject) {
   java_ime_adapter_.reset();
+}
+
+RenderWidgetHostImpl* ImeAdapterAndroid::GetRenderWidgetHostImpl() {
+  DCHECK(rwhva_);
+  RenderWidgetHost* rwh = rwhva_->GetRenderWidgetHost();
+  if (!rwh)
+    return NULL;
+
+  return RenderWidgetHostImpl::From(rwh);
 }
 
 }  // namespace content
