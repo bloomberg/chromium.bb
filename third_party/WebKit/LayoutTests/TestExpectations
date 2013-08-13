@@ -1179,7 +1179,6 @@ crbug.com/266754 fast/ruby/ruby-svg-crash.html [ ImageOnlyFailure Pass ]
 
 crbug.com/267206 [ Lion MountainLion ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
-crbug.com/267296 [ Win ] http/tests/htmlimports/import-script-nosniff.html  [ Pass Crash ]
 crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Pass Failure ]
 
 crbug.com/268111 [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Timeout ]
