@@ -439,6 +439,12 @@ void LauncherButton::Layout() {
       icon_width,
       icon_height));
 
+  // Icon size has been incorrect when running
+  // PanelLayoutManagerTest.PanelAlignmentSecondDisplay on valgrind bot, see
+  // http://crbug.com/234854.
+  DCHECK_LE(icon_width, kIconSize);
+  DCHECK_LE(icon_height, kIconSize);
+
   bar_->SetBarBoundsRect(button_bounds);
 
   UpdateState();

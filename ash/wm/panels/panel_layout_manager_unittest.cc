@@ -128,6 +128,8 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     ASSERT_FALSE(icon_bounds.width() == 0 && icon_bounds.height() == 0);
 
     gfx::Rect window_bounds = panel->GetBoundsInScreen();
+    ASSERT_LT(icon_bounds.width(), window_bounds.width());
+    ASSERT_LT(icon_bounds.height(), window_bounds.height());
     gfx::Rect launcher_bounds = launcher->shelf_widget()->
         GetWindowBoundsInScreen();
     ShelfAlignment alignment = GetAlignment(panel->GetRootWindow());
