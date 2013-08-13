@@ -2649,15 +2649,14 @@ PassRefPtr<NodeList> Node::getDestinationInsertionPoints()
     document()->updateDistributionForNodeIfNeeded(this);
     Vector<InsertionPoint*, 8> insertionPoints;
     collectInsertionPointsWhereNodeIsDistributed(this, insertionPoints);
+    Vector<RefPtr<Node> > filteredInsertionPoints;
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         InsertionPoint* insertionPoint = insertionPoints[i];
         ASSERT(insertionPoint->containingShadowRoot());
-        if (insertionPoint->containingShadowRoot()->type() == ShadowRoot::UserAgentShadowRoot)
-            return StaticNodeList::createEmpty();
+        if (insertionPoint->containingShadowRoot()->type() != ShadowRoot::UserAgentShadowRoot)
+            filteredInsertionPoints.append(insertionPoint);
     }
-    Vector<RefPtr<Node> > asNodes;
-    asNodes.appendRange(insertionPoints.begin(), insertionPoints.end());
-    return StaticNodeList::adopt(asNodes);
+    return StaticNodeList::adopt(filteredInsertionPoints);
 }
 
 void Node::registerScopedHTMLStyleChild()
