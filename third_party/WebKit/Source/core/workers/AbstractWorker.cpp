@@ -57,24 +57,24 @@ void AbstractWorker::contextDestroyed()
 KURL AbstractWorker::resolveURL(const String& url, ExceptionState& es)
 {
     if (url.isEmpty()) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "Failed to create a worker: an empty URL was provided.");
         return KURL();
     }
 
     // FIXME: This should use the dynamic global scope (bug #27887)
     KURL scriptURL = scriptExecutionContext()->completeURL(url);
     if (!scriptURL.isValid()) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, "Failed to create a worker: '" + url + "' is not a valid URL.");
         return KURL();
     }
 
     if (!scriptExecutionContext()->securityOrigin()->canRequest(scriptURL)) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "Failed to create a worker: script with origin '" + SecurityOrigin::create(scriptURL)->toString() + "' cannot be accessed from origin '" + scriptExecutionContext()->securityOrigin()->toString() + "'.");
         return KURL();
     }
 
     if (scriptExecutionContext()->contentSecurityPolicy() && !scriptExecutionContext()->contentSecurityPolicy()->allowScriptFromSource(scriptURL)) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "Failed to create a worker: access to the script at '" + url + "' is denied by the document's Content Security Policy.");
         return KURL();
     }
 

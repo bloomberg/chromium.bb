@@ -65,17 +65,17 @@ PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, c
 
     worker->suspendIfNeeded();
 
-    KURL scriptURL = worker->resolveURL(url, es);
-    if (scriptURL.isEmpty())
-        return 0;
-
     // We don't currently support nested workers, so workers can only be created from documents.
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers()) {
-        es.throwDOMException(SecurityError);
+        es.throwDOMException(SecurityError, "Failed to create 'SharedWorker': access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
         return 0;
     }
+
+    KURL scriptURL = worker->resolveURL(url, es);
+    if (scriptURL.isEmpty())
+        return 0;
 
     SharedWorkerRepository::connect(worker.get(), remotePort.release(), scriptURL, name, es);
 

@@ -1,6 +1,6 @@
 Test that loading the shared worker's script does not allow a cross origin redirect (bug 26146)
 
-SUCCESS: threw exception (SecurityError: An attempt was made to break through the security policy of the user agent.) when attempting to cross origin while loading the worker script.
+SUCCESS: threw exception (SecurityError: Failed to create a worker: script with origin 'http://localhost:8000' cannot be accessed from origin 'http://127.0.0.1:8000'.) when attempting to cross origin while loading the worker script.
 SUCCESS: threw error when attempting to redirected cross origin while loading the worker script.
 DONE
 
