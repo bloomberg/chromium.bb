@@ -4,6 +4,7 @@
 
 #include <map>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -36,6 +37,9 @@ namespace {
 
 const int kNotificationPriority = static_cast<int>(
     message_center::LOW_PRIORITY);
+// The test notification provider name shold match the name of the first
+// synced notification service.
+const char kTestNotificationProvider[] = "Google+";
 
 // Extract notification id from syncer::SyncData.
 std::string GetNotificationId(const SyncData& sync_data) {
@@ -44,6 +48,10 @@ std::string GetNotificationId(const SyncData& sync_data) {
 
   return specifics.coalesced_notification().key();
 }
+
+}  // namespace
+
+namespace notifier {
 
 // Stub out the NotificationUIManager for unit testing.
 class StubNotificationUIManager : public NotificationUIManager {
@@ -185,8 +193,6 @@ class SyncChangeProcessorDelegate : public syncer::SyncChangeProcessor {
 
   DISALLOW_COPY_AND_ASSIGN(SyncChangeProcessorDelegate);
 };
-
-}  // namespace
 
 class ChromeNotifierServiceTest : public testing::Test {
  public:
@@ -595,6 +601,34 @@ TEST_F(ChromeNotifierServiceTest, ModelAssocBothNonEmptyWithUpdate) {
   EXPECT_FALSE(processor()->ContainsId(kKey1));
 }
 
-// TODO(petewil): There are more tests to add, such as when we add an API
-// to allow data entry from the client, we might have a more up to date
-// item on the client than the server, or we might have a merge conflict.
+TEST_F(ChromeNotifierServiceTest, ServiceEnabledTest) {
+  StubNotificationUIManager notification_manager;
+  ChromeNotifierService notifier(NULL, &notification_manager);
+  std::vector<std::string>::iterator iter;
+
+  // Create some local fake data.
+  scoped_ptr<SyncedNotification> n1(CreateNotification(
+      kTitle1, kText1, kIconUrl1, kImageUrl1, kAppId1, kKey1, kUnread));
+  notifier.AddForTest(n1.Pass());
+
+  // Enable the service and ensure the service is in the list.
+  // Initially the service starts in the disabled state.
+  notifier.OnSyncedNotificationServiceEnabled(kTestNotificationProvider, true);
+  iter = find(notifier.enabled_sending_services_.begin(),
+              notifier.enabled_sending_services_.end(),
+              kTestNotificationProvider);
+  EXPECT_NE(notifier.enabled_sending_services_.end(), iter);
+  // TODO(petewil): Verify Display gets called too.
+
+  // Disable the service and ensure it is gone from the list and the
+  // notification_manager.
+  notifier.OnSyncedNotificationServiceEnabled(kTestNotificationProvider, false);
+  iter = find(notifier.enabled_sending_services_.begin(),
+              notifier.enabled_sending_services_.end(),
+              kTestNotificationProvider);
+  EXPECT_EQ(notifier.enabled_sending_services_.end(), iter);
+  EXPECT_EQ(notification_manager.dismissed_id(), std::string(kKey1));
+
+}
+
+}  // namespace notifier

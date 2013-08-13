@@ -439,14 +439,41 @@ void ChromeNotifierService::OnSyncedNotificationServiceEnabled(
   // Add the notifier_id if it is enabled and not already there.
   if (iter == enabled_sending_services_.end() && enabled) {
     enabled_sending_services_.push_back(notifier_id);
-    // TODO(petewil) Check now for any outstanding notifications.
+    // Check now for any outstanding notifications.
+    DisplayUnreadNotificationsFromSource(notifier_id);
   // Remove the notifier_id if it is disabled and present.
   } else if (iter != enabled_sending_services_.end() && !enabled) {
     enabled_sending_services_.erase(iter);
+    RemoveUnreadNotificationsFromSource(notifier_id);
   }
 
   // Otherwise, nothing to do, we can exit.
   return;
 }
+
+void ChromeNotifierService::DisplayUnreadNotificationsFromSource(
+    std::string notifier_id) {
+  for (std::vector<SyncedNotification*>::const_iterator iter =
+          notification_data_.begin();
+       iter != notification_data_.end();
+       ++iter) {
+    if ((*iter)->GetSendingServiceId() == notifier_id &&
+        (*iter)->GetReadState() == SyncedNotification::kUnread)
+      Display(*iter);
+  }
+}
+
+void ChromeNotifierService::RemoveUnreadNotificationsFromSource(
+    std::string notifier_id) {
+  for (std::vector<SyncedNotification*>::const_iterator iter =
+          notification_data_.begin();
+       iter != notification_data_.end();
+       ++iter) {
+    if ((*iter)->GetSendingServiceId() == notifier_id &&
+        (*iter)->GetReadState() == SyncedNotification::kUnread)
+      notification_manager_->CancelById((*iter)->GetKey());
+  }
+}
+
 
 }  // namespace notifier

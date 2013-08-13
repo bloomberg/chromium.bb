@@ -100,6 +100,14 @@ class ChromeNotifierService : public syncer::SyncableService,
   // Remove a notification from our store.
   void FreeNotificationById(const std::string& notification_id);
 
+  // When a service it turned on, scan our cache for any notifications
+  // for that service, and display them if they are unread.
+  void DisplayUnreadNotificationsFromSource(std::string notifier_id);
+
+  // When a service it turned off, scan our cache for any notifications
+  // for that service, and remove them from the message center.
+  void RemoveUnreadNotificationsFromSource(std::string notifier_id);
+
   // Back pointer to the owning profile.
   Profile* const profile_;
   NotificationUIManager* const notification_manager_;
@@ -112,6 +120,7 @@ class ChromeNotifierService : public syncer::SyncableService,
   ScopedVector<notifier::SyncedNotification> notification_data_;
 
   friend class ChromeNotifierServiceTest;
+  FRIEND_TEST_ALL_PREFIXES(ChromeNotifierServiceTest, ServiceEnabledTest);
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNotifierService);
 };
