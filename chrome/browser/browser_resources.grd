@@ -370,6 +370,11 @@
         <include name="IDR_IDENTITY_INTERNALS_CSS" file="resources\identity_internals.css" type="BINDATA" />
         <include name="IDR_IDENTITY_INTERNALS_JS" file="resources\identity_internals.js" type="BINDATA" />
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <include name="IDR_NETWORK_HTML" file="resources\chromeos\network.html" type="BINDATA" />
+        <include name="IDR_NETWORK_JS" file="resources\chromeos\network.js" type="BINDATA" />
+        <include name="IDR_NETWORK_CSS" file="resources\chromeos\network.css" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

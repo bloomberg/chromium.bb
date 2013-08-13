@@ -80,7 +80,6 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
-#include "chrome/browser/ui/webui/chromeos/about_network.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -1128,8 +1127,6 @@ void AboutUIHTMLSource::StartDataRequest(
     FinishMemoryDataRequest(path, callback);
     return;
 #if defined(OS_CHROMEOS)
-  } else if (source_name_ == chrome::kChromeUINetworkHost) {
-    response = chromeos::about_ui::AboutNetwork(path);
   } else if (source_name_ == chrome::kChromeUIOSCreditsHost) {
     response = ResourceBundle::GetSharedInstance().GetRawDataResource(
         IDR_OS_CREDITS_HTML).as_string();

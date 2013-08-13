@@ -14884,6 +14884,21 @@ Do you accept?
       Screen
     </message>
 
+    <!-- About network UI display strings -->
+    <if expr="pp_ifdef('chromeos')">
+      <message name="IDS_NETWORK_TITLE" desc="Title of the page">
+        Network
+      </message>
+      <message name="IDS_NETWORK_AUTO_REFRESH" desc="A instruction of how to auto-refresh the page">
+        Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;
+      </message>
+      <message name="IDS_NETWORK_LOG_ENTRY" desc="The log entry displayed in network event log table.">
+        [<ph name="TIMESTAMP">$1<ex>Timestamp</ex></ph>]
+        <ph name="EVENT_NAME">$2<ex>Event Name</ex></ph>
+        <ph name="DESCRIPTION">$3<ex>Description</ex></ph>
+      </message>
+    </if>
+
     </messages>
 
     <structures fallback_to_english="true">

@@ -8,6 +8,7 @@
 
 #include "base/files/file_path.h"
 #include "base/i18n/time_formatting.h"
+#include "base/json/json_string_value_serializer.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -25,6 +26,7 @@ namespace {
 class NetworkEventLog;
 NetworkEventLog* g_network_event_log = NULL;
 size_t g_max_network_event_log_entries = 4000;
+const char* kLogLevelName[] = {"Error", "User", "Event", "Debug"};
 
 struct LogEntry {
   LogEntry(const std::string& file,
@@ -37,9 +39,11 @@ struct LogEntry {
                        bool show_file,
                        bool show_desc,
                        bool format_html) const;
+  void ToDictionary(base::DictionaryValue*) const;
 
   std::string GetNormalText(bool show_desc) const;
   std::string GetHtmlText(bool show_desc) const;
+  std::string GetAsJSON() const;
 
   void SendToVLogOrErrorLog() const;
 
@@ -65,8 +69,7 @@ LogEntry::LogEntry(const std::string& file,
       event(event),
       description(description),
       time(base::Time::Now()),
-      count(1) {
-}
+      count(1) {}
 
 std::string LogEntry::ToString(bool show_time,
                                bool show_file,
@@ -77,12 +80,32 @@ std::string LogEntry::ToString(bool show_time,
     line += "[" + UTF16ToUTF8(base::TimeFormatShortDateAndTime(time)) + "] ";
   if (show_file) {
     std::string filestr = format_html ? net::EscapeForHTML(file) : file;
-    line += base::StringPrintf("%s:%d ", filestr.c_str(), file_line);
+    line += base::StringPrintf("%s:%d ", file.c_str(), file_line);
   }
   line += format_html ? GetHtmlText(show_desc) : GetNormalText(show_desc);
   if (count > 1)
     line += base::StringPrintf(" (%d)", count);
   return line;
+}
+
+void LogEntry::ToDictionary(base::DictionaryValue* output) const {
+  output->SetString("timestamp", base::TimeFormatShortDateAndTime(time));
+  output->SetString("level", kLogLevelName[log_level]);
+  output->SetString("file",
+                    base::StringPrintf("%s:%d ", file.c_str(), file_line));
+  output->SetString("event", event);
+  output->SetString("description", description);
+}
+
+std::string LogEntry::GetAsJSON() const {
+  base::DictionaryValue entry;
+  ToDictionary(&entry);
+  std::string json;
+  JSONStringValueSerializer serializer(&json);
+  if (!serializer.Serialize(entry)) {
+    LOG(ERROR) << "Failed to serialize to JSON";
+  }
+  return json;
 }
 
 std::string LogEntry::GetNormalText(bool show_desc) const {
@@ -128,21 +151,23 @@ void LogEntry::SendToVLogOrErrorLog() const {
 
 bool LogEntry::ContentEquals(const LogEntry& other) const {
   return file == other.file &&
-      file_line == other.file_line &&
-      event == other.event &&
-      description == other.description;
+         file_line == other.file_line &&
+         event == other.event &&
+         description == other.description;
 }
 
 void GetFormat(const std::string& format_string,
                bool* show_time,
                bool* show_file,
                bool* show_desc,
-               bool* format_html) {
+               bool* format_html,
+               bool* format_json) {
   base::StringTokenizer tokens(format_string, ",");
   *show_time = false;
   *show_file = false;
   *show_desc = false;
   *format_html = false;
+  *format_json = false;
   while (tokens.GetNext()) {
     std::string tok(tokens.token());
     if (tok == "time")
@@ -153,6 +178,8 @@ void GetFormat(const std::string& format_string,
       *show_desc = true;
     if (tok == "html")
       *format_html = true;
+    if (tok == "json")
+      *format_json = true;
   }
 }
 
@@ -194,8 +221,8 @@ void NetworkEventLog::AddLogEntry(const LogEntry& entry) {
     // Remove the first (oldest) non-error entry, or the oldest entry if more
     // than half the entries are errors.
     size_t error_count = 0;
-    for (LogEntryList::iterator iter = entries_.begin();
-         iter != entries_.end(); ++iter) {
+    for (LogEntryList::iterator iter = entries_.begin(); iter != entries_.end();
+         ++iter) {
       if (iter->log_level != LOG_LEVEL_ERROR) {
         entries_.erase(iter);
         break;
@@ -218,10 +245,12 @@ std::string NetworkEventLog::GetAsString(StringOrder order,
   if (entries_.empty())
     return "No Log Entries.";
 
-  bool show_time, show_file, show_desc, format_html;
-  GetFormat(format, &show_time, &show_file, &show_desc, &format_html);
+  bool show_time, show_file, show_desc, format_html, format_json;
+  GetFormat(
+      format, &show_time, &show_file, &show_desc, &format_html, &format_json);
 
   std::string result;
+  base::ListValue log_entries;
   if (order == OLDEST_FIRST) {
     size_t offset = 0;
     if (max_events > 0 && max_events < entries_.size()) {
@@ -230,7 +259,8 @@ std::string NetworkEventLog::GetAsString(StringOrder order,
       size_t shown_events = 0;
       size_t num_entries = 0;
       for (LogEntryList::const_reverse_iterator riter = entries_.rbegin();
-           riter != entries_.rend(); ++riter) {
+           riter != entries_.rend();
+           ++riter) {
         ++num_entries;
         if (riter->log_level > max_level)
           continue;
@@ -240,29 +270,46 @@ std::string NetworkEventLog::GetAsString(StringOrder order,
       offset = entries_.size() - num_entries;
     }
     for (LogEntryList::const_iterator iter = entries_.begin();
-         iter != entries_.end(); ++iter) {
+         iter != entries_.end();
+         ++iter) {
       if (offset > 0) {
         --offset;
         continue;
       }
       if (iter->log_level > max_level)
         continue;
-      result += (*iter).ToString(show_time, show_file, show_desc, format_html);
-      result += "\n";
+      if (format_json) {
+        log_entries.AppendString((*iter).GetAsJSON());
+      } else {
+        result +=
+            (*iter).ToString(show_time, show_file, show_desc, format_html);
+        result += "\n";
+      }
     }
   } else {
     size_t nlines = 0;
     // Iterate backwards through the list to show the most recent entries first.
     for (LogEntryList::const_reverse_iterator riter = entries_.rbegin();
-         riter != entries_.rend(); ++riter) {
+         riter != entries_.rend();
+         ++riter) {
       if (riter->log_level > max_level)
         continue;
-      result += (*riter).ToString(show_time, show_file, show_desc, format_html);
-      result += "\n";
+      if (format_json) {
+        log_entries.AppendString((*riter).GetAsJSON());
+      } else {
+        result +=
+            (*riter).ToString(show_time, show_file, show_desc, format_html);
+        result += "\n";
+      }
       if (max_events > 0 && ++nlines >= max_events)
         break;
     }
   }
+  if (format_json) {
+    JSONStringValueSerializer serializer(&result);
+    serializer.Serialize(log_entries);
+  }
+
   return result;
 }
 
@@ -281,15 +328,11 @@ void Shutdown() {
   g_network_event_log = NULL;
 }
 
-bool IsInitialized() {
-  return g_network_event_log != NULL;
-}
+bool IsInitialized() { return g_network_event_log != NULL; }
 
 namespace internal {
 
-size_t GetMaxLogEntries() {
-  return g_max_network_event_log_entries;
-}
+size_t GetMaxLogEntries() { return g_max_network_event_log_entries; }
 
 void SetMaxLogEntries(size_t max_entries) {
   g_max_network_event_log_entries = max_entries;

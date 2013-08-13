@@ -80,8 +80,11 @@ CHROMEOS_EXPORT void AddEntry(const char* file,
 //  "file" - Include file and line number.
 //  "desc" - Include the description.
 //  "html" - Include html tags.
+//  "json" - Return as JSON format
 // Only events with |log_level| <= |max_level| are included in the output.
 // If |max_events| > 0, limits how many events are output.
+// If |json| is specified, returns a JSON list of dictionaries containing time,
+// level, file, event, and description.
 CHROMEOS_EXPORT std::string GetAsString(StringOrder order,
                                         const std::string& format,
                                         LogLevel max_level,
