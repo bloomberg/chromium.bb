@@ -111,6 +111,109 @@ int GetAppListIconIndex() {
 #endif
 }
 
+string16 GetAppListIconPath() {
+  base::FilePath icon_path;
+  if (!PathService::Get(base::FILE_EXE, &icon_path)) {
+    NOTREACHED();
+    return string16();
+  }
+
+  std::stringstream ss;
+  ss << "," << GetAppListIconIndex();
+  string16 result = icon_path.value();
+  result.append(UTF8ToUTF16(ss.str()));
+  return result;
+}
+
+// Utility methods for showing the app list.
+// Attempts to find the bounds of the Windows taskbar. Returns true on success.
+// |rect| is in screen coordinates. If the taskbar is in autohide mode and is
+// not visible, |rect| will be outside the current monitor's bounds, except for
+// one pixel of overlap where the edge of the taskbar is shown.
+bool GetTaskbarRect(gfx::Rect* rect) {
+  HWND taskbar_hwnd = FindWindow(kTrayClassName, NULL);
+  if (!taskbar_hwnd)
+    return false;
+
+  RECT win_rect;
+  if (!GetWindowRect(taskbar_hwnd, &win_rect))
+    return false;
+
+  *rect = gfx::Rect(win_rect);
+  return true;
+}
+
+gfx::Point FindReferencePoint(const gfx::Display& display,
+                              const gfx::Point& cursor) {
+  const int kSnapDistance = 50;
+
+  // If we can't find the taskbar, snap to the bottom left.
+  // If the display size is the same as the work area, and does not contain the
+  // taskbar, either the taskbar is hidden or on another monitor, so just snap
+  // to the bottom left.
+  gfx::Rect taskbar_rect;
+  if (!GetTaskbarRect(&taskbar_rect) ||
+      (display.work_area() == display.bounds() &&
+          !display.work_area().Contains(taskbar_rect))) {
+    return display.work_area().bottom_left();
+  }
+
+  // Snap to the taskbar edge. If the cursor is greater than kSnapDistance away,
+  // also move to the left (for horizontal taskbars) or top (for vertical).
+  const gfx::Rect& screen_rect = display.bounds();
+  // First handle taskbar on bottom.
+  if (taskbar_rect.width() == screen_rect.width()) {
+    if (taskbar_rect.bottom() == screen_rect.bottom()) {
+      if (taskbar_rect.y() - cursor.y() > kSnapDistance)
+        return gfx::Point(screen_rect.x(), taskbar_rect.y());
+
+      return gfx::Point(cursor.x(), taskbar_rect.y());
+    }
+
+    // Now try on the top.
+    if (cursor.y() - taskbar_rect.bottom() > kSnapDistance)
+      return gfx::Point(screen_rect.x(), taskbar_rect.bottom());
+
+    return gfx::Point(cursor.x(), taskbar_rect.bottom());
+  }
+
+  // Now try the left.
+  if (taskbar_rect.x() == screen_rect.x()) {
+    if (cursor.x() - taskbar_rect.right() > kSnapDistance)
+      return gfx::Point(taskbar_rect.right(), screen_rect.y());
+
+    return gfx::Point(taskbar_rect.right(), cursor.y());
+  }
+
+  // Finally, try the right.
+  if (taskbar_rect.x() - cursor.x() > kSnapDistance)
+    return gfx::Point(taskbar_rect.x(), screen_rect.y());
+
+  return gfx::Point(taskbar_rect.x(), cursor.y());
+}
+
+gfx::Point FindAnchorPoint(
+    const gfx::Size view_size,
+    const gfx::Display& display,
+    const gfx::Point& cursor) {
+  const int kSnapOffset = 3;
+
+  gfx::Rect bounds_rect(display.work_area());
+  // Always subtract the taskbar area since work_area() will not subtract it
+  // if the taskbar is set to auto-hide, and the app list should never overlap
+  // the taskbar.
+  gfx::Rect taskbar_rect;
+  if (GetTaskbarRect(&taskbar_rect))
+    bounds_rect.Subtract(taskbar_rect);
+
+  bounds_rect.Inset(view_size.width() / 2 + kSnapOffset,
+                    view_size.height() / 2 + kSnapOffset);
+
+  gfx::Point anchor = FindReferencePoint(display, cursor);
+  anchor.SetToMax(bounds_rect.origin());
+  anchor.SetToMin(bounds_rect.bottom_right());
+  return anchor;
+}
 string16 GetAppListShortcutName() {
   chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
   if (channel == chrome::VersionInfo::CHANNEL_CANARY)
@@ -272,6 +375,60 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);
 };
 
+// Customizes the app list |hwnd| for Windows (eg: disable aero peek, set up
+// restart params).
+void SetWindowAttributes(HWND hwnd) {
+  // Vista and lower do not offer pinning to the taskbar, which makes any
+  // presence on the taskbar useless. So, hide the window on the taskbar
+  // for these versions of Windows.
+  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
+    LONG_PTR ex_styles = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+    ex_styles |= WS_EX_TOOLWINDOW;
+    SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_styles);
+  }
+
+  if (base::win::GetVersion() > base::win::VERSION_VISTA) {
+    // Disable aero peek. Without this, hovering over the taskbar popup puts
+    // Windows into a mode for switching between windows in the same
+    // application. The app list has just one window, so it is just distracting.
+    BOOL disable_value = TRUE;
+    ::DwmSetWindowAttribute(hwnd,
+                            DWMWA_DISALLOW_PEEK,
+                            &disable_value,
+                            sizeof(disable_value));
+  }
+
+  ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
+  CommandLine relaunch = GetAppListCommandLine();
+  string16 app_name(GetAppListShortcutName());
+  ui::win::SetRelaunchDetailsForWindow(
+      relaunch.GetCommandLineString(), app_name, hwnd);
+  ::SetWindowText(hwnd, app_name.c_str());
+  string16 icon_path = GetAppListIconPath();
+  ui::win::SetAppIconForWindow(icon_path, hwnd);
+}
+
+app_list::AppListView* CreateAppListView(
+    scoped_ptr<AppListControllerDelegate> delegate,
+    Profile* profile,
+    app_list::PaginationModel* pagination_model) {
+  // The controller will be owned by the view delegate, and the delegate is
+  // owned by the app list view. The app list view manages it's own lifetime.
+  // TODO(koz): Make AppListViewDelegate take a scoped_ptr.
+  AppListViewDelegate* view_delegate =
+      new AppListViewDelegate(delegate.release(), profile);
+  app_list::AppListView* view = new app_list::AppListView(view_delegate);
+  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+  view->InitAsBubble(NULL,
+                     pagination_model,
+                     NULL,
+                     cursor,
+                     views::BubbleBorder::FLOAT,
+                     false /* border_accepts_events */);
+  SetWindowAttributes(view->GetHWND());
+  return view;
+}
+
 class ScopedKeepAlive {
  public:
   ScopedKeepAlive() { chrome::StartKeepAlive(); }
@@ -413,6 +570,145 @@ class ActivationTracker {
   base::RepeatingTimer<ActivationTracker> timer_;
 };
 
+// Creates and shows AppListViews as needed.
+class AppListShower {
+ public:
+  AppListShower()
+      : view_(NULL),
+        profile_(NULL),
+        can_close_app_list_(true) {
+  }
+
+  void set_can_close(bool can_close) {
+    can_close_app_list_ = can_close;
+  }
+
+  void ShowAndReacquireFocus(Profile* requested_profile) {
+    ShowForProfile(requested_profile);
+    activation_tracker_->RegainNextLostFocus();
+  }
+
+  void ShowForProfile(Profile* requested_profile) {
+   // If the app list is already displaying |profile| just activate it (in case
+    // we have lost focus).
+    if (IsAppListVisible() && (requested_profile == profile_)) {
+      view_->GetWidget()->Show();
+      view_->GetWidget()->Activate();
+      return;
+    }
+
+    DismissAppList();
+    CreateForProfile(requested_profile);
+
+    DCHECK(view_);
+    EnsureHaveKeepAliveForView();
+    gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+    UpdateArrowPositionAndAnchorPoint(cursor);
+    view_->GetWidget()->Show();
+    view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
+    view_->GetWidget()->Activate();
+  }
+
+  gfx::NativeWindow GetWindow() {
+    if (!IsAppListVisible())
+      return NULL;
+    return view_ ? view_->GetWidget()->GetNativeWindow() : NULL;
+  }
+
+  void OnAppListActivationChanged(bool active) {
+    activation_tracker_->OnActivationChanged(active);
+  }
+
+  void OnSigninStatusChanged() {
+    if (view_)
+      view_->OnSigninStatusChanged();
+  }
+
+  // Create or recreate, and initialize |view_| from |requested_profile|.
+  void CreateForProfile(Profile* requested_profile) {
+    // Aura has problems with layered windows and bubble delegates. The app
+    // launcher has a trick where it only hides the window when it is dismissed,
+    // reshowing it again later. This does not work with win aura for some
+    // reason. This change temporarily makes it always get recreated, only on
+    // win aura. See http://crbug.com/176186.
+#if !defined(USE_AURA)
+    if (requested_profile == profile_)
+      return;
+#endif
+
+    profile_ = requested_profile;
+    view_ = CreateAppListView(
+        make_scoped_ptr(new AppListControllerDelegateWin),
+        profile_,
+        &pagination_model_);
+    activation_tracker_.reset(new ActivationTracker(view_,
+        base::Bind(&AppListShower::DismissAppList, base::Unretained(this))));
+  }
+
+  void DismissAppList() {
+    if (IsAppListVisible() && can_close_app_list_) {
+      view_->GetWidget()->Hide();
+      activation_tracker_->OnViewHidden();
+      FreeAnyKeepAliveForView();
+    }
+  }
+
+  void CloseAppList() {
+    FreeAnyKeepAliveForView();
+    view_ = NULL;
+    profile_ = NULL;
+    activation_tracker_.reset();
+  }
+
+  bool IsAppListVisible() const {
+    return view_ && view_->GetWidget()->IsVisible();
+  }
+
+  void WarmupForProfile(Profile* profile) {
+    DCHECK(!profile_);
+    CreateForProfile(profile);
+    view_->Prerender();
+  }
+
+  bool HasView() const {
+    return !!view_;
+  }
+
+ private:
+  void UpdateArrowPositionAndAnchorPoint(
+      const gfx::Point& cursor) {
+    gfx::Screen* screen =
+        gfx::Screen::GetScreenFor(view_->GetWidget()->GetNativeView());
+    gfx::Display display = screen->GetDisplayNearestPoint(cursor);
+
+    view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
+    view_->SetAnchorPoint(FindAnchorPoint(
+        view_->GetPreferredSize(), display, cursor));
+  }
+
+  void EnsureHaveKeepAliveForView() {
+    if (!keep_alive_)
+      keep_alive_.reset(new ScopedKeepAlive());
+  }
+
+  void FreeAnyKeepAliveForView() {
+    if (keep_alive_)
+      keep_alive_.reset(NULL);
+  }
+
+  // Weak pointer. The view manages its own lifetime.
+  app_list::AppListView* view_;
+  Profile* profile_;
+  bool can_close_app_list_;
+  scoped_ptr<ActivationTracker> activation_tracker_;
+
+  // PaginationModel that is shared across all views.
+  app_list::PaginationModel pagination_model_;
+
+  // Used to keep the browser process alive while the app list is visible.
+  scoped_ptr<ScopedKeepAlive> keep_alive_;
+};
+
 // The AppListController class manages global resources needed for the app
 // list to operate, and controls when the app list is opened and closed.
 // TODO(tapted): Rename this class to AppListServiceWin and move entire file to
@@ -427,14 +723,12 @@ class AppListController : public AppListServiceImpl {
                      LeakySingletonTraits<AppListController> >::get();
   }
 
-  void set_can_close(bool can_close) { can_close_app_list_ = can_close; }
-  bool can_close() { return can_close_app_list_; }
+  void set_can_close(bool can_close) {
+    shower_->set_can_close(can_close);
+  }
 
-  void AppListClosing();
-  void AppListActivationChanged(bool active);
-  void ShowAppListDuringModeSwitch(Profile* requested_profile);
-
-  app_list::AppListView* GetView() { return current_view_; }
+  void OnAppListClosing();
+  void OnAppListActivationChanged(bool active);
 
   // AppListService overrides:
   virtual void HandleFirstRun() OVERRIDE;
@@ -465,42 +759,8 @@ class AppListController : public AppListServiceImpl {
   void LoadProfileForWarmup();
   void OnLoadProfileForWarmup(Profile* initial_profile);
 
-  // Creates an AppListView.
-  app_list::AppListView* CreateAppListView();
-
-  // Customizes the app list |hwnd| for Windows (eg: disable aero peek, set up
-  // restart params).
-  void SetWindowAttributes(HWND hwnd);
-
-  // Utility methods for showing the app list.
-  gfx::Point FindAnchorPoint(const gfx::Display& display,
-                             const gfx::Point& cursor);
-  void UpdateArrowPositionAndAnchorPoint(const gfx::Point& cursor);
-  string16 GetAppListIconPath();
-
-  // Check if the app list or the taskbar has focus. The app list is kept
-  // visible whenever either of these have focus, which allows it to be
-  // pinned but will hide it if it otherwise loses focus. This is checked
-  // periodically whenever the app list does not have focus.
-  void CheckTaskbarOrViewHasFocus();
-
-  // Utilities to manage browser process keep alive for the view itself. Note
-  // keep alives are also used when asynchronously loading profiles.
-  void EnsureHaveKeepAliveForView();
-  void FreeAnyKeepAliveForView();
-
-  // Weak pointer. The view manages its own lifetime.
-  app_list::AppListView* current_view_;
-
-  scoped_ptr<ActivationTracker> activation_tracker_;
-
-  app_list::PaginationModel pagination_model_;
-
-  // True if the controller can close the app list.
-  bool can_close_app_list_;
-
-  // Used to keep the browser process alive while the app list is visible.
-  scoped_ptr<ScopedKeepAlive> keep_alive_;
+  // Responsible for putting views on the screen.
+  scoped_ptr<AppListShower> shower_;
 
   bool enable_app_list_on_next_init_;
 
@@ -518,11 +778,11 @@ void AppListControllerDelegateWin::DismissView() {
 }
 
 void AppListControllerDelegateWin::ViewActivationChanged(bool active) {
-  AppListController::GetInstance()->AppListActivationChanged(active);
+  AppListController::GetInstance()->OnAppListActivationChanged(active);
 }
 
 void AppListControllerDelegateWin::ViewClosing() {
-  AppListController::GetInstance()->AppListClosing();
+  AppListController::GetInstance()->OnAppListClosing();
 }
 
 gfx::NativeWindow AppListControllerDelegateWin::GetAppListWindow() {
@@ -562,12 +822,9 @@ void AppListControllerDelegateWin::DoCreateShortcutsFlow(
       extension_id);
   DCHECK(extension);
 
-  app_list::AppListView* view = AppListController::GetInstance()->GetView();
-  if (!view)
+  gfx::NativeWindow parent_hwnd = GetAppListWindow();
+  if (!parent_hwnd)
     return;
-
-  gfx::NativeWindow parent_hwnd =
-      view->GetWidget()->GetTopLevelWidget()->GetNativeWindow();
   OnShowExtensionPrompt();
   chrome::ShowCreateChromeAppShortcutsDialog(
       parent_hwnd, profile, extension,
@@ -595,18 +852,15 @@ void AppListControllerDelegateWin::LaunchApp(
 }
 
 AppListController::AppListController()
-    : current_view_(NULL),
-      can_close_app_list_(true),
-      enable_app_list_on_next_init_(false),
+    : enable_app_list_on_next_init_(false),
+      shower_(new AppListShower),
       weak_factory_(this) {}
 
 AppListController::~AppListController() {
 }
 
 gfx::NativeWindow AppListController::GetAppListWindow() {
-  if (!IsAppListVisible())
-    return NULL;
-  return current_view_ ? current_view_->GetWidget()->GetNativeWindow() : NULL;
+  return shower_->GetWindow();
 }
 
 AppListControllerDelegate* AppListController::CreateControllerDelegate() {
@@ -614,8 +868,7 @@ AppListControllerDelegate* AppListController::CreateControllerDelegate() {
 }
 
 void AppListController::OnSigninStatusChanged() {
-  if (current_view_)
-    current_view_->OnSigninStatusChanged();
+  shower_->OnSigninStatusChanged();
 }
 
 void AppListController::ShowForProfile(Profile* requested_profile) {
@@ -635,249 +888,32 @@ void AppListController::ShowForProfile(Profile* requested_profile) {
   }
 
   InvalidatePendingProfileLoads();
-
-  // If the app list is already displaying |profile| just activate it (in case
-  // we have lost focus).
-  if (IsAppListVisible() && (requested_profile == profile())) {
-    current_view_->GetWidget()->Show();
-    current_view_->GetWidget()->Activate();
-    return;
-  }
-
+  // TODO(koz): Investigate making SetProfile() call SetProfilePath() itself.
   SetProfilePath(requested_profile->GetPath());
-
-  DismissAppList();
-  CreateForProfile(requested_profile);
-
-  DCHECK(current_view_);
-  EnsureHaveKeepAliveForView();
-  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  UpdateArrowPositionAndAnchorPoint(cursor);
-  current_view_->GetWidget()->Show();
-  current_view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
-  current_view_->GetWidget()->Activate();
+  SetProfile(requested_profile);
+  shower_->ShowForProfile(requested_profile);
   RecordAppListLaunch();
 }
 
-void AppListController::ShowAppListDuringModeSwitch(
-    Profile* requested_profile) {
-  ShowForProfile(requested_profile);
-  activation_tracker_->RegainNextLostFocus();
-}
-
-void AppListController::CreateForProfile(Profile* requested_profile) {
-  // Aura has problems with layered windows and bubble delegates. The app
-  // launcher has a trick where it only hides the window when it is dismissed,
-  // reshowing it again later. This does not work with win aura for some
-  // reason. This change temporarily makes it always get recreated, only on win
-  // aura. See http://crbug.com/176186.
-#if !defined(USE_AURA)
-  if (requested_profile == profile())
-    return;
-#endif
-
-  SetProfile(requested_profile);
-  current_view_ = CreateAppListView();
-  activation_tracker_.reset(new ActivationTracker(current_view_,
-      base::Bind(&AppListController::DismissAppList, base::Unretained(this))));
-}
-
-app_list::AppListView* AppListController::CreateAppListView() {
-  // The controller will be owned by the view delegate, and the delegate is
-  // owned by the app list view. The app list view manages it's own lifetime.
-  AppListViewDelegate* view_delegate =
-      new AppListViewDelegate(CreateControllerDelegate(), profile());
-  app_list::AppListView* view = new app_list::AppListView(view_delegate);
-  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  view->InitAsBubble(NULL,
-                     &pagination_model_,
-                     NULL,
-                     cursor,
-                     views::BubbleBorder::FLOAT,
-                     false /* border_accepts_events */);
-  SetWindowAttributes(view->GetHWND());
-  return view;
-}
-
-void AppListController::SetWindowAttributes(HWND hwnd) {
-  // Vista and lower do not offer pinning to the taskbar, which makes any
-  // presence on the taskbar useless. So, hide the window on the taskbar
-  // for these versions of Windows.
-  if (base::win::GetVersion() <= base::win::VERSION_VISTA) {
-    LONG_PTR ex_styles = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
-    ex_styles |= WS_EX_TOOLWINDOW;
-    SetWindowLongPtr(hwnd, GWL_EXSTYLE, ex_styles);
-  }
-
-  if (base::win::GetVersion() > base::win::VERSION_VISTA) {
-    // Disable aero peek. Without this, hovering over the taskbar popup puts
-    // Windows into a mode for switching between windows in the same
-    // application. The app list has just one window, so it is just distracting.
-    BOOL disable_value = TRUE;
-    ::DwmSetWindowAttribute(hwnd,
-                            DWMWA_DISALLOW_PEEK,
-                            &disable_value,
-                            sizeof(disable_value));
-  }
-
-  ui::win::SetAppIdForWindow(GetAppModelId(), hwnd);
-  CommandLine relaunch = GetAppListCommandLine();
-  string16 app_name(GetAppListShortcutName());
-  ui::win::SetRelaunchDetailsForWindow(
-      relaunch.GetCommandLineString(), app_name, hwnd);
-  ::SetWindowText(hwnd, app_name.c_str());
-  string16 icon_path = GetAppListIconPath();
-  ui::win::SetAppIconForWindow(icon_path, hwnd);
-}
 
 void AppListController::DismissAppList() {
-  if (IsAppListVisible() && can_close_app_list_) {
-    current_view_->GetWidget()->Hide();
-    activation_tracker_->OnViewHidden();
-    FreeAnyKeepAliveForView();
-  }
+  shower_->DismissAppList();
 }
 
-void AppListController::AppListClosing() {
-  FreeAnyKeepAliveForView();
-  current_view_ = NULL;
-  activation_tracker_.reset();
+void AppListController::OnAppListClosing() {
+  shower_->CloseAppList();
   SetProfile(NULL);
 }
 
-void AppListController::AppListActivationChanged(bool active) {
-  activation_tracker_->OnActivationChanged(active);
-}
-
-// Attempts to find the bounds of the Windows taskbar. Returns true on success.
-// |rect| is in screen coordinates. If the taskbar is in autohide mode and is
-// not visible, |rect| will be outside the current monitor's bounds, except for
-// one pixel of overlap where the edge of the taskbar is shown.
-bool GetTaskbarRect(gfx::Rect* rect) {
-  HWND taskbar_hwnd = FindWindow(kTrayClassName, NULL);
-  if (!taskbar_hwnd)
-    return false;
-
-  RECT win_rect;
-  if (!GetWindowRect(taskbar_hwnd, &win_rect))
-    return false;
-
-  *rect = gfx::Rect(win_rect);
-  return true;
-}
-
-gfx::Point FindReferencePoint(const gfx::Display& display,
-                              const gfx::Point& cursor) {
-  const int kSnapDistance = 50;
-
-  // If we can't find the taskbar, snap to the bottom left.
-  // If the display size is the same as the work area, and does not contain the
-  // taskbar, either the taskbar is hidden or on another monitor, so just snap
-  // to the bottom left.
-  gfx::Rect taskbar_rect;
-  if (!GetTaskbarRect(&taskbar_rect) ||
-      (display.work_area() == display.bounds() &&
-          !display.work_area().Contains(taskbar_rect))) {
-    return display.work_area().bottom_left();
-  }
-
-  // Snap to the taskbar edge. If the cursor is greater than kSnapDistance away,
-  // also move to the left (for horizontal taskbars) or top (for vertical).
-  const gfx::Rect& screen_rect = display.bounds();
-  // First handle taskbar on bottom.
-  if (taskbar_rect.width() == screen_rect.width()) {
-    if (taskbar_rect.bottom() == screen_rect.bottom()) {
-      if (taskbar_rect.y() - cursor.y() > kSnapDistance)
-        return gfx::Point(screen_rect.x(), taskbar_rect.y());
-
-      return gfx::Point(cursor.x(), taskbar_rect.y());
-    }
-
-    // Now try on the top.
-    if (cursor.y() - taskbar_rect.bottom() > kSnapDistance)
-      return gfx::Point(screen_rect.x(), taskbar_rect.bottom());
-
-    return gfx::Point(cursor.x(), taskbar_rect.bottom());
-  }
-
-  // Now try the left.
-  if (taskbar_rect.x() == screen_rect.x()) {
-    if (cursor.x() - taskbar_rect.right() > kSnapDistance)
-      return gfx::Point(taskbar_rect.right(), screen_rect.y());
-
-    return gfx::Point(taskbar_rect.right(), cursor.y());
-  }
-
-  // Finally, try the right.
-  if (taskbar_rect.x() - cursor.x() > kSnapDistance)
-    return gfx::Point(taskbar_rect.x(), screen_rect.y());
-
-  return gfx::Point(taskbar_rect.x(), cursor.y());
-}
-
-gfx::Point AppListController::FindAnchorPoint(
-    const gfx::Display& display,
-    const gfx::Point& cursor) {
-  const int kSnapOffset = 3;
-
-  gfx::Rect bounds_rect(display.work_area());
-  // Always subtract the taskbar area since work_area() will not subtract it if
-  // the taskbar is set to auto-hide, and the app list should never overlap the
-  // taskbar.
-  gfx::Rect taskbar_rect;
-  if (GetTaskbarRect(&taskbar_rect))
-    bounds_rect.Subtract(taskbar_rect);
-
-  gfx::Size view_size(current_view_->GetPreferredSize());
-  bounds_rect.Inset(view_size.width() / 2 + kSnapOffset,
-                    view_size.height() / 2 + kSnapOffset);
-
-  gfx::Point anchor = FindReferencePoint(display, cursor);
-  anchor.SetToMax(bounds_rect.origin());
-  anchor.SetToMin(bounds_rect.bottom_right());
-  return anchor;
-}
-
-void AppListController::UpdateArrowPositionAndAnchorPoint(
-    const gfx::Point& cursor) {
-  gfx::Screen* screen =
-      gfx::Screen::GetScreenFor(current_view_->GetWidget()->GetNativeView());
-  gfx::Display display = screen->GetDisplayNearestPoint(cursor);
-
-  current_view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
-  current_view_->SetAnchorPoint(FindAnchorPoint(display, cursor));
-}
-
-string16 AppListController::GetAppListIconPath() {
-  base::FilePath icon_path;
-  if (!PathService::Get(base::FILE_EXE, &icon_path)) {
-    NOTREACHED();
-    return string16();
-  }
-
-  std::stringstream ss;
-  ss << "," << GetAppListIconIndex();
-  string16 result = icon_path.value();
-  result.append(UTF8ToUTF16(ss.str()));
-  return result;
-}
-
-void AppListController::EnsureHaveKeepAliveForView() {
-  if (!keep_alive_)
-    keep_alive_.reset(new ScopedKeepAlive());
-}
-
-void AppListController::FreeAnyKeepAliveForView() {
-  if (keep_alive_)
-    keep_alive_.reset(NULL);
+void AppListController::OnAppListActivationChanged(bool active) {
+  shower_->OnAppListActivationChanged(active);
 }
 
 void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
   if (!IsWarmupNeeded())
     return;
 
-  CreateForProfile(initial_profile);
-  current_view_->Prerender();
+  shower_->WarmupForProfile(initial_profile);
 }
 
 void AppListController::HandleFirstRun() {
@@ -907,8 +943,9 @@ void AppListController::Init(Profile* initial_profile) {
   if (prefs->HasPrefPath(prefs::kRestartWithAppList) &&
       prefs->GetBoolean(prefs::kRestartWithAppList)) {
     prefs->SetBoolean(prefs::kRestartWithAppList, false);
-    AppListController::GetInstance()->
-        ShowAppListDuringModeSwitch(initial_profile);
+    // If we are restarting in Metro mode we will lose focus straight away. We
+    // need to reacquire focus when that happens.
+    shower_->ShowAndReacquireFocus(initial_profile);
   }
 
   // Migrate from legacy app launcher if we are on a non-canary and non-chromium
@@ -943,8 +980,12 @@ void AppListController::Init(Profile* initial_profile) {
   HandleCommandLineFlags(initial_profile);
 }
 
+void AppListController::CreateForProfile(Profile* profile) {
+  shower_->CreateForProfile(profile);
+}
+
 bool AppListController::IsAppListVisible() const {
-  return current_view_ && current_view_->GetWidget()->IsVisible();
+  return shower_->IsAppListVisible();
 }
 
 void AppListController::CreateShortcut() {
@@ -992,7 +1033,7 @@ bool AppListController::IsWarmupNeeded() {
 
   // We only need to initialize the view if there's no view already created and
   // there's no profile loading to be shown.
-  return !current_view_ && !profile_loader().IsAnyProfileLoading();
+  return !shower_->HasView() && !profile_loader().IsAnyProfileLoading();
 }
 
 void AppListController::LoadProfileForWarmup() {
