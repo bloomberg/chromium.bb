@@ -26,7 +26,7 @@ PPAPI_SHARED_EXPORT extern const unsigned int kPPIdTypeBits;
 
 extern const int32 kMaxPPId;
 
-// The most significant bits are the type, the rest are the value.
+// The least significant bits are the type, the rest are the value.
 template <typename T> inline T MakeTypedId(T value, PPIdType type) {
   return (value << kPPIdTypeBits) | static_cast<T>(type);
 }

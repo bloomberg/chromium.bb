@@ -44,6 +44,9 @@ void ResourceTracker::AddRefResource(PP_Resource res) {
   CheckThreadingPreconditions();
   DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
+
+  DCHECK(CanOperateOnResource(res));
+
   ResourceMap::iterator i = live_resources_.find(res);
   if (i == live_resources_.end())
     return;
@@ -66,6 +69,9 @@ void ResourceTracker::ReleaseResource(PP_Resource res) {
   CheckThreadingPreconditions();
   DLOG_IF(ERROR, !CheckIdType(res, PP_ID_TYPE_RESOURCE))
       << res << " is not a PP_Resource.";
+
+  DCHECK(CanOperateOnResource(res));
+
   ResourceMap::iterator i = live_resources_.find(res);
   if (i == live_resources_.end())
     return;
@@ -166,15 +172,23 @@ int ResourceTracker::GetLiveObjectsForInstance(PP_Instance instance) const {
   return static_cast<int>(found->second->resources.size());
 }
 
+void ResourceTracker::UseOddResourceValueInDebugMode() {
+#if !defined(NDEBUG)
+  DCHECK_EQ(0, last_resource_value_);
+
+  ++last_resource_value_;
+#endif
+}
+
 PP_Resource ResourceTracker::AddResource(Resource* object) {
   CheckThreadingPreconditions();
   // If the plugin manages to create too many resources, don't do crazy stuff.
-  if (last_resource_value_ == kMaxPPId)
+  if (last_resource_value_ >= kMaxPPId)
     return 0;
 
   // Allocate an ID. Note there's a rare error condition below that means we
   // could end up not using |new_id|, but that's harmless.
-  PP_Resource new_id = MakeTypedId(++last_resource_value_, PP_ID_TYPE_RESOURCE);
+  PP_Resource new_id = MakeTypedId(GetNextResourceValue(), PP_ID_TYPE_RESOURCE);
 
   // Some objects have a 0 instance, meaning they aren't associated with any
   // instance, so they won't be in |instance_map_|. This is (as of this writing)
@@ -227,6 +241,33 @@ void ResourceTracker::LastPluginRefWasDeleted(Resource* object) {
   if (callback_tracker)
     callback_tracker->PostAbortForResource(object->pp_resource());
   object->NotifyLastPluginRefWasDeleted();
+}
+
+int32 ResourceTracker::GetNextResourceValue() {
+#if defined(NDEBUG)
+  return ++last_resource_value_;
+#else
+  // In debug mode, the least significant bit indicates which side (renderer
+  // or plugin process) created the resource. Increment by 2 so it's always the
+  // same.
+  last_resource_value_ += 2;
+  return last_resource_value_;
+#endif
+}
+
+bool ResourceTracker::CanOperateOnResource(PP_Resource res) {
+#if defined(NDEBUG)
+  return true;
+#else
+  // The invalid PP_Resource value could appear at both sides.
+  if (res == 0)
+    return true;
+
+  // Skipping the type bits, the least significant bit of |res| should be the
+  // same as that of |last_resource_value_|.
+  return ((res >> kPPIdTypeBits) & 1) == (last_resource_value_ & 1);
+#endif
+
 }
 
 }  // namespace ppapi
