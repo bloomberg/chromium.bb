@@ -1368,6 +1368,11 @@ void WebFrameImpl::moveCaretSelection(const WebPoint& point)
         frame()->selection()->moveTo(position, UserTriggered);
 }
 
+void WebFrameImpl::setCaretVisible(bool visible)
+{
+    frame()->selection()->setCaretVisible(visible);
+}
+
 VisiblePosition WebFrameImpl::visiblePositionForWindowPoint(const WebPoint& point)
 {
     FloatPoint unscaledPoint(point);
