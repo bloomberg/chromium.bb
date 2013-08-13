@@ -82,8 +82,8 @@ TEST(LayerAnimationSequenceTest, SingleThreadedElement) {
       LayerAnimationElement::CreateOpacityElement(target, delta));
 
   for (int i = 0; i < 2; ++i) {
-    int group_id = 1;
-    sequence.set_animation_group_id(group_id);
+    int starting_group_id = 1;
+    sequence.set_animation_group_id(starting_group_id);
     start_time = effective_start + delta;
     sequence.set_start_time(start_time);
     delegate.SetOpacityFromAnimation(start);
@@ -94,7 +94,7 @@ TEST(LayerAnimationSequenceTest, SingleThreadedElement) {
     sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::Started,
         0,
-        group_id,
+        sequence.animation_group_id(),
         cc::Animation::Opacity,
         (effective_start - base::TimeTicks()).InSecondsF()));
     sequence.Progress(effective_start + delta/2, &delegate);
@@ -139,8 +139,8 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
       LayerAnimationElement::CreateTransformElement(target_transform, delta));
 
   for (int i = 0; i < 2; ++i) {
-    int group_id = 1;
-    sequence.set_animation_group_id(group_id);
+    int starting_group_id = 1;
+    sequence.set_animation_group_id(starting_group_id);
     start_time = opacity_effective_start + 4 * delta;
     sequence.set_start_time(start_time);
     delegate.SetOpacityFromAnimation(start_opacity);
@@ -150,10 +150,11 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
     sequence.Progress(start_time, &delegate);
     EXPECT_FLOAT_EQ(0.0, sequence.last_progressed_fraction());
     opacity_effective_start = start_time + delta;
+    EXPECT_EQ(starting_group_id, sequence.animation_group_id());
     sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::Started,
         0,
-        group_id,
+        sequence.animation_group_id(),
         cc::Animation::Opacity,
         (opacity_effective_start - base::TimeTicks()).InSecondsF()));
     sequence.Progress(opacity_effective_start + delta/2, &delegate);
@@ -180,10 +181,11 @@ TEST(LayerAnimationSequenceTest, MultipleElement) {
                             delegate.GetTransformForAnimation());
     EXPECT_FLOAT_EQ(0.0, sequence.last_progressed_fraction());
     transform_effective_start = opacity_effective_start + 3 * delta;
+    EXPECT_NE(starting_group_id, sequence.animation_group_id());
     sequence.OnThreadedAnimationStarted(cc::AnimationEvent(
         cc::AnimationEvent::Started,
         0,
-        group_id,
+        sequence.animation_group_id(),
         cc::Animation::Transform,
         (transform_effective_start - base::TimeTicks()).InSecondsF()));
     sequence.Progress(transform_effective_start + delta/2, &delegate);

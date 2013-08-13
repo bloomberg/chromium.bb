@@ -102,6 +102,8 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   bool IsFirstElementThreaded() const;
 
   // Used to identify groups of sequences that are supposed to start together.
+  // Once started, used to identify the sequence that owns a particular
+  // threaded animation.
   int animation_group_id() const { return animation_group_id_; }
   void set_animation_group_id(int id) { animation_group_id_ = id; }
 
@@ -164,6 +166,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   bool waiting_for_group_start_;
 
   // Identifies groups of sequences that are supposed to start together.
+  // Also used to identify the owner of a particular threaded animation; any
+  // in-progress threaded animation owned by this sequence will have this
+  // group id.
   int animation_group_id_;
 
   // These parties are notified when layer animations end.
