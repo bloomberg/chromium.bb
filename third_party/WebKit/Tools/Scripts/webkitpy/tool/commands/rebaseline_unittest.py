@@ -592,6 +592,7 @@ class TestAutoRebaseline(_BaseTestCase):
     def setUp(self):
         super(TestAutoRebaseline, self).setUp()
         self.command.latest_revision_processed_on_all_bots = lambda log_server: 9000
+        self.command.bot_revision_data = lambda log_server: [{"builder": "Mock builder", "revision": "9000"}]
 
     def test_tests_to_rebaseline(self):
         def blame(path):

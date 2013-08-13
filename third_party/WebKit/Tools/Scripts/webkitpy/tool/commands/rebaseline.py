@@ -621,15 +621,18 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
         handler.setLevel(logging.DEBUG)
         _log.addHandler(handler)
 
-    def latest_revision_processed_on_all_bots(self, log_server):
+    def bot_revision_data(self, log_server):
         revisions = []
         for result in self.builder_data().values():
             if result.run_was_interrupted():
                 self._start_new_log_entry(log_server)
                 _log.error("Can't rebaseline because the latest run on %s exited early." % result.builder_name())
-                return 0
-            revisions.append(result.blink_revision())
-        return int(min(revisions))
+                return []
+            revisions.append({
+                "builder": result.builder_name(),
+                "revision": result.blink_revision(),
+            })
+        return revisions
 
     def tests_to_rebaseline(self, tool, min_revision, print_revisions, log_server):
         port = tool.port_factory.get()
@@ -740,10 +743,11 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         self._configure_logging(options.log_server)
 
-        min_revision = self.latest_revision_processed_on_all_bots(options.log_server)
-        if not min_revision:
+        revision_data = self.bot_revision_data(options.log_server)
+        if not revision_data:
             return
 
+        min_revision = int(min([item["revision"] for item in revision_data]))
         tests, revision, author, bugs, has_any_needs_rebaseline_lines = self.tests_to_rebaseline(tool, min_revision, print_revisions=options.verbose, log_server=options.log_server)
 
         if not has_any_needs_rebaseline_lines:
@@ -751,7 +755,9 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             return
 
         if options.verbose:
-            _log.info("Bot min revision is %s." % min_revision)
+            _log.info("Min revision across all bots is %s." % min_revision)
+            for item in revision_data:
+                _log.info("%s: r%s" % (item["builder"], item["revision"]))
 
         test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
 
