@@ -6,6 +6,7 @@
 
 #include "base/threading/worker_pool.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/geolocation_handler.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_cert_migrator.h"
@@ -31,11 +32,13 @@ NetworkHandler::NetworkHandler() {
   network_state_handler_.reset(new NetworkStateHandler());
   network_device_handler_.reset(new NetworkDeviceHandler());
   network_profile_handler_.reset(new NetworkProfileHandler());
-  if (CertLoader::IsInitialized())
-    network_cert_migrator_.reset(new NetworkCertMigrator());
   network_configuration_handler_.reset(new NetworkConfigurationHandler());
   managed_network_configuration_handler_.reset(
       new ManagedNetworkConfigurationHandler());
+  if (CertLoader::IsInitialized()) {
+    network_cert_migrator_.reset(new NetworkCertMigrator());
+    client_cert_resolver_.reset(new ClientCertResolver());
+  }
   network_connection_handler_.reset(new NetworkConnectionHandler());
   network_sms_handler_.reset(new NetworkSmsHandler());
   geolocation_handler_.reset(new GeolocationHandler());
@@ -48,8 +51,6 @@ NetworkHandler::~NetworkHandler() {
 void NetworkHandler::Init() {
   network_state_handler_->InitShillPropertyHandler();
   network_profile_handler_->Init(network_state_handler_.get());
-  if (network_cert_migrator_)
-    network_cert_migrator_->Init(network_state_handler_.get());
   network_configuration_handler_->Init(network_state_handler_.get());
   managed_network_configuration_handler_->Init(
       network_state_handler_.get(),
@@ -57,6 +58,12 @@ void NetworkHandler::Init() {
       network_configuration_handler_.get());
   network_connection_handler_->Init(network_state_handler_.get(),
                                     network_configuration_handler_.get());
+  if (network_cert_migrator_)
+    network_cert_migrator_->Init(network_state_handler_.get());
+  if (client_cert_resolver_) {
+    client_cert_resolver_->Init(network_state_handler_.get(),
+                                managed_network_configuration_handler_.get());
+  }
   network_sms_handler_->Init();
   geolocation_handler_->Init();
 }

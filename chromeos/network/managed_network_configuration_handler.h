@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_handler_callbacks.h"
@@ -26,6 +27,7 @@ class ListValue;
 namespace chromeos {
 
 class NetworkConfigurationHandler;
+class NetworkPolicyObserver;
 class NetworkProfileHandler;
 class NetworkStateHandler;
 class NetworkUIData;
@@ -68,6 +70,9 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   // NULL.
   static scoped_ptr<NetworkUIData> GetUIData(
       const base::DictionaryValue& shill_dictionary);
+
+  void AddObserver(NetworkPolicyObserver* observer);
+  void RemoveObserver(NetworkPolicyObserver* observer);
 
   // Provides the properties of the network with |service_path| to |callback|.
   void GetProperties(
@@ -132,7 +137,13 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
       const std::string& guid,
       onc::ONCSource* onc_source) const;
 
-  // NetworkProfileObserver overrides
+  // Returns the policy with |guid| for profile |profile_path|. If such
+  // doesn't exist, returns NULL.
+  const base::DictionaryValue* FindPolicyByGuidAndProfile(
+      const std::string& guid,
+      const std::string& profile_path) const;
+
+ // NetworkProfileObserver overrides
   virtual void OnProfileAdded(const NetworkProfile& profile) OVERRIDE;
   virtual void OnProfileRemoved(const NetworkProfile& profile) OVERRIDE;
 
@@ -141,6 +152,7 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   }
 
  private:
+  friend class ClientCertResolverTest;
   friend class NetworkHandler;
   friend class ManagedNetworkConfigurationHandlerTest;
   class PolicyApplicator;
@@ -150,7 +162,6 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   void Init(NetworkStateHandler* network_state_handler,
             NetworkProfileHandler* network_profile_handler,
             NetworkConfigurationHandler* network_configuration_handler);
-
 
   void GetManagedPropertiesCallback(
       const network_handler::DictionaryResultCallback& callback,
@@ -162,6 +173,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   const GuidToPolicyMap* GetPoliciesForProfile(
       const NetworkProfile& profile) const;
 
+  void OnPolicyApplied(const std::string& service_path);
+
   // The DictionaryValues of the nested maps are owned by this class and are
   // explicitly deleted where necessary. If present, the empty string maps to
   // the device policy.
@@ -171,6 +184,8 @@ class CHROMEOS_EXPORT ManagedNetworkConfigurationHandler
   NetworkStateHandler* network_state_handler_;
   NetworkProfileHandler* network_profile_handler_;
   NetworkConfigurationHandler* network_configuration_handler_;
+
+  ObserverList<NetworkPolicyObserver> observers_;
 
   // For Shill client callbacks
   base::WeakPtrFactory<ManagedNetworkConfigurationHandler> weak_ptr_factory_;

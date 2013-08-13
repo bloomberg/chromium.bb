@@ -69,10 +69,15 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   static std::string GetPkcs11IdForCert(const net::X509Certificate& cert);
 
+  // By default, CertLoader tries to load the TPMToken only if running in a
+  // ChromeOS environment. Tests can call this function after Initialize() and
+  // before SetCryptoTaskRunner() to enable the TPM initialization.
+  void InitializeTPMForTest();
+
   // |crypto_task_runner| is the task runner that any synchronous crypto calls
   // should be made from, e.g. in Chrome this is the IO thread. Must be called
-  // after the thread is started. Certificate loading will not happen unless
-  // this is set.
+  // after the thread is started. Starts TPM initialization and Certificate
+  // loading.
   void SetCryptoTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner>& crypto_task_runner);
 
@@ -105,7 +110,6 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
   CertLoader();
   virtual ~CertLoader();
 
-  void Init();
   void MaybeRequestCertificates();
 
   // This is the cyclic chain of callbacks to initialize the TPM token and to
@@ -124,7 +128,15 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   // These calls handle the updating of the certificate list after the TPM token
   // was initialized.
+
+  // Start certificate loading. Must be called at most once.
   void StartLoadCertificates();
+
+  // Trigger a certificate load. If a certificate loading task is already in
+  // progress, will start a reload once the current task finised.
+  void LoadCertificates();
+
+  // Called if a certificate load task is finished.
   void UpdateCertificates(net::CertificateList* cert_list);
 
   void NotifyCertificatesLoaded(bool initial_load);
@@ -136,6 +148,8 @@ class CHROMEOS_EXPORT CertLoader : public net::CertDatabase::Observer,
 
   // LoginState::Observer
   virtual void LoggedInStateChanged(LoginState::LoggedInState state) OVERRIDE;
+
+  bool initialize_tpm_for_test_;
 
   ObserverList<Observer> observers_;
 

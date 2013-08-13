@@ -25,6 +25,7 @@
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
 #include "chromeos/network/network_handler_callbacks.h"
+#include "chromeos/network/network_policy_observer.h"
 #include "chromeos/network/network_profile.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
@@ -96,10 +97,6 @@ void SetUIData(const NetworkUIData& ui_data,
   base::JSONWriter::Write(&ui_data_dict, &ui_data_blob);
   shill_dictionary->SetStringWithoutPathExpansion(flimflam::kUIDataProperty,
                                                   ui_data_blob);
-}
-
-// A dummy callback to ignore the result of Shill calls.
-void IgnoreString(const std::string& str) {
 }
 
 void LogErrorWithDict(const tracked_objects::Location& from_where,
@@ -372,6 +369,16 @@ scoped_ptr<NetworkUIData> ManagedNetworkConfigurationHandler::GetUIData(
   }
   VLOG(2) << "JSON dictionary has no UIData blob: " << shill_dictionary;
   return scoped_ptr<NetworkUIData>();
+}
+
+void ManagedNetworkConfigurationHandler::AddObserver(
+    NetworkPolicyObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void ManagedNetworkConfigurationHandler::RemoveObserver(
+    NetworkPolicyObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ManagedNetworkConfigurationHandler::GetManagedProperties(
@@ -734,6 +741,27 @@ ManagedNetworkConfigurationHandler::FindPolicyByGUID(
   return NULL;
 }
 
+const base::DictionaryValue*
+ManagedNetworkConfigurationHandler::FindPolicyByGuidAndProfile(
+    const std::string& guid,
+    const std::string& profile_path) const {
+  const NetworkProfile* profile =
+      network_profile_handler_->GetProfileForPath(profile_path);
+  if (!profile) {
+    LOG(ERROR) << "Profile path unknown: " << profile_path;
+    return NULL;
+  }
+
+  const GuidToPolicyMap* policies = GetPoliciesForProfile(*profile);
+  if (!policies)
+    return NULL;
+
+  GuidToPolicyMap::const_iterator it = policies->find(guid);
+  if (it == policies->end())
+    return NULL;
+  return it->second;
+}
+
 void ManagedNetworkConfigurationHandler::OnProfileRemoved(
     const NetworkProfile& profile) {
   // Nothing to do in this case.
@@ -779,6 +807,14 @@ void ManagedNetworkConfigurationHandler::Init(
   network_profile_handler_ = network_profile_handler;
   network_configuration_handler_ = network_configuration_handler;
   network_profile_handler_->AddObserver(this);
+}
+
+void ManagedNetworkConfigurationHandler::OnPolicyApplied(
+    const std::string& service_path) {
+  if (service_path.empty())
+    return;
+  FOR_EACH_OBSERVER(
+      NetworkPolicyObserver, observers_, PolicyApplied(service_path));
 }
 
 ManagedNetworkConfigurationHandler::PolicyApplicator::PolicyApplicator(
@@ -921,10 +957,11 @@ void ManagedNetworkConfigurationHandler::PolicyApplicator::GetEntryCallback(
       scoped_ptr<base::DictionaryValue> shill_dictionary =
           CreateShillConfiguration(
               profile_, new_guid, new_policy, user_settings);
-      handler_->network_configuration_handler()
-          ->CreateConfiguration(*shill_dictionary,
-                                base::Bind(&IgnoreString),
-                                base::Bind(&LogErrorWithDict, FROM_HERE));
+      handler_->network_configuration_handler()->CreateConfiguration(
+          *shill_dictionary,
+          base::Bind(&ManagedNetworkConfigurationHandler::OnPolicyApplied,
+                     handler_),
+          base::Bind(&LogErrorWithDict, FROM_HERE));
       remaining_policies_.erase(new_guid);
     }
   } else if (was_managed) {
@@ -987,10 +1024,11 @@ ManagedNetworkConfigurationHandler::PolicyApplicator::~PolicyApplicator() {
     scoped_ptr<base::DictionaryValue> shill_dictionary =
         CreateShillConfiguration(
             profile_, *it, policy, NULL /* no user settings */);
-    handler_->network_configuration_handler()
-        ->CreateConfiguration(*shill_dictionary,
-                              base::Bind(&IgnoreString),
-                              base::Bind(&LogErrorWithDict, FROM_HERE));
+    handler_->network_configuration_handler()->CreateConfiguration(
+        *shill_dictionary,
+        base::Bind(&ManagedNetworkConfigurationHandler::OnPolicyApplied,
+                   handler_),
+        base::Bind(&LogErrorWithDict, FROM_HERE));
   }
 }
 

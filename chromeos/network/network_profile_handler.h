@@ -60,6 +60,7 @@ class CHROMEOS_EXPORT NetworkProfileHandler
   static const char kSharedProfilePath[];
 
  protected:
+  friend class ClientCertResolverTest;
   friend class NetworkHandler;
   NetworkProfileHandler();
 

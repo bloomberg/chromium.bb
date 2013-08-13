@@ -52,7 +52,8 @@ void CallOpenPersistentNSSDB() {
   VLOG(1) << "CallOpenPersistentNSSDB";
 
   // Ensure we've opened the user's key/certificate database.
-  crypto::OpenPersistentNSSDB();
+  if (base::chromeos::IsRunningOnChromeOS())
+    crypto::OpenPersistentNSSDB();
   crypto::EnableTPMTokenForNSS();
 }
 
@@ -64,7 +65,6 @@ static CertLoader* g_cert_loader = NULL;
 void CertLoader::Initialize() {
   CHECK(!g_cert_loader);
   g_cert_loader = new CertLoader();
-  g_cert_loader->Init();
 }
 
 // static
@@ -86,7 +86,8 @@ bool CertLoader::IsInitialized() {
 }
 
 CertLoader::CertLoader()
-    : certificates_requested_(false),
+    : initialize_tpm_for_test_(false),
+      certificates_requested_(false),
       certificates_loaded_(false),
       certificates_update_required_(false),
       certificates_update_running_(false),
@@ -95,12 +96,12 @@ CertLoader::CertLoader()
           base::TimeDelta::FromMilliseconds(kInitialRequestDelayMs)),
       initialize_token_factory_(this),
       update_certificates_factory_(this) {
-}
-
-void CertLoader::Init() {
-  net::CertDatabase::GetInstance()->AddObserver(this);
   if (LoginState::IsInitialized())
     LoginState::Get()->AddObserver(this);
+}
+
+void CertLoader::InitializeTPMForTest() {
+  initialize_tpm_for_test_ = true;
 }
 
 void CertLoader::SetCryptoTaskRunner(
@@ -154,7 +155,11 @@ void CertLoader::MaybeRequestCertificates() {
 
   // Ensure we only initialize the TPM token once.
   DCHECK_EQ(tpm_token_state_, TPM_STATE_UNKNOWN);
-  if (!base::chromeos::IsRunningOnChromeOS())
+  if (!initialize_tpm_for_test_ && !base::chromeos::IsRunningOnChromeOS())
+    tpm_token_state_ = TPM_DISABLED;
+
+  // Treat TPM as disabled for guest users since they do not store certs.
+  if (LoginState::IsInitialized() && LoginState::Get()->IsGuestUser())
     tpm_token_state_ = TPM_DISABLED;
 
   InitializeTokenAndLoadCertificates();
@@ -163,10 +168,6 @@ void CertLoader::MaybeRequestCertificates() {
 void CertLoader::InitializeTokenAndLoadCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
   VLOG(1) << "InitializeTokenAndLoadCertificates: " << tpm_token_state_;
-
-  // Treat TPM as disabled for guest users since they do not store certs.
-  if (LoginState::IsInitialized() && LoginState::Get()->IsGuestUser())
-    tpm_token_state_ = TPM_DISABLED;
 
   switch (tpm_token_state_) {
     case TPM_STATE_UNKNOWN: {
@@ -211,8 +212,6 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
           base::Bind(&CertLoader::OnTPMTokenInitialized,
                      initialize_token_factory_.GetWeakPtr()));
       return;
-      tpm_token_state_ = TPM_TOKEN_INITIALIZED;
-      // FALL_THROUGH_INTENDED
     }
     case TPM_TOKEN_INITIALIZED: {
       StartLoadCertificates();
@@ -223,7 +222,7 @@ void CertLoader::InitializeTokenAndLoadCertificates() {
 
 void CertLoader::RetryTokenInitializationLater() {
   CHECK(thread_checker_.CalledOnValidThread());
-  LOG(WARNING) << "Re-Requesting Certificates later.";
+  LOG(WARNING) << "Retry token initialization later.";
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&CertLoader::InitializeTokenAndLoadCertificates,
@@ -324,8 +323,14 @@ void CertLoader::OnTPMTokenInitialized(bool success) {
 }
 
 void CertLoader::StartLoadCertificates() {
+  DCHECK(!certificates_loaded_ && !certificates_update_running_);
+  net::CertDatabase::GetInstance()->AddObserver(this);
+  LoadCertificates();
+}
+
+void CertLoader::LoadCertificates() {
   CHECK(thread_checker_.CalledOnValidThread());
-  VLOG(1) << "StartLoadCertificates: " << certificates_update_running_;
+  VLOG(1) << "LoadCertificates: " << certificates_update_running_;
 
   if (certificates_update_running_) {
     certificates_update_required_ = true;
@@ -361,7 +366,7 @@ void CertLoader::UpdateCertificates(net::CertificateList* cert_list) {
 
   certificates_update_running_ = false;
   if (certificates_update_required_)
-    StartLoadCertificates();
+    LoadCertificates();
 }
 
 void CertLoader::NotifyCertificatesLoaded(bool initial_load) {
@@ -374,12 +379,12 @@ void CertLoader::OnCertTrustChanged(const net::X509Certificate* cert) {
 
 void CertLoader::OnCertAdded(const net::X509Certificate* cert) {
   VLOG(1) << "OnCertAdded";
-  StartLoadCertificates();
+  LoadCertificates();
 }
 
 void CertLoader::OnCertRemoved(const net::X509Certificate* cert) {
   VLOG(1) << "OnCertRemoved";
-  StartLoadCertificates();
+  LoadCertificates();
 }
 
 void CertLoader::LoggedInStateChanged(LoginState::LoggedInState state) {
