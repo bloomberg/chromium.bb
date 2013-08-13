@@ -54,7 +54,7 @@ class TraceEventTestFixture : public testing::Test {
   void OnTraceNotification(int notification) {
     if (notification & TraceLog::EVENT_WATCH_NOTIFICATION)
       ++event_watch_notification_;
-      notifications_received_ |= notification;
+    notifications_received_ |= notification;
   }
   DictionaryValue* FindMatchingTraceEntry(const JsonKeyValue* key_values);
   DictionaryValue* FindNamePhase(const char* name, const char* phase);
