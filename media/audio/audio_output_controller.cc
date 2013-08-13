@@ -11,7 +11,6 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_util.h"
 #include "media/audio/shared_memory_util.h"
 #include "media/base/scoped_histogram_timer.h"
@@ -49,7 +48,10 @@ AudioOutputController::AudioOutputController(AudioManager* audio_manager,
       num_allowed_io_(0),
       sync_reader_(sync_reader),
       message_loop_(audio_manager->GetMessageLoop()),
-      number_polling_attempts_left_(0) {
+      number_polling_attempts_left_(0),
+      power_monitor_(
+          params.sample_rate(),
+          TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);
@@ -156,23 +158,29 @@ void AudioOutputController::DoPlay() {
 
   state_ = kPlaying;
 
-  // Start monitoring power levels and send an initial notification that we're
-  // starting in silence.
-  handler_->OnPowerMeasured(AudioPowerMonitor::zero_power(), false);
-  power_monitor_callback_.Reset(
-      base::Bind(&EventHandler::OnPowerMeasured, base::Unretained(handler_)));
-  power_monitor_.reset(new AudioPowerMonitor(
-      params_.sample_rate(),
-      TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis),
-      TimeDelta::FromSeconds(1) / kPowerMeasurementsPerSecond,
-      base::MessageLoop::current(),
-      power_monitor_callback_.callback()));
+  power_monitor_.Reset();
+  power_poll_callback_.Reset(
+      base::Bind(&AudioOutputController::ReportPowerMeasurementPeriodically,
+                 this));
+  // Run the callback to send an initial notification that we're starting in
+  // silence, and to schedule periodic callbacks.
+  power_poll_callback_.callback().Run();
 
   // We start the AudioOutputStream lazily.
   AllowEntryToOnMoreIOData();
   stream_->Start(this);
 
   handler_->OnPlaying();
+}
+
+void AudioOutputController::ReportPowerMeasurementPeriodically() {
+  DCHECK(message_loop_->BelongsToCurrentThread());
+  const std::pair<float, bool>& reading =
+      power_monitor_.ReadCurrentPowerAndClip();
+  handler_->OnPowerMeasured(reading.first, reading.second);
+  message_loop_->PostDelayedTask(
+      FROM_HERE, power_poll_callback_.callback(),
+      TimeDelta::FromSeconds(1) / kPowerMeasurementsPerSecond);
 }
 
 void AudioOutputController::StopStream() {
@@ -182,11 +190,7 @@ void AudioOutputController::StopStream() {
     stream_->Stop();
     DisallowEntryToOnMoreIOData();
 
-    // Stop monitoring power levels.  By canceling power_monitor_callback_, any
-    // tasks posted to |message_loop_| by AudioPowerMonitor during the
-    // stream_->Stop() call above will not run.
-    power_monitor_.reset();
-    power_monitor_callback_.Cancel();
+    power_poll_callback_.Cancel();
 
     state_ = kPaused;
   }
@@ -279,7 +283,7 @@ int AudioOutputController::OnMoreIOData(AudioBus* source,
   sync_reader_->UpdatePendingBytes(
       buffers_state.total_bytes() + frames * params_.GetBytesPerFrame());
 
-  power_monitor_->Scan(*dest, frames);
+  power_monitor_.Scan(*dest, frames);
 
   AllowEntryToOnMoreIOData();
   return frames;

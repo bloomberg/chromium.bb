@@ -7,36 +7,26 @@
 #include <algorithm>
 #include <cmath>
 
-#include "base/bind.h"
 #include "base/float_util.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 
 namespace media {
 
 AudioPowerMonitor::AudioPowerMonitor(
-    int sample_rate,
-    const base::TimeDelta& time_constant,
-    const base::TimeDelta& measurement_period,
-    base::MessageLoop* message_loop,
-    const PowerMeasurementCallback& callback)
+    int sample_rate, const base::TimeDelta& time_constant)
     : sample_weight_(
-          1.0f - expf(-1.0f / (sample_rate * time_constant.InSecondsF()))),
-      num_frames_per_callback_(sample_rate * measurement_period.InSecondsF()),
-      message_loop_(message_loop),
-      power_level_callback_(callback),
-      average_power_(0.0f),
-      clipped_since_last_notification_(false),
-      frames_since_last_notification_(0),
-      last_reported_power_(-1.0f),
-      last_reported_clipped_(false) {
-  DCHECK(message_loop_);
-  DCHECK(!power_level_callback_.is_null());
+          1.0f - expf(-1.0f / (sample_rate * time_constant.InSecondsF()))) {
+  Reset();
 }
 
 AudioPowerMonitor::~AudioPowerMonitor() {
+}
+
+void AudioPowerMonitor::Reset() {
+  power_reading_ = average_power_ = 0.0f;
+  clipped_reading_ = has_clipped_ = false;
 }
 
 void AudioPowerMonitor::Scan(const AudioBus& buffer, int num_frames) {
@@ -50,10 +40,10 @@ void AudioPowerMonitor::Scan(const AudioBus& buffer, int num_frames) {
   //
   // TODO(miu): Implement optimized SSE/NEON to more efficiently compute the
   // results (in media/base/vector_math) in soon-upcoming change.
-  bool clipped = false;
   float sum_power = 0.0f;
   for (int i = 0; i < num_channels; ++i) {
     float average_power_this_channel = average_power_;
+    bool clipped = false;
     const float* p = buffer.channel(i);
     const float* const end_of_samples = p + num_frames;
     for (; p < end_of_samples; ++p) {
@@ -64,45 +54,41 @@ void AudioPowerMonitor::Scan(const AudioBus& buffer, int num_frames) {
           (sample_squared - average_power_this_channel) * sample_weight_;
     }
     // If data in audio buffer is garbage, ignore its effect on the result.
-    if (base::IsNaN(average_power_this_channel))
+    if (base::IsNaN(average_power_this_channel)) {
       average_power_this_channel = average_power_;
-    sum_power += average_power_this_channel;
-  }
-
-  // Update accumulated results.
-  average_power_ = std::max(0.0f, std::min(1.0f, sum_power / num_channels));
-  clipped_since_last_notification_ |= clipped;
-  frames_since_last_notification_ += num_frames;
-
-  // Once enough frames have been scanned, report the accumulated results.
-  if (frames_since_last_notification_ >= num_frames_per_callback_) {
-    // Note: Forgo making redundant callbacks when results remain unchanged.
-    // Part of this is to pin-down the power to zero if it is insignificantly
-    // small.
-    const float kInsignificantPower = 1.0e-10f;  // -100 dBFS
-    const float power =
-        (average_power_ < kInsignificantPower) ? 0.0f : average_power_;
-    if (power != last_reported_power_ ||
-        clipped_since_last_notification_ != last_reported_clipped_) {
-      const float power_dbfs =
-          power > 0.0f ? 10.0f * log10f(power) : zero_power();
-      // Try to post a task to run the callback with the dBFS result.  The
-      // posting of the task is guaranteed to be non-blocking, and therefore
-      // could fail.  However, in the common case, failures should be rare (and
-      // then the task-post will likely succeed the next time it's attempted).
-      if (!message_loop_->TryPostTask(
-              FROM_HERE,
-              base::Bind(power_level_callback_,
-                         power_dbfs, clipped_since_last_notification_))) {
-        DVLOG(2) << "TryPostTask() did not succeed.";
-        return;
-      }
-      last_reported_power_ = power;
-      last_reported_clipped_ = clipped_since_last_notification_;
+      clipped = false;
     }
-    clipped_since_last_notification_ = false;
-    frames_since_last_notification_ = 0;
+    sum_power += average_power_this_channel;
+    has_clipped_ |= clipped;
   }
+
+  // Update accumulated results, with clamping for sanity.
+  average_power_ = std::max(0.0f, std::min(1.0f, sum_power / num_channels));
+
+  // Push results for reading by other threads, non-blocking.
+  if (reading_lock_.Try()) {
+    power_reading_ = average_power_;
+    if (has_clipped_) {
+      clipped_reading_ = true;
+      has_clipped_ = false;
+    }
+    reading_lock_.Release();
+  }
+}
+
+std::pair<float, bool> AudioPowerMonitor::ReadCurrentPowerAndClip() {
+  base::AutoLock for_reading(reading_lock_);
+
+  // Convert power level to dBFS units, and pin it down to zero if it is
+  // insignificantly small.
+  const float kInsignificantPower = 1.0e-10f;  // -100 dBFS
+  const float power_dbfs = power_reading_ < kInsignificantPower ? zero_power() :
+      10.0f * log10f(power_reading_);
+
+  const bool clipped = clipped_reading_;
+  clipped_reading_ = false;
+
+  return std::make_pair(power_dbfs, clipped);
 }
 
 }  // namespace media

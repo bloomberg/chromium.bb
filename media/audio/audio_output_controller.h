@@ -9,10 +9,9 @@
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/timer/timer.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/audio_manager.h"
+#include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_source_diverter.h"
 #include "media/audio/simple_sources.h"
 #include "media/base/media_export.h"
@@ -52,8 +51,6 @@
 //
 
 namespace media {
-
-class AudioPowerMonitor;
 
 class MEDIA_EXPORT AudioOutputController
     : public base::RefCountedThreadSafe<AudioOutputController>,
@@ -182,9 +179,9 @@ class MEDIA_EXPORT AudioOutputController
   void DoStartDiverting(AudioOutputStream* to_stream);
   void DoStopDiverting();
 
-  // Called at regular intervals during playback to check for a change in
-  // silence and call EventHandler::OnAudible() when state changes occur.
-  void MaybeInvokeAudibleCallback();
+  // Calls EventHandler::OnPowerMeasured() with the current power level and then
+  // schedules itself to be called again later.
+  void ReportPowerMeasurementPeriodically();
 
   // Helper method that stops the physical stream.
   void StopStream();
@@ -234,11 +231,11 @@ class MEDIA_EXPORT AudioOutputController
   // Number of times left.
   int number_polling_attempts_left_;
 
-  // Scans audio samples from OnMoreIOData() as input and causes
-  // EventHandler::OnPowerMeasured() to be called with power level measurements
-  // at regular intervals.
-  scoped_ptr<AudioPowerMonitor> power_monitor_;
-  base::CancelableCallback<void(float, bool)> power_monitor_callback_;
+  // Scans audio samples from OnMoreIOData() as input to compute power levels.
+  AudioPowerMonitor power_monitor_;
+
+  // Periodic callback to report power levels during playback.
+  base::CancelableClosure power_poll_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioOutputController);
 };

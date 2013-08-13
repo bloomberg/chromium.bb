@@ -6,9 +6,6 @@
 
 #include <limits>
 
-#include "base/bind.h"
-#include "base/bind_helpers.h"
-#include "base/message_loop/message_loop.h"
 #include "base/time/time.h"
 #include "media/base/audio_bus.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -19,7 +16,6 @@ static const int kSampleRate = 48000;
 static const int kFramesPerBuffer = 128;
 
 static const int kTimeConstantMillis = 5;
-static const int kMeasurementPeriodMillis = 20;
 
 namespace {
 
@@ -158,26 +154,22 @@ class MeasurementObserver {
 class AudioPowerMonitorTest : public ::testing::TestWithParam<TestScenario> {
  public:
   AudioPowerMonitorTest()
-      : power_monitor_(
-            kSampleRate,
-            base::TimeDelta::FromMilliseconds(kTimeConstantMillis),
-            base::TimeDelta::FromMilliseconds(kMeasurementPeriodMillis),
-            &message_loop_,
-            base::Bind(&AudioPowerMonitorTest::OnPowerMeasured,
-                       base::Unretained(this))) {}
+      : power_monitor_(kSampleRate,
+                       base::TimeDelta::FromMilliseconds(kTimeConstantMillis)) {
+  }
 
   void FeedAndCheckExpectedPowerIsMeasured(
       const AudioBus& bus, float power, bool clipped) {
-    // Feed the AudioPowerMonitor.  It should post tasks to |message_loop_|.
+    // Feed the AudioPowerMonitor, read measurements from it, and record them in
+    // MeasurementObserver.
     static const int kNumFeedIters = 100;
-    for (int i = 0; i < kNumFeedIters; ++i)
-      power_monitor_.Scan(bus, bus.frames());
-
-    // Set up an observer and run all the enqueued tasks.
     MeasurementObserver observer(power, clipped);
-    current_observer_ = &observer;
-    message_loop_.RunUntilIdle();
-    current_observer_ = NULL;
+    for (int i = 0; i < kNumFeedIters; ++i) {
+      power_monitor_.Scan(bus, bus.frames());
+      const std::pair<float, bool>& reading =
+          power_monitor_.ReadCurrentPowerAndClip();
+      observer.OnPowerMeasured(reading.first, reading.second);
+    }
 
     // Check that the results recorded by the observer are the same whole-number
     // dBFS.
@@ -187,14 +179,7 @@ class AudioPowerMonitorTest : public ::testing::TestWithParam<TestScenario> {
   }
 
  private:
-  void OnPowerMeasured(float power, bool clipped) {
-    CHECK(current_observer_);
-    current_observer_->OnPowerMeasured(power, clipped);
-  }
-
-  base::MessageLoop message_loop_;
   AudioPowerMonitor power_monitor_;
-  MeasurementObserver* current_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioPowerMonitorTest);
 };
@@ -303,7 +288,7 @@ INSTANTIATE_TEST_CASE_P(
          TestScenario(kMonoMaxAmplitudeWithClip2, 1, 4,
                       AudioPowerMonitor::max_power(), true),
          TestScenario(kMonoSilentNoise, 1, 2,
-                      AudioPowerMonitor::zero_power(), true).
+                      AudioPowerMonitor::zero_power(), false).
              WithABadSample(std::numeric_limits<float>::infinity()),
          TestScenario(kMonoHalfMaxAmplitude, 1, 4,
                       AudioPowerMonitor::zero_power(), false).
