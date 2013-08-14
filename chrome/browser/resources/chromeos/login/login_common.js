@@ -263,6 +263,16 @@ cr.define('cr.ui', function() {
     DisplayManager.refocusCurrentPod();
   };
 
+  /**
+   * Login for autotests.
+   * @param {string} username Login username.
+   * @param {string} password Login password.
+   */
+  Oobe.loginForTesting = function(username, password) {
+    chrome.send('skipToLoginForTesting');
+    chrome.send('completeLogin', [username, password]);
+  };
+
   // Export
   return {
     Oobe: Oobe
