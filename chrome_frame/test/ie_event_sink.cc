@@ -231,7 +231,7 @@ void IEEventSink::Attach(IDispatch* browser_disp) {
 
 HRESULT IEEventSink::Attach(IWebBrowser2* browser) {
   DCHECK(browser);
-  HRESULT result;
+  HRESULT result = E_INVALIDARG;
   if (browser) {
     web_browser2_ = browser;
     FindIEProcessId();
