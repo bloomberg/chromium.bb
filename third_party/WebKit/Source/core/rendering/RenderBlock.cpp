@@ -4254,7 +4254,7 @@ void RenderBlock::clearPercentHeightDescendantsFrom(RenderBox* parent)
     }
 }
 
-static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int objectBottom)
+inline static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int objectBottom)
 {
     if (objectTop >= floatBottom || objectBottom < floatTop)
         return false;
@@ -4275,7 +4275,7 @@ static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int ob
 }
 
 template<>
-bool RenderBlock::ComputeFloatOffsetAdapter<RenderBlock::FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+inline bool RenderBlock::ComputeFloatOffsetAdapter<RenderBlock::FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
     LayoutUnit logicalRight = floatingObject->logicalRight(m_renderer->isHorizontalWritingMode());
     if (logicalRight > m_offset) {
@@ -4286,7 +4286,7 @@ bool RenderBlock::ComputeFloatOffsetAdapter<RenderBlock::FloatingObject::FloatLe
 }
 
 template<>
-bool RenderBlock::ComputeFloatOffsetAdapter<RenderBlock::FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
+inline bool RenderBlock::ComputeFloatOffsetAdapter<RenderBlock::FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
 {
     LayoutUnit logicalLeft = floatingObject->logicalLeft(m_renderer->isHorizontalWritingMode());
     if (logicalLeft < m_offset) {
