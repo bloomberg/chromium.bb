@@ -723,6 +723,8 @@
             '../base/base.gyp:base_java',
             '../media/media.gyp:media_java',
             '../net/net.gyp:net_java',
+            '../tools/android/forwarder/forwarder.gyp:forwarder',
+            '../tools/android/md5sum/md5sum.gyp:md5sum',
             '../ui/ui.gyp:ui_java',
           ],
           'variables': {
