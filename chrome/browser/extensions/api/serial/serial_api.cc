@@ -65,7 +65,7 @@ void SerialGetPortsFunction::Work() {
       SerialPortEnumerator::GenerateValidSerialPortNames();
   SerialPortEnumerator::StringSet::const_iterator i = port_names.begin();
   while (i != port_names.end()) {
-    ports->Append(Value::CreateStringValue(*i++));
+    ports->Append(new base::StringValue(*i++));
   }
 
   SetResult(ports);
@@ -182,7 +182,7 @@ void SerialCloseFunction::Work() {
     close_result = true;
   }
 
-  SetResult(Value::CreateBooleanValue(close_result));
+  SetResult(new base::FundamentalValue(close_result));
 }
 
 bool SerialCloseFunction::Respond() {
@@ -294,7 +294,7 @@ void SerialFlushFunction::Work() {
     flush_result = true;
   }
 
-  SetResult(Value::CreateBooleanValue(flush_result));
+  SetResult(new base::FundamentalValue(flush_result));
 }
 
 bool SerialFlushFunction::Respond() {
@@ -369,14 +369,14 @@ void SerialSetControlSignalsFunction::Work() {
     if (control_signals.should_set_rts)
       control_signals.rts = *(params_->options.rts);
     if (serial_connection->SetControlSignals(control_signals)) {
-      SetResult(Value::CreateBooleanValue(true));
+      SetResult(new base::FundamentalValue(true));
     } else {
       error_ = kErrorSetControlSignalsFailed;
-      SetResult(Value::CreateBooleanValue(false));
+      SetResult(new base::FundamentalValue(false));
     }
   } else {
     error_ = kSerialConnectionNotFoundError;
-    SetResult(Value::CreateBooleanValue(false));
+    SetResult(new base::FundamentalValue(false));
   }
 }
 

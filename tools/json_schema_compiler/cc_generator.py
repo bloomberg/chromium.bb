@@ -449,7 +449,7 @@ class _Generator(object):
 
     var: variable or variable*
 
-    E.g for std::string, generate base::Value::CreateStringValue(var)
+    E.g for std::string, generate new base::StringValue(var)
     """
     underlying_type = self._type_helper.FollowRef(type_)
     if (underlying_type.property_type == PropertyType.CHOICES or
@@ -466,7 +466,7 @@ class _Generator(object):
         vardot = '(%s).' % var
       return '%sDeepCopy()' % vardot
     elif underlying_type.property_type == PropertyType.ENUM:
-      return 'base::Value::CreateStringValue(ToString(%s))' % var
+      return 'new base::StringValue(ToString(%s))' % var
     elif underlying_type.property_type == PropertyType.BINARY:
       if is_ptr:
         vardot = var + '->'

@@ -114,7 +114,7 @@ void SetUninstallUrl(ExtensionPrefs* prefs,
                      const std::string& url_string) {
   prefs->UpdateExtensionPref(extension_id,
                              kUninstallUrl,
-                             base::Value::CreateStringValue(url_string));
+                             new base::StringValue(url_string));
 }
 
 std::string GetUninstallUrl(ExtensionPrefs* prefs,

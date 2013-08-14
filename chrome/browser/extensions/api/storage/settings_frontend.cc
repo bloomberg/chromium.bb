@@ -46,7 +46,7 @@ class DefaultObserver : public SettingsObserver {
     // string-based event payloads is removed. http://crbug.com/136045
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(base::JSONReader::Read(change_json));
-    args->Append(Value::CreateStringValue(settings_namespace::ToString(
+    args->Append(new base::StringValue(settings_namespace::ToString(
         settings_namespace)));
     scoped_ptr<Event> event(new Event(
         event_names::kOnSettingsChanged, args.Pass()));

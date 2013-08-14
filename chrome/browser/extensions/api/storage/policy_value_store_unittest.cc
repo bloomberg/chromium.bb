@@ -124,7 +124,7 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
                policy::POLICY_SCOPE_USER, expected.DeepCopy(), NULL);
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
                policy::POLICY_SCOPE_USER,
-               base::Value::CreateIntegerValue(456), NULL);
+               new base::FundamentalValue(456), NULL);
   store_->SetCurrentPolicy(policies, false);
   ValueStore::ReadResult result = store_->Get();
   ASSERT_FALSE(result->HasError());
@@ -155,7 +155,7 @@ TEST_F(PolicyValueStoreTest, ReadOnly) {
 TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
   policy::PolicyMap policies;
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("111"), NULL);
+               new base::StringValue("111"), NULL);
   EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
   // No notification when setting the initial policy.
   store_->SetCurrentPolicy(policies, false);
@@ -164,9 +164,9 @@ TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
 
   // And no notifications on changes when not asked for.
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("222"), NULL);
+               new base::StringValue("222"), NULL);
   policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               base::Value::CreateStringValue("223"), NULL);
+               new base::StringValue("223"), NULL);
   EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
   store_->SetCurrentPolicy(policies, false);
   loop_.RunUntilIdle();

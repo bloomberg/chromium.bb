@@ -44,7 +44,7 @@ void MusicManagerPrivateGetDeviceIdFunction::DeviceIdCallback(
     SetError(kDeviceIdNotSupported);
     response = false;
   } else {
-    SetResult(Value::CreateStringValue(device_id));
+    SetResult(new base::StringValue(device_id));
     response = true;
   }
 

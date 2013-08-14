@@ -57,7 +57,7 @@ std::string GenerateKey(const GURL& manifest_url) {
   return key;
 }
 
-}
+}  // namespace
 
 
 // Generates a version for the converted app using the current date. This isn't
@@ -133,14 +133,14 @@ scoped_refptr<Extension> ConvertWebAppToExtension(
   base::ListValue* permissions = new base::ListValue();
   root->Set(keys::kPermissions, permissions);
   for (size_t i = 0; i < web_app.permissions.size(); ++i) {
-    permissions->Append(Value::CreateStringValue(web_app.permissions[i]));
+    permissions->Append(new base::StringValue(web_app.permissions[i]));
   }
 
   // Add the URLs.
   base::ListValue* urls = new base::ListValue();
   root->Set(keys::kWebURLs, urls);
   for (size_t i = 0; i < web_app.urls.size(); ++i) {
-    urls->Append(Value::CreateStringValue(web_app.urls[i].spec()));
+    urls->Append(new base::StringValue(web_app.urls[i].spec()));
   }
 
   // Write the manifest.

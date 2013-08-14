@@ -253,7 +253,7 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
 
   prefs->UpdateExtensionPref(extension_id,
                              kBrowserActionVisible,
-                             Value::CreateBooleanValue(visible));
+                             new base::FundamentalValue(visible));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_BROWSER_ACTION_VISIBILITY_CHANGED,
       content::Source<ExtensionPrefs>(prefs),
@@ -655,28 +655,32 @@ bool ExtensionActionSetBadgeBackgroundColorFunction::RunExtensionAction() {
 }
 
 bool ExtensionActionGetTitleFunction::RunExtensionAction() {
-  SetResult(Value::CreateStringValue(extension_action_->GetTitle(tab_id_)));
+  SetResult(new base::StringValue(extension_action_->GetTitle(tab_id_)));
   return true;
 }
 
 bool ExtensionActionGetPopupFunction::RunExtensionAction() {
   SetResult(
-      Value::CreateStringValue(extension_action_->GetPopupUrl(tab_id_).spec()));
+      new base::StringValue(extension_action_->GetPopupUrl(tab_id_).spec()));
   return true;
 }
 
 bool ExtensionActionGetBadgeTextFunction::RunExtensionAction() {
-  SetResult(Value::CreateStringValue(extension_action_->GetBadgeText(tab_id_)));
+  SetResult(new base::StringValue(extension_action_->GetBadgeText(tab_id_)));
   return true;
 }
 
 bool ExtensionActionGetBadgeBackgroundColorFunction::RunExtensionAction() {
   base::ListValue* list = new base::ListValue();
   SkColor color = extension_action_->GetBadgeBackgroundColor(tab_id_);
-  list->Append(Value::CreateIntegerValue(SkColorGetR(color)));
-  list->Append(Value::CreateIntegerValue(SkColorGetG(color)));
-  list->Append(Value::CreateIntegerValue(SkColorGetB(color)));
-  list->Append(Value::CreateIntegerValue(SkColorGetA(color)));
+  list->Append(
+      new base::FundamentalValue(static_cast<int>(SkColorGetR(color))));
+  list->Append(
+      new base::FundamentalValue(static_cast<int>(SkColorGetG(color))));
+  list->Append(
+      new base::FundamentalValue(static_cast<int>(SkColorGetB(color))));
+  list->Append(
+      new base::FundamentalValue(static_cast<int>(SkColorGetA(color))));
   SetResult(list);
   return true;
 }

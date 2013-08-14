@@ -505,7 +505,7 @@ void BluetoothWriteFunction::Work() {
   success_ = socket_->Send(drainable_io_buffer.get());
   if (success_) {
     if (drainable_io_buffer->BytesConsumed() > 0)
-      SetResult(base::Value::CreateIntegerValue(
+      SetResult(new base::FundamentalValue(
           drainable_io_buffer->BytesConsumed()));
     else
       results_.reset();

@@ -23,7 +23,7 @@ const char kPref4[] = "path4";
 }  // namespace
 
 static Value* CreateVal(const char* str) {
-  return Value::CreateStringValue(str);
+  return new base::StringValue(str);
 }
 
 static base::Time CreateTime(int64 t) {

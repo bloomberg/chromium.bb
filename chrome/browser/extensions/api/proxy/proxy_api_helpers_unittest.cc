@@ -204,8 +204,8 @@ TEST(ExtensionProxyApiHelpers, GetBypassListFromExtensionPref) {
   EXPECT_FALSE(bad_message);
 
   base::ListValue* bypass_list = new base::ListValue;
-  bypass_list->Append(Value::CreateStringValue("host1"));
-  bypass_list->Append(Value::CreateStringValue("host2"));
+  bypass_list->Append(new base::StringValue("host1"));
+  bypass_list->Append(new base::StringValue("host2"));
   base::DictionaryValue* proxy_rules = new base::DictionaryValue;
   proxy_rules->Set(keys::kProxyConfigBypassList, bypass_list);
   proxy_config.Set(keys::kProxyConfigRules, proxy_rules);
@@ -323,9 +323,9 @@ TEST(ExtensionProxyApiHelpers, GetProxyServer) {
 TEST(ExtensionProxyApiHelpers, JoinUrlList) {
   bool bad_message = false;
   base::ListValue list;
-  list.Append(Value::CreateStringValue("s1"));
-  list.Append(Value::CreateStringValue("s2"));
-  list.Append(Value::CreateStringValue("s3"));
+  list.Append(new base::StringValue("s1"));
+  list.Append(new base::StringValue("s2"));
+  list.Append(new base::StringValue("s3"));
 
   std::string out;
   std::string error;
@@ -355,7 +355,7 @@ TEST(ExtensionProxyApiHelpers, CreateProxyRulesDict) {
   expected->Set("fallbackProxy",
                 CreateTestProxyServerDict("socks4", "proxy4", 80));
   base::ListValue* bypass_list = new base::ListValue;
-  bypass_list->Append(Value::CreateStringValue("localhost"));
+  bypass_list->Append(new base::StringValue("localhost"));
   expected->Set(keys::kProxyConfigBypassList, bypass_list);
 
   EXPECT_TRUE(Value::Equals(expected.get(), extension_pref.get()));
@@ -383,7 +383,7 @@ TEST(ExtensionProxyApiHelpers, CreateProxyRulesDictMultipleProxies) {
   expected->Set("fallbackProxy",
                 CreateTestProxyServerDict("socks4", "proxy4", 80));
   base::ListValue* bypass_list = new base::ListValue;
-  bypass_list->Append(Value::CreateStringValue("localhost"));
+  bypass_list->Append(new base::StringValue("localhost"));
   expected->Set(keys::kProxyConfigBypassList, bypass_list);
 
   EXPECT_TRUE(Value::Equals(expected.get(), extension_pref.get()));
@@ -421,9 +421,9 @@ TEST(ExtensionProxyApiHelpers, CreatePacScriptDictWidthData) {
 
 TEST(ExtensionProxyApiHelpers, TokenizeToStringList) {
   base::ListValue expected;
-  expected.Append(Value::CreateStringValue("s1"));
-  expected.Append(Value::CreateStringValue("s2"));
-  expected.Append(Value::CreateStringValue("s3"));
+  expected.Append(new base::StringValue("s1"));
+  expected.Append(new base::StringValue("s2"));
+  expected.Append(new base::StringValue("s3"));
 
   scoped_ptr<base::ListValue> out(TokenizeToStringList("s1;s2;s3", ";"));
   EXPECT_TRUE(Value::Equals(&expected, out.get()));

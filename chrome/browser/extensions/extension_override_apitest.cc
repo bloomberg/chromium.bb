@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, ShouldCleanUpDuplicateEntries) {
   // the file already contains dupes when an extension is loaded.
   base::ListValue* list = new base::ListValue();
   for (size_t i = 0; i < 3; ++i)
-    list->Append(Value::CreateStringValue("http://www.google.com/"));
+    list->Append(new base::StringValue("http://www.google.com/"));
 
   {
     DictionaryPrefUpdate update(browser()->profile()->GetPrefs(),

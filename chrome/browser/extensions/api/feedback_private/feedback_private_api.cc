@@ -71,7 +71,7 @@ bool FeedbackPrivateGetUserEmailFunction::RunImpl() {
       FeedbackPrivateAPI::GetFactoryInstance()->GetForProfile(
           profile())->GetService();
   DCHECK(service);
-  SetResult(base::Value::CreateStringValue(service->GetUserEmail()));
+  SetResult(new base::StringValue(service->GetUserEmail()));
   return true;
 }
 

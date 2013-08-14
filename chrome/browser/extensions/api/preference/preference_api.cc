@@ -139,7 +139,7 @@ class InvertBooleanTransformer : public PrefTransformerInterface {
     bool bool_value = false;
     bool result = value->GetAsBoolean(&bool_value);
     DCHECK(result);
-    return Value::CreateBooleanValue(!bool_value);
+    return new base::FundamentalValue(!bool_value);
   }
 };
 

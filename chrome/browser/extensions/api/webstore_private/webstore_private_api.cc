@@ -357,34 +357,34 @@ void WebstorePrivateBeginInstallWithManifest3Function::SetResultCode(
     ResultCode code) {
   switch (code) {
     case ERROR_NONE:
-      SetResult(Value::CreateStringValue(std::string()));
+      SetResult(new base::StringValue(std::string()));
       break;
     case UNKNOWN_ERROR:
-      SetResult(Value::CreateStringValue("unknown_error"));
+      SetResult(new base::StringValue("unknown_error"));
       break;
     case USER_CANCELLED:
-      SetResult(Value::CreateStringValue("user_cancelled"));
+      SetResult(new base::StringValue("user_cancelled"));
       break;
     case MANIFEST_ERROR:
-      SetResult(Value::CreateStringValue("manifest_error"));
+      SetResult(new base::StringValue("manifest_error"));
       break;
     case ICON_ERROR:
-      SetResult(Value::CreateStringValue("icon_error"));
+      SetResult(new base::StringValue("icon_error"));
       break;
     case INVALID_ID:
-      SetResult(Value::CreateStringValue("invalid_id"));
+      SetResult(new base::StringValue("invalid_id"));
       break;
     case PERMISSION_DENIED:
-      SetResult(Value::CreateStringValue("permission_denied"));
+      SetResult(new base::StringValue("permission_denied"));
       break;
     case INVALID_ICON_URL:
-      SetResult(Value::CreateStringValue("invalid_icon_url"));
+      SetResult(new base::StringValue("invalid_icon_url"));
       break;
     case SIGNIN_FAILED:
-      SetResult(Value::CreateStringValue("signin_failed"));
+      SetResult(new base::StringValue("signin_failed"));
       break;
     case ALREADY_INSTALLED:
-      SetResult(Value::CreateStringValue("already_installed"));
+      SetResult(new base::StringValue("already_installed"));
       break;
     default:
       CHECK(false);
@@ -640,7 +640,7 @@ bool WebstorePrivateGetBrowserLoginFunction::RunImpl() {
 }
 
 bool WebstorePrivateGetStoreLoginFunction::RunImpl() {
-  SetResult(Value::CreateStringValue(GetWebstoreLogin(profile_)));
+  SetResult(new base::StringValue(GetWebstoreLogin(profile_)));
   return true;
 }
 
@@ -662,7 +662,7 @@ WebstorePrivateGetWebGLStatusFunction::
     ~WebstorePrivateGetWebGLStatusFunction() {}
 
 void WebstorePrivateGetWebGLStatusFunction::CreateResult(bool webgl_allowed) {
-  SetResult(Value::CreateStringValue(
+  SetResult(new base::StringValue(
       webgl_allowed ? "webgl_allowed" : "webgl_blocked"));
 }
 
@@ -678,14 +678,14 @@ void WebstorePrivateGetWebGLStatusFunction::
 }
 
 bool WebstorePrivateGetIsLauncherEnabledFunction::RunImpl() {
-  SetResult(Value::CreateBooleanValue(apps::IsAppLauncherEnabled()));
+  SetResult(new base::FundamentalValue(apps::IsAppLauncherEnabled()));
   SendResponse(true);
   return true;
 }
 
 bool WebstorePrivateIsInIncognitoModeFunction::RunImpl() {
   SetResult(
-      Value::CreateBooleanValue(profile_ != profile_->GetOriginalProfile()));
+      new base::FundamentalValue(profile_ != profile_->GetOriginalProfile()));
   SendResponse(true);
   return true;
 }

@@ -129,7 +129,7 @@ bool IdentityGetAuthTokenFunction::RunImpl() {
 
 void IdentityGetAuthTokenFunction::CompleteFunctionWithResult(
     const std::string& access_token) {
-  SetResult(Value::CreateStringValue(access_token));
+  SetResult(new base::StringValue(access_token));
   SendResponse(true);
   Release();  // Balanced in RunImpl.
 }
@@ -599,7 +599,7 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
 void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
     const GURL& redirect_url) {
   if (redirect_url.GetWithEmptyPath() == final_url_prefix_) {
-    SetResult(Value::CreateStringValue(redirect_url.spec()));
+    SetResult(new base::StringValue(redirect_url.spec()));
     SendResponse(true);
     Release();  // Balanced in RunImpl.
   }

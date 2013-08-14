@@ -165,24 +165,24 @@ class ExtensionSortingInitialize
         static_cast<ExtensionScopedPrefs*>(prefs());
     scoped_prefs->UpdateExtensionPref(extension1()->id(),
                                       kPrefAppLaunchIndexDeprecated,
-                                      Value::CreateIntegerValue(0));
+                                      new base::FundamentalValue(0));
     scoped_prefs->UpdateExtensionPref(extension1()->id(),
                                       kPrefPageIndexDeprecated,
-                                      Value::CreateIntegerValue(0));
+                                      new base::FundamentalValue(0));
 
     scoped_prefs->UpdateExtensionPref(extension2()->id(),
                                       kPrefAppLaunchIndexDeprecated,
-                                      Value::CreateIntegerValue(1));
+                                      new base::FundamentalValue(1));
     scoped_prefs->UpdateExtensionPref(extension2()->id(),
                                       kPrefPageIndexDeprecated,
-                                      Value::CreateIntegerValue(0));
+                                      new base::FundamentalValue(0));
 
     scoped_prefs->UpdateExtensionPref(extension3()->id(),
                                       kPrefAppLaunchIndexDeprecated,
-                                      Value::CreateIntegerValue(0));
+                                      new base::FundamentalValue(0));
     scoped_prefs->UpdateExtensionPref(extension3()->id(),
                                       kPrefPageIndexDeprecated,
-                                      Value::CreateIntegerValue(1));
+                                      new base::FundamentalValue(1));
 
     // We insert the ids in reserve order so that we have to deal with the
     // element on the 2nd page before the 1st page is seen.
@@ -281,10 +281,10 @@ class ExtensionSortingMigrateAppIndexInvalid
         static_cast<ExtensionScopedPrefs*>(prefs());
     scoped_prefs->UpdateExtensionPref(extension1()->id(),
                                       kPrefAppLaunchIndexDeprecated,
-                                      Value::CreateIntegerValue(0));
+                                      new base::FundamentalValue(0));
     scoped_prefs->UpdateExtensionPref(extension1()->id(),
                                       kPrefPageIndexDeprecated,
-                                      Value::CreateIntegerValue(-1));
+                                      new base::FundamentalValue(-1));
 
     extensions::ExtensionIdList ids;
     ids.push_back(extension1()->id());

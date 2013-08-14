@@ -127,8 +127,8 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
     return false;
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, Value::CreateStringValue(input));
-  args->Set(1, Value::CreateIntegerValue(suggest_id));
+  args->Set(0, new base::StringValue(input));
+  args->Set(1, new base::FundamentalValue(suggest_id));
 
   scoped_ptr<Event> event(new Event(events::kOnInputChanged, args.Pass()));
   event->restrict_to_profile = profile;
@@ -154,13 +154,13 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
       active_tab_permission_granter()->GrantIfRequested(extension);
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Set(0, Value::CreateStringValue(input));
+  args->Set(0, new base::StringValue(input));
   if (disposition == NEW_FOREGROUND_TAB)
-    args->Set(1, Value::CreateStringValue(kForegroundTabDisposition));
+    args->Set(1, new base::StringValue(kForegroundTabDisposition));
   else if (disposition == NEW_BACKGROUND_TAB)
-    args->Set(1, Value::CreateStringValue(kBackgroundTabDisposition));
+    args->Set(1, new base::StringValue(kBackgroundTabDisposition));
   else
-    args->Set(1, Value::CreateStringValue(kCurrentTabDisposition));
+    args->Set(1, new base::StringValue(kCurrentTabDisposition));
 
   scoped_ptr<Event> event(new Event(events::kOnInputEntered, args.Pass()));
   event->restrict_to_profile = profile;

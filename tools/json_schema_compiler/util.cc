@@ -45,19 +45,19 @@ bool GetItemFromList(const base::ListValue& from, int index,
 }
 
 void AddItemToList(const int from, base::ListValue* out) {
-  out->Append(base::Value::CreateIntegerValue(from));
+  out->Append(new base::FundamentalValue(from));
 }
 
 void AddItemToList(const bool from, base::ListValue* out) {
-  out->Append(base::Value::CreateBooleanValue(from));
+  out->Append(new base::FundamentalValue(from));
 }
 
 void AddItemToList(const double from, base::ListValue* out) {
-  out->Append(base::Value::CreateDoubleValue(from));
+  out->Append(new base::FundamentalValue(from));
 }
 
 void AddItemToList(const std::string& from, base::ListValue* out) {
-  out->Append(base::Value::CreateStringValue(from));
+  out->Append(new base::StringValue(from));
 }
 
 void AddItemToList(const linked_ptr<base::Value>& from,

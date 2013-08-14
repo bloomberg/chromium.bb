@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_P(ExtensionNetworkingPrivateApiTest,
   policy.Set(policy::key::kOpenNetworkConfiguration,
              policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER,
-             Value::CreateStringValue(user_policy_blob),
+             new base::StringValue(user_policy_blob),
              NULL);
   provider_.UpdateChromePolicy(policy);
 

@@ -169,9 +169,9 @@ class ExtensionPrefsGrantedPermissions : public ExtensionPrefsTest {
         permission_info->CreateAPIPermission());
     {
       scoped_ptr<base::ListValue> value(new base::ListValue());
-      value->Append(Value::CreateStringValue("tcp-connect:*.example.com:80"));
-      value->Append(Value::CreateStringValue("udp-bind::8080"));
-      value->Append(Value::CreateStringValue("udp-send-to::8888"));
+      value->Append(new base::StringValue("tcp-connect:*.example.com:80"));
+      value->Append(new base::StringValue("udp-bind::8080"));
+      value->Append(new base::StringValue("udp-send-to::8888"));
       if (!permission->FromValue(value.get()))
         NOTREACHED();
     }

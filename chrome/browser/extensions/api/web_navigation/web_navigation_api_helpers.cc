@@ -102,13 +102,13 @@ void DispatchOnCommitted(const char* event_name,
       content::PageTransitionGetCoreTransitionString(transition_type));
   base::ListValue* qualifiers = new base::ListValue();
   if (transition_type & content::PAGE_TRANSITION_CLIENT_REDIRECT)
-    qualifiers->Append(Value::CreateStringValue("client_redirect"));
+    qualifiers->Append(new base::StringValue("client_redirect"));
   if (transition_type & content::PAGE_TRANSITION_SERVER_REDIRECT)
-    qualifiers->Append(Value::CreateStringValue("server_redirect"));
+    qualifiers->Append(new base::StringValue("server_redirect"));
   if (transition_type & content::PAGE_TRANSITION_FORWARD_BACK)
-    qualifiers->Append(Value::CreateStringValue("forward_back"));
+    qualifiers->Append(new base::StringValue("forward_back"));
   if (transition_type & content::PAGE_TRANSITION_FROM_ADDRESS_BAR)
-    qualifiers->Append(Value::CreateStringValue("from_address_bar"));
+    qualifiers->Append(new base::StringValue("from_address_bar"));
   dict->Set(keys::kTransitionQualifiersKey, qualifiers);
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);

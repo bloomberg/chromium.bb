@@ -235,7 +235,7 @@ bool StorageStorageAreaGetBytesInUseFunction::RunWithStorage(
       return false;
   }
 
-  SetResult(base::Value::CreateIntegerValue(bytes_in_use));
+  SetResult(new base::FundamentalValue(static_cast<int>(bytes_in_use)));
   return true;
 }
 

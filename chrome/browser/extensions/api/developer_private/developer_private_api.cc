@@ -250,7 +250,7 @@ bool DeveloperPrivateAutoUpdateFunction::RunImpl() {
   ExtensionUpdater* updater = GetExtensionUpdater(profile());
   if (updater)
     updater->CheckNow(ExtensionUpdater::CheckParams());
-  SetResult(Value::CreateBooleanValue(true));
+  SetResult(new base::FundamentalValue(true));
   return true;
 }
 
@@ -1095,7 +1095,7 @@ void DeveloperPrivateLoadProjectFunction::GetUnpackedExtension(
   const Extension* extension = GetExtensionByPath(extensions, path);
   bool success = true;
   if (extension) {
-    SetResult(base::Value::CreateStringValue(extension->id()));
+    SetResult(new base::StringValue(extension->id()));
   } else {
     SetError("unable to load the project");
     success = false;
@@ -1154,7 +1154,7 @@ bool DeveloperPrivateChoosePathFunction::RunImpl() {
 
 void DeveloperPrivateChoosePathFunction::FileSelected(
     const base::FilePath& path) {
-  SetResult(base::Value::CreateStringValue(
+  SetResult(new base::StringValue(
       UTF16ToUTF8(path.LossyDisplayName())));
   SendResponse(true);
   Release();

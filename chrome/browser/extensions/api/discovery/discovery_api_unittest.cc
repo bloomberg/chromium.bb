@@ -58,7 +58,7 @@ std::string SuggestParamsToJSON(const std::string& link_url,
 std::string RemoveSuggestionParamsToJSON(const std::string& link_url) {
   std::string result;
   base::ListValue params;
-  params.Append(base::Value::CreateStringValue(link_url));
+  params.Append(new base::StringValue(link_url));
   base::JSONWriter::Write(&params, &result);
   return result;
 }

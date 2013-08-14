@@ -303,7 +303,7 @@ bool FontSettingsSetFontFunction::RunImpl() {
       extension_id(),
       pref_path.c_str(),
       kExtensionPrefsScopeRegular,
-      Value::CreateStringValue(params->details.font_id));
+      new base::StringValue(params->details.font_id));
   return true;
 }
 
@@ -343,8 +343,8 @@ bool FontSettingsGetFontListFunction::CopyFontsToResult(
     }
 
     base::DictionaryValue* font_name = new base::DictionaryValue();
-    font_name->Set(kFontIdKey, Value::CreateStringValue(name));
-    font_name->Set(kDisplayNameKey, Value::CreateStringValue(localized_name));
+    font_name->Set(kFontIdKey, new base::StringValue(name));
+    font_name->Set(kDisplayNameKey, new base::StringValue(localized_name));
     result->Append(font_name);
   }
 

@@ -87,7 +87,7 @@ void SystemStorageEjectDeviceFunction::HandleResponse(
       result = api::system_storage::EJECT_DEVICE_RESULT_CODE_FAILURE;
   }
 
-  SetResult(base::StringValue::CreateStringValue(
+  SetResult(new base::StringValue(
       api::system_storage::ToString(result)));
   SendResponse(true);
 }

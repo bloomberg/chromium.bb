@@ -68,7 +68,7 @@ void MockExtensionService::AddExtensionWithIdAndPermissions(
   scoped_ptr<base::ListValue> permissions(new base::ListValue());
   for (std::set<std::string>::const_iterator it = permissions_set.begin();
       it != permissions_set.end(); ++it) {
-    permissions->Append(Value::CreateStringValue(*it));
+    permissions->Append(new base::StringValue(*it));
   }
   manifest.Set("permissions", permissions.release());
 

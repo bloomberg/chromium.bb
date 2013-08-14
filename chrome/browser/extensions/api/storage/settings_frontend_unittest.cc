@@ -35,7 +35,7 @@ scoped_ptr<Value> CreateKilobyte() {
   for (int i = 0; i < 1024; ++i) {
     kilobyte_string += "a";
   }
-  return scoped_ptr<Value>(Value::CreateStringValue(kilobyte_string));
+  return scoped_ptr<Value>(new base::StringValue(kilobyte_string));
 }
 
 // Creates a megabyte of data.
@@ -47,7 +47,7 @@ scoped_ptr<Value> CreateMegabyte() {
   return scoped_ptr<Value>(megabyte);
 }
 
-}
+}  // namespace
 
 class ExtensionSettingsFrontendTest : public testing::Test {
  public:

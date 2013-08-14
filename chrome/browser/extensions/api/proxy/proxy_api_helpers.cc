@@ -490,7 +490,7 @@ base::ListValue* TokenizeToStringList(const std::string& in,
   base::ListValue* out = new base::ListValue;
   base::StringTokenizer entries(in, delims);
   while (entries.GetNext())
-    out->Append(Value::CreateStringValue(entries.token()));
+    out->Append(new base::StringValue(entries.token()));
   return out;
 }
 

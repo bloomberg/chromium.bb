@@ -216,15 +216,15 @@ TEST_F(MenuManagerTest, PopulateFromValue) {
 
   base::ListValue* document_url_patterns(new base::ListValue());
   document_url_patterns->Append(
-      Value::CreateStringValue("http://www.google.com/*"));
+      new base::StringValue("http://www.google.com/*"));
   document_url_patterns->Append(
-      Value::CreateStringValue("http://www.reddit.com/*"));
+      new base::StringValue("http://www.reddit.com/*"));
 
   base::ListValue* target_url_patterns(new base::ListValue());
   target_url_patterns->Append(
-      Value::CreateStringValue("http://www.yahoo.com/*"));
+      new base::StringValue("http://www.yahoo.com/*"));
   target_url_patterns->Append(
-      Value::CreateStringValue("http://www.facebook.com/*"));
+      new base::StringValue("http://www.facebook.com/*"));
 
   base::DictionaryValue value;
   value.SetBoolean("incognito", incognito);

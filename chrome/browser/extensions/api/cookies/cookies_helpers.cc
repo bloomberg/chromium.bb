@@ -151,7 +151,7 @@ void AppendToTabIdList(Browser* browser, base::ListValue* tab_ids) {
   DCHECK(tab_ids);
   TabStripModel* tab_strip = browser->tab_strip_model();
   for (int i = 0; i < tab_strip->count(); ++i) {
-    tab_ids->Append(Value::CreateIntegerValue(
+    tab_ids->Append(new base::FundamentalValue(
         ExtensionTabUtil::GetTabId(tab_strip->GetWebContentsAt(i))));
   }
 }
@@ -206,4 +206,4 @@ bool MatchFilter::MatchesDomain(const std::string& domain) {
 }
 
 }  // namespace cookies_helpers
-}  // namespace extension
+}  // namespace extensions

@@ -149,7 +149,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   virtual void Close(bool by_user) OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
-    args->Append(Value::CreateBooleanValue(by_user));
+    args->Append(new base::FundamentalValue(by_user));
     SendEvent(event_names::kOnNotificationClosed, args.Pass());
   }
 
@@ -165,7 +165,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   virtual void ButtonClick(int index) OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
-    args->Append(Value::CreateIntegerValue(index));
+    args->Append(new base::FundamentalValue(index));
     SendEvent(event_names::kOnNotificationButtonClicked, args.Pass());
   }
 
@@ -202,7 +202,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
 
   scoped_ptr<base::ListValue> CreateBaseEventArgs() {
     scoped_ptr<base::ListValue> args(new base::ListValue());
-    args->Append(Value::CreateStringValue(id_));
+    args->Append(new base::StringValue(id_));
     return args.Pass();
   }
 
@@ -491,7 +491,7 @@ bool NotificationsCreateFunction::RunNotificationsApi() {
   else
     notification_id = kNotificationPrefix + base::Uint64ToString(next_id_++);
 
-  SetResult(Value::CreateStringValue(notification_id));
+  SetResult(new base::StringValue(notification_id));
 
   // TODO(dewittj): Add more human-readable error strings if this fails.
   if (!CreateNotification(notification_id, &params_->options))
@@ -518,7 +518,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
       g_browser_process->notification_ui_manager()->FindById(
           CreateScopedIdentifier(extension_->id(), params_->notification_id));
   if (!matched_notification) {
-    SetResult(Value::CreateBooleanValue(false));
+    SetResult(new base::FundamentalValue(false));
     SendResponse(true);
     return true;
   }
@@ -530,7 +530,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   Notification notification = *matched_notification;
   bool could_update_notification = UpdateNotification(
       params_->notification_id, &params_->options, &notification);
-  SetResult(Value::CreateBooleanValue(could_update_notification));
+  SetResult(new base::FundamentalValue(could_update_notification));
   if (!could_update_notification)
     return false;
 
@@ -553,7 +553,7 @@ bool NotificationsClearFunction::RunNotificationsApi() {
   bool cancel_result = g_browser_process->notification_ui_manager()->CancelById(
       CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
-  SetResult(Value::CreateBooleanValue(cancel_result));
+  SetResult(new base::FundamentalValue(cancel_result));
   SendResponse(true);
 
   return true;

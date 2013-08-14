@@ -307,7 +307,7 @@ TEST_F(ExtensionSettingsSyncTest, InSyncDataDoesNotInvokeSync) {
 
   StringValue value1("fooValue");
   ListValue value2;
-  value2.Append(StringValue::CreateStringValue("barValue"));
+  value2.Append(new base::StringValue("barValue"));
 
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
   ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
@@ -357,7 +357,7 @@ TEST_F(ExtensionSettingsSyncTest, LocalDataWithNoSyncDataIsPushedToSync) {
 
   StringValue value1("fooValue");
   ListValue value2;
-  value2.Append(StringValue::CreateStringValue("barValue"));
+  value2.Append(new base::StringValue("barValue"));
 
   ValueStore* storage1 = AddExtensionAndGetStorage("s1", type);
   ValueStore* storage2 = AddExtensionAndGetStorage("s2", type);
@@ -389,7 +389,7 @@ TEST_F(ExtensionSettingsSyncTest, AnySyncDataOverwritesLocalData) {
 
   StringValue value1("fooValue");
   ListValue value2;
-  value2.Append(StringValue::CreateStringValue("barValue"));
+  value2.Append(new base::StringValue("barValue"));
 
   // Maintain dictionaries mirrored to the expected values of the settings in
   // each storage area.
@@ -429,7 +429,7 @@ TEST_F(ExtensionSettingsSyncTest, ProcessSyncChanges) {
 
   StringValue value1("fooValue");
   ListValue value2;
-  value2.Append(StringValue::CreateStringValue("barValue"));
+  value2.Append(new base::StringValue("barValue"));
 
   // Maintain dictionaries mirrored to the expected values of the settings in
   // each storage area.
@@ -502,7 +502,7 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 
   StringValue value1("fooValue");
   ListValue value2;
-  value2.Append(StringValue::CreateStringValue("barValue"));
+  value2.Append(new base::StringValue("barValue"));
 
   // Make storage1/2 initialised from local data, storage3/4 initialised from
   // sync.
@@ -641,7 +641,7 @@ TEST_F(ExtensionSettingsSyncTest, PushToSync) {
 TEST_F(ExtensionSettingsSyncTest, ExtensionAndAppSettingsSyncSeparately) {
   StringValue value1("fooValue");
   ListValue value2;
-  value2.Append(StringValue::CreateStringValue("barValue"));
+  value2.Append(new base::StringValue("barValue"));
 
   // storage1 is an extension, storage2 is an app.
   ValueStore* storage1 = AddExtensionAndGetStorage(
@@ -1390,7 +1390,7 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
 
   {
     syncer::SyncDataList sync_data_list;
-    scoped_ptr<Value> string_value(Value::CreateStringValue("value"));
+    scoped_ptr<Value> string_value(new base::StringValue("value"));
     sync_data_list.push_back(settings_sync_util::CreateData(
         "ext", "key.with.dot", *string_value, model_type));
 
@@ -1410,13 +1410,13 @@ TEST_F(ExtensionSettingsSyncTest, Dots) {
     DictionaryValue expected_data;
     expected_data.SetWithoutPathExpansion(
         "key.with.dot",
-        Value::CreateStringValue("value"));
+        new base::StringValue("value"));
     EXPECT_TRUE(Value::Equals(&expected_data, data->settings().get()));
   }
 
   // Test dots in keys going to sync.
   {
-    scoped_ptr<Value> string_value(Value::CreateStringValue("spot"));
+    scoped_ptr<Value> string_value(new base::StringValue("spot"));
     storage->Set(DEFAULTS, "key.with.spot", *string_value);
 
     ASSERT_EQ(1u, sync_processor_->changes().size());

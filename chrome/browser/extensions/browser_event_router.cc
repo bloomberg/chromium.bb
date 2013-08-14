@@ -201,12 +201,12 @@ void BrowserEventRouter::TabInsertedAt(WebContents* contents,
   }
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateIntegerValue(tab_id));
+  args->Append(new base::FundamentalValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->Set(tab_keys::kNewWindowIdKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kNewWindowIdKey, new base::FundamentalValue(
       ExtensionTabUtil::GetWindowIdOfTab(contents)));
-  object_args->Set(tab_keys::kNewPositionKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kNewPositionKey, new base::FundamentalValue(
       index));
   args->Append(object_args);
 
@@ -222,12 +222,13 @@ void BrowserEventRouter::TabDetachedAt(WebContents* contents, int index) {
   }
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
+  args->Append(
+      new base::FundamentalValue(ExtensionTabUtil::GetTabId(contents)));
 
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->Set(tab_keys::kOldWindowIdKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kOldWindowIdKey, new base::FundamentalValue(
       ExtensionTabUtil::GetWindowIdOfTab(contents)));
-  object_args->Set(tab_keys::kOldPositionKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kOldPositionKey, new base::FundamentalValue(
       index));
   args->Append(object_args);
 
@@ -242,7 +243,7 @@ void BrowserEventRouter::TabClosingAt(TabStripModel* tab_strip_model,
   int tab_id = ExtensionTabUtil::GetTabId(contents);
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateIntegerValue(tab_id));
+  args->Append(new base::FundamentalValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
   object_args->SetInteger(tab_keys::kWindowIdKey,
@@ -267,10 +268,10 @@ void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
                                           int reason) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   int tab_id = ExtensionTabUtil::GetTabId(new_contents);
-  args->Append(Value::CreateIntegerValue(tab_id));
+  args->Append(new base::FundamentalValue(tab_id));
 
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kWindowIdKey, new base::FundamentalValue(
       ExtensionTabUtil::GetWindowIdOfTab(new_contents)));
   args->Append(object_args);
 
@@ -289,7 +290,7 @@ void BrowserEventRouter::ActiveTabChanged(WebContents* old_contents,
 
   // The onActivated event takes one argument: {windowId, tabId}.
   args->Remove(0, NULL);
-  object_args->Set(tab_keys::kTabIdKey, Value::CreateIntegerValue(tab_id));
+  object_args->Set(tab_keys::kTabIdKey, new base::FundamentalValue(tab_id));
   DispatchEvent(profile, events::kOnTabActivated, args.Pass(), gesture);
 }
 
@@ -306,13 +307,13 @@ void BrowserEventRouter::TabSelectionChanged(
     if (!contents)
       break;
     int tab_id = ExtensionTabUtil::GetTabId(contents);
-    all->Append(Value::CreateIntegerValue(tab_id));
+    all->Append(new base::FundamentalValue(tab_id));
   }
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   DictionaryValue* select_info = new DictionaryValue();
 
-  select_info->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
+  select_info->Set(tab_keys::kWindowIdKey, new base::FundamentalValue(
       ExtensionTabUtil::GetWindowIdOfTabStripModel(tab_strip_model)));
 
   select_info->Set(tab_keys::kTabIdsKey, all);
@@ -331,14 +332,15 @@ void BrowserEventRouter::TabMoved(WebContents* contents,
                                   int from_index,
                                   int to_index) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
+  args->Append(
+      new base::FundamentalValue(ExtensionTabUtil::GetTabId(contents)));
 
   DictionaryValue* object_args = new DictionaryValue();
-  object_args->Set(tab_keys::kWindowIdKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kWindowIdKey, new base::FundamentalValue(
       ExtensionTabUtil::GetWindowIdOfTab(contents)));
-  object_args->Set(tab_keys::kFromIndexKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kFromIndexKey, new base::FundamentalValue(
       from_index));
-  object_args->Set(tab_keys::kToIndexKey, Value::CreateIntegerValue(
+  object_args->Set(tab_keys::kToIndexKey, new base::FundamentalValue(
       to_index));
   args->Append(object_args);
 
@@ -415,7 +417,7 @@ void BrowserEventRouter::DispatchSimpleBrowserEvent(
     return;
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateIntegerValue(window_id));
+  args->Append(new base::FundamentalValue(window_id));
 
   DispatchEvent(profile, event_name, args.Pass(),
                 EventRouter::USER_GESTURE_UNKNOWN);
@@ -518,8 +520,8 @@ void BrowserEventRouter::TabReplacedAt(TabStripModel* tab_strip_model,
   const int new_tab_id = ExtensionTabUtil::GetTabId(new_contents);
   const int old_tab_id = ExtensionTabUtil::GetTabId(old_contents);
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateIntegerValue(new_tab_id));
-  args->Append(Value::CreateIntegerValue(old_tab_id));
+  args->Append(new base::FundamentalValue(new_tab_id));
+  args->Append(new base::FundamentalValue(old_tab_id));
 
   DispatchEvent(Profile::FromBrowserContext(new_contents->GetBrowserContext()),
                 events::kOnTabReplaced,
@@ -560,13 +562,13 @@ void BrowserEventRouter::DispatchOldPageActionEvent(
     const std::string& url,
     int button) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateStringValue(page_action_id));
+  args->Append(new base::StringValue(page_action_id));
 
   DictionaryValue* data = new DictionaryValue();
-  data->Set(tab_keys::kTabIdKey, Value::CreateIntegerValue(tab_id));
-  data->Set(tab_keys::kTabUrlKey, Value::CreateStringValue(url));
+  data->Set(tab_keys::kTabIdKey, new base::FundamentalValue(tab_id));
+  data->Set(tab_keys::kTabUrlKey, new base::StringValue(url));
   data->Set(page_actions_keys::kButtonKey,
-            Value::CreateIntegerValue(button));
+            new base::FundamentalValue(button));
   args->Append(data);
 
   DispatchEventToExtension(profile, extension_id, "pageActions", args.Pass(),

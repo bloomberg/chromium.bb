@@ -1101,7 +1101,7 @@ class ExtensionServiceTest
     msg += " = ";
     msg += base::IntToString(value);
 
-    SetPref(extension_id, pref_path, Value::CreateIntegerValue(value), msg);
+    SetPref(extension_id, pref_path, new base::FundamentalValue(value), msg);
   }
 
   void SetPrefBool(const std::string& extension_id,
@@ -1112,7 +1112,7 @@ class ExtensionServiceTest
     msg += " = ";
     msg += (value ? "true" : "false");
 
-    SetPref(extension_id, pref_path, Value::CreateBooleanValue(value), msg);
+    SetPref(extension_id, pref_path, new base::FundamentalValue(value), msg);
   }
 
   void ClearPref(const std::string& extension_id,
@@ -1138,7 +1138,7 @@ class ExtensionServiceTest
     ListValue* list_value = new ListValue();
     for (std::set<std::string>::const_iterator iter = value.begin();
          iter != value.end(); ++iter)
-      list_value->Append(Value::CreateStringValue(*iter));
+      list_value->Append(new base::StringValue(*iter));
 
     SetPref(extension_id, pref_path, list_value, msg);
   }
@@ -2103,7 +2103,7 @@ TEST_F(ExtensionServiceTest, GrantedAPIAndHostPermissions) {
 
   ListValue* api_permissions = new ListValue();
   api_permissions->Append(
-      Value::CreateStringValue("tabs"));
+      new base::StringValue("tabs"));
   SetPref(extension_id, "granted_permissions.api",
           api_permissions, "granted_permissions.api");
   SetPrefStringSet(
@@ -3355,7 +3355,7 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
 
   base::ListValue whitelist;
   PrefService* prefs = service_->extension_prefs()->pref_service();
-  whitelist.Append(base::Value::CreateStringValue(good_crx));
+  whitelist.Append(new base::StringValue(good_crx));
   prefs->Set(prefs::kExtensionInstallAllowList, whitelist);
 
   std::vector<std::string> blacklist;
@@ -3419,7 +3419,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
     ListValue* blacklist = update.Get();
-    blacklist->Append(Value::CreateStringValue("*"));
+    blacklist->Append(new base::StringValue("*"));
   }
 
   // Blacklist prevents us from installing good_crx.
@@ -3432,7 +3432,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyWillNotInstall) {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallAllowList);
     ListValue* whitelist = update.Get();
-    whitelist->Append(Value::CreateStringValue(good_crx));
+    whitelist->Append(new base::StringValue(good_crx));
   }
 
   // Ensure we can now install good_crx.
@@ -3456,7 +3456,7 @@ TEST_F(ExtensionServiceTest, BlacklistedByPolicyRemovedIfRunning) {
     ASSERT_TRUE(blacklist != NULL);
 
     // Blacklist this extension.
-    blacklist->Append(Value::CreateStringValue(good_crx));
+    blacklist->Append(new base::StringValue(good_crx));
   }
 
   // Extension should not be running now.
@@ -3473,7 +3473,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
     ListValue* blacklist = update.Get();
-    blacklist->Append(Value::CreateStringValue("*"));
+    blacklist->Append(new base::StringValue("*"));
   }
 
   // Install a component extension.
@@ -3502,7 +3502,7 @@ TEST_F(ExtensionServiceTest, ComponentExtensionWhitelisted) {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
     ListValue* blacklist = update.Get();
-    blacklist->Append(Value::CreateStringValue(good0));
+    blacklist->Append(new base::StringValue(good0));
   }
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, service_->extensions()->size());
@@ -3551,7 +3551,7 @@ TEST_F(ExtensionServiceTest, PolicyInstalledExtensionsWhitelisted) {
     ListPrefUpdate update(profile_->GetPrefs(),
                           prefs::kExtensionInstallDenyList);
     ListValue* blacklist = update.Get();
-    blacklist->Append(Value::CreateStringValue(good0));
+    blacklist->Append(new base::StringValue(good0));
   }
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(1u, service_->extensions()->size());

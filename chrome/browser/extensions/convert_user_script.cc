@@ -102,7 +102,7 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   root->SetBoolean(keys::kConvertedFromUserScript, true);
 
   base::ListValue* js_files = new base::ListValue();
-  js_files->Append(Value::CreateStringValue("script.js"));
+  js_files->Append(new base::StringValue("script.js"));
 
   // If the script provides its own match patterns, we use those. Otherwise, we
   // generate some using the include globs.
@@ -110,12 +110,12 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
   if (!script.url_patterns().is_empty()) {
     for (URLPatternSet::const_iterator i = script.url_patterns().begin();
          i != script.url_patterns().end(); ++i) {
-      matches->Append(Value::CreateStringValue(i->GetAsString()));
+      matches->Append(new base::StringValue(i->GetAsString()));
     }
   } else {
     // TODO(aa): Derive tighter matches where possible.
-    matches->Append(Value::CreateStringValue("http://*/*"));
-    matches->Append(Value::CreateStringValue("https://*/*"));
+    matches->Append(new base::StringValue("http://*/*"));
+    matches->Append(new base::StringValue("https://*/*"));
   }
 
   // Read the exclude matches, if any are present.
@@ -124,17 +124,17 @@ scoped_refptr<Extension> ConvertUserScriptToExtension(
     for (URLPatternSet::const_iterator i =
          script.exclude_url_patterns().begin();
          i != script.exclude_url_patterns().end(); ++i) {
-      exclude_matches->Append(Value::CreateStringValue(i->GetAsString()));
+      exclude_matches->Append(new base::StringValue(i->GetAsString()));
     }
   }
 
   base::ListValue* includes = new base::ListValue();
   for (size_t i = 0; i < script.globs().size(); ++i)
-    includes->Append(Value::CreateStringValue(script.globs().at(i)));
+    includes->Append(new base::StringValue(script.globs().at(i)));
 
   base::ListValue* excludes = new base::ListValue();
   for (size_t i = 0; i < script.exclude_globs().size(); ++i)
-    excludes->Append(Value::CreateStringValue(script.exclude_globs().at(i)));
+    excludes->Append(new base::StringValue(script.exclude_globs().at(i)));
 
   DictionaryValue* content_script = new DictionaryValue();
   content_script->Set(keys::kMatches, matches);

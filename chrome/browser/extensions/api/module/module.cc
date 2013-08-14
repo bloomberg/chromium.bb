@@ -41,7 +41,7 @@ bool ExtensionSetUpdateUrlDataFunction::RunImpl() {
   ExtensionPrefs::Get(profile())->UpdateExtensionPref(
       extension_id(),
       extension::kUpdateURLData,
-      base::Value::CreateStringValue(data));
+      new base::StringValue(data));
   return true;
 }
 
@@ -50,7 +50,7 @@ bool ExtensionIsAllowedIncognitoAccessFunction::RunImpl() {
       ExtensionSystem::Get(profile())->extension_service();
   const Extension* extension = GetExtension();
 
-  SetResult(Value::CreateBooleanValue(
+  SetResult(new base::FundamentalValue(
       ext_service->IsIncognitoEnabled(extension->id())));
   return true;
 }
@@ -60,7 +60,7 @@ bool ExtensionIsAllowedFileSchemeAccessFunction::RunImpl() {
       ExtensionSystem::Get(profile())->extension_service();
   const Extension* extension = GetExtension();
 
-  SetResult(Value::CreateBooleanValue(
+  SetResult(new base::FundamentalValue(
       ext_service->AllowFileAccess(extension)));
   return true;
 }

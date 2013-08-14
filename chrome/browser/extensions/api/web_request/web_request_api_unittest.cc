@@ -584,7 +584,7 @@ TEST_F(ExtensionWebRequestTest, AccessRequestBodyData) {
       &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawFileKey,
-      Value::CreateStringValue(std::string()),
+      new base::StringValue(std::string()),
       &raw);
   extensions::subtle::AppendKeyValuePair(
       keys::kRequestBodyRawBytesKey,
@@ -1165,11 +1165,11 @@ TEST(ExtensionWebRequestHelpersTest,
 
 TEST(ExtensionWebRequestHelpersTest, TestStringToCharList) {
   ListValue list_value;
-  list_value.Append(Value::CreateIntegerValue('1'));
-  list_value.Append(Value::CreateIntegerValue('2'));
-  list_value.Append(Value::CreateIntegerValue('3'));
-  list_value.Append(Value::CreateIntegerValue(0xFE));
-  list_value.Append(Value::CreateIntegerValue(0xD1));
+  list_value.Append(new base::FundamentalValue('1'));
+  list_value.Append(new base::FundamentalValue('2'));
+  list_value.Append(new base::FundamentalValue('3'));
+  list_value.Append(new base::FundamentalValue(0xFE));
+  list_value.Append(new base::FundamentalValue(0xD1));
 
   unsigned char char_value[] = {'1', '2', '3', 0xFE, 0xD1};
   std::string string_value(reinterpret_cast<char *>(char_value), 5);

@@ -67,7 +67,7 @@ bool SystemPrivateGetIncognitoModeAvailabilityFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(
       value >= 0 &&
       value < static_cast<int>(arraysize(kIncognitoModeAvailabilityStrings)));
-  SetResult(Value::CreateStringValue(kIncognitoModeAvailabilityStrings[value]));
+  SetResult(new base::StringValue(kIncognitoModeAvailabilityStrings[value]));
   return true;
 }
 

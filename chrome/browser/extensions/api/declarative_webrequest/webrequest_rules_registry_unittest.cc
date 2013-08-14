@@ -95,7 +95,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // https://www.example.com and cancels it
   linked_ptr<RulesRegistry::Rule> CreateRule1() {
     base::ListValue* scheme_http = new base::ListValue();
-    scheme_http->Append(Value::CreateStringValue("http"));
+    scheme_http->Append(new base::StringValue("http"));
     base::DictionaryValue* http_condition_dict = new base::DictionaryValue();
     http_condition_dict->Set(keys2::kSchemesKey, scheme_http);
     http_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");
@@ -105,7 +105,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
                                         keys::kRequestMatcherType);
 
     base::ListValue* scheme_https = new base::ListValue();
-    scheme_http->Append(Value::CreateStringValue("https"));
+    scheme_http->Append(new base::StringValue("https"));
     base::DictionaryValue* https_condition_dict = new base::DictionaryValue();
     https_condition_dict->Set(keys2::kSchemesKey, scheme_https);
     https_condition_dict->SetString(keys2::kHostSuffixKey, "example.com");

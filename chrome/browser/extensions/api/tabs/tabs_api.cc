@@ -1951,7 +1951,7 @@ void TabsDetectLanguageFunction::Observe(
 }
 
 void TabsDetectLanguageFunction::GotLanguage(const std::string& language) {
-  SetResult(Value::CreateStringValue(language.c_str()));
+  SetResult(new base::StringValue(language.c_str()));
   SendResponse(true);
 
   Release();  // Balanced in Run()

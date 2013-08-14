@@ -306,7 +306,7 @@ void ExtensionSorting::SetAppLaunchOrdinal(
   AddOrdinalMapping(extension_id, page_ordinal, new_app_launch_ordinal);
 
   Value* new_value = new_app_launch_ordinal.IsValid() ?
-      Value::CreateStringValue(new_app_launch_ordinal.ToInternalValue()) :
+      new base::StringValue(new_app_launch_ordinal.ToInternalValue()) :
       NULL;
 
   extension_scoped_prefs_->UpdateExtensionPref(
@@ -385,7 +385,7 @@ void ExtensionSorting::SetPageOrdinal(
   AddOrdinalMapping(extension_id, new_page_ordinal, app_launch_ordinal);
 
   Value* new_value = new_page_ordinal.IsValid() ?
-      Value::CreateStringValue(new_page_ordinal.ToInternalValue()) :
+      new base::StringValue(new_page_ordinal.ToInternalValue()) :
       NULL;
 
   extension_scoped_prefs_->UpdateExtensionPref(

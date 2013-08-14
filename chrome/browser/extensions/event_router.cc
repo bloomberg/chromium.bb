@@ -130,7 +130,7 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
   }
 
   ListValue args;
-  args.Set(0, Value::CreateStringValue(event_name));
+  args.Set(0, new base::StringValue(event_name));
   args.Set(1, event_args);
   args.Set(2, info.AsValue().release());
   ipc_sender->Send(new ExtensionMsg_MessageInvoke(

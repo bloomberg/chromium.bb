@@ -224,7 +224,7 @@ Value* NetLogModificationCallback(
       delta->modified_request_headers);
   while (modification.GetNext()) {
     std::string line = modification.name() + ": " + modification.value();
-    modified_headers->Append(Value::CreateStringValue(line));
+    modified_headers->Append(new base::StringValue(line));
   }
   dict->Set("modified_headers", modified_headers);
 
@@ -233,7 +233,7 @@ Value* NetLogModificationCallback(
            delta->deleted_request_headers.begin();
        key != delta->deleted_request_headers.end();
        ++key) {
-    deleted_headers->Append(Value::CreateStringValue(*key));
+    deleted_headers->Append(new base::StringValue(*key));
   }
   dict->Set("deleted_headers", deleted_headers);
   return dict;
@@ -249,7 +249,7 @@ base::ListValue* StringToCharList(const std::string& s) {
   base::ListValue* result = new base::ListValue;
   for (size_t i = 0, n = s.size(); i < n; ++i) {
     result->Append(
-        Value::CreateIntegerValue(
+        new base::FundamentalValue(
             *reinterpret_cast<const unsigned char*>(&s[i])));
   }
   return result;

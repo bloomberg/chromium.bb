@@ -65,7 +65,7 @@ static const char kErrorCannotClaimInterface[] = "Error claiming interface.";
 static const char kErrorCannotReleaseInterface[] = "Error releasing interface.";
 static const char kErrorCannotSetInterfaceAlternateSetting[] =
     "Error setting alternate interface setting.";
-static const char kErrorConvertDirection[] = "Invalid transfer direction.";
+static const char kErrorConvertDirection[] = "Invalid transsfer direction.";
 static const char kErrorConvertRecipient[] = "Invalid transfer recipient.";
 static const char kErrorConvertRequestType[] = "Invalid request type.";
 static const char kErrorConvertSynchronizationType[] =
@@ -1041,14 +1041,14 @@ void UsbResetDeviceFunction::OnCompleted(bool success) {
       base::Bind(&UsbResetDeviceFunction::OnError, this));
     return;
   }
-  SetResult(Value::CreateBooleanValue(true));
+  SetResult(new base::FundamentalValue(true));
   AsyncWorkCompleted();
 }
 
 void UsbResetDeviceFunction::OnError() {
   RemoveUsbDeviceResource(parameters_->device.handle);
   SetError(kErrorResetDevice);
-  SetResult(Value::CreateBooleanValue(false));
+  SetResult(new base::FundamentalValue(false));
   AsyncWorkCompleted();
 }
 

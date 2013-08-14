@@ -110,7 +110,8 @@ class MenuItem {
     }
 
     scoped_ptr<base::Value> ToValue() const {
-      return scoped_ptr<base::Value>(base::Value::CreateIntegerValue(value_));
+      return scoped_ptr<base::Value>(
+          new base::FundamentalValue(static_cast<int>(value_)));
     }
 
     bool Populate(const base::Value& value) {

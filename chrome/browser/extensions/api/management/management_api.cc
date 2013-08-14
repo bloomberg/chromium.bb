@@ -678,7 +678,7 @@ void ManagementEventRouter::Observe(
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == events::kOnExtensionUninstalled) {
-    args->Append(Value::CreateStringValue(extension->id()));
+    args->Append(new base::StringValue(extension->id()));
   } else {
     scoped_ptr<management::ExtensionInfo> info = CreateExtensionInfo(
         *extension, ExtensionSystem::Get(profile));

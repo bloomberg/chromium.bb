@@ -414,7 +414,7 @@ void MediaGalleriesPrivateEjectDeviceFunction::HandleResponse(
   if (status == chrome::StorageMonitor::EJECT_NO_SUCH_DEVICE)
     result = EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
 
-  SetResult(base::StringValue::CreateStringValue(
+  SetResult(new base::StringValue(
       api::media_galleries_private::ToString(result)));
   SendResponse(true);
 }

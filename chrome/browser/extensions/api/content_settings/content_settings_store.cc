@@ -105,7 +105,7 @@ void ContentSettingsStore::SetExtensionContentSetting(
       map->DeleteValue(primary_pattern, secondary_pattern, type, identifier);
     } else {
       map->SetValue(primary_pattern, secondary_pattern, type, identifier,
-                    base::Value::CreateIntegerValue(setting));
+                    new base::FundamentalValue(setting));
     }
   }
 

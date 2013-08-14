@@ -23,7 +23,7 @@ TEST(WebRequestUploadDataPresenterTest, ParsedData) {
 
   // Expected output.
   scoped_ptr<base::ListValue> values(new base::ListValue);
-  values->Append(base::Value::CreateStringValue("value"));
+  values->Append(new base::StringValue("value"));
   base::DictionaryValue expected_form;
   expected_form.SetWithoutPathExpansion("key.with.dots", values.release());
 
@@ -52,7 +52,7 @@ TEST(WebRequestUploadDataPresenterTest, RawData) {
       base::BinaryValue::CreateWithCopiedBuffer(block1, block1_size));
   ASSERT_TRUE(expected_a.get() != NULL);
   scoped_ptr<base::StringValue> expected_b(
-      base::Value::CreateStringValue(kFilename));
+      new base::StringValue(kFilename));
   ASSERT_TRUE(expected_b.get() != NULL);
   scoped_ptr<base::BinaryValue> expected_c(
       base::BinaryValue::CreateWithCopiedBuffer(block2, block2_size));

@@ -72,7 +72,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
 
   int window_id = window_controller->GetWindowId();
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  args->Append(Value::CreateIntegerValue(window_id));
+  args->Append(new base::FundamentalValue(window_id));
   DispatchEvent(event_names::kOnWindowRemoved, window_controller->profile(),
                 args.Pass());
 }
@@ -117,11 +117,11 @@ static void WillDispatchWindowFocusedEvent(Profile* new_active_profile,
       !extensions::ExtensionSystem::Get(profile)->extension_service()->
           CanCrossIncognito(extension)) {
     event_args->Clear();
-    event_args->Append(Value::CreateIntegerValue(
+    event_args->Append(new base::FundamentalValue(
         extension_misc::kUnknownWindowId));
   } else {
     event_args->Clear();
-    event_args->Append(Value::CreateIntegerValue(window_id));
+    event_args->Append(new base::FundamentalValue(window_id));
   }
 }
 

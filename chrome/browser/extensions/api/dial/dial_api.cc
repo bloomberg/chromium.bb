@@ -167,7 +167,7 @@ bool DialDiscoverNowFunction::Respond() {
   if (!result_)
     error_ = kDialServiceError;
 
-  SetResult(base::Value::CreateBooleanValue(result_));
+  SetResult(new base::FundamentalValue(result_));
   return true;
 }
 

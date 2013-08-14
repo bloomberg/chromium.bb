@@ -117,7 +117,7 @@ bool TestSendMessageFunction::RunImpl() {
 TestSendMessageFunction::~TestSendMessageFunction() {}
 
 void TestSendMessageFunction::Reply(const std::string& message) {
-  SetResult(Value::CreateStringValue(message));
+  SetResult(new base::StringValue(message));
   SendResponse(true);
   Release();  // balanced in RunImpl
 }

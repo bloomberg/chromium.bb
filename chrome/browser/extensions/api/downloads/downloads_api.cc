@@ -1043,7 +1043,7 @@ void DownloadsDownloadFunction::OnStarted(
   VLOG(1) << __FUNCTION__ << " " << item << " " << error;
   if (item) {
     DCHECK_EQ(net::OK, error);
-    SetResult(base::Value::CreateIntegerValue(item->GetId()));
+    SetResult(new base::FundamentalValue(static_cast<int>(item->GetId())));
     if (!creator_suggested_filename.empty()) {
       ExtensionDownloadsEventRouterData* data =
           ExtensionDownloadsEventRouterData::Get(item);
@@ -1187,7 +1187,8 @@ bool DownloadsEraseFunction::RunImpl() {
   base::ListValue* json_results = new base::ListValue();
   for (DownloadManager::DownloadVector::const_iterator it = results.begin();
        it != results.end(); ++it) {
-    json_results->Append(base::Value::CreateIntegerValue((*it)->GetId()));
+    json_results->Append(
+        new base::FundamentalValue(static_cast<int>((*it)->GetId())));
     (*it)->Remove();
   }
   SetResult(json_results);
@@ -1479,7 +1480,7 @@ void DownloadsGetFileIconFunction::OnIconURLExtracted(const std::string& url) {
     return;
   }
   RecordApiFunctions(DOWNLOADS_FUNCTION_GET_FILE_ICON);
-  SetResult(base::Value::CreateStringValue(url));
+  SetResult(new base::StringValue(url));
   SendResponse(true);
 }
 
@@ -1819,7 +1820,8 @@ void ExtensionDownloadsEventRouter::OnDownloadRemoved(
   DispatchEvent(events::kOnDownloadErased,
                 true,
                 extensions::Event::WillDispatchCallback(),
-                base::Value::CreateIntegerValue(download_item->GetId()));
+                new base::FundamentalValue(
+                    static_cast<int>(download_item->GetId())));
 }
 
 void ExtensionDownloadsEventRouter::DispatchEvent(

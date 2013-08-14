@@ -43,7 +43,7 @@ std::string GetPlatformKeybindingKeyForAccelerator(
 void SetInitialBindingsHaveBeenAssigned(
     ExtensionPrefs* prefs, const std::string& extension_id) {
   prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
-                             base::Value::CreateBooleanValue(true));
+                             new base::FundamentalValue(true));
 }
 
 bool InitialBindingsHaveBeenAssigned(

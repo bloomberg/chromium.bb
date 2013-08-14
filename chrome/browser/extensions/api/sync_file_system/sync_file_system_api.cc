@@ -99,12 +99,12 @@ void SyncFileSystemDeleteFileSystemFunction::DidDeleteFileSystem(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error != base::PLATFORM_FILE_OK) {
     error_ = base::StringPrintf(kFileError, static_cast<int>(error));
-    SetResult(base::Value::CreateBooleanValue(false));
+    SetResult(new base::FundamentalValue(false));
     SendResponse(false);
     return;
   }
 
-  SetResult(base::Value::CreateBooleanValue(true));
+  SetResult(new base::FundamentalValue(true));
   SendResponse(true);
 }
 
@@ -380,7 +380,7 @@ bool SyncFileSystemGetConflictResolutionPolicyFunction::RunImpl() {
   api::sync_file_system::ConflictResolutionPolicy policy =
       ConflictResolutionPolicyToExtensionEnum(
           service->GetConflictResolutionPolicy());
-  SetResult(Value::CreateStringValue(
+  SetResult(new base::StringValue(
           api::sync_file_system::ToString(policy)));
   return true;
 }

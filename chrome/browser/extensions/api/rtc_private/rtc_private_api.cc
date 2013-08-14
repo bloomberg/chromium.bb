@@ -67,7 +67,7 @@ void GetContactIntentData(const Contact& contact,
   dict->Set(kPhoneIntentField, phone_list);
   for (int i = 0; i < contact.phone_numbers_size(); i++) {
     const Contact_PhoneNumber& phone_number = contact.phone_numbers(i);
-    StringValue* value = Value::CreateStringValue(phone_number.number());
+    StringValue* value = new base::StringValue(phone_number.number());
     if (phone_number.primary())
       CHECK(phone_list->Insert(0, value));
     else
@@ -78,7 +78,7 @@ void GetContactIntentData(const Contact& contact,
   dict->Set(kEmailIntentField, email_list);
   for (int i = 0; i < contact.email_addresses_size(); i++) {
     const Contact_EmailAddress& email_address = contact.email_addresses(i);
-    StringValue* value = Value::CreateStringValue(email_address.address());
+    StringValue* value = new base::StringValue(email_address.address());
     if (email_address.primary())
       CHECK(email_list->Insert(0, value));
     else

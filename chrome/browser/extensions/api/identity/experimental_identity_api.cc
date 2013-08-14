@@ -102,7 +102,7 @@ bool ExperimentalIdentityGetAuthTokenFunction::RunImpl() {
 
 void ExperimentalIdentityGetAuthTokenFunction::CompleteFunctionWithResult(
     const std::string& access_token) {
-  SetResult(Value::CreateStringValue(access_token));
+  SetResult(new base::StringValue(access_token));
   SendResponse(true);
   Release();  // Balanced in RunImpl.
 }
@@ -385,7 +385,7 @@ void ExperimentalIdentityLaunchWebAuthFlowFunction::OnAuthFlowFailure(
 void ExperimentalIdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
     const GURL& redirect_url) {
   if (IsFinalRedirectURL(redirect_url)) {
-    SetResult(Value::CreateStringValue(redirect_url.spec()));
+    SetResult(new base::StringValue(redirect_url.spec()));
     SendResponse(true);
     Release();  // Balanced in RunImpl.
   }

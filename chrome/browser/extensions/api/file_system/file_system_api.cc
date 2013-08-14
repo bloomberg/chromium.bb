@@ -490,7 +490,7 @@ bool FileSystemGetDisplayPathFunction::RunImpl() {
     return false;
 
   file_path = PrettifyPath(file_path);
-  SetResult(base::Value::CreateStringValue(file_path.value()));
+  SetResult(new base::StringValue(file_path.value()));
   return true;
 }
 
@@ -613,7 +613,7 @@ bool FileSystemIsWritableEntryFunction::RunImpl() {
   bool is_writable = policy->CanReadWriteFileSystem(renderer_id,
                                                     filesystem_id);
 
-  SetResult(base::Value::CreateBooleanValue(is_writable));
+  SetResult(new base::FundamentalValue(is_writable));
   return true;
 }
 
