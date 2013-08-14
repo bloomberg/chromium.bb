@@ -16,7 +16,7 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
-          '../tools/swarm_client/googletest/run_test_cases.py',
+          '../tools/swarming_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
@@ -29,8 +29,8 @@
       'variables': {
         'isolate_dependency_tracked': [
           '../testing/test_env.py',
-          '../tools/swarm_client/run_isolated.py',
-          '../tools/swarm_client/googletest/run_test_cases.py',
+          '../tools/swarming_client/run_isolated.py',
+          '../tools/swarming_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },
@@ -39,7 +39,7 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
-          '../tools/swarm_client/googletest/run_test_cases.py',
+          '../tools/swarming_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
         ],
       },

@@ -8,7 +8,7 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
-          '../tools/swarm_client/googletest/run_test_cases.py',
+          '../tools/swarming_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [
@@ -45,8 +45,8 @@
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
         'isolate_dependency_tracked': [
-          '../tools/swarm_client/run_isolated.py',
-          '../tools/swarm_client/googletest/run_test_cases.py',
+          '../tools/swarming_client/run_isolated.py',
+          '../tools/swarming_client/googletest/run_test_cases.py',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/pyproto/',
@@ -56,7 +56,7 @@
     ['OS=="mac"', {
       'variables': {
         'command': [
-          '../tools/swarm_client/googletest/run_test_cases.py',
+          '../tools/swarming_client/googletest/run_test_cases.py',
           '<(PRODUCT_DIR)/sync_integration_tests<(EXECUTABLE_SUFFIX)',
         ],
         'isolate_dependency_tracked': [

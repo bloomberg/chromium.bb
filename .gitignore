@@ -304,7 +304,7 @@ v8.log
 /tools/page_cycler/acid3
 /tools/perf/data
 /tools/perf/results.html
-/tools/swarm_client
+/tools/swarming_client
 /tools/tryserver
 /tools/win/link_limiter/build
 /ui/surface/surface.xml
