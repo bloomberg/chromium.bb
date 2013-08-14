@@ -228,7 +228,7 @@ def CheckChangeHasNoCrAndHasOnlyOneEol(input_api, output_api,
 
 def _ReportErrorFileAndLine(filename, line_num, dummy_line):
   """Default error formatter for _FindNewViolationsOfRule."""
-  return '%s, line %s' % (filename, line_num)
+  return '%s:%s' % (filename, line_num)
 
 
 def _FindNewViolationsOfRule(callable_rule, input_api, source_file_filter=None,

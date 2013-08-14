@@ -2053,7 +2053,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
     self.assertEquals(results1[0].__class__,
         presubmit.OutputApi.PresubmitPromptWarning)
     self.assertEquals(results1[0]._long_text,
-        'makefile.foo, line 46')
+        'makefile.foo:46')
 
   def testCannedCheckLongLines(self):
     check = lambda x, y, z: presubmit_canned_checks.CheckLongLines(x, y, 10, z)
