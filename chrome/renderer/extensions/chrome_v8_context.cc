@@ -97,6 +97,7 @@ bool ChromeV8Context::IsAnyFeatureAvailableToContext(
     const std::string& api_name) {
   return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(
       api_name,
+      extension_.get(),
       context_type_,
       UserScriptSlave::GetDataSourceURLForFrame(web_frame_));
 }

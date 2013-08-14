@@ -688,6 +688,9 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
         const std::string& api_name = *it;
         Feature* feature = feature_provider->GetFeature(api_name);
         DCHECK(feature);
+
+        // Internal APIs are included via require(api_name) from internal code
+        // rather than chrome[api_name].
         if (feature->IsInternal())
           continue;
 
@@ -704,26 +707,12 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
         if (parent_feature_available)
           continue;
 
-        if (!context->IsAnyFeatureAvailableToContext(api_name)) {
-          DeregisterBinding(api_name, context);
-          continue;
-        }
-
-        RegisterBinding(api_name, context);
+        if (context->IsAnyFeatureAvailableToContext(api_name))
+          RegisterBinding(api_name, context);
       }
       break;
     }
   }
-}
-
-void Dispatcher::DeregisterBinding(const std::string& api_name,
-                                   ChromeV8Context* context) {
-  std::string bind_name;
-  v8::Handle<v8::Object> bind_object =
-      GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
-  v8::Handle<v8::String> v8_bind_name = v8::String::New(bind_name.c_str());
-  if (!bind_object.IsEmpty() && bind_object->HasRealNamedProperty(v8_bind_name))
-    bind_object->Delete(v8_bind_name);
 }
 
 v8::Handle<v8::Object> Dispatcher::GetOrCreateBindObjectIfAvailable(

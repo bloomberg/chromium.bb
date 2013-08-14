@@ -1,10 +1,11 @@
 {
   "test1": {
-    "channel": "trunk",
-    "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
+    "channel": "stable",
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"],
+    "extension_types": ["extension"]
   },
   "test2": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["web_page"],
     "matches": ["<all_urls>"]
   },
@@ -12,7 +13,7 @@
     "contexts": ["content_script"]
   },
   "test3": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["content_script"]
   },
   "test3.foo": {
@@ -20,7 +21,7 @@
     "matches": ["<all_urls>"]
   },
   "test4": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["blessed_extension"],
     "dependencies": ["api:test3.foo"]
   },
@@ -33,19 +34,19 @@
     "dependencies": []
   },
   "test5": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["web_page"],
     "matches": ["http://foo.com/*"]
   },
   "test6": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["content_script"]
   },
   "test6.foo": {
     "contexts": ["blessed_extension"]
   },
   "test7": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["web_page"],
     "matches": ["http://foo.com/*"]
   },
@@ -61,7 +62,7 @@
   },
 
   "parent1": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["content_script"]
   },
   "parent1.child1": {
@@ -71,7 +72,7 @@
   "parent1.child2": {
   },
   "parent2": {
-    "channel": "trunk",
+    "channel": "stable",
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
   },
   "parent2.child3": {
@@ -85,7 +86,7 @@
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
   },
   "parent3.noparent": {
-    "channel": "trunk",
+    "channel": "stable",
     "noparent": true,
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
   },

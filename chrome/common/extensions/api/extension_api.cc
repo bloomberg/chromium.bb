@@ -284,6 +284,7 @@ void ExtensionAPI::RegisterDependencyProvider(const std::string& name,
 }
 
 bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
+                                                  const Extension* extension,
                                                   Feature::Context context,
                                                   const GURL& url) {
   FeatureProviderMap::iterator provider = dependency_providers_.find("api");
@@ -297,11 +298,11 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
        i != features.end(); ++i) {
     const std::string& feature_name = *i;
     if (feature_name != api_name && feature_name.find(api_name + ".") == 0) {
-      if (IsAvailable(feature_name, NULL, context, url).is_available())
+      if (IsAvailable(feature_name, extension, context, url).is_available())
         return true;
     }
   }
-  return IsAvailable(api_name, NULL, context, url).is_available();
+  return IsAvailable(api_name, extension, context, url).is_available();
 }
 
 Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,

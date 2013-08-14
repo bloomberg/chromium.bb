@@ -4,8 +4,8 @@
 
 // Contains holistic tests of the bindings infrastructure
 
+#include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -18,6 +18,14 @@ namespace extensions {
 namespace {
 
 class ExtensionBindingsApiTest : public ExtensionApiTest {};
+
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
+                       UnavailableBindingsNeverRegistered) {
+  // Test will request the 'storage' permission.
+  PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);
+  ASSERT_TRUE(RunExtensionTest(
+      "bindings/unavailable_bindings_never_registered")) << message_;
+}
 
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
                        ExceptionInHandlerShouldNotCrash) {

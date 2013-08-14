@@ -30,6 +30,7 @@ Feature::Availability ExtensionAPI::IsAvailable(
 }
 
 bool ExtensionAPI::IsAnyFeatureAvailableToContext(const std::string& api_name,
+                                                  const Extension* extension,
                                                   Feature::Context context,
                                                   const GURL& url) {
   return false;

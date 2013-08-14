@@ -59,13 +59,14 @@ function checkAppCalls() {
 
 // Makes an API call that the extension doesn't have permission for.
 // Don't add the bookmarks permission or this test won't test the code path.
-function makeBlockedApiCall() {
-  resetStatus();
-  try {
-    var allExtensions = chrome.bookmarks.getTree();
-  } catch (err) { }
-  appendCompleted('makeBlockedApiCall');
-}
+// NOTE(kalman): disabled, see http://crbug.com/272526.
+//function makeBlockedApiCall() {
+//  resetStatus();
+//  try {
+//    var allExtensions = chrome.bookmarks.getTree();
+//  } catch (err) { }
+//  appendCompleted('makeBlockedApiCall');
+//}
 
 function callObjectMethod() {
   resetStatus();
@@ -368,7 +369,8 @@ fnMap['api_call'] = makeApiCall;
 fnMap['special_call'] = makeSpecialApiCalls;
 fnMap['double'] = checkNoDoubleLogging;
 fnMap['app_bindings'] = checkAppCalls;
-fnMap['blocked_call'] = makeBlockedApiCall;
+// NOTE(kalman): disabled, see http://crbug.com/272526.
+//fnMap['blocked_call'] = makeBlockedApiCall;
 fnMap['object_methods'] = callObjectMethod;
 fnMap['message_self'] = sendMessageToSelf;
 fnMap['message_other'] = sendMessageToOther;

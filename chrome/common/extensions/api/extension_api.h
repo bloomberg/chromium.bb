@@ -77,6 +77,7 @@ class ExtensionAPI {
   // Determines whether an API, or any parts of that API, are available in
   // |context|.
   bool IsAnyFeatureAvailableToContext(const std::string& api_name,
+                                      const Extension* extension,
                                       Feature::Context context,
                                       const GURL& url);
 

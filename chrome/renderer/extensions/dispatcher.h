@@ -212,7 +212,6 @@ class Dispatcher : public content::RenderProcessObserver {
   void AddOrRemoveBindingsForContext(ChromeV8Context* context);
   void RegisterBinding(const std::string& api_name,
                        ChromeV8Context* context);
-  void DeregisterBinding(const std::string& api_name, ChromeV8Context* context);
   v8::Handle<v8::Object> GetOrCreateBindObjectIfAvailable(
       const std::string& api_name,
       std::string* bind_name,
