@@ -458,13 +458,10 @@ FileCopyManager.EventRouter.prototype.sendDeleteEvent = function(
  * cancel operation cancels everything in the queue.
  *
  * @param {DirectoryEntry} targetDirEntry Target directory.
- * @param {DirectoryEntry=} opt_zipBaseDirEntry Base directory dealt as a root
- *     in ZIP archive.
  * @constructor
  */
-FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
+FileCopyManager.Task = function(targetDirEntry) {
   this.targetDirEntry = targetDirEntry;
-  this.zipBaseDirEntry = opt_zipBaseDirEntry;
   this.originalEntries = null;
 
   // TODO(hidehiko): When we support recursive copy, we should be able to
@@ -483,6 +480,18 @@ FileCopyManager.Task = function(targetDirEntry, opt_zipBaseDirEntry) {
   this.deleteAfterCopy = false;
   this.move = false;
   this.zip = false;
+
+  /**
+   * Set to true when cancel is requested.
+   * @private {boolean}
+   */
+  this.cancelRequested_ = false;
+
+  /**
+   * Callback to cancel the running process.
+   * @private {function()}
+   */
+  this.cancelCallback_ = null;
 
   // TODO(hidehiko): After we support recursive copy, we don't need this.
   // If directory already exists, we try to make a copy named 'dir (X)',
@@ -561,6 +570,390 @@ FileCopyManager.Task.prototype.applyRenames = function(path) {
     }
   }
   return path;
+};
+
+/**
+ * Requests cancellation of this task.
+ * When the cancellation is done, it is notified via callbacks of run().
+ */
+FileCopyManager.Task.prototype.requestCancel = function() {
+  this.cancelRequested_ = true;
+  if (this.cancelCallback_) {
+    this.cancelCallback_();
+    this.cancelCallback_ = null;
+  }
+};
+
+/**
+ * Runs the task. Sub classes must implement this method.
+ *
+ * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
+ *     invoked when an entry is changed.
+ * @param {function()} progressCallback Callback invoked periodically during
+ *     the operation.
+ * @param {function()} successCallback Callback run on success.
+ * @param {function(FileCopyManager.Error)} errorCallback Callback run on error.
+ */
+FileCopyManager.Task.prototype.run = function(
+    entryChangedCallback, progressCallback, successCallback, errorCallback) {
+};
+
+/**
+ * Task to copy entries.
+ *
+ * @param {DirectoryEntry} targetDirEntry Target directory.
+ * @constructor
+ * @extends {FileCopyManager.Task}
+ */
+FileCopyManager.CopyTask = function(targetDirEntry) {
+  FileCopyManager.Task.call(this, targetDirEntry);
+};
+
+/**
+ * Extends FileCopyManager.Task.
+ */
+FileCopyManager.CopyTask.prototype.__proto__ = FileCopyManager.Task.prototype;
+
+/**
+ * Copies all entries to the target directory.
+ * Note: this method contains also the operation of "Move" due to historical
+ * reason.
+ *
+ * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
+ *     invoked when an entry is changed.
+ * @param {function()} progressCallback Callback invoked periodically during
+ *     the copying.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @override
+ */
+FileCopyManager.CopyTask.prototype.run = function(
+    entryChangedCallback, progressCallback, successCallback, errorCallback) {
+  // TODO(hidehiko): We should be able to share the code to iterate on entries
+  // with serviceMoveTask_().
+  if (this.entries.length == 0) {
+    successCallback();
+    return;
+  }
+
+  // TODO(hidehiko): Delete after copy is the implementation of Move.
+  // Migrate the part into MoveTask.run().
+  var deleteOriginals = function() {
+    var count = this.originalEntries.length;
+
+    var onEntryDeleted = function(entry) {
+      entryChangedCallback(util.EntryChangedType.DELETED, entry);
+      count--;
+      if (!count)
+        successCallback();
+    };
+
+    var onFilesystemError = function(err) {
+      errorCallback(new FileCopyManager.Error(
+          util.FileOperationErrorType.FILESYSTEM_ERROR, err));
+    };
+
+    for (var i = 0; i < this.originalEntries.length; i++) {
+      var entry = this.originalEntries[i];
+      util.removeFileOrDirectory(
+          entry, onEntryDeleted.bind(null, entry), onFilesystemError);
+    }
+  }.bind(this);
+
+  AsyncUtil.forEach(
+      this.entries,
+      function(callback, entry, index) {
+        this.entryIndex = index;  // Keep the current index for status update.
+        if (this.cancelRequested_) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              util.createFileError(FileError.ABORT_ERR)));
+          return;
+        }
+        progressCallback();
+        this.processEntry_(entry, entryChangedCallback,
+                           progressCallback, callback, errorCallback);
+
+      },
+      function() {
+        // Hack: Mark all entries are completed.
+        // TODO(hidehiko): remove this.
+        this.entryIndex = this.entries.length;
+
+        if (this.deleteAfterCopy) {
+          deleteOriginals();
+        } else {
+          successCallback();
+        }
+      }.bind(this),
+      this);
+};
+
+/**
+ * Copies the source entry to the target directory.
+ *
+ * @param {Entry} sourceEntry An entry to be copied.
+ * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
+ *     invoked when an entry is changed.
+ * @param {function()} progressCallback Callback invoked periodically during
+ *     the copying.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @private
+ */
+FileCopyManager.CopyTask.prototype.processEntry_ = function(
+    sourceEntry, entryChangedCallback, progressCallback, successCallback,
+    errorCallback) {
+  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
+  var sourcePath = sourceEntry.originalSourcePath;
+  if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
+    // We found an entry in the list that is not relative to the base source
+    // path, something is wrong.
+    errorCallback(new FileCopyManager.Error(
+        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
+        sourceEntry.fullPath));
+    return;
+  }
+
+  var targetDirEntry = this.targetDirEntry;
+  var originalPath = sourceEntry.fullPath.substr(sourcePath.length + 1);
+  originalPath = this.applyRenames(originalPath);
+
+  var onDeduplicated = function(targetRelativePath) {
+    var onCopyComplete = function(entry) {
+      entryChangedCallback(util.EntryChangedType.CREATED, entry);
+      successCallback();
+    };
+
+    var onFilesystemError = function(err) {
+      errorCallback(new FileCopyManager.Error(
+          util.FileOperationErrorType.FILESYSTEM_ERROR, err));
+    };
+
+    if (sourceEntry.isDirectory) {
+      // Copying the directory means just creating a new directory.
+      targetDirEntry.getDirectory(
+          targetRelativePath,
+          {create: true, exclusive: true},
+          function(targetEntry) {
+            if (targetRelativePath != originalPath) {
+              this.registerRename(originalPath, targetRelativePath);
+            }
+            onCopyComplete(targetEntry);
+          }.bind(this),
+          util.flog('Error getting dir: ' + targetRelativePath,
+                    onFilesystemError));
+    } else {
+      // Copy a file.
+      targetDirEntry.getDirectory(
+          PathUtil.dirname(targetRelativePath), {create: false},
+          function(dirEntry) {
+            this.cancelCallback_ = fileOperationUtil.copyFile(
+                sourceEntry, dirEntry, PathUtil.basename(targetRelativePath),
+                function(entry, size) {
+                  this.updateFileCopyProgress(size);
+                  progressCallback();
+                }.bind(this),
+                function(entry) {
+                  this.cancelCallback_ = null;
+                  onCopyComplete(entry);
+                }.bind(this),
+                function(error) {
+                  this.cancelCallback_ = null;
+                  onFilesystemError(error);
+                }.bind(this));
+          }.bind(this),
+          onFilesystemError);
+    }
+  }.bind(this);
+
+  fileOperationUtil.deduplicatePath(
+      targetDirEntry, originalPath, onDeduplicated, errorCallback);
+};
+
+/**
+ * Task to move entries.
+ *
+ * @param {DirectoryEntry} targetDirEntry Target directory.
+ * @constructor
+ * @extends {FileCopyManager.Task}
+ */
+FileCopyManager.MoveTask = function(targetDirEntry) {
+  FileCopyManager.Task.call(this, targetDirEntry);
+  // TODO(hidehiko): We should handle dispatching copy/move/zip more nicely.
+  this.move = true;
+};
+
+/**
+ * Extends FileCopyManager.Task.
+ */
+FileCopyManager.MoveTask.prototype.__proto__ = FileCopyManager.Task.prototype;
+
+/**
+ * Moves all entries in the task.
+ *
+ * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
+ *     invoked when an entry is changed.
+ * @param {function()} progressCallback Callback invoked periodically during
+ *     the moving.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @override
+ */
+FileCopyManager.MoveTask.prototype.run = function(
+    entryChangedCallback, progressCallback, successCallback, errorCallback) {
+  if (this.entries.length == 0) {
+    successCallback();
+    return;
+  }
+
+  AsyncUtil.forEach(
+      this.entries,
+      function(callback, entry, index) {
+        this.entryIndex = index;  // Keep the index for status update.
+        if (this.cancelRequested_) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              util.createFileError(FileError.ABORT_ERR)));
+          return;
+        }
+        progressCallback();
+        this.processEntry_(
+            entry, entryChangedCallback, callback, errorCallback);
+      },
+      function() {
+        // Hack: Mark all entries are completed.
+        // TODO(hidehiko): remove this.
+        this.entryIndex = this.entries.length;
+        successCallback();
+      }.bind(this),
+      this);
+};
+
+/**
+ * Moves the sourceEntry to the targetDirEntry in this task.
+ *
+ * Implementation note: This method can be simplified more. For example, in
+ * Task.setEntries(), the flag to recurse is set to false for move task,
+ * so that all the entries' originalSourcePath should be
+ * dirname(sourceEntry.fullPath).
+ * Thus, targetRelativePath should contain exact one component. Also we can
+ * skip applyRenames, because the destination directory always should be
+ * task.targetDirEntry.
+ * The unnecessary complexity is due to historical reason.
+ * TODO(hidehiko): Refactor this method.
+ *
+ * @param {Entry} sourceEntry An entry to be moved.
+ * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
+ *     invoked when an entry is changed.
+ * @param {function()} successCallback On success.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @private
+ */
+FileCopyManager.MoveTask.prototype.processEntry_ = function(
+    sourceEntry, entryChangedCallback, successCallback, errorCallback) {
+  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
+  var sourcePath = sourceEntry.originalSourcePath;
+  if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
+    // We found an entry in the list that is not relative to the base source
+    // path, something is wrong.
+    errorCallback(new FileCopyManager.Error(
+        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
+        sourceEntry.fullPath));
+    return;
+  }
+
+  fileOperationUtil.deduplicatePath(
+      this.targetDirEntry,
+      this.applyRenames(sourceEntry.fullPath.substr(sourcePath.length + 1)),
+      function(targetRelativePath) {
+        var onFilesystemError = function(err) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              err));
+        };
+
+        this.targetDirEntry.getDirectory(
+            PathUtil.dirname(targetRelativePath), {create: false},
+            function(dirEntry) {
+              sourceEntry.moveTo(
+                  dirEntry, PathUtil.basename(targetRelativePath),
+                  function(targetEntry) {
+                    entryChangedCallback(
+                        util.EntryChangedType.CREATED, targetEntry);
+                    entryChangedCallback(
+                        util.EntryChangedType.DELETED, sourceEntry);
+                    successCallback();
+                  },
+                  onFilesystemError);
+            },
+            onFilesystemError);
+      }.bind(this),
+      errorCallback);
+};
+
+/**
+ * Task to create a zip archive.
+ *
+ * @param {DirectoryEntry} targetDirEntry Target directory.
+ * @param {DirectoryEntry} zipBaseDirEntry Base directory dealt as a root
+ *     in ZIP archive.
+ * @constructor
+ * @extends {FileCopyManager.Task}
+ */
+FileCopyManager.ZipTask = function(targetDirEntry, zipBaseDirEntry) {
+  FileCopyManager.Task.call(this, targetDirEntry);
+  this.zipBaseDirEntry = zipBaseDirEntry;
+  this.zip = true;
+};
+
+/**
+ * Extends FileCopyManager.Task.
+ */
+FileCopyManager.ZipTask.prototype.__proto__ = FileCopyManager.Task.prototype;
+
+/**
+ * Runs a zip file creation task.
+ *
+ * @param {function(util.EntryChangedType, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
+ * @param {function()} progressCallback Callback invoked periodically during
+ *     the moving.
+ * @param {function()} successCallback On complete.
+ * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @override
+ */
+FileCopyManager.ZipTask.prototype.run = function(
+    entryChangedCallback, progressCallback, successCallback, errorCallback) {
+  // TODO(hidehiko): we should localize the name.
+  var destName = 'Archive';
+  if (this.originalEntries.length == 1) {
+    var entryPath = this.originalEntries[0].fullPath;
+    var i = entryPath.lastIndexOf('/');
+    var basename = (i < 0) ? entryPath : entryPath.substr(i + 1);
+    i = basename.lastIndexOf('.');
+    destName = ((i < 0) ? basename : basename.substr(0, i));
+  }
+
+  fileOperationUtil.deduplicatePath(
+      this.targetDirEntry, destName + '.zip',
+      function(destPath) {
+        progressCallback();
+
+        fileOperationUtil.zipSelection(
+            this.entries,
+            this.zipBaseDirEntry,
+            destPath,
+            function(entry) {
+              entryChangedCallback(util.EntryChangedType.CREATE, entry);
+              successCallback();
+            },
+            function(error) {
+              errorCallback(new FileCopyManager.Error(
+                  util.FileOperationErrorType.FILESYSTEM_ERROR, error));
+            });
+      }.bind(this),
+      errorCallback);
 };
 
 /**
@@ -717,6 +1110,8 @@ FileCopyManager.prototype.requestCancel = function(opt_callback) {
   // Otherwise call it right now.
   if (this.copyTasks_.length == 0)
     this.doCancel_();
+  else
+    this.copyTasks_[0].requestCancel();
 };
 
 /**
@@ -835,37 +1230,40 @@ FileCopyManager.prototype.isMovable = function(sourceEntry,
  *
  * @param {DirectoryEntry} targetDirEntry Target directory.
  * @param {Array.<Entry>} entries Entries to copy.
- * @param {boolean} deleteAfterCopy In case of move.
+ * @param {boolean} isMove In case of move.
  * @return {FileCopyManager.Task} Copy task.
  * @private
  */
 FileCopyManager.prototype.queueCopy_ = function(
-    targetDirEntry, entries, deleteAfterCopy) {
-  var self = this;
+    targetDirEntry, entries, isMove) {
   // When copying files, null can be specified as source directory.
-  var copyTask = new FileCopyManager.Task(targetDirEntry);
-  if (deleteAfterCopy) {
+  var task;
+  if (isMove) {
     if (this.isMovable(entries[0], targetDirEntry)) {
-      copyTask.move = true;
+      task = new FileCopyManager.MoveTask(targetDirEntry);
     } else {
-      copyTask.deleteAfterCopy = true;
+      task = new FileCopyManager.CopyTask(targetDirEntry);
+      task.deleteAfterCopy = true;
     }
+  } else {
+    task = new FileCopyManager.CopyTask(targetDirEntry);
   }
-  copyTask.setEntries(entries, function() {
-    self.copyTasks_.push(copyTask);
-    self.maybeScheduleCloseBackgroundPage_();
-    if (self.copyTasks_.length == 1) {
-      // Assume self.cancelRequested_ == false.
+
+  task.setEntries(entries, function() {
+    this.copyTasks_.push(task);
+    this.maybeScheduleCloseBackgroundPage_();
+    if (this.copyTasks_.length == 1) {
+      // Assume this.cancelRequested_ == false.
       // This moved us from 0 to 1 active tasks, let the servicing begin!
-      self.serviceAllTasks_();
+      this.serviceAllTasks_();
     } else {
       // Force to update the progress of butter bar when there are new tasks
       // coming while servicing current task.
-      self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
+      this.eventRouter_.sendProgressEvent('PROGRESS', this.getStatus());
     }
-  });
+  }.bind(this));
 
-  return copyTask;
+  return task;
 };
 
 /**
@@ -912,362 +1310,15 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
     // big task logically, so there is only one BEGIN/SUCCESS event pair for
     // these continuous tasks.
     self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
-
-    self.serviceTask_(self.copyTasks_[0], onEntryChanged, onTaskProgress,
-                      onTaskSuccess, onTaskError);
+    self.copyTasks_[0].run(
+        onEntryChanged, onTaskProgress, onTaskSuccess, onTaskError);
   };
 
   // If the queue size is 1 after pushing our task, it was empty before,
   // so we need to kick off queue processing and dispatch BEGIN event.
-
   this.eventRouter_.sendProgressEvent('BEGIN', this.getStatus());
-  this.serviceTask_(this.copyTasks_[0], onEntryChanged, onTaskProgress,
-                    onTaskSuccess, onTaskError);
-};
-
-/**
- * Runs a given task.
- * Note that the responsibility of this method is just dispatching to the
- * appropriate serviceXxxTask_() method.
- * TODO(hidehiko): Remove this method by introducing FileCopyManager.Task.run()
- *     (crbug.com/246976).
- *
- * @param {FileCopyManager.Task} task A task to be run.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
- * @param {function()} progressCallback Callback invoked periodically during
- *     the operation.
- * @param {function()} successCallback Callback run on success.
- * @param {function(FileCopyManager.Error)} errorCallback Callback run on error.
- * @private
- */
-FileCopyManager.prototype.serviceTask_ = function(
-    task, entryChangedCallback, progressCallback,
-    successCallback, errorCallback) {
-  if (task.zip)
-    this.serviceZipTask_(task, entryChangedCallback, progressCallback,
-                         successCallback, errorCallback);
-  else if (task.move)
-    this.serviceMoveTask_(task, entryChangedCallback, progressCallback,
-                          successCallback, errorCallback);
-  else
-    this.serviceCopyTask_(task, entryChangedCallback, progressCallback,
-                          successCallback, errorCallback);
-};
-
-/**
- * Service all entries in the copy (and move) task.
- * Note: this method contains also the operation of "Move" due to historical
- * reason.
- *
- * @param {FileCopyManager.Task} task A copy task to be run.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
- * @param {function()} progressCallback Callback invoked periodically during
- *     the copying.
- * @param {function()} successCallback On success.
- * @param {function(FileCopyManager.Error)} errorCallback On error.
- * @private
- */
-FileCopyManager.prototype.serviceCopyTask_ = function(
-    task, entryChangedCallback, progressCallback, successCallback,
-    errorCallback) {
-  // TODO(hidehiko): We should be able to share the code to iterate on entries
-  // with serviceMoveTask_().
-  if (task.entries.length == 0) {
-    successCallback();
-    return;
-  }
-
-  var self = this;
-
-  var deleteOriginals = function() {
-    var count = task.originalEntries.length;
-
-    var onEntryDeleted = function(entry) {
-      entryChangedCallback(util.EntryChangedType.DELETED, entry);
-      count--;
-      if (!count)
-        successCallback();
-    };
-
-    var onFilesystemError = function(err) {
-      errorCallback(new FileCopyManager.Error(
-          util.FileOperationErrorType.FILESYSTEM_ERROR, err));
-    };
-
-    for (var i = 0; i < task.originalEntries.length; i++) {
-      var entry = task.originalEntries[i];
-      util.removeFileOrDirectory(
-          entry, onEntryDeleted.bind(self, entry), onFilesystemError);
-    }
-  };
-
-  AsyncUtil.forEach(
-      task.entries,
-      function(callback, entry, index) {
-        task.entryIndex = index;  // Keep the current index for status update.
-        if (this.cancelRequested_) {
-          errorCallback(new FileCopyManager.Error(
-              util.FileOperationErrorType.FILESYSTEM_ERROR,
-              util.createFileError(FileError.ABORT_ERR)));
-          return;
-        }
-        progressCallback();
-        this.processCopyEntry_(task, entry, entryChangedCallback,
-                               progressCallback, callback, errorCallback);
-
-      },
-      function() {
-        // Hack: Mark all entries are completed.
-        // TODO(hidehiko): remove this.
-        task.entryIndex = task.entries.length;
-
-        if (task.deleteAfterCopy) {
-          deleteOriginals();
-        } else {
-          successCallback();
-        }
-      },
-      this);
-};
-
-/**
- * Copies the next entry in a given task.
- * TODO(olege): Refactor this method into a separate class.
- *
- * @param {FileManager.Task} task A task.
- * @param {Entry} sourceEntry An entry to be copied.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
- * @param {function()} progressCallback Callback invoked periodically during
- *     the copying.
- * @param {function()} successCallback On success.
- * @param {function(FileCopyManager.Error)} errorCallback On error.
- * @private
- */
-FileCopyManager.prototype.processCopyEntry_ = function(
-    task, sourceEntry, entryChangedCallback, progressCallback, successCallback,
-    errorCallback) {
-  var self = this;
-
-  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
-  var sourcePath = sourceEntry.originalSourcePath;
-  if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
-    // We found an entry in the list that is not relative to the base source
-    // path, something is wrong.
-    errorCallback(new FileCopyManager.Error(
-        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
-        sourceEntry.fullPath));
-    return;
-  }
-
-  var targetDirEntry = task.targetDirEntry;
-  var originalPath = sourceEntry.fullPath.substr(sourcePath.length + 1);
-  originalPath = task.applyRenames(originalPath);
-
-  var onDeduplicated = function(targetRelativePath) {
-    var onCopyComplete = function(entry) {
-      entryChangedCallback(util.EntryChangedType.CREATED, entry);
-      successCallback();
-    };
-
-    var onFilesystemError = function(err) {
-      errorCallback(new FileCopyManager.Error(
-          util.FileOperationErrorType.FILESYSTEM_ERROR, err));
-    };
-
-    if (sourceEntry.isDirectory) {
-      // Copying the directory means just creating a new directory.
-      targetDirEntry.getDirectory(
-          targetRelativePath,
-          {create: true, exclusive: true},
-          function(targetEntry) {
-            if (targetRelativePath != originalPath) {
-              task.registerRename(originalPath, targetRelativePath);
-            }
-            onCopyComplete(targetEntry);
-          },
-          util.flog('Error getting dir: ' + targetRelativePath,
-                    onFilesystemError));
-    } else {
-      // Copy a file.
-      targetDirEntry.getDirectory(
-          PathUtil.dirname(targetRelativePath), {create: false},
-          function(dirEntry) {
-            self.cancelCallback_ = fileOperationUtil.copyFile(
-                sourceEntry, dirEntry, PathUtil.basename(targetRelativePath),
-                function(entry, size) {
-                  task.updateFileCopyProgress(size);
-                  progressCallback();
-                },
-                function(entry) {
-                  self.cancelCallback_ = null;
-                  onCopyComplete(entry);
-                },
-                function(error) {
-                  self.cancelCallback_ = null;
-                  onFilesystemError(error);
-                });
-          },
-          onFilesystemError);
-    }
-  };
-
-  fileOperationUtil.deduplicatePath(
-      targetDirEntry, originalPath, onDeduplicated, errorCallback);
-};
-
-/**
- * Moves all entries in the task.
- *
- * @param {FileCopyManager.Task} task A move task to be run.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
- * @param {function()} progressCallback Callback invoked periodically during
- *     the moving.
- * @param {function()} successCallback On success.
- * @param {function(FileCopyManager.Error)} errorCallback On error.
- * @private
- */
-FileCopyManager.prototype.serviceMoveTask_ = function(
-    task, entryChangedCallback, progressCallback, successCallback,
-    errorCallback) {
-  if (task.entries.length == 0) {
-    successCallback();
-    return;
-  }
-
-  AsyncUtil.forEach(
-      task.entries,
-      function(callback, entry, index) {
-        task.entryIndex = index;  // Keep the index for status update.
-        if (this.cancelRequested_) {
-          errorCallback(new FileCopyManager.Error(
-              util.FileOperationErrorType.FILESYSTEM_ERROR,
-              util.createFileError(FileError.ABORT_ERR)));
-          return;
-        }
-        progressCallback();
-        this.processMoveEntry_(
-            task, entry, entryChangedCallback, callback, errorCallback);
-      },
-      function() {
-        // Hack: Mark all entries are completed.
-        // TODO(hidehiko): remove this.
-        task.entryIndex = task.entries.length;
-        successCallback();
-      },
-      this);
-};
-
-/**
- * Moves the next entry in a given task.
- *
- * Implementation note: This method can be simplified more. For example, in
- * Task.setEntries(), the flag to recurse is set to false for move task,
- * so that all the entries' originalSourcePath should be
- * dirname(sourceEntry.fullPath).
- * Thus, targetRelativePath should contain exact one component. Also we can
- * skip applyRenames, because the destination directory always should be
- * task.targetDirEntry.
- * The unnecessary complexity is due to historical reason.
- * TODO(hidehiko): Refactor this method.
- *
- * @param {FileManager.Task} task A move task.
- * @param {Entry} sourceEntry An entry to be moved.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
- * @param {function()} successCallback On success.
- * @param {function(FileCopyManager.Error)} errorCallback On error.
- * @private
- */
-FileCopyManager.prototype.processMoveEntry_ = function(
-    task, sourceEntry, entryChangedCallback, successCallback, errorCallback) {
-  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
-  var sourcePath = sourceEntry.originalSourcePath;
-  if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
-    // We found an entry in the list that is not relative to the base source
-    // path, something is wrong.
-    errorCallback(new FileCopyManager.Error(
-        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
-        sourceEntry.fullPath));
-    return;
-  }
-
-  fileOperationUtil.deduplicatePath(
-      task.targetDirEntry,
-      task.applyRenames(sourceEntry.fullPath.substr(sourcePath.length + 1)),
-      function(targetRelativePath) {
-        var onFilesystemError = function(err) {
-          errorCallback(new FileCopyManager.Error(
-              util.FileOperationErrorType.FILESYSTEM_ERROR,
-              err));
-        };
-
-        task.targetDirEntry.getDirectory(
-            PathUtil.dirname(targetRelativePath), {create: false},
-            function(dirEntry) {
-              sourceEntry.moveTo(
-                  dirEntry, PathUtil.basename(targetRelativePath),
-                  function(targetEntry) {
-                    entryChangedCallback(
-                        util.EntryChangedType.CREATED, targetEntry);
-                    entryChangedCallback(
-                        util.EntryChangedType.DELETED, sourceEntry);
-                    successCallback();
-                  },
-                  onFilesystemError);
-            },
-            onFilesystemError);
-      },
-      errorCallback);
-};
-
-/**
- * Service a zip file creation task.
- *
- * @param {FileCopyManager.Task} task A zip task to be run.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
- * @param {function()} progressCallback Callback invoked periodically during
- *     the moving.
- * @param {function()} successCallback On complete.
- * @param {function(FileCopyManager.Error)} errorCallback On error.
- * @private
- */
-FileCopyManager.prototype.serviceZipTask_ = function(
-    task, entryChangedCallback, progressCallback, successCallback,
-    errorCallback) {
-  // TODO(hidehiko): we should localize the name.
-  var destName = 'Archive';
-  if (task.originalEntries.length == 1) {
-    var entryPath = task.originalEntries[0].fullPath;
-    var i = entryPath.lastIndexOf('/');
-    var basename = (i < 0) ? entryPath : entryPath.substr(i + 1);
-    i = basename.lastIndexOf('.');
-    destName = ((i < 0) ? basename : basename.substr(0, i));
-  }
-
-  fileOperationUtil.deduplicatePath(
-      task.targetDirEntry, destName + '.zip',
-      function(destPath) {
-        progressCallback();
-
-        fileOperationUtil.zipSelection(
-            task.entries,
-            task.zipBaseDirEntry,
-            destPath,
-            function(entry) {
-              entryChangedCallback(util.EntryChangedType.CREATE, entry);
-              successCallback();
-            },
-            function(error) {
-              errorCallback(new FileCopyManager.Error(
-                  util.FileOperationErrorType.FILESYSTEM_ERROR, error));
-            });
-      },
-      errorCallback);
+  this.copyTasks_[0].run(
+      onEntryChanged, onTaskProgress, onTaskSuccess, onTaskError);
 };
 
 /**
@@ -1398,7 +1449,7 @@ FileCopyManager.prototype.serviceDeleteTask_ = function(
  */
 FileCopyManager.prototype.zipSelection = function(dirEntry, selectionEntries) {
   var self = this;
-  var zipTask = new FileCopyManager.Task(dirEntry, dirEntry);
+  var zipTask = new FileCopyManager.ZipTask(dirEntry, dirEntry);
   zipTask.zip = true;
   zipTask.setEntries(selectionEntries, function() {
     // TODO: per-entry zip progress update with accurate byte count.
