@@ -14,7 +14,7 @@ void TryOpenFile(wchar_t *path, FILE *output) {
   wchar_t path_expanded[MAX_PATH] = {0};
   DWORD size = ::ExpandEnvironmentStrings(path, path_expanded, MAX_PATH - 1);
   if (!size) {
-    fprintf(output, "[ERROR] Cannot expand \"%S\". Error %S.\r\n", path,
+    fprintf(output, "[ERROR] Cannot expand \"%S\". Error %d.\r\n", path,
             ::GetLastError());
   }
 
