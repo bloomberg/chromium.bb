@@ -559,9 +559,6 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
   width: 26px;
 }
 
-#search-breadcrumbs {
-}
-
 .breadcrumbs > [collapsed]::before {
   content: '...';
 }
@@ -672,9 +669,6 @@ body[drive] .dialog-container[connection='metered'] .offline-icon-space {
 
 #search-box::-webkit-search-cancel-button {
   -webkit-appearance: none;
-}
-
-#search-box::-webkit-search-cancel-button {
   right: 2px;
 }
 
@@ -1020,8 +1014,6 @@ body[type='full-page'] .thumbnail-grid .thumbnail-bottom {
 @-webkit-keyframes acceptsBlink {
   0% {
     background-color: transparent;
-  }
-  50% {
   }
 }
 
