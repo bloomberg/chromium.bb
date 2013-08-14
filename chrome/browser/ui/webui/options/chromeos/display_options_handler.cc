@@ -215,10 +215,11 @@ void DisplayOptionsHandler::SendDisplayInfo(
     std::sort(resolutions.begin(), resolutions.end(), CompareResolution);
 
     base::ListValue* js_resolutions = new base::ListValue();
-    gfx::Size current_size(bounds.width() * display.device_scale_factor(),
-                           bounds.height() * display.device_scale_factor());
+    gfx::Size current_size = display_info.bounds_in_pixel().size();
+    gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
     for (size_t i = 0; i < resolutions.size(); ++i) {
       base::DictionaryValue* resolution_info = new base::DictionaryValue();
+      gfx::Size resolution = resolutions[i].size;
       if (!ui_scales.empty()) {
         resolution_info->SetDouble("scale", ui_scales[i]);
         if (ui_scales[i] == 1.0f)
@@ -230,11 +231,12 @@ void DisplayOptionsHandler::SendDisplayInfo(
         // because |resolutions| is sorted by its area.
         if (i == resolutions.size() - 1)
           resolution_info->SetBoolean("isBest", true);
-        resolution_info->SetBoolean(
-            "selected", (resolutions[i].size == current_size));
+        resolution_info->SetBoolean("selected", (resolution == current_size));
+        resolution.Enlarge(
+            -current_overscan.width(), -current_overscan.height());
       }
-      resolution_info->SetInteger("width", resolutions[i].size.width());
-      resolution_info->SetInteger("height",resolutions[i].size.height());
+      resolution_info->SetInteger("width", resolution.width());
+      resolution_info->SetInteger("height", resolution.height());
       js_resolutions->Append(resolution_info);
     }
     js_display->Set("resolutions", js_resolutions);
@@ -347,8 +349,10 @@ void DisplayOptionsHandler::HandleSetResolution(const base::ListValue* args) {
 
   const ash::internal::DisplayInfo& display_info =
       GetDisplayManager()->GetDisplayInfo(display_id);
+  gfx::Insets current_overscan = display_info.GetOverscanInsetsInPixel();
   gfx::Size new_resolution = gfx::ToFlooredSize(gfx::SizeF(width, height));
-  gfx::Size old_resolution = display_info.size_in_pixel();
+  new_resolution.Enlarge(current_overscan.width(), current_overscan.height());
+  gfx::Size old_resolution = display_info.bounds_in_pixel().size();
   bool has_new_resolution = false;
   bool has_old_resolution = false;
   for (size_t i = 0; i < display_info.resolutions().size(); ++i) {
