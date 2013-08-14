@@ -903,6 +903,13 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
         You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords, and other settings will become permanently tied to <ph name="USER_NAME">$1<ex>pat@example.com</ex></ph>. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE">$2<ex>Learn more</ex></ph>
       </message>
 
+      <message name="IDS_OPTIONS_PASSWORDS_MAC_WARNING" desc="The warning for OS X that passwords are shared across profiles in the keychain.">
+        On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chromium users sharing this OS X account.
+      </message>
+
+      <message name="IDS_AUTOFILL_CC_INFOBAR_TEXT" desc="Text to show in the Autofill credit card request infobar.">
+        Do you want Chromium to save this credit card information for completing web forms?
+      </message>
       <message name="IDS_AUTOFILL_DIALOG_SAVE_LOCALLY_CHECKBOX" desc="Checkbox that controls whether info the user types into the autofill dialog is saved by chrome.">
         Save details in Chromium
       </message>
@@ -911,6 +918,9 @@ Signing in anyway will merge Chromium information like bookmarks, history, and o
       </message>
       <message name="IDS_AUTOFILL_NEW_CREDIT_CARD_BUBBLE_TITLE" desc="Title text of the new credit card bubble informing a user their billing information has been saved in chrome.">
         Your billing details have been saved in Chromium.
+      </message>
+      <message name="IDS_AUTOFILL_WALLET_UPGRADE_CHROME_ERROR" desc="Text explaining that user must upgrade Chrome to use Wallet.">
+        You must upgrade Chromium to use Google Wallet [<ph name="ERROR_CODE">$1<ex>54</ex></ph>].
       </message>
 
       <!-- Network Error Pages -->
