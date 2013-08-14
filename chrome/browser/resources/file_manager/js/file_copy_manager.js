@@ -818,8 +818,9 @@ FileCopyManager.MoveTask.prototype.run = function(
           return;
         }
         progressCallback();
-        this.processEntry_(
-            entry, entryChangedCallback, callback, errorCallback);
+        FileCopyManager.MoveTask.processEntry_(
+            entry, this.targetDirEntry, entryChangedCallback, callback,
+            errorCallback);
       },
       function() {
         // Hack: Mark all entries are completed.
@@ -833,62 +834,34 @@ FileCopyManager.MoveTask.prototype.run = function(
 /**
  * Moves the sourceEntry to the targetDirEntry in this task.
  *
- * Implementation note: This method can be simplified more. For example, in
- * Task.setEntries(), the flag to recurse is set to false for move task,
- * so that all the entries' originalSourcePath should be
- * dirname(sourceEntry.fullPath).
- * Thus, targetRelativePath should contain exact one component. Also we can
- * skip applyRenames, because the destination directory always should be
- * task.targetDirEntry.
- * The unnecessary complexity is due to historical reason.
- * TODO(hidehiko): Refactor this method.
- *
  * @param {Entry} sourceEntry An entry to be moved.
+ * @param {DirectoryEntry} destinationEntry The entry of the destination
+ *     directory.
  * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
  *     invoked when an entry is changed.
  * @param {function()} successCallback On success.
  * @param {function(FileCopyManager.Error)} errorCallback On error.
  * @private
  */
-FileCopyManager.MoveTask.prototype.processEntry_ = function(
-    sourceEntry, entryChangedCallback, successCallback, errorCallback) {
-  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
-  var sourcePath = sourceEntry.originalSourcePath;
-  if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
-    // We found an entry in the list that is not relative to the base source
-    // path, something is wrong.
-    errorCallback(new FileCopyManager.Error(
-        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
-        sourceEntry.fullPath));
-    return;
-  }
-
+FileCopyManager.MoveTask.processEntry_ = function(
+    sourceEntry, destinationEntry, entryChangedCallback, successCallback,
+    errorCallback) {
   fileOperationUtil.deduplicatePath(
-      this.targetDirEntry,
-      this.applyRenames(sourceEntry.fullPath.substr(sourcePath.length + 1)),
-      function(targetRelativePath) {
-        var onFilesystemError = function(err) {
-          errorCallback(new FileCopyManager.Error(
-              util.FileOperationErrorType.FILESYSTEM_ERROR,
-              err));
-        };
-
-        this.targetDirEntry.getDirectory(
-            PathUtil.dirname(targetRelativePath), {create: false},
-            function(dirEntry) {
-              sourceEntry.moveTo(
-                  dirEntry, PathUtil.basename(targetRelativePath),
-                  function(targetEntry) {
-                    entryChangedCallback(
-                        util.EntryChangedType.CREATED, targetEntry);
-                    entryChangedCallback(
-                        util.EntryChangedType.DELETED, sourceEntry);
-                    successCallback();
-                  },
-                  onFilesystemError);
+      destinationEntry,
+      sourceEntry.name,
+      function(destinationName) {
+        sourceEntry.moveTo(
+            destinationEntry, destinationName,
+            function(movedEntry) {
+              entryChangedCallback(util.EntryChangedType.CREATED, movedEntry);
+              entryChangedCallback(util.EntryChangedType.DELETED, sourceEntry);
+              successCallback();
             },
-            onFilesystemError);
-      }.bind(this),
+            function(error) {
+              errorCallback(new FileCopyManager.Error(
+                  util.FileOperationErrorType.FILESYSTEM_ERROR, error));
+            });
+      },
       errorCallback);
 };
 
