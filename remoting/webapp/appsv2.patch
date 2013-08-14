@@ -42,8 +42,8 @@ index d1f8d1f..67bf660 100644
      "clipboardWrite",
 -    "nativeMessaging"
 +    "nativeMessaging",
-+    "fullscreen"
-+    "identity",
++    "fullscreen",
++    "identity"
    ],
 -  "plugins": [
 -    { "path": "remoting_host_plugin.dll", "public": false },
