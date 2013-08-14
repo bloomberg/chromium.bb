@@ -33,6 +33,7 @@ class BrowserWindowCocoa;
 @class DownloadShelfController;
 class ExtensionKeybindingRegistryCocoa;
 @class FindBarCocoaController;
+@class FullscreenModeController;
 @class FullscreenWindow;
 @class InfoBarContainerController;
 class LocationBarViewMac;
@@ -71,6 +72,7 @@ class WebContents;
   base::scoped_nsobject<OverlayableContentsController>
       overlayableContentsController_;
   base::scoped_nsobject<PresentationModeController> presentationModeController_;
+  base::scoped_nsobject<FullscreenModeController> fullscreenModeController_;
   base::scoped_nsobject<FullscreenExitBubbleController>
       fullscreenExitBubbleController_;
 

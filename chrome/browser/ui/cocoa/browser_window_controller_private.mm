@@ -23,6 +23,7 @@
 #import "chrome/browser/ui/cocoa/find_bar/find_bar_cocoa_controller.h"
 #import "chrome/browser/ui/cocoa/floating_bar_backing_view.h"
 #import "chrome/browser/ui/cocoa/framed_browser_window.h"
+#import "chrome/browser/ui/cocoa/fullscreen_mode_controller.h"
 #import "chrome/browser/ui/cocoa/fullscreen_window.h"
 #import "chrome/browser/ui/cocoa/infobars/infobar_container_controller.h"
 #include "chrome/browser/ui/cocoa/last_active_browser_cocoa.h"
@@ -181,6 +182,9 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat minY = NSMinY(contentBounds);
   CGFloat width = NSWidth(contentBounds);
 
+  BOOL useSimplifiedFullscreen = CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableSimplifiedFullscreen);
+
   // Suppress title drawing if necessary.
   if ([window respondsToSelector:@selector(setShouldHideTitle:)])
     [(id)window setShouldHideTitle:![self hasTitleBar]];
@@ -192,7 +196,7 @@ willPositionSheet:(NSWindow*)sheet
   CGFloat floatingBarHeight = [self floatingBarHeight];
   // In presentation mode, |yOffset| accounts for the sliding position of the
   // floating bar and the extra offset needed to dodge the menu bar.
-  CGFloat yOffset = inPresentationMode ?
+  CGFloat yOffset = inPresentationMode && !useSimplifiedFullscreen ?
       (std::floor((1 - floatingBarShownFraction_) * floatingBarHeight) -
           [presentationModeController_ floatingBarVerticalOffset]) : 0;
   CGFloat maxY = NSMaxY(contentBounds) + yOffset;
@@ -202,6 +206,17 @@ willPositionSheet:(NSWindow*)sheet
     // value, and then lay out the tab strip.
     NSRect windowFrame = [contentView convertRect:[window frame] fromView:nil];
     maxY = NSHeight(windowFrame) + yOffset;
+    if (useSimplifiedFullscreen && [self isFullscreen]) {
+      CGFloat tabStripHeight = NSHeight([[self tabStripView] frame]);
+      CGFloat revealAmount = (1 - floatingBarShownFraction_) * tabStripHeight;
+      // In simplified fullscreen, only the toolbar is visible by default, and
+      // the tabstrip and menu bar come down (each separately) when the user
+      // mouses near the top of the window. Push the maxY of the toolbar up by
+      // the amount of the tabstrip that is revealed, while removing the amount
+      // of space needed by the menu bar.
+      maxY += std::floor(
+          revealAmount - [fullscreenModeController_ menuBarHeight]);
+    }
     maxY = [self layoutTabStripAtMaxY:maxY
                                 width:width
                            fullscreen:[self isFullscreen]];
@@ -234,8 +249,6 @@ willPositionSheet:(NSWindow*)sheet
 
   // If in presentation mode, reset |maxY| to top of screen, so that the
   // floating bar slides over the things which appear to be in the content area.
-  BOOL useSimplifiedFullscreen = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableSimplifiedFullscreen);
   if (inPresentationMode ||
       (useSimplifiedFullscreen && !fullscreenUrl_.is_empty())) {
     maxY = NSMaxY(contentBounds);
@@ -805,6 +818,14 @@ willPositionSheet:(NSWindow*)sheet
     [self deregisterForContentViewResizeNotifications];
   enteringFullscreen_ = NO;
   enteringPresentationMode_ = NO;
+
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableSimplifiedFullscreen) &&
+      fullscreenUrl_.is_empty()) {
+    fullscreenModeController_.reset([[FullscreenModeController alloc]
+        initWithBrowserWindowController:self]);
+  }
+
   [self showFullscreenExitBubbleIfNecessary];
   browser_->WindowFullscreenStateChanged();
 }
@@ -812,6 +833,7 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowWillExitFullScreen:(NSNotification*)notification {
   if (chrome::mac::SupportsSystemFullscreen())
     [self registerForContentViewResizeNotifications];
+  fullscreenModeController_.reset();
   [self destroyFullscreenExitBubbleIfNecessary];
   [self setPresentationModeInternal:NO forceDropdown:NO];
 }
