@@ -31,6 +31,7 @@ struct CHROMEOS_EXPORT AudioDevice {
   bool is_input;
   uint64 id;
   std::string display_name;
+  std::string device_name;
   AudioDeviceType type;
   uint8 priority;
   bool active;

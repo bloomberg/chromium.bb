@@ -97,6 +97,7 @@ AudioDevice::AudioDevice(const AudioNode& node) {
     display_name = node.name;
   else
     display_name = node.device_name;
+  device_name = node.device_name;
   priority = GetDevicePriority(type);
   active = node.active;
   plugged_time = node.plugged_time;
@@ -113,6 +114,9 @@ std::string AudioDevice::ToString() const {
   base::StringAppendF(&result,
                       "display_name = %s ",
                       display_name.c_str());
+  base::StringAppendF(&result,
+                      "device_name = %s ",
+                      device_name.c_str());
   base::StringAppendF(&result,
                       "type = %s ",
                       GetTypeString(type).c_str());

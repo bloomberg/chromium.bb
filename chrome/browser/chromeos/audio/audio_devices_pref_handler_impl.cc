@@ -21,7 +21,7 @@
 namespace {
 
 std::string GetDeviceIdString(const chromeos::AudioDevice& device) {
-  return device.display_name + " : " +
+  return device.device_name + " : " +
          base::Uint64ToString(device.id & static_cast<uint64>(0xffffffff));
 }
 
