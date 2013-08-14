@@ -89,6 +89,13 @@ scoped_ptr<ProxyConfigDictionary> GetProxyPolicy(
   return make_scoped_ptr(new ProxyConfigDictionary(proxy_dict.get()));
 }
 
+void NotifyNetworkStateHandler(const std::string& service_path) {
+  if (NetworkHandler::IsInitialized()) {
+    NetworkHandler::Get()->network_state_handler()->RequestUpdateForNetwork(
+        service_path);
+  }
+}
+
 }  // namespace
 
 namespace proxy_config {
@@ -157,12 +164,12 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
 
   ProxyPrefs::ProxyMode mode;
   if (!proxy_config.GetMode(&mode) || mode == ProxyPrefs::MODE_DIRECT) {
-    // TODO(pneubeck): Consider removing this legacy code.  Return empty string
-    // for direct mode for portal check to work correctly.
+    // Return empty string for direct mode for portal check to work correctly.
+    // TODO(pneubeck): Consider removing this legacy code.
     shill_service_client->ClearProperty(
         dbus::ObjectPath(network.path()),
         flimflam::kProxyConfigProperty,
-        base::Bind(&base::DoNothing),
+        base::Bind(&NotifyNetworkStateHandler, network.path()),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "SetProxyConfig.ClearProperty Failed",
                    network.path(),
@@ -174,16 +181,11 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
         dbus::ObjectPath(network.path()),
         flimflam::kProxyConfigProperty,
         base::StringValue(proxy_config_str),
-        base::Bind(&base::DoNothing),
+        base::Bind(&NotifyNetworkStateHandler, network.path()),
         base::Bind(&network_handler::ShillErrorCallbackFunction,
                    "SetProxyConfig.SetProperty Failed",
                    network.path(),
                    network_handler::ErrorCallback()));
-  }
-
-  if (NetworkHandler::IsInitialized()) {
-    NetworkHandler::Get()->network_state_handler()
-        ->RequestUpdateForNetwork(network.path());
   }
 }
 

@@ -376,8 +376,8 @@ TEST_F(NetworkStateHandlerTest, RequestUpdate) {
   // Request an update for kShillManagerClientStubDefaultWireless.
   EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(
       kShillManagerClientStubDefaultWireless));
-  EXPECT_TRUE(network_state_handler_->RequestUpdateForNetwork(
-      kShillManagerClientStubDefaultWireless));
+  network_state_handler_->RequestUpdateForNetwork(
+      kShillManagerClientStubDefaultWireless);
   message_loop_.RunUntilIdle();
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(
       kShillManagerClientStubDefaultWireless));

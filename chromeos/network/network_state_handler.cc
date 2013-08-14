@@ -345,16 +345,14 @@ void NetworkStateHandler::ConnectToBestWifiNetwork() {
                          shill_property_handler_->AsWeakPtr()));
 }
 
-bool NetworkStateHandler::RequestUpdateForNetwork(
+void NetworkStateHandler::RequestUpdateForNetwork(
     const std::string& service_path) {
   NetworkState* network = GetModifiableNetworkState(service_path);
-  if (!network)
-    return false;  // Only request an update for known networks.
-  network->set_update_requested(true);
+  if (network)
+    network->set_update_requested(true);
   NET_LOG_EVENT("RequestUpdate", service_path);
   shill_property_handler_->RequestProperties(
       ManagedState::MANAGED_TYPE_NETWORK, service_path);
-  return true;
 }
 
 void NetworkStateHandler::RequestUpdateForAllNetworks() {

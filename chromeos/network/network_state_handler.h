@@ -179,12 +179,13 @@ class CHROMEOS_EXPORT NetworkStateHandler
   void ConnectToBestWifiNetwork();
 
   // Request an update for an existing NetworkState, e.g. after configuring
-  // a network. This is a no-op if an update request is already pending.
-  // Returns true if the network exists and an update is requested or pending.
+  // a network. This is a no-op if an update request is already pending. To
+  // ensure that a change is picked up, this must be called after Shill
+  // acknowledged it (e.g. in the callback of a SetProperties).
   // When the properties are received, NetworkPropertiesUpdated will be
   // signaled for each member of |observers_|, regardless of whether any
   // properties actually changed.
-  bool RequestUpdateForNetwork(const std::string& service_path);
+  void RequestUpdateForNetwork(const std::string& service_path);
 
   // Request an update for all existing NetworkState entries, e.g. after
   // loading an ONC configuration file that may have updated one or more

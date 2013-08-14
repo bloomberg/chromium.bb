@@ -160,17 +160,16 @@ class NetworkCertMigrator::MigrationTask
 
   void ClearNssProperty(const std::string& service_path,
                         const std::string& nss_key) {
-    DBusThreadManager::Get()->GetShillServiceClient()
-        ->SetProperty(dbus::ObjectPath(service_path),
-                      nss_key,
-                      base::StringValue(std::string()),
-                      base::Bind(&base::DoNothing),
-                      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                                 "MigrationTask.SetProperty failed",
-                                 service_path,
-                                 network_handler::ErrorCallback()));
-    cert_migrator_->network_state_handler_
-        ->RequestUpdateForNetwork(service_path);
+    DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
+        dbus::ObjectPath(service_path),
+        nss_key,
+        base::StringValue(std::string()),
+        base::Bind(
+            &MigrationTask::NotifyNetworkStateHandler, this, service_path),
+        base::Bind(&network_handler::ShillErrorCallbackFunction,
+                   "MigrationTask.SetProperty failed",
+                   service_path,
+                   network_handler::ErrorCallback()));
   }
 
   scoped_refptr<net::X509Certificate> FindCertificateWithNickname(
@@ -193,16 +192,35 @@ class NetworkCertMigrator::MigrationTask
     ca_cert_pems->AppendString(pem_encoded_cert);
     new_properties.SetWithoutPathExpansion(pem_key, ca_cert_pems.release());
 
-    DBusThreadManager::Get()->GetShillServiceClient()
-        ->SetProperties(dbus::ObjectPath(service_path),
-                        new_properties,
-                        base::Bind(&base::DoNothing),
-                        base::Bind(&network_handler::ShillErrorCallbackFunction,
-                                   "MigrationTask.SetProperties failed",
-                                   service_path,
-                                   network_handler::ErrorCallback()));
-    cert_migrator_->network_state_handler_
-        ->RequestUpdateForNetwork(service_path);
+    DBusThreadManager::Get()->GetShillServiceClient()->SetProperties(
+        dbus::ObjectPath(service_path),
+        new_properties,
+        base::Bind(
+            &MigrationTask::NotifyNetworkStateHandler, this, service_path),
+        base::Bind(&MigrationTask::LogErrorAndNotifyNetworkStateHandler,
+                   this,
+                   service_path));
+  }
+
+  void LogErrorAndNotifyNetworkStateHandler(const std::string& service_path,
+                                            const std::string& error_name,
+                                            const std::string& error_message) {
+    network_handler::ShillErrorCallbackFunction(
+        "MigrationTask.SetProperties failed",
+        service_path,
+        network_handler::ErrorCallback(),
+        error_name,
+        error_message);
+    NotifyNetworkStateHandler(service_path);
+  }
+
+  void NotifyNetworkStateHandler(const std::string& service_path) {
+    if (!cert_migrator_) {
+      VLOG(2) << "NetworkCertMigrator already destroyed. Aborting migration.";
+      return;
+    }
+    cert_migrator_->network_state_handler_->RequestUpdateForNetwork(
+        service_path);
   }
 
  private:
