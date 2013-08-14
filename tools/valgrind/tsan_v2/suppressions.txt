@@ -14,6 +14,7 @@ race:libevent/event.c
 
 # http://crbug.com/46840
 race:history::HistoryBackend::DeleteFTSIndexDatabases
+race:history::InMemoryHistoryBackend::Init
 
 # http://crbug.com/84094
 race:sqlite3StatusSet
@@ -115,3 +116,6 @@ race:gLibCleanupFunctions
 
 # http://crbug.com/270675
 race:net::RuleBasedHostResolverProc::Resolve
+
+# http://crbug.com/272095
+race:base::g_top_manager
