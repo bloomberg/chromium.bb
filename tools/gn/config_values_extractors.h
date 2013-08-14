@@ -13,7 +13,7 @@
 #include "tools/gn/config_values.h"
 #include "tools/gn/target.h"
 
-class EscapeOptions;
+struct EscapeOptions;
 
 template<typename T, class Writer>
 inline void ConfigValuesToStream(
