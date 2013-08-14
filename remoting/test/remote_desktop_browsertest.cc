@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.cc"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest.h"
@@ -88,6 +88,8 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
 
   void Authenticate();
 
+  void Approve();
+
   // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
   // This is useful for diagnostic purposes.
   bool NoCleanup() { return no_cleanup_; }
@@ -113,6 +115,11 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Helper to get the extension ID of the installed chromoting webapp.
   std::string ChromotingID() { return chromoting_id_; }
 
+  // Helper to construct the starting URL of the installed chromoting webapp.
+  GURL Chromoting_Main_URL() {
+    return GURL("chrome-extension://" + ChromotingID() + "/main.html");
+  }
+
   // Helper to retrieve the current URL of the active tab in the browser.
   GURL GetCurrentURL() {
     return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
@@ -136,6 +143,31 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
     ExecuteScript(script);
 
     observer.Wait();
+  }
+
+  // Helper to execute a javascript code snippet on the current page and
+  // wait until the target url is loaded. This is used when the target page
+  // is loaded after multiple redirections.
+  void ExecuteScriptAndWaitUntil(
+      const std::string& script, const GURL& target) {
+    content::WindowedNotificationObserver observer(
+        content::NOTIFICATION_LOAD_STOP,
+        content::Source<content::NavigationController>(
+            &browser()->tab_strip_model()->GetActiveWebContents()->
+                GetController()));
+
+    ExecuteScript(script);
+
+    observer.Wait();
+
+    // TODO: is there a better way to wait for all the redirections to complete?
+    while (GetCurrentURL() != target) {
+      content::WindowedNotificationObserver(
+          content::NOTIFICATION_LOAD_STOP,
+          content::Source<content::NavigationController>(
+              &browser()->tab_strip_model()->GetActiveWebContents()->
+                  GetController())).Wait();
+    }
   }
 
   // Helper to execute a javascript code snippet on the current page and
@@ -260,8 +292,7 @@ void RemoteDesktopBrowserTest::UninstallChromotingApp() {
 void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   ASSERT_FALSE(ChromotingID().empty());
 
-  std::string url = "chrome-extension://" + ChromotingID() + "/main.html";
-  const GURL chromoting_main(url);
+  const GURL chromoting_main = Chromoting_Main_URL();
   NavigateToURLAndWait(chromoting_main);
 
   EXPECT_EQ(GetCurrentURL(), chromoting_main);
@@ -302,8 +333,7 @@ void RemoteDesktopBrowserTest::Authorize() {
 
   // The chromoting main page should be loaded in the current tab
   // and isAuthenticated() should be false (auth dialog visible).
-  std::string url = "chrome-extension://" + ChromotingID() + "/main.html";
-  ASSERT_EQ(GetCurrentURL().spec(), url);
+  ASSERT_EQ(GetCurrentURL(), Chromoting_Main_URL());
   ASSERT_FALSE(ExecuteScriptAndExtractBool(
       "remoting.OAuth2.prototype.isAuthenticated()"));
 
@@ -335,6 +365,29 @@ void RemoteDesktopBrowserTest::Authenticate() {
   // TODO: Is there a better way to verify we are on the
   // "Request for Permission" page?
   EXPECT_TRUE(HtmlElementExists("submit_approve_access"));
+}
+
+void RemoteDesktopBrowserTest::Approve() {
+  // The chromoting extension should be installed.
+  ASSERT_FALSE(ChromotingID().empty());
+
+  // The active tab should have the chromoting app loaded.
+  ASSERT_EQ(GetCurrentURL().host(), "accounts.google.com");
+
+  // Is there a better way to verify we are on the "Request for Permission"
+  // page?
+  ASSERT_TRUE(HtmlElementExists("submit_approve_access"));
+
+  const GURL chromoting_main = Chromoting_Main_URL();
+  ExecuteScriptAndWaitUntil(
+      "lso.approveButtonAction();"
+      "document.forms[\"connect-approve\"].submit();",
+      chromoting_main);
+
+  ASSERT_TRUE(GetCurrentURL() == chromoting_main);
+
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(
+      "remoting.OAuth2.prototype.isAuthenticated()"));
 }
 
 IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Launch) {
@@ -376,6 +429,14 @@ IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Auth) {
   Authorize();
 
   Authenticate();
+
+  Approve();
+
+  // TODO: Remove this hack by blocking on the appropriate notification.
+  // The browser may still be loading images embedded in the webapp. If we
+  // uinstall it now those load will fail. Navigating away to avoid the load
+  // failures.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
 
   if (!NoCleanup()) {
     UninstallChromotingApp();
