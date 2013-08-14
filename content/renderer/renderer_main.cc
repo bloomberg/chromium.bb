@@ -181,8 +181,6 @@ int RendererMain(const MainFunctionParams& parameters) {
   base::FieldTrialList field_trial_list(NULL);
   // Ensure any field trials in browser are reflected into renderer.
   if (parsed_command_line.HasSwitch(switches::kForceFieldTrials)) {
-    std::string persistent = parsed_command_line.GetSwitchValueASCII(
-        switches::kForceFieldTrials);
     // Field trials are created in an "activated" state to ensure they get
     // reported in crash reports.
     bool result = base::FieldTrialList::CreateTrialsFromString(
