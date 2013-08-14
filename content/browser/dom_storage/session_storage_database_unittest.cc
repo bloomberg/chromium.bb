@@ -219,7 +219,6 @@ void SessionStorageDatabaseTest::CheckDatabaseConsistency() const {
 
   for (DataMap::const_iterator it = data.begin(); it != data.end(); ++it) {
     std::string namespace_id;
-    std::string origin;
     if (IsNamespaceKey(it->first, &namespace_id)) {
       found_namespace_ids.insert(namespace_id);
       ++valid_keys;
