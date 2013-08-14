@@ -469,9 +469,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyMinZoom: return 407;
     case CSSPropertyOrientation: return 408;
     case CSSPropertyUserZoom: return 409;
-#if defined(ENABLE_DASHBOARD_SUPPORT) && ENABLE_DASHBOARD_SUPPORT
-    case CSSPropertyWebkitDashboardRegion: return 410;
-#endif
+    // CSSPropertyWebkitDashboardRegion was 410.
     // CSSPropertyWebkitOverflowScrolling was 411.
     case CSSPropertyWebkitAppRegion: return 412;
     case CSSPropertyWebkitFilter: return 413;
