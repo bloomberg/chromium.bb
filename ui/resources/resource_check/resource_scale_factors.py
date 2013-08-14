@@ -15,6 +15,10 @@ import os
 import struct
 
 
+class InvalidPNGException(Exception):
+  pass
+
+
 class ResourceScaleFactors(object):
   """Verifier of image dimensions for Chromium resources.
 
@@ -44,7 +48,8 @@ class ResourceScaleFactors(object):
     def ImageSize(filename):
       with open(filename, 'rb', buffering=0) as f:
         data = f.read(24)
-      assert data[:8] == '\x89PNG\r\n\x1A\n' and data[12:16] == 'IHDR'
+      if data[:8] != '\x89PNG\r\n\x1A\n' or data[12:16] != 'IHDR':
+        raise InvalidPNGException
       return struct.unpack('>ii', data[16:24])
 
     # Returns a list of valid scaled image sizes. The valid sizes are the
@@ -75,6 +80,9 @@ class ResourceScaleFactors(object):
           if relative_path not in files:
             files.append(relative_path)
 
+    corrupt_png_error = ('Corrupt PNG in file %s. Note that binaries are not '
+        'correctly uploaded to the code review tool and must be directly '
+        'submitted using the dcommit command.')
     for f in files:
       base_image = self.input_api.os_path.join(self.paths[0][1], f)
       if not os.path.exists(base_image):
@@ -82,7 +90,12 @@ class ResourceScaleFactors(object):
             'Base image %s does not exist' % self.input_api.os_path.join(
             repository_path, base_image)))
         continue
-      base_dimensions = ImageSize(base_image)
+      try:
+        base_dimensions = ImageSize(base_image)
+      except InvalidPNGException:
+        results.append(self.output_api.PresubmitError(corrupt_png_error %
+            self.input_api.os_path.join(repository_path, base_image)))
+        continue
       # Find all scaled versions of the base image and verify their sizes.
       for i in range(1, len(self.paths)):
         image_path = self.input_api.os_path.join(self.paths[i][1], f)
@@ -90,7 +103,12 @@ class ResourceScaleFactors(object):
           continue
         # Ensure that each image for a particular scale factor is the
         # correct scale of the base image.
-        scaled_dimensions = ImageSize(image_path)
+        try:
+          scaled_dimensions = ImageSize(image_path)
+        except InvalidPNGException:
+          results.append(self.output_api.PresubmitError(corrupt_png_error %
+              self.input_api.os_path.join(repository_path, image_path)))
+          continue
         for dimension_name, base_size, scaled_size in zip(
             ('width', 'height'), base_dimensions, scaled_dimensions):
           valid_sizes = ValidSizes(base_size, self.paths[i][0])
