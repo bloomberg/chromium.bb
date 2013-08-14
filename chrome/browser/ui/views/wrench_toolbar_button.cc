@@ -27,9 +27,9 @@ void WrenchToolbarButton::SetSeverity(WrenchIconPainter::Severity severity,
 
 void WrenchToolbarButton::OnPaint(gfx::Canvas* canvas) {
   // Badge non-ChromeOS ASH builds so that users know that they are using ASH.
-#if defined(USE_ASH) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
   wrench_icon_painter_->set_badge(
-      *GetThemeProvider()->GetImageSkiaNamed(IDR_TOOLS_BADGE_ASH));
+      *GetThemeProvider()->GetImageSkiaNamed(IDR_TOOLS_BADGE_AURA));
 #endif
 
   wrench_icon_painter_->Paint(
