@@ -589,11 +589,8 @@
         }],
         ['OS=="win"', {
           'include_dirs': [
+            '<(DEPTH)/breakpad/src',
             '<(DEPTH)/third_party/wtl/include',
-          ],
-          'sources!': [
-            'common/crash_keys.cc',
-            'common/crash_keys.h',
           ],
         }],
         ['enable_mdns == 1', {

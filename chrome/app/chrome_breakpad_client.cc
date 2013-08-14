@@ -234,6 +234,9 @@ void ChromeBreakpadClient::SetDumpWithoutCrashingFunction(void (*function)()) {
 #endif
 
 size_t ChromeBreakpadClient::RegisterCrashKeys() {
+  // Note: This is not called on Windows because Breakpad is initialized in the
+  // EXE module, but code that uses crash keys is in the DLL module.
+  // RegisterChromeCrashKeys() will be called after the DLL is loaded.
   return crash_keys::RegisterChromeCrashKeys();
 }
 

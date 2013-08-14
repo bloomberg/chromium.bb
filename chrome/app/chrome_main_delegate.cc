@@ -41,6 +41,7 @@
 #include <atlbase.h>
 #include <malloc.h>
 #include "base/strings/string_util.h"
+#include "chrome/common/child_process_logging.h"
 #include "sandbox/win/src/sandbox.h"
 #include "tools/memory_watcher/memory_watcher.h"
 #include "ui/base/resource/resource_bundle_win.h"
@@ -585,6 +586,10 @@ void ChromeMainDelegate::PreSandboxStartup() {
                         Append(chrome::kHelperProcessExecutablePath));
 
   InitMacCrashReporter(command_line, process_type);
+#endif
+
+#if defined(OS_WIN)
+  child_process_logging::Init();
 #endif
 
   // Notice a user data directory override if any

@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "gpu/config/gpu_info.h"
@@ -55,6 +56,15 @@ typedef void (__cdecl *MainSetCommandLine)(const wchar_t**, size_t);
 // exported in breakpad_field_trial_win.cc:
 //   void __declspec(dllexport) __cdecl SetExperimentList3
 typedef void (__cdecl *MainSetExperimentList)(const wchar_t**, size_t, size_t);
+
+// exported in breakpad_win.cc:
+//    void __declspec(dllexport) __cdecl SetCrashKeyValueImpl.
+typedef void (__cdecl *SetCrashKeyValue)(const wchar_t*, const wchar_t*);
+
+// exported in breakpad_win.cc:
+//    void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl.
+typedef void (__cdecl *ClearCrashKeyValue)(const wchar_t*);
+
 
 // Copied from breakpad_win.cc.
 void StringVectorToCStringVector(const std::vector<std::wstring>& wstrings,
@@ -254,6 +264,48 @@ void SetNumberOfViews(int number_of_views) {
       return;
   }
   (set_number_of_views)(number_of_views);
+}
+
+namespace {
+
+void SetCrashKeyValueTrampoline(const base::StringPiece& key,
+                                const base::StringPiece& value) {
+  static SetCrashKeyValue set_crash_key = NULL;
+  if (!set_crash_key) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    set_crash_key = reinterpret_cast<SetCrashKeyValue>(
+        GetProcAddress(exe_module, "SetCrashKeyValueImpl"));
+  }
+
+  if (set_crash_key)
+    (set_crash_key)(UTF8ToWide(key).data(), UTF8ToWide(value).data());
+}
+
+void ClearCrashKeyValueTrampoline(const base::StringPiece& key) {
+  static ClearCrashKeyValue clear_crash_key = NULL;
+  if (!clear_crash_key) {
+    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
+    if (!exe_module)
+      return;
+    clear_crash_key = reinterpret_cast<ClearCrashKeyValue>(
+        GetProcAddress(exe_module, "ClearCrashKeyValueImpl"));
+  }
+
+  if (clear_crash_key)
+    (clear_crash_key)(UTF8ToWide(key).data());
+}
+
+}  // namespace
+
+void Init() {
+  // Note: on other platforms, this is set up during Breakpad initialization,
+  // in ChromeBreakpadClient. But on Windows, that is before the DLL module is
+  // loaded, which is a prerequisite of the crash key system.
+  crash_keys::RegisterChromeCrashKeys();
+  base::debug::SetCrashKeyReportingFunctions(
+      &SetCrashKeyValueTrampoline, &ClearCrashKeyValueTrampoline);
 }
 
 }  // namespace child_process_logging

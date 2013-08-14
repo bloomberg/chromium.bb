@@ -170,4 +170,13 @@ extern const char* kUrlChunkFormatStr;
 
 #endif  // defined(OS_MACOSX)
 
+#if defined(OS_WIN)
+namespace child_process_logging {
+
+// Sets up the base/debug/crash_logging.h mechanism.
+void Init();
+
+}  // namespace child_process_loggging
+#endif  // defined(OS_WIN)
+
 #endif  // CHROME_COMMON_CHILD_PROCESS_LOGGING_H_

@@ -110,10 +110,13 @@ static size_t g_num_of_views_offset = 0;
 static size_t g_num_switches_offset = 0;
 static size_t g_switches_offset = 0;
 static size_t g_dynamic_keys_offset = 0;
-typedef std::map<std::string, google_breakpad::CustomInfoEntry*>
+typedef std::map<std::wstring, google_breakpad::CustomInfoEntry*>
     DynamicEntriesMap;
 DynamicEntriesMap* g_dynamic_entries = NULL;
-static size_t g_dynamic_entries_count = 0;
+// Allow for 128 entries. POSIX uses 64 entries of 256 bytes, so Windows needs
+// 256 entries of 64 bytes to match. See CustomInfoEntry::kValueMaxLength in
+// Breakpad.
+const size_t kMaxDynamicEntries = 256;
 
 // Maximum length for plugin path to include in plugin crash reports.
 const size_t kMaxPluginPathLength = 256;
@@ -508,9 +511,8 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
 
   // Create space for dynamic ad-hoc keys. The names and values are set using
   // the API defined in base/debug/crash_logging.h.
-  g_dynamic_entries_count = breakpad::GetBreakpadClient()->RegisterCrashKeys();
   g_dynamic_keys_offset = g_custom_entries->size();
-  for (size_t i = 0; i < g_dynamic_entries_count; ++i) {
+  for (size_t i = 0; i < kMaxDynamicEntries; ++i) {
     // The names will be mutated as they are set. Un-numbered since these are
     // merely placeholders. The name cannot be empty because Breakpad's
     // HTTPUpload will interpret that as an invalid parameter.
@@ -718,43 +720,37 @@ extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
   SetIntegerValue(g_num_of_views_offset, number_of_views);
 }
 
-void SetCrashKeyValue(const base::StringPiece& key,
-                      const base::StringPiece& value) {
+extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
+    const wchar_t* key, const wchar_t* value) {
   // CustomInfoEntry limits the length of key and value. If they exceed
   // their maximum length the underlying string handling functions raise
   // an exception and prematurely trigger a crash. Truncate here.
-  base::StringPiece safe_key(key.substr(
+  std::wstring safe_key(std::wstring(key).substr(
       0, google_breakpad::CustomInfoEntry::kNameMaxLength  - 1));
-  base::StringPiece safe_value(value.substr(
+  std::wstring safe_value(std::wstring(value).substr(
       0, google_breakpad::CustomInfoEntry::kValueMaxLength - 1));
-
-  // Keep a copy of the safe key as a std::string, we'll reuse it later.
-  std::string key_string(safe_key.begin(), safe_key.end());
 
   // If we already have a value for this key, update it; otherwise, insert
   // the new value if we have not exhausted the pre-allocated slots for dynamic
   // entries.
-  DynamicEntriesMap::iterator it = g_dynamic_entries->find(key_string);
+  DynamicEntriesMap::iterator it = g_dynamic_entries->find(safe_key);
   google_breakpad::CustomInfoEntry* entry = NULL;
   if (it == g_dynamic_entries->end()) {
-    if (g_dynamic_entries->size() >= g_dynamic_entries_count)
+    if (g_dynamic_entries->size() >= kMaxDynamicEntries)
       return;
     entry = &(*g_custom_entries)[g_dynamic_keys_offset++];
-    g_dynamic_entries->insert(std::make_pair(key_string, entry));
+    g_dynamic_entries->insert(std::make_pair(safe_key, entry));
   } else {
     entry = it->second;
   }
 
-  entry->set(UTF8ToWide(safe_key).data(), UTF8ToWide(safe_value).data());
+  entry->set(safe_key.data(), safe_value.data());
 }
 
-extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValuePair(
-    const char* key, const char* value) {
-  SetCrashKeyValue(base::StringPiece(key), base::StringPiece(value));
-}
-
-void ClearCrashKeyValue(const base::StringPiece& key) {
-  DynamicEntriesMap::iterator it = g_dynamic_entries->find(key.as_string());
+extern "C" void __declspec(dllexport) __cdecl ClearCrashKeyValueImpl(
+    const wchar_t* key) {
+  std::wstring key_string(key);
+  DynamicEntriesMap::iterator it = g_dynamic_entries->find(key_string);
   if (it == g_dynamic_entries->end())
     return;
 
@@ -990,9 +986,6 @@ void InitCrashReporter() {
 
   bool is_per_user_install = breakpad::GetBreakpadClient()->GetIsPerUserInstall(
       base::FilePath(exe_path));
-
-  base::debug::SetCrashKeyReportingFunctions(
-      &SetCrashKeyValue, &ClearCrashKeyValue);
 
   google_breakpad::CustomClientInfo* custom_info =
       GetCustomInfo(exe_path, process_type);
