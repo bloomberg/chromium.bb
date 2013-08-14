@@ -545,6 +545,21 @@ void ExtensionService::Init() {
     component_loader_->LoadAll();
     extensions::InstalledLoader(this).LoadAllExtensions();
 
+    // Attempt to re-enable extensions whose only disable reason is reloading.
+    std::vector<std::string> extensions_to_enable;
+    for (ExtensionSet::const_iterator iter = disabled_extensions_.begin();
+        iter != disabled_extensions_.end(); ++iter) {
+      const Extension* e = iter->get();
+      if (extension_prefs_->GetDisableReasons(e->id()) ==
+          Extension::DISABLE_RELOAD) {
+        extensions_to_enable.push_back(e->id());
+      }
+    }
+    for (std::vector<std::string>::iterator it = extensions_to_enable.begin();
+         it != extensions_to_enable.end(); ++it) {
+      EnableExtension(*it);
+    }
+
     // Finish install (if possible) of extensions that were still delayed while
     // the browser was shut down.
     scoped_ptr<extensions::ExtensionPrefs::ExtensionsInfo> delayed_info(
