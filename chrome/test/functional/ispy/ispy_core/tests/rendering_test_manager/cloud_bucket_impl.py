@@ -3,12 +3,15 @@
 # found in the LICENSE file.
 
 """Implementation of CloudBucket using Google Cloud Storage as the backend."""
-
+import os
 import sys
-sys.path.append(sys.path.join('gsutil', 'third_party', 'boto'))
-# TODO(chris) check boto into ispy/third_party/
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
+                             'gsutil', 'third_party', 'boto'))
 import boto
 
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 from tests.rendering_test_manager import cloud_bucket
 
 
@@ -63,7 +66,9 @@ class CloudBucketImpl(cloud_bucket.CloudBucket):
     key = boto.gs.key.Key(self.bucket)
     key.key = path
     if key.exists():
-      return key.generate_url(3600)
+      # Corrects a bug in boto that incorrectly generates a url
+      #  to a resource in Google Cloud Storage.
+      return key.generate_url(3600).replace('AWSAccessKeyId', 'GoogleAccessId')
     else:
       raise cloud_bucket.FileNotFoundError(path)
 

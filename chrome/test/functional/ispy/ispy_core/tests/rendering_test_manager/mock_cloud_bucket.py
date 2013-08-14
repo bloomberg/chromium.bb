@@ -4,6 +4,10 @@
 
 """Subclass of CloudBucket used for testing."""
 
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 from tests.rendering_test_manager import cloud_bucket
 
 
