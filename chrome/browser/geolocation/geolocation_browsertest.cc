@@ -456,13 +456,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
   CheckStringValueFromJavascript("1", "geoGetLastError()");
 }
 
-// http://crbug.com/44589. Hangs on Mac, crashes on Windows
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_NoInfobarForSecondTab DISABLED_NoInfobarForSecondTab
-#else
-#define MAYBE_NoInfobarForSecondTab NoInfobarForSecondTab
-#endif
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForSecondTab) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   AddGeolocationWatch(true);
   SetInfoBarResponse(current_url(), true);
@@ -475,13 +469,7 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForSecondTab) {
   CheckGeoposition(fake_latitude(), fake_longitude());
 }
 
-// http://crbug.com/44589. Hangs on Mac, crashes on Windows
-#if defined(OS_MACOSX) || defined(OS_WIN)
-#define MAYBE_NoInfobarForDeniedOrigin DISABLED_NoInfobarForDeniedOrigin
-#else
-#define MAYBE_NoInfobarForDeniedOrigin NoInfobarForDeniedOrigin
-#endif
-IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, MAYBE_NoInfobarForDeniedOrigin) {
+IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest, NoInfobarForDeniedOrigin) {
   ASSERT_TRUE(Initialize(INITIALIZATION_NONE));
   current_browser()->profile()->GetHostContentSettingsMap()->SetContentSetting(
       ContentSettingsPattern::FromURLNoWildcard(current_url()),
