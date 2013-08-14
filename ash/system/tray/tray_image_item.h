@@ -41,6 +41,9 @@ class TrayImageItem : public SystemTrayItem {
       ShelfAlignment alignment) OVERRIDE;
 
  private:
+  // Set the alignment of the image depending on the shelf alignment.
+  void SetItemAlignment(ShelfAlignment alignment);
+
   int resource_id_;
   TrayItemView* tray_view_;
 
