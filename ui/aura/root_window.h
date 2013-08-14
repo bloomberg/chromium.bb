@@ -29,8 +29,6 @@
 #include "ui/gfx/point.h"
 #include "ui/gfx/transform.h"
 
-class SkCanvas;
-
 namespace gfx {
 class Size;
 class Transform;
@@ -238,12 +236,6 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
 
   // Sets if the window should be focused when shown.
   void SetFocusWhenShown(bool focus_when_shown);
-
-  // Copies |source_bounds| from the root window (as displayed on the host
-  // machine) to |canvas| at offset |dest_offset|.
-  bool CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
-                          const gfx::Point& dest_offset,
-                          SkCanvas* canvas);
 
   // Gets the last location seen in a mouse event in this root window's
   // coordinates. This may return a point outside the root window's bounds.

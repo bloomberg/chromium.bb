@@ -50,7 +50,6 @@ namespace internal {
 
 class AlwaysOnTopController;
 class AnimatingDesktopController;
-class BootSplashScreen;
 class DesktopBackgroundWidgetController;
 class DockedWindowLayoutManager;
 class PanelLayoutManager;
@@ -63,6 +62,10 @@ class SystemModalContainerLayoutManager;
 class TouchHudDebug;
 class TouchHudProjection;
 class WorkspaceController;
+
+#if defined(USE_X11)
+class BootSplashScreen;
+#endif
 
 // This class maintains the per root window state for ash. This class
 // owns the root window and other dependent objects that should be
@@ -255,7 +258,9 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   PanelLayoutManager* panel_layout_manager_;
 
   scoped_ptr<SystemBackgroundController> system_background_;
+#if defined(USE_X11)
   scoped_ptr<BootSplashScreen> boot_splash_screen_;
+#endif
 
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;

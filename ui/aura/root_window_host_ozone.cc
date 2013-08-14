@@ -106,13 +106,6 @@ void RootWindowHostOzone::SetFocusWhenShown(bool focus_when_shown) {
   NOTIMPLEMENTED();
 }
 
-bool RootWindowHostOzone::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
-                                             const gfx::Point& dest_offset,
-                                             SkCanvas* canvas) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RootWindowHostOzone::PostNativeEvent(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();

@@ -46,9 +46,6 @@ class RootWindowHostMac : public RootWindowHost,
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
   virtual bool ConfineCursorToRootWindow() OVERRIDE;
   virtual void UnConfineCursor() OVERRIDE;
-  virtual bool CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
-                                  const gfx::Point& dest_offset,
-                                  SkCanvas* canvas) OVERRIDE;
   // RootWindowHostMacDelegate:
   virtual void SendEvent(const base::NativeEvent& native_event) OVERRIDE;
 

@@ -32,11 +32,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/threading/thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPostConfig.h"
 #include "ui/base/events/event_utils.h"
 #include "ui/base/keycodes/keyboard_code_conversion_x.h"
 #include "ui/base/touch/touch_factory_x11.h"
 #include "ui/base/x/device_data_manager.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
+#include "ui/gfx/point.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -49,7 +55,6 @@
 #if defined(USE_AURA)
 #include <X11/Xcursor/Xcursor.h>
 #include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/skia_util.h"
 #endif
 
@@ -1181,6 +1186,55 @@ void DetachSharedMemory(Display* display, XSharedMemoryId shmseg) {
 
   if (!XShmDetach(display, &shminfo))
     NOTREACHED();
+}
+
+bool CopyAreaToCanvas(XID drawable,
+                      gfx::Rect source_bounds,
+                      gfx::Point dest_offset,
+                      gfx::Canvas* canvas) {
+  ui::XScopedImage scoped_image(
+      XGetImage(GetXDisplay(), drawable,
+                source_bounds.x(), source_bounds.y(),
+                source_bounds.width(), source_bounds.height(),
+                AllPlanes, ZPixmap));
+  XImage* image = scoped_image.get();
+  if (!image) {
+    LOG(ERROR) << "XGetImage failed";
+    return false;
+  }
+
+  if (image->bits_per_pixel == 32) {
+    if ((0xff << SK_R32_SHIFT) != image->red_mask ||
+        (0xff << SK_G32_SHIFT) != image->green_mask ||
+        (0xff << SK_B32_SHIFT) != image->blue_mask) {
+      LOG(WARNING) << "XImage and Skia byte orders differ";
+      return false;
+    }
+
+    // Set the alpha channel before copying to the canvas.  Otherwise, areas of
+    // the framebuffer that were cleared by ply-image rather than being obscured
+    // by an image during boot may end up transparent.
+    // TODO(derat|marcheu): Remove this if/when ply-image has been updated to
+    // set the framebuffer's alpha channel regardless of whether the device
+    // claims to support alpha or not.
+    for (int i = 0; i < image->width * image->height * 4; i += 4)
+      image->data[i + 3] = 0xff;
+
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
+                     image->width, image->height,
+                     image->bytes_per_line);
+    bitmap.setPixels(image->data);
+    gfx::ImageSkia image_skia;
+    gfx::ImageSkiaRep image_rep(bitmap, canvas->scale_factor());
+    image_skia.AddRepresentation(image_rep);
+    canvas->DrawImageInt(image_skia, dest_offset.x(), dest_offset.y());
+  } else {
+    NOTIMPLEMENTED() << "Unsupported bits-per-pixel " << image->bits_per_pixel;
+    return false;
+  }
+
+  return true;
 }
 
 XID CreatePictureFromSkiaPixmap(Display* display, XID pixmap) {

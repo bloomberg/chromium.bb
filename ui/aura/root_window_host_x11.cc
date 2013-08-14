@@ -25,9 +25,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkPostConfig.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -45,7 +42,6 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/screen.h"
 
 #if defined(OS_CHROMEOS)
@@ -817,51 +813,6 @@ void RootWindowHostX11::SetFocusWhenShown(bool focus_when_shown) {
                        k_NET_WM_USER_TIME,
                        0);
   }
-}
-
-bool RootWindowHostX11::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
-                                             const gfx::Point& dest_offset,
-                                             SkCanvas* canvas) {
-  ui::XScopedImage scoped_image(
-      XGetImage(xdisplay_, xwindow_,
-                source_bounds.x(), source_bounds.y(),
-                source_bounds.width(), source_bounds.height(),
-                AllPlanes, ZPixmap));
-  XImage* image = scoped_image.get();
-  if (!image) {
-    LOG(ERROR) << "XGetImage failed";
-    return false;
-  }
-
-  if (image->bits_per_pixel == 32) {
-    if ((0xff << SK_R32_SHIFT) != image->red_mask ||
-        (0xff << SK_G32_SHIFT) != image->green_mask ||
-        (0xff << SK_B32_SHIFT) != image->blue_mask) {
-      LOG(WARNING) << "XImage and Skia byte orders differ";
-      return false;
-    }
-
-    // Set the alpha channel before copying to the canvas.  Otherwise, areas of
-    // the framebuffer that were cleared by ply-image rather than being obscured
-    // by an image during boot may end up transparent.
-    // TODO(derat|marcheu): Remove this if/when ply-image has been updated to
-    // set the framebuffer's alpha channel regardless of whether the device
-    // claims to support alpha or not.
-    for (int i = 0; i < image->width * image->height * 4; i += 4)
-      image->data[i + 3] = 0xff;
-
-    SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config,
-                     image->width, image->height,
-                     image->bytes_per_line);
-    bitmap.setPixels(image->data);
-    canvas->drawBitmap(bitmap, SkIntToScalar(0), SkIntToScalar(0), NULL);
-  } else {
-    NOTIMPLEMENTED() << "Unsupported bits-per-pixel " << image->bits_per_pixel;
-    return false;
-  }
-
-  return true;
 }
 
 void RootWindowHostX11::PostNativeEvent(

@@ -499,15 +499,6 @@ void RootWindow::SetFocusWhenShown(bool focused) {
   host_->SetFocusWhenShown(focused);
 }
 
-bool RootWindow::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
-                                    const gfx::Point& dest_offset,
-                                    SkCanvas* canvas) {
-  DCHECK(canvas);
-  DCHECK(bounds().Contains(source_bounds));
-  gfx::Rect source_pixels = ui::ConvertRectToPixel(layer(), source_bounds);
-  return host_->CopyAreaToSkCanvas(source_pixels, dest_offset, canvas);
-}
-
 gfx::Point RootWindow::GetLastMouseLocationInRoot() const {
   gfx::Point location = Env::GetInstance()->last_mouse_location();
   client::ScreenPositionClient* client = client::GetScreenPositionClient(this);

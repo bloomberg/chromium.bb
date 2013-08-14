@@ -1,11 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/wm/boot_splash_screen.h"
+#include "ash/wm/boot_splash_screen_chromeos.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/root_window.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -33,9 +34,9 @@ class BootSplashScreen::CopyHostContentLayerDelegate
     // TODO(derat): Instead of copying the data, use GLX_EXT_texture_from_pixmap
     // to create a zero-copy texture (when possible):
     // https://codereview.chromium.org/10543125
-    root_window_->CopyAreaToSkCanvas(
+    ui::CopyAreaToCanvas(root_window_->GetAcceleratedWidget(),
         gfx::Rect(root_window_->GetHostOrigin(), root_window_->GetHostSize()),
-        gfx::Point(), canvas->sk_canvas());
+        gfx::Point(), canvas);
   }
 
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE {}

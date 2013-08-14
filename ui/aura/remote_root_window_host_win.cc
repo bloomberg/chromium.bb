@@ -339,13 +339,6 @@ bool RemoteRootWindowHostWin::ConfineCursorToRootWindow() {
   return true;
 }
 
-bool RemoteRootWindowHostWin::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
-                                                 const gfx::Point& dest_offset,
-                                                 SkCanvas* canvas) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RemoteRootWindowHostWin::UnConfineCursor() {
 }
 

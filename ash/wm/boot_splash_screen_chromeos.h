@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_WM_BOOT_SPLASH_SCREEN_H_
-#define ASH_WM_BOOT_SPLASH_SCREEN_H_
+#ifndef ASH_WM_BOOT_SPLASH_SCREEN_CHROMEOS_H_
+#define ASH_WM_BOOT_SPLASH_SCREEN_CHROMEOS_H_
 
 #include <string>
 
@@ -50,4 +50,4 @@ class BootSplashScreen {
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_WM_BOOT_SPLASH_SCREEN_H_
+#endif  // ASH_WM_BOOT_SPLASH_SCREEN_CHROMEOS_H_

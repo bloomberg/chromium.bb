@@ -39,13 +39,15 @@ typedef struct _GtkWindow GtkWindow;
 #endif
 
 namespace gfx {
+class Canvas;
+class Point;
 class Rect;
 }
 class SkBitmap;
 
 namespace ui {
 
-// These functions use the GDK default display and this /must/ be called from
+// These functions use the default display and this /must/ be called from
 // the UI thread. Thus, they don't support multiple displays.
 
 // These functions cache their results ---------------------------------
@@ -258,6 +260,16 @@ void RestackWindow(XID window, XID sibling, bool above);
 UI_EXPORT XSharedMemoryId AttachSharedMemory(Display* display,
                                              int shared_memory_support);
 UI_EXPORT void DetachSharedMemory(Display* display, XSharedMemoryId shmseg);
+
+// Copies |source_bounds| from |drawable| to |canvas| at offset |dest_offset|.
+// |source_bounds| is in physical pixels, while |dest_offset| is relative to
+// the canvas's scale. Note that this function is slow since it uses
+// XGetImage() to copy the data from the X server to this process before
+// copying it to |canvas|.
+UI_EXPORT bool CopyAreaToCanvas(XID drawable,
+                                gfx::Rect source_bounds,
+                                gfx::Point dest_offset,
+                                gfx::Canvas* canvas);
 
 // Return a handle to an XRender picture where |pixmap| is a handle to a
 // pixmap containing Skia ARGB data.

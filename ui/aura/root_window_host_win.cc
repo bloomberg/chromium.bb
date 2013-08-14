@@ -210,13 +210,6 @@ bool RootWindowHostWin::ConfineCursorToRootWindow() {
   return ClipCursor(&window_rect) != 0;
 }
 
-bool RootWindowHostWin::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
-                                           const gfx::Point& dest_offset,
-                                           SkCanvas* canvas) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void RootWindowHostWin::UnConfineCursor() {
   ClipCursor(NULL);
 }

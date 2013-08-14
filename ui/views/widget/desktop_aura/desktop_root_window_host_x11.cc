@@ -731,14 +731,6 @@ void DesktopRootWindowHostX11::SetFocusWhenShown(bool focus_when_shown) {
   }
 }
 
-bool DesktopRootWindowHostX11::CopyAreaToSkCanvas(
-    const gfx::Rect& source_bounds,
-    const gfx::Point& dest_offset,
-    SkCanvas* canvas) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void DesktopRootWindowHostX11::PostNativeEvent(
     const base::NativeEvent& native_event) {
   DCHECK(xwindow_);
