@@ -1,0 +1,36 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.eventHandler["Timeline.eventRecorded"] = eventRecorded;
+
+    InspectorTest.sendCommand("Timeline.start", {});
+    InspectorTest.sendCommand("Page.enable", {}, pageEnabled);
+
+    function pageEnabled()
+    {
+        InspectorTest.log("Page enabled");
+        InspectorTest.sendCommand("Page.disable", {});
+        InspectorTest.sendCommand("Timeline.stop", {}, pageDisabled);
+    }
+
+    function pageDisabled()
+    {
+        InspectorTest.log("Page disabled");
+        InspectorTest.completeTest();
+    }
+
+    function eventRecorded(msg)
+    {
+        InspectorTest.log("Timeline.eventRecorded: " + msg.params.record.type);
+    }
+}
+
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>

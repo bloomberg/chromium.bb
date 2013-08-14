@@ -84,8 +84,14 @@ String InspectorState::getString(const String& propertyName)
 
 long InspectorState::getLong(const String& propertyName)
 {
+    return getLong(propertyName, 0);
+}
+
+
+long InspectorState::getLong(const String& propertyName, long defaultValue)
+{
     JSONObject::iterator it = m_properties->find(propertyName);
-    long value = 0;
+    long value = defaultValue;
     if (it != m_properties->end())
         it->value->asNumber(&value);
     return value;
@@ -93,8 +99,13 @@ long InspectorState::getLong(const String& propertyName)
 
 double InspectorState::getDouble(const String& propertyName)
 {
+    return getDouble(propertyName, 0);
+}
+
+double InspectorState::getDouble(const String& propertyName, double defaultValue)
+{
     JSONObject::iterator it = m_properties->find(propertyName);
-    double value = 0;
+    double value = defaultValue;
     if (it != m_properties->end())
         it->value->asNumber(&value);
     return value;

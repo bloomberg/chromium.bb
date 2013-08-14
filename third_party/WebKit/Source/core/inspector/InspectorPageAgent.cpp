@@ -396,7 +396,7 @@ void InspectorPageAgent::disable(ErrorString*)
     setShowPaintRects(0, false);
     setShowDebugBorders(0, false);
     setShowFPSCounter(0, false);
-    setEmulatedMedia(0, "");
+    setEmulatedMedia(0, String());
     setContinuousPaintingEnabled(0, false);
     setShowScrollBottleneckRects(0, false);
     setShowViewportSizeOnResize(0, false, 0);
@@ -693,7 +693,7 @@ bool InspectorPageAgent::deviceMetricsChanged(int width, int height, double font
     // These two always fit an int.
     int currentWidth = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenWidthOverride));
     int currentHeight = static_cast<int>(m_state->getLong(PageAgentState::pageAgentScreenHeightOverride));
-    double currentFontScaleFactor = m_state->getDouble(PageAgentState::pageAgentFontScaleFactorOverride);
+    double currentFontScaleFactor = m_state->getDouble(PageAgentState::pageAgentFontScaleFactorOverride, 1);
     bool currentFitWindow = m_state->getBoolean(PageAgentState::pageAgentFitWindow);
 
     return width != currentWidth || height != currentHeight || fontScaleFactor != currentFontScaleFactor || fitWindow != currentFitWindow;
