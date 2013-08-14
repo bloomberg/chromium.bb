@@ -10,13 +10,14 @@ leak:WTF::StringImpl::createStatic
 # V8 leak, expect 1024 bytes leaked per process. http://crbug.com/99304
 leak:v8::internal::V8::Initialize
 
-# V8 GC issue which comes up in lots of tests. http://crbug.com/169678
-leak:v8::internal::SlotsBufferAllocator::AllocateBuffer
-
 # V8 GC issues in ProxyResolver tests, probably harmless. http://crbug.com/67378
 leak:net::ProxyResolverV8::SetPacScript
 leak:net::(anonymous namespace)::ProxyResolverV8WithMockBindings::SetPacScriptFromDisk
 leak:net::(anonymous namespace)::InitResolver
+leak:net::ProxyResolverScriptData::FromUTF8
+
+# http://crbug.com/270180
+leak:net::ProxyResolverV8::Context::ResolveProxy
 
 # NSS leaks in CertDatabaseNSSTest tests. http://crbug.com/51988
 leak:net::NSSCertDatabase::ImportFromPKCS12
@@ -33,10 +34,6 @@ leak:libplds4
 # Skia leaks. http://crbug.com/189170
 leak:FontConfigTypeface::LegacyCreateTypeface
 
-# Angle leaks. http://crbug.com/181691
-leak:InitializeGlobalParseContext
-leak:InitializeGlobalPools
-
 # Skia leaks GrGpuGL::ProgramCache::Entry. http://crbug.com/262934
 leak:GrGpuGL::flushGraphicsState
 
@@ -45,3 +42,10 @@ leak:ppapi::proxy::PPP_Instance_Private_ProxyTest_PPPInstancePrivate_Test
 
 # Leak in base_unittests. http://crbug.com/268267
 leak:base::WeakPtrTest_MoveOwnershipAfterInvalidate_Test::TestBody
+
+# GTK leaks. GTK is deprecated, so we won't be fixing these.
+# Most of them should apply to the full browser process only.
+leak:StatusIconGtk::UpdatePlatformContextMenu
+leak:GlobalMenuBar::GlobalMenuBar
+leak:BookmarkBubbleGtk::InitFolderComboModel
+leak:TranslateInfoBarBase::CreateLanguageCombobox
