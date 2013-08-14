@@ -18,6 +18,7 @@ class MockBrowserPlugin : public BrowserPlugin {
   virtual ~MockBrowserPlugin();
 
   // Allow poking at a few private members.
+  using BrowserPlugin::OnAttachACK;
   using BrowserPlugin::guest_crashed_;
   using BrowserPlugin::pending_damage_buffer_;
   using BrowserPlugin::damage_buffer_sequence_id_;

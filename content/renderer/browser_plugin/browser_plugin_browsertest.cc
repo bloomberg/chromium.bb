@@ -172,8 +172,13 @@ MockBrowserPlugin* BrowserPluginTest::GetCurrentPluginWithAttachParams(
       msg, &iter, params))
     return NULL;
 
-  return static_cast<MockBrowserPlugin*>(
+  MockBrowserPlugin* browser_plugin = static_cast<MockBrowserPlugin*>(
       browser_plugin_manager()->GetBrowserPlugin(instance_id));
+
+  BrowserPluginMsg_Attach_ACK_Params attach_ack_params;
+  browser_plugin->OnAttachACK(instance_id, attach_ack_params);
+
+  return browser_plugin;
 }
 
 // This test verifies that an initial resize occurs when we instantiate the

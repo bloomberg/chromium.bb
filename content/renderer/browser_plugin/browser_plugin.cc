@@ -71,6 +71,7 @@ BrowserPlugin::BrowserPlugin(
     WebKit::WebFrame* frame,
     const WebPluginParams& params)
     : guest_instance_id_(browser_plugin::kInstanceIDNone),
+      attached_(false),
       render_view_(render_view->AsWeakPtr()),
       render_view_routing_id_(render_view->GetRoutingID()),
       container_(NULL),
@@ -393,6 +394,7 @@ void BrowserPlugin::OnAttachACK(
             params.storage_partition_id;
     UpdateDOMAttribute(browser_plugin::kAttributePartition, partition_name);
   }
+  attached_ = true;
 }
 
 void BrowserPlugin::OnBuffersSwapped(
@@ -1057,7 +1059,7 @@ void BrowserPlugin::updateGeometry(
   int old_width = width();
   int old_height = height();
   plugin_rect_ = window_rect;
-  if (!HasGuestInstanceID())
+  if (!attached())
     return;
 
   // In AutoSize mode, guests don't care when the BrowserPlugin container is

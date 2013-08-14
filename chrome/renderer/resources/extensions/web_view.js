@@ -7,11 +7,19 @@
 // The actual tag is implemented via the browser plugin. The internals of this
 // are hidden via Shadow DOM.
 
-var addTagWatcher = require('tagWatcher').addTagWatcher;
+'use strict';
+
 var eventBindings = require('event_bindings');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
+
+// This secret enables hiding <webview> private members from the outside scope.
+// Outside of this file, |secret| is inaccessible. The only way to access the
+// <webview> element's internal members is via the |secret|. Since it's only
+// accessible by code here (and in web_view_experimental), only <webview>'s
+// API can access it and not external developers.
+var secret = {};
 
 /** @type {Array.<string>} */
 var WEB_VIEW_ATTRIBUTES = ['name', 'src', 'partition', 'autosize', 'minheight',
@@ -112,42 +120,39 @@ var WEB_VIEW_EXT_EVENTS = {
   }
 };
 
-addTagWatcher('WEBVIEW', function(addedNode) { new WebView(addedNode); });
-
-/** @type {number} */
-WebView.prototype.entryCount_;
-
-/** @type {number} */
-WebView.prototype.currentEntryIndex_;
-
-/** @type {number} */
-WebView.prototype.processId_;
-
 /**
  * @constructor
  */
-function WebView(webviewNode) {
+function WebViewInternal(webviewNode) {
   this.webviewNode_ = webviewNode;
   this.browserPluginNode_ = this.createBrowserPluginNode_();
   var shadowRoot = this.webviewNode_.webkitCreateShadowRoot();
   shadowRoot.appendChild(this.browserPluginNode_);
 
-  this.setupFocusPropagation_();
-  this.setupWebviewNodeMethods_();
-  this.setupWebviewNodeProperties_();
   this.setupWebviewNodeAttributes_();
+  this.setupFocusPropagation_();
+  this.setupWebviewNodeProperties_();
   this.setupWebviewNodeEvents_();
 }
 
 /**
  * @private
  */
-WebView.prototype.createBrowserPluginNode_ = function() {
-  var browserPluginNode = document.createElement('object');
-  browserPluginNode.type = 'application/browser-plugin';
-  // The <object> node fills in the <webview> container.
-  browserPluginNode.style.width = '100%';
-  browserPluginNode.style.height = '100%';
+WebViewInternal.prototype.createBrowserPluginNode_ = function() {
+  // We create BrowserPlugin as a custom element in order to observe changes
+  // to attributes synchronously.
+  var browserPluginNode = new WebViewInternal.BrowserPlugin();
+  Object.defineProperty(browserPluginNode, 'internal_', {
+    enumerable: false,
+    writable: false,
+    value: function(key) {
+      if (key !== secret) {
+        return null;
+      }
+      return this;
+    }.bind(this)
+  });
+
   $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
     // Only copy attributes that have been assigned values, rather than copying
     // a series of undefined attributes to BrowserPlugin.
@@ -170,7 +175,7 @@ WebView.prototype.createBrowserPluginNode_ = function() {
 /**
  * @private
  */
-WebView.prototype.setupFocusPropagation_ = function() {
+WebViewInternal.prototype.setupFocusPropagation_ = function() {
   if (!this.webviewNode_.hasAttribute('tabIndex')) {
     // <webview> needs a tabIndex in order to respond to keyboard focus.
     // TODO(fsamuel): This introduces unexpected tab ordering. We need to find
@@ -192,73 +197,98 @@ WebView.prototype.setupFocusPropagation_ = function() {
 /**
  * @private
  */
-WebView.prototype.setupWebviewNodeMethods_ = function() {
-  // this.browserPluginNode_[apiMethod] are not necessarily defined immediately
-  // after the shadow object is appended to the shadow root.
-  var webviewNode = this.webviewNode_;
-  var browserPluginNode = this.browserPluginNode_;
-  var self = this;
-
-  webviewNode['canGoBack'] = function() {
-    return self.entryCount_ > 1 && self.currentEntryIndex_ > 0;
-  };
-
-  webviewNode['canGoForward'] = function() {
-    return self.currentEntryIndex_ >=0 &&
-        self.currentEntryIndex_ < (self.entryCount_ - 1);
-  };
-
-  webviewNode['back'] = function() {
-    webviewNode.go(-1);
-  };
-
-  webviewNode['forward'] = function() {
-    webviewNode.go(1);
-  };
-
-  webviewNode['getProcessId'] = function() {
-    return self.processId_;
-  };
-
-  webviewNode['go'] = function(relativeIndex) {
-    var instanceId = browserPluginNode.getGuestInstanceId();
-    if (!instanceId) {
-      return;
-    }
-    chrome.webview.go(instanceId, relativeIndex);
-  };
-
-  webviewNode['reload'] = function() {
-    var instanceId = browserPluginNode.getGuestInstanceId();
-    if (!instanceId) {
-      return;
-    }
-    chrome.webview.reload(instanceId);
-  };
-
-  webviewNode['stop'] = function() {
-    var instanceId = browserPluginNode.getGuestInstanceId();
-    if (!instanceId) {
-      return;
-    }
-    chrome.webview.stop(instanceId);
-  };
-
-  webviewNode['terminate'] = function() {
-    var instanceId = browserPluginNode.getGuestInstanceId();
-    if (!instanceId) {
-      return;
-    }
-    chrome.webview.terminate(instanceId);
-  };
-
-  this.setupExecuteCodeAPI_();
+WebViewInternal.prototype.canGoBack_ = function() {
+  return this.entryCount_ > 1 && this.currentEntryIndex_ > 0;
 };
 
 /**
  * @private
  */
-WebView.prototype.setupWebviewNodeProperties_ = function() {
+WebViewInternal.prototype.canGoForward_ = function() {
+  return this.currentEntryIndex_ >= 0 &&
+      this.currentEntryIndex_ < (this.entryCount_ - 1);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.getProcessId_ = function() {
+  return this.processId_;
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.go_ = function(relativeIndex) {
+  if (!this.instanceId_) {
+    return;
+  }
+  chrome.webview.go(this.instanceId_, relativeIndex);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.reload_ = function() {
+  if (!this.instanceId_) {
+    return;
+  }
+  chrome.webview.reload(this.instanceId_);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.stop_ = function() {
+  if (!this.instanceId_) {
+    return;
+  }
+  chrome.webview.stop(this.instanceId_);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.terminate_ = function() {
+  if (!this.instanceId_) {
+    return;
+  }
+  chrome.webview.terminate(this.instanceId_);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.validateExecuteCodeCall_  = function() {
+  var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
+      'Script cannot be injected into content until the page has loaded.';
+  if (!this.instanceId_) {
+    throw new Error(ERROR_MSG_CANNOT_INJECT_SCRIPT);
+  }
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.executeScript_ = function(var_args) {
+  this.validateExecuteCodeCall_();
+  var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
+  $Function.apply(chrome.webview.executeScript, null, args);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.insertCSS_ = function(var_args) {
+  this.validateExecuteCodeCall_();
+  var args = $Array.concat([this.instanceId_], $Array.slice(arguments));
+  $Function.apply(chrome.webview.insertCSS, null, args);
+};
+
+/**
+ * @private
+ */
+WebViewInternal.prototype.setupWebviewNodeProperties_ = function() {
   var ERROR_MSG_CONTENTWINDOW_NOT_AVAILABLE = '<webview>: ' +
     'contentWindow is not available at this time. It will become available ' +
         'when the page has finished loading.';
@@ -268,17 +298,28 @@ WebView.prototype.setupWebviewNodeProperties_ = function() {
   $Array.forEach(WEB_VIEW_ATTRIBUTES, function(attributeName) {
     Object.defineProperty(this.webviewNode_, attributeName, {
       get: function() {
-        return browserPluginNode[attributeName];
+        if (browserPluginNode.hasOwnProperty(attributeName)) {
+          return browserPluginNode[attributeName];
+        } else {
+          return browserPluginNode.getAttribute(attributeName);
+        }
       },
       set: function(value) {
-        browserPluginNode[attributeName] = value;
+        if (browserPluginNode.hasOwnProperty(attributeName)) {
+          // Give the BrowserPlugin first stab at the attribute so that it can
+          // throw an exception if there is a problem. This attribute will then
+          // be propagated back to the <webview>.
+          browserPluginNode[attributeName] = value;
+        } else {
+          browserPluginNode.setAttribute(attributeName, value);
+        }
       },
       enumerable: true
     });
   }, this);
 
-  // We cannot use {writable: true} property descriptor because we want dynamic
-  // getter value.
+  // We cannot use {writable: true} property descriptor because we want a
+  // dynamic getter value.
   Object.defineProperty(this.webviewNode_, 'contentWindow', {
     get: function() {
       if (browserPluginNode.contentWindow)
@@ -293,67 +334,73 @@ WebView.prototype.setupWebviewNodeProperties_ = function() {
 /**
  * @private
  */
-WebView.prototype.setupWebviewNodeAttributes_ = function() {
-  this.setupWebviewNodeObservers_();
-  this.setupBrowserPluginNodeObservers_();
+WebViewInternal.prototype.setupWebviewNodeAttributes_ = function() {
+  Object.defineProperty(this.webviewNode_, 'internal_', {
+    enumerable: false,
+    writable: false,
+    value: function(key) {
+      if (key !== secret) {
+        return null;
+      }
+      return this;
+    }.bind(this)
+  });
+  this.setupWebViewSrcAttributeMutationObserver_();
 };
 
 /**
  * @private
  */
-WebView.prototype.setupWebviewNodeObservers_ = function() {
-  // Map attribute modifications on the <webview> tag to property changes in
-  // the underlying <object> node.
-  var handleMutation = $Function.bind(function(mutation) {
-    this.handleWebviewAttributeMutation_(mutation);
-  }, this);
+WebViewInternal.prototype.setupWebViewSrcAttributeMutationObserver_ =
+    function() {
+  // The purpose of this mutation observer is to catch assignment to the src
+  // attribute without any changes to its value. This is useful in the case
+  // where the webview guest has crashed and navigating to the same address
+  // spawns off a new process.
+  var self = this;
   var observer = new MutationObserver(function(mutations) {
-    $Array.forEach(mutations, handleMutation);
+    $Array.forEach(mutations, function(mutation) {
+      var newValue = self.webviewNode_.getAttribute(mutation.attributeName);
+      if (mutation.oldValue != newValue) {
+        return;
+      }
+      self.handleWebviewAttributeMutation_(mutation.attributeName, newValue);
+    });
   });
-  observer.observe(
-      this.webviewNode_,
-      {attributes: true, attributeFilter: WEB_VIEW_ATTRIBUTES});
+  var params = {
+    attributes: true,
+    attributeOldValue: true,
+    attributeFilter: ['src']
+  };
+  observer.observe(this.webviewNode_, params);
 };
 
 /**
  * @private
  */
-WebView.prototype.setupBrowserPluginNodeObservers_ = function() {
-  var handleMutation = $Function.bind(function(mutation) {
-    this.handleBrowserPluginAttributeMutation_(mutation);
-  }, this);
-  var objectObserver = new MutationObserver(function(mutations) {
-    $Array.forEach(mutations, handleMutation);
-  });
-  objectObserver.observe(
-      this.browserPluginNode_,
-      {attributes: true, attributeFilter: WEB_VIEW_ATTRIBUTES});
-};
-
-/**
- * @private
- */
-WebView.prototype.handleWebviewAttributeMutation_ = function(mutation) {
+WebViewInternal.prototype.handleWebviewAttributeMutation_ =
+      function(name, newValue) {
   // This observer monitors mutations to attributes of the <webview> and
   // updates the BrowserPlugin properties accordingly. In turn, updating
   // a BrowserPlugin property will update the corresponding BrowserPlugin
   // attribute, if necessary. See BrowserPlugin::UpdateDOMAttribute for more
   // details.
-  this.browserPluginNode_[mutation.attributeName] =
-      this.webviewNode_.getAttribute(mutation.attributeName);
+  if (this.browserPluginNode_.hasOwnProperty(name)) {
+    this.browserPluginNode_[name] = newValue;
+  } else {
+    this.browserPluginNode_.setAttribute(name, newValue);
+  }
 };
 
 /**
  * @private
  */
-WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
+WebViewInternal.prototype.handleBrowserPluginAttributeMutation_ =
+    function(name, oldValue, newValue) {
   // This observer monitors mutations to attributes of the BrowserPlugin and
   // updates the <webview> attributes accordingly.
-  if (!this.browserPluginNode_.hasAttribute(mutation.attributeName)) {
-    // If an attribute is removed from the BrowserPlugin, then remove it
-    // from the <webview> as well.
-    this.webviewNode_.removeAttribute(mutation.attributeName);
-  } else {
+  // |newValue| is null if the attribute |name| has been removed.
+  if (newValue != null) {
     // Update the <webview> attribute to match the BrowserPlugin attribute.
     // Note: Calling setAttribute on <webview> will trigger its mutation
     // observer which will then propagate that attribute to BrowserPlugin. In
@@ -361,18 +408,20 @@ WebView.prototype.handleBrowserPluginAttributeMutation_ = function(mutation) {
     // again (such as navigation when crashed), this could end up in an infinite
     // loop. Thus, we avoid this loop by only updating the <webview> attribute
     // if the BrowserPlugin attributes differs from it.
-    var oldValue = this.webviewNode_.getAttribute(mutation.attributeName);
-    var newValue = this.browserPluginNode_.getAttribute(mutation.attributeName);
     if (newValue != oldValue) {
-      this.webviewNode_.setAttribute(mutation.attributeName, newValue);
+      this.webviewNode_.setAttribute(name, newValue);
     }
+  } else {
+    // If an attribute is removed from the BrowserPlugin, then remove it
+    // from the <webview> as well.
+    this.webviewNode_.removeAttribute(name);
   }
 };
 
 /**
  * @private
  */
-WebView.prototype.getWebviewExtEvents_ = function() {
+WebViewInternal.prototype.getWebviewExtEvents_ = function() {
   var experimentalExtEvents = this.maybeGetWebviewExperimentalExtEvents_();
   for (var eventName in experimentalExtEvents) {
     WEB_VIEW_EXT_EVENTS[eventName] = experimentalExtEvents[eventName];
@@ -383,7 +432,7 @@ WebView.prototype.getWebviewExtEvents_ = function() {
 /**
  * @private
  */
-WebView.prototype.setupWebviewNodeEvents_ = function() {
+WebViewInternal.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
   this.viewInstanceId_ = ++webViewInstanceIdCounter;
   var onInstanceIdAllocated = function(e) {
@@ -408,7 +457,7 @@ WebView.prototype.setupWebviewNodeEvents_ = function() {
 /**
  * @private
  */
-WebView.prototype.setupExtEvent_ = function(eventName, eventInfo) {
+WebViewInternal.prototype.setupExtEvent_ = function(eventName, eventInfo) {
   var self = this;
   var webviewNode = this.webviewNode_;
   eventInfo.evt.addListener(function(event) {
@@ -432,7 +481,8 @@ WebView.prototype.setupExtEvent_ = function(eventName, eventInfo) {
 /**
  * @private
  */
-WebView.prototype.setupExtNewWindowEvent_ = function(event, webviewEvent) {
+WebViewInternal.prototype.setupExtNewWindowEvent_ =
+    function(event, webviewEvent) {
   var ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN = '<webview>: ' +
       'An action has already been taken for this "newwindow" event.';
 
@@ -527,42 +577,12 @@ WebView.prototype.setupExtNewWindowEvent_ = function(event, webviewEvent) {
   }
 };
 
-/**
- * @private
- */
-WebView.prototype.setupExecuteCodeAPI_ = function() {
-  var ERROR_MSG_CANNOT_INJECT_SCRIPT = '<webview>: ' +
-      'Script cannot be injected into content until the page has loaded.';
-
-  var self = this;
-  var validateCall = function() {
-    if (!self.browserPluginNode_.getGuestInstanceId()) {
-      throw new Error(ERROR_MSG_CANNOT_INJECT_SCRIPT);
-    }
-  };
-
-  this.webviewNode_['executeScript'] = function(var_args) {
-    validateCall();
-    var args = $Array.concat([self.browserPluginNode_.getGuestInstanceId()],
-                             $Array.slice(arguments));
-    $Function.apply(chrome.webview.executeScript, null, args);
-  }
-  this.webviewNode_['insertCSS'] = function(var_args) {
-    validateCall();
-    var args = $Array.concat([self.browserPluginNode_.getGuestInstanceId()],
-                             $Array.slice(arguments));
-    $Function.apply(chrome.webview.insertCSS, null, args);
-  }
-};
-
-/**
- * @private
- */
-WebView.prototype.getPermissionTypes_ = function() {
+WebViewInternal.prototype.getPermissionTypes_ = function() {
   return ['media', 'geolocation', 'pointerLock', 'download'];
 };
 
-WebView.prototype.setupExtPermissionEvent_ = function(event, webviewEvent) {
+WebViewInternal.prototype.setupExtPermissionEvent_ =
+    function(event, webviewEvent) {
   var ERROR_MSG_PERMISSION_ALREADY_DECIDED = '<webview>: ' +
       'Permission has already been decided for this "permissionrequest" event.';
 
@@ -639,7 +659,7 @@ WebView.prototype.setupExtPermissionEvent_ = function(event, webviewEvent) {
 /**
  * @private
  */
-WebView.prototype.setupWebRequestEvents_ = function() {
+WebViewInternal.prototype.setupWebRequestEvents_ = function() {
   var self = this;
   var request = {};
   var createWebRequestEvent = function(webRequestEvent) {
@@ -681,23 +701,134 @@ WebView.prototype.setupWebRequestEvents_ = function() {
   );
 };
 
-/**
- * Implemented when the experimental API is available.
- * @private
- */
-WebView.prototype.maybeSetupExtDialogEvent_ = function() {};
+// Save document.register in a variable in case the developer attempts to
+// override it at some point.
+var register = document.register;
+
+// Registers browser plugin <object> custom element.
+function registerBrowserPluginElement() {
+  var proto = Object.create(HTMLObjectElement.prototype);
+
+  proto.createdCallback = function() {
+    this.setAttribute('type', 'application/browser-plugin');
+    // The <object> node fills in the <webview> container.
+    this.style.width = '100%';
+    this.style.height = '100%';
+  };
+
+  proto.attributeChangedCallback = function(name, oldValue, newValue) {
+    if (!this.internal_) {
+      return;
+    }
+    var internal = this.internal_(secret);
+    internal.handleBrowserPluginAttributeMutation_(name, oldValue, newValue);
+  };
+
+  WebViewInternal.BrowserPlugin =
+      register.call(document, 'browser-plugin', {prototype: proto});
+
+  delete proto.createdCallback;
+  delete proto.enteredDocumentCallback;
+  delete proto.leftDocumentCallback;
+  delete proto.attributeChangedCallback;
+}
+
+// Registers <webview> custom element.
+function registerWebViewElement() {
+  var proto = Object.create(HTMLElement.prototype);
+
+  proto.createdCallback = function() {
+    new WebViewInternal(this);
+  };
+
+  proto.attributeChangedCallback = function(name, oldValue, newValue) {
+    var internal = this.internal_(secret);
+    internal.handleWebviewAttributeMutation_(name, newValue);
+  };
+
+  proto.back = function() {
+    this.go(-1);
+  };
+
+  proto.forward = function() {
+    this.go(1);
+  };
+
+  proto.canGoBack = function() {
+    return this.internal_(secret).canGoBack_();
+  };
+
+  proto.canGoForward = function() {
+    return this.internal_(secret).canGoForward_();
+  };
+
+  proto.getProcessId = function() {
+    return this.internal_(secret).getProcessId_();
+  };
+
+  proto.go = function(relativeIndex) {
+    this.internal_(secret).go_(relativeIndex);
+  };
+
+  proto.reload = function() {
+    this.internal_(secret).reload_();
+  };
+
+  proto.stop = function() {
+    this.internal_(secret).stop_();
+  };
+
+  proto.terminate = function() {
+    this.internal_(secret).terminate_();
+  };
+
+  proto.executeScript = function(var_args) {
+    var internal = this.internal_(secret);
+    $Function.apply(internal.executeScript_, internal, arguments);
+  };
+
+  proto.insertCSS = function(var_args) {
+    var internal = this.internal_(secret);
+    $Function.apply(internal.insertCSS_, internal, arguments);
+  };
+
+  window.WebView = register.call(document, 'webview', {prototype: proto});
+
+  // Delete the callbacks so developers cannot call them and produce unexpected
+  // behavior.
+  delete proto.createdCallback;
+  delete proto.enteredDocumentCallback;
+  delete proto.leftDocumentCallback;
+  delete proto.attributeChangedCallback;
+}
+
+var useCapture = true;
+window.addEventListener('readystatechange', function listener(event) {
+  if (document.readyState == 'loading')
+    return;
+
+  registerBrowserPluginElement();
+  registerWebViewElement();
+  window.removeEventListener(event.type, listener, useCapture);
+}, useCapture);
 
 /**
  * Implemented when the experimental API is available.
  * @private
  */
-WebView.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {};
+WebViewInternal.prototype.maybeSetupExtDialogEvent_ = function() {};
 
 /**
  * Implemented when the experimental API is available.
  * @private
  */
-WebView.prototype.maybeAttachWebRequestEventToWebview_ = function() {};
+WebViewInternal.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {};
 
-exports.WebView = WebView;
+/**
+ * Implemented when the experimental API is available.
+ * @private
+ */
+WebViewInternal.prototype.maybeAttachWebRequestEventToWebview_ = function() {};
+
+exports.WebViewInternal = WebViewInternal;
 exports.CreateEvent = createEvent;

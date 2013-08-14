@@ -12,7 +12,10 @@
 // CHANNEL_CANARY.
 
 var createEvent = require('webView').CreateEvent;
-var WebView = require('webView').WebView;
+var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
+var webRequestSchema =
+    requireNative('schema_registry').GetSchema('webRequest');
+var WebViewInternal = require('webView').WebViewInternal;
 
 var WEB_VIEW_EXPERIMENTAL_EXT_EVENTS = {
   'dialog': {
@@ -28,7 +31,7 @@ var WEB_VIEW_EXPERIMENTAL_EXT_EVENTS = {
 /**
  * @private
  */
-WebView.prototype.maybeAttachWebRequestEventToWebview_ =
+WebViewInternal.prototype.maybeAttachWebRequestEventToWebview_ =
     function(eventName, webRequestEvent) {
   Object.defineProperty(
       this.webviewNode_,
@@ -43,7 +46,8 @@ WebView.prototype.maybeAttachWebRequestEventToWebview_ =
 /**
  * @private
  */
-WebView.prototype.maybeSetupExtDialogEvent_ = function(event, webviewEvent) {
+WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
+    function(event, webviewEvent) {
   var showWarningMessage = function(dialogType) {
     var VOWELS = ['a', 'e', 'i', 'o', 'u'];
     var WARNING_MSG_DIALOG_BLOCKED = '<webview>: %1 %2 dialog was blocked.';
@@ -124,6 +128,6 @@ WebView.prototype.maybeSetupExtDialogEvent_ = function(event, webviewEvent) {
 /**
  * @private
  */
-WebView.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {
+WebViewInternal.prototype.maybeGetWebviewExperimentalExtEvents_ = function() {
   return WEB_VIEW_EXPERIMENTAL_EXT_EVENTS;
 };

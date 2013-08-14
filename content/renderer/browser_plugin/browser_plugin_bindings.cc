@@ -286,28 +286,6 @@ class BrowserPluginBindingAttachWindowTo : public BrowserPluginMethodBinding {
 
 // Note: This is a method that is used internally by the <webview> shim only.
 // This should not be exposed to developers.
-class BrowserPluginBindingGetGuestInstanceID :
-    public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingGetGuestInstanceID()
-      : BrowserPluginMethodBinding(
-          browser_plugin::kMethodGetGuestInstanceId, 0) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    int guest_instance_id = bindings->instance()->guest_instance_id();
-    INT32_TO_NPVARIANT(guest_instance_id, *result);
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingGetGuestInstanceID);
-};
-
-// Note: This is a method that is used internally by the <webview> shim only.
-// This should not be exposed to developers.
 class BrowserPluginBindingTrackObjectLifetime
     : public BrowserPluginMethodBinding {
  public:
@@ -588,10 +566,12 @@ class BrowserPluginPropertyBindingPartition
       UpdateDOMAttribute(bindings, new_value);
       std::string error_message;
       if (!bindings->instance()->ParsePartitionAttribute(&error_message)) {
-        WebBindings::setException(
-            np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
         // Reset to old value on error.
         UpdateDOMAttribute(bindings, old_value);
+        // Exceptions must be set as the last operation before returning to
+        // script.
+        WebBindings::setException(
+            np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
         return false;
       }
     }
@@ -642,10 +622,12 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
       UpdateDOMAttribute(bindings, new_value);
       std::string error_message;
       if (!bindings->instance()->ParseSrcAttribute(&error_message)) {
-        WebBindings::setException(
-            np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
         // Reset to old value on error.
         UpdateDOMAttribute(bindings, old_value);
+        // Exceptions must be set as the last operation before returning to
+        // script.
+        WebBindings::setException(
+            np_obj, static_cast<const NPUTF8 *>(error_message.c_str()));
         return false;
       }
     }
@@ -654,6 +636,8 @@ class BrowserPluginPropertyBindingSrc : public BrowserPluginPropertyBinding {
   virtual void RemoveProperty(BrowserPluginBindings* bindings,
                               NPObject* np_obj) OVERRIDE {
     std::string old_value = bindings->instance()->GetSrcAttribute();
+    if (old_value.empty())
+      return;
     // Remove the DOM attribute to trigger the mutation observer when it is
     // restored to its original value again.
     bindings->instance()->RemoveDOMAttribute(name());
@@ -684,7 +668,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
 
   method_bindings_.push_back(new BrowserPluginBindingAttach);
   method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
-  method_bindings_.push_back(new BrowserPluginBindingGetGuestInstanceID);
   method_bindings_.push_back(new BrowserPluginBindingTrackObjectLifetime);
 
   property_bindings_.push_back(new BrowserPluginPropertyBindingAutoSize);

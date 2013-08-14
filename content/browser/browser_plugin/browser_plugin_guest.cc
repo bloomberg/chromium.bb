@@ -765,6 +765,10 @@ WebContentsImpl* BrowserPluginGuest::GetWebContents() {
 
 base::SharedMemory* BrowserPluginGuest::GetDamageBufferFromEmbedder(
     const BrowserPluginHostMsg_ResizeGuest_Params& params) {
+  if (!attached()) {
+    LOG(WARNING) << "Attempting to map a damage buffer prior to attachment.";
+    return NULL;
+  }
 #if defined(OS_WIN)
   base::ProcessHandle handle =
       embedder_web_contents_->GetRenderProcessHost()->GetHandle();
