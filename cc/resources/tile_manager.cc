@@ -347,7 +347,6 @@ void TileManager::GetPrioritizedTileSet(PrioritizedTileSet* tiles) {
   TRACE_EVENT0("cc", "TileManager::GetPrioritizedTileSet");
 
   GetTilesWithAssignedBins(tiles);
-  tiles->Sort();
 }
 
 void TileManager::ManageTiles() {
@@ -479,7 +478,7 @@ void TileManager::AssignGpuMemoryToTiles(
   // the needs-to-be-rasterized queue.
   size_t bytes_releasable = 0;
   size_t resources_releasable = 0;
-  for (PrioritizedTileSet::PriorityIterator it(tiles);
+  for (PrioritizedTileSet::Iterator it(tiles, false);
        it;
        ++it) {
     const Tile* tile = *it;
@@ -515,7 +514,7 @@ void TileManager::AssignGpuMemoryToTiles(
   bool oomed = false;
 
   unsigned schedule_priority = 1u;
-  for (PrioritizedTileSet::PriorityIterator it(tiles);
+  for (PrioritizedTileSet::Iterator it(tiles, true);
        it;
        ++it) {
     Tile* tile = *it;
@@ -598,6 +597,7 @@ void TileManager::AssignGpuMemoryToTiles(
       all_tiles_that_need_to_be_rasterized_have_memory_ = false;
       if (tile->required_for_activation())
         all_tiles_required_for_activation_have_memory_ = false;
+      it.DisablePriorityOrdering();
       continue;
     }
 

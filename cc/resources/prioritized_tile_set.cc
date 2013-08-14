@@ -67,37 +67,52 @@ void SortBinTiles(ManagedTileBin bin, TileVector* tiles) {
 
 }  // namespace
 
-PrioritizedTileSet::PrioritizedTileSet() {}
+PrioritizedTileSet::PrioritizedTileSet() {
+  for (int bin = 0; bin < NUM_BINS; ++bin)
+    bin_sorted_[bin] = true;
+}
 
 PrioritizedTileSet::~PrioritizedTileSet() {}
 
 void PrioritizedTileSet::InsertTile(Tile* tile, ManagedTileBin bin) {
   tiles_[bin].push_back(make_scoped_refptr(tile));
+  bin_sorted_[bin] = false;
 }
 
 void PrioritizedTileSet::Clear() {
-  for (int bin = 0; bin < NUM_BINS; ++bin)
+  for (int bin = 0; bin < NUM_BINS; ++bin) {
     tiles_[bin].clear();
+    bin_sorted_[bin] = true;
+  }
 }
 
-void PrioritizedTileSet::Sort() {
-  for (int bin = 0; bin < NUM_BINS; ++bin)
-    SortBinTiles(static_cast<ManagedTileBin>(bin), &tiles_[bin]);
+void PrioritizedTileSet::SortBinIfNeeded(ManagedTileBin bin) {
+  if (!bin_sorted_[bin]) {
+    SortBinTiles(bin, &tiles_[bin]);
+    bin_sorted_[bin] = true;
+  }
 }
 
-PrioritizedTileSet::PriorityIterator::PriorityIterator(
-    PrioritizedTileSet* tile_set)
+PrioritizedTileSet::Iterator::Iterator(
+    PrioritizedTileSet* tile_set, bool use_priority_ordering)
     : tile_set_(tile_set),
       current_bin_(NOW_AND_READY_TO_DRAW_BIN),
-      iterator_(tile_set->tiles_[current_bin_].begin()) {
+      use_priority_ordering_(use_priority_ordering) {
+  if (use_priority_ordering_)
+    tile_set_->SortBinIfNeeded(current_bin_);
+  iterator_ = tile_set->tiles_[current_bin_].begin();
   if (iterator_ == tile_set_->tiles_[current_bin_].end())
     AdvanceList();
 }
 
-PrioritizedTileSet::PriorityIterator::~PriorityIterator() {}
+PrioritizedTileSet::Iterator::~Iterator() {}
 
-PrioritizedTileSet::PriorityIterator&
-PrioritizedTileSet::PriorityIterator::operator++() {
+void PrioritizedTileSet::Iterator::DisablePriorityOrdering() {
+  use_priority_ordering_ = false;
+}
+
+PrioritizedTileSet::Iterator&
+PrioritizedTileSet::Iterator::operator++() {
   // We can't increment past the end of the tiles.
   DCHECK(iterator_ != tile_set_->tiles_[current_bin_].end());
 
@@ -107,16 +122,20 @@ PrioritizedTileSet::PriorityIterator::operator++() {
   return *this;
 }
 
-Tile* PrioritizedTileSet::PriorityIterator::operator*() {
+Tile* PrioritizedTileSet::Iterator::operator*() {
   DCHECK(iterator_ != tile_set_->tiles_[current_bin_].end());
   return iterator_->get();
 }
 
-void PrioritizedTileSet::PriorityIterator::AdvanceList() {
+void PrioritizedTileSet::Iterator::AdvanceList() {
   DCHECK(iterator_ == tile_set_->tiles_[current_bin_].end());
 
   while (current_bin_ != NEVER_BIN) {
     current_bin_ = static_cast<ManagedTileBin>(current_bin_ + 1);
+
+    if (use_priority_ordering_)
+      tile_set_->SortBinIfNeeded(current_bin_);
+
     iterator_ = tile_set_->tiles_[current_bin_].begin();
     if (iterator_ != tile_set_->tiles_[current_bin_].end())
       break;
