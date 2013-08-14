@@ -211,7 +211,7 @@ template <> inline bool isMatchingElement(const HTMLCollection* htmlCollection, 
     case MapAreas:
         return element->hasLocalName(areaTag);
     case DocApplets:
-        return element->hasLocalName(appletTag) || (element->hasLocalName(objectTag) && static_cast<HTMLObjectElement*>(element)->containsJavaApplet());
+        return element->hasLocalName(appletTag) || (element->hasLocalName(objectTag) && toHTMLObjectElement(element)->containsJavaApplet());
     case DocEmbeds:
         return element->hasLocalName(embedTag);
     case DocLinks:

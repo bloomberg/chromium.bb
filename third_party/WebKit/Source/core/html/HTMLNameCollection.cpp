@@ -87,7 +87,7 @@ Element* HTMLNameCollection::virtualItemAfter(unsigned& offsetInArray, Element* 
                     return current;
             } else if (current->hasTagName(objectTag)) {
                 if ((current->getNameAttribute() == m_name || current->getIdAttribute() == m_name)
-                    && static_cast<HTMLObjectElement*>(current)->isDocNamedItem())
+                    && toHTMLObjectElement(current)->isDocNamedItem())
                     return current;
             } else if (current->hasTagName(imgTag)) {
                 if (current->getNameAttribute() == m_name || (current->getIdAttribute() == m_name && current->hasName()))

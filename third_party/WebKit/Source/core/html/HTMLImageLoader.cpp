@@ -69,7 +69,7 @@ void HTMLImageLoader::notifyFinished(Resource*)
     bool loadError = cachedImage->errorOccurred() || cachedImage->response().httpStatusCode() >= 400;
 
     if (loadError && element->hasTagName(HTMLNames::objectTag))
-        static_cast<HTMLObjectElement*>(element.get())->renderFallbackContent();
+        toHTMLObjectElement(element.get())->renderFallbackContent();
 }
 
 }
