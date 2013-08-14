@@ -16,6 +16,9 @@ namespace {
 // Padding on the left of the indicator icon.
 const CGFloat kMenuLeftMargin = 3;
 
+// Padding on the top and bottom of the menu item.
+const CGFloat kMenuTopBottomPadding = 2;
+
 }
 
 @interface CurrentUserMenuItemView ()
@@ -33,14 +36,14 @@ const CGFloat kMenuLeftMargin = 3;
   if ((self = [super initWithFrame:NSZeroRect])) {
     NSImage* userImage = ui::ResourceBundle::GetSharedInstance().
         GetNativeImageNamed(IDR_APP_LIST_USER_INDICATOR).AsNSImage();
-    NSRect imageRect = NSMakeRect(kMenuLeftMargin, 0, 0, 0);
+    NSRect imageRect = NSMakeRect(kMenuLeftMargin, kMenuTopBottomPadding, 0, 0);
     imageRect.size = [userImage size];
     base::scoped_nsobject<NSImageView> userImageView(
         [[NSImageView alloc] initWithFrame:imageRect]);
     [userImageView setImage:userImage];
     [self addSubview:userImageView];
 
-    NSPoint labelOrigin = NSMakePoint(NSMaxX(imageRect), 0);
+    NSPoint labelOrigin = NSMakePoint(NSMaxX(imageRect), kMenuTopBottomPadding);
     NSTextField* userField =
         [self addLabelWithFrame:labelOrigin
                       labelText:delegate->GetCurrentUserName()];
@@ -57,7 +60,7 @@ const CGFloat kMenuLeftMargin = 3;
       labelFrame.size.width = NSWidth([userField frame]);
     [self setFrameSize:NSMakeSize(
         NSMaxX(labelFrame) + NSMaxX(imageRect),
-        NSMaxY(labelFrame))];
+        NSMaxY(labelFrame) + kMenuTopBottomPadding)];
   }
   return self;
 }
