@@ -145,9 +145,7 @@ IN_PROC_BROWSER_TEST_F(DownloadDangerPromptTest, TestAll) {
 
   // If the containing tab is closed, the dialog should DISMISS itself.
   OpenNewTab();
-  // TODO(benjhayden):
-  // SetUpExpectations(DownloadDangerPrompt::DISMISS);
-  SetUpExpectations(DownloadDangerPrompt::CANCEL);
+  SetUpExpectations(DownloadDangerPrompt::DISMISS);
   chrome::CloseTab(browser());
   VerifyExpectations();
 }

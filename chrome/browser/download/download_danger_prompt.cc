@@ -159,7 +159,7 @@ void DownloadDangerPromptImpl::OnCanceled() {
 }
 
 void DownloadDangerPromptImpl::OnClosed() {
-  RunDone(CANCEL);
+  RunDone(DISMISS);
 }
 
 void DownloadDangerPromptImpl::RunDone(Action action) {
