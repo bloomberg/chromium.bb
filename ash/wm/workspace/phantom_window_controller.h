@@ -13,6 +13,7 @@
 #include "ui/gfx/rect.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 
@@ -35,13 +36,14 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   virtual ~PhantomWindowController();
 
   // Bounds last passed to Show().
-  const gfx::Rect& bounds() const { return bounds_; }
+  const gfx::Rect& bounds_in_screen() const { return bounds_in_screen_; }
 
-  // Shows the phantom window at the specified location (coordinates of the
-  // parent). If |layer| is non-NULL, it is shown on top of the phantom window.
-  // |layer| is owned by the caller.
+  // Animates the phantom window towards |bounds_in_screen|.
+  // Creates two (if start bounds intersect any root window other than the
+  // root window that matches the target bounds) or one (otherwise) phantom
+  // widgets to display animated rectangle in each root.
   // This does not immediately show the window.
-  void Show(const gfx::Rect& bounds);
+  void Show(const gfx::Rect& bounds_in_screen);
 
   // Hides the phantom.
   void Hide();
@@ -59,12 +61,12 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomStyle);
+  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomWindowShow);
 
-  // Creates and shows the |phantom_widget_| at |bounds|.
-  // |layer| is shown on top of the phantom window if it is non-NULL.
-  // |layer| is not owned by this object.
-  void CreatePhantomWidget(const gfx::Rect& bounds);
+  // Creates, shows and returns a phantom widget at |bounds|
+  // with kShellWindowId_ShelfContainer in |root_window| as a parent.
+  views::Widget* CreatePhantomWidget(aura::RootWindow* root_window,
+                                     const gfx::Rect& bounds_in_screen);
 
   // Window the phantom is placed beneath.
   aura::Window* window_;
@@ -72,14 +74,23 @@ class ASH_EXPORT PhantomWindowController : public ui::AnimationDelegate {
   // If set, the phantom window should get stacked below this window.
   aura::Window* phantom_below_window_;
 
-  // Initially the bounds of |window_|. Each time Show() is invoked
-  // |start_bounds_| is then reset to the bounds of |phantom_widget_| and
-  // |bounds_| is set to the value passed into Show(). The animation animates
-  // between these two values.
+  // Initially the bounds of |window_| (in screen coordinates).
+  // Each time Show() is invoked |start_bounds_| is then reset to the bounds of
+  // |phantom_widget_| and |bounds_| is set to the value passed into Show().
+  // The animation animates between these two values.
   gfx::Rect start_bounds_;
-  gfx::Rect bounds_;
 
+  // Target bounds of the animation in screen coordinates.
+  gfx::Rect bounds_in_screen_;
+
+  // The primary phantom representation of the window. It is parented by the
+  // root window matching the target bounds.
   views::Widget* phantom_widget_;
+
+  // If the animation starts on another display, this is the secondary phantom
+  // representation of the window used on the initial display, otherwise this is
+  // NULL. This allows animation to progress from one display into the other.
+  views::Widget* phantom_widget_start_;
 
   // Used to transition the bounds.
   scoped_ptr<ui::SlideAnimation> animation_;

@@ -30,6 +30,36 @@
 #include "ui/gfx/screen.h"
 #include "ui/views/widget/widget.h"
 
+namespace ui {
+
+// Class to provide access to SlideAnimation internals for testing.
+class SlideAnimation::TestApi {
+ public:
+  explicit TestApi(SlideAnimation* animation) : animation_(animation) {}
+
+  void SetStartTime(base::TimeTicks ticks) {
+    animation_->SetStartTime(ticks);
+  }
+
+  void Step(base::TimeTicks ticks) {
+    animation_->Step(ticks);
+  }
+
+  void RunTillComplete() {
+    SetStartTime(base::TimeTicks());
+    Step(base::TimeTicks() +
+         base::TimeDelta::FromMilliseconds(animation_->GetSlideDuration()));
+    EXPECT_EQ(1.0, animation_->GetCurrentValue());
+  }
+
+ private:
+  SlideAnimation* animation_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestApi);
+};
+
+}
+
 namespace ash {
 namespace internal {
 namespace {
@@ -168,6 +198,12 @@ class WorkspaceWindowResizerTest : public test::AshTestBase {
     touch_resize_window_->SetHitTestBoundsOverrideOuter(mouse_insets,
                                                         touch_insets);
     touch_resize_window_->set_hit_test_bounds_override_inner(mouse_insets);
+  }
+
+  // Simulate running the animation.
+  void RunAnimationTillComplete(ui::SlideAnimation* animation) {
+    ui::SlideAnimation::TestApi test_api(animation);
+    test_api.RunTillComplete();
   }
 
   TestWindowDelegate delegate_;
@@ -1829,5 +1865,114 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
   EXPECT_EQ(gfx::Rect(100, 100, 600, kRootHeight - 100).ToString(),
             touch_resize_window_->bounds().ToString());
 }
+
+TEST_F(WorkspaceWindowResizerTest, PhantomWindowShow) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("500x400,500x400");
+  window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
+                             Shell::GetScreen()->GetPrimaryDisplay());
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(root_windows[0], window_->GetRootWindow());
+
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTCAPTION,
+      aura::client::WINDOW_MOVE_SOURCE_MOUSE, empty_windows()));
+  ASSERT_TRUE(resizer.get());
+  EXPECT_FALSE(resizer->snap_phantom_window_controller_.get());
+
+  // The pointer is on the edge but not shared. The snap phantom window
+  // controller should be non-NULL.
+  resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
+  EXPECT_TRUE(resizer->snap_phantom_window_controller_.get());
+  PhantomWindowController* phantom_controller(
+      resizer->snap_phantom_window_controller_.get());
+
+  // phantom widget only in the left screen.
+  phantom_controller->Show(gfx::Rect(100, 100, 50, 60));
+  EXPECT_TRUE(phantom_controller->phantom_widget_);
+  EXPECT_FALSE(phantom_controller->phantom_widget_start_);
+  EXPECT_EQ(
+      root_windows[0],
+      phantom_controller->phantom_widget_->GetNativeWindow()->GetRootWindow());
+
+  // Move phantom widget into the right screen. Test that 2 widgets got created.
+  phantom_controller->Show(gfx::Rect(600, 100, 50, 60));
+  EXPECT_TRUE(phantom_controller->phantom_widget_);
+  EXPECT_TRUE(phantom_controller->phantom_widget_start_);
+  EXPECT_EQ(
+      root_windows[1],
+      phantom_controller->phantom_widget_->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(
+      root_windows[0],
+      phantom_controller->phantom_widget_start_->GetNativeWindow()->
+          GetRootWindow());
+  RunAnimationTillComplete(phantom_controller->animation_.get());
+
+  // Move phantom widget only in the right screen. Start widget should close.
+  phantom_controller->Show(gfx::Rect(700, 100, 50, 60));
+  EXPECT_TRUE(phantom_controller->phantom_widget_);
+  EXPECT_FALSE(phantom_controller->phantom_widget_start_);
+  EXPECT_EQ(
+      root_windows[1],
+      phantom_controller->phantom_widget_->GetNativeWindow()->GetRootWindow());
+  RunAnimationTillComplete(phantom_controller->animation_.get());
+
+  // Move phantom widget into the left screen. Start widget should open.
+  phantom_controller->Show(gfx::Rect(100, 100, 50, 60));
+  EXPECT_TRUE(phantom_controller->phantom_widget_);
+  EXPECT_TRUE(phantom_controller->phantom_widget_start_);
+  EXPECT_EQ(
+      root_windows[0],
+      phantom_controller->phantom_widget_->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(
+      root_windows[1],
+      phantom_controller->phantom_widget_start_->GetNativeWindow()->
+          GetRootWindow());
+  RunAnimationTillComplete(phantom_controller->animation_.get());
+
+  // Move phantom widget while in the left screen. Start widget should close.
+  phantom_controller->Show(gfx::Rect(200, 100, 50, 60));
+  EXPECT_TRUE(phantom_controller->phantom_widget_);
+  EXPECT_FALSE(phantom_controller->phantom_widget_start_);
+  EXPECT_EQ(
+      root_windows[0],
+      phantom_controller->phantom_widget_->GetNativeWindow()->GetRootWindow());
+  RunAnimationTillComplete(phantom_controller->animation_.get());
+
+  // Move phantom widget spanning both screens with most of the window in the
+  // right screen. Two widgets are created.
+  phantom_controller->Show(gfx::Rect(495, 100, 50, 60));
+  EXPECT_TRUE(phantom_controller->phantom_widget_);
+  EXPECT_TRUE(phantom_controller->phantom_widget_start_);
+  EXPECT_EQ(
+      root_windows[1],
+      phantom_controller->phantom_widget_->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(
+      root_windows[0],
+      phantom_controller->phantom_widget_start_->GetNativeWindow()->
+          GetRootWindow());
+  RunAnimationTillComplete(phantom_controller->animation_.get());
+
+  // Move phantom widget back into the left screen. Phantom widgets should swap.
+  phantom_controller->Show(gfx::Rect(200, 100, 50, 60));
+  EXPECT_TRUE(phantom_controller->phantom_widget_);
+  EXPECT_TRUE(phantom_controller->phantom_widget_start_);
+  EXPECT_EQ(
+      root_windows[0],
+      phantom_controller->phantom_widget_->GetNativeWindow()->GetRootWindow());
+  EXPECT_EQ(
+      root_windows[1],
+      phantom_controller->phantom_widget_start_->GetNativeWindow()->
+          GetRootWindow());
+  RunAnimationTillComplete(phantom_controller->animation_.get());
+
+  // Hide phantom controller. Both widgets should close.
+  phantom_controller->Hide();
+  EXPECT_FALSE(phantom_controller->phantom_widget_);
+  EXPECT_FALSE(phantom_controller->phantom_widget_start_);
+}
+
 }  // namespace internal
 }  // namespace ash

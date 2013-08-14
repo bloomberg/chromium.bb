@@ -509,7 +509,7 @@ gfx::Rect WorkspaceWindowResizer::GetFinalBounds(
     const gfx::Rect& bounds) const {
   if (snap_phantom_window_controller_.get() &&
       snap_phantom_window_controller_->IsShowing()) {
-    return snap_phantom_window_controller_->bounds();
+    return snap_phantom_window_controller_->bounds_in_screen();
   }
   return bounds;
 }
