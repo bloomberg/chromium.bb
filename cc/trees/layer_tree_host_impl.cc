@@ -2500,7 +2500,9 @@ void LayerTreeHostImpl::CreateUIResource(
   if (id)
     DeleteUIResource(uid);
   id = resource_provider_->CreateResource(
-      bitmap->GetSize(), GL_RGBA, ResourceProvider::TextureUsageAny);
+      bitmap->GetSize(),
+      resource_provider_->best_texture_format(),
+      ResourceProvider::TextureUsageAny);
 
   ui_resource_map_[uid] = id;
   resource_provider_->SetPixels(id,

@@ -10,10 +10,9 @@
 #include "cc/layers/contents_scaling_layer.h"
 #include "cc/layers/scrollbar_theme_painter.h"
 #include "cc/resources/layer_updater.h"
+#include "cc/resources/scoped_ui_resource.h"
 
 namespace cc {
-class CachingBitmapContentLayerUpdater;
-class ResourceUpdateQueue;
 class ScrollbarThemeComposite;
 
 class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
@@ -33,8 +32,6 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   ScrollbarOrientation Orientation() const;
 
   // Layer interface
-  virtual void SetTexturePriorities(const PriorityCalculator& priority_calc)
-      OVERRIDE;
   virtual bool Update(ResourceUpdateQueue* queue,
                       const OcclusionTracker* occlusion) OVERRIDE;
   virtual void SetLayerTreeHost(LayerTreeHost* host) OVERRIDE;
@@ -50,23 +47,26 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   virtual ScrollbarLayer* ToScrollbarLayer() OVERRIDE;
 
  protected:
-  ScrollbarLayer(scoped_ptr<Scrollbar> scrollbar,
-                 int scroll_layer_id);
+  ScrollbarLayer(scoped_ptr<Scrollbar> scrollbar, int scroll_layer_id);
   virtual ~ScrollbarLayer();
 
+  // For unit tests
+  UIResourceId track_resource_id() {
+    return track_resource_.get() ? track_resource_->id() : 0;
+  }
+  UIResourceId thumb_resource_id() {
+    return thumb_resource_.get() ? thumb_resource_->id() : 0;
+  }
+
  private:
-  bool UpdatePart(CachingBitmapContentLayerUpdater* painter,
-                  LayerUpdater::Resource* resource,
-                  gfx::Rect rect,
-                  ResourceUpdateQueue* queue);
-  void CreateUpdaterIfNeeded();
   gfx::Rect ScrollbarLayerRectToContentRect(gfx::Rect layer_rect) const;
   gfx::Rect OriginThumbRect() const;
 
-  bool is_dirty() const { return !dirty_rect_.IsEmpty(); }
-
   int MaxTextureSize();
   float ClampScaleToMaxTextureSize(float scale);
+
+  scoped_refptr<UIResourceBitmap> RasterizeScrollbarPart(gfx::Rect rect,
+                                                         ScrollbarPart part);
 
   scoped_ptr<Scrollbar> scrollbar_;
 
@@ -75,16 +75,8 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   gfx::Rect track_rect_;
   int scroll_layer_id_;
 
-  unsigned texture_format_;
-
-  gfx::RectF dirty_rect_;
-
-  scoped_refptr<CachingBitmapContentLayerUpdater> track_updater_;
-  scoped_refptr<CachingBitmapContentLayerUpdater> thumb_updater_;
-
-  // All the parts of the scrollbar except the thumb
-  scoped_ptr<LayerUpdater::Resource> track_;
-  scoped_ptr<LayerUpdater::Resource> thumb_;
+  scoped_ptr<ScopedUIResource> track_resource_;
+  scoped_ptr<ScopedUIResource> thumb_resource_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarLayer);
 };

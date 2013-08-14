@@ -1111,7 +1111,7 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers);
 
 // Verify atomicity of commits and reuse of textures.
-class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
+class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
  public:
   virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
     // Make sure partial texture updates are turned off.
@@ -1162,19 +1162,18 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
         PostSetNeedsCommitToMainThread();
         break;
       case 1:
-        // Number of textures should be doubled as the first textures
-        // are used by impl thread and cannot by used for update.
-        ASSERT_EQ(4u, context->NumTextures());
-        // Number of textures used for commit should still be
-        // one for each layer.
+        // Number of textures should be one for scrollbar layer since it was
+        // requested and deleted on the impl-thread, and double for the content
+        // layer since its first texture is used by impl thread and cannot by
+        // used for update.
+        ASSERT_EQ(3u, context->NumTextures());
+        // Number of textures used for commit should be one for each layer.
         EXPECT_EQ(2u, context->NumUsedTextures());
         // First textures should not have been used.
         EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
-        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
         // New textures should have been used.
         EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
-        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
-
         context->ResetUsedTextures();
         PostSetNeedsCommitToMainThread();
         break;
@@ -1209,14 +1208,68 @@ class LayerTreeHostTestAtomicCommit : public LayerTreeHostTest {
 
   virtual void AfterTest() OVERRIDE {}
 
- private:
+ protected:
   FakeContentLayerClient client_;
   scoped_refptr<FakeContentLayer> layer_;
   scoped_refptr<FakeScrollbarLayer> scrollbar_;
   int drew_frame_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestAtomicCommit);
+MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestDirectRendererAtomicCommit);
+
+class LayerTreeHostTestDelegatingRendererAtomicCommit
+    : public LayerTreeHostTestDirectRendererAtomicCommit {
+ public:
+  virtual void DidActivateTreeOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
+
+    TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
+        impl->output_surface()->context3d());
+
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        // Number of textures should be one for each layer
+        ASSERT_EQ(2u, context->NumTextures());
+        // Number of textures used for commit should be one for each layer.
+        EXPECT_EQ(2u, context->NumUsedTextures());
+        // Verify that used texture is correct.
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(0)));
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(1)));
+        context->ResetUsedTextures();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        // Number of textures should be doubled as the first context layer
+        // texture is being used by the impl-thread and cannot be used for
+        // update.  The scrollbar behavior is different direct renderer because
+        // UI resource deletion with delegating renderer occurs after tree
+        // activation.
+        ASSERT_EQ(4u, context->NumTextures());
+        // Number of textures used for commit should still be
+        // one for each layer.
+        EXPECT_EQ(2u, context->NumUsedTextures());
+        // First textures should not have been used.
+        EXPECT_FALSE(context->UsedTexture(context->TextureAt(0)));
+        EXPECT_FALSE(context->UsedTexture(context->TextureAt(1)));
+        // New textures should have been used.
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(2)));
+        EXPECT_TRUE(context->UsedTexture(context->TextureAt(3)));
+        context->ResetUsedTextures();
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 2:
+        EndTest();
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+};
+
+MULTI_THREAD_DELEGATING_RENDERER_TEST_F(
+    LayerTreeHostTestDelegatingRendererAtomicCommit);
 
 static void SetLayerPropertiesForTesting(Layer* layer,
                                          Layer* parent,
