@@ -399,15 +399,25 @@ tc-test-bot() {
       --concurrency=${PNACL_CONCURRENCY} || handle-error
   done
 
+  local optset
+  optset[1]="--opt O3f --opt O2b"
   for arch in ${archset}; do
-    echo "@@@BUILD_STEP llvm-test-suite $arch @@@"
-    python ${LLVM_TESTSUITE} --testsuite-prereq --arch ${arch}
-    python ${LLVM_TESTSUITE} --testsuite-clean
-
-    { python ${LLVM_TESTSUITE} --testsuite-configure &&
-        python ${LLVM_TESTSUITE} --testsuite-run --arch ${arch} &&
-        python ${LLVM_TESTSUITE} --testsuite-report --arch ${arch} -v -c
-    } || handle-error
+    # Run all appropriate frontend/backend optimization combinations.
+    # For now, this means running 2 combinations for x86 since each
+    # takes about 20 minutes on the bots, and making a single run
+    # elsewhere since e.g. arm takes about 75 minutes.  In a perfect
+    # world, all 4 combinations would be run.
+    if [[ ${archset} =~ x86 ]]; then
+      optset[2]="--opt O3f --opt O0b"
+    fi
+    for opt in "${optset[@]}"; do
+      echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
+      python ${LLVM_TESTSUITE} --testsuite-prereq --arch ${arch}
+      python ${LLVM_TESTSUITE} --testsuite-clean
+      python ${LLVM_TESTSUITE} \
+        --testsuite-configure --testsuite-run --testsuite-report \
+        --arch ${arch} ${opt} -v -c || handle-error
+    done
 
     archived-frontend-test ${arch}
 
