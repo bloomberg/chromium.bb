@@ -553,6 +553,8 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     , m_numGLErrorsToConsoleAllowed(maxGLErrorsAllowedToConsole)
     , m_multisamplingAllowed(false)
     , m_multisamplingObserverRegistered(false)
+    , m_onePlusMaxEnabledAttribIndex(0)
+    , m_onePlusMaxNonDefaultTextureUnit(0)
 {
     ASSERT(m_context);
     ScriptWrappable::init(this);
@@ -1138,9 +1140,17 @@ void WebGLRenderingContext::bindTexture(GC3Denum target, WebGLTexture* texture)
         synthesizeGLError(GraphicsContext3D::INVALID_ENUM, "bindTexture", "invalid target");
         return;
     }
+
     m_context->bindTexture(target, objectOrZero(texture));
-    if (texture)
+    if (texture) {
         texture->setTarget(target, maxLevel);
+        m_onePlusMaxNonDefaultTextureUnit = max(m_activeTextureUnit + 1, m_onePlusMaxNonDefaultTextureUnit);
+    } else {
+        // If the disabled index is the current maximum, trace backwards to find the new max enabled texture index
+        if (m_onePlusMaxNonDefaultTextureUnit == m_activeTextureUnit + 1) {
+            findNewMaxNonDefaultTextureUnit();
+        }
+    }
 
     // Note: previously we used to automatically set the TEXTURE_WRAP_R
     // repeat mode to CLAMP_TO_EDGE for cube map textures, because OpenGL
@@ -1655,17 +1665,27 @@ void WebGLRenderingContext::deleteTexture(WebGLTexture* texture)
 {
     if (!deleteObject(texture))
         return;
-    for (size_t i = 0; i < m_textureUnits.size(); ++i) {
+
+    int maxBoundTextureIndex = -1;
+    for (size_t i = 0; i < m_onePlusMaxNonDefaultTextureUnit; ++i) {
         if (texture == m_textureUnits[i].m_texture2DBinding) {
             m_textureUnits[i].m_texture2DBinding = 0;
+            maxBoundTextureIndex = i;
             if (!i)
                 m_drawingBuffer->setTexture2DBinding(0);
         }
-        if (texture == m_textureUnits[i].m_textureCubeMapBinding)
+        if (texture == m_textureUnits[i].m_textureCubeMapBinding) {
             m_textureUnits[i].m_textureCubeMapBinding = 0;
+            maxBoundTextureIndex = i;
+        }
     }
     if (m_framebufferBinding)
         m_framebufferBinding->removeAttachmentFromBoundFramebuffer(texture);
+
+    // If the deleted was bound to the the current maximum index, trace backwards to find the new max texture index
+    if (m_onePlusMaxNonDefaultTextureUnit == maxBoundTextureIndex + 1) {
+        findNewMaxNonDefaultTextureUnit();
+    }
 }
 
 void WebGLRenderingContext::depthFunc(GC3Denum func)
@@ -1735,6 +1755,12 @@ void WebGLRenderingContext::disableVertexAttribArray(GC3Duint index)
 
     WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
     state.enabled = false;
+
+    // If the disabled index is the current maximum, trace backwards to find the new max enabled attrib index
+    if (m_onePlusMaxEnabledAttribIndex == index + 1) {
+        findNewMaxEnabledAttribIndex();
+    }
+
     m_context->disableVertexAttribArray(index);
 }
 
@@ -1744,7 +1770,7 @@ bool WebGLRenderingContext::validateRenderingState()
         return false;
 
     // Look in each enabled vertex attrib and check if they've been bound to a buffer.
-    for (unsigned i = 0; i < m_maxVertexAttribs; ++i) {
+    for (unsigned i = 0; i < m_onePlusMaxEnabledAttribIndex; ++i) {
         const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(i);
         if (state.enabled
             && (!state.bufferBinding || !state.bufferBinding->object()))
@@ -1852,6 +1878,8 @@ void WebGLRenderingContext::enableVertexAttribArray(GC3Duint index)
 
     WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(index);
     state.enabled = true;
+
+    m_onePlusMaxEnabledAttribIndex = max(index + 1, m_onePlusMaxEnabledAttribIndex);
 
     m_context->enableVertexAttribArray(index);
 }
@@ -4279,7 +4307,7 @@ void WebGLRenderingContext::handleTextureCompleteness(const char* functionName, 
     bool resetActiveUnit = false;
     WebGLTexture::TextureExtensionFlag flag = static_cast<WebGLTexture::TextureExtensionFlag>((m_oesTextureFloatLinear ? WebGLTexture::TextureFloatLinearExtensionEnabled : 0)
         | (m_oesTextureHalfFloatLinear ? WebGLTexture::TextureHalfFloatLinearExtensionEnabled : 0));
-    for (unsigned ii = 0; ii < m_textureUnits.size(); ++ii) {
+    for (unsigned ii = 0; ii < m_onePlusMaxNonDefaultTextureUnit; ++ii) {
         if ((m_textureUnits[ii].m_texture2DBinding.get() && m_textureUnits[ii].m_texture2DBinding->needToUseBlackTexture(flag))
             || (m_textureUnits[ii].m_textureCubeMapBinding.get() && m_textureUnits[ii].m_textureCubeMapBinding->needToUseBlackTexture(flag))) {
             if (ii != m_activeTextureUnit) {
@@ -5205,7 +5233,7 @@ bool WebGLRenderingContext::validateDrawInstanced(const char* functionName, GC3D
     }
 
     // Ensure at least one enabled vertex attrib has a divisor of 0.
-    for (unsigned i = 0; i < m_maxVertexAttribs; ++i) {
+    for (unsigned i = 0; i < m_onePlusMaxEnabledAttribIndex; ++i) {
         const WebGLVertexArrayObjectOES::VertexAttribState& state = m_boundVertexArrayObject->getVertexAttribState(i);
         if (state.enabled && !state.divisor)
             return true;
@@ -5528,6 +5556,33 @@ void WebGLRenderingContext::multisamplingChanged(bool enabled)
         m_multisamplingAllowed = enabled;
         forceLostContext(WebGLRenderingContext::AutoRecoverSyntheticLostContext);
     }
+}
+
+void WebGLRenderingContext::findNewMaxEnabledAttribIndex()
+{
+    // Trace backwards from the current max to find the new max enabled attrib index
+    int startIndex = m_onePlusMaxEnabledAttribIndex - 1;
+    for (int i = startIndex; i >= 0; --i) {
+        if (m_boundVertexArrayObject->getVertexAttribState(i).enabled) {
+            m_onePlusMaxEnabledAttribIndex = i + 1;
+            return;
+        }
+    }
+    m_onePlusMaxEnabledAttribIndex = 0;
+}
+
+void WebGLRenderingContext::findNewMaxNonDefaultTextureUnit()
+{
+    // Trace backwards from the current max to find the new max non-default texture unit
+    int startIndex = m_onePlusMaxNonDefaultTextureUnit - 1;
+    for (int i = startIndex; i >= 0; --i) {
+        if (m_textureUnits[i].m_texture2DBinding
+            || m_textureUnits[i].m_textureCubeMapBinding) {
+            m_onePlusMaxNonDefaultTextureUnit = i + 1;
+            return;
+        }
+    }
+    m_onePlusMaxNonDefaultTextureUnit = 0;
 }
 
 } // namespace WebCore

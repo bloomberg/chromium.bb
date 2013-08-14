@@ -506,6 +506,12 @@ public:
     bool m_synthesizedErrorsToConsole;
     int m_numGLErrorsToConsoleAllowed;
 
+    bool m_multisamplingAllowed;
+    bool m_multisamplingObserverRegistered;
+
+    GC3Duint m_onePlusMaxEnabledAttribIndex;
+    unsigned long m_onePlusMaxNonDefaultTextureUnit;
+
     // Enabled extension objects.
     RefPtr<ANGLEInstancedArrays> m_angleInstancedArrays;
     RefPtr<EXTFragDepth> m_extFragDepth;
@@ -885,8 +891,9 @@ public:
     void restoreCurrentTexture2D();
 
     virtual void multisamplingChanged(bool);
-    bool m_multisamplingAllowed;
-    bool m_multisamplingObserverRegistered;
+
+    void findNewMaxEnabledAttribIndex();
+    void findNewMaxNonDefaultTextureUnit();
 
     friend class WebGLStateRestorer;
     friend class WebGLRenderingContextEvictionManager;
