@@ -361,6 +361,10 @@ void WindowSelector::OnEvent(ui::Event* event) {
   aura::Window* target = static_cast<aura::Window*>(event->target());
   for (size_t i = 0; i < windows_.size(); ++i) {
     if (windows_[i]->Contains(target)) {
+      // TODO(flackr): StopPropogation prevents generation of gesture events.
+      // We should find a better way to prevent events from being delivered to
+      // the window, perhaps a transparent window in front of the target window
+      // or using EventClientImpl::CanProcessEventsWithinSubtree.
       event->StopPropagation();
       break;
     }
@@ -381,8 +385,8 @@ void WindowSelector::OnMouseEvent(ui::MouseEvent* event) {
   HandleSelectionEvent(target);
 }
 
-void WindowSelector::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_GESTURE_TAP)
+void WindowSelector::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() != ui::ET_TOUCH_PRESSED)
     return;
   WindowSelectorWindow* target = GetEventTarget(event);
   if (!target)
