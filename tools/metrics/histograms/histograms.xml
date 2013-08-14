@@ -6809,7 +6809,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.PreconnectedLinkNavigation" enum="PreconnectedNavigation">
+<histogram name="Net.PreconnectedLinkNavigations" enum="PreconnectedNavigation">
   <summary>
     Indicate whether a link navigation was preceded by a recent pre-connect
     trigger (within 10 seconds). There is a high chance that loading the page
@@ -10577,6 +10577,13 @@ other types of suffix sets.
   <summary>TBD</summary>
 </histogram>
 
+<histogram name="PLT.BeginToFinish_AfterPreconnectRequest" units="milliseconds">
+  <summary>
+    PLT.BeginToFinish, but for pages requested just after a new preconnect
+    request.
+  </summary>
+</histogram>
+
 <histogram name="PLT.BeginToFinish_ContentPrefetcher" units="milliseconds">
   <summary>
     PLT.BeginToFinish, but for pages which contained prefetch links.
@@ -10593,6 +10600,14 @@ other types of suffix sets.
 
 <histogram name="PLT.BeginToFinishDoc">
   <summary>TBD</summary>
+</histogram>
+
+<histogram name="PLT.BeginToFinishDoc_AfterPreconnectRequest"
+    units="milliseconds">
+  <summary>
+    PLT.BeginToFinishDoc, but for pages requested just after a new preconnect
+    request.
+  </summary>
 </histogram>
 
 <histogram name="PLT.BeginToFinishDoc_ContentPrefetcher" units="milliseconds">
