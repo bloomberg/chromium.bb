@@ -206,7 +206,12 @@ class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(NewTabUISortingBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest, ReorderDuringInstall) {
+#if defined(OS_WIN)
+#define MAYBE_ReorderDuringInstall DISABLED_ReorderDuringInstall
+#else
+#define MAYBE_ReorderDuringInstall ReorderDuringInstall
+#endif
+IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest, MAYBE_ReorderDuringInstall) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();
