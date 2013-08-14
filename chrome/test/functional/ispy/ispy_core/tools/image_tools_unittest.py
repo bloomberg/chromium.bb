@@ -1,10 +1,14 @@
-# Copyright 2013 The Chromium Authors. All rights reserved.
+# Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 import unittest
+import sys
+import os
 from PIL import Image
-import image_tools
+
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
+from tools import image_tools
 
 
 def _GenImage(size, color):
