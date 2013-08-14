@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
@@ -55,6 +56,12 @@ namespace {
 // unpacked on the filesystem.)
 const char* kDefaultThemeGalleryID = "hkacjpbfdknhflllbcmjibkdeoafencn";
 
+// Wait this many seconds after startup to garbage collect unused themes.
+// Removing unused themes is done after a delay because there is no
+// reason to do it at startup.
+// ExtensionService::GarbageCollectExtensions() does something similar.
+const int kRemoveUnusedThemesStartupDelay = 30;
+
 SkColor TintForUnderline(SkColor input) {
   return SkColorSetA(input, SkColorGetA(input) / 3);
 }
@@ -79,6 +86,7 @@ ThemeService::ThemeService()
     : ready_(false),
       rb_(ResourceBundle::GetSharedInstance()),
       profile_(NULL),
+      installed_pending_load_id_(kDefaultThemeID),
       number_of_infobars_(0),
       weak_ptr_factory_(this) {
 }
@@ -96,11 +104,9 @@ void ThemeService::Init(Profile* profile) {
 
   LoadThemePrefs();
 
-  if (!ready_) {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_EXTENSIONS_READY,
-                   content::Source<Profile>(profile_));
-  }
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSIONS_READY,
+                 content::Source<Profile>(profile_));
 
   theme_syncable_service_.reset(new ThemeSyncableService(profile_, this));
 }
@@ -211,36 +217,83 @@ base::RefCountedMemory* ThemeService::GetRawData(
 void ThemeService::Observe(int type,
                            const content::NotificationSource& source,
                            const content::NotificationDetails& details) {
-  DCHECK(type == chrome::NOTIFICATION_EXTENSIONS_READY);
-  registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
-      content::Source<Profile>(profile_));
-
-  MigrateTheme();
-  set_ready();
-
-  // Send notification in case anyone requested data and cached it when the
-  // theme service was not ready yet.
-  NotifyThemeChanged();
+  using content::Details;
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSIONS_READY:
+      registrar_.Remove(this, chrome::NOTIFICATION_EXTENSIONS_READY,
+          content::Source<Profile>(profile_));
+      OnExtensionServiceReady();
+      break;
+    case chrome::NOTIFICATION_EXTENSION_INSTALLED:
+    {
+      // The theme may be initially disabled. Wait till it is loaded (if ever).
+      Details<const extensions::InstalledExtensionInfo> installed_details(
+          details);
+      if (installed_details->extension->is_theme())
+        installed_pending_load_id_ = installed_details->extension->id();
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_LOADED:
+    {
+      const Extension* extension = Details<const Extension>(details).ptr();
+      if (extension->is_theme() &&
+          installed_pending_load_id_ != kDefaultThemeID &&
+          installed_pending_load_id_ == extension->id()) {
+        SetTheme(extension);
+      }
+      installed_pending_load_id_ = kDefaultThemeID;
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_ENABLED:
+    {
+      const Extension* extension = Details<const Extension>(details).ptr();
+      if (extension->is_theme())
+        SetTheme(extension);
+      break;
+    }
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED:
+    {
+      Details<const extensions::UnloadedExtensionInfo> unloaded_details(
+          details);
+      if (unloaded_details->reason != extension_misc::UNLOAD_REASON_UPDATE &&
+          unloaded_details->extension->is_theme() &&
+          unloaded_details->extension->id() == GetThemeID()) {
+        UseDefaultTheme();
+      }
+      break;
+    }
+  }
 }
 
 void ThemeService::SetTheme(const Extension* extension) {
+  DCHECK(extension->is_theme());
+  ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile_)->extension_service();
+  if (!service->IsExtensionEnabled(extension->id())) {
+    // |extension| is disabled when reverting to the previous theme via an
+    // infobar.
+    service->EnableExtension(extension->id());
+    // Enabling the extension will call back to SetTheme().
+    return;
+  }
+
+  std::string previous_theme_id = GetThemeID();
+
   // Clear our image cache.
   FreePlatformCaches();
-
-  DCHECK(extension);
-  DCHECK(extension->is_theme());
-  if (DCHECK_IS_ON()) {
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    DCHECK(service);
-    DCHECK(service->GetExtensionById(extension->id(), false));
-  }
 
   BuildFromExtension(extension);
   SaveThemeID(extension->id());
 
   NotifyThemeChanged();
   content::RecordAction(UserMetricsAction("Themes_Installed"));
+
+  if (previous_theme_id != kDefaultThemeID &&
+      previous_theme_id != extension->id()) {
+    // Disable the old theme.
+    service->DisableExtension(previous_theme_id,
+                              extensions::Extension::DISABLE_USER_ACTION);
+  }
 }
 
 void ThemeService::SetCustomDefaultTheme(
@@ -254,11 +307,12 @@ bool ThemeService::ShouldInitWithNativeTheme() const {
   return false;
 }
 
-void ThemeService::RemoveUnusedThemes() {
+void ThemeService::RemoveUnusedThemes(bool ignore_infobars) {
   // We do not want to garbage collect themes on startup (|ready_| is false).
-  // Themes will get garbage collected once
-  // ExtensionService::GarbageCollectExtensions() runs.
+  // Themes will get garbage collected after |kRemoveUnusedThemesStartupDelay|.
   if (!profile_ || !ready_)
+    return;
+  if (!ignore_infobars && number_of_infobars_ != 0)
     return;
 
   ExtensionService* service = profile_->GetExtensionService();
@@ -266,13 +320,28 @@ void ThemeService::RemoveUnusedThemes() {
     return;
   std::string current_theme = GetThemeID();
   std::vector<std::string> remove_list;
-  const ExtensionSet* extensions = service->extensions();
+  scoped_ptr<const ExtensionSet> extensions(
+      service->GenerateInstalledExtensionsSet());
+  extensions::ExtensionPrefs* prefs = service->extension_prefs();
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
-    if ((*it)->is_theme() && (*it)->id() != current_theme) {
-      remove_list.push_back((*it)->id());
+    const extensions::Extension* extension = *it;
+    if (extension->is_theme() &&
+        extension->id() != current_theme) {
+      // Only uninstall themes which are not disabled or are disabled with
+      // reason DISABLE_USER_ACTION. We cannot blanket uninstall all disabled
+      // themes because externally installed themes are initially disabled.
+      int disable_reason = prefs->GetDisableReasons(extension->id());
+      if (!prefs->IsExtensionDisabled(extension->id()) ||
+          disable_reason == Extension::DISABLE_USER_ACTION) {
+        remove_list.push_back((*it)->id());
+      }
     }
   }
+  // TODO: Garbage collect all unused themes. This method misses themes which
+  // are installed but not loaded because they are blacklisted by a management
+  // policy provider.
+
   for (size_t i = 0; i < remove_list.size(); ++i)
     service->UninstallExtension(remove_list[i], false, NULL);
 }
@@ -328,7 +397,14 @@ void ThemeService::ClearAllThemeData() {
   profile_->GetPrefs()->ClearPref(prefs::kCurrentThemePackFilename);
   SaveThemeID(kDefaultThemeID);
 
-  RemoveUnusedThemes();
+  // There should be no more infobars. This may not be the case because of
+  // http://crbug.com/62154
+  // RemoveUnusedThemes is called on a task because ClearAllThemeData() may
+  // be called as a result of NOTIFICATION_EXTENSION_UNLOADED.
+  base::MessageLoop::current()->PostTask(FROM_HERE,
+      base::Bind(&ThemeService::RemoveUnusedThemes,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 true));
 }
 
 void ThemeService::LoadThemePrefs() {
@@ -359,16 +435,9 @@ void ThemeService::LoadThemePrefs() {
   if (loaded_pack) {
     content::RecordAction(UserMetricsAction("Themes.Loaded"));
     set_ready();
-  } else {
-    // TODO(erg): We need to pop up a dialog informing the user that their
-    // theme is being migrated.
-    ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    if (service && service->is_ready()) {
-      MigrateTheme();
-      set_ready();
-    }
   }
+  // Else: wait for the extension service to be ready so that the theme pack
+  // can be recreated from the extension.
 }
 
 void ThemeService::NotifyThemeChanged() {
@@ -398,16 +467,41 @@ void ThemeService::FreePlatformCaches() {
 }
 #endif
 
-void ThemeService::SwapThemeSupplier(
-    scoped_refptr<CustomThemeSupplier> theme_supplier) {
-  if (theme_supplier_.get())
-    theme_supplier_->StopUsingTheme();
-  theme_supplier_ = theme_supplier;
-  if (theme_supplier_.get())
-    theme_supplier_->StartUsingTheme();
+void ThemeService::OnExtensionServiceReady() {
+  if (!ready_) {
+    // If the ThemeService is not ready yet, the custom theme data pack needs to
+    // be recreated from the extension.
+    MigrateTheme();
+    set_ready();
+
+    // Send notification in case anyone requested data and cached it when the
+    // theme service was not ready yet.
+    NotifyThemeChanged();
+  }
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALLED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_LOADED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_ENABLED,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_UNLOADED,
+                 content::Source<Profile>(profile_));
+
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::Bind(&ThemeService::RemoveUnusedThemes,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 false),
+      base::TimeDelta::FromSeconds(kRemoveUnusedThemesStartupDelay));
 }
 
 void ThemeService::MigrateTheme() {
+  // TODO(erg): We need to pop up a dialog informing the user that their
+  // theme is being migrated.
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   const Extension* extension = service ?
@@ -421,6 +515,15 @@ void ThemeService::MigrateTheme() {
     ClearAllThemeData();
     content::RecordAction(UserMetricsAction("Themes.Gone"));
   }
+}
+
+void ThemeService::SwapThemeSupplier(
+    scoped_refptr<CustomThemeSupplier> theme_supplier) {
+  if (theme_supplier_.get())
+    theme_supplier_->StopUsingTheme();
+  theme_supplier_ = theme_supplier;
+  if (theme_supplier_.get())
+    theme_supplier_->StartUsingTheme();
 }
 
 void ThemeService::SavePackName(const base::FilePath& pack_path) {
@@ -493,7 +596,7 @@ void ThemeService::OnInfobarDestroyed() {
   number_of_infobars_--;
 
   if (number_of_infobars_ == 0)
-    RemoveUnusedThemes();
+    RemoveUnusedThemes(false);
 }
 
 ThemeSyncableService* ThemeService::GetThemeSyncableService() const {

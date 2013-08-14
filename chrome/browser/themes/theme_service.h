@@ -135,8 +135,10 @@ class ThemeService : public base::NonThreadSafe,
   // destroyed, uninstalls all themes that aren't the currently selected.
   void OnInfobarDestroyed();
 
-  // Remove preference values for themes that are no longer in use.
-  void RemoveUnusedThemes();
+  // Uninstall theme extensions which are no longer in use. |ignore_infobars| is
+  // whether unused themes should be removed despite a theme infobar being
+  // visible.
+  void RemoveUnusedThemes(bool ignore_infobars);
 
   // Returns the syncable service for syncing theme. The returned service is
   // owned by |this| object.
@@ -190,13 +192,16 @@ class ThemeService : public base::NonThreadSafe,
  private:
   friend class theme_service_internal::ThemeServiceTest;
 
-  // Replaces the current theme supplier with a new one and calls
-  // StopUsingTheme() or StartUsingTheme() as appropriate.
-  void SwapThemeSupplier(scoped_refptr<CustomThemeSupplier> theme_supplier);
+  // Called when the extension service is ready.
+  void OnExtensionServiceReady();
 
   // Migrate the theme to the new theme pack schema by recreating the data pack
   // from the extension.
   void MigrateTheme();
+
+  // Replaces the current theme supplier with a new one and calls
+  // StopUsingTheme() or StartUsingTheme() as appropriate.
+  void SwapThemeSupplier(scoped_refptr<CustomThemeSupplier> theme_supplier);
 
   // Saves the filename of the cached theme pack.
   void SavePackName(const base::FilePath& pack_path);
@@ -243,6 +248,13 @@ class ThemeService : public base::NonThreadSafe,
   Profile* profile_;
 
   scoped_refptr<CustomThemeSupplier> theme_supplier_;
+
+  // The id of the theme extension which has just been installed but has not
+  // been loaded yet. The theme extension with |installed_pending_load_id_| may
+  // never be loaded if the install is due to updating a disabled theme.
+  // |pending_install_id_| should be set to |kDefaultThemeID| if there are no
+  // recently installed theme extensions
+  std::string installed_pending_load_id_;
 
   // The number of infobars currently displayed.
   int number_of_infobars_;
