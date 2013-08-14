@@ -4351,24 +4351,10 @@ LayoutUnit RenderBlock::logicalRightOffsetForContent(RenderRegion* region, Layou
 
 LayoutUnit RenderBlock::logicalLeftFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
 {
-    LayoutUnit left = fixedOffset;
-    if (m_floatingObjects && m_floatingObjects->hasLeftObjects()) {
-        ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(this, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), left);
-        m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
+    if (m_floatingObjects && m_floatingObjects->hasLeftObjects())
+        return max(m_floatingObjects->logicalLeftOffset(logicalTop, logicalHeight, offsetMode, heightRemaining), fixedOffset);
 
-        if (heightRemaining)
-            *heightRemaining = adapter.getHeightRemaining();
-
-        const FloatingObject* outermostFloat = adapter.outermostFloat();
-        if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
-            if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-                shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, outermostFloat->logicalTop(isHorizontalWritingMode()), logicalHeight);
-                left += shapeOutside->rightSegmentMarginBoxDelta();
-            }
-        }
-    }
-
-    return left;
+    return fixedOffset;
 }
 
 LayoutUnit RenderBlock::adjustLogicalLeftOffsetForLine(LayoutUnit offsetFromFloats, bool applyTextIndent) const
@@ -4411,26 +4397,10 @@ LayoutUnit RenderBlock::adjustLogicalLeftOffsetForLine(LayoutUnit offsetFromFloa
 
 LayoutUnit RenderBlock::logicalRightFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
 {
-    LayoutUnit right = fixedOffset;
-    if (m_floatingObjects && m_floatingObjects->hasRightObjects()) {
-        LayoutUnit rightFloatOffset = fixedOffset;
-        ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(this, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), rightFloatOffset);
-        m_floatingObjects->placedFloatsTree().allOverlapsWithAdapter(adapter);
+    if (m_floatingObjects && m_floatingObjects->hasRightObjects())
+        return min(m_floatingObjects->logicalRightOffset(logicalTop, logicalHeight, offsetMode, heightRemaining), fixedOffset);
 
-        if (heightRemaining)
-            *heightRemaining = adapter.getHeightRemaining();
-
-        const FloatingObject* outermostFloat = adapter.outermostFloat();
-        if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
-            if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-                shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, outermostFloat->logicalTop(isHorizontalWritingMode()), logicalHeight);
-                rightFloatOffset += shapeOutside->leftSegmentMarginBoxDelta();
-            }
-        }
-
-        right = min(right, rightFloatOffset);
-    }
-    return right;
+    return fixedOffset;
 }
 
 LayoutUnit RenderBlock::adjustLogicalRightOffsetForLine(LayoutUnit offsetFromFloats, bool applyTextIndent) const
@@ -8057,6 +8027,46 @@ void RenderBlock::FloatingObjects::computePlacedFloatsTree()
         if (floatingObject->isPlaced())
             m_placedFloatsTree.add(intervalForFloatingObject(floatingObject));
     }
+}
+
+LayoutUnit RenderBlock::FloatingObjects::logicalLeftOffset(LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
+{
+    LayoutUnit offset;
+    ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
+    placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+    if (heightRemaining)
+        *heightRemaining = adapter.getHeightRemaining();
+
+    const FloatingObject* outermostFloat = adapter.outermostFloat();
+    if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
+        if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
+            shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, outermostFloat->logicalTop(m_horizontalWritingMode), logicalHeight);
+            offset += shapeOutside->rightSegmentMarginBoxDelta();
+        }
+    }
+
+    return offset;
+}
+
+LayoutUnit RenderBlock::FloatingObjects::logicalRightOffset(LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
+{
+    LayoutUnit offset = m_renderer->logicalWidth();
+    ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
+    placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+    if (heightRemaining)
+        *heightRemaining = adapter.getHeightRemaining();
+
+    const FloatingObject* outermostFloat = adapter.outermostFloat();
+    if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
+        if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
+            shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, outermostFloat->logicalTop(m_horizontalWritingMode), logicalHeight);
+            offset += shapeOutside->leftSegmentMarginBoxDelta();
+        }
+    }
+
+    return offset;
 }
 
 template <typename CharacterType>
