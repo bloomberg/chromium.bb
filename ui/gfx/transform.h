@@ -10,6 +10,7 @@
 #include "base/compiler_specific.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/vector2d_f.h"
 
 namespace gfx {
 
@@ -160,6 +161,10 @@ class UI_EXPORT Transform {
   //    transforms would have on z values.
   //
   void FlattenTo2d();
+
+  // Returns the translation components of the matrix. It is an error to call
+  // this function if the transform does not represent only a 2d translation.
+  Vector2dF To2dTranslation() const;
 
   // Applies the transformation on the point. Returns true if the point is
   // transformed successfully.

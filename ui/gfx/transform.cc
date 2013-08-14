@@ -9,6 +9,7 @@
 
 #include <cmath>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/point3_f.h"
@@ -364,6 +365,14 @@ void Transform::FlattenTo2d() {
   matrix_.setDouble(2, 2, 1.0);
   matrix_.setDouble(3, 2, 0.0);
   matrix_.setDouble(2, 3, 0.0);
+}
+
+Vector2dF Transform::To2dTranslation() const {
+  DCHECK(IsIdentityOrTranslation());
+  // Ensure that this translation is truly 2d.
+  const double translate_z = matrix_.getDouble(2, 3);
+  DCHECK_EQ(0.0, translate_z);
+  return gfx::Vector2dF(matrix_.getDouble(0, 3), matrix_.getDouble(1, 3));
 }
 
 void Transform::TransformPoint(Point& point) const {

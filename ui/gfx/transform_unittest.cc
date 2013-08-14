@@ -2494,6 +2494,16 @@ TEST(XFormTest, Preserves2dAxisAlignment) {
   EXPECT_TRUE(transform.Preserves2dAxisAlignment());
 }
 
+TEST(XFormTest, To2dTranslation) {
+  Vector2dF translation(3.f, 7.f);
+  Transform transform;
+  transform.Translate(translation.x(), translation.y() + 1);
+  EXPECT_NE(translation.ToString(), transform.To2dTranslation().ToString());
+  transform.MakeIdentity();
+  transform.Translate(translation.x(), translation.y());
+  EXPECT_EQ(translation.ToString(), transform.To2dTranslation().ToString());
+}
+
 }  // namespace
 
 }  // namespace gfx
