@@ -99,20 +99,48 @@ tabpanel {
 }
 
 #search {
+  -webkit-padding-end: 5px;
+  -webkit-padding-start: 34px;
+  background-image: -webkit-image-set(
+      url(../images/search.png) 1x,
+      url(../images/2x/search.png) 2x);
+  background-position: 0 8px;
+  background-repeat: no-repeat;
   border: none;
   font-size: 13px;
   height: 18px;
-  padding: 0;
   position: absolute;
-  right: 0;
-  text-align: left;
+  right: 16px;
   top: 15px;
   width: 220px;
 }
 
 html[dir='rtl'] #search {
-  left: 0;
+  background-position-x: calc(100% - 16px);
+  left: 16px;
   right: auto;
+}
+
+#search::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  background-image: -webkit-image-set(
+      url(../images/search_clear.png) 1x,
+      url(../images/2x/search_clear.png) 2x);
+  background-repeat: no-repeat;
+  height: 16px;
+  width: 16px;
+}
+
+#search::-webkit-search-cancel-button:hover {
+  background-image: -webkit-image-set(
+      url(../images/search_clear_hover.png) 1x,
+      url(../images/2x/search_clear_hover.png) 2x);
+}
+
+#search::-webkit-search-cancel-button:active {
+  background-image: -webkit-image-set(
+      url(../images/search_clear_active.png) 1x,
+      url(../images/2x/search_clear_active.png) 2x);
 }
 
 /* Contents */

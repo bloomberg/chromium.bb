@@ -43,7 +43,7 @@ cr.define('apps_dev_tool', function() {
      * @param {!Event} e Click event.
      * @private
      */
-   handleLoadUnpackedItem_: function(e) {
+    handleLoadUnpackedItem_: function(e) {
       chrome.developerPrivate.loadUnpacked();
     },
 
