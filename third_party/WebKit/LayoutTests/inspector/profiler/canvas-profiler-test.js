@@ -138,7 +138,6 @@ InspectorTest.dumpResourceState = function(resourceState, indent)
     var descriptors = resourceState.descriptors || [];
     var properties = [
         "{ResourceState}",
-        "length(descriptors):" + descriptors.length,
         "length(imageURL):" + (resourceState.imageURL || "").length
     ];
     InspectorTest.addResult(indent + properties.filter(Boolean).join("  "));

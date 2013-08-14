@@ -77,6 +77,17 @@ function doCanvasCalls()
 
     var location = gl.getUniformLocation(program, "uColor");
 
+    var extensions = [
+        "OES_standard_derivatives",
+        "OES_vertex_array_object",
+        "EXT_texture_filter_anisotropic",
+    ];
+    for (var i = 0, extension; extension = extensions[i]; ++i) {
+        var result1 = gl.getExtension(extension);
+        var result2 = gl.getExtension("WEBKIT_" + extension);
+        console.assert(result1 || result2, "Expected WebGL extension \"" + extension + "\" to be supported.");
+    }
+
     var err = gl.getError();
     console.assert(err === gl.NO_ERROR, "Should be no GL errors, but was: " + err);
 }
@@ -128,7 +139,7 @@ function test()
 
         InspectorTest.assertTrue(!error && !!traceLog, "Unexpected error: " + error);
         traceLogCallsNumber = traceLog.calls.length;
-        InspectorTest.addResult("Number of trace log calls received: " + traceLogCallsNumber);
+        InspectorTest.assertTrue(traceLogCallsNumber > 0, "Expected not empty trace log calls array");
         for (var i = 0; i < traceLogCallsNumber; ++i) {
             var call = traceLog.calls[i];
             examineCallArguments(call.arguments);

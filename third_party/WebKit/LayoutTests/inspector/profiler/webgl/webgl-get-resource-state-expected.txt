@@ -3,10 +3,9 @@ Tests canvas WebGL ResourceState during the replay.
  
 Started capturing.
 Stopped capturing.
-Number of trace log calls received: 45
 
 --- WebGLRenderingContext state ---
-{ResourceState}  length(descriptors):62  length(imageURL):1594
+{ResourceState}  length(imageURL):1594
   ACTIVE_TEXTURE: TEXTURE2
   ARRAY_BUFFER_BINDING: WebGLBuffer@1
   BLEND: false
@@ -29,6 +28,11 @@ Number of trace log calls received: 45
   DEPTH_WRITEMASK: true
   DITHER: false
   ELEMENT_ARRAY_BUFFER_BINDING: null
+  ENABLED_EXTENSIONS[3]
+    OES_standard_derivatives: OESStandardDerivatives
+    OES_vertex_array_object: OESVertexArrayObject
+    WEBKIT_EXT_texture_filter_anisotropic: EXTTextureFilterAnisotropic
+  FRAGMENT_SHADER_DERIVATIVE_HINT_OES: DONT_CARE
   FRAMEBUFFER_BINDING: WebGLFramebuffer@1
   FRONT_FACE: CCW
   GENERATE_MIPMAP_HINT: DONT_CARE
@@ -115,6 +119,7 @@ Number of trace log calls received: 45
   UNPACK_COLORSPACE_CONVERSION_WEBGL: BROWSER_DEFAULT_WEBGL
   UNPACK_FLIP_Y_WEBGL: true
   UNPACK_PREMULTIPLY_ALPHA_WEBGL: false
+  VERTEX_ARRAY_BINDING_OES: null
   VERTEX_ATTRIB_ARRAYS[16]
     0
       CURRENT_VERTEX_ATTRIB: Float32Array[4]
@@ -263,7 +268,7 @@ Number of trace log calls received: 45
   VIEWPORT: Int32Array[4]
 
 --- WebGLBuffer state ---
-{ResourceState}  length(descriptors):5  length(imageURL):0
+{ResourceState}  length(imageURL):0
   BUFFER_SIZE: 24
   BUFFER_USAGE: STATIC_DRAW
   context: WebGLRenderingContext@1
@@ -271,8 +276,9 @@ Number of trace log calls received: 45
   target: ARRAY_BUFFER
 
 --- WebGLTexture state ---
-{ResourceState}  length(descriptors):7  length(imageURL):0
+{ResourceState}  length(imageURL):0
   TEXTURE_MAG_FILTER: LINEAR
+  TEXTURE_MAX_ANISOTROPY_EXT: 1
   TEXTURE_MIN_FILTER: NEAREST_MIPMAP_LINEAR
   TEXTURE_WRAP_S: REPEAT
   TEXTURE_WRAP_T: REPEAT
@@ -281,7 +287,7 @@ Number of trace log calls received: 45
   target: TEXTURE_2D
 
 --- WebGLProgram state ---
-{ResourceState}  length(descriptors):9  length(imageURL):0
+{ResourceState}  length(imageURL):0
   ACTIVE_ATTRIBUTES[1]
     0
       name: aVertex
@@ -304,7 +310,7 @@ Number of trace log calls received: 45
   isProgram: true
 
 --- WebGLShader state ---
-{ResourceState}  length(descriptors):8  length(imageURL):0
+{ResourceState}  length(imageURL):0
   COMPILE_STATUS: true
   DELETE_STATUS: false
   SHADER_TYPE: VERTEX_SHADER
@@ -321,7 +327,7 @@ Number of trace log calls received: 45
   isShader: true
 
 --- WebGLFramebuffer state ---
-{ResourceState}  length(descriptors):5  length(imageURL):0
+{ResourceState}  length(imageURL):0
   COLOR_ATTACHMENT0
     FRAMEBUFFER_ATTACHMENT_OBJECT_NAME: WebGLTexture@2
     FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE: TEXTURE
@@ -341,7 +347,7 @@ Number of trace log calls received: 45
   isFramebuffer: true
 
 --- WebGLRenderbuffer state ---
-{ResourceState}  length(descriptors):11  length(imageURL):0
+{ResourceState}  length(imageURL):0
   RENDERBUFFER_ALPHA_SIZE: 0
   RENDERBUFFER_BLUE_SIZE: 0
   RENDERBUFFER_DEPTH_SIZE: 16
@@ -355,7 +361,7 @@ Number of trace log calls received: 45
   isRenderbuffer: true
 
 --- WebGLUniformLocation state ---
-{ResourceState}  length(descriptors):6  length(imageURL):0
+{ResourceState}  length(imageURL):0
   context: WebGLRenderingContext@1
   name: uColor
   program: WebGLProgram@1

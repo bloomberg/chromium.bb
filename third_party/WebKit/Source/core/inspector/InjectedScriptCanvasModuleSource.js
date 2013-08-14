@@ -185,6 +185,16 @@ var TypeUtils = {
     },
 
     /**
+     * @param {string} property
+     * @param {!Object} obj
+     * @return {boolean}
+     */
+    isEnumPropertyName: function(property, obj)
+    {
+        return (/^[A-Z][A-Z0-9_]+$/.test(property) && typeof obj[property] === "number");
+    },
+
+    /**
      * @return {CanvasRenderingContext2D}
      */
     _dummyCanvas2dContext: function()
@@ -983,7 +993,7 @@ Resource.prototype = {
                     proxy[property] = this._wrapCustomFunction(this, wrappedObject, wrappedObject[property], property, customWrapFunction);
                 else
                     proxy[property] = this._wrapFunction(this, wrappedObject, wrappedObject[property], property);
-            } else if (/^[A-Z0-9_]+$/.test(property) && typeof wrappedObject[property] === "number") {
+            } else if (TypeUtils.isEnumPropertyName(property, wrappedObject)) {
                 // Fast access to enums and constants.
                 proxy[property] = wrappedObject[property];
             } else {
@@ -1446,8 +1456,13 @@ WebGLTextureResource.prototype = {
         if (oldTexture !== texture)
             gl.bindTexture(target, texture);
 
-        // FIXME: Add TEXTURE_MAX_ANISOTROPY_EXT for extension EXT_texture_filter_anisotropic.
-        var textureParameters = ["TEXTURE_MAG_FILTER", "TEXTURE_MIN_FILTER", "TEXTURE_WRAP_S", "TEXTURE_WRAP_T"];
+        var textureParameters = [
+            "TEXTURE_MAG_FILTER",
+            "TEXTURE_MIN_FILTER",
+            "TEXTURE_WRAP_S",
+            "TEXTURE_WRAP_T",
+            "TEXTURE_MAX_ANISOTROPY_EXT" // EXT_texture_filter_anisotropic extension
+        ];
         glResource.queryStateValues(gl.getTexParameter, target, textureParameters, result);
 
         if (oldTexture !== texture)
@@ -2160,8 +2175,10 @@ function WebGLRenderingContextResource(glContext)
     ContextResource.call(this, glContext, "WebGLRenderingContext");
     /** @type {Object.<number, boolean>} */
     this._customErrors = null;
-    /** @type {!Object.<string, boolean>} */
+    /** @type {!Object.<string, string>} */
     this._extensions = {};
+    /** @type {!Object.<string, number>} */
+    this._extensionEnums = {};
 }
 
 /**
@@ -2215,6 +2232,7 @@ WebGLRenderingContextResource.StateParameters = [
     "DEPTH_RANGE",
     "DEPTH_WRITEMASK",
     "ELEMENT_ARRAY_BUFFER_BINDING",
+    "FRAGMENT_SHADER_DERIVATIVE_HINT_OES", // OES_standard_derivatives extension
     "FRAMEBUFFER_BINDING",
     "FRONT_FACE",
     "GENERATE_MIPMAP_HINT",
@@ -2245,6 +2263,7 @@ WebGLRenderingContextResource.StateParameters = [
     "UNPACK_COLORSPACE_CONVERSION_WEBGL",
     "UNPACK_FLIP_Y_WEBGL",
     "UNPACK_PREMULTIPLY_ALPHA_WEBGL",
+    "VERTEX_ARRAY_BINDING_OES", // OES_vertex_array_object extension
     "VIEWPORT"
 ];
 
@@ -2266,6 +2285,7 @@ WebGLRenderingContextResource.GetResultIsEnum = TypeUtils.createPrefixedProperty
     "DEPTH_FUNC",
     "FRONT_FACE",
     "GENERATE_MIPMAP_HINT",
+    "FRAGMENT_SHADER_DERIVATIVE_HINT_OES",
     "STENCIL_BACK_FAIL",
     "STENCIL_BACK_FUNC",
     "STENCIL_BACK_PASS_DEPTH_FAIL",
@@ -2409,11 +2429,31 @@ WebGLRenderingContextResource.prototype = {
 
     /**
      * @param {string} name
+     * @param {Object} obj
      */
-    addExtension: function(name)
+    registerWebGLExtension: function(name, obj)
     {
         // FIXME: Wrap OES_vertex_array_object extension.
-        this._extensions[name.toLowerCase()] = true;
+        var lowerName = name.toLowerCase();
+        if (obj && !this._extensions[lowerName]) {
+            this._extensions[lowerName] = name;
+            for (var property in obj) {
+                if (TypeUtils.isEnumPropertyName(property, obj))
+                    this._extensionEnums[property] = /** @type {number} */ (obj[property]);
+            }
+        }
+    },
+
+    /**
+     * @param {string} name
+     * @return {number|undefined}
+     */
+    _enumValueForName: function(name)
+    {
+        if (typeof this._extensionEnums[name] === "number")
+            return this._extensionEnums[name];
+        var gl = this.wrappedObject();
+        return (typeof gl[name] === "number" ? gl[name] : undefined);
     },
 
     /**
@@ -2427,7 +2467,11 @@ WebGLRenderingContextResource.prototype = {
     {
         var gl = this.wrappedObject();
         for (var i = 0, pname; pname = pnames[i]; ++i) {
-            var value = func.call(gl, targetOrWebGLObject, gl[pname]);
+            var enumValue = this._enumValueForName(pname);
+            if (typeof enumValue !== "number")
+                continue;
+            var value = func.call(gl, targetOrWebGLObject, enumValue);
+            value = Resource.forObject(value) || value;
             output.push({ name: pname, value: value, valueIsEnum: WebGLRenderingContextResource.GetResultIsEnum[pname] });
         }
     },
@@ -2448,6 +2492,7 @@ WebGLRenderingContextResource.prototype = {
                 output.push({ name: pname, value: obj[pname], valueIsEnum: WebGLRenderingContextResource.GetResultIsEnum[pname] });
         }
 
+        var gl = this.wrappedObject();
         var glState = this._internalCurrentState(null);
 
         // VERTEX_ATTRIB_ARRAYS
@@ -2475,13 +2520,22 @@ WebGLRenderingContextResource.prototype = {
         result.push({ name: "VERTEX_ATTRIB_ARRAYS", values: vertexAttribStates, isArray: true });
         result.push({ name: "TEXTURE_UNITS", values: textureUnits, isArray: true });
 
-        var gl = this.wrappedObject();
         var textureBindingParameters = ["TEXTURE_BINDING_2D", "TEXTURE_BINDING_CUBE_MAP"];
         for (var i = 0, pname; pname = textureBindingParameters[i]; ++i) {
             var value = gl.getParameter(gl[pname]);
             value = Resource.forObject(value) || value;
             result.push({ name: pname, value: value });
         }
+
+        // ENABLED_EXTENSIONS
+        var enabledExtensions = [];
+        for (var lowerName in this._extensions) {
+            var pname = this._extensions[lowerName];
+            var value = gl.getExtension(pname);
+            value = Resource.forObject(value) || value;
+            enabledExtensions.push({ name: pname, value: value });
+        }
+        result.push({ name: "ENABLED_EXTENSIONS", values: enabledExtensions, isArray: true });
 
         return result;
     },
@@ -2509,20 +2563,33 @@ WebGLRenderingContextResource.prototype = {
         WebGLRenderingContextResource.GLCapabilities.forEach(function(parameter) {
             glState[parameter] = gl.isEnabled(gl[parameter]);
         });
-        WebGLRenderingContextResource.StateParameters.forEach(function(parameter) {
-            glState[parameter] = maybeToReplayable(gl.getParameter(gl[parameter]));
-        });
+        for (var i = 0, pname; pname = WebGLRenderingContextResource.StateParameters[i]; ++i) {
+            var enumValue = this._enumValueForName(pname);
+            if (typeof enumValue === "number")
+                glState[pname] = maybeToReplayable(gl.getParameter(enumValue));
+        }
 
         // VERTEX_ATTRIB_ARRAYS
         var maxVertexAttribs = /** @type {number} */ (gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
-        var vertexAttribParameters = ["VERTEX_ATTRIB_ARRAY_BUFFER_BINDING", "VERTEX_ATTRIB_ARRAY_ENABLED", "VERTEX_ATTRIB_ARRAY_SIZE", "VERTEX_ATTRIB_ARRAY_STRIDE", "VERTEX_ATTRIB_ARRAY_TYPE", "VERTEX_ATTRIB_ARRAY_NORMALIZED", "CURRENT_VERTEX_ATTRIB"];
+        var vertexAttribParameters = [
+            "VERTEX_ATTRIB_ARRAY_BUFFER_BINDING",
+            "VERTEX_ATTRIB_ARRAY_ENABLED",
+            "VERTEX_ATTRIB_ARRAY_SIZE",
+            "VERTEX_ATTRIB_ARRAY_STRIDE",
+            "VERTEX_ATTRIB_ARRAY_TYPE",
+            "VERTEX_ATTRIB_ARRAY_NORMALIZED",
+            "CURRENT_VERTEX_ATTRIB",
+            "VERTEX_ATTRIB_ARRAY_DIVISOR_ANGLE" // ANGLE_instanced_arrays extension
+        ];
         var vertexAttribStates = [];
-        for (var i = 0; i < maxVertexAttribs; ++i) {
+        for (var index = 0; index < maxVertexAttribs; ++index) {
             var state = Object.create(null);
-            vertexAttribParameters.forEach(function(attribParameter) {
-                state[attribParameter] = maybeToReplayable(gl.getVertexAttrib(i, gl[attribParameter]));
-            });
-            state.VERTEX_ATTRIB_ARRAY_POINTER = gl.getVertexAttribOffset(i, gl.VERTEX_ATTRIB_ARRAY_POINTER);
+            for (var i = 0, pname; pname = vertexAttribParameters[i]; ++i) {
+                var enumValue = this._enumValueForName(pname);
+                if (typeof enumValue === "number")
+                    state[pname] = maybeToReplayable(gl.getVertexAttrib(index, enumValue));
+            }
+            state.VERTEX_ATTRIB_ARRAY_POINTER = gl.getVertexAttribOffset(index, gl.VERTEX_ATTRIB_ARRAY_POINTER);
             vertexAttribStates.push(state);
         }
         glState.VERTEX_ATTRIB_ARRAYS = vertexAttribStates;
@@ -2556,6 +2623,7 @@ WebGLRenderingContextResource.prototype = {
         data.originalCanvas = gl.canvas;
         data.originalContextAttributes = gl.getContextAttributes();
         data.extensions = TypeUtils.cloneObject(this._extensions);
+        data.extensionEnums = TypeUtils.cloneObject(this._extensionEnums);
         data.glState = this._internalCurrentState(cache);
     },
 
@@ -2568,6 +2636,7 @@ WebGLRenderingContextResource.prototype = {
     {
         this._customErrors = null;
         this._extensions = TypeUtils.cloneObject(data.extensions) || {};
+        this._extensionEnums = TypeUtils.cloneObject(data.extensionEnums) || {};
 
         var canvas = data.originalCanvas.cloneNode(true);
         var replayContext = null;
@@ -2614,6 +2683,10 @@ WebGLRenderingContextResource.prototype = {
         gl.frontFace(glState.FRONT_FACE);
         gl.hint(gl.GENERATE_MIPMAP_HINT, glState.GENERATE_MIPMAP_HINT);
         gl.lineWidth(glState.LINE_WIDTH);
+
+        var enumValue = this._enumValueForName("FRAGMENT_SHADER_DERIVATIVE_HINT_OES");
+        if (typeof enumValue === "number")
+            gl.hint(enumValue, glState.FRAGMENT_SHADER_DERIVATIVE_HINT_OES);
 
         WebGLRenderingContextResource.PixelStoreParameters.forEach(function(parameter) {
             gl.pixelStorei(gl[parameter], glState[parameter]);
@@ -2726,17 +2799,20 @@ WebGLRenderingContextResource.prototype = {
      */
     onCallReplayed: function(call)
     {
-        // Update BINDING state for Resources in the replay world.
         var functionName = call.functionName();
+        var args = call.args();
         switch (functionName) {
         case "bindBuffer":
         case "bindFramebuffer":
         case "bindRenderbuffer":
         case "bindTexture":
-            var args = call.args();
+            // Update BINDING state for Resources in the replay world.
             var resource = Resource.forObject(args[1]);
             if (resource)
                 resource.pushBinding(args[0], functionName);
+            break;
+        case "getExtension":
+            this.registerWebGLExtension(args[0], /** @type {Object} */ (call.result()));
             break;
         }
     },
@@ -2827,7 +2903,7 @@ WebGLRenderingContextResource.prototype = {
              */
             wrapFunctions["getExtension"] = function(name)
             {
-                this._resource.addExtension(name);
+                this._resource.registerWebGLExtension(name, this.result());
             }
 
             //
@@ -3741,7 +3817,7 @@ WebGLCallFormatter.prototype = {
             if (!obj)
                 return;
             for (var property in obj) {
-                if (/^[A-Z0-9_]+$/.test(property) && typeof obj[property] === "number") {
+                if (TypeUtils.isEnumPropertyName(property, obj)) {
                     var value = /** @type {number} */ (obj[property]);
                     this._enumNameToValue[property] = value;
                     var names = this._enumValueToNames[value];
