@@ -1066,12 +1066,12 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFr
     }
 
     if (hasOneChild(containerNode.get())) {
-        containerNode->replaceChild(fragment, containerNode->firstChild(), es, AttachLazily);
+        containerNode->replaceChild(fragment, containerNode->firstChild(), es);
         return;
     }
 
     containerNode->removeChildren();
-    containerNode->appendChild(fragment, es, AttachLazily);
+    containerNode->appendChild(fragment, es);
 }
 
 void replaceChildrenWithText(ContainerNode* container, const String& text, ExceptionState& es)
@@ -1088,12 +1088,12 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
     RefPtr<Text> textNode = Text::create(containerNode->document(), text);
 
     if (hasOneChild(containerNode.get())) {
-        containerNode->replaceChild(textNode.release(), containerNode->firstChild(), es, AttachLazily);
+        containerNode->replaceChild(textNode.release(), containerNode->firstChild(), es);
         return;
     }
 
     containerNode->removeChildren();
-    containerNode->appendChild(textNode.release(), es, AttachLazily);
+    containerNode->appendChild(textNode.release(), es);
 }
 
 }
