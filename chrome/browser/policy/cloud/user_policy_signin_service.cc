@@ -26,7 +26,12 @@
 namespace policy {
 
 UserPolicySigninService::UserPolicySigninService(
-    Profile* profile) : UserPolicySigninServiceBase(profile) {
+    Profile* profile,
+    PrefService* local_state,
+    DeviceManagementService* device_management_service)
+    : UserPolicySigninServiceBase(profile,
+                                  local_state,
+                                  device_management_service) {
   if (profile->GetPrefs()->GetBoolean(prefs::kDisableCloudPolicyOnSignin))
     return;
 

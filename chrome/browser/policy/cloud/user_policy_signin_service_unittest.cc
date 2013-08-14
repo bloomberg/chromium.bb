@@ -162,10 +162,8 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    device_management_service_ = new MockDeviceManagementService();
-    g_browser_process->browser_policy_connector()->
-        SetDeviceManagementServiceForTesting(
-            scoped_ptr<DeviceManagementService>(device_management_service_));
+    UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
+        &device_management_service_);
 
     local_state_.reset(new TestingPrefServiceSimple);
     chrome::RegisterLocalState(local_state_->registry());
@@ -207,6 +205,7 @@ class UserPolicySigninServiceTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
+    UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(NULL);
     // Free the profile before we clear out the browser prefs.
     profile_.reset();
     TestingBrowserProcess* testing_browser_process =
@@ -259,11 +258,11 @@ class UserPolicySigninServiceTest : public testing::Test {
     // When the user is from a hosted domain, this should kick off client
     // registration.
     MockDeviceManagementJob* register_request = NULL;
-    EXPECT_CALL(*device_management_service_,
+    EXPECT_CALL(device_management_service_,
                 CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
-        .WillOnce(device_management_service_->CreateAsyncJob(
+        .WillOnce(device_management_service_.CreateAsyncJob(
             &register_request));
-    EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(1);
 
     // Now mimic the user being a hosted domain - this should cause a Register()
@@ -291,10 +290,10 @@ class UserPolicySigninServiceTest : public testing::Test {
 
     // Now call to fetch policy - this should fire off a fetch request.
     MockDeviceManagementJob* fetch_request = NULL;
-    EXPECT_CALL(*device_management_service_,
+    EXPECT_CALL(device_management_service_,
                 CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
-        .WillOnce(device_management_service_->CreateAsyncJob(&fetch_request));
-    EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+        .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
+    EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(1);
     signin_service->FetchPolicyForSignedInUser(
         created_client_.Pass(),
@@ -354,7 +353,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   // Weak ptr to the MockDeviceManagementService (object is owned by the
   // BrowserPolicyConnector).
-  MockDeviceManagementService* device_management_service_;
+  MockDeviceManagementService device_management_service_;
 
   scoped_ptr<TestingPrefServiceSimple> local_state_;
 };
@@ -637,10 +636,10 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientFailedRegistration) {
   // When the user is from a hosted domain, this should kick off client
   // registration.
   MockDeviceManagementJob* register_request = NULL;
-  EXPECT_CALL(*device_management_service_,
+  EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
-      .WillOnce(device_management_service_->CreateAsyncJob(&register_request));
-  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&register_request));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
         .Times(1);
 
   // Now mimic the user being a hosted domain - this should cause a Register()
@@ -671,10 +670,10 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientSucceeded) {
   // When the user is from a hosted domain, this should kick off client
   // registration.
   MockDeviceManagementJob* register_request = NULL;
-  EXPECT_CALL(*device_management_service_,
+  EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION))
-      .WillOnce(device_management_service_->CreateAsyncJob(&register_request));
-  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&register_request));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
       .Times(1);
 
   // Now mimic the user being a hosted domain - this should cause a Register()
@@ -703,15 +702,15 @@ TEST_F(UserPolicySigninServiceTest, RegisterPolicyClientSucceeded) {
 TEST_F(UserPolicySigninServiceTest, FetchPolicyFailed) {
   scoped_ptr<CloudPolicyClient> client =
       UserCloudPolicyManager::CreateCloudPolicyClient(
-          device_management_service_);
+          &device_management_service_);
   client->SetupRegistration("mock_dm_token", "mock_client_id");
 
   // Initiate a policy fetch request.
   MockDeviceManagementJob* fetch_request = NULL;
-  EXPECT_CALL(*device_management_service_,
+  EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
-      .WillOnce(device_management_service_->CreateAsyncJob(&fetch_request));
-  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
       .Times(1);
   UserPolicySigninService* signin_service =
       UserPolicySigninServiceFactory::GetForProfile(profile_.get());
@@ -751,10 +750,10 @@ TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureTemporary) {
 
   // Kick off another policy fetch.
   MockDeviceManagementJob* fetch_request = NULL;
-  EXPECT_CALL(*device_management_service_,
+  EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
-      .WillOnce(device_management_service_->CreateAsyncJob(&fetch_request));
-  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
       .Times(1);
   manager_->RefreshPolicies();
   Mock::VerifyAndClearExpectations(this);
@@ -777,10 +776,10 @@ TEST_F(UserPolicySigninServiceTest, PolicyFetchFailureDisableManagement) {
 
   // Kick off another policy fetch.
   MockDeviceManagementJob* fetch_request = NULL;
-  EXPECT_CALL(*device_management_service_,
+  EXPECT_CALL(device_management_service_,
               CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH))
-      .WillOnce(device_management_service_->CreateAsyncJob(&fetch_request));
-  EXPECT_CALL(*device_management_service_, StartJob(_, _, _, _, _, _, _))
+      .WillOnce(device_management_service_.CreateAsyncJob(&fetch_request));
+  EXPECT_CALL(device_management_service_, StartJob(_, _, _, _, _, _, _))
       .Times(1);
   manager_->RefreshPolicies();
   Mock::VerifyAndClearExpectations(this);

@@ -23,7 +23,9 @@ class CloudPolicyClientRegistrationHelper;
 class UserPolicySigninService : public UserPolicySigninServiceBase {
  public:
   // Creates a UserPolicySigninService associated with the passed |profile|.
-  explicit UserPolicySigninService(Profile* profile);
+  UserPolicySigninService(Profile* profile,
+                          PrefService* local_state,
+                          DeviceManagementService* device_management_service);
   virtual ~UserPolicySigninService();
 
   // Registers a CloudPolicyClient for fetching policy for |username|.

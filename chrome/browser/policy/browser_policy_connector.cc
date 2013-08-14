@@ -376,11 +376,6 @@ void BrowserPolicyConnector::SetUserPolicyDelegate(
 }
 #endif
 
-void BrowserPolicyConnector::SetDeviceManagementServiceForTesting(
-    scoped_ptr<DeviceManagementService> service) {
-  device_management_service_ = service.Pass();
-}
-
 // static
 void BrowserPolicyConnector::SetPolicyProviderForTesting(
     ConfigurationPolicyProvider* provider) {

@@ -18,10 +18,12 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class PrefService;
 class Profile;
 
 namespace policy {
 
+class DeviceManagementService;
 class UserCloudPolicyManager;
 
 // The UserPolicySigninService is responsible for interacting with the policy
@@ -51,7 +53,10 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   typedef base::Callback<void(bool)> PolicyFetchCallback;
 
   // Creates a UserPolicySigninServiceBase associated with the passed |profile|.
-  explicit UserPolicySigninServiceBase(Profile* profile);
+  UserPolicySigninServiceBase(
+      Profile* profile,
+      PrefService* local_state,
+      DeviceManagementService* device_management_service);
   virtual ~UserPolicySigninServiceBase();
 
   // Initiates a policy fetch as part of user signin, using a CloudPolicyClient
@@ -126,6 +131,9 @@ class UserPolicySigninServiceBase : public BrowserContextKeyedService,
   Profile* profile_;
 
   content::NotificationRegistrar registrar_;
+
+  PrefService* local_state_;
+  DeviceManagementService* device_management_service_;
 
   base::WeakPtrFactory<UserPolicySigninServiceBase> weak_factory_;
 

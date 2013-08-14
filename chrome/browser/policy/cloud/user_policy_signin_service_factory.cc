@@ -5,6 +5,8 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 
 #include "base/prefs/pref_service.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -21,6 +23,13 @@
 #endif
 
 namespace policy {
+
+namespace {
+
+// Used only for testing.
+DeviceManagementService* g_device_management_service = NULL;
+
+}  // namespace
 
 UserPolicySigninServiceFactory::UserPolicySigninServiceFactory()
     : BrowserContextKeyedServiceFactory(
@@ -49,10 +58,23 @@ UserPolicySigninServiceFactory* UserPolicySigninServiceFactory::GetInstance() {
   return Singleton<UserPolicySigninServiceFactory>::get();
 }
 
+// static
+void UserPolicySigninServiceFactory::SetDeviceManagementServiceForTesting(
+    DeviceManagementService* device_management_service) {
+  g_device_management_service = device_management_service;
+}
+
 BrowserContextKeyedService*
 UserPolicySigninServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
-  return new UserPolicySigninService(static_cast<Profile*>(profile));
+  BrowserPolicyConnector* connector =
+      g_browser_process->browser_policy_connector();
+  DeviceManagementService* device_management_service =
+      g_device_management_service ? g_device_management_service
+                                  : connector->device_management_service();
+  return new UserPolicySigninService(static_cast<Profile*>(profile),
+                                     g_browser_process->local_state(),
+                                     device_management_service);
 }
 
 bool

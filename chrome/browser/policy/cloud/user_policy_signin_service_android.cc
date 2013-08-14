@@ -36,8 +36,13 @@ enterprise_management::DeviceRegisterRequest::Type GetRegistrationType() {
 
 }  // namespace
 
-UserPolicySigninService::UserPolicySigninService(Profile* profile)
-    : UserPolicySigninServiceBase(profile),
+UserPolicySigninService::UserPolicySigninService(
+    Profile* profile,
+    PrefService* local_state,
+    DeviceManagementService* device_management_service)
+    : UserPolicySigninServiceBase(profile,
+                                  local_state,
+                                  device_management_service),
       weak_factory_(this) {}
 
 UserPolicySigninService::~UserPolicySigninService() {}
