@@ -6,10 +6,13 @@
 
 #include "base/logging.h"
 #include "grit/ui_resources.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/effects/SkLerpXfermode.h"
 #include "ui/base/animation/animation.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/sys_color_change_listener.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
@@ -119,17 +122,22 @@ void LabelButtonBorder::Paint(const View& view, gfx::Canvas* canvas) {
   ui::NativeTheme::State state = native_theme_delegate->GetThemeState(&extra);
 
   if (animation && animation->is_animating()) {
-    // Composite the background and foreground painters during state animations.
-    int alpha = animation->CurrentValueBetween(0, 0xff);
+    // Linearly interpolate background and foreground painters during animation.
+    const SkRect sk_rect = gfx::RectToSkRect(rect);
+    canvas->sk_canvas()->saveLayer(&sk_rect, NULL);
     state = native_theme_delegate->GetBackgroundThemeState(&extra);
-    canvas->SaveLayerAlpha(static_cast<uint8>(0xff - alpha));
     PaintHelper(this, canvas, theme, part, state, rect, extra);
-    canvas->Restore();
 
+    SkPaint paint;
+    skia::RefPtr<SkXfermode> sk_lerp_xfer =
+        skia::AdoptRef(SkLerpXfermode::Create(animation->GetCurrentValue()));
+    paint.setXfermode(sk_lerp_xfer.get());
+    canvas->sk_canvas()->saveLayer(&sk_rect, &paint);
     state = native_theme_delegate->GetForegroundThemeState(&extra);
-    canvas->SaveLayerAlpha(static_cast<uint8>(alpha));
     PaintHelper(this, canvas, theme, part, state, rect, extra);
-    canvas->Restore();
+    canvas->sk_canvas()->restore();
+
+    canvas->sk_canvas()->restore();
   } else {
     PaintHelper(this, canvas, theme, part, state, rect, extra);
   }

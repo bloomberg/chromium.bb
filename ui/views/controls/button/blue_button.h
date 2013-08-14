@@ -6,7 +6,6 @@
 #define UI_VIEWS_CONTROLS_BUTTON_BLUE_BUTTON_H_
 
 #include "base/compiler_specific.h"
-#include "base/strings/string16.h"
 #include "ui/views/controls/button/label_button.h"
 
 namespace views {
@@ -22,7 +21,6 @@ class VIEWS_EXPORT BlueButton : public LabelButton {
  private:
   // Overridden from LabelButton:
   virtual const char* GetClassName() const OVERRIDE;
-  virtual const ui::Animation* GetThemeAnimation() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(BlueButton);
 };

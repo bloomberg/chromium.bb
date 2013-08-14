@@ -78,9 +78,4 @@ const char* BlueButton::GetClassName() const {
   return BlueButton::kViewClassName;
 }
 
-// TODO(msw): Re-enable animations for blue buttons. See crbug.com/239121.
-const ui::Animation* BlueButton::GetThemeAnimation() const {
-  return NULL;
-}
-
 }  // namespace views
