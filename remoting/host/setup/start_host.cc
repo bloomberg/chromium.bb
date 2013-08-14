@@ -149,9 +149,7 @@ int main(int argc, char** argv) {
   io_thread.StartWithOptions(io_thread_options);
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter(
-      new remoting::URLRequestContextGetter(
-          g_message_loop->message_loop_proxy(),
-          io_thread.message_loop_proxy()));
+      new remoting::URLRequestContextGetter(io_thread.message_loop_proxy()));
 
   net::URLFetcher::SetIgnoreCertificateRequests(true);
 

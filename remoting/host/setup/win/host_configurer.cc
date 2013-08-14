@@ -45,8 +45,7 @@ int WINAPI WinMain(HINSTANCE instance_handle, HINSTANCE prev_instance_handle,
   io_thread.StartWithOptions(io_thread_options);
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_(
-      new remoting::URLRequestContextGetter(
-          message_loop.message_loop_proxy(), io_thread.message_loop_proxy()));
+      new remoting::URLRequestContextGetter(io_thread.message_loop_proxy()));
 
   OleInitialize(NULL);
 

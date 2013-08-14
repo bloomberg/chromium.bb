@@ -43,10 +43,7 @@ class ProxyConfigServiceDirect : public net::ProxyConfigService {
 };
 
 net::ProxyConfigService* CreateSystemProxyConfigService(
-    base::SingleThreadTaskRunner* ui_task_runner,
     base::SingleThreadTaskRunner* io_thread_task_runner) {
-  DCHECK(ui_task_runner->BelongsToCurrentThread());
-
 #if defined(OS_WIN)
   return new net::ProxyConfigServiceWin();
 #elif defined(OS_MACOSX)
@@ -115,11 +112,10 @@ URLRequestContext::~URLRequestContext() {
 }
 
 URLRequestContextGetter::URLRequestContextGetter(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
     : network_task_runner_(network_task_runner) {
   proxy_config_service_.reset(CreateSystemProxyConfigService(
-      ui_task_runner.get(), network_task_runner_.get()));
+      network_task_runner_.get()));
 }
 
 net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {

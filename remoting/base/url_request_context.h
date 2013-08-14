@@ -40,7 +40,6 @@ class URLRequestContext : public net::URLRequestContext {
 class URLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   URLRequestContextGetter(
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner);
 
   // Overridden from net::URLRequestContextGetter:
