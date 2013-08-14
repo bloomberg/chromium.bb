@@ -7,10 +7,12 @@
 #include "base/bind.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/file_util.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -88,7 +90,7 @@ void StartupUtils::MarkOobeCompleted() {
 // Returns the path to flag file indicating that both parts of OOBE were
 // completed.
 // On chrome device, returns /home/chronos/.oobe_completed.
-// On Linux desktop, returns $HOME/.oobe_completed.
+// On Linux desktop, returns {DIR_USER_DATA}/.oobe_completed.
 static base::FilePath GetOobeCompleteFlagPath() {
   // The constant is defined here so it won't be referenced directly.
   const char kOobeCompleteFlagFilePath[] = "/home/chronos/.oobe_completed";
@@ -96,11 +98,9 @@ static base::FilePath GetOobeCompleteFlagPath() {
   if (base::chromeos::IsRunningOnChromeOS()) {
     return base::FilePath(kOobeCompleteFlagFilePath);
   } else {
-    const char* home = getenv("HOME");
-    // Unlikely but if HOME is not defined, use the current directory.
-    if (!home)
-      home = "";
-    return base::FilePath(home).AppendASCII(".oobe_completed");
+    base::FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    return user_data_dir.AppendASCII(".oobe_completed");
   }
 }
 

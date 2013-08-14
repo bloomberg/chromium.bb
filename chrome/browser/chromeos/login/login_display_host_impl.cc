@@ -77,13 +77,13 @@
 namespace {
 
 // URL which corresponds to the login WebUI.
-const char kLoginURL[] = "chrome://oobe/login#login";
+const char kLoginURL[] = "chrome://oobe/login";
 
 // URL which corresponds to the OOBE WebUI.
-const char kOobeURL[] = "chrome://oobe#login";
+const char kOobeURL[] = "chrome://oobe/oobe";
 
 // URL which corresponds to the user adding WebUI.
-const char kUserAddingURL[] = "chrome://oobe/login#user-adding";
+const char kUserAddingURL[] = "chrome://oobe/user-adding";
 
 // Duration of sign-in transition animation.
 const int kLoginFadeoutTransitionDurationMs = 700;

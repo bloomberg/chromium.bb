@@ -17,7 +17,7 @@
 
 namespace base {
 class DictionaryValue;
-}
+}  // namespace base
 
 namespace chromeos {
 class BaseScreenHandler;
@@ -57,7 +57,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenTermsOfService[];
   static const char kScreenWrongHWID[];
 
-  explicit OobeUI(content::WebUI* web_ui);
+  OobeUI(content::WebUI* web_ui, const GURL& url);
   virtual ~OobeUI();
 
   // OobeDisplay implementation:
@@ -113,6 +113,9 @@ class OobeUI : public OobeDisplay,
 
   // CoreOobeHandler::Delegate implementation:
   virtual void OnCurrentScreenChanged(const std::string& screen) OVERRIDE;
+
+  // Type of UI.
+  std::string display_type_;
 
   // Reference to NetworkStateInformer that handles changes in network
   // state.

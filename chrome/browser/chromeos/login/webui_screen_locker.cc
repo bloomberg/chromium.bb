@@ -35,7 +35,7 @@
 namespace {
 
 // URL which corresponds to the login WebUI.
-const char kLoginURL[] = "chrome://oobe/login#lock";
+const char kLoginURL[] = "chrome://oobe/lock";
 
 }  // namespace
 

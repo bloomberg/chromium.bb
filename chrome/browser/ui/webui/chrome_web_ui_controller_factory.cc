@@ -168,6 +168,13 @@ WebUIController* NewWebUI<AboutUI>(WebUI* web_ui, const GURL& url) {
   return new AboutUI(web_ui, url.host());
 }
 
+#if defined(OS_CHROMEOS)
+template<>
+WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
+  return new chromeos::OobeUI(web_ui, url);
+}
+#endif
+
 // Only create ExtensionWebUI for URLs that are allowed extension bindings,
 // hosted by actual tabs.
 bool NeedsExtensionWebUI(Profile* profile, const GURL& url) {

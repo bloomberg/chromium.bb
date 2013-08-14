@@ -77,9 +77,9 @@ cr.define('cr.ui', function() {
    */
   Oobe.showOobeUI = function(showOobe) {
     if (showOobe) {
-      document.body.classList.remove('login-display');
+      document.body.classList.add('oobe-display');
     } else {
-      document.body.classList.add('login-display');
+      document.body.classList.remove('oobe-display');
       Oobe.getInstance().prepareForLoginDisplay_();
     }
 

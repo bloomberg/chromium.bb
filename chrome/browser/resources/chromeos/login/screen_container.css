@@ -124,13 +124,13 @@
   opacity: 1;
 }
 
-body.login-display #inner-container {
+body:not(.oobe-display) #inner-container {
   height: 262px;
   padding: 0;
   width: 1100px;
 }
 
-body.login-display #progress-dots {
+body:not(.oobe-display) #progress-dots {
   display: none;
 }
 

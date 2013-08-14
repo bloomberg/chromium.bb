@@ -44,7 +44,8 @@ cr.define('login', function() {
           this.handleSignoutClick_);
       $('cancel-multiple-sign-in-button').addEventListener('click',
           this.handleCancelMultipleSignInClick_);
-      if (document.documentElement.getAttribute('screen') == 'login')
+      if (Oobe.getInstance().displayType == DISPLAY_TYPE.LOGIN ||
+          Oobe.getInstance().displayType == DISPLAY_TYPE.OOBE)
         login.AppsMenuButton.decorate($('show-apps-button'));
     },
 
@@ -187,7 +188,8 @@ cr.define('login', function() {
           (this.signinUIState_ == SIGNIN_UI_STATE.MANAGED_USER_CREATION_FLOW);
       var wrongHWIDWarningIsActive =
           (this.signinUIState_ == SIGNIN_UI_STATE.WRONG_HWID_WARNING);
-      var isMultiProfilesUI = Oobe.getInstance().isSignInToAddScreen();
+      var isMultiProfilesUI =
+          (Oobe.getInstance().displayType == DISPLAY_TYPE.USER_ADDING);
 
       $('add-user-button').hidden = !accountPickerIsActive || isMultiProfilesUI;
       $('cancel-add-user-button').hidden = accountPickerIsActive ||
