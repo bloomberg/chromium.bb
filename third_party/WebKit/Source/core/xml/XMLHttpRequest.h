@@ -74,11 +74,6 @@ public:
         ResponseTypeArrayBuffer
     };
 
-    enum DropProtection {
-        DropProtectionSync,
-        DropProtectionAsync,
-    };
-
     virtual void contextDestroyed();
     virtual void didTimeout();
     virtual bool canSuspend() const;
@@ -181,7 +176,7 @@ private:
     void callReadyStateChangeListener();
     void dropProtectionSoon();
     void dropProtection(Timer<XMLHttpRequest>* = 0);
-    void internalAbort(DropProtection = DropProtectionSync);
+    void internalAbort();
     void clearResponse();
     void clearResponseBuffers();
     void clearRequest();

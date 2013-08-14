@@ -50,14 +50,9 @@ function doLeakTest(src, tolerance) {
             loadSourceIntoIframe('about:blank', function() {
                 // target document unloaded...
 
-                // Measure counter values on next timer event. This is needed
-                // to correctly handle deref cycles for some ActiveDOMObjects
-                // such as XMLHttpRequest.
-                setTimeout(function() {
-                    var countersAfter = getCounterValues();
-                    compareValues(countersBefore, countersAfter, tolerance);
-                    finishJSTest();
-                }, 100);
+                var countersAfter = getCounterValues();
+                compareValues(countersBefore, countersAfter, tolerance);
+                finishJSTest();
             });
         });
     });
