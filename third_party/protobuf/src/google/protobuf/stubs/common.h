@@ -48,12 +48,17 @@
 #include <stdint.h>
 #endif
 
+#ifndef PROTOBUF_USE_EXCEPTIONS
 #if defined(_MSC_VER) && defined(_CPPUNWIND)
-  #define PROTOBUF_USE_EXCEPTIONS
+  #define PROTOBUF_USE_EXCEPTIONS 1
 #elif defined(__EXCEPTIONS)
-  #define PROTOBUF_USE_EXCEPTIONS
+  #define PROTOBUF_USE_EXCEPTIONS 1
+#else
+  #define PROTOBUF_USE_EXCEPTIONS 0
 #endif
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#endif
+
+#if PROTOBUF_USE_EXCEPTIONS
 #include <exception>
 #endif
 
@@ -123,24 +128,24 @@ namespace internal {
 
 // The current version, represented as a single integer to make comparison
 // easier:  major * 10^6 + minor * 10^3 + micro
-#define GOOGLE_PROTOBUF_VERSION 2004002
+#define GOOGLE_PROTOBUF_VERSION 2005000
 
 // The minimum library version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 2004000
+#define GOOGLE_PROTOBUF_MIN_LIBRARY_VERSION 2005000
 
 // The minimum header version which works with the current version of
 // the library.  This constant should only be used by protoc's C++ code
 // generator.
-static const int kMinHeaderVersionForLibrary = 2004000;
+static const int kMinHeaderVersionForLibrary = 2005000;
 
 // The minimum protoc version which works with the current version of the
 // headers.
-#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 2004000
+#define GOOGLE_PROTOBUF_MIN_PROTOC_VERSION 2005000
 
 // The minimum header version which works with the current version of
 // protoc.  This constant should only be used in VerifyVersion().
-static const int kMinHeaderVersionForProtoc = 2004000;
+static const int kMinHeaderVersionForProtoc = 2005000;
 
 // Verifies that the headers and libraries are compatible.  Use the macro
 // below to call this.
@@ -353,12 +358,6 @@ inline To down_cast(From* f) {                   // so we only accept pointers
 #if !defined(NDEBUG) && !defined(GOOGLE_PROTOBUF_NO_RTTI)
   assert(f == NULL || dynamic_cast<To>(f) != NULL);  // RTTI: debug mode only!
 #endif
-  return static_cast<To>(f);
-}
-
-// Simplified down_cast for reference type.
-template<typename To, typename From>
-inline To down_cast(From& f) {
   return static_cast<To>(f);
 }
 
@@ -1209,7 +1208,7 @@ LIBPROTOBUF_EXPORT void OnShutdown(void (*func)());
 
 }  // namespace internal
 
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#if PROTOBUF_USE_EXCEPTIONS
 class FatalException : public std::exception {
  public:
   FatalException(const char* filename, int line, const std::string& message)

@@ -110,7 +110,7 @@ void DefaultLogHandler(LogLevel level, const char* filename, int line,
 
   // We use fprintf() instead of cerr because we want this to work at static
   // initialization time.
-  fprintf(stderr, "libprotobuf %s %s:%d] %s\n",
+  fprintf(stderr, "[libprotobuf %s %s:%d] %s\n",
           level_names[level], filename, line, message.c_str());
   fflush(stderr);  // Needed on MSVC.
 }
@@ -183,15 +183,15 @@ void LogMessage::Finish() {
   if (level_ != LOGLEVEL_FATAL) {
     InitLogSilencerCountOnce();
     MutexLock lock(log_silencer_count_mutex_);
-    suppress = internal::log_silencer_count_ > 0;
+    suppress = log_silencer_count_ > 0;
   }
 
   if (!suppress) {
-    internal::log_handler_(level_, filename_, line_, message_);
+    log_handler_(level_, filename_, line_, message_);
   }
 
   if (level_ == LOGLEVEL_FATAL) {
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#if PROTOBUF_USE_EXCEPTIONS
     throw FatalException(filename_, line_, message_);
 #else
     abort();
@@ -383,7 +383,7 @@ void ShutdownProtobufLibrary() {
   internal::shutdown_functions_mutex = NULL;
 }
 
-#ifdef PROTOBUF_USE_EXCEPTIONS
+#if PROTOBUF_USE_EXCEPTIONS
 FatalException::~FatalException() throw() {}
 
 const char* FatalException::what() const throw() {

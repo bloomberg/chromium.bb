@@ -54,7 +54,7 @@
 #define GOOGLE_PROTOBUF_ATOMICOPS_H_
 
 // Don't include this file for people not concerned about thread safety.
-#ifndef GOOGLE_PROTOBUF_NO_THREADSAFETY
+#ifndef GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
 #include <google/protobuf/stubs/platform_macros.h>
 
@@ -181,8 +181,12 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #include <google/protobuf/stubs/atomicops_internals_x86_gcc.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_ARM)
 #include <google/protobuf/stubs/atomicops_internals_arm_gcc.h>
+#elif defined(GOOGLE_PROTOBUF_ARCH_ARM_QNX)
+#include <google/protobuf/stubs/atomicops_internals_arm_qnx.h>
 #elif defined(GOOGLE_PROTOBUF_ARCH_MIPS)
 #include <google/protobuf/stubs/atomicops_internals_mips_gcc.h>
+#elif defined(__pnacl__)
+#include <google/protobuf/stubs/atomicops_internals_pnacl.h>
 #else
 GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 #endif
@@ -200,6 +204,6 @@ GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 
 #undef GOOGLE_PROTOBUF_ATOMICOPS_ERROR
 
-#endif  // GOOGLE_PROTOBUF_NO_THREADSAFETY
+#endif  // GOOGLE_PROTOBUF_NO_THREAD_SAFETY
 
 #endif  // GOOGLE_PROTOBUF_ATOMICOPS_H_

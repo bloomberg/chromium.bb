@@ -28,49 +28,46 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// from google3/base/stringprintf.h
-//
-// Printf variants that place their output in a C++ string.
-//
-// Usage:
-//      string result = StringPrintf("%d %s\n", 10, "hello");
-//      SStringPrintf(&result, "%d %s\n", 10, "hello");
-//      StringAppendF(&result, "%d %s\n", 20, "there");
+// This file is an internal atomic implementation, use atomicops.h instead.
 
-#ifndef GOOGLE_PROTOBUF_STUBS_STRINGPRINTF_H
-#define GOOGLE_PROTOBUF_STUBS_STRINGPRINTF_H
-
-#include <stdarg.h>
-#include <string>
-#include <vector>
-
-#include <google/protobuf/stubs/common.h>
+#ifndef GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_PNACL_H_
+#define GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_PNACL_H_
 
 namespace google {
 namespace protobuf {
+namespace internal {
 
-// Return a C++ string
-LIBPROTOBUF_EXPORT extern string StringPrintf(const char* format, ...);
+inline Atomic32 NoBarrier_CompareAndSwap(volatile Atomic32* ptr,
+                                         Atomic32 old_value,
+                                         Atomic32 new_value) {
+  return __sync_val_compare_and_swap(ptr, old_value, new_value);
+}
 
-// Store result into a supplied string and return it
-LIBPROTOBUF_EXPORT extern const string& SStringPrintf(string* dst, const char* format, ...);
+inline void MemoryBarrier() {
+  __sync_synchronize();
+}
 
-// Append result to a supplied string
-LIBPROTOBUF_EXPORT extern void StringAppendF(string* dst, const char* format, ...);
+inline Atomic32 Acquire_CompareAndSwap(volatile Atomic32* ptr,
+                                       Atomic32 old_value,
+                                       Atomic32 new_value) {
+  Atomic32 ret = NoBarrier_CompareAndSwap(ptr, old_value, new_value);
+  MemoryBarrier();
+  return ret;
+}
 
-// Lower-level routine that takes a va_list and appends to a specified
-// string.  All other routines are just convenience wrappers around it.
-LIBPROTOBUF_EXPORT extern void StringAppendV(string* dst, const char* format, va_list ap);
+inline void Release_Store(volatile Atomic32* ptr, Atomic32 value) {
+  MemoryBarrier();
+  *ptr = value;
+}
 
-// The max arguments supported by StringPrintfVector
-LIBPROTOBUF_EXPORT extern const int kStringPrintfVectorMaxArgs;
+inline Atomic32 Acquire_Load(volatile const Atomic32* ptr) {
+  Atomic32 value = *ptr;
+  MemoryBarrier();
+  return value;
+}
 
-// You can use this version when all your arguments are strings, but
-// you don't know how many arguments you'll have at compile time.
-// StringPrintfVector will LOG(FATAL) if v.size() > kStringPrintfVectorMaxArgs
-LIBPROTOBUF_EXPORT extern string StringPrintfVector(const char* format, const vector<string>& v);
-
+}  // namespace internal
 }  // namespace protobuf
 }  // namespace google
 
-#endif  // GOOGLE_PROTOBUF_STUBS_STRINGPRINTF_H
+#endif  // GOOGLE_PROTOBUF_ATOMICOPS_INTERNALS_PNACL_H_

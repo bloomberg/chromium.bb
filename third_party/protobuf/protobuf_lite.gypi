@@ -32,7 +32,6 @@
     'src/google/protobuf/stubs/once.cc',
     'src/google/protobuf/stubs/hash.h',
     'src/google/protobuf/stubs/map-util.h',
-    'src/google/protobuf/stubs/stl_util-inl.h',
     'src/google/protobuf/extension_set.cc',
     'src/google/protobuf/generated_message_util.cc',
     'src/google/protobuf/message_lite.cc',

@@ -139,7 +139,9 @@ void protobuf_AddDesc_google_2fprotobuf_2fcompiler_2fplugin_2eproto() {
     "atorResponse\022\r\n\005error\030\001 \001(\t\022B\n\004file\030\017 \003("
     "\01324.google.protobuf.compiler.CodeGenerat"
     "orResponse.File\032>\n\004File\022\014\n\004name\030\001 \001(\t\022\027\n"
-    "\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001(\t", 399);
+    "\017insertion_point\030\002 \001(\t\022\017\n\007content\030\017 \001(\tB"
+    ",\n\034com.google.protobuf.compilerB\014PluginP"
+    "rotos", 445);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/compiler/plugin.proto", &protobuf_RegisterTypes);
   CodeGeneratorRequest::default_instance_ = new CodeGeneratorRequest();
