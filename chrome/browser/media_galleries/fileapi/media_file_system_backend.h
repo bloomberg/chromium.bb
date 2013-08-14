@@ -13,10 +13,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace fileapi {
-class AsyncFileUtilAdapter;
-}
-
 namespace chrome {
 
 class MediaPathFilter;
