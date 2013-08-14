@@ -228,8 +228,7 @@ public:
 
     virtual void transitionToCommittedForNewPage() OVERRIDE { }
 
-    virtual bool shouldGoToHistoryItem(HistoryItem*) const OVERRIDE { return false; }
-    virtual bool shouldStopLoadingForHistoryItem(HistoryItem*) const OVERRIDE { return false; }
+    virtual void navigateBackForward(int offset) const OVERRIDE { }
     virtual void didDisplayInsecureContent() OVERRIDE { }
     virtual void didRunInsecureContent(SecurityOrigin*, const KURL&) OVERRIDE { }
     virtual void didDetectXSS(const KURL&, bool) OVERRIDE { }
@@ -361,13 +360,9 @@ public:
 
 class EmptyBackForwardClient : public BackForwardClient {
 public:
-    virtual void addItem(PassRefPtr<HistoryItem>) OVERRIDE { }
-    virtual void goToItem(HistoryItem*) OVERRIDE { }
-    virtual HistoryItem* itemAtIndex(int) OVERRIDE { return 0; }
+    virtual void didAddItem() OVERRIDE { }
     virtual int backListCount() OVERRIDE { return 0; }
     virtual int forwardListCount() OVERRIDE { return 0; }
-    virtual bool isActive() OVERRIDE { return false; }
-    virtual void close() OVERRIDE { }
 };
 
 void fillWithEmptyClients(Page::PageClients&);

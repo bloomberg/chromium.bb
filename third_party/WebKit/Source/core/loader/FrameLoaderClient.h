@@ -128,8 +128,7 @@ class FetchRequest;
 
         virtual void loadURLExternally(const ResourceRequest&, NavigationPolicy, const String& suggestedName = String()) = 0;
 
-        virtual bool shouldGoToHistoryItem(HistoryItem*) const = 0;
-        virtual bool shouldStopLoadingForHistoryItem(HistoryItem*) const = 0;
+        virtual void navigateBackForward(int offset) const = 0;
 
         // Another page has accessed the initial empty document of this frame.
         // It is no longer safe to display a provisional URL, since a URL spoof

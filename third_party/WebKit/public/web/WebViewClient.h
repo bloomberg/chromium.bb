@@ -305,9 +305,6 @@ public:
     virtual int historyBackListCount() { return 0; }
     virtual int historyForwardListCount() { return 0; }
 
-    // Called to notify the embedder when a new history item is added.
-    virtual void didAddHistoryItem() { }
-
 
     // Accessibility -------------------------------------------------------
 

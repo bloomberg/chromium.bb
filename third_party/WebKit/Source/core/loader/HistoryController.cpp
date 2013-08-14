@@ -196,12 +196,8 @@ bool HistoryController::shouldStopLoadingForHistoryItem(HistoryItem* targetItem)
 {
     if (!m_currentItem)
         return false;
-
     // Don't abort the current load if we're navigating within the current document.
-    if (m_currentItem->shouldDoSameDocumentNavigationTo(targetItem))
-        return false;
-
-    return m_frame->loader()->client()->shouldStopLoadingForHistoryItem(targetItem);
+    return !m_currentItem->shouldDoSameDocumentNavigationTo(targetItem);
 }
 
 // Main funnel for navigating to a previous location (back/forward, non-search snap-back)
@@ -216,8 +212,6 @@ void HistoryController::goToItem(HistoryItem* targetItem)
     // <rdar://problem/3979539> back/forward cache navigations should consult policy delegate
     Page* page = m_frame->page();
     if (!page)
-        return;
-    if (!m_frame->loader()->client()->shouldGoToHistoryItem(targetItem))
         return;
     if (m_defersLoading) {
         m_deferredItem = targetItem;
@@ -701,7 +695,6 @@ void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject,
     m_currentItem->setTitle(title);
     m_currentItem->setStateObject(stateObject);
     m_currentItem->setURLString(urlString);
-
     page->backForward()->addItem(topItem.release());
 }
 

@@ -46,10 +46,6 @@ typedef Vector<RefPtr<HistoryItem> > HistoryItemVector;
 class HistoryItem : public RefCounted<HistoryItem> {
 public:
     static PassRefPtr<HistoryItem> create() { return adoptRef(new HistoryItem); }
-    static PassRefPtr<HistoryItem> create(const String& urlString)
-    {
-        return adoptRef(new HistoryItem(urlString));
-    }
 
     ~HistoryItem();
 
@@ -136,8 +132,6 @@ public:
 
 private:
     HistoryItem();
-    explicit HistoryItem(const String& urlString);
-
     explicit HistoryItem(const HistoryItem&);
 
     void recordVisitAtTime(double);

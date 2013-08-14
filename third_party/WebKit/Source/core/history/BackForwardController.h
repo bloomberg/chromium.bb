@@ -46,33 +46,26 @@ public:
 
     BackForwardClient* client() const { return m_client; }
 
-    void goBackOrForward(int distance);
-
-    bool goBack();
-    bool goForward();
+    bool goBackOrForward(int distance);
+    bool goBack() { return goBackOrForward(-1); }
+    bool goForward() { return goBackOrForward(1); }
 
     void addItem(PassRefPtr<HistoryItem>);
     void setCurrentItem(HistoryItem*);
+    HistoryItem* currentItem() { return m_currentItem.get(); }
 
     int count() const;
     int backCount() const;
     int forwardCount() const;
-
-    HistoryItem* itemAtIndex(int);
-
-    bool isActive();
-
-    void close();
-
-    HistoryItem* backItem() { return itemAtIndex(-1); }
-    HistoryItem* currentItem() { return itemAtIndex(0); }
-    HistoryItem* forwardItem() { return itemAtIndex(1); }
 
 private:
     BackForwardController(Page*, BackForwardClient*);
 
     Page* m_page;
     BackForwardClient* m_client;
+
+    // FIXME: Ideally, we could derive this from HistoryController, but the rules for setting it are non-obvious.
+    RefPtr<HistoryItem> m_currentItem;
 };
 
 } // namespace WebCore

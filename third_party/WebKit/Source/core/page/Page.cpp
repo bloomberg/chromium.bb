@@ -157,8 +157,6 @@ Page::~Page()
     if (m_scrollingCoordinator)
         m_scrollingCoordinator->pageDestroyed();
 
-    backForward()->close();
-
 #ifndef NDEBUG
     pageCounter.decrement();
 #endif

@@ -37,8 +37,6 @@
 namespace WebKit {
 class WebViewImpl;
 
-extern const char backForwardNavigationScheme[];
-
 class BackForwardClientImpl : public WebCore::BackForwardClient {
 public:
     explicit BackForwardClientImpl(WebViewImpl*);
@@ -46,21 +44,11 @@ public:
 
 private:
     // WebCore::BackForwardList methods:
-    virtual void addItem(PassRefPtr<WebCore::HistoryItem>);
-    virtual void goToItem(WebCore::HistoryItem*);
-    virtual WebCore::HistoryItem* itemAtIndex(int index);
+    virtual void didAddItem();
     virtual int backListCount();
     virtual int forwardListCount();
-    virtual bool isActive();
-    virtual void close();
 
     WebViewImpl* m_webView;
-
-    RefPtr<WebCore::HistoryItem> m_currentItem;
-
-    // The last history item that was accessed via itemAtIndex().  We keep track
-    // of this until goToItem() is called, so we can track the navigation.
-    RefPtr<WebCore::HistoryItem> m_pendingHistoryItem;
 };
 
 } // namespace WebKit
