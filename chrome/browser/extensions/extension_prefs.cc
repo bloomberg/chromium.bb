@@ -1392,7 +1392,10 @@ bool ExtensionPrefs::FinishDelayedInstallInfo(
           base::Int64ToString(install_time.ToInternalValue())));
 
   // Commit the delayed install data.
-  extension_dict->MergeDictionary(pending_install_dict);
+  for (DictionaryValue::Iterator it(*pending_install_dict); !it.IsAtEnd();
+       it.Advance()) {
+    extension_dict->Set(it.key(), it.value().DeepCopy());
+  }
   FinishExtensionInfoPrefs(extension_id, install_time, needs_sort_ordinal,
                            suggested_page_ordinal, extension_dict);
   return true;
