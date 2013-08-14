@@ -82,6 +82,7 @@ class MEDIA_EXPORT AudioParameters {
   // Comparison with other AudioParams.
   bool operator==(const AudioParameters& other) const {
     return format_ == other.format() &&
+           sample_rate_ == other.sample_rate() &&
            channel_layout_ == other.channel_layout() &&
            channels_ == other.channels() &&
            input_channels_ == other.input_channels() &&
