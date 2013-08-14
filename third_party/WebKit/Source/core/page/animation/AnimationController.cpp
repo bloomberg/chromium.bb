@@ -149,8 +149,12 @@ void AnimationControllerPrivate::scheduleService(double timeToNextService, doubl
 
     bool visible = m_frame->page()->visibilityState() == WebCore::PageVisibilityStateVisible;
 
+    // This std::max to 1 second limits how often we service animations on background tabs.
+    // Without this, plus and gmail were recalculating style as every 200ms or even more
+    // often, burning CPU needlessly for background tabs.
+    // FIXME: Do we want to fire events at all on background tabs?
     if (!visible)
-        timeToNextService = timeToNextEvent;
+        timeToNextService = std::max(timeToNextEvent, 1.0);
 
     if (visible && !timeToNextService) {
         m_frame->document()->view()->scheduleAnimation();
