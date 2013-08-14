@@ -160,12 +160,9 @@ _JSON_FILE_EXTENSION = 'json'
 _PYTHON_FILE_EXTENSION = 'py'
 
 _TEXT_FILE_EXTENSIONS = [
-    'ac',
     'cc',
     'cgi',
     'css',
-    'exp',
-    'flex',
     'gyp',
     'gypi',
     'html',
@@ -176,13 +173,9 @@ _TEXT_FILE_EXTENSIONS = [
     'php',
     'pl',
     'pm',
-    'pri',
-    'pro',
     'rb',
     'sh',
-    'table',
     'txt',
-    'wm',
     'xhtml',
     'y',
     ]

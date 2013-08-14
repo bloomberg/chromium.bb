@@ -456,12 +456,9 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
     def test_text_paths(self):
         """Test paths that should be checked as text."""
         paths = [
-           "foo.ac",
            "foo.cc",
            "foo.cgi",
            "foo.css",
-           "foo.exp",
-           "foo.flex",
            "foo.gyp",
            "foo.gypi",
            "foo.html",
@@ -472,12 +469,9 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
            "foo.php",
            "foo.pl",
            "foo.pm",
-           "foo.pri",
-           "foo.pro",
            "foo.rb",
            "foo.sh",
            "foo.txt",
-           "foo.wm",
            "foo.xhtml",
            "foo.y",
            os.path.join("Source", "WebCore", "inspector", "front-end", "inspector.js"),
