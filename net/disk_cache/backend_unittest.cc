@@ -313,7 +313,7 @@ TEST_F(DiskCacheBackendTest, CreateBackend_MissingFile) {
   scoped_ptr<disk_cache::BackendImpl> cache(new disk_cache::BackendImpl(
       cache_path_, cache_thread.message_loop_proxy().get(), NULL));
   int rv = cache->Init(cb.callback());
-  ASSERT_EQ(net::ERR_FAILED, cb.GetResult(rv));
+  EXPECT_EQ(net::ERR_FAILED, cb.GetResult(rv));
   base::ThreadRestrictions::SetIOAllowed(prev);
 
   cache.reset();
