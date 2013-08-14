@@ -82,17 +82,16 @@
       ['OS=="win"', {
         'host_plugin_extension': 'dll',
         'host_plugin_prefix': '',
-      }],
-      ['OS=="win"', {
         # Use auto-generated CLSIDs to make sure that the newly installed COM
         # classes will be used during/after upgrade even if there are old
         # instances running already.
-        # The parameter passed to uuidgen.py is ignored, but needed to make sure
-        # that the script will be invoked separately for each CLSID. Otherwise
-        # GYP will reuse the value returned by the first invocation of
-        # the script.
-        'daemon_controller_clsid': '<!(python tools/uuidgen.py 1)',
-        'rdp_desktop_session_clsid': '<!(python tools/uuidgen.py 2)',
+        # The parameter at the end is ignored, but needed to make sure that the
+        # script will be invoked separately for each CLSID. Otherwise GYP will
+        # reuse the value returned by the first invocation of the script.
+        'daemon_controller_clsid':
+            '<!(python -c "import uuid; print uuid.uuid4()" 1)',
+        'rdp_desktop_session_clsid':
+            '<!(python -c "import uuid; print uuid.uuid4()" 2)',
       }],
     ],
 
@@ -563,27 +562,6 @@
             }],
           ],  # end of 'conditions'
         },  # end of target 'remoting_me2me_host_static'
-
-        {
-          'target_name': 'remoting_host_keygen',
-          'type': 'executable',
-          'dependencies': [
-            'remoting_base',
-            '../base/base.gyp:base',
-            '../base/base.gyp:base_i18n',
-            '../crypto/crypto.gyp:crypto',
-          ],
-          'sources': [
-            'host/keygen_main.cc',
-          ],
-          'conditions': [
-            ['OS=="linux" and linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        },  # end of target 'remoting_host_keygen'
 
         {
           'target_name': 'remoting_host_setup_base',
@@ -1747,7 +1725,7 @@
         },  # end of target 'remoting_host_messages'
 
         # Generates localized the version information resources for the Windows
-        # binaries. 
+        # binaries.
         # The substitution strings are taken from:
         #   - build/util/LASTCHANGE - the last source code revision.
         #   - chrome/VERSION - the major, build & patch versions.
