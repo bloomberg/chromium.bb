@@ -90,6 +90,9 @@ void Stream::Finalize() {
 Stream::StreamState Stream::ReadRawData(net::IOBuffer* buf,
                                         int buf_size,
                                         int* bytes_read) {
+  DCHECK(buf);
+  DCHECK(bytes_read);
+
   *bytes_read = 0;
   if (!data_.get()) {
     data_length_ = 0;
