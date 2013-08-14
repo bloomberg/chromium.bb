@@ -198,7 +198,6 @@ void ClipboardMessageFilter::OnReadImageReply(
     const SkBitmap& bitmap, IPC::Message* reply_msg) {
   base::SharedMemoryHandle image_handle = base::SharedMemory::NULLHandle();
   uint32 image_size = 0;
-  std::string reply_data;
   if (!bitmap.isNull()) {
     std::vector<unsigned char> png_data;
     SkAutoLockPixels lock(bitmap);
