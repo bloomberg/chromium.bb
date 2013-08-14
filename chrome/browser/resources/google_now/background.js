@@ -118,7 +118,6 @@ var tasks = buildTaskManager(areTasksConflicting);
 
 // Add error processing to API calls.
 tasks.instrumentChromeApiFunction('location.onLocationUpdate.addListener', 0);
-tasks.instrumentChromeApiFunction('metricsPrivate.getFieldTrial', 1);
 tasks.instrumentChromeApiFunction('metricsPrivate.getVariationParams', 1);
 tasks.instrumentChromeApiFunction('notifications.create', 2);
 tasks.instrumentChromeApiFunction('notifications.update', 2);
@@ -868,11 +867,11 @@ function onStateChange() {
     tasks.debugSetStepName('onStateChange-isSignedIn');
     authenticationManager.isSignedIn(function(token) {
       var signedIn = !!token && !!NOTIFICATION_CARDS_URL;
-      instrumented.metricsPrivate.getFieldTrial(
+      instrumented.metricsPrivate.getVariationParams(
           'GoogleNow',
           function(response) {
-            console.log('Experiment Status: ' + response);
-            var enableBackground = (response != 'EnableWithoutBackground');
+            var enableBackground =
+                (!response || (response.enableBackground != 'false'));
             tasks.debugSetStepName(
                 'onStateChange-get-googleGeolocationAccessEnabledPref');
             instrumented.

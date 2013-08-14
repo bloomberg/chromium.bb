@@ -63,7 +63,7 @@ function mockInitializeDependencies(fixture) {
     'authenticationManager.isSignedIn',
     'chrome.location.clearWatch',
     'chrome.storage.local.set',
-    'instrumented.metricsPrivate.getFieldTrial',
+    'instrumented.metricsPrivate.getVariationParams',
     'instrumented.notifications.getAll',
     'instrumented.preferencesPrivate.googleGeolocationAccessEnabled.get',
     'instrumented.storage.local.get',
@@ -83,14 +83,16 @@ function mockInitializeDependencies(fixture) {
  * @param {string} testIdentityToken getAuthToken callback token.
  * @param {boolean} testGeolocationPref Geolocation Preference callback value.
  * @param {boolean} testUserRespondedToToast User Response to toast
- &     callback value.
+ *     callback value.
+ * @param {object} testExperimentVariationParams Response of
+ *     metricsPrivate.getVariationParams
  */
 function expectStateMachineCalls(
     fixture,
     testIdentityToken,
     testGeolocationPref,
     testUserRespondedToToast,
-    testExperimentResponse) {
+    testExperimentVariationParams) {
   var authenticationManagerIsSignedInSavedArgs = new SaveMockArguments();
   fixture.mockApis.expects(once()).
       authenticationManager_isSignedIn(
@@ -100,13 +102,13 @@ function expectStateMachineCalls(
           0,
           testIdentityToken));
 
-  var getFieldTrialSavedArgs = new SaveMockArguments();
+  var getVariationParamsSavedArgs = new SaveMockArguments();
   fixture.mockApis.expects(once()).
-      instrumented_metricsPrivate_getFieldTrial(
-          getFieldTrialSavedArgs.match(ANYTHING),
-          getFieldTrialSavedArgs.match(ANYTHING)).
+      instrumented_metricsPrivate_getVariationParams(
+          getVariationParamsSavedArgs.match(ANYTHING),
+          getVariationParamsSavedArgs.match(ANYTHING)).
       will(invokeCallback(
-          getFieldTrialSavedArgs, 1, testExperimentResponse));
+          getVariationParamsSavedArgs, 1, testExperimentVariationParams));
 
   var googleGeolocationPrefGetSavedArgs = new SaveMockArguments();
   fixture.mockApis.expects(once()).
@@ -174,7 +176,7 @@ TEST_F(
       var testIdentityToken = undefined;
       var testGeolocationPref = false;
       var testUserRespondedToToast = {};
-      var testExperimentResponse = '';
+      var testExperimentVariationParams = {};
 
       mockInitializeDependencies(this);
 
@@ -191,7 +193,7 @@ TEST_F(
           testIdentityToken,
           testGeolocationPref,
           testUserRespondedToToast,
-          testExperimentResponse);
+          testExperimentVariationParams);
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
       this.mockApis.expects(exactly(2)).
@@ -220,7 +222,7 @@ TEST_F(
       var testIdentityToken = undefined;
       var testGeolocationPref = false;
       var testUserRespondedToToast = {};
-      var testExperimentResponse = '';
+      var testExperimentVariationParams = {};
 
       mockInitializeDependencies(this);
 
@@ -237,7 +239,7 @@ TEST_F(
           testIdentityToken,
           testGeolocationPref,
           testUserRespondedToToast,
-          testExperimentResponse);
+          testExperimentVariationParams);
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
       this.mockApis.expects(exactly(2)).
@@ -264,7 +266,7 @@ TEST_F(
       var testIdentityToken = 'some identity token';
       var testGeolocationPref = false;
       var testUserRespondedToToast = {};
-      var testExperimentResponse = '';
+      var testExperimentVariationParams = {};
 
       mockInitializeDependencies(this);
 
@@ -278,7 +280,7 @@ TEST_F(
           testIdentityToken,
           testGeolocationPref,
           testUserRespondedToToast,
-          testExperimentResponse);
+          testExperimentVariationParams);
 
       var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
       this.mockApis.expects(exactly(2)).
@@ -303,7 +305,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = true;
   var testUserRespondedToToast = {userRespondedToToast: true};
-  var testExperimentResponse = '';
+  var testExperimentVariationParams = {};
 
   mockInitializeDependencies(this);
 
@@ -317,7 +319,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_RunGoogleNow', function() {
       testIdentityToken,
       testGeolocationPref,
       testUserRespondedToToast,
-      testExperimentResponse);
+      testExperimentVariationParams);
 
   var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
   this.mockApis.expects(exactly(2)).
@@ -342,7 +344,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
   var testIdentityToken = 'some identity token';
   var testGeolocationPref = false;
   var testUserRespondedToToast = {userRespondedToToast: true};
-  var testExperimentResponse = '';
+  var testExperimentVariationParams = {};
 
   mockInitializeDependencies(this);
 
@@ -359,7 +361,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
       testIdentityToken,
       testGeolocationPref,
       testUserRespondedToToast,
-      testExperimentResponse);
+      testExperimentVariationParams);
 
   var chromeNotificationGetAllSavedArgs = new SaveMockArguments();
   this.mockApis.expects(exactly(2)).
