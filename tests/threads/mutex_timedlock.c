@@ -103,7 +103,7 @@ void test_already_locked_with_non_zero_timestamp(void) {
   tell_thread_to_release_lock();
 }
 
-void test_alteady_locked_with_negative_timestamp(void) {
+void test_already_locked_with_negative_timestamp(void) {
   int rc;
   struct timespec abstime = { 0, -10000 };
   tell_thread_to_acquire_lock();
@@ -115,7 +115,7 @@ void test_alteady_locked_with_negative_timestamp(void) {
   tell_thread_to_release_lock();
 }
 
-void test_alteady_locked_with_too_large_timestamp(void) {
+void test_already_locked_with_too_large_timestamp(void) {
   int rc;
   struct timespec abstime = { 0, 2000000000 };
   tell_thread_to_acquire_lock();
@@ -156,7 +156,7 @@ void test_unlocked_with_non_zero_timestamp(void) {
   ASSERT_EQ(rc, 0);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   int rc;
   fprintf(stderr, "Running...\n");
 
@@ -177,8 +177,8 @@ int main(int argc, char** argv) {
 
   test_already_locked_with_zero_timestamp();
   test_already_locked_with_non_zero_timestamp();
-  test_alteady_locked_with_negative_timestamp();
-  test_alteady_locked_with_too_large_timestamp();
+  test_already_locked_with_negative_timestamp();
+  test_already_locked_with_too_large_timestamp();
   test_unlocked_with_zero_timestamp();
   test_unlocked_with_non_zero_timestamp();
 
