@@ -273,6 +273,7 @@ class _Results(object):
 
     out.write(line)
     out.write(edge + ' Stage Results\n')
+    warnings = False
 
     for name, result, _, run_time in results:
       timestr = datetime.timedelta(seconds=math.ceil(run_time))
@@ -287,6 +288,7 @@ class _Results(object):
         status = 'PASS'
       elif result == self.FORGIVEN:
         status = 'FAILED BUT FORGIVEN'
+        warnings = True
       else:
         status = 'FAIL'
         if isinstance(result, cros_build_lib.RunCommandError):
@@ -319,5 +321,9 @@ class _Results(object):
         out.write('\nFailed in stage %s:\n\n' % x.failed_stage)
         out.write(x.traceback)
         out.write('\n')
+
+    if warnings:
+      cros_build_lib.PrintBuildbotStepWarnings(out)
+
 
 Results = _Results()

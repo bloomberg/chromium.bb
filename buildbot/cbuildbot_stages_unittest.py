@@ -1554,6 +1554,13 @@ class BuildStagesResultsTest(cros_test_lib.TestCase):
 
     self._verifyRunResults(expectedResults)
 
+  def testFailedButForgiven(self):
+    """Tests that warnings are flagged as such."""
+    results_lib.Results.Record('Warn', results_lib.Results.FORGIVEN, time=1)
+    results = StringIO.StringIO()
+    results_lib.Results.Report(results)
+    self.assertTrue('@@@STEP_WARNINGS@@@' in results.getvalue())
+
 
 class ReportStageTest(AbstractStageTest):
 
