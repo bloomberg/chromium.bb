@@ -29,6 +29,10 @@
 class Profile;
 using content::BrowserThread;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace extensions {
 class Extension;
 class ActivityLogPolicy;
@@ -50,15 +54,15 @@ class ActivityLog : public BrowserContextKeyedService,
   // use GetInstance instead.
   static ActivityLog* GetInstance(Profile* profile);
 
+  // Specifies if AL was enabled at least for one profile. We use this method to
+  // check if AL possibly enabled when a profile is not available, e.g., when
+  // executing on thread other than UI.
+  static bool IsLogEnabledOnAnyProfile();
+
   // Provides up-to-date information about whether the AL is enabled for a
   // profile. The AL is enabled if the user has installed the whitelisted
   // AL extension *or* set the --enable-extension-activity-logging flag.
   bool IsLogEnabled();
-
-  // If you want to know whether the log is enabled but DON'T have a profile
-  // object yet, use this method. However, it's preferable for the caller to
-  // use IsLogEnabled when possible.
-  static bool IsLogEnabledOnAnyProfile();
 
   // Add/remove observer: the activityLogPrivate API only listens when the
   // ActivityLog extension is registered for an event.
@@ -83,14 +87,10 @@ class ActivityLog : public BrowserContextKeyedService,
   // Extension::InstallObserver
   // We keep track of whether the whitelisted extension is installed; if it is,
   // we want to recompute whether to have logging enabled.
-  virtual void OnExtensionInstalled(
-      const extensions::Extension* extension) OVERRIDE {}
-  virtual void OnExtensionLoaded(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void OnExtensionUnloaded(
-      const extensions::Extension* extension) OVERRIDE;
-  virtual void OnExtensionUninstalled(
-      const extensions::Extension* extension) OVERRIDE {}
+  virtual void OnExtensionInstalled(const Extension* extension) OVERRIDE {}
+  virtual void OnExtensionLoaded(const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUnloaded(const Extension* extension) OVERRIDE;
+  virtual void OnExtensionUninstalled(const Extension* extension) OVERRIDE {}
   // We also have to list the following from InstallObserver.
   virtual void OnBeginExtensionInstall(const std::string& extension_id,
                                        const std::string& extension_name,
@@ -108,6 +108,8 @@ class ActivityLog : public BrowserContextKeyedService,
   // BrowserContextKeyedService
   virtual void Shutdown() OVERRIDE;
 
+  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
  private:
   friend class ActivityLogFactory;
   friend class ActivityLogTest;
@@ -116,9 +118,9 @@ class ActivityLog : public BrowserContextKeyedService,
   explicit ActivityLog(Profile* profile);
   virtual ~ActivityLog();
 
-  // Some setup needs to wait until after the ExtensionSystem/ExtensionService
-  // are done with their own setup.
-  void Init();
+  // Delayed initialization of Install Tracker which waits until after the
+  // ExtensionSystem/ExtensionService are done with their own setup.
+  void InitInstallTracker();
 
   // TabHelper::ScriptExecutionObserver implementation.
   // Fires when a ContentScript is executed.
@@ -127,10 +129,6 @@ class ActivityLog : public BrowserContextKeyedService,
       const ExecutingScriptsMap& extension_ids,
       int32 page_id,
       const GURL& on_url) OVERRIDE;
-
-  // For unit tests only. Does not call Init again!
-  // Sets whether logging should be enabled for the whole current profile.
-  static void RecomputeLoggingIsEnabled(bool profile_enabled);
 
   // At the moment, ActivityLog will use only one policy for summarization.
   // These methods are used to choose and set the most appropriate policy.
@@ -145,14 +143,13 @@ class ActivityLog : public BrowserContextKeyedService,
   // be a scoped_ptr since some cleanup work must happen on the database
   // thread.  Calling policy_->Close() will free the object; see the comments
   // on the ActivityDatabase class for full details.
-  extensions::ActivityLogPolicy* policy_;
+  ActivityLogPolicy* policy_;
 
   // TODO(dbabic,felt) change this into a list of policy types later.
   ActivityLogPolicy::PolicyType policy_type_;
 
   Profile* profile_;
   bool enabled_;  // Whether logging is currently enabled.
-  bool initialized_;  // Whether Init() has already been called.
   bool policy_chosen_;  // Whether we've already set the default policy.
   // testing_mode_ controls whether to log API call arguments. By default, we
   // don't log most arguments to avoid saving too much data. In testing mode,
@@ -168,6 +165,13 @@ class ActivityLog : public BrowserContextKeyedService,
   // Used to track whether the whitelisted extension is installed. If it's
   // added or removed, enabled_ may change.
   InstallTracker* tracker_;
+
+  // Set if the watchdog extension is present and active. Maintained by
+  // kWatchdogExtensionActive pref variable.
+  bool watchdog_extension_active_;
+
+  // Specifies if AL was enabled at least for one profile.
+  static bool enabled_on_any_profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLog);
 };

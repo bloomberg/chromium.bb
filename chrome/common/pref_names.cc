@@ -2544,4 +2544,10 @@ const char kDRMSalt[] = "settings.privacy.drm_salt";
 // A boolean pref that enables the (private) pepper GetDeviceID() call.
 const char kEnableDRM[] = "settings.privacy.drm_enabled";
 
+// A boolean per-profile pref that signals if the watchdog extension is
+// installed and active. We need to know if the watchdog extension active for
+// ActivityLog initialization before the extension system is initialized.
+const char kWatchdogExtensionActive[] =
+    "profile.extensions.activity_log.watchdog_extension_active";
+
 }  // namespace prefs

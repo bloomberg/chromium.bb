@@ -39,24 +39,19 @@ namespace extensions {
 
 class ActivityLogTest : public ChromeRenderViewHostTestHarness {
  protected:
-  ActivityLogTest() : saved_cmdline_(CommandLine::NO_PROGRAM) {}
-
   virtual void SetUp() OVERRIDE {
     ChromeRenderViewHostTestHarness::SetUp();
 #if defined OS_CHROMEOS
     test_user_manager_.reset(new chromeos::ScopedTestUserManager());
 #endif
     CommandLine command_line(CommandLine::NO_PROGRAM);
-    saved_cmdline_ = *CommandLine::ForCurrentProcess();
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogging);
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kEnableExtensionActivityLogTesting);
-    ActivityLog::RecomputeLoggingIsEnabled(true);  // Logging now enabled.
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile()))->CreateExtensionService
             (&command_line, base::FilePath(), false);
-    ActivityLog::GetInstance(profile())->Init();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -65,9 +60,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
     test_user_manager_.reset();
 #endif
     base::RunLoop().RunUntilIdle();
-    // Restore the original command line and undo the affects of SetUp().
-    *CommandLine::ForCurrentProcess() = saved_cmdline_;
-    ActivityLog::RecomputeLoggingIsEnabled(false);  // Logging now disabled.
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
@@ -96,11 +88,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   }
 
   ExtensionService* extension_service_;
-  // Used to preserve a copy of the original command line.
-  // The test framework will do this itself as well. However, by then,
-  // it is too late to call ActivityLog::RecomputeLoggingIsEnabled() in
-  // TearDown().
-  CommandLine saved_cmdline_;
 
 #if defined OS_CHROMEOS
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
@@ -108,10 +95,6 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
 #endif
 };
-
-TEST_F(ActivityLogTest, Enabled) {
-  ASSERT_TRUE(ActivityLog::IsLogEnabledOnAnyProfile());
-}
 
 TEST_F(ActivityLogTest, Construct) {
   ActivityLog* activity_log = ActivityLog::GetInstance(profile());

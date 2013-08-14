@@ -21,6 +21,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -326,6 +327,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   SessionStartupPref::RegisterProfilePrefs(registry);
   TemplateURLPrepopulateData::RegisterProfilePrefs(registry);
   TranslatePrefs::RegisterProfilePrefs(registry);
+  extensions::ActivityLog::RegisterProfilePrefs(registry);
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
   autofill::AutofillDialogController::RegisterProfilePrefs(registry);

@@ -781,13 +781,6 @@ content::WebContentsViewDelegate*
   return chrome::CreateWebContentsViewDelegate(web_contents);
 }
 
-// Check if the extension activity log is enabled for the profile.
-static bool IsExtensionActivityLogEnabledForProfile(Profile* profile) {
-  // crbug.com/247908 - This should be IsLogEnabled except for an issue
-  // in chrome_frame_net_tests
-  return extensions::ActivityLog::IsLogEnabledOnAnyProfile();
-}
-
 void ChromeContentBrowserClient::GuestWebContentsCreated(
     WebContents* guest_web_contents,
     WebContents* opener_web_contents,
@@ -910,7 +903,7 @@ void ChromeContentBrowserClient::RenderProcessHostCreated(
       profile->IsOffTheRecord()));
 
   host->Send(new ChromeViewMsg_SetExtensionActivityLogEnabled(
-      IsExtensionActivityLogEnabledForProfile(profile)));
+      extensions::ActivityLog::GetInstance(profile)->IsLogEnabled()));
 
   SendExtensionWebRequestStatusToHost(host);
 

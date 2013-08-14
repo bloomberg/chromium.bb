@@ -934,6 +934,8 @@ extern const char kModuleConflictBubbleShown[];
 extern const char kDRMSalt[];
 extern const char kEnableDRM[];
 
+extern const char kWatchdogExtensionActive[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -29,6 +30,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/re2/re2/re2.h"
@@ -53,44 +55,6 @@ std::string MakeArgList(const base::ListValue* args) {
   }
   return call_signature;
 }
-
-// This is a hack for AL callers who don't have access to a profile object
-// when deciding whether or not to do the work required for logging. The state
-// is accessed through the static ActivityLog::IsLogEnabledOnAnyProfile()
-// method. It returns true if --enable-extension-activity-logging is set on the
-// command line OR *ANY* profile has the activity log whitelisted extension
-// installed.
-class LogIsEnabled {
- public:
-  LogIsEnabled() : any_profile_enabled_(false) {
-    ComputeIsFlagEnabled();
-  }
-
-  void ComputeIsFlagEnabled() {
-    base::AutoLock auto_lock(lock_);
-    cmd_line_enabled_ = CommandLine::ForCurrentProcess()->
-        HasSwitch(switches::kEnableExtensionActivityLogging);
-  }
-
-  static LogIsEnabled* GetInstance() {
-    return Singleton<LogIsEnabled>::get();
-  }
-
-  bool IsEnabled() {
-    base::AutoLock auto_lock(lock_);
-    return cmd_line_enabled_ || any_profile_enabled_;
-  }
-
-  void SetProfileEnabled(bool any_profile_enabled) {
-    base::AutoLock auto_lock(lock_);
-    any_profile_enabled_ = any_profile_enabled;
-  }
-
- private:
-  base::Lock lock_;
-  bool any_profile_enabled_;
-  bool cmd_line_enabled_;
-};
 
 // Gets the URL for a given tab ID.  Helper method for LookupTabId.  Returns
 // true if able to perform the lookup.  The URL is stored to *url, and
@@ -183,17 +147,6 @@ void LookupTabIds(scoped_refptr<extensions::Action> action, Profile* profile) {
 
 namespace extensions {
 
-// static
-bool ActivityLog::IsLogEnabledOnAnyProfile() {
-  return LogIsEnabled::GetInstance()->IsEnabled();
-}
-
-// static
-void ActivityLog::RecomputeLoggingIsEnabled(bool profile_enabled) {
-  LogIsEnabled::GetInstance()->ComputeIsFlagEnabled();
-  LogIsEnabled::GetInstance()->SetProfileEnabled(profile_enabled);
-}
-
 // ActivityLogFactory
 
 ActivityLogFactory* ActivityLogFactory::GetInstance() {
@@ -257,15 +210,21 @@ ActivityLog::ActivityLog(Profile* profile)
       policy_type_(ActivityLogPolicy::POLICY_INVALID),
       profile_(profile),
       enabled_(false),
-      initialized_(false),
       policy_chosen_(false),
       testing_mode_(false),
       has_threads_(true),
-      tracker_(NULL) {
+      tracker_(NULL),
+      watchdog_extension_active_(false) {
   // This controls whether logging statements are printed, which policy is set,
   // etc.
   testing_mode_ = CommandLine::ForCurrentProcess()->HasSwitch(
     switches::kEnableExtensionActivityLogTesting);
+
+  // Check if the watchdog extension is previously installed and active.
+  watchdog_extension_active_ =
+    profile_->GetPrefs()->GetBoolean(prefs::kWatchdogExtensionActive);
+
+  observers_ = new ObserverListThreadSafe<Observer>;
 
   // Check that the right threads exist. If not, we shouldn't try to do things
   // that require them.
@@ -274,28 +233,24 @@ ActivityLog::ActivityLog(Profile* profile)
       !BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
     LOG(ERROR) << "Missing threads, disabling Activity Logging!";
     has_threads_ = false;
-  } else {
-    enabled_ = IsLogEnabledOnAnyProfile();
-    ExtensionSystem::Get(profile_)->ready().Post(
-      FROM_HERE, base::Bind(&ActivityLog::Init, base::Unretained(this)));
   }
 
-  observers_ = new ObserverListThreadSafe<Observer>;
+  enabled_ = has_threads_
+      && (CommandLine::ForCurrentProcess()->
+          HasSwitch(switches::kEnableExtensionActivityLogging)
+      || watchdog_extension_active_);
+
+  if (enabled_) enabled_on_any_profile_ = true;
+
+  ExtensionSystem::Get(profile_)->ready().Post(
+      FROM_HERE,
+      base::Bind(&ActivityLog::InitInstallTracker, base::Unretained(this)));
+  ChooseDefaultPolicy();
 }
 
-void ActivityLog::Init() {
-  DCHECK(has_threads_);
-  DCHECK(!initialized_);
-  const Extension* whitelisted_extension = ExtensionSystem::Get(profile_)->
-      extension_service()->GetExtensionById(kActivityLogExtensionId, false);
-  if (whitelisted_extension) {
-    enabled_ = true;
-    LogIsEnabled::GetInstance()->SetProfileEnabled(true);
-  }
+void ActivityLog::InitInstallTracker() {
   tracker_ = InstallTrackerFactory::GetForProfile(profile_);
   tracker_->AddObserver(this);
-  ChooseDefaultPolicy();
-  initialized_ = true;
 }
 
 void ActivityLog::ChooseDefaultPolicy() {
@@ -315,23 +270,45 @@ ActivityLog::~ActivityLog() {
     policy_->Close();
 }
 
+// static
+bool ActivityLog::enabled_on_any_profile_ = false;
+
+// static
+bool ActivityLog::IsLogEnabledOnAnyProfile() {
+  return enabled_on_any_profile_;
+}
+
 bool ActivityLog::IsLogEnabled() {
-  if (!has_threads_ || !initialized_) return false;
+  // Make sure we are not enabled when there are no threads.
+  DCHECK(has_threads_ || !enabled_);
   return enabled_;
 }
 
 void ActivityLog::OnExtensionLoaded(const Extension* extension) {
   if (extension->id() != kActivityLogExtensionId) return;
-  enabled_ = true;
-  LogIsEnabled::GetInstance()->SetProfileEnabled(true);
+  if (has_threads_) {
+    enabled_ = true;
+    enabled_on_any_profile_ = true;
+  }
+  if (!watchdog_extension_active_) {
+    watchdog_extension_active_ = true;
+    profile_->GetPrefs()->SetBoolean(prefs::kWatchdogExtensionActive, true);
+  }
   ChooseDefaultPolicy();
 }
 
 void ActivityLog::OnExtensionUnloaded(const Extension* extension) {
   if (extension->id() != kActivityLogExtensionId) return;
+  // Make sure we are not enabled when there are no threads.
+  DCHECK(has_threads_ || !enabled_);
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExtensionActivityLogging))
     enabled_ = false;
+  if (watchdog_extension_active_) {
+    watchdog_extension_active_ = false;
+    profile_->GetPrefs()->SetBoolean(prefs::kWatchdogExtensionActive,
+                                     false);
+  }
 }
 
 // static
@@ -425,6 +402,15 @@ void ActivityLog::OnScriptsExecuted(
       LogAction(action);
     }
   }
+}
+
+// static
+void ActivityLog::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kWatchdogExtensionActive,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
 }  // namespace extensions
