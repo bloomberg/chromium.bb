@@ -2490,9 +2490,8 @@ void Node::defaultEventHandler(Event* event)
         if (dispatchDOMActivateEvent(detail, event))
             event->setDefaultHandled();
     } else if (eventType == eventNames().contextmenuEvent) {
-        if (Frame* frame = document()->frame())
-            if (Page* page = frame->page())
-                page->contextMenuController()->handleContextMenuEvent(event);
+        if (Page* page = document()->page())
+            page->contextMenuController().handleContextMenuEvent(event);
     } else if (eventType == eventNames().textInputEvent) {
         if (event->hasInterface(eventNames().interfaceForTextEvent))
             if (Frame* frame = document()->frame())

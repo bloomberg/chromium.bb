@@ -145,9 +145,9 @@ public:
     DragCaretController& dragCaretController() const { return *m_dragCaretController; }
     DragController& dragController() const { return *m_dragController; }
     FocusController& focusController() const { return *m_focusController; }
-    ContextMenuController* contextMenuController() const { return m_contextMenuController.get(); }
+    ContextMenuController& contextMenuController() const { return *m_contextMenuController; }
     InspectorController* inspectorController() const { return m_inspectorController.get(); }
-    PointerLockController* pointerLockController() const { return m_pointerLockController.get(); }
+    PointerLockController& pointerLockController() const { return *m_pointerLockController; }
     ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
     void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }
 
@@ -268,9 +268,9 @@ private:
     const OwnPtr<DragCaretController> m_dragCaretController;
     const OwnPtr<DragController> m_dragController;
     OwnPtr<FocusController> m_focusController;
-    OwnPtr<ContextMenuController> m_contextMenuController;
+    const OwnPtr<ContextMenuController> m_contextMenuController;
     OwnPtr<InspectorController> m_inspectorController;
-    OwnPtr<PointerLockController> m_pointerLockController;
+    const OwnPtr<PointerLockController> m_pointerLockController;
     RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
     OwnPtr<Settings> m_settings;

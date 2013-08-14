@@ -4730,18 +4730,18 @@ void Document::webkitExitPointerLock()
 {
     if (!page())
         return;
-    if (Element* target = page()->pointerLockController()->element()) {
+    if (Element* target = page()->pointerLockController().element()) {
         if (target->document() != this)
             return;
     }
-    page()->pointerLockController()->requestPointerUnlock();
+    page()->pointerLockController().requestPointerUnlock();
 }
 
 Element* Document::webkitPointerLockElement() const
 {
-    if (!page() || page()->pointerLockController()->lockPending())
+    if (!page() || page()->pointerLockController().lockPending())
         return 0;
-    if (Element* element = page()->pointerLockController()->element()) {
+    if (Element* element = page()->pointerLockController().element()) {
         if (element->document() == this)
             return element;
     }

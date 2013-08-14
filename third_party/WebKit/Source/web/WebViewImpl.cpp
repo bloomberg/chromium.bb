@@ -567,7 +567,7 @@ void WebViewImpl::mouseContextMenu(const WebMouseEvent& event)
     if (!mainFrameImpl() || !mainFrameImpl()->frameView())
         return;
 
-    m_page->contextMenuController()->clearContextMenu();
+    m_page->contextMenuController().clearContextMenu();
 
     PlatformMouseEventBuilder pme(mainFrameImpl()->frameView(), event);
 
@@ -760,7 +760,7 @@ bool WebViewImpl::handleGestureEvent(const WebGestureEvent& event)
             break;
 
         m_client->cancelScheduledContentIntents();
-        m_page->contextMenuController()->clearContextMenu();
+        m_page->contextMenuController().clearContextMenu();
         m_contextMenuAllowed = true;
         eventSwallowed = mainFrameImpl()->frame()->eventHandler()->handleGestureEvent(platformEvent);
         m_contextMenuAllowed = false;
@@ -1356,7 +1356,7 @@ bool WebViewImpl::sendContextMenuEvent(const WebKeyboardEvent& event)
     // detect if we create a new menu for this event, since we won't create
     // a new menu if the DOM swallows the event and the defaultEventHandler does
     // not run.
-    page()->contextMenuController()->clearContextMenu();
+    page()->contextMenuController().clearContextMenu();
 
     m_contextMenuAllowed = true;
     Frame* focusedFrame = page()->focusController().focusedOrMainFrame();
@@ -2462,19 +2462,19 @@ void WebViewImpl::willCloseLayerTreeView()
 void WebViewImpl::didAcquirePointerLock()
 {
     if (page())
-        page()->pointerLockController()->didAcquirePointerLock();
+        page()->pointerLockController().didAcquirePointerLock();
 }
 
 void WebViewImpl::didNotAcquirePointerLock()
 {
     if (page())
-        page()->pointerLockController()->didNotAcquirePointerLock();
+        page()->pointerLockController().didNotAcquirePointerLock();
 }
 
 void WebViewImpl::didLosePointerLock()
 {
     if (page())
-        page()->pointerLockController()->didLosePointerLock();
+        page()->pointerLockController().didLosePointerLock();
 }
 
 void WebViewImpl::didChangeWindowResizerRect()
@@ -3453,13 +3453,13 @@ void WebViewImpl::performCustomContextMenuAction(unsigned action)
 {
     if (!m_page)
         return;
-    ContextMenu* menu = m_page->contextMenuController()->contextMenu();
+    ContextMenu* menu = m_page->contextMenuController().contextMenu();
     if (!menu)
         return;
     const ContextMenuItem* item = menu->itemWithAction(static_cast<ContextMenuAction>(ContextMenuItemBaseCustomTag + action));
     if (item)
-        m_page->contextMenuController()->contextMenuItemSelected(item);
-    m_page->contextMenuController()->clearContextMenu();
+        m_page->contextMenuController().contextMenuItemSelected(item);
+    m_page->contextMenuController().clearContextMenu();
 }
 
 void WebViewImpl::showContextMenu()
@@ -3467,7 +3467,7 @@ void WebViewImpl::showContextMenu()
     if (!page())
         return;
 
-    page()->contextMenuController()->clearContextMenu();
+    page()->contextMenuController().clearContextMenu();
     m_contextMenuAllowed = true;
     if (Frame* focusedFrame = page()->focusController().focusedOrMainFrame())
         focusedFrame->eventHandler()->sendContextMenuEventForKey();
@@ -4071,7 +4071,7 @@ void WebViewImpl::pointerLockMouseEvent(const WebInputEvent& event)
     const WebMouseEvent& mouseEvent = static_cast<const WebMouseEvent&>(event);
 
     if (page())
-        page()->pointerLockController()->dispatchLockedMouseEvent(
+        page()->pointerLockController().dispatchLockedMouseEvent(
             PlatformMouseEventBuilder(mainFrameImpl()->frameView(), mouseEvent),
             eventType);
 }

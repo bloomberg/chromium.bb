@@ -1279,7 +1279,7 @@ void Element::removedFrom(ContainerNode* insertionPoint)
         setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
 
     if (document()->page())
-        document()->page()->pointerLockController()->elementRemoved(this);
+        document()->page()->pointerLockController().elementRemoved(this);
 
     setSavedLayerScrollOffset(IntSize());
 
@@ -2638,7 +2638,7 @@ void Element::setIsInTopLayer(bool inTopLayer)
 void Element::webkitRequestPointerLock()
 {
     if (document()->page())
-        document()->page()->pointerLockController()->requestPointerLock(this);
+        document()->page()->pointerLockController().requestPointerLock(this);
 }
 
 SpellcheckAttributeState Element::spellcheckAttributeState() const

@@ -122,7 +122,7 @@ static String selectMisspelledWord(Frame* selectedFrame)
 
     // Selection is empty, so change the selection to the word under the cursor.
     HitTestResult hitTestResult = selectedFrame->eventHandler()->
-        hitTestResultAtPoint(selectedFrame->page()->contextMenuController()->hitTestResult().pointInInnerNodeFrame());
+        hitTestResultAtPoint(selectedFrame->page()->contextMenuController().hitTestResult().pointInInnerNodeFrame());
     Node* innerNode = hitTestResult.innerNode();
     VisiblePosition pos(innerNode->renderer()->positionForPoint(
         hitTestResult.localPoint()));
@@ -184,7 +184,7 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
     if (!m_webView->contextMenuAllowed())
         return;
 
-    HitTestResult r = m_webView->page()->contextMenuController()->hitTestResult();
+    HitTestResult r = m_webView->page()->contextMenuController().hitTestResult();
     Frame* selectedFrame = r.innerNodeFrame();
 
     WebContextMenuData data;
