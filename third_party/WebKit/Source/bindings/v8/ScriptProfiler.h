@@ -79,6 +79,7 @@ public:
     static void initialize();
     static void visitNodeWrappers(WrappedNodeVisitor*);
     static HashMap<String, double>* currentProfileNameIdleTimeMap();
+    static void setIdle(bool isIdle);
 };
 
 } // namespace WebCore

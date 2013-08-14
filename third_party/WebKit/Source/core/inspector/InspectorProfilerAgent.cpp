@@ -162,7 +162,6 @@ void InspectorProfilerAgent::getCPUProfile(ErrorString* errorString, int rawUid,
     }
     profileObject = TypeBuilder::Profiler::CPUProfile::create()
         .setHead(it->value->buildInspectorObjectForHead())
-        .setIdleTime(it->value->idleTime())
         .setStartTime(it->value->startTime())
         .setEndTime(it->value->endTime());
     profileObject->setSamples(it->value->buildInspectorObjectForSamples());
@@ -269,6 +268,7 @@ void InspectorProfilerAgent::willProcessTask()
 {
     if (!m_profileNameIdleTimeMap || !m_profileNameIdleTimeMap->size())
         return;
+    ScriptProfiler::setIdle(false);
     if (!m_previousTaskEndTime)
         return;
 
@@ -284,6 +284,7 @@ void InspectorProfilerAgent::didProcessTask()
     if (!m_profileNameIdleTimeMap || !m_profileNameIdleTimeMap->size())
         return;
     m_previousTaskEndTime = WTF::monotonicallyIncreasingTime();
+    ScriptProfiler::setIdle(true);
 }
 
 } // namespace WebCore
