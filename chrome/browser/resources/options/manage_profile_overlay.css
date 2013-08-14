@@ -81,6 +81,10 @@
   margin-bottom: 5px;
 }
 
+#create-profile-content {
+  padding-bottom: 0;
+}
+
 .action-area-shortcut-container {
   -webkit-box-flex: 1;
 }
@@ -113,4 +117,8 @@ html[dir='rtl'] #delete-profile-message {
 #create-profile-managed-account-details-out-of-date-label {
   white-space: pre-wrap;
   word-wrap: break-word;
+}
+
+#create-profile-managed-content-area {
+  padding-top: 0;
 }
