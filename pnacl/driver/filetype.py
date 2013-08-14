@@ -6,17 +6,10 @@
 """Utilities for determining (and overriding) the types of files
 """
 
-# driver_tools.Run and driver_env.env are used by GetBitcodeMetadata to run
-# llvm-dis. The metadata is still used to distinguish bitcode object files
-# from non-final pexes.
-# TODO(dschuff): Fix this last circular dependence, possibly by moving Run
-# into driver_base
 import subprocess
 
 import artools
-import driver_env
 import driver_log
-import driver_tools
 import elftools
 import ldtools
 
@@ -73,14 +66,6 @@ def IsNativeObject(filename):
 @SimpleCache
 def IsNativeDSO(filename):
   return FileType(filename) == 'so'
-
-@SimpleCache
-def IsBitcodeDSO(filename):
-  return FileType(filename) == 'pso'
-
-@SimpleCache
-def IsBitcodeObject(filename):
-  return FileType(filename) == 'po'
 
 @SimpleCache
 def GetBitcodeMagic(filename):
@@ -172,7 +157,6 @@ ExtensionMap = {
   'bc'  : 'po',
   'po'  : 'po',   # .po = "Portable object file"
   'pexe': 'pexe', # .pexe = "Portable executable"
-  'pso' : 'pso',  # .pso = "Portable Shared Object"
   'asm' : 'S',
   'S'   : 'S',
   'sx'  : 'S',
@@ -203,8 +187,13 @@ def FileType(filename):
   if elftools.IsELF(filename):
     return GetELFType(filename)
 
-  if IsLLVMBitcode(filename) or IsPNaClBitcode(filename):
-    return GetBitcodeType(filename, False)
+  # If this is LLVM bitcode, we don't have a good way of determining if it
+  # is an object file or a non-finalized program, so just say 'po' for now.
+  if IsLLVMBitcode(filename):
+    return 'po'
+
+  if IsPNaClBitcode(filename):
+    return 'pexe'
 
   if ldtools.IsLinkerScript(filename):
     return 'ldscript'
@@ -230,68 +219,6 @@ def GetELFType(filename):
     'DYN' : 'so'
   }
   return elf_type_map[elfheader.type]
-
-# Sandboxed LLC returns the metadata after translation. Use FORCED_METADATA
-# if available instead of llvm-dis to avoid building llvm-dis on arm, and
-# to make sure this interface gets tested
-FORCED_METADATA = {}
-@SimpleCache
-def GetBitcodeMetadata(filename, assume_pexe=False):
-  assert(IsLLVMBitcode(filename) or IsPNaClBitcode(filename))
-  # The argument |assume_pexe| helps break a dependency on bitcode metadata,
-  # as the shared library metadata is not finalized yet.
-  if assume_pexe:
-    return { 'OutputFormat': 'executable',
-             'SOName'      : '',
-             'NeedsLibrary': [] }
-  global FORCED_METADATA
-  if filename in FORCED_METADATA:
-    return FORCED_METADATA[filename]
-
-  llvm_dis = driver_env.env.getone('LLVM_DIS')
-  args = [ llvm_dis, '-dump-metadata', filename ]
-  _, stdout_contents, _  = driver_tools.Run(args,
-                                            redirect_stdout=subprocess.PIPE)
-
-  metadata = { 'OutputFormat': '',
-               'SOName'      : '',
-               'NeedsLibrary': [] }
-  for line in stdout_contents.split('\n'):
-    if not line.strip():
-      continue
-    k, v = line.split(':')
-    k = k.strip()
-    v = v.strip()
-    if k.startswith('NeededRecord_'):
-      metadata[k] = ''
-    assert(k in metadata)
-    if isinstance(metadata[k], list):
-      metadata[k].append(v)
-    else:
-      metadata[k] = v
-
-  return metadata
-
-def SetBitcodeMetadata(filename, is_shared, soname, needed_libs):
-  metadata = {}
-  metadata['OutputFormat'] = 'shared' if is_shared else 'executable'
-  metadata['NeedsLibrary'] = list(needed_libs)
-  metadata['SOName'] = soname
-  global FORCED_METADATA
-  FORCED_METADATA[filename] = metadata
-
-@SimpleCache
-def GetBitcodeType(filename, assume_pexe):
-  """ Bitcode type as determined by bitcode metadata """
-  if IsPNaClBitcode(filename):
-    return 'pexe'
-  metadata = GetBitcodeMetadata(filename, assume_pexe)
-  format_map = {
-    'object': 'po',
-    'shared': 'pso',
-    'executable': 'pexe'
-  }
-  return format_map[metadata['OutputFormat']]
 
 # Map from GCC's -x file types and this driver's file types.
 FILE_TYPE_MAP = {

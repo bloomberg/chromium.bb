@@ -507,7 +507,7 @@ def HasBitcodeInputs(inputs):
   for f in inputs:
     if ldtools.IsFlag(f):
       continue
-    elif filetype.IsBitcodeObject(f) or filetype.IsBitcodeArchive(f):
+    elif filetype.IsLLVMBitcode(f) or filetype.IsBitcodeArchive(f):
       return True
   return False
 
@@ -516,8 +516,7 @@ def CheckInputsArch(inputs):
   for f in inputs:
     if ldtools.IsFlag(f):
       continue
-    elif (filetype.IsBitcodeObject(f) or filetype.IsBitcodeDSO(f) or
-          filetype.IsBitcodeArchive(f)):
+    elif filetype.IsLLVMBitcode(f) or filetype.IsBitcodeArchive(f):
       pass
     elif filetype.IsNative(f):
       ArchMerge(f, True)

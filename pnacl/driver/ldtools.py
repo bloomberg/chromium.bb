@@ -23,7 +23,7 @@ import pathtools
 
 def IsLinkerScript(filename):
   _, ext = os.path.splitext(filename)
-  return (len(ext) > 0 and ext[1:] in ('o','so','a','po','pso','pa','x') and
+  return (len(ext) > 0 and ext[1:] in ('o', 'so', 'a', 'po', 'pa', 'x') and
       ParseLinkerScript(filename) is not None)
 
 
@@ -219,11 +219,6 @@ def FindLib(arg, searchdirs, static_only, acceptable_types):
     name = name[1:]
     searchnames.append(name)
 
-    # .pso may exist in lieu of .so, or vice versa.
-    if '.so' in name:
-      searchnames.append(name.replace('.so', '.pso'))
-    if '.pso' in name:
-      searchnames.append(name.replace('.pso', '.so'))
     # If the real IRT shim is not found, fall back to the dummy shim
     if name == 'libpnacl_irt_shim.a':
       searchnames.append('libpnacl_irt_shim_dummy.a')
@@ -232,7 +227,7 @@ def FindLib(arg, searchdirs, static_only, acceptable_types):
     if static_only:
       extensions = [ 'a' ]
     else:
-      extensions = [ 'pso', 'so', 'a' ]
+      extensions = [ 'so', 'a' ]
     for ext in extensions:
       searchnames.append('lib' + name + '.' + ext)
 

@@ -19,7 +19,7 @@ EXTRA_ENV = {
                            # It doesn't normally make sense to do this.
 
   'ALLOW_NATIVE'   : '0',  # Allow native objects (.S,.s,.o) to be in the
-                           # linker line for .pexe or .pso generation.
+                           # linker line for .pexe generation.
                            # It doesn't normally make sense to do this.
 
   'ALLOW_CXX_EXCEPTIONS': '0', # Allow exception handling. This should not be
@@ -552,7 +552,7 @@ def main(argv):
       if not env.getbool('ALLOW_NATIVE'):
         Log.Fatal('%s: Native object files not allowed in link. '
                   'Use --pnacl-allow-native to override.', pathtools.touser(f))
-    assert(intype in ('po','o','so','pso','ldscript') or filetype.IsArchive(f))
+    assert(intype in ('po','o','so','ldscript') or filetype.IsArchive(f))
 
   # Fix the user-specified linker arguments
   ld_inputs = []

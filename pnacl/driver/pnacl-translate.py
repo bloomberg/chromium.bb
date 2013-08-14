@@ -79,16 +79,12 @@ EXTRA_ENV = {
                # TODO(robertm): provide a "better" libgcc_s.so
                ' ${NEWLIB_SHARED_EXPERIMENT ? : -l:libgcc_s.so.1}}',
 
-  # List of user requested libraries (according to bitcode metadata).
-  'NEEDED_LIBRARIES': '',   # Set by ApplyBitcodeConfig.
-
-  'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs} ${NEEDED_LIBRARIES}',
+  'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
   # These are just the dependencies in the native link.
   'LD_ARGS_normal':
     '${CRTBEGIN} ${ld_inputs} ' +
     '${USE_IRT_SHIM ? ${LD_ARGS_IRT_SHIM} : ${LD_ARGS_IRT_SHIM_DUMMY}} ' +
-    '${NEEDED_LIBRARIES} ' +
     '${STATIC ? --start-group} ' +
     '${USE_DEFAULTLIBS ? ${DEFAULTLIBS}} ' +
     '${STATIC ? --end-group} ' +
@@ -246,10 +242,7 @@ def main(argv):
   env.update(EXTRA_ENV)
   driver_tools.ParseArgs(argv, TranslatorPatterns)
   if env.getbool('SHARED'):
-    env.set('PIC', '1')
-
-  if env.getbool('SHARED') and env.getbool('STATIC'):
-    Log.Fatal('Cannot mix -static and -shared')
+    Log.Fatal('Not handling SHARED')
 
   driver_tools.GetArch(required = True)
 
@@ -277,7 +270,6 @@ def main(argv):
   # If there's a bitcode file, translate it now.
   tng = driver_tools.TempNameGen(inputs + bcfiles, output)
   output_type = env.getone('OUTPUT_TYPE')
-  metadata = None
   if bcfile:
     sfile = None
     if output_type == 's':
@@ -309,100 +301,22 @@ def main(argv):
     inputs = ListReplace(inputs, bcfile, '__BITCODE__')
     env.set('INPUTS', *inputs)
 
-  # Get bitcode type and metadata
-  if bcfile:
-    # Until we stabilize the ABI for shared libraries,
-    # assume that pnacl-translate only handles pexes
-    # to avoid a dependency on bitcode metadata.
-    assert not env.getbool('SHARED')
-    bctype = filetype.GetBitcodeType(bcfile, True)
-    metadata = filetype.GetBitcodeMetadata(bcfile, True)
-
   # Determine the output type, in this order of precedence:
-  # 1) Output type can be specified on command-line (-S, -c, -shared, -static)
-  # 2) If bitcode file given, use its output type. (pso->so, pexe->nexe, po->o)
-  # 3) Otherwise, assume nexe output.
-  if env.getbool('SHARED'):
-    output_type = 'so'
-  elif env.getbool('STATIC'):
+  # 1) Output type can be specified on command-line (-S, -c, -static)
+  #    -S and -c are handled above by the check that output_type in ('o', 's').
+  # 2) Otherwise, assume static nexe output.
+  if env.getbool('STATIC'):
     output_type = 'nexe'
-  elif bcfile:
-    DefaultOutputTypes = {
-      'pso' : 'so',
-      'pexe': 'nexe',
-      'po'  : 'o',
-    }
-    output_type = DefaultOutputTypes[bctype]
   else:
+    # Until we stabilize the ABI for shared libraries,
+    # assume that pnacl-translate only handles pexes -> nexes,
+    # to avoid a dependency on bitcode metadata.
     output_type = 'nexe'
-
-  # If the bitcode is of type "object", no linking is required.
-  if output_type == 'o':
-    # Copy ofile to output
-    Log.Info('Copying %s to %s' % (ofile, output))
-    shutil.copy(pathtools.tosys(ofile), pathtools.tosys(output))
-    return 0
-
-  if bcfile:
-    ApplyBitcodeConfig(metadata, bctype)
-
-  # NOTE: we intentionally delay setting STATIC here to give user choices
-  #       preference but we should think about dropping the support for
-  #       the -static, -shared flags in the translator and have everything
-  #       be determined by bctype
-  if metadata is None:
-    env.set('STATIC', '1')
-  elif len(metadata['NeedsLibrary']) == 0 and not env.getbool('SHARED'):
     env.set('STATIC', '1')
 
   assert output_type in ('so','nexe')
   RunLD(ofile, output)
   return 0
-
-def ApplyBitcodeConfig(metadata, bctype):
-  # Read the bitcode metadata to extract library
-  # dependencies and SOName.
-  # For now, we use LD_FLAGS to convey the information.
-  # However, if the metadata becomes richer we will need another mechanism.
-  # TODO(jvoung): at least grep out the SRPC output from LLC and transmit
-  # that directly to LD to avoid issues with mismatching delimiters.
-  for needed in metadata['NeedsLibrary']:
-    env.append('LD_FLAGS', '--add-extra-dt-needed=' + needed)
-  if bctype == 'pso':
-    soname = metadata['SOName']
-    if soname:
-      env.append('LD_FLAGS', '-soname=' + soname)
-
-  # For the current LD final linker, native libraries still need to be
-  # linked directly, since --add-extra-dt-needed isn't enough.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2451
-  # For the under-construction gold final linker, it expects to have
-  # the needed libraries on the commandline as "-llib1 -llib2", which actually
-  # refer to the stub metadata file.
-  for needed in metadata['NeedsLibrary']:
-    # Specify the ld-nacl-${arch}.so as the --dynamic-linker to set PT_INTERP.
-    # Also, the original libc.so linker script had it listed as --as-needed,
-    # so let's do that.
-    if needed.startswith('ld-nacl-'):
-      env.append('NEEDED_LIBRARIES', '--dynamic-linker=' + needed)
-      env.append('NEEDED_LIBRARIES',
-                 '--as-needed',
-                 # We normally would have a symlink between
-                 # ld-2.9 <-> ld-nacl-${arch}.so, but our native lib directory
-                 # has no symlinks (to make windows + cygwin happy).
-                 # Link to ld-2.9.so instead for now.
-                 '-l:ld-2.9.so',
-                 '--no-as-needed')
-    else:
-      env.append('NEEDED_LIBRARIES', '-l:' + needed)
-    # libc and libpthread may need the nonshared components too.
-    # Normally these are enclosed in --start-group and --end-group...
-    if not env.getbool('NEWLIB_SHARED_EXPERIMENT'):
-      if needed.startswith('libc.so'):
-        env.append('NEEDED_LIBRARIES', '-l:libc_nonshared.a')
-      elif needed.startswith('libpthread.so'):
-        env.append('NEEDED_LIBRARIES', '-l:libpthread_nonshared.a')
-
 
 def RunAS(infile, outfile):
   driver_tools.RunDriver('as', [infile, '-o', outfile])
@@ -485,9 +399,9 @@ def RunLLC(infile, outfile, outfiletype):
   env.setmany(input=infile, output=outfile, outfiletype=outfiletype)
   if env.getbool('SANDBOXED'):
     is_shared, soname, needed = RunLLCSandboxed()
+    # Ignore is_shared, soname, and needed for now, since we aren't
+    # dealing with bitcode shared libraries.
     env.pop()
-    # soname and dt_needed libs are returned from LLC and passed to LD
-    filetype.SetBitcodeMetadata(infile, is_shared, soname, needed)
   else:
     args = ["${RUN_LLC}"]
     if filetype.IsPNaClBitcode(infile):
@@ -568,10 +482,9 @@ Usage: pnacl-translate [options] -arch <arch> <input> -o <output>
                           tuning and features, see -mattr, and -mcpu.
   -o <output>             Output file.
 
-  The output file type depends on the input file type:
-     Portable object (.po)         -> NaCl ELF object (.o)
-     Portable shared object (.pso) -> NaCl ELF shared object (.so)
-     Portable executable (.pexe)   -> NaCl ELF executable (.nexe)
+  The default output file type is .nexe, which assumes that the input file
+  type is .pexe.  Native object files and assembly can also be generated
+  with the -S and -c commandline flags.
 
 ADVANCED OPTIONS:
   -mattr=<+feat1,-feat2>  Toggle specific cpu features on and off.

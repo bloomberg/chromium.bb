@@ -49,8 +49,6 @@ EXTRA_ENV = {
                   '--build-id ' +
                   '${!USE_IRT ? --rosegment-gap=32}',
 
-  'NEEDED_LIBRARIES': '',
-
   'LD_EMUL'        : '${LD_EMUL_%ARCH%}',
   'LD_EMUL_ARM'    : 'armelf_nacl',
   'LD_EMUL_X8632'  : 'elf_nacl',
@@ -78,7 +76,6 @@ LDPatterns = [
   ( '-o(.+)',          "env.set('OUTPUT', pathtools.normalize($0))"),
   ( ('-o', '(.+)'),    "env.set('OUTPUT', pathtools.normalize($0))"),
 
-  ( ('(--add-extra-dt-needed=.*)'), "env.append('NEEDED_LIBRARIES', $0)"),
   ( '--noirt',                      "env.set('USE_IRT', '0')"),
 
   ( '-static',         "env.set('STATIC', '1')"),
@@ -231,8 +228,7 @@ def MakeSelUniversalScriptForLD(ld_flags,
                   (basename, f))
 
   if use_default:
-    # We don't have the bitcode file here anymore, so we assume that
-    # pnacl-translate passed along the relevant information via commandline.
+    # Assume static linking for now.
     soname = ''
     needed = ''
     is_shared_library = 0
