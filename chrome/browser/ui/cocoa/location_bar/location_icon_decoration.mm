@@ -98,7 +98,8 @@ bool LocationIconDecoration::OnMousePressed(NSRect frame) {
 
   WebContents* tab = owner_->GetWebContents();
   const NavigationController& controller = tab->GetController();
-  NavigationEntry* nav_entry = controller.GetActiveEntry();
+  // Important to use GetVisibleEntry to match what's showing in the omnibox.
+  NavigationEntry* nav_entry = controller.GetVisibleEntry();
   if (!nav_entry) {
     NOTREACHED();
     return true;

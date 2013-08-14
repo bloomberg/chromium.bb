@@ -36,7 +36,7 @@ static jobjectArray GetCertificateChain(JNIEnv* env,
   content::WebContents* contents =
       content::ContentViewCore::GetNativeContentViewCore(env, view)->
           GetWebContents();
-  int cert_id = contents->GetController().GetActiveEntry()->GetSSL().cert_id;
+  int cert_id = contents->GetController().GetVisibleEntry()->GetSSL().cert_id;
   scoped_refptr<net::X509Certificate> cert;
   bool ok = CertStore::GetInstance()->RetrieveCert(cert_id, &cert);
   CHECK(ok);
@@ -77,7 +77,10 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
     jobject context,
     jobject java_content_view,
     WebContents* web_contents) {
-  if (web_contents->GetController().GetActiveEntry() == NULL)
+  // Important to use GetVisibleEntry to match what's showing in the omnibox.
+  content::NavigationEntry* nav_entry =
+      web_contents->GetController().GetVisibleEntry();
+  if (nav_entry == NULL)
     return;
 
   popup_jobject_.Reset(
@@ -89,8 +92,8 @@ WebsiteSettingsPopupAndroid::WebsiteSettingsPopupAndroid(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()),
       TabSpecificContentSettings::FromWebContents(web_contents),
       InfoBarService::FromWebContents(web_contents),
-      web_contents->GetURL(),
-      web_contents->GetController().GetActiveEntry()->GetSSL(),
+      nav_entry->GetURL(),
+      nav_entry->GetSSL(),
       content::CertStore::GetInstance()));
 }
 

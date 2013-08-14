@@ -677,12 +677,12 @@ void TabSpecificContentSettings::Observe(
 
   content::Details<const ContentSettingsDetails> settings_details(details);
   const NavigationController& controller = web_contents()->GetController();
-  NavigationEntry* entry = controller.GetActiveEntry();
+  NavigationEntry* entry = controller.GetVisibleEntry();
   GURL entry_url;
   if (entry)
     entry_url = entry->GetURL();
   if (settings_details.ptr()->update_all() ||
-      // The active NavigationEntry is the URL in the URL field of a tab.
+      // The visible NavigationEntry is the URL in the URL field of a tab.
       // Currently this should be matched by the |primary_pattern|.
       settings_details.ptr()->primary_pattern().Matches(entry_url)) {
     Profile* profile =

@@ -1363,6 +1363,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       // the page) from the NavigationEntry because its reflects their origin
       // rather than the display one (returned by GetURL) which may be
       // different (like having "view-source:" on the front).
+      // TODO(nasko): Audit all GetActiveEntry calls in this file.
       NavigationEntry* active_entry =
           source_web_contents_->GetController().GetActiveEntry();
       return content::IsSavableURL(
@@ -1796,7 +1797,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
     case IDC_CONTENT_CONTEXT_VIEWPAGEINFO: {
       NavigationController* controller = &source_web_contents_->GetController();
-      NavigationEntry* nav_entry = controller->GetActiveEntry();
+      // Important to use GetVisibleEntry to match what's showing in the
+      // omnibox.
+      NavigationEntry* nav_entry = controller->GetVisibleEntry();
       Browser* browser =
           chrome::FindBrowserWithWebContents(source_web_contents_);
       chrome::ShowWebsiteSettings(browser, source_web_contents_,
