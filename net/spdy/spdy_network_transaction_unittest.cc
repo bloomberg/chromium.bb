@@ -10,6 +10,7 @@
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_vector.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "net/base/auth.h"
 #include "net/base/net_log_unittest.h"
@@ -80,16 +81,18 @@ class SpdyNetworkTransactionTest
   SpdyNetworkTransactionTest() : spdy_util_(GetParam().protocol) {
   }
 
+  virtual ~SpdyNetworkTransactionTest() {
+    // UploadDataStream posts deletion tasks back to the message loop on
+    // destruction.
+    upload_data_stream_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
+
   virtual void SetUp() {
     google_get_request_initialized_ = false;
     google_post_request_initialized_ = false;
     google_chunked_post_request_initialized_ = false;
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
-
-  virtual void TearDown() {
-    // Empty the current queue.
-    base::MessageLoop::current()->RunUntilIdle();
   }
 
   struct TransactionHelperResult {
@@ -519,7 +522,7 @@ class SpdyNetworkTransactionTest
         // reads until we complete our callback.
         while (!callback.have_result()) {
           data->CompleteRead();
-          base::MessageLoop::current()->RunUntilIdle();
+          base::RunLoop().RunUntilIdle();
         }
         rv = callback.WaitForResult();
       } else if (rv <= 0) {
@@ -573,7 +576,7 @@ class SpdyNetworkTransactionTest
     rv = trans2->Start(
         &CreateGetPushRequest(), callback.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);
-    base::MessageLoop::current()->RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
 
     // The data for the pushed path may be coming in more than 1 frame. Compile
     // the results into a single string.
@@ -1880,10 +1883,10 @@ TEST_P(SpdyNetworkTransactionTest, DelayedChunkedPost) {
   helper.AddData(&data);
   ASSERT_TRUE(helper.StartDefaultTest());
 
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   helper.request().upload_data_stream->AppendChunk(
       kUploadData, kUploadDataSize, false);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   helper.request().upload_data_stream->AppendChunk(
       kUploadData, kUploadDataSize, true);
 
@@ -2252,7 +2255,7 @@ TEST_P(SpdyNetworkTransactionTest, CancelledTransaction) {
 
   // Flush the MessageLoop while the SpdySessionDependencies (in particular, the
   // MockClientSocketFactory) are still alive.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   helper.VerifyDataNotConsumed();
 }
 
@@ -2408,7 +2411,7 @@ TEST_P(SpdyNetworkTransactionTest, DeleteSessionOnReadCallback) {
   data.CompleteRead();
 
   // Finish running rest of tasks.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
   helper.VerifyDataConsumed();
 }
 
@@ -2469,12 +2472,12 @@ TEST_P(SpdyNetworkTransactionTest, RedirectGetRequest) {
 
     d.set_quit_on_redirect(true);
     r.Start();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     EXPECT_EQ(1, d.received_redirect_count());
 
     r.FollowDeferredRedirect();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     EXPECT_EQ(1, d.response_started_count());
     EXPECT_FALSE(d.received_data_before_response());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, r.status().status());
@@ -2559,7 +2562,7 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
         AddSocketDataProvider(&data);
 
     r.Start();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
 
     EXPECT_EQ(0, d.received_redirect_count());
     std::string contents("hello!");
@@ -2572,11 +2575,11 @@ TEST_P(SpdyNetworkTransactionTest, RedirectServerPush) {
 
     d2.set_quit_on_redirect(true);
     r2.Start();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     EXPECT_EQ(1, d2.received_redirect_count());
 
     r2.FollowDeferredRedirect();
-    base::MessageLoop::current()->Run();
+    base::RunLoop().Run();
     EXPECT_EQ(1, d2.response_started_count());
     EXPECT_FALSE(d2.received_data_before_response());
     EXPECT_EQ(net::URLRequestStatus::SUCCESS, r2.status().status());
@@ -3786,7 +3789,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferFull) {
 
   // Flush the MessageLoop while the SpdySessionDependencies (in particular, the
   // MockClientSocketFactory) are still alive.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
@@ -3883,7 +3886,7 @@ TEST_P(SpdyNetworkTransactionTest, Buffering) {
 
   // Flush the MessageLoop while the SpdySessionDependencies (in particular, the
   // MockClientSocketFactory) are still alive.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
@@ -3977,7 +3980,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedAll) {
 
   // Flush the MessageLoop while the SpdySessionDependencies (in particular, the
   // MockClientSocketFactory) are still alive.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
@@ -4072,7 +4075,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedClosed) {
 
   // Flush the MessageLoop while the SpdySessionDependencies (in particular, the
   // MockClientSocketFactory) are still alive.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
@@ -4143,7 +4146,7 @@ TEST_P(SpdyNetworkTransactionTest, BufferedCancelled) {
 
   // Flush the MessageLoop; this will cause the buffered IO task
   // to run for the final time.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Verify that we consumed all test data.
   helper.VerifyDataConsumed();
@@ -4787,7 +4790,7 @@ TEST_P(SpdyNetworkTransactionTest, VerifyRetryOnConnectionReset) {
         if (variant == VARIANT_RST_DURING_READ_COMPLETION) {
           // Writes to the socket complete asynchronously on SPDY by running
           // through the message loop.  Complete the write here.
-          base::MessageLoop::current()->RunUntilIdle();
+          base::RunLoop().RunUntilIdle();
         }
 
         // Now schedule the ERR_CONNECTION_RESET.
@@ -5102,7 +5105,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
       &CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   data.RunFor(3);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read the server push body.
   std::string result2;
@@ -5238,7 +5241,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithTwoHeaderFrames) {
       &CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   data.RunFor(3);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read the server push body.
   std::string result2;
@@ -5371,7 +5374,7 @@ TEST_P(SpdyNetworkTransactionTest, ServerPushWithNoStatusHeaderFrames) {
       &CreateGetPushRequest(), callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   data.RunFor(2);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read the server push body.
   std::string result2;
@@ -5726,7 +5729,7 @@ TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
   // Run the message loop, but do not allow the write to complete.
   // This leaves the SpdySession with a write pending, which prevents
   // SpdySession from attempting subsequent writes until this write completes.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Now, start both new transactions
   HttpRequestInfo info2 = CreateGetRequest();
@@ -5735,7 +5738,7 @@ TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
       new HttpNetworkTransaction(MEDIUM, helper.session().get()));
   rv = trans2->Start(&info2, callback2.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   HttpRequestInfo info3 = CreateGetRequest();
   TestCompletionCallback callback3;
@@ -5743,7 +5746,7 @@ TEST_P(SpdyNetworkTransactionTest, OutOfOrderSynStream) {
       new HttpNetworkTransaction(HIGHEST, helper.session().get()));
   rv = trans3->Start(&info3, callback3.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // We now have two SYN_STREAM frames queued up which will be
   // dequeued only once the first write completes, which we
@@ -5955,7 +5958,7 @@ TEST_P(SpdyNetworkTransactionTest, WindowUpdateSent) {
 
   // Force write of WINDOW_UPDATE which was scheduled during the above
   // read.
-  base::MessageLoop::current()->RunUntilIdle();
+  base::RunLoop().RunUntilIdle();
 
   // Read EOF.
   data.CompleteRead();
@@ -6139,7 +6142,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResume) {
   int rv = trans->Start(&helper.request(), callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
-  base::MessageLoop::current()->RunUntilIdle();  // Write as much as we can.
+  base::RunLoop().RunUntilIdle();  // Write as much as we can.
 
   SpdyHttpStream* stream = static_cast<SpdyHttpStream*>(trans->stream_.get());
   ASSERT_TRUE(stream != NULL);
