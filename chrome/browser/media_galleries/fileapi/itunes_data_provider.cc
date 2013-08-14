@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
 
+#include <map>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/format_macros.h"
@@ -17,6 +19,8 @@
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/common/media_galleries/itunes_library.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/icu/source/common/unicode/locid.h"
+#include "webkit/browser/fileapi/native_file_util.h"
 
 using chrome::MediaFileSystemBackend;
 
@@ -94,10 +98,108 @@ void StartLibraryWatchOnFileThread(
       base::Bind(watch_started_callback, base::Passed(&watcher)));
 }
 
+// |result_path| is set if |locale_string| maps to a localized directory name
+// and it exists in the filesystem.
+bool CheckLocaleStringAutoAddPath(
+    const base::FilePath& media_path,
+    const std::map<std::string, std::string>& localized_dir_names,
+    const std::string& locale_string,
+    base::FilePath* result_path) {
+  DCHECK(!media_path.empty());
+  DCHECK(!localized_dir_names.empty());
+  DCHECK(!locale_string.empty());
+  DCHECK(result_path);
+
+  std::map<std::string, std::string>::const_iterator it =
+      localized_dir_names.find(locale_string);
+  if (it == localized_dir_names.end())
+    return false;
+
+  base::FilePath localized_auto_add_path =
+      media_path.Append(base::FilePath::FromUTF8Unsafe(it->second));
+  if (!fileapi::NativeFileUtil::DirectoryExists(localized_auto_add_path))
+    return false;
+
+  *result_path = localized_auto_add_path;
+  return true;
+}
+
+// This method is complex because Apple localizes the directory name in versions
+// of iTunes before 10.6.
+base::FilePath GetAutoAddPath(const base::FilePath& library_path) {
+  const char kiTunesMediaDir[] = "iTunes Media";
+  base::FilePath media_path =
+      library_path.DirName().AppendASCII(kiTunesMediaDir);
+
+  // Test 'universal' path first.
+  base::FilePath universal_auto_add_path =
+      media_path.AppendASCII("Automatically Add to iTunes.localized");
+  if (fileapi::NativeFileUtil::DirectoryExists(universal_auto_add_path))
+    return universal_auto_add_path;
+
+  // Test user locale. Localized directory names encoded in UTF-8.
+  std::map<std::string, std::string> localized_dir_names;
+  localized_dir_names["nl"] = "Voeg automatisch toe aan iTunes";
+  localized_dir_names["en"] = "Automatically Add to iTunes";
+  localized_dir_names["fr"] = "Ajouter automatiquement \xC3\xA0 iTunes";
+  localized_dir_names["de"] = "Automatisch zu iTunes hinzuf\xC3\xBCgen";
+  localized_dir_names["it"] = "Aggiungi automaticamente a iTunes";
+  localized_dir_names["ja"] = "iTunes \xE3\x81\xAB\xE8\x87\xAA\xE5\x8B\x95\xE7"
+                              "\x9A\x84\xE3\x81\xAB\xE8\xBF\xBD\xE5\x8A\xA0";
+  localized_dir_names["es"] = "A\xC3\xB1""adir autom\xC3\xA1ticamente a iTunes";
+  localized_dir_names["da"] = "F\xC3\xB8j automatisk til iTunes";
+  localized_dir_names["en-GB"] = "Automatically Add to iTunes";
+  localized_dir_names["fi"] = "Lis\xC3\xA4\xC3\xA4 automaattisesti iTunesiin";
+  localized_dir_names["ko"] = "iTunes\xEC\x97\x90 \xEC\x9E\x90\xEB\x8F\x99\xEC"
+                              "\x9C\xBC\xEB\xA1\x9C \xEC\xB6\x94\xEA\xB0\x80";
+  localized_dir_names["no"] = "Legg til automatisk i iTunes";
+  localized_dir_names["pl"] = "Automatycznie dodaj do iTunes";
+  localized_dir_names["pt"] = "Adicionar Automaticamente ao iTunes";
+  localized_dir_names["pt-PT"] = "Adicionar ao iTunes automaticamente";
+  localized_dir_names["ru"] = "\xD0\x90\xD0\xB2\xD1\x82\xD0\xBE\xD0\xBC\xD0\xB0"
+                              "\xD1\x82\xD0\xB8\xD1\x87\xD0\xB5\xD1\x81\xD0\xBA"
+                              "\xD0\xB8 \xD0\xB4\xD0\xBE\xD0\xB1\xD0\xB0\xD0"
+                              "\xB2\xD0\xBB\xD1\x8F\xD1\x82\xD1\x8C \xD0\xB2"
+                              "iTunes";
+  localized_dir_names["sv"] = "L\xC3\xA4gg automatiskt till i iTunes";
+  localized_dir_names["zh-CN"] = "\xE8\x87\xAA\xE5\x8A\xA8\xE6\xB7\xBB\xE5\x8A"
+                                 "\xA0\xE5\x88\xB0 iTunes";
+  localized_dir_names["zh-TW"] = "\xE8\x87\xAA\xE5\x8B\x95\xE5\x8A\xA0\xE5\x85"
+                                 "\xA5 iTunes";
+
+  const icu::Locale locale = icu::Locale::getDefault();
+  const char* language = locale.getLanguage();
+  const char* country = locale.getCountry();
+
+  base::FilePath result_path;
+  if (language != NULL && *language != '\0') {
+    if (country != NULL && *country != '\0' &&
+        CheckLocaleStringAutoAddPath(media_path, localized_dir_names,
+                                     std::string(language) + "-" + country,
+                                     &result_path)) {
+      return result_path;
+    }
+
+    if (CheckLocaleStringAutoAddPath(media_path, localized_dir_names,
+                                     language, &result_path)) {
+      return result_path;
+    }
+  }
+
+  // Fallback to trying English.
+  if (CheckLocaleStringAutoAddPath(media_path, localized_dir_names,
+                                   "en", &result_path)) {
+    return result_path;
+  }
+
+  return base::FilePath();
+}
+
 }  // namespace
 
 ITunesDataProvider::ITunesDataProvider(const base::FilePath& library_path)
     : library_path_(library_path),
+      auto_add_path_(GetAutoAddPath(library_path)),
       needs_refresh_(true),
       is_valid_(false) {
   DCHECK(MediaFileSystemBackend::CurrentlyOnMediaTaskRunnerThread());
@@ -132,6 +234,10 @@ void ITunesDataProvider::RefreshData(const ReadyCallback& ready_callback) {
 
 const base::FilePath& ITunesDataProvider::library_path() const {
   return library_path_;
+}
+
+const base::FilePath& ITunesDataProvider::auto_add_path() const {
+  return auto_add_path_;
 }
 
 bool ITunesDataProvider::KnownArtist(const ArtistName& artist) const {

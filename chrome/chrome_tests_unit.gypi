@@ -2361,6 +2361,7 @@
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [
+            'browser/media_galleries/fileapi/itunes_file_util_unittest.cc',
             'browser/media_galleries/fileapi/picasa/picasa_file_util_unittest.cc',
             'utility/media_galleries/itunes_library_parser_unittest.cc',
             'utility/media_galleries/picasa_album_table_reader_unittest.cc',

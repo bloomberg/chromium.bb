@@ -36,10 +36,13 @@ class ITunesDataProvider {
 
   // Ask the data provider to refresh the data if necessary. |ready_callback|
   // will be called with the result; false if unable to parse the XML file.
-  void RefreshData(const ReadyCallback& ready_callback);
+  virtual void RefreshData(const ReadyCallback& ready_callback);
 
   // Get the platform path for the library XML file.
   const base::FilePath& library_path() const;
+
+  // Get the platform path for the auto-add directory.
+  virtual const base::FilePath& auto_add_path() const;
 
   // Returns true if |artist| exists in the library.
   bool KnownArtist(const ArtistName& artist) const;
@@ -93,6 +96,9 @@ class ITunesDataProvider {
 
   // Path to the library XML file.
   const base::FilePath library_path_;
+
+  // Path to the auto-add directory.
+  const base::FilePath auto_add_path_;
 
   // The parsed and uniquified data.
   Library library_;

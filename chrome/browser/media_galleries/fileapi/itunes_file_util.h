@@ -17,10 +17,15 @@ namespace itunes {
 
 class ITunesDataProvider;
 
-class ItunesFileUtil : public chrome::NativeMediaFileUtil {
+extern const char kITunesLibraryXML[];
+extern const char kITunesMediaDir[];
+extern const char kITunesMusicDir[];
+extern const char kITunesAutoAddDir[];
+
+class ITunesFileUtil : public chrome::NativeMediaFileUtil {
  public:
-  explicit ItunesFileUtil(chrome::MediaPathFilter* media_path_filter);
-  virtual ~ItunesFileUtil();
+  explicit ITunesFileUtil(chrome::MediaPathFilter* media_path_filter);
+  virtual ~ITunesFileUtil();
 
  protected:
   // NativeMediaFileUtil overrides.
@@ -73,13 +78,13 @@ class ItunesFileUtil : public chrome::NativeMediaFileUtil {
       const CreateSnapshotFileCallback& callback,
       bool valid_parse);
 
-  ITunesDataProvider* GetDataProvider();
+  virtual ITunesDataProvider* GetDataProvider();
 
-  base::WeakPtrFactory<ItunesFileUtil> weak_factory_;
+  base::WeakPtrFactory<ITunesFileUtil> weak_factory_;
 
   chrome::ImportedMediaGalleryRegistry* imported_registry_;
 
-  DISALLOW_COPY_AND_ASSIGN(ItunesFileUtil);
+  DISALLOW_COPY_AND_ASSIGN(ITunesFileUtil);
 };
 
 }  // namespace itunes

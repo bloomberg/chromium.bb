@@ -59,7 +59,7 @@ MediaFileSystemBackend::MediaFileSystemBackend(
 #if defined(OS_WIN) || defined(OS_MACOSX)
       ,
       picasa_file_util_(new picasa::PicasaFileUtil(media_path_filter_.get())),
-      itunes_file_util_(new itunes::ItunesFileUtil(media_path_filter_.get()))
+      itunes_file_util_(new itunes::ITunesFileUtil(media_path_filter_.get()))
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 {
 }
