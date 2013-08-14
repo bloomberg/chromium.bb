@@ -1355,7 +1355,7 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognito-Modus (<ph name="SHORTCUT_
 <translation id="5171045022955879922">Suchen oder URL eingeben</translation>
 <translation id="6830600606572693159">Die Webseite unter <ph name="URL"/> ist zurzeit nicht verfügbar. Möglicherweise ist sie überlastet oder wird gerade gewartet.</translation>
 <translation id="6776310961830589430">Verschieben abgebrochen</translation>
-<translation id="5299109548848736476">Nicht erfassen</translation>
+<translation id="5299109548848736476">Do Not Track</translation>
 <translation id="4421932782753506458">Miez</translation>
 <translation id="7197910855372448411">Auswahlkontrollkästchen zeigen</translation>
 <translation id="1885118447093706945">Deaktiviert den Wechsel zwischen Tabs durch waagrechtes Scrollen mit drei Fingern.</translation>
@@ -1657,7 +1657,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="4349181486102621992"><ph name="NUMBER_ZERO"/> Sekunden</translation>
 <translation id="8053278772142718589">PKCS #12-Dateien</translation>
 <translation id="6662016084451426657">Synchronisierungsfehler: Bitten Sie Ihren Administrator, die Synchronisierung zu aktivieren.</translation>
-<translation id="1425751983380462633">Die Aktivierung der Option &quot;Nicht erfassen&quot; bedeutet, dass mit Ihrem Datenverkehr beim Surfen eine Aufforderung gesendet wird. Das Ergebnis hängt davon ab, ob eine Webseite auf die Aufforderung reagiert und wie die Aufforderung ausgelegt wird. Einige Webseiten reagieren beispielsweise so auf diese Aufforderung, dass sie Ihnen Werbeanzeigen zeigen, die nicht auf anderen von Ihnen besuchten Webseiten basieren. Viele Webseiten werden Ihren Datenverkehr beim Surfen dennoch sammeln und verwenden – beispielsweise, um die Sicherheit zu verbessern, um Inhalte, Dienste, Werbeanzeigen und Empfehlungen auf ihren Webseiten zur Verfügung zu stellen und um Berichtsstatistiken zu erstellen.</translation>
+<translation id="1425751983380462633">Die Aktivierung der Option &quot;Do Not Track&quot; bedeutet, dass mit Ihrem Datenverkehr beim Surfen eine Aufforderung gesendet wird. Das Ergebnis hängt davon ab, ob eine Webseite auf die Aufforderung reagiert und wie die Aufforderung ausgelegt wird. Einige Webseiten reagieren beispielsweise so auf diese Aufforderung, dass sie Ihnen Werbeanzeigen zeigen, die nicht auf anderen von Ihnen besuchten Webseiten basieren. Viele Webseiten werden Ihren Datenverkehr beim Surfen dennoch sammeln und verwenden – beispielsweise, um die Sicherheit zu verbessern, um Inhalte, Dienste, Werbeanzeigen und Empfehlungen auf ihren Webseiten zur Verfügung zu stellen und um Berichtsstatistiken zu erstellen.</translation>
 <translation id="2129904043921227933">Synchronisierungsfehler: Aktualisieren Sie die Passphrase für die Synchronisierung...</translation>
 <translation id="1476949146811612304">Legen Sie fest, welche Suchmaschine bei einer Suche über die <ph name="BEGIN_LINK"/>Omnibox<ph name="END_LINK"/> verwendet werden soll.</translation>
 <translation id="4114360727879906392">Vorheriges Fenster</translation>
@@ -2145,7 +2145,7 @@ Achten Sie darauf, dass dadurch keine vertraulichen Informationen offengelegt we
 <translation id="4763830802490665879">Cookies von mehreren Websites werden beim Beenden gelöscht.</translation>
 <translation id="1358032944105037487">Japanische Tastatur </translation>
 <translation id="3897224341549769789">Aktivierungen</translation>
-<translation id="2317866052221803936">Mit Browserzugriffen eine &quot;Nicht erfassen&quot;-Anforderung senden</translation>
+<translation id="2317866052221803936">Mit Browserzugriffen eine &quot;Do Not Track&quot;-Anforderung senden</translation>
 <translation id="4648491805942548247">Unzureichende Berechtigungen</translation>
 <translation id="1183083053288481515">Vom Administrator bereitgestelltes Zertifikat verwenden</translation>
 <translation id="6231782223312638214">Vorgeschlagen</translation>

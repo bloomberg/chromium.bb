@@ -152,7 +152,7 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="1691304614444223855">Chromium Frame er opdateret. Genstart browseren. Chromium-version: <ph name="TODO_0001"/>, Chromium Frame-version: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Dine ændringer træder i kraft, næste gang du genstarter din enhed.</translation>
 <translation id="3244477511402911926">Chromium Underretningscenter</translation>
-<translation id="1105130903706696483">Chromium lukkede ikke korrekt ned. Klik på Gendan for at genåbne de sider, du havde åben.</translation>
+<translation id="1105130903706696483">Chromium lukkede ikke korrekt ned. Klik på Gendan for at genåbne de sider, du havde åbne.</translation>
 <translation id="1531452407274881270">Du logger ind på Chromium med kontoen <ph name="USER_EMAIL_ADDRESS"/>. Du har adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du genstarte nu?</translation>
 <translation id="1414495520565016063">Du er logget ind på Chromium.</translation>
@@ -193,7 +193,7 @@ Hvis du logger ind alligevel, flettes Chromium-oplysninger, som f.eks. bogmærke
 <translation id="2739631515503418643">Downloads er i øjeblikket i gang. Vil du afslutte Chromium og annullere downloads?</translation>
 <translation id="9013262824292842194">Chromium kræver Windows Vista eller Windows XP med SP2 eller højere.</translation>
 <translation id="7673212349590566645">Vil du logge ind på Chromium med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
-<translation id="1967743265616885482">Et modul med samme navn er i modstrid med Chromium.</translation>
+<translation id="1967743265616885482">Et modul med samme navn er i strid med Chromium.</translation>
 <translation id="4224199872375172890">Chromium er opdateret.</translation>
 <translation id="374481098568514319">Denne computer har allerede en nyere version af Chromium-komponenterne. Brug et nyere installationsprogram.</translation>
 <translation id="6240281849816458190">Du forsøgte at gå til &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men serveren viste et certifikat, der endnu ikke er gyldigt. Der er ingen tilgængelige oplysninger, der indikerer, om certifikatet stammer fra en kilde, der er tillid til. Chromium kan ikke med sikkerhed garantere, at du kommunikerer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; og ikke en angriber. Uret på din computer viser i øjeblikket <ph name="CURRENT_TIME"/>. Ser det rigtigt ud? Hvis ikke, skal du rette systemuret og derefter opdatere siden.</translation>

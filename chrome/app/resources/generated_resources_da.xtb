@@ -1785,7 +1785,7 @@ Sørg for, at du ikke afslører følsomme oplysninger.</translation>
 <translation id="4258748452823770588">Forkert signatur</translation>
 <translation id="7434823369735508263">Britisk (Dvorak) tastatur</translation>
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> dage</translation>
-<translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen &quot;<ph name="HEADER_NAME"/>&quot; for en netværksanmodning, fordi ændringen var i modstrid med en anden udvidelse. (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="8825366169884721447">Denne udvidelse kunne ikke ændre anmodningsheaderen &quot;<ph name="HEADER_NAME"/>&quot; for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="5308845175611284862">Synkronisering med <ph name="PRODUCT_NAME"/> gør det nemt at dele data (såsom bogmærker og indstillinger) mellem dine computere. <ph name="PRODUCT_NAME"/> synkroniserer dine data ved at gemme dem på nettet hos Google, når du logger ind med din Google-konto.</translation>
 <translation id="1707463636381878959">Del dette netværk med andre brugere</translation>
 <translation id="112817597702985620">Altid maksimeret tilstand</translation>
@@ -3401,7 +3401,7 @@ Tjek din e-mail på <ph name="ACCOUNT_EMAIL"/> for at se denne og flere vejledni
 <translation id="1859234291848436338">Skriveretning</translation>
 <translation id="5045550434625856497">Ugyldig adgangskode</translation>
 <translation id="6397592254427394018">Åbn alle bogmærker i &amp;inkognitovindue</translation>
-<translation id="27822970480436970">Denne udvidelse kunne ikke ændre en netværksanmodning, fordi ændringen var i modstrid med en anden udvidelse.</translation>
+<translation id="27822970480436970">Denne udvidelse kunne ikke ændre en netværksanmodning, fordi ændringen var i strid med en anden udvidelse.</translation>
 <translation id="756445078718366910">Åbn browservindue</translation>
 <translation id="6132383530370527946">Det med småt</translation>
 <translation id="9033780830059217187">Proxyen håndhæves af en udvidelse.</translation>
@@ -3688,7 +3688,7 @@ Tjek din e-mail på <ph name="ACCOUNT_EMAIL"/> for at se denne og flere vejledni
 <translation id="4647697156028544508">Indtast pinkoden for &quot;<ph name="DEVICE_NAME"/>&quot;:</translation>
 <translation id="5604961908909363516">Få adgang til alt det, som du skriver.</translation>
 <translation id="7671130400130574146">Brug systemets titellinje og rammer</translation>
-<translation id="9111791539553342076">Denne udvidelse kunne ikke ændre anmodningsheaderen &quot;<ph name="HEADER_NAME"/>&quot; for en netværksanmodning, fordi ændringen var i modstrid med en anden udvidelse. (<ph name="EXTENSION_NAME"/>).</translation>
+<translation id="9111791539553342076">Denne udvidelse kunne ikke ændre anmodningsheaderen &quot;<ph name="HEADER_NAME"/>&quot; for en netværksanmodning, fordi ændringen var i strid med en anden udvidelse. (<ph name="EXTENSION_NAME"/>).</translation>
 <translation id="9170848237812810038">&amp;Fortryd</translation>
 <translation id="284970761985428403"><ph name="ASCII_NAME"/> (<ph name="UNICODE_NAME"/>)</translation>
 <translation id="3903912596042358459">Serveren afviste at gennemføre anmodningen.</translation>
@@ -4411,7 +4411,7 @@ Tjek din e-mail på <ph name="ACCOUNT_EMAIL"/> for at se denne og flere vejledni
 <translation id="3695919544155087829">Angiv den adgangskode, der blev brugt til at kryptere denne certifikatfil.</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="2509857212037838238">Installer <ph name="PLUGIN_NAME"/></translation>
-<translation id="2943400156390503548">Præsentation</translation>
+<translation id="2943400156390503548">Præsentationer</translation>
 <translation id="3790146417033334899"><ph name="PLUGIN_NAME"/> fungerer kun på skrivebordet.</translation>
 <translation id="5117930984404104619">Overvåg adfærden for andre udvidelser, herunder de webadresser, du har besøgt.</translation>
 <translation id="33022249435934718">GDI-håndtag</translation>
@@ -4920,7 +4920,7 @@ Accepterer du?</translation>
 <translation id="445923051607553918">Tilmeld dig et Wi-Fi-netværk</translation>
 <translation id="4215898373199266584">Psst! Prøv at bruge Inkognitotilstand (<ph name="INCOGNITO_MODE_SHORTCUT"/>) næste gang.</translation>
 <translation id="9087725134750123268">Slet cookies og andre websitedata</translation>
-<translation id="2925966894897775835">Ark</translation>
+<translation id="2925966894897775835">Regneark</translation>
 <translation id="2563856802393254086">Datatjenesten &quot;<ph name="NAME"/>&quot; er blevet aktiveret og er klar til brug.</translation>
 <translation id="756631359159530168">Aktivér tegning efter flise af sideindholdet, når komposition er aktiveret.</translation>
 <translation id="3349155901412833452">Brug tasterne , og . til at bladre igennem en kandidatliste</translation>

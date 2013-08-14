@@ -82,7 +82,7 @@
 <translation id="1480041086352807611">الوضع التجريبي</translation>
 <translation id="3626637461649818317">باقٍ <ph name="PERCENTAGE"/>%</translation>
 <translation id="9089416786594320554">أساليب الإدخال</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
 <translation id="2614835198358683673">قد لا يستجيب جهاز Chromebook لعملية الشحن وهو قيد التشغيل. مع مراعاة استخدام الشاحن المخصص للجهاز.</translation>
 <translation id="1895658205118569222">إيقاف التشغيل</translation>
 <translation id="4430019312045809116">مستوى الصوت</translation>

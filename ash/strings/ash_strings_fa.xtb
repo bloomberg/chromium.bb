@@ -80,7 +80,7 @@
 <translation id="1480041086352807611">حالت نمایش</translation>
 <translation id="3626637461649818317"><ph name="PERCENTAGE"/>٪ باقیمانده</translation>
 <translation id="9089416786594320554">روش‌های ورودی</translation>
-<translation id="6247708409970142803"><ph name="PERCENTAGE"/>%</translation>
+<translation id="6247708409970142803">%<ph name="PERCENTAGE"/></translation>
 <translation id="2614835198358683673">وقتی Chromebook روشن است ممکن است شارژ نشود. از شارژر مخصوص دستگاه استفاده کنید.</translation>
 <translation id="1895658205118569222">بسته شدن</translation>
 <translation id="4430019312045809116">میزان صدا</translation>
