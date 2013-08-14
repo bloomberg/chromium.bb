@@ -242,20 +242,26 @@ def LlvmRegression(env, options):
     # stdout to our stdout, rather than collect its entire stdout and
     # print it at the end.  Otherwise the watchdog may try to kill the
     # process after too long without any output.
+    #
+    # Note: We use readline instead of 'for line in make_pipe.stdout'
+    # because otherwise the process on the Cygwin bot seems to hang
+    # when the 'make' process completes (with slightly truncated
+    # output).  The readline avoids buffering when reading from a
+    # pipe in Python 2, which may be complicit in the problem.
     for line in iter(make_pipe.stdout.readline, ''):
       if env['PNACL_BUILDBOT'] != 'false':
         # The buildbots need to be fully verbose and print all output
         # from "make check-all".
         print line,
       lines.append(line)
-    print 'Calling pipe.wait()...'
+    print "Waiting for 'make check-all' to complete."
     make_pipe.wait()
-    print 'Finished calling pipe.wait()'
     make_stdout = ''.join(lines)
     parse_options = vars(options)
     parse_options['lit'] = True
     parse_options['excludes'].append(env['LIT_KNOWN_FAILURES'])
     parse_options['attributes'].append(env['BUILD_PLATFORM'])
+    print 'Parsing LLVM test report output.'
     parse_llvm_test_report.Report(parse_options, filecontents=make_stdout)
   return 0
 
