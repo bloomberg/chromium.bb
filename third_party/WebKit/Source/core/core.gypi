@@ -1949,6 +1949,8 @@
             'dom/SecurityPolicyViolationEvent.h',
             'dom/SelectorQuery.cpp',
             'dom/SelectorQuery.h',
+            'dom/ShadowTreeStyleSheetCollection.cpp',
+            'dom/ShadowTreeStyleSheetCollection.h',
             'dom/SimulatedClickOptions.h',
             'dom/SpaceSplitString.cpp',
             'dom/StaticNodeList.cpp',

@@ -37,6 +37,8 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ProcessingInstruction.h"
+#include "core/dom/ShadowTreeStyleSheetCollection.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLLinkElement.h"
 #include "core/html/HTMLStyleElement.h"
@@ -63,6 +65,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(Document* document)
     , m_usesBeforeAfterRulesOverride(false)
     , m_usesRemUnits(false)
     , m_collectionForDocument(document)
+    , m_needsDocumentStyleSheetsUpdate(true)
 {
 }
 
@@ -80,6 +83,55 @@ DocumentStyleSheetCollection::~DocumentStyleSheetCollection()
         m_authorStyleSheets[i]->clearOwnerNode();
 }
 
+void DocumentStyleSheetCollection::insertTreeScopeInDocumentOrder(TreeScopeSet& treeScopes, TreeScope* treeScope)
+{
+    if (treeScopes.isEmpty()) {
+        treeScopes.add(treeScope);
+        return;
+    }
+    if (treeScopes.contains(treeScope))
+        return;
+
+    TreeScopeSet::iterator begin = treeScopes.begin();
+    TreeScopeSet::iterator end = treeScopes.end();
+    TreeScopeSet::iterator it = end;
+    TreeScope* followingTreeScope = 0;
+    do {
+        --it;
+        TreeScope* n = *it;
+        unsigned short position = n->comparePosition(treeScope);
+        if (position & Node::DOCUMENT_POSITION_FOLLOWING) {
+            treeScopes.insertBefore(followingTreeScope, treeScope);
+            return;
+        }
+        followingTreeScope = n;
+    } while (it != begin);
+
+    treeScopes.insertBefore(followingTreeScope, treeScope);
+}
+
+StyleSheetCollection* DocumentStyleSheetCollection::ensureStyleSheetCollectionFor(TreeScope* treeScope)
+{
+    if (treeScope == m_document)
+        return &m_collectionForDocument;
+
+    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::AddResult result = m_styleSheetCollectionMap.add(treeScope, nullptr);
+    if (result.isNewEntry)
+        result.iterator->value = adoptPtr(new ShadowTreeStyleSheetCollection(toShadowRoot(treeScope)));
+    return result.iterator->value.get();
+}
+
+StyleSheetCollection* DocumentStyleSheetCollection::styleSheetCollectionFor(TreeScope* treeScope)
+{
+    if (treeScope == m_document)
+        return &m_collectionForDocument;
+
+    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::iterator it = m_styleSheetCollectionMap.find(treeScope);
+    if (it == m_styleSheetCollectionMap.end())
+        return 0;
+    return it->value.get();
+}
+
 const Vector<RefPtr<StyleSheet> >& DocumentStyleSheetCollection::styleSheetsForStyleSheetList()
 {
     return m_collectionForDocument.styleSheetsForStyleSheetList();
@@ -88,6 +140,19 @@ const Vector<RefPtr<StyleSheet> >& DocumentStyleSheetCollection::styleSheetsForS
 const Vector<RefPtr<CSSStyleSheet> >& DocumentStyleSheetCollection::activeAuthorStyleSheets() const
 {
     return m_collectionForDocument.activeAuthorStyleSheets();
+}
+
+void DocumentStyleSheetCollection::getActiveAuthorStyleSheets(Vector<const Vector<RefPtr<CSSStyleSheet> >*>& activeAuthorStyleSheets) const
+{
+    activeAuthorStyleSheets.append(&m_collectionForDocument.activeAuthorStyleSheets());
+
+    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values begin = m_styleSheetCollectionMap.values().begin();
+    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values end = m_styleSheetCollectionMap.values().end();
+    HashMap<TreeScope*, OwnPtr<StyleSheetCollection> >::const_iterator::Values it = begin;
+    for (; it != end; ++it) {
+        const StyleSheetCollection* collection = it->get();
+        activeAuthorStyleSheets.append(&collection->activeAuthorStyleSheets());
+    }
 }
 
 void DocumentStyleSheetCollection::combineCSSFeatureFlags(const RuleFeatureSet& features)
@@ -188,6 +253,7 @@ void DocumentStyleSheetCollection::updateInjectedStyleSheetCache() const
 void DocumentStyleSheetCollection::invalidateInjectedStyleSheetCache()
 {
     m_injectedStyleSheetCacheValid = false;
+    m_needsDocumentStyleSheetsUpdate = true;
     // FIXME: updateInjectedStyleSheetCache is called inside StyleSheetCollection::updateActiveStyleSheets
     // and batch updates lots of sheets so we can't call addedStyleSheet() or removedStyleSheet().
     m_document->styleResolverChanged(DeferRecalcStyle);
@@ -198,6 +264,7 @@ void DocumentStyleSheetCollection::addAuthorSheet(PassRefPtr<StyleSheetContents>
     ASSERT(!authorSheet->isUserStyleSheet());
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, m_document));
     m_document->addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);
+    m_needsDocumentStyleSheetsUpdate = true;
 }
 
 void DocumentStyleSheetCollection::addUserSheet(PassRefPtr<StyleSheetContents> userSheet)
@@ -205,15 +272,22 @@ void DocumentStyleSheetCollection::addUserSheet(PassRefPtr<StyleSheetContents> u
     ASSERT(userSheet->isUserStyleSheet());
     m_userStyleSheets.append(CSSStyleSheet::create(userSheet, m_document));
     m_document->addedStyleSheet(m_userStyleSheets.last().get(), RecalcStyleImmediately);
+    m_needsDocumentStyleSheetsUpdate = true;
 }
 
 // This method is called whenever a top-level stylesheet has finished loading.
-void DocumentStyleSheetCollection::removePendingSheet(RemovePendingSheetNotificationType notification)
+void DocumentStyleSheetCollection::removePendingSheet(Node* styleSheetCandidateNode, RemovePendingSheetNotificationType notification)
 {
     // Make sure we knew this sheet was pending, and that our count isn't out of sync.
     ASSERT(m_pendingStylesheets > 0);
 
     m_pendingStylesheets--;
+
+    TreeScope* treeScope = isHTMLStyleElement(styleSheetCandidateNode) ? styleSheetCandidateNode->treeScope() : m_document;
+    if (treeScope == m_document)
+        m_needsDocumentStyleSheetsUpdate = true;
+    else
+        m_dirtyTreeScopes.add(treeScope);
 
     if (m_pendingStylesheets)
         return;
@@ -230,21 +304,59 @@ void DocumentStyleSheetCollection::removePendingSheet(RemovePendingSheetNotifica
 
 void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool createdByParser)
 {
-    m_collectionForDocument.addStyleSheetCandidateNode(node, createdByParser);
+    if (!node->inDocument())
+        return;
+
+    TreeScope* treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+
+    StyleSheetCollection* collection = ensureStyleSheetCollectionFor(treeScope);
+    ASSERT(collection);
+    collection->addStyleSheetCandidateNode(node, createdByParser);
+
+    if (treeScope == m_document) {
+        m_needsDocumentStyleSheetsUpdate = true;
+        return;
+    }
+
+    insertTreeScopeInDocumentOrder(m_activeTreeScopes, treeScope);
+    m_dirtyTreeScopes.add(treeScope);
 }
 
 void DocumentStyleSheetCollection::removeStyleSheetCandidateNode(Node* node, ContainerNode* scopingNode)
 {
-    m_collectionForDocument.removeStyleSheetCandidateNode(node, scopingNode);
+    TreeScope* treeScope = scopingNode ? scopingNode->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+
+    StyleSheetCollection* collection = styleSheetCollectionFor(treeScope);
+    ASSERT(collection);
+    collection->removeStyleSheetCandidateNode(node, scopingNode);
+
+    if (treeScope == m_document) {
+        m_needsDocumentStyleSheetsUpdate = true;
+        return;
+    }
+    m_dirtyTreeScopes.add(treeScope);
+    m_activeTreeScopes.remove(treeScope);
 }
 
-static bool styleSheetsUseRemUnits(const Vector<RefPtr<CSSStyleSheet> >& sheets)
+void DocumentStyleSheetCollection::modifiedStyleSheetCandidateNode(Node* node)
 {
-    for (unsigned i = 0; i < sheets.size(); ++i) {
-        if (sheets[i]->contents()->usesRemUnits())
-            return true;
+    if (!node->inDocument())
+        return;
+
+    TreeScope* treeScope = isHTMLStyleElement(node) ? node->treeScope() : m_document;
+    ASSERT(isHTMLStyleElement(node) || treeScope == m_document);
+    if (treeScope == m_document) {
+        m_needsDocumentStyleSheetsUpdate = true;
+        return;
     }
-    return false;
+    m_dirtyTreeScopes.add(treeScope);
+}
+
+bool DocumentStyleSheetCollection::shouldUpdateShadowTreeStyleSheetCollection(StyleResolverUpdateMode updateMode)
+{
+    return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;
 }
 
 bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMode updateMode)
@@ -260,18 +372,91 @@ bool DocumentStyleSheetCollection::updateActiveStyleSheets(StyleResolverUpdateMo
     if (!m_document->renderer() || !m_document->attached())
         return false;
 
-    StyleSheetCollection::StyleResolverUpdateType styleResolverUpdateType;
-    bool requiresFullStyleRecalc = m_collectionForDocument.updateActiveStyleSheets(this, updateMode, styleResolverUpdateType);
+    bool requiresFullStyleRecalc = false;
+    if (m_needsDocumentStyleSheetsUpdate || updateMode == FullStyleUpdate)
+        requiresFullStyleRecalc = m_collectionForDocument.updateActiveStyleSheets(this, updateMode);
+
+    if (shouldUpdateShadowTreeStyleSheetCollection(updateMode)) {
+        TreeScopeSet treeScopes = updateMode == FullStyleUpdate ? m_activeTreeScopes : m_dirtyTreeScopes;
+        HashSet<TreeScope*> treeScopesRemoved;
+
+        for (TreeScopeSet::iterator it = treeScopes.begin(); it != treeScopes.end(); ++it) {
+            TreeScope* treeScope = *it;
+            ASSERT(treeScope != m_document);
+            ShadowTreeStyleSheetCollection* collection = static_cast<ShadowTreeStyleSheetCollection*>(styleSheetCollectionFor(treeScope));
+            ASSERT(collection);
+            collection->updateActiveStyleSheets(this, updateMode);
+            if (!collection->hasStyleSheetCandidateNodes())
+                treeScopesRemoved.add(treeScope);
+        }
+        if (!treeScopesRemoved.isEmpty())
+            for (HashSet<TreeScope*>::iterator it = treeScopesRemoved.begin(); it != treeScopesRemoved.end(); ++it)
+                m_activeTreeScopes.remove(*it);
+        m_dirtyTreeScopes.clear();
+    }
+
+    if (StyleResolver* styleResolver = m_document->styleResolverIfExists()) {
+        styleResolver->finishAppendAuthorStyleSheets();
+        resetCSSFeatureFlags(styleResolver->ruleFeatureSet());
+    }
+
     m_needsUpdateActiveStylesheetsOnStyleRecalc = false;
+    activeStyleSheetsUpdatedForInspector();
+    m_usesRemUnits = m_collectionForDocument.usesRemUnits();
 
-    if (styleResolverUpdateType != StyleSheetCollection::Reconstruct)
-        resetCSSFeatureFlags(m_document->styleResolver()->ruleFeatureSet());
-
-    InspectorInstrumentation::activeStyleSheetsUpdated(m_document, m_collectionForDocument.styleSheetsForStyleSheetList());
-    m_usesRemUnits = styleSheetsUseRemUnits(m_collectionForDocument.activeAuthorStyleSheets());
-    m_document->notifySeamlessChildDocumentsOfStylesheetUpdate();
+    if (m_needsDocumentStyleSheetsUpdate || updateMode == FullStyleUpdate) {
+        m_document->notifySeamlessChildDocumentsOfStylesheetUpdate();
+        m_needsDocumentStyleSheetsUpdate = false;
+    }
 
     return requiresFullStyleRecalc;
+}
+
+void DocumentStyleSheetCollection::activeStyleSheetsUpdatedForInspector()
+{
+    if (m_activeTreeScopes.isEmpty()) {
+        InspectorInstrumentation::activeStyleSheetsUpdated(m_document, m_collectionForDocument.styleSheetsForStyleSheetList());
+        return;
+    }
+    Vector<RefPtr<StyleSheet> > activeStyleSheets;
+
+    activeStyleSheets.append(m_collectionForDocument.styleSheetsForStyleSheetList());
+
+    TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
+    TreeScopeSet::iterator end = m_activeTreeScopes.end();
+    for (TreeScopeSet::iterator it = begin; it != end; ++it) {
+        if (StyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it))
+            activeStyleSheets.append(collection->styleSheetsForStyleSheetList());
+    }
+
+    // FIXME: Inspector needs a vector which has all active stylesheets.
+    // However, creating such a large vector might cause performance regression.
+    // Need to implement some smarter solution.
+    InspectorInstrumentation::activeStyleSheetsUpdated(m_document, activeStyleSheets);
+}
+
+void DocumentStyleSheetCollection::didRemoveShadowRoot(ShadowRoot* shadowRoot)
+{
+    m_styleSheetCollectionMap.remove(shadowRoot);
+}
+
+void DocumentStyleSheetCollection::appendActiveAuthorStyleSheets(StyleResolver* styleResolver)
+{
+    ASSERT(styleResolver);
+
+    styleResolver->setBuildScopedStyleTreeInDocumentOrder(true);
+    styleResolver->appendAuthorStyleSheets(0, m_collectionForDocument.activeAuthorStyleSheets());
+
+    TreeScopeSet::iterator begin = m_activeTreeScopes.begin();
+    TreeScopeSet::iterator end = m_activeTreeScopes.end();
+    for (TreeScopeSet::iterator it = begin; it != end; ++it) {
+        if (StyleSheetCollection* collection = m_styleSheetCollectionMap.get(*it)) {
+            styleResolver->setBuildScopedStyleTreeInDocumentOrder(!collection->scopingNodesForStyleScoped());
+            styleResolver->appendAuthorStyleSheets(0, collection->activeAuthorStyleSheets());
+        }
+    }
+    styleResolver->finishAppendAuthorStyleSheets();
+    styleResolver->setBuildScopedStyleTreeInDocumentOrder(false);
 }
 
 }
