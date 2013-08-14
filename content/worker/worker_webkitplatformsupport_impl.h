@@ -98,8 +98,6 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
   virtual WebKit::WebString wellKnownMimeTypeForExtension(
       const WebKit::WebString&);
   virtual WebKit::WebString mimeTypeFromFile(const WebKit::WebString&);
-  virtual WebKit::WebString preferredExtensionForMIMEType(
-      const WebKit::WebString&);
   virtual void queryStorageUsageAndQuota(
       const WebKit::WebURL& storage_partition,
       WebKit::WebStorageQuotaType,

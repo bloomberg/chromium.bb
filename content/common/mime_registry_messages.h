@@ -20,7 +20,4 @@ IPC_SYNC_MESSAGE_CONTROL1_1(MimeRegistryMsg_GetMimeTypeFromExtension,
 IPC_SYNC_MESSAGE_CONTROL1_1(MimeRegistryMsg_GetMimeTypeFromFile,
                             base::FilePath /* file_path */,
                             std::string /* mime_type */)
-IPC_SYNC_MESSAGE_CONTROL1_1(MimeRegistryMsg_GetPreferredExtensionForMimeType,
-                            std::string /* mime_type */,
-                            base::FilePath::StringType /* extension */)
 

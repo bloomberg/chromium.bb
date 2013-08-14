@@ -291,15 +291,6 @@ WebString WorkerWebKitPlatformSupportImpl::mimeTypeFromFile(
   return ASCIIToUTF16(mime_type);
 }
 
-WebString WorkerWebKitPlatformSupportImpl::preferredExtensionForMIMEType(
-    const WebString& mime_type) {
-  base::FilePath::StringType file_extension;
-  thread_safe_sender_->Send(
-      new MimeRegistryMsg_GetPreferredExtensionForMimeType(
-          UTF16ToASCII(mime_type), &file_extension));
-  return base::FilePath(file_extension).AsUTF16Unsafe();
-}
-
 WebBlobRegistry* WorkerWebKitPlatformSupportImpl::blobRegistry() {
   if (!blob_registry_.get() && thread_safe_sender_.get())
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));

@@ -30,8 +30,6 @@ bool MimeRegistryMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnGetMimeTypeFromExtension)
     IPC_MESSAGE_HANDLER(MimeRegistryMsg_GetMimeTypeFromFile,
                         OnGetMimeTypeFromFile)
-    IPC_MESSAGE_HANDLER(MimeRegistryMsg_GetPreferredExtensionForMimeType,
-                        OnGetPreferredExtensionForMimeType)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -45,11 +43,6 @@ void MimeRegistryMessageFilter::OnGetMimeTypeFromExtension(
 void MimeRegistryMessageFilter::OnGetMimeTypeFromFile(
     const base::FilePath& file_path, std::string* mime_type) {
   net::GetMimeTypeFromFile(file_path, mime_type);
-}
-
-void MimeRegistryMessageFilter::OnGetPreferredExtensionForMimeType(
-    const std::string& mime_type, base::FilePath::StringType* extension) {
-  net::GetPreferredExtensionForMimeType(mime_type, extension);
 }
 
 }  // namespace content

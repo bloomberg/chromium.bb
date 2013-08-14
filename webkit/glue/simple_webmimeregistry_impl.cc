@@ -94,12 +94,4 @@ WebString SimpleWebMimeRegistryImpl::mimeTypeFromFile(
   return WebString::fromUTF8(mime_type);
 }
 
-WebString SimpleWebMimeRegistryImpl::preferredExtensionForMIMEType(
-    const WebString& mime_type) {
-  base::FilePath::StringType file_extension;
-  net::GetPreferredExtensionForMimeType(ToASCIIOrEmpty(mime_type),
-                                        &file_extension);
-  return base::FilePath(file_extension).AsUTF16Unsafe();
-}
-
 }  // namespace webkit_glue
