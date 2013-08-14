@@ -45,7 +45,7 @@ typedef std::vector<scoped_refptr<UsbDevice> > UsbDevices;
 base::LazyInstance<AndroidUsbDevices>::Leaky g_devices =
     LAZY_INSTANCE_INITIALIZER;
 
-static scoped_refptr<AndroidUsbDevice> ClaimInterface(
+scoped_refptr<AndroidUsbDevice> ClaimInterface(
     crypto::RSAPrivateKey* rsa_key,
     scoped_refptr<UsbDeviceHandle> usb_device,
     const UsbInterface* interface) {
@@ -92,7 +92,7 @@ static scoped_refptr<AndroidUsbDevice> ClaimInterface(
                               inbound_address, outbound_address, zero_mask);
 }
 
-static uint32 Checksum(const std::string& data) {
+uint32 Checksum(const std::string& data) {
   unsigned char* x = (unsigned char*)data.data();
   int count = data.length();
   uint32 sum = 0;
@@ -101,7 +101,7 @@ static uint32 Checksum(const std::string& data) {
   return sum;
 }
 
-static void DumpMessage(bool outgoing, const char* data, size_t length) {
+void DumpMessage(bool outgoing, const char* data, size_t length) {
 #if 0
   std::string result = "";
   if (length == kHeaderSize) {
@@ -128,6 +128,11 @@ static void DumpMessage(bool outgoing, const char* data, size_t length) {
   }
   LOG(ERROR) << (outgoing ? "[out] " : "[ in] ") << result;
 #endif  // 0
+}
+
+void ReleaseInterface(scoped_refptr<UsbDeviceHandle> usb_device) {
+  usb_device->ReleaseInterface(1);
+  usb_device->Close();
 }
 
 }  // namespace
@@ -496,8 +501,9 @@ void AndroidUsbDevice::Terminate() {
     it->second->Terminated();
   }
 
-  usb_device_->ReleaseInterface(1);
-  usb_device_->Close();
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ReleaseInterface, usb_device_));
 }
 
 void AndroidUsbDevice::SocketDeleted(uint32 socket_id) {
