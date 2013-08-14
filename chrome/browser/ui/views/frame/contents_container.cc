@@ -4,25 +4,13 @@
 
 #include "chrome/browser/ui/views/frame/contents_container.h"
 
-#include "content/public/browser/web_contents.h"
-#include "ui/views/controls/webview/webview.h"
-
-// static
-const char ContentsContainer::kViewClassName[] = "ContentsContainer";
-
 ContentsContainer::ContentsContainer(views::View* active_web_view)
-    : active_(active_web_view),
+    : active_web_view_(active_web_view),
       active_top_margin_(0) {
-  AddChildView(active_);
+  AddChildView(active_web_view_);
 }
 
 ContentsContainer::~ContentsContainer() {
-}
-
-void ContentsContainer::SetActive(views::WebView* overlay) {
-  DCHECK(overlay);
-  active_ = overlay;
-  Layout();
 }
 
 bool ContentsContainer::SetActiveTopMargin(int margin) {
@@ -40,7 +28,7 @@ void ContentsContainer::Layout() {
   int content_y = active_top_margin_;
   int content_height = std::max(0, height() - content_y);
 
-  active_->SetBounds(0, content_y, width(), content_height);
+  active_web_view_->SetBounds(0, content_y, width(), content_height);
 
   // Need to invoke views::View in case any views whose bounds didn't change
   // still need a layout.
@@ -48,5 +36,5 @@ void ContentsContainer::Layout() {
 }
 
 const char* ContentsContainer::GetClassName() const {
-  return kViewClassName;
+  return "ContentsContainer";
 }
