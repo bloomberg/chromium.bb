@@ -95,6 +95,12 @@ gfx::Display& GetInvalidDisplay() {
   return *invalid_display;
 }
 
+void MaybeInitInternalDisplay(int64 id) {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
+    gfx::Display::SetInternalDisplayId(id);
+}
+
 // Scoped objects used to either create or close the mirror window
 // at specific timing.
 class MirrorWindowCreator {
@@ -209,9 +215,8 @@ void DisplayManager::InitFromCommandLine() {
        iter != parts.end(); ++iter) {
     info_list.push_back(DisplayInfo::CreateFromSpec(*iter));
   }
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
-    gfx::Display::SetInternalDisplayId(info_list[0].id());
+  if (info_list.size())
+    MaybeInitInternalDisplay(info_list[0].id());
   OnNativeDisplaysChanged(info_list);
 }
 
@@ -419,6 +424,7 @@ void DisplayManager::OnNativeDisplaysChanged(
     if (displays_.empty()) {
       std::vector<DisplayInfo> init_displays;
       init_displays.push_back(DisplayInfo::CreateFromSpec(std::string()));
+      MaybeInitInternalDisplay(init_displays[0].id());
       OnNativeDisplaysChanged(init_displays);
     } else {
       // Otherwise don't update the displays when all displays are disconnected.
