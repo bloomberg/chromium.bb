@@ -118,7 +118,7 @@ void CheckEventType(int expected_event_type, const linked_ptr<Event>& event) {
 
 // Verify that we received the proper number of events, checking the type of
 // each one.
-void CheckEventTypes(const std::vector<int> expected_event_types,
+void CheckEventTypes(const std::vector<int>& expected_event_types,
                      const Database::EventVector& events) {
   ASSERT_EQ(expected_event_types.size(), events.size());
 
