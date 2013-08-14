@@ -74,6 +74,9 @@ class HttpStreamFactoryImpl::Job {
   // Used to detach the Job from |request|.
   void Orphan(const Request* request);
 
+  void SetPriority(RequestPriority priority);
+
+  RequestPriority priority() const { return priority_; }
   bool was_npn_negotiated() const;
   NextProto protocol_negotiated() const;
   bool using_spdy() const;

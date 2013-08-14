@@ -105,6 +105,7 @@ class HttpStreamFactoryImpl::Request : public HttpStreamRequest {
 
   virtual int RestartTunnelWithProxyAuth(
       const AuthCredentials& credentials) OVERRIDE;
+  virtual void SetPriority(RequestPriority priority) OVERRIDE;
   virtual LoadState GetLoadState() const OVERRIDE;
   virtual bool was_npn_negotiated() const OVERRIDE;
   virtual NextProto protocol_negotiated() const OVERRIDE;

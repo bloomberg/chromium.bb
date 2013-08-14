@@ -157,6 +157,9 @@ class NET_EXPORT_PRIVATE HttpStreamRequest {
   virtual int RestartTunnelWithProxyAuth(
       const AuthCredentials& credentials) = 0;
 
+  // Called when the priority of the parent transaction changes.
+  virtual void SetPriority(RequestPriority priority) = 0;
+
   // Returns the LoadState for the request.
   virtual LoadState GetLoadState() const = 0;
 

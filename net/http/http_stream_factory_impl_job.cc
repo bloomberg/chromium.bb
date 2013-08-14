@@ -230,12 +230,17 @@ void HttpStreamFactoryImpl::Job::Orphan(const Request* request) {
   }
 }
 
+void HttpStreamFactoryImpl::Job::SetPriority(RequestPriority priority) {
+  priority_ = priority;
+  // TODO(akalin): Propagate this to |connection_| and maybe the
+  // preconnect state.
+}
+
 bool HttpStreamFactoryImpl::Job::was_npn_negotiated() const {
   return was_npn_negotiated_;
 }
 
-NextProto HttpStreamFactoryImpl::Job::protocol_negotiated()
-    const {
+NextProto HttpStreamFactoryImpl::Job::protocol_negotiated() const {
   return protocol_negotiated_;
 }
 

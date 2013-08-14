@@ -215,6 +215,15 @@ int HttpStreamFactoryImpl::Request::RestartTunnelWithProxyAuth(
   return bound_job_->RestartTunnelWithProxyAuth(credentials);
 }
 
+void HttpStreamFactoryImpl::Request::SetPriority(RequestPriority priority) {
+  for (std::set<HttpStreamFactoryImpl::Job*>::const_iterator it = jobs_.begin();
+       it != jobs_.end(); ++it) {
+    (*it)->SetPriority(priority);
+  }
+  if (bound_job_)
+    bound_job_->SetPriority(priority);
+}
+
 LoadState HttpStreamFactoryImpl::Request::GetLoadState() const {
   if (bound_job_.get())
     return bound_job_->GetLoadState();

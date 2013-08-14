@@ -1631,6 +1631,7 @@
         'http/http_security_headers_unittest.cc',
         'http/http_server_properties_impl_unittest.cc',
         'http/http_status_code_unittest.cc',
+        'http/http_stream_factory_impl_request_unittest.cc',
         'http/http_stream_factory_impl_unittest.cc',
         'http/http_stream_parser_unittest.cc',
         'http/http_transaction_unittest.cc',

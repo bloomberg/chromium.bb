@@ -15,6 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_file_util.h"
@@ -11678,6 +11679,163 @@ TEST_P(HttpNetworkTransactionTest, GetFullRequestHeadersIncludesExtraHeader) {
   std::string foo;
   EXPECT_TRUE(request_headers.GetHeader("X-Foo", &foo));
   EXPECT_EQ("bar", foo);
+}
+
+namespace {
+
+// Fake HttpStreamRequest that simply records calls to SetPriority().
+class FakeStreamRequest : public HttpStreamRequest,
+                          public base::SupportsWeakPtr<FakeStreamRequest> {
+ public:
+  explicit FakeStreamRequest(RequestPriority priority) : priority_(priority) {}
+  virtual ~FakeStreamRequest() {}
+
+  RequestPriority priority() const { return priority_; }
+
+  virtual int RestartTunnelWithProxyAuth(
+      const AuthCredentials& credentials) OVERRIDE {
+    ADD_FAILURE();
+    return ERR_UNEXPECTED;
+  }
+
+  virtual LoadState GetLoadState() const OVERRIDE {
+    ADD_FAILURE();
+    return LoadState();
+  }
+
+  virtual void SetPriority(RequestPriority priority) OVERRIDE {
+    priority_ = priority;
+  }
+
+  virtual bool was_npn_negotiated() const OVERRIDE {
+    ADD_FAILURE();
+    return false;
+  }
+
+  virtual NextProto protocol_negotiated() const OVERRIDE {
+    ADD_FAILURE();
+    return kProtoUnknown;
+  }
+
+  virtual bool using_spdy() const OVERRIDE {
+    ADD_FAILURE();
+    return false;
+  }
+
+ private:
+  RequestPriority priority_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeStreamRequest);
+};
+
+// Fake HttpStreamFactory that vends FakeStreamRequests.
+class FakeStreamFactory : public HttpStreamFactory {
+ public:
+  FakeStreamFactory() {}
+  virtual ~FakeStreamFactory() {}
+
+  // Returns a WeakPtr<> to the last HttpStreamRequest returned by
+  // RequestStream() (which may be NULL if it was destroyed already).
+  base::WeakPtr<FakeStreamRequest> last_stream_request() {
+    return last_stream_request_;
+  }
+
+  virtual HttpStreamRequest* RequestStream(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
+      const BoundNetLog& net_log) OVERRIDE {
+    FakeStreamRequest* fake_request = new FakeStreamRequest(priority);
+    last_stream_request_ = fake_request->AsWeakPtr();
+    return fake_request;
+  }
+
+  virtual HttpStreamRequest* RequestWebSocketStream(
+      const HttpRequestInfo& info,
+      RequestPriority priority,
+      const SSLConfig& server_ssl_config,
+      const SSLConfig& proxy_ssl_config,
+      HttpStreamRequest::Delegate* delegate,
+      WebSocketStreamBase::Factory* factory,
+      const BoundNetLog& net_log) OVERRIDE {
+    ADD_FAILURE();
+    return NULL;
+  }
+
+  virtual void PreconnectStreams(int num_streams,
+                                 const HttpRequestInfo& info,
+                                 RequestPriority priority,
+                                 const SSLConfig& server_ssl_config,
+                                 const SSLConfig& proxy_ssl_config) OVERRIDE {
+    ADD_FAILURE();
+  }
+
+  virtual base::Value* PipelineInfoToValue() const OVERRIDE {
+    ADD_FAILURE();
+    return NULL;
+  }
+
+  virtual const HostMappingRules* GetHostMappingRules() const OVERRIDE {
+    ADD_FAILURE();
+    return NULL;
+  }
+
+ private:
+  base::WeakPtr<FakeStreamRequest> last_stream_request_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeStreamFactory);
+};
+
+}  // namespace
+
+// Make sure that HttpNetworkTransaction passes on its priority to its
+// stream request on start.
+TEST_P(HttpNetworkTransactionTest, SetStreamRequestPriorityOnStart) {
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkSessionPeer peer(session);
+  FakeStreamFactory* fake_factory = new FakeStreamFactory();
+  peer.SetHttpStreamFactory(fake_factory);
+
+  HttpNetworkTransaction trans(LOW, session);
+
+  ASSERT_TRUE(fake_factory->last_stream_request() == NULL);
+
+  HttpRequestInfo request;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans.Start(&request, callback.callback(), BoundNetLog()));
+
+  base::WeakPtr<FakeStreamRequest> fake_request =
+      fake_factory->last_stream_request();
+  ASSERT_TRUE(fake_request != NULL);
+  EXPECT_EQ(LOW, fake_request->priority());
+}
+
+// Make sure that HttpNetworkTransaction passes on its priority
+// updates to its stream request.
+TEST_P(HttpNetworkTransactionTest, SetStreamRequestPriority) {
+  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
+  HttpNetworkSessionPeer peer(session);
+  FakeStreamFactory* fake_factory = new FakeStreamFactory();
+  peer.SetHttpStreamFactory(fake_factory);
+
+  HttpNetworkTransaction trans(LOW, session);
+
+  HttpRequestInfo request;
+  TestCompletionCallback callback;
+  EXPECT_EQ(ERR_IO_PENDING,
+            trans.Start(&request, callback.callback(), BoundNetLog()));
+
+  base::WeakPtr<FakeStreamRequest> fake_request =
+      fake_factory->last_stream_request();
+  ASSERT_TRUE(fake_request != NULL);
+  EXPECT_EQ(LOW, fake_request->priority());
+
+  trans.SetPriority(LOWEST);
+  ASSERT_TRUE(fake_request != NULL);
+  EXPECT_EQ(LOWEST, fake_request->priority());
 }
 
 }  // namespace net
