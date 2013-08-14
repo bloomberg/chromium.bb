@@ -1159,8 +1159,6 @@ crbug.com/269100 fast/canvas/canvas-negative-size.html [ Crash Pass ]
 crbug.com/269100 fast/canvas/canvas-overloads-drawImage.html [ Crash Pass ]
 crbug.com/269100 fast/canvas/change-context.html [ Crash Pass ]
 
-crbug.com/270922 [ Mac Win ] fast/events/touch/compositor-touch-hit-rects.html [ NeedsRebaseline ]
-
 # Causes the test following it ( fast/loader/subresource-willSendRequest-null.html ) to Timeout.
 crbug.com/253619 fast/loader/subresource-load-failed-crash.html [ Skip ]
 
