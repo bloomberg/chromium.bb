@@ -1480,6 +1480,10 @@ const char kEnableSpdyProxyAuth[]           = "enable-spdy-proxy-auth";
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
 #if defined(OS_ANDROID)
+// Enable the accessibility tab switcher.
+const char kEnableAccessibilityTabSwitcher[] =
+    "enable-accessibility-tab-switcher";
+
 // Enables the new NTP.
 const char kEnableNewNTP[]                  = "enable-new-ntp";
 

@@ -5372,6 +5372,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_SCROLL_PREDICTION_DESCRIPTION" desc="Description of the flag to enable scroll prediction.">
         Predicts the finger's future position during scrolls allowing time to render the frame before the finger is there.
       </message>
+      <if expr="is_android">
+        <message name="IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_NAME" desc="Name of the flag to enable the accessibility tab switcher.">
+          Enable Accessibility Tab Switcher.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION" desc="Description of the flag to enable the accessibility tab switcher.">
+          Enable the accessibility tab switcher for Android.
+        </message>
+      </if>
       <message name="IDS_TOUCH_EVENTS_NAME" desc="Title of the touch-events flag." >
         Enable touch events
       </message>

@@ -1621,6 +1621,15 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableUserImageSync)
   },
 #endif
+#if defined(OS_ANDROID)
+  {
+    "enable-accessibility-tab-switcher",
+    IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_NAME,
+    IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION,
+    kOsAndroid,
+    SINGLE_VALUE_TYPE(switches::kEnableAccessibilityTabSwitcher)
+  }
+#endif
 };
 
 const Experiment* experiments = kExperiments;
