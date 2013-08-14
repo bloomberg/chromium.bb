@@ -106,6 +106,7 @@ struct utf8_state_machine {
 	enum utf8_state state;
 	int len;
 	union utf8_char s;
+	uint32_t unicode;
 };
 
 static void
@@ -132,6 +133,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 			/* single byte, accept */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_accept;
+			machine->unicode = c;
 		} else if((c & 0xC0) == 0x80) {
 			/* parser out of sync, ignore byte */
 			machine->state = utf8state_start;
@@ -139,14 +141,17 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 			/* start of two byte sequence */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_expect1;
+			machine->unicode = c & 0x1f;
 		} else if((c & 0xF0) == 0xE0) {
 			/* start of three byte sequence */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_expect2;
+			machine->unicode = c & 0x0f;
 		} else if((c & 0xF8) == 0xF0) {
 			/* start of four byte sequence */
 			machine->s.byte[machine->len++] = c;
 			machine->state = utf8state_expect3;
+			machine->unicode = c & 0x07;
 		} else {
 			/* overlong encoding, reject */
 			machine->state = utf8state_reject;
@@ -154,6 +159,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 		break;
 	case utf8state_expect3:
 		machine->s.byte[machine->len++] = c;
+		machine->unicode = (machine->unicode << 6) | (c & 0x3f);
 		if((c & 0xC0) == 0x80) {
 			/* all good, continue */
 			machine->state = utf8state_expect2;
@@ -164,6 +170,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 		break;
 	case utf8state_expect2:
 		machine->s.byte[machine->len++] = c;
+		machine->unicode = (machine->unicode << 6) | (c & 0x3f);
 		if((c & 0xC0) == 0x80) {
 			/* all good, continue */
 			machine->state = utf8state_expect1;
@@ -174,6 +181,7 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 		break;
 	case utf8state_expect1:
 		machine->s.byte[machine->len++] = c;
+		machine->unicode = (machine->unicode << 6) | (c & 0x3f);
 		if((c & 0xC0) == 0x80) {
 			/* all good, accept */
 			machine->state = utf8state_accept;
@@ -188,6 +196,26 @@ utf8_next_char(struct utf8_state_machine *machine, unsigned char c)
 	}
 	
 	return machine->state;
+}
+
+static uint32_t
+get_unicode(union utf8_char utf8)
+{
+	struct utf8_state_machine machine;
+	int i;
+
+	init_state_machine(&machine);
+	for (i = 0; i < 4; i++) {
+		utf8_next_char(&machine, utf8.byte[i]);
+		if (machine.state == utf8state_accept ||
+		    machine.state == utf8state_reject)
+			break;
+	}
+
+	if (machine.state == utf8state_reject)
+		return 0xfffd;
+
+	return machine.unicode;
 }
 
 struct char_sub {
