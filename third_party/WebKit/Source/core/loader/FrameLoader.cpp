@@ -163,7 +163,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_needsClear(false)
     , m_checkTimer(this, &FrameLoader::checkTimerFired)
     , m_shouldCallCheckCompleted(false)
-    , m_shouldCallCheckLoadComplete(false)
     , m_opener(0)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
@@ -297,18 +296,6 @@ void FrameLoader::stopLoading()
     m_frame->navigationScheduler()->cancel();
 }
 
-void FrameLoader::stop()
-{
-    // http://bugs.webkit.org/show_bug.cgi?id=10854
-    // The frame's last ref may be removed and it will be deleted by checkCompleted().
-    RefPtr<Frame> protector(m_frame);
-
-    if (DocumentParser* parser = m_frame->document()->parser()) {
-        parser->stopParsing();
-        parser->finish();
-    }
-}
-
 bool FrameLoader::closeURL()
 {
     history()->saveDocumentState();
@@ -335,17 +322,6 @@ void FrameLoader::didExplicitOpen()
     // Canceling redirection here works for all cases because document.open
     // implicitly precedes document.write.
     m_frame->navigationScheduler()->cancel();
-}
-
-
-void FrameLoader::cancelAndClear()
-{
-    m_frame->navigationScheduler()->cancel();
-
-    if (!m_isComplete)
-        closeURL();
-
-    clear(false);
 }
 
 void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, bool clearFrameView)
@@ -390,7 +366,6 @@ void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, boo
 
     m_checkTimer.stop();
     m_shouldCallCheckCompleted = false;
-    m_shouldCallCheckLoadComplete = false;
 
     if (m_stateMachine.isDisplayingInitialEmptyDocument() && m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::CommittedFirstRealLoad);
@@ -549,13 +524,11 @@ void FrameLoader::checkTimerFired(Timer<FrameLoader>*)
     }
     if (m_shouldCallCheckCompleted)
         checkCompleted();
-    if (m_shouldCallCheckLoadComplete)
-        checkLoadComplete();
 }
 
 void FrameLoader::startCheckCompleteTimer()
 {
-    if (!(m_shouldCallCheckCompleted || m_shouldCallCheckLoadComplete))
+    if (!m_shouldCallCheckCompleted)
         return;
     if (m_checkTimer.isActive())
         return;
@@ -565,12 +538,6 @@ void FrameLoader::startCheckCompleteTimer()
 void FrameLoader::scheduleCheckCompleted()
 {
     m_shouldCallCheckCompleted = true;
-    startCheckCompleteTimer();
-}
-
-void FrameLoader::scheduleCheckLoadComplete()
-{
-    m_shouldCallCheckLoadComplete = true;
     startCheckCompleteTimer();
 }
 
@@ -956,18 +923,6 @@ void FrameLoader::stopAllLoaders(ClearProvisionalItemPolicy clearProvisionalItem
     m_inStopAllLoaders = false;
 }
 
-void FrameLoader::stopForUserCancel(bool deferCheckLoadComplete)
-{
-    // stopAllLoaders can detach the Frame, so protect it.
-    RefPtr<Frame> protect(m_frame);
-    stopAllLoaders();
-
-    if (deferCheckLoadComplete)
-        scheduleCheckLoadComplete();
-    else if (m_frame->page())
-        checkLoadComplete();
-}
-
 DocumentLoader* FrameLoader::activeDocumentLoader() const
 {
     if (m_state == FrameStateProvisional)
@@ -1211,8 +1166,6 @@ void FrameLoader::checkLoadComplete()
 {
     ASSERT(m_client->hasWebView());
 
-    m_shouldCallCheckLoadComplete = false;
-
     // FIXME: Always traversing the entire frame tree is a bit inefficient, but
     // is currently needed in order to null out the previous history item for all frames.
     if (Page* page = m_frame->page()) {
@@ -1381,9 +1334,8 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
     RefPtr<Frame> protect(m_frame);
 
     RefPtr<DocumentLoader> loader = activeDocumentLoader();
-    // FIXME: Don't want to do this if an entirely new load is going, so should check
-    // that both data sources on the frame are either this or nil.
-    stop();
+    if (m_frame->document()->parser())
+        m_frame->document()->parser()->stopParsing();
 
     // FIXME: We really ought to be able to just check for isCancellation() here, but there are some
     // ResourceErrors that setIsCancellation() but aren't created by ResourceError::cancelledError().

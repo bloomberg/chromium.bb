@@ -107,11 +107,8 @@ public:
     // Warning: stopAllLoaders can and will detach the Frame out from under you. All callers need to either protect the Frame
     // or guarantee they won't in any way access the Frame after stopAllLoaders returns.
     void stopAllLoaders(ClearProvisionalItemPolicy = ShouldClearProvisionalItem);
-    void stopForUserCancel(bool deferCheckLoadComplete = false);
-    void stop();
     void stopLoading();
     bool closeURL();
-    void cancelAndClear();
     // FIXME: clear() is trying to do too many things. We should break it down into smaller functions (ideally with fewer raw Boolean parameters).
     void clear(bool clearWindowProperties = true, bool clearScriptObjects = true, bool clearFrameView = true);
 
@@ -265,7 +262,6 @@ private:
     void loadInSameDocument(const KURL&, PassRefPtr<SerializedScriptValue> stateObject, bool isNewNavigation);
 
     void scheduleCheckCompleted();
-    void scheduleCheckLoadComplete();
     void startCheckCompleteTimer();
 
     bool shouldTreatURLAsSameAsCurrent(const KURL&) const;
@@ -309,7 +305,6 @@ private:
 
     Timer<FrameLoader> m_checkTimer;
     bool m_shouldCallCheckCompleted;
-    bool m_shouldCallCheckLoadComplete;
 
     Frame* m_opener;
     HashSet<Frame*> m_openedFrames;
