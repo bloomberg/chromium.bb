@@ -56,8 +56,8 @@ public:
     virtual PassRefPtr<DataTransferItem> item(unsigned long index) = 0;
     virtual void deleteItem(unsigned long index, ExceptionState&) = 0;
     virtual void clear() = 0;
-    virtual void add(const String& data, const String& type, ExceptionState&) = 0;
-    virtual void add(PassRefPtr<File>) = 0;
+    virtual PassRefPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&) = 0;
+    virtual PassRefPtr<DataTransferItem> add(PassRefPtr<File>) = 0;
 };
 
 } // namespace WebCore

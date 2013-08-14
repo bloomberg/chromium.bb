@@ -34,7 +34,7 @@ interface DataTransferItemList {
 
     [RaisesException, ImplementedAs=deleteItem] void remove(unsigned long index);
     void clear();
-    void add(File? file);
-    [RaisesException] void add(DOMString data, DOMString type);
+    DataTransferItem add(File? file);
+    [RaisesException] DataTransferItem add(DOMString data, DOMString type);
 };
 

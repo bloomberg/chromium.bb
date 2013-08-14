@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<script src="../js/resources/js-test-pre.js"></script>
 <style>
 #drag {
     border: 1px solid black;
@@ -14,24 +15,13 @@
 }
 </style>
 <script>
-function assertEq(left, right)
-{
-    if (left === right)
-        log('PASS: ' + left + " === " + right);
-    else
-        log('FAIL: ' + left + " (of type " + (typeof left) + ") !== " + right + " (of type " + (typeof right) + ")");
-}
-function log(str)
-{
-    var result = document.getElementById('result');
-    result.appendChild(document.createTextNode(str));
-    result.appendChild(document.createElement('br'));
-}
-
 var testFile;
+var testItem;
 function dragstart(event)
 {
-    event.dataTransfer.items.add(testFile);
+    testItem = event.dataTransfer.items.add(testFile);
+    shouldBeEqualToString('testItem.kind', 'file');
+    shouldBeEqualToString('testItem.type', 'text/plain');
 }
 
 function dragenter(event)
@@ -44,16 +34,23 @@ function dragover(event)
     event.preventDefault();
 }
 
+var testItems;
 function drop(event)
 {
-    assertEq(1, event.dataTransfer.items.length);
-    assertEq('file', event.dataTransfer.items[0].kind);
-    assertEq('text/plain', event.dataTransfer.items[0].type);
-    testRunner.notifyDone();
+    testItems = event.dataTransfer.items;
+    shouldBe('testItems.length', '1');
+    shouldBeNull('testItems.add(testFile)'); // Read-only.
+    shouldBe('testItems.length', '1');
+    shouldBeEqualToString('testItems[0].kind', 'file');
+    shouldBeEqualToString('testItems[0].type', 'text/plain');
+    finishJSTest();
 }
 
 function runTest()
 {
+    if (!window.testRunner)
+        return;
+
     // First, we need to generate a File object to use for our tests.
     eventSender.beginDragWithFiles(['test.txt']);
     var inputElement = document.getElementsByTagName('input')[0];
@@ -74,23 +71,21 @@ function runTest()
     eventSender.mouseUp();
 }
 
-window.onload = function()
-{
-    if (!window.testRunner)
-        return;
-    testRunner.dumpAsText();
-    testRunner.waitUntilDone();
-
-    runTest();
-}
 </script>
 </head>
 <body>
-<p>To manually test, select a text file for the file input element, and then drag 'Drag Me' to 'Drop Here' and drop.  Several lines that say 'PASS' should appear below.
+<p>To manually test, select a text file for the file input element, and then drag 'Drag Me' to 'Drop Here' and drop.
 <input type="file"></input>
 <div draggable="true" id="drag" ondragstart="dragstart(event)">Drag Me</div>
 <div id="drop" ondragenter="dragenter(event)" ondragover="dragover(event)" ondrop="drop(event)">Drop Here</div>
 </div>
-<div id="result"></div>
+<div id="console"></div>
+<script>
+description("Tests DataTransferItemList file handling");
+window.jsTestIsAsync = true;
+
+window.onload = runTest;
+</script>
+<script src="../js/resources/js-test-post.js"></script>
 </body>
 </html>

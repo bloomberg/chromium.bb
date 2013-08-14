@@ -64,8 +64,8 @@ public:
     virtual PassRefPtr<DataTransferItem> item(unsigned long index) OVERRIDE;
     virtual void deleteItem(unsigned long index, ExceptionState&) OVERRIDE;
     virtual void clear() OVERRIDE;
-    virtual void add(const String& data, const String& type, ExceptionState&) OVERRIDE;
-    virtual void add(PassRefPtr<File>) OVERRIDE;
+    virtual PassRefPtr<DataTransferItem> add(const String& data, const String& type, ExceptionState&) OVERRIDE;
+    virtual PassRefPtr<DataTransferItem> add(PassRefPtr<File>) OVERRIDE;
 
 private:
     DataTransferItemListPolicyWrapper(PassRefPtr<ClipboardChromium>, PassRefPtr<ChromiumDataObject>);
@@ -119,18 +119,24 @@ void DataTransferItemListPolicyWrapper::clear()
     m_dataObject->clearAll();
 }
 
-void DataTransferItemListPolicyWrapper::add(const String& data, const String& type, ExceptionState& es)
+PassRefPtr<DataTransferItem> DataTransferItemListPolicyWrapper::add(const String& data, const String& type, ExceptionState& es)
 {
     if (!m_clipboard->canWriteData())
-        return;
-    m_dataObject->add(data, type, es);
+        return 0;
+    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(data, type, es);
+    if (!item)
+        return 0;
+    return DataTransferItemPolicyWrapper::create(m_clipboard, item);
 }
 
-void DataTransferItemListPolicyWrapper::add(PassRefPtr<File> file)
+PassRefPtr<DataTransferItem> DataTransferItemListPolicyWrapper::add(PassRefPtr<File> file)
 {
     if (!m_clipboard->canWriteData())
-        return;
-    m_dataObject->add(file, m_clipboard->frame()->document()->scriptExecutionContext());
+        return 0;
+    RefPtr<ChromiumDataObjectItem> item = m_dataObject->add(file, m_clipboard->frame()->document()->scriptExecutionContext());
+    if (!item)
+        return 0;
+    return DataTransferItemPolicyWrapper::create(m_clipboard, item);
 }
 
 DataTransferItemListPolicyWrapper::DataTransferItemListPolicyWrapper(

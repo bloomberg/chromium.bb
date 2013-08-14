@@ -21,6 +21,8 @@ PASS testDataTransfer.getData("text/html") is "<em>Markup</em>"
 PASS testDataTransfer.getData("custom-data") is "hello world"
 Running test with Legacy drag handler and DataTransferItemList drop handler
 PASS testDataTransfer.items.length is 4
+PASS testDataTransfer.items.add("test", "text/plain") is null
+PASS testDataTransfer.items.length is 4
 PASS JSON.stringify(expectedTypes) is JSON.stringify(types)
 PASS testData is expectedTestData
 PASS testData is expectedTestData
@@ -29,6 +31,14 @@ PASS testData is expectedTestData
 Running test with DataTransferItemList drag handler and Legacy drop handler
 PASS testDataTransfer.items.add() threw exception TypeError: Not enough arguments.
 PASS testDataTransfer.items.add("sample") threw exception TypeError: Type error.
+PASS testItem.kind is "string"
+PASS testItem.type is "text/plain"
+PASS testItem.kind is "string"
+PASS testItem.type is "text/uri-list"
+PASS testItem.kind is "string"
+PASS testItem.type is "text/html"
+PASS testItem.kind is "string"
+PASS testItem.type is "custom-data"
 PASS testDataTransfer.types.length is 4
 PASS testDataTransfer.types.indexOf("text/plain") >= 0 is true
 PASS testDataTransfer.types.indexOf("text/uri-list") >= 0 is true
@@ -41,6 +51,16 @@ PASS testDataTransfer.getData("custom-data") is "hello world"
 Running test with DataTransferItemList drag handler and DataTransferItemList drop handler
 PASS testDataTransfer.items.add() threw exception TypeError: Not enough arguments.
 PASS testDataTransfer.items.add("sample") threw exception TypeError: Type error.
+PASS testItem.kind is "string"
+PASS testItem.type is "text/plain"
+PASS testItem.kind is "string"
+PASS testItem.type is "text/uri-list"
+PASS testItem.kind is "string"
+PASS testItem.type is "text/html"
+PASS testItem.kind is "string"
+PASS testItem.type is "custom-data"
+PASS testDataTransfer.items.length is 4
+PASS testDataTransfer.items.add("test", "text/plain") is null
 PASS testDataTransfer.items.length is 4
 PASS JSON.stringify(expectedTypes) is JSON.stringify(types)
 PASS testData is expectedTestData

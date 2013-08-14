@@ -24,15 +24,24 @@ function legacyDragStart(dataTransfer)
 }
 
 var testDataTransfer;
+var testItem;
 function itemListDragStart(dataTransfer)
 {
     testDataTransfer = dataTransfer;
     shouldThrow('testDataTransfer.items.add()', '"TypeError: Not enough arguments"');
     shouldThrow('testDataTransfer.items.add("sample")', '"TypeError: Type error"');
-    dataTransfer.items.add('sample', 'text/plain');
-    dataTransfer.items.add('http://www.google.com/', 'text/uri-list');
-    dataTransfer.items.add('<em>Markup</em>', 'text/html');
-    dataTransfer.items.add('hello world', 'custom-data');
+    testItem = dataTransfer.items.add('sample', 'text/plain');
+    shouldBeEqualToString('testItem.kind', 'string');
+    shouldBeEqualToString('testItem.type', 'text/plain');
+    testItem = dataTransfer.items.add('http://www.google.com/', 'text/uri-list');
+    shouldBeEqualToString('testItem.kind', 'string');
+    shouldBeEqualToString('testItem.type', 'text/uri-list');
+    testItem = dataTransfer.items.add('<em>Markup</em>', 'text/html');
+    shouldBeEqualToString('testItem.kind', 'string');
+    shouldBeEqualToString('testItem.type', 'text/html');
+    testItem = dataTransfer.items.add('hello world', 'custom-data');
+    shouldBeEqualToString('testItem.kind', 'string');
+    shouldBeEqualToString('testItem.type', 'custom-data');
 }
 
 function dragstart(event)
@@ -76,6 +85,8 @@ function itemListDrop(dataTransfer)
 {
     testDataTransfer = dataTransfer;
     outstandingRequests = 0;
+    shouldBe('testDataTransfer.items.length', '4');
+    shouldBeNull('testDataTransfer.items.add("test", "text/plain")'); // Read-only.
     shouldBe('testDataTransfer.items.length', '4');
     types = [];
     for (var i = 0; i < dataTransfer.items.length; ++i) {
