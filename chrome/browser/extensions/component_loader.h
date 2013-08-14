@@ -34,10 +34,6 @@ class ComponentLoader {
   // Creates and loads all registered component extensions.
   void LoadAll();
 
-  // Clear the list of all registered extensions and unloads them from the
-  // extension service.
-  void RemoveAll();
-
   // Registers and possibly loads a component extension. If ExtensionService
   // has been initialized, the extension is loaded; otherwise, the load is
   // deferred until LoadAll is called. The ID of the added extension is

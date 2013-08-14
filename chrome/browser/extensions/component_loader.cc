@@ -226,14 +226,6 @@ void ComponentLoader::Load(const ComponentExtensionInfo& info) {
   extension_service_->AddComponentExtension(extension.get());
 }
 
-void ComponentLoader::RemoveAll() {
-  RegisteredComponentExtensions::iterator it = component_extensions_.begin();
-  for (; it != component_extensions_.end(); ++it)
-    UnloadComponent(&(*it));
-
-  component_extensions_.clear();
-}
-
 void ComponentLoader::Remove(const base::FilePath& root_directory) {
   // Find the ComponentExtensionInfo for the extension.
   RegisteredComponentExtensions::iterator it = component_extensions_.begin();
