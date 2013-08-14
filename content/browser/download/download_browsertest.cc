@@ -22,12 +22,14 @@
 #include "content/public/browser/power_save_blocker.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/shell.h"
 #include "content/shell/shell_browser_context.h"
 #include "content/shell/shell_download_manager_delegate.h"
+#include "content/shell/shell_network_delegate.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
@@ -1596,6 +1598,44 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   DownloadAndWait(shell(), url2, DownloadItem::COMPLETE);
 
   EXPECT_TRUE(EnsureNoPendingDownloads());
+}
+
+// Check that the cookie policy is correctly updated when downloading a file
+// that redirects cross origin.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, CookiePolicy) {
+  ASSERT_TRUE(test_server()->Start());
+  net::HostPortPair host_port = test_server()->host_port_pair();
+  DCHECK_EQ(host_port.host(), std::string("127.0.0.1"));
+
+  // Block third-party cookies.
+  ShellNetworkDelegate::SetAcceptAllCookies(false);
+
+  // |url| redirects to a different origin |download| which tries to set a
+  // cookie.
+  std::string download(base::StringPrintf(
+      "http://localhost:%d/set-cookie?A=B", host_port.port()));
+  GURL url(test_server()->GetURL("server-redirect?" + download));
+
+  // Download the file.
+  SetupEnsureNoPendingDownloads();
+  scoped_ptr<DownloadUrlParameters> dl_params(
+      DownloadUrlParameters::FromWebContents(shell()->web_contents(), url));
+  scoped_ptr<DownloadTestObserver> observer(CreateWaiter(shell(), 1));
+  DownloadManagerForShell(shell())->DownloadUrl(dl_params.Pass());
+  observer->WaitForFinished();
+
+  // Get the important info from other threads and check it.
+  EXPECT_TRUE(EnsureNoPendingDownloads());
+
+  std::vector<DownloadItem*> downloads;
+  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
+  ASSERT_EQ(1u, downloads.size());
+  ASSERT_EQ(DownloadItem::COMPLETE, downloads[0]->GetState());
+
+  // Check that the cookies were correctly set.
+  EXPECT_EQ("A=B",
+            content::GetCookies(shell()->web_contents()->GetBrowserContext(),
+                                GURL(download)));
 }
 
 }  // namespace content

@@ -49,7 +49,6 @@ class CONTENT_EXPORT DownloadResourceHandler
                                 uint64 position,
                                 uint64 size) OVERRIDE;
 
-  // Not needed, as this event handler ought to be the final resource.
   virtual bool OnRequestRedirected(int request_id,
                                    const GURL& url,
                                    ResourceResponse* response,
