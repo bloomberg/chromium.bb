@@ -700,7 +700,6 @@ paladin = _config(
   manifest_version=True,
   trybot_list=True,
   description='Commit Queue',
-  upload_standalone_images=False,
   create_delta_sysroot=True,
 )
 
