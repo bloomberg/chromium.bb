@@ -113,15 +113,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_GUEST_ICON" file="cros/status/status_guest_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_GUEST_ICON_LARGE" file="common/alt_launcher/status_guest_icon.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM" file="cros/status/status_logout_button_hover_bottom.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_LEFT" file="cros/status/status_logout_button_hover_bottom_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_BOTTOM_RIGHT" file="cros/status/status_logout_button_hover_bottom_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_CENTER" file="cros/status/status_logout_button_hover_center.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_LEFT" file="cros/status/status_logout_button_hover_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_RIGHT" file="cros/status/status_logout_button_hover_right.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP" file="cros/status/status_logout_button_hover_top.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_LEFT" file="cros/status/status_logout_button_hover_top_left.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_HOT_TOP_RIGHT" file="cros/status/status_logout_button_hover_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM" file="cros/status/status_logout_button_pushed_bottom.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_LEFT" file="cros/status/status_logout_button_pushed_bottom_left.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_LOGOUT_BUTTON_PUSHED_BOTTOM_RIGHT" file="cros/status/status_logout_button_pushed_bottom_right.png" />
