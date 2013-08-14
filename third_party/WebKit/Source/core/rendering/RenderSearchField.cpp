@@ -24,6 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderSearchField.h"
 
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
 
@@ -47,12 +48,12 @@ RenderSearchField::~RenderSearchField()
 
 inline Element* RenderSearchField::searchDecorationElement() const
 {
-    return inputElement()->uaShadowElementById(ShadowElementNames::searchDecoration());
+    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::searchDecoration());
 }
 
 inline Element* RenderSearchField::cancelButtonElement() const
 {
-    return inputElement()->uaShadowElementById(ShadowElementNames::clearButton());
+    return inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
 }
 
 LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight, LayoutUnit nonContentHeight) const
