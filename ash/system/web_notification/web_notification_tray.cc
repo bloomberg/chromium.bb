@@ -110,6 +110,15 @@ WorkAreaObserver::~WorkAreaObserver() {
 
 void WorkAreaObserver::SetSystemTrayHeight(int height) {
   system_tray_height_ = height;
+
+  // If the shelf is shown during auto-hide state, the distance from the edge
+  // should be reduced by the height of shelf's shown height.
+  if (shelf_->visibility_state() == SHELF_AUTO_HIDE &&
+      shelf_->auto_hide_state() == SHELF_AUTO_HIDE_SHOWN) {
+    system_tray_height_ -= ShelfLayoutManager::GetPreferredShelfSize() -
+        ShelfLayoutManager::kAutoHideSize;
+  }
+
   if (system_tray_height_ > 0 && ash::switches::UseAlternateShelfLayout())
     system_tray_height_ += message_center::kMarginBetweenItems;
 
@@ -127,10 +136,12 @@ void WorkAreaObserver::OnAutoHideStateChanged(ShelfAutoHideState new_state) {
       shelf_->shelf_widget()->GetNativeView());
   gfx::Rect work_area = display.work_area();
   int width = 0;
-  if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_NEVER) {
-    width = (new_state == SHELF_AUTO_HIDE_HIDDEN) ?
-        ShelfLayoutManager::kAutoHideSize :
-        ShelfLayoutManager::GetPreferredShelfSize();
+  if ((shelf_->visibility_state() == SHELF_AUTO_HIDE) &&
+      new_state == SHELF_AUTO_HIDE_SHOWN) {
+    // Since the work_area is already reduced by kAutoHideSize, the inset width
+    // should be just the difference.
+    width = ShelfLayoutManager::GetPreferredShelfSize() -
+        ShelfLayoutManager::kAutoHideSize;
   }
   work_area.Inset(shelf_->SelectValueForShelfAlignment(
       gfx::Insets(0, 0, width, 0),

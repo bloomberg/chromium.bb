@@ -39,6 +39,8 @@ namespace ash {
 class ScreenAsh;
 class ShelfLayoutManagerObserver;
 class ShelfWidget;
+FORWARD_DECLARE_TEST(WebNotificationTrayTest, PopupAndFullscreen);
+
 namespace internal {
 
 class PanelLayoutManagerTest;
@@ -211,6 +213,7 @@ class ASH_EXPORT ShelfLayoutManager :
   friend class ash::ScreenAsh;
   friend class PanelLayoutManagerTest;
   friend class ShelfLayoutManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(ash::WebNotificationTrayTest, PopupAndFullscreen);
 
   struct TargetBounds {
     TargetBounds();
