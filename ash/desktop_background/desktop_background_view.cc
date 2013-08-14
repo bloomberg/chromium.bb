@@ -10,6 +10,7 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/desktop_background_widget_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
+#include "ash/display/display_manager.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
@@ -56,13 +57,28 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
   // streching to avoid upsampling artifacts (Note that we could tile too, but
   // decided not to do this at the moment).
   DesktopBackgroundController* controller =
-      ash::Shell::GetInstance()->desktop_background_controller();
+      Shell::GetInstance()->desktop_background_controller();
   gfx::ImageSkia wallpaper = controller->GetWallpaper();
   WallpaperLayout wallpaper_layout = controller->GetWallpaperLayout();
 
-  gfx::Rect wallpaper_rect(0, 0, wallpaper.width(), wallpaper.height());
+  gfx::NativeView native_view = GetWidget()->GetNativeView();
+  gfx::Display display = gfx::Screen::GetScreenFor(native_view)->
+      GetDisplayNearestWindow(native_view);
+
+  DisplayManager* display_manager = Shell::GetInstance()->display_manager();
+  DisplayInfo display_info = display_manager->GetDisplayInfo(display.id());
+  float scaling = display_info.ui_scale();
+  if (scaling <= 1.0f)
+    scaling = 1.0f;
+  // Allow scaling up to the UI scaling.
+  // TODO(oshima): Create separate layer that fits to the image and then
+  // scale to avoid artifacts and be more efficient when clipped.
+  gfx::Rect wallpaper_rect(
+      0, 0, wallpaper.width() * scaling, wallpaper.height() * scaling);
+
   if (wallpaper_layout == WALLPAPER_LAYOUT_CENTER_CROPPED &&
-      wallpaper.width() > width() && wallpaper.height() > height()) {
+      wallpaper_rect.width() >= width() &&
+      wallpaper_rect.height() >= height()) {
     // The dimension with the smallest ratio must be cropped, the other one
     // is preserved. Both are set in gfx::Size cropped_size.
     double horizontal_ratio = static_cast<double>(width()) /
@@ -80,7 +96,8 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
           RoundPositive(static_cast<double>(height()) / horizontal_ratio));
     }
 
-    gfx::Rect wallpaper_cropped_rect = wallpaper_rect;
+    gfx::Rect wallpaper_cropped_rect(
+        0, 0, wallpaper.width(), wallpaper.height());
     wallpaper_cropped_rect.ClampToCenteredSize(cropped_size);
     canvas->DrawImageInt(wallpaper,
         wallpaper_cropped_rect.x(), wallpaper_cropped_rect.y(),
@@ -94,9 +111,19 @@ void DesktopBackgroundView::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawImageInt(wallpaper, 0, 0, wallpaper.width(),
         wallpaper.height(), 0, 0, width(), height(), true);
   } else {
+    // Fill with black to make sure that the entire area is opaque.
+    canvas->FillRect(GetLocalBounds(), SK_ColorBLACK);
     // All other are simply centered, and not scaled (but may be clipped).
-     canvas->DrawImageInt(wallpaper, (width() - wallpaper.width()) / 2,
-         (height() - wallpaper.height()) / 2);
+    if (wallpaper.width() && wallpaper.height()) {
+      canvas->DrawImageInt(
+          wallpaper,
+          0, 0, wallpaper.width(), wallpaper.height(),
+          (width() - wallpaper_rect.width()) / 2,
+          (height() - wallpaper_rect.height()) / 2,
+          wallpaper_rect.width(),
+          wallpaper_rect.height(),
+          true);
+    }
   }
 }
 
@@ -114,9 +141,9 @@ void DesktopBackgroundView::ShowContextMenuForView(
 views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
                                        int container_id) {
   DesktopBackgroundController* controller =
-      ash::Shell::GetInstance()->desktop_background_controller();
-  ash::UserWallpaperDelegate* wallpaper_delegate =
-    ash::Shell::GetInstance()->user_wallpaper_delegate();
+      Shell::GetInstance()->desktop_background_controller();
+  UserWallpaperDelegate* wallpaper_delegate =
+      Shell::GetInstance()->user_wallpaper_delegate();
 
   views::Widget* desktop_widget = new views::Widget;
   views::Widget::InitParams params(
