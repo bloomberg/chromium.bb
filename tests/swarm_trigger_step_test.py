@@ -69,6 +69,7 @@ def generate_expected_json(
     u'test_case_name': TEST_NAME,
     u'tests': chromium_tasks(retrieval_url),
     u'working_dir': unicode(working_dir),
+    u'priority': 101,
   }
   if shards > 1:
     expected[u'env_vars'][u'GTEST_SHARD_INDEX'] = u'%(instance_index)s'
@@ -135,7 +136,8 @@ class ManifestTest(auto_stub.TestCase):
         working_dir='swarm_tests',
         data_server='http://localhost:8081',
         verbose=False,
-        profile=False)
+        profile=False,
+        priority=101)
 
     swarm_trigger_step.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -161,7 +163,8 @@ class ManifestTest(auto_stub.TestCase):
         working_dir='swarm_tests',
         data_server='http://localhost:8081',
         verbose=False,
-        profile=False)
+        profile=False,
+        priority=101)
 
     swarm_trigger_step.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -184,7 +187,8 @@ class ManifestTest(auto_stub.TestCase):
         working_dir='swarm_tests',
         data_server='http://localhost:8081',
         verbose=False,
-        profile=True)
+        profile=True,
+        priority=101)
 
     swarm_trigger_step.chromium_setup(manifest)
     manifest_json = json.loads(manifest.to_json())
@@ -210,7 +214,8 @@ class ManifestTest(auto_stub.TestCase):
         data_server='http://localhost:8081',
         swarm_url='http://localhost:8082',
         verbose=False,
-        profile=False)
+        profile=False,
+        priority=101)
     self.assertEqual(0, result)
 
     # Just assert it printed enough, since it contains variable output.
@@ -232,7 +237,8 @@ class ManifestTest(auto_stub.TestCase):
         data_server='http://localhost:8081',
         swarm_url='http://localhost:8082',
         verbose=False,
-        profile=False)
+        profile=False,
+        priority=101)
     self.assertEqual(0, result)
 
     # Just assert it printed enough, since it contains variable output.

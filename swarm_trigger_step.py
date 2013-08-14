@@ -42,7 +42,7 @@ class Failure(Exception):
 class Manifest(object):
   def __init__(
       self, manifest_hash, test_name, shards, test_filter, os_image,
-      working_dir, data_server, verbose, profile):
+      working_dir, data_server, verbose, profile, priority):
     """Populates a manifest object.
       Args:
         manifest_hash - The manifest's sha-1 that the slave is going to fetch.
@@ -54,6 +54,7 @@ class Manifest(object):
         data_server - isolate server url.
         verbose - if True, have the slave print more details.
         profile - if True, have the slave print more timing data.
+        priority - int between 0 and 1000, lower the higher priority
     """
     self.manifest_hash = manifest_hash
     self._test_name = test_name
@@ -70,6 +71,7 @@ class Manifest(object):
 
     self.verbose = bool(verbose)
     self.profile = bool(profile)
+    self.priority = priority
 
     self._zip_file_hash = ''
     self._tasks = []
@@ -173,6 +175,7 @@ class Manifest(object):
       'working_dir': self._working_dir,
       'restart_on_failure': True,
       'cleanup': 'root',
+      'priority': self.priority,
     }
 
     # These flags are googletest specific.
@@ -213,12 +216,12 @@ def chromium_setup(manifest):
 
 def process_manifest(
     file_sha1, test_name, shards, test_filter, os_image, working_dir,
-    data_server, swarm_url, verbose, profile):
+    data_server, swarm_url, verbose, profile, priority):
   """Process the manifest file and send off the swarm test request."""
   try:
     manifest = Manifest(
         file_sha1, test_name, shards, test_filter, os_image, working_dir,
-        data_server, verbose, profile)
+        data_server, verbose, profile, priority)
   except ValueError as e:
     print >> sys.stderr, 'Unable to process %s: %s' % (test_name, e)
     return 1
@@ -277,6 +280,8 @@ def main(argv):
   parser.add_option('--profile', action='store_true',
                     default=bool(os.environ.get('ISOLATE_DEBUG')),
                     help='Have run_isolated.py print profiling info')
+  parser.add_option('--priority', type='int', default=100,
+                    help='The lower value, the more important the task is')
   (options, args) = parser.parse_args(argv)
 
   if args:
@@ -305,7 +310,8 @@ def main(argv):
           options.data_server,
           options.swarm_url,
           options.verbose,
-          options.profile)
+          options.profile,
+          options.priority)
       highest_exit_code = max(highest_exit_code, exit_code)
   except Failure as e:
     print >> sys.stderr, e.args[0]
