@@ -5,7 +5,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS createImageBitmap(image) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
 PASS createImageBitmap(video) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS createImageBitmap(undefined, shouldNotBeCalled) threw exception TypeError: Type error.
+PASS createImageBitmap(undefined) threw exception TypeError: Type error.
 PASS createImageBitmap(image, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS createImageBitmap(image, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS createImageBitmap(video, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
@@ -18,6 +18,9 @@ PASS createImageBitmap(aCtx, 0, 0, 10, 0) threw exception IndexSizeError: Index 
 PASS createImageBitmap(aCtx, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS createImageBitmap(testBitmap, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
 PASS createImageBitmap(testBitmap, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(blob, 0, 0, 10, 0) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(blob, 0, 0, 0, 10) threw exception IndexSizeError: Index or size was negative, or greater than the allowed value..
+PASS createImageBitmap(invalidBlob) was rejected.
 PASS successfullyParsed is true
 
 TEST COMPLETE

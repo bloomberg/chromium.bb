@@ -124,6 +124,17 @@ ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
     ScriptWrappable::init(this);
 }
 
+ImageBitmap::ImageBitmap(Image* image, const IntRect& cropRect)
+    : m_cropRect(cropRect)
+    , m_imageElement(0)
+{
+    IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), image->size()));
+    m_bitmap = cropImage(image, cropRect);
+    m_bitmapRect = IntRect(IntPoint(max(0, -cropRect.x()), max(0, -cropRect.y())),  srcRect.size());
+
+    ScriptWrappable::init(this);
+}
+
 ImageBitmap::~ImageBitmap()
 {
     if (m_imageElement)
@@ -133,36 +144,37 @@ ImageBitmap::~ImageBitmap()
 PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(image, normalizedCropRect)));
-    return imageBitmap.release();
+    return adoptRef(new ImageBitmap(image, normalizedCropRect));
 }
 
 PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(video, normalizedCropRect)));
-    return imageBitmap.release();
+    return adoptRef(new ImageBitmap(video, normalizedCropRect));
 }
 
 PassRefPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(canvas, normalizedCropRect)));
-    return imageBitmap.release();
+    return adoptRef(new ImageBitmap(canvas, normalizedCropRect));
 }
 
 PassRefPtr<ImageBitmap> ImageBitmap::create(ImageData* data, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(data, normalizedCropRect)));
-    return imageBitmap.release();
+    return adoptRef(new ImageBitmap(data, normalizedCropRect));
 }
 
 PassRefPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    RefPtr<ImageBitmap> imageBitmap(adoptRef(new ImageBitmap(bitmap, normalizedCropRect)));
-    return imageBitmap.release();
+    return adoptRef(new ImageBitmap(bitmap, normalizedCropRect));
+}
+
+PassRefPtr<ImageBitmap> ImageBitmap::create(Image* image, const IntRect& cropRect)
+{
+    IntRect normalizedCropRect = normalizeRect(cropRect);
+    return adoptRef(new ImageBitmap(image, normalizedCropRect));
 }
 
 void ImageBitmap::notifyImageSourceChanged()

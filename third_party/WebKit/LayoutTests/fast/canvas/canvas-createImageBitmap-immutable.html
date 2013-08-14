@@ -13,7 +13,7 @@ var aCanvas = document.createElement('canvas');
 aCanvas.setAttribute('width', '10');
 aCanvas.setAttribute('height', '10');
 var aCtx = aCanvas.getContext('2d');
-aCtx.fillStyle = 'green';
+aCtx.fillStyle = 'rgb(0, 255, 0)';
 aCtx.fillRect(0, 0, 20, 20);
 
 var bCanvas = document.createElement('canvas');
@@ -24,7 +24,7 @@ bCtx.fillStyle = 'red';
 bCtx.fillRect(0, 0, 20, 20);
 
 var canvas = document.createElement('canvas');
-canvas.setAttribute('width', '40');
+canvas.setAttribute('width', '50');
 canvas.setAttribute('height', '30');
 var ctx = canvas.getContext('2d');
 document.body.appendChild(canvas);
@@ -35,71 +35,105 @@ image.src = aCanvas.toDataURL();
 
 var d;
 
+var imageLoaded = false;
+var blobLoaded = false;
+
 function imageLoaded() {
-    d = aCtx.getImageData(0, 0, 10, 10);
-    createImageBitmap(image).then(callback('Image'), shouldNotBeCalled);
-    createImageBitmap(d).then(callback('Data'), shouldNotBeCalled);
-    createImageBitmap(aCanvas).then(callback('Canvas'), shouldNotBeCalled);
+    imageLoaded = true;
+    loaded();
 }
 
-var imageBitmapImage, imageBitmapData, imageBitmapCanvas;
-var i = 0;
+var xhr = new XMLHttpRequest();
+xhr.open("GET", 'resources/pattern.png');
+xhr.responseType = 'blob';
+xhr.send();
+xhr.onload = function() {
+    blob = xhr.response;
+    blobLoaded = true;
+    loaded();
+}
+
+function loaded() {
+    if (imageLoaded && blobLoaded) {
+        d = aCtx.getImageData(0, 0, 10, 10);
+        createImageBitmap(image).then(callback('Image'));
+        createImageBitmap(d).then(callback('Data'));
+        createImageBitmap(aCanvas).then(callback('Canvas'));
+        // The blob image has a green square at (x,y,w,h) = (10, 0, 10, 10).
+        createImageBitmap(blob, 10, 0, 10, 10).then(callback('Blob'));
+    }
+}
+
+var imageBitmaps = {};
+
 function callback(name) {
     var name = name;
     return function(imageBitmap) {
         switch(name) {
         case 'Image':
-            imageBitmapImage = imageBitmap;
-            image.onload = draw(imageBitmapImage);
+            imageBitmaps.image = imageBitmap;
+            image.onload = function() {
+                ctx.drawImage(imageBitmaps.image, 0, 0);
+                checkIfDone();
+            };
             image.src = bCanvas.toDataURL();
-            createImageBitmap(imageBitmapImage).then(callback('ImageBitmapImage', shouldNotBeCalled));
+            createImageBitmap(imageBitmaps.image).then(callback('ImageBitmapImage'));
             break;
         case 'Data':
-            imageBitmapData = imageBitmap;
+            imageBitmaps.data = imageBitmap;
             d = 0;
-            ctx.drawImage(imageBitmapData, 11, 0);
-            createImageBitmap(imageBitmapData).then(callback('ImageBitmapData', shouldNotBeCalled));
+            ctx.drawImage(imageBitmaps.data, 11, 0);
+            createImageBitmap(imageBitmaps.data).then(callback('ImageBitmapData'));
             checkIfDone();
             break;
         case 'Canvas':
-            imageBitmapCanvas = imageBitmap;
+            imageBitmaps.canvas = imageBitmap;
             aCtx.clearRect(0, 0, 10, 10);
-            ctx.drawImage(imageBitmapCanvas, 22, 0);
-            createImageBitmap(imageBitmapCanvas).then(callback('ImageBitmapCanvas', shouldNotBeCalled));
+            ctx.drawImage(imageBitmaps.canvas, 22, 0);
+            createImageBitmap(imageBitmaps.canvas).then(callback('ImageBitmapCanvas'));
+            checkIfDone();
+            break;
+        case 'Blob':
+            imageBitmaps.blob = imageBitmap;
+            blob = 0;
+            ctx.drawImage(imageBitmaps.blob, 33, 0);
+            createImageBitmap(imageBitmaps.blob).then(callback('ImageBitmapBlob'));
             checkIfDone();
             break;
         case 'ImageBitmapImage':
-            imageBitmapImage = 0;
+            imageBitmaps.image = 0;
             ctx.drawImage(imageBitmap, 0, 11);
             checkIfDone();
             break;
         case 'ImageBitmapData':
             d = 0;
-            imageBitmapData = 0;
+            imageBitmaps.data = 0;
             ctx.drawImage(imageBitmap, 11, 11);
             checkIfDone();
             break;
         case 'ImageBitmapCanvas':
             aCtx.clearRect(0, 0, 10, 10);
-            imageBitmapCanvas = 0;
+            imageBitmaps.canvas = 0;
             ctx.drawImage(imageBitmap, 22, 11);
+            checkIfDone();
+            break;
+        case 'ImageBitmapBlob':
+            aCtx.clearRect(0, 0, 10, 10);
+            imageBitmaps.blob = 0;
+            ctx.drawImage(imageBitmap, 33, 11);
             checkIfDone();
             break;
         }
     }
 }
 
-function draw(imageBitmap) {
-    ctx.drawImage(imageBitmap, 0, 0);
-    checkIfDone();
-}
-
+var checkNum = 0;
 function checkIfDone() {
-    if (++i == 6 && window.testRunner)
+    if (++checkNum == 8 && window.testRunner)
         window.testRunner.notifyDone();
 }
 
 </script>
-<p>There should be 6 green squares displayed in a 2 row by 3 column grid.</p>
+<p>There should be 8 green squares displayed in a 2 row by 4 column grid.</p>
 </body>
 </html>

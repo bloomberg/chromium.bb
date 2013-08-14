@@ -12,15 +12,13 @@ var InvalidStateError = "InvalidStateError: An attempt was made to use an object
 var TypeError = "TypeError: Type error";
 var IndexSizeError = "IndexSizeError: Index or size was negative, or greater than the allowed value.";
 
-function shouldNotBeCalled(imageBitmap) {
-    testFailed("shouldNotBeCalled was called.");
-}
-
 var image;
-var testBitmap; // this is an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
+var testBitmap; // an ImageBitmap that is uncropped. We use this to test createImageBitmap(testBitmap)
 var d;          // image.imageData
+var blob;
+var invalidBlob;
 
-// Create auxiliary canvas to draw to and create an image from.
+// Draw to an auxillary canvas.
 var aCanvas = document.createElement("canvas");
 aCanvas.setAttribute("width", "200");
 aCanvas.setAttribute("height", "200");
@@ -31,7 +29,7 @@ image.onload = imageLoaded;
 
 // Before image loads
 shouldThrow("createImageBitmap(image)", "InvalidStateError");
-image.src = aCanvas.toDataURL(); // set a data URI of the base64 enconded image as the source
+image.src = aCanvas.toDataURL();
 
 video = document.createElement("video");
 video.addEventListener("canplaythrough", videoLoaded, false);
@@ -43,6 +41,8 @@ video.src = "../../compositing/resources/video.ogv";
 var imageLoaded = false;
 var videoLoaded = false;
 var imageBitmapLoaded = false;
+var blobLoaded = false;
+var invalidBlobLoaded = false;
 
 function imageLoaded() {
     createImageBitmap(image).then(imageBitmapLoadedCallback, function() {
@@ -65,9 +65,29 @@ function imageBitmapLoadedCallback(imageBitmap) {
     loaded();
 }
 
+var xhr = new XMLHttpRequest();
+xhr.open("GET", 'resources/pattern.png');
+xhr.responseType = 'blob';
+xhr.send();
+xhr.onload = function() {
+    blob = xhr.response;
+    blobLoaded = true;
+    loaded();
+}
+
+var xhr2 = new XMLHttpRequest();
+xhr2.open("GET", 'resources/repaint.js');
+xhr2.responseType = 'blob';
+xhr2.send();
+xhr2.onload = function() {
+    invalidBlob = xhr2.response;
+    invalidBlobLoaded = true;
+    loaded();
+}
+
 function loaded() {
-    if (imageLoaded && videoLoaded && imageBitmapLoaded) {
-        shouldThrow("createImageBitmap(undefined, shouldNotBeCalled)", "TypeError");
+    if (imageLoaded && videoLoaded && imageBitmapLoaded && blobLoaded && invalidBlobLoaded) {
+        shouldThrow("createImageBitmap(undefined)", "TypeError");
 
         shouldThrow("createImageBitmap(image, 0, 0, 10, 0)", "IndexSizeError");
         shouldThrow("createImageBitmap(image, 0, 0, 0, 10)", "IndexSizeError");
@@ -87,7 +107,16 @@ function loaded() {
         shouldThrow("createImageBitmap(testBitmap, 0, 0, 10, 0)", "IndexSizeError");
         shouldThrow("createImageBitmap(testBitmap, 0, 0, 0, 10)", "IndexSizeError");
 
-        finishJSTest();
+        shouldThrow("createImageBitmap(blob, 0, 0, 10, 0)", "IndexSizeError");
+        shouldThrow("createImageBitmap(blob, 0, 0, 0, 10)", "IndexSizeError");
+
+        createImageBitmap(invalidBlob).then(function() {
+            testFailed("Invalid blob fulfilled.");
+            finishJSTest();
+        }, function() {
+            testPassed("createImageBitmap(invalidBlob) was rejected.");
+            finishJSTest();
+        });
     }
 }
 

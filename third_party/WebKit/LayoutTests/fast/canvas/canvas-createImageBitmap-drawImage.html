@@ -25,6 +25,11 @@ function shouldBeType(expression, className)
     shouldBe("jsWrapperClass(" + expression + ")", "'" + className + "'");
 }
 
+function shouldNotBeCalled() {
+    testFailed("createImageBitmap promise rejected.");
+    finishJSTest();
+}
+
 function shouldBeRed(x, y) {
     d = ctx.getImageData(x, y, 1, 1).data;
     shouldBeTrue("d[0] == 255");
@@ -92,7 +97,7 @@ var elements;
 var imageWidth = 20;
 var imageHeight = 20;
 
-// Create auxiliary canvas to draw to and create an image from.
+// Draw to an auxillary canvas.
 var aCanvas = document.createElement("canvas");
 aCanvas.width = imageWidth;
 aCanvas.height = imageHeight;
@@ -106,13 +111,14 @@ var ctx = canvas.getContext("2d");
 
 image = new Image();
 image.onload = imageLoaded;
-image.src = aCanvas.toDataURL(); // set a data URI of the base64 enconded image as the source
+image.src = aCanvas.toDataURL();
 
 var imageLoaded = false;
 var imageBitmapLoaded = false;
+var blobLoaded = false;
 
 function imageLoaded() {
-    createImageBitmap(image).then(imageBitmapLoadedCallback);
+    createImageBitmap(image).then(imageBitmapLoadedCallback, shouldNotBeCalled);
     d = aCtx.getImageData(0, 0, 20, 20);
     imageLoaded = true;
     loaded();
@@ -134,10 +140,20 @@ function imageBitmapLoadedCallback(imageBitmap) {
     loaded();
 }
 
+var xhr = new XMLHttpRequest();
+xhr.open("GET", 'resources/pattern.png');
+xhr.responseType = 'blob';
+xhr.send();
+xhr.onload = function() {
+    blob = xhr.response;
+    blobLoaded = true;
+    loaded();
+}
+
 function loaded() {
-    if (imageLoaded && imageBitmapLoaded) {
+    if (imageLoaded && imageBitmapLoaded && blobLoaded) {
         // check all of these elements
-        elements = [image, aCanvas, d, aCtx, testBitmap];
+        elements = [image, aCanvas, d, aCtx, testBitmap, blob];
 
         // wait for callback to finish before each check to ensure synchronous behavior
         nextCheck(0);
@@ -172,10 +188,7 @@ function nextCheck(elementIndex) {
         checkEmpty(imageBitmaps.empty);
         checkEmpty(imageBitmaps.emptyTwo);
         nextCheck(elementIndex + 1);
-    }, function() {
-        testFailed("createImageBitmap promise rejected.");
-        finishJSTest();
-    });
+    }, shouldNotBeCalled);
 }
 
 function checkNoCrop(imageBitmap) {
