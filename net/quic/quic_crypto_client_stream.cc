@@ -85,6 +85,8 @@ QuicCryptoClientStream::~QuicCryptoClientStream() {
 
 void QuicCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
+  QuicCryptoStream::OnHandshakeMessage(message);
+
   DoHandshakeLoop(&message);
 }
 

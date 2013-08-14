@@ -106,6 +106,14 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Servers will simply call it once with HANDSHAKE_CONFIRMED.
   virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event);
 
+  // Called by the QuicCryptoStream when a handshake message is sent.
+  virtual void OnCryptoHandshakeMessageSent(
+      const CryptoHandshakeMessage& message);
+
+  // Called by the QuicCryptoStream when a handshake message is received.
+  virtual void OnCryptoHandshakeMessageReceived(
+      const CryptoHandshakeMessage& message);
+
   // Returns mutable config for this session. Returned config is owned
   // by QuicSession.
   QuicConfig* config();

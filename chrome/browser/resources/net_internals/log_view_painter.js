@@ -335,6 +335,12 @@ function defaultWriteParameter(key, value, out) {
     return;
   }
 
+  if (key == 'quic_crypto_handshake_message' && typeof value == 'string') {
+    var lines = value.split('\n');
+    out.writeArrowIndentedLines(lines);
+    return;
+  }
+
   if (key == 'quic_rst_stream_error' && typeof value == 'number') {
     var valueStr = value + ' (' + quicRstStreamErrorToString(value) + ')';
     out.writeArrowKeyValue(key, valueStr);

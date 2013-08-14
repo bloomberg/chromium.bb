@@ -151,6 +151,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogViewPainterPrintAsText', function() {
   runTestCase(painterTestURLRequestIncompleteFromLoadedLogSingleEvent());
   runTestCase(painterTestNetError());
   runTestCase(painterTestQuicError());
+  runTestCase(painterTestQuicCryptoHandshakeMessage());
   runTestCase(painterTestHexEncodedBytes());
   runTestCase(painterTestCertVerifierJob());
   runTestCase(painterTestProxyConfigOneProxyAllSchemes());
@@ -1159,6 +1160,90 @@ function painterTestQuicError() {
 't=1338864774369 [st=475] -QUIC_SESSION\n' +
 '                          --> quic_error = ' +
         QuicError.QUIC_CONNECTION_TIMED_OUT + ' (QUIC_CONNECTION_TIMED_OUT)';
+
+  return testCase;
+}
+
+/**
+ * Tests the custom formatting of QUIC crypto handshake messages.
+ */
+function painterTestQuicCryptoHandshakeMessage() {
+  var testCase = {};
+  testCase.tickOffset = '1337911098446';
+
+  testCase.logEntries = [
+    {
+      'params': {
+        "host": "www.example.com"
+      },
+      'phase': EventPhase.PHASE_BEGIN,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675448',
+      'type': EventType.QUIC_SESSION
+    },
+    {
+      'params': {
+        'quic_crypto_handshake_message':
+            "REJ <\n" +
+            "  STK : 4FDE\n" +
+            "  SNO : A228\n" +
+            "  PROF: 3045\n" +
+            "  SCFG:\n" +
+            "    SCFG<\n" +
+            "      AEAD: AESG\n" +
+            "      SCID: FED7\n" +
+            "      PDMD: CHID\n" +
+            "      PUBS: 2000\n" +
+            "      VERS: 0000\n" +
+            "      KEXS: C255,P256\n" +
+            "      OBIT: 7883764781F2DFD0\n" +
+            "      EXPY: FFEE725200000000\n" +
+            "    >\n" +
+            "  >"
+      },
+      'phase': EventPhase.PHASE_NONE,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675460',
+      'type': EventType.QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT
+    },
+    {
+      'phase': EventPhase.PHASE_END,
+      'source': {
+        'id': 318,
+        'type': EventSourceType.URL_REQUEST
+      },
+      'time': '953675923',
+      'type': EventType.QUIC_SESSION
+    }
+  ];
+
+  testCase.expectedText =
+'t=1338864773894 [st=  0] +QUIC_SESSION  [dt=475]\n' +
+'                          --> host = "www.example.com"\n' +
+'t=1338864773906 [st= 12]    QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT\n' +
+'                            --> REJ <\n' +
+'                                  STK : 4FDE\n' +
+'                                  SNO : A228\n' +
+'                                  PROF: 3045\n' +
+'                                  SCFG:\n' +
+'                                    SCFG<\n' +
+'                                      AEAD: AESG\n' +
+'                                      SCID: FED7\n' +
+'                                      PDMD: CHID\n' +
+'                                      PUBS: 2000\n' +
+'                                      VERS: 0000\n' +
+'                                      KEXS: C255,P256\n' +
+'                                      OBIT: 7883764781F2DFD0\n' +
+'                                      EXPY: FFEE725200000000\n' +
+'                                    >\n' +
+'                                  >\n' +
+'t=1338864774369 [st=475] -QUIC_SESSION';
 
   return testCase;
 }

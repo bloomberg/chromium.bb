@@ -10,6 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "net/base/net_log.h"
+#include "net/quic/crypto/crypto_handshake.h"
 
 namespace net {
 
@@ -168,6 +169,14 @@ base::Value* NetLogQuicVersionNegotiationPacketCallback(
        it != packet->versions.end(); ++it) {
     versions->AppendString(QuicVersionToString(*it));
   }
+  return dict;
+}
+
+base::Value* NetLogQuicCryptoHandshakeMessageCallback(
+    const CryptoHandshakeMessage* message,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetString("quic_crypto_handshake_message", message->DebugString());
   return dict;
 }
 
@@ -371,6 +380,20 @@ void QuicConnectionLogger::OnRevivedPacket(
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_PACKET_HEADER_REVIVED,
       base::Bind(&NetLogQuicPacketHeaderCallback, &revived_header));
+}
+
+void QuicConnectionLogger::OnCryptoHandshakeMessageReceived(
+    const CryptoHandshakeMessage& message) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_RECEIVED,
+      base::Bind(&NetLogQuicCryptoHandshakeMessageCallback, &message));
+}
+
+void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
+    const CryptoHandshakeMessage& message) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT,
+      base::Bind(&NetLogQuicCryptoHandshakeMessageCallback, &message));
 }
 
 }  // namespace net

@@ -1466,6 +1466,19 @@ EVENT_TYPE(QUIC_SESSION_VERSION_NEGOTIATION_PACKET_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_PACKET_HEADER_REVIVED)
 
+// Session received a crypto handshake message.
+//   {
+//     "quic_crypto_handshake_message": <The human readable dump of the message
+//                                       contents>
+//   }
+EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_RECEIVED)
+
+// Session sent a crypto handshake message.
+//   {
+//     "quic_crypto_handshake_message": <The human readable dump of the message
+//                                       contents>
+//   }
+EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT)
 
 // ------------------------------------------------------------------------
 // QuicHttpStream

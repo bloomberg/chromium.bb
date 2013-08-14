@@ -260,6 +260,16 @@ void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
 }
 
+void QuicClientSession::OnCryptoHandshakeMessageSent(
+    const CryptoHandshakeMessage& message) {
+  logger_.OnCryptoHandshakeMessageSent(message);
+}
+
+void QuicClientSession::OnCryptoHandshakeMessageReceived(
+    const CryptoHandshakeMessage& message) {
+  logger_.OnCryptoHandshakeMessageReceived(message);
+}
+
 void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ConnectionCloseErrorCode",
                               error);

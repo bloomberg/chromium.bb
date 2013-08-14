@@ -102,6 +102,10 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   virtual QuicCryptoClientStream* GetCryptoStream() OVERRIDE;
   virtual void CloseStream(QuicStreamId stream_id) OVERRIDE;
   virtual void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) OVERRIDE;
+  virtual void OnCryptoHandshakeMessageSent(
+      const CryptoHandshakeMessage& message) OVERRIDE;
+  virtual void OnCryptoHandshakeMessageReceived(
+      const CryptoHandshakeMessage& message) OVERRIDE;
   virtual bool GetSSLInfo(SSLInfo* ssl_info) OVERRIDE;
 
   // QuicConnectionVisitorInterface methods:
