@@ -855,3 +855,10 @@
    fun:ThemeService::SetManagedUserTheme
    fun:ThemeService::OnManagedUserInitialized
 }
+{
+   bug_272596
+   Heapcheck:Leak
+   fun:*
+   fun:net::NSSCertDatabase::ListCerts
+   fun:LoadNSSCertificates
+}

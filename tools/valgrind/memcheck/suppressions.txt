@@ -7211,3 +7211,14 @@
    ...
    fun:_ZN7WebCore14HarfBuzzShaper19collectHarfBuzzRunsEv
 }
+{
+   bug_272596
+   Memcheck:Leak
+   ...
+   fun:nssPKIObjectCollection_AddInstanceAsObject
+   fun:nssToken_TraverseCertificates
+   fun:NSSTrustDomain_TraverseCertificates
+   fun:PK11_ListCerts
+   fun:_ZN3net15NSSCertDatabase9ListCertsEPSt6vectorI13scoped_refptrINS_15X509CertificateEESaIS4_EE
+   fun:_ZN8chromeos12_GLOBAL__N_119LoadNSSCertificatesEPSt6vectorI13scoped_refptrIN3net15X509CertificateEESaIS5_EE
+}
