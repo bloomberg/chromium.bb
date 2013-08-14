@@ -273,7 +273,6 @@ PassRefPtr<InputFieldSpeechButtonElement> InputFieldSpeechButtonElement::create(
 {
     RefPtr<InputFieldSpeechButtonElement> element = adoptRef(new InputFieldSpeechButtonElement(document));
     element->setPart(AtomicString("-webkit-input-speech-button", AtomicString::ConstructFromLiteral));
-    element->setAttribute(idAttr, ShadowElementNames::speechButton());
     return element.release();
 }
 

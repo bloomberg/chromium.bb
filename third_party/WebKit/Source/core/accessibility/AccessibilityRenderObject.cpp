@@ -36,7 +36,6 @@
 #include "core/accessibility/AccessibilitySpinButton.h"
 #include "core/accessibility/AccessibilityTable.h"
 #include "core/dom/NodeTraversal.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/VisibleUnits.h"
@@ -47,7 +46,6 @@
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/HTMLTextAreaElement.h"
-#include "core/html/shadow/ShadowElementNames.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/page/Page.h"
 #include "core/platform/LocalizedStrings.h"
@@ -2334,12 +2332,12 @@ void AccessibilityRenderObject::addTextFieldChildren()
         return;
 
     HTMLInputElement* input = toHTMLInputElement(node);
-    Element* spinButtonElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton());
+    HTMLElement* spinButtonElement = input->innerSpinButtonElement();
     if (!spinButtonElement || !spinButtonElement->isSpinButtonElement())
         return;
 
     AccessibilitySpinButton* axSpinButton = static_cast<AccessibilitySpinButton*>(axObjectCache()->getOrCreate(SpinButtonRole));
-    axSpinButton->setSpinButtonElement(toSpinButtonElement(spinButtonElement));
+    axSpinButton->setSpinButtonElement(static_cast<SpinButtonElement*>(spinButtonElement));
     axSpinButton->setParent(this);
     m_children.append(axSpinButton);
 }

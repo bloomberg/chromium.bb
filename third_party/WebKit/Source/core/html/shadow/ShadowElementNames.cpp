@@ -65,12 +65,6 @@ const AtomicString& searchDecoration()
     return name;
 }
 
-const AtomicString& speechButton()
-{
-    DEFINE_STATIC_LOCAL(AtomicString, name, ("speech", AtomicString::ConstructFromLiteral));
-    return name;
-}
-
 }
 
 }

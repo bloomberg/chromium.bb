@@ -183,6 +183,18 @@ HTMLElement* HTMLInputElement::innerBlockElement() const
     return m_inputType->innerBlockElement();
 }
 
+HTMLElement* HTMLInputElement::innerSpinButtonElement() const
+{
+    return m_inputType->innerSpinButtonElement();
+}
+
+#if ENABLE(INPUT_SPEECH)
+HTMLElement* HTMLInputElement::speechButtonElement() const
+{
+    return m_inputType->speechButtonElement();
+}
+#endif
+
 HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const
 {
     return m_inputType->passwordGeneratorButtonElement();

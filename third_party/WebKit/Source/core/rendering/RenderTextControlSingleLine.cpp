@@ -25,9 +25,7 @@
 #include "core/rendering/RenderTextControlSingleLine.h"
 
 #include "CSSValueKeywords.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
-#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/Frame.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/graphics/SimpleFontData.h"
@@ -55,7 +53,7 @@ RenderTextControlSingleLine::~RenderTextControlSingleLine()
 
 inline HTMLElement* RenderTextControlSingleLine::innerSpinButtonElement() const
 {
-    return toHTMLElement(inputElement()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
+    return inputElement()->innerSpinButtonElement();
 }
 
 RenderStyle* RenderTextControlSingleLine::textBaseStyle() const
