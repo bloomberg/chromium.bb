@@ -971,11 +971,11 @@ void SavePackage::DoSavingProcess() {
     // sub-resource's link can be replaced with local file path, which
     // sub-resource's link need to be replaced with absolute URL which
     // point to its internet address because it got error when saving its data.
-    SaveItem* save_item = NULL;
+
     // Start a new SaveItem job if we still have job in waiting queue.
     if (waiting_item_queue_.size()) {
       DCHECK(wait_state_ == NET_FILES);
-      save_item = waiting_item_queue_.front();
+      SaveItem* save_item = waiting_item_queue_.front();
       if (save_item->save_source() != SaveFileCreateInfo::SAVE_FILE_FROM_DOM) {
         SaveNextFile(false);
       } else if (!in_process_count()) {
