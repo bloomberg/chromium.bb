@@ -211,22 +211,6 @@ int64 SandboxFileSystemBackend::GetOriginUsageOnFileThread(
       file_system_context, origin_url, type);
 }
 
-void SandboxFileSystemBackend::InvalidateUsageCache(
-    const GURL& origin,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  sandbox_context_->InvalidateUsageCache(origin, type);
-}
-
-void SandboxFileSystemBackend::StickyInvalidateUsageCache(
-    const GURL& origin,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  sandbox_context_->StickyInvalidateUsageCache(origin, type);
-}
-
 void SandboxFileSystemBackend::AddFileUpdateObserver(
     FileSystemType type,
     FileUpdateObserver* observer,

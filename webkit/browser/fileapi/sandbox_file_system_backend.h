@@ -82,12 +82,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
-  virtual void InvalidateUsageCache(
-      const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
-  virtual void StickyInvalidateUsageCache(
-      const GURL& origin_url,
-      FileSystemType type) OVERRIDE;
   virtual void AddFileUpdateObserver(
       FileSystemType type,
       FileUpdateObserver* observer,

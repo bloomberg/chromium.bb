@@ -180,22 +180,6 @@ int64 SyncFileSystemBackend::GetOriginUsageOnFileThread(
       context, origin_url, type);
 }
 
-void SyncFileSystemBackend::InvalidateUsageCache(
-    const GURL& origin_url,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  sandbox_context_->InvalidateUsageCache(origin_url, type);
-}
-
-void SyncFileSystemBackend::StickyInvalidateUsageCache(
-    const GURL& origin_url,
-    fileapi::FileSystemType type) {
-  DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  sandbox_context_->StickyInvalidateUsageCache(origin_url, type);
-}
-
 void SyncFileSystemBackend::AddFileUpdateObserver(
     fileapi::FileSystemType type,
     fileapi::FileUpdateObserver* observer,

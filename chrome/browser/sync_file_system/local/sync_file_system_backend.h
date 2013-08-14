@@ -69,12 +69,6 @@ class SyncFileSystemBackend
       fileapi::FileSystemContext* context,
       const GURL& origin_url,
       fileapi::FileSystemType type) OVERRIDE;
-  virtual void InvalidateUsageCache(
-      const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
-  virtual void StickyInvalidateUsageCache(
-      const GURL& origin_url,
-      fileapi::FileSystemType type) OVERRIDE;
   virtual void AddFileUpdateObserver(
       fileapi::FileSystemType type,
       fileapi::FileUpdateObserver* observer,

@@ -66,17 +66,6 @@ class TestFileSystemBackend::QuotaUtil
     return usage_;
   }
 
-  virtual void InvalidateUsageCache(const GURL& origin_url,
-                                    FileSystemType type) OVERRIDE {
-    // Do nothing.
-  }
-
-  virtual void StickyInvalidateUsageCache(
-      const GURL& origin,
-      FileSystemType type) OVERRIDE {
-    // Do nothing.
-  }
-
   virtual void AddFileUpdateObserver(
       FileSystemType type,
       FileUpdateObserver* observer,
