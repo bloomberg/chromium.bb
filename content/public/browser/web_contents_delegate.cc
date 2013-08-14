@@ -127,11 +127,8 @@ bool WebContentsDelegate::ShouldCreateWebContents(
     WindowContainerType window_container_type,
     const string16& frame_name,
     const GURL& target_url,
-    const Referrer& referrer,
-    WindowOpenDisposition disposition,
-    const WebKit::WebWindowFeatures& features,
-    bool user_gesture,
-    bool opener_suppressed) {
+    const std::string& partition_id,
+    SessionStorageNamespace* session_storage_namespace) {
   return true;
 }
 

@@ -572,11 +572,8 @@ class Browser : public TabStripModelObserver,
       WindowContainerType window_container_type,
       const string16& frame_name,
       const GURL& target_url,
-      const content::Referrer& referrer,
-      WindowOpenDisposition disposition,
-      const WebKit::WebWindowFeatures& features,
-      bool user_action,
-      bool opener_suppressed) OVERRIDE;
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace) OVERRIDE;
   virtual void WebContentsCreated(content::WebContents* source_contents,
                                   int64 source_frame_id,
                                   const string16& frame_name,
@@ -780,10 +777,13 @@ class Browser : public TabStripModelObserver,
 
   // Creates a BackgroundContents if appropriate; return true if one was
   // created.
-  bool MaybeCreateBackgroundContents(int route_id,
-                                     content::WebContents* opener_web_contents,
-                                     const string16& frame_name,
-                                     const GURL& target_url);
+  bool MaybeCreateBackgroundContents(
+      int route_id,
+      content::WebContents* opener_web_contents,
+      const string16& frame_name,
+      const GURL& target_url,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Data members /////////////////////////////////////////////////////////////
 

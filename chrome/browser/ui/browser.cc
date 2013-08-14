@@ -1500,15 +1500,16 @@ bool Browser::ShouldCreateWebContents(
     WindowContainerType window_container_type,
     const string16& frame_name,
     const GURL& target_url,
-    const content::Referrer& referrer,
-    WindowOpenDisposition disposition,
-    const WebWindowFeatures& features,
-    bool user_gesture,
-    bool opener_suppressed) {
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
-    return !MaybeCreateBackgroundContents(
-        route_id, web_contents, frame_name, target_url);
+    return !MaybeCreateBackgroundContents(route_id,
+                                          web_contents,
+                                          frame_name,
+                                          target_url,
+                                          partition_id,
+                                          session_storage_namespace);
   }
 
   return true;
@@ -2181,10 +2182,13 @@ bool Browser::ShouldHideUIForFullscreen() const {
   return window_ && window_->ShouldHideUIForFullscreen();
 }
 
-bool Browser::MaybeCreateBackgroundContents(int route_id,
-                                            WebContents* opener_web_contents,
-                                            const string16& frame_name,
-                                            const GURL& target_url) {
+bool Browser::MaybeCreateBackgroundContents(
+    int route_id,
+    WebContents* opener_web_contents,
+    const string16& frame_name,
+    const GURL& target_url,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
   GURL opener_url = opener_web_contents->GetURL();
   ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
@@ -2247,7 +2251,9 @@ bool Browser::MaybeCreateBackgroundContents(int route_id,
                                         route_id,
                                         profile_,
                                         frame_name,
-                                        ASCIIToUTF16(extension->id()));
+                                        ASCIIToUTF16(extension->id()),
+                                        partition_id,
+                                        session_storage_namespace);
 
   // When a separate process is used, the original renderer cannot access the
   // new window later, thus we need to navigate the window now.

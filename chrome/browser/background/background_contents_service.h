@@ -27,6 +27,10 @@ namespace base {
 class DictionaryValue;
 }
 
+namespace content {
+class SessionStorageNamespace;
+}
+
 namespace gfx {
 class Rect;
 }
@@ -79,11 +83,14 @@ class BackgroundContentsService : private content::NotificationObserver,
   // A BACKGROUND_CONTENTS_OPENED notification will be generated with the passed
   // |frame_name| and |application_id| values, using the passed |profile| as the
   // Source..
-  BackgroundContents* CreateBackgroundContents(content::SiteInstance* site,
-                                               int route_id,
-                                               Profile* profile,
-                                               const string16& frame_name,
-                                               const string16& application_id);
+  BackgroundContents* CreateBackgroundContents(
+      content::SiteInstance* site,
+      int route_id,
+      Profile* profile,
+      const string16& frame_name,
+      const string16& application_id,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace);
 
   // Load the manifest-specified background page for the specified hosted app.
   // If the manifest doesn't specify one, then load the BackgroundContents

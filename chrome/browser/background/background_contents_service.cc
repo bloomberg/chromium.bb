@@ -188,7 +188,7 @@ void ShowBalloon(const Extension* extension, Profile* profile) {
 #endif
 }
 
-}
+}  // namespace
 
 // Keys for the information we store about individual BackgroundContents in
 // prefs. There is one top-level DictionaryValue (stored at
@@ -554,7 +554,9 @@ void BackgroundContentsService::LoadBackgroundContents(
       MSG_ROUTING_NONE,
       profile,
       frame_name,
-      application_id);
+      application_id,
+      std::string(),
+      NULL);
 
   // TODO(atwilson): Create RenderViews asynchronously to avoid increasing
   // startup latency (http://crbug.com/47236).
@@ -567,8 +569,11 @@ BackgroundContents* BackgroundContentsService::CreateBackgroundContents(
     int routing_id,
     Profile* profile,
     const string16& frame_name,
-    const string16& application_id) {
-  BackgroundContents* contents = new BackgroundContents(site, routing_id, this);
+    const string16& application_id,
+    const std::string& partition_id,
+    content::SessionStorageNamespace* session_storage_namespace) {
+  BackgroundContents* contents = new BackgroundContents(
+      site, routing_id, this, partition_id, session_storage_namespace);
 
   // Register the BackgroundContents internally, then send out a notification
   // to external listeners.

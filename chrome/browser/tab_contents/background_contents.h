@@ -17,6 +17,7 @@
 class Profile;
 
 namespace content {
+class SessionStorageNamespace;
 class SiteInstance;
 };
 
@@ -42,9 +43,12 @@ class BackgroundContents : public content::WebContentsDelegate,
     virtual ~Delegate() {}
   };
 
-  BackgroundContents(content::SiteInstance* site_instance,
-                     int routing_id,
-                     Delegate* delegate);
+  BackgroundContents(
+      content::SiteInstance* site_instance,
+      int routing_id,
+      Delegate* delegate,
+      const std::string& partition_id,
+      content::SessionStorageNamespace* session_storage_namespace);
   virtual ~BackgroundContents();
 
   content::WebContents* web_contents() const { return web_contents_.get(); }
