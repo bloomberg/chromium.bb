@@ -770,7 +770,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
         keyframeValue.addProperties(keyframe->properties());
 
         // Add this keyframe style to all the indicated key times
-        Vector<float> keys;
+        Vector<double> keys;
         keyframe->getKeys(keys);
         for (size_t keyIndex = 0; keyIndex < keys.size(); ++keyIndex) {
             keyframeValue.setKey(keys[keyIndex]);
@@ -818,7 +818,7 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
         RefPtr<RenderStyle> keyframeStyle = styleForKeyframe(element, style, styleKeyframe);
-        Vector<float> offsets;
+        Vector<double> offsets;
         styleKeyframe->getKeys(offsets);
         RefPtr<Keyframe> firstOffsetKeyframe;
         for (size_t j = 0; j < offsets.size(); ++j) {
@@ -902,7 +902,7 @@ const StylePropertySet* StyleResolver::firstKeyframeStyles(const Element* elemen
     for (unsigned i = 0; i < styleKeyframes.size(); ++i) {
         const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
 
-        Vector<float> offsets;
+        Vector<double> offsets;
         styleKeyframe->getKeys(offsets);
         for (size_t j = 0; j < offsets.size(); ++j) {
             if (!offsets[j]) {

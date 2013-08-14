@@ -71,7 +71,7 @@ class TimingFunction;
 class AnimationValue {
     WTF_MAKE_FAST_ALLOCATED;
 public:
-    explicit AnimationValue(float keyTime, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit AnimationValue(double keyTime, PassRefPtr<TimingFunction> timingFunction = 0)
         : m_keyTime(keyTime)
         , m_timingFunction(timingFunction)
     {
@@ -79,12 +79,12 @@ public:
 
     virtual ~AnimationValue() { }
 
-    float keyTime() const { return m_keyTime; }
+    double keyTime() const { return m_keyTime; }
     const TimingFunction* timingFunction() const { return m_timingFunction.get(); }
     virtual PassOwnPtr<AnimationValue> clone() const = 0;
 
 private:
-    float m_keyTime;
+    double m_keyTime;
     RefPtr<TimingFunction> m_timingFunction;
 };
 
@@ -92,7 +92,7 @@ private:
 // FIXME: Should be moved to its own header file.
 class FloatAnimationValue : public AnimationValue {
 public:
-    FloatAnimationValue(float keyTime, float value, PassRefPtr<TimingFunction> timingFunction = 0)
+    FloatAnimationValue(double keyTime, float value, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)
         , m_value(value)
     {
@@ -109,7 +109,7 @@ private:
 // FIXME: Should be moved to its own header file.
 class TransformAnimationValue : public AnimationValue {
 public:
-    explicit TransformAnimationValue(float keyTime, const TransformOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit TransformAnimationValue(double keyTime, const TransformOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)
     {
         if (value)
@@ -127,7 +127,7 @@ private:
 // FIXME: Should be moved to its own header file.
 class FilterAnimationValue : public AnimationValue {
 public:
-    explicit FilterAnimationValue(float keyTime, const FilterOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
+    explicit FilterAnimationValue(double keyTime, const FilterOperations* value = 0, PassRefPtr<TimingFunction> timingFunction = 0)
         : AnimationValue(keyTime, timingFunction)
     {
         if (value)

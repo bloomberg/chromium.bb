@@ -237,6 +237,9 @@ private:
 
     AttributeType m_attributeType;
     Vector<String> m_values;
+    // FIXME: We should probably use doubles for this, but there's no point
+    // making such a change unless all SVG logic for sampling animations is
+    // changed to use doubles.
     Vector<float> m_keyTimes;
     Vector<float> m_keyPoints;
     Vector<UnitBezier> m_keySplines;

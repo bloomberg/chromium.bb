@@ -51,7 +51,7 @@ public:
     // invalid string?
     void setKeyText(const String& s) { m_key = s; }
 
-    void getKeys(Vector<float>& keys) const   { parseKeyString(m_key, keys); }
+    void getKeys(Vector<double>& keys) const { parseKeyString(m_key, keys); }
 
     const StylePropertySet* properties() const { return m_properties.get(); }
     MutableStylePropertySet* mutableProperties();
@@ -62,7 +62,7 @@ public:
 private:
     StyleKeyframe();
 
-    static void parseKeyString(const String&, Vector<float>& keys);
+    static void parseKeyString(const String&, Vector<double>& keys);
 
     RefPtr<StylePropertySet> m_properties;
     // FIXME: This should be a parsed vector of floats.

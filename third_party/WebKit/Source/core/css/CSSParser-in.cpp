@@ -11508,7 +11508,7 @@ StyleKeyframe* CSSParser::createKeyframe(CSSParserValueList* keys)
     StringBuilder keyString;
     for (unsigned i = 0; i < keys->size(); ++i) {
         ASSERT(keys->valueAt(i)->unit == CSSPrimitiveValue::CSS_NUMBER);
-        float key = static_cast<float>(keys->valueAt(i)->fValue);
+        double key = keys->valueAt(i)->fValue;
         if (key < 0 || key > 100) {
             // As per http://www.w3.org/TR/css3-animations/#keyframes,
             // "If a keyframe selector specifies negative percentage values
