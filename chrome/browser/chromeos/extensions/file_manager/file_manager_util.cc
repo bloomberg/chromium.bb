@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
@@ -75,8 +76,6 @@ using extensions::app_file_handler_util::PathAndMimeTypeSet;
 using extensions::Extension;
 using fileapi::FileSystemURL;
 
-const char kFileBrowserDomain[] = "hhaomjibdihmijegdhdafkllkbggdgoj";
-
 namespace file_manager {
 namespace util {
 namespace {
@@ -95,7 +94,7 @@ const char* kBrowserSupportedExtensions[] = {
 
 // Returns a file manager URL for the given |path|.
 GURL GetFileManagerUrl(const char* path) {
-  return GURL(std::string("chrome-extension://") + kFileBrowserDomain + path);
+  return GURL(std::string("chrome-extension://") + kFileManagerAppId + path);
 }
 
 bool IsSupportedBrowserExtension(const char* file_extension) {
@@ -234,13 +233,13 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
   // File browser always runs in the site for its extension id, so that is the
   // site for which file access permissions should be granted.
   GURL site = extensions::ExtensionSystem::Get(profile)->extension_service()->
-      GetSiteForExtensionId(kFileBrowserDomain);
+      GetSiteForExtensionId(kFileManagerAppId);
   fileapi::ExternalFileSystemBackend* backend =
       BrowserContext::GetStoragePartitionForSite(profile, site)->
           GetFileSystemContext()->external_backend();
   if (!backend)
     return false;
-  backend->GrantFullAccessToExtension(kFileBrowserDomain);
+  backend->GrantFullAccessToExtension(kFileManagerAppId);
   return true;
 }
 
@@ -255,7 +254,7 @@ void OpenFileWithTask(Profile* profile,
 
   fileapi::FileSystemContext* file_system_context =
       fileapi_util::GetFileSystemContextForExtensionId(
-          profile, kFileBrowserDomain);
+          profile, kFileManagerAppId);
 
   // We are executing the task on behalf of File Browser extension.
   const GURL source_url = GetFileBrowserUrl();
@@ -265,7 +264,7 @@ void OpenFileWithTask(Profile* profile,
   file_tasks::ExecuteFileTask(
       profile,
       source_url,
-      kFileBrowserDomain,
+      kFileManagerAppId,
       0, // no tab id
       task,
       urls,
@@ -284,10 +283,10 @@ void OpenFileWithInternalActionId(const base::FilePath& path,
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
+  if (!ConvertFileToFileSystemUrl(profile, path, kFileManagerAppId, &url))
     return;
 
-  file_tasks::TaskDescriptor task(kFileBrowserDomain,
+  file_tasks::TaskDescriptor task(kFileManagerAppId,
                                   file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,
                                   action_id);
   OpenFileWithTask(profile, task, url);
@@ -406,7 +405,7 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
 
   // Some action IDs of the file manager's file browser handlers require the
   // file to be directly opened with the browser.
-  if (extension_id == kFileBrowserDomain &&
+  if (extension_id == kFileManagerAppId &&
       ShouldBeOpenedWithBrowser(action_id)) {
     return OpenFileWithBrowser(browser, path);
   }
@@ -425,7 +424,7 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
 bool OpenFileWithHandlerOrBrowser(Profile* profile,
                                   const base::FilePath& path) {
   GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url))
+  if (!ConvertFileToFileSystemUrl(profile, path, kFileManagerAppId, &url))
     return false;
 
   std::string mime_type = GetMimeTypeForPath(path);
@@ -698,7 +697,7 @@ void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   base::FilePath virtual_path;
-  if (!ConvertFileToRelativeFileSystemPath(profile, kFileBrowserDomain, path,
+  if (!ConvertFileToRelativeFileSystemPath(profile, kFileManagerAppId, path,
                                            &virtual_path))
     return;
   GURL dialog_url = GetActionChoiceUrl(virtual_path, advanced_mode);
@@ -723,7 +722,7 @@ void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
     return;
 
   const extensions::Extension* extension =
-      service->GetExtensionById(kFileBrowserDomain, false);
+      service->GetExtensionById(kFileManagerAppId, false);
   if (!extension)
     return;
 
@@ -740,7 +739,7 @@ void ViewItem(const base::FilePath& path) {
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path, kFileBrowserDomain, &url) ||
+  if (!ConvertFileToFileSystemUrl(profile, path, kFileManagerAppId, &url) ||
       !GrantFileSystemAccessToFileBrowser(profile)) {
     ShowWarningMessageBox(profile, path);
     return;
@@ -748,7 +747,7 @@ void ViewItem(const base::FilePath& path) {
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
       fileapi_util::GetFileSystemContextForExtensionId(
-          profile, kFileBrowserDomain);
+          profile, kFileManagerAppId);
 
   CheckIfDirectoryExists(file_system_context, url,
                          base::Bind(&ContinueViewItem, profile, path));

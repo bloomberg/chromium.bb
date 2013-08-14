@@ -204,7 +204,7 @@
 #endif
 
 #if defined(FILE_MANAGER_EXTENSION)
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #endif
 
 #if defined(TOOLKIT_GTK)
@@ -2253,7 +2253,7 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
   // file manager, which is implemented using WebUI but wants HW acceleration
   // for video decode & render.
   if (url.SchemeIs(extensions::kExtensionScheme) &&
-      url.host() == kFileBrowserDomain) {
+      url.host() == file_manager::kFileManagerAppId) {
     web_prefs->accelerated_compositing_enabled = true;
     web_prefs->accelerated_2d_canvas_enabled = true;
   }

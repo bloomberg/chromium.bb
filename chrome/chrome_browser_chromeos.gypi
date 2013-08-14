@@ -319,6 +319,7 @@
         'browser/chromeos/extensions/external_cache.h',
         'browser/chromeos/extensions/external_pref_cache_loader.cc',
         'browser/chromeos/extensions/external_pref_cache_loader.h',
+        'browser/chromeos/extensions/file_manager/app_id.h',
         'browser/chromeos/extensions/file_manager/desktop_notifications.cc',
         'browser/chromeos/extensions/file_manager/desktop_notifications.h',
         'browser/chromeos/extensions/file_manager/event_router.cc',

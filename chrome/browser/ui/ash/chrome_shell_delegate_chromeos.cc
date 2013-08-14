@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/background/ash_user_wallpaper_delegate.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
@@ -69,19 +69,20 @@ void ChromeShellDelegate::OpenFileManager(bool as_dialog) {
       return;
     }
   } else {
+    using file_manager::kFileManagerAppId;
     Profile* const profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
     const apps::ShellWindowRegistry* const registry =
         apps::ShellWindowRegistry::Get(profile);
     const apps::ShellWindowRegistry::ShellWindowList list =
-        registry->GetShellWindowsForApp(kFileBrowserDomain);
+        registry->GetShellWindowsForApp(kFileManagerAppId);
     if (list.empty()) {
       // Open the new window.
       const ExtensionService* const service = profile->GetExtensionService();
       if (service == NULL ||
-          !service->IsExtensionEnabledForLauncher(kFileBrowserDomain))
+          !service->IsExtensionEnabledForLauncher(kFileManagerAppId))
         return;
       const extensions::Extension* const extension =
-          service->GetInstalledExtension(kFileBrowserDomain);
+          service->GetInstalledExtension(kFileManagerAppId);
       // event_flags = 0 means this invokes the same behavior as the launcher
       // item is clicked without any keyboard modifiers.
       chrome::OpenApplication(

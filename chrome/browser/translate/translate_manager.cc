@@ -53,7 +53,7 @@
 #include "net/http/http_status_code.h"
 
 #ifdef FILE_MANAGER_EXTENSION
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -106,7 +106,7 @@ bool TranslateManager::IsTranslatableURL(const GURL& url) {
          !url.SchemeIs(chrome::kChromeDevToolsScheme) &&
 #ifdef FILE_MANAGER_EXTENSION
          !(url.SchemeIs(extensions::kExtensionScheme) &&
-           url.DomainIs(kFileBrowserDomain)) &&
+           url.DomainIs(file_manager::kFileManagerAppId)) &&
 #endif
          !url.SchemeIs(chrome::kFtpScheme);
 }

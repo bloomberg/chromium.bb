@@ -9,6 +9,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -481,7 +482,7 @@ bool ExecuteFileBrowserHandler(
 
 bool IsFallbackFileBrowserHandler(const FileBrowserHandler* handler) {
   const std::string& extension_id = handler->extension_id();
-  return (extension_id == kFileBrowserDomain ||
+  return (extension_id == kFileManagerAppId ||
           extension_id == extension_misc::kQuickOfficeComponentExtensionId ||
           extension_id == extension_misc::kQuickOfficeDevExtensionId ||
           extension_id == extension_misc::kQuickOfficeExtensionId);
@@ -561,10 +562,10 @@ FileBrowserHandlerList FindCommonFileBrowserHandlers(
   // "watch" and "gallery" are defined in the file manager's manifest.json.
   FileBrowserHandlerList::iterator watch_iter =
       FindFileBrowserHandlerForExtensionIdAndActionId(
-          &common_handlers, kFileBrowserDomain, "watch");
+          &common_handlers, kFileManagerAppId, "watch");
   FileBrowserHandlerList::iterator gallery_iter =
       FindFileBrowserHandlerForExtensionIdAndActionId(
-          &common_handlers, kFileBrowserDomain, "gallery");
+          &common_handlers, kFileManagerAppId, "gallery");
   if (watch_iter != common_handlers.end() &&
       gallery_iter != common_handlers.end()) {
     // Both "watch" and "gallery" actions are applicable which means that the

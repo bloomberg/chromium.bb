@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system_interface.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/file_manager/desktop_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/mounted_disk_monitor.h"
@@ -578,7 +579,7 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
            iter = drive_jobs_.begin(); iter != drive_jobs_.end(); ++iter) {
 
     scoped_ptr<base::DictionaryValue> job_info_dict(
-        JobInfoToDictionaryValue(kFileBrowserDomain,
+        JobInfoToDictionaryValue(kFileManagerAppId,
                                  iter->second.status,
                                  iter->second.job_info));
     event_list->Append(job_info_dict.release());
@@ -589,7 +590,7 @@ void EventRouter::SendDriveFileTransferEvent(bool always) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::event_names::kOnFileTransfersUpdated, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
-      DispatchEventToExtension(kFileBrowserDomain, event.Pass());
+      DispatchEventToExtension(kFileManagerAppId, event.Pass());
 
   last_file_transfer_event_ = now;
 }
@@ -717,7 +718,7 @@ void EventRouter::DispatchMountEvent(
     // exposed within File API.
     if (util::ConvertFileToRelativeFileSystemPath(
             profile_,
-            kFileBrowserDomain,
+            kFileManagerAppId,
             base::FilePath(mount_info.mount_path),
             &relative_mount_path)) {
       mount_info_value->SetString("mountPath",
