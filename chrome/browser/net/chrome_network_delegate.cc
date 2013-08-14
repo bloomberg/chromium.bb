@@ -241,6 +241,18 @@ int64 ListPrefInt64Value(const base::ListValue& list_update, size_t index) {
   return value;
 }
 
+// Ensure list has exactly n elements.
+void MaintainContentLengthPrefsWindow(base::ListValue* list, size_t n) {
+  // Remove data for old days from the front.
+  while (list->GetSize() > n)
+    list->Remove(0, NULL);
+  // Newly added lists are empty. Add entries to back to fill the window,
+  // each initialized to zero.
+  while (list->GetSize() < n)
+    list->AppendString(base::Int64ToString(0));
+  DCHECK_EQ(n, list->GetSize());
+}
+
 void RecordDailyContentLengthHistograms(
     int64 original_length,
     int64 received_length,
@@ -326,6 +338,15 @@ void UpdateContentLengthPrefs(int received_content_length,
   ListPrefUpdate via_data_reduction_update(
       prefs, prefs::kDailyHttpReceivedContentLengthViaDataReductionProxy);
 
+  // New empty lists may have been created. Maintain the invariant that
+  // there should be exactly |kNumDaysInHistory| days in the histories.
+  MaintainContentLengthPrefsWindow(original_update.Get(), kNumDaysInHistory);
+  MaintainContentLengthPrefsWindow(received_update.Get(), kNumDaysInHistory);
+  MaintainContentLengthPrefsWindow(
+      data_reduction_enabled_update.Get(), kNumDaysInHistory);
+  MaintainContentLengthPrefsWindow(
+      via_data_reduction_update.Get(), kNumDaysInHistory);
+
   // Determine how many days it has been since the last update.
   int64 then_internal = prefs->GetInt64(
       prefs::kDailyHttpContentLengthLastUpdateDate);
@@ -376,8 +397,9 @@ void UpdateContentLengthPrefs(int received_content_length,
           ListPrefInt64Value(*via_data_reduction_update,
                              via_data_reduction_update->GetSize() - 1));
     }
-
-    // Add entries for days since last update.
+    // Add entries for days since last update event. This will make the
+    // lists longer than kNumDaysInHistory. The additional items will be cut off
+    // from the head of the lists by MaintainContentLengthPrefsWindow, below.
     for (int i = 0;
          i < days_since_last_update && i < static_cast<int>(kNumDaysInHistory);
          ++i) {
@@ -387,22 +409,15 @@ void UpdateContentLengthPrefs(int received_content_length,
       via_data_reduction_update->AppendString(base::Int64ToString(0));
     }
 
-    // Maintain the invariant that there should never be more than
-    // |kNumDaysInHistory| days in the histories.
-    while (original_update->GetSize() > kNumDaysInHistory)
-      original_update->Remove(0, NULL);
-    while (received_update->GetSize() > kNumDaysInHistory)
-      received_update->Remove(0, NULL);
-    while (data_reduction_enabled_update->GetSize() > kNumDaysInHistory)
-      data_reduction_enabled_update->Remove(0, NULL);
-    while (via_data_reduction_update->GetSize() > kNumDaysInHistory)
-      via_data_reduction_update->Remove(0, NULL);
+    // Entries for new days may have been appended. Maintain the invariant that
+    // there should be exactly |kNumDaysInHistory| days in the histories.
+    MaintainContentLengthPrefsWindow(original_update.Get(), kNumDaysInHistory);
+    MaintainContentLengthPrefsWindow(received_update.Get(), kNumDaysInHistory);
+    MaintainContentLengthPrefsWindow(
+        data_reduction_enabled_update.Get(), kNumDaysInHistory);
+    MaintainContentLengthPrefsWindow(
+        via_data_reduction_update.Get(), kNumDaysInHistory);
   }
-
-  DCHECK_EQ(kNumDaysInHistory, original_update->GetSize());
-  DCHECK_EQ(kNumDaysInHistory, received_update->GetSize());
-  DCHECK_EQ(kNumDaysInHistory, data_reduction_enabled_update->GetSize());
-  DCHECK_EQ(kNumDaysInHistory, via_data_reduction_update->GetSize());
 
   // Update the counts for the current day.
   AddInt64ToListPref(kNumDaysInHistory - 1,
