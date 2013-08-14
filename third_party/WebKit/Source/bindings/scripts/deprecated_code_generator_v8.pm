@@ -2191,14 +2191,6 @@ END
     }
 
     my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
-    if (!$raisesExceptions) {
-        foreach my $parameter (@{$function->parameters}) {
-            if ($parameter->extendedAttributes->{"IsIndex"}) {
-                $raisesExceptions = 1;
-            }
-        }
-    }
-
     if ($raisesExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(args.GetIsolate());\n";
@@ -2417,14 +2409,6 @@ sub GenerateParametersCheck
             }
         }
 
-        if ($parameter->extendedAttributes->{"IsIndex"}) {
-            AddToImplIncludes("core/dom/ExceptionCode.h");
-            $parameterCheckString .= "    if (UNLIKELY($parameterName < 0)) {\n";
-            $parameterCheckString .= "        setDOMException(IndexSizeError, args.GetIsolate());\n";
-            $parameterCheckString .= "        return;\n";
-            $parameterCheckString .= "    }\n";
-        }
-
         $paramIndex++;
     }
     return ($parameterCheckString, $paramIndex, %replacements);
@@ -2479,13 +2463,6 @@ sub GenerateSingleConstructorCallback
     my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $raisesExceptions = 1;
-    }
-    if (!$raisesExceptions) {
-        foreach my $parameter (@{$function->parameters}) {
-            if ($parameter->extendedAttributes->{"IsIndex"}) {
-                $raisesExceptions = 1;
-            }
-        }
     }
 
     my @beforeArgumentList;
@@ -2745,13 +2722,6 @@ sub GenerateNamedConstructor
     my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
     if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
         $raisesExceptions = 1;
-    }
-    if (!$raisesExceptions) {
-        foreach my $parameter (@{$function->parameters}) {
-            if ($parameter->extendedAttributes->{"IsIndex"}) {
-                $raisesExceptions = 1;
-            }
-        }
     }
 
     my $maybeObserveFeature = GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
@@ -4982,10 +4952,6 @@ sub GetNativeType
     return "double" if $type eq "double";
     return "int" if $type eq "long" or $type eq "int" or $type eq "short" or $type eq "byte";
     if ($type eq "unsigned long" or $type eq "unsigned int" or $type eq "unsigned short" or $type eq "octet") {
-        if ($extendedAttributes->{"IsIndex"}) {
-            # Special-case index arguments because we need to check that they aren't < 0.
-            return "int";
-        }
         return "unsigned";
     }
     return "long long" if $type eq "long long";
@@ -5065,10 +5031,6 @@ sub JSValueToNativeStatement
     my $getIsolate = shift;
 
     my $nativeType = GetNativeType($type, $extendedAttributes, "parameter");
-    if ($type eq "unsigned long" and $extendedAttributes->{"IsIndex"}) {
-        # Special-case index arguments because we need to check that they aren't < 0.
-        $nativeType = "int";
-    }
     my $native_value = JSValueToNative($type, $extendedAttributes, $jsValue, $getIsolate);
     my $code = "";
     if ($type eq "DOMString" || IsEnumType($type)) {

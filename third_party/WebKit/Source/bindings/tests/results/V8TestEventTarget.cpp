@@ -31,7 +31,6 @@
 #include "bindings/v8/V8DOMWrapper.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "wtf/GetPtr.h"
@@ -73,12 +72,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
         return;
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
-    ExceptionState es(args.GetIsolate());
-    V8TRYCATCH_VOID(int, index, toUInt32(args[0]));
-    if (UNLIKELY(index < 0)) {
-        setDOMException(IndexSizeError, args.GetIsolate());
-        return;
-    }
+    V8TRYCATCH_VOID(unsigned, index, toUInt32(args[0]));
     v8SetReturnValue(args, toV8(imp->item(index), args.Holder(), args.GetIsolate()));
     return;
 }

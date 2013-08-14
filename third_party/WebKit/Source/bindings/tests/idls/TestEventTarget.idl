@@ -30,7 +30,7 @@
     MasqueradesAsUndefined
 ] interface TestEventTarget : EventTarget {
 
-    getter Node item([IsIndex] unsigned long index);
+    getter Node item(unsigned long index);
     [ImplementedAs=anonymousIndexedSetter] setter Node (unsigned long index, Node node);
     getter Node namedItem(DOMString name);
     [ImplementedAs=anonymousNamedSetter] setter Node(DOMString name, [TreatUndefinedAs=anonymousNamedSetterUndefined] DOMString value);
