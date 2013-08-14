@@ -148,6 +148,10 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
   if (GetTextInputClient()) {
     GetTextInputClient()->InsertChar(static_cast<char16>(wparam),
                                      ui::GetModifiersFromKeyState());
+
+    // If Windows sends a WM_CHAR, then any previously sent WM_DEADCHARs (which
+    // are displayed as the composition text) should be cleared.
+    GetTextInputClient()->ClearCompositionText();
   }
 
   // Explicitly show the system menu at a good location on [Alt]+[Space].
