@@ -73,7 +73,8 @@ inline double getseconds() {
   return 0.0;
 }
 
-inline uint32_t MakeRGBA(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+// BGRA helper function, for constructing a pixel for a BGRA buffer.
+inline uint32_t MakeBGRA(uint32_t b, uint32_t g, uint32_t r, uint32_t a) {
   return (((a) << 24) | ((r) << 16) | ((g) << 8) | (b));
 }
 }  // namespace
@@ -162,7 +163,7 @@ void Voronoi::Reset() {
     const float v = (frand() * 2.0f - 1.0f) * speed;
     velocities_[i].Set(u, v);
     // 'unique' color (well... unique enough for our purposes)
-    colors_[i] = MakeRGBA(rand255(), rand255(), rand255(), 255);
+    colors_[i] = MakeBGRA(rand255(), rand255(), rand255(), 255);
   }
 }
 
@@ -173,7 +174,7 @@ Voronoi::Voronoi() : num_regions_(kDefaultNumRegions), num_threads_(0),
   // By default, render from the dispatch thread.
   workers_ = new ThreadPool(num_threads_);
   PSEventSetFilter(PSE_ALL);
-  ps_context_ = PSContext2DAllocate();
+  ps_context_ = PSContext2DAllocate(PP_IMAGEDATAFORMAT_BGRA_PREMUL);
 }
 
 Voronoi::~Voronoi() {
@@ -243,7 +244,7 @@ bool Voronoi::wTestRect(int* m, int x, int y, int w, int h) {
 // If multithreading, this function is only called by the worker threads.
 inline void Voronoi::wFillSpan(uint32_t* pixels, uint32_t color, int width) {
   if (!draw_interiors_) {
-    const uint32_t gray = MakeRGBA(128, 128, 128, 255);
+    const uint32_t gray = MakeBGRA(128, 128, 128, 255);
     color = gray;
   }
   for (int i = 0; i < width; i += 4) {
@@ -394,8 +395,8 @@ void Voronoi::RenderDot(float x, float y, uint32_t color1, uint32_t color2) {
 
 // Superimposes dots on the positions.
 void Voronoi::SuperimposePositions() {
-  const uint32_t white = MakeRGBA(255, 255, 255, 255);
-  const uint32_t gray = MakeRGBA(192, 192, 192, 255);
+  const uint32_t white = MakeBGRA(255, 255, 255, 255);
+  const uint32_t gray = MakeBGRA(192, 192, 192, 255);
   for (int i = 0; i < point_count_; i++) {
     RenderDot(
         screen_positions_[i].x, screen_positions_[i].y, white, gray);

@@ -75,7 +75,7 @@ int example_main(int argc, char* argv[]) {
 
   PSEventSetFilter(PSE_ALL);
 
-  PSContext2D_t* ctx = PSContext2DAllocate();
+  PSContext2D_t* ctx = PSContext2DAllocate(PP_IMAGEDATAFORMAT_BGRA_PREMUL);
   bool running = true;
   while (running) {
     PSEvent* event;

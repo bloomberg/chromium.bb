@@ -1,6 +1,6 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.auto
+// found in the LICENSE file.
 
 #include <stdlib.h>
 #include <string.h>
@@ -21,11 +21,11 @@
 #include "ppapi_simple/ps_instance.h"
 #include "ppapi_simple/ps_interface.h"
 
-PSContext2D_t* PSContext2DAllocate() {
+PSContext2D_t* PSContext2DAllocate(PP_ImageDataFormat format) {
   PSContext2D_t* ctx = (PSContext2D_t*) malloc(sizeof(PSContext2D_t));
   memset(ctx, 0, sizeof(PSContext2D_t));
 
-  ctx->format = PSInterfaceImageData()->GetNativeImageDataFormat();
+  ctx->format = format;
   return ctx;
 }
 
@@ -39,6 +39,10 @@ void PSContext2DFree(PSContext2D_t* ctx) {
     ctx->image = 0;
   }
   free(ctx);
+}
+
+PP_ImageDataFormat PSContext2DGetNativeImageDataFormat() {
+  return PSInterfaceImageData()->GetNativeImageDataFormat();
 }
 
 // Update the 2D context if the message is appropriate, returning non-zero

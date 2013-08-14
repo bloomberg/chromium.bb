@@ -60,7 +60,7 @@ inline double getseconds() {
   return 0.0;
 }
 
-// RGBA helper functions.
+// RGBA helper functions, used for extracting color from RGBA source image.
 inline float ExtractR(uint32_t c) {
   return static_cast<float>(c & 0xFF) * kOneOver255;
 }
@@ -73,7 +73,8 @@ inline float ExtractB(uint32_t c) {
   return static_cast<float>((c & 0xFF0000) >> 16) * kOneOver255;
 }
 
-inline uint32_t MakeRGBA(uint32_t r, uint32_t g, uint32_t b, uint32_t a) {
+// BGRA helper function, for constructing a pixel for a BGRA buffer.
+inline uint32_t MakeBGRA(uint32_t b, uint32_t g, uint32_t r, uint32_t a) {
   return (((a) << 24) | ((r) << 16) | ((g) << 8) | (b));
 }
 
@@ -353,7 +354,7 @@ Planet::Planet() : base_tex_(NULL), night_tex_(NULL), num_threads_(0),
   // By default, render from the dispatch thread.
   workers_ = new ThreadPool(num_threads_);
   PSEventSetFilter(PSE_ALL);
-  ps_context_ = PSContext2DAllocate();
+  ps_context_ = PSContext2DAllocate(PP_IMAGEDATAFORMAT_BGRA_PREMUL);
 }
 
 Planet::~Planet() {
@@ -382,7 +383,7 @@ inline uint32_t* Planet::wGetAddr(int x, int y) {
 void Planet::wRenderPixelSpan(int x0, int x1, int y) {
   if (!base_tex_ || !night_tex_)
     return;
-  const int kColorBlack = MakeRGBA(0, 0, 0, 0xFF);
+  const int kColorBlack = MakeBGRA(0, 0, 0, 0xFF);
   float width = ps_context_->width;
   float height = ps_context_->height;
   float min_dim = width < height ? width : height;
@@ -495,7 +496,7 @@ void Planet::wRenderPixelSpan(int x0, int x1, int y) {
     unsigned int ig = Clamp255(pg * tg + ng * ipg);
     unsigned int ib = Clamp255(pb * tb + nb * ipb);
 
-    unsigned int color = MakeRGBA(ir, ig, ib, 0xFF);
+    unsigned int color = MakeBGRA(ib, ig, ir, 0xFF);
 
     *pixels = color;
     ++pixels;

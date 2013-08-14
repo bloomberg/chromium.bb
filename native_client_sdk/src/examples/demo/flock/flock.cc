@@ -116,7 +116,7 @@ int example_main(int argc, char *argv[]) {
 
   g_goose_sprite = new Sprite(buffer, pp::Size(fmt.width, fmt.height), 0);
 
-  PSContext2D_t* ctx = PSContext2DAllocate();
+  PSContext2D_t* ctx = PSContext2DAllocate(PP_IMAGEDATAFORMAT_BGRA_PREMUL);
   ResetFlock(ctx, 50);
   while (1) {
     PSEvent* event;
