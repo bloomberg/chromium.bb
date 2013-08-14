@@ -50,7 +50,8 @@ enum RunTestFlags {
   kNone = 0,
   kInternal = 1 << 0,         // Test uses internal test data.
   kAllowExternalDNS = 1 << 1, // Test needs external DNS lookup.
-  kIsGpuCanvasTest = 1 << 2   // Test uses GPU accelerated canvas features.
+  kIsGpuCanvasTest = 1 << 2,  // Test uses GPU accelerated canvas features.
+  kIsFlaky = 1 << 3
 };
 
 enum ThroughputTestFlags {
@@ -369,7 +370,9 @@ class ThroughputTest : public BrowserPerfTest {
       frames = &events_sw;
       EXPECT_EQ(0u, events_gpu.size());
     }
-    ASSERT_GT(frames->size(), 20u);
+    if (!(flags & kIsFlaky)) {
+      ASSERT_GT(frames->size(), 20u);
+    }
     // Cull a few leading and trailing events as they might be unreliable.
     TraceEventVector rate_events(frames->begin() + kIgnoreSomeFrames,
                                  frames->end() - kIgnoreSomeFrames);
@@ -536,7 +539,8 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestSW, DrawImageShadowSW) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
-  RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest);
+  // TODO(junov): Fix test flakiness crbug.com/272383
+  RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest | kIsFlaky);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestThread, DrawImageShadowGPU) {
