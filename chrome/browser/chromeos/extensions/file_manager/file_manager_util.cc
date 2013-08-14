@@ -1,19 +1,18 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/file_system.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handlers.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/url_util.h"
 #include "chrome/browser/chromeos/media/media_player.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -65,8 +65,6 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-using base::DictionaryValue;
-using base::ListValue;
 using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
@@ -91,11 +89,6 @@ const char* kBrowserSupportedExtensions[] = {
     ".bmp", ".jpg", ".jpeg", ".png", ".webp", ".gif", ".txt", ".html", ".htm",
     ".mhtml", ".mht", ".svg"
 };
-
-// Returns a file manager URL for the given |path|.
-GURL GetFileManagerUrl(const char* path) {
-  return GURL(std::string("chrome-extension://") + kFileManagerAppId + path);
-}
 
 bool IsSupportedBrowserExtension(const char* file_extension) {
   for (size_t i = 0; i < arraysize(kBrowserSupportedExtensions); i++) {
@@ -137,42 +130,6 @@ bool IsFlashPluginEnabled(Profile* profile) {
   if (plugin_path.empty())
     PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &plugin_path);
   return IsPepperPluginEnabled(profile, plugin_path);
-}
-
-// Convert numeric dialog type to a string.
-std::string GetDialogTypeAsString(
-    ui::SelectFileDialog::Type dialog_type) {
-  std::string type_str;
-  switch (dialog_type) {
-    case ui::SelectFileDialog::SELECT_NONE:
-      type_str = "full-page";
-      break;
-
-    case ui::SelectFileDialog::SELECT_FOLDER:
-      type_str = "folder";
-      break;
-
-    case ui::SelectFileDialog::SELECT_UPLOAD_FOLDER:
-      type_str = "upload-folder";
-      break;
-
-    case ui::SelectFileDialog::SELECT_SAVEAS_FILE:
-      type_str = "saveas-file";
-      break;
-
-    case ui::SelectFileDialog::SELECT_OPEN_FILE:
-      type_str = "open-file";
-      break;
-
-    case ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE:
-      type_str = "open-multi-file";
-      break;
-
-    default:
-      NOTREACHED();
-  }
-
-  return type_str;
 }
 
 void OpenNewTab(Profile* profile, const GURL& url) {
@@ -257,7 +214,7 @@ void OpenFileWithTask(Profile* profile,
           profile, kFileManagerAppId);
 
   // We are executing the task on behalf of File Browser extension.
-  const GURL source_url = GetFileBrowserUrl();
+  const GURL source_url = GetFileManagerMainPageUrl();
   std::vector<FileSystemURL> urls;
   urls.push_back(file_system_context->CrackURL(url));
 
@@ -515,28 +472,6 @@ void CheckIfDirectoryExists(
 
 }  // namespace
 
-GURL GetFileBrowserExtensionUrl() {
-  return GetFileManagerUrl("/");
-}
-
-GURL GetFileBrowserUrl() {
-  return GetFileManagerUrl("/main.html");
-}
-
-GURL GetMediaPlayerUrl() {
-  return GetFileManagerUrl("/mediaplayer.html");
-}
-
-GURL GetActionChoiceUrl(const base::FilePath& virtual_path,
-                        bool advanced_mode) {
-  std::string url = GetFileManagerUrl("/action_choice.html").spec();
-  if (advanced_mode)
-    url += "?advanced-mode";
-  url += "#/" + net::EscapeUrlEncodedData(virtual_path.value(),
-                                          false);  // Space to %20 instead of +.
-  return GURL(url);
-}
-
 GURL ConvertRelativePathToFileSystemUrl(const base::FilePath& relative_path,
                                         const std::string& extension_id) {
   GURL base_url = fileapi::GetFileSystemRootURI(
@@ -586,63 +521,6 @@ bool ConvertFileToRelativeFileSystemPath(
     return false;
 
   return true;
-}
-
-GURL GetFileBrowserUrlWithParams(
-    ui::SelectFileDialog::Type type,
-    const string16& title,
-    const base::FilePath& default_virtual_path,
-    const ui::SelectFileDialog::FileTypeInfo* file_types,
-    int file_type_index,
-    const base::FilePath::StringType& default_extension) {
-  DictionaryValue arg_value;
-  arg_value.SetString("type", GetDialogTypeAsString(type));
-  arg_value.SetString("title", title);
-  arg_value.SetString("defaultPath", default_virtual_path.value());
-  arg_value.SetString("defaultExtension", default_extension);
-
-  if (file_types) {
-    ListValue* types_list = new ListValue();
-    for (size_t i = 0; i < file_types->extensions.size(); ++i) {
-      ListValue* extensions_list = new ListValue();
-      for (size_t j = 0; j < file_types->extensions[i].size(); ++j) {
-        extensions_list->Append(
-            new base::StringValue(file_types->extensions[i][j]));
-      }
-
-      DictionaryValue* dict = new DictionaryValue();
-      dict->Set("extensions", extensions_list);
-
-      if (i < file_types->extension_description_overrides.size()) {
-        string16 desc = file_types->extension_description_overrides[i];
-        dict->SetString("description", desc);
-      }
-
-      // file_type_index is 1-based. 0 means no selection at all.
-      dict->SetBoolean("selected",
-                       (static_cast<size_t>(file_type_index) == (i + 1)));
-
-      types_list->Set(i, dict);
-    }
-    arg_value.Set("typeList", types_list);
-
-    arg_value.SetBoolean("includeAllFiles", file_types->include_all_files);
-  }
-
-  // If the caller cannot handle Drive path, the file chooser dialog need to
-  // return resolved local native paths to the selected files.
-  arg_value.SetBoolean("shouldReturnLocalPath",
-                       !file_types || !file_types->support_drive);
-
-  std::string json_args;
-  base::JSONWriter::Write(&arg_value, &json_args);
-
-  // kChromeUIFileManagerURL could not be used since query parameters are not
-  // supported for it.
-  std::string url = GetFileBrowserUrl().spec() + '?' +
-      net::EscapeUrlEncodedData(json_args,
-                                false);  // Space to %20 instead of +.
-  return GURL(url);
 }
 
 string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {

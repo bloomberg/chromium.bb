@@ -336,6 +336,8 @@
         'browser/chromeos/extensions/file_manager/fileapi_util.h',
         'browser/chromeos/extensions/file_manager/mounted_disk_monitor.cc',
         'browser/chromeos/extensions/file_manager/mounted_disk_monitor.h',
+        'browser/chromeos/extensions/file_manager/url_util.cc',
+        'browser/chromeos/extensions/file_manager/url_util.h',
         'browser/chromeos/extensions/file_manager/zip_file_creator.cc',
         'browser/chromeos/extensions/file_manager/zip_file_creator.h',
         'browser/chromeos/extensions/info_private_api.cc',

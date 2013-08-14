@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/url_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -348,11 +349,12 @@ void SelectFileDialogExtension::SelectFileImpl(
   has_multiple_file_type_choices_ =
       file_types ? file_types->extensions.size() > 1 : true;
 
-  GURL file_browser_url = file_manager::util::GetFileBrowserUrlWithParams(
-      type, title, virtual_path, file_types, file_type_index,
-      default_extension);
+  GURL file_manager_url =
+      file_manager::util::GetFileManagerMainPageUrlWithParams(
+          type, title, virtual_path, file_types, file_type_index,
+          default_extension);
 
-  ExtensionDialog* dialog = ExtensionDialog::Show(file_browser_url,
+  ExtensionDialog* dialog = ExtensionDialog::Show(file_manager_url,
       base_window, profile_, web_contents,
       kFileManagerWidth, kFileManagerHeight,
       kFileManagerWidth,

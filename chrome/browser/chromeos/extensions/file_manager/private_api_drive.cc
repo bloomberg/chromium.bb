@@ -9,9 +9,9 @@
 #include "chrome/browser/chromeos/drive/drive_app_registry.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/logging.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/url_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -24,7 +24,6 @@ using content::BrowserThread;
 
 namespace file_manager {
 namespace {
-
 
 // List of connection types of drive.
 // Keep this in sync with the DriveConnectionType in volume_manager.js.
@@ -677,7 +676,7 @@ bool GetShareUrlFunction::RunImpl() {
 
   integration_service->file_system()->GetShareUrl(
       drive_path,
-      util::GetFileBrowserExtensionUrl(),  // embed origin
+      util::GetFileManagerBaseUrl(),  // embed origin
       base::Bind(&GetShareUrlFunction::OnGetShareUrl, this));
   return true;
 }

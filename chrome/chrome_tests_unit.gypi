@@ -655,6 +655,7 @@
         'browser/chromeos/extensions/file_manager/desktop_notifications_unittest.cc',
         'browser/chromeos/extensions/file_manager/file_tasks_unittest.cc',
         'browser/chromeos/extensions/file_manager/file_watcher_unittest.cc',
+        'browser/chromeos/extensions/file_manager/url_util_unittest.cc',
         'browser/chromeos/extensions/wallpaper_private_api_unittest.cc',
         'browser/chromeos/external_metrics_unittest.cc',
         'browser/chromeos/fileapi/file_access_permissions_unittest.cc',

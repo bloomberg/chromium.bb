@@ -18,11 +18,6 @@ class Profile;
 namespace file_manager {
 namespace util {
 
-// Gets base file browser url.
-GURL GetFileBrowserExtensionUrl();
-GURL GetFileBrowserUrl();
-GURL GetMediaPlayerUrl();
-
 // Converts |relative_path| (e.g., "drive/root" or "Downloads") into external
 // filesystem URL (e.g., filesystem://id/external/drive/root).
 GURL ConvertRelativePathToFileSystemUrl(const base::FilePath& relative_path,
@@ -43,15 +38,6 @@ bool ConvertFileToRelativeFileSystemPath(Profile* profile,
                                          const std::string& extension_id,
                                          const base::FilePath& full_file_path,
                                          base::FilePath* relative_path);
-
-// Gets base file browser url for.
-GURL GetFileBrowserUrlWithParams(
-    ui::SelectFileDialog::Type type,
-    const string16& title,
-    const base::FilePath& default_virtual_path,
-    const ui::SelectFileDialog::FileTypeInfo* file_types,
-    int file_type_index,
-    const base::FilePath::StringType& default_extension);
 
 // Get file dialog title string from its type.
 string16 GetTitleFromType(ui::SelectFileDialog::Type type);

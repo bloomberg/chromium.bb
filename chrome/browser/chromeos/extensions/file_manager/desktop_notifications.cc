@@ -8,7 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/url_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "grit/generated_resources.h"
@@ -170,7 +170,7 @@ class DesktopNotifications::NotificationMessage {
     // TODO(mukai): refactor here to invoke NotificationUIManager directly.
     const string16 replace_id = UTF8ToUTF16(notification_id);
     DesktopNotificationService::AddIconNotification(
-        util::GetFileBrowserExtensionUrl(), GetTitle(type),
+        util::GetFileManagerBaseUrl(), GetTitle(type),
         message, icon, replace_id,
         new Delegate(host->AsWeakPtr(), notification_id), profile);
   }
