@@ -392,7 +392,6 @@ void DiskCacheEntryTest::ExternalSyncIOBackground(disk_cache::Entry* entry) {
   EXPECT_EQ(
       25000,
       entry->ReadData(1, 0, buffer2.get(), kSize2, net::CompletionCallback()));
-  EXPECT_EQ(0, memcmp(buffer2->data(), buffer2->data(), 10000));
   EXPECT_EQ(5000,
             entry->ReadData(
                 1, 30000, buffer2.get(), kSize2, net::CompletionCallback()));
