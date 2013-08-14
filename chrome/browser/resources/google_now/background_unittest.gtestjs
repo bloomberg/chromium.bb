@@ -382,6 +382,7 @@ TEST_F('GoogleNowBackgroundUnitTest', 'Initialize_NoGeolocation', function() {
 function mockOnNotificationClickedDependencies(fixture) {
   fixture.makeAndRegisterMockApis([
       'chrome.windows.create',
+      'chrome.windows.update',
       'instrumented.storage.local.get',
       'instrumented.tabs.create']);
 }
@@ -488,7 +489,7 @@ TEST_F(
           notificationsData: {'TEST_ID': {actionUrls: testActionUrls}}
       };
       var testActionUrl = 'http://testurl.com';
-      var testCreatedTab = {};
+      var testCreatedTab = {windowId: 239};
 
       mockOnNotificationClickedDependencies(this);
       this.makeMockLocalFunctions(['selector']);
@@ -507,6 +508,9 @@ TEST_F(
               chromeTabsCreateSavedArgs.match(eqJSON({url: testActionUrl})),
               chromeTabsCreateSavedArgs.match(ANYTHING)).
           will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
+      this.mockApis.expects(once()).chrome_windows_update(
+          testCreatedTab.windowId, 
+          eqJSON({focused: true}));
 
       // Invoking the tested function.
       onNotificationClicked(
@@ -548,7 +552,7 @@ TEST_F(
               chromeTabsCreateSavedArgs.match(ANYTHING)).
           will(invokeCallback(chromeTabsCreateSavedArgs, 1, testCreatedTab));
       this.mockApis.expects(once()).chrome_windows_create(
-          eqJSON({url: testActionUrl}));
+          eqJSON({url: testActionUrl, focused: true}));
 
       // Invoking the tested function.
       onNotificationClicked(

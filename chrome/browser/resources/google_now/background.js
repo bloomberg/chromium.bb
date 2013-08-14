@@ -603,8 +603,10 @@ function onNotificationClicked(notificationId, selector) {
       return;
 
     instrumented.tabs.create({url: url}, function(tab) {
-      if (!tab)
-        chrome.windows.create({url: url});
+      if (tab)
+        chrome.windows.update(tab.windowId, {focused: true});
+      else
+        chrome.windows.create({url: url, focused: true});
     });
   });
 }
