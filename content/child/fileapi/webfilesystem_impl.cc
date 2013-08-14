@@ -9,11 +9,11 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_local.h"
 #include "content/child/child_thread.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
-#include "content/child/fileapi/webfilesystem_callback_adapters.h"
 #include "content/child/fileapi/webfilewriter_impl.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
@@ -196,6 +196,21 @@ void CallbackFileSystemCallbacks(
       base::Bind(&RunCallbacks<Method, Params>, callbacks_id, method, params));
 }
 
+//-----------------------------------------------------------------------------
+// Callback adapters. Callbacks must be called on the original calling thread,
+// so these callback adapters relay back the results to the calling thread
+// if necessary.
+
+void OpenFileSystemCallbackAdapter(
+    int thread_id, int callbacks_id,
+    WaitableCallbackResults* waitable_results,
+    const std::string& name, const GURL& root) {
+  CallbackFileSystemCallbacks(
+      thread_id, callbacks_id, waitable_results,
+      &WebFileSystemCallbacks::didOpenFileSystem,
+      MakeTuple(UTF8ToUTF16(name), root));
+}
+
 void StatusCallbackAdapter(int thread_id, int callbacks_id,
                            WaitableCallbackResults* waitable_results,
                            base::PlatformFileError error) {
@@ -315,6 +330,9 @@ void CreateSnapshotFileCallbackAdapter(
 
 }  // namespace
 
+//-----------------------------------------------------------------------------
+// WebFileSystemImpl
+
 WebFileSystemImpl* WebFileSystemImpl::ThreadSpecificInstance(
     base::MessageLoopProxy* main_thread_loop) {
   if (g_webfilesystem_tls.Pointer()->Get())
@@ -342,6 +360,47 @@ WebFileSystemImpl::~WebFileSystemImpl() {
 
 void WebFileSystemImpl::OnWorkerRunLoopStopped() {
   delete this;
+}
+
+void WebFileSystemImpl::openFileSystem(
+    const WebKit::WebURL& storage_partition,
+    WebKit::WebFileSystemType type,
+    bool create,
+    WebKit::WebFileSystemCallbacks* callbacks) {
+  int callbacks_id = CallbacksMap::GetOrCreate()->RegisterCallbacks(callbacks);
+  WaitableCallbackResults* waitable_results =
+      WaitableCallbackResults::MaybeCreate(callbacks);
+  CallDispatcherOnMainThread(
+      main_thread_loop_.get(),
+      &FileSystemDispatcher::OpenFileSystem,
+      MakeTuple(GURL(storage_partition),
+                static_cast<fileapi::FileSystemType>(type),
+                0 /* size (not used) */, create,
+                base::Bind(&OpenFileSystemCallbackAdapter,
+                           CurrentWorkerId(), callbacks_id,
+                           base::Unretained(waitable_results)),
+                base::Bind(&StatusCallbackAdapter,
+                           CurrentWorkerId(), callbacks_id,
+                           base::Unretained(waitable_results))),
+      make_scoped_ptr(waitable_results));
+}
+
+void WebFileSystemImpl::deleteFileSystem(
+    const WebKit::WebURL& storage_partition,
+    WebKit::WebFileSystemType type,
+    WebKit::WebFileSystemCallbacks* callbacks) {
+  int callbacks_id = CallbacksMap::GetOrCreate()->RegisterCallbacks(callbacks);
+  WaitableCallbackResults* waitable_results =
+      WaitableCallbackResults::MaybeCreate(callbacks);
+  CallDispatcherOnMainThread(
+      main_thread_loop_.get(),
+      &FileSystemDispatcher::DeleteFileSystem,
+      MakeTuple(GURL(storage_partition),
+                static_cast<fileapi::FileSystemType>(type),
+                base::Bind(&StatusCallbackAdapter,
+                           CurrentWorkerId(), callbacks_id,
+                           base::Unretained(waitable_results))),
+      make_scoped_ptr(waitable_results));
 }
 
 void WebFileSystemImpl::move(

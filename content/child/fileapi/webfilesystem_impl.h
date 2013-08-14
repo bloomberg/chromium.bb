@@ -43,6 +43,15 @@ class WebFileSystemImpl
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   // WebFileSystem implementation.
+  virtual void openFileSystem(
+      const WebKit::WebURL& storage_partition,
+      const WebKit::WebFileSystemType type,
+      bool create,
+      WebKit::WebFileSystemCallbacks*);
+  virtual void deleteFileSystem(
+      const WebKit::WebURL& storage_partition,
+      const WebKit::WebFileSystemType type,
+      WebKit::WebFileSystemCallbacks*);
   virtual void move(
       const WebKit::WebURL& src_path,
       const WebKit::WebURL& dest_path,
