@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 
-#include "FetchInitiatorTypeNames.h"
 #include "core/html/parser/HTMLIdentifier.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/platform/text/SegmentedString.h"
@@ -217,7 +216,7 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source)
         if (!url.isEmpty()) {
             KURL baseElementURL; // FIXME: This should be passed in from the HTMLPreloadScaner via scan()!
             TextPosition position = TextPosition(source.currentLine(), source.currentColumn());
-            OwnPtr<PreloadRequest> request = PreloadRequest::create(FetchInitiatorTypeNames::css, position, url, baseElementURL, Resource::CSSStyleSheet);
+            OwnPtr<PreloadRequest> request = PreloadRequest::create("css", position, url, baseElementURL, Resource::CSSStyleSheet);
             // FIXME: Should this be including the charset in the preload request?
             m_requests->append(request.release());
         }

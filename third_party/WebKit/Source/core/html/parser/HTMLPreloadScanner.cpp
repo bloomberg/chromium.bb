@@ -85,7 +85,7 @@ static String initiatorFor(const StringImpl* tagImpl)
     if (match(tagImpl, scriptTag))
         return scriptTag.localName();
     ASSERT_NOT_REACHED();
-    return emptyString();
+    return "unknown";
 }
 
 class TokenPreloadScanner::StartTagScanner {
