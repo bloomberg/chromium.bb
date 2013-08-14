@@ -6,5 +6,5 @@
    "background": {
      "scripts": ["background.js"]
    },
-   "permissions": [ "tabs", "experimental" ]
+   "permissions": [ "tabs", "processes" ]
 }

@@ -42,12 +42,11 @@ const char kCacheLiveSize[] = "liveSize";
 const char kCacheSize[] = "size";
 
 // Event names.
-const char kOnCreated[] = "experimental.processes.onCreated";
-const char kOnExited[] = "experimental.processes.onExited";
-const char kOnUnresponsive[] = "experimental.processes.onUnresponsive";
-const char kOnUpdated[] = "experimental.processes.onUpdated";
-const char kOnUpdatedWithMemory[] =
-    "experimental.processes.onUpdatedWithMemory";
+const char kOnCreated[] = "processes.onCreated";
+const char kOnExited[] = "processes.onExited";
+const char kOnUnresponsive[] = "processes.onUnresponsive";
+const char kOnUpdated[] = "processes.onUpdated";
+const char kOnUpdatedWithMemory[] = "processes.onUpdatedWithMemory";
 
 // Error strings.
 const char kExtensionNotSupported[] =

@@ -17,7 +17,6 @@
       <include name="IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST" file="extensions\api\declarative_web_request.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_ECHOPRIVATE" file="extensions\api\echo_private.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD" file="extensions\api\experimental_input_virtual_keyboard.json" type="BINDATA" />
-      <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES" file="extensions\api\experimental_processes.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ" file="extensions\api\experimental_rlz.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER" file="extensions\api\file_browser_handler.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_FILEBROWSERPRIVATE" file="extensions\api\file_browser_private.json" type="BINDATA" />
@@ -26,6 +25,7 @@
       <include name="IDR_EXTENSION_API_JSON_PAGEACTION" file="extensions\api\page_action.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PAGEACTIONS" file="extensions\api\page_actions.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PRIVACY" file="extensions\api\privacy.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_PROCESSES" file="extensions\api\processes.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_PROXY" file="extensions\api\proxy.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_RUNTIME" file="extensions\api\runtime.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_SCRIPTBADGE" file="extensions\api\script_badge.json" type="BINDATA" />

@@ -108,6 +108,7 @@ class APIPermission {
     kPower,
     kPreferencesPrivate,
     kPrivacy,
+    kProcesses,
     kProxy,
     kPushMessaging,
     kRecoveryPrivate,

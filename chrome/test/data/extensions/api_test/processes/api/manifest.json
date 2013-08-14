@@ -1,10 +1,10 @@
 {
-  "name": "chrome.experimental.processes",
+  "name": "chrome.processes",
   "version": "0.1",
   "manifest_version": 2,
-  "description": "end-to-end browser test for chrome.experimental.processes API",
+  "description": "end-to-end browser test for chrome.processes API",
   "background": {
     "page": "test.html"
   },
-  "permissions": ["experimental", "tabs"]
+  "permissions": ["processes", "tabs"]
 }

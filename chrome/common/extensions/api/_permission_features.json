@@ -491,6 +491,10 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]
   },
+  "processes": {
+    "channel": "dev",
+    "extension_types": ["extension"]
+  },
   "proxy": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

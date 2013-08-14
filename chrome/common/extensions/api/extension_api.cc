@@ -243,8 +243,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_DECLARATIVE_WEBREQUEST);
   RegisterSchemaResource("experimental.input.virtualKeyboard",
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_INPUT_VIRTUALKEYBOARD);
-  RegisterSchemaResource("experimental.processes",
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_PROCESSES);
   RegisterSchemaResource("experimental.rlz",
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ);
   RegisterSchemaResource("runtime", IDR_EXTENSION_API_JSON_RUNTIME);
@@ -257,6 +255,7 @@ void ExtensionAPI::InitDefaultConfiguration() {
   RegisterSchemaResource("pageAction", IDR_EXTENSION_API_JSON_PAGEACTION);
   RegisterSchemaResource("pageActions", IDR_EXTENSION_API_JSON_PAGEACTIONS);
   RegisterSchemaResource("privacy", IDR_EXTENSION_API_JSON_PRIVACY);
+  RegisterSchemaResource("processes", IDR_EXTENSION_API_JSON_PROCESSES);
   RegisterSchemaResource("proxy", IDR_EXTENSION_API_JSON_PROXY);
   RegisterSchemaResource("scriptBadge", IDR_EXTENSION_API_JSON_SCRIPTBADGE);
   RegisterSchemaResource("streamsPrivate",

@@ -9,7 +9,7 @@ function init() {
       var current = currentWindow.tabs.filter(function(tab) {
         return tab.active;
       })[0];
-      chrome.experimental.processes.getProcessIdForTab(current.id,
+      chrome.processes.getProcessIdForTab(current.id,
         function(pid) {
           var outputDiv = document.getElementById("tab-list");
           var titleDiv = document.getElementById("title");
@@ -38,7 +38,7 @@ function displaySameProcessTabs(selectedTab, processId, outputDiv) {
 
     // Display tab in list if it is in the same process
     tabs.forEach(function(tab) {
-      chrome.experimental.processes.getProcessIdForTab(tab.id,
+      chrome.processes.getProcessIdForTab(tab.id,
         function(pid) {
           if (pid == processId) {
             displayTabInfo(tab.windowId, tab, outputDiv);

@@ -9,8 +9,10 @@ chrome.test.runTests([
   function experimental() {
     chrome.tabs.getSelected(null, function(tab) {
       try {
-        chrome.experimental.processes.getProcessForTab(tab.id,
-                                                       function(process) {
+        // If/when chrome.experimental.accessibility is moved out of
+        // experimental, this test needs to be updated.
+        chrome.experimental.accessibility.getAlertsForTab(
+          tab.id, function(alerts) {
           chrome.test.fail();
         });
       } catch (e) {

@@ -10,12 +10,12 @@ var pass = chrome.test.callbackPass;
 chrome.test.runTests([
   function experimental() {
     // Test that use of an experimental API works.
-    // If/when chrome.experimental.processes is moved out of
+    // If/when chrome.experimental.accessibility is moved out of
     // experimental, this test needs to be updated.
     chrome.tabs.getSelected(null, function(tab) {
       try {
-        chrome.experimental.processes.getProcessIdForTab(
-          tab.id, pass(function(pid) {}));
+        chrome.experimental.accessibility.getAlertsForTab(
+          tab.id, pass(function(alerts) {}));
       } catch (e) {
         chrome.test.fail();
       }

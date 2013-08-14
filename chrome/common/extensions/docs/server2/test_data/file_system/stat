@@ -1108,16 +1108,16 @@ BUG=110823...</td>
 <tr class="vc_row_even">
 <td colspan="2">
 
-<a name="experimental_processes.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_processes.json?view=log" title="View file revision log">
+<a name="processes.json" href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/processes.json?view=log" title="View file revision log">
 
 <img src="/viewvc/*docroot*/images/text.png" alt="" width="16" height="16" />
-experimental_processes.json</a>
+processes.json</a>
 
 </td>
 
 
 
-<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/experimental_processes.json?revision=137690&amp;view=markup" title="View file contents"><strong>137690</strong></a></td>
+<td>&nbsp;<a href="/viewvc/chrome/trunk/src/chrome/common/extensions/api/processes.json?revision=137690&amp;view=markup" title="View file contents"><strong>137690</strong></a></td>
 
 <td>&nbsp;2 months</td>
 <td>&nbsp;nasko@chromium.org</td>

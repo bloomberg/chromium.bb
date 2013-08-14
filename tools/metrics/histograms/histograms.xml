@@ -17201,7 +17201,7 @@ other types of suffix sets.
   <int value="34" label="AUTOTESTPRIVATE_RESTART"/>
   <int value="35" label="USB_CLAIMINTERFACE"/>
   <int value="36" label="MEDIAPLAYERPRIVATE_SETWINDOWHEIGHT"/>
-  <int value="37" label="EXPERIMENTAL_PROCESSES_GETPROCESSINFO"/>
+  <int value="37" label="PROCESSES_GETPROCESSINFO"/>
   <int value="38" label="HISTORY_GETVISITS"/>
   <int value="39" label="SOCKET_BIND"/>
   <int value="40" label="TABS_MOVE"/>
@@ -17266,7 +17266,7 @@ other types of suffix sets.
   <int value="99" label="WINDOWS_CREATE"/>
   <int value="100" label="DEVELOPERPRIVATE_LOADUNPACKED"/>
   <int value="101" label="DELETED_DOWNLOADS_SETDESTINATION"/>
-  <int value="102" label="EXPERIMENTAL_PROCESSES_GETPROCESSIDFORTAB"/>
+  <int value="102" label="PROCESSES_GETPROCESSIDFORTAB"/>
   <int value="103" label="BOOKMARKS_GETCHILDREN"/>
   <int value="104" label="BROWSERACTION_GETTITLE"/>
   <int value="105" label="TERMINALPRIVATE_OPENTERMINALPROCESS"/>
@@ -17460,7 +17460,7 @@ other types of suffix sets.
   <int value="292" label="EXPERIMENTAL_APP_NOTIFY"/>
   <int value="293" label="METRICSPRIVATE_RECORDLONGTIME"/>
   <int value="294" label="SOCKET_READ"/>
-  <int value="295" label="EXPERIMENTAL_PROCESSES_TERMINATE"/>
+  <int value="295" label="PROCESSES_TERMINATE"/>
   <int value="296" label="METRICSPRIVATE_RECORDTIME"/>
   <int value="297" label="BOOKMARKMANAGERPRIVATE_GETSTRINGS"/>
   <int value="298" label="USB_ISOCHRONOUSTRANSFER"/>

@@ -213,10 +213,6 @@
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
   },
-  "experimental.processes": {
-    "dependencies": ["permission:experimental"],
-    "contexts": ["blessed_extension"]
-  },
   "experimental.rlz": {
     "dependencies": ["permission:experimental"],
     "contexts": ["blessed_extension"]
@@ -393,6 +389,10 @@
   },
   "privacy": {
     "dependencies": ["permission:privacy"],
+    "contexts": ["blessed_extension"]
+  },
+  "processes": {
+    "dependencies": ["permission:processes"],
     "contexts": ["blessed_extension"]
   },
   "proxy": {

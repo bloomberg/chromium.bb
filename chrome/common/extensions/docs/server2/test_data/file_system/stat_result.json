@@ -73,7 +73,7 @@
   "file_browser_private.json": "150806",
   "cloud_print_private.json": "149303",
   "omnibox.json": "124878",
-  "experimental_processes.json": "137690",
+  "processes.json": "137690",
   "proxy.json": "136588",
   "file_browser_handler_internal.json": "142683",
   "types.json": "146093",
