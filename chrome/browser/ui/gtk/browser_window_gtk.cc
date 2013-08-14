@@ -1154,8 +1154,8 @@ WebContentsModalDialogHost* BrowserWindowGtk::GetWebContentsModalDialogHost() {
 void BrowserWindowGtk::ShowAvatarBubble(WebContents* web_contents,
                                         const gfx::Rect& rect) {
   GtkWidget* widget = web_contents->GetView()->GetContentNativeView();
-  new AvatarMenuBubbleGtk(browser_.get(), widget,
-      BubbleGtk::ANCHOR_TOP_LEFT, &rect);
+  new AvatarMenuBubbleGtk(browser_.get(), widget, BubbleGtk::ANCHOR_TOP_RIGHT,
+                          &rect);
 }
 
 void BrowserWindowGtk::ShowAvatarBubbleFromAvatarButton() {

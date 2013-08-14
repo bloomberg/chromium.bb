@@ -13,7 +13,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -149,8 +147,7 @@ void NTPLoginHandler::HandleShowSyncLoginUI(const ListValue* args) {
       RecordInHistogram(NTP_SIGN_IN_PROMO_CLICKED);
     }
 #endif
-  } else if (args->GetSize() == 4 &&
-             chrome::IsCommandEnabled(browser, IDC_SHOW_AVATAR_MENU)) {
+  } else if (args->GetSize() == 4) {
     // The user is signed in, show the profiles menu.
     double x = 0;
     double y = 0;
