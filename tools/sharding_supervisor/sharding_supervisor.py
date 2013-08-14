@@ -60,9 +60,9 @@ def main():
   parser.disable_interspersed_args()
   options, args = parser.parse_args()
 
-  swarming_client_dir = os.path.join(
-      ROOT_DIR, 'tools', 'swarming_client', 'googletest')
-  sys.path.insert(0, swarming_client_dir)
+  swarm_client_dir = os.path.join(
+      ROOT_DIR, 'tools', 'swarm_client', 'googletest')
+  sys.path.insert(0, swarm_client_dir)
 
   cmd = [
     '--shards', str(options.total_slaves),

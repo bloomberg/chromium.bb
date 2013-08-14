@@ -8,7 +8,7 @@
         'command': [
           '../testing/xvfb.py',
           '<(PRODUCT_DIR)',
-          '../tools/swarming_client/googletest/run_test_cases.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '--use-less-jobs',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
         ],
@@ -44,8 +44,8 @@
           '../media/test/data/sfx.ogg',
           '../ppapi/tests/test_case.html',
           '../ppapi/tests/test_page.css',
-          '../tools/swarming_client/run_isolated.py',
-          '../tools/swarming_client/googletest/run_test_cases.py',
+          '../tools/swarm_client/run_isolated.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
           '<(PRODUCT_DIR)/ppapi_nacl_tests_glibc.nmf',
@@ -129,7 +129,7 @@
       'variables': {
         'command': [
           '../testing/test_env.py',
-          '../tools/swarming_client/googletest/run_test_cases.py',
+          '../tools/swarm_client/googletest/run_test_cases.py',
           '--use-less-jobs',
           '<(PRODUCT_DIR)/browser_tests<(EXECUTABLE_SUFFIX)',
         ],

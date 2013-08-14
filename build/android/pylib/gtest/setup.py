@@ -66,7 +66,7 @@ _DEPS_EXCLUSION_LIST = [
 ]
 
 _ISOLATE_SCRIPT = os.path.join(
-    constants.DIR_SOURCE_ROOT, 'tools', 'swarming_client', 'isolate.py')
+    constants.DIR_SOURCE_ROOT, 'tools', 'swarm_client', 'isolate.py')
 
 
 def _GenerateDepsDirUsingIsolate(suite_name, build_type):
