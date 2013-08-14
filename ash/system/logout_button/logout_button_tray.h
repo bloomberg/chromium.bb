@@ -5,7 +5,6 @@
 #ifndef ASH_SYSTEM_LOGOUT_BUTTON_LOGOUT_BUTTON_TRAY_H_
 #define ASH_SYSTEM_LOGOUT_BUTTON_LOGOUT_BUTTON_TRAY_H_
 
-#include "ash/ash_export.h"
 #include "ash/system/logout_button/logout_button_observer.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/user/login_status.h"
