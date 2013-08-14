@@ -22,6 +22,8 @@ crbug.com/264934 [ Linux Mac Debug ] inspector/debugger/debugger-script-preproce
 
 crbug.com/264998 [ Mac ] inspector/tracing.html [ Pass Failure ]
 
+crbug.com/273119 [ XP ] inspector/styles/styles-new-API.html [ Pass Failure ]
+
 crbug.com/256518 [ Win7 Debug ] pointer-lock/mouse-event-delivery.html [ Pass Crash ]
 
 # Sometimes the output includes an empty line, sometimes it doesn't. Flake.
