@@ -161,13 +161,6 @@ class NetworkMenuModel : public ui::MenuModel {
   // Weak pointer to NetworkMenu that owns this MenuModel.
   base::WeakPtr<NetworkMenu> owner_;
 
-  // Top up URL of the current carrier on empty string if there's none.
-  std::string top_up_url_;
-
-  // Carrier ID which top up URL is initialized for.
-  // Used to update top up URL only when cellular carrier has changed.
-  std::string carrier_id_;
-
  private:
   // Open a dialog to set up and connect to a network.
   void ShowOther(const std::string& type) const;

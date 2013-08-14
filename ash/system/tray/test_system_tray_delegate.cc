@@ -254,15 +254,6 @@ bool TestSystemTrayDelegate::GetBluetoothEnabled() {
   return bluetooth_enabled_;
 }
 
-bool TestSystemTrayDelegate::GetCellularCarrierInfo(std::string* carrier_id,
-                                                    std::string* topup_url,
-                                                    std::string* setup_url) {
-  return false;
-}
-
-void TestSystemTrayDelegate::ShowCellularURL(const std::string& url) {
-}
-
 void TestSystemTrayDelegate::ChangeProxySettings() {
 }
 

@@ -278,6 +278,30 @@ void ShillServiceClientStub::ActivateCellularModem(
     const std::string& carrier,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {
+  base::DictionaryValue* service_properties =
+      GetModifiableServiceProperties(service_path.value());
+  if (!service_properties) {
+    LOG(ERROR) << "Service not found: " << service_path.value();
+    error_callback.Run("Error.InvalidService", "Invalid Service");
+  }
+  SetServiceProperty(service_path.value(),
+                     flimflam::kActivationStateProperty,
+                     base::StringValue(flimflam::kActivationStateActivating));
+  base::TimeDelta delay;
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableStubInteractive)) {
+    const int kConnectDelaySeconds = 2;
+    delay = base::TimeDelta::FromSeconds(kConnectDelaySeconds);
+  }
+  // Set Activated after a delay
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ShillServiceClientStub::SetCellularActivated,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 service_path,
+                 error_callback),
+      delay);
+
   base::MessageLoop::current()->PostTask(FROM_HERE, callback);
 }
 
@@ -616,6 +640,21 @@ void ShillServiceClientStub::SetOtherServicesOffline(
         flimflam::kStateProperty,
         base::Value::CreateStringValue(flimflam::kStateIdle));
   }
+}
+
+void ShillServiceClientStub::SetCellularActivated(
+    const dbus::ObjectPath& service_path,
+    const ErrorCallback& error_callback) {
+  SetProperty(service_path,
+              flimflam::kActivationStateProperty,
+              base::StringValue(flimflam::kActivationStateActivated),
+              base::Bind(&base::DoNothing),
+              error_callback);
+  SetProperty(service_path,
+              flimflam::kConnectableProperty,
+              base::FundamentalValue(true),
+              base::Bind(&base::DoNothing),
+              error_callback);
 }
 
 }  // namespace chromeos

@@ -19,7 +19,6 @@
 #include "ash/system/bluetooth/bluetooth_observer.h"
 #include "ash/system/brightness/brightness_observer.h"
 #include "ash/system/chromeos/network/network_observer.h"
-#include "ash/system/chromeos/network/network_tray_delegate.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/drive/drive_observer.h"
 #include "ash/system/ime/ime_observer.h"
@@ -49,7 +48,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/choose_mobile_network_dialog.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/drive/job_list.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -62,7 +60,6 @@
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/mobile_config.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/options/network_connect.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
@@ -221,18 +218,9 @@ void BluetoothDeviceConnectError(
   // TODO(sad): Do something?
 }
 
-ash::NetworkObserver::NetworkType NetworkTypeForCellular(
-    const CellularNetwork* cellular) {
-  if (cellular->network_technology() == NETWORK_TECHNOLOGY_LTE ||
-      cellular->network_technology() == NETWORK_TECHNOLOGY_LTE_ADVANCED)
-    return ash::NetworkObserver::NETWORK_CELLULAR_LTE;
-  return ash::NetworkObserver::NETWORK_CELLULAR;
-}
-
 class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public PowerManagerClient::Observer,
                            public SessionManagerClient::Observer,
-                           public NetworkLibrary::NetworkManagerObserver,
                            public drive::JobListObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
@@ -240,7 +228,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public chromeos::SystemClockClient::Observer,
                            public device::BluetoothAdapter::Observer,
                            public SystemKeyEventListener::CapsLockObserver,
-                           public ash::NetworkTrayDelegate,
                            public policy::CloudPolicyStore::Observer,
                            public ash::SessionStateObserver {
  public:
@@ -254,8 +241,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         have_session_start_time_(false),
         have_session_length_limit_(false),
         data_promo_notification_(new DataPromoNotification()),
-        cellular_activating_(false),
-        cellular_out_of_credits_(false),
         volume_control_delegate_(new VolumeController()) {
     // Register notifications on construction so that events such as
     // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -294,10 +279,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   virtual void Initialize() OVERRIDE {
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
-
-    NetworkLibrary* crosnet = NetworkLibrary::Get();
-    crosnet->AddNetworkManagerObserver(this);
-    OnNetworkManagerChanged(crosnet);
 
     input_method::InputMethodManager::Get()->AddObserver(this);
     UpdateClockType();
@@ -361,9 +342,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(this);
-    NetworkLibrary* crosnet = NetworkLibrary::Get();
-    if (crosnet)
-      crosnet->RemoveNetworkManagerObserver(this);
     input_method::InputMethodManager::Get()->RemoveObserver(this);
     system::TimezoneSettings::GetInstance()->RemoveObserver(this);
     if (SystemKeyEventListener::GetInstance())
@@ -807,40 +785,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return bluetooth_adapter_->IsPowered();
   }
 
-  virtual bool GetCellularCarrierInfo(std::string* carrier_id,
-                                      std::string* topup_url,
-                                      std::string* setup_url) OVERRIDE {
-    bool result = false;
-    NetworkLibrary* crosnet = NetworkLibrary::Get();
-    const NetworkDevice* cellular = crosnet->FindCellularDevice();
-    if (!cellular)
-      return false;
-
-    MobileConfig* config = MobileConfig::GetInstance();
-    if (config->IsReady()) {
-      *carrier_id = crosnet->GetCellularHomeCarrierId();
-      const MobileConfig::Carrier* carrier = config->GetCarrier(*carrier_id);
-      if (carrier) {
-        *topup_url = carrier->top_up_url();
-        result = true;
-      }
-      const MobileConfig::LocaleConfig* locale_config =
-          config->GetLocaleConfig();
-      if (locale_config) {
-        // Only link to setup URL if SIM card is not inserted.
-        if (cellular->is_sim_absent()) {
-          *setup_url = locale_config->setup_url();
-          result = true;
-        }
-      }
-    }
-    return result;
-  }
-
-  virtual void ShowCellularURL(const std::string& url) OVERRIDE {
-    chrome::ShowSingletonTab(GetAppropriateBrowser(), GURL(url));
-  }
-
   virtual void ChangeProxySettings() OVERRIDE {
     CHECK(GetUserLoginStatus() == ash::user::LOGGED_IN_NONE);
     LoginDisplayHostImpl::default_host()->OpenProxySettings();
@@ -1066,14 +1010,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     return GetNativeWindowByStatus(GetUserLoginStatus());
   }
 
-  // Overridden from NetworkLibrary::NetworkManagerObserver.
-  virtual void OnNetworkManagerChanged(NetworkLibrary* crosnet) OVERRIDE {
-    // TODO(stevenjb): Migrate to NetworkStateHandler.
-    data_promo_notification_->ShowOptionalMobileDataPromoNotification(
-        crosnet, GetPrimarySystemTray(), this);
-    UpdateCellular();
-  }
-
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
                        const content::NotificationSource& source,
@@ -1251,56 +1187,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         enabled, search_mapped_to_caps_lock);
   }
 
-  // Overridden from ash::NetworkTrayDelegate
-  virtual void NotificationLinkClicked(
-      ash::NetworkObserver::MessageType message_type,
-      size_t link_index) OVERRIDE {
-    if (message_type == ash::NetworkObserver::ERROR_OUT_OF_CREDITS) {
-      const NetworkState* cellular =
-          NetworkHandler::Get()->network_state_handler()->
-          FirstNetworkByType(flimflam::kTypeCellular);
-      std::string service_path = cellular ? cellular->path() : "";
-      ShowNetworkSettings(service_path);
-
-      ash::Shell::GetInstance()->system_tray_notifier()->
-          NotifyClearNetworkMessage(message_type);
-    }
-    if (message_type != ash::NetworkObserver::MESSAGE_DATA_PROMO)
-      return;
-    // If we have deal info URL defined that means that there're
-    // 2 links in bubble. Let the user close it manually then thus giving
-    // ability to navigate to second link.
-    // mobile_data_bubble_ will be set to NULL in BubbleClosing callback.
-    std::string deal_info_url = data_promo_notification_->deal_info_url();
-    std::string deal_topup_url = data_promo_notification_->deal_topup_url();
-    if (deal_info_url.empty())
-      data_promo_notification_->CloseNotification();
-
-    std::string deal_url_to_open;
-    if (link_index == 0) {
-      if (!deal_topup_url.empty()) {
-        deal_url_to_open = deal_topup_url;
-      } else {
-        const Network* cellular =
-            NetworkLibrary::Get()->cellular_network();
-        if (!cellular)
-          return;
-        ShowNetworkSettings(cellular->service_path());
-        return;
-      }
-    } else if (link_index == 1) {
-      deal_url_to_open = deal_info_url;
-    }
-
-    if (!deal_url_to_open.empty()) {
-      Browser* browser = GetAppropriateBrowser();
-      if (!browser)
-        return;
-      chrome::ShowSingletonTab(browser, GURL(deal_url_to_open));
-    }
-  }
-
-  virtual void UpdateEnterpriseDomain() {
+  void UpdateEnterpriseDomain() {
     std::string enterprise_domain =
         g_browser_process->browser_policy_connector()->GetEnterpriseDomain();
     if (enterprise_domain_ != enterprise_domain) {
@@ -1323,31 +1210,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifyUserUpdate();
   }
 
-  void UpdateCellular() {
-    const CellularNetworkVector& cellular_networks =
-        NetworkLibrary::Get()->cellular_networks();
-    if (cellular_networks.empty())
-      return;
-    // We only care about the first cellular network (in practice there will
-    // only ever be one)
-    const CellularNetwork* cellular = cellular_networks[0];
-    if (cellular->activation_state() == ACTIVATION_STATE_ACTIVATING) {
-      cellular_activating_ = true;
-    } else if (cellular->activated() && cellular_activating_) {
-      cellular_activating_ = false;
-      ash::NetworkObserver::NetworkType type = NetworkTypeForCellular(cellular);
-      ash::Shell::GetInstance()->system_tray_notifier()->
-          NotifySetNetworkMessage(
-              NULL,
-              ash::NetworkObserver::MESSAGE_DATA_PROMO,
-              type,
-              l10n_util::GetStringUTF16(IDS_NETWORK_CELLULAR_ACTIVATED_TITLE),
-              l10n_util::GetStringFUTF16(IDS_NETWORK_CELLULAR_ACTIVATED,
-                                         UTF8ToUTF16((cellular->name()))),
-              std::vector<string16>());
-    }
-  }
-
   scoped_ptr<base::WeakPtrFactory<SystemTrayDelegate> > ui_weak_ptr_factory_;
   scoped_ptr<content::NotificationRegistrar> registrar_;
   scoped_ptr<PrefChangeRegistrar> local_state_registrar_;
@@ -1364,11 +1226,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   std::string enterprise_domain_;
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
-
   scoped_ptr<DataPromoNotification> data_promo_notification_;
-  bool cellular_activating_;
-  bool cellular_out_of_credits_;
-
   scoped_ptr<ash::VolumeControlDelegate> volume_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayDelegate);

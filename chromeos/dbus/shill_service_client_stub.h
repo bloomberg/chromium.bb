@@ -113,6 +113,8 @@ class ShillServiceClientStub : public ShillServiceClient,
       const std::string& service_path);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
   void SetOtherServicesOffline(const std::string& service_path);
+  void SetCellularActivated(const dbus::ObjectPath& service_path,
+                            const ErrorCallback& error_callback);
 
   base::DictionaryValue stub_services_;
   // Observer list for each service.

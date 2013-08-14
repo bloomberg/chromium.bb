@@ -117,6 +117,9 @@ class CHROMEOS_EXPORT NetworkConnectionHandler
   // has not completed (i.e. success or error callback has been called).
   bool HasConnectingNetwork(const std::string& service_path);
 
+  // Returns true if there are any pending connect requests.
+  bool HasPendingConnectRequest();
+
   // NetworkStateHandlerObserver
   virtual void NetworkListChanged() OVERRIDE;
   virtual void NetworkPropertiesUpdated(const NetworkState* network) OVERRIDE;

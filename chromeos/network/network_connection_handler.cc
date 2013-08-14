@@ -334,6 +334,10 @@ bool NetworkConnectionHandler::HasConnectingNetwork(
   return pending_requests_.count(service_path) != 0;
 }
 
+bool NetworkConnectionHandler::HasPendingConnectRequest() {
+  return pending_requests_.size() > 0;
+}
+
 void NetworkConnectionHandler::NetworkListChanged() {
   CheckAllPendingRequests();
 }

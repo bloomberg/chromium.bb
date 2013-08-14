@@ -238,6 +238,10 @@ void ShillDeviceClientStub::SetDefaultProperties() {
   // Add a cellular device. Used in SMS stub.
   AddDevice("stub_cellular_device1", flimflam::kTypeCellular,
             "/device/cellular1");
+  base::DictionaryValue* properties =
+      GetDeviceProperties("stub_cellular_device1");
+  properties->SetStringWithoutPathExpansion(flimflam::kCarrierProperty,
+                                            shill::kCarrierSprint);
 
   // Add a wimax device.
   AddDevice("stub_wimax_device1", flimflam::kTypeWimax,
