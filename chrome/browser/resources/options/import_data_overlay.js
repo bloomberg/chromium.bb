@@ -102,21 +102,18 @@ cr.define('options', function() {
     },
 
     /**
-     * Sets the enabled and checked states of a checkbox element.
+     * Sets the enabled state of a checkbox element.
      * @param {Object} checkbox A checkbox element.
      * @param {boolean} enabled The enabled state of the checkbox. If false,
-     * the checkbox is disabled and unchecked. If true, the checkbox is enabled
-     * and checked.
-     * @param {boolean} visible The visible state of the checkbox.
+     *     the checkbox is disabled. If true, the checkbox is enabled.
      * @private
      */
     setUpCheckboxState_: function(checkbox, enabled) {
       checkbox.setDisabled('noProfileData', !enabled);
-      checkbox.checked = enabled;
     },
 
     /**
-     * Update the enabled and checked states of all checkboxes.
+     * Update the enabled and visible states of all the checkboxes.
      * @private
      */
     updateCheckboxes_: function() {
@@ -132,7 +129,6 @@ cr.define('options', function() {
       for (var i = 0; i < importOptions.length; i++) {
         var checkbox = $('import-' + importOptions[i]);
         var enable = browserProfile && browserProfile[importOptions[i]];
-        checkbox.checked = enable;
         this.setUpCheckboxState_(checkbox, enable);
         var checkboxWithLabel = $('import-' + importOptions[i] + '-with-label');
         checkboxWithLabel.style.display = enable ? '' : 'none';
