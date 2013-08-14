@@ -17,13 +17,19 @@
 #include "third_party/webrtc/modules/desktop_capture/screen_capturer.h"
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::DoAll;
+using ::testing::Expectation;
 using ::testing::InvokeWithoutArgs;
 using ::testing::SaveArg;
 
 namespace content {
 
 namespace {
+
+MATCHER_P2(EqualsCaptureCapability, width, height, "") {
+  return arg.width == width && arg.height == height;
+}
 
 const int kTestFrameWidth1 = 100;
 const int kTestFrameHeight1 = 100;
@@ -38,6 +44,8 @@ class MockFrameObserver : public media::VideoCaptureDevice::EventHandler {
   MOCK_METHOD0(ReserveOutputBuffer, scoped_refptr<media::VideoFrame>());
   MOCK_METHOD0(OnError, void());
   MOCK_METHOD1(OnFrameInfo, void(const media::VideoCaptureCapability& info));
+  MOCK_METHOD1(OnFrameInfoChanged,
+      void(const media::VideoCaptureCapability& info));
   MOCK_METHOD6(OnIncomingCapturedFrame, void(const uint8* data,
                                              int length,
                                              base::Time timestamp,
@@ -141,8 +149,9 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
 }
 
-// Test that screen capturer can handle resolution change without crashing.
-TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChange) {
+// Test that screen capturer behaves correctly if the source frame size changes
+// but the caller cannot cope with variable resolution output.
+TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
 
   DesktopCaptureDevice capture_device(
@@ -154,11 +163,14 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChange) {
   int frame_size;
 
   MockFrameObserver frame_observer;
-  EXPECT_CALL(frame_observer, OnFrameInfo(_))
+  Expectation frame_info_called = EXPECT_CALL(frame_observer, OnFrameInfo(_))
       .WillOnce(SaveArg<0>(&caps));
+  EXPECT_CALL(frame_observer, OnFrameInfoChanged(_))
+      .Times(0);
   EXPECT_CALL(frame_observer, OnError())
       .Times(0);
   EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _, _, _, _))
+      .After(frame_info_called)
       .WillRepeatedly(DoAll(
           SaveArg<1>(&frame_size),
           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
@@ -171,13 +183,16 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChange) {
       0,
       false,
       media::ConstantResolutionVideoCaptureDevice);
+
   capture_device.Allocate(capture_format, &frame_observer);
   capture_device.Start();
-  // Capture first frame.
+
+  // Capture at least two frames, to ensure that the source frame size has
+  // changed while capturing.
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
   done_event.Reset();
-  // Capture second frame.
   EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+
   capture_device.Stop();
   capture_device.DeAllocate();
 
@@ -188,6 +203,69 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChange) {
   EXPECT_FALSE(caps.interlaced);
 
   EXPECT_EQ(caps.width * caps.height * 4, frame_size);
+}
+
+// Test that screen capturer behaves correctly if the source frame size changes
+// and the caller can cope with variable resolution output.
+TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
+  FakeScreenCapturer* mock_capturer = new FakeScreenCapturer();
+
+  DesktopCaptureDevice capture_device(
+      worker_pool_->GetSequencedTaskRunner(worker_pool_->GetSequenceToken()),
+      scoped_ptr<webrtc::DesktopCapturer>(mock_capturer));
+
+  media::VideoCaptureCapability caps;
+  base::WaitableEvent done_event(false, false);
+
+  MockFrameObserver frame_observer;
+  Expectation frame_info_called = EXPECT_CALL(frame_observer, OnFrameInfo(_))
+      .WillOnce(SaveArg<0>(&caps));
+  Expectation first_info_changed = EXPECT_CALL(frame_observer,
+      OnFrameInfoChanged(EqualsCaptureCapability(kTestFrameWidth2,
+                                                 kTestFrameHeight2)))
+      .After(frame_info_called);
+  Expectation second_info_changed = EXPECT_CALL(frame_observer,
+      OnFrameInfoChanged(EqualsCaptureCapability(kTestFrameWidth1,
+                                                 kTestFrameHeight1)))
+      .After(first_info_changed);
+  EXPECT_CALL(frame_observer, OnFrameInfoChanged(_))
+      .Times(AnyNumber())
+      .After(second_info_changed);
+  EXPECT_CALL(frame_observer, OnError())
+      .Times(0);
+  EXPECT_CALL(frame_observer, OnIncomingCapturedFrame(_, _, _, _, _, _))
+      .After(frame_info_called)
+      .WillRepeatedly(
+          InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal));
+
+  media::VideoCaptureCapability capture_format(
+      kTestFrameWidth2,
+      kTestFrameHeight2,
+      kFrameRate,
+      media::VideoCaptureCapability::kI420,
+      0,
+      false,
+      media::VariableResolutionVideoCaptureDevice);
+
+  capture_device.Allocate(capture_format, &frame_observer);
+  capture_device.Start();
+
+  // Capture at least three frames, to ensure that the source frame size has
+  // changed at least twice while capturing.
+  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+  done_event.Reset();
+  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+  done_event.Reset();
+  EXPECT_TRUE(done_event.TimedWait(TestTimeouts::action_max_timeout()));
+
+  capture_device.Stop();
+  capture_device.DeAllocate();
+
+  EXPECT_EQ(kTestFrameWidth1, caps.width);
+  EXPECT_EQ(kTestFrameHeight1, caps.height);
+  EXPECT_EQ(kFrameRate, caps.frame_rate);
+  EXPECT_EQ(media::VideoCaptureCapability::kARGB, caps.color);
+  EXPECT_FALSE(caps.interlaced);
 }
 
 }  // namespace content
