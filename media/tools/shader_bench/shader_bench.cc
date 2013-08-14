@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "media/base/media.h"
 #include "media/base/video_frame.h"
 #include "media/tools/shader_bench/cpu_color_painter.h"
 #include "media/tools/shader_bench/gpu_color_painter.h"
@@ -127,18 +128,19 @@ int main(int argc, char** argv) {
 
   // Initialize window and graphics context.
   base::AtExitManager at_exit_manager;
+  media::InitializeMediaLibraryForTesting();
   gfx::GLSurface::InitializeOneOff();
   scoped_ptr<media::Window> window(new media::Window(width, height));
-  gfx::GLSurface* surface =
-      gfx::GLSurface::CreateViewGLSurface(window->PluginWindow()).get();
-  gfx::GLContext* context = gfx::GLContext::CreateGLContext(
-      NULL, surface, gfx::PreferDiscreteGpu).get();
-  context->MakeCurrent(surface);
+  scoped_refptr<gfx::GLSurface> surface =
+      gfx::GLSurface::CreateViewGLSurface(window->PluginWindow());
+  scoped_refptr<gfx::GLContext> context = gfx::GLContext::CreateGLContext(
+      NULL, surface.get(), gfx::PreferDiscreteGpu);
+  context->MakeCurrent(surface.get());
   // This sets D3DPRESENT_INTERVAL_IMMEDIATE on Windows.
   context->SetSwapInterval(0);
 
   // Initialize and name GPU painters.
-  static const struct {
+  const struct {
     const char* name;
     GPUPainter* painter;
   } painters[] = {

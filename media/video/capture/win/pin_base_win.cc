@@ -93,8 +93,6 @@ class TypeEnumerator
 
   STDMETHOD(Clone)(IEnumMediaTypes** clone) {
     TypeEnumerator* type_enum = new TypeEnumerator(pin_);
-    if (!type_enum)
-      return E_OUTOFMEMORY;
     type_enum->AddRef();
     type_enum->index_ = index_;
     *clone = type_enum;
