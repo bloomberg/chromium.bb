@@ -181,9 +181,16 @@ def GetTestName(desc, toolchain, config):
 
 def IsTestDisabled(desc, toolchain, config):
   def AsList(value):
-    if type(value) in (list, tuple):
-      return (value,)
+    if type(value) not in (list, tuple):
+      return [value]
     return value
+
+  def TestMatchesDisabled(test_values, disabled_test):
+    for key in test_values:
+      if key in disabled_test:
+        if test_values[key] not in AsList(disabled_test[key]):
+          return False
+    return True
 
   test_values = {
       'name': desc['NAME'],
@@ -193,10 +200,8 @@ def IsTestDisabled(desc, toolchain, config):
   }
 
   for disabled_test in DISABLED_TESTS:
-    for key in test_values:
-      if key in disabled_test:
-        if test_values[key] in AsList(disabled_test[key]):
-          return True
+    if TestMatchesDisabled(test_values, disabled_test):
+      return True
   return False
 
 
