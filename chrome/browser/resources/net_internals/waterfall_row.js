@@ -25,6 +25,9 @@ var WaterfallRow = (function() {
     this.createRow_();
   }
 
+  // Offset of popup from mouse location.
+  var POPUP_OFFSET_FROM_CURSOR = 15;
+
   WaterfallRow.prototype = {
     onSourceUpdated: function() {
       this.updateRow();
@@ -112,6 +115,12 @@ var WaterfallRow = (function() {
       var popupList = addNode(newPopup, 'ul');
       popupList.classList.add('waterfall-view-popup-list');
 
+      popupList.style.maxWidth =
+          $(WaterfallView.MAIN_BOX_ID).offsetWidth * 0.5 + 'px';
+
+      this.createPopupItem_(
+          popupList, 'Has Error', this.sourceEntry_.isError());
+
       this.createPopupItem_(
           popupList, 'Event Type', eventType);
       this.createPopupItem_(
@@ -132,37 +141,25 @@ var WaterfallRow = (function() {
       this.createPopupItem_(
           popupList, 'Source ID', this.sourceEntry_.getSourceId());
       var urlListItem = this.createPopupItem_(
-          popupList, 'Source Description: ', this.description_);
+          popupList, 'Source Description', this.description_);
 
-      var viewWidth = $(WaterfallView.MAIN_BOX_ID).offsetWidth;
-      // Controls the overflow of extremely long URLs by cropping to window.
-      if (urlListItem.offsetWidth > viewWidth) {
-        urlListItem.style.width = viewWidth + 'px';
-      }
       urlListItem.classList.add('waterfall-view-popup-list-url-item');
 
-      this.createPopupItem_(
-          popupList, 'Has Error', this.sourceEntry_.isError());
-
       // Fixes cases where the popup appears 'off-screen'.
-      var popupLeft = mouse.pageX + $(WaterfallView.MAIN_BOX_ID).scrollLeft;
-      var popupRight = popupLeft + newPopup.offsetWidth;
-      var viewRight = viewWidth + $(WaterfallView.MAIN_BOX_ID).scrollLeft;
-
-      if (viewRight - popupRight < 0) {
-        popupLeft = viewRight - newPopup.offsetWidth;
+      var popupLeft = mouse.pageX - newPopup.offsetWidth;
+      if (popupLeft < 0) {
+        popupLeft = mouse.pageX;
       }
-      newPopup.style.left = popupLeft + 'px';
+      newPopup.style.left = popupLeft +
+          $(WaterfallView.MAIN_BOX_ID).scrollLeft + 'px';
 
-      var popupTop = mouse.pageY + $(WaterfallView.MAIN_BOX_ID).scrollTop;
-      var popupBottom = popupTop + newPopup.offsetHeight;
-      var viewBottom = $(WaterfallView.MAIN_BOX_ID).offsetHeight +
-          $(WaterfallView.MAIN_BOX_ID).scrollTop;
-
-      if (viewBottom - popupBottom < 0) {
-        popupTop = viewBottom - newPopup.offsetHeight;
+      var popupTop = mouse.pageY - newPopup.offsetHeight -
+          POPUP_OFFSET_FROM_CURSOR;
+      if (popupTop < 0) {
+        popupTop = mouse.pageY;
       }
-      newPopup.style.top = popupTop + 'px';
+      newPopup.style.top = popupTop +
+          $(WaterfallView.MAIN_BOX_ID).scrollTop + 'px';
     },
 
     createPopupItem_: function(parentPopup, key, popupInformation) {

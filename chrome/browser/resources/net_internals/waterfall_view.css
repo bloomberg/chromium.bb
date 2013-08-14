@@ -48,6 +48,7 @@
   display: list-item;
 }
 .waterfall-view-popup-list-url-item {
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
