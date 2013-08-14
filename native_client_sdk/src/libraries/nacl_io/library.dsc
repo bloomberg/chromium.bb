@@ -11,6 +11,7 @@
       'NAME' : 'nacl_io',
       'TYPE' : 'lib',
       'SOURCES' : [
+        'dbgprint.c',
         "event_emitter.cc",
         "event_listener.cc",
         "h_errno.cc",
@@ -97,6 +98,7 @@
   'HEADERS': [
     {
       'FILES': [
+        'dbgprint.h',
         "event_emitter.h",
         "event_listener.h",
         "error.h",

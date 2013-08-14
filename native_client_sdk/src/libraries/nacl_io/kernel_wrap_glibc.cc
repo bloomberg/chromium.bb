@@ -22,6 +22,7 @@
 #include <sys/time.h>
 
 #include "nacl_io/kernel_intercept.h"
+#include "nacl_io/kernel_wrap_real.h"
 #include "nacl_io/osmman.h"
 
 
@@ -243,9 +244,6 @@ int WRAP(poll)(struct pollfd *fds, nfds_t nfds, int timeout, int* count) {
 }
 
 int WRAP(read)(int fd, void *buf, size_t count, size_t *nread) {
-  if (!ki_is_initialized())
-    return REAL(read)(fd, buf, count, nread);
-
   ssize_t signed_nread = ki_read(fd, buf, count);
   *nread = static_cast<size_t>(signed_nread);
   return (signed_nread < 0) ? errno : 0;
@@ -277,22 +275,33 @@ int WRAP(stat)(const char *pathname, struct nacl_abi_stat *nacl_buf) {
 }
 
 int WRAP(write)(int fd, const void* buf, size_t count, size_t* nwrote) {
-  if (!ki_is_initialized())
-    return REAL(write)(fd, buf, count, nwrote);
-
   ssize_t signed_nwrote = ki_write(fd, buf, count);
   *nwrote = static_cast<size_t>(signed_nwrote);
   return (signed_nwrote < 0) ? errno : 0;
 }
 
+static void assign_real_pointers() {
+  static bool assigned = false;
+  if (!assigned) {
+    EXPAND_SYMBOL_LIST_OPERATION(ASSIGN_REAL_PTR)
+    assigned = true;
+  }
+}
+
+#define CHECK_REAL(func) \
+  if (!REAL(func)) \
+    assign_real_pointers();
+
 // "real" functions, i.e. the unwrapped original functions.
 
 int _real_close(int fd) {
+  CHECK_REAL(close);
   return REAL(close)(fd);
 }
 
 int _real_fstat(int fd, struct stat* buf) {
   struct nacl_abi_stat st;
+  CHECK_REAL(fstat);
   int err = REAL(fstat)(fd, &st);
   if (err) {
     errno = err;
@@ -310,6 +319,7 @@ int _real_getdents(int fd, void* buf, size_t count, size_t* nread) {
   size_t offset = 0;
   size_t nacl_offset = 0;
   size_t nacl_nread;
+  CHECK_REAL(getdents);
   int err = REAL(getdents)(fd, (dirent*)nacl_buf, count, &nacl_nread);
   if (err)
     return err;
@@ -333,39 +343,48 @@ int _real_getdents(int fd, void* buf, size_t count, size_t* nread) {
 }
 
 int _real_lseek(int fd, off_t offset, int whence, off_t* new_offset) {
+  CHECK_REAL(seek);
   return REAL(seek)(fd, offset, whence, new_offset);
 }
 
 int _real_mkdir(const char* pathname, mode_t mode) {
+  CHECK_REAL(mkdir);
   return REAL(mkdir)(pathname, mode);
 }
 
 int _real_mmap(void** addr, size_t length, int prot, int flags, int fd,
                off_t offset) {
+  CHECK_REAL(mmap);
   return REAL(mmap)(addr, length, prot, flags, fd, offset);
 }
 
 int _real_munmap(void* addr, size_t length) {
+  CHECK_REAL(munmap);
   return REAL(munmap)(addr, length);
 }
 
 int _real_open(const char* pathname, int oflag, mode_t cmode, int* newfd) {
+  CHECK_REAL(open);
   return REAL(open)(pathname, oflag, cmode, newfd);
 }
 
 int _real_open_resource(const char* file, int* fd) {
+  CHECK_REAL(open_resource);
   return REAL(open_resource)(file, fd);
 }
 
 int _real_read(int fd, void *buf, size_t count, size_t *nread) {
+  CHECK_REAL(read);
   return REAL(read)(fd, buf, count, nread);
 }
 
 int _real_rmdir(const char* pathname) {
+  CHECK_REAL(rmdir);
   return REAL(rmdir)(pathname);
 }
 
 int _real_write(int fd, const void *buf, size_t count, size_t *nwrote) {
+  CHECK_REAL(write);
   return REAL(write)(fd, buf, count, nwrote);
 }
 
@@ -376,13 +395,9 @@ uint64_t usec_since_epoch() {
 }
 
 static bool s_wrapped = false;
-static bool s_assigned = false;
 void kernel_wrap_init() {
   if (!s_wrapped) {
-    if (!s_assigned) {
-      EXPAND_SYMBOL_LIST_OPERATION(ASSIGN_REAL_PTR)
-      s_assigned = true;
-    }
+    assign_real_pointers();
     EXPAND_SYMBOL_LIST_OPERATION(USE_WRAP)
     s_wrapped = true;
   }
@@ -397,6 +412,4 @@ void kernel_wrap_uninit() {
 
 EXTERN_C_END
 
-
 #endif  // defined(__native_client__) && defined(__GLIBC__)
-
