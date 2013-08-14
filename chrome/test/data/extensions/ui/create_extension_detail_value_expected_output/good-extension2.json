@@ -14,12 +14,14 @@
   "allowFileAccess": false,
   "views": [
     {
+      "generatedBackgroundPage": false,
       "path": "bar.html",
       "renderProcessId": 42,
       "renderViewId": 88,
       "incognito": false
     },
     {
+      "generatedBackgroundPage": false,
       "path": "bar.html",
       "renderProcessId": 0,
       "renderViewId": 0,

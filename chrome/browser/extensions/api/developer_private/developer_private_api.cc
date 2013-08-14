@@ -362,7 +362,8 @@ void DeveloperPrivateGetItemsInfoFunction::
         constructInspectView(web_contents->GetURL(),
                              process->GetID(),
                              host->GetRoutingID(),
-                             process->GetBrowserContext()->IsOffTheRecord()));
+                             process->GetBrowserContext()->IsOffTheRecord(),
+                             false));
   }
 }
 
@@ -385,7 +386,8 @@ void DeveloperPrivateGetItemsInfoFunction::
         constructInspectView(web_contents->GetURL(),
                              process->GetID(),
                              host->GetRoutingID(),
-                             process->GetBrowserContext()->IsOffTheRecord()));
+                             process->GetBrowserContext()->IsOffTheRecord(),
+                             false));
   }
 }
 
@@ -394,7 +396,8 @@ linked_ptr<developer::ItemInspectView> DeveloperPrivateGetItemsInfoFunction::
         const GURL& url,
         int render_process_id,
         int render_view_id,
-        bool incognito) {
+        bool incognito,
+        bool generated_background_page) {
   linked_ptr<developer::ItemInspectView> view(new developer::ItemInspectView());
 
   if (url.scheme() == kExtensionScheme) {
@@ -408,6 +411,7 @@ linked_ptr<developer::ItemInspectView> DeveloperPrivateGetItemsInfoFunction::
   view->render_process_id = render_process_id;
   view->render_view_id = render_view_id;
   view->incognito = incognito;
+  view->generated_background_page = generated_background_page;
   return view;
 }
 
@@ -432,7 +436,11 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
       extension_is_enabled &&
       !process_manager->GetBackgroundHostForExtension(extension->id())) {
     result.push_back(constructInspectView(
-        BackgroundInfo::GetBackgroundURL(extension), -1, -1, false));
+        BackgroundInfo::GetBackgroundURL(extension),
+        -1,
+        -1,
+        false,
+        BackgroundInfo::HasGeneratedBackgroundPage(extension)));
   }
 
   ExtensionService* service = profile()->GetExtensionService();
@@ -450,7 +458,11 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
         extension_is_enabled &&
         !process_manager->GetBackgroundHostForExtension(extension->id())) {
     result.push_back(constructInspectView(
-        BackgroundInfo::GetBackgroundURL(extension), -1, -1, false));
+        BackgroundInfo::GetBackgroundURL(extension),
+        -1,
+        -1,
+        false,
+        BackgroundInfo::HasGeneratedBackgroundPage(extension)));
     }
   }
 
@@ -1198,6 +1210,7 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
              IDS_EXTENSIONS_INSTALL_WARNINGS);
   SET_STRING("viewIncognito", IDS_EXTENSIONS_VIEW_INCOGNITO);
   SET_STRING("viewInactive", IDS_EXTENSIONS_VIEW_INACTIVE);
+  SET_STRING("backgroundPage", IDS_EXTENSIONS_BACKGROUND_PAGE);
   SET_STRING("extensionSettingsEnable", IDS_EXTENSIONS_ENABLE);
   SET_STRING("extensionSettingsEnabled", IDS_EXTENSIONS_ENABLED);
   SET_STRING("extensionSettingsRemove", IDS_EXTENSIONS_REMOVE);
@@ -1207,7 +1220,8 @@ bool DeveloperPrivateGetStringsFunction::RunImpl() {
              IDS_EXTENSIONS_ALLOW_FILE_ACCESS);
   SET_STRING("extensionSettingsReloadTerminated",
              IDS_EXTENSIONS_RELOAD_TERMINATED);
-  SET_STRING("extensionSettingsReloadUnpacked", IDS_EXTENSIONS_RELOAD_UNPACKED);
+  SET_STRING("extensionSettingsReloadUnpacked",
+             IDS_APPS_DEV_TOOLS_RELOAD_UNPACKED);
   SET_STRING("extensionSettingsLaunch", IDS_EXTENSIONS_LAUNCH);
   SET_STRING("extensionSettingsRestart", IDS_EXTENSIONS_RESTART);
   SET_STRING("extensionSettingsOptions", IDS_EXTENSIONS_OPTIONS_LINK);

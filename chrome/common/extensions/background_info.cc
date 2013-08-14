@@ -61,6 +61,12 @@ GURL BackgroundInfo::GetBackgroundURL(const Extension* extension) {
 }
 
 // static
+bool BackgroundInfo::HasGeneratedBackgroundPage(const Extension* extension) {
+  const BackgroundInfo& info = GetBackgroundInfo(extension);
+  return !info.background_scripts_.empty();
+}
+
+// static
 const std::vector<std::string>& BackgroundInfo::GetBackgroundScripts(
     const Extension* extension) {
   return GetBackgroundInfo(extension).background_scripts_;

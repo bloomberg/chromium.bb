@@ -144,10 +144,10 @@ TEST_F(ExtensionUITest, GenerateExtensionsJSONData) {
   std::vector<ExtensionPage> pages;
   pages.push_back(ExtensionPage(
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/bar.html"),
-      42, 88, false));
+      42, 88, false, false));
   pages.push_back(ExtensionPage(
       GURL("chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/dog.html"),
-      0, 0, false));
+      0, 0, false, false));
 
   expected_output_path = data_test_dir_path.AppendASCII("extensions")
       .AppendASCII("ui")

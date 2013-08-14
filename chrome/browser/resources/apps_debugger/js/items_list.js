@@ -489,8 +489,10 @@ cr.define('apps_dev_tool', function() {
       var link = activeViews.querySelector('a');
 
       item.views.forEach(function(view, i) {
-        var label = view.path +
-            (view.incognito ? ' ' + str('viewIncognito') : '') +
+        var displayName = view.generatedBackgroundPage ?
+            str('backgroundPage') : view.path;
+        var label =
+            displayName + (view.incognito ? ' ' + str('viewIncognito') : '') +
             (view.render_process_id == -1 ? ' ' + str('viewInactive') : '');
         link.textContent = label;
         link.addEventListener('click', function(e) {

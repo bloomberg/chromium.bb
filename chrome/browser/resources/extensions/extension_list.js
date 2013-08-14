@@ -287,7 +287,9 @@ cr.define('options', function() {
         var link = activeViews.querySelector('a');
 
         extension.views.forEach(function(view, i) {
-          var label = view.path +
+          var displayName = view.generatedBackgroundPage ?
+              loadTimeData.getString('backgroundPage') : view.path;
+          var label = displayName +
               (view.incognito ?
                   ' ' + loadTimeData.getString('viewIncognito') : '') +
               (view.renderProcessId == -1 ?

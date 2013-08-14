@@ -88,11 +88,13 @@ namespace extensions {
 ExtensionPage::ExtensionPage(const GURL& url,
                              int render_process_id,
                              int render_view_id,
-                             bool incognito)
+                             bool incognito,
+                             bool generated_background_page)
     : url(url),
       render_process_id(render_process_id),
       render_view_id(render_view_id),
-      incognito(incognito) {
+      incognito(incognito),
+      generated_background_page(generated_background_page) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -221,6 +223,8 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     view_value->SetInteger("renderViewId", iter->render_view_id);
     view_value->SetInteger("renderProcessId", iter->render_process_id);
     view_value->SetBoolean("incognito", iter->incognito);
+    view_value->SetBoolean("generatedBackgroundPage",
+                           iter->generated_background_page);
     views->Append(view_value);
   }
   extension_data->Set("views", views);
@@ -296,6 +300,8 @@ void ExtensionSettingsHandler::GetLocalizedValues(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INCOGNITO));
   source->AddString("viewInactive",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VIEW_INACTIVE));
+  source->AddString("backgroundPage",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_BACKGROUND_PAGE));
   source->AddString("extensionSettingsEnable",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_ENABLE));
   source->AddString("extensionSettingsEnabled",
@@ -987,7 +993,11 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
       extension_is_enabled &&
       !process_manager->GetBackgroundHostForExtension(extension->id())) {
     result.push_back(ExtensionPage(
-        BackgroundInfo::GetBackgroundURL(extension), -1, -1, false));
+        BackgroundInfo::GetBackgroundURL(extension),
+        -1,
+        -1,
+        false,
+        BackgroundInfo::HasGeneratedBackgroundPage(extension)));
   }
 
   // Repeat for the incognito process, if applicable. Don't try to get
@@ -1005,7 +1015,11 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
         extension_is_enabled &&
         !process_manager->GetBackgroundHostForExtension(extension->id())) {
       result.push_back(ExtensionPage(
-          BackgroundInfo::GetBackgroundURL(extension), -1, -1, true));
+          BackgroundInfo::GetBackgroundURL(extension),
+          -1,
+          -1,
+          true,
+          BackgroundInfo::HasGeneratedBackgroundPage(extension)));
     }
   }
 
@@ -1029,7 +1043,7 @@ void ExtensionSettingsHandler::GetInspectablePagesForExtensionProcess(
     content::RenderProcessHost* process = host->GetProcess();
     result->push_back(
         ExtensionPage(url, process->GetID(), host->GetRoutingID(),
-                      process->GetBrowserContext()->IsOffTheRecord()));
+                      process->GetBrowserContext()->IsOffTheRecord(), false));
   }
 }
 
@@ -1052,7 +1066,7 @@ void ExtensionSettingsHandler::GetShellWindowPagesForExtensionProfile(
     result->push_back(
         ExtensionPage(web_contents->GetURL(), process->GetID(),
                       host->GetRoutingID(),
-                      process->GetBrowserContext()->IsOffTheRecord()));
+                      process->GetBrowserContext()->IsOffTheRecord(), false));
   }
 }
 

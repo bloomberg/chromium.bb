@@ -166,7 +166,8 @@ class DeveloperPrivateGetItemsInfoFunction : public AsyncExtensionFunction {
       const GURL& url,
       int render_process_id,
       int render_view_id,
-      bool incognito);
+      bool incognito,
+      bool generated_background_page);
 };
 
 class DeveloperPrivateInspectFunction : public SyncExtensionFunction {

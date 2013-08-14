@@ -26,6 +26,7 @@ class BackgroundInfo : public Extension::ManifestData {
   static bool HasBackgroundPage(const Extension* extension);
   static bool HasPersistentBackgroundPage(const Extension* extension);
   static bool HasLazyBackgroundPage(const Extension* extension);
+  static bool HasGeneratedBackgroundPage(const Extension* extension);
   static bool AllowJSAccess(const Extension* extension);
 
   bool has_background_page() const {
