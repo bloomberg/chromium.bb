@@ -32,8 +32,6 @@
 
 #include "AsyncFileSystemChromium.h"
 #include "AsyncFileWriterChromium.h"
-#include "WorkerAsyncFileSystemChromium.h"
-#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
 #include "core/platform/FileMetadata.h"
 #include "public/platform/WebFileInfo.h"
@@ -47,17 +45,14 @@ using namespace WebCore;
 
 namespace WebKit {
 
-WebFileSystemCallbacksImpl::WebFileSystemCallbacksImpl(PassOwnPtr<AsyncFileSystemCallbacks> callbacks, ScriptExecutionContext* context, FileSystemSynchronousType synchronousType)
+WebFileSystemCallbacksImpl::WebFileSystemCallbacksImpl(PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
     : m_callbacks(callbacks)
-    , m_context(context)
-    , m_synchronousType(synchronousType)
 {
     ASSERT(m_callbacks);
 }
 
 WebFileSystemCallbacksImpl::WebFileSystemCallbacksImpl(PassOwnPtr<AsyncFileSystemCallbacks> callbacks, PassOwnPtr<AsyncFileWriterChromium> writer)
     : m_callbacks(callbacks)
-    , m_context(0)
     , m_writer(writer)
 {
     ASSERT(m_callbacks);
@@ -117,11 +112,6 @@ void WebFileSystemCallbacksImpl::didOpenFileSystem(const WebString& name, const 
 {
     // This object is intended to delete itself on exit.
     OwnPtr<WebFileSystemCallbacksImpl> callbacks = adoptPtr(this);
-
-    if (m_context && m_context->isWorkerGlobalScope()) {
-        m_callbacks->didOpenFileSystem(name, rootURL, WorkerAsyncFileSystemChromium::create(m_context, m_synchronousType));
-        return;
-    }
     m_callbacks->didOpenFileSystem(name, rootURL, AsyncFileSystemChromium::create());
 }
 

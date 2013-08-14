@@ -135,6 +135,12 @@ public:
             m_result->m_file = File::createForFileSystemFile(m_url, metadata).get();
         }
     }
+
+    virtual bool shouldBlockUntilCompletion() const OVERRIDE
+    {
+        return true;
+    }
+
 private:
     CreateFileHelper(PassRefPtr<CreateFileResult> result, const String& name, const KURL& url, FileSystemType type)
         : m_result(result)

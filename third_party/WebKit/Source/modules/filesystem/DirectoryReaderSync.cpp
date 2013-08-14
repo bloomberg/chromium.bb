@@ -53,7 +53,7 @@ EntrySyncVector DirectoryReaderSync::readEntries(ExceptionState& es)
         return EntrySyncVector();
 
     EntriesSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
-    if (!m_fileSystem->readDirectory(this, m_fullPath, helper.successCallback(), helper.errorCallback())) {
+    if (!m_fileSystem->readDirectory(this, m_fullPath, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
         es.throwDOMException(InvalidModificationError);
         setHasMoreEntries(false);
         return EntrySyncVector();
