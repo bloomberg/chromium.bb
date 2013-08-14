@@ -66,6 +66,13 @@ const char kForceDirectShowVideoCapture[] = "force-directshow";
 // Use Windows WaveOut/In audio API even if Core Audio is supported.
 const char kForceWaveAudio[] = "force-wave-audio";
 
+// Instead of always using the hardware channel layout, check if a driver
+// supports the source channel layout.  Avoids outputting empty channels and
+// permits drivers to enable stereo to multichannel expansion.  Kept behind a
+// flag since some drivers lie about supported layouts and hang when used.  See
+// http://crbug.com/259165 for more details.
+const char kTrySupportedChannelLayouts[] = "try-supported-channel-layouts";
+
 // Number of buffers to use for WaveOut.
 const char kWaveOutBuffers[] = "waveout-buffers";
 #endif

@@ -41,6 +41,7 @@ MEDIA_EXPORT extern const char kDisableMainThreadAudio[];
 MEDIA_EXPORT extern const char kEnableExclusiveAudio[];
 MEDIA_EXPORT extern const char kForceDirectShowVideoCapture[];
 MEDIA_EXPORT extern const char kForceWaveAudio[];
+MEDIA_EXPORT extern const char kTrySupportedChannelLayouts[];
 MEDIA_EXPORT extern const char kWaveOutBuffers[];
 #endif
 
