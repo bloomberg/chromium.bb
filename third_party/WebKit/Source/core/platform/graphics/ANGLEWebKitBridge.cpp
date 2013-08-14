@@ -80,11 +80,19 @@ static bool getSymbolInfo(ShHandle compiler, ShShaderInfo symbolType, Vector<ANG
         switch (symbolType) {
         case SH_ACTIVE_ATTRIBUTES:
             symbol.symbolType = SHADER_SYMBOL_TYPE_ATTRIBUTE;
+#if ANGLE_SH_VERSION >= 111
+            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, nameBuffer.data(), mappedNameBuffer.data());
+#else
             ShGetActiveAttrib(compiler, i, &nameLength, &symbol.size, &symbol.dataType, nameBuffer.data(), mappedNameBuffer.data());
+#endif
             break;
         case SH_ACTIVE_UNIFORMS:
             symbol.symbolType = SHADER_SYMBOL_TYPE_UNIFORM;
+#if ANGLE_SH_VERSION >= 111
+            ShGetVariableInfo(compiler, symbolType, i, &nameLength, &symbol.size, &symbol.dataType, &symbol.precision, nameBuffer.data(), mappedNameBuffer.data());
+#else
             ShGetActiveUniform(compiler, i, &nameLength, &symbol.size, &symbol.dataType, nameBuffer.data(), mappedNameBuffer.data());
+#endif
             break;
         default:
             ASSERT_NOT_REACHED();
@@ -187,7 +195,11 @@ bool ANGLEWebKitBridge::compileShaderSource(const char* shaderSource, ANGLEShade
 
     const char* const shaderSourceStrings[] = { shaderSource };
 
+#if ANGLE_SH_VERSION >= 111
+    bool validateSuccess = ShCompile(compiler, shaderSourceStrings, 1, SH_OBJECT_CODE | SH_VARIABLES | extraCompileOptions);
+#else
     bool validateSuccess = ShCompile(compiler, shaderSourceStrings, 1, SH_OBJECT_CODE | SH_ATTRIBUTES_UNIFORMS | extraCompileOptions);
+#endif
     if (!validateSuccess) {
         int logSize = getValidationResultValue(compiler, SH_INFO_LOG_LENGTH);
         if (logSize > 1) {
