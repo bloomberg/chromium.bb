@@ -31,12 +31,12 @@ class IOMetric(Metric):
         process_type_trace: String to be added to the trace name in the results.
       """
       if 'ReadOperationCount' in io_stats[process_type_io]:
-        results.AddSummary('read_operations_' + process_type_trace, '',
+        results.AddSummary('read_operations_' + process_type_trace, 'count',
                            io_stats[process_type_io]
                            ['ReadOperationCount'],
                            data_type='unimportant')
       if 'WriteOperationCount' in io_stats[process_type_io]:
-        results.AddSummary('write_operations_' + process_type_trace, '',
+        results.AddSummary('write_operations_' + process_type_trace, 'count',
                            io_stats[process_type_io]
                            ['WriteOperationCount'],
                            data_type='unimportant')
