@@ -6,6 +6,7 @@
 
 """Unittests for build stages."""
 
+import collections
 import contextlib
 import copy
 import cPickle
@@ -1577,6 +1578,7 @@ class ReportStageTest(AbstractStageTest):
                 (commands, 'UploadArchivedFile'),):
       self.StartPatcher(mock.patch.object(*cmd, autospec=True))
     self.StartPatcher(ArchiveStageMock())
+    self.sync_stage = None
 
   def ConstructStage(self):
     archive_stage = stages.ArchiveStage(self.options, self.build_config,
@@ -1587,10 +1589,18 @@ class ReportStageTest(AbstractStageTest):
         cbuildbot.BoardConfig('mattress-man', 'config2'): archive_stage,
     }
     return stages.ReportStage(self.options, self.build_config,
-                              archive_stages, None)
+                              archive_stages, None, self.sync_stage)
 
   def testCheckResults(self):
     """Basic sanity check for results stage functionality"""
+    self.RunStage()
+
+  def testCommitQueueResults(self):
+    """Check that commit queue patches get serialized"""
+    self.sync_stage = stages.CommitQueueSyncStage(self.options,
+                                                  self.build_config)
+    self.sync_stage.pool = collections.namedtuple('changes', ['changes'])
+    self.sync_stage.pool.changes = [ MockPatch() ]
     self.RunStage()
 
 
@@ -1620,6 +1630,7 @@ class MockPatch(mock.MagicMock):
   gerrit_number = '1234'
   patch_number = '1'
   project = 'chromiumos/chromite'
+  internal = False
 
 
 class BaseCQTest(StageTest):

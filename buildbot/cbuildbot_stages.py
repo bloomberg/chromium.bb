@@ -206,8 +206,17 @@ class ArchivingStage(BoardSpecificBuilderStage):
 
     return '%s/%s' % (gs_base, self._bot_id)
 
-  def GetMetadata(self, stage=None, final_status=None):
-    """Constructs the metadata json object."""
+  def GetMetadata(self, stage=None, final_status=None, sync_instance=None):
+    """Constructs the metadata json object.
+
+    Args:
+      stage: The stage name that this metadata file is being uploaded for.
+      final_status: Whether the build passed or failed. If None, the build
+        will be treated as still running.
+      sync_instance: The stage instance that was used for syncing the source
+        code. This should be a derivative of SyncStage. If None, the list of
+        commit queue patches will not be included in the metadata.
+    """
     config = self._build_config
 
     start_time = results_lib.Results.start_time
@@ -273,15 +282,25 @@ class ArchivingStage(BoardSpecificBuilderStage):
           'log': self.ConstructDashboardURL(stage=name),
       })
 
+    if (sync_instance and isinstance(sync_instance, CommitQueueSyncStage) and
+        sync_instance.pool):
+      changes = []
+      for change in sync_instance.pool.changes:
+        changes.append({'gerrit_number': change.gerrit_number,
+                        'patch_number': change.patch_number,
+                        'internal': change.internal})
+      metadata['changes'] = changes
+
     return metadata
 
-  def UploadMetadata(self, stage=None, final_status=None):
+  def UploadMetadata(self, stage=None, **kwargs):
     """Create a JSON of various metadata describing this build."""
-    metadata = self.GetMetadata(stage=stage, final_status=final_status)
+    metadata = self.GetMetadata(stage=stage, **kwargs)
     filename = constants.METADATA_JSON
     if stage is not None:
       filename = constants.METADATA_STAGE_JSON % { 'stage': stage }
     metadata_json = os.path.join(self.archive_path, filename)
+
     # Stages may run in parallel, so we have to do atomic updates on this.
     osutils.WriteFile(metadata_json, json.dumps(metadata), atomic=True)
     self.UploadArtifact(os.path.basename(metadata_json), archive=False)
@@ -2895,10 +2914,12 @@ class ReportStage(bs.BuilderStage):
 <body>
 <h2>Artifacts Index: %(board)s / %(version)s (%(config)s config)</h2>"""
 
-  def __init__(self, options, build_config, archive_stages, version):
+  def __init__(self, options, build_config, archive_stages, version,
+               sync_instance):
     bs.BuilderStage.__init__(self, options, build_config)
     self._archive_stages = archive_stages
     self._version = version if version else ''
+    self._sync_instance = sync_instance
 
   def PerformStage(self):
     acl = None if self._build_config['internal'] else 'public-read'
@@ -2922,7 +2943,8 @@ class ReportStage(bs.BuilderStage):
         final_status = 'passed'
       else:
         final_status = 'failed'
-      archive_stage.UploadMetadata(final_status=final_status)
+      archive_stage.UploadMetadata(final_status=final_status,
+                                   sync_instance=self._sync_instance)
 
       # Generate the index page needed for public reading.
       uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)

@@ -297,6 +297,7 @@ class Builder(object):
     print_report = True
     exception_thrown = False
     success = True
+    sync_instance = None
     try:
       self.Initialize()
       sync_instance = self.GetSyncInstance()
@@ -328,7 +329,7 @@ class Builder(object):
       if print_report:
         results_lib.WriteCheckpoint(self.options.buildroot)
         self._RunStage(stages.ReportStage, self.archive_stages,
-                       self.release_tag)
+                       self.release_tag, sync_instance)
         success = results_lib.Results.BuildSucceededSoFar()
         if exception_thrown and success:
           success = False
