@@ -462,6 +462,7 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive")));
 
 // TODO(mtomasz): Fix this test. crbug.com/252561
+/*
 INSTANTIATE_TEST_CASE_P(
     OpenSpecialTypes,
     FileManagerBrowserTest,
@@ -475,6 +476,7 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(NOT_IN_GUEST_MODE,
                                     "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
+*/
 
 INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
