@@ -13,6 +13,7 @@
 #include <ppapi/c/pp_resource.h>
 #include <ppapi/c/pp_var.h>
 #include <ppapi/c/ppb_console.h>
+#include <ppapi/c/ppb_core.h>
 #include <ppapi/c/ppb_file_io.h>
 #include <ppapi/c/ppb_file_ref.h>
 #include <ppapi/c/ppb_file_system.h>
@@ -29,6 +30,25 @@
 
 namespace nacl_io {
 
+// This class is the base interface for Pepper used by nacl_io.
+//
+// We use #include and macro magic to simplify adding new interfaces. The
+// resulting PepperInterface basically looks like this:
+//
+// class PepperInterface {
+//  public:
+//   virtual ~PepperInterface() {}
+//   virtual PP_Instance GetInstance() = 0;
+//   ...
+//
+//   // Interface getters.
+//   ConsoleInterface* GetConsoleInterface() = 0;
+//   CoreInterface* GetCoreInterface() = 0;
+//   FileIoInterface* GetFileIoInterface() = 0;
+//   ... etc.
+// };
+//
+//
 // Note: To add a new interface:
 //
 // 1. Using one of the other interfaces as a template, add your interface to
@@ -51,11 +71,18 @@ class PepperInterface {
  public:
   virtual ~PepperInterface() {}
   virtual PP_Instance GetInstance() = 0;
-  virtual void AddRefResource(PP_Resource) = 0;
-  virtual void ReleaseResource(PP_Resource) = 0;
-  virtual bool IsMainThread() = 0;
+
+  // Convenience functions. These forward to
+  // GetCoreInterface()->{AddRef,Release}Resource.
+  void AddRefResource(PP_Resource resource);
+  void ReleaseResource(PP_Resource resource);
 
 // Interface getters.
+//
+// These macros expand to definitions like:
+//
+//   CoreInterface* GetCoreInterface() = 0;
+//
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
@@ -65,6 +92,17 @@ class PepperInterface {
 };
 
 // Interface class definitions.
+//
+// Each class will be defined with all pure virtual methods, e.g:
+//
+//   class CoreInterface {
+//    public:
+//     virtual ~CoreInterface() {}
+//     virtual void AddRefResource() = 0;
+//     virtual void ReleaseResource() = 0;
+//     virtual PP_Bool IsMainThread() = 0;
+//   };
+//
 #include "nacl_io/pepper/undef_macros.h"
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
     class BaseClass { \
@@ -72,6 +110,8 @@ class PepperInterface {
       virtual ~BaseClass() {}
 #define END_INTERFACE(BaseClass, PPInterface) \
     };
+#define METHOD0(Class, ReturnType, MethodName) \
+    virtual ReturnType MethodName() = 0;
 #define METHOD1(Class, ReturnType, MethodName, Type0) \
     virtual ReturnType MethodName(Type0) = 0;
 #define METHOD2(Class, ReturnType, MethodName, Type0, Type1) \

@@ -4,6 +4,7 @@
 
 #undef BEGIN_INTERFACE
 #undef END_INTERFACE
+#undef METHOD0
 #undef METHOD1
 #undef METHOD2
 #undef METHOD3

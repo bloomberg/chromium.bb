@@ -138,7 +138,7 @@ Error MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   // We can't block the main thread, so make an asynchronous call if on main
   // thread. If we are off-main-thread, then don't make an asynchronous call;
   // otherwise we require a message loop.
-  bool main_thread = ppapi->IsMainThread();
+  bool main_thread = ppapi->GetCoreInterface()->IsMainThread();
   PP_CompletionCallback cc =
       main_thread ? PP_MakeCompletionCallback(
                         &MountHtml5Fs::FilesystemOpenCallbackThunk, this)

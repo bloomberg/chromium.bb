@@ -8,6 +8,14 @@
 
 namespace nacl_io {
 
+void PepperInterface::AddRefResource(PP_Resource resource) {
+  GetCoreInterface()->AddRefResource(resource);
+}
+
+void PepperInterface::ReleaseResource(PP_Resource resource) {
+  GetCoreInterface()->ReleaseResource(resource);
+}
+
 ScopedResource::ScopedResource(PepperInterface* ppapi, PP_Resource resource)
     : ppapi_(ppapi),
       resource_(resource) {

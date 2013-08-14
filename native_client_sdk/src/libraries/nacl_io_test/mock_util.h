@@ -16,9 +16,6 @@ ACTION_TEMPLATE(CallCallback,
   if (callback.func) {
     (*callback.func)(callback.user_data, result);
   }
-
-  // Dummy return value.
-  return 0;
 }
 
 MATCHER_P(IsEqualToVar, var, "") {

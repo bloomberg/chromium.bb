@@ -52,6 +52,7 @@ class MountHtml5FsTest : public ::testing::Test {
 
  protected:
   PepperInterfaceMock* ppapi_;
+  CoreInterfaceMock* core_;
   PP_CompletionCallback open_filesystem_callback_;
 
   static const PP_Instance instance_ = 123;
@@ -59,7 +60,8 @@ class MountHtml5FsTest : public ::testing::Test {
 };
 
 MountHtml5FsTest::MountHtml5FsTest()
-    : ppapi_(new PepperInterfaceMock(instance_)) {
+    : ppapi_(new PepperInterfaceMock(instance_)),
+      core_(ppapi_->GetCoreInterface()) {
 }
 
 MountHtml5FsTest::~MountHtml5FsTest() {
@@ -79,14 +81,15 @@ void MountHtml5FsTest::SetUpFilesystemExpectations(
     EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
         .WillOnce(DoAll(SaveArg<2>(&open_filesystem_callback_),
                         Return(int32_t(PP_OK))));
-    EXPECT_CALL(*ppapi_, IsMainThread()).WillOnce(Return(PP_TRUE));
+    EXPECT_CALL(*core_, IsMainThread()).WillOnce(Return(PP_TRUE));
   } else {
     EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
-        .WillOnce(CallCallback<2>(int32_t(PP_OK)));
-    EXPECT_CALL(*ppapi_, IsMainThread()).WillOnce(Return(PP_FALSE));
+        .WillOnce(DoAll(CallCallback<2>(int32_t(PP_OK)),
+                        Return(int32_t(PP_OK_COMPLETIONPENDING))));
+    EXPECT_CALL(*core_, IsMainThread()).WillOnce(Return(PP_FALSE));
   }
 
-  EXPECT_CALL(*ppapi_, ReleaseResource(filesystem_resource_));
+  EXPECT_CALL(*core_, ReleaseResource(filesystem_resource_));
 }
 
 class MountHtml5FsNodeTest : public MountHtml5FsTest {
@@ -149,12 +152,12 @@ void MountHtml5FsNodeTest::SetUpNodeExpectations(PP_FileType file_type) {
 
     // Close.
     EXPECT_CALL(*fileio_, Close(fileio_resource_));
-    EXPECT_CALL(*ppapi_, ReleaseResource(fileio_resource_));
+    EXPECT_CALL(*core_, ReleaseResource(fileio_resource_));
     EXPECT_CALL(*fileio_, Flush(fileio_resource_, _));
   }
 
   // Close.
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource_));
+  EXPECT_CALL(*core_, ReleaseResource(fileref_resource_));
 }
 
 void MountHtml5FsNodeTest::InitFilesystem() {
@@ -342,8 +345,8 @@ TEST_F(MountHtml5FsTest, Access) {
       .WillOnce(Return(int32_t(PP_OK)));
   EXPECT_CALL(*fileio, Close(fileio_resource));
   EXPECT_CALL(*fileio, Flush(fileio_resource, _));
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileio_resource));
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(*core_, ReleaseResource(fileio_resource));
+  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
   ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
@@ -378,8 +381,8 @@ TEST_F(MountHtml5FsTest, AccessFileNotFound) {
       .WillOnce(Return(int32_t(PP_ERROR_FILENOTFOUND)));
   EXPECT_CALL(*fileio, Close(fileio_resource));
   EXPECT_CALL(*fileio, Flush(fileio_resource, _));
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileio_resource));
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(*core_, ReleaseResource(fileio_resource));
+  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
   ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
@@ -400,7 +403,7 @@ TEST_F(MountHtml5FsTest, Mkdir) {
       .WillOnce(Return(fileref_resource));
   EXPECT_CALL(*fileref, MakeDirectory(fileref_resource, _, _))
       .WillOnce(Return(int32_t(PP_OK)));
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
   ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
@@ -423,7 +426,7 @@ TEST_F(MountHtml5FsTest, Remove) {
       .WillOnce(Return(fileref_resource));
   EXPECT_CALL(*fileref, Delete(fileref_resource, _))
       .WillOnce(Return(int32_t(PP_OK)));
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
   ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
@@ -604,8 +607,8 @@ TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
   EXPECT_CALL(*var, VarToUtf8(IsEqualToVar(fileref_name_2), _))
       .WillOnce(Return(fileref_name_cstr_2));
 
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource_1));
-  EXPECT_CALL(*ppapi_, ReleaseResource(fileref_resource_2));
+  EXPECT_CALL(*core_, ReleaseResource(fileref_resource_1));
+  EXPECT_CALL(*core_, ReleaseResource(fileref_resource_2));
 
   struct dirent dirents[2];
   memset(&dirents[0], 0, sizeof(dirents));

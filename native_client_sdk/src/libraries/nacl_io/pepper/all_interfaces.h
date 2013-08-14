@@ -19,8 +19,14 @@
  */
 
 BEGIN_INTERFACE(ConsoleInterface, PPB_Console, PPB_CONSOLE_INTERFACE_1_0)
-  METHOD3(ConsoleInterface, void, Log, PP_Instance, PP_LogLevel, struct PP_Var)
+  METHOD3(ConsoleInterface, void, Log, PP_Instance, PP_LogLevel, PP_Var)
 END_INTERFACE(ConsoleInterface, PPB_Console)
+
+BEGIN_INTERFACE(CoreInterface, PPB_Core, PPB_CORE_INTERFACE_1_0)
+  METHOD1(CoreInterface, void, AddRefResource, PP_Resource)
+  METHOD1(CoreInterface, void, ReleaseResource, PP_Resource)
+  METHOD0(CoreInterface, PP_Bool, IsMainThread)
+END_INTERFACE(CoreInterface, PPB_Core)
 
 BEGIN_INTERFACE(FileIoInterface, PPB_FileIO, PPB_FILEIO_INTERFACE_1_0)
   METHOD1(FileIoInterface, void, Close, PP_Resource)
@@ -60,12 +66,13 @@ BEGIN_INTERFACE(FileSystemInterface, PPB_FileSystem,
 END_INTERFACE(FileSystemInterface, PPB_FileSystem)
 
 BEGIN_INTERFACE(MessagingInterface, PPB_Messaging, PPB_MESSAGING_INTERFACE_1_0)
-  METHOD2(MessagingInterface, void, PostMessage, PP_Instance, struct PP_Var)
+  METHOD2(MessagingInterface, void, PostMessage, PP_Instance, PP_Var)
 END_INTERFACE(MessagingInterface, PPB_Messaging)
 
 BEGIN_INTERFACE(VarInterface, PPB_Var, PPB_VAR_INTERFACE_1_1)
-  METHOD1(VarInterface, void, Release, struct PP_Var)
-  METHOD2(VarInterface, struct PP_Var, VarFromUtf8, const char *, uint32_t)
+  METHOD1(VarInterface, void, AddRef, PP_Var)
+  METHOD1(VarInterface, void, Release, PP_Var)
+  METHOD2(VarInterface, PP_Var, VarFromUtf8, const char *, uint32_t)
   METHOD2(VarInterface, const char*, VarToUtf8, PP_Var, uint32_t*)
 END_INTERFACE(VarInterface, PPB_Var)
 

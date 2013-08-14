@@ -121,6 +121,9 @@ Error MountNodeHtml5Fs::GetDents(size_t offs,
     uint32_t file_name_length;
     const char* file_name = mount_->ppapi()->GetVarInterface()
         ->VarToUtf8(file_name_var, &file_name_length);
+
+    mount_->ppapi()->GetVarInterface()->Release(file_name_var);
+
     if (!file_name)
       continue;
 

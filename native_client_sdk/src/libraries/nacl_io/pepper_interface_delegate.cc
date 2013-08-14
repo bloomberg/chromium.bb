@@ -1,52 +1,46 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LIBRARIES_NACL_IO_REAL_PEPPER_INTERFACE_H_
-#define LIBRARIES_NACL_IO_REAL_PEPPER_INTERFACE_H_
-
-#include <ppapi/c/ppb.h>
-#include <ppapi/c/ppb_core.h>
-#include <ppapi/c/ppb_message_loop.h>
-#include "pepper_interface.h"
+#include "nacl_io/pepper_interface_delegate.h"
 
 namespace nacl_io {
 
-// Forward declare interface classes.
+PepperInterfaceDelegate::PepperInterfaceDelegate(PP_Instance instance)
+    : instance_(instance) {
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    class Real##BaseClass;
+  BaseClass##delegate_ = NULL;
 #include "nacl_io/pepper/all_interfaces.h"
+}
 
-class RealPepperInterface : public PepperInterface {
- public:
-  RealPepperInterface(PP_Instance instance,
-                      PPB_GetInterface get_browser_interface);
+PepperInterfaceDelegate::~PepperInterfaceDelegate() {}
 
-  virtual PP_Instance GetInstance();
+PP_Instance PepperInterfaceDelegate::GetInstance() {
+  return instance_;
+}
 
 // Interface getters.
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    virtual BaseClass* Get##BaseClass();
+BaseClass* PepperInterfaceDelegate::Get##BaseClass() { \
+  return BaseClass##delegate_; \
+}
 #include "nacl_io/pepper/all_interfaces.h"
 
- private:
-  PP_Instance instance_;
-
-// Interface pointers.
+// Interface delegate setters.
 #include "nacl_io/pepper/undef_macros.h"
 #include "nacl_io/pepper/define_empty_macros.h"
 #undef BEGIN_INTERFACE
 #define BEGIN_INTERFACE(BaseClass, PPInterface, InterfaceString) \
-    Real##BaseClass* BaseClass##interface_;
+void PepperInterfaceDelegate::Set##BaseClass##Delegate( \
+    BaseClass* delegate) { \
+  BaseClass##delegate_ = delegate; \
+}
 #include "nacl_io/pepper/all_interfaces.h"
-};
 
 }  // namespace nacl_io
-
-#endif  // LIBRARIES_NACL_IO_REAL_PEPPER_INTERFACE_H_

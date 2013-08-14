@@ -17,6 +17,8 @@
       virtual ~BaseClass##Mock();
 #define END_INTERFACE(BaseClass, PPInterface) \
     };
+#define METHOD0(Class, ReturnType, MethodName) \
+    MOCK_METHOD0(MethodName, ReturnType());
 #define METHOD1(Class, ReturnType, MethodName, Type0) \
     MOCK_METHOD1(MethodName, ReturnType(Type0));
 #define METHOD2(Class, ReturnType, MethodName, Type0, Type1) \
@@ -37,9 +39,6 @@ class PepperInterfaceMock : public nacl_io::PepperInterface {
   ~PepperInterfaceMock();
 
   virtual PP_Instance GetInstance();
-  MOCK_METHOD1(AddRefResource, void(PP_Resource));
-  MOCK_METHOD1(ReleaseResource, void(PP_Resource));
-  MOCK_METHOD0(IsMainThread, bool());
 
 // Interface getters.
 #include "nacl_io/pepper/undef_macros.h"
