@@ -9,13 +9,13 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/common/chrome_paths.h"
 #include "crypto/rsa_private_key.h"
 #include "net/test/python_utils.h"
 #include "net/test/spawned_test_server/base_test_server.h"
@@ -72,8 +72,11 @@ LocalPolicyTestServer::LocalPolicyTestServer(const std::string& test_name)
                            base::FilePath()) {
   // Read configuration from a file in chrome/test/data/policy.
   base::FilePath source_root;
-  CHECK(PathService::Get(chrome::DIR_TEST_DATA, &source_root));
+  CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &source_root));
   config_file_ = source_root
+      .AppendASCII("chrome")
+      .AppendASCII("test")
+      .AppendASCII("data")
       .AppendASCII("policy")
       .AppendASCII(base::StringPrintf("policy_%s.json", test_name.c_str()));
 }

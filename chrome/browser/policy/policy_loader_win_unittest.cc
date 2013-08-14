@@ -13,6 +13,7 @@
 #include <iterator>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preg_parser_win.h"
-#include "chrome/common/chrome_paths.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -789,8 +789,12 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   virtual ~PolicyLoaderWinTest() {}
 
   virtual void SetUp() OVERRIDE {
-    ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_));
-    test_data_dir_ = test_data_dir_.AppendASCII("policy").AppendASCII("gpo");
+    ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
+    test_data_dir_ = test_data_dir_.AppendASCII("chrome")
+                                   .AppendASCII("test")
+                                   .AppendASCII("data")
+                                   .AppendASCII("policy")
+                                   .AppendASCII("gpo");
   }
 
   // AppliedGPOListProvider:

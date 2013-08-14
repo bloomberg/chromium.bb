@@ -74,10 +74,6 @@ specific_include_rules = {
     "+chrome/common/pref_names.h",
   ],
 
-  r"policy_loader_win_unittest\.cc": [
-    "+chrome/common/chrome_paths.h",
-  ],
-
   r"policy_path_parser_win\.cc": [
     "+chrome/common/chrome_switches.h",
   ],
@@ -89,13 +85,5 @@ specific_include_rules = {
   r"policy_statistics_collector_unittest\.cc": [
     "+chrome/browser/prefs/browser_prefs.h",
     "+chrome/common/pref_names.h",
-  ],
-
-  r"preg_parser_win_unittest\.cc": [
-    "+chrome/common/chrome_paths.h",
-  ],
-
-  r"test/local_policy_test_server\.cc": [
-    "+chrome/common/chrome_paths.h",
   ],
 }

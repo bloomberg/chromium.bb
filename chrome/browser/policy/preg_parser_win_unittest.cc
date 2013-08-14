@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/preg_parser_win.h"
 
+#include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
@@ -11,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/registry_dict_win.h"
-#include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -69,7 +69,7 @@ void SetString(RegistryDict* dict,
 
 TEST(PRegParserWinTest, TestParseFile) {
   base::FilePath test_data_dir;
-  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
+  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
 
   // Prepare the test dictionary with some data so the test can check that the
   // PReg action triggers work, i.e. remove these items.
@@ -88,7 +88,8 @@ TEST(PRegParserWinTest, TestParseFile) {
   dict.SetKey("DelValsTest", subdict.Pass());
 
   // Run the parser.
-  base::FilePath test_file(test_data_dir.AppendASCII("policy/registry.pol"));
+  base::FilePath test_file(
+      test_data_dir.AppendASCII("chrome/test/data/policy/registry.pol"));
   PolicyLoadStatusSample status;
   ASSERT_TRUE(preg_parser::ReadFile(
       test_file, L"SOFTWARE\\Policies\\Chromium", &dict, &status));
