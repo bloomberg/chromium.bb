@@ -344,9 +344,11 @@ class SSLServerSocketTest : public PlatformTest {
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
+    scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+    connection->set_socket(fake_client_socket);
     client_socket_.reset(
         socket_factory_->CreateSSLClientSocket(
-            fake_client_socket, host_and_pair, ssl_config, context));
+            connection.release(), host_and_pair, ssl_config, context));
     server_socket_.reset(net::CreateSSLServerSocket(
         fake_server_socket, cert.get(), private_key.get(), net::SSLConfig()));
   }

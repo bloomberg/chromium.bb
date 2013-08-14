@@ -14,6 +14,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/ssl_server_socket.h"
 #include "net/ssl/ssl_config_service.h"
@@ -103,9 +104,11 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
+    scoped_ptr<net::ClientSocketHandle> connection(new net::ClientSocketHandle);
+    connection->set_socket(socket.release());
     socket_.reset(
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-            socket.release(), host_and_port, ssl_config, context));
+            connection.release(), host_and_port, ssl_config, context));
 
     result = socket_->Connect(
         base::Bind(&SslHmacChannelAuthenticator::OnConnected,

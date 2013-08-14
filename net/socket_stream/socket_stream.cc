@@ -33,6 +33,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/socket/socks5_client_socket.h"
 #include "net/socket/socks_client_socket.h"
 #include "net/socket/ssl_client_socket.h"
@@ -953,15 +954,17 @@ int SocketStream::DoSOCKSConnect() {
 
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
 
-  StreamSocket* s = socket_.release();
   HostResolver::RequestInfo req_info(HostPortPair::FromURL(url_));
 
   DCHECK(!proxy_info_.is_empty());
-  if (proxy_info_.proxy_server().scheme() == ProxyServer::SCHEME_SOCKS5)
-    s = new SOCKS5ClientSocket(s, req_info);
-  else
-    s = new SOCKSClientSocket(s, req_info, context_->host_resolver());
-  socket_.reset(s);
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  connection->set_socket(socket_.release());
+  if (proxy_info_.proxy_server().scheme() == ProxyServer::SCHEME_SOCKS5) {
+    socket_.reset(new SOCKS5ClientSocket(connection.release(), req_info));
+  } else {
+    socket_.reset(new SOCKSClientSocket(
+        connection.release(), req_info, context_->host_resolver()));
+  }
   metrics_->OnCountConnectionType(SocketStreamMetrics::SOCKS_CONNECTION);
   return socket_->Connect(io_callback_);
 }
@@ -986,8 +989,10 @@ int SocketStream::DoSecureProxyConnect() {
   ssl_context.cert_verifier = context_->cert_verifier();
   ssl_context.transport_security_state = context_->transport_security_state();
   ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  connection->set_socket(socket_.release());
   socket_.reset(factory_->CreateSSLClientSocket(
-      socket_.release(),
+      connection.release(),
       proxy_info_.proxy_server().host_port_pair(),
       proxy_ssl_config_,
       ssl_context));
@@ -1040,7 +1045,9 @@ int SocketStream::DoSSLConnect() {
   ssl_context.cert_verifier = context_->cert_verifier();
   ssl_context.transport_security_state = context_->transport_security_state();
   ssl_context.server_bound_cert_service = context_->server_bound_cert_service();
-  socket_.reset(factory_->CreateSSLClientSocket(socket_.release(),
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  connection->set_socket(socket_.release());
+  socket_.reset(factory_->CreateSSLClientSocket(connection.release(),
                                                 HostPortPair::FromURL(url_),
                                                 server_ssl_config_,
                                                 ssl_context));

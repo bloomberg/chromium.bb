@@ -130,18 +130,6 @@ static base::LazyInstance<DefaultClientSocketFactory>::Leaky
 
 }  // namespace
 
-// Deprecated function (http://crbug.com/37810) that takes a StreamSocket.
-SSLClientSocket* ClientSocketFactory::CreateSSLClientSocket(
-    StreamSocket* transport_socket,
-    const HostPortPair& host_and_port,
-    const SSLConfig& ssl_config,
-    const SSLClientSocketContext& context) {
-  ClientSocketHandle* socket_handle = new ClientSocketHandle();
-  socket_handle->set_socket(transport_socket);
-  return CreateSSLClientSocket(socket_handle, host_and_port, ssl_config,
-                               context);
-}
-
 // static
 ClientSocketFactory* ClientSocketFactory::GetDefaultFactory() {
   return g_default_client_socket_factory.Pointer();

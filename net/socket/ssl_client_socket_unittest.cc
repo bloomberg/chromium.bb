@@ -514,7 +514,9 @@ class SSLClientSocketTest : public PlatformTest {
       net::StreamSocket* transport_socket,
       const net::HostPortPair& host_and_port,
       const net::SSLConfig& ssl_config) {
-    return socket_factory_->CreateSSLClientSocket(transport_socket,
+    scoped_ptr<net::ClientSocketHandle> connection(new net::ClientSocketHandle);
+    connection->set_socket(transport_socket);
+    return socket_factory_->CreateSSLClientSocket(connection.release(),
                                                   host_and_port,
                                                   ssl_config,
                                                   context_);

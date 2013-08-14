@@ -52,13 +52,6 @@ class NET_EXPORT ClientSocketFactory {
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) = 0;
 
-  // Deprecated function (http://crbug.com/37810) that takes a StreamSocket.
-  virtual SSLClientSocket* CreateSSLClientSocket(
-      StreamSocket* transport_socket,
-      const HostPortPair& host_and_port,
-      const SSLConfig& ssl_config,
-      const SSLClientSocketContext& context);
-
   // Clears cache used for SSL session resumption.
   virtual void ClearSSLSessionCache() = 0;
 

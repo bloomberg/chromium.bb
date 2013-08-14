@@ -37,6 +37,8 @@ class SOCKSClientSocketTest : public PlatformTest {
  protected:
   scoped_ptr<SOCKSClientSocket> user_sock_;
   AddressList address_list_;
+  // Filled in by BuildMockSocket() and owned by its return value
+  // (which |user_sock| is set to).
   StreamSocket* tcp_sock_;
   TestCompletionCallback callback_;
   scoped_ptr<MockHostResolver> host_resolver_;
@@ -73,7 +75,12 @@ SOCKSClientSocket* SOCKSClientSocketTest::BuildMockSocket(
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(tcp_sock_->IsConnected());
 
-  return new SOCKSClientSocket(tcp_sock_,
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  // |connection| takes ownership of |tcp_sock_|, but keep a
+  // non-owning pointer to it.
+  connection->set_socket(tcp_sock_);
+  return new SOCKSClientSocket(
+      connection.release(),
       HostResolver::RequestInfo(HostPortPair(hostname, port)),
       host_resolver);
 }

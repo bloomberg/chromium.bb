@@ -47,6 +47,8 @@ class SOCKS5ClientSocketTest : public PlatformTest {
   CapturingNetLog net_log_;
   scoped_ptr<SOCKS5ClientSocket> user_sock_;
   AddressList address_list_;
+  // Filled in by BuildMockSocket() and owned by its return value
+  // (which |user_sock| is set to).
   StreamSocket* tcp_sock_;
   TestCompletionCallback callback_;
   scoped_ptr<MockHostResolver> host_resolver_;
@@ -94,7 +96,12 @@ SOCKS5ClientSocket* SOCKS5ClientSocketTest::BuildMockSocket(
   EXPECT_EQ(OK, rv);
   EXPECT_TRUE(tcp_sock_->IsConnected());
 
-  return new SOCKS5ClientSocket(tcp_sock_,
+  scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+  // |connection| takes ownership of |tcp_sock_|, but keep a
+  // non-owning pointer to it.
+  connection->set_socket(tcp_sock_);
+  return new SOCKS5ClientSocket(
+      connection.release(),
       HostResolver::RequestInfo(HostPortPair(hostname, port)));
 }
 

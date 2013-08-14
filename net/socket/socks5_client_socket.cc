@@ -42,22 +42,6 @@ SOCKS5ClientSocket::SOCKS5ClientSocket(
       net_log_(transport_socket->socket()->NetLog()) {
 }
 
-SOCKS5ClientSocket::SOCKS5ClientSocket(
-    StreamSocket* transport_socket,
-    const HostResolver::RequestInfo& req_info)
-    : io_callback_(base::Bind(&SOCKS5ClientSocket::OnIOComplete,
-                              base::Unretained(this))),
-      transport_(new ClientSocketHandle()),
-      next_state_(STATE_NONE),
-      completed_handshake_(false),
-      bytes_sent_(0),
-      bytes_received_(0),
-      read_header_size(kReadHeaderSize),
-      host_request_info_(req_info),
-      net_log_(transport_socket->NetLog()) {
-  transport_->set_socket(transport_socket);
-}
-
 SOCKS5ClientSocket::~SOCKS5ClientSocket() {
   Disconnect();
 }

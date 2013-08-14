@@ -40,10 +40,6 @@ class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
   SOCKS5ClientSocket(ClientSocketHandle* transport_socket,
                      const HostResolver::RequestInfo& req_info);
 
-  // Deprecated constructor (http://crbug.com/37810) that takes a StreamSocket.
-  SOCKS5ClientSocket(StreamSocket* transport_socket,
-                     const HostResolver::RequestInfo& req_info);
-
   // On destruction Disconnect() is called.
   virtual ~SOCKS5ClientSocket();
 

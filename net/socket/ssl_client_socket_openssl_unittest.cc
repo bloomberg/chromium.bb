@@ -111,7 +111,9 @@ class SSLClientSocketOpenSSLClientAuthTest : public PlatformTest {
       StreamSocket* transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config) {
-    return socket_factory_->CreateSSLClientSocket(transport_socket,
+    scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
+    connection->set_socket(transport_socket);
+    return socket_factory_->CreateSSLClientSocket(connection.release(),
                                                   host_and_port,
                                                   ssl_config,
                                                   context_);
