@@ -147,6 +147,8 @@ bool ChromeContentUtilityClient::OnMessageReceived(
                         OnParseITunesLibraryXmlFile)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_ParsePicasaPMPDatabase,
                         OnParsePicasaPMPDatabase)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_IndexPicasaAlbumsContents,
+                        OnIndexPicasaAlbumsContents)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -591,7 +593,7 @@ void ChromeContentUtilityClient::OnParsePicasaPMPDatabase(
   ReleaseProcessIfNeeded();
 }
 
-void OnIndexPicasaAlbumsContents(
+void ChromeContentUtilityClient::OnIndexPicasaAlbumsContents(
     const picasa::AlbumUIDSet& album_uids,
     const std::vector<picasa::FolderINIContents>& folders_inis) {
   picasa::PicasaAlbumsIndexer indexer(album_uids);
