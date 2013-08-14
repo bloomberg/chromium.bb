@@ -47,20 +47,23 @@ public:
     CustomElementUpgradeCandidateMap() { }
     ~CustomElementUpgradeCandidateMap();
 
+    // API for CustomElement to notify observers
     static void elementWasDestroyed(Element*);
+
+    // API for CustomElementRegistrationContext to save and take candidates
+
+    typedef ListHashSet<Element*> ElementSet;
 
     void add(const CustomElementDescriptor&, Element*);
     void remove(Element*);
-
-    typedef ListHashSet<Element*> ElementSet;
     ElementSet takeUpgradeCandidatesFor(const CustomElementDescriptor&);
 
 private:
-    // Maps elements to upgrade candidate maps observing their destruction
-    typedef HashMap<Element*, CustomElementUpgradeCandidateMap*> DestructionObserverMap;
-    static DestructionObserverMap& destructionObservers();
-    static void registerForElementDestructionNotification(Element*, CustomElementUpgradeCandidateMap*);
-    static void unregisterForElementDestructionNotification(Element*, CustomElementUpgradeCandidateMap*);
+    // Maps elements to upgrade candidate maps observing them
+    typedef HashMap<Element*, CustomElementUpgradeCandidateMap*> ElementObserverMap;
+    static ElementObserverMap& elementObservers();
+    void observe(Element*);
+    void unobserve(Element*);
 
     typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;

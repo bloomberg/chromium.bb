@@ -39,14 +39,14 @@ CustomElementUpgradeCandidateMap::~CustomElementUpgradeCandidateMap()
 {
     UpgradeCandidateMap::const_iterator::Keys end = m_upgradeCandidates.end().keys();
     for (UpgradeCandidateMap::const_iterator::Keys it = m_upgradeCandidates.begin().keys(); it != end; ++it)
-        unregisterForElementDestructionNotification(*it, this);
+        unobserve(*it);
 }
 
 void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descriptor, Element* element)
 {
     element->setCustomElementState(Element::UpgradeCandidate);
 
-    registerForElementDestructionNotification(element, this);
+    observe(element);
 
     UpgradeCandidateMap::AddResult result = m_upgradeCandidates.add(element, descriptor);
     ASSERT(result.isNewEntry);
@@ -59,7 +59,7 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
 
 void CustomElementUpgradeCandidateMap::remove(Element* element)
 {
-    unregisterForElementDestructionNotification(element, this);
+    unobserve(element);
 
     UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
     ASSERT(candidate != m_upgradeCandidates.end());
@@ -75,7 +75,7 @@ ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor
     const ListHashSet<Element*>& candidates = m_unresolvedDefinitions.take(descriptor);
 
     for (ElementSet::const_iterator candidate = candidates.begin(); candidate != candidates.end(); ++candidate) {
-        unregisterForElementDestructionNotification(*candidate, this);
+        unobserve(*candidate);
         m_upgradeCandidates.remove(*candidate);
     }
 
@@ -84,28 +84,28 @@ ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor
 
 void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
 {
-    DestructionObserverMap::iterator it = destructionObservers().find(element);
-    if (it == destructionObservers().end())
+    ElementObserverMap::iterator it = elementObservers().find(element);
+    if (it == elementObservers().end())
         return;
     it->value->remove(element); // will also remove the destruction observer
 }
 
-CustomElementUpgradeCandidateMap::DestructionObserverMap& CustomElementUpgradeCandidateMap::destructionObservers()
+CustomElementUpgradeCandidateMap::ElementObserverMap& CustomElementUpgradeCandidateMap::elementObservers()
 {
-    DEFINE_STATIC_LOCAL(DestructionObserverMap, map, ());
+    DEFINE_STATIC_LOCAL(ElementObserverMap, map, ());
     return map;
 }
 
-void CustomElementUpgradeCandidateMap::registerForElementDestructionNotification(Element* element, CustomElementUpgradeCandidateMap* observer)
+void CustomElementUpgradeCandidateMap::observe(Element* element)
 {
-    DestructionObserverMap::AddResult result = destructionObservers().add(element, observer);
+    ElementObserverMap::AddResult result = elementObservers().add(element, this);
     ASSERT(result.isNewEntry);
 }
 
-void CustomElementUpgradeCandidateMap::unregisterForElementDestructionNotification(Element* element, CustomElementUpgradeCandidateMap* observer)
+void CustomElementUpgradeCandidateMap::unobserve(Element* element)
 {
-    CustomElementUpgradeCandidateMap* map = destructionObservers().take(element);
-    ASSERT(map == observer);
+    CustomElementUpgradeCandidateMap* map = elementObservers().take(element);
+    ASSERT(map == this);
 }
 
 }
