@@ -102,6 +102,23 @@ def _FormatValue(value):
   s = str(value)
   return ','.join([s[max(0, i - 3):i] for i in range(len(s), 0, -3)][::-1])
 
+def _GetAddRulesDefinitionFromEvents(events):
+  """Parses the dictionary |events| to find the definition of the method
+  addRules among functions of the type Event.
+  """
+  assert 'types' in events, \
+      'The dictionary |events| must contain the key "types".'
+  event_list = [t for t in events['types']
+                if 'name' in t and t['name'] == 'Event']
+  assert len(event_list) == 1, 'Exactly one type must be called "Event".'
+  event = event_list[0]
+  assert 'functions' in event, 'The type Event must contain "functions".'
+  result_list = [f for f in event['functions']
+                 if 'name' in f and f['name'] == 'addRules']
+  assert len(result_list) == 1, \
+      'Exactly one function must be called "addRules".'
+  return result_list[0]
+
 class _JSCModel(object):
   """Uses a Model from the JSON Schema Compiler and generates a dict that
   a Handlebar template can use for a data source.
@@ -113,6 +130,7 @@ class _JSCModel(object):
                availability_finder,
                parse_cache,
                template_data_source,
+               add_rules_schema_function,
                idl=False):
     self._ref_resolver = ref_resolver
     self._disable_refs = disable_refs
@@ -122,6 +140,7 @@ class _JSCModel(object):
     self._api_features = parse_cache.GetFromFile(
         '%s/_api_features.json' % svn_constants.API_PATH)
     self._template_data_source = template_data_source
+    self._add_rules_schema_function = add_rules_schema_function
     clean_json = copy.deepcopy(json)
     if _RemoveNoDocs(clean_json):
       self._namespace = None
@@ -336,24 +355,40 @@ class _JSCModel(object):
     event_dict = {
       'name': event.simple_name,
       'description': self._FormatDescription(event.description),
-      'parameters': [self._GenerateProperty(p) for p in event.params],
-      'callback': self._GenerateCallback(event.callback),
       'filters': [self._GenerateProperty(f) for f in event.filters],
       'conditions': [self._GetLink(condition)
                      for condition in event.conditions],
       'actions': [self._GetLink(action) for action in event.actions],
       'supportsRules': event.supports_rules,
+      'supportsListeners': event.supports_listeners,
       'id': _CreateId(event, 'event')
     }
     if (event.parent is not None and
         not isinstance(event.parent, model.Namespace)):
       event_dict['parentName'] = event.parent.simple_name
-    if event.callback is not None:
-      # Show the callback as an extra parameter.
-      event_dict['parameters'].append(
-          self._GenerateCallbackProperty(event.callback))
-    if len(event_dict['parameters']) > 0:
-      event_dict['parameters'][-1]['last'] = True
+    # For the addRules method we can use the common definition, because addRules
+    # has the same signature for every event.
+    if event.supports_rules:
+      event_dict['addRulesFunction'] = self._add_rules_schema_function()
+    # We need to create the method description for addListener based on the
+    # information stored in |event|.
+    if event.supports_listeners:
+      if event.callback:
+        callback_object = event.callback
+      else:
+        callback_object = model.Function(parent=event,
+                                         name='callback',
+                                         json={},
+                                         namespace=event.parent,
+                                         origin='')
+        callback_object.params = event.params
+      callback_parameters = self._GenerateCallbackProperty(callback_object)
+      callback_parameters['last'] = True
+      event_dict['addListenerFunction'] = {
+        'name': 'addListener',
+        'callback': self._GenerateFunction(callback_object),
+        'parameters': [callback_parameters]
+      }
     return event_dict
 
   def _GenerateCallback(self, callback):
@@ -509,6 +544,9 @@ class APIDataSource(object):
       self._ref_resolver_factory = None
       self._samples_data_source_factory = None
 
+      # This caches the result of _LoadAddRulesSchema.
+      self._add_rules_schema = None
+
     def SetSamplesDataSourceFactory(self, samples_data_source_factory):
       self._samples_data_source_factory = samples_data_source_factory
 
@@ -546,6 +584,15 @@ class APIDataSource(object):
                            samples,
                            disable_refs)
 
+    def _LoadAddRulesSchema(self):
+      """ All events supporting rules have the addRules method. We source its
+      description from Event in events.json.
+      """
+      if self._add_rules_schema is None:
+        self._add_rules_schema = _GetAddRulesDefinitionFromEvents(
+            self._json_cache.GetFromFile('%s/events.json' % self._base_path))
+      return self._add_rules_schema
+
     def _LoadJsonAPI(self, api, disable_refs):
       return _JSCModel(
           json_parse.Parse(api)[0],
@@ -553,7 +600,8 @@ class APIDataSource(object):
           disable_refs,
           self._availability_finder,
           self._parse_cache,
-          self._template_data_source).ToDict()
+          self._template_data_source,
+          self._LoadAddRulesSchema).ToDict()
 
     def _LoadIdlAPI(self, api, disable_refs):
       idl = idl_parser.IDLParser().ParseData(api)
@@ -564,6 +612,7 @@ class APIDataSource(object):
           self._availability_finder,
           self._parse_cache,
           self._template_data_source,
+          self._LoadAddRulesSchema,
           idl=True).ToDict()
 
     def _GetIDLNames(self, base_dir, apis):

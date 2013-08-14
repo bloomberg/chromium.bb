@@ -1,0 +1,30 @@
+{{- Parameters:
+    |api|: the schema for the API that the function belongs to
+    |function|: the schema for the function
+    |parentName|: name of the parent object of the function
+-}}
+<div class="summary{{^function.returns}}{{?api}} uncapitalize{{/}}{{/}}">
+<span>{{?function.returns}}{{+partials.variable_type}} {{/}}{{?api}}chrome.{{api.name}}{{/}}{{?parentName}}.{{parentName}}{{/}}.{{function.name}}</span>({{#function.parameters}}{{+partials.parameter_item}}{{^last}}, {{/}}{{/}})
+</div>
+<div class="description">
+  {{?function.description}}
+  <p>
+    {{{function.description}}}
+  </p>
+  {{/function.description}}
+  {{?function.parameters}}
+  <h4>Parameters</h4>
+  <dl>
+    {{#function.parameters}}
+      {{+partials.parameter_full}}
+    {{/function.parameters}}
+  </dl>
+  {{/function.parameters}}
+  {{?function.callback}}
+    {{+partials.callback}}
+  {{/function.callback}}
+  {{?function.returns.is_object}}
+    <h4>Properties of return type</h4>
+    {{+partials.type @:function.returns api:api}}
+  {{/function.returns.is_object}}
+</div>

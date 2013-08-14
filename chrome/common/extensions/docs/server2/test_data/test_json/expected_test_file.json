@@ -4,7 +4,7 @@
       "name": "get",
       "parameters": [
         {
-          "parent_name": "get",
+          "parentName": "get",
           "functions": [],
           "choices": [
             {
@@ -44,7 +44,7 @@
           "description": "a param"
         },
         {
-          "parent_name": "get",
+          "parentName": "get",
           "last": true,
           "name": "callback",
           "simple_type": "function",
@@ -72,7 +72,7 @@
             },
             "optional": null,
             "id": "property-callback-results",
-            "parent_name": "callback",
+            "parentName": "callback",
             "functions": [],
             "last": true,
             "name": "results",
@@ -140,7 +140,7 @@
     {
       "properties": [
         {
-          "parent_name": "TypeA",
+          "parentName": "TypeA",
           "functions": [],
           "name": "b",
           "parameters": [],
@@ -178,7 +178,7 @@
       "name": "EventA",
       "parameters": [
         {
-          "parent_name": "EventA",
+          "parentName": "EventA",
           "functions": [],
           "simple_type": "string",
           "name": "id",
@@ -198,7 +198,7 @@
           },
           "optional": null,
           "id": "property-EventA-bookmark",
-          "parent_name": "EventA",
+          "parentName": "EventA",
           "functions": [],
           "last": true,
           "name": "bookmark",

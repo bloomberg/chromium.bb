@@ -1,0 +1,26 @@
+[
+  {
+    "namespace": "tester",
+    "description": "A test api with a couple of events which support or do not support rules.",
+    "types": [
+    ],
+    "functions": [
+    ],
+    "events": [
+      {
+        "name": "rules",
+        "options": {
+          "supportsRules": true,
+          "conditions": [],
+          "actions": []
+        }
+      },
+      {
+        "name": "noRules",
+        "type": "function",
+        "description": "Listeners can be registered with this event.",
+        "parameters": []
+      }
+    ]
+  }
+]

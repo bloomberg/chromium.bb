@@ -13,7 +13,8 @@ from api_data_source import (_JSCModel,
                              _FormatValue,
                              _RemoveNoDocs,
                              _DetectInlineableTypes,
-                             _InlineDocs)
+                             _InlineDocs,
+                             _GetAddRulesDefinitionFromEvents)
 from collections import namedtuple
 from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
@@ -96,7 +97,8 @@ class APIDataSourceTest(unittest.TestCase):
                       False,
                       FakeAvailabilityFinder(),
                       self._json_cache,
-                      FakeTemplateDataSource()).ToDict()
+                      FakeTemplateDataSource(),
+                      None).ToDict()
     self.assertEquals('type-TypeA', dict_['types'][0]['id'])
     self.assertEquals('property-TypeA-b',
                       dict_['types'][0]['properties'][0]['id'])
@@ -114,7 +116,8 @@ class APIDataSourceTest(unittest.TestCase):
                       False,
                       FakeAvailabilityFinder(),
                       self._json_cache,
-                      FakeTemplateDataSource()).ToDict()
+                      FakeTemplateDataSource(),
+                      None).ToDict()
     self.assertEquals(expected_json, dict_)
 
   def testFormatValue(self):
@@ -128,7 +131,8 @@ class APIDataSourceTest(unittest.TestCase):
                       False,
                       FakeAvailabilityFinder(),
                       self._json_cache,
-                      FakeTemplateDataSource()).ToDict()
+                      FakeTemplateDataSource(),
+                      None).ToDict()
     self.assertEquals(_MakeLink('ref_test.html#type-type2', 'type2'),
                       _GetType(dict_, 'type1')['description'])
     self.assertEquals(
@@ -151,7 +155,8 @@ class APIDataSourceTest(unittest.TestCase):
                       False,
                       FakeAvailabilityFinder(),
                       self._json_cache,
-                      FakeTemplateDataSource())
+                      FakeTemplateDataSource(),
+                      None)
     expected_list = [
       { 'title': 'Description',
         'content': [
@@ -285,6 +290,62 @@ class APIDataSourceTest(unittest.TestCase):
     _DetectInlineableTypes(schema)
     _InlineDocs(schema)
     self.assertEqual(expected_schema, schema)
+
+  def testGetAddRulesDefinitionFromEvents(self):
+    events = {}
+    # Missing 'types' completely.
+    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+
+    events['types'] = []
+    # No type 'Event' defined.
+    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+
+    events['types'].append({ 'name': 'Event' })
+    # 'Event' has no 'functions'.
+    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+
+    events['types'][0]['functions'] = []
+    # No 'functions' named 'addRules'.
+    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+
+    add_rules = { "name": "addRules" }
+    events['types'][0]['functions'].append(add_rules)
+    self.assertEqual(add_rules, _GetAddRulesDefinitionFromEvents(events))
+
+    events['types'][0]['functions'].append(add_rules)
+    # Duplicates are an error.
+    self.assertRaises(AssertionError, _GetAddRulesDefinitionFromEvents, events)
+
+  def _FakeLoadAddRulesSchema(self):
+    events = self._LoadJSON('add_rules_def_test.json')
+    return _GetAddRulesDefinitionFromEvents(events)
+
+  def testAddRules(self):
+    data_source = FakeAPIAndListDataSource(
+        self._LoadJSON('test_file_data_source.json'))
+    dict_ = _JSCModel(self._LoadJSON('add_rules_test.json')[0],
+                      self._CreateRefResolver('test_file_data_source.json'),
+                      False,
+                      FakeAvailabilityFinder(),
+                      self._json_cache,
+                      FakeTemplateDataSource(),
+                      self._FakeLoadAddRulesSchema).ToDict()
+    # Check that the first event has the addRulesFunction defined.
+    self.assertEquals('tester', dict_['name'])
+    self.assertEquals('rules', dict_['events'][0]['name'])
+    self.assertEquals('notable_name_to_check_for',
+                      dict_['events'][0]['addRulesFunction'][
+                          'parameters'][0]['name'])
+
+    # Check that the second event has no addRulesFunction defined.
+    self.assertEquals('noRules', dict_['events'][1]['name'])
+    self.assertFalse('addRulesFunction' in dict_['events'][1])
+    # But addListener should be defined.
+    self.assertEquals('tester', dict_['name'])
+    self.assertEquals('noRules', dict_['events'][1]['name'])
+    self.assertEquals('callback',
+                      dict_['events'][0]['addListenerFunction'][
+                          'parameters'][0]['name'])
 
 if __name__ == '__main__':
   unittest.main()
