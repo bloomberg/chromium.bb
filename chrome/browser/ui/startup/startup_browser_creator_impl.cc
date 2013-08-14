@@ -869,12 +869,10 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
     if (!command_line_.HasSwitch(switches::kTestType)) {
       GoogleApiKeysInfoBarDelegate::Create(InfoBarService::FromWebContents(
           browser->tab_strip_model()->GetActiveWebContents()));
-
-      // TODO(phajdan.jr): Always enable after migrating bots:
-      // http://crbug.com/170262 .
-      ObsoleteOSInfoBarDelegate::Create(InfoBarService::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents()));
     }
+
+    ObsoleteOSInfoBarDelegate::Create(InfoBarService::FromWebContents(
+        browser->tab_strip_model()->GetActiveWebContents()));
 
     if (browser_defaults::kOSSupportsOtherBrowsers &&
         !command_line_.HasSwitch(switches::kNoDefaultBrowserCheck)) {
