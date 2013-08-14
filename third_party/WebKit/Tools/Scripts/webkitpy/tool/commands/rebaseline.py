@@ -727,9 +727,9 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
     def tree_status(self):
         blink_tree_status_url = "http://blink-status.appspot.com/status"
         status = urllib2.urlopen(blink_tree_status_url).read().lower()
-        if status.find('closed') != -1 or status == 0:
+        if status.find('closed') != -1 or status == "0":
             return 'closed'
-        elif status.find('open') != -1 or status == 1:
+        elif status.find('open') != -1 or status == "1":
             return 'open'
         return 'unknown'
 
@@ -760,16 +760,17 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             for item in revision_data:
                 _log.info("%s: r%s" % (item["builder"], item["revision"]))
 
-        test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
-
         if not tests:
             _log.debug('No tests to rebaseline.')
             return
-        _log.info('Rebaselining %s for r%s by %s.' % (list(tests), revision, author))
 
         if self.tree_status() == 'closed':
             _log.info('Cannot proceed. Tree is closed.')
             return
+
+        _log.info('Rebaselining %s for r%s by %s.' % (list(tests), revision, author))
+
+        test_prefix_list, lines_to_remove = self.get_test_prefix_list(tests)
 
         try:
             old_branch_name = tool.scm().current_branch()
