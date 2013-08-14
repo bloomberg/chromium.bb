@@ -1228,8 +1228,8 @@ public:
         bool hasRightObjects() const { return m_rightObjectsCount > 0; }
         const FloatingObjectSet& set() const { return m_set; }
         void clearLineBoxTreePointers();
-        LayoutUnit logicalLeftOffset(LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatShapeOffset, LayoutUnit* heightRemaining = 0);
-        LayoutUnit logicalRightOffset(LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatShapeOffset, LayoutUnit* heightRemaining = 0);
+        LayoutUnit logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatShapeOffset, LayoutUnit* heightRemaining = 0);
+        LayoutUnit logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode = ShapeOutsideFloatShapeOffset, LayoutUnit* heightRemaining = 0);
     private:
         FloatingObjects(const RenderBlock*, bool horizontalWritingMode);
         void computePlacedFloatsTree();

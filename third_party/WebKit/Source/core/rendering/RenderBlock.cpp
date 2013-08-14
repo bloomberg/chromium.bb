@@ -4353,7 +4353,7 @@ LayoutUnit RenderBlock::logicalRightOffsetForContent(RenderRegion* region, Layou
 LayoutUnit RenderBlock::logicalLeftFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
 {
     if (m_floatingObjects && m_floatingObjects->hasLeftObjects())
-        return max(m_floatingObjects->logicalLeftOffset(logicalTop, logicalHeight, offsetMode, heightRemaining), fixedOffset);
+        return m_floatingObjects->logicalLeftOffset(fixedOffset, logicalTop, logicalHeight, offsetMode, heightRemaining);
 
     return fixedOffset;
 }
@@ -4399,7 +4399,7 @@ LayoutUnit RenderBlock::adjustLogicalLeftOffsetForLine(LayoutUnit offsetFromFloa
 LayoutUnit RenderBlock::logicalRightFloatOffsetForLine(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode) const
 {
     if (m_floatingObjects && m_floatingObjects->hasRightObjects())
-        return min(m_floatingObjects->logicalRightOffset(logicalTop, logicalHeight, offsetMode, heightRemaining), fixedOffset);
+        return m_floatingObjects->logicalRightOffset(fixedOffset, logicalTop, logicalHeight, offsetMode, heightRemaining);
 
     return fixedOffset;
 }
@@ -8030,9 +8030,9 @@ void RenderBlock::FloatingObjects::computePlacedFloatsTree()
     }
 }
 
-LayoutUnit RenderBlock::FloatingObjects::logicalLeftOffset(LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
+LayoutUnit RenderBlock::FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
 {
-    LayoutUnit offset;
+    LayoutUnit offset = fixedOffset;
     ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
@@ -8050,9 +8050,9 @@ LayoutUnit RenderBlock::FloatingObjects::logicalLeftOffset(LayoutUnit logicalTop
     return offset;
 }
 
-LayoutUnit RenderBlock::FloatingObjects::logicalRightOffset(LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
+LayoutUnit RenderBlock::FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
 {
-    LayoutUnit offset = m_renderer->logicalWidth();
+    LayoutUnit offset = fixedOffset;
     ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
@@ -8067,7 +8067,7 @@ LayoutUnit RenderBlock::FloatingObjects::logicalRightOffset(LayoutUnit logicalTo
         }
     }
 
-    return offset;
+    return min(fixedOffset, offset);
 }
 
 template <typename CharacterType>
