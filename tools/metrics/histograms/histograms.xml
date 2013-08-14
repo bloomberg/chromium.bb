@@ -15187,6 +15187,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.PreloadDelayMs" units="milliseconds">
+  <summary>
+    The delay between when the preload scanner discovers a resource on the
+    parser thread and when the preload request is issued on the main thread.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.V8DOMWindowShell.createContext.IsolatedWorld"
     units="milliseconds">
   <summary>
