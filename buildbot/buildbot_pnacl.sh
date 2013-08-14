@@ -364,7 +364,7 @@ scons-stage-noirt() {
 
 llvm-regression() {
   echo "@@@BUILD_STEP llvm_regression@@@"
-  ${LLVM_TEST} --llvm-regression || handle-error
+  ${LLVM_TEST} --llvm-regression --check-excludes || handle-error
 }
 
 # This function is shared between x86-32 and x86-64. All building and testing
