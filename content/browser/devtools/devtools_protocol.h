@@ -141,6 +141,8 @@ class DevToolsProtocol {
     void SendNotification(const std::string& method,
                           base::DictionaryValue* params);
 
+    void SendAsyncResponse(scoped_refptr<DevToolsProtocol::Response> response);
+
     // Sends message to client, the caller is presumed to properly
     // format the message.
     void SendRawMessage(const std::string& message);

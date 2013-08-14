@@ -190,6 +190,11 @@ void DevToolsProtocol::Handler::SendNotification(
   SendRawMessage(notification->Serialize());
 }
 
+void DevToolsProtocol::Handler::SendAsyncResponse(
+    scoped_refptr<DevToolsProtocol::Response> response) {
+  SendRawMessage(response->Serialize());
+}
+
 void DevToolsProtocol::Handler::SendRawMessage(const std::string& message) {
   if (!notifier_.is_null())
     notifier_.Run(message);

@@ -8,32 +8,40 @@ namespace content {
 namespace devtools {
 
 namespace Inspector {
+
 namespace detached {
   const char kName[] = "Inspector.detached";
   const char kParamReason[] = "reason";
 }  // detached
+
 namespace targetCrashed {
   const char kName[] = "Inspector.targetCrashed";
 }  // targetCrashed
+
 }  // Inspector
 
 namespace DOM {
+
 namespace setFileInputFiles {
   const char kName[] = "DOM.setFileInputFiles";
   const char kParamFiles[] = "files";
 }  // setFileInputFiles
+
 }  // DOM
 
 namespace Page {
+
 namespace handleJavaScriptDialog {
   const char kName[] = "Page.handleJavaScriptDialog";
   const char kParamAccept[] = "accept";
   const char kParamPromptText[] = "promptText";
 }  // handleJavaScriptDialog
+
 namespace navigate {
   const char kName[] = "Page.navigate";
   const char kParamUrl[] = "url";
 }  // navigate
+
 namespace captureScreenshot {
   const char kName[] = "Page.captureScreenshot";
   const char kParamFormat[] = "format";
@@ -41,12 +49,31 @@ namespace captureScreenshot {
   const char kParamScale[] = "scale";
   const char kResponseData[] = "data";
 }  // captureScreenshot
+
+namespace startScreencast {
+  const char kName[] = "Page.startScreencast";
+  const char kParamFormat[] = "format";
+  const char kParamQuality[] = "quality";
+  const char kParamScale[] = "scale";
+}  // startScreencast
+
+namespace stopScreencast {
+  const char kName[] = "Page.stopScreencast";
+}  // stopScreencast
+
+namespace screencastFrame {
+  const char kName[] = "Page.screencastFrame";
+  const char kResponseData[] = "data";
+}  // screencastFrame
+
 }  // Page
 
 namespace Worker {
+
 namespace disconnectedFromWorker {
   const char kName[] = "Worker.disconnectedFromWorker";
 }  // disconnectedFromWorker
+
 }  // Worker
 
 namespace Tracing {
@@ -70,6 +97,7 @@ namespace dataCollected {
   const char kName[] = "Tracing.dataCollected";
   const char kValue[] = "value";
 }
+
 }  // Tracing
 
 }  // devtools
