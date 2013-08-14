@@ -4656,7 +4656,7 @@ Make sure you do not expose any sensitive information.
         Extensions cannot be modified by supervised users.
       </message>
       <message name="IDS_EXTENSIONS_USE_APPS_DEV_TOOLS" desc="The message in the banner to invite people to use Apps Developer Tools.">
-        The new Apps Developer Tools makes it easier than ever to manage and debug your apps and extensions. It's also been added to the application list.
+        The new Apps Developer Tools makes it easier than ever to manage and debug your apps and extensions. It's now available in the Chrome Apps Launcher.
       </message>
       <message name="IDS_EXTENSIONS_OPEN_APPS_DEV_TOOLS" desc="The text of the button to open Apps Developer Tools in the banner to invite people to use Apps Developer Tools.">
         Open
