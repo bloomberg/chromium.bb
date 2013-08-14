@@ -544,7 +544,8 @@ IN_PROC_BROWSER_TEST_F(ThroughputTestGPU, DrawImageShadowGPU) {
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestThread, DrawImageShadowGPU) {
-  RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest);
+  // TODO(junov): Fix test flakiness crbug.com/272383
+  RunTest("canvas2d_balls_with_shadow", kNone | kIsGpuCanvasTest | kIsFlaky);
 }
 
 IN_PROC_BROWSER_TEST_F(ThroughputTestSW, CanvasToCanvasDrawSW) {
