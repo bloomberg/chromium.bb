@@ -1148,7 +1148,9 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
       ManifestVersionedSyncStage.manifest_manager.UploadStatus(
           success=self.success, message=self.message)
       if not self.success and self._build_config['important']:
-        self._AbortCQHWTests()
+        tracebacks = results_lib.Results.GetTracebacks()
+        if len(tracebacks) != 1 or tracebacks[0] != 'HWTest':
+          self._AbortCQHWTests()
 
       statuses = self._GetSlavesStatus()
       failing_build_dict, inflight_build_dict = {}, {}
