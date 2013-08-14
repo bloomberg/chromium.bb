@@ -272,8 +272,8 @@ static bool deviceAspectRatioMediaFeatureEval(CSSValue* value, RenderStyle*, Fra
 
 static bool evalResolution(CSSValue* value, Frame* frame, MediaFeaturePrefix op)
 {
-    // FIXME: Possible handle other media types than 'screen' and 'print'.
-    float deviceScaleFactor = 0;
+    // FIXME: Possibly handle other media types than 'screen' and 'print'.
+    float actualResolution = 0;
 
     // This checks the actual media type applied to the document, and we know
     // this method only got called if this media type matches the one defined
@@ -281,16 +281,16 @@ static bool evalResolution(CSSValue* value, Frame* frame, MediaFeaturePrefix op)
     // media type of the query will either be "print" or "all".
     String mediaType = frame->view()->mediaType();
     if (equalIgnoringCase(mediaType, "screen"))
-        deviceScaleFactor = frame->page()->deviceScaleFactor();
+        actualResolution = clampTo<float>(frame->devicePixelRatio());
     else if (equalIgnoringCase(mediaType, "print")) {
         // The resolution of images while printing should not depend on the DPI
         // of the screen. Until we support proper ways of querying this info
         // we use 300px which is considered minimum for current printers.
-        deviceScaleFactor = 300 / cssPixelsPerInch;
+        actualResolution = 300 / cssPixelsPerInch;
     }
 
     if (!value)
-        return !!deviceScaleFactor;
+        return !!actualResolution;
 
     if (!value->isPrimitiveValue())
         return false;
@@ -298,7 +298,7 @@ static bool evalResolution(CSSValue* value, Frame* frame, MediaFeaturePrefix op)
     CSSPrimitiveValue* resolution = toCSSPrimitiveValue(value);
 
     if (resolution->isNumber())
-        return compareValue(deviceScaleFactor, resolution->getFloatValue(), op);
+        return compareValue(actualResolution, resolution->getFloatValue(), op);
 
     if (!resolution->isResolution())
         return false;
@@ -310,11 +310,11 @@ static bool evalResolution(CSSValue* value, Frame* frame, MediaFeaturePrefix op)
         // approximates the reference pixel". With that in mind, allowing 2 decimal
         // point precision seems appropriate.
         return compareValue(
-            floorf(0.5 + 100 * deviceScaleFactor) / 100,
+            floorf(0.5 + 100 * actualResolution) / 100,
             floorf(0.5 + 100 * resolution->getFloatValue(CSSPrimitiveValue::CSS_DPPX)) / 100, op);
     }
 
-    return compareValue(deviceScaleFactor, resolution->getFloatValue(CSSPrimitiveValue::CSS_DPPX), op);
+    return compareValue(actualResolution, resolution->getFloatValue(CSSPrimitiveValue::CSS_DPPX), op);
 }
 
 static bool devicePixelRatioMediaFeatureEval(CSSValue *value, RenderStyle*, Frame* frame, MediaFeaturePrefix op)

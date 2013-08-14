@@ -1254,14 +1254,7 @@ double DOMWindow::devicePixelRatio() const
     if (!m_frame)
         return 0.0;
 
-    Page* page = m_frame->page();
-    if (!page)
-        return 0.0;
-
-    if (RuntimeEnabledFeatures::devicePixelRatioIncludesZoomEnabled())
-        return page->deviceScaleFactor() * m_frame->pageZoomFactor();
-
-    return page->deviceScaleFactor();
+    return m_frame->devicePixelRatio();
 }
 
 void DOMWindow::scrollBy(int x, int y) const

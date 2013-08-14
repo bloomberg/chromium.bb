@@ -709,4 +709,15 @@ PassOwnPtr<DragImage> Frame::dragImageForSelection()
     return DragImage::create(image.get());
 }
 
+double Frame::devicePixelRatio() const
+{
+    if (!m_page)
+        return 0;
+
+    double ratio = m_page->deviceScaleFactor();
+    if (RuntimeEnabledFeatures::devicePixelRatioIncludesZoomEnabled())
+        ratio *= pageZoomFactor();
+    return ratio;
+}
+
 } // namespace WebCore

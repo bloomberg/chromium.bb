@@ -135,6 +135,7 @@ namespace WebCore {
         void setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor);
 
         void deviceOrPageScaleFactorChanged();
+        double devicePixelRatio() const;
 
 #if ENABLE(ORIENTATION_EVENTS)
         // Orientation is the interface orientation in degrees. Some examples are:
