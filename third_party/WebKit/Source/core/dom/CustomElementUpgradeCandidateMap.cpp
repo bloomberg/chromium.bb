@@ -60,7 +60,17 @@ void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descri
 void CustomElementUpgradeCandidateMap::remove(Element* element)
 {
     unobserve(element);
+    removeCommon(element);
+}
 
+void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
+{
+    CustomElementObserver::elementWasDestroyed(element);
+    removeCommon(element);
+}
+
+void CustomElementUpgradeCandidateMap::removeCommon(Element* element)
+{
     UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
     ASSERT(candidate != m_upgradeCandidates.end());
 
@@ -80,32 +90,6 @@ ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor
     }
 
     return candidates;
-}
-
-void CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element)
-{
-    ElementObserverMap::iterator it = elementObservers().find(element);
-    if (it == elementObservers().end())
-        return;
-    it->value->remove(element); // will also remove the destruction observer
-}
-
-CustomElementUpgradeCandidateMap::ElementObserverMap& CustomElementUpgradeCandidateMap::elementObservers()
-{
-    DEFINE_STATIC_LOCAL(ElementObserverMap, map, ());
-    return map;
-}
-
-void CustomElementUpgradeCandidateMap::observe(Element* element)
-{
-    ElementObserverMap::AddResult result = elementObservers().add(element, this);
-    ASSERT(result.isNewEntry);
-}
-
-void CustomElementUpgradeCandidateMap::unobserve(Element* element)
-{
-    CustomElementUpgradeCandidateMap* map = elementObservers().take(element);
-    ASSERT(map == this);
 }
 
 }

@@ -33,6 +33,7 @@
 
 #include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/CustomElementDescriptorHash.h"
+#include "core/dom/CustomElementObserver.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/Noncopyable.h"
@@ -41,14 +42,11 @@ namespace WebCore {
 
 class Element;
 
-class CustomElementUpgradeCandidateMap {
+class CustomElementUpgradeCandidateMap : CustomElementObserver {
     WTF_MAKE_NONCOPYABLE(CustomElementUpgradeCandidateMap);
 public:
     CustomElementUpgradeCandidateMap() { }
     ~CustomElementUpgradeCandidateMap();
-
-    // API for CustomElement to notify observers
-    static void elementWasDestroyed(Element*);
 
     // API for CustomElementRegistrationContext to save and take candidates
 
@@ -59,11 +57,8 @@ public:
     ElementSet takeUpgradeCandidatesFor(const CustomElementDescriptor&);
 
 private:
-    // Maps elements to upgrade candidate maps observing them
-    typedef HashMap<Element*, CustomElementUpgradeCandidateMap*> ElementObserverMap;
-    static ElementObserverMap& elementObservers();
-    void observe(Element*);
-    void unobserve(Element*);
+    virtual void elementWasDestroyed(Element*) OVERRIDE;
+    void removeCommon(Element*);
 
     typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;

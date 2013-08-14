@@ -1770,6 +1770,8 @@
             'dom/CustomElementException.cpp',
             'dom/CustomElementException.h',
             'dom/CustomElementLifecycleCallbacks.h',
+            'dom/CustomElementObserver.cpp',
+            'dom/CustomElementObserver.h',
             'dom/CustomElementRegistrationContext.cpp',
             'dom/CustomElementRegistrationContext.h',
             'dom/CustomElementRegistry.cpp',

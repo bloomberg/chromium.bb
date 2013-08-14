@@ -35,7 +35,7 @@
 #include "MathMLNames.h"
 #include "SVGNames.h"
 #include "core/dom/CustomElementCallbackScheduler.h"
-#include "core/dom/CustomElementUpgradeCandidateMap.h"
+#include "core/dom/CustomElementObserver.h"
 #include "core/dom/Element.h"
 
 namespace WebCore {
@@ -131,12 +131,13 @@ void CustomElement::wasDestroyed(Element* element)
         break;
 
     case Element::UpgradeCandidate:
-        CustomElementUpgradeCandidateMap::elementWasDestroyed(element);
+        CustomElementObserver::notifyElementWasDestroyed(element);
         break;
 
     case Element::Defined:
     case Element::Upgraded:
         definitions().remove(element);
+        CustomElementObserver::notifyElementWasDestroyed(element);
         break;
     }
 }
