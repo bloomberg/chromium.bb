@@ -575,16 +575,11 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, ConvertedGraphs) {
   }
 }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
 // Timing out on ARM linux bot: http://crbug.com/238490
-#define MAYBE_WithRealPeerConnectionCall DISABLED_WithRealPeerConnectionCall
-#else
-#define MAYBE_WithRealPeerConnectionCall WithRealPeerConnectionCall
-#endif
-
+// Disabling due to failure on Linux, Mac, Win: http://crbug.com/272413
 // Sanity check of the page content under a real PeerConnection call.
 IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest,
-                       MAYBE_WithRealPeerConnectionCall) {
+                       DISABLED_WithRealPeerConnectionCall) {
   // Start a peerconnection call in the first window.
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   GURL url(embedded_test_server()->GetURL("/media/peerconnection-call.html"));
