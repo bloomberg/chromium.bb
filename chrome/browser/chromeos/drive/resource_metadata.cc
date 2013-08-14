@@ -247,8 +247,8 @@ FileError ResourceMetadata::SetLargestChangestamp(int64 value) {
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  storage_->SetLargestChangestamp(value);
-  return FILE_ERROR_OK;
+  return storage_->SetLargestChangestamp(value) ?
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 void ResourceMetadata::AddEntryOnUIThread(const ResourceEntry& entry,
@@ -636,10 +636,6 @@ FileError ResourceMetadata::RefreshDirectory(
   if (!directory.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  directory.mutable_directory_specific_info()->set_changestamp(
-      directory_fetch_info.changestamp());
-  storage_->PutEntry(directory);
-
   // Go through the entry map. Handle existing entries and new entries.
   for (ResourceEntryMap::const_iterator it = entry_map.begin();
        it != entry_map.end(); ++it) {
@@ -663,6 +659,11 @@ FileError ResourceMetadata::RefreshDirectory(
     if (!PutEntryUnderDirectory(CreateEntryWithProperBaseName(entry)))
       return FILE_ERROR_FAILED;
   }
+
+  directory.mutable_directory_specific_info()->set_changestamp(
+      directory_fetch_info.changestamp());
+  if (!storage_->PutEntry(directory))
+    return FILE_ERROR_FAILED;
 
   if (out_file_path)
     *out_file_path = GetFilePath(directory.resource_id());
