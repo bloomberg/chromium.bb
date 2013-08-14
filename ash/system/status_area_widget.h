@@ -18,6 +18,7 @@ class WebNotificationTray;
 
 namespace internal {
 
+class LogoutButtonTray;
 class StatusAreaWidgetDelegate;
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget {
@@ -27,7 +28,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
   explicit StatusAreaWidget(aura::Window* status_container);
   virtual ~StatusAreaWidget();
 
-  // Creates the SystemTray and the WebNotificationTray.
+  // Creates the SystemTray, WebNotificationTray and LogoutButtonTray.
   void CreateTrayViews();
 
   // Destroys the system tray and web notification tray. Called before
@@ -72,11 +73,13 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget {
  private:
   void AddSystemTray();
   void AddWebNotificationTray();
+  void AddLogoutButtonTray();
 
   // Weak pointers to View classes that are parented to StatusAreaWidget:
   internal::StatusAreaWidgetDelegate* status_area_widget_delegate_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
+  LogoutButtonTray* logout_button_tray_;
   user::LoginStatus login_status_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusAreaWidget);

@@ -15,7 +15,6 @@
 #include "ash/system/date/tray_date.h"
 #include "ash/system/drive/tray_drive.h"
 #include "ash/system/ime/tray_ime.h"
-#include "ash/system/logout_button/tray_logout_button.h"
 #include "ash/system/monitor/tray_monitor.h"
 #include "ash/system/session_length_limit/tray_session_length_limit.h"
 #include "ash/system/status_area_widget.h"
@@ -147,7 +146,6 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #if !defined(OS_WIN)
   AddTrayItem(new internal::TraySessionLengthLimit(this));
-  AddTrayItem(new internal::TrayLogoutButton(this));
   // In multi-profile user mode we can have multiple user tiles.
   ash::Shell* shell = ash::Shell::GetInstance();
   int maximum_user_profiles =

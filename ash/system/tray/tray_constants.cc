@@ -67,12 +67,17 @@ const int kTrayNotificationContentsWidth = kTrayPopupMinWidth -
      (kTrayPopupPaddingHorizontal / 2) * 3);
 const int kTraySpacing = 8;
 const int kAlternateTraySpacing = 4;
+const int kShelfItemHeight = 31;
+const int kAlternateShelfItemHeight = 38;
 
-// Returns kTraySpacing or kAlternateTraySpacing as applicable
-// (Determined by ash::switches::UseAlternateShelfLayout).
 int GetTraySpacing() {
   return ash::switches::UseAlternateShelfLayout() ?
       kAlternateTraySpacing : kTraySpacing;
+}
+
+int GetShelfItemHeight() {
+  return ash::switches::UseAlternateShelfLayout() ?
+      kAlternateShelfItemHeight : kShelfItemHeight;
 }
 
 }  // namespace ash

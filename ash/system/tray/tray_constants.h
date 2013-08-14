@@ -66,6 +66,10 @@ extern const int kTrayNotificationContentsWidth;
 // (Determined by ash::switches::UseAlternateShelfLayout).
 int GetTraySpacing();
 
+// Returns kShelfItemHeight or kAlternateShelfItemHeight as applicable
+// (Determined by ash::switches::UseAlternateShelfLayout).
+int GetShelfItemHeight();
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_TRAY_TRAY_CONSTANTS_H_

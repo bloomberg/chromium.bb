@@ -19,7 +19,8 @@ class StatusAreaWidget;
 class TrayEventFilter;
 class TrayBackground;
 
-// Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray.
+// Base class for children of StatusAreaWidget: SystemTray, WebNotificationTray,
+// LogoutButtonTray.
 // This class handles setting and animating the background when the Launcher
 // his shown/hidden. It also inherits from ActionableView so that the tray
 // items can override PerformAction when clicked on.

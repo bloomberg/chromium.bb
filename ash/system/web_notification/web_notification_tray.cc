@@ -58,10 +58,6 @@ namespace ash {
 namespace internal {
 namespace {
 
-const int kWebNotificationIconSize = 31;
-// Height of the art assets used in alternate shelf layout,
-// see ash/ash_switches.h:UseAlternateShelfLayout.
-const int kWebNotificationAlternateSize = 38;
 const SkColor kWebNotificationColorNoUnread = SkColorSetA(SK_ColorWHITE, 128);
 const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
 
@@ -230,10 +226,8 @@ class WebNotificationButton : public views::CustomButton {
  protected:
   // Overridden from views::ImageButton:
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    if (ash::switches::UseAlternateShelfLayout())
-      return gfx::Size(kWebNotificationAlternateSize,
-                       kWebNotificationAlternateSize);
-    return gfx::Size(kWebNotificationIconSize, kWebNotificationIconSize);
+    const int notification_item_size = GetShelfItemHeight();
+    return gfx::Size(notification_item_size, notification_item_size);
   }
 
   virtual int GetHeightForWidth(int width) OVERRIDE {
