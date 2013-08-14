@@ -211,10 +211,18 @@ class CHROMEOS_EXPORT OutputConfigurator
           xrandr_event_base_(xrandr_event_base) {}
     ~TestApi() {}
 
-    // Dispatches RRScreenChangeNotify and RRNotify_OutputChange events to
-    // |configurator_| and runs ConfigureOutputs().  Returns false if
-    // |configure_timer_| wasn't started.
-    bool SendOutputChangeEvents(bool connected);
+    // Dispatches an RRScreenChangeNotify event to |configurator_|.
+    void SendScreenChangeEvent();
+
+    // Dispatches an RRNotify_OutputChange event to |configurator_|.
+    void SendOutputChangeEvent(RROutput output,
+                               RRCrtc crtc,
+                               RRMode mode,
+                               bool connected);
+
+    // If |configure_timer_| is started, stops the timer, runs
+    // ConfigureOutputs(), and returns true; returns false otherwise.
+    bool TriggerConfigureTimeout();
 
    private:
     OutputConfigurator* configurator_;  // not owned

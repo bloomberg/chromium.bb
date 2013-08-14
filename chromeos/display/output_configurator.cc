@@ -119,28 +119,35 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       display_id(0),
       has_display_id(false) {}
 
-bool OutputConfigurator::TestApi::SendOutputChangeEvents(bool connected) {
-  XRRScreenChangeNotifyEvent screen_event;
-  memset(&screen_event, 0, sizeof(screen_event));
-  screen_event.type = xrandr_event_base_ + RRScreenChangeNotify;
-  configurator_->Dispatch(
-      reinterpret_cast<const base::NativeEvent>(&screen_event));
+void OutputConfigurator::TestApi::SendScreenChangeEvent() {
+  XRRScreenChangeNotifyEvent event = {0};
+  event.type = xrandr_event_base_ + RRScreenChangeNotify;
+  configurator_->Dispatch(reinterpret_cast<const base::NativeEvent>(&event));
+}
 
-  XRROutputChangeNotifyEvent notify_event;
-  memset(&notify_event, 0, sizeof(notify_event));
-  notify_event.type = xrandr_event_base_ + RRNotify;
-  notify_event.subtype = RRNotify_OutputChange;
-  notify_event.connection = connected ? RR_Connected : RR_Disconnected;
-  configurator_->Dispatch(
-      reinterpret_cast<const base::NativeEvent>(&notify_event));
+void OutputConfigurator::TestApi::SendOutputChangeEvent(RROutput output,
+                                                        RRCrtc crtc,
+                                                        RRMode mode,
+                                                        bool connected) {
+  XRROutputChangeNotifyEvent event = {0};
+  event.type = xrandr_event_base_ + RRNotify;
+  event.subtype = RRNotify_OutputChange;
+  event.output = output;
+  event.crtc = crtc;
+  event.mode = mode;
+  event.connection = connected ? RR_Connected : RR_Disconnected;
+  configurator_->Dispatch(reinterpret_cast<const base::NativeEvent>(&event));
+}
 
-  if (!configurator_->configure_timer_->IsRunning()) {
-    LOG(ERROR) << "ConfigureOutputs() timer not running";
+bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
+  if (configurator_->configure_timer_.get() &&
+      configurator_->configure_timer_->IsRunning()) {
+    configurator_->configure_timer_.reset();
+    configurator_->ConfigureOutputs();
+    return true;
+  } else {
     return false;
   }
-
-  configurator_->ConfigureOutputs();
-  return true;
 }
 
 OutputConfigurator::OutputConfigurator()
@@ -265,28 +272,54 @@ bool OutputConfigurator::Dispatch(const base::NativeEvent& event) {
     return true;
 
   if (event->type - xrandr_event_base_ == RRScreenChangeNotify) {
+    VLOG(1) << "Received RRScreenChangeNotify event";
     delegate_->UpdateXRandRConfiguration(event);
     return true;
   }
 
+  // Bail out early for everything except RRNotify_OutputChange events
+  // about an output getting connected or disconnected.
   if (event->type - xrandr_event_base_ != RRNotify)
     return true;
+  const XRRNotifyEvent* notify_event = reinterpret_cast<XRRNotifyEvent*>(event);
+  if (notify_event->subtype != RRNotify_OutputChange)
+    return true;
+  const XRROutputChangeNotifyEvent* output_change_event =
+      reinterpret_cast<XRROutputChangeNotifyEvent*>(event);
+  const int action = output_change_event->connection;
+  if (action != RR_Connected && action != RR_Disconnected)
+    return true;
 
-  XEvent* xevent = static_cast<XEvent*>(event);
-  XRRNotifyEvent* notify_event =
-      reinterpret_cast<XRRNotifyEvent*>(xevent);
-  if (notify_event->subtype == RRNotify_OutputChange) {
-    XRROutputChangeNotifyEvent* output_change_event =
-        reinterpret_cast<XRROutputChangeNotifyEvent*>(xevent);
-    if ((output_change_event->connection == RR_Connected) ||
-        (output_change_event->connection == RR_Disconnected)) {
-      // Connecting/Disconnecting display may generate multiple
-      // RRNotify. Defer configuring outputs to avoid
-      // grabbing X and configuring displays multiple times.
-      ScheduleConfigureOutputs();
+  const bool connected = (action == RR_Connected);
+  VLOG(1) << "Received RRNotify_OutputChange event:"
+          << " output=" << output_change_event->output
+          << " crtc=" << output_change_event->crtc
+          << " mode=" << output_change_event->mode
+          << " action=" << (connected ? "connected" : "disconnected");
+
+  bool found_changed_output = false;
+  for (std::vector<OutputSnapshot>::const_iterator it = cached_outputs_.begin();
+       it != cached_outputs_.end(); ++it) {
+    if (it->output == output_change_event->output) {
+      if (connected && it->crtc == output_change_event->crtc &&
+          it->current_mode == output_change_event->mode) {
+        VLOG(1) << "Ignoring event describing already-cached state";
+        return true;
+      }
+      found_changed_output = true;
+      break;
     }
   }
 
+  if (!connected && !found_changed_output) {
+    VLOG(1) << "Ignoring event describing already-disconnected output";
+    return true;
+  }
+
+  // Connecting/disconnecting a display may generate multiple events. Defer
+  // configuring outputs to avoid grabbing X and configuring displays
+  // multiple times.
+  ScheduleConfigureOutputs();
   return true;
 }
 
