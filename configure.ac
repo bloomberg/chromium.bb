@@ -226,6 +226,7 @@ AC_ARG_WITH(cairo-glesv2,
                            [Use GLESv2 cairo]))
 if test "x$with_cairo_glesv2" = "xyes"; then
   cairo_modules="cairo-glesv2"
+  with_cairo="glesv2"
 fi
 
 if test "x$cairo_modules" = "xcairo-glesv2"; then
@@ -285,7 +286,8 @@ if test x$enable_clients = xyes; then
                       [have_cairo_egl=yes], [have_cairo_egl=no])
     AS_IF([test "x$have_cairo_egl" = "xyes"],
 	  [AC_DEFINE([HAVE_CAIRO_EGL], [1], [Have cairo-egl])],
-	  [AC_ERROR([cairo-egl not used because $CAIRO_EGL_PKG_ERRORS])])])
+	  [AC_ERROR([cairo-egl not used because $CAIRO_EGL_PKG_ERRORS])])],
+  [have_cairo_egl=no])
 
   PKG_CHECK_MODULES(PANGO, [pangocairo], [have_pango=yes], [have_pango=no])
 fi
@@ -438,3 +440,42 @@ AC_CONFIG_FILES([Makefile
 		 man/Makefile
 		 tests/Makefile])
 AC_OUTPUT
+
+AC_MSG_RESULT([
+	Native Backend			${WESTON_NATIVE_BACKEND}
+	setuid Install			${enable_setuid_install}
+
+	Cairo Renderer			${with_cairo}
+	EGL				${enable_egl}
+	libxkbcommon			${enable_xkbcommon}
+	XWayland			${enable_xwayland}
+
+	Build wcap utility		${enable_wcap_tools}
+	Build Tablet Shell		${enable_tablet_shell}
+
+	weston-launch utility		${enable_weston_launch}
+	weston-launch systemd support	${have_systemd_login}
+
+	DRM Compositor			${enable_drm_compositor}
+	X11 Compositor			${enable_x11_compositor}
+	Wayland Compositor		${enable_wayland_compositor}
+	Headless Compositor		${enable_headless_compositor}
+	RPI Compositor			${enable_rpi_compositor}
+	FBDEV Compositor		${enable_fbdev_compositor}
+	RDP Compositor			${enable_rdp_compositor}
+
+	Raspberry Pi BCM headers	${have_bcm_host}
+
+	Build Clients			${enable_clients}
+	Build EGL Clients		${have_cairo_egl}
+	Build Simple Clients		${enable_simple_clients}
+	Build Simple EGL Clients	${enable_simple_egl_clients}
+
+	Install Demo Clients		${enable_demo_clients}
+
+	Colord Support			${have_colord}
+	GLU Support			${have_glu}
+	LCMS2 Support			${have_lcms}
+	libwebp Support			${have_webp}
+	libunwind Support		${have_libunwind}
+])
