@@ -326,10 +326,14 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
         LOG(ERROR) << "METHOD_GET_CHILD_WITH_INODE failed";
         goto error;
       }
+
       real_pids_to_sandbox_pids[real_pid] = pid;
+    } else {
+      // If no SUID sandbox is involved then no pid translation is
+      // necessary.
+      real_pid = pid;
     }
     if (use_helper) {
-      real_pid = pid;
       if (!helper_->AckChild(pipe_fds[1], channel_switch)) {
         LOG(ERROR) << "Failed to synchronise with zygote fork helper";
         goto error;
