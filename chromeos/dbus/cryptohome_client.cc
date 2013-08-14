@@ -466,18 +466,17 @@ class CryptohomeClientImpl : public CryptohomeClient {
 
   // CryptohomeClient override.
   virtual void AsyncTpmAttestationCreateCertRequest(
-      int options,
+      attestation::AttestationCertificateProfile certificate_profile,
+      const std::string& user_email,
+      const std::string& request_origin,
       const AsyncMethodCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(
         cryptohome::kCryptohomeInterface,
-        cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequest);
+        cryptohome::kCryptohomeAsyncTpmAttestationCreateCertRequestByProfile);
     dbus::MessageWriter writer(&method_call);
-    bool include_stable_id =
-        (options & attestation::CERTIFICATE_INCLUDE_STABLE_ID);
-    writer.AppendBool(include_stable_id);
-    bool include_device_state =
-        (options & attestation::CERTIFICATE_INCLUDE_DEVICE_STATE);
-    writer.AppendBool(include_device_state);
+    writer.AppendInt32(certificate_profile);
+    writer.AppendString(user_email);
+    writer.AppendString(request_origin);
     proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                        base::Bind(&CryptohomeClientImpl::OnAsyncMethodCall,
                                   weak_ptr_factory_.GetWeakPtr(),

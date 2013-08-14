@@ -189,6 +189,8 @@ void AttestationPolicyObserver::GetNewCertificate() {
   // We can reuse the dbus callback handler logic.
   attestation_flow_->GetCertificate(
       PROFILE_ENTERPRISE_MACHINE_CERTIFICATE,
+      std::string(),  // Not used.
+      std::string(),  // Not used.
       true,  // Force a new key to be generated.
       base::Bind(DBusStringCallback,
                  base::Bind(&AttestationPolicyObserver::UploadCertificate,

@@ -133,11 +133,15 @@ class AsyncMethodCallerImpl : public AsyncMethodCaller {
   }
 
   virtual void AsyncTpmAttestationCreateCertRequest(
-      int options,
+      chromeos::attestation::AttestationCertificateProfile certificate_profile,
+      const std::string& username,
+      const std::string& request_origin,
       const DataCallback& callback) OVERRIDE {
     DBusThreadManager::Get()->GetCryptohomeClient()->
         AsyncTpmAttestationCreateCertRequest(
-            options,
+            certificate_profile,
+            username,
+            request_origin,
             base::Bind(&AsyncMethodCallerImpl::RegisterAsyncDataCallback,
                        weak_ptr_factory_.GetWeakPtr(),
                        callback,

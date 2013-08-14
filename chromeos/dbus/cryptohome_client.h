@@ -250,14 +250,18 @@ class CHROMEOS_EXPORT CryptohomeClient {
       const AsyncMethodCallback& callback) = 0;
 
   // Asynchronously creates an attestation certificate request according to
-  // |options|, which is a combination of AttestationCertificateOptions.
-  // |callback| will be called when the dbus call completes.  When the operation
-  // completes, the AsyncCallStatusWithDataHandler signal handler is called.
-  // The data that is sent with the signal is a certificate request to be sent
-  // to the Privacy CA.  The certificate request is completed by calling
-  // AsyncTpmAttestationFinishCertRequest.
+  // |certificate_profile|.  Some profiles require that the |user_email| of the
+  // currently active user and an identifier of the |request_origin| be
+  // provided.  |callback| will be called when the dbus call completes.  When
+  // the operation completes, the AsyncCallStatusWithDataHandler signal handler
+  // is called.  The data that is sent with the signal is a certificate request
+  // to be sent to the Privacy CA.  The certificate request is completed by
+  // calling AsyncTpmAttestationFinishCertRequest.  The |user_email| will not
+  // be included in the certificate request for the Privacy CA.
   virtual void AsyncTpmAttestationCreateCertRequest(
-      int options,
+      attestation::AttestationCertificateProfile certificate_profile,
+      const std::string& user_email,
+      const std::string& request_origin,
       const AsyncMethodCallback& callback) = 0;
 
   // Asynchronously finishes a certificate request operation.  The callback will

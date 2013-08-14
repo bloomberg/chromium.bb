@@ -92,9 +92,12 @@ class MockCryptohomeClient : public CryptohomeClient {
   MOCK_METHOD2(AsyncTpmAttestationEnroll,
                void(const std::string& pca_response,
                     const AsyncMethodCallback& callback));
-  MOCK_METHOD2(AsyncTpmAttestationCreateCertRequest,
-               void(int options,
-                    const AsyncMethodCallback& callback));
+  MOCK_METHOD4(
+      AsyncTpmAttestationCreateCertRequest,
+      void(attestation::AttestationCertificateProfile certificate_profile,
+           const std::string& user_email,
+           const std::string& request_origin,
+           const AsyncMethodCallback& callback));
   MOCK_METHOD4(AsyncTpmAttestationFinishCertRequest,
                void(const std::string& pca_response,
                     attestation::AttestationKeyType key_type,

@@ -295,7 +295,9 @@ bool FakeCryptohomeClient::CallTpmClearStoredPasswordAndBlock() {
 }
 
 void FakeCryptohomeClient::AsyncTpmAttestationCreateCertRequest(
-    int options,
+    attestation::AttestationCertificateProfile certificate_profile,
+    const std::string& user_email,
+    const std::string& request_origin,
     const AsyncMethodCallback& callback) {
 }
 

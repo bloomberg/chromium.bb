@@ -68,6 +68,12 @@ class CHROMEOS_EXPORT AttestationFlow {
   // Parameters
   //   certificate_profile - Specifies what kind of certificate should be
   //                         requested from the CA.
+  //   user_email - The canonical email address of the currently active user.
+  //                This is ignored when not using the content protection
+  //                profile.
+  //   request_origin - For content protection profiles, certificate requests
+  //                    are origin-specific.  This string must uniquely identify
+  //                    the origin of the request.
   //   force_new_key - If set to true, a new key will be generated even if a key
   //                   already exists for the profile.  The new key will replace
   //                   the existing key on success.
@@ -75,6 +81,8 @@ class CHROMEOS_EXPORT AttestationFlow {
   //              On success |result| will be true and |data| will contain the
   //              PCA-issued certificate chain in PEM format.
   virtual void GetCertificate(AttestationCertificateProfile certificate_profile,
+                              const std::string& user_email,
+                              const std::string& request_origin,
                               bool force_new_key,
                               const CertificateCallback& callback);
 
@@ -134,10 +142,14 @@ class CHROMEOS_EXPORT AttestationFlow {
   // Parameters
   //   certificate_profile - Specifies what kind of certificate should be
   //                         requested from the CA.
+  //   user_email - The active user's canonical email.
+  //   request_origin - An identifier for the origin of this request.
   //   generate_new_key - If set to true a new key is generated.
   //   callback - Called when the operation completes.
   void StartCertificateRequest(
       const AttestationCertificateProfile certificate_profile,
+      const std::string& user_email,
+      const std::string& request_origin,
       bool generate_new_key,
       const CertificateCallback& callback);
 

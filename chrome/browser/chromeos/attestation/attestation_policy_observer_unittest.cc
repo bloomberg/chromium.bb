@@ -183,8 +183,8 @@ class AttestationPolicyObserverTest : public ::testing::Test {
     // another costly operation and if it gets triggered more than once during
     // a single pass this indicates a logical problem in the observer.
     if (new_key) {
-      EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _))
-          .WillOnce(WithArgs<2>(Invoke(CertCallbackSuccess)));
+      EXPECT_CALL(attestation_flow_, GetCertificate(_, _, _, _, _))
+          .WillOnce(WithArgs<4>(Invoke(CertCallbackSuccess)));
     }
   }
 

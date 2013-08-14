@@ -9,6 +9,7 @@ namespace attestation {
 
 const char kEnterpriseMachineKey[] = "attest-ent-machine";
 const char kEnterpriseUserKey[] = "attest-ent-user";
+const char kContentProtectionKeyPrefix[] = "attest-cp-";
 
 }  // namespace attestation
 }  // namespace chromeos

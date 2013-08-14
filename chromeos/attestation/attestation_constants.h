@@ -10,17 +10,6 @@
 namespace chromeos {
 namespace attestation {
 
-// Options available for customizing an attestation certificate.
-enum AttestationCertificateOptions {
-  CERTIFICATE_OPTION_NONE = 0,
-  // A stable identifier is simply an identifier that is not affected by device
-  // state changes, including device recovery.
-  CERTIFICATE_INCLUDE_STABLE_ID = 1,
-  // Device state information contains a quoted assertion of whether the device
-  // is in verified mode.
-  CERTIFICATE_INCLUDE_DEVICE_STATE = 1 << 1,
-};
-
 // Key types supported by the Chrome OS attestation subsystem.
 enum AttestationKeyType {
   // The key will be associated with the device itself and will be available
@@ -48,6 +37,8 @@ enum AttestationCertificateProfile {
   // Uses the following certificate options:
   //   CERTIFICATE_INCLUDE_DEVICE_STATE
   PROFILE_ENTERPRISE_USER_CERTIFICATE,
+  // A profile for certificates intended for protected content providers.
+  PROFILE_CONTENT_PROTECTION_CERTIFICATE,
 };
 
 // A key name for the Enterprise Machine Key.  This key should always be stored
@@ -57,6 +48,10 @@ CHROMEOS_EXPORT extern const char kEnterpriseMachineKey[];
 // A key name for the Enterprise User Key.  This key should always be stored as
 // a USER_KEY.
 CHROMEOS_EXPORT extern const char kEnterpriseUserKey[];
+
+// The key name prefix for content protection keys.  This prefix must be
+// appended with an origin-specific identifier to form the final key name.
+CHROMEOS_EXPORT extern const char kContentProtectionKeyPrefix[];
 
 }  // namespace attestation
 }  // namespace chromeos

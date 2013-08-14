@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -113,11 +114,15 @@ class CHROMEOS_EXPORT AsyncMethodCaller {
                                          const Callback& callback) = 0;
 
   // Asks cryptohomed to asynchronously create an attestation certificate
-  // request according to |options|, which is a combination of
-  // attestation::AttestationCertificateOptions.  On success the data sent to
-  // |callback| is a request to be sent to the Privacy CA.
+  // request according to |certificate_profile|.  Some profiles require that the
+  // |user_email| of the currently active user and an identifier of the
+  // |request_origin| be provided.  On success the data sent to |callback| is a
+  // request to be sent to the Privacy CA.  The |request_origin| may be sent to
+  // the Privacy CA but the |user_email| will never be sent.
   virtual void AsyncTpmAttestationCreateCertRequest(
-      int options,
+      chromeos::attestation::AttestationCertificateProfile certificate_profile,
+      const std::string& user_email,
+      const std::string& request_origin,
       const DataCallback& callback) = 0;
 
   // Asks cryptohomed to asynchronously finish an attestation certificate

@@ -205,6 +205,8 @@ void EPKPChallengeKeyBase::AskForUserConsentCallback(
   // Generate a new key and have it signed by PCA.
   attestation_flow_->GetCertificate(
       certificate_profile,
+      std::string(),  // Not used.
+      std::string(),  // Not used.
       true,  // Force a new key to be generated.
       base::Bind(&EPKPChallengeKeyBase::GetCertificateCallback, this,
                  callback));
