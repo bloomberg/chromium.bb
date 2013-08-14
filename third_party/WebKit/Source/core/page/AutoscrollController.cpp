@@ -132,10 +132,13 @@ void AutoscrollController::updateAutoscrollRenderer()
 
 void AutoscrollController::updateDragAndDrop(Node* dropTargetNode, const IntPoint& eventPosition, double eventTime)
 {
-    if (!dropTargetNode) {
+    if (!dropTargetNode || !dropTargetNode->renderer()) {
         stopAutoscrollTimer();
         return;
     }
+
+    if (m_autoscrollRenderer && m_autoscrollRenderer->frame() != dropTargetNode->renderer()->frame())
+        return;
 
     RenderBox* scrollable = RenderBox::findAutoscrollable(dropTargetNode->renderer());
     if (!scrollable) {

@@ -808,6 +808,8 @@ IntSize RenderBox::calculateAutoscrollDirection(const IntPoint& windowPoint) con
     IntSize offset;
     IntPoint point = frameView->windowToContents(windowPoint);
     IntRect box(absoluteBoundingBoxRect());
+    if (isRenderView())
+        box.moveBy(frameView->windowToContents(IntPoint()));
 
     if (point.x() < box.x() + autoscrollBeltSize)
         point.move(-autoscrollBeltSize, 0);

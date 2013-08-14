@@ -1,0 +1,10 @@
+<script>
+window.addEventListener('message', function(event) {
+    document.body.outerHTML = event.data;
+    testRunner.notifyDone();
+});
+</script>
+<frameset cols="50%,%50%">
+    <frame src="resources/drag-and-drop-autoscroll-frame.html">
+    <frame>
+</frameset>
