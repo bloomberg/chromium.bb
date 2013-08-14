@@ -11,6 +11,7 @@ error() {
 }
 
 outdir_prefix="stress_test_"
+time="/usr/bin/time"
 
 if [ $# -lt 2 ]; then
   cat <<EOF
@@ -90,8 +91,12 @@ run_test() {
     fi
     mkdir -p "$(dirname "${patch}")"
     mkdir -p "$(dirname "${apply}")"
-    courgette -gen "${file1}" "${file2}" "${patch}"
-    courgette -apply "${file1}" "${patch}" "${apply}"
+    echo "courgette -gen"
+    ${time} -f "TIME_GEN %e ${file1}" courgette -gen "${file1}" "${file2}" \
+      "${patch}"
+    echo "courgette -apply"
+    ${time} -f "TIME_APPLY %e ${file1}" courgette -apply "${file1}" "${patch}" \
+      "${apply}"
     cmp -s "${file2}" "${apply}"
     if [ "${?}" -ne 0 ]; then
       echo "FAIL_COURGETTE ${file1}"
@@ -99,23 +104,39 @@ run_test() {
       echo "PASS_COURGETTE ${file1}"
       local bsdiff_patch="${patches_dir}/${file1}.bsdiff_patch"
       local bsdiff_apply="${applied_dir}/${file2}.bsdiff_applied"
-      bsdiff "${file1}" "${file2}" "${bsdiff_patch}"
-      bspatch "${file1}" "${bsdiff_apply}" "${bsdiff_patch}"
+      echo "RUN bsdiff"
+      ${time} -f "TIME_BSDIFF %e ${file1}" bsdiff "${file1}" "${file2}" \
+        "${bsdiff_patch}"
+      echo "RUN bspatch"
+      ${time} -f "TIME_BSPATCH %e ${file1}" bspatch "${file1}" \
+        "${bsdiff_apply}" "${bsdiff_patch}"
       cmp -s "${file2}" "${bsdiff_apply}"
       if [ "${?}" -ne 0 ]; then
         echo "FAIL_BSDIFF ${file1}"
       else
         echo "PASS_BSDIFF ${file1}"
-        bzip2 -k -9 "${patch}"
-        local patch_size="$(du -b "${patch}.bz2" | cut -f1)"
+        local bz2_patch="${patch}.bz2"
+        local xz_patch="${patch}.xz"
+        bzip2 -9 -c "${patch}" > "${bz2_patch}"
+        xz -9 -c "${patch}" > "${xz_patch}"
+        local patch_size="$(du -b "${bz2_patch}" | cut -f1)"
         local bsdiff_patch_size="$(du -b "${bsdiff_patch}" | cut -f1)"
-        echo "SIZE courgette=${patch_size} bsdiff=${bsdiff_patch_size} ${file1}"
+        local xz_patch_size="$(du -b "${xz_patch}" | cut -f1)"
+        echo "SIZE courgette=${patch_size} bsdiff=${bsdiff_patch_size}" \
+          "courgette_xz=${xz_patch_size} ${file1}"
         if [ "${patch_size}" -eq "${bsdiff_patch_size}" ]; then
           echo "BEST_TIE ${patch_size} ${file1}"
         elif [ "${patch_size}" -lt "${bsdiff_patch_size}" ]; then
           echo "BEST_COURGETTE ${patch_size} ${file1}"
         elif [ "${patch_size}" -gt "${bsdiff_patch_size}" ]; then
           echo "BEST_BSDIFF ${bsdiff_patch_size} ${file1}"
+        fi
+        if [ "${xz_patch_size}" -eq "${bsdiff_patch_size}" ]; then
+          echo "XZBEST_TIE ${xz_patch_size} ${file1}"
+        elif [ "${xz_patch_size}" -lt "${bsdiff_patch_size}" ]; then
+          echo "XZBEST_COURGETTE ${xz_patch_size} ${file1}"
+        elif [ "${xz_patch_size}" -gt "${bsdiff_patch_size}" ]; then
+          echo "XZBEST_BSDIFF ${bsdiff_patch_size} ${file1}"
         fi
       fi
     fi
@@ -158,7 +179,10 @@ $(count_result "FAIL_DISASSEMBLE") failed to disassemble/assemble (search log \
 for "^FAIL_DISASSEMBLE")
 $(count_result "PASS_BSDIFF") succesful bsdiff patches
 $(count_result "FAIL_BSDIFF") failed bsdiff patches
-$(count_result "BEST_COURGETTE") patch(es) where courgette is smaller
-$(count_result "BEST_BSDIFF") patch(es) where bsdiff is smaller
-$(count_result "BEST_TIE") patch(es) where both are the same size
+$(count_result "BEST_COURGETTE") patch(es) where courgette (bz2) is smaller
+$(count_result "BEST_BSDIFF") patch(es) where bsdiff is smaller (bz2)
+$(count_result "BEST_TIE") patch(es) where both are the same size (bz2)
+$(count_result "XZBEST_COURGETTE") patch(es) where courgette (xz) is smaller
+$(count_result "XZBEST_BSDIFF") patch(es) where bsdiff is smaller (xz)
+$(count_result "XZBEST_TIE") patch(es) where both are the same size (xz)
 EOF
