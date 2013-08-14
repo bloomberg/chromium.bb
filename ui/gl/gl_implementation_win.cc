@@ -94,7 +94,7 @@ typedef void (*AddTraceEventFunc)(char phase,
                                   const unsigned char* argTypes,
                                   const unsigned long long* argValues,
                                   unsigned char flags);
-typedef void (*SetTraceFunctionPointersFunc)(
+typedef void (__stdcall *SetTraceFunctionPointersFunc)(
     GetCategoryEnabledFlagFunc get_category_enabled_flag,
     AddTraceEventFunc add_trace_event_func);
 
