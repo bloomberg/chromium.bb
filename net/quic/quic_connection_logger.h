@@ -28,7 +28,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
                             EncryptionLevel level,
                             const QuicEncryptedPacket& packet,
                             int rv) OVERRIDE;
-
+  virtual void OnPacketRetransmitted(
+      QuicPacketSequenceNumber old_sequence_number,
+      QuicPacketSequenceNumber new_sequence_number) OVERRIDE;
   virtual void OnPacketReceived(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address,
                                 const QuicEncryptedPacket& packet) OVERRIDE;

@@ -95,6 +95,12 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitorInterface
                             const QuicEncryptedPacket& packet,
                             int rv) = 0;
 
+  // Called when the contents of a packet have been retransmitted as
+  // a new packet.
+  virtual void OnPacketRetransmitted(
+      QuicPacketSequenceNumber old_sequence_number,
+      QuicPacketSequenceNumber new_sequence_number) = 0;
+
   // Called when a packet has been received, but before it is
   // validated or parsed.
   virtual void OnPacketReceived(const IPEndPoint& self_address,

@@ -1296,6 +1296,15 @@ EVENT_TYPE(QUIC_SESSION_PACKET_RECEIVED)
 //                                as a base-10 string.>,
 //     "size": <The size of the packet in bytes>
 //   }
+EVENT_TYPE(QUIC_SESSION_PACKET_RETRANSMITTED)
+
+// Session retransmitted a QUIC packet.
+//   {
+//     "old_packet_sequence_number": <The old packet's full 64-bit sequence
+//                                    number, as a base-10 string.>,
+//     "new_packet_sequence_number": <The new packet's full 64-bit sequence
+//                                    number, as a base-10 string.>,
+//   }
 EVENT_TYPE(QUIC_SESSION_PACKET_SENT)
 
 // Session received a QUIC packet header for a valid packet.
@@ -1434,6 +1443,29 @@ EVENT_TYPE(QUIC_SESSION_CONNECTION_CLOSE_FRAME_RECEIVED)
 //     "details": <Human readable description>,
 //   }
 EVENT_TYPE(QUIC_SESSION_CONNECTION_CLOSE_FRAME_SENT)
+
+// Session received a public reset packet.
+//   {
+//   }
+EVENT_TYPE(QUIC_SESSION_PUBLIC_RESET_PACKET_RECEIVED)
+
+// Session received a version negotiation packet.
+//   {
+//     "versions": <List of QUIC versions supported by the server>,
+//   }
+EVENT_TYPE(QUIC_SESSION_VERSION_NEGOTIATION_PACKET_RECEIVED)
+
+// Session revived a QUIC packet packet via FEC.
+//   {
+//     "guid": <The 64-bit GUID for this connection, as a base-10 string>,
+//     "public_flags": <The public flags set for this packet>,
+//     "packet_sequence_number": <The packet's full 64-bit sequence number,
+//                                as a base-10 string.>,
+//     "private_flags": <The private flags set for this packet>,
+//     "fec_group": <The FEC group of this packet>,
+//   }
+EVENT_TYPE(QUIC_SESSION_PACKET_HEADER_REVIVED)
+
 
 // ------------------------------------------------------------------------
 // QuicHttpStream

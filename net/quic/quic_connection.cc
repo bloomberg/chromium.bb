@@ -1035,6 +1035,10 @@ void QuicConnection::RetransmitPacket(
                                     unacked));
   retransmission_map_.insert(make_pair(serialized_packet.sequence_number,
                                        retransmission_info));
+  if (debug_visitor_) {
+    debug_visitor_->OnPacketRetransmitted(sequence_number,
+                                          serialized_packet.sequence_number);
+  }
   SendOrQueuePacket(unacked->encryption_level(),
                     serialized_packet.sequence_number,
                     serialized_packet.packet,
