@@ -42,6 +42,7 @@ const AtomicString& spinButton();
 const AtomicString& clearButton();
 const AtomicString& pickerIndicator();
 const AtomicString& searchDecoration();
+const AtomicString& speechButton();
 
 }
 

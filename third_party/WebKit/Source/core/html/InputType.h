@@ -212,10 +212,6 @@ public:
     virtual HTMLElement* containerElement() const { return 0; }
     virtual HTMLElement* innerBlockElement() const { return 0; }
     virtual HTMLElement* innerTextElement() const { return 0; }
-    virtual HTMLElement* innerSpinButtonElement() const { return 0; }
-#if ENABLE(INPUT_SPEECH)
-    virtual HTMLElement* speechButtonElement() const { return 0; }
-#endif
     virtual HTMLElement* passwordGeneratorButtonElement() const { return 0; }
     virtual HTMLElement* sliderThumbElement() const { return 0; }
     virtual HTMLElement* sliderTrackElement() const { return 0; }

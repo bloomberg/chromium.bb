@@ -39,6 +39,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
@@ -211,11 +212,15 @@ bool WebInputElement::isSpeechInputEnabled() const
 #endif
 }
 
+static inline InputFieldSpeechButtonElement* speechButtonElement(const WebInputElement* webInput)
+{
+    return toInputFieldSpeechButtonElement(webInput->constUnwrap<HTMLInputElement>()->userAgentShadowRoot()->getElementById(ShadowElementNames::speechButton()));
+}
+
 WebInputElement::SpeechInputState WebInputElement::getSpeechInputState() const
 {
 #if ENABLE(INPUT_SPEECH)
-    InputFieldSpeechButtonElement* speechButton = toInputFieldSpeechButtonElement(constUnwrap<HTMLInputElement>()->speechButtonElement());
-    if (speechButton)
+    if (InputFieldSpeechButtonElement* speechButton = speechButtonElement(this))
         return static_cast<WebInputElement::SpeechInputState>(speechButton->state());
 #endif
 
@@ -225,8 +230,7 @@ WebInputElement::SpeechInputState WebInputElement::getSpeechInputState() const
 void WebInputElement::startSpeechInput()
 {
 #if ENABLE(INPUT_SPEECH)
-    InputFieldSpeechButtonElement* speechButton = toInputFieldSpeechButtonElement(constUnwrap<HTMLInputElement>()->speechButtonElement());
-    if (speechButton)
+    if (InputFieldSpeechButtonElement* speechButton = speechButtonElement(this))
         speechButton->startSpeechInput();
 #endif
 }
@@ -234,8 +238,7 @@ void WebInputElement::startSpeechInput()
 void WebInputElement::stopSpeechInput()
 {
 #if ENABLE(INPUT_SPEECH)
-    InputFieldSpeechButtonElement* speechButton = toInputFieldSpeechButtonElement(constUnwrap<HTMLInputElement>()->speechButtonElement());
-    if (speechButton)
+    if (InputFieldSpeechButtonElement* speechButton = speechButtonElement(this))
         speechButton->stopSpeechInput();
 #endif
 }

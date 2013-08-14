@@ -121,10 +121,6 @@ public:
     HTMLElement* containerElement() const;
     virtual HTMLElement* innerTextElement() const;
     HTMLElement* innerBlockElement() const;
-    HTMLElement* innerSpinButtonElement() const;
-#if ENABLE(INPUT_SPEECH)
-    HTMLElement* speechButtonElement() const;
-#endif
     HTMLElement* sliderThumbElement() const;
     HTMLElement* sliderTrackElement() const;
     HTMLElement* passwordGeneratorButtonElement() const;
