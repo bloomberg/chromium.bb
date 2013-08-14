@@ -240,7 +240,7 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
           GetFileSystemContext()->external_backend();
   if (!backend)
     return false;
-  backend->GrantFullAccessToExtension(GetFileBrowserUrl().host());
+  backend->GrantFullAccessToExtension(kFileBrowserDomain);
   return true;
 }
 
