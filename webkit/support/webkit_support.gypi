@@ -31,7 +31,6 @@
         '<(DEPTH)/webkit/renderer/webkit_renderer.gyp:webkit_renderer',
         '<(DEPTH)/webkit/storage_browser.gyp:webkit_storage_browser',
         '<(DEPTH)/webkit/storage_common.gyp:webkit_storage_common',
-        '<(DEPTH)/webkit/storage_renderer.gyp:webkit_storage_renderer',
         'glue',
         'glue_child',
         'webkit_support_common',

@@ -182,7 +182,6 @@
             '../webkit/support/webkit_support.gyp:webkit_support_common',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/storage_renderer.gyp:webkit_storage_renderer',
           ],
         }],
         ['OS == "win" or toolkit_uses_gtk == 1', {
@@ -390,6 +389,7 @@
         'browser/web_contents/web_drag_source_mac_unittest.mm',
         'browser/webui/web_ui_data_source_unittest.cc',
         'browser/webui/web_ui_message_handler_unittest.cc',
+        'child/fileapi/webfilewriter_base_unittest.cc',
         'child/indexed_db/indexed_db_dispatcher_unittest.cc',
         'child/indexed_db/proxy_webidbcursor_impl_unittest.cc',
         'child/npapi/plugin_lib_unittest.cc',
@@ -549,7 +549,6 @@
         '../webkit/browser/quota/quota_temporary_storage_evictor_unittest.cc',
         '../webkit/browser/quota/usage_tracker_unittest.cc',
         '../webkit/renderer/cpp_variant_unittest.cc',
-        '../webkit/renderer/fileapi/webfilewriter_base_unittest.cc',
       ],
       'conditions': [
         ['OS == "ios"', {
@@ -587,7 +586,6 @@
             '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
             '../webkit/storage_browser.gyp:webkit_storage_browser',
             '../webkit/storage_common.gyp:webkit_storage_common',
-            '../webkit/storage_renderer.gyp:webkit_storage_renderer',
             '../webkit/support/webkit_support.gyp:glue',
             '../webkit/support/webkit_support.gyp:glue_child',
           ],

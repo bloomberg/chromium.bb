@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/fileapi/webfilewriter_base.h"
+#include "content/child/fileapi/webfilewriter_base.h"
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/web/WebFileWriterClient.h"
 #include "url/gurl.h"
 
-namespace fileapi {
+namespace content {
 
 namespace {
 
@@ -408,4 +408,4 @@ TEST_F(FileWriterTest, DeleteInCompletionCallbacks) {
   // Not crashing counts as passing.
 }
 
-}  // namespace fileapi
+}  // namespace content

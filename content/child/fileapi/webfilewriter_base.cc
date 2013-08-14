@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/fileapi/webfilewriter_base.h"
+#include "content/child/fileapi/webfilewriter_base.h"
 
 #include "base/logging.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -10,18 +10,18 @@
 #include "third_party/WebKit/public/web/WebFileWriterClient.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
-namespace fileapi {
+using fileapi::PlatformFileErrorToWebFileError;
 
-WebFileWriterBase::WebFileWriterBase(
-     const GURL& path, WebKit::WebFileWriterClient* client)
-  : path_(path),
-    client_(client),
-    operation_(kOperationNone),
-    cancel_state_(kCancelNotInProgress) {
-}
+namespace content {
 
-WebFileWriterBase::~WebFileWriterBase() {
-}
+WebFileWriterBase::WebFileWriterBase(const GURL& path,
+                                     WebKit::WebFileWriterClient* client)
+    : path_(path),
+      client_(client),
+      operation_(kOperationNone),
+      cancel_state_(kCancelNotInProgress) {}
+
+WebFileWriterBase::~WebFileWriterBase() {}
 
 void WebFileWriterBase::truncate(long long length) {
   DCHECK(kOperationNone == operation_);
@@ -30,9 +30,8 @@ void WebFileWriterBase::truncate(long long length) {
   DoTruncate(path_, length);
 }
 
-void WebFileWriterBase::write(
-      long long position,
-      const WebKit::WebURL& blob_url) {
+void WebFileWriterBase::write(long long position,
+                              const WebKit::WebURL& blob_url) {
   DCHECK(kOperationNone == operation_);
   DCHECK(kCancelNotInProgress == cancel_state_);
   operation_ = kOperationWrite;
@@ -123,8 +122,7 @@ void WebFileWriterBase::DidFail(base::PlatformFileError error_code) {
     case kCancelNotInProgress:
       // A write or truncate failed.
       operation_ = kOperationNone;
-      client_->didFail(
-          PlatformFileErrorToWebFileError(error_code));
+      client_->didFail(PlatformFileErrorToWebFileError(error_code));
       break;
     case kCancelSent:
       // This is the failure of a write or truncate; the next message should be
@@ -151,4 +149,4 @@ void WebFileWriterBase::FinishCancel() {
   client_->didFail(WebKit::WebFileErrorAbort);
 }
 
-}  // namespace fileapi
+}  // namespace content

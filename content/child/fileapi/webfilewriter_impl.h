@@ -8,12 +8,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
-#include "webkit/renderer/fileapi/webfilewriter_base.h"
+#include "content/child/fileapi/webfilewriter_base.h"
 
 namespace content {
 
 // An implementation of WebFileWriter for use in chrome renderers and workers.
-class WebFileWriterImpl : public fileapi::WebFileWriterBase,
+class WebFileWriterImpl : public WebFileWriterBase,
                           public base::SupportsWeakPtr<WebFileWriterImpl> {
  public:
   enum Type {

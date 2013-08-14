@@ -47,6 +47,8 @@
     'child/fileapi/webfilesystem_callback_adapters.h',
     'child/fileapi/webfilesystem_impl.cc',
     'child/fileapi/webfilesystem_impl.h',
+    'child/fileapi/webfilewriter_base.cc',
+    'child/fileapi/webfilewriter_base.h',
     'child/fileapi/webfilewriter_impl.cc',
     'child/fileapi/webfilewriter_impl.h',
     'child/image_decoder.cc',

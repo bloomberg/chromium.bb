@@ -23,7 +23,6 @@
     '../webkit/renderer/compositor_bindings/compositor_bindings.gyp:webkit_compositor_support',
     '../webkit/renderer/webkit_renderer.gyp:webkit_renderer',
     '../webkit/storage_common.gyp:webkit_storage_common',
-    '../webkit/storage_renderer.gyp:webkit_storage_renderer',
     '../webkit/support/webkit_support.gyp:glue',
     '../webkit/support/webkit_support.gyp:glue_child',
   ],
