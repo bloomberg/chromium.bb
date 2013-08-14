@@ -16,8 +16,6 @@
 #include "chrome/browser/policy/mock_policy_service.h"
 #include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "components/policy/core/common/policy_schema.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -142,6 +140,7 @@ class PolicyServiceTest : public testing::Test {
   }
 
  protected:
+  base::MessageLoop loop_;
   MockConfigurationPolicyProvider provider0_;
   MockConfigurationPolicyProvider provider1_;
   MockConfigurationPolicyProvider provider2_;
@@ -149,7 +148,6 @@ class PolicyServiceTest : public testing::Test {
   PolicyMap policy1_;
   PolicyMap policy2_;
   scoped_ptr<PolicyServiceImpl> policy_service_;
-  content::TestBrowserThreadBundle thread_bundle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PolicyServiceTest);

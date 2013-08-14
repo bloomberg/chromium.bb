@@ -82,11 +82,6 @@ specific_include_rules = {
     "+chrome/common/chrome_switches.h",
   ],
 
-  r"policy_service_impl_unittest\.cc": [
-    "+content/public/browser/browser_thread.h",
-    "+content/public/test/test_browser_thread_bundle.h",
-  ],
-
   r"policy_statistics_collector\.cc": [
     "+chrome/common/pref_names.h",
   ],
