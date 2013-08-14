@@ -1122,7 +1122,9 @@ void Dispatcher::DidCreateScriptContext(
         std::string hexencoded_id_hash = base::HexEncode(id_hash.c_str(),
                                                          id_hash.length());
         if (hexencoded_id_hash == "8C3741E3AF0B93B6E8E0DDD499BB0B74839EA578" ||
-            hexencoded_id_hash == "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB")
+            hexencoded_id_hash == "E703483CEF33DEC18B4B6DD84B5C776FB9182BDB" ||
+            hexencoded_id_hash == "1A26E32DE447A17CBE5E9750CDBA78F58539B39C" ||
+            hexencoded_id_hash == "59048028102D7B4C681DBC7BC6CD980C3DC66DA3")
           includeExperimental = true;
       }
       if (includeExperimental)
