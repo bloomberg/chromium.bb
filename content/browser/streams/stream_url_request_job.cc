@@ -167,7 +167,6 @@ void StreamURLRequestJob::NotifyFailure(int error_code) {
 
   // TODO(zork): Share these with BlobURLRequestJob.
   net::HttpStatusCode status_code = net::HTTP_INTERNAL_SERVER_ERROR;
-  std::string status_txt;
   switch (error_code) {
     case net::ERR_ACCESS_DENIED:
       status_code = net::HTTP_FORBIDDEN;
