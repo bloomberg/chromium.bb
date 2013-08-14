@@ -76,10 +76,9 @@ void GetPropertiesCallback(
         network_handler::CreateErrorData(path,
                                          kDBusFailedError,
                                          kDBusFailedErrorMessage));
-    // Because network services are added and removed frequently, we will see
-    // these failures regularly, so log as events not errors.
-    NET_LOG_EVENT(base::StringPrintf("GetProperties failed: %d", call_status),
-                  path);
+    NET_LOG_ERROR(
+        base::StringPrintf("GetProperties failed. Status: %d", call_status),
+        path);
     if (!error_callback.is_null())
       error_callback.Run(kDBusFailedError, error_data.Pass());
   } else if (!callback.is_null()) {

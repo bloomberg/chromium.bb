@@ -261,6 +261,11 @@ const int kPreferredPriority = 1;
 void ShillError(const std::string& function,
                 const std::string& error_name,
                 scoped_ptr<base::DictionaryValue> error_data) {
+  // UpdateConnectionData may send requests for stale services; ignore
+  // these errors.
+  if (function == "UpdateConnectionData" &&
+      error_name == network_handler::kDBusFailedError)
+    return;
   NET_LOG_ERROR("Shill Error from InternetOptionsHandler: " + error_name,
                 function);
 }

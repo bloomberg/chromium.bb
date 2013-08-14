@@ -17,7 +17,7 @@ void NetworkEventLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK(!callback.is_null());
 
   scoped_ptr<SystemLogsResponse> response(new SystemLogsResponse);
-  const int kMaxNetworkEventsForAboutSystem = 200;
+  const int kMaxNetworkEventsForAboutSystem = 400;
   (*response)[kNetworkEventLogEntry] = network_event_log::GetAsString(
       network_event_log::OLDEST_FIRST,
       "time,file,desc",

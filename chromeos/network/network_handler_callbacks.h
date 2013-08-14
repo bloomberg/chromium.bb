@@ -19,6 +19,8 @@ class DictionaryValue;
 namespace chromeos {
 namespace network_handler {
 
+CHROMEOS_EXPORT extern const char kDBusFailedError[];
+CHROMEOS_EXPORT extern const char kDBusFailedErrorMessage[];
 CHROMEOS_EXPORT extern const char kErrorName[];
 CHROMEOS_EXPORT extern const char kErrorDetail[];
 CHROMEOS_EXPORT extern const char kDbusErrorName[];
