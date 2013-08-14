@@ -21,6 +21,7 @@
 #ifndef SVGClipPathElement_h
 #define SVGClipPathElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedEnumeration.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
@@ -54,6 +55,12 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGClipPathElement* toSVGClipPathElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::clipPathTag));
+    return static_cast<SVGClipPathElement*>(node);
+}
 
 }
 
