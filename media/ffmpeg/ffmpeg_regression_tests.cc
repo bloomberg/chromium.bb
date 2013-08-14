@@ -359,7 +359,7 @@ FLAKY_FFMPEG_TEST_CASE(WEBM_2, "security/uninitialize.webm");
 TEST_P(FFmpegRegressionTest, BasicPlayback) {
   if (GetParam().init_status == PIPELINE_OK) {
     ASSERT_TRUE(Start(GetTestDataFilePath(GetParam().filename),
-                      GetParam().init_status, true));
+                      GetParam().init_status, kHashed));
     Play();
     ASSERT_EQ(WaitUntilEndedOrError(), GetParam().end_status);
     EXPECT_EQ(GetParam().video_md5, GetVideoHash());
@@ -374,7 +374,7 @@ TEST_P(FFmpegRegressionTest, BasicPlayback) {
     }
   } else {
     ASSERT_FALSE(Start(GetTestDataFilePath(GetParam().filename),
-                       GetParam().init_status, true));
+                       GetParam().init_status, kHashed));
     EXPECT_EQ(GetParam().video_md5, GetVideoHash());
     EXPECT_EQ(GetParam().audio_md5, GetAudioHash());
   }

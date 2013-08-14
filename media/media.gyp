@@ -99,6 +99,8 @@
         'audio/audio_source_diverter.h',
         'audio/audio_util.cc',
         'audio/audio_util.h',
+        'audio/clockless_audio_sink.cc',
+        'audio/clockless_audio_sink.h',
         'audio/cras/audio_manager_cras.cc',
         'audio/cras/audio_manager_cras.h',
         'audio/cras/cras_input.cc',

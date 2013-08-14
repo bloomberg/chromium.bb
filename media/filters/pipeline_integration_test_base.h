@@ -7,6 +7,7 @@
 
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
+#include "media/audio/clockless_audio_sink.h"
 #include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
 #include "media/base/media_keys.h"
@@ -47,10 +48,13 @@ class PipelineIntegrationTestBase {
   bool WaitUntilOnEnded();
   PipelineStatus WaitUntilEndedOrError();
   bool Start(const base::FilePath& file_path, PipelineStatus expected_status);
-  // Enable playback with audio and video hashing enabled.  Frame dropping and
-  // audio underflow will be disabled to ensure consistent hashes.
-  bool Start(const base::FilePath& file_path, PipelineStatus expected_status,
-             bool hashing_enabled);
+  // Enable playback with audio and video hashing enabled, or clockless
+  // playback (audio only). Frame dropping and audio underflow will be disabled
+  // if hashing enabled to ensure consistent hashes.
+  enum kTestType { kHashed, kClockless };
+  bool Start(const base::FilePath& file_path,
+             PipelineStatus expected_status,
+             kTestType test_type);
   // Initialize the pipeline and ignore any status updates.  Useful for testing
   // invalid audio/video clips which don't have deterministic results.
   bool Start(const base::FilePath& file_path);
@@ -75,14 +79,20 @@ class PipelineIntegrationTestBase {
   // enabled.
   std::string GetAudioHash();
 
+  // Returns the time taken to render the complete audio file.
+  // Pipeline must have been started with clockless playback enabled.
+  base::TimeDelta GetAudioTime();
+
  protected:
   base::MessageLoop message_loop_;
   base::MD5Context md5_context_;
   bool hashing_enabled_;
+  bool clockless_playback_;
   scoped_ptr<Demuxer> demuxer_;
   scoped_ptr<DataSource> data_source_;
   scoped_ptr<Pipeline> pipeline_;
   scoped_refptr<NullAudioSink> audio_sink_;
+  scoped_refptr<ClocklessAudioSink> clockless_audio_sink_;
   bool ended_;
   PipelineStatus pipeline_status_;
   NeedKeyCB need_key_cb_;
@@ -103,6 +113,7 @@ class PipelineIntegrationTestBase {
   void QuitAfterCurrentTimeTask(const base::TimeDelta& quit_time);
   scoped_ptr<FilterCollection> CreateFilterCollection(
       scoped_ptr<Demuxer> demuxer, Decryptor* decryptor);
+
   void SetDecryptor(Decryptor* decryptor,
                     const DecryptorReadyCB& decryptor_ready_cb);
   void OnVideoRendererPaint(const scoped_refptr<VideoFrame>& frame);

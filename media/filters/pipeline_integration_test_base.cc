@@ -26,6 +26,7 @@ const char kNullAudioHash[] = "0.00,0.00,0.00,0.00,0.00,0.00,";
 
 PipelineIntegrationTestBase::PipelineIntegrationTestBase()
     : hashing_enabled_(false),
+      clockless_playback_(false),
       pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
                              new MediaLog())),
       ended_(false),
@@ -120,8 +121,9 @@ bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
                                         PipelineStatus expected_status,
-                                        bool hashing_enabled) {
-  hashing_enabled_ = hashing_enabled;
+                                        kTestType test_type) {
+  hashing_enabled_ = test_type == kHashed;
+  clockless_playback_ = test_type == kClockless;
   return Start(file_path, expected_status);
 }
 
@@ -229,26 +231,32 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   scoped_ptr<FilterCollection> collection(new FilterCollection());
   collection->SetDemuxer(demuxer_.get());
 
-  ScopedVector<VideoDecoder> video_decoders;
-  video_decoders.push_back(
-      new VpxVideoDecoder(message_loop_.message_loop_proxy()));
-  video_decoders.push_back(
-      new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
+  if (!clockless_playback_) {
+    ScopedVector<VideoDecoder> video_decoders;
+    video_decoders.push_back(
+        new VpxVideoDecoder(message_loop_.message_loop_proxy()));
+    video_decoders.push_back(
+        new FFmpegVideoDecoder(message_loop_.message_loop_proxy()));
 
-  // Disable frame dropping if hashing is enabled.
-  scoped_ptr<VideoRenderer> renderer(new VideoRendererBase(
-      message_loop_.message_loop_proxy(),
-      video_decoders.Pass(),
-      base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
-                 base::Unretained(this), decryptor),
-      base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
-                 base::Unretained(this)),
-      base::Bind(&PipelineIntegrationTestBase::OnSetOpaque,
-                 base::Unretained(this)),
-      !hashing_enabled_));
-  collection->SetVideoRenderer(renderer.Pass());
+    // Disable frame dropping if hashing is enabled.
+    scoped_ptr<VideoRenderer> renderer(new VideoRendererBase(
+        message_loop_.message_loop_proxy(),
+        video_decoders.Pass(),
+        base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
+                   base::Unretained(this),
+                   decryptor),
+        base::Bind(&PipelineIntegrationTestBase::OnVideoRendererPaint,
+                   base::Unretained(this)),
+        base::Bind(&PipelineIntegrationTestBase::OnSetOpaque,
+                   base::Unretained(this)),
+        !hashing_enabled_));
+    collection->SetVideoRenderer(renderer.Pass());
 
-  audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
+    audio_sink_ = new NullAudioSink(message_loop_.message_loop_proxy());
+  } else {
+    // audio only for clockless_playback_
+    clockless_audio_sink_ = new ClocklessAudioSink();
+  }
 
   ScopedVector<AudioDecoder> audio_decoders;
   audio_decoders.push_back(
@@ -258,7 +266,9 @@ PipelineIntegrationTestBase::CreateFilterCollection(
 
   AudioRendererImpl* audio_renderer_impl = new AudioRendererImpl(
       message_loop_.message_loop_proxy(),
-      audio_sink_.get(),
+      (clockless_playback_)
+          ? static_cast<AudioRendererSink*>(clockless_audio_sink_.get())
+          : audio_sink_.get(),
       audio_decoders.Pass(),
       base::Bind(&PipelineIntegrationTestBase::SetDecryptor,
                  base::Unretained(this),
@@ -299,6 +309,11 @@ std::string PipelineIntegrationTestBase::GetVideoHash() {
 std::string PipelineIntegrationTestBase::GetAudioHash() {
   DCHECK(hashing_enabled_);
   return audio_sink_->GetAudioHashForTesting();
+}
+
+base::TimeDelta PipelineIntegrationTestBase::GetAudioTime() {
+  DCHECK(clockless_playback_);
+  return clockless_audio_sink_->render_time();
 }
 
 }  // namespace media
