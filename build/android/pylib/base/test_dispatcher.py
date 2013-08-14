@@ -330,7 +330,7 @@ def _GetAttachedDevices(wait_for_debugger=False, test_device=None):
     logging.warning('Debugger can not be sharded, using first available device')
     attached_devices = attached_devices[:1]
 
-  return attached_devices
+  return sorted(attached_devices)
 
 
 def RunTests(tests, runner_factory, wait_for_debugger, test_device,

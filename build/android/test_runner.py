@@ -28,6 +28,9 @@ from pylib.instrumentation import setup as instrumentation_setup
 from pylib.instrumentation import test_options as instrumentation_test_options
 from pylib.monkey import setup as monkey_setup
 from pylib.monkey import test_options as monkey_test_options
+from pylib.perf import setup as perf_setup
+from pylib.perf import test_options as perf_test_options
+from pylib.perf import test_runner as perf_test_runner
 from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
 from pylib.utils import report_results
@@ -418,6 +421,42 @@ def ProcessMonkeyTestOptions(options, error_func):
       options.extra_args)
 
 
+def AddPerfTestOptions(option_parser):
+  """Adds perf test options to |option_parser|."""
+
+  option_parser.usage = '%prog perf [options]'
+  option_parser.command_list = []
+  option_parser.example = ('%prog perf --steps perf_steps.json')
+
+  option_parser.add_option('--steps', help='JSON file containing the list '
+      'of perf steps to run.')
+  option_parser.add_option('--flaky-steps',
+                           help='A JSON file containing steps that are flaky '
+                                'and will have its exit code ignored.')
+  option_parser.add_option('--print-step', help='The name of a previously '
+      'executed perf step to print.')
+
+  AddCommonOptions(option_parser)
+
+
+def ProcessPerfTestOptions(options, error_func):
+  """Processes all perf test options.
+
+  Args:
+    options: optparse.Options object.
+    error_func: Function to call with the error message in case of an error.
+
+  Returns:
+    A PerfOptions named tuple which contains all options relevant to
+    perf tests.
+  """
+  if not options.steps and not options.print_step:
+    error_func('Please specify --steps or --print-step')
+  return perf_test_options.PerfOptions(
+      options.steps, options.flaky_steps, options.print_step)
+
+
+
 def _RunGTests(options, error_func):
   """Subcommand of RunTestsCommands which runs gtests."""
   ProcessGTestOptions(options)
@@ -553,6 +592,26 @@ def _RunMonkeyTests(options, error_func):
   return exit_code
 
 
+def _RunPerfTests(options, error_func):
+  """Subcommand of RunTestsCommands which runs perf tests."""
+  perf_options = ProcessPerfTestOptions(options, error_func)
+    # Just print the results from a single previously executed step.
+  if perf_options.print_step:
+    return perf_test_runner.PrintTestOutput(perf_options.print_step)
+
+  runner_factory, tests = perf_setup.Setup(perf_options)
+
+  results, exit_code = test_dispatcher.RunTests(
+      tests, runner_factory, False, None, shard=True, test_timeout=None)
+
+  report_results.LogFull(
+      results=results,
+      test_type='Perf',
+      test_package='Perf',
+      build_type=options.build_type)
+
+  return exit_code
+
 
 def RunTestsCommand(command, options, args, option_parser):
   """Checks test type and dispatches to the appropriate function.
@@ -587,6 +646,8 @@ def RunTestsCommand(command, options, args, option_parser):
     return _RunUIAutomatorTests(options, option_parser.error)
   elif command == 'monkey':
     return _RunMonkeyTests(options, option_parser.error)
+  elif command == 'perf':
+    return _RunPerfTests(options, option_parser.error)
   else:
     raise Exception('Unknown test type.')
 
@@ -645,6 +706,8 @@ VALID_COMMANDS = {
         AddUIAutomatorTestOptions, RunTestsCommand),
     'monkey': CommandFunctionTuple(
         AddMonkeyTestOptions, RunTestsCommand),
+    'perf': CommandFunctionTuple(
+        AddPerfTestOptions, RunTestsCommand),
     'help': CommandFunctionTuple(lambda option_parser: None, HelpCommand)
     }
 
