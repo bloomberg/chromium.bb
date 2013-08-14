@@ -362,12 +362,16 @@ void TileManager::ManageTiles() {
                          &tiles_that_need_to_be_rasterized);
   CleanUpUnusedImageDecodeTasks();
 
+  // Finally, schedule rasterizer tasks.
+  ScheduleTasks(tiles_that_need_to_be_rasterized);
+
   TRACE_EVENT_INSTANT1(
       "cc", "DidManage", TRACE_EVENT_SCOPE_THREAD,
       "state", TracedValue::FromValue(BasicStateAsValue().release()));
 
-  // Finally, schedule rasterizer tasks.
-  ScheduleTasks(tiles_that_need_to_be_rasterized);
+  TRACE_COUNTER_ID1("cc", "unused_memory_bytes", this,
+                    resource_pool_->total_memory_usage_bytes() -
+                    resource_pool_->acquired_memory_usage_bytes());
 }
 
 bool TileManager::UpdateVisibleTiles() {
@@ -390,9 +394,11 @@ bool TileManager::UpdateVisibleTiles() {
 void TileManager::GetMemoryStats(
     size_t* memory_required_bytes,
     size_t* memory_nice_to_have_bytes,
+    size_t* memory_allocated_bytes,
     size_t* memory_used_bytes) const {
   *memory_required_bytes = 0;
   *memory_nice_to_have_bytes = 0;
+  *memory_allocated_bytes = resource_pool_->total_memory_usage_bytes();
   *memory_used_bytes = resource_pool_->acquired_memory_usage_bytes();
   for (TileMap::const_iterator it = tiles_.begin();
        it != tiles_.end();
@@ -439,13 +445,16 @@ scoped_ptr<base::Value> TileManager::GetMemoryRequirementsAsValue() const {
 
   size_t memory_required_bytes;
   size_t memory_nice_to_have_bytes;
+  size_t memory_allocated_bytes;
   size_t memory_used_bytes;
   GetMemoryStats(&memory_required_bytes,
                  &memory_nice_to_have_bytes,
+                 &memory_allocated_bytes,
                  &memory_used_bytes);
   requirements->SetInteger("memory_required_bytes", memory_required_bytes);
   requirements->SetInteger("memory_nice_to_have_bytes",
                            memory_nice_to_have_bytes);
+  requirements->SetInteger("memory_allocated_bytes", memory_allocated_bytes);
   requirements->SetInteger("memory_used_bytes", memory_used_bytes);
   return requirements.PassAs<base::Value>();
 }

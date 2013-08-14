@@ -327,9 +327,11 @@ void LayerTreeHostImpl::ManageTiles() {
 
   size_t memory_required_bytes;
   size_t memory_nice_to_have_bytes;
+  size_t memory_allocated_bytes;
   size_t memory_used_bytes;
   tile_manager_->GetMemoryStats(&memory_required_bytes,
                                 &memory_nice_to_have_bytes,
+                                &memory_allocated_bytes,
                                 &memory_used_bytes);
   SendManagedMemoryStats(memory_required_bytes,
                          memory_nice_to_have_bytes,

@@ -44,6 +44,9 @@ class CC_EXPORT ResourcePool {
                             size_t max_unused_memory_usage_bytes,
                             size_t num_resources_limit);
 
+  size_t total_memory_usage_bytes() const {
+    return memory_usage_bytes_;
+  }
   size_t acquired_memory_usage_bytes() const {
     return memory_usage_bytes_ - unused_memory_usage_bytes_;
   }

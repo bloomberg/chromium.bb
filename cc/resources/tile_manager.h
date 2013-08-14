@@ -69,6 +69,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   scoped_ptr<base::Value> AllTilesAsValue() const;
   void GetMemoryStats(size_t* memory_required_bytes,
                       size_t* memory_nice_to_have_bytes,
+                      size_t* memory_allocated_bytes,
                       size_t* memory_used_bytes) const;
 
   const MemoryHistory::Entry& memory_stats_from_last_assign() const {
