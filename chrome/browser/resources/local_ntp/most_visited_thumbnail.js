@@ -11,7 +11,11 @@ window.addEventListener('DOMContentLoaded', function() {
   'use strict';
 
   fillMostVisited(document.location, function(params, data) {
+    function logEvent(eventName) {
+      chrome.embeddedSearch.newTabPage.logEvent(eventName);
+    }
     function showDomainElement() {
+      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ERROR);
       var link = createMostVisitedLink(params, data.url, data.title);
       var domain = document.createElement('div');
       domain.textContent = data.domain;
@@ -31,6 +35,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
       image.onerror = showDomainElement;
       image.src = data.thumbnailUrl;
+      logEvent(NTP_LOGGING_EVENT_TYPE.NTP_THUMBNAIL_ATTEMPT);
     } else {
       showDomainElement();
     }

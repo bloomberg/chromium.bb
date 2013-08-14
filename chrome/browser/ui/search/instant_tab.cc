@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ntp/ntp_user_data_logger.h"
+#include "chrome/common/ntp_logging_events.h"
 #include "content/public/browser/web_contents.h"
 
 InstantTab::InstantTab(InstantPage::Delegate* delegate,
@@ -21,10 +22,11 @@ void InstantTab::Init(content::WebContents* contents) {
 }
 
 // static
-void InstantTab::CountMouseover(content::WebContents* contents) {
+void InstantTab::LogEvent(content::WebContents* contents,
+                          NTPLoggingEventType event) {
   NTPUserDataLogger* data = NTPUserDataLogger::FromWebContents(contents);
   if (data)
-    data->increment_number_of_mouseovers();
+    data->LogEvent(event);
 }
 
 // static

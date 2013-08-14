@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/search/instant_ipc_sender.h"
 #include "chrome/browser/ui/search/search_model_observer.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_transition_types.h"
@@ -195,7 +196,7 @@ class InstantPage : public content::WebContentsObserver,
                            WindowOpenDisposition disposition,
                            bool is_search_type);
   void OnSearchBoxPaste(int page_id, const string16& text);
-  void OnCountMouseover(int page_id);
+  void OnLogEvent(int page_id, NTPLoggingEventType event);
   void OnDeleteMostVisitedItem(int page_id, const GURL& url);
   void OnUndoMostVisitedDeletion(int page_id, const GURL& url);
   void OnUndoAllMostVisitedDeletions(int page_id);

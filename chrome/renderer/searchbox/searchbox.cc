@@ -158,9 +158,9 @@ SearchBox::SearchBox(content::RenderView* render_view)
 SearchBox::~SearchBox() {
 }
 
-void SearchBox::CountMouseover() {
-  render_view()->Send(new ChromeViewHostMsg_CountMouseover(
-      render_view()->GetRoutingID(), render_view()->GetPageId()));
+void SearchBox::LogEvent(NTPLoggingEventType event) {
+  render_view()->Send(new ChromeViewHostMsg_LogEvent(
+      render_view()->GetRoutingID(), render_view()->GetPageId(), event));
 }
 
 void SearchBox::DeleteMostVisitedItem(

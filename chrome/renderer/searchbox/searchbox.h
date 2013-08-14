@@ -11,6 +11,7 @@
 #include "base/strings/string16.h"
 #include "chrome/common/instant_restricted_id_cache.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -28,8 +29,8 @@ class SearchBox : public content::RenderViewObserver,
   explicit SearchBox(content::RenderView* render_view);
   virtual ~SearchBox();
 
-  // Sends ChromeViewHostMsg_CountMouseover to the browser.
-  void CountMouseover();
+  // Sends ChromeViewHostMsg_LogEvent to the browser.
+  void LogEvent(NTPLoggingEventType event);
 
   // Sends ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem to the browser.
   void DeleteMostVisitedItem(InstantRestrictedID most_visited_item_id);

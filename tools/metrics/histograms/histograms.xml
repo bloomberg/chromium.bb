@@ -9443,6 +9443,17 @@ other types of suffix sets.
   <summary>Time spent on the Suggested Sites NTP pane, in seconds.</summary>
 </histogram>
 
+<histogram name="NewTabPage.ThumbnailErrorRate">
+  <summary>
+    The percentage of errors per attempts to load image thumbnails on the New
+    Tab Page. When an error occurs, a grey tile is shown instead of a thumbnail
+    image. We measure the rate instead of the number of errors because multiple
+    attempts are made to load images at different times during the NTP's
+    lifetime. Each NTP session's error rate is logged after the user navigates
+    to a new URL from that NTP.
+  </summary>
+</histogram>
+
 <histogram name="NewTabPage.VisibleScreenshots">
   <summary>
     The number of screenshots that were cached for the visible suggestions on

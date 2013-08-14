@@ -9,6 +9,19 @@
 
 <include src="instant_iframe_validation.js">
 
+/**
+ * Enum for the different types of events that are logged from the NTP.
+ * @enum {number}
+ * @const
+ */
+var NTP_LOGGING_EVENT_TYPE = {
+  // The user moused over an NTP tile or title.
+  NTP_MOUSEOVER: 0,
+  // The page attempted to load a thumbnail image.
+  NTP_THUMBNAIL_ATTEMPT: 1,
+  // There was an error in loading a thumbnail image.
+  NTP_THUMBNAIL_ERROR: 2
+};
 
 /**
  * Parses query parameters from Location.
@@ -62,7 +75,7 @@ function createMostVisitedLink(params, href, title, text) {
     link.textContent = text;
   link.addEventListener('mouseover', function() {
     var ntpApiHandle = chrome.embeddedSearch.newTabPage;
-    ntpApiHandle.logEvent('NewTabPage.NumberOfMouseOvers');
+    ntpApiHandle.logEvent(NTP_LOGGING_EVENT_TYPE.NTP_MOUSEOVER);
   });
   return link;
 }

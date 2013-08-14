@@ -12,6 +12,7 @@
 #include "chrome/common/autocomplete_match_type.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
 #include "content/public/renderer/render_view.h"
@@ -808,17 +809,16 @@ void SearchBoxExtensionWrapper::LogEvent(
       GURL(chrome::kChromeSearchMostVisitedUrl));
   if (!render_view) return;
 
-  if (args.Length() < 1 || !args[0]->IsString())
+  if (args.Length() < 1 || !args[0]->IsNumber())
     return;
 
   DVLOG(1) << render_view << " LogEvent";
 
-  std::string histogram_name = *v8::String::Utf8Value(args[0]->ToString());
-
-  if (histogram_name == "NewTabPage.NumberOfMouseOvers")
-    SearchBox::Get(render_view)->CountMouseover();
-  else
-    DVLOG(1) << render_view << " Unsupported histogram name";
+  if (args[0]->Uint32Value() < NTP_NUM_EVENT_TYPES) {
+    NTPLoggingEventType event =
+        static_cast<NTPLoggingEventType>(args[0]->Uint32Value());
+    SearchBox::Get(render_view)->LogEvent(event);
+  }
 }
 
 // static

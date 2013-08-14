@@ -149,7 +149,7 @@ bool InstantPage::OnMessageReceived(const IPC::Message& message) {
                         OnSearchBoxNavigate);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PasteAndOpenDropdown,
                         OnSearchBoxPaste);
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CountMouseover, OnCountMouseover);
+    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_LogEvent, OnLogEvent);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem,
                         OnDeleteMostVisitedItem);
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion,
@@ -261,11 +261,11 @@ void InstantPage::OnSearchBoxPaste(int page_id, const string16& text) {
   delegate_->PasteIntoOmnibox(contents(), text);
 }
 
-void InstantPage::OnCountMouseover(int page_id) {
+void InstantPage::OnLogEvent(int page_id, NTPLoggingEventType event) {
   if (!contents()->IsActiveEntry(page_id))
     return;
 
-  InstantTab::CountMouseover(contents());
+  InstantTab::LogEvent(contents(), event);
 }
 
 void InstantPage::OnDeleteMostVisitedItem(int page_id, const GURL& url) {

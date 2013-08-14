@@ -21,6 +21,7 @@
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_pattern.h"
 #include "chrome/common/instant_types.h"
+#include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "chrome/common/search_provider.h"
 #include "chrome/common/translate/language_detection_details.h"
@@ -228,6 +229,9 @@ IPC_STRUCT_TRAITS_BEGIN(LanguageDetectionDetails)
   IPC_STRUCT_TRAITS_MEMBER(adopted_language)
   IPC_STRUCT_TRAITS_MEMBER(contents)
 IPC_STRUCT_TRAITS_END()
+
+IPC_ENUM_TRAITS_MAX_VALUE(NTPLoggingEventType,
+                          NTP_NUM_EVENT_TYPES)
 
 //-----------------------------------------------------------------------------
 // RenderView messages
@@ -663,9 +667,10 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_FPS,
                      int /* routing id */,
                      float /* frames per second */)
 
-// Counts a mouseover event on an InstantExtended most visited tile.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CountMouseover,
-                    int /* page_id */)
+// Logs events from InstantExtended New Tab Pages.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_LogEvent,
+                    int /* page_id */,
+                    NTPLoggingEventType /* event */)
 
 // Tells InstantExtended to set the omnibox focus state.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_FocusOmnibox,
