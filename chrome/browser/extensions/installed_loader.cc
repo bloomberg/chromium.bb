@@ -50,6 +50,7 @@ enum ManifestReloadReason {
   NOT_NEEDED = 0,  // Reload not needed.
   UNPACKED_DIR,  // Unpacked directory.
   NEEDS_RELOCALIZATION,  // The locale has changed since we read this extension.
+  CORRUPT_PREFERENCES,  // The manifest in the preferences is corrupt.
   NUM_MANIFEST_RELOAD_REASONS
 };
 
@@ -73,6 +74,21 @@ enum ExternalItemState {
   EXTERNAL_ITEM_MAX_ITEMS = 6
 };
 
+bool IsManifestCorrupt(const DictionaryValue* manifest) {
+  if (!manifest) return false;
+
+  // Because of bug #272524 sometimes manifests got mangled in the preferences
+  // file, one particularly bad case resulting in having both a background page
+  // and background scripts values. In those situations we want to reload the
+  // manifest from the extension to fix this.
+  const Value* background_page;
+  const Value* background_scripts;
+  return manifest->Get(extension_manifest_keys::kBackgroundPage,
+                       &background_page) &&
+         manifest->Get(extension_manifest_keys::kBackgroundScripts,
+                       &background_scripts);
+}
+
 ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
   // Always reload manifests of unpacked extensions, because they can change
   // on disk independent of the manifest in our prefs.
@@ -83,6 +99,10 @@ ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {
   if (extension_l10n_util::ShouldRelocalizeManifest(
           info.extension_manifest.get()))
     return NEEDS_RELOCALIZATION;
+
+  // Reload if the copy of the manifest in the preferences is corrupt.
+  if (IsManifestCorrupt(info.extension_manifest.get()))
+    return CORRUPT_PREFERENCES;
 
   return NOT_NEEDED;
 }
