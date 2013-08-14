@@ -40,13 +40,11 @@
 
 namespace WebCore {
 
-HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url, const ResourcePtr<RawResource>& resource)
+HTMLImportLoader::HTMLImportLoader(HTMLImport* parent, const KURL& url)
     : m_parent(parent)
     , m_state(StateLoading)
-    , m_resource(resource)
     , m_url(url)
 {
-    m_resource->addClient(this);
 }
 
 HTMLImportLoader::~HTMLImportLoader()
@@ -56,6 +54,12 @@ HTMLImportLoader::~HTMLImportLoader()
     ASSERT(!m_importedDocument);
     if (m_resource)
         m_resource->removeClient(this);
+}
+
+void HTMLImportLoader::setResource(const ResourcePtr<RawResource>& resource)
+{
+    m_resource = resource;
+    m_resource->addClient(this);
 }
 
 void HTMLImportLoader::responseReceived(Resource*, const ResourceResponse& response)

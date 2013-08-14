@@ -52,12 +52,13 @@ public:
         StateReady
     };
 
-    HTMLImportLoader(HTMLImport*, const KURL&, const ResourcePtr<RawResource>&);
+    HTMLImportLoader(HTMLImport*, const KURL&);
     virtual ~HTMLImportLoader();
 
     Document* importedDocument() const;
     const KURL& url() const { return m_url; }
 
+    void setResource(const ResourcePtr<RawResource>&);
     void addClient(HTMLImportLoaderClient*);
     void removeClient(HTMLImportLoaderClient*);
     void importDestroyed();
