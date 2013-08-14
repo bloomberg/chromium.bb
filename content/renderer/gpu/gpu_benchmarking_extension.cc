@@ -16,7 +16,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_view_impl.h"
-#include "content/renderer/rendering_benchmark.h"
 #include "content/renderer/skia_benchmarking_extension.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebImageCache.h"

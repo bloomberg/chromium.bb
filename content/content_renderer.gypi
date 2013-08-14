@@ -474,8 +474,6 @@
     'renderer/renderer_webcolorchooser_impl.h',
     'renderer/renderer_webkitplatformsupport_impl.cc',
     'renderer/renderer_webkitplatformsupport_impl.h',
-    'renderer/rendering_benchmark.cc',
-    'renderer/rendering_benchmark.h',
     'renderer/sad_plugin.cc',
     'renderer/sad_plugin.h',
     'renderer/savable_resources.cc',
