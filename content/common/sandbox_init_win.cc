@@ -15,8 +15,6 @@ namespace content {
 
 bool InitializeSandbox(sandbox::SandboxInterfaceInfo* sandbox_info) {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
   sandbox::BrokerServices* broker_services = sandbox_info->broker_services;
   if (broker_services) {
     if (!InitBrokerServices(broker_services))
