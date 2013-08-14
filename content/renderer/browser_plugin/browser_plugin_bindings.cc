@@ -548,7 +548,6 @@ class BrowserPluginPropertyBindingName
                            NPVariant* result) OVERRIDE {
     std::string name = bindings->instance()->GetNameAttribute();
     return StringToNPVariant(name, result);
-    return true;
   }
   virtual bool SetProperty(BrowserPluginBindings* bindings,
                            NPObject* np_obj,
