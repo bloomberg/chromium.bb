@@ -6,6 +6,7 @@
 #define ASH_ACCELERATORS_EXIT_WARNING_HANDLER_H_
 
 #include "ash/ash_export.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/timer/timer.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -71,7 +72,7 @@ class ASH_EXPORT ExitWarningHandler {
   void Hide();
 
   State state_;
-  views::Widget* widget_; // owned by |this|.
+  scoped_ptr<views::Widget> widget_;
   base::OneShotTimer<ExitWarningHandler> timer_;
 
   // Flag to suppress starting the timer for testing. For test we call

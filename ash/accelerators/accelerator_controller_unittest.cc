@@ -35,8 +35,8 @@ namespace {
 
 class TestTarget : public ui::AcceleratorTarget {
  public:
-  TestTarget() : accelerator_pressed_count_(0) {};
-  virtual ~TestTarget() {};
+  TestTarget() : accelerator_pressed_count_(0) {}
+  virtual ~TestTarget() {}
 
   int accelerator_pressed_count() const {
     return accelerator_pressed_count_;
@@ -298,8 +298,8 @@ bool TestTarget::CanHandleAccelerators() const {
 
 class AcceleratorControllerTest : public test::AshTestBase {
  public:
-  AcceleratorControllerTest() {};
-  virtual ~AcceleratorControllerTest() {};
+  AcceleratorControllerTest() {}
+  virtual ~AcceleratorControllerTest() {}
 
  protected:
   void EnableInternalDisplay() {
@@ -360,7 +360,7 @@ TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestDoublePress) {
   EXPECT_FALSE(ProcessWithContext(release));
   EXPECT_FALSE(is_idle(ewh));
   EXPECT_TRUE(is_ui_shown(ewh));
-  EXPECT_TRUE(ProcessWithContext(press)); // second press before timer.
+  EXPECT_TRUE(ProcessWithContext(press));  // second press before timer.
   EXPECT_FALSE(ProcessWithContext(release));
   SimulateTimerExpired(ewh);
   EXPECT_TRUE(is_exiting(ewh));
@@ -386,6 +386,20 @@ TEST_F(AcceleratorControllerTest, ExitWarningHandlerTestSinglePress) {
   EXPECT_TRUE(is_idle(ewh));
   EXPECT_FALSE(is_ui_shown(ewh));
   Reset(ewh);
+}
+
+// Shutdown ash with exit warning bubble open should not crash.
+TEST_F(AcceleratorControllerTest, LingeringExitWarningBubble) {
+  ExitWarningHandler* ewh = GetController()->GetExitWarningHandlerForTest();
+  ASSERT_TRUE(!!ewh);
+  StubForTest(ewh);
+
+  // Trigger once to show the bubble.
+  ewh->HandleAccelerator();
+  EXPECT_FALSE(is_idle(ewh));
+  EXPECT_TRUE(is_ui_shown(ewh));
+
+  // Exit ash and there should be no crash
 }
 #endif  // !defined(OS_WIN)
 
@@ -908,8 +922,8 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
   // ToggleDesktopFullScreen (not implemented yet on Linux)
   EXPECT_TRUE(ProcessWithContext(
       ui::Accelerator(ui::VKEY_F11, ui::EF_CONTROL_DOWN)));
-#endif //  OS_LINUX
-#endif //  !NDEBUG
+#endif  // OS_LINUX
+#endif  // !NDEBUG
 
 #if !defined(OS_WIN)
   // Exit
@@ -1234,7 +1248,7 @@ TEST_F(AcceleratorControllerTest, DisallowedAtModalWindow) {
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
     EXPECT_TRUE(ProcessWithContext(
         ui::Accelerator(ui::VKEY_MEDIA_LAUNCH_APP1,
- ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
+        ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN)));
     EXPECT_EQ(2, delegate->handle_take_screenshot_count());
   }
   // Brightness
