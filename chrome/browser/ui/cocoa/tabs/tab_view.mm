@@ -323,9 +323,9 @@ const CGFloat kRapidCloseDist = 2.5;
 
   ThemeService* themeProvider =
       static_cast<ThemeService*>([[self window] themeProvider]);
-  NSPoint phase = [[self window]
-      themePatternPhaseForAlignment: THEME_PATTERN_ALIGN_WITH_TAB_STRIP];
-  [context cr_setPatternPhase:phase forView:self];
+  NSPoint position = [[self window]
+      themeImagePositionForAlignment: THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
+  [context cr_setPatternPhase:position forView:self];
 
   CGImageRef mask([self tabClippingMask]);
   CGRect maskBounds = CGRectMake(0, 0, maskCacheWidth_, kMaskHeight);

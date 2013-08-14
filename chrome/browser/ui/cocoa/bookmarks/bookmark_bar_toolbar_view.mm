@@ -46,9 +46,10 @@ const CGFloat kBorderRadius = 3.0;
       [controller_ isAnimatingFromState:BookmarkBar::DETACHED]) {
     [self drawAsDetachedBubble];
   } else {
-    NSPoint phase = [[self window]
-        themePatternPhaseForAlignment:THEME_PATTERN_ALIGN_WITH_TAB_STRIP];
-    [[NSGraphicsContext currentContext] cr_setPatternPhase:phase forView:self];
+    NSPoint position = [[self window]
+        themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
+    [[NSGraphicsContext currentContext] cr_setPatternPhase:position
+                                                   forView:self];
     [self drawBackgroundWithOpaque:YES];
   }
 }
@@ -77,9 +78,9 @@ const CGFloat kBorderRadius = 3.0;
     CGContextRef cgContext = static_cast<CGContextRef>([context graphicsPort]);
     CGContextSetAlpha(cgContext, 1 - morph);
     CGContextBeginTransparencyLayer(cgContext, NULL);
-    NSPoint phase = [[self window]
-        themePatternPhaseForAlignment:THEME_PATTERN_ALIGN_WITH_TAB_STRIP];
-    [context cr_setPatternPhase:phase forView:self];
+    NSPoint position = [[self window]
+        themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
+    [context cr_setPatternPhase:position forView:self];
     [self drawBackgroundWithOpaque:YES];
     CGContextEndTransparencyLayer(cgContext);
   }

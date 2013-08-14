@@ -145,39 +145,57 @@ using content::NativeWebKeyboardEvent;
   return [newTitle copy];
 }
 
-// Our patterns want to be drawn from the upper left hand corner of the view.
-// Cocoa wants to do it from the lower left of the window.
+// The titlebar/tabstrip header on the mac is slightly smaller than on Windows.
+// There is also no window frame to the left and right of the web contents on
+// mac.
+// To keep:
+// - the window background pattern (IDR_THEME_FRAME.*) lined up vertically with
+// the tab and toolbar patterns
+// - the toolbar pattern lined up horizontally with the NTP background.
+// we have to shift the pattern slightly, rather than drawing from the top left
+// corner of the frame / tabstrip. The offsets below were empirically determined
+// in order to line these patterns up.
 //
-// Rephase our pattern to fit this view. Some other views (Tabs, Toolbar etc.)
-// will phase their patterns relative to this so all the views look right.
-//
-// To line up the background pattern with the pattern in the browser window
-// the background pattern for the tabs needs to be moved left by 5 pixels.
+// This will make the themes look slightly different than in Windows/Linux
+// because of the differing heights between window top and tab top, but this has
+// been approved by UI.
 const CGFloat kPatternHorizontalOffset = -5;
-// To match Windows and CrOS, have to offset vertically by 2 pixels.
 // Without tab strip, offset an extra pixel (determined by experimentation).
 const CGFloat kPatternVerticalOffset = 2;
 const CGFloat kPatternVerticalOffsetNoTabStrip = 3;
 
-
-+ (NSPoint)themePatternPhaseFor:(NSView*)windowView
-                   withTabStrip:(NSView*)tabStripView {
-  // When we have a tab strip, line up with the top of the tab, otherwise,
-  // line up with the top of the window.
-  if (!tabStripView)
++ (NSPoint)themeImagePositionFor:(NSView*)windowView
+                    withTabStrip:(NSView*)tabStripView
+                       alignment:(ThemeImageAlignment)alignment {
+  if (!tabStripView) {
     return NSMakePoint(kPatternHorizontalOffset,
-                       NSHeight([windowView bounds])
-                       + kPatternVerticalOffsetNoTabStrip);
+                       NSHeight([windowView bounds]) +
+                           kPatternVerticalOffsetNoTabStrip);
+  }
 
-  NSRect tabStripViewWindowBounds = [tabStripView bounds];
-  tabStripViewWindowBounds =
-      [tabStripView convertRect:tabStripViewWindowBounds
-                         toView:windowView];
-  return NSMakePoint(NSMinX(tabStripViewWindowBounds)
-                         + kPatternHorizontalOffset,
-                     NSMinY(tabStripViewWindowBounds)
-                         + [TabStripController defaultTabHeight]
-                         + kPatternVerticalOffset);
+  NSPoint position =
+      [BrowserWindowUtils themeImagePositionInTabStripCoords:tabStripView
+                                                   alignment:alignment];
+  return [tabStripView convertPoint:position toView:windowView];
+}
+
++ (NSPoint)themeImagePositionInTabStripCoords:(NSView*)tabStripView
+                                    alignment:(ThemeImageAlignment)alignment {
+  DCHECK(tabStripView);
+
+  if (alignment == THEME_IMAGE_ALIGN_WITH_TAB_STRIP) {
+    // The theme image is lined up with the top of the tab which is below the
+    // top of the tab strip.
+    return NSMakePoint(kPatternHorizontalOffset,
+                       [TabStripController defaultTabHeight] +
+                           kPatternVerticalOffset);
+  }
+  // The theme image is lined up with the top of the tab strip (as opposed to
+  // the top of the tab above). This is the same as lining up with the top of
+  // the window's root view when not in presentation mode.
+  return NSMakePoint(kPatternHorizontalOffset,
+                     NSHeight([tabStripView bounds]) +
+                         kPatternVerticalOffsetNoTabStrip);
 }
 
 + (void)activateWindowForController:(NSWindowController*)controller {

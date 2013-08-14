@@ -70,10 +70,10 @@ CGFloat kCurveSize = 8;
     [path addClip];
 
     // Set the pattern phase
-    NSPoint phase = [[self window]
-        themePatternPhaseForAlignment:THEME_PATTERN_ALIGN_WITH_TAB_STRIP];
+    NSPoint position = [[self window]
+        themeImagePositionForAlignment:THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
+    [context cr_setPatternPhase:position forView:self];
 
-    [context cr_setPatternPhase:phase forView:self];
     [super drawBackgroundWithOpaque:YES];
   }
 

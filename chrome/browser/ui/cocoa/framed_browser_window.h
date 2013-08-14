@@ -57,7 +57,6 @@ const NSInteger kFramedWindowButtonsWithoutTabStripOffsetFromLeft = 8;
 + (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
                            forView:(NSView*)view
                             bounds:(NSRect)bounds
-                            offset:(NSPoint)offset
               forceBlackBackground:(BOOL)forceBlackBackground;
 
 // Gets the color to draw title text.

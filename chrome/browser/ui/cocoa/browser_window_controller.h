@@ -311,9 +311,13 @@ class WebContents;
 // Gets the window style.
 - (ThemedWindowStyle)themedWindowStyle;
 
-// Returns the pattern phase for |alignment|. If the window does not have a tab
-// strip, the phase for THEME_PATTERN_ALIGN_WITH_FRAME is always returned.
-- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment;
+// Returns the position in the coordinates of the root view
+// ([[self contentView] superview]) that the top left of a theme image with
+// |alignment| should be painted at. If the window does not have a tab strip,
+// the offset for THEME_IMAGE_ALIGN_WITH_FRAME is always returned. The result of
+// this method can be used in conjunction with
+// [NSGraphicsContext cr_setPatternPhase:] to set the offset of pattern colors.
+- (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment;
 
 // Return the point to which a bubble window's arrow should point, in window
 // coordinates.

@@ -24,11 +24,11 @@
   return [delegate themedWindowStyle];
 }
 
-- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment {
+- (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment {
   id delegate = [self delegate];
-  if (![delegate respondsToSelector:@selector(themePatternPhaseForAlignment:)])
+  if (![delegate respondsToSelector:@selector(themeImagePositionForAlignment:)])
     return NSZeroPoint;
-  return [delegate themePatternPhaseForAlignment:alignment];
+  return [delegate themeImagePositionForAlignment:alignment];
 }
 
 @end

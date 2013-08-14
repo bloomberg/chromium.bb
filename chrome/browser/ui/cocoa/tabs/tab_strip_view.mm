@@ -56,9 +56,9 @@
   if (NSMinY(dirtyRect) < backgroundHeight) {
     gfx::ScopedNSGraphicsContextSaveGState scopedGState;
     NSGraphicsContext *context = [NSGraphicsContext currentContext];
-    NSPoint phase = [[self window] themePatternPhaseForAlignment:
-        THEME_PATTERN_ALIGN_WITH_TAB_STRIP];
-    [context cr_setPatternPhase:phase forView:self];
+    NSPoint position = [[self window] themeImagePositionForAlignment:
+        THEME_IMAGE_ALIGN_WITH_TAB_STRIP];
+    [context cr_setPatternPhase:position forView:self];
 
     // Themes don't have an inactive image so only look for one if there's no
     // theme.

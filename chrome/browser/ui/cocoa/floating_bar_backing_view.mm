@@ -19,11 +19,9 @@
     [[NSColor windowBackgroundColor] set];
   NSRectFill(rect);
 
-  // TODO(rohitrao): Don't assume -22 here.
   [FramedBrowserWindow drawWindowThemeInDirtyRect:rect
                                           forView:self
                                            bounds:[self bounds]
-                                           offset:NSMakePoint(0, -22)
                              forceBlackBackground:YES];
 
 }

@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "chrome/browser/ui/cocoa/themed_window.h"
+
 class Browser;
 
 namespace content {
@@ -37,8 +39,19 @@ struct NativeWebKeyboardEvent;
                         withNewTitle:(NSString*)newTitle
                            forWindow:(NSWindow*)window;
 
-+ (NSPoint)themePatternPhaseFor:(NSView*)windowView
-                   withTabStrip:(NSView*)tabStripView;
+// Returns the position in the coordinates of |windowView| that the top left of
+// a theme image should be painted at. See
+// [BrowserWindowController themeImagePositionForAlignment:] for more details.
++ (NSPoint)themeImagePositionFor:(NSView*)windowView
+                    withTabStrip:(NSView*)tabStripView
+                       alignment:(ThemeImageAlignment)alignment;
+
+// Returns the position in the coordinates of |tabStripView| that the top left
+// of a theme image should be painted at. This method exists so that the
+// position can be queried by the new tab button before the tab strip is layed
+// out.
++ (NSPoint)themeImagePositionInTabStripCoords:(NSView*)tabStripView
+                                    alignment:(ThemeImageAlignment)alignment;
 
 + (void)activateWindowForController:(NSWindowController*)controller;
 @end

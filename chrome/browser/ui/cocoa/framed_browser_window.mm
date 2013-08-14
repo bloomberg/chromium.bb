@@ -8,6 +8,7 @@
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 #include "chrome/browser/profiles/profile_info_util.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#import "chrome/browser/ui/cocoa/browser_window_utils.h"
 #import "chrome/browser/ui/cocoa/custom_frame_view.h"
 #import "chrome/browser/ui/cocoa/nsview_additions.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "grit/theme_resources.h"
+#include "ui/base/cocoa/nsgraphics_context_additions.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
@@ -42,7 +44,6 @@ enum {
 namespace {
 
 const CGFloat kBrowserFrameViewPaintHeight = 60.0;
-const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 3 };
 
 // Size of the gradient. Empirically determined so that the gradient looks
 // like what the heuristic does when there are just a few tabs.
@@ -361,7 +362,6 @@ const CGFloat kWindowGradientHeight = 24.0;
       drawWindowThemeInDirtyRect:rect
                          forView:view
                           bounds:windowRect
-                          offset:NSZeroPoint
             forceBlackBackground:NO];
 
   // If the window needs a title and we painted over the title as drawn by the
@@ -394,7 +394,6 @@ const CGFloat kWindowGradientHeight = 24.0;
 + (BOOL)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
                            forView:(NSView*)view
                             bounds:(NSRect)bounds
-                            offset:(NSPoint)offset
               forceBlackBackground:(BOOL)forceBlackBackground {
   ui::ThemeProvider* themeProvider = [[view window] themeProvider];
   if (!themeProvider)
@@ -435,31 +434,6 @@ const CGFloat kWindowGradientHeight = 24.0;
 
   BOOL themed = NO;
   if (themeImageColor) {
-    // The titlebar/tabstrip header on the mac is slightly smaller than on
-    // Windows.  To keep the window background lined up with the tab and toolbar
-    // patterns, we have to shift the pattern slightly, rather than simply
-    // drawing it from the top left corner.  The offset below was empirically
-    // determined in order to line these patterns up.
-    //
-    // This will make the themes look slightly different than in Windows/Linux
-    // because of the differing heights between window top and tab top, but this
-    // has been approved by UI.
-    NSView* frameView = [[[view window] contentView] superview];
-    NSPoint topLeft = NSMakePoint(NSMinX(bounds), NSMaxY(bounds));
-    NSPoint topLeftInFrameCoordinates =
-        [view convertPoint:topLeft toView:frameView];
-
-    NSPoint phase = kBrowserFrameViewPatternPhaseOffset;
-    phase.x += (offset.x + topLeftInFrameCoordinates.x);
-    phase.y += (offset.y + topLeftInFrameCoordinates.y);
-
-    // Align the phase to physical pixels so resizing the window under HiDPI
-    // doesn't cause wiggling of the theme.
-    phase = [frameView convertPointToBase:phase];
-    phase.x = floor(phase.x);
-    phase.y = floor(phase.y);
-    phase = [frameView convertPointFromBase:phase];
-
     // Default to replacing any existing pixels with the theme image, but if
     // asked paint black first and blend the theme with black.
     NSCompositingOperation operation = NSCompositeCopy;
@@ -469,7 +443,19 @@ const CGFloat kWindowGradientHeight = 24.0;
       operation = NSCompositeSourceOver;
     }
 
-    [[NSGraphicsContext currentContext] setPatternPhase:phase];
+    NSPoint position = [[view window] themeImagePositionForAlignment:
+        THEME_IMAGE_ALIGN_WITH_FRAME];
+
+    // Align the phase to physical pixels so resizing the window under HiDPI
+    // doesn't cause wiggling of the theme.
+    NSView* frameView = [[[view window] contentView] superview];
+    position = [frameView convertPointToBase:position];
+    position.x = floor(position.x);
+    position.y = floor(position.y);
+    position = [frameView convertPointFromBase:position];
+    [[NSGraphicsContext currentContext] cr_setPatternPhase:position
+                                                   forView:view];
+
     [themeImageColor set];
     NSRectFillUsingOperation(dirtyRect, operation);
     themed = YES;
@@ -492,11 +478,14 @@ const CGFloat kWindowGradientHeight = 24.0;
 
   if (overlayImage) {
     // Anchor to top-left and don't scale.
+    NSView* frameView = [[[view window] contentView] superview];
+    NSPoint position = [[view window] themeImagePositionForAlignment:
+        THEME_IMAGE_ALIGN_WITH_FRAME];
+    position = [view convertPoint:position fromView:frameView];
     NSSize overlaySize = [overlayImage size];
     NSRect imageFrame = NSMakeRect(0, 0, overlaySize.width, overlaySize.height);
-    [overlayImage drawAtPoint:NSMakePoint(offset.x,
-                                          NSHeight(bounds) + offset.y -
-                                               overlaySize.height)
+    [overlayImage drawAtPoint:NSMakePoint(position.x,
+                                          position.y - overlaySize.height)
                      fromRect:imageFrame
                     operation:NSCompositeSourceOver
                      fraction:1.0];

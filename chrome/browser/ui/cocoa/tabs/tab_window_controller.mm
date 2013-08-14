@@ -33,10 +33,10 @@
   return NO;
 }
 
-- (NSPoint)themePatternPhaseForAlignment:(ThemePatternAlignment)alignment {
+- (NSPoint)themeImagePositionForAlignment:(ThemeImageAlignment)alignment {
   if ([self parentWindow]) {
     return [[[self parentWindow] windowController]
-        themePatternPhaseForAlignment:alignment];
+        themeImagePositionForAlignment:alignment];
   }
   return NSZeroPoint;
 }
