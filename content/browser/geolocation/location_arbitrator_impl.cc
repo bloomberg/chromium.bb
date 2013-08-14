@@ -160,7 +160,7 @@ LocationProvider* GeolocationArbitratorImpl::NewNetworkLocationProvider(
 }
 
 LocationProvider* GeolocationArbitratorImpl::NewSystemLocationProvider() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   return NULL;
 #else
   return content::NewSystemLocationProvider();

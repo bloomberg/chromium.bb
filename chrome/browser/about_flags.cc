@@ -592,13 +592,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kNoPings)
   },
   {
-    "experimental-location-features",  // FLAGS:RECORD_UMA
-    IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_NAME,
-    IDS_FLAGS_EXPERIMENTAL_LOCATION_FEATURES_DESCRIPTION,
-    kOsMac,
-    SINGLE_VALUE_TYPE(switches::kExperimentalLocationFeatures)
-  },
-  {
     "tab-groups-context-menu",
     IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_NAME,
     IDS_FLAGS_TAB_GROUPS_CONTEXT_MENU_DESCRIPTION,

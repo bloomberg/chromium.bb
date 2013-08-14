@@ -531,11 +531,6 @@ const char kEnableWebMIDI[]                 = "enable-web-midi";
 // Enable WebRTC to open TCP server sockets.
 const char kEnableWebRtcTcpServerSocket[]   = "enable-webrtc-tcp-server-socket";
 
-// Enables experimental features for the geolocation API.
-// Current features:
-// - CoreLocation support for Mac OS X 10.6
-const char kExperimentalLocationFeatures[]  = "experimental-location-features";
-
 // Load NPAPI plugins from the specified directory.
 const char kExtraPluginDir[]                = "extra-plugin-dir";
 
