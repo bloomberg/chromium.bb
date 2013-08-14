@@ -35,10 +35,21 @@ function runGlobalTest(name, element) {
     elements[i].removeEventListener('touchmove', listener, false);
 }
 
+function runOverlayTest() {
+  if (window.testRunner)
+    testRunner.addWebPageOverlay();
+
+  logRects('webPageOverlay', true);
+
+   if (window.testRunner)
+    testRunner.removeWebPageOverlay();
+}
+
 function additionalTests() {
-	runGlobalTest('document', document);
-	runGlobalTest('html', document.documentElement);
-	runGlobalTest('body', document.body);
+  runGlobalTest('document', document);
+  runGlobalTest('html', document.documentElement);
+  runGlobalTest('body', document.body);
+  runOverlayTest();
 }
 </script>
 </body>
