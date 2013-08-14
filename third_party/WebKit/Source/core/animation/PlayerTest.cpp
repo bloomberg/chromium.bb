@@ -48,6 +48,7 @@ protected:
         document = Document::create();
         timeline = DocumentTimeline::create(document.get());
         player = Player::create(timeline.get(), 0);
+        timeline->setZeroTimeAsPerfTime(0);
     }
 
     bool updateTimeline(double time)

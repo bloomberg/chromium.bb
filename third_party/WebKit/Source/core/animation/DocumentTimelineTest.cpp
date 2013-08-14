@@ -51,6 +51,7 @@ protected:
         document = Document::create();
         element = Element::create(nullQName() , document.get());
         timeline = DocumentTimeline::create(document.get());
+        timeline->setZeroTimeAsPerfTime(0);
     }
 
     RefPtr<Document> document;
@@ -75,6 +76,24 @@ TEST_F(DocumentTimelineTest, EmptyKeyframeAnimation)
 
     timeline->serviceAnimations(100);
     EXPECT_FLOAT_EQ(100, timeline->currentTime());
+}
+
+TEST_F(DocumentTimelineTest, ZeroTimeAsPerfTime)
+{
+    timeline = DocumentTimeline::create(document.get());
+
+    timeline->serviceAnimations(100);
+    EXPECT_TRUE(isNull(timeline->currentTime()));
+
+    timeline->serviceAnimations(200);
+    EXPECT_TRUE(isNull(timeline->currentTime()));
+
+    timeline->setZeroTimeAsPerfTime(300);
+    timeline->serviceAnimations(300);
+    EXPECT_EQ(0, timeline->currentTime());
+
+    timeline->serviceAnimations(400);
+    EXPECT_EQ(100, timeline->currentTime());
 }
 
 TEST_F(DocumentTimelineTest, PauseForTesting)

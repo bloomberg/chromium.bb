@@ -45,6 +45,7 @@ PassRefPtr<DocumentTimeline> DocumentTimeline::create(Document* document)
 DocumentTimeline::DocumentTimeline(Document* document)
     : m_currentTime(nullValue())
     , m_document(document)
+    , m_zeroTimeAsPerfTime(nullValue())
 {
     ASSERT(document);
 }
@@ -62,7 +63,10 @@ PassRefPtr<Player> DocumentTimeline::play(TimedItem* child)
 
 void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
 {
-    m_currentTime = monotonicAnimationStartTime;
+    if (!isNull(m_zeroTimeAsPerfTime)) {
+        ASSERT((isNull(m_currentTime)) || (m_currentTime + m_zeroTimeAsPerfTime <= monotonicAnimationStartTime));
+        m_currentTime = monotonicAnimationStartTime - m_zeroTimeAsPerfTime;
+    }
 
     for (int i = m_players.size() - 1; i >= 0; --i) {
         if (!m_players[i]->update())
@@ -73,6 +77,12 @@ void DocumentTimeline::serviceAnimations(double monotonicAnimationStartTime)
         m_document->view()->scheduleAnimation();
 
     dispatchEvents();
+}
+
+void DocumentTimeline::setZeroTimeAsPerfTime(double zeroTime)
+{
+    ASSERT(isNull(m_zeroTimeAsPerfTime));
+    m_zeroTimeAsPerfTime = zeroTime;
 }
 
 void DocumentTimeline::pauseAnimationsForTesting(double pauseTime)

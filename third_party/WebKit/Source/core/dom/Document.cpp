@@ -1088,8 +1088,11 @@ void Document::setReadyState(ReadyState readyState)
             m_documentTiming.domLoading = monotonicallyIncreasingTime();
         break;
     case Interactive:
-        if (!m_documentTiming.domInteractive)
+        if (!m_documentTiming.domInteractive) {
             m_documentTiming.domInteractive = monotonicallyIncreasingTime();
+            if (RuntimeEnabledFeatures::webAnimationsEnabled())
+                m_timeline->setZeroTimeAsPerfTime(m_documentTiming.domInteractive);
+        }
         break;
     case Complete:
         if (!m_documentTiming.domComplete)
