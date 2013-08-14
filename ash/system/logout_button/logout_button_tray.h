@@ -24,9 +24,9 @@ class StatusAreaWidget;
 
 // Adds a logout button to the launcher's status area if enabled by the
 // kShowLogoutButtonInTray pref.
-class ASH_EXPORT LogoutButtonTray : public TrayBackgroundView,
-                                    public LogoutButtonObserver,
-                                    public views::ButtonListener {
+class LogoutButtonTray : public TrayBackgroundView,
+                         public LogoutButtonObserver,
+                         public views::ButtonListener {
  public:
   explicit LogoutButtonTray(StatusAreaWidget* status_area_widget);
   virtual ~LogoutButtonTray();
