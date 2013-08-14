@@ -127,4 +127,8 @@ void HttpBasicStream::Drain(HttpNetworkSession* session) {
   // |drainer| will delete itself.
 }
 
+void HttpBasicStream::SetPriority(RequestPriority priority) {
+  // TODO(akalin): Plumb this through to |connection_|.
+}
+
 }  // namespace net

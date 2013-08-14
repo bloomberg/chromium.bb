@@ -257,6 +257,10 @@ void QuicHttpStream::Drain(HttpNetworkSession* session) {
   delete this;
 }
 
+void QuicHttpStream::SetPriority(RequestPriority priority) {
+  // Nothing to do here (yet).
+}
+
 int QuicHttpStream::OnSendData() {
   // TODO(rch): Change QUIC IO to provide notifications to the streams.
   NOTREACHED();

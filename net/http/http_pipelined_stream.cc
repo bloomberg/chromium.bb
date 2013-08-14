@@ -121,6 +121,11 @@ void HttpPipelinedStream::Drain(HttpNetworkSession* session) {
   pipeline_->Drain(this, session);
 }
 
+void HttpPipelinedStream::SetPriority(RequestPriority priority) {
+  // TODO(akalin): Plumb this through to |pipeline_| and its
+  // underlying ClientSocketHandle.
+}
+
 const SSLConfig& HttpPipelinedStream::used_ssl_config() const {
   return pipeline_->used_ssl_config();
 }

@@ -59,6 +59,10 @@ class ProxyConnectRedirectHttpStream : public HttpStream {
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
   virtual bool IsSpdyHttpStream() const OVERRIDE;
   virtual void Drain(HttpNetworkSession* session) OVERRIDE;
+
+  // This function may be called.
+  virtual void SetPriority(RequestPriority priority) OVERRIDE;
+
   virtual UploadProgress GetUploadProgress() const OVERRIDE;
   virtual HttpStream* RenewStreamForAuth() OVERRIDE;
 

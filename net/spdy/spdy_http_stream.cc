@@ -524,4 +524,9 @@ void SpdyHttpStream::Drain(HttpNetworkSession* session) {
   delete this;
 }
 
+void SpdyHttpStream::SetPriority(RequestPriority priority) {
+  // TODO(akalin): Plumb this through to |stream_request_| and
+  // |stream_|.
+}
+
 }  // namespace net

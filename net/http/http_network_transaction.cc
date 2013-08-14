@@ -421,7 +421,8 @@ void HttpNetworkTransaction::SetPriority(RequestPriority priority) {
   priority_ = priority;
   if (stream_request_)
     stream_request_->SetPriority(priority);
-  // TODO(akalin): Plumb this through to |stream_| also.
+  if (stream_)
+    stream_->SetPriority(priority);
 }
 
 void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
