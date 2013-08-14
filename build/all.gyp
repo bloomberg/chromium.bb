@@ -342,6 +342,7 @@
             '../chrome/chrome.gyp:performance_browser_tests',
             '../chrome/chrome.gyp:performance_ui_tests',
             '../chrome/chrome.gyp:sync_performance_tests',
+            '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
           ],
         }, # target_name: chromium_builder_perf
         {
@@ -514,6 +515,7 @@
             '../sync/sync.gyp:sync_unit_tests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
+            '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../ui/ui.gyp:ui_unittests',
             '../url/url.gyp:url_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
@@ -545,6 +547,7 @@
             '../sync/sync.gyp:sync_unit_tests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
+            '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../ui/ui.gyp:ui_unittests',
             '../url/url.gyp:url_unittests',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
@@ -641,6 +644,7 @@
             '../sync/sync.gyp:sync_unit_tests',
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
+            '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
             '../ui/ui.gyp:ui_unittests',
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:url_unittests',
