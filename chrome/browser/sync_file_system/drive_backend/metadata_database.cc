@@ -160,23 +160,26 @@ void PutTrackerDeletionToBatch(int64 tracker_id, leveldb::WriteBatch* batch) {
   batch->Delete(kFileTrackerKeyPrefix + base::Int64ToString(tracker_id));
 }
 
-void PushChildTrackersToStack(
+template <typename OutputIterator>
+OutputIterator PushChildTrackersToContainer(
     const TrackersByParentAndTitle& trackers_by_parent,
     int64 parent_tracker_id,
-    std::stack<int64>* stack) {
+    OutputIterator target_itr) {
   TrackersByParentAndTitle::const_iterator found =
       trackers_by_parent.find(parent_tracker_id);
   if (found == trackers_by_parent.end())
-    return;
+    return target_itr;
 
   for (TrackersByTitle::const_iterator title_itr = found->second.begin();
        title_itr != found->second.end(); ++title_itr) {
     const TrackerSet& trackers = title_itr->second;
     for (TrackerSet::const_iterator tracker_itr = trackers.begin();
          tracker_itr != trackers.end(); ++tracker_itr) {
-      stack->push((*tracker_itr)->tracker_id());
+      *target_itr = (*tracker_itr)->tracker_id();
+      ++target_itr;
     }
   }
+  return target_itr;
 }
 
 std::string GetTrackerTitle(const FileTracker& tracker) {
@@ -975,15 +978,17 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
 
 void MetadataDatabase::RemoveAllDescendantTrackers(int64 root_tracker_id,
                                                    leveldb::WriteBatch* batch) {
-  std::stack<int64> pending_trackers;
-  PushChildTrackersToStack(trackers_by_parent_and_title_,
-                           root_tracker_id, &pending_trackers);
+  std::vector<int64> pending_trackers;
+  PushChildTrackersToContainer(trackers_by_parent_and_title_,
+                               root_tracker_id,
+                               std::back_inserter(pending_trackers));
 
   while (!pending_trackers.empty()) {
-    int64 tracker_id = pending_trackers.top();
-    pending_trackers.pop();
-    PushChildTrackersToStack(trackers_by_parent_and_title_,
-                             tracker_id, &pending_trackers);
+    int64 tracker_id = pending_trackers.back();
+    pending_trackers.pop_back();
+    PushChildTrackersToContainer(trackers_by_parent_and_title_,
+                                 tracker_id,
+                                 std::back_inserter(pending_trackers));
     RemoveTrackerIgnoringSiblings(tracker_id, batch);
   }
 }
@@ -1077,12 +1082,13 @@ int64 MetadataDatabase::GetNextTrackerID(leveldb::WriteBatch* batch) {
 
 void MetadataDatabase::RecursiveMarkTrackerAsDirty(int64 root_tracker_id,
                                                    leveldb::WriteBatch* batch) {
-  std::stack<int64> stack;
-  stack.push(root_tracker_id);
+  std::vector<int64> stack;
+  stack.push_back(root_tracker_id);
   while (!stack.empty()) {
-    int64 tracker_id = stack.top();
-    stack.pop();
-    PushChildTrackersToStack(trackers_by_parent_and_title_, tracker_id, &stack);
+    int64 tracker_id = stack.back();
+    stack.pop_back();
+    PushChildTrackersToContainer(
+        trackers_by_parent_and_title_, tracker_id, std::back_inserter(stack));
 
     FileTracker* tracker = tracker_by_id_[tracker_id];
     if (!tracker->dirty()) {
