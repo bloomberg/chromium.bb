@@ -166,7 +166,7 @@ def RunInstrumentationSuite(options, test, flunk_on_failure=True,
     args.append('--flakiness-dashboard-server=%s' %
                 options.flakiness_server)
   if test.host_driven_root:
-    args.append('--python_test_root=%s' % test.host_driven_root)
+    args.append('--host-driven-root=%s' % test.host_driven_root)
   if test.annotation:
     args.extend(['-A', test.annotation])
   if test.exclude_annotation:

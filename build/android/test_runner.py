@@ -217,7 +217,8 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.add_option('-p', '--python_only', action='store_true',
                            default=False,
                            help='Run only the host-driven tests.')
-  option_parser.add_option('--python_test_root',
+  option_parser.add_option('--python_test_root', '--host-driven-root',
+                           dest='host_driven_root',
                            help='Root of the host-driven tests.')
   option_parser.add_option('-w', '--wait_debugger', dest='wait_for_debugger',
                            action='store_true',
@@ -253,7 +254,7 @@ def ProcessInstrumentationOptions(options, error_func):
   elif options.python_only:
     options.run_java_tests = False
 
-  if not options.python_test_root:
+  if not options.host_driven_root:
     options.run_python_tests = False
 
   if not options.test_apk:
@@ -521,7 +522,7 @@ def _RunInstrumentationTests(options, error_func):
 
   if options.run_python_tests:
     runner_factory, tests = host_driven_setup.InstrumentationSetup(
-        options.python_test_root, options.official_build,
+        options.host_driven_root, options.official_build,
         instrumentation_options)
 
     if tests:
