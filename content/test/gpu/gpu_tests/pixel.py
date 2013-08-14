@@ -13,9 +13,6 @@ class PixelValidator(page_test.PageTest):
   def __init__(self):
     super(PixelValidator, self).__init__('ValidatePage')
 
-  def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--enable-webgl')
-
   def ValidatePage(self, page, tab, results):
     # TODO(bajones): Grab screenshot, compare to reference.
     # page.reference_image
