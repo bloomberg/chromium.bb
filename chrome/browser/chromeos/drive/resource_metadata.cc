@@ -383,8 +383,11 @@ FileError ResourceMetadata::GetResourceEntryByPath(const base::FilePath& path,
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(out_entry);
 
-  return FindEntryByPathSync(path, out_entry) ?
-      FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
+  std::string resource_id;
+  if (!GetResourceIdByPath(path, &resource_id))
+    return FILE_ERROR_NOT_FOUND;
+
+  return GetResourceEntryById(resource_id, out_entry);
 }
 
 void ResourceMetadata::ReadDirectoryByPathOnUIThread(
@@ -412,8 +415,9 @@ FileError ResourceMetadata::ReadDirectoryByPath(
   DCHECK(out_entries);
 
   ResourceEntry entry;
-  if (!FindEntryByPathSync(path, &entry))
-    return FILE_ERROR_NOT_FOUND;
+  FileError error = GetResourceEntryByPath(path, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   if (!entry.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
@@ -527,16 +531,20 @@ FileError ResourceMetadata::MoveEntryToDirectory(
   if (!EnoughDiskSpaceIsAvailableForDBOperation(storage_->directory_path()))
     return FILE_ERROR_NO_LOCAL_SPACE;
 
-  ResourceEntry entry, destination;
-  if (!FindEntryByPathSync(file_path, &entry) ||
-      !FindEntryByPathSync(directory_path, &destination))
-    return FILE_ERROR_NOT_FOUND;
+  ResourceEntry entry;
+  FileError error = GetResourceEntryByPath(file_path, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
+  ResourceEntry destination;
+  error = GetResourceEntryByPath(directory_path, &destination);
+  if (error != FILE_ERROR_OK)
+    return error;
   if (!destination.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
   entry.set_parent_resource_id(destination.resource_id());
 
-  FileError error = RefreshEntry(entry);
+  error = RefreshEntry(entry);
   if (error == FILE_ERROR_OK)
     *out_file_path = GetFilePath(entry.resource_id());
   return error;
@@ -557,47 +565,40 @@ FileError ResourceMetadata::RenameEntry(
     return FILE_ERROR_NO_LOCAL_SPACE;
 
   ResourceEntry entry;
-  if (!FindEntryByPathSync(file_path, &entry))
-    return FILE_ERROR_NOT_FOUND;
+  FileError error = GetResourceEntryByPath(file_path, &entry);
+  if (error != FILE_ERROR_OK)
+    return error;
 
   if (base::FilePath::FromUTF8Unsafe(new_title) == file_path.BaseName())
     return FILE_ERROR_EXISTS;
 
   entry.set_title(new_title);
 
-  FileError error = RefreshEntry(entry);
+  error = RefreshEntry(entry);
   if (error == FILE_ERROR_OK)
     *out_file_path = GetFilePath(entry.resource_id());
   return error;
 }
 
-bool ResourceMetadata::FindEntryByPathSync(const base::FilePath& file_path,
-                                           ResourceEntry* out_entry) {
+bool ResourceMetadata::GetResourceIdByPath(const base::FilePath& file_path,
+                                           std::string* out_resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   // Start from the root.
-  ResourceEntry entry;
-  if (!storage_->GetEntry(util::kDriveGrandRootSpecialResourceId, &entry))
-    return false;
-  DCHECK(entry.parent_resource_id().empty());
-
-  // Check the first component.
   std::vector<base::FilePath::StringType> components;
   file_path.GetComponents(&components);
-  if (components.empty() ||
-      base::FilePath(components[0]).AsUTF8Unsafe() != entry.base_name())
-    return scoped_ptr<ResourceEntry>();
+  if (components.empty() || components[0] != util::kDriveGrandRootDirName)
+    return false;
 
   // Iterate over the remaining components.
+  std::string resource_id = util::kDriveGrandRootSpecialResourceId;
   for (size_t i = 1; i < components.size(); ++i) {
     const std::string component = base::FilePath(components[i]).AsUTF8Unsafe();
-    const std::string resource_id = storage_->GetChild(entry.resource_id(),
-                                                       component);
-    if (resource_id.empty() || !storage_->GetEntry(resource_id, &entry))
+    resource_id = storage_->GetChild(resource_id, component);
+    if (resource_id.empty())
       return false;
-    DCHECK_EQ(entry.base_name(), component);
   }
-  out_entry->Swap(&entry);
+  *out_resource_id = resource_id;
   return true;
 }
 

@@ -288,9 +288,9 @@ class ResourceMetadata {
       FileError error,
       scoped_ptr<ResourceEntry> entry);
 
-  // Searches for |file_path| synchronously.
-  bool FindEntryByPathSync(const base::FilePath& file_path,
-                           ResourceEntry* out_entry);
+  // Gets resource ID of the entry at the given path.
+  bool GetResourceIdByPath(const base::FilePath& file_path,
+                           std::string* out_resource_id);
 
   // Puts an entry under its parent directory. Removes the child from the old
   // parent if there is. This method will also do name de-duplication to ensure
