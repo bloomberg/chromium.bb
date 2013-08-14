@@ -111,8 +111,9 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input,
   // Sort and clip the resulting matches.
   size_t max_matches = best_match ? 1 : AutocompleteProvider::kMaxMatches;
   if (matches_.size() > max_matches) {
-    std::partial_sort(matches_.begin(), matches_.end(),
+    std::partial_sort(matches_.begin(),
                       matches_.begin() + max_matches,
+                      matches_.end(),
                       AutocompleteMatch::MoreRelevant);
     matches_.resize(max_matches);
   } else {
