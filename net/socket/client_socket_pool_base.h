@@ -387,6 +387,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     bool TryToUseUnassignedConnectJob();
 
     void AddJob(ConnectJob* job, bool is_preconnect);
+    // Remove |job| from this group, which must already own |job|.
     void RemoveJob(ConnectJob* job);
     void RemoveAllJobs();
 

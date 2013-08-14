@@ -942,16 +942,12 @@ void ClientSocketPoolBaseHelper::RemoveConnectJob(ConnectJob* job,
   connecting_socket_count_--;
 
   DCHECK(group);
-  DCHECK(ContainsKey(group->jobs(), job));
   group->RemoveJob(job);
 
   // If we've got no more jobs for this group, then we no longer need a
   // backup job either.
   if (group->jobs().empty())
     group->CleanupBackupJob();
-
-  DCHECK(job);
-  delete job;
 }
 
 void ClientSocketPoolBaseHelper::OnAvailableSocketSlot(
@@ -1192,9 +1188,15 @@ void ClientSocketPoolBaseHelper::Group::AddJob(ConnectJob* job,
 }
 
 void ClientSocketPoolBaseHelper::Group::RemoveJob(ConnectJob* job) {
+  scoped_ptr<ConnectJob> owned_job(job);
   SanityCheck();
 
-  jobs_.erase(job);
+  std::set<ConnectJob*>::iterator it = jobs_.find(job);
+  if (it != jobs_.end()) {
+    jobs_.erase(it);
+  } else {
+    NOTREACHED();
+  }
   size_t job_count = jobs_.size();
   if (job_count < unassigned_job_count_)
     unassigned_job_count_ = job_count;
