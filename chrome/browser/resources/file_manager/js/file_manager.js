@@ -1687,7 +1687,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         // If there is a task to be run, run it after the scan is completed.
         if (task) {
           var listener = function() {
-            this.directoryModel_.removeElementListener(
+            this.directoryModel_.removeEventListener(
                 'scan-completed', listener);
             task();
           }.bind(this);
