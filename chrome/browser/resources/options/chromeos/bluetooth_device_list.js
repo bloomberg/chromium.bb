@@ -304,6 +304,7 @@ cr.define('options.system.bluetooth', function() {
             [item.data.address, item.connected ? 'disconnect' : 'forget']);
         }
       }
+      this.selectionModel.unselectAll();
     },
 
     /** @override */
