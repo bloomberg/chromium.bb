@@ -751,11 +751,15 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
         // This is true while running onunload handlers.
         // FIXME: Maybe we need to be able to send XMLHttpRequests from onunload, <http://bugs.webkit.org/show_bug.cgi?id=10904>.
         // FIXME: Maybe create() can return null for other reasons too?
+        ASSERT(!m_loader);
         m_loader = ThreadableLoader::create(scriptExecutionContext(), this, request, options);
         if (m_loader) {
             // Neither this object nor the JavaScript wrapper should be deleted while
             // a request is in progress because we need to keep the listeners alive,
             // and they are referenced by the JavaScript wrapper.
+
+            // m_loader was null, so there should be no pending activity at this point.
+            ASSERT(!hasPendingActivity());
             setPendingActivity(this);
         }
     } else {
@@ -801,7 +805,7 @@ void XMLHttpRequest::abort()
     }
 }
 
-void XMLHttpRequest::internalAbort()
+void XMLHttpRequest::internalAbort(DropProtection async)
 {
     bool hadLoader = m_loader;
 
@@ -819,8 +823,12 @@ void XMLHttpRequest::internalAbort()
 
     InspectorInstrumentation::didFailXHRLoading(scriptExecutionContext(), this);
 
-    if (hadLoader)
-        dropProtectionSoon();
+    if (hadLoader) {
+        if (async == DropProtectionAsync)
+            dropProtectionSoon();
+        else
+            dropProtection();
+    }
 }
 
 void XMLHttpRequest::clearResponse()
@@ -1222,7 +1230,7 @@ void XMLHttpRequest::resume()
 
 void XMLHttpRequest::stop()
 {
-    internalAbort();
+    internalAbort(DropProtectionAsync);
 }
 
 void XMLHttpRequest::contextDestroyed()
