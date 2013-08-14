@@ -109,10 +109,6 @@ extern const char kChromeUITermsOemURL[];
 extern const char kChromeUIUserImageURL[];
 #endif
 
-#if defined(USE_ASH)
-extern const char kChromeUITransparencyURL[];
-#endif
-
 #if defined(FILE_MANAGER_EXTENSION)
 extern const char kChromeUIFileManagerURL[];
 #endif
@@ -266,10 +262,6 @@ extern const char kChromeUIWrenchMenu[];
 extern const char kEULAPathFormat[];
 extern const char kOemEulaURLPath[];
 extern const char kOnlineEulaURLPath[];
-#endif
-
-#if defined(USE_ASH)
-extern const char kChromeUITransparencyHost[];
 #endif
 
 #if defined(FILE_MANAGER_EXTENSION)

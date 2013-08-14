@@ -83,11 +83,6 @@
 #include "chromeos/chromeos_switches.h"
 #endif
 
-#if defined(USE_ASH)
-#include "ash/wm/frame_painter.h"
-#include "base/strings/string_split.h"
-#endif
-
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
@@ -519,102 +514,6 @@ std::string AboutDiscards(const std::string& path) {
 }
 
 #endif  // OS_CHROMEOS
-
-#if defined(USE_ASH)
-
-// Adds an entry to the chrome://transparency page, with the format:
-// |label|:
-// -- - |value|% + ++
-// where --, -, +, and ++ are links to change the appropriate |key|.
-// TODO(jamescook): Remove this temporary tool when we decide what the window
-// header opacity should be for Ash.
-std::string TransparencyLink(const std::string& label,
-                             int value,
-                             const std::string& key) {
-  return base::StringPrintf("<p>%s</p>"
-      "<p>"
-      "<a href='%s%s=%d'>--</a> "
-      "<a href='%s%s=%d'>-</a> "
-      "%d%% "
-      "<a href='%s%s=%d'>+</a> "
-      "<a href='%s%s=%d'>++</a>"
-      "</p>",
-      label.c_str(),
-      chrome::kChromeUITransparencyURL, key.c_str(), value - 5,
-      chrome::kChromeUITransparencyURL, key.c_str(), value - 1,
-      value,
-      chrome::kChromeUITransparencyURL, key.c_str(), value + 1,
-      chrome::kChromeUITransparencyURL, key.c_str(), value + 5);
-}
-
-// Returns a transparency percent from an opacity value.
-int TransparencyFromOpacity(int opacity) {
-  return (255 - opacity) * 100 / 255;
-}
-
-// Displays a tweaking page for window header transparency, as we're iterating
-// rapidly on how transparent we want the headers to be.
-// TODO(jamescook): Remove this temporary tool when we decide what the window
-// header opacity should be for Ash.
-std::string AboutTransparency(const std::string& path) {
-  const char kActive[] = "active";
-  const char kInactive[] = "inactive";
-  const char kSolo[] = "solo";
-  // Apply transparency based on a path like "active=10&inactive=25".
-  std::vector<std::pair<std::string, std::string> > kv_pairs;
-  if (!path.empty() &&
-      base::SplitStringIntoKeyValuePairs(path, '=', '&', &kv_pairs)) {
-    for (std::vector<std::pair<std::string, std::string> >::const_iterator it =
-            kv_pairs.begin();
-         it != kv_pairs.end();
-         ++it) {
-      int* opacity = NULL;
-      if (it->first == kActive)
-        opacity = &ash::FramePainter::kActiveWindowOpacity;
-      else if (it->first == kInactive)
-        opacity = &ash::FramePainter::kInactiveWindowOpacity;
-      else if (it->first == kSolo)
-        opacity = &ash::FramePainter::kSoloWindowOpacity;
-      if (opacity) {
-        int transparent = 0;
-        base::StringToInt(it->second, &transparent);
-        transparent = std::max(0, std::min(100, transparent));
-        *opacity = (100 - transparent) * 255 / 100;
-      }
-    }
-  }
-
-  // Display current settings.  Do everything in transparency-percent instead of
-  // opacity-value.
-  std::string output;
-  AppendHeader(&output, 0, "About transparency");
-  AppendFooter(&output);
-  AppendBody(&output);
-  output.append("<h3>Window header transparency</h3>");
-  output.append(TransparencyLink("Active window:",
-      TransparencyFromOpacity(ash::FramePainter::kActiveWindowOpacity),
-      kActive));
-  output.append(TransparencyLink("Inactive window:",
-      TransparencyFromOpacity(ash::FramePainter::kInactiveWindowOpacity),
-      kInactive));
-  output.append(TransparencyLink("Solo window:",
-      TransparencyFromOpacity(ash::FramePainter::kSoloWindowOpacity),
-      kSolo));
-  output.append(base::StringPrintf(
-      "<p>Share: %s%s=%d&%s=%d&%s=%d</p>",
-      chrome::kChromeUITransparencyURL,
-      kActive,
-      TransparencyFromOpacity(ash::FramePainter::kActiveWindowOpacity),
-      kInactive,
-      TransparencyFromOpacity(ash::FramePainter::kInactiveWindowOpacity),
-      kSolo,
-      TransparencyFromOpacity(ash::FramePainter::kSoloWindowOpacity)));
-  output.append("<p>Reshape window to force a redraw.</p>");
-  AppendFooter(&output);
-  return output;
-}
-
-#endif  // USE_ASH
 
 // AboutDnsHandler bounces the request back to the IO thread to collect
 // the DNS information.
@@ -1109,10 +1008,6 @@ void AboutUIHTMLSource::StartDataRequest(
 #if defined(OS_CHROMEOS)
   } else if (source_name_ == chrome::kChromeUIDiscardsHost) {
     response = AboutDiscards(path);
-#endif
-#if defined(USE_ASH)
-  } else if (source_name_ == chrome::kChromeUITransparencyHost) {
-    response = AboutTransparency(path);
 #endif
   } else if (source_name_ == chrome::kChromeUIDNSHost) {
     AboutDnsHandler::Start(profile(), callback);

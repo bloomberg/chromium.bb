@@ -422,7 +422,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 #if defined(OS_CHROMEOS)
       || url.host() == chrome::kChromeUIDiscardsHost
       || url.host() == chrome::kChromeUIOSCreditsHost
-      || url.host() == chrome::kChromeUITransparencyHost
 #endif
 #if defined(WEBUI_TASK_MANAGER)
       || url.host() == chrome::kChromeUITaskManagerHost
