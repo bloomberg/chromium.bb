@@ -11,6 +11,8 @@
 #include "base/logging.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/chromeos/system_logs/about_system_logs_fetcher.h"
+#include "chrome/browser/chromeos/system_logs/scrubbed_system_logs_fetcher.h"
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/browser/extensions/api/log_private/syslog_parser.h"
@@ -61,10 +63,15 @@ bool LogPrivateGetHistoricalFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   filter_handler_.reset(new FilterHandler(params->filter));
 
-  chromeos::AboutSystemLogsFetcher* fetcher =
-      new chromeos::AboutSystemLogsFetcher();
+  chromeos::SystemLogsFetcherBase* fetcher;
+  if ((params->filter).scrub) {
+    fetcher = new chromeos::ScrubbedSystemLogsFetcher();
+  } else {
+    fetcher = new chromeos::AboutSystemLogsFetcher();
+  }
   fetcher->Fetch(
       base::Bind(&LogPrivateGetHistoricalFunction::OnSystemLogsLoaded, this));
+
   return true;
 }
 

@@ -18,6 +18,8 @@ namespace logPrivate {
     DOMString[] process;
     //  Only logs have level in |level| will be returned.
     DOMString[] level;
+    // Private information will be scrubbed if |scrub| is true.
+    boolean scrub;
   };
 
   // The class that contains log information.
