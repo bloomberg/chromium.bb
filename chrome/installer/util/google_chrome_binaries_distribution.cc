@@ -25,8 +25,14 @@ string16 GoogleChromeBinariesDistribution::GetAppGuid() {
   return kChromeBinariesGuid;
 }
 
-string16 GoogleChromeBinariesDistribution::GetAppShortCutName() {
+string16 GoogleChromeBinariesDistribution::GetDisplayName() {
   return kChromeBinariesName;
+}
+
+string16 GoogleChromeBinariesDistribution::GetShortcutName(
+    ShortcutType shortcut_type) {
+  NOTREACHED();
+  return string16();
 }
 
 string16 GoogleChromeBinariesDistribution::GetStateKey() {

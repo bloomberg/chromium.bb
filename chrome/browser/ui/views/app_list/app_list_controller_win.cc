@@ -1001,7 +1001,9 @@ void AppListController::CreateShortcut() {
   shortcut_locations.in_quick_launch_bar = true;
   shortcut_locations.in_applications_menu = true;
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  shortcut_locations.applications_menu_subdir = dist->GetAppShortCutName();
+  shortcut_locations.applications_menu_subdir =
+      dist->GetStartMenuShortcutSubfolder(
+          BrowserDistribution::SUBFOLDER_CHROME);
   base::FilePath user_data_dir(
       g_browser_process->profile_manager()->user_data_dir());
 
@@ -1009,7 +1011,7 @@ void AppListController::CreateShortcut() {
       content::BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&CreateAppListShortcuts,
-                  user_data_dir, GetAppModelId(), shortcut_locations));
+                 user_data_dir, GetAppModelId(), shortcut_locations));
 }
 
 void AppListController::ScheduleWarmup() {

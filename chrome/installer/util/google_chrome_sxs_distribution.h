@@ -20,12 +20,12 @@
 class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
   virtual string16 GetBaseAppName() OVERRIDE;
-  virtual string16 GetAppShortCutName() OVERRIDE;
+  virtual string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;
+  virtual int GetIconIndex(ShortcutType shortcut_type) OVERRIDE;
   virtual string16 GetBaseAppId() OVERRIDE;
   virtual string16 GetInstallSubDir() OVERRIDE;
   virtual string16 GetUninstallRegPath() OVERRIDE;
   virtual bool CanSetAsDefault() OVERRIDE;
-  virtual int GetIconIndex() OVERRIDE;
   virtual bool GetChromeChannel(string16* channel) OVERRIDE;
   virtual bool GetCommandExecuteImplClsid(
       string16* handler_class_uuid) OVERRIDE;

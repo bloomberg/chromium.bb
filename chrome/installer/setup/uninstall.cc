@@ -103,7 +103,7 @@ void AddChannelValueUpdateWorkItems(
              product_state != NULL && product_state->is_multi_install())
           << "Channel value for "
           << BrowserDistribution::GetSpecificDistribution(
-                 dist_type)->GetAppShortCutName()
+                 dist_type)->GetDisplayName()
           << " is somehow already set to the desired new value of "
           << channel_info.value();
     }
@@ -940,7 +940,7 @@ void UninstallActiveSetupEntries(const InstallerState& installer_state,
     const char* install_level =
         installer_state.system_install() ? "system" : "user";
     VLOG(1) << "No Active Setup processing to do for " << install_level
-            << "-level " << distribution->GetAppShortCutName();
+            << "-level " << distribution->GetDisplayName();
     return;
   }
 
@@ -1079,7 +1079,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
   bool is_chrome = product.is_chrome();
 
-  VLOG(1) << "UninstallProduct: " << browser_dist->GetAppShortCutName();
+  VLOG(1) << "UninstallProduct: " << browser_dist->GetDisplayName();
 
   if (force_uninstall) {
     // Since --force-uninstall command line option is used, we are going to

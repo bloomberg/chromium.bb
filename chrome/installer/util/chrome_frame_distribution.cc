@@ -36,16 +36,15 @@ string16 ChromeFrameDistribution::GetBaseAppName() {
   return L"Google Chrome Frame";
 }
 
-string16 ChromeFrameDistribution::GetAppShortCutName() {
-  const string16& product_name =
-      installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
-  return product_name;
-}
-
-string16 ChromeFrameDistribution::GetAlternateApplicationName() {
-  const string16& product_name =
-      installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
-  return product_name;
+string16 ChromeFrameDistribution::GetShortcutName(ShortcutType shortcut_type) {
+  switch (shortcut_type) {
+    case SHORTCUT_CHROME:
+    case SHORTCUT_CHROME_ALTERNATE:
+      return installer::GetLocalizedString(IDS_PRODUCT_FRAME_NAME_BASE);
+    default:
+      NOTREACHED();
+      return string16();
+  }
 }
 
 string16 ChromeFrameDistribution::GetInstallSubDir() {
@@ -112,8 +111,14 @@ string16 ChromeFrameDistribution::GetIconFilename() {
   return installer::kChromeExe;
 }
 
-int ChromeFrameDistribution::GetIconIndex() {
-  return 0;
+int ChromeFrameDistribution::GetIconIndex(ShortcutType shortcut_type) {
+  switch (shortcut_type) {
+    case SHORTCUT_CHROME:
+      return 0;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 bool ChromeFrameDistribution::CanSetAsDefault() {

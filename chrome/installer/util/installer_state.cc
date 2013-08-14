@@ -123,20 +123,20 @@ void InstallerState::Initialize(const CommandLine& command_line,
     Product* p = AddProductFromPreferences(
         BrowserDistribution::CHROME_BROWSER, prefs, machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-            << " distribution: " << p->distribution()->GetAppShortCutName();
+            << " distribution: " << p->distribution()->GetDisplayName();
   }
   if (prefs.install_chrome_frame()) {
     Product* p = AddProductFromPreferences(
         BrowserDistribution::CHROME_FRAME, prefs, machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-            << " distribution: " << p->distribution()->GetAppShortCutName();
+            << " distribution: " << p->distribution()->GetDisplayName();
   }
 
   if (prefs.install_chrome_app_launcher()) {
     Product* p = AddProductFromPreferences(
         BrowserDistribution::CHROME_APP_HOST, prefs, machine_state);
     VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-            << " distribution: " << p->distribution()->GetAppShortCutName();
+            << " distribution: " << p->distribution()->GetDisplayName();
   }
 
   if (!is_uninstall && is_multi_install()) {
@@ -169,7 +169,7 @@ void InstallerState::Initialize(const CommandLine& command_line,
       Product* p = AddProductFromPreferences(
           BrowserDistribution::CHROME_BINARIES, prefs, machine_state);
       VLOG(1) << "Install distribution: "
-              << p->distribution()->GetAppShortCutName();
+              << p->distribution()->GetDisplayName();
     }
   }
 
@@ -208,7 +208,7 @@ void InstallerState::Initialize(const CommandLine& command_line,
           Product* p = AddProductFromPreferences(
               conditional_additions[i].type, prefs, machine_state);
           VLOG(1) << "Uninstall distribution: "
-                  << p->distribution()->GetAppShortCutName();
+                  << p->distribution()->GetDisplayName();
         }
       }
     }
@@ -271,7 +271,7 @@ void InstallerState::Initialize(const CommandLine& command_line,
       Product* p = AddProductFromPreferences(
           BrowserDistribution::CHROME_BINARIES, prefs, machine_state);
       VLOG(1) << (is_uninstall ? "Uninstall" : "Install")
-              << " distribution: " << p->distribution()->GetAppShortCutName();
+              << " distribution: " << p->distribution()->GetDisplayName();
     }
   }
 

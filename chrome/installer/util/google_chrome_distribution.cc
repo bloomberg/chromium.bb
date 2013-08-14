@@ -38,6 +38,9 @@ const wchar_t kBrowserAppId[] = L"Chrome";
 const wchar_t kCommandExecuteImplUuid[] =
     L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
 
+// The Google Chrome App Launcher icon is index 5; see chrome_exe.rc.
+const int kAppLauncherIconIndex = 5;
+
 // Substitute the locale parameter in uninstall URL with whatever
 // Google Update tells us is the locale. In case we fail to find
 // the locale, we use US English.
@@ -125,16 +128,28 @@ string16 GoogleChromeDistribution::GetBaseAppName() {
   return L"Google Chrome";
 }
 
-string16 GoogleChromeDistribution::GetAppShortCutName() {
-  const string16& app_shortcut_name =
-      installer::GetLocalizedString(IDS_PRODUCT_NAME_BASE);
-  return app_shortcut_name;
+string16 GoogleChromeDistribution::GetShortcutName(ShortcutType shortcut_type) {
+  int string_id = IDS_PRODUCT_NAME_BASE;
+  switch (shortcut_type) {
+    case SHORTCUT_CHROME_ALTERNATE:
+      string_id = IDS_OEM_MAIN_SHORTCUT_NAME_BASE;
+      break;
+    case SHORTCUT_APP_LAUNCHER:
+      string_id = IDS_APP_LIST_SHORTCUT_NAME_BASE;
+      break;
+    default:
+      DCHECK_EQ(shortcut_type, SHORTCUT_CHROME);
+      break;
+  }
+  return installer::GetLocalizedString(string_id);
 }
 
-string16 GoogleChromeDistribution::GetAlternateApplicationName() {
-  const string16& alt_product_name =
-      installer::GetLocalizedString(IDS_OEM_MAIN_SHORTCUT_NAME_BASE);
-  return alt_product_name;
+int GoogleChromeDistribution::GetIconIndex(ShortcutType shortcut_type) {
+  if (shortcut_type == SHORTCUT_APP_LAUNCHER)
+    return kAppLauncherIconIndex;
+  DCHECK(shortcut_type == SHORTCUT_CHROME ||
+         shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
+  return 0;
 }
 
 string16 GoogleChromeDistribution::GetBaseAppId() {

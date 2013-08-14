@@ -168,7 +168,7 @@ void Product::LaunchUserExperiment(const base::FilePath& setup_path,
                                    bool system_level) const {
   if (distribution_->HasUserExperiments()) {
     VLOG(1) << "LaunchUserExperiment status: " << status << " product: "
-            << distribution_->GetAppShortCutName()
+            << distribution_->GetDisplayName()
             << " system_level: " << system_level;
     operations_->LaunchUserExperiment(
         setup_path, options_, status, system_level);

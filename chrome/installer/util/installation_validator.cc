@@ -211,7 +211,7 @@ void InstallationValidator::ValidateAppCommandFlags(
     bool expected = flags_exp.find(check_list[i].exp_key) != flags_exp.end();
     if (check_list[i].val != expected) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName() << ": "
+      LOG(ERROR) << ctx.dist->GetDisplayName() << ": "
                  << name << " command should " << (expected ? "" : "not ")
                  << check_list[i].msg << ".";
     }
@@ -415,7 +415,7 @@ void InstallationValidator::ValidateAppCommandExpectations(
       the_expectations.erase(expectation);
     } else {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << ctx.dist->GetDisplayName()
                  << " has an unexpected Google Update product command named \""
                  << cmd_id << "\".";
     }
@@ -426,7 +426,7 @@ void InstallationValidator::ValidateAppCommandExpectations(
   CommandExpectations::const_iterator end(the_expectations.end());
   for (; scan != end; ++scan) {
     *is_valid = false;
-    LOG(ERROR) << ctx.dist->GetAppShortCutName()
+    LOG(ERROR) << ctx.dist->GetDisplayName()
                << " is missing the Google Update product command named \""
                << scan->first << "\".";
   }
@@ -595,7 +595,7 @@ void InstallationValidator::ValidateSetupPath(const ProductContext& ctx,
   if (!base::FilePath::CompareEqualIgnoreCase(expected_path.value(),
                                               setup_exe.value())) {
     *is_valid = false;
-    LOG(ERROR) << ctx.dist->GetAppShortCutName() << " path to " << purpose
+    LOG(ERROR) << ctx.dist->GetDisplayName() << " path to " << purpose
                << " is not " << expected_path.value() << ": "
                << setup_exe.value();
   }
@@ -613,7 +613,7 @@ void InstallationValidator::ValidateCommandExpectations(
     const SwitchExpectations::value_type& expectation = expected[i];
     if (command.HasSwitch(expectation.first) != expectation.second) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName() << " " << source
+      LOG(ERROR) << ctx.dist->GetDisplayName() << " " << source
                  << (expectation.second ? " is missing" : " has") << " \""
                  << expectation.first << "\""
                  << (expectation.second ? "" : " but shouldn't") << ": "
@@ -680,14 +680,14 @@ void InstallationValidator::ValidateOldVersionValues(
   if (ctx.state.old_version() == NULL) {
     if (!ctx.state.rename_cmd().empty()) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << ctx.dist->GetDisplayName()
                  << " has a rename command but no opv: "
                  << ctx.state.rename_cmd();
     }
   } else {
     if (ctx.state.rename_cmd().empty()) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << ctx.dist->GetDisplayName()
                  << " has an opv but no rename command: "
                  << ctx.state.old_version()->GetString();
     } else {
@@ -714,14 +714,14 @@ void InstallationValidator::ValidateMultiInstallProduct(
               true,  // system-level
               BrowserDistribution::CHROME_BROWSER)) {
         *is_valid = false;
-        LOG(ERROR) << ctx.dist->GetAppShortCutName()
+        LOG(ERROR) << ctx.dist->GetDisplayName()
                    << " (" << ctx.state.version().GetString() << ") is "
                    << "installed without Chrome Binaries or a system-level "
                    << "Chrome.";
       }
     } else {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << ctx.dist->GetDisplayName()
                  << " (" << ctx.state.version().GetString() << ") is installed "
                  << "without Chrome Binaries.";
     }
@@ -729,7 +729,7 @@ void InstallationValidator::ValidateMultiInstallProduct(
     // Version must match that of binaries.
     if (ctx.state.version().CompareTo(binaries->version()) != 0) {
       *is_valid = false;
-      LOG(ERROR) << "Version of " << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << "Version of " << ctx.dist->GetDisplayName()
                  << " (" << ctx.state.version().GetString() << ") does not "
                     "match that of Chrome Binaries ("
                  << binaries->version().GetString() << ").";
@@ -738,7 +738,7 @@ void InstallationValidator::ValidateMultiInstallProduct(
     // Channel value must match that of binaries.
     if (!ctx.state.channel().Equals(binaries->channel())) {
       *is_valid = false;
-      LOG(ERROR) << "Channel name of " << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << "Channel name of " << ctx.dist->GetDisplayName()
                  << " (" << ctx.state.channel().value()
                  << ") does not match that of Chrome Binaries ("
                  << binaries->channel().value() << ").";
@@ -772,12 +772,12 @@ void InstallationValidator::ValidateUsageStats(const ProductContext& ctx,
   if (ctx.state.GetUsageStats(&usagestats)) {
     if (!ctx.rules.UsageStatsAllowed(ctx)) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << ctx.dist->GetDisplayName()
                  << " has a usagestats value (" << usagestats
                  << "), yet should not.";
     } else if (usagestats != 0 && usagestats != 1) {
       *is_valid = false;
-      LOG(ERROR) << ctx.dist->GetAppShortCutName()
+      LOG(ERROR) << ctx.dist->GetDisplayName()
                  << " has an unsupported usagestats value (" << usagestats
                  << ").";
     }

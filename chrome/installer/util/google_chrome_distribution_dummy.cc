@@ -41,14 +41,14 @@ string16 GoogleChromeDistribution::GetBaseAppName() {
   return string16();
 }
 
-string16 GoogleChromeDistribution::GetAppShortCutName() {
+string16 GoogleChromeDistribution::GetShortcutName(ShortcutType shortcut_type) {
   NOTREACHED();
   return string16();
 }
 
-string16 GoogleChromeDistribution::GetAlternateApplicationName() {
+int GoogleChromeDistribution::GetIconIndex(ShortcutType shortcut_type) {
   NOTREACHED();
-  return string16();
+  return 0;
 }
 
 string16 GoogleChromeDistribution::GetBaseAppId() {

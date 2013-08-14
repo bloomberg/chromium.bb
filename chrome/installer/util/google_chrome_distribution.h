@@ -36,11 +36,13 @@ class GoogleChromeDistribution : public BrowserDistribution {
 
   virtual string16 GetAppGuid() OVERRIDE;
 
+  virtual string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;
+
+  virtual string16 GetIconFilename() OVERRIDE;
+
+  virtual int GetIconIndex(ShortcutType shortcut_type) OVERRIDE;
+
   virtual string16 GetBaseAppName() OVERRIDE;
-
-  virtual string16 GetAppShortCutName() OVERRIDE;
-
-  virtual string16 GetAlternateApplicationName() OVERRIDE;
 
   virtual string16 GetBaseAppId() OVERRIDE;
 
@@ -70,8 +72,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
   virtual string16 GetUninstallRegPath() OVERRIDE;
 
   virtual string16 GetVersionKey() OVERRIDE;
-
-  virtual string16 GetIconFilename() OVERRIDE;
 
   virtual bool GetCommandExecuteImplClsid(
       string16* handler_class_uuid) OVERRIDE;

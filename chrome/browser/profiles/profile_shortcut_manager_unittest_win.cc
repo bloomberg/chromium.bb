@@ -223,7 +223,9 @@ class ProfileShortcutManagerTest : public testing::Test {
         ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS)) << location.ToString();
     const base::FilePath system_level_shortcut_path =
         GetSystemShortcutsDirectory().Append(
-            distribution->GetAppShortCutName() + installer::kLnkExt);
+            distribution->
+                GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
+                installer::kLnkExt);
     EXPECT_TRUE(base::PathExists(system_level_shortcut_path))
         << location.ToString();
     return system_level_shortcut_path;
@@ -311,7 +313,8 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFilenameStripsReservedCharacters) {
   const string16 kSanitizedProfileName = L"Harry";
   BrowserDistribution* distribution = GetDistribution();
   const string16 expected_name = kSanitizedProfileName + L" - " +
-      distribution->GetAppShortCutName() + installer::kLnkExt;
+      distribution->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
+          installer::kLnkExt;
   EXPECT_EQ(expected_name,
             profiles::internal::GetShortcutFilenameForProfile(kProfileName,
                                                               distribution));
@@ -319,9 +322,11 @@ TEST_F(ProfileShortcutManagerTest, ShortcutFilenameStripsReservedCharacters) {
 
 TEST_F(ProfileShortcutManagerTest, UnbadgedShortcutFilename) {
   BrowserDistribution* distribution = GetDistribution();
-  EXPECT_EQ(distribution->GetAppShortCutName() + installer::kLnkExt,
-            profiles::internal::GetShortcutFilenameForProfile(string16(),
-                                                              distribution));
+  EXPECT_EQ(
+      distribution->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME) +
+          installer::kLnkExt,
+      profiles::internal::GetShortcutFilenameForProfile(string16(),
+                                                        distribution));
 }
 
 TEST_F(ProfileShortcutManagerTest, ShortcutFlags) {
@@ -579,7 +584,8 @@ TEST_F(ProfileShortcutManagerTest, UpdateShortcutWithNoFlags) {
                                 false));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
-                                    GetDistribution()->GetAppShortCutName());
+                                    GetDistribution()->GetShortcutName(
+                                        BrowserDistribution::SHORTCUT_CHROME));
 
   // Add another profile and check that the shortcut was replaced with
   // a badged shortcut with the right command line for the profile
@@ -597,7 +603,8 @@ TEST_F(ProfileShortcutManagerTest, UpdateTwoShortcutsWithNoFlags) {
                                 false));
   const base::FilePath regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE,
-                                    GetDistribution()->GetAppShortCutName());
+                                    GetDistribution()->GetShortcutName(
+                                        BrowserDistribution::SHORTCUT_CHROME));
   const base::FilePath customized_regular_shortcut_path =
       CreateRegularShortcutWithName(FROM_HERE, L"MyChrome");
 

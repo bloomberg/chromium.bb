@@ -219,7 +219,9 @@ class RegistryEntry {
                                const string16& suffix,
                                ScopedVector<RegistryEntry>* entries) {
     string16 icon_path(
-        ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
+        ShellUtil::FormatIconLocation(
+            chrome_exe,
+            dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
     string16 open_cmd(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
     string16 delegate_command(ShellUtil::GetChromeDelegateCommand(chrome_exe));
     // For user-level installs: entries for the app id and DelegateExecute verb
@@ -317,7 +319,7 @@ class RegistryEntry {
       // resource for name, description, and company.
       entries->push_back(new RegistryEntry(
           chrome_application, ShellUtil::kRegApplicationName,
-          dist->GetAppShortCutName()));
+          dist->GetDisplayName()));
       entries->push_back(new RegistryEntry(
           chrome_application, ShellUtil::kRegApplicationDescription,
           dist->GetAppDescription()));
@@ -350,7 +352,9 @@ class RegistryEntry {
                                          const string16& suffix,
                                          ScopedVector<RegistryEntry>* entries) {
     const string16 icon_path(
-        ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
+        ShellUtil::FormatIconLocation(
+            chrome_exe,
+            dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
     const string16 quoted_exe_path(L"\"" + chrome_exe + L"\"");
 
     // Register for the Start Menu "Internet" link (pre-Win7).
@@ -359,7 +363,7 @@ class RegistryEntry {
     // TODO(grt): http://crbug.com/75152 Also set LocalizedString; see
     // http://msdn.microsoft.com/en-us/library/windows/desktop/cc144109(v=VS.85).aspx#registering_the_display_name
     entries->push_back(new RegistryEntry(
-        start_menu_entry, dist->GetAppShortCutName()));
+        start_menu_entry, dist->GetDisplayName()));
     // Register the "open" verb for launching Chrome via the "Internet" link.
     entries->push_back(new RegistryEntry(
         start_menu_entry + ShellUtil::kRegShellOpen, quoted_exe_path));
@@ -395,7 +399,7 @@ class RegistryEntry {
         capabilities, ShellUtil::kRegApplicationIcon, icon_path));
     entries->push_back(new RegistryEntry(
         capabilities, ShellUtil::kRegApplicationName,
-        dist->GetAppShortCutName()));
+        dist->GetDisplayName()));
 
     entries->push_back(new RegistryEntry(capabilities + L"\\Startmenu",
         L"StartMenuInternet", reg_app_name));
@@ -501,7 +505,9 @@ class RegistryEntry {
     // Protocols associations.
     string16 chrome_open = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
     string16 chrome_icon =
-        ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex());
+        ShellUtil::FormatIconLocation(
+            chrome_exe,
+            dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME));
     for (int i = 0; ShellUtil::kBrowserProtocolAssociations[i] != NULL; i++) {
       GetXPStyleUserProtocolEntries(ShellUtil::kBrowserProtocolAssociations[i],
                                     chrome_icon, chrome_open, entries);
@@ -906,7 +912,9 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(BrowserDistribution* dist,
   ScopedVector<RegistryEntry> entries;
   const string16 chrome_open(ShellUtil::GetChromeShellOpenCmd(chrome_exe));
   const string16 chrome_icon(
-      ShellUtil::FormatIconLocation(chrome_exe, dist->GetIconIndex()));
+      ShellUtil::FormatIconLocation(
+          chrome_exe,
+          dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME)));
   RegistryEntry::GetXPStyleUserProtocolEntries(protocol, chrome_icon,
                                                chrome_open, &entries);
   // Change the default protocol handler for current user.
@@ -919,17 +927,19 @@ bool RegisterChromeAsDefaultProtocolClientXPStyle(BrowserDistribution* dist,
 }
 
 // Returns |properties.shortcut_name| if the property is set, otherwise it
-// returns dist->GetAppShortcutName(). In any case, it makes sure the
-// return value is suffixed with ".lnk".
+// returns dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME). In any
+// case, it makes sure the return value is suffixed with ".lnk".
 string16 ExtractShortcutNameFromProperties(
     BrowserDistribution* dist,
     const ShellUtil::ShortcutProperties& properties) {
   DCHECK(dist);
   string16 shortcut_name;
-  if (properties.has_shortcut_name())
+  if (properties.has_shortcut_name()) {
     shortcut_name = properties.shortcut_name;
-  else
-    shortcut_name = dist->GetAppShortCutName();
+  } else {
+    shortcut_name =
+        dist->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME);
+  }
 
   if (!EndsWith(shortcut_name, installer::kLnkExt, false))
     shortcut_name.append(installer::kLnkExt);
@@ -1434,8 +1444,10 @@ bool ShellUtil::GetShortcutPath(ShellUtil::ShortcutLocation location,
     return false;
   }
 
-  if (add_folder_for_dist)
-    *path = path->Append(dist->GetAppShortCutName());
+  if (add_folder_for_dist) {
+    *path = path->Append(dist->GetStartMenuShortcutSubfolder(
+        BrowserDistribution::SUBFOLDER_CHROME));
+  }
 
   return true;
 }

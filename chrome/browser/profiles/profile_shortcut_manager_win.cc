@@ -629,7 +629,8 @@ string16 GetShortcutFilenameForProfile(const string16& profile_name,
     shortcut_name.append(L" - ");
     shortcut_name.append(l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME));
   } else {
-    shortcut_name.append(distribution->GetAppShortCutName());
+    shortcut_name.append(
+        distribution->GetShortcutName(BrowserDistribution::SHORTCUT_CHROME));
   }
   return shortcut_name + installer::kLnkExt;
 }

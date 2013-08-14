@@ -38,16 +38,14 @@ string16 ChromeAppHostDistribution::GetBaseAppName() {
   return L"Google Chrome App Launcher";
 }
 
-string16 ChromeAppHostDistribution::GetAppShortCutName() {
-  const string16& product_name =
-      installer::GetLocalizedString(IDS_PRODUCT_APP_LAUNCHER_NAME_BASE);
-  return product_name;
+string16 ChromeAppHostDistribution::GetDisplayName() {
+  return GetShortcutName(SHORTCUT_APP_LAUNCHER);
 }
 
-string16 ChromeAppHostDistribution::GetAlternateApplicationName() {
-  const string16& product_name =
-      installer::GetLocalizedString(IDS_PRODUCT_APP_LAUNCHER_NAME_BASE);
-  return product_name;
+string16 ChromeAppHostDistribution::GetShortcutName(
+    ShortcutType shortcut_type) {
+  DCHECK_EQ(shortcut_type, SHORTCUT_APP_LAUNCHER);
+  return installer::GetLocalizedString(IDS_PRODUCT_APP_LAUNCHER_NAME_BASE);
 }
 
 string16 ChromeAppHostDistribution::GetBaseAppId() {

@@ -13,7 +13,9 @@ class GoogleChromeBinariesDistribution : public ChromiumBinariesDistribution {
  public:
   virtual string16 GetAppGuid();
 
-  virtual string16 GetAppShortCutName();
+  virtual string16 GetDisplayName();
+
+  virtual string16 GetShortcutName(ShortcutType shortcut_type);
 
   virtual string16 GetStateKey();
 

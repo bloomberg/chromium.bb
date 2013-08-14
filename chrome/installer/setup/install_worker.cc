@@ -438,7 +438,8 @@ void AddDeleteUninstallShortcutsForMSIWorkItems(
     LOG(ERROR) << "Failed to get location for shortcut.";
   } else {
     uninstall_link = uninstall_link.Append(
-        product.distribution()->GetAppShortCutName());
+        product.distribution()->GetStartMenuShortcutSubfolder(
+            BrowserDistribution::SUBFOLDER_CHROME));
     uninstall_link = uninstall_link.Append(
         product.distribution()->GetUninstallLinkName() + installer::kLnkExt);
     VLOG(1) << "Deleting old uninstall shortcut (if present): "
@@ -722,8 +723,8 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     string16 uninstall_reg = browser_dist->GetUninstallRegPath();
     install_list->AddCreateRegKeyWorkItem(reg_root, uninstall_reg);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
-        installer::kUninstallDisplayNameField,
-        browser_dist->GetAppShortCutName(), true);
+        installer::kUninstallDisplayNameField, browser_dist->GetDisplayName(),
+        true);
     install_list->AddSetRegValueWorkItem(reg_root,
         uninstall_reg, installer::kUninstallStringField,
         quoted_uninstall_cmd.GetCommandLineString(), true);
@@ -736,7 +737,7 @@ void AddUninstallShortcutWorkItems(const InstallerState& installer_state,
     BrowserDistribution* dist = product.distribution();
     string16 chrome_icon = ShellUtil::FormatIconLocation(
         install_path.Append(dist->GetIconFilename()).value(),
-        dist->GetIconIndex());
+        dist->GetIconIndex(BrowserDistribution::SHORTCUT_CHROME));
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
                                          L"DisplayIcon", chrome_icon, true);
     install_list->AddSetRegValueWorkItem(reg_root, uninstall_reg,
@@ -786,7 +787,7 @@ void AddVersionKeyWorkItems(HKEY root,
   string16 version_key(dist->GetVersionKey());
   list->AddCreateRegKeyWorkItem(root, version_key);
 
-  string16 product_name(dist->GetAppShortCutName());
+  string16 product_name(dist->GetDisplayName());
   list->AddSetRegValueWorkItem(root, version_key, google_update::kRegNameField,
                                product_name, true);  // overwrite name also
   list->AddSetRegValueWorkItem(root, version_key,
@@ -845,7 +846,7 @@ void AddOemInstallWorkItems(const InstallationState& original_state,
     if (source_product->GetOemInstall(&oem_install)) {
       VLOG(1) << "Mirroring oeminstall=\"" << oem_install << "\" from "
               << BrowserDistribution::GetSpecificDistribution(source_type)->
-                    GetAppShortCutName();
+                     GetDisplayName();
       install_list->AddCreateRegKeyWorkItem(root_key, multi_key);
       // Always overwrite an old value.
       install_list->AddSetRegValueWorkItem(root_key, multi_key,
@@ -900,7 +901,7 @@ void AddEulaAcceptedWorkItems(const InstallationState& original_state,
     if (have_eula_accepted) {
       VLOG(1) << "Mirroring eulaaccepted=" << eula_accepted << " from "
               << BrowserDistribution::GetSpecificDistribution(product_type)->
-                     GetAppShortCutName();
+                     GetDisplayName();
       install_list->AddCreateRegKeyWorkItem(root_key, multi_key);
       install_list->AddSetRegValueWorkItem(
           root_key, multi_key, google_update::kRegEULAAceptedField,
@@ -1433,13 +1434,13 @@ void AddDelegateExecuteWorkItems(const InstallerState& installer_state,
                                  const Product& product,
                                  WorkItemList* list) {
   string16 handler_class_uuid;
-  BrowserDistribution* distribution = product.distribution();
-  if (!distribution->GetCommandExecuteImplClsid(&handler_class_uuid)) {
+  BrowserDistribution* dist = product.distribution();
+  if (!dist->GetCommandExecuteImplClsid(&handler_class_uuid)) {
     if (InstallUtil::IsChromeSxSProcess()) {
       CleanupBadCanaryDelegateExecuteRegistration(target_path, list);
     } else {
       VLOG(1) << "No DelegateExecute verb handler processing to do for "
-              << distribution->GetAppShortCutName();
+              << dist->GetDisplayName();
     }
     return;
   }
@@ -1495,25 +1496,24 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
                              const Product& product,
                              WorkItemList* list) {
   DCHECK(installer_state.operation() != InstallerState::UNINSTALL);
-  BrowserDistribution* distribution = product.distribution();
+  BrowserDistribution* dist = product.distribution();
 
   if (!product.is_chrome() || !installer_state.system_install()) {
     const char* install_level =
         installer_state.system_install() ? "system" : "user";
     VLOG(1) << "No Active Setup processing to do for " << install_level
-            << "-level " << distribution->GetAppShortCutName();
+            << "-level " << dist->GetDisplayName();
     return;
   }
   DCHECK(installer_state.RequiresActiveSetup());
 
   const HKEY root = HKEY_LOCAL_MACHINE;
-  const string16 active_setup_path(
-      InstallUtil::GetActiveSetupPath(distribution));
+  const string16 active_setup_path(InstallUtil::GetActiveSetupPath(dist));
 
   VLOG(1) << "Adding registration items for Active Setup.";
   list->AddCreateRegKeyWorkItem(root, active_setup_path);
   list->AddSetRegValueWorkItem(root, active_setup_path, L"",
-                               distribution->GetAppShortCutName(), true);
+                               dist->GetDisplayName(), true);
 
   base::FilePath active_setup_exe(installer_state.GetInstallerDirectory(
       new_version).Append(kActiveSetupExe));
@@ -1528,7 +1528,7 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   // TODO(grt): http://crbug.com/75152 Write a reference to a localized
   // resource.
   list->AddSetRegValueWorkItem(root, active_setup_path, L"Localized Name",
-                               distribution->GetAppShortCutName(), true);
+                               dist->GetDisplayName(), true);
 
   list->AddSetRegValueWorkItem(root, active_setup_path, L"IsInstalled",
                                static_cast<DWORD>(1U), true);

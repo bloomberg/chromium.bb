@@ -29,6 +29,17 @@ class BrowserDistribution {
     NUM_TYPES
   };
 
+  enum ShortcutType {
+    SHORTCUT_CHROME,
+    SHORTCUT_CHROME_ALTERNATE,
+    SHORTCUT_APP_LAUNCHER
+  };
+
+  enum Subfolder {
+    SUBFOLDER_CHROME,
+    // TODO(calamity): add SUBFOLDER_APPS when refactoring chrome app dir code.
+  };
+
   virtual ~BrowserDistribution() {}
 
   static BrowserDistribution* GetDistribution();
@@ -53,10 +64,24 @@ class BrowserDistribution {
   // at run-time.
   virtual string16 GetBaseAppName();
 
-  // Returns the localized name of the program.
-  virtual string16 GetAppShortCutName();
+  // Returns the localized display name of this distribution.
+  virtual string16 GetDisplayName();
 
-  virtual string16 GetAlternateApplicationName();
+  // Returns the localized name of the shortcut identified by |shortcut_type|
+  // for this distribution.
+  virtual string16 GetShortcutName(ShortcutType shortcut_type);
+
+  // Returns the index of the icon for the product identified by
+  // |shortcut_type|, inside the file specified by GetIconFilename().
+  virtual int GetIconIndex(ShortcutType shortcut_type);
+
+  // Returns the executable filename (not path) that contains the product icon.
+  virtual string16 GetIconFilename();
+
+  // Returns the localized name of the subfolder in the Start Menu identified by
+  // |subfolder_type| that this distribution should create shortcuts in. For
+  // SUBFOLDER_CHROME this returns GetShortcutName(SHORTCUT_CHROME).
+  virtual string16 GetStartMenuShortcutSubfolder(Subfolder subfolder_type);
 
   // Returns the unsuffixed appid of this program.
   // The AppUserModelId is a property of Windows programs.
@@ -95,13 +120,6 @@ class BrowserDistribution {
   virtual bool CanSetAsDefault();
 
   virtual bool CanCreateDesktopShortcuts();
-
-  // Returns the executable filename (not path) that contains the product icon.
-  virtual string16 GetIconFilename();
-
-  // Returns the index of the icon for the product, inside the file specified by
-  // GetIconFilename().
-  virtual int GetIconIndex();
 
   virtual bool GetChromeChannel(string16* channel);
 

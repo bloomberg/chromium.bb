@@ -87,7 +87,7 @@ void LogShortcutOperation(ShellUtil::ShortcutLocation location,
   if (properties.has_shortcut_name())
     message.append(UTF16ToUTF8(properties.shortcut_name));
   else
-    message.append(UTF16ToUTF8(dist->GetAppShortCutName()));
+    message.append(UTF16ToUTF8(dist->GetDisplayName()));
   message.push_back('"');
 
   message.append(" shortcut to ");
@@ -330,7 +330,7 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
         BrowserDistribution::CHROME_BROWSER);
     // TODO(grt): http://crbug.com/75152 Write a reference to a localized
     // resource for |display_name|.
-    string16 display_name(dist->GetAppShortCutName());
+    string16 display_name(dist->GetDisplayName());
     EscapeXmlAttributeValueInSingleQuotes(&display_name);
 
     // Fill the manifest with the desired values.
@@ -411,8 +411,11 @@ void CreateOrUpdateShortcuts(
   if (!do_not_create_desktop_shortcut ||
       shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
     ShellUtil::ShortcutProperties desktop_properties(base_properties);
-    if (alternate_desktop_shortcut)
-      desktop_properties.set_shortcut_name(dist->GetAlternateApplicationName());
+    if (alternate_desktop_shortcut) {
+      desktop_properties.set_shortcut_name(
+          dist->GetShortcutName(
+              BrowserDistribution::SHORTCUT_CHROME_ALTERNATE));
+    }
     ExecuteAndLogShortcutOperation(
         ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, desktop_properties,
         shortcut_operation);
@@ -421,7 +424,9 @@ void CreateOrUpdateShortcuts(
     // Desktop shortcut.
     if (!alternate_desktop_shortcut &&
         shortcut_operation == ShellUtil::SHELL_SHORTCUT_REPLACE_EXISTING) {
-      desktop_properties.set_shortcut_name(dist->GetAlternateApplicationName());
+      desktop_properties.set_shortcut_name(
+          dist->GetShortcutName(
+              BrowserDistribution::SHORTCUT_CHROME_ALTERNATE));
       ExecuteAndLogShortcutOperation(
           ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist, desktop_properties,
           shortcut_operation);

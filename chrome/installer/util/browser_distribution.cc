@@ -39,6 +39,9 @@ const wchar_t kChromiumActiveSetupGuid[] =
 const wchar_t kCommandExecuteImplUuid[] =
     L"{A2DF06F9-A21A-44A8-8A99-8B9C84F29160}";
 
+// The Chromium App Launcher icon is index 1; see chrome_exe.rc.
+const int kAppLauncherIconIndex = 1;
+
 // The BrowserDistribution objects are never freed.
 BrowserDistribution* g_browser_distribution = NULL;
 BrowserDistribution* g_chrome_frame_distribution = NULL;
@@ -154,12 +157,42 @@ string16 BrowserDistribution::GetBaseAppName() {
   return L"Chromium";
 }
 
-string16 BrowserDistribution::GetAppShortCutName() {
-  return GetBaseAppName();
+string16 BrowserDistribution::GetDisplayName() {
+  return GetShortcutName(SHORTCUT_CHROME);
 }
 
-string16 BrowserDistribution::GetAlternateApplicationName() {
-  return L"The Internet";
+string16 BrowserDistribution::GetShortcutName(ShortcutType shortcut_type) {
+  switch (shortcut_type) {
+    case SHORTCUT_CHROME_ALTERNATE:
+      // TODO(calamity): Change IDS_OEM_MAIN_SHORTCUT_NAME in
+      // chromium_strings.grd to "The Internet" (so that it doesn't collide with
+      // the value in google_chrome_strings.grd) then change this to
+      // installer::GetLocalizedString(IDS_OEM_MAIN_SHORTCUT_NAME_BASE)
+      return L"The Internet";
+    case SHORTCUT_APP_LAUNCHER:
+      return installer::GetLocalizedString(IDS_APP_LIST_SHORTCUT_NAME_BASE);
+    default:
+      DCHECK_EQ(shortcut_type, SHORTCUT_CHROME);
+      return GetBaseAppName();
+  }
+}
+
+int BrowserDistribution::GetIconIndex(ShortcutType shortcut_type) {
+  if (shortcut_type == SHORTCUT_APP_LAUNCHER)
+    return kAppLauncherIconIndex;
+  DCHECK(shortcut_type == SHORTCUT_CHROME ||
+         shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
+  return 0;
+}
+
+string16 BrowserDistribution::GetIconFilename() {
+  return installer::kChromeExe;
+}
+
+string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
+    Subfolder subfolder_type) {
+  DCHECK_EQ(subfolder_type, SUBFOLDER_CHROME);
+  return GetShortcutName(SHORTCUT_CHROME);
 }
 
 string16 BrowserDistribution::GetBaseAppId() {
@@ -226,16 +259,6 @@ bool BrowserDistribution::CanSetAsDefault() {
 
 bool BrowserDistribution::CanCreateDesktopShortcuts() {
   return true;
-}
-
-string16 BrowserDistribution::GetIconFilename() {
-  return string16();
-}
-
-int BrowserDistribution::GetIconIndex() {
-  // Assuming that main icon appears first alphabetically in the resource file
-  // for GetIconFilename().
-  return 0;
 }
 
 bool BrowserDistribution::GetChromeChannel(string16* channel) {

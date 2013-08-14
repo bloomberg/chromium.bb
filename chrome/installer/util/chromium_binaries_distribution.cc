@@ -29,11 +29,12 @@ string16 ChromiumBinariesDistribution::GetBaseAppName() {
   return string16();
 }
 
-string16 ChromiumBinariesDistribution::GetAppShortCutName() {
+string16 ChromiumBinariesDistribution::GetDisplayName() {
   return kChromiumBinariesName;
 }
 
-string16 ChromiumBinariesDistribution::GetAlternateApplicationName() {
+string16 ChromiumBinariesDistribution::GetShortcutName(
+    ShortcutType shortcut_type) {
   NOTREACHED();
   return string16();
 }
@@ -93,7 +94,7 @@ bool ChromiumBinariesDistribution::CanSetAsDefault() {
   return false;
 }
 
-int ChromiumBinariesDistribution::GetIconIndex() {
+int ChromiumBinariesDistribution::GetIconIndex(ShortcutType shortcut_type) {
   NOTREACHED();
   return 0;
 }

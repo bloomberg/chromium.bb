@@ -127,7 +127,7 @@ class ShellUtil {
     }
 
     // Forces the shortcut's name to |shortcut_name_in|.
-    // Default: the current distribution's GetAppShortcutName().
+    // Default: the current distribution's GetShortcutName(SHORTCUT_CHROME).
     // The ".lnk" extension will automatically be added to this name.
     void set_shortcut_name(const string16& shortcut_name_in) {
       shortcut_name = shortcut_name_in;

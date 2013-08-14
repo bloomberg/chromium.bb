@@ -204,7 +204,7 @@ void AddExistingMultiInstalls(const InstallationState& original_state,
           installer_state->AddProductFromState(type, *state);
           VLOG(1) << "Product already installed and must be included: "
                   << BrowserDistribution::GetSpecificDistribution(type)->
-                         GetAppShortCutName();
+                         GetDisplayName();
         }
       }
     }
@@ -338,9 +338,9 @@ bool CheckGroupPolicySettings(const InstallationState& original_state,
                                                    &is_overridden);
       if (is_overridden && app_policy != binaries_policy) {
         LOG(ERROR) << "Found legacy Group Policy setting for "
-                   << dist->GetAppShortCutName() << " (value: " << app_policy
+                   << dist->GetDisplayName() << " (value: " << app_policy
                    << ") that does not match the setting for "
-                   << binaries_dist->GetAppShortCutName()
+                   << binaries_dist->GetDisplayName()
                    << " (value: " << binaries_policy << ").";
         settings_are_valid = false;
       }
@@ -355,7 +355,7 @@ bool CheckGroupPolicySettings(const InstallationState& original_state,
     LOG(ERROR) << "Cannot apply update on account of inconsistent "
                   "Google Update Group Policy settings. Use the Group Policy "
                   "Editor to set the update policy override for the "
-               << binaries_dist->GetAppShortCutName()
+               << binaries_dist->GetDisplayName()
                << " application and try again.";
     *status = installer::INCONSISTENT_UPDATE_POLICY;
     installer_state.WriteInstallerResult(
@@ -505,7 +505,7 @@ bool CheckMultiInstallConditions(const InstallationState& original_state,
       // Block downgrades from multi-install to single-install.
       if (product_state->is_multi_install()) {
         LOG(ERROR) << "Multi-install "
-                   << products[0]->distribution()->GetAppShortCutName()
+                   << products[0]->distribution()->GetDisplayName()
                    << " exists; aborting single install.";
         *status = installer::MULTI_INSTALLATION_EXISTS;
         installer_state->WriteInstallerResult(*status,
@@ -757,7 +757,7 @@ installer::InstallStatus UninstallProduct(
     VLOG(1) << "version on the system: "
             << product_state->version().GetString();
   } else if (!force_uninstall) {
-    LOG(ERROR) << product.distribution()->GetAppShortCutName()
+    LOG(ERROR) << product.distribution()->GetDisplayName()
                << " not found for uninstall.";
     return installer::CHROME_NOT_INSTALLED;
   }
@@ -929,7 +929,7 @@ installer::InstallStatus RegisterDevChrome(
     static const wchar_t kPleaseUninstallYourChromeMessage[] =
         L"You already have a full-installation (non-dev) of %1ls, please "
         L"uninstall it first using Add/Remove Programs in the control panel.";
-    string16 name(chrome_dist->GetAppShortCutName());
+    string16 name(chrome_dist->GetDisplayName());
     string16 message(base::StringPrintf(kPleaseUninstallYourChromeMessage,
                                         name.c_str()));
 
@@ -1241,7 +1241,7 @@ bool HandleNonInstallCmdLineOptions(const InstallationState& original_state,
       InstallUtil::GetChromeVersion(browser_dist, true, &installed_version);
       if (!installed_version.IsValid()) {
         LOG(ERROR) << "No installation of "
-                   << browser_dist->GetAppShortCutName()
+                   << browser_dist->GetDisplayName()
                    << " found for system-level toast.";
       } else {
         product.LaunchUserExperiment(
@@ -1531,7 +1531,7 @@ installer::InstallStatus InstallProductsHelper(
       if (product_state != NULL &&
           (product_state->version().CompareTo(*installer_version) > 0)) {
         LOG(ERROR) << "Higher version of "
-                   << product.distribution()->GetAppShortCutName()
+                   << product.distribution()->GetDisplayName()
                    << " is already installed.";
         higher_products |= (1 << product.distribution()->GetType());
       }
@@ -1839,7 +1839,7 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
         ::MessageBoxW(NULL,
                       installer::GetLocalizedString(
                           IDS_UNINSTALL_COMPLETE_BASE).c_str(),
-                      cf_install->distribution()->GetAppShortCutName().c_str(),
+                      cf_install->distribution()->GetDisplayName().c_str(),
                       MB_OK);
       }
     }

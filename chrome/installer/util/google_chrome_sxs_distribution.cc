@@ -18,6 +18,9 @@ const wchar_t kChannelName[] = L"canary";
 const wchar_t kBrowserAppId[] = L"ChromeCanary";
 const int kSxSIconIndex = 4;
 
+// The Chrome App Launcher Canary icon is index 6; see chrome_exe.rc.
+const int kSxSAppLauncherIconIndex = 6;
+
 }  // namespace
 
 GoogleChromeSxSDistribution::GoogleChromeSxSDistribution()
@@ -29,10 +32,21 @@ string16 GoogleChromeSxSDistribution::GetBaseAppName() {
   return L"Google Chrome Canary";
 }
 
-string16 GoogleChromeSxSDistribution::GetAppShortCutName() {
-  const string16& shortcut_name =
-      installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
-  return shortcut_name;
+string16 GoogleChromeSxSDistribution::GetShortcutName(
+    ShortcutType shortcut_type) {
+  switch (shortcut_type) {
+    case SHORTCUT_CHROME_ALTERNATE:
+      // This should never be called. Returning the same string as Google Chrome
+      // preserves behavior, but it will result in a naming collision.
+      NOTREACHED();
+      return GoogleChromeDistribution::GetShortcutName(shortcut_type);
+    case SHORTCUT_APP_LAUNCHER:
+      return installer::GetLocalizedString(
+          IDS_APP_LIST_SHORTCUT_NAME_CANARY_BASE);
+    default:
+      DCHECK_EQ(shortcut_type, SHORTCUT_CHROME);
+      return installer::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
+  }
 }
 
 string16 GoogleChromeSxSDistribution::GetBaseAppId() {
@@ -53,7 +67,11 @@ bool GoogleChromeSxSDistribution::CanSetAsDefault() {
   return false;
 }
 
-int GoogleChromeSxSDistribution::GetIconIndex() {
+int GoogleChromeSxSDistribution::GetIconIndex(ShortcutType shortcut_type) {
+  if (shortcut_type == SHORTCUT_APP_LAUNCHER)
+    return kSxSAppLauncherIconIndex;
+  DCHECK(shortcut_type == SHORTCUT_CHROME ||
+         shortcut_type == SHORTCUT_CHROME_ALTERNATE) << shortcut_type;
   return kSxSIconIndex;
 }
 

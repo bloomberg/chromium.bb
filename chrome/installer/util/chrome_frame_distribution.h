@@ -15,11 +15,11 @@ class ChromeFrameDistribution : public BrowserDistribution {
  public:
   virtual string16 GetAppGuid() OVERRIDE;
 
+  virtual string16 GetShortcutName(ShortcutType shortcut_type) OVERRIDE;
+
+  virtual int GetIconIndex(ShortcutType shortcut_type) OVERRIDE;
+
   virtual string16 GetBaseAppName() OVERRIDE;
-
-  virtual string16 GetAppShortCutName() OVERRIDE;
-
-  virtual string16 GetAlternateApplicationName() OVERRIDE;
 
   virtual string16 GetInstallSubDir() OVERRIDE;
 
@@ -46,8 +46,6 @@ class ChromeFrameDistribution : public BrowserDistribution {
   virtual string16 GetVersionKey() OVERRIDE;
 
   virtual string16 GetIconFilename() OVERRIDE;
-
-  virtual int GetIconIndex() OVERRIDE;
 
   virtual bool CanSetAsDefault() OVERRIDE;
 

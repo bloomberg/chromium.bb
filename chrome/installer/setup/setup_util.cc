@@ -394,7 +394,7 @@ void MigrateGoogleUpdateStateMultiToSingle(
                             KEY_SET_VALUE);
     if (result != ERROR_SUCCESS) {
       LOG(ERROR) << "Failed opening ClientState key for "
-                 << dist->GetAppShortCutName() << " to migrate usagestats.";
+                 << dist->GetDisplayName() << " to migrate usagestats.";
     } else {
       state_key.WriteValue(google_update::kRegUsageStatsField, usagestats);
     }
@@ -416,7 +416,7 @@ void MigrateGoogleUpdateStateMultiToSingle(
       if (result == ERROR_SUCCESS &&
           channel_info.Initialize(state_key) &&
           product_to_migrate.SetChannelFlags(false, &channel_info)) {
-        VLOG(1) << "Moving " << dist->GetAppShortCutName()
+        VLOG(1) << "Moving " << dist->GetDisplayName()
                 << " to channel: " << channel_info.value();
         channel_info.Write(&state_key);
       }
@@ -431,10 +431,10 @@ void MigrateGoogleUpdateStateMultiToSingle(
   if (result == ERROR_SUCCESS) {
     installer::ChannelInfo channel_info;
     if (!channel_info.Initialize(state_key)) {
-      LOG(ERROR) << "Failed reading " << dist->GetAppShortCutName()
+      LOG(ERROR) << "Failed reading " << dist->GetDisplayName()
                  << " channel info.";
     } else if (channel_info.RemoveAllModifiersAndSuffixes()) {
-      VLOG(1) << "Moving " << dist->GetAppShortCutName()
+      VLOG(1) << "Moving " << dist->GetDisplayName()
               << " to channel: " << channel_info.value();
       channel_info.Write(&state_key);
     }

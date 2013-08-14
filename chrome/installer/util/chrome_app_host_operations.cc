@@ -108,7 +108,8 @@ void ChromeAppHostOperations::AddDefaultShortcutProperties(
   }
 
   if (!properties->has_icon())
-    properties->set_icon(target_exe, dist->GetIconIndex());
+    properties->set_icon(target_exe,
+        dist->GetIconIndex(BrowserDistribution::SHORTCUT_APP_LAUNCHER));
 
   if (!properties->has_app_id()) {
     std::vector<string16> components;
