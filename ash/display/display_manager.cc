@@ -249,6 +249,38 @@ bool DisplayManager::IsInternalDisplayId(int64 id) const {
   return gfx::Display::InternalDisplayId() == id;
 }
 
+DisplayLayout DisplayManager::GetCurrentDisplayLayout() {
+  DCHECK_EQ(2U, num_connected_displays());
+  // Invert if the primary was swapped.
+  if (num_connected_displays() > 1) {
+    DisplayIdPair pair = GetCurrentDisplayIdPair();
+    return layout_store_->ComputeDisplayLayoutForDisplayIdPair(pair);
+  }
+  NOTREACHED() << "DisplayLayout is requested for single display";
+  // On release build, just fallback to default instead of blowing up.
+  DisplayLayout layout =
+      layout_store_->default_display_layout();
+  layout.primary_id = displays_[0].id();
+  return layout;
+}
+
+DisplayIdPair DisplayManager::GetCurrentDisplayIdPair() const {
+  if (IsMirrored()) {
+    int64 mirrored_id = mirrored_display().id();
+    return displays_[0].id() == mirrored_id ?
+        std::make_pair(displays_[1].id(), mirrored_id) :
+        std::make_pair(displays_[0].id(), mirrored_id);
+  } else {
+    int64 id_at_zero = displays_[0].id();
+    if (id_at_zero == gfx::Display::InternalDisplayId() ||
+        id_at_zero == first_display_id()) {
+      return std::make_pair(id_at_zero, displays_[1].id());
+    } else {
+      return std::make_pair(displays_[1].id(), id_at_zero);
+    }
+  }
+}
+
 const gfx::Display& DisplayManager::GetDisplayForId(int64 id) const {
   gfx::Display* display =
       const_cast<DisplayManager*>(this)->FindDisplayForId(id);
@@ -672,28 +704,13 @@ const gfx::Display& DisplayManager::GetDisplayAt(size_t index) const {
   return displays_[index];
 }
 
-const gfx::Display* DisplayManager::GetPrimaryDisplayCandidate() const {
-  const gfx::Display* primary_candidate = &displays_[0];
-#if defined(OS_CHROMEOS)
-  if (base::chromeos::IsRunningOnChromeOS()) {
-    // On ChromeOS device, root windows are stacked vertically, and
-    // default primary is the one on top.
-    int count = GetNumDisplays();
-    int y = GetDisplayInfo(primary_candidate->id()).bounds_in_pixel().y();
-    for (int i = 1; i < count; ++i) {
-      const gfx::Display* display = &displays_[i];
-      const DisplayInfo& display_info = GetDisplayInfo(display->id());
-      if (display->IsInternal()) {
-        primary_candidate = display;
-        break;
-      } else if (display_info.bounds_in_pixel().y() < y) {
-        primary_candidate = display;
-        y = display_info.bounds_in_pixel().y();
-      }
-    }
+const gfx::Display& DisplayManager::GetPrimaryDisplayCandidate() const {
+  if (GetNumDisplays() == 1) {
+    return displays_[0];
   }
-#endif
-  return primary_candidate;
+  DisplayLayout layout = layout_store_->GetRegisteredDisplayLayout(
+      GetCurrentDisplayIdPair());
+  return GetDisplayForId(layout.primary_id);
 }
 
 size_t DisplayManager::GetNumDisplays() const {

@@ -108,7 +108,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentSizeDisplays) {
       Shell::GetInstance()->mouse_cursor_filter();
   ASSERT_EQ(
       DisplayLayout::RIGHT,
-      Shell::GetInstance()->display_controller()->
+      Shell::GetInstance()->display_manager()->
           GetCurrentDisplayLayout().position);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
@@ -143,7 +143,7 @@ TEST_F(MouseCursorEventFilterTest, WarpMouseDifferentScaleDisplays) {
       Shell::GetInstance()->mouse_cursor_filter();
   ASSERT_EQ(
       DisplayLayout::RIGHT,
-      Shell::GetInstance()->display_controller()->
+      Shell::GetInstance()->display_manager()->
           GetCurrentDisplayLayout().position);
 
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();

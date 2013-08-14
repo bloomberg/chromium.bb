@@ -416,31 +416,6 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   EXPECT_EQ(0, observer.CountAndReset());
 }
 
-TEST_F(DisplayControllerTest, MirroredLayout) {
-  if (!SupportsMultipleDisplays())
-    return;
-
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
-  UpdateDisplay("500x500,400x400");
-  EXPECT_FALSE(display_controller->GetCurrentDisplayLayout().mirrored);
-  EXPECT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ(
-      2U, Shell::GetInstance()->display_manager()->num_connected_displays());
-
-  UpdateDisplay("1+0-500x500,1+0-500x500");
-  EXPECT_TRUE(display_controller->GetCurrentDisplayLayout().mirrored);
-  EXPECT_EQ(1, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ(
-      2U, Shell::GetInstance()->display_manager()->num_connected_displays());
-
-  UpdateDisplay("500x500,500x500");
-  EXPECT_FALSE(display_controller->GetCurrentDisplayLayout().mirrored);
-  EXPECT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ(
-      2U, Shell::GetInstance()->display_manager()->num_connected_displays());
-}
-
 TEST_F(DisplayControllerTest, InvertLayout) {
   EXPECT_EQ("left, 0",
             DisplayLayout(DisplayLayout::RIGHT, 0).Invert().ToString());
@@ -477,6 +452,8 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200,300x300");
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
@@ -506,12 +483,12 @@ TEST_F(DisplayControllerTest, SwapPrimary) {
   EXPECT_EQ("200,0 300x300", secondary_display.bounds().ToString());
   EXPECT_EQ("200,0 300x252", secondary_display.work_area().ToString());
   EXPECT_EQ("right, 50",
-            display_controller->GetCurrentDisplayLayout().ToString());
+            display_manager->GetCurrentDisplayLayout().ToString());
 
   // Switch primary and secondary
   display_controller->SetPrimaryDisplay(secondary_display);
   const DisplayLayout& inverted_layout =
-      display_controller->GetCurrentDisplayLayout();
+      display_manager->GetCurrentDisplayLayout();
   EXPECT_EQ("left, -50", inverted_layout.ToString());
 
   EXPECT_EQ(secondary_display.id(),
@@ -566,6 +543,8 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
 
   DisplayController* display_controller =
       Shell::GetInstance()->display_controller();
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
 
   UpdateDisplay("200x200,300x300");
   gfx::Display primary_display = Shell::GetScreen()->GetPrimaryDisplay();
@@ -608,7 +587,7 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_FALSE(secondary_root->Contains(launcher_window));
 
   const DisplayLayout& inverted_layout =
-      display_controller->GetCurrentDisplayLayout();
+      display_manager->GetCurrentDisplayLayout();
 
   EXPECT_EQ("left, -50", inverted_layout.ToString());
 
@@ -634,8 +613,6 @@ TEST_F(DisplayControllerTest, SwapPrimaryById) {
   EXPECT_FALSE(tracker.Contains(secondary_root));
   EXPECT_TRUE(primary_root->Contains(launcher_window));
 
-  internal::DisplayManager* display_manager =
-      Shell::GetInstance()->display_manager();
   // Adding 2nd display with the same ID.  The 2nd display should become primary
   // since secondary id is still stored as desirable_primary_id.
   std::vector<internal::DisplayInfo> display_info_list;

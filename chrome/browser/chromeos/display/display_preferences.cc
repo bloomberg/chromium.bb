@@ -175,7 +175,7 @@ void StoreCurrentDisplayLayoutPrefs() {
   if (!IsValidUser() || GetDisplayManager()->num_connected_displays() < 2)
     return;
 
-  ash::DisplayIdPair pair = GetDisplayController()->GetCurrentDisplayIdPair();
+  ash::DisplayIdPair pair = GetDisplayManager()->GetCurrentDisplayIdPair();
   ash::DisplayLayout display_layout =
       GetDisplayManager()->layout_store()->GetRegisteredDisplayLayout(pair);
   StoreDisplayLayoutPref(pair, display_layout);

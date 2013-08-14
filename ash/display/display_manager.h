@@ -107,6 +107,12 @@ class ASH_EXPORT DisplayManager
 
   bool IsInternalDisplayId(int64 id) const;
 
+  // Returns the display layout used for current displays.
+  DisplayLayout GetCurrentDisplayLayout();
+
+  // Returns the current display pair.
+  DisplayIdPair GetCurrentDisplayIdPair() const;
+
   // Returns display for given |id|;
   const gfx::Display& GetDisplayForId(int64 id) const;
 
@@ -170,7 +176,7 @@ class ASH_EXPORT DisplayManager
   // no longer considered "primary".
   const gfx::Display& GetDisplayAt(size_t index) const;
 
-  const gfx::Display* GetPrimaryDisplayCandidate() const;
+  const gfx::Display& GetPrimaryDisplayCandidate() const;
 
   // Returns the logical number of displays. This returns 1
   // when displays are mirrored.

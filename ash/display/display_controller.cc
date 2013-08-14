@@ -288,28 +288,20 @@ int DisplayController::GetNumDisplays() {
 }
 
 void DisplayController::InitPrimaryDisplay() {
-  const gfx::Display* primary_candidate =
+  const gfx::Display& primary_candidate =
       GetDisplayManager()->GetPrimaryDisplayCandidate();
-  primary_display_id = primary_candidate->id();
-  AddRootWindowForDisplay(*primary_candidate);
+  primary_display_id = primary_candidate.id();
+  AddRootWindowForDisplay(primary_candidate);
 }
 
 void DisplayController::InitSecondaryDisplays() {
   internal::DisplayManager* display_manager = GetDisplayManager();
-  UpdateDisplayBoundsForLayout();
   for (size_t i = 0; i < display_manager->GetNumDisplays(); ++i) {
     const gfx::Display& display = display_manager->GetDisplayAt(i);
     if (primary_display_id != display.id()) {
       aura::RootWindow* root = AddRootWindowForDisplay(display);
       Shell::GetInstance()->InitRootWindowForSecondaryDisplay(root);
     }
-  }
-  if (display_manager->GetNumDisplays() > 1) {
-    DisplayIdPair pair = GetCurrentDisplayIdPair();
-    DisplayLayout layout = GetCurrentDisplayLayout();
-    SetPrimaryDisplayId(
-        layout.primary_id == gfx::Display::kInvalidDisplayID ?
-        pair.first : layout.primary_id);
   }
   UpdateHostWindowNames();
 }
@@ -387,7 +379,7 @@ void DisplayController::SetLayoutForCurrentDisplays(
   if (GetDisplayManager()->GetNumDisplays() < 2)
     return;
   const gfx::Display& primary = GetPrimaryDisplay();
-  const DisplayIdPair pair = GetCurrentDisplayIdPair();
+  const DisplayIdPair pair = GetDisplayManager()->GetCurrentDisplayIdPair();
   // Invert if the primary was swapped.
   DisplayLayout to_set = pair.first == primary.id() ?
       layout_relative_to_primary : layout_relative_to_primary.Invert();
@@ -409,40 +401,6 @@ void DisplayController::SetLayoutForCurrentDisplays(
     Shell::GetInstance()->screen()->NotifyBoundsChanged(
         ScreenAsh::GetSecondaryDisplay());
     PostDisplayConfigurationChange();
-  }
-}
-
-DisplayLayout DisplayController::GetCurrentDisplayLayout() {
-  DCHECK_EQ(2U, GetDisplayManager()->num_connected_displays());
-  // Invert if the primary was swapped.
-  if (GetDisplayManager()->num_connected_displays() > 1) {
-    DisplayIdPair pair = GetCurrentDisplayIdPair();
-    return GetDisplayManager()->layout_store()->
-        ComputeDisplayLayoutForDisplayIdPair(pair);
-  }
-  NOTREACHED() << "DisplayLayout is requested for single display";
-  // On release build, just fallback to default instead of blowing up.
-  DisplayLayout layout =
-      GetDisplayManager()->layout_store()->default_display_layout();
-  layout.primary_id = primary_display_id;
-  return layout;
-}
-
-DisplayIdPair DisplayController::GetCurrentDisplayIdPair() const {
-  internal::DisplayManager* display_manager = GetDisplayManager();
-  const gfx::Display& primary = GetPrimaryDisplay();
-  if (display_manager->IsMirrored()) {
-    return std::make_pair(primary.id(),
-                          display_manager->mirrored_display().id());
-  }
-
-  const gfx::Display& secondary = ScreenAsh::GetSecondaryDisplay();
-  if (primary.IsInternal() ||
-      GetDisplayManager()->first_display_id() == primary.id()) {
-    return std::make_pair(primary.id(), secondary.id());
-  } else {
-    // Display has been Swapped.
-    return std::make_pair(secondary.id(), primary.id());
   }
 }
 
@@ -542,7 +500,7 @@ void DisplayController::SetPrimaryDisplay(
 
   primary_display_id = new_primary_display.id();
   GetDisplayManager()->layout_store()->UpdatePrimaryDisplayId(
-      GetCurrentDisplayIdPair(), primary_display_id);
+      display_manager->GetCurrentDisplayIdPair(), primary_display_id);
 
   UpdateWorkAreaOfDisplayNearestWindow(
       primary_root, old_primary_display.GetWorkAreaInsets());
@@ -783,7 +741,7 @@ void DisplayController::PostDisplayConfigurationChange() {
   internal::DisplayManager* display_manager = GetDisplayManager();
   internal::DisplayLayoutStore* layout_store = display_manager->layout_store();
   if (display_manager->num_connected_displays() > 1) {
-    DisplayIdPair pair = GetCurrentDisplayIdPair();
+    DisplayIdPair pair = display_manager->GetCurrentDisplayIdPair();
     layout_store->UpdateMirrorStatus(pair, display_manager->IsMirrored());
     DisplayLayout layout = layout_store->GetRegisteredDisplayLayout(pair);
 
@@ -837,14 +795,15 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
 }
 
 void DisplayController::UpdateDisplayBoundsForLayout() {
+  internal::DisplayManager* display_manager = GetDisplayManager();
   if (Shell::GetScreen()->GetNumDisplays() < 2 ||
-      GetDisplayManager()->num_connected_displays() < 2) {
+      display_manager->num_connected_displays() < 2) {
     return;
   }
   DCHECK_EQ(2, Shell::GetScreen()->GetNumDisplays());
 
-  const DisplayLayout layout = GetCurrentDisplayLayout();
-  Shell::GetInstance()->display_manager()->UpdateDisplayBoundsForLayoutById(
+  const DisplayLayout layout = display_manager->GetCurrentDisplayLayout();
+  display_manager->UpdateDisplayBoundsForLayoutById(
       layout, GetPrimaryDisplay(),
       ScreenAsh::GetSecondaryDisplay().id());
 }

@@ -175,11 +175,10 @@ TEST_F(DisplayPreferencesTest, PairedLayoutOverrides) {
   shell->display_manager()->UpdateDisplays();
   // Check if the layout settings are notified to the system properly.
   // The paired layout overrides old layout.
-  ash::DisplayController* display_controller = shell->display_controller();
   // Inverted one of for specified pair (id1, id2).  Not used for the pair
   // (id1, dummy_id) since dummy_id is not connected right now.
   EXPECT_EQ("top, 20",
-            display_controller->GetCurrentDisplayLayout().ToString());
+            shell->display_manager()->GetCurrentDisplayLayout().ToString());
   EXPECT_EQ("top, 20", GetRegisteredDisplayLayoutStr(id1, id2));
   EXPECT_EQ("left, 30", GetRegisteredDisplayLayoutStr(id1, dummy_id));
 }
@@ -475,8 +474,8 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   gfx::Screen* screen = gfx::Screen::GetNativeScreen();
   EXPECT_EQ(id2, screen->GetPrimaryDisplay().id());
   EXPECT_EQ(ash::DisplayLayout::BOTTOM,
-            display_controller->GetCurrentDisplayLayout().position);
-  EXPECT_EQ(-10, display_controller->GetCurrentDisplayLayout().offset);
+            display_manager->GetCurrentDisplayLayout().position);
+  EXPECT_EQ(-10, display_manager->GetCurrentDisplayLayout().offset);
   const gfx::Display& primary_display = screen->GetPrimaryDisplay();
   EXPECT_EQ("178x176", primary_display.bounds().size().ToString());
   EXPECT_EQ(gfx::Display::ROTATE_90, primary_display.rotation());

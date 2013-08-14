@@ -5,6 +5,7 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 
 #include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/shared_display_edge_indicator.h"
 #include "ash/screen_ash.h"
@@ -57,7 +58,7 @@ void MouseCursorEventFilter::ShowSharedEdgeIndicator(
   drag_source_root_ = from;
 
   DisplayLayout::Position position = Shell::GetInstance()->
-      display_controller()->GetCurrentDisplayLayout().position;
+      display_manager()->GetCurrentDisplayLayout().position;
   if (position == DisplayLayout::TOP || position == DisplayLayout::BOTTOM)
     UpdateHorizontalIndicatorWindowBounds();
   else
@@ -158,7 +159,7 @@ void MouseCursorEventFilter::UpdateHorizontalIndicatorWindowBounds() {
       Shell::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Rect secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
-      display_controller()->GetCurrentDisplayLayout().position;
+      display_manager()->GetCurrentDisplayLayout().position;
 
   src_indicator_bounds_.set_x(
       std::max(primary_bounds.x(), secondary_bounds.x()));
@@ -187,7 +188,7 @@ void MouseCursorEventFilter::UpdateVerticalIndicatorWindowBounds() {
       Shell::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Rect secondary_bounds = ScreenAsh::GetSecondaryDisplay().bounds();
   DisplayLayout::Position position = Shell::GetInstance()->
-      display_controller()->GetCurrentDisplayLayout().position;
+      display_manager()->GetCurrentDisplayLayout().position;
 
   int upper_shared_y = std::max(primary_bounds.y(), secondary_bounds.y());
   int lower_shared_y = std::min(primary_bounds.bottom(),

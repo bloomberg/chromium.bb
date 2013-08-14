@@ -167,8 +167,6 @@ void DisplayOptionsHandler::SendAllDisplayInfo() {
 void DisplayOptionsHandler::SendDisplayInfo(
     const std::vector<gfx::Display>& displays) {
   DisplayManager* display_manager = GetDisplayManager();
-  ash::DisplayController* display_controller =
-      ash::Shell::GetInstance()->display_controller();
   base::FundamentalValue mirroring(display_manager->IsMirrored());
 
   int64 primary_id = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
@@ -247,7 +245,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
   scoped_ptr<base::Value> offset_value(base::Value::CreateNullValue());
   if (display_manager->GetNumDisplays() > 1) {
     const ash::DisplayLayout layout =
-        display_controller->GetCurrentDisplayLayout();
+        display_manager->GetCurrentDisplayLayout();
     layout_value.reset(new base::FundamentalValue(layout.position));
     offset_value.reset(new base::FundamentalValue(layout.offset));
   }

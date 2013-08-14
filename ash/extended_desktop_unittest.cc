@@ -36,11 +36,11 @@ namespace ash {
 namespace {
 
 void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
-  DisplayController* display_controller =
-      Shell::GetInstance()->display_controller();
-  DisplayLayout layout = display_controller->GetCurrentDisplayLayout();
+  DisplayLayout layout =
+      Shell::GetInstance()->display_manager()->GetCurrentDisplayLayout();
   layout.position = position;
-  display_controller->SetLayoutForCurrentDisplays(layout);
+  Shell::GetInstance()->display_controller()->
+      SetLayoutForCurrentDisplays(layout);
 }
 
 internal::DisplayManager* GetDisplayManager() {
