@@ -106,6 +106,31 @@ class NET_EXPORT ServerBoundCertService
   // |*out_req| will be initialized with a handle to the async request. This
   // RequestHandle object must be cancelled or destroyed before the
   // ServerBoundCertService is destroyed.
+  int GetOrCreateDomainBoundCert(
+      const std::string& host,
+      std::string* private_key,
+      std::string* cert,
+      const CompletionCallback& callback,
+      RequestHandle* out_req);
+
+  // Fetches the domain bound cert for the specified host if one exists.
+  // Returns OK if successful, ERR_FILE_NOT_FOUND if none exists, or an error
+  // code upon failure.
+  //
+  // On successful completion, |private_key| stores a DER-encoded
+  // PrivateKeyInfo struct, and |cert| stores a DER-encoded certificate.
+  // The PrivateKeyInfo is always an ECDSA private key.
+  //
+  // |callback| must not be null. ERR_IO_PENDING is returned if the operation
+  // could not be completed immediately, in which case the result code will
+  // be passed to the callback when available. If an in-flight
+  // GetDomainBoundCert is pending, and a new GetOrCreateDomainBoundCert
+  // request arrives for the same domain, the GetDomainBoundCert request will
+  // not complete until a new cert is created.
+  //
+  // |*out_req| will be initialized with a handle to the async request. This
+  // RequestHandle object must be cancelled or destroyed before the
+  // ServerBoundCertService is destroyed.
   int GetDomainBoundCert(
       const std::string& host,
       std::string* private_key,
@@ -142,6 +167,29 @@ class NET_EXPORT ServerBoundCertService
                     const std::string& server_identifier,
                     const std::string& private_key,
                     const std::string& cert);
+
+  // Searches for an in-flight request for the same domain. If found,
+  // attaches to the request and returns true. Returns false if no in-flight
+  // request is found.
+  bool JoinToInFlightRequest(const base::TimeTicks& request_start,
+                             const std::string& domain,
+                             std::string* private_key,
+                             std::string* cert,
+                             bool create_if_missing,
+                             const CompletionCallback& callback,
+                             RequestHandle* out_req);
+
+  // Looks for the domain bound cert for |domain| in this service's store.
+  // Returns OK if it can be found synchronously, ERR_IO_PENDING if the
+  // result cannot be obtained synchronously, or a network error code on
+  // failure (including failure to find a domain-bound cert of |domain|).
+  int LookupDomainBoundCert(const base::TimeTicks& request_start,
+                            const std::string& domain,
+                            std::string* private_key,
+                            std::string* cert,
+                            bool create_if_missing,
+                            const CompletionCallback& callback,
+                            RequestHandle* out_req);
 
   scoped_ptr<ServerBoundCertStore> server_bound_cert_store_;
   scoped_refptr<base::TaskRunner> task_runner_;

@@ -740,7 +740,7 @@ int SpdyStream::DoGetDomainBoundCert() {
   io_state_ = STATE_GET_DOMAIN_BOUND_CERT_COMPLETE;
   ServerBoundCertService* sbc_service = session_->GetServerBoundCertService();
   DCHECK(sbc_service != NULL);
-  int rv = sbc_service->GetDomainBoundCert(
+  int rv = sbc_service->GetOrCreateDomainBoundCert(
       url.GetOrigin().host(),
       &domain_bound_private_key_,
       &domain_bound_cert_,

@@ -136,6 +136,24 @@ TEST_F(ServerBoundCertServiceTest, GetDomainForHost) {
 // See http://crbug.com/91512 - implement OpenSSL version of CreateSelfSigned.
 #if !defined(USE_OPENSSL)
 
+TEST_F(ServerBoundCertServiceTest, GetCacheMiss) {
+  std::string host("encrypted.google.com");
+
+  int error;
+  TestCompletionCallback callback;
+  ServerBoundCertService::RequestHandle request_handle;
+
+  // Synchronous completion, because the store is initialized.
+  std::string private_key, der_cert;
+  EXPECT_EQ(0, service_->cert_count());
+  error = service_->GetDomainBoundCert(
+      host, &private_key, &der_cert, callback.callback(), &request_handle);
+  EXPECT_EQ(ERR_FILE_NOT_FOUND, error);
+  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_EQ(0, service_->cert_count());
+  EXPECT_TRUE(der_cert.empty());
+}
+
 TEST_F(ServerBoundCertServiceTest, CacheHit) {
   std::string host("encrypted.google.com");
 
@@ -146,7 +164,7 @@ TEST_F(ServerBoundCertServiceTest, CacheHit) {
   // Asynchronous completion.
   std::string private_key_info1, der_cert1;
   EXPECT_EQ(0, service_->cert_count());
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
@@ -160,7 +178,7 @@ TEST_F(ServerBoundCertServiceTest, CacheHit) {
 
   // Synchronous completion.
   std::string private_key_info2, der_cert2;
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
   EXPECT_FALSE(request_handle.is_active());
@@ -169,8 +187,19 @@ TEST_F(ServerBoundCertServiceTest, CacheHit) {
   EXPECT_EQ(private_key_info1, private_key_info2);
   EXPECT_EQ(der_cert1, der_cert2);
 
-  EXPECT_EQ(2u, service_->requests());
-  EXPECT_EQ(1u, service_->cert_store_hits());
+  // Synchronous get.
+  std::string private_key_info3, der_cert3;
+  error = service_->GetDomainBoundCert(
+      host, &private_key_info3, &der_cert3, callback.callback(),
+      &request_handle);
+  EXPECT_FALSE(request_handle.is_active());
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(1, service_->cert_count());
+  EXPECT_EQ(der_cert1, der_cert3);
+  EXPECT_EQ(private_key_info1, private_key_info3);
+
+  EXPECT_EQ(3u, service_->requests());
+  EXPECT_EQ(2u, service_->cert_store_hits());
   EXPECT_EQ(0u, service_->inflight_joins());
 }
 
@@ -182,7 +211,7 @@ TEST_F(ServerBoundCertServiceTest, StoreCerts) {
   std::string host1("encrypted.google.com");
   std::string private_key_info1, der_cert1;
   EXPECT_EQ(0, service_->cert_count());
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host1, &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
@@ -193,7 +222,7 @@ TEST_F(ServerBoundCertServiceTest, StoreCerts) {
 
   std::string host2("www.verisign.com");
   std::string private_key_info2, der_cert2;
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host2, &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
@@ -204,7 +233,7 @@ TEST_F(ServerBoundCertServiceTest, StoreCerts) {
 
   std::string host3("www.twitter.com");
   std::string private_key_info3, der_cert3;
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host3, &private_key_info3, &der_cert3,
       callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
@@ -234,13 +263,13 @@ TEST_F(ServerBoundCertServiceTest, InflightJoin) {
   TestCompletionCallback callback2;
   ServerBoundCertService::RequestHandle request_handle2;
 
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host, &private_key_info1, &der_cert1,
       callback1.callback(), &request_handle1);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle1.is_active());
   // Should join with the original request.
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host, &private_key_info2, &der_cert2,
       callback2.callback(), &request_handle2);
   EXPECT_EQ(ERR_IO_PENDING, error);
@@ -254,6 +283,45 @@ TEST_F(ServerBoundCertServiceTest, InflightJoin) {
   EXPECT_EQ(2u, service_->requests());
   EXPECT_EQ(0u, service_->cert_store_hits());
   EXPECT_EQ(1u, service_->inflight_joins());
+  EXPECT_EQ(1u, service_->workers_created());
+}
+
+// Tests an inflight join of a Get request to a GetOrCreate request.
+TEST_F(ServerBoundCertServiceTest, InflightJoinGetOrCreateAndGet) {
+  std::string host("encrypted.google.com");
+  int error;
+
+  std::string private_key_info1, der_cert1;
+  TestCompletionCallback callback1;
+  ServerBoundCertService::RequestHandle request_handle1;
+
+  std::string private_key_info2;
+  std::string der_cert2;
+  TestCompletionCallback callback2;
+  ServerBoundCertService::RequestHandle request_handle2;
+
+  error = service_->GetOrCreateDomainBoundCert(
+      host, &private_key_info1, &der_cert1,
+      callback1.callback(), &request_handle1);
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request_handle1.is_active());
+  // Should join with the original request.
+  error = service_->GetDomainBoundCert(
+      host, &private_key_info2, &der_cert2, callback2.callback(),
+      &request_handle2);
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request_handle2.is_active());
+
+  error = callback1.WaitForResult();
+  EXPECT_EQ(OK, error);
+  error = callback2.WaitForResult();
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(der_cert1, der_cert2);
+
+  EXPECT_EQ(2u, service_->requests());
+  EXPECT_EQ(0u, service_->cert_store_hits());
+  EXPECT_EQ(1u, service_->inflight_joins());
+  EXPECT_EQ(1u, service_->workers_created());
 }
 
 TEST_F(ServerBoundCertServiceTest, ExtractValuesFromBytesEC) {
@@ -263,7 +331,7 @@ TEST_F(ServerBoundCertServiceTest, ExtractValuesFromBytesEC) {
   TestCompletionCallback callback;
   ServerBoundCertService::RequestHandle request_handle;
 
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host, &private_key_info, &der_cert, callback.callback(),
       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
@@ -297,11 +365,11 @@ TEST_F(ServerBoundCertServiceTest, CancelRequest) {
   int error;
   ServerBoundCertService::RequestHandle request_handle;
 
-  error = service_->GetDomainBoundCert(host,
-                                      &private_key_info,
-                                      &der_cert,
-                                      base::Bind(&FailTest),
-                                      &request_handle);
+  error = service_->GetOrCreateDomainBoundCert(host,
+                                               &private_key_info,
+                                               &der_cert,
+                                               base::Bind(&FailTest),
+                                               &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle.is_active());
   request_handle.Cancel();
@@ -326,11 +394,11 @@ TEST_F(ServerBoundCertServiceTest, CancelRequestByHandleDestruction) {
   {
     ServerBoundCertService::RequestHandle request_handle;
 
-    error = service_->GetDomainBoundCert(host,
-                                         &private_key_info,
-                                         &der_cert,
-                                         base::Bind(&FailTest),
-                                         &request_handle);
+    error = service_->GetOrCreateDomainBoundCert(host,
+                                                 &private_key_info,
+                                                 &der_cert,
+                                                 base::Bind(&FailTest),
+                                                 &request_handle);
     EXPECT_EQ(ERR_IO_PENDING, error);
     EXPECT_TRUE(request_handle.is_active());
   }
@@ -352,11 +420,11 @@ TEST_F(ServerBoundCertServiceTest, DestructionWithPendingRequest) {
   int error;
   ServerBoundCertService::RequestHandle request_handle;
 
-  error = service_->GetDomainBoundCert(host,
-                                       &private_key_info,
-                                       &der_cert,
-                                       base::Bind(&FailTest),
-                                       &request_handle);
+  error = service_->GetOrCreateDomainBoundCert(host,
+                                               &private_key_info,
+                                               &der_cert,
+                                               base::Bind(&FailTest),
+                                               &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle.is_active());
 
@@ -391,11 +459,11 @@ TEST_F(ServerBoundCertServiceTest, RequestAfterPoolShutdown) {
   int error;
   ServerBoundCertService::RequestHandle request_handle;
 
-  error = service_->GetDomainBoundCert(host,
-                                       &private_key_info,
-                                       &der_cert,
-                                       base::Bind(&FailTest),
-                                       &request_handle);
+  error = service_->GetOrCreateDomainBoundCert(host,
+                                               &private_key_info,
+                                               &der_cert,
+                                               base::Bind(&FailTest),
+                                               &request_handle);
   // If we got here without crashing or a valgrind error, it worked.
   ASSERT_EQ(ERR_INSUFFICIENT_RESOURCES, error);
   EXPECT_FALSE(request_handle.is_active());
@@ -420,27 +488,27 @@ TEST_F(ServerBoundCertServiceTest, SimultaneousCreation) {
   TestCompletionCallback callback3;
   ServerBoundCertService::RequestHandle request_handle3;
 
-  error = service_->GetDomainBoundCert(host1,
-                                       &private_key_info1,
-                                       &der_cert1,
-                                       callback1.callback(),
-                                       &request_handle1);
+  error = service_->GetOrCreateDomainBoundCert(host1,
+                                               &private_key_info1,
+                                               &der_cert1,
+                                               callback1.callback(),
+                                               &request_handle1);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle1.is_active());
 
-  error = service_->GetDomainBoundCert(host2,
-                                       &private_key_info2,
-                                       &der_cert2,
-                                       callback2.callback(),
-                                       &request_handle2);
+  error = service_->GetOrCreateDomainBoundCert(host2,
+                                               &private_key_info2,
+                                               &der_cert2,
+                                               callback2.callback(),
+                                               &request_handle2);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle2.is_active());
 
-  error = service_->GetDomainBoundCert(host3,
-                                       &private_key_info3,
-                                       &der_cert3,
-                                       callback3.callback(),
-                                       &request_handle3);
+  error = service_->GetOrCreateDomainBoundCert(host3,
+                                               &private_key_info3,
+                                               &der_cert3,
+                                               callback3.callback(),
+                                               &request_handle3);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle3.is_active());
 
@@ -492,7 +560,7 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
 
   // Cert is valid - synchronous completion.
   std::string private_key_info1, der_cert1;
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       "good", &private_key_info1, &der_cert1,
       callback.callback(), &request_handle);
   EXPECT_EQ(OK, error);
@@ -503,7 +571,7 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
 
   // Expired cert is valid as well - synchronous completion.
   std::string private_key_info2, der_cert2;
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       "expired", &private_key_info2, &der_cert2,
       callback.callback(), &request_handle);
   EXPECT_EQ(OK, error);
@@ -513,7 +581,7 @@ TEST_F(ServerBoundCertServiceTest, Expiration) {
   EXPECT_STREQ("d", der_cert2.c_str());
 }
 
-TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
+TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOrCreateNoCertsInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
   service_ = scoped_ptr<ServerBoundCertService>(
@@ -528,7 +596,7 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
   // Asynchronous completion with no certs in the store.
   std::string private_key_info, der_cert;
   EXPECT_EQ(0, service_->cert_count());
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host, &private_key_info, &der_cert, callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle.is_active());
@@ -544,7 +612,38 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
   EXPECT_FALSE(request_handle.is_active());
 }
 
-TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
+TEST_F(ServerBoundCertServiceTest, AsyncStoreGetNoCertsInStore) {
+  MockServerBoundCertStoreWithAsyncGet* mock_store =
+      new MockServerBoundCertStoreWithAsyncGet();
+  service_ = scoped_ptr<ServerBoundCertService>(
+      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+
+  std::string host("encrypted.google.com");
+
+  int error;
+  TestCompletionCallback callback;
+  ServerBoundCertService::RequestHandle request_handle;
+
+  // Asynchronous completion with no certs in the store.
+  std::string private_key, der_cert;
+  EXPECT_EQ(0, service_->cert_count());
+  error = service_->GetDomainBoundCert(
+      host, &private_key, &der_cert, callback.callback(), &request_handle);
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request_handle.is_active());
+
+  mock_store->CallGetServerBoundCertCallbackWithResult(
+      ERR_FILE_NOT_FOUND, base::Time(), std::string(), std::string());
+
+  error = callback.WaitForResult();
+  EXPECT_EQ(ERR_FILE_NOT_FOUND, error);
+  EXPECT_EQ(0, service_->cert_count());
+  EXPECT_EQ(0u, service_->workers_created());
+  EXPECT_TRUE(der_cert.empty());
+  EXPECT_FALSE(request_handle.is_active());
+}
+
+TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOrCreateOneCertInStore) {
   MockServerBoundCertStoreWithAsyncGet* mock_store =
       new MockServerBoundCertStoreWithAsyncGet();
   service_ = scoped_ptr<ServerBoundCertService>(
@@ -559,7 +658,7 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
   // Asynchronous completion with a cert in the store.
   std::string private_key_info, der_cert;
   EXPECT_EQ(0, service_->cert_count());
-  error = service_->GetDomainBoundCert(
+  error = service_->GetOrCreateDomainBoundCert(
       host, &private_key_info, &der_cert, callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, error);
   EXPECT_TRUE(request_handle.is_active());
@@ -578,6 +677,94 @@ TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
   EXPECT_STREQ("ab", private_key_info.c_str());
   EXPECT_STREQ("cd", der_cert.c_str());
   EXPECT_FALSE(request_handle.is_active());
+}
+
+TEST_F(ServerBoundCertServiceTest, AsyncStoreGetOneCertInStore) {
+  MockServerBoundCertStoreWithAsyncGet* mock_store =
+      new MockServerBoundCertStoreWithAsyncGet();
+  service_ = scoped_ptr<ServerBoundCertService>(
+      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+
+  std::string host("encrypted.google.com");
+
+  int error;
+  TestCompletionCallback callback;
+  ServerBoundCertService::RequestHandle request_handle;
+
+  // Asynchronous completion with a cert in the store.
+  std::string private_key, der_cert;
+  EXPECT_EQ(0, service_->cert_count());
+  error = service_->GetDomainBoundCert(
+      host, &private_key, &der_cert, callback.callback(), &request_handle);
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request_handle.is_active());
+
+  mock_store->CallGetServerBoundCertCallbackWithResult(
+      OK, base::Time(), "ab", "cd");
+
+  error = callback.WaitForResult();
+  EXPECT_EQ(OK, error);
+  EXPECT_EQ(1, service_->cert_count());
+  EXPECT_EQ(1u, service_->requests());
+  EXPECT_EQ(1u, service_->cert_store_hits());
+  // Because the cert was found in the store, no new workers should have been
+  // created.
+  EXPECT_EQ(0u, service_->workers_created());
+  EXPECT_STREQ("cd", der_cert.c_str());
+  EXPECT_FALSE(request_handle.is_active());
+}
+
+TEST_F(ServerBoundCertServiceTest, AsyncStoreGetThenCreateNoCertsInStore) {
+  MockServerBoundCertStoreWithAsyncGet* mock_store =
+      new MockServerBoundCertStoreWithAsyncGet();
+  service_ = scoped_ptr<ServerBoundCertService>(
+      new ServerBoundCertService(mock_store, sequenced_worker_pool_));
+
+  std::string host("encrypted.google.com");
+
+  int error;
+
+  // Asynchronous get with no certs in the store.
+  TestCompletionCallback callback1;
+  ServerBoundCertService::RequestHandle request_handle1;
+  std::string private_key1, der_cert1;
+  EXPECT_EQ(0, service_->cert_count());
+  error = service_->GetDomainBoundCert(
+      host, &private_key1, &der_cert1, callback1.callback(), &request_handle1);
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request_handle1.is_active());
+
+  // Asynchronous get/create with no certs in the store.
+  TestCompletionCallback callback2;
+  ServerBoundCertService::RequestHandle request_handle2;
+  std::string private_key2, der_cert2;
+  EXPECT_EQ(0, service_->cert_count());
+  error = service_->GetOrCreateDomainBoundCert(
+      host, &private_key2, &der_cert2, callback2.callback(), &request_handle2);
+  EXPECT_EQ(ERR_IO_PENDING, error);
+  EXPECT_TRUE(request_handle2.is_active());
+
+  mock_store->CallGetServerBoundCertCallbackWithResult(
+      ERR_FILE_NOT_FOUND, base::Time(), std::string(), std::string());
+
+  // Even though the first request didn't ask to create a cert, it gets joined
+  // by the second, which does, so both succeed.
+  error = callback1.WaitForResult();
+  EXPECT_EQ(OK, error);
+  error = callback2.WaitForResult();
+  EXPECT_EQ(OK, error);
+
+  // One cert is created, one request is joined.
+  EXPECT_EQ(2U, service_->requests());
+  EXPECT_EQ(1, service_->cert_count());
+  EXPECT_EQ(1u, service_->workers_created());
+  EXPECT_EQ(1u, service_->inflight_joins());
+  EXPECT_FALSE(der_cert1.empty());
+  EXPECT_EQ(der_cert1, der_cert2);
+  EXPECT_FALSE(private_key1.empty());
+  EXPECT_EQ(private_key1, private_key2);
+  EXPECT_FALSE(request_handle1.is_active());
+  EXPECT_FALSE(request_handle2.is_active());
 }
 
 #endif  // !defined(USE_OPENSSL)

@@ -2598,7 +2598,7 @@ int SSLClientSocketNSS::Core::DoGetDomainBoundCert(const std::string& host) {
 
   weak_net_log_->BeginEvent(NetLog::TYPE_SSL_GET_DOMAIN_BOUND_CERT);
 
-  int rv = server_bound_cert_service_->GetDomainBoundCert(
+  int rv = server_bound_cert_service_->GetOrCreateDomainBoundCert(
       host,
       &domain_bound_private_key_,
       &domain_bound_cert_,

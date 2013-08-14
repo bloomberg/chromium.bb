@@ -31,9 +31,8 @@ void CreateCertAndKey(std::string* cert, std::string* key) {
 
   TestCompletionCallback callback;
   ServerBoundCertService::RequestHandle request_handle;
-  int rv = server_bound_cert_service->GetDomainBoundCert(
-      "www.google.com", key, cert,
-      callback.callback(), &request_handle);
+  int rv = server_bound_cert_service->GetOrCreateDomainBoundCert(
+      "www.google.com", key, cert, callback.callback(), &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, callback.WaitForResult());
 

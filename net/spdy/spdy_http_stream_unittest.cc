@@ -542,7 +542,7 @@ void GetECServerBoundCertAndProof(
   TestCompletionCallback callback;
   std::string key;
   ServerBoundCertService::RequestHandle request_handle;
-  int rv = server_bound_cert_service->GetDomainBoundCert(
+  int rv = server_bound_cert_service->GetOrCreateDomainBoundCert(
       host, &key, cert, callback.callback(),
       &request_handle);
   EXPECT_EQ(ERR_IO_PENDING, rv);
