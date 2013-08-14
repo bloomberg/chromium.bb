@@ -895,7 +895,8 @@ void RenderWidgetHostViewWin::CopyFromCompositingSurfaceToVideoFrame(
   if (!accelerated_surface_)
     return;
 
-  if (!target || target->format() != media::VideoFrame::YV12)
+  if (!target || (target->format() != media::VideoFrame::YV12 &&
+                  target->format() != media::VideoFrame::I420))
     return;
 
   if (src_subrect.IsEmpty())
