@@ -180,6 +180,15 @@ class GPU_EXPORT Framebuffer : public base::RefCounted<Framebuffer> {
   DISALLOW_COPY_AND_ASSIGN(Framebuffer);
 };
 
+struct DecoderFramebufferState {
+  DecoderFramebufferState():
+      clear_state_dirty(true) {}
+
+  // State saved for clearing so we can clear render buffers and then
+  // restore to these values.
+  bool clear_state_dirty;
+};
+
 // This class keeps track of the frambebuffers and their attached renderbuffers
 // so we can correctly clear them.
 class GPU_EXPORT FramebufferManager {

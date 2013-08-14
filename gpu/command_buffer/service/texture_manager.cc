@@ -6,6 +6,7 @@
 #include "base/bits.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
+#include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
@@ -1234,6 +1235,239 @@ void TextureManager::IncFramebufferStateChangeCount() {
   if (framebuffer_manager_)
     framebuffer_manager_->IncFramebufferStateChangeCount();
 
+}
+
+bool TextureManager::ValidateTextureParameters(
+    ErrorState* error_state, const char* function_name,
+    GLenum target, GLenum format, GLenum type, GLint level) {
+  if (!feature_info_->GetTextureFormatValidator(format).IsValid(type)) {
+      ERRORSTATE_SET_GL_ERROR(
+          error_state, GL_INVALID_OPERATION, function_name,
+          (std::string("invalid type ") +
+           GLES2Util::GetStringEnum(type) + " for format " +
+           GLES2Util::GetStringEnum(format)).c_str());
+      return false;
+  }
+
+  uint32 channels = GLES2Util::GetChannelsForFormat(format);
+  if ((channels & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && level) {
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_OPERATION, function_name,
+        (std::string("invalid type ") +
+         GLES2Util::GetStringEnum(type) + " for format " +
+         GLES2Util::GetStringEnum(format)).c_str());
+    return false;
+  }
+  return true;
+}
+
+// Gets the texture id for a given target.
+TextureRef* TextureManager::GetTextureInfoForTarget(
+    ContextState* state, GLenum target) {
+  TextureUnit& unit = state->texture_units[state->active_texture_unit];
+  TextureRef* texture = NULL;
+  switch (target) {
+    case GL_TEXTURE_2D:
+      texture = unit.bound_texture_2d.get();
+      break;
+    case GL_TEXTURE_CUBE_MAP:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+    case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+    case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+      texture = unit.bound_texture_cube_map.get();
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      texture = unit.bound_texture_external_oes.get();
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      texture = unit.bound_texture_rectangle_arb.get();
+      break;
+    default:
+      NOTREACHED();
+      return NULL;
+  }
+  return texture;
+}
+
+TextureRef* TextureManager::GetTextureInfoForTargetUnlessDefault(
+    ContextState* state, GLenum target) {
+  TextureRef* texture = GetTextureInfoForTarget(state, target);
+  if (!texture)
+    return NULL;
+  if (texture == GetDefaultTextureInfo(target))
+    return NULL;
+  return texture;
+}
+
+bool TextureManager::ValidateTexImage2D(
+    ContextState* state,
+    const char* function_name,
+    const DoTextImage2DArguments& args,
+    TextureRef** texture_ref) {
+  ErrorState* error_state = state->GetErrorState();
+  const Validators* validators = feature_info_->validators();
+  if (!validators->texture_target.IsValid(args.target)) {
+    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+        error_state, function_name, args.target, "target");
+    return false;
+  }
+  if (!validators->texture_format.IsValid(args.internal_format)) {
+    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+        error_state, function_name, args.internal_format,
+        "internal_format");
+    return false;
+  }
+  if (!validators->texture_format.IsValid(args.format)) {
+    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+        error_state, function_name, args.format, "format");
+    return false;
+  }
+  if (!validators->pixel_type.IsValid(args.type)) {
+    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
+        error_state, function_name, args.type, "type");
+    return false;
+  }
+  if (args.format != args.internal_format) {
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_OPERATION, function_name,
+        "format != internalFormat");
+    return false;
+  }
+  if (!ValidateTextureParameters(
+      error_state, function_name, args.target, args.format, args.type,
+      args.level)) {
+    return false;
+  }
+  if (!ValidForTarget(args.target, args.level, args.width, args.height, 1) ||
+      args.border != 0) {
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_VALUE, function_name,
+        "dimensions out of range");
+    return false;
+  }
+  if ((GLES2Util::GetChannelsForFormat(args.format) &
+       (GLES2Util::kDepth | GLES2Util::kStencil)) != 0 && args.pixels) {
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_OPERATION,
+        function_name, "can not supply data for depth or stencil textures");
+    return false;
+  }
+
+  TextureRef* local_texture_ref = GetTextureInfoForTarget(state, args.target);
+  if (!local_texture_ref) {
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_OPERATION, function_name,
+        "unknown texture for target");
+    return false;
+  }
+  if (local_texture_ref->texture()->IsImmutable()) {
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_OPERATION, function_name,
+        "texture is immutable");
+    return false;
+  }
+
+  // TODO - verify that using the managed vs unmanaged does not matter.
+  // They both use the same MemoryTracker, and this call just re-routes
+  // to it.
+  if (!memory_tracker_managed_->EnsureGPUMemoryAvailable(args.pixels_size)) {
+    ERRORSTATE_SET_GL_ERROR(error_state, GL_OUT_OF_MEMORY, "glTexImage2D",
+                            "out of memory");
+    return false;
+  }
+
+  // Write the TextureReference since this is valid.
+  *texture_ref = local_texture_ref;
+  return true;
+}
+
+void TextureManager::ValidateAndDoTexImage2D(
+    DecoderTextureState* texture_state,
+    ContextState* state,
+    DecoderFramebufferState* framebuffer_state,
+    const DoTextImage2DArguments& args) {
+  TextureRef* texture_ref;
+  if (!ValidateTexImage2D(state, "glTexImage2D", args, &texture_ref)) {
+    return;
+  }
+
+  DoTexImage2D(texture_state, state->GetErrorState(), framebuffer_state,
+               texture_ref, args);
+}
+
+void TextureManager::DoTexImage2D(
+    DecoderTextureState* texture_state,
+    ErrorState* error_state,
+    DecoderFramebufferState* framebuffer_state,
+    TextureRef* texture_ref,
+    const DoTextImage2DArguments& args) {
+  Texture* texture = texture_ref->texture();
+  GLsizei tex_width = 0;
+  GLsizei tex_height = 0;
+  GLenum tex_type = 0;
+  GLenum tex_format = 0;
+  bool level_is_same =
+      texture->GetLevelSize(args.target, args.level, &tex_width, &tex_height) &&
+      texture->GetLevelType(args.target, args.level, &tex_type, &tex_format) &&
+      args.width == tex_width && args.height == tex_height &&
+      args.type == tex_type && args.format == tex_format;
+
+  if (level_is_same && !args.pixels) {
+    // Just set the level texture but mark the texture as uncleared.
+    SetLevelInfo(
+        texture_ref,
+        args.target, args.level, args.internal_format, args.width, args.height,
+        1, args.border, args.format, args.type, false);
+    texture_state->tex_image_2d_failed = false;
+    return;
+  }
+
+  if (texture->IsAttachedToFramebuffer()) {
+    framebuffer_state->clear_state_dirty = true;
+  }
+
+  if (!texture_state->teximage2d_faster_than_texsubimage2d &&
+      level_is_same && args.pixels) {
+    {
+      ScopedTextureUploadTimer timer(texture_state);
+      glTexSubImage2D(args.target, args.level, 0, 0, args.width, args.height,
+                      args.format, args.type, args.pixels);
+    }
+    SetLevelCleared(texture_ref, args.target, args.level, true);
+    texture_state->tex_image_2d_failed = false;
+    return;
+  }
+
+  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, "glTexImage2D");
+  {
+    ScopedTextureUploadTimer timer(texture_state);
+    glTexImage2D(
+        args.target, args.level, args.internal_format, args.width, args.height,
+        args.border, args.format, args.type, args.pixels);
+  }
+  GLenum error = ERRORSTATE_PEEK_GL_ERROR(error_state, "glTexImage2D");
+  if (error == GL_NO_ERROR) {
+    SetLevelInfo(
+        texture_ref,
+        args.target, args.level, args.internal_format, args.width, args.height,
+        1, args.border, args.format, args.type, args.pixels != NULL);
+    texture_state->tex_image_2d_failed = false;
+  }
+}
+
+ScopedTextureUploadTimer::ScopedTextureUploadTimer(
+    DecoderTextureState* texture_state)
+    : texture_state_(texture_state),
+      begin_time_(base::TimeTicks::HighResNow()) {
+}
+
+ScopedTextureUploadTimer::~ScopedTextureUploadTimer() {
+  texture_state_->texture_upload_count++;
+  texture_state_->total_texture_upload_time +=
+      base::TimeTicks::HighResNow() - begin_time_;
 }
 
 }  // namespace gles2

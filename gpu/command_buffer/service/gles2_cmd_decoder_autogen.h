@@ -319,7 +319,7 @@ error::Error GLES2DecoderImpl::HandleColorMask(
     state_.color_mask_green = green;
     state_.color_mask_blue = blue;
     state_.color_mask_alpha = alpha;
-    clear_state_dirty_ = true;
+    framebuffer_state_.clear_state_dirty = true;
   }
   return error::kNoError;
 }
@@ -678,7 +678,7 @@ error::Error GLES2DecoderImpl::HandleDepthMask(
   GLboolean flag = static_cast<GLboolean>(c.flag);
   if (state_.depth_mask != flag) {
     state_.depth_mask = flag;
-    clear_state_dirty_ = true;
+    framebuffer_state_.clear_state_dirty = true;
   }
   return error::kNoError;
 }
@@ -1698,7 +1698,7 @@ error::Error GLES2DecoderImpl::HandleStencilMask(
       state_.stencil_back_writemask != mask) {
     state_.stencil_front_writemask = mask;
     state_.stencil_back_writemask = mask;
-    clear_state_dirty_ = true;
+    framebuffer_state_.clear_state_dirty = true;
   }
   return error::kNoError;
 }
@@ -1725,7 +1725,7 @@ error::Error GLES2DecoderImpl::HandleStencilMaskSeparate(
     if (face == GL_BACK || face == GL_FRONT_AND_BACK) {
       state_.stencil_back_writemask = mask;
     }
-    clear_state_dirty_ = true;
+    framebuffer_state_.clear_state_dirty = true;
   }
   return error::kNoError;
 }
@@ -3332,7 +3332,7 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
     case GL_DEPTH_TEST:
       if (state_.enable_flags.depth_test != enabled) {
         state_.enable_flags.depth_test = enabled;
-        clear_state_dirty_ = true;
+        framebuffer_state_.clear_state_dirty = true;
       }
       return false;
     case GL_DITHER:
@@ -3350,13 +3350,13 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
     case GL_SCISSOR_TEST:
       if (state_.enable_flags.scissor_test != enabled) {
         state_.enable_flags.scissor_test = enabled;
-        clear_state_dirty_ = true;
+        framebuffer_state_.clear_state_dirty = true;
       }
       return false;
     case GL_STENCIL_TEST:
       if (state_.enable_flags.stencil_test != enabled) {
         state_.enable_flags.stencil_test = enabled;
-        clear_state_dirty_ = true;
+        framebuffer_state_.clear_state_dirty = true;
       }
       return false;
     default:

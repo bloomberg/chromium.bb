@@ -62,13 +62,15 @@ _GL_TYPES = {
 _CAPABILITY_FLAGS = [
   {'name': 'blend'},
   {'name': 'cull_face'},
-  {'name': 'depth_test', 'state_flag': 'clear_state_dirty_'},
+  {'name': 'depth_test', 'state_flag': 'framebuffer_state_.clear_state_dirty'},
   {'name': 'dither', 'default': True},
   {'name': 'polygon_offset_fill'},
   {'name': 'sample_alpha_to_coverage'},
   {'name': 'sample_coverage'},
-  {'name': 'scissor_test', 'state_flag': 'clear_state_dirty_'},
-  {'name': 'stencil_test', 'state_flag': 'clear_state_dirty_'},
+  {'name': 'scissor_test',
+   'state_flag': 'framebuffer_state_.clear_state_dirty'},
+  {'name': 'stencil_test',
+   'state_flag': 'framebuffer_state_.clear_state_dirty'},
 ]
 
 _STATES = {
@@ -101,7 +103,7 @@ _STATES = {
       {'name': 'color_mask_blue', 'type': 'GLboolean', 'default': 'true'},
       {'name': 'color_mask_alpha', 'type': 'GLboolean', 'default': 'true'},
     ],
-    'state_flag': 'clear_state_dirty_',
+    'state_flag': 'framebuffer_state_.clear_state_dirty',
   },
   'ClearStencil': {
     'type': 'Normal',
@@ -242,7 +244,7 @@ _STATES = {
   'StencilMask': {
     'type': 'FrontBack',
     'func': 'StencilMaskSeparate',
-    'state_flag': 'clear_state_dirty_',
+    'state_flag': 'framebuffer_state_.clear_state_dirty',
     'states': [
       {
         'name': 'stencil_front_writemask',
@@ -400,7 +402,7 @@ _STATES = {
     'states': [
       {'name': 'depth_mask', 'type': 'GLboolean', 'default': 'true'},
     ],
-    'state_flag': 'clear_state_dirty_',
+    'state_flag': 'framebuffer_state_.clear_state_dirty',
   },
   'Scissor': {
     'type': 'Normal',
