@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/gtk/view_id_util.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ui/base/gtk/gtk_signal.h"
 #include "ui/base/gtk/owned_widget_gtk.h"
 
 class StatusBubbleGtk;
@@ -34,14 +33,6 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   // Make the specified tab visible.
   void SetTab(content::WebContents* tab);
   content::WebContents* tab() const { return tab_; }
-
-  void SetOverlay(content::WebContents* overlay);
-  bool HasOverlay() const { return overlay_ != NULL; }
-
-  // Returns the WebContents currently displayed.
-  content::WebContents* GetVisibleTab() const {
-    return overlay_ ? overlay_ : tab_;
-  }
 
   // Remove the tab from the hierarchy.
   void DetachTab(content::WebContents* tab);
@@ -74,20 +65,10 @@ class TabContentsContainerGtk : public content::NotificationObserver,
   // Stops showing |tab|.
   void HideTab(content::WebContents* tab);
 
-  // Handle focus traversal on the tab contents container. Focus should not
-  // traverse to the overlay contents.
-  CHROMEGTK_CALLBACK_1(TabContentsContainerGtk, gboolean, OnFocus,
-                       GtkDirectionType);
-
   content::NotificationRegistrar registrar_;
 
-  // The WebContents for the currently selected tab. This will be showing
-  // unless there is an overlay contents.
+  // The WebContents for the currently selected tab.
   content::WebContents* tab_;
-
-  // The current overlay contents (for Instant). If non-NULL, it will be
-  // visible.
-  content::WebContents* overlay_;
 
   // The status bubble manager.  Always non-NULL.
   StatusBubbleGtk* status_bubble_;

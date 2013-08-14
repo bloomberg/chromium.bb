@@ -1521,7 +1521,7 @@ void BrowserWindowGtk::RegisterProfilePrefs(
 }
 
 WebContents* BrowserWindowGtk::GetDisplayedTab() {
-  return contents_container_->GetVisibleTab();
+  return contents_container_->tab();
 }
 
 void BrowserWindowGtk::QueueToolbarRedraw() {
@@ -1927,9 +1927,6 @@ void BrowserWindowGtk::MaybeShowBookmarkBar(bool animate) {
     bookmark_bar_->SetPageNavigator(browser_.get());
 
   BookmarkBar::State state = browser_->bookmark_bar_state();
-  if (contents_container_->HasOverlay() && state == BookmarkBar::DETACHED)
-    state = BookmarkBar::HIDDEN;
-
   toolbar_->UpdateForBookmarkBarVisibility(state == BookmarkBar::DETACHED);
   PlaceBookmarkBar(state == BookmarkBar::DETACHED);
   bookmark_bar_->SetBookmarkBarState(
