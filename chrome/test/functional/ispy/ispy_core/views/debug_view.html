@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+    <script>
+      // Set up a getImageData function.
+      var getImageData = function(id) {
+        // Set up an image with the src from the img_id.
+        var image = new Image();
+        image.src = document.getElementById(id).src;
+        // Create a canvas in memeory to hold the image.
+        var mem_canvas = document.createElement('canvas');
+        mem_canvas.setAttribute('width', image.width.toString());
+        mem_canvas.setAttribute('height', image.height.toString());
+        var mem_context = mem_canvas.getContext('2d');
+        // Draw the image into the canvas.
+        mem_context.drawImage(image, 0, 0);
+        // Extract the image from the canvas in editable form.
+        return mem_context.getImageData(0, 0, image.width, image.height);
+      };
+      // Set up a function to generate the image to be displayed.
+      var computeDiffAlpha = function(expected, diff, actual) {
+        // Go through all of the pixels in the diff.
+        for(var i=0; i<diff.data.length; i += 4) {
+          // If the pixel in the diff isn't white, use the expected pixel.
+          if ((diff.data[i] == 255 && diff.data[i + 1] == 255 &&
+               diff.data[i + 2] == 255 && diff.data[i + 3] == 255)) {
+            // If the diff pixel is not white, it should not be seen.
+            expected.data[i] = actual.data[i];
+            expected.data[i + 1] = actual.data[i + 1];
+            expected.data[i + 2] = actual.data[i + 2];
+            expected.data[i + 3] = actual.data[i + 3];
+          }
+          // Otherwise don't touch the actual_data pixel.
+        }
+        // Return the modified pixel data.
+        return expected;
+      };
+      // Set everything up to run after the document loads.
+      var loader = function() {    
+        var canvas = document.getElementById('image');
+        var context = canvas.getContext('2d');
+        var expected = getImageData('expected');
+        var diff = getImageData('diff');
+        var debug = computeDiffAlpha(getImageData('expected'), diff, getImageData('actual'));
+        var state = 'expected';
+        canvas.width = diff.width;
+        canvas.height = diff.height;
+        var swapper = setInterval(function() {                         
+          if (state === 'expected') {
+            state = 'debug';
+            context.putImageData(expected, 0, 0);
+          }
+          else {
+            state = 'expected';
+            context.putImageData(debug, 0, 0);
+          }
+        }, 1000);
+      };
+    </script>
+  </head>
+  <body onload="loader();">
+    <img class='hidden' id='expected' src="{{ expected }}"/>
+    <img class='hidden' id='diff' src="{{ diff }}"/>
+    <img class='hidden' id='actual' src="{{ actual }}"/>
+    <canvas id='image'></canvas>
+  </body>
+</html>

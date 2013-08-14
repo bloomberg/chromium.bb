@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+{% autoescape on %}
+<html>
+  <head>
+    <style>
+      #container {
+        display: table;
+        background-color:#A8A8A8;
+        border:2px solid black;
+        width: 600px
+      }
+      #row {
+        display: table-row;
+        border 1px solid gray;
+        width: 400px;
+        height: 25px;
+        border: 2px solid black;
+      }
+      #col {
+        display: table-cell;
+        padding-right: 25px;
+        padding-left: 25px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      {% for link in links %}
+        <span id="row">
+          <a href="{{ link[1] }}">{{ link[0] }}</a>
+        </span>
+      {% endfor %}
+    </div>
+  </body>
+</html>
+{% endautoescape %}

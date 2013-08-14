@@ -1,0 +1,62 @@
+<!DOCTYPE html> 
+{% autoescape true %}
+<html>
+  <head>
+    <style>
+      #container {
+        display: table;
+        background-color:#A8A8A8;
+        border:2px solid black;
+      }
+      #row {
+        display: table-row;
+      }
+      #left, #right, #middle {
+        display: table-cell;
+        padding-right: 25px;
+        padding-left: 25px;
+      }
+      #left p, #right p, #middle p {
+        margin: 1px 1px;
+      }
+      #title {
+        display: block;
+        text-align: center;
+      }
+      #info-box {
+        background-color:#A8A8A8;
+        border:2px solid black;
+        display: block;
+        width: 400px;
+      }
+      .image {
+        width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <span id="info-box"> Device: {{ device }}<br>
+                         Site: {{ site }}<br>
+                         Device_ID: {{ device_id }}</span>
+    <form action="/update_mask?{{ encoded_parameters }}" method="post">
+      <input type="submit" value="Ignore Diff"/>
+    </form>
+    <div id="container">
+      <div id="row">
+        <div id="left">
+          <span id="title">Expected</span><br>
+          <img class="image" src="{{ expected }}"> 
+        </div>
+        <div id="center">
+          <span id="title">Diff</span><br>
+          <img class="image" src="{{ diff }}">
+        </div>
+        <div id="right">
+          <span id="title">Actual</span><br>
+          <img class="image" src="{{ actual }}"> 
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+{% endautoescape %}

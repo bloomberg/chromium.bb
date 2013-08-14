@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .image {
+        height: 325px;
+      }
+      .cell {
+        padding-right: 25px;
+        padding-left: 25px;
+        float: left;
+      }
+      .info {
+        background-color:#A8A8A8;
+        width: 300px;
+      }
+      .row {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid black;
+        height: 350px;
+      }
+    </style>
+  </head>
+  <body>
+    {% for comp in comparisons %}
+      <div class="row">
+        <div class="cell">
+          Diff<br>
+          <img class="image" src={{ comp['diff'] }}>
+        </div>
+        <div class="cell">
+          Expected<br>
+          <img class="image" src={{ comp['expected'] }}>
+        </div>
+        <div class="cell">
+          Actual<br>
+          <img class="image" src={{ comp['actual'] }}>
+        </div>
+        <div class="cell">
+          <br>
+          <div class="info">
+            Test Name: {{ comp['test_name'] }}<br>
+            Run Name: {{ comp['run_name'] }}
+          </div>
+          <form action="/update_mask" method="post">
+            <input type="hidden" name="batch_name" value="{{ comp['batch_name'] }}"/>
+            <input type="hidden" name="test_name" value="{{ comp['test_name'] }}"/>
+            <input type="hidden" name="run_name" value="{{ comp['run_name'] }}"/>
+            <input type="submit" value="Ignore Diff"/>
+          </form>
+          <a href='/debug_view?diff={{ comp['diff_path'] }}&actual={{ comp['actual_path'] }}&expected={{ comp['expected_path'] }}'>Debug View</a>
+        </div>
+      </div>
+    {% endfor %}
+  </body>
+</html>
