@@ -736,6 +736,11 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
                                     IntSetToString(gpu_driver_bugs_));
   }
 
+  if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
+      !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
+    command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
+  }
+
 #if defined(OS_WIN)
   // DisplayLink 7.1 and earlier can cause the GPU process to crash on startup.
   // http://crbug.com/177611
