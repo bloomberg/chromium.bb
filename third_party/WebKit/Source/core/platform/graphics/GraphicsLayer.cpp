@@ -137,6 +137,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     m_opaqueRectTrackingContentLayerDelegate = adoptPtr(new OpaqueRectTrackingContentLayerDelegate(this));
     m_layer = adoptPtr(Platform::current()->compositorSupport()->createContentLayer(m_opaqueRectTrackingContentLayerDelegate.get()));
     m_layer->layer()->setDrawsContent(m_drawsContent && m_contentsVisible);
+    m_layer->layer()->setWebLayerClient(this);
     m_layer->setAutomaticallyComputeRasterScale(true);
 }
 
@@ -144,6 +145,7 @@ GraphicsLayer::~GraphicsLayer()
 {
     if (m_linkHighlight) {
         m_linkHighlight->clearCurrentGraphicsLayer();
+        m_linkHighlight->layer()->setWebLayerClient(0);
         m_linkHighlight = 0;
     }
 
@@ -512,21 +514,6 @@ int GraphicsLayer::validateTransformOperations(const KeyframeValueList& valueLis
     return firstIndex;
 }
 
-void GraphicsLayer::updateNames()
-{
-    String debugName = "Layer for " + m_nameBase;
-    m_layer->layer()->setDebugName(debugName);
-
-    if (WebLayer* contentsLayer = contentsLayerIfRegistered()) {
-        String debugName = "ContentsLayer for " + m_nameBase;
-        contentsLayer->setDebugName(debugName);
-    }
-    if (m_linkHighlight) {
-        String debugName = "LinkHighlight for " + m_nameBase;
-        m_linkHighlight->layer()->setDebugName(debugName);
-    }
-}
-
 void GraphicsLayer::updateChildList()
 {
     WebLayer* childHost = m_layer->layer();
@@ -618,6 +605,7 @@ void GraphicsLayer::setContentsTo(ContentsLayerPurpose purpose, WebLayer* layer)
             childrenChanged = true;
 
             // The old contents layer will be removed via updateChildList.
+            m_contentsLayer->setWebLayerClient(0);
             m_contentsLayer = 0;
         }
     }
@@ -632,6 +620,7 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
     m_contentsLayerId = m_contentsLayer->id();
 
     if (m_contentsLayer) {
+        m_contentsLayer->setWebLayerClient(this);
         m_contentsLayer->setAnchorPoint(FloatPoint(0, 0));
         m_contentsLayer->setUseParentBackfaceVisibility(true);
 
@@ -643,7 +632,6 @@ void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer)
         // shadow content that must display in front of the video.
         m_layer->layer()->insertChild(m_contentsLayer, 0);
     }
-    updateNames();
 }
 
 void GraphicsLayer::clearContentsLayerIfUnregistered()
@@ -705,7 +693,7 @@ void GraphicsLayer::dumpLayer(TextStream& ts, int indent, LayerTreeFlags flags) 
 
     if (flags & LayerTreeIncludesDebugInfo) {
         ts << " " << static_cast<void*>(const_cast<GraphicsLayer*>(this));
-        ts << " \"" << m_name << "\"";
+        ts << " \"" << m_client->debugName(this) << "\"";
     }
 
     ts << "\n";
@@ -885,11 +873,22 @@ String GraphicsLayer::layerTreeAsText(LayerTreeFlags flags) const
     return ts.release();
 }
 
-void GraphicsLayer::setName(const String& name)
+WebKit::WebString GraphicsLayer::debugName(WebKit::WebLayer* webLayer)
 {
-    m_nameBase = name;
-    m_name = String::format("GraphicsLayer(%p) ", this) + name;
-    updateNames();
+    String name;
+    if (!m_client)
+        return name;
+
+    if (webLayer == m_contentsLayer) {
+        name = "ContentsLayer for " + m_client->debugName(this);
+    } else if (m_linkHighlight && webLayer == m_linkHighlight->layer()) {
+        name = "LinkHighlight for " + m_client->debugName(this);
+    } else if (webLayer == m_layer->layer()) {
+        name = m_client->debugName(this);
+    } else {
+        ASSERT_NOT_REACHED();
+    }
+    return name;
 }
 
 void GraphicsLayer::setCompositingReasons(WebKit::WebCompositingReasons reasons)
@@ -1077,6 +1076,8 @@ void GraphicsLayer::setContentsToImage(Image* image)
             m_imageLayer.clear();
         }
         // The old contents layer will be removed via updateChildList.
+        if (m_contentsLayer)
+            m_contentsLayer->setWebLayerClient(0);
         m_contentsLayer = 0;
     }
 
@@ -1266,6 +1267,8 @@ void GraphicsLayer::setBackgroundFilters(const FilterOperations& filters)
 void GraphicsLayer::setLinkHighlight(LinkHighlightClient* linkHighlight)
 {
     m_linkHighlight = linkHighlight;
+    if (m_linkHighlight)
+        m_linkHighlight->layer()->setWebLayerClient(this);
     updateChildList();
 }
 

@@ -83,6 +83,7 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "wtf/RefCountedLeakCounter.h"
 #include "wtf/UnusedParam.h"
+#include "wtf/text/StringBuilder.h"
 #include <algorithm>
 #include <stdio.h>
 
@@ -255,7 +256,6 @@ RenderTheme* RenderObject::theme() const
     return document()->page()->theme();
 }
 
-#ifndef NDEBUG
 String RenderObject::debugName() const
 {
     StringBuilder name;
@@ -268,7 +268,6 @@ String RenderObject::debugName() const
 
     return name.toString();
 }
-#endif
 
 bool RenderObject::isDescendantOf(const RenderObject* obj) const
 {

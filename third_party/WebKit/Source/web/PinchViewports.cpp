@@ -67,13 +67,6 @@ PinchViewports::PinchViewports(WebViewImpl* owner)
 
     m_innerViewportScrollLayer->platformLayer()->setScrollable(true);
 
-#ifndef NDEBUG
-    m_innerViewportContainerLayer->setName("inner viewport container layer");
-    m_pageScaleLayer->setName("page scale layer");
-    m_innerViewportScrollLayer->setName("inner viewport scroll layer");
-    m_overlayScrollbarHorizontal->setName("overlay scrollbar horizontal");
-    m_overlayScrollbarVertical->setName("overlay scrollbar vertical");
-#endif
 
     m_innerViewportContainerLayer->addChild(m_pageScaleLayer.get());
     m_pageScaleLayer->addChild(m_innerViewportScrollLayer.get());
@@ -184,6 +177,26 @@ void PinchViewports::notifyAnimationStarted(const GraphicsLayer*, double time)
 
 void PinchViewports::paintContents(const GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip)
 {
+}
+
+String PinchViewports::debugName(const GraphicsLayer* graphicsLayer)
+{
+    String name;
+    if (graphicsLayer == m_innerViewportContainerLayer.get()) {
+        name = "Inner Viewport Container Layer";
+    } else if (graphicsLayer == m_pageScaleLayer.get()) {
+        name =  "Page Scale Layer";
+    } else if (graphicsLayer == m_innerViewportScrollLayer.get()) {
+        name =  "Inner Viewport Scroll Layer";
+    } else if (graphicsLayer == m_overlayScrollbarHorizontal.get()) {
+        name =  "Overlay Scrollbar Horizontal Layer";
+    } else if (graphicsLayer == m_overlayScrollbarVertical.get()) {
+        name =  "Overlay Scrollbar Vertical Layer";
+    } else {
+        ASSERT_NOT_REACHED();
+    }
+
+    return name;
 }
 
 } // namespace WebKit

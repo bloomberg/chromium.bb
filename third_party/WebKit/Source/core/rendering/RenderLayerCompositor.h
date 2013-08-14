@@ -205,6 +205,8 @@ public:
     // Returns all reasons (direct, indirectly due to subtree, and indirectly due to overlap) that a layer should be composited.
     CompositingReasons reasonsForCompositing(const RenderLayer*) const;
 
+    virtual String debugName(const GraphicsLayer*) OVERRIDE;
+
 private:
     class OverlapMap;
 

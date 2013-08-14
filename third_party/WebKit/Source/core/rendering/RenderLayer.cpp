@@ -242,7 +242,6 @@ RenderLayer::~RenderLayer()
         m_resizer->destroy();
 }
 
-#ifndef NDEBUG
 String RenderLayer::debugName() const
 {
     String name = renderer()->debugName();
@@ -250,7 +249,6 @@ String RenderLayer::debugName() const
         return name;
     return name + " (reflection)";
 }
-#endif
 
 RenderLayerCompositor* RenderLayer::compositor() const
 {

@@ -608,9 +608,9 @@ public:
     //
     virtual void removedFrom(ContainerNode* insertionPoint);
 
-#ifndef NDEBUG
     String debugName() const;
 
+#ifndef NDEBUG
     virtual void formatForDebugger(char* buffer, unsigned length) const;
 
     void showNode(const char* prefix = "") const;

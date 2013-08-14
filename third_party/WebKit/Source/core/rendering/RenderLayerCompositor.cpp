@@ -2203,9 +2203,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresOverhangAreasLayer()) {
         if (!m_layerForOverhangAreas) {
             m_layerForOverhangAreas = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-            m_layerForOverhangAreas->setName("overhang areas");
-#endif
             m_layerForOverhangAreas->setDrawsContent(false);
             m_layerForOverhangAreas->setSize(m_renderView->frameView()->frameRect().size());
 
@@ -2222,9 +2219,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresHorizontalScrollbarLayer()) {
         if (!m_layerForHorizontalScrollbar) {
             m_layerForHorizontalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-            m_layerForHorizontalScrollbar->setName("horizontal scrollbar");
-#endif
             m_overflowControlsHostLayer->addChild(m_layerForHorizontalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
@@ -2241,9 +2235,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresVerticalScrollbarLayer()) {
         if (!m_layerForVerticalScrollbar) {
             m_layerForVerticalScrollbar = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-            m_layerForVerticalScrollbar->setName("vertical scrollbar");
-#endif
             m_overflowControlsHostLayer->addChild(m_layerForVerticalScrollbar.get());
 
             if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
@@ -2260,9 +2251,6 @@ void RenderLayerCompositor::updateOverflowControlsLayers()
     if (requiresScrollCornerLayer()) {
         if (!m_layerForScrollCorner) {
             m_layerForScrollCorner = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-            m_layerForScrollCorner->setName("scroll corner");
-#endif
             m_overflowControlsHostLayer->addChild(m_layerForScrollCorner.get());
         }
     } else if (m_layerForScrollCorner) {
@@ -2281,9 +2269,6 @@ void RenderLayerCompositor::ensureRootLayer()
 
     if (!m_rootContentLayer) {
         m_rootContentLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-        m_rootContentLayer->setName("content root");
-#endif
         IntRect overflowRect = m_renderView->pixelSnappedLayoutOverflowRect();
         m_rootContentLayer->setSize(FloatSize(overflowRect.maxX(), overflowRect.maxY()));
         m_rootContentLayer->setPosition(FloatPoint());
@@ -2298,22 +2283,13 @@ void RenderLayerCompositor::ensureRootLayer()
 
         // Create a layer to host the clipping layer and the overflow controls layers.
         m_overflowControlsHostLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-        m_overflowControlsHostLayer->setName("overflow controls host");
-#endif
 
         // Create a clipping layer if this is an iframe
         m_containerLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-        m_containerLayer->setName("frame clipping");
-#endif
         if (!isMainFrame())
             m_containerLayer->setMasksToBounds(true);
 
         m_scrollLayer = GraphicsLayer::create(graphicsLayerFactory(), this);
-#ifndef NDEBUG
-        m_scrollLayer->setName("frame scrolling");
-#endif
         if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
             scrollingCoordinator->setLayerIsContainerForFixedPositionLayers(m_scrollLayer.get(), true);
 
@@ -2637,6 +2613,34 @@ Page* RenderLayerCompositor::page() const
         return frame->page();
 
     return 0;
+}
+
+String RenderLayerCompositor::debugName(const GraphicsLayer* graphicsLayer)
+{
+    String name;
+    if (graphicsLayer == m_rootContentLayer.get()) {
+        name = "Content Root Layer";
+#if ENABLE(RUBBER_BANDING)
+    } else if (graphicsLayer == m_layerForOverhangAreas.get()) {
+        name = "Overhang Areas Layer";
+#endif
+    } else if (graphicsLayer == m_overflowControlsHostLayer.get()) {
+        name = "Overflow Controls Host Layer";
+    } else if (graphicsLayer == m_layerForHorizontalScrollbar.get()) {
+        name = "Horizontal Scrollbar Layer";
+    } else if (graphicsLayer == m_layerForVerticalScrollbar.get()) {
+        name = "Vertical Scrollbar Layer";
+    } else if (graphicsLayer == m_layerForScrollCorner.get()) {
+        name = "Scroll Corner Layer";
+    } else if (graphicsLayer == m_containerLayer.get()) {
+        name = "Frame Clipping Layer";
+    } else if (graphicsLayer == m_scrollLayer.get()) {
+        name = "Frame Scrolling Layer";
+    } else {
+        ASSERT_NOT_REACHED();
+    }
+
+    return name;
 }
 
 } // namespace WebCore

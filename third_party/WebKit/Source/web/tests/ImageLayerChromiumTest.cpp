@@ -39,6 +39,7 @@ class MockGraphicsLayerClient : public GraphicsLayerClient {
   public:
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) OVERRIDE { }
     virtual void paintContents(const GraphicsLayer*, GraphicsContext&, GraphicsLayerPaintingPhase, const IntRect& inClip) OVERRIDE { }
+    virtual String debugName(const GraphicsLayer*) OVERRIDE { return String(); }
 };
 
 class TestImage : public Image {

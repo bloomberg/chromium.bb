@@ -70,6 +70,8 @@ public:
     virtual void notifyAnimationStarted(const WebCore::GraphicsLayer*, double time) OVERRIDE;
     virtual void paintContents(const WebCore::GraphicsLayer*, WebCore::GraphicsContext&, WebCore::GraphicsLayerPaintingPhase, const WebCore::IntRect& inClip) OVERRIDE;
 
+    virtual String debugName(const WebCore::GraphicsLayer*) OVERRIDE;
+
 private:
     explicit PinchViewports(WebViewImpl* owner);
 

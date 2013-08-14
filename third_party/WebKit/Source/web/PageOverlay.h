@@ -39,6 +39,7 @@ class GraphicsLayerClient;
 }
 
 namespace WebKit {
+class OverlayGraphicsLayerClientImpl;
 class WebPageOverlay;
 class WebViewImpl;
 struct WebRect;
@@ -47,7 +48,7 @@ class PageOverlay {
 public:
     static PassOwnPtr<PageOverlay> create(WebViewImpl*, WebPageOverlay*);
 
-    ~PageOverlay() { }
+    ~PageOverlay();
 
     WebPageOverlay* overlay() const { return m_overlay; }
     void setOverlay(WebPageOverlay* overlay) { m_overlay = overlay; }
@@ -67,7 +68,7 @@ private:
 
     WebViewImpl* m_viewImpl;
     WebPageOverlay* m_overlay;
-    OwnPtr<WebCore::GraphicsLayerClient> m_layerClient;
+    OverlayGraphicsLayerClientImpl* m_layerClient;
     OwnPtr<WebCore::GraphicsLayer> m_layer;
     int m_zOrder;
 };

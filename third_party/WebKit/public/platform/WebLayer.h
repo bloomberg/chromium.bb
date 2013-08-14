@@ -42,13 +42,12 @@ class SkImageFilter;
 namespace WebKit {
 class WebAnimationDelegate;
 class WebFilterOperations;
+class WebLayerClient;
 class WebLayerScrollClient;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebLayerPositionConstraint;
 struct WebSize;
-
-class WebLayerImpl;
 
 class WebLayer {
 public:
@@ -135,8 +134,6 @@ public:
     // (opacity, transforms), it may conflict and hide the background filters.
     virtual void setBackgroundFilters(const WebFilterOperations&) = 0;
 
-    virtual void setDebugName(WebString) = 0;
-
     // Provides a bitfield that describe why this composited layer was created.
     // FIXME: non-pure until the chromium-side implements this.
     virtual void setCompositingReasons(WebCompositingReasons) { }
@@ -213,6 +210,8 @@ public:
 
     // True if the layer is not part of a tree attached to a WebLayerTreeView.
     virtual bool isOrphan() const = 0;
+
+    virtual void setWebLayerClient(WebLayerClient*) = 0;
 };
 
 } // namespace WebKit

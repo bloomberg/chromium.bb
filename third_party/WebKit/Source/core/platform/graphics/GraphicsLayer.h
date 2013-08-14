@@ -46,6 +46,7 @@
 #include "public/platform/WebCompositingReasons.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebImageLayer.h"
+#include "public/platform/WebLayerClient.h"
 #include "public/platform/WebLayerScrollClient.h"
 #include "public/platform/WebSolidColorLayer.h"
 
@@ -198,7 +199,7 @@ protected:
 // GraphicsLayer is an abstraction for a rendering surface with backing store,
 // which may have associated transformation and animations.
 
-class GraphicsLayer : public GraphicsContextPainter, public WebKit::WebAnimationDelegate, public WebKit::WebLayerScrollClient {
+class GraphicsLayer : public GraphicsContextPainter, public WebKit::WebAnimationDelegate, public WebKit::WebLayerScrollClient, public WebKit::WebLayerClient {
     WTF_MAKE_NONCOPYABLE(GraphicsLayer); WTF_MAKE_FAST_ALLOCATED;
 public:
     enum ContentsLayerPurpose {
@@ -214,9 +215,8 @@ public:
 
     GraphicsLayerClient* client() const { return m_client; }
 
-    // Layer name. Only used to identify layers in debug output
-    const String& name() const { return m_name; }
-    void setName(const String&);
+    // WebKit::WebLayerClient implementation.
+    virtual WebKit::WebString debugName(WebKit::WebLayer*) OVERRIDE;
 
     void setCompositingReasons(WebKit::WebCompositingReasons);
 
@@ -466,7 +466,6 @@ protected:
     void dumpAdditionalProperties(TextStream&, int /*indent*/, LayerTreeFlags) const { }
 
     // Helper functions used by settors to keep layer's the state consistent.
-    void updateNames();
     void updateChildList();
     void updateLayerIsDrawable();
     void updateContentsRect();
@@ -477,7 +476,6 @@ protected:
     WebKit::WebLayer* contentsLayerIfRegistered();
 
     GraphicsLayerClient* m_client;
-    String m_name;
 
     // Offset from the owning renderer
     IntSize m_offsetFromRenderer;
@@ -521,8 +519,6 @@ protected:
     IntRect m_contentsRect;
 
     int m_repaintCount;
-
-    String m_nameBase;
 
     Color m_contentsSolidColor;
 

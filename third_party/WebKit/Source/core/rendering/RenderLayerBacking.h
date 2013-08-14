@@ -177,11 +177,13 @@ public:
 
     void setBlendMode(BlendMode);
 
+    virtual String debugName(const GraphicsLayer*) OVERRIDE;
+
 private:
     void createPrimaryGraphicsLayer();
     void destroyGraphicsLayers();
 
-    PassOwnPtr<GraphicsLayer> createGraphicsLayer(const String& name, CompositingReasons);
+    PassOwnPtr<GraphicsLayer> createGraphicsLayer(CompositingReasons);
 
     RenderLayerModelObject* renderer() const { return m_owningLayer->renderer(); }
     RenderLayerCompositor* compositor() const { return m_owningLayer->compositor(); }

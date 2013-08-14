@@ -1893,8 +1893,6 @@ FloatPoint Node::convertFromPage(const FloatPoint& p) const
     return p;
 }
 
-#ifndef NDEBUG
-
 String Node::debugName() const
 {
     StringBuilder name;
@@ -1918,6 +1916,8 @@ String Node::debugName() const
 
     return name.toString();
 }
+
+#ifndef NDEBUG
 
 static void appendAttributeDesc(const Node* node, StringBuilder& stringBuilder, const QualifiedName& name, const char* attrDesc)
 {

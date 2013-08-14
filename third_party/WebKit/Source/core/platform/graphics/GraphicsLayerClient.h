@@ -26,6 +26,8 @@
 #ifndef GraphicsLayerClient_h
 #define GraphicsLayerClient_h
 
+#include "wtf/text/WTFString.h"
+
 namespace WebCore {
 
 class FloatPoint;
@@ -77,6 +79,8 @@ public:
     virtual bool getCurrentTransform(const GraphicsLayer*, TransformationMatrix&) const { return false; }
 
     virtual bool isTrackingRepaints() const { return false; }
+
+    virtual String debugName(const GraphicsLayer*) = 0;
 
 #ifndef NDEBUG
     // RenderLayerBacking overrides this to verify that it is not

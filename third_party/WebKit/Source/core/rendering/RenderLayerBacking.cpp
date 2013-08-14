@@ -180,19 +180,13 @@ RenderLayerBacking::~RenderLayerBacking()
     destroyGraphicsLayers();
 }
 
-PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& name, CompositingReasons reasons)
+PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(CompositingReasons reasons)
 {
     GraphicsLayerFactory* graphicsLayerFactory = 0;
     if (Page* page = renderer()->frame()->page())
         graphicsLayerFactory = page->chrome().client()->graphicsLayerFactory();
 
     OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(graphicsLayerFactory, this);
-
-#ifndef NDEBUG
-    graphicsLayer->setName(name);
-#else
-    UNUSED_PARAM(name);
-#endif
 
     graphicsLayer->setCompositingReasons(reasons);
 
@@ -201,12 +195,7 @@ PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(const String& 
 
 void RenderLayerBacking::createPrimaryGraphicsLayer()
 {
-    String layerName;
-#ifndef NDEBUG
-    layerName = m_owningLayer->debugName();
-#endif
-
-    m_graphicsLayer = createGraphicsLayer(layerName, m_owningLayer->compositingReasons());
+    m_graphicsLayer = createGraphicsLayer(m_owningLayer->compositingReasons());
 
 #if !OS(ANDROID)
     if (m_isMainFrameRenderViewLayer)
@@ -855,7 +844,7 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
 
     if (needsAncestorClip) {
         if (!m_ancestorClippingLayer) {
-            m_ancestorClippingLayer = createGraphicsLayer("Ancestor clipping Layer", CompositingReasonLayerForClip);
+            m_ancestorClippingLayer = createGraphicsLayer(CompositingReasonLayerForClip);
             m_ancestorClippingLayer->setMasksToBounds(true);
             layersChanged = true;
         }
@@ -869,7 +858,7 @@ bool RenderLayerBacking::updateClippingLayers(bool needsAncestorClip, bool needs
         // We don't need a child containment layer if we're the main frame render view
         // layer. It's redundant as the frame clip above us will handle this clipping.
         if (!m_childContainmentLayer && !m_isMainFrameRenderViewLayer) {
-            m_childContainmentLayer = createGraphicsLayer("Child clipping Layer", CompositingReasonLayerForClip);
+            m_childContainmentLayer = createGraphicsLayer(CompositingReasonLayerForClip);
             m_childContainmentLayer->setMasksToBounds(true);
             layersChanged = true;
         }
@@ -892,7 +881,7 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
     bool horizontalScrollbarLayerChanged = false;
     if (needsHorizontalScrollbarLayer) {
         if (!m_layerForHorizontalScrollbar) {
-            m_layerForHorizontalScrollbar = createGraphicsLayer("horizontal scrollbar", CompositingReasonLayerForScrollbar);
+            m_layerForHorizontalScrollbar = createGraphicsLayer(CompositingReasonLayerForScrollbar);
             horizontalScrollbarLayerChanged = true;
         }
     } else if (m_layerForHorizontalScrollbar) {
@@ -903,7 +892,7 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
     bool verticalScrollbarLayerChanged = false;
     if (needsVerticalScrollbarLayer) {
         if (!m_layerForVerticalScrollbar) {
-            m_layerForVerticalScrollbar = createGraphicsLayer("vertical scrollbar", CompositingReasonLayerForScrollbar);
+            m_layerForVerticalScrollbar = createGraphicsLayer(CompositingReasonLayerForScrollbar);
             verticalScrollbarLayerChanged = true;
         }
     } else if (m_layerForVerticalScrollbar) {
@@ -914,7 +903,7 @@ bool RenderLayerBacking::updateOverflowControlsLayers(bool needsHorizontalScroll
     bool scrollCornerLayerChanged = false;
     if (needsScrollCornerLayer) {
         if (!m_layerForScrollCorner) {
-            m_layerForScrollCorner = createGraphicsLayer("scroll corner", CompositingReasonLayerForScrollbar);
+            m_layerForScrollCorner = createGraphicsLayer(CompositingReasonLayerForScrollbar);
             scrollCornerLayerChanged = true;
         }
     } else if (m_layerForScrollCorner) {
@@ -987,11 +976,7 @@ bool RenderLayerBacking::updateForegroundLayer(bool needsForegroundLayer)
     bool layerChanged = false;
     if (needsForegroundLayer) {
         if (!m_foregroundLayer) {
-            String layerName;
-#ifndef NDEBUG
-            layerName = m_owningLayer->debugName() + " (foreground)";
-#endif
-            m_foregroundLayer = createGraphicsLayer(layerName, CompositingReasonLayerForForeground);
+            m_foregroundLayer = createGraphicsLayer(CompositingReasonLayerForForeground);
             m_foregroundLayer->setDrawsContent(true);
             m_foregroundLayer->setPaintingPhase(GraphicsLayerPaintForeground);
             layerChanged = true;
@@ -1013,11 +998,7 @@ bool RenderLayerBacking::updateBackgroundLayer(bool needsBackgroundLayer)
     bool layerChanged = false;
     if (needsBackgroundLayer) {
         if (!m_backgroundLayer) {
-            String layerName;
-#ifndef NDEBUG
-            layerName = m_owningLayer->debugName() + " (background)";
-#endif
-            m_backgroundLayer = createGraphicsLayer(layerName, CompositingReasonLayerForBackground);
+            m_backgroundLayer = createGraphicsLayer(CompositingReasonLayerForBackground);
             m_backgroundLayer->setDrawsContent(true);
             m_backgroundLayer->setAnchorPoint(FloatPoint3D());
             m_backgroundLayer->setPaintingPhase(GraphicsLayerPaintBackground);
@@ -1049,7 +1030,7 @@ bool RenderLayerBacking::updateMaskLayer(bool needsMaskLayer)
     bool layerChanged = false;
     if (needsMaskLayer) {
         if (!m_maskLayer) {
-            m_maskLayer = createGraphicsLayer("Mask", CompositingReasonLayerForMask);
+            m_maskLayer = createGraphicsLayer(CompositingReasonLayerForMask);
             m_maskLayer->setDrawsContent(true);
             m_maskLayer->setPaintingPhase(GraphicsLayerPaintMask);
             layerChanged = true;
@@ -1073,12 +1054,12 @@ bool RenderLayerBacking::updateScrollingLayers(bool needsScrollingLayers)
     if (needsScrollingLayers) {
         if (!m_scrollingLayer) {
             // Outer layer which corresponds with the scroll view.
-            m_scrollingLayer = createGraphicsLayer("Scrolling container", CompositingReasonLayerForClip);
+            m_scrollingLayer = createGraphicsLayer(CompositingReasonLayerForClip);
             m_scrollingLayer->setDrawsContent(false);
             m_scrollingLayer->setMasksToBounds(true);
 
             // Inner layer which renders the content that scrolls.
-            m_scrollingContentsLayer = createGraphicsLayer("Scrolled Contents", CompositingReasonLayerForScrollingContainer);
+            m_scrollingContentsLayer = createGraphicsLayer(CompositingReasonLayerForScrollingContainer);
             m_scrollingContentsLayer->setDrawsContent(true);
             GraphicsLayerPaintingPhase paintPhase = GraphicsLayerPaintOverflowContents | GraphicsLayerPaintCompositedScroll;
             if (!m_foregroundLayer)
@@ -1920,6 +1901,38 @@ double RenderLayerBacking::backingStoreMemoryEstimate() const
         backingMemory += m_layerForScrollCorner->backingStoreMemoryEstimate();
 
     return backingMemory;
+}
+
+String RenderLayerBacking::debugName(const GraphicsLayer* graphicsLayer)
+{
+    String name;
+    if (graphicsLayer == m_graphicsLayer.get()) {
+        name = m_owningLayer->debugName();
+    } else if (graphicsLayer == m_ancestorClippingLayer.get()) {
+        name = "Ancestor Clipping Layer";
+    } else if (graphicsLayer == m_foregroundLayer.get()) {
+        name = m_owningLayer->debugName() + " (foreground) Layer";
+    } else if (graphicsLayer == m_backgroundLayer.get()) {
+        name = m_owningLayer->debugName() + " (background) Layer";
+    } else if (graphicsLayer == m_childContainmentLayer.get()) {
+        name = "Child Containment Layer";
+    } else if (graphicsLayer == m_maskLayer.get()) {
+        name = "Mask Layer";
+    } else if (graphicsLayer == m_layerForHorizontalScrollbar.get()) {
+        name = "Horizontal Scrollbar Layer";
+    } else if (graphicsLayer == m_layerForVerticalScrollbar.get()) {
+        name = "Vertical Scrollbar Layer";
+    } else if (graphicsLayer == m_layerForScrollCorner.get()) {
+        name = "Scroll Corner Layer";
+    } else if (graphicsLayer == m_scrollingLayer.get()) {
+        name = "Scrolling Layer";
+    } else if (graphicsLayer == m_scrollingContentsLayer.get()) {
+        name = "Scrolling Contents Layer";
+    } else {
+        ASSERT_NOT_REACHED();
+    }
+
+    return name;
 }
 
 } // namespace WebCore

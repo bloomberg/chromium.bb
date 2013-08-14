@@ -59,6 +59,7 @@ PassOwnPtr<PageOverlay> PageOverlay::create(WebViewImpl* viewImpl, WebPageOverla
 PageOverlay::PageOverlay(WebViewImpl* viewImpl, WebPageOverlay* overlay)
     : m_viewImpl(viewImpl)
     , m_overlay(overlay)
+    , m_layerClient(0)
     , m_zOrder(0)
 {
 }
@@ -72,6 +73,12 @@ public:
 
     virtual ~OverlayGraphicsLayerClientImpl() { }
 
+    PassOwnPtr<GraphicsLayer> createGraphicsLayer(GraphicsLayerFactory* factory)
+    {
+        m_layer = GraphicsLayer::create(factory, this);
+        return m_layer.release();
+    }
+
     virtual void notifyAnimationStarted(const GraphicsLayer*, double time) { }
 
     virtual void paintContents(const GraphicsLayer*, GraphicsContext& gc, GraphicsLayerPaintingPhase, const IntRect& inClip)
@@ -81,6 +88,12 @@ public:
         gc.restore();
     }
 
+    virtual String debugName(const GraphicsLayer* graphicsLayer) OVERRIDE
+    {
+        ASSERT(graphicsLayer == m_layer.get());
+        return String("WebViewImpl Page Overlay Content Layer");
+    }
+
 private:
     explicit OverlayGraphicsLayerClientImpl(WebPageOverlay* overlay)
         : m_overlay(overlay)
@@ -88,7 +101,17 @@ private:
     }
 
     WebPageOverlay* m_overlay;
+
+    OwnPtr<GraphicsLayer> m_layer;
 };
+
+PageOverlay::~PageOverlay()
+{
+    if (m_layerClient) {
+        delete m_layerClient;
+        m_layerClient = 0;
+    }
+}
 
 void PageOverlay::clear()
 {
@@ -97,7 +120,7 @@ void PageOverlay::clear()
     if (m_layer) {
         m_layer->removeFromParent();
         m_layer = nullptr;
-        m_layerClient = nullptr;
+        m_layerClient = 0;
     }
 }
 
@@ -106,9 +129,8 @@ void PageOverlay::update()
     invalidateWebFrame();
 
     if (!m_layer) {
-        m_layerClient = OverlayGraphicsLayerClientImpl::create(m_overlay);
-        m_layer = GraphicsLayer::create(m_viewImpl->graphicsLayerFactory(), m_layerClient.get());
-        m_layer->setName("WebViewImpl page overlay content");
+        m_layerClient = OverlayGraphicsLayerClientImpl::create(m_overlay).leakPtr();
+        m_layer = m_layerClient->createGraphicsLayer(m_viewImpl->graphicsLayerFactory());
         m_layer->setDrawsContent(true);
 
         // Compositor hit-testing does not know how to deal with layers that may be
