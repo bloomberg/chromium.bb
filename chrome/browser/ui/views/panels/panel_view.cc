@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/panels/panel.h"
 #include "chrome/browser/ui/panels/panel_bounds_animation.h"
 #include "chrome/browser/ui/panels/panel_manager.h"
@@ -947,10 +948,13 @@ void PanelView::OnWidgetActivationChanged(views::Widget* widget, bool active) {
   if (window_closed_)
     return;
 
-  // The panel window is in focus (actually accepting keystrokes) if it is
-  // active and belongs to a foreground application.
-  bool focused = active &&
-      views::HWNDForWidget(widget) == ::GetForegroundWindow();
+  bool focused = active;
+  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
+    // The panel window is in focus (actually accepting keystrokes) if it is
+    // active and belongs to a foreground application.
+    focused = active &&
+        views::HWNDForWidget(widget) == ::GetForegroundWindow();
+  }
 #else
   NOTIMPLEMENTED();
   bool focused = active;
