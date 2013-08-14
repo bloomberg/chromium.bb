@@ -1521,6 +1521,11 @@ void LauncherView::ButtonPressed(views::Button* sender,
       case TYPE_TABBED:
       case TYPE_APP_PANEL:
         delegate_->ItemSelected(model_->items()[view_index], event);
+        // Don't show the menu when the user creates a new browser using ctrl
+        // click.
+        if (model_->items()[view_index].type != TYPE_BROWSER_SHORTCUT ||
+            !(event.flags() & ui::EF_CONTROL_DOWN))
+          ShowListMenuForView(model_->items()[view_index], sender, event);
         break;
 
       case TYPE_APP_LIST:
@@ -1530,9 +1535,6 @@ void LauncherView::ButtonPressed(views::Button* sender,
         break;
     }
   }
-
-  if (model_->items()[view_index].type != TYPE_APP_LIST)
-    ShowListMenuForView(model_->items()[view_index], sender, event);
 }
 
 bool LauncherView::ShowListMenuForView(const LauncherItem& item,
