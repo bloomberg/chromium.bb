@@ -42,6 +42,8 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 	struct weston_xserver *wxs = data;
 	char display[8], s[8];
 	int sv[2], client_fd;
+	char *xserver = NULL;
+	struct weston_config_section *section;
 
 	if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0, sv) < 0) {
 		weston_log("socketpair failed\n");
@@ -62,8 +64,11 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 
 		snprintf(display, sizeof display, ":%d", wxs->display);
 
-		if (execl(XSERVER_PATH,
-			  XSERVER_PATH,
+		section = weston_config_get_section(wxs->compositor->config, "xwayland", NULL, NULL);
+		weston_config_section_get_string(section, "path", &xserver, XSERVER_PATH);
+
+		if (execl(xserver,
+			  xserver,
 			  display,
 			  "-wayland",
 			  "-rootless",
@@ -72,6 +77,7 @@ weston_xserver_handle_event(int listen_fd, uint32_t mask, void *data)
 			  "-terminate",
 			  NULL) < 0)
 			weston_log("exec failed: %m\n");
+		free(xserver);
 		_exit(EXIT_FAILURE);
 
 	default:

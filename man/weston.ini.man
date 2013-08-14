@@ -77,6 +77,7 @@ The section headers are:
 .BR "input-method   " "Onscreen keyboard input"
 .BR "keyboard       " "Keyboard layouts"
 .BR "terminal       " "Terminal application options"
+.BR "xwayland       " "XWayland options"
 .fi
 .RE
 .PP
@@ -355,6 +356,12 @@ sets the size of the terminal font (unsigned integer).
 .TP 7
 .BI "term=" "xterm-256color"
 The terminal shell (string). Sets the $TERM variable.
+.RE
+.RE
+.SH "XWAYLAND SECTION"
+.TP 7
+.BI "path=" "/usr/bin/Xorg"
+sets the path to the xserver to run (string).
 .RE
 .RE
 .SH "SEE ALSO"
