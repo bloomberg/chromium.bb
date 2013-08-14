@@ -1,0 +1,40 @@
+<html>
+<head>
+<script>
+    if (window.internals)
+        window.internals.settings.setCSSExclusionsEnabled(true);
+</script>
+<style>
+    #polygon-shape-inside, #polygon-svg-shape {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+    }
+    #shape-inside {
+        position: absolute;
+        left: 0px;
+        top: 0px;
+        -webkit-shape-inside: polygon(0px 0px, 200px 0px, 200px 200px);
+    }
+    #float {
+        width: 50px;
+        height: 50px;
+        float: left;
+        background-color: yellow;
+    }
+</style>
+</head>
+<body>
+    <svg id="polygon-svg-shape" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="0,0 200,0 200,200" fill="#636363"></polygon>
+    </svg>
+    <div id="shape-inside">
+        <div id="float"></div>
+    </div>
+    <p style="margin-top: 200px;">
+      There is a triangle shape-inside (represented by the matching filled SVG polygon), the shape-inside contains a 50x50px yellow float left,
+      the float should be at the very left and top position inside the triangle shape where it fits first.
+    </p>
+    <p>Bug <a href="http://webkit.org/b/102846">102846</a>: [CSS Shapes] Use the float height to determine position in shape-inside</p>
+</body>
+</html>

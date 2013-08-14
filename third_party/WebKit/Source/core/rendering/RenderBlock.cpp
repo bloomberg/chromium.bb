@@ -4010,8 +4010,9 @@ LayoutPoint RenderBlock::computeLogicalLocationForFloat(const FloatingObject* fl
     LayoutUnit logicalRightOffset; // Constant part of right offset.
     // FIXME Bug 102948: This only works for shape outside directly set on this block.
     ShapeInsideInfo* shapeInsideInfo = this->shapeInsideInfo();
-    // FIXME Bug 102846: Take into account the height of the content. The offset should be
-    // equal to the maximum segment length.
+    // FIXME: We should place the float based on its width/height.
+    if (shapeInsideInfo)
+        shapeInsideInfo->computeSegmentsForLine(logicalTopOffset, childBox->logicalHeight());
     if (shapeInsideInfo && shapeInsideInfo->hasSegments() && shapeInsideInfo->segments().size() == 1) {
         // FIXME Bug 102949: Add support for shapes with multipe segments.
 
