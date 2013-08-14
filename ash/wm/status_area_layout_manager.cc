@@ -70,7 +70,7 @@ void StatusAreaLayoutManager::SetChildBounds(
 
 void StatusAreaLayoutManager::LayoutStatusArea() {
   // Shelf layout manager may be already doing layout.
-  if (shelf_->shelf_layout_manager()->in_layout())
+  if (shelf_->shelf_layout_manager()->updating_bounds())
     return;
 
   base::AutoReset<bool> auto_reset_in_layout(&in_layout_, true);

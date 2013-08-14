@@ -70,6 +70,66 @@ SystemTray* GetSystemTray() {
   return Shell::GetPrimaryRootWindowController()->GetSystemTray();
 }
 
+// Class which waits till the shelf finishes animating to the target size and
+// counts the number of animation steps.
+class ShelfAnimationWaiter : views::WidgetObserver {
+ public:
+  explicit ShelfAnimationWaiter(const gfx::Rect& target_bounds)
+      : target_bounds_(target_bounds),
+        animation_steps_(0),
+        done_waiting_(false) {
+    GetShelfWidget()->AddObserver(this);
+  }
+
+  virtual ~ShelfAnimationWaiter() {
+    GetShelfWidget()->RemoveObserver(this);
+  }
+
+  // Wait till the shelf finishes animating to its expected bounds.
+  void WaitTillDoneAnimating() {
+    if (IsDoneAnimating())
+      done_waiting_ = true;
+    else
+      base::MessageLoop::current()->Run();
+  }
+
+  // Returns true if the animation has completed and it was valid.
+  bool WasValidAnimation() const {
+    return done_waiting_ && animation_steps_ > 0;
+  }
+
+ private:
+  // Returns true if shelf has finished animating to the target size.
+  bool IsDoneAnimating() const {
+    ShelfLayoutManager* layout_manager = GetShelfLayoutManager();
+    gfx::Rect current_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+    int size = layout_manager->PrimaryAxisValue(current_bounds.height(),
+        current_bounds.width());
+    int desired_size = layout_manager->PrimaryAxisValue(target_bounds_.height(),
+        target_bounds_.width());
+    return (size == desired_size);
+  }
+
+  // views::WidgetObserver override.
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE {
+    if (done_waiting_)
+      return;
+
+    ++animation_steps_;
+    if (IsDoneAnimating()) {
+      done_waiting_ = true;
+      base::MessageLoop::current()->Quit();
+    }
+  }
+
+  gfx::Rect target_bounds_;
+  int animation_steps_;
+  bool done_waiting_;
+
+  DISALLOW_COPY_AND_ASSIGN(ShelfAnimationWaiter);
+};
+
 class ShelfDragCallback {
  public:
   ShelfDragCallback(const gfx::Rect& not_visible, const gfx::Rect& visible)
@@ -1429,7 +1489,7 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
   window1->Minimize();
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 
-  // both minimzed => disable auto hide
+  // both minimized => disable auto hide
   window2->Minimize();
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
 
@@ -1444,14 +1504,84 @@ TEST_F(ShelfLayoutManagerTest, WindowVisibilityDisablesAutoHide) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
 }
 
-#if defined(OS_WIN)
-// RootWindow and Display can't resize on Windows Ash. http://crbug.com/165962
-#define MAYBE_GestureRevealsTrayBubble DISABLED_GestureRevealsTrayBubble
-#else
-#define MAYBE_GestureRevealsTrayBubble GestureRevealsTrayBubble
-#endif
+// Test that the shelf animates back to its normal position upon a user
+// completing a gesture drag.
+TEST_F(ShelfLayoutManagerTest, ShelfAnimatesWhenGestureComplete) {
+  if (!SupportsHostWindowResize())
+    return;
 
-TEST_F(ShelfLayoutManagerTest, MAYBE_GestureRevealsTrayBubble) {
+  // Test the shelf animates back to its original visible bounds when it is
+  // dragged when there are no visible windows.
+  ShelfLayoutManager* shelf = GetShelfLayoutManager();
+  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+  gfx::Rect visible_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+  {
+    // Enable animations so that we can make sure that they occur.
+    ui::ScopedAnimationDurationScaleMode regular_animations(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    gfx::Rect shelf_bounds_in_screen =
+        GetShelfWidget()->GetWindowBoundsInScreen();
+    gfx::Point start(shelf_bounds_in_screen.CenterPoint());
+    gfx::Point end(start.x(), shelf_bounds_in_screen.bottom());
+    generator.GestureScrollSequence(start, end,
+        base::TimeDelta::FromMilliseconds(10), 1);
+    EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+    EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->auto_hide_state());
+
+    ShelfAnimationWaiter waiter(visible_bounds);
+    // Wait till the animation completes and check that it occurred.
+    waiter.WaitTillDoneAnimating();
+    EXPECT_TRUE(waiter.WasValidAnimation());
+  }
+
+  // Create a visible window so auto-hide behavior is enforced.
+  CreateTestWidget();
+
+  // Get the bounds of the shelf when it is hidden.
+  EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+  gfx::Rect auto_hidden_bounds = GetShelfWidget()->GetWindowBoundsInScreen();
+
+  {
+    // Enable the animations so that we can make sure they do occur.
+    ui::ScopedAnimationDurationScaleMode regular_animations(
+        ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+    gfx::Point start =
+        GetShelfWidget()->GetWindowBoundsInScreen().CenterPoint();
+    gfx::Point end(start.x(), start.y() - 100);
+    aura::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+
+    // Test that the shelf animates to the visible bounds after a swipe up on
+    // the auto hidden shelf.
+    generator.GestureScrollSequence(start, end,
+        base::TimeDelta::FromMilliseconds(10), 1);
+    EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+    ShelfAnimationWaiter waiter1(visible_bounds);
+    waiter1.WaitTillDoneAnimating();
+    EXPECT_TRUE(waiter1.WasValidAnimation());
+
+    // Test that the shelf animates to the auto hidden bounds after a swipe up
+    // on the visible shelf.
+    EXPECT_EQ(SHELF_VISIBLE, shelf->visibility_state());
+    generator.GestureScrollSequence(start, end,
+        base::TimeDelta::FromMilliseconds(10), 1);
+    EXPECT_EQ(SHELF_AUTO_HIDE, shelf->visibility_state());
+    EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->auto_hide_state());
+    ShelfAnimationWaiter waiter2(auto_hidden_bounds);
+    waiter2.WaitTillDoneAnimating();
+    EXPECT_TRUE(waiter2.WasValidAnimation());
+  }
+}
+
+TEST_F(ShelfLayoutManagerTest, GestureRevealsTrayBubble) {
+  if (!SupportsHostWindowResize())
+    return;
+
   ShelfLayoutManager* shelf = GetShelfLayoutManager();
   shelf->LayoutShelf();
 

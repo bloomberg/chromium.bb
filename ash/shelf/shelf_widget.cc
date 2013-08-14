@@ -256,9 +256,6 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void SetDimmed(bool dimmed);
   bool GetDimmed() const;
 
-  // Set the bounds of the widget.
-  void SetWidgetBounds(const gfx::Rect bounds);
-
   void SetParentLayer(ui::Layer* layer);
 
   // views::View overrides:
@@ -361,11 +358,6 @@ bool ShelfWidget::DelegateView::GetDimmed() const {
   return dimmer_.get() && dimmer_->IsVisible();
 }
 
-void ShelfWidget::DelegateView::SetWidgetBounds(const gfx::Rect bounds) {
-  if (dimmer_)
-    dimmer_->SetBounds(bounds);
-}
-
 void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
   layer->Add(&opaque_background_);
   ReorderLayers();
@@ -432,6 +424,8 @@ void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
   opaque_background_.SetBounds(GetLocalBounds());
+  if (dimmer_)
+    dimmer_->SetBounds(GetBoundsInScreen());
 }
 
 void ShelfWidget::DelegateView::ForceUndimming(bool force) {
@@ -627,11 +621,6 @@ void ShelfWidget::ShutdownStatusAreaWidget() {
   if (status_area_widget_)
     status_area_widget_->Shutdown();
   status_area_widget_ = NULL;
-}
-
-void ShelfWidget::SetWidgetBounds(const gfx::Rect& rect) {
-  Widget::SetBounds(rect);
-  delegate_view_->SetWidgetBounds(rect);
 }
 
 void ShelfWidget::ForceUndimming(bool force) {

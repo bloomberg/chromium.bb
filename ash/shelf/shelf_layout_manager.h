@@ -33,6 +33,7 @@ class RootWindow;
 
 namespace ui {
 class GestureEvent;
+class ImplicitAnimationObserver;
 }
 
 namespace ash {
@@ -100,7 +101,7 @@ class ASH_EXPORT ShelfLayoutManager :
     workspace_controller_ = controller;
   }
 
-  bool in_layout() const { return in_layout_; }
+  bool updating_bounds() const { return updating_bounds_; }
 
   // Clears internal data for shutdown process.
   void PrepareForShutdown();
@@ -254,6 +255,13 @@ class ASH_EXPORT ShelfLayoutManager :
   // Sets the visibility of the shelf to |state|.
   void SetState(ShelfVisibilityState visibility_state);
 
+  // Updates the bounds and opacity of the launcher and status widgets.
+  // If |observer| is specified, it will be called back when the animations, if
+  // any, are complete.
+  void UpdateBoundsAndOpacity(const TargetBounds& target_bounds,
+                              bool animate,
+                              ui::ImplicitAnimationObserver* observer);
+
   // Stops any animations and progresses them to the end.
   void StopAnimating();
 
@@ -322,9 +330,9 @@ class ASH_EXPORT ShelfLayoutManager :
   // deleted too.
   aura::RootWindow* root_window_;
 
-  // True when inside LayoutShelf method. Used to prevent calling LayoutShelf
-  // again from SetChildBounds().
-  bool in_layout_;
+  // True when inside UpdateBoundsAndOpacity() method. Used to prevent calling
+  // UpdateBoundsAndOpacity() again from SetChildBounds().
+  bool updating_bounds_;
 
   // See description above setter.
   ShelfAutoHideBehavior auto_hide_behavior_;
@@ -363,6 +371,7 @@ class ASH_EXPORT ShelfLayoutManager :
   enum GestureDragStatus {
     GESTURE_DRAG_NONE,
     GESTURE_DRAG_IN_PROGRESS,
+    GESTURE_DRAG_CANCEL_IN_PROGRESS,
     GESTURE_DRAG_COMPLETE_IN_PROGRESS
   };
   GestureDragStatus gesture_drag_status_;

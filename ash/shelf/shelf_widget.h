@@ -79,9 +79,6 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // TODO(harrym): Remove when Status Area Widget is a child view.
   void ShutdownStatusAreaWidget();
 
-  // Set the bounds of the widget and the dim shelf overlay.
-  void SetWidgetBounds(const gfx::Rect& rect);
-
   // Force the shelf to be presented in an undimmed state.
   void ForceUndimming(bool force);
 
