@@ -1379,7 +1379,7 @@ void WebGLRenderingContext::compressedTexImage2D(GC3Denum target, GC3Dint level,
         synthesizeGLError(GraphicsContext3D::INVALID_VALUE, "compressedTexImage2D", "border not 0");
         return;
     }
-    if (!validateCompressedTexDimensions("compressedTexImage2D", level, width, height, internalformat))
+    if (!validateCompressedTexDimensions("compressedTexImage2D", NotTexSubImage2D, target, level, width, height, internalformat))
         return;
     if (!validateCompressedTexFuncData("compressedTexImage2D", width, height, internalformat, data))
         return;
@@ -4557,7 +4557,7 @@ bool WebGLRenderingContext::validateTexFuncLevel(const char* functionName, GC3De
     }
     switch (target) {
     case GraphicsContext3D::TEXTURE_2D:
-        if (level > m_maxTextureLevel) {
+        if (level >= m_maxTextureLevel) {
             synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "level out of range");
             return false;
         }
@@ -4568,7 +4568,7 @@ bool WebGLRenderingContext::validateTexFuncLevel(const char* functionName, GC3De
     case GraphicsContext3D::TEXTURE_CUBE_MAP_NEGATIVE_Y:
     case GraphicsContext3D::TEXTURE_CUBE_MAP_POSITIVE_Z:
     case GraphicsContext3D::TEXTURE_CUBE_MAP_NEGATIVE_Z:
-        if (level > m_maxCubeMapTextureLevel) {
+        if (level >= m_maxCubeMapTextureLevel) {
             synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "level out of range");
             return false;
         }
@@ -4579,19 +4579,9 @@ bool WebGLRenderingContext::validateTexFuncLevel(const char* functionName, GC3De
     return true;
 }
 
-bool WebGLRenderingContext::validateTexFuncParameters(const char* functionName,
-                                                      TexFuncValidationFunctionType functionType,
-                                                      GC3Denum target, GC3Dint level,
-                                                      GC3Denum internalformat,
-                                                      GC3Dsizei width, GC3Dsizei height, GC3Dint border,
-                                                      GC3Denum format, GC3Denum type)
+bool WebGLRenderingContext::validateTexFuncDimensions(const char* functionName, TexFuncValidationFunctionType functionType,
+    GC3Denum target, GC3Dint level, GC3Dsizei width, GC3Dsizei height)
 {
-    // We absolutely have to validate the format and type combination.
-    // The texImage2D entry points taking HTMLImage, etc. will produce
-    // temporary data based on this combination, so it must be legal.
-    if (!validateTexFuncFormatAndType(functionName, format, type, level) || !validateTexFuncLevel(functionName, target, level))
-        return false;
-
     if (width < 0 || height < 0) {
         synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "width or height < 0");
         return false;
@@ -4599,7 +4589,7 @@ bool WebGLRenderingContext::validateTexFuncParameters(const char* functionName,
 
     switch (target) {
     case GraphicsContext3D::TEXTURE_2D:
-        if (width > m_maxTextureSize || height > m_maxTextureSize) {
+        if (width > (m_maxTextureSize >> level) || height > (m_maxTextureSize >> level)) {
             synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "width or height out of range");
             return false;
         }
@@ -4616,7 +4606,7 @@ bool WebGLRenderingContext::validateTexFuncParameters(const char* functionName,
         }
         // No need to check height here. For texImage width == height.
         // For texSubImage that will be checked when checking yoffset + height is in range.
-        if (width > m_maxCubeMapTextureSize) {
+        if (width > (m_maxCubeMapTextureSize >> level)) {
             synthesizeGLError(GraphicsContext3D::INVALID_VALUE, functionName, "width or height out of range for cube map");
             return false;
         }
@@ -4625,6 +4615,20 @@ bool WebGLRenderingContext::validateTexFuncParameters(const char* functionName,
         synthesizeGLError(GraphicsContext3D::INVALID_ENUM, functionName, "invalid target");
         return false;
     }
+    return true;
+}
+
+bool WebGLRenderingContext::validateTexFuncParameters(const char* functionName, TexFuncValidationFunctionType functionType, GC3Denum target,
+    GC3Dint level, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type)
+{
+    // We absolutely have to validate the format and type combination.
+    // The texImage2D entry points taking HTMLImage, etc. will produce
+    // temporary data based on this combination, so it must be legal.
+    if (!validateTexFuncFormatAndType(functionName, format, type, level) || !validateTexFuncLevel(functionName, target, level))
+        return false;
+
+    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height))
+        return false;
 
     if (format != internalformat) {
         synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, functionName, "format != internalformat");
@@ -4791,8 +4795,11 @@ bool WebGLRenderingContext::validateCompressedTexFuncData(const char* functionNa
     return true;
 }
 
-bool WebGLRenderingContext::validateCompressedTexDimensions(const char* functionName, GC3Dint level, GC3Dsizei width, GC3Dsizei height, GC3Denum format)
+bool WebGLRenderingContext::validateCompressedTexDimensions(const char* functionName, TexFuncValidationFunctionType functionType, GC3Denum target, GC3Dint level, GC3Dsizei width, GC3Dsizei height, GC3Denum format)
 {
+    if (!validateTexFuncDimensions(functionName, functionType, target, level, width, height))
+        return false;
+
     switch (format) {
     case Extensions3D::COMPRESSED_RGB_S3TC_DXT1_EXT:
     case Extensions3D::COMPRESSED_RGBA_S3TC_DXT1_EXT:
@@ -4837,7 +4844,7 @@ bool WebGLRenderingContext::validateCompressedTexSubDimensions(const char* funct
             synthesizeGLError(GraphicsContext3D::INVALID_OPERATION, functionName, "dimensions out of range");
             return false;
         }
-        return validateCompressedTexDimensions(functionName, level, width, height, format);
+        return validateCompressedTexDimensions(functionName, TexSubImage2D, target, level, width, height, format);
     }
     default:
         return false;

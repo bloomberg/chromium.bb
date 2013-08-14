@@ -717,6 +717,11 @@ public:
     bool validateTexFunc(const char* functionName, TexFuncValidationFunctionType, TexFuncValidationSourceType, GC3Denum target, GC3Dint level, GC3Denum internalformat, GC3Dsizei width,
         GC3Dsizei height, GC3Dint border, GC3Denum format, GC3Denum type, GC3Dint xoffset, GC3Dint yoffset);
 
+    // Helper function to check input width and height for functions {copy, compressed}Tex{Sub}Image.
+    // Generates GL error and returns false if width or height is invalid.
+    bool validateTexFuncDimensions(const char* functionName, TexFuncValidationFunctionType,
+        GC3Denum target, GC3Dint level, GC3Dsizei width, GC3Dsizei height);
+
     // Helper function to check input parameters for functions {copy}Tex{Sub}Image.
     // Generates GL error and returns false if parameters are invalid.
     bool validateTexFuncParameters(const char* functionName,
@@ -757,7 +762,7 @@ public:
 
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.
-    bool validateCompressedTexDimensions(const char* functionName, GC3Dint level, GC3Dsizei width, GC3Dsizei height, GC3Denum format);
+    bool validateCompressedTexDimensions(const char* functionName, TexFuncValidationFunctionType, GC3Denum target, GC3Dint level, GC3Dsizei width, GC3Dsizei height, GC3Denum format);
 
     // Helper function to validate compressed texture dimensions are valid for
     // the given format.
