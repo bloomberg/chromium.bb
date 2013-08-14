@@ -236,11 +236,6 @@ def parse_args(args):
             dest="retry_failures",
             help="Don't re-try any tests that produce unexpected results."),
 
-        # FIXME: Remove this after we remove the flag from the v8 bot.
-        optparse.make_option("--retry-crashes", action="store_true",
-            default=False,
-            help="ignored (we now always retry crashes when we retry failures)."),
-
         optparse.make_option("--max-locked-shards", type="int", default=0,
             help="Set the maximum number of locked shards"),
         optparse.make_option("--additional-env-var", type="string", action="append", default=[],
