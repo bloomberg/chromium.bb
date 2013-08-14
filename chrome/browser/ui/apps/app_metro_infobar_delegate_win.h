@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
-#define CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
+#ifndef CHROME_BROWSER_UI_APPS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
+#define CHROME_BROWSER_UI_APPS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
 
 #include <string>
 
@@ -49,4 +49,4 @@ class AppMetroInfoBarDelegateWin : public ConfirmInfoBarDelegate {
   DISALLOW_COPY_AND_ASSIGN(AppMetroInfoBarDelegateWin);
 };
 
-#endif  // CHROME_BROWSER_UI_EXTENSIONS_APP_METRO_INFOBAR_DELEGATE_WIN_H_
+#endif  // CHROME_BROWSER_UI_APPS_APP_METRO_INFOBAR_DELEGATE_WIN_H_

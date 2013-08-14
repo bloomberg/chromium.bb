@@ -20,7 +20,7 @@ include_rules = [
   "+chrome/browser/lifetime/application_lifetime.h",
   "+chrome/browser/profiles",
   "+chrome/browser/sessions/session_id.h",
-  "+chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h",
+  "+chrome/browser/ui/apps/app_metro_infobar_delegate_win.h",
   "+chrome/browser/ui/host_desktop.h",
   "+chrome/common/chrome_switches.h",
   "+chrome/common/extensions",

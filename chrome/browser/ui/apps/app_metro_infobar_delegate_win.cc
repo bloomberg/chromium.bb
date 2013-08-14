@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
+#include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
 
 #include "apps/app_launch_for_metro_restart_win.h"
 #include "base/bind_helpers.h"

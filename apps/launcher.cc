@@ -23,7 +23,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/extensions/app_metro_infobar_delegate_win.h"
+#include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"

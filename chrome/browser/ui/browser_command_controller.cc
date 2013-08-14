@@ -46,7 +46,7 @@
 #if defined(OS_WIN)
 #include "base/win/metro.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/ui/extensions/apps_metro_handler_win.h"
+#include "chrome/browser/ui/apps/apps_metro_handler_win.h"
 #endif
 
 #if defined(USE_ASH)
@@ -448,7 +448,7 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       content::RecordAction(content::UserMetricsAction("Win8DesktopRestart"));
       break;
     case IDC_WIN8_METRO_RESTART:
-      if (!chrome::VerifySwitchToMetroForApps(window()->GetNativeWindow()))
+      if (!VerifySwitchToMetroForApps(window()->GetNativeWindow()))
         break;
 
       // SwitchToMetroUIHandler deletes itself.
