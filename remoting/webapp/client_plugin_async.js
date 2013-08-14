@@ -316,7 +316,7 @@ remoting.ClientPluginAsync.prototype.handleMessage_ = function(messageStr) {
   } else if (message.method == 'extensionMessage') {
     // No messages currently supported.
     console.log('Unexpected message received: ' +
-                message.data.type + ': ' + message.data.data);
+                message.data['type'] + ': ' + message.data['data']);
   }
 };
 
