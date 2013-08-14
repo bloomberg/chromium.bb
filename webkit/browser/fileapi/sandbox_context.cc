@@ -123,7 +123,7 @@ SandboxContext::SandboxContext(
       quota_observer_(new SandboxQuotaObserver(
           quota_manager_proxy,
           file_task_runner,
-          sync_file_util(),
+          obfuscated_file_util(),
           usage_cache())),
       special_storage_policy_(special_storage_policy),
       file_system_options_(file_system_options),
@@ -132,7 +132,7 @@ SandboxContext::SandboxContext(
 
 SandboxContext::~SandboxContext() {
   if (!file_task_runner_->RunsTasksOnCurrentThread()) {
-    AsyncFileUtilAdapter* sandbox_file_util = sandbox_file_util_.release();
+    AsyncFileUtil* sandbox_file_util = sandbox_file_util_.release();
     SandboxQuotaObserver* quota_observer = quota_observer_.release();
     FileSystemUsageCache* file_system_usage_cache =
         file_system_usage_cache_.release();
@@ -195,13 +195,13 @@ bool SandboxContext::IsAllowedScheme(const GURL& url) const {
 }
 
 SandboxContext::OriginEnumerator* SandboxContext::CreateOriginEnumerator() {
-  return new ObfuscatedOriginEnumerator(sync_file_util());
+  return new ObfuscatedOriginEnumerator(obfuscated_file_util());
 }
 
 base::FilePath SandboxContext::GetBaseDirectoryForOriginAndType(
     const GURL& origin_url, fileapi::FileSystemType type, bool create) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
-  base::FilePath path = sync_file_util()->GetDirectoryForOriginAndType(
+  base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
       origin_url, type, create, &error);
   if (error != base::PLATFORM_FILE_OK)
     return base::FilePath();
@@ -225,7 +225,7 @@ void SandboxContext::OpenFileSystem(
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&OpenFileSystemOnFileThread,
-                 sync_file_util(), origin_url, type, mode,
+                 obfuscated_file_util(), origin_url, type, mode,
                  base::Unretained(error_ptr)),
       base::Bind(&DidOpenFileSystem,
                  weak_factory_.GetWeakPtr(),
@@ -241,7 +241,7 @@ base::PlatformFileError SandboxContext::DeleteOriginDataOnFileThread(
   int64 usage = GetOriginUsageOnFileThread(
       file_system_context, origin_url, type);
   usage_cache()->CloseCacheFiles();
-  bool result = sync_file_util()->DeleteDirectoryForOriginAndType(
+  bool result = obfuscated_file_util()->DeleteDirectoryForOriginAndType(
       origin_url, type);
   if (result && proxy) {
     proxy->NotifyStorageModified(
@@ -323,7 +323,7 @@ void SandboxContext::InvalidateUsageCache(
     fileapi::FileSystemType type) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
-      sync_file_util(), origin, type, &error);
+      obfuscated_file_util(), origin, type, &error);
   if (error != base::PLATFORM_FILE_OK)
     return;
   usage_cache()->IncrementDirty(usage_file_path);
@@ -337,12 +337,16 @@ void SandboxContext::StickyInvalidateUsageCache(
   InvalidateUsageCache(origin, type);
 }
 
+FileSystemFileUtil* SandboxContext::sync_file_util() {
+  return static_cast<AsyncFileUtilAdapter*>(file_util())->sync_file_util();
+}
+
 base::FilePath SandboxContext::GetUsageCachePathForOriginAndType(
     const GURL& origin_url,
     FileSystemType type) {
   base::PlatformFileError error;
   base::FilePath path = GetUsageCachePathForOriginAndType(
-      sync_file_util(), origin_url, type, &error);
+      obfuscated_file_util(), origin_url, type, &error);
   if (error != base::PLATFORM_FILE_OK)
     return base::FilePath();
   return path;
@@ -370,7 +374,8 @@ int64 SandboxContext::RecalculateUsage(FileSystemContext* context,
   FileSystemURL url = context->CreateCrackedFileSystemURL(
       origin, type, base::FilePath());
   scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-      sync_file_util()->CreateFileEnumerator(&operation_context, url, true));
+      obfuscated_file_util()->CreateFileEnumerator(
+          &operation_context, url, true));
 
   base::FilePath file_path_each;
   int64 usage = 0;
@@ -420,8 +425,8 @@ void SandboxContext::CollectOpenFileSystemMetrics(
 #undef REPORT
 }
 
-ObfuscatedFileUtil* SandboxContext::sync_file_util() {
-  return static_cast<ObfuscatedFileUtil*>(file_util()->sync_file_util());
+ObfuscatedFileUtil* SandboxContext::obfuscated_file_util() {
+  return static_cast<ObfuscatedFileUtil*>(sync_file_util());
 }
 
 }  // namespace fileapi

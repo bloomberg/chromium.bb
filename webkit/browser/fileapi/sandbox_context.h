@@ -30,7 +30,8 @@ class SpecialStoragePolicy;
 
 namespace fileapi {
 
-class AsyncFileUtilAdapter;
+class AsyncFileUtil;
+class FileSystemFileUtil;
 class FileSystemURL;
 class FileSystemUsageCache;
 class ObfuscatedFileUtil;
@@ -130,7 +131,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
     return file_task_runner_.get();
   }
 
-  AsyncFileUtilAdapter* file_util() { return sandbox_file_util_.get(); }
+  AsyncFileUtil* file_util() { return sandbox_file_util_.get(); }
   FileSystemUsageCache* usage_cache() { return file_system_usage_cache_.get(); }
   SandboxQuotaObserver* quota_observer() { return quota_observer_.get(); };
 
@@ -138,9 +139,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
     return special_storage_policy_.get();
   }
 
-  FileSystemOptions file_system_options() { return file_system_options_; }
+  const FileSystemOptions& file_system_options() const {
+    return file_system_options_;
+  }
 
-  ObfuscatedFileUtil* sync_file_util();
+  FileSystemFileUtil* sync_file_util();
 
  private:
   friend class SandboxQuotaObserver;
@@ -162,9 +165,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
                          const GURL& origin,
                          FileSystemType type);
 
+  ObfuscatedFileUtil* obfuscated_file_util();
+
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  scoped_ptr<AsyncFileUtilAdapter> sandbox_file_util_;
+  scoped_ptr<AsyncFileUtil> sandbox_file_util_;
   scoped_ptr<FileSystemUsageCache> file_system_usage_cache_;
   scoped_ptr<SandboxQuotaObserver> quota_observer_;
 
