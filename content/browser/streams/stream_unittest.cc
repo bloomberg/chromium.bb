@@ -41,7 +41,7 @@ class StreamTest : public testing::Test {
 
 class TestStreamReader : public StreamReadObserver {
  public:
-  TestStreamReader() : buffer_(new net::GrowableIOBuffer()) {
+  TestStreamReader() : buffer_(new net::GrowableIOBuffer()), completed_(false) {
   }
   virtual ~TestStreamReader() {}
 
@@ -50,8 +50,22 @@ class TestStreamReader : public StreamReadObserver {
     scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
 
     int bytes_read = 0;
-    while (stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read) ==
-           Stream::STREAM_HAS_DATA) {
+    while (true) {
+      Stream::StreamState state =
+          stream->ReadRawData(buffer.get(), kBufferSize, &bytes_read);
+      switch (state) {
+        case Stream::STREAM_HAS_DATA:
+          // TODO(tyoshino): Move these expectations to the beginning of Read()
+          // method once Stream::Finalize() is fixed.
+          EXPECT_FALSE(completed_);
+          break;
+        case Stream::STREAM_COMPLETE:
+          completed_ = true;
+          return;
+        case Stream::STREAM_EMPTY:
+          EXPECT_FALSE(completed_);
+          return;
+      }
       size_t old_capacity = buffer_->capacity();
       buffer_->SetCapacity(old_capacity + bytes_read);
       memcpy(buffer_->StartOfBuffer() + old_capacity,
@@ -65,8 +79,13 @@ class TestStreamReader : public StreamReadObserver {
 
   scoped_refptr<net::GrowableIOBuffer> buffer() { return buffer_; }
 
+  bool completed() const {
+    return completed_;
+  }
+
  private:
   scoped_refptr<net::GrowableIOBuffer> buffer_;
+  bool completed_;
 };
 
 class TestStreamWriter : public StreamWriteObserver {
@@ -137,12 +156,36 @@ TEST_F(StreamTest, Stream) {
   scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
   writer.Write(stream.get(), buffer, kBufferSize);
   stream->Finalize();
-  reader.Read(stream.get());
   base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(reader.completed());
 
   ASSERT_EQ(reader.buffer()->capacity(), kBufferSize);
   for (int i = 0; i < kBufferSize; i++)
     EXPECT_EQ(buffer->data()[i], reader.buffer()->data()[i]);
+}
+
+// Test that even if a reader receives an empty buffer, once TransferData()
+// method is called on it with |source_complete| = true, following Read() calls
+// on it never returns STREAM_EMPTY. Together with StreamTest.Stream above, this
+// guarantees that Reader::Read() call returns only STREAM_HAS_DATA
+// or STREAM_COMPLETE in |data_available_callback_| call corresponding to
+// Writer::Close().
+TEST_F(StreamTest, ClosedReaderDoesNotReturnStreamEmpty) {
+  TestStreamReader reader;
+  TestStreamWriter writer;
+
+  GURL url("blob://stream");
+  scoped_refptr<Stream> stream(
+      new Stream(registry_.get(), &writer, url));
+  EXPECT_TRUE(stream->SetReadObserver(&reader));
+
+  const int kBufferSize = 0;
+  scoped_refptr<net::IOBuffer> buffer(NewIOBuffer(kBufferSize));
+  stream->AddData(buffer, kBufferSize);
+  stream->Finalize();
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_TRUE(reader.completed());
+  EXPECT_EQ(0, reader.buffer()->capacity());
 }
 
 TEST_F(StreamTest, GetStream) {
