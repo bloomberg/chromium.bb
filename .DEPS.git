@@ -133,8 +133,8 @@ deps = {
         Var('git_url') + '/external/gyp.git@793f69bbc09792052636dbe6038678b24d68e11b',
     'src/tools/page_cycler/acid3':
         Var('git_url') + '/chromium/deps/acid3.git@6be0a66a1ebd7ebc5abc1b2f405a945f6d871521',
-    'src/tools/swarming_client':
-        Var('git_url') + '/external/swarming.client.git@51336a32732d4eea3f07e44e4a62c4d8103ef29f',
+    'src/tools/swarm_client':
+        Var('git_url') + '/chromium/tools/swarm_client.git@51336a32732d4eea3f07e44e4a62c4d8103ef29f',
     'src/v8':
         Var('git_url') + '/external/v8.git@594006017e46d82ed7146611dc12c20e3c509c7d',
 }
