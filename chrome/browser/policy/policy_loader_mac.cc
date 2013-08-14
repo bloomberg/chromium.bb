@@ -21,7 +21,7 @@
 #include "chrome/browser/policy/policy_load_status.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preferences_mac.h"
-#include "chrome/common/policy/policy_schema.h"
+#include "components/policy/core/common/policy_schema.h"
 #include "policy/policy_constants.h"
 
 using base::mac::CFCast;

@@ -13,7 +13,7 @@
 #include "chrome/browser/policy/external_data_manager.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/policy/policy_schema.h"
+#include "components/policy/core/common/policy_schema.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {

@@ -91,7 +91,6 @@ specific_include_rules = {
   ],
 
   r"component_cloud_policy_service_unittest\.cc": [
-    "+chrome/common/policy/policy_schema.h",
     "+content/public/browser/browser_thread.h",
     "+content/public/test/test_browser_thread.h",
   ],

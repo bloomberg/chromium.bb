@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_POLICY_POLICY_SCHEMA_H_
-#define CHROME_COMMON_POLICY_POLICY_SCHEMA_H_
+#ifndef COMPONENTS_POLICY_CORE_COMMON_POLICY_SCHEMA_H_
+#define COMPONENTS_POLICY_CORE_COMMON_POLICY_SCHEMA_H_
 
 #include <map>
 #include <string>
@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "components/policy/policy_export.h"
 
 namespace policy {
 
@@ -19,7 +20,7 @@ typedef std::map<std::string, PolicySchema*> PolicySchemaMap;
 
 // Maps known policy keys to their expected types, and recursively describes
 // the known keys within dictionary or list types.
-class PolicySchema {
+class POLICY_EXPORT PolicySchema {
  public:
 
   // Parses |schema| as a JSON v3 schema, and additionally verifies that:
@@ -66,4 +67,4 @@ class PolicySchema {
 
 }  // namespace policy
 
-#endif  // CHROME_COMMON_POLICY_POLICY_SCHEMA_H_
+#endif  // COMPONENTS_POLICY_CORE_COMMON_POLICY_SCHEMA_H_

@@ -12,6 +12,7 @@ include_rules = [
   "+components/browser_context_keyed_service",
   "+components/nacl/common",
   "+components/navigation_interception",
+  "+components/policy",
   "+components/user_prefs",
   "+components/visitedlink/browser",
   "+components/webdata",

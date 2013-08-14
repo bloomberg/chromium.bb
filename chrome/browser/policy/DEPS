@@ -74,25 +74,8 @@ specific_include_rules = {
     "+chrome/common/pref_names.h",
   ],
 
-  r"policy_domain_descriptor\.cc": [
-    "+chrome/common/policy/policy_schema.h",
-  ],
-
-  r"policy_domain_descriptor_unittest\.cc": [
-    "+chrome/common/policy/policy_schema.h",
-  ],
-
-  r"policy_loader_mac\.cc": [
-    "+chrome/common/policy/policy_schema.h",
-  ],
-
-  r"policy_loader_win\.cc": [
-    "+chrome/common/json_schema/json_schema_constants.h",
-  ],
-
   r"policy_loader_win_unittest\.cc": [
     "+chrome/common/chrome_paths.h",
-    "+chrome/common/json_schema/json_schema_constants.h",
   ],
 
   r"policy_path_parser_win\.cc": [
@@ -100,7 +83,6 @@ specific_include_rules = {
   ],
 
   r"policy_service_impl_unittest\.cc": [
-    "+chrome/common/policy/policy_schema.h",
     "+content/public/browser/browser_thread.h",
     "+content/public/test/test_browser_thread_bundle.h",
   ],
@@ -116,14 +98,6 @@ specific_include_rules = {
 
   r"preg_parser_win_unittest\.cc": [
     "+chrome/common/chrome_paths.h",
-  ],
-
-  r"registry_dict_win\.cc": [
-    "+chrome/common/json_schema/json_schema_constants.h",
-  ],
-
-  r"registry_dict_win_unittest\.cc": [
-    "+chrome/common/json_schema/json_schema_constants.h",
   ],
 
   r"test/local_policy_test_server\.cc": [

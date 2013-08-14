@@ -17,7 +17,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
-#include "chrome/common/policy/policy_schema.h"
+#include "components/policy/core/common/policy_schema.h"
 #include "extensions/common/install_warning.h"
 
 using extension_manifest_keys::kStorageManagedSchema;

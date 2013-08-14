@@ -24,6 +24,13 @@ per-file nacl*=sehr@chromium.org
 per-file navigation_interception.gypi=joth@chromium.org
 per-file navigation_interception.gypi=mkosiba@chromium.org
 
+per-file policy.gypi=mnissler@chromium.org
+per-file policy.gypi=pastarmovj@chromium.org
+per-file policy.gypi=joaodasilva@chromium.org
+per-file policy.gypi=bartfab@chromium.org
+per-file policy.gypi=atwilson@chromium.org
+per-file policy.gypi=pneubeck@chromium.org
+
 per-file sessions.gypi=marja@chromium.org
 per-file sessions.gypi=sky@chromium.org
 

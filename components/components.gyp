@@ -17,6 +17,7 @@
     'components_tests.gypi',
     'json_schema.gypi',
     'navigation_interception.gypi',
+    'policy.gypi',
     'sessions.gypi',
     'user_prefs.gypi',
     'visitedlink.gypi',

@@ -49,6 +49,9 @@
             '../skia/skia.gyp:skia',
             'navigation_interception',
 
+            # Dependencies of policy
+            'policy_component',
+
             # Dependencies of sessions
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             'sessions',
@@ -92,6 +95,11 @@
             'link_settings': {
                 'ldflags': ['-rdynamic'],
             },
+            }],
+            ['configuration_policy==1', {
+              'sources': [
+                'policy/core/common/policy_schema_unittest.cc',
+              ],
             }],
           ],
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
