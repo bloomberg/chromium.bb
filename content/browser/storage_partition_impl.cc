@@ -305,6 +305,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
                    GetDatabaseTracker()));
   }
 
+  if (GetFileSystemContext())
+    GetFileSystemContext()->Shutdown();
+
   if (GetDOMStorageContext())
     GetDOMStorageContext()->Shutdown();
 }

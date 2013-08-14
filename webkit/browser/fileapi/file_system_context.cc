@@ -174,6 +174,16 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
   return success;
 }
 
+void FileSystemContext::Shutdown() {
+  if (!io_task_runner_->RunsTasksOnCurrentThread()) {
+    io_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&FileSystemContext::Shutdown,
+                              make_scoped_refptr(this)));
+    return;
+  }
+  operation_runner_->Shutdown();
+}
+
 FileSystemQuotaUtil*
 FileSystemContext::GetQuotaUtil(FileSystemType type) const {
   FileSystemBackend* backend = GetFileSystemBackend(type);

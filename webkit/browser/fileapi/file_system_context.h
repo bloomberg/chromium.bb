@@ -108,6 +108,9 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
     return quota_manager_proxy_.get();
   }
 
+  // Discards inflight operations in the operation runner.
+  void Shutdown();
+
   // Returns a quota util for a given filesystem type.  This may
   // return NULL if the type does not support the usage tracking or
   // it is not a quota-managed storage.

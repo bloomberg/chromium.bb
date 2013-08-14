@@ -55,7 +55,9 @@ scoped_refptr<fileapi::FileSystemContext> CreateFileSystemContext(
 
   base::SequencedWorkerPool* pool = content::BrowserThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> file_task_runner =
-      pool->GetSequencedTaskRunner(pool->GetNamedSequenceToken("FileAPI"));
+      pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          pool->GetNamedSequenceToken("FileAPI"),
+          base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 
   // Setting up additional filesystem backends.
   ScopedVector<fileapi::FileSystemBackend> additional_backends;
