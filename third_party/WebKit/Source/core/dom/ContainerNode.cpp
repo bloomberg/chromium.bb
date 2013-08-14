@@ -25,6 +25,7 @@
 
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
+#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
 #include "core/dom/EventNames.h"
@@ -682,6 +683,8 @@ void ContainerNode::resumePostAttachCallbacks()
 
         if (s_postAttachCallbackQueue)
             dispatchPostAttachCallbacks();
+        if (StyleResolver* resolver = document()->styleResolverIfExists())
+            resolver->clearStyleSharingList();
     }
     --s_attachDepth;
 }
@@ -1036,6 +1039,8 @@ static void updateTreeAfterInsertion(ContainerNode* parent, Node* child, AttachB
             child->lazyAttach();
         else
             child->attach();
+        if (StyleResolver* resolver = parent->document()->document()->styleResolverIfExists())
+            resolver->clearStyleSharingList();
     }
 
     dispatchChildInsertionEvents(child);
