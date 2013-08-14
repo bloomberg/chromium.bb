@@ -660,6 +660,24 @@ def GenericRetry(handler, max_retry, functor, *args, **kwds):
   raise exc_info[0], exc_info[1], exc_info[2]
 
 
+def RetryException(exc_retry, max_retry, functor, *args, **kwds):
+  """Convience wrapper for RetryInvocation based on exceptions.
+
+  Args:
+    exc_retry: A class (or tuple of classes).  If the raised exception
+      is the given class(es), a retry will be attempted.  Otherwise,
+      the exception is raised.
+    *: See GenericRetry.
+  """
+  if not isinstance(exc_retry, (tuple, type)):
+    raise TypeError('exc_retry should be an exception (or tuple), not %r' %
+                    exc_retry)
+  #pylint: disable=E0102
+  def exc_retry(exc, values=exc_retry):
+    return isinstance(exc, values)
+  return GenericRetry(exc_retry, max_retry, functor, *args, **kwds)
+
+
 def RetryCommand(functor, max_retry, *args, **kwds):
   """Wrapper for RunCommand that will retry a command
 

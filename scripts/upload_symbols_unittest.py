@@ -7,10 +7,10 @@ import ctypes
 import logging
 import os
 import sys
+import urllib2
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)),
                                 '..', '..'))
-from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
@@ -77,15 +77,13 @@ class UploadSymbolsTest(cros_test_lib.MockTempDirTestCase):
 class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
 
   def setUp(self):
-    self.good_result = cros_build_lib.CommandResult(returncode=0)
-    self.bad_result = cros_build_lib.CommandResult(returncode=1)
-    self.excp_result = cros_build_lib.RunCommandError('failed', self.bad_result)
+    self.excp_result = urllib2.HTTPError('http://', 400, 'fail', {}, None)
     self.sym_file = os.path.join(self.tempdir, 'foo.sym')
     self.url = 'http://eatit'
 
   def testUploadSymbolNormal(self):
     """Verify we try to upload on a normal file"""
-    m = upload_symbols.SymUpload = mock.Mock(return_value=self.good_result)
+    m = upload_symbols.SymUpload = mock.Mock()
     osutils.Touch(self.sym_file)
     ret = upload_symbols.UploadSymbol(self.sym_file, self.url)
     self.assertEqual(ret, 0)
@@ -113,7 +111,6 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     def SymUpload(sym_file, _url):
       content = osutils.ReadFile(sym_file)
       self.assertEqual(content, 'some junk\n')
-      return self.good_result
     m = upload_symbols.SymUpload = mock.Mock(side_effect=SymUpload)
     content = (
         'STACK CFI 1234',
@@ -128,7 +125,7 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
 
   def testTruncateReallyLargeFiles(self):
     """Verify we try to shrink really big files"""
-    m = upload_symbols.SymUpload = mock.Mock(return_value=self.good_result)
+    m = upload_symbols.SymUpload = mock.Mock()
     with open(self.sym_file, 'w+b') as f:
       f.truncate(upload_symbols.CRASH_SERVER_FILE_LIMIT + 100)
       f.seek(0)
@@ -137,6 +134,43 @@ class UploadSymbolTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(ret, 1)
     self.assertNotEqual(m.call_args[0][1], self.sym_file)
     self.assertEqual(m.call_count, 1)
+
+
+class SymUploadTest(cros_test_lib.MockTempDirTestCase):
+
+  SYM_URL = 'http://localhost/post/it/here'
+  SYM_CONTENTS = """MODULE Linux arm 123-456 blkid
+PUBLIC 1471 0 main"""
+
+  def setUp(self):
+    self.sym_file = os.path.join(self.tempdir, 'test.sym')
+    osutils.WriteFile(self.sym_file, self.SYM_CONTENTS)
+
+  def testPostUpload(self):
+    """Verify HTTP POST has all the fields we need"""
+    m = self.PatchObject(urllib2, 'urlopen', autospec=True)
+    upload_symbols.SymUpload(self.sym_file, self.SYM_URL)
+    self.assertEquals(m.call_count, 1)
+    req = m.call_args[0][0]
+    self.assertEquals(req.get_full_url(), self.SYM_URL)
+    data = ''.join([x for x in req.get_data()])
+
+    fields = {
+        'code_file': 'blkid',
+        'debug_file': 'blkid',
+        'debug_identifier': '123456',
+        'os': 'Linux',
+        'cpu': 'arm',
+    }
+    for key, val in fields.iteritems():
+      line = 'Content-Disposition: form-data; name="%s"\r\n' % key
+      self.assertTrue(line in data)
+      line = '%s\r\n' % val
+      self.assertTrue(line in data)
+    line = ('Content-Disposition: form-data; name="symbol_file"; '
+            'filename="test.sym"\r\n')
+    self.assertTrue(line in data)
+    self.assertTrue(self.SYM_CONTENTS in data)
 
 
 if __name__ == '__main__':

@@ -469,6 +469,32 @@ class TestRetries(cros_test_lib.MoxTestCase):
     self.assertEqual(4, cros_build_lib.GenericRetry(handler, 1, f))
     self.assertRaises(StopIteration, cros_build_lib.GenericRetry, handler, 3, f)
 
+  def testRetryExceptionBadArgs(self):
+    """Verify we reject non-classes or tuples of classes"""
+    self.assertRaises(TypeError, cros_build_lib.RetryException, '', 3, map)
+    self.assertRaises(TypeError, cros_build_lib.RetryException, 123, 3, map)
+    self.assertRaises(TypeError, cros_build_lib.RetryException, None, 3, map)
+    self.assertRaises(TypeError, cros_build_lib.RetryException, [None], 3, map)
+
+  def testRetryException(self):
+    """Verify we retry only when certain exceptions get thrown"""
+    source, source2 = iter(xrange(6)).next, iter(xrange(6)).next
+    def f():
+      val = source2()
+      self.assertEqual(val, source())
+      if val < 2:
+        raise OSError()
+      if val < 5:
+        raise ValueError()
+      return val
+    self.assertRaises(OSError, cros_build_lib.RetryException,
+                      (OSError, ValueError), 2, f)
+    self.assertRaises(ValueError, cros_build_lib.RetryException,
+                      (OSError, ValueError), 1, f)
+    self.assertEqual(5, cros_build_lib.RetryException(ValueError, 1, f))
+    self.assertRaises(StopIteration, cros_build_lib.RetryException,
+                      ValueError, 3, f)
+
   @osutils.TempDirDecorator
   def testBasicRetry(self):
     # pylint: disable=E1101

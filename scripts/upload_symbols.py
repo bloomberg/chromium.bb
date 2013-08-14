@@ -9,13 +9,14 @@ crashes on non-release builds (in which case try to only upload the symbols
 for those executables involved)."""
 
 import ctypes
-import logging
 import multiprocessing
 import os
+import poster
 import random
 import textwrap
 import tempfile
 import time
+import urllib2
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
@@ -57,14 +58,45 @@ MAX_TOTAL_ERRORS_FOR_RETRY = 3
 
 
 def SymUpload(sym_file, upload_url):
-  """Run breakpad sym_upload helper"""
-  # TODO(vapier): Rewrite to use native python HTTP libraries.  This tool
-  # reads the sym_file and does a HTTP post to URL with a few fields set.
-  # See the tiny breakpad/tools/linux/symupload/sym_upload.cc for details.
-  cmd = ['sym_upload', sym_file, upload_url]
-  with cros_build_lib.SubCommandTimeout(UPLOAD_TIMEOUT):
-    return cros_build_lib.RunCommandCaptureOutput(
-        cmd, debug_level=logging.DEBUG)
+  """Upload a symbol file to a HTTP server
+
+  The upload is a multipart/form-data POST with the following parameters:
+    code_file: the basename of the module, e.g. "app"
+    code_identifier: the module file's identifier
+    debug_file: the basename of the debugging file, e.g. "app"
+    debug_identifier: the debug file's identifier, usually consisting of
+                      the guid and age embedded in the pdb, e.g.
+                      "11111111BBBB3333DDDD555555555555F"
+    version: the file version of the module, e.g. "1.2.3.4"
+    product: HTTP-friendly product name
+    os: the operating system that the module was built for
+    cpu: the CPU that the module was built for
+    symbol_file: the contents of the breakpad-format symbol file
+
+  Args:
+    sym_file: The symbol file to upload
+    upload_url: The crash URL to POST the |sym_file| to
+  """
+  sym_header = cros_generate_breakpad_symbols.ReadSymsHeader(sym_file)
+
+  fields = (
+      ('code_file', sym_header.name),
+      ('debug_file', sym_header.name),
+      ('debug_identifier', sym_header.id.replace('-', '')),
+      # Should we set these fields?  They aren't critical, but it might be nice?
+      # We'd have to figure out what file this symbol is coming from and what
+      # package provides it ...
+      #('version', None),
+      #('product', 'ChromeOS'),
+      ('os', sym_header.os),
+      ('cpu', sym_header.cpu),
+      poster.encode.MultipartParam.from_file('symbol_file', sym_file),
+  )
+
+  data, headers = poster.encode.multipart_encode(fields)
+  request = urllib2.Request(upload_url, data, headers)
+  request.add_header('User-agent', 'chromite.upload_symbols')
+  urllib2.urlopen(request, timeout=UPLOAD_TIMEOUT)
 
 
 def TestingSymUpload(sym_file, upload_url):
@@ -81,7 +113,7 @@ def TestingSymUpload(sym_file, upload_url):
   result = cros_build_lib.CommandResult(cmd=cmd, error=None, output=output,
                                         returncode=returncode)
   if returncode:
-    raise cros_build_lib.RunCommandError('forced test fail', result)
+    raise urllib2.HTTPError(upload_url, 400, 'forced test fail', {}, None)
   else:
     return result
 
@@ -141,14 +173,14 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
 
     # Upload the symbol file.
     try:
-      cros_build_lib.RetryCommand(SymUpload, MAX_RETRIES, upload_file,
-                                  upload_url, sleep=INITIAL_RETRY_DELAY)
+      cros_build_lib.RetryException(urllib2.HTTPError,
+                                    MAX_RETRIES, SymUpload, upload_file,
+                                    upload_url, sleep=INITIAL_RETRY_DELAY)
       cros_build_lib.Info('successfully uploaded %10i bytes: %s', file_size,
                           os.path.basename(sym_file))
-    except cros_build_lib.RunCommandError as e:
-      cros_build_lib.Warning('could not upload: %s:\n{stdout} %s\n{stderr} %s',
-                             os.path.basename(sym_file), e.result.output,
-                             e.result.error)
+    except urllib2.HTTPError as e:
+      cros_build_lib.Warning('could not upload: %s: HTTP %s: %s',
+                             os.path.basename(sym_file), e.code, e.reason)
       num_errors.value += 1
 
   return num_errors.value
@@ -293,3 +325,11 @@ def main(argv):
     ret = 1
 
   return ret
+
+
+# We need this to run once per process.  Do it at module import time as that
+# will let us avoid doing it inline at function call time (see SymUpload) as
+# that func might be called by the multiprocessing module which means we'll
+# do the opener logic multiple times overall.  Plus, if you're importing this
+# module, it's a pretty good chance that you're going to need this.
+poster.streaminghttp.register_openers()
