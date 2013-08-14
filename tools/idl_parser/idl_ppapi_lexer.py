@@ -15,23 +15,25 @@ PLY can be found at:
 """
 
 from idl_lexer import IDLLexer
-import optparse
-import os.path
-import sys
 
 
 #
 # IDL PPAPI Lexer
 #
 class IDLPPAPILexer(IDLLexer):
+  # Token definitions
+  #
+  # These need to be methods for lexer construction, despite not using self.
+  # pylint: disable=R0201
+
   # Special multi-character operators
   def t_LSHIFT(self, t):
     r'<<'
-    return t;
+    return t
 
   def t_RSHIFT(self, t):
     r'>>'
-    return t;
+    return t
 
   def t_INLINE(self, t):
     r'\#inline (.|\n)*?\#endinl.*'
@@ -45,15 +47,15 @@ class IDLPPAPILexer(IDLLexer):
     self._AddKeywords(['label', 'struct'])
 
     # Add number types
-    self._AddKeywords(['char', 'int8_t', 'int16_t', 'int32_t', 'int64_t']);
-    self._AddKeywords(['uint8_t', 'uint16_t', 'uint32_t', 'uint64_t']);
-    self._AddKeywords(['double_t', 'float_t']);
+    self._AddKeywords(['char', 'int8_t', 'int16_t', 'int32_t', 'int64_t'])
+    self._AddKeywords(['uint8_t', 'uint16_t', 'uint32_t', 'uint64_t'])
+    self._AddKeywords(['double_t', 'float_t'])
 
     # Add handle types
-    self._AddKeywords(['handle_t', 'PP_FileHandle']);
+    self._AddKeywords(['handle_t', 'PP_FileHandle'])
 
     # Add pointer types (void*, char*, const char*, const void*)
-    self._AddKeywords(['mem_t', 'str_t', 'cstr_t', 'interface_t']);
+    self._AddKeywords(['mem_t', 'str_t', 'cstr_t', 'interface_t'])
 
     # Remove JS types
     self._DelKeywords(['boolean', 'byte', 'Date', 'DOMString', 'double',

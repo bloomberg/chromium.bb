@@ -29,13 +29,11 @@
 # pylint: disable=R0201
 # pylint: disable=C0301
 
-import os.path
 import sys
-import time
 
 from idl_ppapi_lexer import IDLPPAPILexer
 from idl_parser import IDLParser, ListFromConcat, ParseFile
-from idl_node import IDLAttribute, IDLNode
+from idl_node import IDLNode
 
 class IDLPPAPIParser(IDLParser):
 #
@@ -104,7 +102,8 @@ class IDLPPAPIParser(IDLParser):
   def p_LabelCont(self, p):
     """LabelCont : ',' LabelList
                  |"""
-    if len(p) > 1: p[0] = p[2]
+    if len(p) > 1:
+      p[0] = p[2]
 
   def p_LabelContError(self, p):
     """LabelCont : error LabelCont"""
@@ -260,20 +259,21 @@ class IDLPPAPIParser(IDLParser):
     arguments = self.BuildProduction('Values', p, 2, p[3])
     p[0] = self.BuildNamed('ExtAttribute', p, 1, arguments)
 
+  def p_ValueList(self, p):
+    """ValueList : ConstValue ValueListCont"""
+    p[0] = ListFromConcat(p[1], p[2])
+
+  def p_ValueListCont(self, p):
+    """ValueListCont : ValueList
+                     |"""
+    if len(p) > 1:
+      p[0] = p[1]
+
   # [76]
   def p_ExtendedAttributeIdentConst(self, p):
     """ExtendedAttributeIdentConst : identifier '=' ConstValue"""
     p[0] = self.BuildNamed('ExtAttribute', p, 1, p[3])
 
-  def p_ValueListCont(self, p):
-    """ValueListCont : ConstValue ValueListCont
-                     |"""
-    if len(p) > 1:
-      p[0] = ListFromConcat(p[1], p[2])
-
-  def p_ValueList(self, p):
-    """ValueList : ConstValue ValueListCont"""
-    values = self.BuildProduction('Values', p, 2, ListFromConcat(p[1], p[2]))
 
   def __init__(self, lexer, verbose=False, debug=False, mute_error=False):
     IDLParser.__init__(self, lexer, verbose, debug, mute_error)

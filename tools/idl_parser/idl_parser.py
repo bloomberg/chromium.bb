@@ -36,8 +36,22 @@ import time
 from idl_lexer import IDLLexer
 from idl_node import IDLAttribute, IDLNode
 
-from ply import lex
-from ply import yacc
+#
+# Try to load the ply module, if not, then assume it is in the third_party
+# directory.
+#
+try:
+  # Disable lint check which fails to find the ply module.
+  # pylint: disable=F0401
+  from ply import lex
+  from ply import yacc
+except ImportError:
+  module_path, module_name = os.path.split(__file__)
+  third_party = os.path.join(module_path, os.par, os.par, 'third_party')
+  sys.path.append(third_party)
+  # pylint: disable=F0401
+  from ply import lex
+  from ply import yacc
 
 #
 # ERROR_REMAP
@@ -862,7 +876,7 @@ class IDLParser(object):
   def __init__(self, lexer, verbose=False, debug=False, mute_error=False):
     self.lexer = lexer
     self.tokens = lexer.KnownTokens()
-    self.yaccobj = yacc.yacc(module=self, tabmodule=None, debug=False,
+    self.yaccobj = yacc.yacc(module=self, tabmodule=None, debug=debug,
                              optimize=0, write_tables=0)
     self.parse_debug = debug
     self.verbose = verbose
@@ -973,6 +987,8 @@ class IDLParser(object):
     return IDLAttribute(key, Boolean(True))
 
   def GetErrors(self):
+    # Access lexer errors, despite being private
+    # pylint: disable=W0212
     return self._parse_errors + self.lexer._lex_errors
 
 #
