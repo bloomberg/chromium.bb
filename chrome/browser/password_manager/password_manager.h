@@ -89,6 +89,20 @@ class PasswordManager : public LoginModel,
  private:
   friend class content::WebContentsUserData<PasswordManager>;
 
+  enum ProvisionalSaveFailure {
+    SAVING_DISABLED,
+    EMPTY_PASSWORD,
+    NO_MATCHING_FORM,
+    MATCHING_NOT_COMPLETE,
+    FORM_BLACKLISTED,
+    INVALID_FORM,
+    AUTOCOMPLETE_OFF,
+    MAX_FAILURE_VALUE
+  };
+
+  // Log failure for UMA
+  void RecordFailure(ProvisionalSaveFailure failure);
+
   // Possibly set up FieldTrial for testing other possible usernames. This only
   // happens if there are other_possible_usernames to be shown and the
   // experiment hasn't already been initialized. We setup the experiment at

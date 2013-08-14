@@ -137,12 +137,16 @@ bool PasswordManager::IsSavingEnabled() const {
 }
 
 void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
-  if (!IsSavingEnabled())
+  if (!IsSavingEnabled()) {
+    RecordFailure(SAVING_DISABLED);
     return;
+  }
 
   // No password to save? Then don't.
-  if (form.password_value.empty())
+  if (form.password_value.empty()) {
+    RecordFailure(EMPTY_PASSWORD);
     return;
+  }
 
   scoped_ptr<PasswordFormManager> manager;
   ScopedVector<PasswordFormManager>::iterator matched_manager_it =
@@ -173,6 +177,7 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     manager.reset(*matched_manager_it);
     pending_login_managers_.weak_erase(matched_manager_it);
   } else {
+    RecordFailure(NO_MATCHING_FORM);
     return;
   }
 
@@ -180,23 +185,31 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
   // tried to submit credentials before we had time to even find matching
   // results for the given form and autofill. If this is the case, we just
   // give up.
-  if (!manager->HasCompletedMatching())
+  if (!manager->HasCompletedMatching()) {
+    RecordFailure(MATCHING_NOT_COMPLETE);
     return;
+  }
 
   // Also get out of here if the user told us to 'never remember' passwords for
   // this form.
-  if (manager->IsBlacklisted())
+  if (manager->IsBlacklisted()) {
+    RecordFailure(FORM_BLACKLISTED);
     return;
+  }
 
   // Bail if we're missing any of the necessary form components.
-  if (!manager->HasValidPasswordForm())
+  if (!manager->HasValidPasswordForm()) {
+    RecordFailure(INVALID_FORM);
     return;
+  }
 
   // Always save generated passwords, as the user expresses explicit intent for
   // Chrome to manage such passwords. For other passwords, respect the
   // autocomplete attribute.
-  if (!manager->HasGeneratedPassword() && !form.password_autocomplete_set)
+  if (!manager->HasGeneratedPassword() && !form.password_autocomplete_set) {
+    RecordFailure(AUTOCOMPLETE_OFF);
     return;
+  }
 
   PasswordForm provisionally_saved_form(form);
   provisionally_saved_form.ssl_valid = form.origin.SchemeIsSecure() &&
@@ -208,6 +221,11 @@ void PasswordManager::ProvisionallySavePassword(const PasswordForm& form) {
     action = PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES;
   manager->ProvisionallySave(provisionally_saved_form, action);
   provisional_save_manager_.swap(manager);
+}
+
+void PasswordManager::RecordFailure(ProvisionalSaveFailure failure) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ProvisionalSaveFailure",
+                            failure, MAX_FAILURE_VALUE);
 }
 
 void PasswordManager::AddObserver(LoginModelObserver* observer) {

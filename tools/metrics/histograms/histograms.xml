@@ -9626,6 +9626,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.ProvisionalSaveFailure"
+    enum="ProvisionalSaveFailure">
+  <summary>
+    Breakdown of cases where a password is submitted, but we don't even try and
+    save it. Recorded for every password form submit.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.TimesGeneratedPasswordUsed">
   <summary>
     The number of times each generated password has been used to log in.
@@ -20918,6 +20926,16 @@ other types of suffix sets.
   <int value="3" label="SPDY 2.0"/>
   <int value="4" label="SPDY 2.1"/>
   <int value="5" label="SPDY 3.0"/>
+</enum>
+
+<enum name="ProvisionalSaveFailure" type="int">
+  <int value="0" label="SAVING_DISABLED"/>
+  <int value="1" label="EMPTY_PASSWORD"/>
+  <int value="2" label="NO_MATCHING_FORM"/>
+  <int value="3" label="MATCHING_NOT_COMPLETE"/>
+  <int value="4" label="FORM_BLACKLISTED"/>
+  <int value="5" label="INVALID_FORM"/>
+  <int value="6" label="AUTOCOMPLETE_OFF"/>
 </enum>
 
 <enum name="ProxyStatus" type="int">
