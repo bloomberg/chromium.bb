@@ -137,7 +137,7 @@ DefaultContextFactory::OffscreenContextProviderForMainThread() {
   if (!offscreen_contexts_main_thread_.get() ||
       !offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_main_thread_ =
-        webkit::gpu::ContextProviderInProcess::Create();
+        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
     if (offscreen_contexts_main_thread_.get() &&
         !offscreen_contexts_main_thread_->BindToCurrentThread())
       offscreen_contexts_main_thread_ = NULL;
@@ -150,7 +150,7 @@ DefaultContextFactory::OffscreenContextProviderForCompositorThread() {
   if (!offscreen_contexts_compositor_thread_.get() ||
       !offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
     offscreen_contexts_compositor_thread_ =
-        webkit::gpu::ContextProviderInProcess::Create();
+        webkit::gpu::ContextProviderInProcess::CreateOffscreen();
   }
   return offscreen_contexts_compositor_thread_;
 }

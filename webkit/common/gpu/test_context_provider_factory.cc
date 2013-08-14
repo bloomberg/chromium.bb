@@ -27,7 +27,7 @@ TestContextProviderFactory::~TestContextProviderFactory() {}
 scoped_refptr<cc::ContextProvider> TestContextProviderFactory::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_.get() || main_thread_->DestroyedOnMainThread()) {
-    main_thread_ = ContextProviderInProcess::Create();
+    main_thread_ = ContextProviderInProcess::CreateOffscreen();
     if (main_thread_.get() && !main_thread_->BindToCurrentThread())
       main_thread_ = NULL;
   }

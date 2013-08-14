@@ -4,6 +4,7 @@
 
 #include "webkit/common/gpu/context_provider_in_process.h"
 
+#include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
@@ -53,6 +54,35 @@ class ContextProviderInProcess::MemoryAllocationCallbackProxy
   ContextProviderInProcess* provider_;
 };
 
+// static
+scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
+    const CreateCallback& create_callback) {
+  scoped_refptr<ContextProviderInProcess> provider =
+      new ContextProviderInProcess;
+  if (!provider->InitializeOnMainThread(create_callback))
+    return NULL;
+  return provider;
+}
+
+static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
+CreateOffscreenContext() {
+  WebKit::WebGraphicsContext3D::Attributes attributes;
+  attributes.depth = false;
+  attributes.stencil = true;
+  attributes.antialias = false;
+  attributes.shareResources = true;
+  attributes.noAutomaticFlushes = true;
+
+  return WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
+      attributes).Pass();
+}
+
+// static
+scoped_refptr<ContextProviderInProcess>
+ContextProviderInProcess::CreateOffscreen() {
+  return Create(base::Bind(&CreateOffscreenContext));
+}
+
 ContextProviderInProcess::ContextProviderInProcess()
     : destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -64,22 +94,13 @@ ContextProviderInProcess::~ContextProviderInProcess() {
          context_thread_checker_.CalledOnValidThread());
 }
 
-bool ContextProviderInProcess::InitializeOnMainThread() {
+bool ContextProviderInProcess::InitializeOnMainThread(
+    const CreateCallback& create_callback) {
   DCHECK(!context3d_);
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(!create_callback.is_null());
 
-  WebKit::WebGraphicsContext3D::Attributes attributes;
-  attributes.depth = false;
-  attributes.stencil = true;
-  attributes.antialias = false;
-  attributes.shareResources = true;
-  attributes.noAutomaticFlushes = true;
-
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  context3d_ =
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          attributes);
-
+  context3d_ = create_callback.Run();
   return context3d_;
 }
 

@@ -48,16 +48,19 @@ namespace gpu {
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
     : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
-  static scoped_ptr<WebKit::WebGraphicsContext3D> CreateViewContext(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes,
-      gfx::AcceleratedWidget window);
+  static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
+      CreateViewContext(
+          const WebKit::WebGraphicsContext3D::Attributes& attributes,
+          gfx::AcceleratedWidget window);
 
-  static scoped_ptr<WebKit::WebGraphicsContext3D> CreateOffscreenContext(
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
+  static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
+      CreateOffscreenContext(
+          const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
-  static scoped_ptr<WebKit::WebGraphicsContext3D> WrapContext(
-      scoped_ptr< ::gpu::GLInProcessContext> context,
-      const WebKit::WebGraphicsContext3D::Attributes& attributes);
+  static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
+      WrapContext(
+          scoped_ptr< ::gpu::GLInProcessContext> context,
+          const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   virtual ~WebGraphicsContext3DInProcessCommandBufferImpl();
 

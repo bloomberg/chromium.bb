@@ -66,11 +66,11 @@ static base::LazyInstance<GLES2Initializer> g_gles2_initializer =
 }  // namespace anonymous
 
 // static
-scoped_ptr<WebKit::WebGraphicsContext3D>
+scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
     const WebKit::WebGraphicsContext3D::Attributes& attributes,
     gfx::AcceleratedWidget window) {
-  scoped_ptr<WebKit::WebGraphicsContext3D> context;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context;
   if (gfx::GLSurface::InitializeOneOff()) {
     context.reset(new WebGraphicsContext3DInProcessCommandBufferImpl(
       scoped_ptr< ::gpu::GLInProcessContext>(), attributes, false, window));
@@ -79,7 +79,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
 }
 
 // static
-scoped_ptr<WebKit::WebGraphicsContext3D>
+scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   return make_scoped_ptr(new WebGraphicsContext3DInProcessCommandBufferImpl(
@@ -87,10 +87,10 @@ WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
                              attributes,
                              true,
                              gfx::kNullAcceleratedWidget))
-      .PassAs<WebKit::WebGraphicsContext3D>();
+      .Pass();
 }
 
-scoped_ptr<WebKit::WebGraphicsContext3D>
+scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
 WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
     scoped_ptr< ::gpu::GLInProcessContext> context,
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
@@ -100,7 +100,7 @@ WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
           attributes,
           true /* is_offscreen. Not used. */,
           gfx::kNullAcceleratedWidget /* window. Not used. */))
-      .PassAs<WebKit::WebGraphicsContext3D>();
+      .Pass();
 }
 
 WebGraphicsContext3DInProcessCommandBufferImpl::

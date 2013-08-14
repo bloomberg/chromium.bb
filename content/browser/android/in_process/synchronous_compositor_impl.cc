@@ -70,7 +70,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
     if (!offscreen_context_for_main_thread_.get() ||
         offscreen_context_for_main_thread_->DestroyedOnMainThread()) {
       offscreen_context_for_main_thread_ =
-          webkit::gpu::ContextProviderInProcess::Create();
+          webkit::gpu::ContextProviderInProcess::CreateOffscreen();
       if (offscreen_context_for_main_thread_.get() &&
           !offscreen_context_for_main_thread_->BindToCurrentThread())
         offscreen_context_for_main_thread_ = NULL;
@@ -90,7 +90,7 @@ class SynchronousCompositorFactoryImpl : public SynchronousCompositorFactory {
     if (!offscreen_context_for_compositor_thread_.get() ||
         offscreen_context_for_compositor_thread_->DestroyedOnMainThread()) {
       offscreen_context_for_compositor_thread_ =
-          webkit::gpu::ContextProviderInProcess::Create();
+          webkit::gpu::ContextProviderInProcess::CreateOffscreen();
     }
     return offscreen_context_for_compositor_thread_;
   }
