@@ -18,6 +18,7 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/async_policy_provider.h"
@@ -43,7 +44,8 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/policy/policy_loader_win.h"
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#include <CoreFoundation/CoreFoundation.h>
 #include "chrome/browser/policy/policy_loader_mac.h"
 #include "chrome/browser/policy/preferences_mac.h"
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
@@ -94,6 +96,30 @@ const char kDefaultDeviceManagementServerUrl[] =
 
 // Used in BrowserPolicyConnector::SetPolicyProviderForTesting.
 ConfigurationPolicyProvider* g_testing_provider = NULL;
+
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+base::FilePath GetManagedPolicyPath() {
+  // This constructs the path to the plist file in which Mac OS X stores the
+  // managed preference for the application. This is undocumented and therefore
+  // fragile, but if it doesn't work out, AsyncPolicyLoader has a task that
+  // polls periodically in order to reload managed preferences later even if we
+  // missed the change.
+  base::FilePath path;
+  if (!PathService::Get(chrome::DIR_MANAGED_PREFS, &path))
+    return base::FilePath();
+
+  CFBundleRef bundle(CFBundleGetMainBundle());
+  if (!bundle)
+    return base::FilePath();
+
+  CFStringRef bundle_id = CFBundleGetIdentifier(bundle);
+  if (!bundle_id)
+    return base::FilePath();
+
+  return path.Append(base::SysCFStringRefToUTF8(bundle_id) + ".plist");
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace
 
@@ -465,11 +491,12 @@ ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       policy_list));
   return new AsyncPolicyProvider(loader.Pass());
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       policy_list,
+      GetManagedPolicyPath(),
       new MacPreferences()));
   return new AsyncPolicyProvider(loader.Pass());
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)

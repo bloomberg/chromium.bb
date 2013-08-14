@@ -34,6 +34,7 @@ class PolicyLoaderMac : public AsyncPolicyLoader {
  public:
   PolicyLoaderMac(scoped_refptr<base::SequencedTaskRunner> task_runner,
                   const PolicyDefinitionList* policy_list,
+                  const base::FilePath& managed_policy_path,
                   MacPreferences* preferences);
   virtual ~PolicyLoaderMac();
 

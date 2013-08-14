@@ -83,7 +83,6 @@ specific_include_rules = {
   ],
 
   r"policy_loader_mac\.cc": [
-    "+chrome/common/chrome_paths.h",
     "+chrome/common/policy/policy_schema.h",
   ],
 
