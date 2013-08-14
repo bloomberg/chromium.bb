@@ -782,6 +782,10 @@ const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 // Runs the security test for the renderer sandbox.
 const char kTestSandbox[]                   = "test-sandbox";
 
+// Enables not sending touch events to renderer while scrolling.
+const char kNoTouchToRendererWhileScrolling[] =
+    "no-touch-to-renderer-while-scrolling";
+
 // Causes TRACE_EVENT flags to be recorded from startup. Optionally, can
 // specify the specific trace categories to include (e.g.
 // --trace-startup=base,net) otherwise, all events are recorded. Setting this

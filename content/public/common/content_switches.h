@@ -224,6 +224,7 @@ extern const char kTapDownDeferralTimeMs[];
 CONTENT_EXPORT extern const char kTestingFixedHttpPort[];
 CONTENT_EXPORT extern const char kTestingFixedHttpsPort[];
 CONTENT_EXPORT extern const char kTestSandbox[];
+CONTENT_EXPORT extern const char kNoTouchToRendererWhileScrolling[];
 extern const char kTraceStartup[];
 extern const char kTraceStartupDuration[];
 extern const char kTraceStartupFile[];

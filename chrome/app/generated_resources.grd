@@ -5595,6 +5595,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_NEW_NTP_DESCRIPTION" desc="Description for the flag to enable the new NTP.">
         Whether or not the new style New Tab Page is enabled.
       </message>
+      <message name="IDS_FLAGS_ENABLE_NO_TOUCH_TO_RENDERER_WHILE_SCROLLING_NAME" desc="Name of the flag that enables not sending touch events to renderer while scrolling.">
+        Enable not sending touch events to renderer while scrolling
+      </message>
+      <message name="IDS_FLAGS_ENABLE_NO_TOUCH_TO_RENDERER_WHILE_SCROLLING_DESCRIPTION" desc="Description of the flag to enable not sending touch events to renderer while scrolling.">
+        Enable not sending touch events to renderer while scrolling.
+      </message>
       <message name="IDS_FLAGS_ENABLE_GESTURE_TAP_HIGHLIGHTING_NAME" desc="Title for the flag to turn on gesture tap highlighting">
         Gesture Tap Highlighting
       </message>

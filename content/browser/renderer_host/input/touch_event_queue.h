@@ -61,6 +61,10 @@ class TouchEventQueue {
     return touch_queue_.empty();
   }
 
+  void set_no_touch_move_to_renderer(bool value) {
+    no_touch_move_to_renderer_ = value;
+  }
+
  private:
   friend class MockRenderWidgetHost;
   friend class ImmediateInputRouterTest;
@@ -87,6 +91,11 @@ class TouchEventQueue {
 
   // Used to defer touch forwarding when ack dispatch triggers |QueueEvent()|.
   bool dispatching_touch_ack_;
+
+  // Don't send touch move events to renderer. This is enabled when the page
+  // is scrolling. This behaviour is currently enabled only on aura behind a
+  // flag.
+  bool no_touch_move_to_renderer_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchEventQueue);
 };

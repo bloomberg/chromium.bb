@@ -85,6 +85,9 @@ ImmediateInputRouter::ImmediateInputRouter(
       has_touch_handler_(false),
       touch_event_queue_(new TouchEventQueue(this)),
       gesture_event_filter_(new GestureEventFilter(this)) {
+  enable_no_touch_to_renderer_while_scrolling_ =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kNoTouchToRendererWhileScrolling) == "1";
   DCHECK(process);
   DCHECK(client);
 }
@@ -199,6 +202,7 @@ void ImmediateInputRouter::SendKeyboardEvent(
 
 void ImmediateInputRouter::SendGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
+  HandleGestureScroll(gesture_event);
   if (!client_->OnSendGestureEvent(gesture_event))
     return;
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
@@ -252,6 +256,7 @@ void ImmediateInputRouter::SendTouchEventImmediately(
 
 void ImmediateInputRouter::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
+  HandleGestureScroll(gesture_event);
   if (!client_->OnSendGestureEventImmediately(gesture_event))
     return;
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency, false);
@@ -554,6 +559,21 @@ void ImmediateInputRouter::ProcessTouchAck(
     const ui::LatencyInfo& latency_info) {
   // |touch_event_queue_| will forward to OnTouchEventAck when appropriate.
   touch_event_queue_->ProcessTouchAck(ack_result, latency_info);
+}
+
+void ImmediateInputRouter::HandleGestureScroll(
+    const GestureEventWithLatencyInfo& gesture_event) {
+  if (!enable_no_touch_to_renderer_while_scrolling_)
+    return;
+
+  // Once scrolling is started stop forwarding touch move events to renderer.
+  if (gesture_event.event.type == WebInputEvent::GestureScrollBegin)
+    touch_event_queue_->set_no_touch_move_to_renderer(true);
+
+  if (gesture_event.event.type == WebInputEvent::GestureScrollEnd ||
+      gesture_event.event.type == WebInputEvent::GestureFlingStart) {
+    touch_event_queue_->set_no_touch_move_to_renderer(false);
+  }
 }
 
 }  // namespace content

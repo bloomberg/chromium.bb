@@ -73,6 +73,8 @@ class CONTENT_EXPORT ImmediateInputRouter
   }
 
 private:
+  friend class ImmediateInputRouterTest;
+
   // TouchEventQueueClient
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
                                InputEventAckState ack_result) OVERRIDE;
@@ -126,6 +128,9 @@ private:
   // renderer.
   void ProcessTouchAck(InputEventAckState ack_result,
                        const ui::LatencyInfo& latency_info);
+
+  void HandleGestureScroll(
+      const GestureEventWithLatencyInfo& gesture_event);
 
   int routing_id() const { return routing_id_; }
 
@@ -185,6 +190,10 @@ private:
   // then touch events are sent to the renderer. Otherwise, the touch events are
   // not sent to the renderer.
   bool has_touch_handler_;
+
+  // Whether enabling the optimization that sending no touch move events to
+  // renderer while scrolling.
+  bool enable_no_touch_to_renderer_while_scrolling_;
 
   scoped_ptr<TouchEventQueue> touch_event_queue_;
   scoped_ptr<GestureEventFilter> gesture_event_filter_;
