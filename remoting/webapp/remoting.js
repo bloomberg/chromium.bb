@@ -125,16 +125,18 @@ remoting.init = function() {
   }
   remoting.hostList.load(onLoad);
 
-  // Show the tab-type warnings if necessary.
-  /** @param {boolean} isWindowed */
-  var onIsWindowed = function(isWindowed) {
-    if (!isWindowed &&
-        navigator.platform.indexOf('Mac') == -1) {
-      document.getElementById('startup-mode-box-me2me').hidden = false;
-      document.getElementById('startup-mode-box-it2me').hidden = false;
-    }
-  };
-  isWindowed_(onIsWindowed);
+  // For Apps v1, check the tab type to warn the user if they are not getting
+  // the best keyboard experience.
+  if (!remoting.isAppsV2 && navigator.platform.indexOf('Mac') == -1) {
+    /** @param {boolean} isWindowed */
+    var onIsWindowed = function(isWindowed) {
+      if (!isWindowed) {
+        document.getElementById('startup-mode-box-me2me').hidden = false;
+        document.getElementById('startup-mode-box-it2me').hidden = false;
+      }
+    };
+    isWindowed_(onIsWindowed);
+  }
 };
 
 /**
