@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/controls/textfield/native_textfield_views.h"
+
 #include <set>
 #include <string>
 #include <vector>
@@ -26,7 +28,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/render_text.h"
-#include "ui/views/controls/textfield/native_textfield_views.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/controls/textfield/textfield_views_model.h"
@@ -37,6 +38,10 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
+
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 #define EXPECT_STR_EQ(ascii, utf16) EXPECT_EQ(ASCIIToUTF16(ascii), utf16)
 
@@ -1881,4 +1886,24 @@ TEST_F(NativeTextfieldViewsTest, TestLongPressInitiatesDragDrop) {
   EXPECT_TRUE(textfield_view_->CanStartDragForView(NULL,
       kStringPoint, kStringPoint));
 }
+
+TEST_F(NativeTextfieldViewsTest, GetTextfieldBaseline_FontFallbackTest) {
+#if defined(OS_WIN)
+  // This test fails on Win8 because two different text have the same baseline.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
+    return;
+#endif
+
+  InitTextfield(Textfield::STYLE_DEFAULT);
+  textfield_->SetText(UTF8ToUTF16("abc"));
+  const int old_baseline = textfield_->GetBaseline();
+
+  // Set text which may fall back to a font which has taller baseline than
+  // the default font.  |new_baseline| will be greater than |old_baseline|.
+  textfield_->SetText(UTF8ToUTF16("\xE0\xB9\x91"));
+  const int new_baseline = textfield_->GetBaseline();
+
+  EXPECT_GT(new_baseline, old_baseline);
+}
+
 }  // namespace views

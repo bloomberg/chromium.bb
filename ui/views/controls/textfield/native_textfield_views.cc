@@ -718,7 +718,7 @@ int NativeTextfieldViews::GetFontHeight() {
 }
 
 int NativeTextfieldViews::GetTextfieldBaseline() const {
-  return GetRenderText()->font_list().GetBaseline();
+  return GetRenderText()->GetBaseline();
 }
 
 int NativeTextfieldViews::GetWidthNeededForText() const {
