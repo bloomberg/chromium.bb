@@ -5,6 +5,7 @@
 #include "chrome/test/chromedriver/window_commands.h"
 
 #include <list>
+#include <string>
 
 #include "base/callback.h"
 #include "base/strings/string_number_conversions.h"
@@ -119,6 +120,67 @@ Status GetVisibleCookies(WebView* web_view,
   }
   cookies->swap(cookies_tmp);
   return Status(kOk);
+}
+
+Status ScrollCoordinateInToView(
+    Session* session, WebView* web_view, int x, int y, int* offset_x,
+    int* offset_y) {
+  scoped_ptr<base::Value> value;
+  base::ListValue args;
+  args.AppendInteger(x);
+  args.AppendInteger(y);
+  Status status = web_view->CallFunction(
+      std::string(),
+      "function(x, y) {"
+      "  if (x < window.pageXOffset ||"
+      "      x >= window.pageXOffset + window.innerWidth ||"
+      "      y < window.pageYOffset ||"
+      "      y >= window.pageYOffset + window.innerHeight) {"
+      "    window.scrollTo(x - window.innerWidth/2, y - window.innerHeight/2);"
+      "  }"
+      "  return {"
+      "    view_x: Math.floor(window.pageXOffset),"
+      "    view_y: Math.floor(window.pageYOffset),"
+      "    view_width: Math.floor(window.innerWidth),"
+      "    view_height: Math.floor(window.innerHeight)};"
+      "}",
+      args,
+      &value);
+  if (!status.IsOk())
+    return status;
+  base::DictionaryValue* view_attrib;
+  value->GetAsDictionary(&view_attrib);
+  int view_x, view_y, view_width, view_height;
+  view_attrib->GetInteger("view_x", &view_x);
+  view_attrib->GetInteger("view_y", &view_y);
+  view_attrib->GetInteger("view_width", &view_width);
+  view_attrib->GetInteger("view_height", &view_height);
+  *offset_x = x - view_x;
+  *offset_y = y - view_y;
+  if (*offset_x < 0 || *offset_x >= view_width || *offset_y < 0 ||
+      *offset_y >= view_height)
+    return Status(kUnknownError, "Failed to scroll coordinate into view");
+  return Status(kOk);
+}
+
+Status ExecuteTouchEvent(
+    Session* session, WebView* web_view, TouchEventType type,
+    const base::DictionaryValue& params) {
+  int x, y;
+  if (!params.GetInteger("x", &x))
+    return Status(kUnknownError, "'x' must be an integer");
+  if (!params.GetInteger("y", &y))
+    return Status(kUnknownError, "'y' must be an integer");
+  int relative_x = x;
+  int relative_y = y;
+  Status status = ScrollCoordinateInToView(
+      session, web_view, x, y, &relative_x, &relative_y);
+  if (!status.IsOk())
+    return status;
+  std::list<TouchEvent> events;
+  events.push_back(
+      TouchEvent(type, relative_x, relative_y));
+  return web_view->DispatchTouchEvents(events);
 }
 
 }  // namespace
@@ -497,6 +559,30 @@ Status ExecuteMouseDoubleClick(
                  session->mouse_position.x, session->mouse_position.y,
                  session->sticky_modifiers, 2));
   return web_view->DispatchMouseEvents(events, session->GetCurrentFrameId());
+}
+
+Status ExecuteTouchDown(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return ExecuteTouchEvent(session, web_view, kTouchStart, params);
+}
+
+Status ExecuteTouchUp(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return ExecuteTouchEvent(session, web_view, kTouchEnd, params);
+}
+
+Status ExecuteTouchMove(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value) {
+  return ExecuteTouchEvent(session, web_view, kTouchMove, params);
 }
 
 Status ExecuteGetActiveElement(

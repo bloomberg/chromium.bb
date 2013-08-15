@@ -45,3 +45,6 @@ class WebElement(object):
       for i in range(len(value)):
         typing.append(value[i])
     self._Execute(Command.SEND_KEYS_TO_ELEMENT, {'value': typing})
+
+  def GetLocation(self):
+    return self._Execute(Command.GET_ELEMENT_LOCATION)

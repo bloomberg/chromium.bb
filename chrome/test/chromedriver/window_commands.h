@@ -153,6 +153,27 @@ Status ExecuteMouseDoubleClick(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+// Touch press at a given coordinate.
+Status ExecuteTouchDown(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Touch release at a given coordinate.
+Status ExecuteTouchUp(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
+// Touch move at a given coordinate.
+Status ExecuteTouchMove(
+    Session* session,
+    WebView* web_view,
+    const base::DictionaryValue& params,
+    scoped_ptr<base::Value>* value);
+
 Status ExecuteGetActiveElement(
     Session* session,
     WebView* web_view,

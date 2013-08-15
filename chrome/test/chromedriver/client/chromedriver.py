@@ -217,6 +217,15 @@ class ChromeDriver(object):
   def MouseDoubleClick(self, button=0):
     self.ExecuteCommand(Command.MOUSE_DOUBLE_CLICK, {'button': button})
 
+  def TouchDown(self, x, y):
+    self.ExecuteCommand(Command.TOUCH_DOWN, {'x': x, 'y': y})
+
+  def TouchUp(self, x, y):
+    self.ExecuteCommand(Command.TOUCH_UP, {'x': x, 'y': y})
+
+  def TouchMove(self, x, y):
+    self.ExecuteCommand(Command.TOUCH_MOVE, {'x': x, 'y': y})
+
   def GetCookies(self):
     return self.ExecuteCommand(Command.GET_COOKIES)
 

@@ -66,8 +66,10 @@ _DESKTOP_NEGATIVE_FILTER['HEAD'] = (
         # This test is flaky since it uses setTimeout.
         # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
         'ChromeDriverTest.testAlert',
-        # Desktop doesn't support TAP.
+        # Desktop doesn't support touch (without --touch-events).
         'ChromeDriverTest.testSingleTapElement',
+        'ChromeDriverTest.testTouchDownUpElement',
+        'ChromeDriverTest.testTouchMovedElement',
     ]
 )
 
@@ -353,7 +355,6 @@ class ChromeDriverTest(ChromeDriverBaseTest):
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
         'div.addEventListener("click", function() {'
-        '  var div = document.getElementsByTagName("div")[0];'
         '  div.innerHTML="new<br>";'
         '});'
         'return div;')
@@ -364,12 +365,38 @@ class ChromeDriverTest(ChromeDriverBaseTest):
     div = self._driver.ExecuteScript(
         'document.body.innerHTML = "<div>old</div>";'
         'var div = document.getElementsByTagName("div")[0];'
-        'div.addEventListener("click", function() {'
-        '  var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("touchend", function() {'
         '  div.innerHTML="new<br>";'
         '});'
         'return div;')
     div.SingleTap()
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testTouchDownUpElement(self):
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("touchend", function() {'
+        '  div.innerHTML="new<br>";'
+        '});'
+        'return div;')
+    loc = div.GetLocation()
+    self._driver.TouchDown(loc['x'], loc['y'])
+    self._driver.TouchUp(loc['x'], loc['y'])
+    self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
+
+  def testTouchMovedElement(self):
+    div = self._driver.ExecuteScript(
+        'document.body.innerHTML = "<div>old</div>";'
+        'var div = document.getElementsByTagName("div")[0];'
+        'div.addEventListener("touchmove", function() {'
+        '  div.innerHTML="new<br>";'
+        '});'
+        'return div;')
+    loc = div.GetLocation()
+    self._driver.TouchDown(loc['x'], loc['y'])
+    self._driver.TouchMove(loc['x'] + 1, loc['y'] + 1)
+    self._driver.TouchUp(loc['x'] + 1, loc['y'] + 1)
     self.assertEquals(1, len(self._driver.FindElements('tag name', 'br')))
 
   def testClickElementInSubFrame(self):
