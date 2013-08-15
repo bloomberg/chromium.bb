@@ -249,10 +249,12 @@ void RenderView::layout()
     if (shouldUsePrintingLayout())
         m_minPreferredLogicalWidth = m_maxPreferredLogicalWidth = logicalWidth();
 
+    SubtreeLayoutScope layoutScope(this);
+
     // Use calcWidth/Height to get the new width/height, since this will take the full page zoom factor into account.
     bool relayoutChildren = !shouldUsePrintingLayout() && (!m_frameView || width() != viewWidth() || height() != viewHeight());
     if (relayoutChildren) {
-        setChildNeedsLayout(MarkOnlyThis);
+        layoutScope.setChildNeedsLayout(this);
         for (RenderObject* child = firstChild(); child; child = child->nextSibling()) {
             if ((child->isBox() && toRenderBox(child)->hasRelativeLogicalHeight())
                     || child->style()->logicalHeight().isPercent()
@@ -262,7 +264,7 @@ void RenderView::layout()
                     || child->style()->logicalMinHeight().isViewportPercentage()
                     || child->style()->logicalMaxHeight().isViewportPercentage()
                     || child->isSVGRoot())
-                child->setChildNeedsLayout(MarkOnlyThis);
+                layoutScope.setChildNeedsLayout(child);
         }
     }
 

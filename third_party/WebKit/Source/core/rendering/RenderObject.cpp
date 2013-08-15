@@ -2821,7 +2821,7 @@ void RenderObject::forceLayout()
 void RenderObject::forceChildLayout()
 {
     setChildNeedsLayout(MarkOnlyThis);
-    forceLayout();
+    layout();
 }
 
 enum StyleCacheState {

@@ -29,6 +29,7 @@
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/SubtreeLayoutScope.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
@@ -240,8 +241,9 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
             }
         }
 
+        SubtreeLayoutScope layoutScope(child);
         if (needsLayout)
-            child->setNeedsLayout(MarkOnlyThis);
+            layoutScope.setNeedsLayout(child);
 
         if (child->needsLayout()) {
             child->layout();
@@ -253,8 +255,6 @@ void SVGRenderSupport::layoutChildren(RenderObject* start, bool selfNeedsLayout)
                 child->repaint();
         } else if (layoutSizeChanged)
             notlayoutedObjects.add(child);
-
-        ASSERT(!child->needsLayout());
     }
 
     if (!layoutSizeChanged) {

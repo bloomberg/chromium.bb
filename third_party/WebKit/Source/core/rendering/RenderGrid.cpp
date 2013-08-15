@@ -514,8 +514,9 @@ size_t RenderGrid::explicitGridSizeForSide(GridPositionSide side) const
 
 LayoutUnit RenderGrid::logicalContentHeightForChild(RenderBox* child, Vector<GridTrack>& columnTracks)
 {
+    SubtreeLayoutScope layoutScope(child);
     if (child->style()->logicalHeight().isPercent())
-        child->setNeedsLayout(MarkOnlyThis);
+        layoutScope.setNeedsLayout(child);
 
     child->setOverrideContainingBlockContentLogicalWidth(gridAreaBreadthForChild(child, ForColumns, columnTracks));
     // If |child| has a percentage logical height, we shouldn't let it override its intrinsic height, which is
@@ -858,8 +859,10 @@ void RenderGrid::layoutGridItems()
         // in minContentForChild / maxContentForChild which means that we will always relayout the child.
         LayoutUnit overrideContainingBlockContentLogicalWidth = gridAreaBreadthForChild(child, ForColumns, columnTracks);
         LayoutUnit overrideContainingBlockContentLogicalHeight = gridAreaBreadthForChild(child, ForRows, rowTracks);
+
+        SubtreeLayoutScope layoutScope(child);
         if (oldOverrideContainingBlockContentLogicalWidth != overrideContainingBlockContentLogicalWidth || oldOverrideContainingBlockContentLogicalHeight != overrideContainingBlockContentLogicalHeight)
-            child->setNeedsLayout(MarkOnlyThis);
+            layoutScope.setNeedsLayout(child);
 
         child->setOverrideContainingBlockContentLogicalWidth(overrideContainingBlockContentLogicalWidth);
         child->setOverrideContainingBlockContentLogicalHeight(overrideContainingBlockContentLogicalHeight);
