@@ -40,6 +40,8 @@ class AutofillDialogCocoa : public AutofillDialogView,
   // AutofillDialogView implementation:
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual void UpdatesStarted() OVERRIDE;
+  virtual void UpdatesFinished() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateDetailArea() OVERRIDE;

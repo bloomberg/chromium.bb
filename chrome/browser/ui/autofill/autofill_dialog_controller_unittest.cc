@@ -122,17 +122,45 @@ scoped_ptr<risk::Fingerprint> GetFakeFingerprint() {
 
 class TestAutofillDialogView : public AutofillDialogView {
  public:
-  TestAutofillDialogView() {}
+  TestAutofillDialogView() : updates_started_(0) {}
   virtual ~TestAutofillDialogView() {}
 
   virtual void Show() OVERRIDE {}
   virtual void Hide() OVERRIDE {}
-  virtual void UpdateNotificationArea() OVERRIDE {}
-  virtual void UpdateAccountChooser() OVERRIDE {}
-  virtual void UpdateButtonStrip() OVERRIDE {}
-  virtual void UpdateDetailArea() OVERRIDE {}
-  virtual void UpdateAutocheckoutStepsArea() OVERRIDE {}
-  virtual void UpdateSection(DialogSection section) OVERRIDE {}
+
+  virtual void UpdatesStarted() OVERRIDE {
+    updates_started_++;
+  }
+
+  virtual void UpdatesFinished() OVERRIDE {
+    updates_started_--;
+    EXPECT_GE(updates_started_, 0);
+  }
+
+  virtual void UpdateNotificationArea() OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
+  virtual void UpdateAccountChooser() OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
+  virtual void UpdateButtonStrip() OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
+  virtual void UpdateDetailArea() OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
+  virtual void UpdateAutocheckoutStepsArea() OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
+  virtual void UpdateSection(DialogSection section) OVERRIDE {
+    EXPECT_GE(updates_started_, 1);
+  }
+
   virtual void FillSection(DialogSection section,
                            const DetailInput& originating_input) OVERRIDE {};
   virtual void GetUserInput(DialogSection section, DetailOutputMap* output)
@@ -162,6 +190,8 @@ class TestAutofillDialogView : public AutofillDialogView {
 
  private:
   std::map<DialogSection, DetailOutputMap> outputs_;
+
+  int updates_started_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
 };
@@ -1461,7 +1491,7 @@ TEST_F(AutofillDialogControllerTest, ManageItem) {
   EXPECT_NE(wallet_manage_instruments_url, wallet_manage_addresses_url);
 }
 
-TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
+TEST_F(AutofillDialogControllerTest, EditClicked) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
 
   AutofillProfile full_profile(test::GetVerifiedProfile());
@@ -1488,15 +1518,6 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
       controller()->RequestedFieldsForSection(SECTION_EMAIL);
   EXPECT_EQ(kEmail, inputs1[0].initial_value);
   EXPECT_FALSE(controller()->SuggestionStateForSection(SECTION_EMAIL).visible);
-
-  // When edit is cancelled, the initial_value should be empty.
-  controller()->EditCancelledForSection(SECTION_EMAIL);
-  const DetailInputs& inputs2 =
-      controller()->RequestedFieldsForSection(SECTION_EMAIL);
-  EXPECT_EQ(kEmail,
-            controller()->SuggestionStateForSection(SECTION_EMAIL).
-                vertically_compact_text);
-  EXPECT_EQ(string16(), inputs2[0].initial_value);
 }
 
 // Tests that editing an autofill profile and then submitting works.
@@ -2112,7 +2133,7 @@ TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
   controller()->EditClickedForSection(SECTION_EMAIL);
   EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
 
-  controller()->EditCancelledForSection(SECTION_EMAIL);
+  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(0);
   EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
 
   controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(1);

@@ -107,6 +107,26 @@ const color_utils::HSL kGrayImageShift = {-1, 0, 0.8};
 // Limit Wallet items refresh rate to at most once per minute.
 const int kWalletItemsRefreshRateSeconds = 60;
 
+// A helper class to make sure an AutofillDialogView knows when a series of
+// updates is incoming.
+class ScopedViewUpdates {
+ public:
+  explicit ScopedViewUpdates(AutofillDialogView* view) : view_(view) {
+    if (view_)
+      view_->UpdatesStarted();
+  }
+
+  ~ScopedViewUpdates() {
+    if (view_)
+      view_->UpdatesFinished();
+  }
+
+ private:
+  AutofillDialogView* view_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedViewUpdates);
+};
+
 // Returns true if |card_type| is supported by Wallet.
 bool IsWalletSupportedCard(const std::string& card_type) {
   return card_type == autofill::kVisaCard ||
@@ -626,6 +646,8 @@ void AutofillDialogControllerImpl::AddAutocheckoutStep(
 void AutofillDialogControllerImpl::UpdateAutocheckoutStep(
     AutocheckoutStepType step_type,
     AutocheckoutStepStatus step_status) {
+  ScopedViewUpdates updates(view_.get());
+
   int total_steps = 0;
   int completed_steps = 0;
   for (size_t i = 0; i < steps_.size(); ++i) {
@@ -852,6 +874,7 @@ bool AutofillDialogControllerImpl::IsSubmitPausedOn(
 void AutofillDialogControllerImpl::GetWalletItems() {
   DCHECK(previously_selected_instrument_id_.empty());
   DCHECK(previously_selected_shipping_address_id_.empty());
+  ScopedViewUpdates updates(view_.get());
 
   if (wallet_items_) {
     if (ActiveInstrument())
@@ -872,6 +895,7 @@ void AutofillDialogControllerImpl::GetWalletItems() {
 }
 
 void AutofillDialogControllerImpl::HideSignIn() {
+  ScopedViewUpdates updates(view_.get());
   signin_registrar_.RemoveAll();
   view_->HideSignIn();
   view_->UpdateAccountChooser();
@@ -912,6 +936,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
 }
 
 void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
+  ScopedViewUpdates updates(view_.get());
   SignedInStateUpdated();
   SuggestionsUpdated();
   UpdateAccountChooserView();
@@ -1421,6 +1446,7 @@ gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
 
 void AutofillDialogControllerImpl::EditClickedForSection(
     DialogSection section) {
+  ScopedViewUpdates updates(view_.get());
   scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
   SetEditingExistingData(section, true);
 
@@ -1434,12 +1460,6 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 
   GetMetricLogger().LogDialogUiEvent(
       GetDialogType(), common::DialogSectionToUiEditEvent(section));
-}
-
-void AutofillDialogControllerImpl::EditCancelledForSection(
-    DialogSection section) {
-  ResetSectionInput(section);
-  UpdateSection(section);
 }
 
 gfx::Image AutofillDialogControllerImpl::IconForField(
@@ -1876,6 +1896,8 @@ std::vector<DialogNotification> AutofillDialogControllerImpl::
 }
 
 void AutofillDialogControllerImpl::SignInLinkClicked() {
+  ScopedViewUpdates updates(view_.get());
+
   if (signin_registrar_.IsEmpty()) {
     // Start sign in.
     DCHECK(!IsPayingWithWallet());
@@ -2005,6 +2027,7 @@ void AutofillDialogControllerImpl::DidSelectSuggestion(int identifier) {
 
 void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
                                                        int identifier) {
+  ScopedViewUpdates updates(view_.get());
   const PersonalDataManager::GUIDPair& pair = popup_guids_[identifier];
 
   scoped_ptr<DataModelWrapper> wrapper;
@@ -2064,6 +2087,8 @@ void AutofillDialogControllerImpl::Observe(
 void AutofillDialogControllerImpl::SuggestionItemSelected(
     SuggestionsMenuModel* model,
     size_t index) {
+  ScopedViewUpdates updates(view_.get());
+
   if (model->GetItemKeyAt(index) == kManageItemsKey) {
     GURL url;
     if (!IsPayingWithWallet()) {
@@ -2137,6 +2162,7 @@ void AutofillDialogControllerImpl::OnDidAuthenticateInstrument(bool success) {
 void AutofillDialogControllerImpl::OnDidGetFullWallet(
     scoped_ptr<wallet::FullWallet> full_wallet) {
   DCHECK(is_submitting_ && IsPayingWithWallet());
+  ScopedViewUpdates updates(view_.get());
 
   full_wallet_ = full_wallet.Pass();
 
@@ -2177,6 +2203,7 @@ void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
 
 void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
     const std::string& username) {
+  ScopedViewUpdates updates(view_.get());
   const string16 username16 = UTF8ToUTF16(username);
   signin_helper_.reset();
   account_chooser_model_.SetActiveWalletAccountName(username16);
@@ -2252,6 +2279,8 @@ void AutofillDialogControllerImpl::OnPersonalDataChanged() {
 // AccountChooserModelDelegate implementation.
 
 void AutofillDialogControllerImpl::AccountChoiceChanged() {
+  ScopedViewUpdates updates(view_.get());
+
   if (is_submitting_)
     GetWalletClient()->CancelRequests();
 
@@ -2263,6 +2292,7 @@ void AutofillDialogControllerImpl::AccountChoiceChanged() {
 
 void AutofillDialogControllerImpl::UpdateAccountChooserView() {
   if (view_) {
+    ScopedViewUpdates updates(view_.get());
     view_->UpdateAccountChooser();
     view_->UpdateNotificationArea();
   }
@@ -2447,6 +2477,8 @@ void AutofillDialogControllerImpl::DisableWallet(
 }
 
 void AutofillDialogControllerImpl::SuggestionsUpdated() {
+  ScopedViewUpdates updates(view_.get());
+
   const DetailOutputMap snapshot = TakeUserInputSnapshot();
 
   suggested_email_.Reset();
@@ -2974,6 +3006,7 @@ void AutofillDialogControllerImpl::SetIsSubmitting(bool submitting) {
     full_wallet_.reset();
 
   if (view_) {
+    ScopedViewUpdates updates(view_.get());
     view_->UpdateButtonStrip();
     view_->UpdateNotificationArea();
   }
@@ -3143,6 +3176,7 @@ void AutofillDialogControllerImpl::FinishSubmit() {
     if (GetDialogType() == DIALOG_TYPE_REQUEST_AUTOCOMPLETE) {
       // To get past this point, the view must call back OverlayButtonPressed.
 #if defined(TOOLKIT_VIEWS)
+      ScopedViewUpdates updates(view_.get());
       view_->UpdateButtonStrip();
 #else
       // TODO(estade): implement overlays on other platforms.
@@ -3365,6 +3399,7 @@ void AutofillDialogControllerImpl::SetAutocheckoutState(
 
   autocheckout_state_ = autocheckout_state;
   if (view_) {
+    ScopedViewUpdates updates(view_.get());
     view_->UpdateDetailArea();
     view_->UpdateButtonStrip();
     view_->UpdateAutocheckoutStepsArea();

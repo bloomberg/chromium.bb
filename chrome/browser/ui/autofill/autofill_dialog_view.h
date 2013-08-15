@@ -32,6 +32,15 @@ class AutofillDialogView {
   // Closes the dialog window. May self-delete.
   virtual void Hide() = 0;
 
+  // A hint that the view is going to receive a series of Update* calls soon,
+  // and may want to delay visible changes until after the updates are over.
+  // As multiple calls to UpdatesStarted may be stacked, and the view should
+  // expect an equal number of calls to UpdateFinished().
+  virtual void UpdatesStarted() = 0;
+
+  // The matching call to UpdatesStarted.
+  virtual void UpdatesFinished() = 0;
+
   // Called when a different notification is available.
   virtual void UpdateNotificationArea() = 0;
 

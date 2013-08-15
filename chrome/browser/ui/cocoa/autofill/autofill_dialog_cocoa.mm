@@ -80,6 +80,14 @@ void AutofillDialogCocoa::CloseNow() {
   constrained_window_->CloseWebContentsModalDialog();
 }
 
+void AutofillDialogCocoa::UpdatesStarted() {
+  // TODO(estade): implement if it makes sense to.
+}
+
+void AutofillDialogCocoa::UpdatesFinished() {
+  // TODO(estade): implement if it makes sense to.
+}
+
 void AutofillDialogCocoa::UpdateAccountChooser() {
   [sheet_delegate_ updateAccountChooser];
 }

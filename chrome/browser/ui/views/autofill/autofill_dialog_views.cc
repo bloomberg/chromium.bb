@@ -1184,6 +1184,8 @@ AutofillDialogView* AutofillDialogView::Create(
 
 AutofillDialogViews::AutofillDialogViews(AutofillDialogViewDelegate* delegate)
     : delegate_(delegate),
+      updates_scope_(0),
+      needs_update_(false),
       window_(NULL),
       browser_resize_timer_(false, false),
       notification_area_(NULL),
@@ -1259,6 +1261,19 @@ void AutofillDialogViews::Show() {
 void AutofillDialogViews::Hide() {
   if (window_)
     window_->Close();
+}
+
+void AutofillDialogViews::UpdatesStarted() {
+  updates_scope_++;
+}
+
+void AutofillDialogViews::UpdatesFinished() {
+  updates_scope_--;
+  DCHECK_GE(updates_scope_, 0);
+  if (updates_scope_ == 0 && needs_update_) {
+    needs_update_ = false;
+    ContentsPreferredSizeChanged();
+  }
 }
 
 void AutofillDialogViews::UpdateAccountChooser() {
@@ -2279,6 +2294,11 @@ void AutofillDialogViews::UpdateButtonStripExtraView() {
 }
 
 void AutofillDialogViews::ContentsPreferredSizeChanged() {
+  if (updates_scope_ != 0) {
+    needs_update_ = true;
+    return;
+  }
+
   preferred_size_ = gfx::Size();
 
   if (GetWidget()) {

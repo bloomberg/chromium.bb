@@ -81,6 +81,8 @@ class AutofillDialogViews : public AutofillDialogView,
   // AutofillDialogView implementation:
   virtual void Show() OVERRIDE;
   virtual void Hide() OVERRIDE;
+  virtual void UpdatesStarted() OVERRIDE;
+  virtual void UpdatesFinished() OVERRIDE;
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateAutocheckoutStepsArea() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
@@ -581,6 +583,13 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // The preferred size of the view, cached to avoid needless recomputation.
   gfx::Size preferred_size_;
+
+  // The current number of unmatched calls to UpdatesStarted.
+  int updates_scope_;
+
+  // True when there's been a call to ContentsPreferredSizeChanged() suppressed
+  // due to an unmatched UpdatesStarted.
+  bool needs_update_;
 
   // The window that displays |contents_|. Weak pointer; may be NULL when the
   // dialog is closing.
