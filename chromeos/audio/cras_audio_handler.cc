@@ -473,6 +473,14 @@ bool CrasAudioHandler::ChangeActiveDevice(const AudioDevice& new_active_device,
   return true;
 }
 
+bool CrasAudioHandler::NonActiveDeviceUnplugged(
+    size_t old_devices_size,
+    size_t new_devices_size,
+    uint64 current_active_node) {
+  return (new_devices_size <= old_devices_size &&
+          GetDeviceFromId(current_active_node));
+}
+
 void CrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
   if (device.is_input) {
     if (!ChangeActiveDevice(device, &active_input_node_id_))
@@ -489,6 +497,7 @@ void CrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
 
 void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     const AudioNodeList& nodes) {
+  size_t old_audio_devices_size = audio_devices_.size();
   audio_devices_.clear();
   has_alternative_input_ = false;
   has_alternative_output_ = false;
@@ -518,11 +527,20 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       output_devices_pq_.push(device);
   }
 
-  if (!input_devices_pq_.empty())
+  // If audio nodes change is caused by unplugging some non-active audio
+  // devices, the previously set active audio device will stay active.
+  // Otherwise, switch to a new active audio device according to their priority.
+  if (!NonActiveDeviceUnplugged(old_audio_devices_size,
+                                     audio_devices_.size(),
+                                     active_input_node_id_) &&
+      !input_devices_pq_.empty())
     SwitchToDevice(input_devices_pq_.top());
-
-  if (!output_devices_pq_.empty())
+  if (!NonActiveDeviceUnplugged(old_audio_devices_size,
+                                     audio_devices_.size(),
+                                     active_output_node_id_) &&
+      !output_devices_pq_.empty()) {
     SwitchToDevice(output_devices_pq_.top());
+  }
 }
 
 void CrasAudioHandler::HandleGetNodes(const chromeos::AudioNodeList& node_list,

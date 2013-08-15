@@ -224,6 +224,12 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   bool ChangeActiveDevice(const AudioDevice& new_active_device,
                           uint64* current_active_node_id);
 
+  // Returns true if the audio nodes change is caused by some non-active
+  // audio nodes unplugged.
+  bool NonActiveDeviceUnplugged(size_t old_devices_size,
+                                size_t new_device_size,
+                                uint64 current_active_node);
+
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);
 

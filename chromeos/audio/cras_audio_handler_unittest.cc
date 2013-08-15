@@ -814,6 +814,88 @@ TEST_F(CrasAudioHandlerTest, HandleMultipleUSBHeadphones) {
   EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
 }
 
+TEST_F(CrasAudioHandlerTest, UnplugUSBHeadphonesWithActiveSpeaker) {
+  // Initialize with internal speaker and one usb headphone.
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  audio_nodes.push_back(kUSBHeadphone1);
+  SetUpCrasAudioHandler(audio_nodes);
+  const size_t init_nodes_size = audio_nodes.size();
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_nodes_size, audio_devices.size());
+  EXPECT_EQ(0, test_observer_->audio_nodes_changed_count());
+
+  // Verify the usb headphone is selected as the active output initially.
+  EXPECT_EQ(0, test_observer_->active_output_node_changed_count());
+  AudioDevice active_output;
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(kUSBHeadphone1.id, active_output.id);
+  EXPECT_EQ(kUSBHeadphone1.id, cras_audio_handler_->GetActiveOutputNode());
+  EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+
+  // Plug in the headphone jack.
+  audio_nodes.clear();
+  audio_nodes.push_back(kInternalSpeaker);
+  AudioNode usb_headphone_1(kUSBHeadphone1);
+  usb_headphone_1.active = true;
+  usb_headphone_1.plugged_time = 80000000;
+  audio_nodes.push_back(usb_headphone_1);
+  AudioNode headphone_jack(kHeadphone);
+  headphone_jack.plugged_time = 90000000;
+  audio_nodes.push_back(headphone_jack);
+  ChangeAudioNodes(audio_nodes);
+
+  // Verify the AudioNodesChanged event is fired and new audio device is added.
+  EXPECT_EQ(1, test_observer_->audio_nodes_changed_count());
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_nodes_size + 1, audio_devices.size());
+
+  // Verify the active output device is switched to the headphone jack, which
+  // is plugged later, and ActiveOutputChanged event is fired.
+  EXPECT_EQ(1, test_observer_->active_output_node_changed_count());
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(kHeadphone.id, active_output.id);
+  EXPECT_EQ(kHeadphone.id, cras_audio_handler_->GetActiveOutputNode());
+  EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+
+  // Select the speaker to be the active output device.
+  AudioDevice internal_speaker(kInternalSpeaker);
+  cras_audio_handler_->SwitchToDevice(internal_speaker);
+
+  // Verify the active output is switched to internal speaker, and the
+  // ActiveOutputNodeChanged event is fired.
+  EXPECT_EQ(2, test_observer_->active_output_node_changed_count());
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(kInternalSpeaker.id, active_output.id);
+  EXPECT_EQ(kInternalSpeaker.id, cras_audio_handler_->GetActiveOutputNode());
+
+  // Unplug the usb headphone.
+  audio_nodes.clear();
+  AudioNode internal_speaker_node(kInternalSpeaker);
+  internal_speaker_node.active = true;
+  internal_speaker_node.plugged_time = 70000000;
+  audio_nodes.push_back(internal_speaker_node);
+  headphone_jack.active = false;
+  audio_nodes.push_back(headphone_jack);
+  ChangeAudioNodes(audio_nodes);
+
+  // Verify the AudioNodesChanged event is fired and one audio device is
+  // removed.
+  EXPECT_EQ(2, test_observer_->audio_nodes_changed_count());
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_nodes_size, audio_devices.size());
+
+  // Verify the active output device remains to be speaker.
+  EXPECT_EQ(2, test_observer_->active_output_node_changed_count());
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(kInternalSpeaker.id, active_output.id);
+  EXPECT_EQ(kInternalSpeaker.id, cras_audio_handler_->GetActiveOutputNode());
+  EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+}
+
 TEST_F(CrasAudioHandlerTest, PlugUSBMic) {
   // Set up initial audio devices, only with internal mic.
   AudioNodeList audio_nodes;
