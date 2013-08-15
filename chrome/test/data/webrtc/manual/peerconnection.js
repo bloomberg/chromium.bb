@@ -11,7 +11,7 @@
 function getUserMediaFromHere() {
   var constraints = $('getusermedia-constraints').value;
   try {
-    getUserMedia(constraints);
+    doGetUserMedia(constraints);
   } catch (exception) {
     print_('getUserMedia says: ' + exception);
   }

@@ -66,7 +66,7 @@ class WebrtcBrutalityTest(webrtc_test_base.WebrtcTestBase):
 
   def _GetUserMediaWithoutTakingAction(self, tab_index):
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-      'getUserMedia("{ audio: true, video: true, }")', tab_index=0))
+      'doGetUserMedia("{ audio: true, video: true, }")', tab_index=0))
 
 
 if __name__ == '__main__':

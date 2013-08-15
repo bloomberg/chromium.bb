@@ -51,7 +51,7 @@ class WebrtcTestBase(pyauto.PyUITest):
     constraints = '{ video: %s, audio: %s }' % (str(request_video).lower(),
                                                 str(request_audio).lower())
     self.assertEquals('ok-requested', self.ExecuteJavascript(
-        'getUserMedia("%s")' % constraints, tab_index=tab_index))
+        'doGetUserMedia("%s")' % constraints, tab_index=tab_index))
 
     self.WaitForInfobarCount(1, tab_index=tab_index)
     self.PerformActionOnInfobar(action, infobar_index=0, tab_index=tab_index)
