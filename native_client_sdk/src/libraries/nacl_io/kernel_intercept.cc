@@ -51,7 +51,6 @@ void ki_uninit() {
   s_kp = NULL;
 }
 
-
 int ki_chdir(const char* path) {
   ON_NOSYS_RETURN(-1);
   return s_kp->chdir(path);

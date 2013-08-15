@@ -21,9 +21,11 @@
 #include <ppapi/c/ppb_messaging.h>
 #include <ppapi/c/ppb_messaging.h>
 #include <ppapi/c/ppb_net_address.h>
+#include <ppapi/c/ppb_tcp_socket.h>
 #include <ppapi/c/ppb_url_loader.h>
 #include <ppapi/c/ppb_url_request_info.h>
 #include <ppapi/c/ppb_url_response_info.h>
+#include <ppapi/c/ppb_udp_socket.h>
 #include <ppapi/c/ppb_var.h>
 
 #include <sdk_util/macros.h>

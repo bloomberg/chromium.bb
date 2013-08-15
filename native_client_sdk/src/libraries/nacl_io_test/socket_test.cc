@@ -1,9 +1,14 @@
 // Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <netinet/in.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
 
 #include <map>
@@ -235,16 +240,6 @@ TEST_F(SocketTest, Socket) {
   EXPECT_EQ(errno, EAFNOSUPPORT);
   EXPECT_LT(ki_socket(AF_INET, SOCK_RAW, 0), 0);
   EXPECT_EQ(errno, EPROTONOSUPPORT);
-
-  // These four af/protocol combinations should be supported.
-  EXPECT_LT(ki_socket(AF_INET, SOCK_STREAM, 0), 0);
-  EXPECT_EQ(errno, EACCES);
-  EXPECT_LT(ki_socket(AF_INET, SOCK_DGRAM, 0), 0);
-  EXPECT_EQ(errno, EACCES);
-  EXPECT_LT(ki_socket(AF_INET6, SOCK_STREAM, 0), 0);
-  EXPECT_EQ(errno, EACCES);
-  EXPECT_LT(ki_socket(AF_INET6, SOCK_DGRAM, 0), 0);
-  EXPECT_EQ(errno, EACCES);
 }
 
 TEST_F(SocketTest, Socketpair) {

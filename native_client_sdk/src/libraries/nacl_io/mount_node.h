@@ -82,6 +82,7 @@ class MountNode : public EventListener {
   virtual Error GetSize(size_t* out_size);
   virtual bool IsaDir();
   virtual bool IsaFile();
+  virtual bool IsaSock();
   virtual bool IsaTTY();
 
 

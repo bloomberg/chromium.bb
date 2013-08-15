@@ -27,6 +27,8 @@
 #include "nacl_io/mount_http.h"
 #include "nacl_io/mount_mem.h"
 #include "nacl_io/mount_node.h"
+#include "nacl_io/mount_node_tcp.h"
+#include "nacl_io/mount_node_udp.h"
 #include "nacl_io/mount_passthrough.h"
 #include "nacl_io/osmman.h"
 #include "nacl_io/ossocket.h"
@@ -82,6 +84,10 @@ void KernelProxy::Init(PepperInterface* ppapi) {
 #ifdef PROVIDES_SOCKET_API
   host_resolver_.Init(ppapi_);
 #endif
+
+  StringMap_t args;
+  socket_mount_.reset(new MountSocket());
+  socket_mount_->Init(0, args, ppapi);
 }
 
 int KernelProxy::open_resource(const char* path) {
@@ -907,8 +913,13 @@ int KernelProxy::bind(int fd, const struct sockaddr* addr, socklen_t len) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  Error err = handle->socket_node()->Bind(addr, len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::connect(int fd, const struct sockaddr* addr, socklen_t len) {
@@ -921,8 +932,13 @@ int KernelProxy::connect(int fd, const struct sockaddr* addr, socklen_t len) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EACCES;
-  return -1;
+  Error err = handle->socket_node()->Connect(addr, len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 struct hostent* KernelProxy::gethostbyname(const char* name) {
@@ -939,8 +955,13 @@ int KernelProxy::getpeername(int fd, struct sockaddr* addr, socklen_t* len) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  Error err = handle->socket_node()->GetPeerName(addr, len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
@@ -953,8 +974,13 @@ int KernelProxy::getsockname(int fd, struct sockaddr* addr, socklen_t* len) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  Error err = handle->socket_node()->GetSockName(addr, len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::getsockopt(int fd,
@@ -997,8 +1023,14 @@ ssize_t KernelProxy::recv(int fd,
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  int out_len = 0;
+  Error err = handle->socket_node()->Recv(buf, len, flags, &out_len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return static_cast<ssize_t>(out_len);
 }
 
 ssize_t KernelProxy::recvfrom(int fd,
@@ -1021,8 +1053,19 @@ ssize_t KernelProxy::recvfrom(int fd,
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  int out_len = 0;
+  Error err = handle->socket_node()->RecvFrom(buf,
+                                              len,
+                                              flags,
+                                              addr,
+                                              addrlen,
+                                              &out_len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return static_cast<ssize_t>(out_len);
 }
 
 ssize_t KernelProxy::recvmsg(int fd, struct msghdr* msg, int flags) {
@@ -1049,8 +1092,14 @@ ssize_t KernelProxy::send(int fd, const void* buf, size_t len, int flags) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  int out_len = 0;
+  Error err = handle->socket_node()->Send(buf, len, flags, &out_len);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return static_cast<ssize_t>(out_len);
 }
 
 ssize_t KernelProxy::sendto(int fd,
@@ -1073,8 +1122,16 @@ ssize_t KernelProxy::sendto(int fd,
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  int out_len = 0;
+  Error err =
+      handle->socket_node()->SendTo(buf, len, flags, addr, addrlen, &out_len);
+
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return static_cast<ssize_t>(out_len);
 }
 
 ssize_t KernelProxy::sendmsg(int fd, const struct msghdr* msg, int flags) {
@@ -1114,8 +1171,13 @@ int KernelProxy::shutdown(int fd, int how) {
   if (AcquireSocketHandle(fd, &handle) == -1)
     return -1;
 
-  errno = EINVAL;
-  return -1;
+  Error err = handle->socket_node()->Shutdown(how);
+  if (err != 0) {
+    errno = err;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::socket(int domain, int type, int protocol) {
@@ -1124,13 +1186,29 @@ int KernelProxy::socket(int domain, int type, int protocol) {
     return -1;
   }
 
-  if (SOCK_STREAM != type && SOCK_DGRAM != type) {
-    errno = EPROTONOSUPPORT;
-    return -1;
+  MountNodeSocket* sock = NULL;
+  switch (type) {
+    case SOCK_DGRAM:
+      sock = new MountNodeUDP(socket_mount_.get());
+      break;
+
+    case SOCK_STREAM:
+      sock = new MountNodeTCP(socket_mount_.get());
+      break;
+
+    default:
+      errno = EPROTONOSUPPORT;
+      return -1;
   }
 
-  errno = EACCES;
-  return -1;
+  ScopedMountNode node(sock);
+  if (sock->Init(S_IREAD | S_IWRITE) == 0) {
+    ScopedKernelHandle handle(new KernelHandle(socket_mount_, node));
+    return AllocateFD(handle);
+  }
+
+  // If we failed to init, assume we don't have access.
+  return EACCES;
 }
 
 int KernelProxy::socketpair(int domain, int type, int protocol, int* sv) {

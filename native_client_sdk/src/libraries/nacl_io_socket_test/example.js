@@ -1,0 +1,126 @@
+// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+// Called by the common.js module.
+
+function runTCPEchoServer(port) {
+  console.log("Starting server on TCP port: " + port);
+  chrome.socket.create("tcp", {}, function(createInfo) {
+    var listeningSocket = createInfo.socketId;
+    chrome.socket.listen(listeningSocket,
+                         '127.0.0.1',
+                         port,
+                         10,
+                         function(result) {
+      if (result !== 0) {
+        console.log("Listen failed: " + result);
+        return;
+      }
+
+      chrome.socket.accept(listeningSocket, function(acceptInfo) {
+        if (result !== 0) {
+          console.log("Accept failed: " + result);
+          return;
+        }
+
+        var newSock = acceptInfo.socketId;
+
+        var readCallback = function(readInfo) {
+          if (readInfo.resultCode < 0) {
+            console.log("Read failed: " + readInfo.resultCode);
+            chrome.socket.destroy(newSock);
+            return;
+          }
+
+          chrome.socket.write(newSock, readInfo.data, function(writeInfo) {})
+          chrome.socket.read(newSock, readCallback);
+        }
+
+        chrome.socket.read(newSock, readCallback);
+      })
+    })
+  })
+}
+
+function moduleDidLoad() {
+  // The module is not hidden by default so we can easily see if the plugin
+  // failed to load.
+  common.hideModule();
+  runTCPEchoServer(4006);
+}
+
+var currentTestEl = null;
+
+function startCommand(testName) {
+  var testListEl = document.getElementById('tests');
+  var testEl = document.createElement('li');
+  var testRowEl = document.createElement('div');
+  var testNameEl = document.createElement('span');
+  var testResultEl = document.createElement('span');
+  testRowEl.classList.add('row');
+  testNameEl.classList.add('name');
+  testNameEl.textContent = testName;
+  testResultEl.classList.add('result');
+  testRowEl.appendChild(testNameEl);
+  testRowEl.appendChild(testResultEl);
+  testEl.appendChild(testRowEl);
+  testListEl.appendChild(testEl);
+
+  currentTestEl = testEl;
+}
+
+function failCommand(fileName, lineNumber, summary) {
+  var testMessageEl = document.createElement('pre');
+  testMessageEl.textContent += fileName + ':' + lineNumber + ': ' + summary;
+  currentTestEl.appendChild(testMessageEl);
+}
+
+function endCommand(testName, testResult) {
+  var testRowEl = currentTestEl.querySelector('.row');
+  var testResultEl = currentTestEl.querySelector('.result');
+  testRowEl.classList.add(testResult);
+  testResultEl.textContent = testResult;
+}
+
+function handleMessage(event) {
+  var msg = event.data;
+  var firstColon = msg.indexOf(':');
+  var cmd = msg.substr(0, firstColon);
+  var cmdFunctionName = cmd + 'Command';
+  var cmdFunction = window[cmdFunctionName];
+
+  if (typeof(cmdFunction) !== 'function') {
+    console.log('Unknown command: ' + cmd);
+    console.log('  message: ' + msg);
+    return;
+  }
+
+  var argCount = cmdFunction.length;
+
+  // Don't use split, because it will split all commas (for example any commas
+  // in the test failure summary).
+  var argList = msg.substr(firstColon + 1);
+  args = [];
+  for (var i = 0; i < argCount - 1; ++i) {
+    var arg;
+    var comma = argList.indexOf(',');
+    if (comma === -1) {
+      if (i !== argCount - 1) {
+        console.log('Bad arg count to command "' + cmd + '", expected ' +
+                    argCount);
+        console.log('  message: ' + msg);
+      } else {
+        arg = argList;
+      }
+    } else {
+      arg = argList.substr(0, comma);
+      argList = argList.substr(comma + 1);
+    }
+    args.push(arg);
+  }
+
+  // Last argument is the rest of the message.
+  args.push(argList);
+
+  cmdFunction.apply(null, args);
+}

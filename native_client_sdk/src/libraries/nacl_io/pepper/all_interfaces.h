@@ -90,6 +90,10 @@ END_INTERFACE(HostResolverInterface, PPB_HostResolver)
 
 BEGIN_INTERFACE(NetAddressInterface, PPB_NetAddress,
                 PPB_NETADDRESS_INTERFACE_1_0)
+  METHOD2(NetAddressInterface, PP_Resource, CreateFromIPv4Address,
+          PP_Instance, PP_NetAddress_IPv4*)
+  METHOD2(NetAddressInterface, PP_Resource, CreateFromIPv6Address,
+          PP_Instance, PP_NetAddress_IPv6*)
   METHOD1(NetAddressInterface, PP_Bool, IsNetAddress, PP_Resource)
   METHOD1(NetAddressInterface, PP_NetAddress_Family, GetFamily, PP_Resource)
   METHOD2(NetAddressInterface, PP_Bool, DescribeAsIPv4Address, PP_Resource,
@@ -120,3 +124,36 @@ BEGIN_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo,
   METHOD2(URLResponseInfoInterface, PP_Var, GetProperty, PP_Resource,
           PP_URLResponseProperty)
 END_INTERFACE(URLResponseInfoInterface, PPB_URLResponseInfo)
+
+BEGIN_INTERFACE(TCPSocketInterface, PPB_TCPSocket,
+                PPB_TCPSOCKET_INTERFACE_1_0)
+  METHOD1(TCPSocketInterface, PP_Resource, Create, PP_Instance)
+  METHOD1(TCPSocketInterface, PP_Bool, IsTCPSocket, PP_Resource)
+  METHOD3(TCPSocketInterface, int32_t, Connect, PP_Resource, PP_Resource,
+          PP_CompletionCallback)
+  METHOD1(TCPSocketInterface, PP_Resource, GetLocalAddress, PP_Resource)
+  METHOD1(TCPSocketInterface, PP_Resource, GetRemoteAddress, PP_Resource)
+  METHOD4(TCPSocketInterface, int32_t, Read, PP_Resource, char*, int32_t,
+          PP_CompletionCallback)
+  METHOD4(TCPSocketInterface, int32_t, Write, PP_Resource, const char*,
+          int32_t, PP_CompletionCallback)
+  METHOD1(TCPSocketInterface, void, Close, PP_Resource)
+  METHOD4(TCPSocketInterface, int32_t, SetOption, PP_Resource,
+          PP_TCPSocket_Option, PP_Var, PP_CompletionCallback)
+END_INTERFACE(TCPSocketInterface, PPB_TCPSocket)
+
+BEGIN_INTERFACE(UDPSocketInterface, PPB_UDPSocket,
+                PPB_UDPSOCKET_INTERFACE_1_0)
+  METHOD1(UDPSocketInterface, PP_Resource, Create, PP_Instance)
+  METHOD1(UDPSocketInterface, PP_Bool, IsUDPSocket, PP_Resource)
+  METHOD3(UDPSocketInterface, int32_t, Bind, PP_Resource, PP_Resource,
+          PP_CompletionCallback)
+  METHOD1(UDPSocketInterface, PP_Resource, GetBoundAddress, PP_Resource)
+  METHOD5(UDPSocketInterface, int32_t, RecvFrom, PP_Resource, char*, int32_t,
+          PP_Resource*, PP_CompletionCallback)
+  METHOD5(UDPSocketInterface, int32_t, SendTo, PP_Resource, const char*,
+          int32_t, PP_Resource, PP_CompletionCallback)
+  METHOD1(UDPSocketInterface, void, Close, PP_Resource)
+  METHOD4(UDPSocketInterface, int32_t, SetOption, PP_Resource,
+          PP_UDPSocket_Option, PP_Var, PP_CompletionCallback)
+END_INTERFACE(UDPSocketInterface, PPB_UDPSocket)

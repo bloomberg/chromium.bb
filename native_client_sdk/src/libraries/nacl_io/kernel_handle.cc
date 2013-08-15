@@ -29,6 +29,13 @@ KernelHandle::~KernelHandle() {
   mount_.reset(NULL);
 }
 
+// Returns the MountNodeSocket* if this node is a socket.
+MountNodeSocket*  KernelHandle::socket_node() {
+  if (node_.get() && node_->IsaSock())
+    return reinterpret_cast<MountNodeSocket*>(node_.get());
+  return NULL;
+}
+
 Error KernelHandle::Init(int open_mode) {
   if (open_mode & O_APPEND) {
     Error error = node_->GetSize(&offs_);

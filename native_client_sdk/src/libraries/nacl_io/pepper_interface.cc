@@ -33,8 +33,11 @@ PP_Resource ScopedResource::Release() {
 }
 
 int PPErrorToErrno(int32_t err) {
+  // If not an error, then just return it.
+  if (err >= PP_OK)
+    return err;
+
   switch (err) {
-    case PP_OK: return 0;
     case PP_OK_COMPLETIONPENDING: return 0;
     case PP_ERROR_FAILED: return EPERM;
     case PP_ERROR_ABORTED: return EPERM;
@@ -58,6 +61,12 @@ int PPErrorToErrno(int32_t err) {
     case PP_ERROR_CONTEXT_LOST: return EPERM;
     case PP_ERROR_NO_MESSAGE_LOOP: return EPERM;
     case PP_ERROR_WRONG_THREAD: return EPERM;
+    case PP_ERROR_CONNECTION_ABORTED: return ECONNABORTED;
+    case PP_ERROR_CONNECTION_REFUSED: return ECONNREFUSED;
+    case PP_ERROR_CONNECTION_FAILED: return ECONNREFUSED;
+    case PP_ERROR_CONNECTION_TIMEDOUT: return ETIMEDOUT;
+    case PP_ERROR_ADDRESS_UNREACHABLE: return ENETUNREACH;
+    case PP_ERROR_ADDRESS_IN_USE: return EADDRINUSE;
   }
 
   return EINVAL;

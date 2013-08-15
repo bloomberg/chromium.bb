@@ -153,6 +153,8 @@ bool MountNode::IsaDir() { return (stat_.st_mode & S_IFDIR) != 0; }
 
 bool MountNode::IsaFile() { return (stat_.st_mode & S_IFREG) != 0; }
 
+bool MountNode::IsaSock() { return (stat_.st_mode & S_IFSOCK) != 0; }
+
 bool MountNode::IsaTTY() { return (stat_.st_mode & S_IFCHR) != 0; }
 
 Error MountNode::AddChild(const std::string& name,

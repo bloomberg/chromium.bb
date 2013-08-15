@@ -19,6 +19,9 @@
 
 namespace nacl_io {
 
+class MountNode;
+class MountNodeSocket;
+
 // KernelHandle provides a reference counted container for the open
 // file information, such as it's mount, node, access type and offset.
 // KernelHandle can only be referenced when the KernelProxy lock is held.
@@ -40,6 +43,10 @@ class KernelHandle : public sdk_util::RefObject {
 
   const ScopedMountNode& node() { return node_; }
   const ScopedMount& mount() { return mount_; }
+
+  // Returns the MountNodeSocket* if this node is a socket otherwise returns
+  // NULL.
+  MountNodeSocket* socket_node();
 
 private:
   ScopedMount mount_;
