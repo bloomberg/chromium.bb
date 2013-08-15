@@ -344,6 +344,13 @@
             '../chrome/chrome.gyp:sync_performance_tests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
           ],
+          'conditions': [
+            ['OS!="ios" and OS!="win"', {
+              'dependencies': [
+                '../breakpad/breakpad.gyp:minidump_stackwalk',
+              ],
+            }],
+          ],
         }, # target_name: chromium_builder_perf
         {
           'target_name': 'chromium_gpu_builder',
