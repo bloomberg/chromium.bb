@@ -49,7 +49,8 @@ namespace WebCore {
 static MemoryCache* gMemoryCache;
 
 static const int cDefaultCacheCapacity = 8192 * 1024;
-static const double cMinDelayBeforeLiveDecodedPrune = 1; // Seconds.
+static const int cMinDelayBeforeLiveDecodedPrune = 1; // Seconds.
+static const double cMaxPruneDeferralDelay = 0.5; // Seconds.
 static const float cTargetPrunePercentage = .95f; // Percentage of capacity toward which we prune, to avoid immediately pruning again.
 
 MemoryCache* memoryCache()
@@ -67,6 +68,8 @@ void setMemoryCacheForTesting(MemoryCache* memoryCache)
 
 MemoryCache::MemoryCache()
     : m_inPruneResources(false)
+    , m_prunePending(false)
+    , m_maxPruneDeferralDelay(cMaxPruneDeferralDelay)
     , m_capacity(cDefaultCacheCapacity)
     , m_minDeadCapacity(0)
     , m_maxDeadCapacity(cDefaultCacheCapacity)
@@ -81,6 +84,13 @@ MemoryCache::MemoryCache()
     const double statsIntervalInSeconds = 15;
     m_statsTimer.startRepeating(statsIntervalInSeconds);
 #endif
+    m_pruneTimeStamp = m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
+}
+
+MemoryCache::~MemoryCache()
+{
+    if (m_prunePending)
+        WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
 KURL MemoryCache::removeFragmentIdentifierIfNeeded(const KURL& originalURL)
@@ -151,24 +161,21 @@ unsigned MemoryCache::liveCapacity() const
 
 void MemoryCache::pruneLiveResources()
 {
+    ASSERT(!m_prunePending);
     unsigned capacity = liveCapacity();
     if (!m_liveSize || (capacity && m_liveSize <= capacity))
         return;
 
     unsigned targetSize = static_cast<unsigned>(capacity * cTargetPrunePercentage); // Cut by a percentage to avoid immediately pruning again.
 
-    double currentTime = FrameView::currentPaintTimeStamp();
-    if (!currentTime) // In case prune is called directly, outside of a Frame paint.
-        currentTime = WTF::currentTime();
-
     // Destroy any decoded data in live objects that we can.
     // Start from the tail, since this is the lowest priority
     // and least recently accessed of the objects.
 
-    // The list might not be sorted by the m_lastDecodedAccessTime. The impact
+    // The list might not be sorted by the m_lastDecodedFrameTimeStamp. The impact
     // of this weaker invariant is minor as the below if statement to check the
-    // elapsedTime will evaluate to false as the currentTime will be a lot
-    // greater than the current->m_lastDecodedAccessTime.
+    // elapsedTime will evaluate to false as the current time will be a lot
+    // greater than the current->m_lastDecodedFrameTimeStamp.
     // For more details see: https://bugs.webkit.org/show_bug.cgi?id=30209
 
     // Start pruning from the lowest priority list.
@@ -179,7 +186,7 @@ void MemoryCache::pruneLiveResources()
             ASSERT(current->hasClients());
             if (current->isLoaded() && current->decodedSize()) {
                 // Check to see if the remaining resources are too new to prune.
-                double elapsedTime = currentTime - current->m_lastDecodedAccessTime;
+                double elapsedTime = m_pruneFrameTimeStamp - current->m_lastDecodedAccessTime;
                 if (elapsedTime < m_delayBeforeLiveDecodedPrune)
                     return;
 
@@ -563,16 +570,59 @@ void MemoryCache::prune()
 {
     ASSERT(WebKit::Platform::current()); // This method should not be called after WebKit::shutdown().
 
-    if (m_liveSize + m_deadSize <= m_capacity && m_maxDeadCapacity && m_deadSize <= m_maxDeadCapacity) // Fast path.
-        return;
     if (m_inPruneResources)
         return;
-    TemporaryChange<bool> reentrancyProtector(m_inPruneResources, true);
+    if (m_liveSize + m_deadSize <= m_capacity && m_maxDeadCapacity && m_deadSize <= m_maxDeadCapacity) // Fast path.
+        return;
 
-    pruneDeadResources(); // Prune dead first, in case it was "borrowing" capacity from live.
-    pruneLiveResources();
+    // To avoid burdening the current thread with repetitive pruning jobs,
+    // pruning is postponed until the end of the current task. If it has
+    // been more that m_maxPruneDeferralDelay since the last prune,
+    // then we prune immediately.
+    // If the current thread's run loop is not active, then pruning will happen
+    // immediately only if it has been over m_maxPruneDeferralDelay
+    // since the last prune.
+    double currentTime = WTF::currentTime();
+    if (m_prunePending) {
+        if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
+            // Delay exceeded, prune now and cancel deferral
+            m_prunePending = false;
+            WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+            pruneNow(currentTime);
+        }
+    } else {
+        if (currentTime - m_pruneTimeStamp >= m_maxPruneDeferralDelay) {
+            pruneNow(currentTime); // Delay exceeded, prune now.
+        } else {
+            // Defer.
+            WebKit::Platform::current()->currentThread()->addTaskObserver(this);
+            m_prunePending = true;
+        }
+    }
 }
 
+void MemoryCache::willProcessTask()
+{
+}
+
+void MemoryCache::didProcessTask()
+{
+    // Perform deferred pruning
+    ASSERT(m_prunePending);
+
+    m_prunePending = false;
+    WebKit::Platform::current()->currentThread()->removeTaskObserver(this);
+    pruneNow(WTF::currentTime());
+}
+
+void MemoryCache::pruneNow(double currentTime)
+{
+    TemporaryChange<bool> reentrancyProtector(m_inPruneResources, true);
+    pruneDeadResources(); // Prune dead first, in case it was "borrowing" capacity from live.
+    pruneLiveResources();
+    m_pruneFrameTimeStamp = FrameView::currentFrameTimeStamp();
+    m_pruneTimeStamp = currentTime;
+}
 
 #ifdef MEMORY_CACHE_STATS
 

@@ -83,7 +83,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-double FrameView::sCurrentPaintTimeStamp = 0.0;
+double FrameView::s_currentFrameTimeStamp = 0.0;
+bool FrameView::s_inPaintContents = false;
 
 
 // REPAINT_THROTTLING now chooses default values for throttling parameters.
@@ -2830,9 +2831,8 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
 
     InspectorInstrumentation::willPaint(renderView);
 
-    bool isTopLevelPainter = !sCurrentPaintTimeStamp;
-    if (isTopLevelPainter)
-        sCurrentPaintTimeStamp = currentTime();
+    bool isTopLevelPainter = !s_inPaintContents;
+    s_inPaintContents = true;
 
     FontCachePurgePreventer fontCachePurgePreventer;
 
@@ -2874,8 +2874,12 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
     if (document->annotatedRegionsDirty())
         updateAnnotatedRegions();
 
-    if (isTopLevelPainter)
-        sCurrentPaintTimeStamp = 0;
+    if (isTopLevelPainter) {
+        // Everythin that happens after paintContents completions is considered
+        // to be part of the next frame.
+        s_currentFrameTimeStamp = currentTime();
+        s_inPaintContents = false;
+    }
 
     InspectorInstrumentation::didPaint(renderView, p, rect);
 }

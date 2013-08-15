@@ -26,6 +26,7 @@
 #define MemoryCache_h
 
 #include "core/fetch/Resource.h"
+#include "public/platform/WebThread.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -58,11 +59,11 @@ struct SecurityOriginHash;
 // Enable this macro to periodically log information about the memory cache.
 #undef MEMORY_CACHE_STATS
 
-class MemoryCache {
+class MemoryCache : public WebKit::WebThread::TaskObserver {
     WTF_MAKE_NONCOPYABLE(MemoryCache); WTF_MAKE_FAST_ALLOCATED;
 public:
     MemoryCache();
-    ~MemoryCache() { }
+    virtual ~MemoryCache();
 
     typedef HashMap<String, Resource*> ResourceMap;
 
@@ -120,7 +121,8 @@ public:
     //  - maxDeadBytes: The maximum number of bytes that dead resources should consume when the cache is not under pressure.
     //  - totalBytes: The maximum number of bytes that the cache should consume overall.
     void setCapacities(unsigned minDeadBytes, unsigned maxDeadBytes, unsigned totalBytes);
-    void setDelayBeforeLiveDecodedPrune(unsigned seconds) { m_delayBeforeLiveDecodedPrune = seconds; }
+    void setDelayBeforeLiveDecodedPrune(double seconds) { m_delayBeforeLiveDecodedPrune = seconds; }
+    void setMaxPruneDeferralDelay(double seconds) { m_maxPruneDeferralDelay = seconds; }
 
     void evictResources();
 
@@ -150,6 +152,10 @@ public:
     unsigned liveSize() const { return m_liveSize; }
     unsigned deadSize() const { return m_deadSize; }
 
+    // TaskObserver implementation
+    virtual void willProcessTask() OVERRIDE;
+    virtual void didProcessTask() OVERRIDE;
+
 private:
     LRUList* lruListFor(Resource*);
 
@@ -165,17 +171,23 @@ private:
     // pruneLiveResources() - Flush decoded data from resources still referenced by Web pages.
     void pruneDeadResources(); // Automatically decide how much to prune.
     void pruneLiveResources();
+    void pruneNow(double currentTime);
 
     void evict(Resource*);
 
     static void removeURLFromCacheInternal(ScriptExecutionContext*, const KURL&);
 
     bool m_inPruneResources;
+    bool m_prunePending;
+    bool m_prePainting;
+    double m_maxPruneDeferralDelay;
+    double m_pruneTimeStamp;
+    double m_pruneFrameTimeStamp;
 
     unsigned m_capacity;
     unsigned m_minDeadCapacity;
     unsigned m_maxDeadCapacity;
-    unsigned m_delayBeforeLiveDecodedPrune;
+    double m_delayBeforeLiveDecodedPrune;
     double m_deadDecodedDataDeletionInterval;
 
     unsigned m_liveSize; // The number of bytes currently consumed by "live" resources in the cache.
@@ -194,6 +206,7 @@ private:
     // referenced by a Web page).
     HashMap<String, Resource*> m_resources;
 
+    friend class MemoryCacheTest;
 #ifdef MEMORY_CACHE_STATS
     Timer<MemoryCache> m_statsTimer;
 #endif

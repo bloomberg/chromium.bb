@@ -35,6 +35,7 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/platform/network/ResourceRequest.h"
+#include "public/platform/Platform.h"
 #include "wtf/OwnPtr.h"
 
 #include <gtest/gtest.h>
@@ -43,9 +44,9 @@ namespace WebCore {
 
 class MemoryCacheTest : public ::testing::Test {
 public:
-    class MockImageResource : public WebCore::Resource {
+    class FakeDecodedResource : public WebCore::Resource {
     public:
-        MockImageResource(const ResourceRequest& request, Type type)
+        FakeDecodedResource(const ResourceRequest& request, Type type)
             : Resource(request, type)
         {
         }
@@ -102,6 +103,8 @@ TEST_F(MemoryCacheTest, CapacityAccounting)
 // from cache when pruning.
 TEST_F(MemoryCacheTest, DeadResourceEviction)
 {
+    memoryCache()->setDelayBeforeLiveDecodedPrune(0);
+    memoryCache()->setMaxPruneDeferralDelay(0);
     const unsigned totalCapacity = 1000000;
     const unsigned minDeadCapacity = 0;
     const unsigned maxDeadCapacity = 0;
@@ -127,15 +130,94 @@ TEST_F(MemoryCacheTest, DeadResourceEviction)
     ASSERT_EQ(0u, memoryCache()->liveSize());
 }
 
+// Verified that when ordering a prune in a runLoop task, the prune
+// is deferred to the end of the task.
+TEST_F(MemoryCacheTest, LiveResourceEvictionAtEndOfTask)
+{
+    memoryCache()->setDelayBeforeLiveDecodedPrune(0);
+    const unsigned totalCapacity = 1;
+    const unsigned minDeadCapacity = 0;
+    const unsigned maxDeadCapacity = 0;
+    memoryCache()->setCapacities(minDeadCapacity, maxDeadCapacity, totalCapacity);
+    const char data[6] = "abcde";
+    ResourcePtr<Resource> cachedDeadResource =
+        new Resource(ResourceRequest(""), Resource::Raw);
+    cachedDeadResource->appendData(data, 3);
+    ResourcePtr<Resource> cachedLiveResource =
+        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
+    MockImageResourceClient client;
+    cachedLiveResource->addClient(&client);
+    cachedLiveResource->appendData(data, 4);
+
+    class Task1 : public WebKit::WebThread::Task {
+    public:
+        Task1(const ResourcePtr<Resource>& live, const ResourcePtr<Resource>& dead)
+            : m_live(live)
+            , m_dead(dead)
+        { }
+
+        virtual void run() OVERRIDE
+        {
+
+            // The resource size has to be nonzero for this test to be meaningful, but
+            // we do not rely on it having any particular value.
+            ASSERT_GT(m_live->size(), 0u);
+            ASSERT_GT(m_dead->size(), 0u);
+
+            ASSERT_EQ(0u, memoryCache()->deadSize());
+            ASSERT_EQ(0u, memoryCache()->liveSize());
+
+            memoryCache()->add(m_dead.get());
+            memoryCache()->add(m_live.get());
+            memoryCache()->insertInLiveDecodedResourcesList(m_live.get());
+            ASSERT_EQ(m_dead->size(), memoryCache()->deadSize());
+            ASSERT_EQ(m_live->size(), memoryCache()->liveSize());
+            ASSERT_GT(m_live->decodedSize(), 0u);
+
+            memoryCache()->prune(); // Dead resources are pruned immediately
+            ASSERT_EQ(m_dead->size(), memoryCache()->deadSize());
+            ASSERT_EQ(m_live->size(), memoryCache()->liveSize());
+            ASSERT_GT(m_live->decodedSize(), 0u);
+        }
+
+    private:
+        ResourcePtr<Resource> m_live, m_dead;
+    };
+
+    class Task2 : public WebKit::WebThread::Task {
+    public:
+        Task2(unsigned liveSizeWithoutDecode)
+            : m_liveSizeWithoutDecode(liveSizeWithoutDecode) { }
+
+        virtual void run() OVERRIDE
+        {
+            // Next task: now, the live resource was evicted.
+            ASSERT_EQ(0u, memoryCache()->deadSize());
+            ASSERT_EQ(m_liveSizeWithoutDecode, memoryCache()->liveSize());
+            WebKit::Platform::current()->currentThread()->exitRunLoop();
+        }
+
+    private:
+        unsigned m_liveSizeWithoutDecode;
+    };
+
+
+    WebKit::Platform::current()->currentThread()->postTask(new Task1(cachedLiveResource, cachedDeadResource));
+    WebKit::Platform::current()->currentThread()->postTask(new Task2(cachedLiveResource->encodedSize() + cachedLiveResource->overheadSize()));
+    WebKit::Platform::current()->currentThread()->enterRunLoop();
+    cachedLiveResource->removeClient(&client);
+}
+
 // Verifies that CachedResources are evicted from the decode cache
 // according to their DecodeCachePriority.
 TEST_F(MemoryCacheTest, DecodeCacheOrder)
 {
     memoryCache()->setDelayBeforeLiveDecodedPrune(0);
-    ResourcePtr<MockImageResource> cachedImageLowPriority =
-        new MockImageResource(ResourceRequest(""), Resource::Raw);
-    ResourcePtr<MockImageResource> cachedImageHighPriority =
-        new MockImageResource(ResourceRequest(""), Resource::Raw);
+    memoryCache()->setMaxPruneDeferralDelay(0);
+    ResourcePtr<FakeDecodedResource> cachedImageLowPriority =
+        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
+    ResourcePtr<FakeDecodedResource> cachedImageHighPriority =
+        new FakeDecodedResource(ResourceRequest(""), Resource::Raw);
 
     MockImageResourceClient clientLowPriority;
     MockImageResourceClient clientHighPriority;

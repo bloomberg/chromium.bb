@@ -232,7 +232,7 @@ public:
 
     StyleColor documentBackgroundColor() const;
 
-    static double currentPaintTimeStamp() { return sCurrentPaintTimeStamp; } // returns 0 if not painting
+    static double currentFrameTimeStamp() { return s_currentFrameTimeStamp; }
 
     void updateLayoutAndStyleIfNeededRecursive();
 
@@ -418,7 +418,8 @@ private:
     virtual AXObjectCache* axObjectCache() const;
     void removeFromAXObjectCache();
 
-    static double sCurrentPaintTimeStamp; // used for detecting decoded resource thrash in the cache
+    static double s_currentFrameTimeStamp; // used for detecting decoded resource thrash in the cache
+    static bool s_inPaintContents;
 
     LayoutSize m_size;
     LayoutSize m_margins;
