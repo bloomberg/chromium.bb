@@ -25,12 +25,12 @@
 #include "chrome/browser/ui/panels/test_panel_mouse_watcher.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 
 #if defined(OS_LINUX)
@@ -547,8 +547,8 @@ scoped_refptr<Extension> BasePanelBrowserTest::CreateExtension(
   base::FilePath full_path = extension_prefs->install_directory().Append(path);
 
   scoped_ptr<DictionaryValue> input_value(extra_value.DeepCopy());
-  input_value->SetString(extension_manifest_keys::kVersion, "1.0.0.0");
-  input_value->SetString(extension_manifest_keys::kName, "Sample Extension");
+  input_value->SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  input_value->SetString(extensions::manifest_keys::kName, "Sample Extension");
 
   std::string error;
   scoped_refptr<Extension> extension = Extension::Create(

@@ -22,17 +22,17 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "crypto/sha2.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
-namespace keys = extension_manifest_keys;
+namespace keys = manifest_keys;
 
 using base::Time;
 
@@ -58,7 +58,6 @@ std::string GenerateKey(const GURL& manifest_url) {
 }
 
 }  // namespace
-
 
 // Generates a version for the converted app using the current date. This isn't
 // really needed, but it seems like useful information.

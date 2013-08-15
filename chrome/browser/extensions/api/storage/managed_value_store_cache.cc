@@ -25,7 +25,6 @@
 #include "chrome/browser/value_store/value_store_change.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
@@ -34,6 +33,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/common/manifest_constants.h"
 
 using content::BrowserThread;
 
@@ -104,8 +104,7 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
       ExtensionSystem::Get(profile_)->extension_service()->extensions();
   scoped_ptr<ExtensionSet> managed_extensions(new ExtensionSet());
   for (ExtensionSet::const_iterator it = set->begin(); it != set->end(); ++it) {
-    if ((*it)->manifest()->HasPath(
-            extension_manifest_keys::kStorageManagedSchema)) {
+    if ((*it)->manifest()->HasPath(manifest_keys::kStorageManagedSchema)) {
       managed_extensions->Insert(*it);
     }
 
@@ -135,7 +134,7 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
        it != extensions->end(); ++it) {
     std::string schema_file;
     if (!(*it)->manifest()->GetString(
-            extension_manifest_keys::kStorageManagedSchema, &schema_file)) {
+            manifest_keys::kStorageManagedSchema, &schema_file)) {
       // TODO(joaodasilva): Remove this for M30. http://crbug.com/240704
       if ((*it)->HasAPIPermission(APIPermission::kStorage)) {
         descriptor->RegisterComponent((*it)->id(),

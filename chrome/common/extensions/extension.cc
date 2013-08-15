@@ -42,7 +42,7 @@
 #include "grit/generated_resources.h"
 #endif
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 
@@ -752,13 +752,15 @@ bool Extension::LoadManifestVersion(string16* error) {
   }
 
   manifest_version_ = manifest_->GetManifestVersion();
-  if (creation_flags_ & REQUIRE_MODERN_MANIFEST_VERSION &&
-      manifest_version_ < kModernManifestVersion &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAllowLegacyExtensionManifests)) {
+  if (manifest_version_ < kModernManifestVersion &&
+      ((creation_flags_ & REQUIRE_MODERN_MANIFEST_VERSION &&
+        !CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kAllowLegacyExtensionManifests)) ||
+       GetType() == Manifest::TYPE_PLATFORM_APP)) {
     *error = ErrorUtils::FormatErrorMessageUTF16(
         errors::kInvalidManifestVersionOld,
-        base::IntToString(kModernManifestVersion));
+        base::IntToString(kModernManifestVersion),
+        is_platform_app() ? "apps" : "extensions");
     return false;
   }
 

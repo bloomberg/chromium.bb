@@ -30,12 +30,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/menu_model.h"
 
@@ -154,10 +154,10 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
     model_->AddObserver(model_observer_.get());
 
     DictionaryValue manifest;
-    manifest.SetString(extension_manifest_keys::kName,
+    manifest.SetString(extensions::manifest_keys::kName,
                        "launcher controller test extension");
-    manifest.SetString(extension_manifest_keys::kVersion, "1");
-    manifest.SetString(extension_manifest_keys::kDescription,
+    manifest.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest.SetString(extensions::manifest_keys::kDescription,
                        "for testing pinned apps");
 
     extensions::TestExtensionSystem* extension_system(
@@ -179,16 +179,16 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
                                     &error);
     // Fake gmail extension.
     DictionaryValue manifest_gmail;
-    manifest_gmail.SetString(extension_manifest_keys::kName,
+    manifest_gmail.SetString(extensions::manifest_keys::kName,
                              "Gmail launcher controller test extension");
-    manifest_gmail.SetString(extension_manifest_keys::kVersion, "1");
-    manifest_gmail.SetString(extension_manifest_keys::kDescription,
+    manifest_gmail.SetString(extensions::manifest_keys::kVersion, "1");
+    manifest_gmail.SetString(extensions::manifest_keys::kDescription,
                              "for testing pinned Gmail");
-    manifest_gmail.SetString(extension_manifest_keys::kLaunchWebURL,
+    manifest_gmail.SetString(extensions::manifest_keys::kLaunchWebURL,
                              "https://mail.google.com/mail/ca");
     ListValue* list = new ListValue();
     list->Append(Value::CreateStringValue("*://mail.google.com/mail/ca"));
-    manifest_gmail.Set(extension_manifest_keys::kWebURLs, list);
+    manifest_gmail.Set(extensions::manifest_keys::kWebURLs, list);
 
     extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
                                     manifest_gmail,

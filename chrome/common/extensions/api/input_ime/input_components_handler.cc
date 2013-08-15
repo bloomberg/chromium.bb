@@ -15,7 +15,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "extensions/common/error_utils.h"
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = extension_manifest_errors;
 
 namespace extensions {

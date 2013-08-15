@@ -20,9 +20,9 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/size.h"
 
-namespace keys = extension_manifest_keys;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 static base::LazyInstance<ExtensionIconSet> g_empty_icon_set =
     LAZY_INSTANCE_INITIALIZER;

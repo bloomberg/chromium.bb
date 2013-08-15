@@ -9,7 +9,7 @@
 
 namespace extensions {
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = extension_manifest_errors;
 
 SpellcheckDictionaryInfo::SpellcheckDictionaryInfo() {

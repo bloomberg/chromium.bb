@@ -27,7 +27,7 @@ bool BrowserActionHandler::Parse(Extension* extension,
                                  string16* error) {
   const base::DictionaryValue* dict = NULL;
   if (!extension->manifest()->GetDictionary(
-          extension_manifest_keys::kBrowserAction, &dict)) {
+          manifest_keys::kBrowserAction, &dict)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidBrowserAction);
     return false;
   }
@@ -58,7 +58,7 @@ bool BrowserActionHandler::Validate(
 }
 
 const std::vector<std::string> BrowserActionHandler::Keys() const {
-  return SingleKey(extension_manifest_keys::kBrowserAction);
+  return SingleKey(manifest_keys::kBrowserAction);
 }
 
 }  // namespace extensions

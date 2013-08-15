@@ -12,7 +12,7 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = extension_manifest_errors;
 
 using extensions::csp_validator::ContentSecurityPolicyIsLegal;

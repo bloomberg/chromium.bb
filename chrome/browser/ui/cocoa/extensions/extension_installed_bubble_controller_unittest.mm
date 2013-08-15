@@ -19,7 +19,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -44,7 +44,7 @@ using extensions::Extension;
 
 @end
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 class ExtensionInstalledBubbleControllerTest : public CocoaProfileTest {
 

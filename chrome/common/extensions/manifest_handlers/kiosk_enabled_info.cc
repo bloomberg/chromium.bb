@@ -11,9 +11,9 @@
 #include "base/values.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 
-namespace keys = extension_manifest_keys;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 KioskEnabledInfo::KioskEnabledInfo(bool is_kiosk_enabled)
     : kiosk_enabled(is_kiosk_enabled) {

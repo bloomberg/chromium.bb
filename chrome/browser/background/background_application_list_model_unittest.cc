@@ -19,12 +19,12 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // This value is used to seed the PRNG at the beginning of a sequence of
@@ -62,11 +62,11 @@ class BackgroundApplicationListModelTest : public ExtensionServiceTestBase {
 static scoped_refptr<Extension> CreateExtension(const std::string& name,
                                                 bool background_permission) {
   DictionaryValue manifest;
-  manifest.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
-  manifest.SetString(extension_manifest_keys::kName, name);
+  manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  manifest.SetString(extensions::manifest_keys::kName, name);
   if (background_permission) {
     ListValue* permissions = new ListValue();
-    manifest.Set(extension_manifest_keys::kPermissions, permissions);
+    manifest.Set(extensions::manifest_keys::kPermissions, permissions);
     permissions->Append(Value::CreateStringValue("background"));
   }
   std::string error;

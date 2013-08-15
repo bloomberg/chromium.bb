@@ -41,7 +41,6 @@
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,6 +53,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/manifest_constants.h"
 #include "libxml/globals.h"
 #include "net/base/backoff_entry.h"
 #include "net/base/escape.h"
@@ -271,12 +271,12 @@ class MockService : public TestExtensionService {
                             Manifest::Location location) {
     for (int i = 1; i <= count; i++) {
       DictionaryValue manifest;
-      manifest.SetString(extension_manifest_keys::kVersion,
+      manifest.SetString(manifest_keys::kVersion,
                          base::StringPrintf("%d.0.0.0", i));
-      manifest.SetString(extension_manifest_keys::kName,
+      manifest.SetString(manifest_keys::kName,
                          base::StringPrintf("Extension %d.%d", id, i));
       if (update_url)
-        manifest.SetString(extension_manifest_keys::kUpdateURL, *update_url);
+        manifest.SetString(manifest_keys::kUpdateURL, *update_url);
       scoped_refptr<Extension> e =
           prefs_->AddExtensionWithManifest(manifest, location);
       ASSERT_TRUE(e.get() != NULL);

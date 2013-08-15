@@ -14,9 +14,9 @@
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
 
-namespace keys = extension_manifest_keys;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 AppIsolationInfo::AppIsolationInfo(bool isolated_storage)
     : has_isolated_storage(isolated_storage) {

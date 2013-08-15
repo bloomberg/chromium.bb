@@ -9,10 +9,10 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/api/manifest_types.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
@@ -35,7 +35,7 @@ const char kErrorWildcardHostsNotAllowed[] =
     "Wildcard domain patterns such as \"*\" are not allowed";
 }  // namespace externally_connectable_errors
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = externally_connectable_errors;
 using api::manifest_types::ExternallyConnectable;
 

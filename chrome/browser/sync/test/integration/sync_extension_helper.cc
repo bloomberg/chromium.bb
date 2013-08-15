@@ -16,8 +16,8 @@
 #include "chrome/browser/sync/test/integration/sync_datatype_helper.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -273,30 +273,30 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
                                          const std::string& name,
                                          Manifest::Type type) {
   DictionaryValue source;
-  source.SetString(extension_manifest_keys::kName, name);
+  source.SetString(extensions::manifest_keys::kName, name);
   const std::string& public_key = NameToPublicKey(name);
-  source.SetString(extension_manifest_keys::kPublicKey, public_key);
-  source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
+  source.SetString(extensions::manifest_keys::kPublicKey, public_key);
+  source.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
   switch (type) {
     case Manifest::TYPE_EXTENSION:
       // Do nothing.
       break;
     case Manifest::TYPE_THEME:
-      source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
+      source.Set(extensions::manifest_keys::kTheme, new DictionaryValue());
       break;
     case Manifest::TYPE_HOSTED_APP:
     case Manifest::TYPE_LEGACY_PACKAGED_APP:
-      source.Set(extension_manifest_keys::kApp, new DictionaryValue());
-      source.SetString(extension_manifest_keys::kLaunchWebURL,
+      source.Set(extensions::manifest_keys::kApp, new DictionaryValue());
+      source.SetString(extensions::manifest_keys::kLaunchWebURL,
                        "http://www.example.com");
       break;
     case Manifest::TYPE_PLATFORM_APP: {
-      source.Set(extension_manifest_keys::kApp, new DictionaryValue());
-      source.Set(extension_manifest_keys::kPlatformAppBackground,
+      source.Set(extensions::manifest_keys::kApp, new DictionaryValue());
+      source.Set(extensions::manifest_keys::kPlatformAppBackground,
                  new DictionaryValue());
       ListValue* scripts = new ListValue();
       scripts->AppendString("main.js");
-      source.Set(extension_manifest_keys::kPlatformAppBackgroundScripts,
+      source.Set(extensions::manifest_keys::kPlatformAppBackgroundScripts,
                  scripts);
       break;
     }

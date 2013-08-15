@@ -27,7 +27,7 @@
 #include "ui/keyboard/keyboard_constants.h"
 #endif
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = extension_manifest_errors;
 
 namespace extensions {

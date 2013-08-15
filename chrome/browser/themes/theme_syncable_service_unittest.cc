@@ -15,13 +15,13 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/permissions/api_permission_set.h"
 #include "chrome/common/extensions/permissions/permission_set.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/manifest_constants.h"
 #include "sync/api/sync_error.h"
 #include "sync/api/sync_error_factory_mock.h"
 #include "sync/protocol/sync.pb.h"
@@ -144,10 +144,10 @@ scoped_refptr<extensions::Extension> MakeThemeExtension(
     extensions::Manifest::Location location,
     const string& update_url) {
   DictionaryValue source;
-  source.SetString(extension_manifest_keys::kName, name);
-  source.Set(extension_manifest_keys::kTheme, new DictionaryValue());
-  source.SetString(extension_manifest_keys::kUpdateURL, update_url);
-  source.SetString(extension_manifest_keys::kVersion, "0.0.0.0");
+  source.SetString(extensions::manifest_keys::kName, name);
+  source.Set(extensions::manifest_keys::kTheme, new DictionaryValue());
+  source.SetString(extensions::manifest_keys::kUpdateURL, update_url);
+  source.SetString(extensions::manifest_keys::kVersion, "0.0.0.0");
   string error;
   scoped_refptr<extensions::Extension> extension =
       extensions::Extension::Create(

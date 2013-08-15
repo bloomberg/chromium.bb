@@ -21,7 +21,6 @@
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "chrome/common/extensions/features/feature_channel.h"
@@ -79,6 +78,7 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature_provider.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/view_type.h"
 #include "grit/common_resources.h"
 #include "grit/renderer_resources.h"
@@ -513,8 +513,7 @@ void Dispatcher::OnSetSystemFont(const std::string& font_family,
 }
 
 void Dispatcher::OnSetChannel(int channel) {
-  extensions::SetCurrentChannel(
-      static_cast<chrome::VersionInfo::Channel>(channel));
+  SetCurrentChannel(static_cast<chrome::VersionInfo::Channel>(channel));
 }
 
 void Dispatcher::OnMessageInvoke(const std::string& extension_id,
@@ -664,7 +663,7 @@ void Dispatcher::AddOrRemoveBindingsForContext(ChromeV8Context* context) {
            it != extensions_.end(); ++it) {
         ExternallyConnectableInfo* info =
             static_cast<ExternallyConnectableInfo*>((*it)->GetManifestData(
-                extension_manifest_keys::kExternallyConnectable));
+                manifest_keys::kExternallyConnectable));
         if (info && info->matches.MatchesURL(context->GetURL())) {
           runtime_is_available = true;
           break;
@@ -1421,11 +1420,10 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
 // the frame's security origin is unique. The extension sandbox directive is
 // checked for in chrome/common/extensions/csp_handler.cc.
 bool Dispatcher::IsSandboxedPage(const GURL& url) const {
-  if (url.SchemeIs(extensions::kExtensionScheme)) {
+  if (url.SchemeIs(kExtensionScheme)) {
     const Extension* extension = extensions_.GetByID(url.host());
     if (extension) {
-      return extensions::SandboxedPageInfo::IsSandboxedPage(extension,
-                                                            url.path());
+      return SandboxedPageInfo::IsSandboxedPage(extension, url.path());
     }
   }
   return false;

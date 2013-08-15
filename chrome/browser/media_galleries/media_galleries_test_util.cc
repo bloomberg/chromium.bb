@@ -15,7 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chrome {
@@ -25,12 +25,12 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
     const std::vector<std::string>& media_galleries_permissions,
     Profile* profile) {
   scoped_ptr<DictionaryValue> manifest(new DictionaryValue);
-  manifest->SetString(extension_manifest_keys::kName, name);
-  manifest->SetString(extension_manifest_keys::kVersion, "0.1");
-  manifest->SetInteger(extension_manifest_keys::kManifestVersion, 2);
+  manifest->SetString(extensions::manifest_keys::kName, name);
+  manifest->SetString(extensions::manifest_keys::kVersion, "0.1");
+  manifest->SetInteger(extensions::manifest_keys::kManifestVersion, 2);
   ListValue* background_script_list = new ListValue;
   background_script_list->Append(Value::CreateStringValue("background.js"));
-  manifest->Set(extension_manifest_keys::kPlatformAppBackgroundScripts,
+  manifest->Set(extensions::manifest_keys::kPlatformAppBackgroundScripts,
                 background_script_list);
 
   ListValue* permission_detail_list = new ListValue;
@@ -41,7 +41,7 @@ scoped_refptr<extensions::Extension> AddMediaGalleriesApp(
   media_galleries_permission->Set("mediaGalleries", permission_detail_list);
   ListValue* permission_list = new ListValue;
   permission_list->Append(media_galleries_permission);
-  manifest->Set(extension_manifest_keys::kPermissions, permission_list);
+  manifest->Set(extensions::manifest_keys::kPermissions, permission_list);
 
   extensions::ExtensionPrefs* extension_prefs =
       extensions::ExtensionPrefs::Get(profile);

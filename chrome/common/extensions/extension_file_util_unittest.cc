@@ -12,9 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,7 +23,7 @@
 using extensions::Extension;
 using extensions::Manifest;
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 class ExtensionFileUtilTest : public testing::Test {
 };

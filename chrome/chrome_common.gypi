@@ -80,6 +80,8 @@
         '../extensions/common/id_util.h',
         '../extensions/common/install_warning.cc',
         '../extensions/common/install_warning.h',
+        '../extensions/common/manifest_constants.cc',
+        '../extensions/common/manifest_constants.h',
         '../extensions/common/matcher/regex_set_matcher.cc',
         '../extensions/common/matcher/regex_set_matcher.h',
         '../extensions/common/matcher/string_pattern.cc',

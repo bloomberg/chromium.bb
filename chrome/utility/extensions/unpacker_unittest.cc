@@ -17,7 +17,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace errors = extension_manifest_errors;
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 namespace extensions {
 

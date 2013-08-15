@@ -25,7 +25,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 namespace errors = extension_manifest_errors;
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 static std::string& GetProcessLocale() {
   CR_DEFINE_STATIC_LOCAL(std::string, locale, ());

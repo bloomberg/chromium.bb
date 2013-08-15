@@ -7,7 +7,7 @@
 #include <map>
 
 #include "chrome/browser/extensions/extension_prefs_unittest.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -15,7 +15,7 @@ using extensions::Blacklist;
 using extensions::Extension;
 using extensions::Manifest;
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 class ExtensionSortingTest : public extensions::ExtensionPrefsTest {
  protected:

@@ -12,14 +12,11 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_prefs_unittest.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Value;
-
-namespace keys = extension_manifest_keys;
 
 namespace extensions {
 

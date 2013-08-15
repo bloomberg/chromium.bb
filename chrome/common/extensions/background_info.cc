@@ -21,7 +21,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using base::DictionaryValue;
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace values = extension_manifest_values;
 namespace errors = extension_manifest_errors;
 

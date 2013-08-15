@@ -10,9 +10,9 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 
-namespace keys = extension_manifest_keys;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 IncognitoInfo::IncognitoInfo(bool incognito_split_mode)
     : split_mode(incognito_split_mode) {

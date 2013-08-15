@@ -145,7 +145,7 @@ using extensions::PermissionSet;
 using extensions::TestExtensionSystem;
 using extensions::URLPatternSet;
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 namespace {
 

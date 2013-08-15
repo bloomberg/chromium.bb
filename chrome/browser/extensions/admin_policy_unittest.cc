@@ -6,8 +6,8 @@
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Value;
@@ -25,16 +25,16 @@ class ExtensionAdminPolicyTest : public testing::Test {
 
   void CreateHostedApp(Manifest::Location location) {
     base::DictionaryValue values;
-    values.Set(extension_manifest_keys::kWebURLs, new base::ListValue());
-    values.SetString(extension_manifest_keys::kLaunchWebURL,
+    values.Set(extensions::manifest_keys::kWebURLs, new base::ListValue());
+    values.SetString(extensions::manifest_keys::kLaunchWebURL,
                      "http://www.example.com");
     CreateExtensionFromValues(location, &values);
   }
 
   void CreateExtensionFromValues(Manifest::Location location,
                                  base::DictionaryValue* values) {
-    values->SetString(extension_manifest_keys::kName, "test");
-    values->SetString(extension_manifest_keys::kVersion, "0.1");
+    values->SetString(extensions::manifest_keys::kName, "test");
+    values->SetString(extensions::manifest_keys::kVersion, "0.1");
     std::string error;
     extension_ = Extension::Create(base::FilePath(), location, *values,
                                    Extension::NO_FLAGS, &error);

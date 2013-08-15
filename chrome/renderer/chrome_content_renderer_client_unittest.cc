@@ -7,8 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -91,8 +91,8 @@ scoped_refptr<const extensions::Extension> CreateTestExtension(
   if (is_hosted_app) {
     base::ListValue* url_list = new base::ListValue();
     url_list->Append(base::Value::CreateStringValue(app_url));
-    manifest.Set(extension_manifest_keys::kWebURLs, url_list);
-    manifest.SetString(extension_manifest_keys::kLaunchWebURL, app_url);
+    manifest.Set(extensions::manifest_keys::kWebURLs, url_list);
+    manifest.SetString(extensions::manifest_keys::kLaunchWebURL, app_url);
   }
   std::string error;
   return extensions::Extension::Create(base::FilePath(), location, manifest,

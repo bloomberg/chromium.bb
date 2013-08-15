@@ -25,7 +25,7 @@
 #include "extensions/common/user_script.h"
 #include "url/gurl.h"
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace values = extension_manifest_values;
 
 namespace extensions {

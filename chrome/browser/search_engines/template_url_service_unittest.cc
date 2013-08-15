@@ -26,12 +26,12 @@
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/webdata/web_data_service_factory.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/webdata/common/web_database.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -953,10 +953,10 @@ TEST_F(TemplateURLServiceExtensionTest, ResetURLs) {
       TemplateURLPrepopulateData::GetEngineType(default_provider->url()));
 
   DictionaryValue manifest;
-  manifest.SetString(extension_manifest_keys::kVersion, "1.0.0.0");
-  manifest.SetString(extension_manifest_keys::kName, "ext1");
+  manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
+  manifest.SetString(extensions::manifest_keys::kName, "ext1");
   manifest.SetString("app.launch.web_url", "http://www.google.com");
-  manifest.SetString(extension_manifest_keys::kOmniboxKeyword, "ext_keyword");
+  manifest.SetString(extensions::manifest_keys::kOmniboxKeyword, "ext_keyword");
   std::string error;
   scoped_refptr<extensions::Extension> extension =
       extensions::Extension::Create(

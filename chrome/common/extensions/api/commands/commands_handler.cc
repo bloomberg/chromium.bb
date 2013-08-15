@@ -10,9 +10,9 @@
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "extensions/common/error_utils.h"
 
-namespace keys = extension_manifest_keys;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 namespace {
 // The maximum number of commands (including page action/browser actions) with a

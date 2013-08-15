@@ -19,13 +19,13 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/common/extensions/features/api_feature.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/extensions/features/simple_feature.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/value_builder.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -468,10 +468,10 @@ TEST(ExtensionAPITest, ExtensionWithUnprivilegedAPIs) {
 
 scoped_refptr<Extension> CreateHostedApp() {
   base::DictionaryValue values;
-  values.SetString(extension_manifest_keys::kName, "test");
-  values.SetString(extension_manifest_keys::kVersion, "0.1");
-  values.Set(extension_manifest_keys::kWebURLs, new base::ListValue());
-  values.SetString(extension_manifest_keys::kLaunchWebURL,
+  values.SetString(manifest_keys::kName, "test");
+  values.SetString(manifest_keys::kVersion, "0.1");
+  values.Set(manifest_keys::kWebURLs, new base::ListValue());
+  values.SetString(manifest_keys::kLaunchWebURL,
                    "http://www.example.com");
   std::string error;
   scoped_refptr<Extension> extension(Extension::Create(
@@ -484,9 +484,9 @@ scoped_refptr<Extension> CreateHostedApp() {
 scoped_refptr<Extension> CreatePackagedAppWithPermissions(
     const std::set<std::string>& permissions) {
   base::DictionaryValue values;
-  values.SetString(extension_manifest_keys::kName, "test");
-  values.SetString(extension_manifest_keys::kVersion, "0.1");
-  values.SetString(extension_manifest_keys::kPlatformAppBackground,
+  values.SetString(manifest_keys::kName, "test");
+  values.SetString(manifest_keys::kVersion, "0.1");
+  values.SetString(manifest_keys::kPlatformAppBackground,
       "http://www.example.com");
 
   base::DictionaryValue* app = new base::DictionaryValue();
@@ -495,7 +495,7 @@ scoped_refptr<Extension> CreatePackagedAppWithPermissions(
   scripts->Append(new base::StringValue("test.js"));
   background->Set("scripts", scripts);
   app->Set("background", background);
-  values.Set(extension_manifest_keys::kApp, app);
+  values.Set(manifest_keys::kApp, app);
   {
     scoped_ptr<base::ListValue> permissions_list(new base::ListValue());
     for (std::set<std::string>::const_iterator i = permissions.begin();

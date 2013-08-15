@@ -13,7 +13,7 @@
 #include "extensions/common/error_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = extension_manifest_errors;
 
 namespace {

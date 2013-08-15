@@ -10,16 +10,15 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/install_warning.h"
-
-namespace errors = extension_manifest_errors;
-namespace keys = extension_manifest_keys;
+#include "extensions/common/manifest_constants.h"
 
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 namespace {
 
@@ -131,10 +130,6 @@ bool Manifest::ValidateManifest(
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
   *error = "";
-  if (type_ == Manifest::TYPE_PLATFORM_APP && GetManifestVersion() < 2) {
-    *error = errors::kPlatformAppNeedsManifestVersion2;
-    return false;
-  }
 
   // Check every feature to see if its in the manifest. Note that this means
   // we will ignore keys that are not features; we do this for forward

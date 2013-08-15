@@ -4,11 +4,11 @@
 
 #include <algorithm>
 
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/common/extensions/manifest_handlers/externally_connectable.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +26,7 @@ class ExternallyConnectableTest : public ExtensionManifestTest {
   ExternallyConnectableInfo* GetExternallyConnectableInfo(
       scoped_refptr<Extension> extension) {
     return static_cast<ExternallyConnectableInfo*>(extension->GetManifestData(
-        extension_manifest_keys::kExternallyConnectable));
+        manifest_keys::kExternallyConnectable));
   }
 
  private:

@@ -26,8 +26,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/utility_process_host.h"
@@ -36,6 +34,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/crx_file.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/generated_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -607,7 +606,7 @@ DictionaryValue* SandboxedUnpacker::RewriteManifestFile(
   // the original manifest. We do this to ensure the manifest doesn't contain an
   // exploitable bug that could be used to compromise the browser.
   scoped_ptr<DictionaryValue> final_manifest(manifest.DeepCopy());
-  final_manifest->SetString(extension_manifest_keys::kPublicKey, public_key_);
+  final_manifest->SetString(manifest_keys::kPublicKey, public_key_);
 
   std::string manifest_json;
   JSONStringValueSerializer serializer(&manifest_json);

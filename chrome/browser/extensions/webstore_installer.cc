@@ -28,7 +28,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_manager.h"
@@ -42,6 +41,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/manifest_constants.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
@@ -238,8 +238,7 @@ void WebstoreInstaller::Start() {
                  base::Bind(&WebstoreInstaller::StartDownload, this)));
 
   std::string name;
-  if (!approval_->manifest->value()->GetString(extension_manifest_keys::kName,
-                                               &name)) {
+  if (!approval_->manifest->value()->GetString(manifest_keys::kName, &name)) {
     NOTREACHED();
   }
   extensions::InstallTracker* tracker =

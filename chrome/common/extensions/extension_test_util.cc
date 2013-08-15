@@ -11,7 +11,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_builder.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using extensions::DictionaryBuilder;
@@ -46,8 +46,8 @@ namespace extension_test_util {
 
 scoped_refptr<Extension> CreateExtensionWithID(std::string id) {
   base::DictionaryValue values;
-  values.SetString(extension_manifest_keys::kName, "test");
-  values.SetString(extension_manifest_keys::kVersion, "0.1");
+  values.SetString(extensions::manifest_keys::kName, "test");
+  values.SetString(extensions::manifest_keys::kVersion, "0.1");
   std::string error;
   return Extension::Create(base::FilePath(), extensions::Manifest::INTERNAL,
                            values, Extension::NO_FLAGS, id, &error);

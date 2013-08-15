@@ -8,7 +8,7 @@
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = extension_manifest_errors;
 
 namespace {

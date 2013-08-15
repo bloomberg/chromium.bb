@@ -20,11 +20,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_file_util.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 #include "extensions/common/id_util.h"
+#include "extensions/common/manifest_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -90,7 +90,7 @@ std::string GenerateId(const DictionaryValue* manifest,
                        const base::FilePath& path) {
   std::string raw_key;
   std::string id_input;
-  CHECK(manifest->GetString(extension_manifest_keys::kPublicKey, &raw_key));
+  CHECK(manifest->GetString(manifest_keys::kPublicKey, &raw_key));
   CHECK(Extension::ParsePEMKeyBytes(raw_key, &id_input));
   std::string id = id_util::GenerateId(id_input);
   return id;
@@ -302,7 +302,7 @@ void ComponentLoader::AddWithName(int manifest_resource_id,
 
   if (manifest) {
     // Update manifest to use a proper name.
-    manifest->SetString(extension_manifest_keys::kName, name);
+    manifest->SetString(manifest_keys::kName, name);
     Add(manifest, root_directory);
   }
 }

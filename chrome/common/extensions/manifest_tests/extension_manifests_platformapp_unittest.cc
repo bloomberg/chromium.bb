@@ -11,6 +11,7 @@
 #include "chrome/common/extensions/incognito_handler.h"
 #include "chrome/common/extensions/manifest_handlers/app_isolation_info.h"
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
+#include "extensions/common/error_utils.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -36,9 +37,10 @@ TEST_F(PlatformAppsManifestTest, PlatformApps) {
 
   Testcase error_testcases[] = {
     Testcase("init_invalid_platform_app_2.json",
-        errors::kBackgroundRequiredForPlatformApps),
+             errors::kBackgroundRequiredForPlatformApps),
     Testcase("init_invalid_platform_app_3.json",
-        errors::kPlatformAppNeedsManifestVersion2),
+             ErrorUtils::FormatErrorMessage(
+                 errors::kInvalidManifestVersionOld, "2", "apps")),
   };
   RunTestcases(error_testcases, arraysize(error_testcases), EXPECT_TYPE_ERROR);
 

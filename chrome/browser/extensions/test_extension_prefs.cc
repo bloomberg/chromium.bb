@@ -22,9 +22,9 @@
 #include "chrome/browser/prefs/pref_service_mock_builder.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/manifest_constants.h"
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,18 +122,17 @@ void TestExtensionPrefs::RecreateExtensionPrefs() {
 
 scoped_refptr<Extension> TestExtensionPrefs::AddExtension(std::string name) {
   DictionaryValue dictionary;
-  dictionary.SetString(extension_manifest_keys::kName, name);
-  dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
+  dictionary.SetString(manifest_keys::kName, name);
+  dictionary.SetString(manifest_keys::kVersion, "0.1");
   return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
 }
 
 scoped_refptr<Extension> TestExtensionPrefs::AddApp(std::string name) {
   DictionaryValue dictionary;
-  dictionary.SetString(extension_manifest_keys::kName, name);
-  dictionary.SetString(extension_manifest_keys::kVersion, "0.1");
-  dictionary.SetString(extension_manifest_keys::kApp, "true");
-  dictionary.SetString(extension_manifest_keys::kLaunchWebURL,
-                       "http://example.com");
+  dictionary.SetString(manifest_keys::kName, name);
+  dictionary.SetString(manifest_keys::kVersion, "0.1");
+  dictionary.SetString(manifest_keys::kApp, "true");
+  dictionary.SetString(manifest_keys::kLaunchWebURL, "http://example.com");
   return AddExtensionWithManifest(dictionary, Manifest::INTERNAL);
 
 }
@@ -149,7 +148,7 @@ scoped_refptr<Extension> TestExtensionPrefs::AddExtensionWithManifestAndFlags(
     Manifest::Location location,
     int extra_flags) {
   std::string name;
-  EXPECT_TRUE(manifest.GetString(extension_manifest_keys::kName, &name));
+  EXPECT_TRUE(manifest.GetString(manifest_keys::kName, &name));
   base::FilePath path =  extensions_dir_.AppendASCII(name);
   std::string errors;
   scoped_refptr<Extension> extension = Extension::Create(

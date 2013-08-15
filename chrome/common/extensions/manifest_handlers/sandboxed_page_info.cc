@@ -18,7 +18,7 @@ namespace extensions {
 
 namespace {
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 namespace errors = extension_manifest_errors;
 
 const char kDefaultSandboxedPageContentSecurityPolicy[] =

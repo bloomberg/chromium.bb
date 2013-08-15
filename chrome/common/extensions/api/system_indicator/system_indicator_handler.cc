@@ -24,7 +24,7 @@ SystemIndicatorHandler::~SystemIndicatorHandler() {
 bool SystemIndicatorHandler::Parse(Extension* extension, string16* error) {
   const base::DictionaryValue* system_indicator_value = NULL;
   if (!extension->manifest()->GetDictionary(
-          extension_manifest_keys::kSystemIndicator, &system_indicator_value)) {
+          manifest_keys::kSystemIndicator, &system_indicator_value)) {
     *error = ASCIIToUTF16(extension_manifest_errors::kInvalidSystemIndicator);
     return false;
   }
@@ -45,7 +45,7 @@ bool SystemIndicatorHandler::Parse(Extension* extension, string16* error) {
 }
 
 const std::vector<std::string> SystemIndicatorHandler::Keys() const {
-  return SingleKey(extension_manifest_keys::kSystemIndicator);
+  return SingleKey(manifest_keys::kSystemIndicator);
 }
 
 }  // namespace extensions

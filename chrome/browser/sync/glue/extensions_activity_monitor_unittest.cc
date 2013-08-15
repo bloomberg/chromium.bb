@@ -12,9 +12,9 @@
 #include "chrome/browser/extensions/api/bookmarks/bookmarks_api.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/manifest_constants.h"
 #include "sync/util/extensions_activity.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,7 +25,7 @@ namespace browser_sync {
 namespace {
 
 using content::BrowserThread;
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 // Create and return an extension with the given path.
 scoped_refptr<Extension> MakeExtension(const std::string& name) {

@@ -75,7 +75,8 @@ enum ExternalItemState {
 };
 
 bool IsManifestCorrupt(const DictionaryValue* manifest) {
-  if (!manifest) return false;
+  if (!manifest)
+    return false;
 
   // Because of bug #272524 sometimes manifests got mangled in the preferences
   // file, one particularly bad case resulting in having both a background page
@@ -83,10 +84,8 @@ bool IsManifestCorrupt(const DictionaryValue* manifest) {
   // manifest from the extension to fix this.
   const Value* background_page;
   const Value* background_scripts;
-  return manifest->Get(extension_manifest_keys::kBackgroundPage,
-                       &background_page) &&
-         manifest->Get(extension_manifest_keys::kBackgroundScripts,
-                       &background_scripts);
+  return manifest->Get(manifest_keys::kBackgroundPage, &background_page) &&
+      manifest->Get(manifest_keys::kBackgroundScripts, &background_scripts);
 }
 
 ManifestReloadReason ShouldReloadExtensionManifest(const ExtensionInfo& info) {

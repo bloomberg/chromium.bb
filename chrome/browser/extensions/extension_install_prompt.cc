@@ -26,7 +26,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/manifest.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -36,6 +35,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/url_pattern.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -457,11 +457,11 @@ scoped_refptr<Extension>
   if (!localized_name.empty() || !localized_description.empty()) {
     localized_manifest.reset(manifest->DeepCopy());
     if (!localized_name.empty()) {
-      localized_manifest->SetString(extension_manifest_keys::kName,
+      localized_manifest->SetString(extensions::manifest_keys::kName,
                                     localized_name);
     }
     if (!localized_description.empty()) {
-      localized_manifest->SetString(extension_manifest_keys::kDescription,
+      localized_manifest->SetString(extensions::manifest_keys::kDescription,
                                     localized_description);
     }
   }

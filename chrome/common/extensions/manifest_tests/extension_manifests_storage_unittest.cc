@@ -4,10 +4,10 @@
 
 #include "chrome/common/extensions/manifest_tests/extension_manifest_test.h"
 
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 TEST_F(ExtensionManifestTest, StorageAPIManifestVersionAvailability) {
   base::DictionaryValue base_manifest;

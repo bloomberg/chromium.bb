@@ -20,9 +20,9 @@
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/extensions/manifest.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/manifest_constants.h"
 #include "ui/gfx/codec/png_codec.h"
 
 using content::BrowserThread;
@@ -63,7 +63,7 @@ void SaveIconToLocalOnBlockingPool(
 // Returns true for valid kiosk app manifest.
 bool IsValidKioskAppManifest(const extensions::Manifest& manifest) {
   bool kiosk_enabled;
-  if (manifest.GetBoolean(extension_manifest_keys::kKioskEnabled,
+  if (manifest.GetBoolean(extensions::manifest_keys::kKioskEnabled,
                           &kiosk_enabled)) {
     return kiosk_enabled;
   }

@@ -8,8 +8,8 @@
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
@@ -17,7 +17,7 @@ using extensions::APIPermission;
 using extensions::Extension;
 using extensions::Manifest;
 
-namespace keys = extension_manifest_keys;
+namespace keys = extensions::manifest_keys;
 
 namespace {
 

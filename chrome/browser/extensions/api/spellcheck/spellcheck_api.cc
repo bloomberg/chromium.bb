@@ -15,7 +15,6 @@
 
 namespace extensions {
 
-namespace keys = extension_manifest_keys;
 namespace errors = extension_manifest_errors;
 
 namespace {
@@ -24,7 +23,7 @@ SpellcheckDictionaryInfo* GetSpellcheckDictionaryInfo(
     const Extension* extension) {
   SpellcheckDictionaryInfo *spellcheck_info =
       static_cast<SpellcheckDictionaryInfo*>(
-          extension->GetManifestData(keys::kSpellcheck));
+          extension->GetManifestData(manifest_keys::kSpellcheck));
   return spellcheck_info;
 }
 

@@ -21,9 +21,9 @@
 #include "base/win/metro.h"
 #endif
 
-namespace keys = extension_manifest_keys;
-
 namespace extensions {
+
+namespace keys = manifest_keys;
 
 namespace {
 
