@@ -196,8 +196,6 @@ public:
     void finishedParsing();
     void checkCompleted();
 
-    bool isComplete() const;
-
     void commitProvisionalLoad();
 
     FrameLoaderStateMachine* stateMachine() const { return &m_stateMachine; }
@@ -208,7 +206,6 @@ public:
 
     bool shouldInterruptLoadForXFrameOptions(const String&, const KURL&, unsigned long requestIdentifier);
 
-    void completed();
     bool allAncestorsAreComplete() const; // including this
 
     bool suppressOpenerInNewFrame() const { return m_suppressOpenerInNewFrame; }
@@ -225,6 +222,8 @@ public:
 
 private:
     bool allChildrenAreComplete() const; // immediate children, not all descendants
+
+    void completed();
 
     void checkTimerFired(Timer<FrameLoader>*);
 
@@ -294,6 +293,7 @@ private:
 
     String m_outgoingReferrer;
 
+    // FIXME: This is only used in checkCompleted(). Figure out a way to disentangle it.
     bool m_isComplete;
 
     bool m_needsClear;

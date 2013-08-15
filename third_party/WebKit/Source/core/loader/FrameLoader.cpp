@@ -464,7 +464,7 @@ bool FrameLoader::allChildrenAreComplete() const
 bool FrameLoader::allAncestorsAreComplete() const
 {
     for (Frame* ancestor = m_frame; ancestor; ancestor = ancestor->tree()->parent()) {
-        if (!ancestor->loader()->m_isComplete)
+        if (!ancestor->document()->loadEventFinished())
             return false;
     }
     return true;
@@ -676,11 +676,6 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
     checkCompleted();
 
     m_frame->document()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
-}
-
-bool FrameLoader::isComplete() const
-{
-    return m_isComplete;
 }
 
 void FrameLoader::completed()
@@ -1065,7 +1060,7 @@ FrameLoadType FrameLoader::loadType() const
 
 CachePolicy FrameLoader::subresourceCachePolicy() const
 {
-    if (m_isComplete)
+    if (m_frame->document()->loadEventFinished())
         return CachePolicyVerify;
 
     if (m_loadType == FrameLoadTypeReloadFromOrigin)

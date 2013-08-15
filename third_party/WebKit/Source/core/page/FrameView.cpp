@@ -1765,7 +1765,7 @@ void FrameView::doDeferredRepaints()
 bool FrameView::shouldUseLoadTimeDeferredRepaintDelay() const
 {
     // Don't defer after the initial load of the page has been completed.
-    if (m_frame->tree()->top()->loader()->isComplete())
+    if (m_frame->tree()->top()->document()->loadEventFinished())
         return false;
     Document* document = m_frame->document();
     if (!document)
@@ -2312,7 +2312,7 @@ void FrameView::autoSizeIfEnabled()
         // While loading only allow the size to increase (to avoid twitching during intermediate smaller states)
         // unless autoresize has just been turned on or the maximum size is smaller than the current size.
         if (m_didRunAutosize && size.height() <= m_maxAutoSize.height() && size.width() <= m_maxAutoSize.width()
-            && !frame()->loader()->isComplete() && (newSize.height() < size.height() || newSize.width() < size.width()))
+            && !frame()->document()->loadEventFinished() && (newSize.height() < size.height() || newSize.width() < size.width()))
             break;
 
         resize(newSize.width(), newSize.height());
