@@ -1,14 +1,19 @@
+<!DOCTYPE html>
 <html>
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <script src="../js/resources/js-test-pre.js"></script>
 <script>
 function runTest()
 {
     description("This tests accessing form elements by name. "
-        + "IE only lets you look up names under the first name the element had and "
-        + "does not respond to name changes. Firefox remembers every name item has been "
-        + "accessed with, but forgets items that have not been accessed. "
-        + "This test has been written to expect the Firefox behavior.");
+        + "IE updates collections immediatelly after name changes, but A "
+        + "collection never be changed to a single node when the number of "
+        + "matched nodes becomes 1. "
+        + "Firefox remembers every name item has been accessed with, but "
+        + "forgets items that have not been accessed. "
+        + "We follow the standard behavior. i.e. collections are updated "
+        + "immediately, and it's changed to a single node when the size becomes 1.");
 
     form = document.getElementById('form');
     a = document.getElementById('a');
@@ -53,7 +58,7 @@ function runTest()
     a.name="second";
     
     shouldBe('form.length', '2');
-    shouldBe('form.original', 'a');
+    shouldBeUndefined('form.original');
     shouldBe('form.originalB', 'b');
     shouldBe('form.second', 'a');
     shouldBe('form.third', 'undefined');
@@ -69,9 +74,9 @@ function runTest()
     a.name="third";
 
     shouldBe('form.length', '2');
-    shouldBe('form.original', 'a');
+    shouldBeUndefined('form.original');
     shouldBe('form.originalB', 'b');
-    shouldBe('form.second', 'a');
+    shouldBeUndefined('form.second');
     shouldBe('form.third', 'a');
     shouldBe('form.elements.original', 'undefined');
     shouldBe('form.elements.originalB', 'b');
@@ -85,8 +90,8 @@ function runTest()
     b.name="second";
 
     shouldBe('form.length', '2');
-    shouldBe('form.original', 'a');
-    shouldBe('form.originalB', 'b');
+    shouldBeUndefined('form.original');
+    shouldBeUndefined('form.originalB');
     shouldBe('form.second', 'b');
     shouldBe('form.elements.original', 'undefined');
     shouldBe('form.elements.originalB', 'undefined');
@@ -96,12 +101,12 @@ function runTest()
     debug("now change a form item b's name to third");
     debug('');
 
-    form.originalB.name="third";
+    form.second.name = 'third';
 
     shouldBe('form.length', '2');
-    shouldBe('form.original', 'a');
-    shouldBe('form.originalB', 'b');
-    shouldBe('form.second', 'b');
+    shouldBeUndefined('form.original');
+    shouldBeUndefined('form.originalB');
+    shouldBeUndefined('form.second');
     shouldBe('form.third.length', '2');
     shouldBe('form.third[0]', 'a');
     shouldBe('form.third[1]', 'b');
@@ -116,7 +121,7 @@ function runTest()
     debug("now change a form item b's name to fourth");
     debug('');
 
-    form.originalB.name="fourth";
+    form.third[1].name = 'fourth';
     
     shouldBe('form.third', 'a');
     shouldBe('form.third.length', 'undefined');
@@ -130,10 +135,10 @@ function runTest()
     form.removeChild(a);
 
     shouldBe('form.length', '1');
-    shouldBe('form.original', 'a');
-    shouldBe('form.originalB', 'b');
-    shouldBe('form.second', 'b');
-    shouldBe('form.third', 'a');
+    shouldBeUndefined('form.original');
+    shouldBeUndefined('form.originalB');
+    shouldBeUndefined('form.second');
+    shouldBeUndefined('form.third');
     shouldBe('form.fourth', 'b');
     shouldBe('form.elements.original', 'undefined');
     shouldBe('form.elements.originalB', 'undefined');
@@ -142,13 +147,13 @@ function runTest()
     shouldBe('form.elements.fourth', 'b');
  
     debug('');
-    debug("check we still remember names we should");
+    debug("check we forget names we should");
     debug('');
 
     shouldBe('form.thisWillBeForgotten', 'undefined');
     shouldBe('form.thisWillBeForgottenToo', 'undefined');
-    shouldBe('form.thisWillBeRemembered', 'a');
-    shouldBe('form.thisWillBeRememberedToo', 'a');
+    shouldBeUndefined('form.thisWillBeRemembered');
+    shouldBeUndefined('form.thisWillBeRememberedToo');
     debug('');
 }
 </script>

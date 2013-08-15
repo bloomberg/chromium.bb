@@ -1,6 +1,7 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<!DOCTYPE html>
 <html>
 <head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
 <script src="../js/resources/js-test-pre.js"></script>
 </head>
 <body>
@@ -29,11 +30,8 @@ shouldBe("form.imageElement.id", "'2'");
 
 span.innerHTML = "<img id='2' name='newImage'>";
 
-// imageElement has been removed from the DOM, but,
-// IE 6 has a quirk where once accessed, form images are always accessible by name
-shouldBeTrue("!!form.imageElement");
-
-// This quirk has no bearing on document. access
+// imageElement has been removed from the DOM.
+shouldBeUndefined("form.imageElement");
 shouldBeUndefined("document.imageElement");
 
 // Of coruse, the new image should be accessible both ways.
