@@ -95,6 +95,19 @@ struct weston_info {
 	bool roundtrip_needed;
 };
 
+static void *
+xmalloc(size_t s)
+{
+	void *p = malloc(s);
+
+	if (p == NULL) {
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+	}
+
+	return p;
+}
+
 static void
 print_global_info(void *data)
 {
@@ -271,7 +284,7 @@ static const struct wl_seat_listener seat_listener = {
 static void
 add_seat_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
-	struct seat_info *seat = malloc(sizeof *seat);
+	struct seat_info *seat = xmalloc(sizeof *seat);
 
 	init_global_info(info, &seat->global, id, "wl_seat", version);
 	seat->global.print = print_seat_info;
@@ -287,7 +300,7 @@ static void
 shm_handle_format(void *data, struct wl_shm *wl_shm, uint32_t format)
 {
 	struct shm_info *shm = data;
-	struct shm_format *shm_format = malloc(sizeof *shm_format);
+	struct shm_format *shm_format = xmalloc(sizeof *shm_format);
 
 	wl_list_insert(&shm->formats, &shm_format->link);
 	shm_format->format = format;
@@ -300,7 +313,7 @@ static const struct wl_shm_listener shm_listener = {
 static void
 add_shm_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
-	struct shm_info *shm = malloc(sizeof *shm);
+	struct shm_info *shm = xmalloc(sizeof *shm);
 
 	init_global_info(info, &shm->global, id, "wl_shm", version);
 	shm->global.print = print_shm_info;
@@ -339,7 +352,7 @@ output_handle_mode(void *data, struct wl_output *wl_output,
 		   int32_t refresh)
 {
 	struct output_info *output = data;
-	struct output_mode *mode = malloc(sizeof *mode);
+	struct output_mode *mode = xmalloc(sizeof *mode);
 
 	mode->flags = flags;
 	mode->width = width;
@@ -357,7 +370,7 @@ static const struct wl_output_listener output_listener = {
 static void
 add_output_info(struct weston_info *info, uint32_t id, uint32_t version)
 {
-	struct output_info *output = malloc(sizeof *output);
+	struct output_info *output = xmalloc(sizeof *output);
 
 	init_global_info(info, &output->global, id, "wl_output", version);
 	output->global.print = print_output_info;
@@ -376,7 +389,7 @@ static void
 add_global_info(struct weston_info *info, uint32_t id,
 		const char *interface, uint32_t version)
 {
-	struct global_info *global = malloc(sizeof *global);
+	struct global_info *global = xmalloc(sizeof *global);
 
 	init_global_info(info, global, id, interface, version);
 	global->print = print_global_info;
