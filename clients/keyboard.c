@@ -456,16 +456,6 @@ prev_utf8_char(const char *s, const char *p)
 	return NULL;
 }
 
-static const char *
-next_utf8_char(const char *p)
-{
-	if (*p == '\0')
-		return NULL;
-	for (++p; (*p & 0xc0) == 0x80; ++p)
-		;
-	return p;
-}
-
 static void
 delete_before_cursor(struct virtual_keyboard *keyboard)
 {
@@ -483,7 +473,7 @@ delete_before_cursor(struct virtual_keyboard *keyboard)
 		return;
 	}
 
-	end = next_utf8_char(start);
+	end = keyboard->surrounding_text + keyboard->surrounding_cursor;
 
 	wl_input_method_context_delete_surrounding_text(keyboard->context,
 							(start - keyboard->surrounding_text) - keyboard->surrounding_cursor,
