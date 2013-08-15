@@ -61,12 +61,6 @@ class CC_EXPORT FrameRateController {
   int MaxSwapsPending() const { return max_swaps_pending_; }
   int NumSwapsPendingForTesting() const { return num_frames_pending_; }
 
-  // This returns null for unthrottled frame-rate.
-  base::TimeTicks NextTickTime();
-
-  // This returns now for unthrottled frame-rate.
-  base::TimeTicks LastTickTime();
-
   void SetTimebaseAndInterval(base::TimeTicks timebase,
                               base::TimeDelta interval);
   void SetDeadlineAdjustment(base::TimeDelta delta);
@@ -77,6 +71,11 @@ class CC_EXPORT FrameRateController {
 
   void PostManualTick();
   void ManualTick();
+
+    // This returns null for unthrottled frame-rate.
+  base::TimeTicks NextTickTime();
+  // This returns now for unthrottled frame-rate.
+  base::TimeTicks LastTickTime();
 
   FrameRateControllerClient* client_;
   int num_frames_pending_;

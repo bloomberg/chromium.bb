@@ -27,7 +27,12 @@ class TimeSourceClient {
 class CC_EXPORT TimeSource : public base::RefCounted<TimeSource> {
  public:
   virtual void SetClient(TimeSourceClient* client) = 0;
-  virtual void SetActive(bool active) = 0;
+
+  // If transitioning from not active to active, SetActive will return the
+  // timestamp of the most recenly missed tick that did not have OnTimerTick
+  // called.
+  virtual base::TimeTicks SetActive(bool active) = 0;
+
   virtual bool Active() const = 0;
   virtual void SetTimebaseAndInterval(base::TimeTicks timebase,
                                       base::TimeDelta interval) = 0;

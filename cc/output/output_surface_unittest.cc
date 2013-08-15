@@ -67,8 +67,8 @@ class TestOutputSurface : public OutputSurface {
     OnSwapBuffersComplete(NULL);
   }
 
-  void SetRetroactiveBeginFramePeriod(base::TimeDelta period) {
-    retroactive_begin_frame_period_ = period;
+  void SetAlternateRetroactiveBeginFramePeriod(base::TimeDelta period) {
+    alternate_retroactive_begin_frame_period_ = period;
   }
 
  protected:
@@ -77,11 +77,11 @@ class TestOutputSurface : public OutputSurface {
     CheckForRetroactiveBeginFrame();
   }
 
-  virtual base::TimeDelta RetroactiveBeginFramePeriod() OVERRIDE {
-    return retroactive_begin_frame_period_;
+  virtual base::TimeDelta AlternateRetroactiveBeginFramePeriod() OVERRIDE {
+    return alternate_retroactive_begin_frame_period_;
   }
 
-  base::TimeDelta retroactive_begin_frame_period_;
+  base::TimeDelta alternate_retroactive_begin_frame_period_;
 };
 
 TEST(OutputSurfaceTest, ClientPointerIndicatesBindToClientSuccess) {
@@ -202,7 +202,7 @@ TEST(OutputSurfaceTest, BeginFrameEmulation) {
       display_refresh_interval);
 
   output_surface.SetMaxFramesPending(2);
-  output_surface.SetRetroactiveBeginFramePeriod(
+  output_surface.SetAlternateRetroactiveBeginFramePeriod(
       base::TimeDelta::FromSeconds(-1));
 
   // We should start off with 0 BeginFrames
@@ -279,7 +279,7 @@ TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
   output_surface.SetMaxFramesPending(2);
 
   // Enable retroactive BeginFrames.
-  output_surface.SetRetroactiveBeginFramePeriod(
+  output_surface.SetAlternateRetroactiveBeginFramePeriod(
     base::TimeDelta::FromSeconds(100000));
 
   // Optimistically injected BeginFrames should be throttled if
@@ -315,6 +315,63 @@ TEST(OutputSurfaceTest, OptimisticAndRetroactiveBeginFrames) {
   // ...and retroactively triggered by OnSwapBuffersComplete
   output_surface.OnSwapBuffersCompleteForTesting();
   EXPECT_EQ(client.begin_frame_count(), 4);
+}
+
+TEST(OutputSurfaceTest, RetroactiveBeginFrameDoesNotDoubleTickWhenEmulating) {
+  scoped_ptr<TestWebGraphicsContext3D> context3d =
+      TestWebGraphicsContext3D::Create();
+
+  TestOutputSurface output_surface(
+      context3d.PassAs<WebKit::WebGraphicsContext3D>());
+  EXPECT_FALSE(output_surface.HasClientForTesting());
+
+  FakeOutputSurfaceClient client;
+  EXPECT_TRUE(output_surface.BindToClient(&client));
+  EXPECT_TRUE(output_surface.HasClientForTesting());
+  EXPECT_FALSE(client.deferred_initialize_called());
+
+  base::TimeDelta big_interval = base::TimeDelta::FromSeconds(1000);
+
+  // Initialize BeginFrame emulation
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
+  bool throttle_frame_production = true;
+  const base::TimeDelta display_refresh_interval = big_interval;
+
+  output_surface.InitializeBeginFrameEmulation(
+      task_runner.get(),
+      throttle_frame_production,
+      display_refresh_interval);
+
+  // We need to subtract an epsilon from Now() because some platforms have
+  // a slow clock.
+  output_surface.OnVSyncParametersChangedForTesting(
+      base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(1),
+      display_refresh_interval);
+
+  output_surface.SetMaxFramesPending(2);
+  output_surface.SetAlternateRetroactiveBeginFramePeriod(
+      base::TimeDelta::FromSeconds(-1));
+
+  // We should start off with 0 BeginFrames
+  EXPECT_EQ(client.begin_frame_count(), 0);
+  EXPECT_EQ(output_surface.pending_swap_buffers(), 0);
+
+  // The first SetNeedsBeginFrame(true) should start a retroactive BeginFrame.
+  output_surface.SetNeedsBeginFrame(true);
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  EXPECT_GT(task_runner->NextPendingTaskDelay(), big_interval / 2);
+  EXPECT_EQ(client.begin_frame_count(), 1);
+
+  output_surface.SetNeedsBeginFrame(false);
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  EXPECT_EQ(client.begin_frame_count(), 1);
+
+  // The second SetNeedBeginFrame(true) should not retroactively start a
+  // BeginFrame if the timestamp would be the same as the previous BeginFrame.
+  output_surface.SetNeedsBeginFrame(true);
+  EXPECT_TRUE(task_runner->HasPendingTask());
+  EXPECT_EQ(client.begin_frame_count(), 1);
 }
 
 TEST(OutputSurfaceTest, MemoryAllocation) {

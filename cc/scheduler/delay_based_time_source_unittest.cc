@@ -246,10 +246,10 @@ TEST(DelayBasedTimeSource, HandlesSignificantTimebaseChangesImmediately) {
   timer->SetTimebaseAndInterval(timer->Now() + jitter, Interval());
 
   EXPECT_FALSE(client.TickCalled());  // Make sure pending tasks were canceled.
-  EXPECT_EQ(7, task_runner->NextPendingTaskDelay().InMilliseconds());
+  EXPECT_EQ(16 + 7, task_runner->NextPendingTaskDelay().InMilliseconds());
 
   // Tick, then shift timebase by -7ms.
-  timer->SetNow(timer->Now() + jitter);
+  timer->SetNow(timer->Now() + Interval() + jitter);
   task_runner->RunPendingTasks();
 
   EXPECT_EQ(16, task_runner->NextPendingTaskDelay().InMilliseconds());
