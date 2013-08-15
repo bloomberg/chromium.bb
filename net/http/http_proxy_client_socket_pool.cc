@@ -58,7 +58,7 @@ HttpProxySocketParams::HttpProxySocketParams(
 
 const HostResolver::RequestInfo& HttpProxySocketParams::destination() const {
   if (transport_params_.get() == NULL) {
-    return ssl_params_->transport_params()->destination();
+    return ssl_params_->GetDirectConnectionParams()->destination();
   } else {
     return transport_params_->destination();
   }
@@ -212,10 +212,11 @@ int HttpProxyConnectJob::DoSSLConnect() {
   }
   next_state_ = STATE_SSL_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
+  const scoped_refptr<SSLSocketParams>& ssl_params = params_->ssl_params();
+  RequestPriority priority =
+      ssl_params->GetDirectConnectionParams()->destination().priority();
   return transport_socket_handle_->Init(
-      group_name(), params_->ssl_params(),
-      params_->ssl_params()->transport_params()->destination().priority(),
-      callback_, ssl_pool_, net_log());
+      group_name(), ssl_params, priority, callback_, ssl_pool_, net_log());
 }
 
 int HttpProxyConnectJob::DoSSLConnectComplete(int result) {

@@ -13,7 +13,6 @@
 #include "net/base/privacy_mode.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_response_info.h"
-#include "net/proxy/proxy_server.h"
 #include "net/socket/client_socket_pool.h"
 #include "net/socket/client_socket_pool_base.h"
 #include "net/socket/client_socket_pool_histograms.h"
@@ -35,32 +34,39 @@ class TransportClientSocketPool;
 class TransportSecurityState;
 class TransportSocketParams;
 
-// SSLSocketParams only needs the socket params for the transport socket
-// that will be used (denoted by |proxy|).
 class NET_EXPORT_PRIVATE SSLSocketParams
     : public base::RefCounted<SSLSocketParams> {
  public:
-  SSLSocketParams(const scoped_refptr<TransportSocketParams>& transport_params,
-                  const scoped_refptr<SOCKSSocketParams>& socks_params,
-                  const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
-                  ProxyServer::Scheme proxy,
-                  const HostPortPair& host_and_port,
-                  const SSLConfig& ssl_config,
-                  PrivacyMode privacy_mode,
-                  int load_flags,
-                  bool force_spdy_over_ssl,
-                  bool want_spdy_over_npn);
+  enum ConnectionType { DIRECT, SOCKS_PROXY, HTTP_PROXY };
 
-  const scoped_refptr<TransportSocketParams>& transport_params() {
-      return transport_params_;
-  }
-  const scoped_refptr<HttpProxySocketParams>& http_proxy_params() {
-    return http_proxy_params_;
-  }
-  const scoped_refptr<SOCKSSocketParams>& socks_params() {
-    return socks_params_;
-  }
-  ProxyServer::Scheme proxy() const { return proxy_; }
+  // Exactly one of |direct_params|, |socks_proxy_params|, and
+  // |http_proxy_params| must be non-NULL.
+  SSLSocketParams(
+      const scoped_refptr<TransportSocketParams>& direct_params,
+      const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
+      const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
+      const HostPortPair& host_and_port,
+      const SSLConfig& ssl_config,
+      PrivacyMode privacy_mode,
+      int load_flags,
+      bool force_spdy_over_ssl,
+      bool want_spdy_over_npn);
+
+  // Returns the type of the underlying connection.
+  ConnectionType GetConnectionType() const;
+
+  // Must be called only when GetConnectionType() returns DIRECT.
+  const scoped_refptr<TransportSocketParams>&
+      GetDirectConnectionParams() const;
+
+  // Must be called only when GetConnectionType() returns SOCKS_PROXY.
+  const scoped_refptr<SOCKSSocketParams>&
+      GetSocksProxyConnectionParams() const;
+
+  // Must be called only when GetConnectionType() returns HTTP_PROXY.
+  const scoped_refptr<HttpProxySocketParams>&
+      GetHttpProxyConnectionParams() const;
+
   const HostPortPair& host_and_port() const { return host_and_port_; }
   const SSLConfig& ssl_config() const { return ssl_config_; }
   PrivacyMode privacy_mode() const { return privacy_mode_; }
@@ -73,10 +79,9 @@ class NET_EXPORT_PRIVATE SSLSocketParams
   friend class base::RefCounted<SSLSocketParams>;
   ~SSLSocketParams();
 
-  const scoped_refptr<TransportSocketParams> transport_params_;
+  const scoped_refptr<TransportSocketParams> direct_params_;
+  const scoped_refptr<SOCKSSocketParams> socks_proxy_params_;
   const scoped_refptr<HttpProxySocketParams> http_proxy_params_;
-  const scoped_refptr<SOCKSSocketParams> socks_params_;
-  const ProxyServer::Scheme proxy_;
   const HostPortPair host_and_port_;
   const SSLConfig ssl_config_;
   const PrivacyMode privacy_mode_;
@@ -137,6 +142,10 @@ class SSLConnectJob : public ConnectJob {
   int DoTunnelConnectComplete(int result);
   int DoSSLConnect();
   int DoSSLConnectComplete(int result);
+
+  // Returns the initial state for the state machine based on the
+  // |connection_type|.
+  static State GetInitialState(SSLSocketParams::ConnectionType connection_type);
 
   // Starts the SSL connection process.  Returns OK on success and
   // ERR_IO_PENDING if it cannot immediately service the request.

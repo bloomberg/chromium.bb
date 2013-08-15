@@ -509,13 +509,10 @@ base::WeakPtr<SpdySession> CreateSpdySessionHelper(
   int rv = ERR_UNEXPECTED;
   if (is_secure) {
     SSLConfig ssl_config;
-    scoped_refptr<SOCKSSocketParams> socks_params;
-    scoped_refptr<HttpProxySocketParams> http_proxy_params;
     scoped_refptr<SSLSocketParams> ssl_params(
         new SSLSocketParams(transport_params,
-                            socks_params,
-                            http_proxy_params,
-                            ProxyServer::SCHEME_DIRECT,
+                            NULL,
+                            NULL,
                             key.host_port_pair(),
                             ssl_config,
                             key.privacy_mode(),

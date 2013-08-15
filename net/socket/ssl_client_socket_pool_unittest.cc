@@ -159,7 +159,6 @@ class SSLClientSocketPoolTest
                                             : NULL,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : NULL,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : NULL,
-        proxy,
         HostPortPair("host", 443),
         ssl_config_,
         kPrivacyModeDisabled,

@@ -26,20 +26,18 @@
 namespace net {
 
 SSLSocketParams::SSLSocketParams(
-    const scoped_refptr<TransportSocketParams>& transport_params,
-    const scoped_refptr<SOCKSSocketParams>& socks_params,
+    const scoped_refptr<TransportSocketParams>& direct_params,
+    const scoped_refptr<SOCKSSocketParams>& socks_proxy_params,
     const scoped_refptr<HttpProxySocketParams>& http_proxy_params,
-    ProxyServer::Scheme proxy,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     PrivacyMode privacy_mode,
     int load_flags,
     bool force_spdy_over_ssl,
     bool want_spdy_over_npn)
-    : transport_params_(transport_params),
+    : direct_params_(direct_params),
+      socks_proxy_params_(socks_proxy_params),
       http_proxy_params_(http_proxy_params),
-      socks_params_(socks_params),
-      proxy_(proxy),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       privacy_mode_(privacy_mode),
@@ -47,34 +45,54 @@ SSLSocketParams::SSLSocketParams(
       force_spdy_over_ssl_(force_spdy_over_ssl),
       want_spdy_over_npn_(want_spdy_over_npn),
       ignore_limits_(false) {
-  switch (proxy_) {
-    case ProxyServer::SCHEME_DIRECT:
-      DCHECK(transport_params_.get() != NULL);
-      DCHECK(http_proxy_params_.get() == NULL);
-      DCHECK(socks_params_.get() == NULL);
-      ignore_limits_ = transport_params_->ignore_limits();
-      break;
-    case ProxyServer::SCHEME_HTTP:
-    case ProxyServer::SCHEME_HTTPS:
-      DCHECK(transport_params_.get() == NULL);
-      DCHECK(http_proxy_params_.get() != NULL);
-      DCHECK(socks_params_.get() == NULL);
-      ignore_limits_ = http_proxy_params_->ignore_limits();
-      break;
-    case ProxyServer::SCHEME_SOCKS4:
-    case ProxyServer::SCHEME_SOCKS5:
-      DCHECK(transport_params_.get() == NULL);
-      DCHECK(http_proxy_params_.get() == NULL);
-      DCHECK(socks_params_.get() != NULL);
-      ignore_limits_ = socks_params_->ignore_limits();
-      break;
-    default:
-      LOG(DFATAL) << "unknown proxy type";
-      break;
+  if (direct_params_) {
+    DCHECK(!socks_proxy_params_);
+    DCHECK(!http_proxy_params_);
+    ignore_limits_ = direct_params_->ignore_limits();
+  } else if (socks_proxy_params_) {
+    DCHECK(!http_proxy_params_);
+    ignore_limits_ = socks_proxy_params_->ignore_limits();
+  } else {
+    DCHECK(http_proxy_params_);
+    ignore_limits_ = http_proxy_params_->ignore_limits();
   }
 }
 
 SSLSocketParams::~SSLSocketParams() {}
+
+SSLSocketParams::ConnectionType SSLSocketParams::GetConnectionType() const {
+  if (direct_params_) {
+    DCHECK(!socks_proxy_params_);
+    DCHECK(!http_proxy_params_);
+    return DIRECT;
+  }
+
+  if (socks_proxy_params_) {
+    DCHECK(!http_proxy_params_);
+    return SOCKS_PROXY;
+  }
+
+  DCHECK(http_proxy_params_);
+  return HTTP_PROXY;
+}
+
+const scoped_refptr<TransportSocketParams>&
+SSLSocketParams::GetDirectConnectionParams() const {
+  DCHECK_EQ(GetConnectionType(), DIRECT);
+  return direct_params_;
+}
+
+const scoped_refptr<SOCKSSocketParams>&
+SSLSocketParams::GetSocksProxyConnectionParams() const {
+  DCHECK_EQ(GetConnectionType(), SOCKS_PROXY);
+  return socks_proxy_params_;
+}
+
+const scoped_refptr<HttpProxySocketParams>&
+SSLSocketParams::GetHttpProxyConnectionParams() const {
+  DCHECK_EQ(GetConnectionType(), HTTP_PROXY);
+  return http_proxy_params_;
+}
 
 // Timeout for the SSL handshake portion of the connect.
 static const int kSSLHandshakeTimeoutInSeconds = 30;
@@ -201,11 +219,11 @@ int SSLConnectJob::DoTransportConnect() {
 
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
-  scoped_refptr<TransportSocketParams> transport_params =
-      params_->transport_params();
+  scoped_refptr<TransportSocketParams> direct_params =
+      params_->GetDirectConnectionParams();
   return transport_socket_handle_->Init(
-      group_name(), transport_params,
-      transport_params->destination().priority(), callback_, transport_pool_,
+      group_name(), direct_params,
+      direct_params->destination().priority(), callback_, transport_pool_,
       net_log());
 }
 
@@ -220,9 +238,11 @@ int SSLConnectJob::DoSOCKSConnect() {
   DCHECK(socks_pool_);
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
-  scoped_refptr<SOCKSSocketParams> socks_params = params_->socks_params();
+  scoped_refptr<SOCKSSocketParams> socks_proxy_params =
+      params_->GetSocksProxyConnectionParams();
   return transport_socket_handle_->Init(
-      group_name(), socks_params, socks_params->destination().priority(),
+      group_name(), socks_proxy_params,
+      socks_proxy_params->destination().priority(),
       callback_, socks_pool_, net_log());
 }
 
@@ -239,7 +259,7 @@ int SSLConnectJob::DoTunnelConnect() {
 
   transport_socket_handle_.reset(new ClientSocketHandle());
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
-      params_->http_proxy_params();
+      params_->GetHttpProxyConnectionParams();
   return transport_socket_handle_->Init(
       group_name(), http_proxy_params,
       http_proxy_params->destination().priority(), callback_, http_proxy_pool_,
@@ -420,23 +440,22 @@ int SSLConnectJob::DoSSLConnectComplete(int result) {
   return result;
 }
 
-int SSLConnectJob::ConnectInternal() {
-  switch (params_->proxy()) {
-    case ProxyServer::SCHEME_DIRECT:
-      next_state_ = STATE_TRANSPORT_CONNECT;
-      break;
-    case ProxyServer::SCHEME_HTTP:
-    case ProxyServer::SCHEME_HTTPS:
-      next_state_ = STATE_TUNNEL_CONNECT;
-      break;
-    case ProxyServer::SCHEME_SOCKS4:
-    case ProxyServer::SCHEME_SOCKS5:
-      next_state_ = STATE_SOCKS_CONNECT;
-      break;
-    default:
-      NOTREACHED() << "unknown proxy type";
-      break;
+SSLConnectJob::State SSLConnectJob::GetInitialState(
+    SSLSocketParams::ConnectionType connection_type) {
+  switch (connection_type) {
+    case SSLSocketParams::DIRECT:
+      return STATE_TRANSPORT_CONNECT;
+    case SSLSocketParams::HTTP_PROXY:
+      return STATE_TUNNEL_CONNECT;
+    case SSLSocketParams::SOCKS_PROXY:
+      return STATE_SOCKS_CONNECT;
   }
+  NOTREACHED();
+  return STATE_NONE;
+}
+
+int SSLConnectJob::ConnectInternal() {
+  next_state_ = GetInitialState(params_->GetConnectionType());
   return DoLoop(OK);
 }
 

@@ -73,7 +73,6 @@ class HttpProxyClientSocketPoolTest
             new SSLSocketParams(ignored_transport_socket_params_,
                                 NULL,
                                 NULL,
-                                ProxyServer::SCHEME_DIRECT,
                                 HostPortPair("www.google.com", 443),
                                 ssl_config_,
                                 kPrivacyModeDisabled,
