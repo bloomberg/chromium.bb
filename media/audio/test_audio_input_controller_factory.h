@@ -10,6 +10,7 @@
 
 namespace media {
 
+class UserInputMonitor;
 class TestAudioInputControllerFactory;
 
 // TestAudioInputController and TestAudioInputControllerFactory are used for
@@ -56,7 +57,8 @@ class TestAudioInputController : public AudioInputController {
                            AudioManager* audio_manager,
                            const AudioParameters& audio_parameters,
                            EventHandler* event_handler,
-                           SyncWriter* sync_writer);
+                           SyncWriter* sync_writer,
+                           UserInputMonitor* user_input_monitor);
 
   // Returns the event handler installed on the AudioInputController.
   EventHandler* event_handler() const { return event_handler_; }
@@ -94,7 +96,8 @@ class TestAudioInputControllerFactory : public AudioInputController::Factory {
   virtual AudioInputController* Create(
       AudioManager* audio_manager,
       AudioInputController::EventHandler* event_handler,
-      AudioParameters params) OVERRIDE;
+      AudioParameters params,
+      UserInputMonitor* user_input_monitor) OVERRIDE;
 
   void SetDelegateForTests(TestAudioInputControllerDelegate* delegate);
 

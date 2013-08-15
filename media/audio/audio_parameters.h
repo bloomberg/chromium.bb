@@ -14,6 +14,7 @@ namespace media {
 struct MEDIA_EXPORT AudioInputBufferParameters {
   double volume;
   uint32 size;
+  bool key_pressed;
 };
 
 // Use a struct-in-struct approach to ensure that we can calculate the required

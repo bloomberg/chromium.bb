@@ -304,6 +304,11 @@
         'base/stream_parser_buffer.cc',
         'base/stream_parser_buffer.h',
         'base/text_track.h',
+        'base/user_input_monitor.cc',
+        'base/user_input_monitor.h',
+        'base/user_input_monitor_linux.cc',
+        'base/user_input_monitor_mac.mm',
+        'base/user_input_monitor_win.cc',
         'base/video_decoder.cc',
         'base/video_decoder.h',
         'base/video_decoder_config.cc',
@@ -541,6 +546,7 @@
             ['include', '^base/media\\.cc$'],
             ['include', '^base/media_stub\\.cc$'],
             ['include', '^base/media_switches\\.'],
+            ['include', '^base/user_input_monitor\\.'],
             ['include', '^base/vector_math\\.'],
           ],
           'link_settings': {
@@ -551,6 +557,9 @@
               '$(SDKROOT)/System/Library/Frameworks/CoreMIDI.framework',
             ],
           },
+          'defines': [
+            'DISABLE_USER_INPUT_MONITOR',
+          ],
         }],
         ['OS=="android"', {
           'link_settings': {
@@ -578,6 +587,9 @@
               ],
             }],
           ],
+          'defines': [
+            'DISABLE_USER_INPUT_MONITOR',
+          ],
         }],
         # A simple WebM encoder for animated avatars on ChromeOS.
         ['chromeos==1', {
@@ -590,6 +602,15 @@
             'webm/chromeos/ebml_writer.h',
             'webm/chromeos/webm_encoder.cc',
             'webm/chromeos/webm_encoder.h',
+          ],
+          'defines': [
+            # TODO(jiayl): figure out why MediaStreamInfoBarTest.
+            # DenyingCameraDoesNotCauseStickyDenyForMics fails on ChromeOS and
+            # remove this.
+            'DISABLE_USER_INPUT_MONITOR',
+          ],
+          'sources!': [
+            'base/user_input_monitor_linux.cc',
           ],
         }],
         ['use_alsa==1', {
@@ -626,8 +647,16 @@
                   '-lXdamage',
                   '-lXext',
                   '-lXfixes',
+                  '-lXtst',
                 ],
               },
+            }, {  # else: use_x11==0
+              'sources!': [
+                'base/user_input_monitor_linux.cc',
+              ],
+              'defines': [
+                'DISABLE_USER_INPUT_MONITOR',
+              ],
             }],
             ['use_cras==1', {
               'cflags': [

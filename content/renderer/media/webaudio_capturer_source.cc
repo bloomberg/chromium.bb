@@ -96,7 +96,7 @@ void WebAudioCapturerSource::consumeAudio(
   int capture_frames = params_.frames_per_buffer();
   while (fifo_->frames() >= capture_frames) {
     fifo_->Consume(capture_bus_.get(), 0, capture_frames);
-    callback_->Capture(capture_bus_.get(), 0, 1.0);
+    callback_->Capture(capture_bus_.get(), 0, 1.0, false);
   }
 }
 
