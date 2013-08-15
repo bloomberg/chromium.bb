@@ -4,8 +4,8 @@ var sel = window.getSelection();
 var textNode = document.createTextNode("abcdef");
 document.body.appendChild(textNode);
 
-shouldThrow("sel.collapseToStart()", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
-shouldThrow("sel.collapseToEnd()", "'InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.'");
+shouldThrow("sel.collapseToStart()", '"InvalidStateError: Failed to execute \'collapseToStart\' on \'Selection\': there is no selection."');
+shouldThrow("sel.collapseToEnd()", '"InvalidStateError: Failed to execute \'collapseToEnd\' on \'Selection\': there is no selection."');
 
 sel.selectAllChildren(textNode);
 

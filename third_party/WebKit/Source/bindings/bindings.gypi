@@ -24,6 +24,8 @@
             'v8/DateExtension.h',
             'v8/Dictionary.cpp',
             'v8/Dictionary.h',
+            'v8/ExceptionMessages.h',
+            'v8/ExceptionMessages.cpp',
             'v8/ExceptionState.h',
             'v8/ExceptionState.cpp',
             'v8/ExceptionStatePlaceholder.h',
