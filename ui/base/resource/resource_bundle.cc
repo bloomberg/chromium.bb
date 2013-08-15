@@ -321,7 +321,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     image = delegate_->GetImageNamed(resource_id);
 
   if (image.IsEmpty()) {
-    DCHECK(!delegate_ && !data_packs_.empty()) <<
+    DCHECK(!data_packs_.empty()) <<
         "Missing call to SetResourcesDataDLL?";
 
     // TODO(oshima): Consider reading the image size from png IHDR chunk and
