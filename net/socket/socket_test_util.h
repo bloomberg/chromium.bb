@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -1001,11 +1002,12 @@ class ClientSocketPoolTest {
   ClientSocketPoolTest();
   ~ClientSocketPoolTest();
 
-  template <typename PoolType, typename SocketParams>
-  int StartRequestUsingPool(PoolType* socket_pool,
-                            const std::string& group_name,
-                            RequestPriority priority,
-                            const scoped_refptr<SocketParams>& socket_params) {
+  template <typename PoolType>
+  int StartRequestUsingPool(
+      PoolType* socket_pool,
+      const std::string& group_name,
+      RequestPriority priority,
+      const scoped_refptr<typename PoolType::SocketParams>& socket_params) {
     DCHECK(socket_pool);
     TestSocketRequest* request = new TestSocketRequest(&request_order_,
                                                        &completion_count_);
@@ -1045,8 +1047,17 @@ class ClientSocketPoolTest {
   size_t completion_count_;
 };
 
+class MockTransportSocketParams
+    : public base::RefCounted<MockTransportSocketParams> {
+ private:
+  friend class base::RefCounted<MockTransportSocketParams>;
+  ~MockTransportSocketParams() {}
+};
+
 class MockTransportClientSocketPool : public TransportClientSocketPool {
  public:
+  typedef MockTransportSocketParams SocketParams;
+
   class MockConnectJob {
    public:
     MockConnectJob(scoped_ptr<StreamSocket> socket, ClientSocketHandle* handle,

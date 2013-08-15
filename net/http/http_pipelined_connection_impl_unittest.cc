@@ -28,15 +28,6 @@ using testing::StrEq;
 
 namespace net {
 
-class DummySocketParams : public base::RefCounted<DummySocketParams> {
- private:
-  friend class base::RefCounted<DummySocketParams>;
-  ~DummySocketParams() {}
-};
-
-REGISTER_SOCKET_PARAMS_FOR_POOL(MockTransportClientSocketPool,
-                                DummySocketParams);
-
 namespace {
 
 // Tests the load timing of a stream that's connected and is not the first
@@ -118,7 +109,7 @@ class HttpPipelinedConnectionImplTest : public testing::Test {
       data_->StopAfter(reads_count + writes_count);
     }
     factory_.AddSocketDataProvider(data_.get());
-    scoped_refptr<DummySocketParams> params;
+    scoped_refptr<MockTransportSocketParams> params;
     ClientSocketHandle* connection = new ClientSocketHandle;
     // Only give the connection a real NetLog to make sure that LoadTiming uses
     // the connection's ID, rather than the pipeline's.  Since pipelines are

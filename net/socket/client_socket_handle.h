@@ -70,9 +70,9 @@ class NET_EXPORT ClientSocketHandle {
   //
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //
-  template <typename SocketParams, typename PoolType>
+  template <typename PoolType>
   int Init(const std::string& group_name,
-           const scoped_refptr<SocketParams>& socket_params,
+           const scoped_refptr<typename PoolType::SocketParams>& socket_params,
            RequestPriority priority,
            const CompletionCallback& callback,
            PoolType* pool,
@@ -207,20 +207,17 @@ class NET_EXPORT ClientSocketHandle {
 };
 
 // Template function implementation:
-template <typename SocketParams, typename PoolType>
-int ClientSocketHandle::Init(const std::string& group_name,
-                             const scoped_refptr<SocketParams>& socket_params,
-                             RequestPriority priority,
-                             const CompletionCallback& callback,
-                             PoolType* pool,
-                             const BoundNetLog& net_log) {
+template <typename PoolType>
+int ClientSocketHandle::Init(
+    const std::string& group_name,
+    const scoped_refptr<typename PoolType::SocketParams>& socket_params,
+    RequestPriority priority,
+    const CompletionCallback& callback,
+    PoolType* pool,
+    const BoundNetLog& net_log) {
   requesting_source_ = net_log.source();
 
   CHECK(!group_name.empty());
-  // Note that this will result in a compile error if the SocketParams has not
-  // been registered for the PoolType via REGISTER_SOCKET_PARAMS_FOR_POOL
-  // (defined in client_socket_pool.h).
-  CheckIsValidSocketParamsForPool<PoolType, SocketParams>();
   ResetInternal(true);
   ResetErrorState();
   pool_ = pool;

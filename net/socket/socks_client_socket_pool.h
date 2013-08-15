@@ -107,6 +107,8 @@ class SOCKSConnectJob : public ConnectJob {
 class NET_EXPORT_PRIVATE SOCKSClientSocketPool
     : public ClientSocketPool, public LayeredPool {
  public:
+  typedef SOCKSSocketParams SocketParams;
+
   SOCKSClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
@@ -203,8 +205,6 @@ class NET_EXPORT_PRIVATE SOCKSClientSocketPool
 
   DISALLOW_COPY_AND_ASSIGN(SOCKSClientSocketPool);
 };
-
-REGISTER_SOCKET_PARAMS_FOR_POOL(SOCKSClientSocketPool, SOCKSSocketParams);
 
 }  // namespace net
 

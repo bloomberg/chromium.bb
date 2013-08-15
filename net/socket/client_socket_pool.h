@@ -45,6 +45,10 @@ class NET_EXPORT LayeredPool {
 //
 class NET_EXPORT ClientSocketPool {
  public:
+  // Subclasses must also have an inner class SocketParams which is
+  // the type for the |params| argument in RequestSocket() and
+  // RequestSockets() below.
+
   // Requests a connected socket for a group_name.
   //
   // There are five possible results from calling this function:
@@ -178,41 +182,13 @@ class NET_EXPORT ClientSocketPool {
   DISALLOW_COPY_AND_ASSIGN(ClientSocketPool);
 };
 
-// ClientSocketPool subclasses should indicate valid SocketParams via the
-// REGISTER_SOCKET_PARAMS_FOR_POOL macro below.  By default, any given
-// <PoolType,SocketParams> pair will have its SocketParamsTrait inherit from
-// base::false_type, but REGISTER_SOCKET_PARAMS_FOR_POOL will specialize that
-// pairing to inherit from base::true_type.  This provides compile time
-// verification that the correct SocketParams type is used with the appropriate
-// PoolType.
-template <typename PoolType, typename SocketParams>
-struct SocketParamTraits : public base::false_type {
-};
-
-template <typename PoolType, typename SocketParams>
-void CheckIsValidSocketParamsForPool() {
-  COMPILE_ASSERT(!base::is_pointer<scoped_refptr<SocketParams> >::value,
-                 socket_params_cannot_be_pointer);
-  COMPILE_ASSERT((SocketParamTraits<PoolType,
-                                    scoped_refptr<SocketParams> >::value),
-                 invalid_socket_params_for_pool);
-}
-
-// Provides an empty definition for CheckIsValidSocketParamsForPool() which
-// should be optimized out by the compiler.
-#define REGISTER_SOCKET_PARAMS_FOR_POOL(pool_type, socket_params)             \
-template<>                                                                    \
-struct SocketParamTraits<pool_type, scoped_refptr<socket_params> >            \
-    : public base::true_type {                                                \
-}
-
-template <typename PoolType, typename SocketParams>
-void RequestSocketsForPool(PoolType* pool,
-                           const std::string& group_name,
-                           const scoped_refptr<SocketParams>& params,
-                           int num_sockets,
-                           const BoundNetLog& net_log) {
-  CheckIsValidSocketParamsForPool<PoolType, SocketParams>();
+template <typename PoolType>
+void RequestSocketsForPool(
+    PoolType* pool,
+    const std::string& group_name,
+    const scoped_refptr<typename PoolType::SocketParams>& params,
+    int num_sockets,
+    const BoundNetLog& net_log) {
   pool->RequestSockets(group_name, &params, num_sockets, net_log);
 }
 

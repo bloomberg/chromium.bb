@@ -468,6 +468,8 @@ class TestConnectJobFactory
 
 class TestClientSocketPool : public ClientSocketPool {
  public:
+  typedef TestSocketParams SocketParams;
+
   TestClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
@@ -601,8 +603,6 @@ class TestClientSocketPool : public ClientSocketPool {
 
 }  // namespace
 
-REGISTER_SOCKET_PARAMS_FOR_POOL(TestClientSocketPool, TestSocketParams);
-
 namespace {
 
 void MockClientSocketFactory::SignalJobs() {
@@ -705,9 +705,8 @@ class ClientSocketPoolBaseTest : public testing::Test {
       const std::string& group_name,
       RequestPriority priority,
       const scoped_refptr<TestSocketParams>& params) {
-    return test_base_.StartRequestUsingPool<
-        TestClientSocketPool, TestSocketParams>(
-            pool_.get(), group_name, priority, params);
+    return test_base_.StartRequestUsingPool(
+        pool_.get(), group_name, priority, params);
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {

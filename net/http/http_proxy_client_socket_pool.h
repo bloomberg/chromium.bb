@@ -176,6 +176,8 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
     : public ClientSocketPool,
       public LayeredPool {
  public:
+  typedef HttpProxySocketParams SocketParams;
+
   HttpProxyClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
@@ -273,9 +275,6 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
 
   DISALLOW_COPY_AND_ASSIGN(HttpProxyClientSocketPool);
 };
-
-REGISTER_SOCKET_PARAMS_FOR_POOL(HttpProxyClientSocketPool,
-                                HttpProxySocketParams);
 
 }  // namespace net
 

@@ -132,6 +132,8 @@ class NET_EXPORT_PRIVATE TransportConnectJob : public ConnectJob {
 
 class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
  public:
+  typedef TransportSocketParams SocketParams;
+
   TransportClientSocketPool(
       int max_sockets,
       int max_sockets_per_group,
@@ -212,9 +214,6 @@ class NET_EXPORT_PRIVATE TransportClientSocketPool : public ClientSocketPool {
 
   DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPool);
 };
-
-REGISTER_SOCKET_PARAMS_FOR_POOL(TransportClientSocketPool,
-                                TransportSocketParams);
 
 }  // namespace net
 

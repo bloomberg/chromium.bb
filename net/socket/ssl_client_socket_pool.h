@@ -167,6 +167,8 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
       public LayeredPool,
       public SSLConfigService::Observer {
  public:
+  typedef SSLSocketParams SocketParams;
+
   // Only the pools that will be used are required. i.e. if you never
   // try to create an SSL over SOCKS socket, |socks_pool| may be NULL.
   SSLClientSocketPool(
@@ -289,8 +291,6 @@ class NET_EXPORT_PRIVATE SSLClientSocketPool
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientSocketPool);
 };
-
-REGISTER_SOCKET_PARAMS_FOR_POOL(SSLClientSocketPool, SSLSocketParams);
 
 }  // namespace net
 
