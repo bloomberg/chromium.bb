@@ -9,6 +9,7 @@
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -153,8 +154,10 @@ class PingChecker : public RequestCounter {
   int NumMisses() const {
     return num_misses_;
   }
+  std::string GetPings() const;
 
  private:
+  std::vector<std::string> pings_;
   int num_hits_;
   int num_misses_;
   const std::map<std::string, std::string> attributes_;
