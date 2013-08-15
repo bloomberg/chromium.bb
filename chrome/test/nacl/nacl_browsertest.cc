@@ -15,40 +15,13 @@
 
 namespace {
 
-// These tests fail on Linux ASAN bots: <http://crbug.com/161709>.
-#if defined(OS_LINUX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_SimpleLoad DISABLED_SimpleLoad
-#define MAYBE_ExitStatus0 DISABLED_ExitStatus0
-#define MAYBE_ExitStatus254 DISABLED_ExitStatus254
-#define MAYBE_ExitStatusNeg2 DISABLED_ExitStatusNeg2
-#define MAYBE_PPAPICore DISABLED_PPAPICore
-#define MAYBE_ProgressEvents DISABLED_ProgressEvents
-#define MAYBE_PnaclMimeType DISABLED_PnaclMimeType
-#define MAYBE_CrossOriginCORS DISABLED_CrossOriginCORS
-#define MAYBE_CrossOriginFail DISABLED_CrossOriginFail
-#define MAYBE_SameOriginCookie DISABLED_SameOriginCookie
-#define MAYBE_CORSNoCookie DISABLED_CORSNoCookie
-#define MAYBE_SysconfNprocessorsOnln DISABLED_SysconfNprocessorsOnln
-#else
-#define MAYBE_SimpleLoad SimpleLoad
-#define MAYBE_ExitStatus0 ExitStatus0
-#define MAYBE_ExitStatus254 ExitStatus254
-#define MAYBE_ExitStatusNeg2 ExitStatusNeg2
-#define MAYBE_PPAPICore PPAPICore
-#define MAYBE_ProgressEvents ProgressEvents
-#define MAYBE_PnaclMimeType PnaclMimeType
-#define MAYBE_CrossOriginCORS CrossOriginCORS
-#define MAYBE_CrossOriginFail CrossOriginFail
-#define MAYBE_SameOriginCookie SameOriginCookie
-#define MAYBE_CORSNoCookie CORSNoCookie
-# if defined(OS_WIN)
+#if defined(OS_WIN)
 #  define MAYBE_SysconfNprocessorsOnln DISABLED_SysconfNprocessorsOnln
-# else
+#else
 #  define MAYBE_SysconfNprocessorsOnln SysconfNprocessorsOnln
-# endif
 #endif
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SimpleLoad, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, SimpleLoad, {
   RunLoadTest(FILE_PATH_LITERAL("nacl_load_test.html"));
 })
 
@@ -62,30 +35,30 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnaclWithOldCache,
   RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
 }
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ExitStatus0, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatus0, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pm_exit_status_test.html?trigger=exit0&expected_exit=0"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ExitStatus254, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatus254, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pm_exit_status_test.html?trigger=exit254&expected_exit=254"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ExitStatusNeg2, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, ExitStatusNeg2, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL(
       "pm_exit_status_test.html?trigger=exitneg2&expected_exit=254"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PPAPICore, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, PPAPICore, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_ppb_core.html"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_ProgressEvents, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, ProgressEvents, {
   RunNaClIntegrationTest(FILE_PATH_LITERAL("ppapi_progress_events.html"));
 })
 
-NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_PnaclMimeType, {
+NACL_BROWSER_TEST_F(NaClBrowserTest, PnaclMimeType, {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_mime_type.html"));
 })
 
@@ -144,19 +117,19 @@ NACL_BROWSER_TEST_F(NaClBrowserTest, MAYBE_SysconfNprocessorsOnln, {
     RunNaClIntegrationTest(path);
 })
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginCORS) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CrossOriginCORS) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CrossOriginFail) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CrossOriginFail) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/fail.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_SameOriginCookie) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, SameOriginCookie) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/same_origin_cookie.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CORSNoCookie) {
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, CORSNoCookie) {
   RunLoadTest(FILE_PATH_LITERAL("cross_origin/cors_no_cookie.html"));
 }
 
