@@ -99,9 +99,9 @@
 }
 
 #events-view-source-list-tbody .source-ipv6-probe-job {
-  color: red;
+  color: rgb(235, 0, 0);
 }
 
 #events-view-source-list-tbody .source-none {
-  color: red;
+  color: rgb(235, 0, 0);
 }

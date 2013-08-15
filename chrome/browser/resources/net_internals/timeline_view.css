@@ -9,7 +9,12 @@
 }
 
 #timeline-view-selection-toggle {
-  cursor: pointer;
+  background-color: #fff;
+  background-image: url(chrome://resources/images/select.png);
+  border: none;
+  height: 8px;
+  padding: none;
+  width: 19px;
 }
 
 .timeline-view-rotateleft {

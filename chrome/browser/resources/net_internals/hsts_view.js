@@ -102,7 +102,7 @@ var HSTSView = (function() {
         this.queryOutputDiv_.innerHTML = '';
         var s = addNode(this.queryOutputDiv_, 'span');
         s.textContent = result.error;
-        s.style.color = 'red';
+        s.style.color = '#e00';
         yellowFade(this.queryOutputDiv_);
         return;
       }

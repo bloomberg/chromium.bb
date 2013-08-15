@@ -4,15 +4,15 @@
  */
 
 .capture-status-view {
-  background: rgb(255, 0, 0);
+  background: rgb(238, 0, 0);
 }
 
 .halted-status-view {
-  background: rgb(0, 170, 0);
+  background: rgb(0, 138, 0);
 }
 
 .loaded-status-view {
-  background: rgb(136, 136, 204);
+  background: rgb(113, 113, 171);
 }
 
 #capture-status-view {

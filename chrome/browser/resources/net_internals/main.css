@@ -103,7 +103,7 @@ table.styled-table,
  * Styling for text indicating a potential problem or error state.
  */
 .warning-text {
-  color: red;
+  color: rgb(238, 0, 0);
 }
 
 /**

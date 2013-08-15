@@ -48,7 +48,7 @@ found in the LICENSE file.
 #top-bar-view {
   -webkit-align-items: center;
   border-bottom: 1px solid gray;
-  color: #eee;
+  color: #fff;
   display: -webkit-flex;
   padding: 2px 2px 4px 7px;
 }
@@ -56,7 +56,7 @@ found in the LICENSE file.
 
 <div id=top-bar-view>
   <span class=top-bar-view-arrow>
-    <select id=top-bar-view-tab-selecter></select>
+    <select aria-label="Tab selector" id=top-bar-view-tab-selecter></select>
   </span>
   <div style="-webkit-flex-grow: 1">
     <include src="status_view.html"/>

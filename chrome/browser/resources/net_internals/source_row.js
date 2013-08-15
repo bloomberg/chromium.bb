@@ -42,6 +42,7 @@ var SourceRow = (function() {
 
       var selectionCol = addNode(tr, 'td');
       var checkbox = addNode(selectionCol, 'input');
+      checkbox.title = this.getSourceId();
       selectionCol.style.borderLeft = '0';
       checkbox.type = 'checkbox';
 

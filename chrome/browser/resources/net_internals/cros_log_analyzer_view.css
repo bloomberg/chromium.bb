@@ -76,7 +76,7 @@
 
 .cros-log-analyzer-td-level-error {
   background-color: rgb(255, 153, 163);
-  color: red;
+  color: rgb(238, 0, 0);
 }
 
 .cros-log-analyzer-td-level-info {

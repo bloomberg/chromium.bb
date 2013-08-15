@@ -143,7 +143,7 @@ var TestView = (function() {
       } else {
         addTextNode(r.resultCell,
                     netErrorToString(result) + ' (' + result + ')');
-        r.passFailCell.style.color = 'red';
+        r.passFailCell.style.color = '#e00';
         addTextNode(r.passFailCell, 'FAIL');
       }
 
