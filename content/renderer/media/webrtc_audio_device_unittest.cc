@@ -221,8 +221,7 @@ class MockWebRtcAudioCapturerSink : public WebRtcAudioCapturerSink {
                           int number_of_frames,
                           int audio_delay_milliseconds,
                           int current_volume,
-                          bool need_audio_processing,
-                          bool key_pressed) OVERRIDE {
+                          bool need_audio_processing) OVERRIDE {
     // Signal that a callback has been received.
     event_->Signal();
     return 0;
@@ -382,13 +381,8 @@ int RunWebRtcLoopbackTimeTest(media::AudioManager* manager,
     capturer_sink->CaptureData(
         voe_channels,
         reinterpret_cast<int16*>(capture_data.get() + input_packet_size * j),
-        params.sample_rate(),
-        params.channels(),
-        params.frames_per_buffer(),
-        kHardwareLatencyInMs,
-        1.0,
-        enable_apm,
-        false);
+        params.sample_rate(), params.channels(), params.frames_per_buffer(),
+        kHardwareLatencyInMs, 1.0, enable_apm);
 
     // Receiving data from WebRtc.
     renderer_source->RenderData(

@@ -61,8 +61,7 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
                    int number_of_channels,
                    int number_of_frames,
                    int audio_delay_milliseconds,
-                   int volume,
-                   bool key_pressed);
+                   int volume);
 
   // Method called by the capturer to set the audio parameters used by source
   // of the capture data..

@@ -102,16 +102,14 @@ class WebRtcAudioCapturer::TrackOwner
                    int number_of_channels,
                    int number_of_frames,
                    int audio_delay_milliseconds,
-                   int volume,
-                   bool key_pressed) {
+                   int volume) {
     base::AutoLock lock(lock_);
     if (delegate_) {
       delegate_->CaptureData(audio_data,
                              number_of_channels,
                              number_of_frames,
                              audio_delay_milliseconds,
-                             volume,
-                             key_pressed);
+                             volume);
     }
   }
 
@@ -426,11 +424,10 @@ void WebRtcAudioCapturer::SetAutomaticGainControl(bool enable) {
 
 void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
                                   int audio_delay_milliseconds,
-                                  double volume,
-                                  bool key_pressed) {
-// This callback is driven by AudioInputDevice::AudioThreadCallback if
-// |source_| is AudioInputDevice, otherwise it is driven by client's
-// CaptureCallback.
+                                  double volume) {
+  // This callback is driven by AudioInputDevice::AudioThreadCallback if
+  // |source_| is AudioInputDevice, otherwise it is driven by client's
+  // CaptureCallback.
 #if defined(OS_WIN) || defined(OS_MACOSX)
   DCHECK_LE(volume, 1.0);
 #elif defined(OS_LINUX) || defined(OS_OPENBSD)
@@ -474,11 +471,8 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
        it != tracks.end();
        ++it) {
     (*it)->CaptureData(buffer_ref_while_calling->buffer(),
-                       audio_source->channels(),
-                       audio_source->frames(),
-                       audio_delay_milliseconds,
-                       volume,
-                       key_pressed);
+                       audio_source->channels(), audio_source->frames(),
+                       audio_delay_milliseconds, volume_);
   }
 }
 

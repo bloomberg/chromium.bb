@@ -59,8 +59,7 @@ int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
                                        int number_of_frames,
                                        int audio_delay_milliseconds,
                                        int current_volume,
-                                       bool need_audio_processing,
-                                       bool key_pressed) {
+                                       bool need_audio_processing) {
   int total_delay_ms = 0;
   {
     base::AutoLock auto_lock(lock_);
@@ -76,9 +75,11 @@ int WebRtcAudioDeviceImpl::CaptureData(const std::vector<int>& channels,
   // Write audio samples in blocks of 10 milliseconds to the registered
   // webrtc::AudioTransport sink. Keep writing until our internal byte
   // buffer is empty.
+  // TODO(niklase): Wire up the key press detection.
   const int16* audio_buffer = audio_data;
   const int samples_per_10_msec = (sample_rate / 100);
   int accumulated_audio_samples = 0;
+  bool key_pressed = false;
   uint32_t new_volume = 0;
   while (accumulated_audio_samples < number_of_frames) {
     // Deliver 10ms of recorded 16-bit linear PCM audio.

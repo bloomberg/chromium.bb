@@ -78,8 +78,7 @@ class CONTENT_EXPORT WebRtcLocalAudioRenderer
                           int number_of_frames,
                           int audio_delay_milliseconds,
                           int current_volume,
-                          bool need_audio_processing,
-                          bool key_pressed) OVERRIDE;
+                          bool need_audio_processing) OVERRIDE;
 
   // Can be called on different user thread.
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;

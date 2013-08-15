@@ -108,8 +108,7 @@ class CONTENT_EXPORT WebRtcAudioCapturer
   // Called on the AudioInputDevice audio thread.
   virtual void Capture(media::AudioBus* audio_source,
                        int audio_delay_milliseconds,
-                       double volume,
-                       bool key_pressed) OVERRIDE;
+                       double volume) OVERRIDE;
   virtual void OnCaptureError() OVERRIDE;
 
   // Reconfigures the capturer with a new buffer size and capture parameters.

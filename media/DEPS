@@ -5,7 +5,6 @@ include_rules = [
   "+third_party/libvpx",
   "+third_party/opus",
   "+third_party/skia",
-  "+ui/base",
   "+ui/gfx",
   "+ui/gl",
 ]

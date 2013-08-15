@@ -51,12 +51,11 @@ AudioInputRendererHost::AudioEntry::~AudioEntry() {}
 AudioInputRendererHost::AudioInputRendererHost(
     media::AudioManager* audio_manager,
     MediaStreamManager* media_stream_manager,
-    AudioMirroringManager* audio_mirroring_manager,
-    media::UserInputMonitor* user_input_monitor)
+    AudioMirroringManager* audio_mirroring_manager)
     : audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
-      audio_mirroring_manager_(audio_mirroring_manager),
-      user_input_monitor_(user_input_monitor) {}
+      audio_mirroring_manager_(audio_mirroring_manager) {
+}
 
 AudioInputRendererHost::~AudioInputRendererHost() {
   DCHECK(audio_entries_.empty());
@@ -273,23 +272,20 @@ void AudioInputRendererHost::OnCreateStream(
     entry->controller = media::AudioInputController::CreateForStream(
         audio_manager_->GetMessageLoop(),
         this,
-        WebContentsAudioInputStream::Create(device_id,
-                                            audio_params,
-                                            audio_manager_->GetWorkerLoop(),
-                                            audio_mirroring_manager_),
-        entry->writer.get(),
-        user_input_monitor_);
+        WebContentsAudioInputStream::Create(
+            device_id, audio_params, audio_manager_->GetWorkerLoop(),
+            audio_mirroring_manager_),
+        entry->writer.get());
   } else {
     // TODO(henrika): replace CreateLowLatency() with Create() as soon
     // as satish has ensured that Speech Input also uses the default low-
     // latency path. See crbug.com/112472 for details.
-    entry->controller =
-        media::AudioInputController::CreateLowLatency(audio_manager_,
-                                                      this,
-                                                      audio_params,
-                                                      device_id,
-                                                      entry->writer.get(),
-                                                      user_input_monitor_);
+    entry->controller = media::AudioInputController::CreateLowLatency(
+        audio_manager_,
+        this,
+        audio_params,
+        device_id,
+        entry->writer.get());
   }
 
   if (!entry->controller.get()) {

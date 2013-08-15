@@ -617,14 +617,11 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   channel_->AddFilter(new AudioInputRendererHost(
       audio_manager,
       media_stream_manager,
-      BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
-      BrowserMainLoop::GetInstance()->user_input_monitor()));
+      BrowserMainLoop::GetInstance()->audio_mirroring_manager()));
   channel_->AddFilter(new AudioRendererHost(
-      GetID(),
-      audio_manager,
+      GetID(), audio_manager,
       BrowserMainLoop::GetInstance()->audio_mirroring_manager(),
-      media_internals,
-      media_stream_manager));
+      media_internals, media_stream_manager));
   channel_->AddFilter(
       new MIDIHost(BrowserMainLoop::GetInstance()->midi_manager()));
   channel_->AddFilter(new MIDIDispatcherHost(GetID(), browser_context));

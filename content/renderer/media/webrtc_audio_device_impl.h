@@ -223,8 +223,7 @@ class WebRtcAudioCapturerSink {
                           int number_of_frames,
                           int audio_delay_milliseconds,
                           int current_volume,
-                          bool need_audio_processing,
-                          bool key_pressed) = 0;
+                          bool need_audio_processing) = 0;
 
   // Set the format for the capture audio parameters.
   virtual void SetCaptureFormat(const media::AudioParameters& params) = 0;
@@ -340,8 +339,7 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl
                           int number_of_frames,
                           int audio_delay_milliseconds,
                           int current_volume,
-                          bool need_audio_processing,
-                          bool key_pressed) OVERRIDE;
+                          bool need_audio_processing) OVERRIDE;
 
   // Called on the main render thread.
   virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;

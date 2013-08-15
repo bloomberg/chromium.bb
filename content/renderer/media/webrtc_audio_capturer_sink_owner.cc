@@ -18,19 +18,13 @@ int WebRtcAudioCapturerSinkOwner::CaptureData(const std::vector<int>& channels,
                                               int number_of_frames,
                                               int audio_delay_milliseconds,
                                               int current_volume,
-                                              bool need_audio_processing,
-                                              bool key_pressed) {
+                                              bool need_audio_processing) {
   base::AutoLock lock(lock_);
   if (delegate_) {
-    delegate_->CaptureData(channels,
-                           audio_data,
-                           sample_rate,
-                           number_of_channels,
-                           number_of_frames,
-                           audio_delay_milliseconds,
-                           current_volume,
-                           need_audio_processing,
-                           key_pressed);
+    return delegate_->CaptureData(channels, audio_data, sample_rate,
+                                  number_of_channels, number_of_frames,
+                                  audio_delay_milliseconds, current_volume,
+                                  need_audio_processing);
   }
 
   return 0;

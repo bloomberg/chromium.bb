@@ -36,17 +36,14 @@ namespace media {
 AudioInputController::Factory* AudioInputController::factory_ = NULL;
 
 AudioInputController::AudioInputController(EventHandler* handler,
-                                           SyncWriter* sync_writer,
-                                           UserInputMonitor* user_input_monitor)
+                                           SyncWriter* sync_writer)
     : creator_loop_(base::MessageLoopProxy::current()),
       handler_(handler),
       stream_(NULL),
       data_is_active_(false),
       state_(kEmpty),
       sync_writer_(sync_writer),
-      max_volume_(0.0),
-      user_input_monitor_(user_input_monitor),
-      key_pressed_(false) {
+      max_volume_(0.0) {
   DCHECK(creator_loop_.get());
 }
 
@@ -59,19 +56,17 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
     AudioManager* audio_manager,
     EventHandler* event_handler,
     const AudioParameters& params,
-    const std::string& device_id,
-    UserInputMonitor* user_input_monitor) {
+    const std::string& device_id) {
   DCHECK(audio_manager);
 
   if (!params.IsValid() || (params.channels() > kMaxInputChannels))
     return NULL;
 
-  if (factory_) {
-    return factory_->Create(
-        audio_manager, event_handler, params, user_input_monitor);
-  }
-  scoped_refptr<AudioInputController> controller(
-      new AudioInputController(event_handler, NULL, user_input_monitor));
+  if (factory_)
+    return factory_->Create(audio_manager, event_handler, params);
+
+  scoped_refptr<AudioInputController> controller(new AudioInputController(
+      event_handler, NULL));
 
   controller->message_loop_ = audio_manager->GetMessageLoop();
 
@@ -92,8 +87,7 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
     EventHandler* event_handler,
     const AudioParameters& params,
     const std::string& device_id,
-    SyncWriter* sync_writer,
-    UserInputMonitor* user_input_monitor) {
+    SyncWriter* sync_writer) {
   DCHECK(audio_manager);
   DCHECK(sync_writer);
 
@@ -102,8 +96,8 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
-  scoped_refptr<AudioInputController> controller(
-      new AudioInputController(event_handler, sync_writer, user_input_monitor));
+  scoped_refptr<AudioInputController> controller(new AudioInputController(
+      event_handler, sync_writer));
   controller->message_loop_ = audio_manager->GetMessageLoop();
 
   // Create and open a new audio input stream from the existing
@@ -122,15 +116,14 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     EventHandler* event_handler,
     AudioInputStream* stream,
-    SyncWriter* sync_writer,
-    UserInputMonitor* user_input_monitor) {
+    SyncWriter* sync_writer) {
   DCHECK(sync_writer);
   DCHECK(stream);
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
-  scoped_refptr<AudioInputController> controller(
-      new AudioInputController(event_handler, sync_writer, user_input_monitor));
+  scoped_refptr<AudioInputController> controller(new AudioInputController(
+      event_handler, sync_writer));
   controller->message_loop_ = message_loop;
 
   // TODO(miu): See TODO at top of file.  Until that's resolved, we need to
@@ -240,9 +233,6 @@ void AudioInputController::DoRecord() {
 
   stream_->Start(this);
   handler_->OnRecording(this);
-
-  if (user_input_monitor_)
-    user_input_monitor_->AddKeyStrokeListener(this);
 }
 
 void AudioInputController::DoClose() {
@@ -261,9 +251,6 @@ void AudioInputController::DoClose() {
     }
 
     state_ = kClosed;
-
-    if (user_input_monitor_)
-      user_input_monitor_->RemoveKeyStrokeListener(this);
   }
 }
 
@@ -333,13 +320,10 @@ void AudioInputController::DoCheckForNoData() {
 void AudioInputController::OnData(AudioInputStream* stream, const uint8* data,
                                   uint32 size, uint32 hardware_delay_bytes,
                                   double volume) {
-  bool key_pressed = false;
   {
     base::AutoLock auto_lock(lock_);
     if (state_ != kRecording)
       return;
-
-    std::swap(key_pressed, key_pressed_);
   }
 
   // Mark data as active to ensure that the periodic calls to
@@ -348,7 +332,7 @@ void AudioInputController::OnData(AudioInputStream* stream, const uint8* data,
 
   // Use SyncSocket if we are in a low-latency mode.
   if (LowLatencyMode()) {
-    sync_writer_->Write(data, size, volume, key_pressed);
+    sync_writer_->Write(data, size, volume);
     sync_writer_->UpdateRecordedBytes(hardware_delay_bytes);
     return;
   }
@@ -369,13 +353,8 @@ void AudioInputController::OnError(AudioInputStream* stream) {
       &AudioInputController::DoReportError, this));
 }
 
-void AudioInputController::OnKeyStroke() {
-  base::AutoLock auto_lock(lock_);
-  key_pressed_ = true;
-}
-
 void AudioInputController::DoStopCloseAndClearStream(
-    base::WaitableEvent* done) {
+    base::WaitableEvent *done) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   // Allow calling unconditionally and bail if we don't have a stream to close.

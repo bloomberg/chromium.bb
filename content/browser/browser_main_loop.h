@@ -26,7 +26,6 @@ class TraceMemoryController;
 namespace media {
 class AudioManager;
 class MIDIManager;
-class UserInputMonitor;
 }  // namespace media
 
 namespace net {
@@ -87,9 +86,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   MediaStreamManager* media_stream_manager() const {
     return media_stream_manager_.get();
   }
-  media::UserInputMonitor* user_input_monitor() const {
-    return user_input_monitor_.get();
-  }
   media::MIDIManager* midi_manager() const { return midi_manager_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 
@@ -126,8 +122,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_ptr<base::PowerMonitor> power_monitor_;
   scoped_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
   scoped_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  // user_input_monitor_ has to outlive audio_manager_, so declared first.
-  scoped_ptr<media::UserInputMonitor> user_input_monitor_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<media::MIDIManager> midi_manager_;
   scoped_ptr<AudioMirroringManager> audio_mirroring_manager_;

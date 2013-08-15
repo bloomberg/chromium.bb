@@ -52,14 +52,13 @@ void WebRtcLocalAudioRenderer::OnRenderError() {
 
 // content::WebRtcAudioCapturerSink implementation
 int WebRtcLocalAudioRenderer::CaptureData(const std::vector<int>& channels,
-                                          const int16* audio_data,
-                                          int sample_rate,
-                                          int number_of_channels,
-                                          int number_of_frames,
-                                          int audio_delay_milliseconds,
-                                          int current_volume,
-                                          bool need_audio_processing,
-                                          bool key_pressed) {
+                                           const int16* audio_data,
+                                           int sample_rate,
+                                           int number_of_channels,
+                                           int number_of_frames,
+                                           int audio_delay_milliseconds,
+                                           int current_volume,
+                                           bool need_audio_processing) {
   TRACE_EVENT0("audio", "WebRtcLocalAudioRenderer::CaptureData");
   base::AutoLock auto_lock(thread_lock_);
 

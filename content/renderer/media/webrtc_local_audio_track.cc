@@ -47,8 +47,7 @@ void WebRtcLocalAudioTrack::CaptureData(const int16* audio_data,
                                         int number_of_channels,
                                         int number_of_frames,
                                         int audio_delay_milliseconds,
-                                        int volume,
-                                        bool key_pressed) {
+                                        int volume) {
   scoped_refptr<WebRtcAudioCapturer> capturer;
   std::vector<int> voe_channels;
   int sample_rate = 0;
@@ -69,15 +68,10 @@ void WebRtcLocalAudioTrack::CaptureData(const int16* audio_data,
 
   // Feed the data to the sinks.
   for (SinkList::const_iterator it = sinks.begin(); it != sinks.end(); ++it) {
-    int new_volume = (*it)->CaptureData(voe_channels,
-                                        audio_data,
-                                        sample_rate,
-                                        number_of_channels,
-                                        number_of_frames,
-                                        audio_delay_milliseconds,
-                                        volume,
-                                        need_audio_processing_,
-                                        key_pressed);
+    int new_volume = (*it)->CaptureData(voe_channels, audio_data, sample_rate,
+                                        number_of_channels, number_of_frames,
+                                        audio_delay_milliseconds, volume,
+                                        need_audio_processing_);
     if (new_volume != 0 && capturer.get())
       capturer->SetVolume(new_volume);
   }

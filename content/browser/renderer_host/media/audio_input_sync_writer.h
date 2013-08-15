@@ -28,10 +28,7 @@ class AudioInputSyncWriter : public media::AudioInputController::SyncWriter {
 
   // media::AudioOutputController::SyncWriter implementation.
   virtual void UpdateRecordedBytes(uint32 bytes) OVERRIDE;
-  virtual uint32 Write(const void* data,
-                       uint32 size,
-                       double volume,
-                       bool key_pressed) OVERRIDE;
+  virtual uint32 Write(const void* data, uint32 size, double volume) OVERRIDE;
   virtual void Close() OVERRIDE;
 
   bool Init();
