@@ -125,9 +125,8 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
       false,
       CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
       64 * 1024,  // command buffer size
-      std::min(full_screen_texture_size_in_bytes,
-               kDefaultStartTransferBufferSize),
-      kDefaultMinTransferBufferSize,
+      64 * 1024,  // starting buffer size
+      64 * 1024,  // min buffer size
       std::min(3 * full_screen_texture_size_in_bytes,
                kDefaultMaxTransferBufferSize));
 
