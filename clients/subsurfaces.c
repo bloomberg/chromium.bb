@@ -781,6 +781,12 @@ main(int argc, char *argv[])
 		return -1;
 	}
 
+	if (!display_has_subcompositor(display)) {
+		fprintf(stderr, "compositor does not support "
+			"the subcompositor extension\n");
+		return -1;
+	}
+
 	app = demoapp_create(display);
 
 	display_run(display);

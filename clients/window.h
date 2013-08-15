@@ -78,6 +78,9 @@ display_get_user_data(struct display *display);
 struct wl_display *
 display_get_display(struct display *display);
 
+int
+display_has_subcompositor(struct display *display);
+
 cairo_device_t *
 display_get_cairo_device(struct display *display);
 

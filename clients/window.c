@@ -5367,6 +5367,17 @@ display_get_display(struct display *display)
 	return display->display;
 }
 
+int
+display_has_subcompositor(struct display *display)
+{
+	if (display->subcompositor)
+		return 1;
+
+	wl_display_roundtrip(display->display);
+
+	return display->subcompositor != NULL;
+}
+
 cairo_device_t *
 display_get_cairo_device(struct display *display)
 {
