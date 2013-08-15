@@ -31,7 +31,6 @@
 #include "WebCommon.h"
 #include "WebCompositingReasons.h"
 #include "WebPoint.h"
-#include "WebPrivatePtr.h"
 #include "WebRect.h"
 #include "WebString.h"
 #include "WebVector.h"
@@ -135,8 +134,7 @@ public:
     virtual void setBackgroundFilters(const WebFilterOperations&) = 0;
 
     // Provides a bitfield that describe why this composited layer was created.
-    // FIXME: non-pure until the chromium-side implements this.
-    virtual void setCompositingReasons(WebCompositingReasons) { }
+    virtual void setCompositingReasons(WebCompositingReasons) = 0;
 
     // An animation delegate is notified when animations are started and
     // stopped. The WebLayer does not take ownership of the delegate, and it is
@@ -164,9 +162,6 @@ public:
     // Returns true if this layer has any active animations - useful for tests.
     virtual bool hasActiveAnimation() = 0;
 
-    // Transfers all animations running on the current layer.
-    virtual void transferAnimationsTo(WebLayer*) { }
-
     // Scrolling
     virtual void setScrollPosition(WebPoint) = 0;
     virtual WebPoint scrollPosition() const = 0;
@@ -186,8 +181,8 @@ public:
     virtual void setNonFastScrollableRegion(const WebVector<WebRect>&) = 0;
     virtual WebVector<WebRect> nonFastScrollableRegion() const = 0;
 
-    virtual void setTouchEventHandlerRegion(const WebVector<WebRect>&) { };
-    virtual WebVector<WebRect> touchEventHandlerRegion() const { return WebVector<WebRect>();}
+    virtual void setTouchEventHandlerRegion(const WebVector<WebRect>&) = 0;
+    virtual WebVector<WebRect> touchEventHandlerRegion() const = 0;
 
     virtual void setIsContainerForFixedPositionLayers(bool) = 0;
     virtual bool isContainerForFixedPositionLayers() const = 0;
