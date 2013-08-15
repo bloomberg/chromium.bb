@@ -707,7 +707,13 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest, MalwareIframeProceed) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(SafeBrowsingBlockingPageTest,
+// Disabled on Win Aura because it is flaky: crbug.com/273302.
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_SafeBrowsingBlockingPageTest DISABLED_SafeBrowsingBlockingPageTest
+#else
+#define MAYBE_SafeBrowsingBlockingPageTest SafeBrowsingBlockingPageTest
+#endif
+IN_PROC_BROWSER_TEST_F(MAYBE_SafeBrowsingBlockingPageTest,
                        MalwareIframeReportDetails) {
   GURL url = SetupMalwareIframeWarningAndNavigate();
 
