@@ -1365,6 +1365,18 @@ void ChromeLauncherControllerPerApp::UpdateAppLaunchersFromPref() {
   // Construct a vector representation of to-be-pinned apps from the pref.
   std::vector<std::string> pinned_apps;
   int chrome_icon_index = GetChromeIconIndexFromPref();
+  int index = 0;
+  int max_index = model_->item_count();
+  // Using the alternate shelf layout the App Icon should be the first item in
+  // the list thus start adding items at slot 1 (instead of slot 0).
+  if (ash::switches::UseAlternateShelfLayout()) {
+    ++index;
+    ++max_index;
+    // The alternate shelf layout's icon position will always include the
+    // AppLauncher which needs to be subtracted here.
+    if (chrome_icon_index > 0)
+      --chrome_icon_index;
+  }
   const base::ListValue* pinned_apps_pref =
       profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
   for (base::ListValue::const_iterator it(pinned_apps_pref->begin());
@@ -1392,14 +1404,6 @@ void ChromeLauncherControllerPerApp::UpdateAppLaunchersFromPref() {
   // removing items as necessary. NB: This code uses plain old indexing instead
   // of iterators because of model mutations as part of the loop.
   std::vector<std::string>::const_iterator pref_app_id(pinned_apps.begin());
-  int index = 0;
-  int max_index = model_->item_count();
-  // Using the alternate shelf layout the App Icon should be the first item in
-  // the list thus start adding items at slot 1 (instead of slot 0).
-  if (ash::switches::UseAlternateShelfLayout()) {
-    ++index;
-    ++max_index;
-  }
   for (; index < max_index && pref_app_id != pinned_apps.end(); ++index) {
     // If the next app launcher according to the pref is present in the model,
     // delete all app launcher entries in between.
@@ -1642,7 +1646,7 @@ int ChromeLauncherControllerPerApp::GetChromeIconIndexFromPref() const {
       profile_->GetPrefs()->GetList(prefs::kPinnedLauncherApps);
   if (ash::switches::UseAlternateShelfLayout())
     return std::max(static_cast<size_t>(1),
-                    std::min(pinned_apps_pref->GetSize(), index));
+                    std::min(pinned_apps_pref->GetSize() + 1, index));
   return std::max(static_cast<size_t>(0),
                   std::min(pinned_apps_pref->GetSize(), index));
 }
