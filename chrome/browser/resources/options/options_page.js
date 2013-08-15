@@ -283,7 +283,7 @@ cr.define('options', function() {
     if (document.activeElement != document.body) {
       if (FocusOutlineManager.forDocument(document).visible) {
         overlay.focus();
-      } else {
+      } else if (!overlay.pageDiv.contains(document.activeElement)) {
         document.activeElement.blur();
       }
     }
