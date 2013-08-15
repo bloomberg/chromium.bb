@@ -537,11 +537,6 @@ void ProfileSyncService::StartUp(StartUpDeferredOption deferred_option) {
 
   DCHECK(IsSyncEnabledAndLoggedIn());
 
-  if (use_oauth2_token_ && access_token_.empty()) {
-    RequestAccessToken();
-    return;
-  }
-
   if (start_up_time_.is_null()) {
     start_up_time_ = base::Time::Now();
     last_synced_time_ = sync_prefs_.GetLastSyncedTime();
