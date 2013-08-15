@@ -41,6 +41,12 @@
     "example": "A plain text description",
     "level": "recommended"
   },
+  "externally_connectable": {
+    "documentation": "messaging.html#external-webpage",
+    "example": {
+      "matches": ["*://*.example.com/*"]
+    }
+  },
   "file_browser_handlers": {
     "documentation": "fileBrowserHandler.html",
     "example": []
