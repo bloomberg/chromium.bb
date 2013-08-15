@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/ppapi_unittest.h"
-
 #include "base/memory/scoped_ptr.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/host_var_tracker.h"
@@ -11,6 +9,7 @@
 #include "content/renderer/pepper/npapi_glue.h"
 #include "content/renderer/pepper/npobject_var.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
+#include "content/test/ppapi_unittest.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
 #include "third_party/npapi/bindings/npruntime.h"

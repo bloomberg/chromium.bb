@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/renderer/pepper/ppapi_unittest.h"
+#include "content/test/ppapi_unittest.h"
 
 #include "base/message_loop/message_loop.h"
 #include "content/renderer/pepper/gfx_conversion.h"

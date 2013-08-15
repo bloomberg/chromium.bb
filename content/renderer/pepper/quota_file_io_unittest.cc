@@ -14,8 +14,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/platform_file.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
-#include "content/renderer/pepper/ppapi_unittest.h"
 #include "content/renderer/pepper/quota_file_io.h"
+#include "content/test/ppapi_unittest.h"
 
 using base::MessageLoopProxy;
 using base::PlatformFile;
