@@ -252,10 +252,6 @@ NaClProcessHost::~NaClProcessHost() {
 #endif
 }
 
-void NaClProcessHost::OnProcessCrashed(int exit_status) {
-  NaClBrowser::GetInstance()->NotifyOfCrash();
-}
-
 // This is called at browser startup.
 // static
 void NaClProcessHost::EarlyStartup(NaClBrowserDelegate* delegate) {
@@ -287,15 +283,6 @@ void NaClProcessHost::Launch(
   nacl_host_message_filter_ = nacl_host_message_filter;
   reply_msg_ = reply_msg;
   manifest_path_ = manifest_path;
-
-  // Do not launch the requested NaCl module if NaCl is marked "unstable" due
-  // to too many crashes within a given time period.
-  if (NaClBrowser::GetInstance()->TooManyCrashes()) {
-    SendErrorToRenderer("Process creation was throttled due to excessive"
-                        " crashes");
-    delete this;
-    return;
-  }
 
   const CommandLine* cmd = CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)

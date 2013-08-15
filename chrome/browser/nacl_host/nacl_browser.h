@@ -5,15 +5,12 @@
 #ifndef CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
 #define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_H_
 
-#include <deque>
-
 #include "base/bind.h"
 #include "base/containers/mru_cache.h"
 #include "base/files/file_util_proxy.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "base/time/time.h"
 #include "chrome/browser/nacl_host/nacl_validation_cache.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 
@@ -122,14 +119,6 @@ class NaClBrowser {
   void EarlyStartup();
   static void SetDelegate(NaClBrowserDelegate* delegate);
   static NaClBrowserDelegate* GetDelegate();
-
-  // Support for NaCl crash throttling.
-  // Each time a NaCl module crashes, the browser is notified.
-  void NotifyOfCrash();
-  // If "too many" crashes occur within a given time period, NaCl is throttled
-  // until the rate again drops below the threshold.
-  bool TooManyCrashes();
-
  private:
   friend struct DefaultSingletonTraits<NaClBrowser>;
 
@@ -188,9 +177,6 @@ class NaClBrowser {
   std::vector<base::Closure> waiting_;
 
   scoped_ptr<NaClBrowserDelegate> browser_delegate_;
-
-  std::deque<base::Time> crash_times_;
-
   DISALLOW_COPY_AND_ASSIGN(NaClBrowser);
 };
 

@@ -59,8 +59,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
                   const base::FilePath& profile_directory);
   virtual ~NaClProcessHost();
 
-  virtual void OnProcessCrashed(int exit_status) OVERRIDE;
-
   // Do any minimal work that must be done at browser startup.
   static void EarlyStartup(NaClBrowserDelegate* delegate);
 

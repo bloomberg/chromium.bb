@@ -76,6 +76,28 @@ pp::Instance* ModulePpapi::CreateInstance(PP_Instance pp_instance) {
   return plugin;
 }
 
+const uint64_t kMaxCrashesPerInterval = 3;
+const uint64_t kCrashesIntervalInSeconds = 120;
+
+void ModulePpapi::RegisterPluginCrash() {
+  PLUGIN_PRINTF(("ModulePpapi::RegisterPluginCrash ()\n"));
+  if (crash_times_.size() == kMaxCrashesPerInterval) {
+    crash_times_.pop_front();
+  }
+  int64_t time = NaClGetTimeOfDayMicroseconds();
+  crash_times_.push_back(time);
+}
+
+bool ModulePpapi::IsPluginUnstable() {
+  PLUGIN_PRINTF(("ModulePpapi::IsPluginUnstable ()\n"));
+  if (crash_times_.size() != kMaxCrashesPerInterval) {
+    return false;
+  }
+  int64_t now = NaClGetTimeOfDayMicroseconds();
+  int64_t delta = now - crash_times_.front();
+  return delta / (1000.0 * 1000.0) <= kCrashesIntervalInSeconds;
+}
+
 }  // namespace plugin
 
 
