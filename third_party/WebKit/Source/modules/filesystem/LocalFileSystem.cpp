@@ -56,22 +56,22 @@ LocalFileSystemBase::~LocalFileSystemBase()
 {
 }
 
-void LocalFileSystemBase::readFileSystem(ScriptExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, FileSystemSynchronousType synchronousType)
+void LocalFileSystemBase::readFileSystem(ScriptExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     if (!client() || !client()->allowFileSystem(context)) {
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
         return;
     }
-    client()->openFileSystem(context, type, callbacks, synchronousType, 0, OpenExistingFileSystem);
+    client()->openFileSystem(context, type, callbacks, 0, OpenExistingFileSystem);
 }
 
-void LocalFileSystemBase::requestFileSystem(ScriptExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, FileSystemSynchronousType synchronousType)
+void LocalFileSystemBase::requestFileSystem(ScriptExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     if (!client() || !client()->allowFileSystem(context)) {
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
         return;
     }
-    client()->openFileSystem(context, type, callbacks, synchronousType, size, CreateFileSystemIfNotPresent);
+    client()->openFileSystem(context, type, callbacks, size, CreateFileSystemIfNotPresent);
 }
 
 void LocalFileSystemBase::deleteFileSystem(ScriptExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)

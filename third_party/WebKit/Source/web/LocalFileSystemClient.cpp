@@ -36,11 +36,13 @@
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
 #include "core/platform/AsyncFileSystemCallbacks.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebFileError.h"
 #include "public/platform/WebFileSystem.h"
+#include "public/platform/WebFileSystemCallbacks.h"
 #include "public/platform/WebFileSystemType.h"
-#include "public/web/WebFrameClient.h"
 #include "public/web/WebPermissionClient.h"
+#include "weborigin/SecurityOrigin.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;
@@ -65,20 +67,19 @@ bool LocalFileSystemClient::allowFileSystem(ScriptExecutionContext* context)
     return !webView->permissionClient() || webView->permissionClient()->allowFileSystem(webFrame);
 }
 
-void LocalFileSystemClient::openFileSystem(ScriptExecutionContext* context, WebCore::FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, FileSystemSynchronousType, long long size, OpenFileSystemMode openMode)
+void LocalFileSystemClient::openFileSystem(ScriptExecutionContext* context, WebCore::FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks, long long size, OpenFileSystemMode openMode)
 {
-    Document* document = toDocument(context);
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-
-    webFrame->client()->openFileSystem(webFrame, static_cast<WebFileSystemType>(type), size, openMode == CreateFileSystemIfNotPresent, new WebFileSystemCallbacksImpl(callbacks));
+    KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
+    // FIXME: fix this callbacks raw pointer.
+    WebKit::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<WebFileSystemType>(type), openMode == CreateFileSystemIfNotPresent, new WebKit::WebFileSystemCallbacksImpl(callbacks));
 }
 
 void LocalFileSystemClient::deleteFileSystem(ScriptExecutionContext* context, WebCore::FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
-    Document* document = toDocument(context);
-    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
+    KURL storagePartition = KURL(KURL(), context->securityOrigin()->toString());
+    // FIXME: fix this callbacks raw pointer.
+    WebKit::Platform::current()->fileSystem()->deleteFileSystem(storagePartition, static_cast<WebFileSystemType>(type), new WebFileSystemCallbacksImpl(callbacks));
 
-    webFrame->client()->deleteFileSystem(webFrame, static_cast<WebFileSystemType>(type), new WebFileSystemCallbacksImpl(callbacks));
 }
 
 LocalFileSystemClient::LocalFileSystemClient()

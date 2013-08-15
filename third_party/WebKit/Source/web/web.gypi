@@ -267,8 +267,6 @@
       'WebWorkerRunLoop.cpp',
       'WorkerAllowMainThreadBridgeBase.cpp',
       'WorkerAllowMainThreadBridgeBase.h',
-      'WorkerFileSystemCallbacksBridge.cpp',
-      'WorkerFileSystemCallbacksBridge.h',
       'WorkerFileSystemClient.cpp',
       'WorkerFileSystemClient.h',
       'android/WebInputEventFactory.cpp',

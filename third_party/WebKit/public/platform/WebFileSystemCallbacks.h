@@ -62,11 +62,11 @@ public:
     // true when there are more entries.
     virtual void didReadDirectory(const WebVector<WebFileSystemEntry>&, bool hasMore) = 0;
 
-    // Callback for WebFrameClient::openFileSystem. Called with a name and
+    // Callback for WebFileSystem::openFileSystem. Called with a name and
     // root URL for the FileSystem when the request is accepted.
     virtual void didOpenFileSystem(const WebString& name, const WebURL& rootURL) = 0;
 
-    // Callback for WebFrameClient::createFileWriter. Called with an instance
+    // Callback for WebFileSystem::createFileWriter. Called with an instance
     // of WebFileWriter and the target file length. The writer's ownership
     // is transferred to the callback.
     virtual void didCreateFileWriter(WebFileWriter* writer, long long length) { WEBKIT_ASSERT_NOT_REACHED(); }

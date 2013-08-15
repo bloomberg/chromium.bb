@@ -62,12 +62,6 @@ public:
         return true;
     }
 
-    // Called on the main webkit thread before opening a file system.
-    virtual void openFileSystem(WebFileSystemType, long long size, bool create, WebFileSystemCallbacks*)
-    {
-        WEBKIT_ASSERT_NOT_REACHED();
-    }
-
     // Called on the main webkit thread before opening an indexed database.
     virtual bool allowIndexedDB(const WebString& name)
     {

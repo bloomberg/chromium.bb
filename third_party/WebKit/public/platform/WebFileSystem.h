@@ -58,6 +58,22 @@ public:
         TypeExternal,
     };
 
+    // Opens a FileSystem.
+    // WebFileSystemCallbacks::didOpenFileSystem() must be called with
+    // a name and root path for the requested FileSystem when the operation
+    // is completed successfully. WebFileSystemCallbacks::didFail() must be
+    // called otherwise. The create bool is for indicating whether or not to
+    // create root path for file systems if it do not exist.
+    virtual void openFileSystem(const WebURL& storagePartition, const WebFileSystemType, bool create, WebFileSystemCallbacks*) { WEBKIT_ASSERT_NOT_REACHED(); }
+
+    // Deletes FileSystem.
+    // WebFileSystemCallbacks::didSucceed() must be called when the operation
+    // is completed successfully. WebFileSystemCallbacks::didFail() must be
+    // called otherwise.
+    // All in-flight operations and following operations may fail after the
+    // FileSystem is deleted.
+    virtual void deleteFileSystem(const WebURL& storagePartition, const WebFileSystemType, WebFileSystemCallbacks*) { }
+
     // Moves a file or directory at |srcPath| to |destPath|.
     // WebFileSystemCallbacks::didSucceed() must be called when the operation is completed successfully.
     // WebFileSystemCallbacks::didFail() must be called otherwise.

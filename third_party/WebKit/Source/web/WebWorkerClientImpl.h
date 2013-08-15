@@ -82,8 +82,6 @@ public:
     // WebCommonWorkerClient methods:
     virtual bool allowDatabase(WebFrame*, const WebString& name, const WebString& displayName, unsigned long estimatedSize) OVERRIDE;
     virtual bool allowFileSystem();
-    virtual void openFileSystem(WebFileSystemType, long long size, bool create,
-        WebFileSystemCallbacks*) OVERRIDE;
     virtual bool allowIndexedDB(const WebString& name) OVERRIDE;
 
 private:

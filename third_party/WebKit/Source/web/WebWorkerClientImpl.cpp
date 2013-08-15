@@ -124,16 +124,6 @@ bool WebWorkerClientImpl::allowFileSystem()
     return !webView->permissionClient() || webView->permissionClient()->allowFileSystem(m_webFrame);
 }
 
-void WebWorkerClientImpl::openFileSystem(WebFileSystemType type, long long size, bool create,
-    WebFileSystemCallbacks* callbacks)
-{
-    if (askedToTerminate()) {
-        callbacks->didFail(WebFileErrorAbort);
-        return;
-    }
-    m_webFrame->client()->openFileSystem(m_webFrame, type, size, create, callbacks);
-}
-
 bool WebWorkerClientImpl::allowIndexedDB(const WebString& name)
 {
     if (askedToTerminate())

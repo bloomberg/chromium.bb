@@ -42,7 +42,7 @@ public:
     virtual ~WorkerFileSystemClient();
 
     virtual bool allowFileSystem(WebCore::ScriptExecutionContext*) OVERRIDE;
-    virtual void openFileSystem(WebCore::ScriptExecutionContext*, WebCore::FileSystemType, PassOwnPtr<WebCore::AsyncFileSystemCallbacks>, WebCore::FileSystemSynchronousType, long long size, WebCore::OpenFileSystemMode) OVERRIDE;
+    virtual void openFileSystem(WebCore::ScriptExecutionContext*, WebCore::FileSystemType, PassOwnPtr<WebCore::AsyncFileSystemCallbacks>, long long size, WebCore::OpenFileSystemMode) OVERRIDE;
     virtual void deleteFileSystem(WebCore::ScriptExecutionContext*, WebCore::FileSystemType, PassOwnPtr<WebCore::AsyncFileSystemCallbacks>) OVERRIDE;
 
 private:
