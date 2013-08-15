@@ -1576,6 +1576,27 @@ void DOMWindow::printErrorMessage(const String& message)
     pageConsole()->addMessage(JSMessageSource, ErrorMessageLevel, message);
 }
 
+// FIXME: Once we're throwing exceptions for cross-origin access violations, we will always sanitize the target
+// frame details, so we can safely combine 'crossDomainAccessErrorMessage' with this method after considering
+// exactly which details may be exposed to JavaScript.
+//
+// http://crbug.com/17325
+String DOMWindow::sanitizedCrossDomainAccessErrorMessage(DOMWindow* activeWindow)
+{
+    const KURL& activeWindowURL = activeWindow->document()->url();
+    if (activeWindowURL.isNull())
+        return String();
+
+    ASSERT(!activeWindow->document()->securityOrigin()->canAccess(document()->securityOrigin()));
+
+    SecurityOrigin* activeOrigin = activeWindow->document()->securityOrigin();
+    String message = "Blocked a frame with origin \"" + activeOrigin->toString() + "\" from accessing a cross-origin frame.";
+
+    // FIXME: Evaluate which details from 'crossDomainAccessErrorMessage' may safely be reported to JavaScript.
+
+    return message;
+}
+
 String DOMWindow::crossDomainAccessErrorMessage(DOMWindow* activeWindow)
 {
     const KURL& activeWindowURL = activeWindow->document()->url();

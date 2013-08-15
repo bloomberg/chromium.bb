@@ -65,19 +65,26 @@ public:
     }
     virtual ~ErrorEvent();
 
-    const String& message() const { return m_message; }
+    // As 'message' is exposed to JavaScript, never return unsanitizedMessage.
+    const String& message() const { return m_sanitizedMessage; }
     const String& filename() const { return m_fileName; }
     unsigned lineno() const { return m_lineNumber; }
     unsigned colno() const { return m_columnNumber; }
 
+    // 'messageForConsole' is not exposed to JavaScript, and prefers 'm_unsanitizedMessage'.
+    const String& messageForConsole() const { return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage : m_sanitizedMessage; }
+
     virtual const AtomicString& interfaceName() const;
+
+    void setUnsanitizedMessage(const String&);
 
 private:
     ErrorEvent();
     ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber);
     ErrorEvent(const AtomicString&, const ErrorEventInit&);
 
-    String m_message;
+    String m_unsanitizedMessage;
+    String m_sanitizedMessage;
     String m_fileName;
     unsigned m_lineNumber;
     unsigned m_columnNumber;

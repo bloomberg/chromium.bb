@@ -40,24 +40,30 @@ typedef int ExceptionCode;
 
 class DOMException : public RefCounted<DOMException>, public ScriptWrappable {
 public:
-    static PassRefPtr<DOMException> create(ExceptionCode, const String& message = String());
+    static PassRefPtr<DOMException> create(ExceptionCode, const String& sanitizedMessage = String(), const String& unsanitizedMessage = String());
 
     unsigned short code() const { return m_code; }
     String name() const { return m_name; }
-    String message() const { return m_message; }
 
+    // This is the message that's exposed to JavaScript: never return unsanitized data.
+    String message() const { return m_sanitizedMessage; }
     String toString() const;
+
+    // This is the message that's exposed to the console: if an unsanitized message is present, we prefer it.
+    String messageForConsole() const { return !m_unsanitizedMessage.isEmpty() ? m_unsanitizedMessage : m_sanitizedMessage; }
+    String toStringForConsole() const;
 
     static String getErrorName(ExceptionCode);
     static String getErrorMessage(ExceptionCode);
     static unsigned short getLegacyErrorCode(ExceptionCode);
 
 private:
-    DOMException(unsigned short m_code, const String& name, const String& message);
+    DOMException(unsigned short m_code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage);
 
     unsigned short m_code;
     String m_name;
-    String m_message;
+    String m_sanitizedMessage;
+    String m_unsanitizedMessage;
 };
 
 } // namespace WebCore
