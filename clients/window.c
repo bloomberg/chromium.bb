@@ -4697,9 +4697,6 @@ window_add_subsurface(struct window *window, void *data,
 	struct wl_surface *parent;
 	struct wl_subcompositor *subcompo = window->display->subcompositor;
 
-	if (!subcompo)
-		return NULL;
-
 	surface = surface_create(window);
 	widget = widget_create(window, surface, data);
 	wl_list_init(&widget->link);
