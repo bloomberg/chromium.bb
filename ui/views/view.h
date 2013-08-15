@@ -1540,6 +1540,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   DragController* drag_controller_;
 
+  // True while we're performing DoDrag(). On X11, we can have multiple mouse
+  // move events in our event queue when we start a drag, so we need a way to
+  // ignore events after the first one.
+  bool currently_dragging_;
+
   // Input  --------------------------------------------------------------------
 
   scoped_ptr<internal::PostEventDispatchHandler> post_dispatch_handler_;
