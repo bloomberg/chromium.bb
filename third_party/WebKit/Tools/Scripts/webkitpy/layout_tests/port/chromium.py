@@ -349,6 +349,9 @@ class ChromiumPort(Port):
             VirtualTestSuite('virtual/threaded/transitions',
                              'transitions',
                              ['--enable-threaded-compositing']),
+            VirtualTestSuite('virtual/web-animations-css/animations',
+                             'animations',
+                             ['--enable-web-animations-css']),
         ]
 
     #

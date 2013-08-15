@@ -295,6 +295,54 @@ webkit.org/b/111004 [ Win Linux ] accessibility/svg-remote-element.html [ Failur
 # End Accessibility layout tests
 # -----------------------------------------------------------------
 
+# The implementation of CSS Animations on the Web Animations model is still in progress
+crbug.com/258896 virtual/web-animations-css/animations/3d/matrix-transform-type-animation.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/3d/state-at-end-event-transform.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/additive-transform-animations.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/animation-controller-drt-api.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode-hardware.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse-fill-mode.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/animation-direction-reverse.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/animation-none-keyword.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/change-keyframes-name.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/end-exclusive.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/fill-mode-iteration-count-non-integer.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/fill-mode-missing-from-to-keyframes.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/fill-mode-multiple-keyframes.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/fill-mode-reverse.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/fill-mode-transform.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/fill-mode.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/missing-from-to-transforms.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/missing-from-to.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/missing-values-first-keyframe.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/missing-values-last-keyframe.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/negative-delay.html [ Crash ]
+crbug.com/258896 virtual/web-animations-css/animations/opacity-transform-animation.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/play-state-suspend.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/suspend-resume-animation.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/suspend-transform-animation.html [ ImageOnlyFailure ]
+crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-1.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
+crbug.com/258896 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
+crbug.com/265303 virtual/web-animations-css/animations/animation-border-overflow.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/animation-end-event-short-iterations.html [ Timeout ]
+crbug.com/265303 virtual/web-animations-css/animations/animations-parsing.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/cross-fade-background-image.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/cross-fade-border-image-source.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/cross-fade-list-style-image.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/cross-fade-webkit-mask-image.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/empty-keyframe-animation.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/keyframe-timing-functions-transform.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/keyframe-timing-functions.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/keyframe-timing-functions2.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/missing-keyframe-properties-timing-function.html [ Crash ]
+crbug.com/265303 virtual/web-animations-css/animations/state-at-end-event.html [ Failure ]
+crbug.com/265303 virtual/web-animations-css/animations/wrong-keyframe-name.html [ Crash ]
+
+
 # This test is slow due to Mesa slowness.
 crbug.com/244481 virtual/gpu/canvas/philip/tests/2d.shadow.blur.low.html [ Skip ]
 
@@ -412,6 +460,8 @@ crbug.com/65877 [ Linux Win ] fast/writing-mode/japanese-ruby-horizontal-bt.html
 # We should probably just skip this test, everyone else has since
 # https://bugs.webkit.org/show_bug.cgi?id=49182
 crbug.com/62138 animations/stop-animation-on-suspend.html [ Failure Pass Timeout ]
+crbug.com/62138 virtual/web-animations-css/animations/stop-animation-on-suspend.html [ Failure Pass Timeout ]
+crbug.com/62138 virtual/threaded/animations/stop-animation-on-suspend.html [ Pass Failure Timeout Crash ]
 
 crbug.com/61739 [ Debug ] animations/suspend-resume-animation-events.html [ Failure Pass ]
 
@@ -931,7 +981,6 @@ crbug.com/248938 [ Linux Debug ] virtual/threaded/animations/animation-add-event
 crbug.com/248938 virtual/threaded/animations/animation-welcome-safari.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/opacity-transform-animation.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/combo-transform-rotate+scale.html [ Pass Failure ]
-crbug.com/248938 virtual/threaded/animations/stop-animation-on-suspend.html [ Pass Failure Timeout Crash ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/keyframes-comma-separated.html [ Pass Failure Timeout ]
 crbug.com/248938 virtual/threaded/animations/play-state-paused.html [ Pass ImageOnlyFailure Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/animations/cross-fade-webkit-mask-image.html [ Pass ImageOnlyFailure ]
