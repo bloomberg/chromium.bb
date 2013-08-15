@@ -1237,7 +1237,6 @@ private:
 
     Timer<Document> m_styleRecalcTimer;
     bool m_inStyleRecalc;
-    bool m_closeAfterStyleRecalc;
 
     bool m_gotoAnchorNeededAfterStylesheetsLoad;
     bool m_isDNSPrefetchEnabled;

@@ -402,7 +402,6 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_bParsing(false)
     , m_styleRecalcTimer(this, &Document::styleRecalcTimerFired)
     , m_inStyleRecalc(false)
-    , m_closeAfterStyleRecalc(false)
     , m_gotoAnchorNeededAfterStylesheetsLoad(false)
     , m_containsValidityStyleRules(false)
     , m_updateFocusAppearanceRestoresSelection(false)
@@ -1691,12 +1690,6 @@ void Document::recalcStyle(StyleChange change)
         }
     }
 
-    // If we wanted to call implicitClose() during recalcStyle, do so now that we're finished.
-    if (m_closeAfterStyleRecalc) {
-        m_closeAfterStyleRecalc = false;
-        implicitClose();
-    }
-
     STYLE_STATS_PRINT();
     STYLE_STATS_CLEAR();
 
@@ -2218,11 +2211,7 @@ void Document::explicitClose()
 
 void Document::implicitClose()
 {
-    // If we're in the middle of recalcStyle, we need to defer the close until the style information is accurate and all elements are re-attached.
-    if (m_inStyleRecalc) {
-        m_closeAfterStyleRecalc = true;
-        return;
-    }
+    ASSERT(!inStyleRecalc());
 
     bool wasLocationChangePending = frame() && frame()->navigationScheduler()->locationChangePending();
     bool doload = !parsing() && m_parser && !processingLoadEvent() && !wasLocationChangePending;
