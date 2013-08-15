@@ -30,6 +30,7 @@ class TabSwitching(page_measurement.PageMeasurement):
 
       page_state = page_runner.PageState()
       page_state.PreparePage(page.page_set.pages[i], t)
+      page_state.ImplicitPageNavigation(page.page_set.pages[i], t)
 
   def MeasurePage(self, _, tab, results):
     """Although this is called MeasurePage, we're actually using this function
