@@ -3965,9 +3965,6 @@ void RenderViewImpl::didNavigateWithinPage(
   new_state->set_was_within_same_page(true);
 
   didCommitProvisionalLoad(frame, is_new_navigation);
-
-  WebDataSource* datasource = frame->view()->mainFrame()->dataSource();
-  UpdateTitle(frame, datasource->pageTitle(), datasource->pageTitleDirection());
 }
 
 void RenderViewImpl::didUpdateCurrentHistoryItem(WebFrame* frame) {
