@@ -2911,12 +2911,15 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 		widget = input->grab;
 	else
 		widget = input->focus_widget;
-	if (widget && widget->motion_handler)
-		cursor = widget->motion_handler(input->focus_widget,
-						input, time, sx, sy,
-						widget->user_data);
-	else
-		cursor = input->focus_widget->default_cursor;
+	if (widget) {
+		if (widget->motion_handler)
+			cursor = widget->motion_handler(input->focus_widget,
+							input, time, sx, sy,
+							widget->user_data);
+		else
+			cursor = widget->default_cursor;
+	} else
+		cursor = CURSOR_LEFT_PTR;
 
 	input_set_pointer_image(input, cursor);
 }
