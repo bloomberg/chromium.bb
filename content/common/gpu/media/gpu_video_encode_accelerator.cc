@@ -13,6 +13,10 @@
 #include "ipc/ipc_message_macros.h"
 #include "media/base/video_frame.h"
 
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#include "content/common/gpu/media/exynos_video_encode_accelerator.h"
+#endif
+
 namespace content {
 
 GpuVideoEncodeAccelerator::GpuVideoEncodeAccelerator(GpuChannel* gpu_channel,
@@ -80,12 +84,18 @@ std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 GpuVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
 
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  profiles = ExynosVideoEncodeAccelerator::GetSupportedProfiles();
+#endif
+
   // TODO(sheu): return platform-specific profiles.
   return profiles;
 }
 
 void GpuVideoEncodeAccelerator::CreateEncoder() {
-  // TODO(sheu): actual create the encoder.
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+  encoder_.reset(new ExynosVideoEncodeAccelerator(this));
+#endif
 }
 
 void GpuVideoEncodeAccelerator::OnInitialize(
@@ -147,7 +157,7 @@ void GpuVideoEncodeAccelerator::OnEncode(int32 frame_id,
 
   scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::WrapExternalSharedMemory(
-          media::VideoFrame::I420,
+          input_format_,
           input_coded_size_,
           gfx::Rect(input_visible_size_),
           input_visible_size_,

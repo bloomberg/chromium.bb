@@ -1794,13 +1794,18 @@ void AddArmMaliGpuWhitelist(std::vector<std::string>* read_whitelist,
   static const char kDevMfcDecPath[] = "/dev/mfc-dec";
   static const char kDevGsc1Path[] = "/dev/gsc1";
 
+  // Devices needed for video encode acceleration on ARM.
+  static const char kDevMfcEncPath[] = "/dev/mfc-enc";
+
   read_whitelist->push_back(kMali0Path);
   read_whitelist->push_back(kDevMfcDecPath);
   read_whitelist->push_back(kDevGsc1Path);
+  read_whitelist->push_back(kDevMfcEncPath);
 
   write_whitelist->push_back(kMali0Path);
   write_whitelist->push_back(kDevMfcDecPath);
   write_whitelist->push_back(kDevGsc1Path);
+  write_whitelist->push_back(kDevMfcEncPath);
 }
 
 void AddArmTegraGpuWhitelist(std::vector<std::string>* read_whitelist,
