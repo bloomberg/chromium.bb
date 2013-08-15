@@ -1668,7 +1668,8 @@ def SendUpstream(parser, args, cmd):
   if options.contributor:
     commit_desc.append_footer('Patch from %s.' % options.contributor)
 
-  print 'Description:', repr(commit_desc.description)
+  print('Description:')
+  print(commit_desc.description)
 
   branches = [base_branch, cl.GetBranchRef()]
   if not options.force:
