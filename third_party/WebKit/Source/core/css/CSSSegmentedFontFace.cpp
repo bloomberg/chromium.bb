@@ -34,8 +34,10 @@
 
 namespace WebCore {
 
-CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* fontSelector)
+CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* fontSelector, FontTraitsMask traitsMask, bool isLocalFallback)
     : m_fontSelector(fontSelector)
+    , m_traitsMask(traitsMask)
+    , m_isLocalFallback(isLocalFallback)
 {
 }
 
@@ -44,7 +46,7 @@ CSSSegmentedFontFace::~CSSSegmentedFontFace()
     pruneTable();
     unsigned size = m_fontFaces.size();
     for (unsigned i = 0; i < size; i++)
-        m_fontFaces[i]->removedFromSegmentedFontFace(this);
+        m_fontFaces[i]->clearSegmentedFontFace();
 }
 
 void CSSSegmentedFontFace::pruneTable()
@@ -86,7 +88,7 @@ void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
 void CSSSegmentedFontFace::appendFontFace(PassRefPtr<CSSFontFace> fontFace)
 {
     pruneTable();
-    fontFace->addedToSegmentedFontFace(this);
+    fontFace->setSegmentedFontFace(this);
     m_fontFaces.append(fontFace);
 }
 
@@ -126,13 +128,12 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     if (!fontData)
         fontData = SegmentedFontData::create();
 
-    unsigned size = m_fontFaces.size();
-    for (unsigned i = 0; i < size; i++) {
+    bool syntheticBold = !(m_traitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask)) && (desiredTraitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask));
+    bool syntheticItalic = !(m_traitsMask & FontStyleItalicMask) && (desiredTraitsMask & FontStyleItalicMask);
+
+    for (int i = m_fontFaces.size() - 1; i >= 0; --i) {
         if (!m_fontFaces[i]->isValid())
             continue;
-        FontTraitsMask traitsMask = m_fontFaces[i]->traitsMask();
-        bool syntheticBold = !(traitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask)) && (desiredTraitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask));
-        bool syntheticItalic = !(traitsMask & FontStyleItalicMask) && (desiredTraitsMask & FontStyleItalicMask);
         if (RefPtr<SimpleFontData> faceFontData = m_fontFaces[i]->getFontData(fontDescription, syntheticBold, syntheticItalic)) {
             ASSERT(!faceFontData->isSegmented());
             appendFontDataWithInvalidUnicodeRangeIfLoading(fontData.get(), faceFontData.release(), m_fontFaces[i]->ranges());
@@ -142,6 +143,16 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
         return fontData; // No release, we have a reference to an object in the cache which should retain the ref count it has.
 
     return 0;
+}
+
+bool CSSSegmentedFontFace::hasSVGFontFaceSource() const
+{
+    unsigned size = m_fontFaces.size();
+    for (unsigned i = 0; i < size; i++) {
+        if (m_fontFaces[i]->hasSVGFontFaceSource())
+            return true;
+    }
+    return false;
 }
 
 bool CSSSegmentedFontFace::isLoading() const

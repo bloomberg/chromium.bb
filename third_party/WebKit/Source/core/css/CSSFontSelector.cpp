@@ -229,7 +229,7 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
             // FIXME: https://bugs.webkit.org/show_bug.cgi?id=112116 - This CSSFontFaceRule has no parent.
             if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
                 rule = static_pointer_cast<CSSFontFaceRule>(fontFaceRule->createCSSOMWrapper());
-            fontFace = CSSFontFace::create(static_cast<FontTraitsMask>(traitsMask), rule);
+            fontFace = CSSFontFace::create(rule);
         }
 
         if (source) {
@@ -287,29 +287,36 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
     if (familyName.isEmpty())
         return;
 
-    OwnPtr<Vector<RefPtr<CSSFontFace> > >& familyFontFaces = m_fontFaces.add(familyName, nullptr).iterator->value;
+    OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >& familyFontFaces = m_fontFaces.add(familyName, nullptr).iterator->value;
     if (!familyFontFaces) {
-        familyFontFaces = adoptPtr(new Vector<RefPtr<CSSFontFace> >);
+        familyFontFaces = adoptPtr(new HashMap<unsigned, RefPtr<CSSSegmentedFontFace> >);
 
         ASSERT(!m_locallyInstalledFontFaces.contains(familyName));
 
         Vector<unsigned> locallyInstalledFontsTraitsMasks;
         fontCache()->getTraitsInFamily(familyName, locallyInstalledFontsTraitsMasks);
         if (unsigned numLocallyInstalledFaces = locallyInstalledFontsTraitsMasks.size()) {
-            OwnPtr<Vector<RefPtr<CSSFontFace> > > familyLocallyInstalledFaces = adoptPtr(new Vector<RefPtr<CSSFontFace> >);
+            OwnPtr<Vector<RefPtr<CSSSegmentedFontFace> > > familyLocallyInstalledFaces = adoptPtr(new Vector<RefPtr<CSSSegmentedFontFace> >);
 
             for (unsigned i = 0; i < numLocallyInstalledFaces; ++i) {
-                RefPtr<CSSFontFace> locallyInstalledFontFace = CSSFontFace::create(static_cast<FontTraitsMask>(locallyInstalledFontsTraitsMasks[i]), 0, true);
+                RefPtr<CSSFontFace> locallyInstalledFontFace = CSSFontFace::create(0);
                 locallyInstalledFontFace->addSource(adoptPtr(new CSSFontFaceSource(familyName)));
                 ASSERT(locallyInstalledFontFace->isValid());
-                familyLocallyInstalledFaces->append(locallyInstalledFontFace);
+
+                RefPtr<CSSSegmentedFontFace> segmentedFontFace = CSSSegmentedFontFace::create(this, static_cast<FontTraitsMask>(locallyInstalledFontsTraitsMasks[i]), true);
+                segmentedFontFace->appendFontFace(locallyInstalledFontFace.release());
+                familyLocallyInstalledFaces->append(segmentedFontFace);
             }
 
             m_locallyInstalledFontFaces.set(familyName, familyLocallyInstalledFaces.release());
         }
     }
 
-    familyFontFaces->append(fontFace);
+    RefPtr<CSSSegmentedFontFace>& segmentedFontFace = familyFontFaces->add(traitsMask, 0).iterator->value;
+    if (!segmentedFontFace)
+        segmentedFontFace = CSSSegmentedFontFace::create(this, static_cast<FontTraitsMask>(traitsMask), false);
+
+    segmentedFontFace->appendFontFace(fontFace);
 
     ++m_version;
 }
@@ -384,21 +391,19 @@ static PassRefPtr<FontData> fontDataForGenericFamily(Document* document, const F
     return 0;
 }
 
-static FontTraitsMask desiredTraitsMaskForComparison;
-
-static inline bool compareFontFaces(CSSFontFace* first, CSSFontFace* second)
+static inline bool compareFontFaces(CSSSegmentedFontFace* first, CSSSegmentedFontFace* second, FontTraitsMask desiredTraitsMask)
 {
     FontTraitsMask firstTraitsMask = first->traitsMask();
     FontTraitsMask secondTraitsMask = second->traitsMask();
 
-    bool firstHasDesiredVariant = firstTraitsMask & desiredTraitsMaskForComparison & FontVariantMask;
-    bool secondHasDesiredVariant = secondTraitsMask & desiredTraitsMaskForComparison & FontVariantMask;
+    bool firstHasDesiredVariant = firstTraitsMask & desiredTraitsMask & FontVariantMask;
+    bool secondHasDesiredVariant = secondTraitsMask & desiredTraitsMask & FontVariantMask;
 
     if (firstHasDesiredVariant != secondHasDesiredVariant)
         return firstHasDesiredVariant;
 
     // We need to check font-variant css property for CSS2.1 compatibility.
-    if ((desiredTraitsMaskForComparison & FontVariantSmallCapsMask) && !first->isLocalFallback() && !second->isLocalFallback()) {
+    if ((desiredTraitsMask & FontVariantSmallCapsMask) && !first->isLocalFallback() && !second->isLocalFallback()) {
         // Prefer a font that has indicated that it can only support small-caps to a font that claims to support
         // all variants.  The specialized font is more likely to be true small-caps and not require synthesis.
         bool firstRequiresSmallCaps = (firstTraitsMask & FontVariantSmallCapsMask) && !(firstTraitsMask & FontVariantNormalMask);
@@ -407,13 +412,13 @@ static inline bool compareFontFaces(CSSFontFace* first, CSSFontFace* second)
             return firstRequiresSmallCaps;
     }
 
-    bool firstHasDesiredStyle = firstTraitsMask & desiredTraitsMaskForComparison & FontStyleMask;
-    bool secondHasDesiredStyle = secondTraitsMask & desiredTraitsMaskForComparison & FontStyleMask;
+    bool firstHasDesiredStyle = firstTraitsMask & desiredTraitsMask & FontStyleMask;
+    bool secondHasDesiredStyle = secondTraitsMask & desiredTraitsMask & FontStyleMask;
 
     if (firstHasDesiredStyle != secondHasDesiredStyle)
         return firstHasDesiredStyle;
 
-    if ((desiredTraitsMaskForComparison & FontStyleItalicMask) && !first->isLocalFallback() && !second->isLocalFallback()) {
+    if ((desiredTraitsMask & FontStyleItalicMask) && !first->isLocalFallback() && !second->isLocalFallback()) {
         // Prefer a font that has indicated that it can only support italics to a font that claims to support
         // all styles.  The specialized font is more likely to be the one the author wants used.
         bool firstRequiresItalics = (firstTraitsMask & FontStyleItalicMask) && !(firstTraitsMask & FontStyleNormalMask);
@@ -422,9 +427,9 @@ static inline bool compareFontFaces(CSSFontFace* first, CSSFontFace* second)
             return firstRequiresItalics;
     }
 
-    if (secondTraitsMask & desiredTraitsMaskForComparison & FontWeightMask)
+    if (secondTraitsMask & desiredTraitsMask & FontWeightMask)
         return false;
-    if (firstTraitsMask & desiredTraitsMaskForComparison & FontWeightMask)
+    if (firstTraitsMask & desiredTraitsMask & FontWeightMask)
         return true;
 
     // http://www.w3.org/TR/2011/WD-css3-fonts-20111004/#font-matching-algorithm says :
@@ -449,7 +454,7 @@ static inline bool compareFontFaces(CSSFontFace* first, CSSFontFace* second)
 
     unsigned ruleSetIndex = 0;
     unsigned w = FontWeight100Bit;
-    while (!(desiredTraitsMaskForComparison & (1 << w))) {
+    while (!(desiredTraitsMask & (1 << w))) {
         w++;
         ruleSetIndex++;
     }
@@ -492,7 +497,7 @@ PassRefPtr<FontData> CSSFontSelector::getFontData(const FontDescription& fontDes
 
 CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDescription, const AtomicString& family)
 {
-    Vector<RefPtr<CSSFontFace> >* familyFontFaces = m_fontFaces.get(family);
+    HashMap<unsigned, RefPtr<CSSSegmentedFontFace> >* familyFontFaces = m_fontFaces.get(family);
     if (!familyFontFaces || familyFontFaces->isEmpty())
         return 0;
 
@@ -504,12 +509,8 @@ CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDe
 
     RefPtr<CSSSegmentedFontFace>& face = segmentedFontFaceCache->add(traitsMask, 0).iterator->value;
     if (!face) {
-        face = CSSSegmentedFontFace::create(this);
-
-        // Collect all matching faces and sort them in order of preference.
-        Vector<CSSFontFace*, 32> candidateFontFaces;
-        for (int i = familyFontFaces->size() - 1; i >= 0; --i) {
-            CSSFontFace* candidate = familyFontFaces->at(i).get();
+        for (HashMap<unsigned, RefPtr<CSSSegmentedFontFace> >::const_iterator i = familyFontFaces->begin(); i != familyFontFaces->end(); ++i) {
+            CSSSegmentedFontFace* candidate = i->value.get();
             unsigned candidateTraitsMask = candidate->traitsMask();
             if ((traitsMask & FontStyleNormalMask) && !(candidateTraitsMask & FontStyleNormalMask))
                 continue;
@@ -521,27 +522,23 @@ CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDe
             if (candidate->hasSVGFontFaceSource() && (traitsMask & FontVariantSmallCapsMask) && !(candidateTraitsMask & FontVariantSmallCapsMask))
                 continue;
 #endif
-            candidateFontFaces.append(candidate);
+            if (!face || compareFontFaces(candidate, face.get(), traitsMask))
+                face = candidate;
         }
 
-        if (Vector<RefPtr<CSSFontFace> >* familyLocallyInstalledFontFaces = m_locallyInstalledFontFaces.get(family)) {
+        if (Vector<RefPtr<CSSSegmentedFontFace> >* familyLocallyInstalledFontFaces = m_locallyInstalledFontFaces.get(family)) {
             unsigned numLocallyInstalledFontFaces = familyLocallyInstalledFontFaces->size();
             for (unsigned i = 0; i < numLocallyInstalledFontFaces; ++i) {
-                CSSFontFace* candidate = familyLocallyInstalledFontFaces->at(i).get();
+                CSSSegmentedFontFace* candidate = familyLocallyInstalledFontFaces->at(i).get();
                 unsigned candidateTraitsMask = candidate->traitsMask();
                 if ((traitsMask & FontStyleNormalMask) && !(candidateTraitsMask & FontStyleNormalMask))
                     continue;
                 if ((traitsMask & FontVariantNormalMask) && !(candidateTraitsMask & FontVariantNormalMask))
                     continue;
-                candidateFontFaces.append(candidate);
+                if (!face || compareFontFaces(candidate, face.get(), traitsMask))
+                    face = candidate;
             }
         }
-
-        desiredTraitsMaskForComparison = traitsMask;
-        stable_sort(candidateFontFaces.begin(), candidateFontFaces.end(), compareFontFaces);
-        unsigned numCandidates = candidateFontFaces.size();
-        for (unsigned i = 0; i < numCandidates; ++i)
-            face->appendFontFace(candidateFontFaces[i]);
     }
     return face.get();
 }

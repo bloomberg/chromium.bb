@@ -81,8 +81,8 @@ private:
     void beginLoadTimerFired(Timer<CSSFontSelector>*);
 
     Document* m_document;
-    HashMap<String, OwnPtr<Vector<RefPtr<CSSFontFace> > >, CaseFoldingHash> m_fontFaces;
-    HashMap<String, OwnPtr<Vector<RefPtr<CSSFontFace> > >, CaseFoldingHash> m_locallyInstalledFontFaces;
+    HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fontFaces;
+    HashMap<String, OwnPtr<Vector<RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_locallyInstalledFontFaces;
     HashMap<String, OwnPtr<HashMap<unsigned, RefPtr<CSSSegmentedFontFace> > >, CaseFoldingHash> m_fonts;
     HashSet<FontSelectorClient*> m_clients;
 

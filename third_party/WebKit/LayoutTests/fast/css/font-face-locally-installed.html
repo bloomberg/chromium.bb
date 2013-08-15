@@ -10,12 +10,6 @@
         font-weight: 400;
         src: local(Times);
     }
-
-    @font-face {
-        font-family: Monaco;
-        unicode-range: U+0060-0080;
-        src: local(Times);
-    }
 </style>
 <p>
     This tests that locally-installed fonts are used for a family of the same
@@ -27,7 +21,4 @@
 </p>
 <p style="font-family: Helvetica;">
     This should be Times <b>and this should be Helvetica Bold.</b>
-</p>
-<p style="font-family: Monaco;">
-    UPPERCASE SHOULD BE MONACO and lowercase should be times.
 </p>
