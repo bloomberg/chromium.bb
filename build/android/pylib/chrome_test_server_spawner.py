@@ -100,7 +100,7 @@ def _GetServerTypeCommandLine(server_type):
 class TestServerThread(threading.Thread):
   """A thread to run the test server in a separate process."""
 
-  def __init__(self, ready_event, arguments, adb, tool, build_type):
+  def __init__(self, ready_event, arguments, adb, tool):
     """Initialize TestServerThread with the following argument.
 
     Args:
@@ -108,7 +108,6 @@ class TestServerThread(threading.Thread):
       arguments: dictionary of arguments to run the test server.
       adb: instance of AndroidCommands.
       tool: instance of runtime error detection tool.
-      build_type: 'Release' or 'Debug'.
     """
     threading.Thread.__init__(self)
     self.wait_event = threading.Event()
@@ -128,7 +127,6 @@ class TestServerThread(threading.Thread):
     self.pipe_in = None
     self.pipe_out = None
     self.command_line = []
-    self.build_type = build_type
 
   def _WaitToStartAndGetPortFromTestServer(self):
     """Waits for the Python test server to start and gets the port it is using.
@@ -251,7 +249,8 @@ class TestServerThread(threading.Thread):
       else:
         self.is_ready = _CheckPortStatus(self.host_port, True)
     if self.is_ready:
-      Forwarder.Map([(0, self.host_port)], self.adb, self.build_type, self.tool)
+      Forwarder.Map([(0, self.host_port)], self.adb, constants.GetBuildType(),
+                    self.tool)
       # Check whether the forwarder is ready on the device.
       self.is_ready = False
       device_port = Forwarder.DevicePortForHostPort(self.host_port)
@@ -333,8 +332,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         ready_event,
         json.loads(test_server_argument_json),
         self.server.adb,
-        self.server.tool,
-        self.server.build_type)
+        self.server.tool)
     self.server.test_server_instance.setDaemon(True)
     self.server.test_server_instance.start()
     ready_event.wait()
@@ -401,14 +399,14 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 class SpawningServer(object):
   """The class used to start/stop a http server."""
 
-  def __init__(self, test_server_spawner_port, adb, tool, build_type):
+  def __init__(self, test_server_spawner_port, adb, tool):
     logging.info('Creating new spawner on port: %d.', test_server_spawner_port)
     self.server = BaseHTTPServer.HTTPServer(('', test_server_spawner_port),
                                             SpawningServerRequestHandler)
     self.server.adb = adb
     self.server.tool = tool
     self.server.test_server_instance = None
-    self.server.build_type = build_type
+    self.server.build_type = constants.GetBuildType()
 
   def _Listen(self):
     logging.info('Starting test server spawner')

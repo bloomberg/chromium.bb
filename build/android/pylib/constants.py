@@ -83,6 +83,17 @@ ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
 UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
 
+def GetBuildType():
+  try:
+    return os.environ['CHROMIUM_BUILD_TYPE']
+  except KeyError:
+    raise Exception('The build type has not been set')
+
+
+def SetBuildType(build_type):
+  os.environ['CHROMIUM_BUILD_TYPE'] = build_type
+
+
 def _GetADBPath():
   if os.environ.get('ANDROID_SDK_ROOT'):
     return 'adb'

@@ -196,7 +196,6 @@ def InstrumentationSetup(host_driven_test_root, official_build,
     return test_runner.HostDrivenTestRunner(
         device, shard_index,
         instrumentation_options.tool,
-        instrumentation_options.build_type,
         instrumentation_options.push_deps,
         instrumentation_options.cleanup_test_files)
 

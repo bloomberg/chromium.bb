@@ -30,13 +30,11 @@ NET_TEST_SERVER_PORT_INFO_FILE = 'net-test-server-ports'
 class BaseTestRunner(object):
   """Base class for running tests on a single device."""
 
-  def __init__(self, device, tool, build_type, push_deps=True,
-               cleanup_test_files=False):
+  def __init__(self, device, tool, push_deps=True, cleanup_test_files=False):
     """
       Args:
         device: Tests will run on the device of this ID.
         tool: Name of the Valgrind tool.
-        build_type: 'Release' or 'Debug'.
         push_deps: If True, push all dependencies to the device.
         cleanup_test_files: Whether or not to cleanup test files on device.
     """
@@ -55,7 +53,6 @@ class BaseTestRunner(object):
     # starting it in TestServerThread.
     self.test_server_spawner_port = 0
     self.test_server_port = 0
-    self.build_type = build_type
     self._push_deps = push_deps
     self._cleanup_test_files = cleanup_test_files
 
@@ -130,7 +127,7 @@ class BaseTestRunner(object):
 
   def _ForwardPorts(self, port_pairs):
     """Forwards a port."""
-    Forwarder.Map(port_pairs, self.adb, self.build_type, self.tool)
+    Forwarder.Map(port_pairs, self.adb, constants.GetBuildType(), self.tool)
 
   def _UnmapPorts(self, port_pairs):
     """Unmap previously forwarded ports."""
@@ -194,8 +191,7 @@ class BaseTestRunner(object):
           [(self.test_server_spawner_port, self.test_server_spawner_port)])
       self._spawning_server = SpawningServer(self.test_server_spawner_port,
                                              self.adb,
-                                             self.tool,
-                                             self.build_type)
+                                             self.tool)
       self._spawning_server.Start()
       server_ready, error_msg = ports.IsHttpServerConnectable(
           '127.0.0.1', self.test_server_spawner_port, path='/ping',

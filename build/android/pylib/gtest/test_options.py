@@ -7,7 +7,6 @@
 import collections
 
 GTestOptions = collections.namedtuple('GTestOptions', [
-    'build_type',
     'tool',
     'cleanup_test_files',
     'push_deps',

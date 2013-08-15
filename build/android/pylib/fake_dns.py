@@ -14,14 +14,12 @@ class FakeDns(object):
   """Wrapper class for the fake_dns tool."""
   _FAKE_DNS_PATH = constants.TEST_EXECUTABLE_DIR + '/fake_dns'
 
-  def __init__(self, adb, build_type):
+  def __init__(self, adb):
     """
       Args:
         adb: the AndroidCommands to use.
-        build_type: 'Release' or 'Debug'.
     """
     self._adb = adb
-    self._build_type = build_type
     self._fake_dns = None
     self._original_dns = None
 
@@ -32,7 +30,7 @@ class FakeDns(object):
       subprocess instance connected to the fake_dns process on the device.
     """
     self._adb.PushIfNeeded(
-        os.path.join(constants.DIR_SOURCE_ROOT, 'out', self._build_type,
+        os.path.join(constants.DIR_SOURCE_ROOT, 'out', constants.GetBuildType(),
                      'fake_dns'),
         FakeDns._FAKE_DNS_PATH)
     return subprocess.Popen(

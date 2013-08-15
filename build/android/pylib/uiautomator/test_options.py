@@ -7,7 +7,6 @@
 import collections
 
 UIAutomatorOptions = collections.namedtuple('UIAutomatorOptions', [
-    'build_type',
     'tool',
     'cleanup_test_files',
     'push_deps',

@@ -7,7 +7,6 @@
 import collections
 
 InstrumentationOptions = collections.namedtuple('InstrumentationOptions', [
-    'build_type',
     'tool',
     'cleanup_test_files',
     'push_deps',

@@ -24,6 +24,7 @@ import os
 import time
 
 from pylib import android_commands
+from pylib import constants
 from pylib.base import base_test_result
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_result
@@ -55,11 +56,10 @@ class HostDrivenTestCase(object):
     self.instrumentation_options = instrumentation_options
     self.ports_to_forward = []
 
-  def SetUp(self, device, shard_index, build_type, push_deps,
+  def SetUp(self, device, shard_index, push_deps,
             cleanup_test_files):
     self.device_id = device
     self.shard_index = shard_index
-    self.build_type = build_type
     self.adb = android_commands.AndroidCommands(self.device_id)
     self.push_deps = push_deps
     self.cleanup_test_files = cleanup_test_files
@@ -69,7 +69,7 @@ class HostDrivenTestCase(object):
 
   def GetOutDir(self):
     return os.path.join(os.environ['CHROME_SRC'], 'out',
-                        self.build_type)
+                        constants.GetBuildType())
 
   def Run(self):
     logging.info('Running host-driven test: %s', self.tagged_name)

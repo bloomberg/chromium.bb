@@ -13,10 +13,10 @@ from pylib import constants
 import flakiness_dashboard_results_uploader
 
 
-def _LogToFile(results, test_type, suite_name, build_type):
+def _LogToFile(results, test_type, suite_name):
   """Log results to local files which can be used for aggregation later."""
   log_file_path = os.path.join(constants.DIR_SOURCE_ROOT, 'out',
-                               build_type, 'test_logs')
+                               constants.GetBuildType(), 'test_logs')
   if not os.path.exists(log_file_path):
     os.mkdir(log_file_path)
   full_file_name = os.path.join(
@@ -64,7 +64,7 @@ def _LogToFlakinessDashboard(results, test_type, test_package,
 
 
 def LogFull(results, test_type, test_package, annotation=None,
-            build_type='Debug', flakiness_server=None):
+            flakiness_server=None):
   """Log the tests results for the test suite.
 
   The results will be logged three different ways:
@@ -80,7 +80,6 @@ def LogFull(results, test_type, test_package, annotation=None,
                   'ContentShellTest' for instrumentation tests)
     annotation: If instrumenation test type, this is a list of annotations
                 (e.g. ['Smoke', 'SmallTest']).
-    build_type: Release/Debug
     flakiness_server: If provider, upload the results to flakiness dashboard
                       with this URL.
     """
@@ -104,7 +103,7 @@ def LogFull(results, test_type, test_package, annotation=None,
       suite_name = annotation[0]
     else:
       suite_name = test_package
-    _LogToFile(results, test_type, suite_name, build_type)
+    _LogToFile(results, test_type, suite_name)
 
     if flakiness_server:
       _LogToFlakinessDashboard(results, test_type, test_package,

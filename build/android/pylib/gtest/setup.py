@@ -69,14 +69,14 @@ _ISOLATE_SCRIPT = os.path.join(
     constants.DIR_SOURCE_ROOT, 'tools', 'swarm_client', 'isolate.py')
 
 
-def _GenerateDepsDirUsingIsolate(suite_name, build_type):
+def _GenerateDepsDirUsingIsolate(suite_name):
   """Generate the dependency dir for the test suite using isolate.
 
   Args:
     suite_name: Name of the test suite (e.g. base_unittests).
-    build_type: Release/Debug
   """
-  product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
+  product_dir = os.path.join(cmd_helper.OutDirectory.get(),
+      constants.GetBuildType())
   assert os.path.isabs(product_dir)
 
   if os.path.isdir(constants.ISOLATE_DEPS_DIR):
@@ -142,7 +142,8 @@ def _GenerateDepsDirUsingIsolate(suite_name, build_type):
       shutil.move(os.path.join(root, filename), paks_dir)
 
   # Move everything in PRODUCT_DIR to top level.
-  deps_product_dir = os.path.join(constants.ISOLATE_DEPS_DIR, 'out', build_type)
+  deps_product_dir = os.path.join(constants.ISOLATE_DEPS_DIR, 'out',
+      constants.GetBuildType())
   if os.path.isdir(deps_product_dir):
     for p in os.listdir(deps_product_dir):
       shutil.move(os.path.join(deps_product_dir, p), constants.ISOLATE_DEPS_DIR)
@@ -270,19 +271,17 @@ def Setup(test_options):
   if not ports.ResetTestServerPortAllocation():
     raise Exception('Failed to reset test server port.')
 
-  test_package = test_package_apk.TestPackageApk(test_options.suite_name,
-                                                 test_options.build_type)
+  test_package = test_package_apk.TestPackageApk(test_options.suite_name)
   if not os.path.exists(test_package.suite_path):
     test_package = test_package_exe.TestPackageExecutable(
-        test_options.suite_name, test_options.build_type)
+        test_options.suite_name)
     if not os.path.exists(test_package.suite_path):
       raise Exception(
           'Did not find %s target. Ensure it has been built.'
           % test_options.suite_name)
   logging.warning('Found target %s', test_package.suite_path)
 
-  _GenerateDepsDirUsingIsolate(test_options.suite_name,
-                               test_options.build_type)
+  _GenerateDepsDirUsingIsolate(test_options.suite_name)
 
   # Constructs a new TestRunner with the current options.
   def TestRunnerFactory(device, shard_index):

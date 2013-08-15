@@ -23,14 +23,14 @@ from test_package import TestPackage
 class TestPackageApk(TestPackage):
   """A helper class for running APK-based native tests."""
 
-  def __init__(self, suite_name, build_type):
+  def __init__(self, suite_name):
     """
     Args:
       suite_name: Name of the test suite (e.g. base_unittests).
-      build_type: 'Release' or 'Debug'.
     """
     TestPackage.__init__(self, suite_name)
-    product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
+    product_dir = os.path.join(cmd_helper.OutDirectory.get(),
+        constants.GetBuildType())
     if suite_name == 'content_browsertests':
       self.suite_path = os.path.join(
           product_dir, 'apks', '%s.apk' % suite_name)

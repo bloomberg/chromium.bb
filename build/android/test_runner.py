@@ -94,6 +94,7 @@ def AddCommonOptions(option_parser):
 def ProcessCommonOptions(options):
   """Processes and handles all common options."""
   run_tests_helper.SetLogLevel(options.verbose_count)
+  constants.SetBuildType(options.build_type)
 
 
 def AddGTestOptions(option_parser):
@@ -275,7 +276,6 @@ def ProcessInstrumentationOptions(options, error_func):
         '%s.jar' %  options.test_apk)
 
   return instrumentation_test_options.InstrumentationOptions(
-      options.build_type,
       options.tool,
       options.cleanup_test_files,
       options.push_deps,
@@ -344,7 +344,6 @@ def ProcessUIAutomatorOptions(options, error_func):
       '_java.jar')
 
   return uiautomator_test_options.UIAutomatorOptions(
-      options.build_type,
       options.tool,
       options.cleanup_test_files,
       options.push_deps,
@@ -411,7 +410,6 @@ def ProcessMonkeyTestOptions(options, error_func):
     category = options.category.split(',')
 
   return monkey_test_options.MonkeyOptions(
-      options.build_type,
       options.verbose_count,
       options.package_name,
       options.activity_name,
@@ -467,7 +465,6 @@ def _RunGTests(options, error_func):
     # TODO(gkanwar): Move this into ProcessGTestOptions once we require -s for
     # the gtest command.
     gtest_options = gtest_test_options.GTestOptions(
-        options.build_type,
         options.tool,
         options.cleanup_test_files,
         options.push_deps,
@@ -480,7 +477,6 @@ def _RunGTests(options, error_func):
     results, test_exit_code = test_dispatcher.RunTests(
         tests, runner_factory, False, options.test_device,
         shard=True,
-        build_type=options.build_type,
         test_timeout=None,
         num_retries=options.num_retries)
 
@@ -491,7 +487,6 @@ def _RunGTests(options, error_func):
         results=results,
         test_type='Unit test',
         test_package=suite_name,
-        build_type=options.build_type,
         flakiness_server=options.flakiness_dashboard_server)
 
   if os.path.isdir(constants.ISOLATE_DEPS_DIR):
@@ -514,7 +509,6 @@ def _RunInstrumentationTests(options, error_func):
         tests, runner_factory, options.wait_for_debugger,
         options.test_device,
         shard=True,
-        build_type=options.build_type,
         test_timeout=None,
         num_retries=options.num_retries)
 
@@ -530,7 +524,6 @@ def _RunInstrumentationTests(options, error_func):
           tests, runner_factory, False,
           options.test_device,
           shard=True,
-          build_type=options.build_type,
           test_timeout=None,
           num_retries=options.num_retries)
 
@@ -545,7 +538,6 @@ def _RunInstrumentationTests(options, error_func):
       test_type='Instrumentation',
       test_package=os.path.basename(options.test_apk),
       annotation=options.annotations,
-      build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
 
   return exit_code
@@ -560,7 +552,6 @@ def _RunUIAutomatorTests(options, error_func):
   results, exit_code = test_dispatcher.RunTests(
       tests, runner_factory, False, options.test_device,
       shard=True,
-      build_type=options.build_type,
       test_timeout=None,
       num_retries=options.num_retries)
 
@@ -569,7 +560,6 @@ def _RunUIAutomatorTests(options, error_func):
       test_type='UIAutomator',
       test_package=os.path.basename(options.test_jar),
       annotation=options.annotations,
-      build_type=options.build_type,
       flakiness_server=options.flakiness_dashboard_server)
 
   return exit_code
@@ -587,8 +577,7 @@ def _RunMonkeyTests(options, error_func):
   report_results.LogFull(
       results=results,
       test_type='Monkey',
-      test_package='Monkey',
-      build_type=options.build_type)
+      test_package='Monkey')
 
   return exit_code
 

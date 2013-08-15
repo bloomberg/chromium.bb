@@ -29,10 +29,11 @@ class DeviceStatsMonitor(object):
   RESULT_VIEWER_PATH = os.path.abspath(os.path.join(
       os.path.dirname(os.path.realpath(__file__)), 'device_stats_monitor.html'))
 
-  def __init__(self, adb, hz, build_type):
+  def __init__(self, adb, hz):
     self._adb = adb
     host_path = os.path.abspath(os.path.join(
-        constants.DIR_SOURCE_ROOT, 'out', build_type, 'device_stats_monitor'))
+        constants.DIR_SOURCE_ROOT, 'out', constants.GetBuildType(),
+        'device_stats_monitor'))
     self._adb.PushIfNeeded(host_path, DeviceStatsMonitor.DEVICE_PATH)
     self._hz = hz
 

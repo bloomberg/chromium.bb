@@ -22,14 +22,14 @@ class TestPackageExecutable(TestPackage):
 
   _TEST_RUNNER_RET_VAL_FILE = 'gtest_retval'
 
-  def __init__(self, suite_name, build_type):
+  def __init__(self, suite_name):
     """
     Args:
       suite_name: Name of the test suite (e.g. base_unittests).
-      build_type: 'Release' or 'Debug'.
     """
     TestPackage.__init__(self, suite_name)
-    product_dir = os.path.join(cmd_helper.OutDirectory.get(), build_type)
+    product_dir = os.path.join(cmd_helper.OutDirectory.get(),
+        constants.GetBuildType())
     self.suite_path = os.path.join(product_dir, suite_name)
     self._symbols_dir = os.path.join(product_dir, 'lib.target')
 

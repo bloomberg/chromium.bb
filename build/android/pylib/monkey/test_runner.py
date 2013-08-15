@@ -14,7 +14,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   """A TestRunner instance runs a monkey test on a single device."""
 
   def __init__(self, test_options, device, shard_index):
-    super(TestRunner, self).__init__(device, None, test_options.build_type)
+    super(TestRunner, self).__init__(device, None)
     self.options = test_options
 
   def _LaunchMonkeyTest(self):

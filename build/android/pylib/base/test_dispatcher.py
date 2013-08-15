@@ -335,7 +335,6 @@ def _GetAttachedDevices(wait_for_debugger=False, test_device=None):
 
 def RunTests(tests, runner_factory, wait_for_debugger, test_device,
              shard=True,
-             build_type='Debug',
              test_timeout=DEFAULT_TIMEOUT,
              setup_timeout=DEFAULT_TIMEOUT,
              num_retries=2):
@@ -352,7 +351,6 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
         shared test collection.
       - Replicating tests will copy all tests to each test runner through a
         unique test collection for each test runner.
-    build_type: Either 'Debug' or 'Release'.
     test_timeout: Watchdog timeout in seconds for running tests.
     setup_timeout: Watchdog timeout in seconds for creating and cleaning up
         test runners.
