@@ -193,9 +193,17 @@ base::TimeTicks DelayBasedTimeSource::Now() const {
 base::TimeTicks DelayBasedTimeSource::NextTickTarget(base::TimeTicks now) {
   const base::TimeDelta epsilon(base::TimeDelta::FromMicroseconds(1));
   base::TimeDelta new_interval = next_parameters_.interval;
-  int intervals_elapsed =
-      (now - next_parameters_.tick_target + new_interval - epsilon) /
-      new_interval;
+
+  // Integer division rounds towards 0, but we always want to round down the
+  // number of intervals_elapsed, so we need the extra condition here.
+  int intervals_elapsed;
+  if (next_parameters_.tick_target < now) {
+    intervals_elapsed =
+        (now - next_parameters_.tick_target + new_interval - epsilon) /
+        new_interval;
+  } else {
+    intervals_elapsed = (now - next_parameters_.tick_target) / new_interval;
+  }
   base::TimeTicks new_tick_target =
       next_parameters_.tick_target + new_interval * intervals_elapsed;
   DCHECK(now <= new_tick_target)
