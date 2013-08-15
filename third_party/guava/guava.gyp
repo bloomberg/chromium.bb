@@ -9,6 +9,8 @@
       'type': 'none',
       'variables': {
         'java_in_dir': 'src/guava',
+        'proguard_preprocess': 1,
+        'proguard_config': 'proguard.flags',
       },
       'dependencies': [
         '../../third_party/jsr-305/jsr-305.gyp:jsr_305_javalib',
