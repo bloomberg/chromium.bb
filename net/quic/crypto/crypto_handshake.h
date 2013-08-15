@@ -266,6 +266,9 @@ class NET_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     void SetProof(const std::vector<std::string>& certs,
                   base::StringPiece signature);
 
+    // Clears the certificate chain and signature and invalidates the proof.
+    void ClearProof();
+
     // SetProofValid records that the certificate chain and signature have been
     // validated and that it's safe to assume that the server is legitimate.
     // (Note: this does not check the chain or signature.)
