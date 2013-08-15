@@ -414,6 +414,25 @@ def CheckSetup():
     Log.Fatal('"pnacl-driver" cannot be used directly. '
               'Use pnacl-clang or pnacl-clang++.')
 
+def DriverOutputTypes(driver_flag, compiling_to_native):
+  if env.getbool('SHARED'):
+    bclink_output = 'pso'
+    link_output = 'so'
+  else:
+    bclink_output = 'pexe'
+    link_output = 'nexe'
+  output_type_map = {
+    ('-E', False) : 'pp',
+    ('-E', True)  : 'pp',
+    ('-c', False) : 'po',
+    ('-c', True)  : 'o',
+    ('-S', False) : 'll',
+    ('-S', True)  : 's',
+    ('',   False) : bclink_output,
+    ('',   True)  : link_output
+  }
+  return output_type_map[(driver_flag, compiling_to_native)]
+
 def main(argv):
   env.update(EXTRA_ENV)
   CheckSetup()
@@ -462,26 +481,7 @@ def main(argv):
       Log.Fatal('No input files')
 
   gcc_mode = env.getone('GCC_MODE')
-
-  if env.getbool('SHARED'):
-    bclink_output = 'pso'
-    link_output = 'so'
-  else:
-    bclink_output = 'pexe'
-    link_output = 'nexe'
-
-  output_type_map = {
-    ('-E', False) : 'pp',
-    ('-E', True)  : 'pp',
-    ('-c', False) : 'po',
-    ('-c', True)  : 'o',
-    ('-S', False) : 'll',
-    ('-S', True)  : 's',
-    ('',   False) : bclink_output,
-    ('',   True)  : link_output
-  }
-
-  output_type = output_type_map[(gcc_mode, compiling_to_native)]
+  output_type = DriverOutputTypes(gcc_mode, compiling_to_native)
   needs_linking = (gcc_mode == '')
 
   if env.getbool('NEED_DASH_E') and gcc_mode != '-E':

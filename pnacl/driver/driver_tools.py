@@ -384,14 +384,15 @@ def UnrecognizedOption(*args):
 ######################################################################
 
 def DefaultOutputName(filename, outtype):
-  if outtype in ('pp','dis'): return '-' # stdout
+  # For pre-processor mode, just print to stdout.
+  if outtype in ('pp'): return '-'
 
   base = pathtools.basename(filename)
   base = RemoveExtension(base)
   if outtype in ('po'): return base + '.o'
 
-  assert(outtype in ExtensionMap.values())
-  assert(not IsSourceType(outtype))
+  assert(outtype in filetype.ExtensionMap.values())
+  assert(not filetype.IsSourceType(outtype))
 
   return base + '.' + outtype
 
