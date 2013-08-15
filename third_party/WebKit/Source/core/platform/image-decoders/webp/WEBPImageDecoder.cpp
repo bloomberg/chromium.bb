@@ -55,7 +55,6 @@ WEBPImageDecoder::WEBPImageDecoder(ImageSource::AlphaOption alphaOption,
     , m_frameBackgroundHasAlpha(false)
 #if USE(QCMSLIB)
     , m_haveReadProfile(false)
-    , m_hasProfile(false)
     , m_transform(0)
 #endif
     , m_demux(0)
@@ -164,15 +163,8 @@ void WEBPImageDecoder::setData(SharedBuffer* data, bool allDataReceived)
 {
     if (failed())
         return;
-
     ImageDecoder::setData(data, allDataReceived);
-
-    if (m_demuxState != WEBP_DEMUX_DONE)
-        m_haveAlreadyParsedThisData = false;
-#if USE(QCMSLIB)
-    else if (m_hasProfile && !m_haveReadProfile)
-        m_haveAlreadyParsedThisData = false;
-#endif
+    m_haveAlreadyParsedThisData = false;
 }
 
 int WEBPImageDecoder::repetitionCount() const
@@ -220,9 +212,6 @@ bool WEBPImageDecoder::updateDemuxer()
     bool hasAnimation = (m_formatFlags & ANIMATION_FLAG);
     if (!ImageDecoder::isSizeAvailable()) {
         m_formatFlags = WebPDemuxGetI(m_demux, WEBP_FF_FORMAT_FLAGS);
-#if USE(QCMSLIB)
-        m_hasProfile = (m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile();
-#endif
         hasAnimation = (m_formatFlags & ANIMATION_FLAG);
         if (hasAnimation && !RuntimeEnabledFeatures::animatedWebPEnabled())
             return setFailed();
@@ -405,7 +394,7 @@ void WEBPImageDecoder::applyPostProcessing(size_t frameIndex)
     const int top = frameRect.y();
 
 #if USE(QCMSLIB)
-    if (m_hasProfile) {
+    if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile()) {
         if (!m_haveReadProfile) {
             readColorProfile();
             m_haveReadProfile = true;
@@ -517,7 +506,7 @@ bool WEBPImageDecoder::decode(const uint8_t* dataBytes, size_t dataSize, bool on
         if (!m_premultiplyAlpha)
             mode = outputMode(false);
 #if USE(QCMSLIB)
-        if (m_hasProfile)
+        if ((m_formatFlags & ICCP_FLAG) && !ignoresGammaAndColorProfile())
             mode = MODE_RGBA; // Decode to RGBA for input to libqcms.
 #endif
         WebPInitDecBuffer(&m_decoderBuffer);

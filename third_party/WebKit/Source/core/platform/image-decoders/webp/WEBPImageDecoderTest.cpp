@@ -138,6 +138,28 @@ void testRandomDecodeAfterClearFrameBufferCache(const char* webpFile)
     }
 }
 
+void testDecodeAfterReallocatingData(const char* webpFile)
+{
+    OwnPtr<WEBPImageDecoder> decoder = createDecoder();
+    RefPtr<SharedBuffer> data = readFile(webpFile);
+    ASSERT_TRUE(data.get());
+
+    // Parse from 'data'.
+    decoder->setData(data.get(), true);
+    size_t frameCount = decoder->frameCount();
+
+    // ... and then decode frames from 'reallocatedData'.
+    RefPtr<SharedBuffer> reallocatedData = data.get()->copy();
+    ASSERT_TRUE(reallocatedData.get());
+    data.clear();
+    decoder->setData(reallocatedData.get(), true);
+
+    for (size_t i = 0; i < frameCount; ++i) {
+        const ImageFrame* const frame = decoder->frameBufferAtIndex(i);
+        EXPECT_EQ(ImageFrame::FrameComplete, frame->status());
+    }
+}
+
 } // namespace
 
 class AnimatedWebPTests : public ::testing::Test {
@@ -430,6 +452,12 @@ TEST_F(AnimatedWebPTests, resumePartialDecodeAfterClearFrameBufferCache)
     ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
     EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->status());
     EXPECT_EQ(baselineHashes[0], hashSkBitmap(firstFrame->getSkBitmap()));
+}
+
+TEST_F(AnimatedWebPTests, decodeAfterReallocatingData)
+{
+    testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated.webp");
+    testDecodeAfterReallocatingData("/LayoutTests/fast/images/resources/webp-animated-icc-xmp.webp");
 }
 
 #endif
