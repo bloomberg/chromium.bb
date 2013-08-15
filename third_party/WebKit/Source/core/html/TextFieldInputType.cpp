@@ -44,6 +44,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/html/FormDataList.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -64,8 +65,13 @@ TextFieldInputType::TextFieldInputType(HTMLInputElement* element)
 
 TextFieldInputType::~TextFieldInputType()
 {
-    if (m_innerSpinButton)
-        m_innerSpinButton->removeSpinButtonOwner();
+    if (SpinButtonElement* spinButton = spinButtonElement())
+        spinButton->removeSpinButtonOwner();
+}
+
+SpinButtonElement* TextFieldInputType::spinButtonElement() const
+{
+    return toSpinButtonElement(element()->userAgentShadowRoot()->getElementById(ShadowElementNames::spinButton()));
 }
 
 bool TextFieldInputType::shouldShowFocusRingOnMouseFocus() const
@@ -170,8 +176,8 @@ void TextFieldInputType::handleKeydownEventForSpinButton(KeyboardEvent* event)
 
 void TextFieldInputType::forwardEvent(Event* event)
 {
-    if (m_innerSpinButton) {
-        m_innerSpinButton->forwardEvent(event);
+    if (SpinButtonElement* spinButton = spinButtonElement()) {
+        spinButton->forwardEvent(event);
         if (event->defaultHandled())
             return;
     }
@@ -238,7 +244,6 @@ void TextFieldInputType::createShadowSubtree()
 
     ASSERT(!m_innerText);
     ASSERT(!m_innerBlock);
-    ASSERT(!m_innerSpinButton);
 
     Document* document = element()->document();
     bool shouldHaveSpinButton = this->shouldHaveSpinButton();
@@ -260,17 +265,12 @@ void TextFieldInputType::createShadowSubtree()
     m_container->appendChild(m_innerBlock, IGNORE_EXCEPTION);
 
 #if ENABLE(INPUT_SPEECH)
-    ASSERT(!m_speechButton);
-    if (element()->isSpeechEnabled()) {
-        m_speechButton = InputFieldSpeechButtonElement::create(document);
-        m_container->appendChild(m_speechButton, IGNORE_EXCEPTION);
-    }
+    if (element()->isSpeechEnabled())
+        m_container->appendChild(InputFieldSpeechButtonElement::create(document), IGNORE_EXCEPTION);
 #endif
 
-    if (shouldHaveSpinButton) {
-        m_innerSpinButton = SpinButtonElement::create(document, *this);
-        m_container->appendChild(m_innerSpinButton, IGNORE_EXCEPTION);
-    }
+    if (shouldHaveSpinButton)
+        m_container->appendChild(SpinButtonElement::create(document, *this), IGNORE_EXCEPTION);
 }
 
 HTMLElement* TextFieldInputType::containerElement() const
@@ -289,18 +289,6 @@ HTMLElement* TextFieldInputType::innerTextElement() const
     return m_innerText.get();
 }
 
-HTMLElement* TextFieldInputType::innerSpinButtonElement() const
-{
-    return m_innerSpinButton.get();
-}
-
-#if ENABLE(INPUT_SPEECH)
-HTMLElement* TextFieldInputType::speechButtonElement() const
-{
-    return m_speechButton.get();
-}
-#endif
-
 HTMLElement* TextFieldInputType::placeholderElement() const
 {
     return m_placeholder.get();
@@ -312,12 +300,8 @@ void TextFieldInputType::destroyShadowSubtree()
     m_innerText.clear();
     m_placeholder.clear();
     m_innerBlock.clear();
-#if ENABLE(INPUT_SPEECH)
-    m_speechButton.clear();
-#endif
-    if (m_innerSpinButton)
-        m_innerSpinButton->removeSpinButtonOwner();
-    m_innerSpinButton.clear();
+    if (SpinButtonElement* spinButton = spinButtonElement())
+        spinButton->removeSpinButtonOwner();
     m_container.clear();
 }
 
@@ -330,14 +314,14 @@ void TextFieldInputType::attributeChanged()
 
 void TextFieldInputType::disabledAttributeChanged()
 {
-    if (m_innerSpinButton)
-        m_innerSpinButton->releaseCapture();
+    if (SpinButtonElement* spinButton = spinButtonElement())
+        spinButton->releaseCapture();
 }
 
 void TextFieldInputType::readonlyAttributeChanged()
 {
-    if (m_innerSpinButton)
-        m_innerSpinButton->releaseCapture();
+    if (SpinButtonElement* spinButton = spinButtonElement())
+        spinButton->releaseCapture();
 }
 
 bool TextFieldInputType::supportsReadOnly() const
