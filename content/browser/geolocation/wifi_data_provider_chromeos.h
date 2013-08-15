@@ -16,7 +16,7 @@ class CONTENT_EXPORT WifiDataProviderChromeOs
   WifiDataProviderChromeOs();
 
   // WifiDataProviderImplBase
-  virtual bool StartDataProvider() OVERRIDE;
+  virtual void StartDataProvider() OVERRIDE;
   virtual void StopDataProvider() OVERRIDE;
   virtual bool GetData(WifiData* data) OVERRIDE;
 

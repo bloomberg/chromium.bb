@@ -11,7 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread.h"
 #include "content/browser/geolocation/device_data_provider.h"
 #include "content/common/content_export.h"
 
@@ -61,14 +60,10 @@ class GenericPollingPolicy : public PollingPolicyInterface {
 
 // Base class to promote code sharing between platform specific wifi data
 // providers. It's optional for specific platforms to derive this, but if they
-// do threading and polling is taken care of by this base class, and all the
-// platform need do is provide the underlying WLAN access API and policy policy,
-// both of which will be create & accessed in the worker thread (only).
-// Also designed this way to promotes ease of testing the cross-platform
-// behavior w.r.t. polling & threading.
-class CONTENT_EXPORT WifiDataProviderCommon
-    : public WifiDataProviderImplBase,
-      private base::Thread {
+// do polling behavior is taken care of by this base class, and all the platform
+// need do is provide the underlying WLAN access API and polling policy.
+// Also designed this way to for ease of testing the cross-platform behavior.
+class CONTENT_EXPORT WifiDataProviderCommon : public WifiDataProviderImplBase {
  public:
   // Interface to abstract the low level data OS library call, and to allow
   // mocking (hence public).
@@ -82,7 +77,7 @@ class CONTENT_EXPORT WifiDataProviderCommon
   WifiDataProviderCommon();
 
   // WifiDataProviderImplBase implementation
-  virtual bool StartDataProvider() OVERRIDE;
+  virtual void StartDataProvider() OVERRIDE;
   virtual void StopDataProvider() OVERRIDE;
   virtual bool GetData(WifiData* data) OVERRIDE;
 
@@ -96,21 +91,15 @@ class CONTENT_EXPORT WifiDataProviderCommon
   virtual PollingPolicyInterface* NewPollingPolicy() = 0;
 
  private:
-  // Thread implementation
-  virtual void Init() OVERRIDE;
-  virtual void CleanUp() OVERRIDE;
-
-  // Task which run in the child thread.
+  // Runs a scan. Notifies the listeners if new data is found.
   void DoWifiScanTask();
 
   // Will schedule a scan; i.e. enqueue DoWifiScanTask deferred task.
   void ScheduleNextScan(int interval);
 
   WifiData wifi_data_;
-  base::Lock data_mutex_;
 
-  // Whether we've successfully completed a scan for WiFi data (or the polling
-  // thread has terminated early).
+  // Whether we've successfully completed a scan for WiFi data.
   bool is_first_scan_complete_;
 
   // Underlying OS wifi API.
@@ -119,7 +108,7 @@ class CONTENT_EXPORT WifiDataProviderCommon
   // Controls the polling update interval.
   scoped_ptr<PollingPolicyInterface> polling_policy_;
 
-  // Holder for the tasks which run on the thread; takes care of cleanup.
+  // Holder for delayed tasks; takes care of cleanup.
   base::WeakPtrFactory<WifiDataProviderCommon> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderCommon);

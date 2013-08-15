@@ -146,7 +146,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, StartThread) {
       .Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, PollingInterval())
       .Times(AtLeast(1));
-  EXPECT_TRUE(provider_->StartDataProvider());
+  provider_->StartDataProvider();
   main_message_loop_.Run();
   SUCCEED();
 }
@@ -188,7 +188,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoAnEmptyScan) {
       .Times(AtLeast(1));
   EXPECT_CALL(*polling_policy_, PollingInterval())
       .Times(AtLeast(1));
-  EXPECT_TRUE(provider_->StartDataProvider());
+  provider_->StartDataProvider();
   main_message_loop_.Run();
   // Check we had at least one call. The worker thread may have raced ahead
   // and made multiple calls.
@@ -211,7 +211,7 @@ TEST_F(GeolocationWifiDataProviderCommonTest, DoScanWithResults) {
   single_access_point.ssid = ASCIIToUTF16("foossid");
   wlan_api_->data_out_.insert(single_access_point);
 
-  EXPECT_TRUE(provider_->StartDataProvider());
+  provider_->StartDataProvider();
   main_message_loop_.Run();
   EXPECT_GT(wlan_api_->calls_, 0);
   WifiData data;

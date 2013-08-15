@@ -4,20 +4,19 @@
 
 // A device data provider provides data from the device that is used by a
 // NetworkLocationProvider to obtain a position fix. This data may be either
-// cell radio data or wifi data. For a given type of data, we use a singleton
-// instance of the device data provider, which is used by multiple
-// NetworkLocationProvider objects.
+// wifi data or (currently not used) cell radio data. For a given type of data,
+// we use a singleton instance of the device data provider, which is used by
+// multiple NetworkLocationProvider objects.
 //
-// This file providers DeviceDataProvider, which provides static methods to
+// This file provides DeviceDataProvider, which provides static methods to
 // access the singleton instance. The singleton instance uses a private
 // implementation to abstract across platforms and also to allow mock providers
 // to be used for testing.
 //
 // This file also provides DeviceDataProviderImplBase, a base class which
-// provides commom functionality for the private implementations.
+// provides common functionality for the private implementations.
 //
-// This file also declares the data structures used to represent cell radio data
-// and wifi data.
+// This file also declares the data structure used to represent wifi data.
 
 #ifndef CONTENT_BROWSER_GEOLOCATION_DEVICE_DATA_PROVIDER_H_
 #define CONTENT_BROWSER_GEOLOCATION_DEVICE_DATA_PROVIDER_H_
@@ -30,7 +29,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
-#include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -96,7 +94,11 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
     DCHECK(client_loop_);
   }
 
-  virtual bool StartDataProvider() = 0;
+  // Tells the provider to start looking for data. Listeners will start
+  // receiving notifications after this call.
+  virtual void StartDataProvider() = 0;
+  // Tells the provider to stop looking for data. Listeners will stop
+  // receiving notifications after this call.
   virtual void StopDataProvider() = 0;
   virtual bool GetData(DataType* data) = 0;
 
@@ -104,23 +106,19 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
   // This is required to pass as a parameter when making the callback to
   // listeners.
   void SetContainer(DeviceDataProvider<DataType>* container) {
-    DCHECK(CalledOnClientThread());
     container_ = container;
   }
 
   typedef typename DeviceDataProvider<DataType>::ListenerInterface
           ListenerInterface;
   void AddListener(ListenerInterface* listener) {
-    DCHECK(CalledOnClientThread());
     listeners_.insert(listener);
   }
   bool RemoveListener(ListenerInterface* listener) {
-    DCHECK(CalledOnClientThread());
     return listeners_.erase(listener) == 1;
   }
 
   bool has_listeners() const {
-    DCHECK(CalledOnClientThread());
     return !listeners_.empty();
   }
 
@@ -133,7 +131,7 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
     // Always make the notify callback via a posted task, so we can unwind
     // callstack here and make callback without causing client re-entrancy.
     client_loop_->PostTask(FROM_HERE, base::Bind(
-        &DeviceDataProviderImplBase<DataType>::NotifyListenersInClientLoop,
+        &DeviceDataProviderImplBase<DataType>::DoNotifyListeners,
         this));
   }
 
@@ -144,8 +142,7 @@ class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
   base::MessageLoop* client_loop() const { return client_loop_; }
 
  private:
-  void NotifyListenersInClientLoop() {
-    DCHECK(CalledOnClientThread());
+  void DoNotifyListeners() {
     // It's possible that all the listeners (and the container) went away
     // whilst this task was pending. This is fine; the loop will be a no-op.
     typename ListenersSet::const_iterator iter = listeners_.begin();
@@ -175,7 +172,7 @@ typedef DeviceDataProviderImplBase<WifiData> WifiDataProviderImplBase;
 // location providers. These location providers access the instance through the
 // Register and Unregister methods.
 template<typename DataType>
-class DeviceDataProvider : public base::NonThreadSafe {
+class DeviceDataProvider {
  public:
   // Interface to be implemented by listeners to a device data provider.
   class ListenerInterface {
@@ -188,7 +185,7 @@ class DeviceDataProvider : public base::NonThreadSafe {
 
   // Sets the factory function which will be used by Register to create the
   // implementation used by the singleton instance. This factory approach is
-  // used to abastract accross both platform-specific implementation and to
+  // used both to abstract accross platform-specific implementations and to
   // inject mock implementations for testing.
   typedef DeviceDataProviderImplBase<DataType>* (*ImplFactoryFunction)(void);
   static void SetFactory(ImplFactoryFunction factory_function_in) {
@@ -202,20 +199,17 @@ class DeviceDataProvider : public base::NonThreadSafe {
   // Adds a listener, which will be called back with DeviceDataUpdateAvailable
   // whenever new data is available. Returns the singleton instance.
   static DeviceDataProvider* Register(ListenerInterface* listener) {
-    bool need_to_start_thread = false;
+    bool need_to_start_provider = false;
     if (!instance_) {
       instance_ = new DeviceDataProvider();
-      need_to_start_thread = true;
+      need_to_start_provider = true;
     }
     DCHECK(instance_);
-    DCHECK(instance_->CalledOnValidThread());
     instance_->AddListener(listener);
     // Start the provider after adding the listener, to avoid any race in
     // it receiving an early callback.
-    if (need_to_start_thread) {
-      bool started = instance_->StartDataProvider();
-      DCHECK(started);
-    }
+    if (need_to_start_provider)
+      instance_->StartDataProvider();
     return instance_;
   }
 
@@ -223,7 +217,6 @@ class DeviceDataProvider : public base::NonThreadSafe {
   // instance. Return value indicates success.
   static bool Unregister(ListenerInterface* listener) {
     DCHECK(instance_);
-    DCHECK(instance_->CalledOnValidThread());
     DCHECK(instance_->has_listeners());
     if (!instance_->RemoveListener(listener)) {
       return false;
@@ -243,7 +236,6 @@ class DeviceDataProvider : public base::NonThreadSafe {
   // value indicates whether this is all the data the provider could ever
   // obtain.
   bool GetData(DataType* data) {
-    DCHECK(this->CalledOnValidThread());
     return impl_->GetData(data);
   }
 
@@ -273,8 +265,8 @@ class DeviceDataProvider : public base::NonThreadSafe {
     return impl_->has_listeners();
   }
 
-  bool StartDataProvider() {
-    return impl_->StartDataProvider();
+  void StartDataProvider() {
+    impl_->StartDataProvider();
   }
 
   void StopDataProvider() {

@@ -19,7 +19,7 @@ class EmptyDeviceDataProvider : public DeviceDataProviderImplBase<DataType> {
   virtual ~EmptyDeviceDataProvider() {}
 
   // DeviceDataProviderImplBase implementation
-  virtual bool StartDataProvider() { return true; }
+  virtual void StartDataProvider() { }
   virtual void StopDataProvider() { }
   virtual bool GetData(DataType *data) {
     DCHECK(data);

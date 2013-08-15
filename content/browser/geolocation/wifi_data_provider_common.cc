@@ -25,40 +25,14 @@ string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
 }
 
 WifiDataProviderCommon::WifiDataProviderCommon()
-    : Thread("Geolocation_wifi_provider"),
-      is_first_scan_complete_(false),
+    : is_first_scan_complete_(false),
       weak_factory_(this) {
 }
 
 WifiDataProviderCommon::~WifiDataProviderCommon() {
-  // Thread must be stopped before entering destructor chain to avoid race
-  // conditions; see comment in DeviceDataProvider::Unregister.
-  DCHECK(!IsRunning());  // Must call StopDataProvider before destroying me.
 }
 
-bool WifiDataProviderCommon::StartDataProvider() {
-  DCHECK(CalledOnClientThread());
-  DCHECK(!IsRunning());  // StartDataProvider must only be called once.
-  return Start();
-}
-
-void WifiDataProviderCommon::StopDataProvider() {
-  DCHECK(CalledOnClientThread());
-  Stop();
-}
-
-bool WifiDataProviderCommon::GetData(WifiData* data) {
-  DCHECK(CalledOnClientThread());
-  DCHECK(data);
-  base::AutoLock lock(data_mutex_);
-  *data = wifi_data_;
-  // If we've successfully completed a scan, indicate that we have all of the
-  // data we can get.
-  return is_first_scan_complete_;
-}
-
-// Thread implementation
-void WifiDataProviderCommon::Init() {
+void WifiDataProviderCommon::StartDataProvider() {
   DCHECK(wlan_api_ == NULL);
   wlan_api_.reset(NewWlanApi());
   if (wlan_api_ == NULL) {
@@ -76,10 +50,16 @@ void WifiDataProviderCommon::Init() {
   ScheduleNextScan(0);
 }
 
-void WifiDataProviderCommon::CleanUp() {
-  // Destroy these instances in the thread on which they were created.
+void WifiDataProviderCommon::StopDataProvider() {
   wlan_api_.reset();
   polling_policy_.reset();
+}
+
+bool WifiDataProviderCommon::GetData(WifiData* data) {
+  *data = wifi_data_;
+  // If we've successfully completed a scan, indicate that we have all of the
+  // data we can get.
+  return is_first_scan_complete_;
 }
 
 void WifiDataProviderCommon::DoWifiScanTask() {
@@ -88,11 +68,8 @@ void WifiDataProviderCommon::DoWifiScanTask() {
   if (!wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
     ScheduleNextScan(polling_policy_->NoWifiInterval());
   } else {
-    {
-      base::AutoLock lock(data_mutex_);
-      update_available = wifi_data_.DiffersSignificantly(new_data);
-      wifi_data_ = new_data;
-    }
+    update_available = wifi_data_.DiffersSignificantly(new_data);
+    wifi_data_ = new_data;
     polling_policy_->UpdatePollingInterval(update_available);
     ScheduleNextScan(polling_policy_->PollingInterval());
   }
@@ -103,7 +80,7 @@ void WifiDataProviderCommon::DoWifiScanTask() {
 }
 
 void WifiDataProviderCommon::ScheduleNextScan(int interval) {
-  message_loop()->PostDelayedTask(
+  client_loop()->PostDelayedTask(
       FROM_HERE,
       base::Bind(&WifiDataProviderCommon::DoWifiScanTask,
                  weak_factory_.GetWeakPtr()),

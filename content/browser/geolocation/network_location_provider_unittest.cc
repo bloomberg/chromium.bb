@@ -76,9 +76,8 @@ class MockDeviceDataProviderImpl
   }
 
   // DeviceDataProviderImplBase implementation.
-  virtual bool StartDataProvider() {
+  virtual void StartDataProvider() {
     ++start_calls_;
-    return true;
   }
   virtual void StopDataProvider() {
     ++stop_calls_;

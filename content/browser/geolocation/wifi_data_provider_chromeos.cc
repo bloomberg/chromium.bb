@@ -29,7 +29,7 @@ WifiDataProviderChromeOs::WifiDataProviderChromeOs() : started_(false) {
 WifiDataProviderChromeOs::~WifiDataProviderChromeOs() {
 }
 
-bool WifiDataProviderChromeOs::StartDataProvider() {
+void WifiDataProviderChromeOs::StartDataProvider() {
   DCHECK(CalledOnClientThread());
 
   DCHECK(polling_policy_ == NULL);
@@ -40,7 +40,6 @@ bool WifiDataProviderChromeOs::StartDataProvider() {
                                kNoWifiPollingIntervalMilliseconds>);
 
   ScheduleStart();
-  return true;
 }
 
 void WifiDataProviderChromeOs::StopDataProvider() {
