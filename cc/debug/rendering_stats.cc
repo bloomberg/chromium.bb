@@ -2,98 +2,185 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/values.h"
 #include "cc/debug/rendering_stats.h"
 
 namespace cc {
 
-RenderingStats::RenderingStats()
-    : animation_frame_count(0),
-      screen_frame_count(0),
-      dropped_frame_count(0),
-      total_commit_count(0),
-      total_pixels_painted(0),
-      total_pixels_recorded(0),
-      total_pixels_rasterized(0),
-      num_impl_thread_scrolls(0),
-      num_main_thread_scrolls(0),
-      num_layers_drawn(0),
-      num_missing_tiles(0),
-      total_deferred_image_decode_count(0),
-      total_deferred_image_cache_hit_count(0),
-      total_image_gathering_count(0),
-      total_tiles_analyzed(0),
-      solid_color_tiles_analyzed(0) {}
+MainThreadRenderingStats::MainThreadRenderingStats()
+  : animation_frame_count(0),
+    screen_frame_count(0),
+    commit_count(0),
+    painted_pixel_count(0),
+    recorded_pixel_count(0),
+    image_gathering_count(0) {}
 
-void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
+ImplThreadRenderingStats::ImplThreadRenderingStats()
+    : screen_frame_count(0),
+      dropped_frame_count(0),
+      rasterized_pixel_count(0),
+      impl_thread_scroll_count(0),
+      main_thread_scroll_count(0),
+      drawn_layer_count(0),
+      missing_tile_count(0),
+      deferred_image_decode_count(0),
+      deferred_image_cache_hit_count(0),
+      tile_analysis_count(0),
+      solid_color_tile_analysis_count(0) {}
+
+void MainThreadRenderingStats::EnumerateFields(
+    RenderingStatsEnumerator* enumerator) const {
   enumerator->AddInt64("numAnimationFrames", animation_frame_count);
   enumerator->AddInt64("numFramesSentToScreen", screen_frame_count);
-  enumerator->AddInt64("droppedFrameCount", dropped_frame_count);
   enumerator->AddDouble("totalPaintTimeInSeconds",
-                        total_paint_time.InSecondsF());
+                        paint_time.InSecondsF());
   enumerator->AddDouble("totalRecordTimeInSeconds",
-                        total_record_time.InSecondsF());
+                        record_time.InSecondsF());
+  enumerator->AddDouble("totalCommitTimeInSeconds",
+                        commit_time.InSecondsF());
+  enumerator->AddInt64("totalCommitCount", commit_count);
+  enumerator->AddInt64("totalPixelsPainted", painted_pixel_count);
+  enumerator->AddInt64("totalPixelsRecorded", recorded_pixel_count);
+  enumerator->AddInt64("totalImageGatheringCount",
+                       image_gathering_count);
+  enumerator->AddDouble("totalImageGatheringTimeInSeconds",
+                        image_gathering_time.InSecondsF());
+}
+
+void ImplThreadRenderingStats::EnumerateFields(
+    RenderingStatsEnumerator* enumerator) const {
+  enumerator->AddInt64("numFramesSentToScreen", screen_frame_count);
+  enumerator->AddInt64("droppedFrameCount", dropped_frame_count);
   enumerator->AddDouble("totalRasterizeTimeInSeconds",
-                        total_rasterize_time.InSecondsF());
+                        rasterize_time.InSecondsF());
   enumerator->AddDouble(
       "totalRasterizeTimeForNowBinsOnPendingTree",
-      total_rasterize_time_for_now_bins_on_pending_tree.InSecondsF());
-  enumerator->AddDouble("totalCommitTimeInSeconds",
-                        total_commit_time.InSecondsF());
+      rasterize_time_for_now_bins_on_pending_tree.InSecondsF());
   enumerator->AddDouble("bestRasterizeTimeInSeconds",
                         best_rasterize_time.InSecondsF());
-  enumerator->AddInt64("totalCommitCount", total_commit_count);
-  enumerator->AddInt64("totalPixelsPainted", total_pixels_painted);
-  enumerator->AddInt64("totalPixelsRecorded", total_pixels_recorded);
-  enumerator->AddInt64("totalPixelsRasterized", total_pixels_rasterized);
-  enumerator->AddInt64("numImplThreadScrolls", num_impl_thread_scrolls);
-  enumerator->AddInt64("numMainThreadScrolls", num_main_thread_scrolls);
-  enumerator->AddInt64("numLayersDrawn", num_layers_drawn);
-  enumerator->AddInt64("numMissingTiles", num_missing_tiles);
+  enumerator->AddInt64("totalPixelsRasterized", rasterized_pixel_count);
+  enumerator->AddInt64("numImplThreadScrolls", impl_thread_scroll_count);
+  enumerator->AddInt64("numMainThreadScrolls", main_thread_scroll_count);
+  enumerator->AddInt64("numLayersDrawn", drawn_layer_count);
+  enumerator->AddInt64("numMissingTiles", missing_tile_count);
   enumerator->AddInt64("totalDeferredImageDecodeCount",
-                       total_deferred_image_decode_count);
-  enumerator->AddInt64("totalTilesAnalyzed", total_tiles_analyzed);
+                       deferred_image_decode_count);
+  enumerator->AddInt64("totalTilesAnalyzed", tile_analysis_count);
   enumerator->AddInt64("solidColorTilesAnalyzed",
-                       solid_color_tiles_analyzed);
+                       solid_color_tile_analysis_count);
   enumerator->AddInt64("totalDeferredImageCacheHitCount",
-                       total_deferred_image_cache_hit_count);
-  enumerator->AddInt64("totalImageGatheringCount",
-                       total_image_gathering_count);
+                       deferred_image_cache_hit_count);
   enumerator->AddDouble("totalDeferredImageDecodeTimeInSeconds",
-                        total_deferred_image_decode_time.InSecondsF());
-  enumerator->AddDouble("totalImageGatheringTimeInSeconds",
-                        total_image_gathering_time.InSecondsF());
+                        deferred_image_decode_time.InSecondsF());
   enumerator->AddDouble("totalTileAnalysisTimeInSeconds",
-                        total_tile_analysis_time.InSecondsF());
+                        tile_analysis_time.InSecondsF());
+}
+
+void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
+  main_stats.EnumerateFields(enumerator);
+  impl_stats.EnumerateFields(enumerator);
+}
+
+scoped_ptr<base::debug::ConvertableToTraceFormat>
+MainThreadRenderingStats::AsTraceableData() const {
+  scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
+  record_data->SetInteger("animation_frame_count",
+                          animation_frame_count);
+  record_data->SetInteger("screen_frame_count",
+                          screen_frame_count);
+  record_data->SetDouble("paint_time",
+                         paint_time.InSecondsF());
+  record_data->SetDouble("record_time",
+                         record_time.InSecondsF());
+  record_data->SetDouble("commit_time",
+                         commit_time.InSecondsF());
+  record_data->SetInteger("commit_count",
+                          commit_count);
+  record_data->SetInteger("painted_pixel_count",
+                          painted_pixel_count);
+  record_data->SetInteger("recorded_pixel_count",
+                          recorded_pixel_count);
+  record_data->SetInteger("image_gathering_count",
+                          image_gathering_count);
+  return TracedValue::FromValue(record_data.release());
+}
+
+scoped_ptr<base::debug::ConvertableToTraceFormat>
+ImplThreadRenderingStats::AsTraceableData() const {
+  scoped_ptr<base::DictionaryValue> record_data(new base::DictionaryValue());
+  record_data->SetInteger("screen_frame_count",
+                          screen_frame_count);
+  record_data->SetInteger("dropped_frame_count",
+                          dropped_frame_count);
+  record_data->SetDouble("rasterize_time",
+                         rasterize_time.InSecondsF());
+  record_data->SetDouble(
+      "rasterize_time_for_now_bins_on_pending_tree",
+      rasterize_time_for_now_bins_on_pending_tree.InSecondsF());
+  record_data->SetDouble("best_rasterize_time",
+                         best_rasterize_time.InSecondsF());
+  record_data->SetInteger("rasterized_pixel_count",
+                          rasterized_pixel_count);
+  record_data->SetInteger("impl_thread_scroll_count",
+                          impl_thread_scroll_count);
+  record_data->SetInteger("main_thread_scroll_count",
+                          main_thread_scroll_count);
+  record_data->SetInteger("drawn_layer_count",
+                          drawn_layer_count);
+  record_data->SetInteger("missing_tile_count",
+                          missing_tile_count);
+  record_data->SetInteger("deferred_image_decode_count",
+                          deferred_image_decode_count);
+  record_data->SetInteger("deferred_image_cache_hit_count",
+                          deferred_image_cache_hit_count);
+  record_data->SetInteger("tile_analysis_count",
+                          tile_analysis_count);
+  record_data->SetInteger("solid_color_tile_analysis_count",
+                          solid_color_tile_analysis_count);
+  record_data->SetDouble("deferred_image_decode_time",
+                         deferred_image_decode_time.InSecondsF());
+  record_data->SetDouble("tile_analysis_time",
+                         tile_analysis_time.InSecondsF());
+  return TracedValue::FromValue(record_data.release());
+}
+
+
+void MainThreadRenderingStats::Add(const MainThreadRenderingStats& other) {
+  animation_frame_count += other.animation_frame_count;
+  screen_frame_count += other.screen_frame_count;
+  paint_time += other.paint_time;
+  record_time += other.record_time;
+  commit_time += other.commit_time;
+  commit_count += other.commit_count;
+  painted_pixel_count += other.painted_pixel_count;
+  recorded_pixel_count += other.recorded_pixel_count;
+  image_gathering_count += other.image_gathering_count;
+  image_gathering_time += other.image_gathering_time;
+}
+
+void ImplThreadRenderingStats::Add(const ImplThreadRenderingStats& other) {
+  screen_frame_count += other.screen_frame_count;
+  dropped_frame_count += other.dropped_frame_count;
+  rasterize_time += other.rasterize_time;
+  rasterize_time_for_now_bins_on_pending_tree +=
+      other.rasterize_time_for_now_bins_on_pending_tree;
+  best_rasterize_time += other.best_rasterize_time;
+  rasterized_pixel_count += other.rasterized_pixel_count;
+  impl_thread_scroll_count += other.impl_thread_scroll_count;
+  main_thread_scroll_count += other.main_thread_scroll_count;
+  drawn_layer_count += other.drawn_layer_count;
+  missing_tile_count += other.missing_tile_count;
+  deferred_image_decode_count += other.deferred_image_decode_count;
+  deferred_image_cache_hit_count += other.deferred_image_cache_hit_count;
+  deferred_image_decode_time += other.deferred_image_decode_time;
+  tile_analysis_count += other.tile_analysis_count;
+  solid_color_tile_analysis_count += other.solid_color_tile_analysis_count;
+  tile_analysis_time += other.tile_analysis_time;
 }
 
 void RenderingStats::Add(const RenderingStats& other) {
-  animation_frame_count += other.animation_frame_count;
-  screen_frame_count += other.screen_frame_count;
-  dropped_frame_count += other.dropped_frame_count;
-  total_paint_time += other.total_paint_time;
-  total_record_time += other.total_record_time;
-  total_rasterize_time += other.total_rasterize_time;
-  total_rasterize_time_for_now_bins_on_pending_tree +=
-      other.total_rasterize_time_for_now_bins_on_pending_tree;
-  total_commit_time += other.total_commit_time;
-  best_rasterize_time += other.best_rasterize_time;
-  total_commit_count += other.total_commit_count;
-  total_pixels_painted += other.total_pixels_painted;
-  total_pixels_recorded += other.total_pixels_recorded;
-  total_pixels_rasterized += other.total_pixels_rasterized;
-  num_impl_thread_scrolls += other.num_impl_thread_scrolls;
-  num_main_thread_scrolls += other.num_main_thread_scrolls;
-  num_layers_drawn += other.num_layers_drawn;
-  num_missing_tiles += other.num_missing_tiles;
-  total_deferred_image_decode_count += other.total_deferred_image_decode_count;
-  total_deferred_image_cache_hit_count +=
-      other.total_deferred_image_cache_hit_count;
-  total_image_gathering_count += other.total_image_gathering_count;
-  total_deferred_image_decode_time += other.total_deferred_image_decode_time;
-  total_image_gathering_time += other.total_image_gathering_time;
-  total_tiles_analyzed += other.total_tiles_analyzed;
-  solid_color_tiles_analyzed += other.solid_color_tiles_analyzed;
-  total_tile_analysis_time += other.total_tile_analysis_time;
+  main_stats.Add(other.main_stats);
+  impl_stats.Add(other.impl_stats);
 }
 
 }  // namespace cc

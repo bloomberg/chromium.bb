@@ -1226,24 +1226,25 @@ static void LayerTreeHostImplDidBeginTracingCallback(LayerImpl* layer) {
 
 void LayerTreeHostImpl::DrawLayers(FrameData* frame,
                                    base::TimeTicks frame_begin_time) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::DrawLayers");
+  TRACE_EVENT_BEGIN0("cc", "LayerTreeHostImpl::DrawLayers");
   DCHECK(CanDraw());
 
   if (frame->has_no_damage) {
     TRACE_EVENT0("cc", "EarlyOut_NoDamage");
     DCHECK(!output_surface_->capabilities()
                .draw_and_swap_full_viewport_every_frame);
+    TRACE_EVENT_END0("cc", "LayerTreeHostImpl::DrawLayers");
     return;
   }
 
   DCHECK(!frame->render_passes.empty());
 
+  int old_dropped_frame_count = fps_counter_->dropped_frame_count();
   fps_counter_->SaveTimeStamp(frame_begin_time);
 
-  rendering_stats_instrumentation_->SetScreenFrameCount(
-      fps_counter_->current_frame_number());
-  rendering_stats_instrumentation_->SetDroppedFrameCount(
-      fps_counter_->dropped_frame_count());
+  rendering_stats_instrumentation_->IncrementScreenFrameCount(1);
+  rendering_stats_instrumentation_->IncrementDroppedFrameCount(
+      fps_counter_->dropped_frame_count() - old_dropped_frame_count);
 
   if (tile_manager_) {
     memory_history_->SaveEntry(
@@ -1262,7 +1263,7 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
   if (!settings_.impl_side_painting && debug_state_.continuous_painting) {
     const RenderingStats& stats =
         rendering_stats_instrumentation_->GetRenderingStats();
-    paint_time_counter_->SavePaintTime(stats.total_paint_time);
+    paint_time_counter_->SavePaintTime(stats.main_stats.paint_time);
   }
 
   bool is_new_trace;
@@ -1307,6 +1308,10 @@ void LayerTreeHostImpl::DrawLayers(FrameData* frame,
         DidDrawDamagedArea();
   }
   active_tree_->root_layer()->ResetAllChangeTrackingForSubtree();
+  TRACE_EVENT_END1("cc", "LayerTreeHostImpl::DrawLayers",
+                   "data", rendering_stats_instrumentation_->
+                   GetImplThreadRenderingStats().AsTraceableData());
+  rendering_stats_instrumentation_->AccumulateAndClearImplThreadStats();
 }
 
 void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {
@@ -1511,8 +1516,8 @@ void LayerTreeHostImpl::ActivatePendingTree() {
     const RenderingStats& stats =
         rendering_stats_instrumentation_->GetRenderingStats();
     paint_time_counter_->SavePaintTime(
-        stats.total_paint_time + stats.total_record_time +
-            stats.total_rasterize_time_for_now_bins_on_pending_tree);
+        stats.main_stats.paint_time + stats.main_stats.record_time +
+            stats.impl_stats.rasterize_time_for_now_bins_on_pending_tree);
   }
 
   client_->DidActivatePendingTree();
