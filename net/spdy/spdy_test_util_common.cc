@@ -942,7 +942,8 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyGet(const char* const extra_headers[],
 SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
     const char* const extra_headers[],
     int extra_header_count,
-    int stream_id) const {
+    int stream_id,
+    RequestPriority priority) const {
   const char* const kConnectHeaders[] = {
     GetMethodKey(),  "CONNECT",
     GetPathKey(),    "www.google.com:443",
@@ -953,7 +954,7 @@ SpdyFrame* SpdyTestUtil::ConstructSpdyConnect(
                                    extra_header_count,
                                    /*compressed*/ false,
                                    stream_id,
-                                   LOWEST,
+                                   priority,
                                    SYN_STREAM,
                                    CONTROL_FLAG_NONE,
                                    kConnectHeaders,

@@ -279,7 +279,7 @@ TEST_P(HttpProxyClientSocketPoolTest, NeedAuth) {
     MockRead(ASYNC, 4, "0123456789"),
   };
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyConnect(NULL, 0, 1));
+      spdy_util_.ConstructSpdyConnect(NULL, 0, 1, LOWEST));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
@@ -377,7 +377,8 @@ TEST_P(HttpProxyClientSocketPoolTest, AsyncHaveAuth) {
   };
 
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1,
+                                      LOWEST));
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC)
   };
@@ -489,7 +490,8 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelUnexpectedClose) {
     MockRead(ASYNC, ERR_CONNECTION_CLOSED, 2),
   };
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1,
+                                      LOWEST));
   MockWrite spdy_writes[] = {
     CreateMockWrite(*req, 0, ASYNC)
   };
@@ -532,7 +534,8 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupError) {
     MockRead(ASYNC, 1, "HTTP/1.1 304 Not Modified\r\n\r\n"),
   };
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1,
+                                      LOWEST));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
   MockWrite spdy_writes[] = {
@@ -583,7 +586,8 @@ TEST_P(HttpProxyClientSocketPoolTest, TunnelSetupRedirect) {
     MockRead(ASYNC, 1, responseText.c_str()),
   };
   scoped_ptr<SpdyFrame> req(
-      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1));
+      spdy_util_.ConstructSpdyConnect(kAuthHeaders, kAuthHeadersSize, 1,
+                                      LOWEST));
   scoped_ptr<SpdyFrame> rst(
       spdy_util_.ConstructSpdyRstStream(1, RST_STREAM_CANCEL));
 
