@@ -352,6 +352,14 @@ static inline const ClassDecoder
     return state->_Forbidden_instance;
   }
 
+  if (((insn & 0x0000003D) == 0x00000034)) {
+    return state->_Safe_instance;
+  }
+
+  if (((insn & 0x0000003D) == 0x00000035)) {
+    return state->_Forbidden_instance;
+  }
+
   if (((insn & 0x0000003E) == 0x0000000A)) {
     return decode_arithm3_2(insn, state);
   }
@@ -376,16 +384,16 @@ static inline const ClassDecoder
     return decode_mult(insn, state);
   }
 
+  if (((insn & 0x0000003C) == 0x00000030)) {
+    return state->_Safe_instance;
+  }
+
   if (((insn & 0x0000003C) == 0x00000038)) {
     return state->_Forbidden_instance;
   }
 
   if (((insn & 0x00000038) == 0x00000020)) {
     return decode_arithm3_3(insn, state);
-  }
-
-  if (((insn & 0x00000038) == 0x00000030)) {
-    return state->_Forbidden_instance;
   }
 
   // Catch any attempt to fall through...
@@ -400,19 +408,31 @@ static inline const ClassDecoder
  */
 static inline const ClassDecoder
 &decode_regimm(const Instruction insn, const DecoderState *state) {
+  if (((insn & 0x001D0000) == 0x000C0000)) {
+    return state->_Safe_instance;
+  }
+
+  if (((insn & 0x001D0000) == 0x000D0000)) {
+    return state->_Forbidden_instance;
+  }
+
   if (((insn & 0x001C0000) == 0x00000000)) {
     return state->_Branch_instance;
+  }
+
+  if (((insn & 0x001C0000) == 0x00080000)) {
+    return state->_Safe_instance;
   }
 
   if (((insn & 0x001C0000) == 0x00100000)) {
     return state->_BranchAndLink_instance;
   }
 
-  if (((insn & 0x000C0000) == 0x00080000)) {
+  if (((insn & 0x000C0000) == 0x00040000)) {
     return state->_Forbidden_instance;
   }
 
-  if (((insn & 0x00040000) == 0x00040000)) {
+  if (((insn & 0x00180000) == 0x00180000)) {
     return state->_Forbidden_instance;
   }
 

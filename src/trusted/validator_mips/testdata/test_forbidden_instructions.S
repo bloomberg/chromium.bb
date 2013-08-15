@@ -1,12 +1,13 @@
-# Copyright 2012 The Native Client Authors.  All rights reserved.
-# Use of this source code is governed by a BSD-style license that can
-# be found in the LICENSE file.
+# Copyright (c) 2012 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 #
 # Tests a few instructions that are always illegal in NaCl.
 #
 
 .globl _start
+.set mips32r2
 _start:
 
   eret               # Error, (forbidden) unsafe instruction.
@@ -20,8 +21,23 @@ _start:
   di                 # Error, unsafe instruction.
   ei                 # Error, unsafe instruction.
   wait               # Error, unsafe instruction.
-  teq $t1, $t2       # Error, unsafe instruction.
   nop
   deret              # Error, unsafe instruction.
+
+  teqi      $t1, 0
+  tnei      $t1, 0
+  tgei      $t1, 0
+  tgeiu     $t1, 0
+  tlti      $t1, 0
+  tltiu     $t1, 0
+
+  teq       $t1, $zero
+  tne       $t1, $t2
+  tge       $t1, $t2
+  tgeu      $t1, $t2
+  tlt       $t1, $t2
+  tltu      $t1, $t2
+
+
 
 end_of_code:
