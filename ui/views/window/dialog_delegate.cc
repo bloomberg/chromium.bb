@@ -52,12 +52,6 @@ Widget* DialogDelegate::CreateDialogWidget(DialogDelegate* dialog,
   params.parent = parent;
   params.top_level = true;
   widget->Init(params);
-  if (use_new_style) {
-#if defined(USE_AURA)
-    // TODO(msw): Add a matching shadow type and remove the bubble frame border?
-    corewm::SetShadowType(widget->GetNativeWindow(), corewm::SHADOW_TYPE_NONE);
-#endif
-  }
   return widget;
 }
 
@@ -199,6 +193,10 @@ NonClientFrameView* DialogDelegate::CreateNewStyleFrameView(
   }
   if (force_opaque_border)
     widget->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+#if defined(USE_AURA)
+  // TODO(msw): Add a matching shadow type and remove the bubble frame border?
+  corewm::SetShadowType(widget->GetNativeWindow(), corewm::SHADOW_TYPE_NONE);
+#endif
   return frame;
 }
 

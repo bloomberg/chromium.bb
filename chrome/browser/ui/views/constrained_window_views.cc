@@ -58,7 +58,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
-#include "ui/views/corewm/shadow_types.h"
 #include "ui/views/corewm/visibility_controller.h"
 #include "ui/views/corewm/window_animations.h"
 #include "ui/views/corewm/window_modality_controller.h"
@@ -668,14 +667,6 @@ views::Widget* CreateWebContentsModalDialogViews(
   }
 
   dialog->Init(params);
-
-#if defined(USE_AURA)
-  if (views::DialogDelegate::UseNewStyle()) {
-    // TODO(msw): Add a matching shadow type and remove the bubble frame border?
-    views::corewm::SetShadowType(dialog->GetNativeWindow(),
-                                 views::corewm::SHADOW_TYPE_NONE);
-  }
-#endif
 
   if (dialog_host_observer) {
     dialog_host_observer->OnPositionRequiresUpdate();
