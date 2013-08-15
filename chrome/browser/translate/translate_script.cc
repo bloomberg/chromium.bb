@@ -8,7 +8,9 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/translate/translate_url_fetcher.h"
 #include "chrome/browser/translate/translate_url_util.h"
 #include "chrome/common/chrome_switches.h"
@@ -96,15 +98,13 @@ void TranslateScript::OnScriptFetchComplete(
   scoped_ptr<const TranslateURLFetcher> delete_ptr(fetcher_.release());
 
   if (success) {
+    DCHECK(data_.empty());
+    data_ = base::StringPrintf("var translateApiKey = '%s';\n",
+                               google_apis::GetAPIKey().c_str());
     base::StringPiece str = ResourceBundle::GetSharedInstance().
         GetRawDataResource(IDR_TRANSLATE_JS);
-    DCHECK(data_.empty());
-    str.CopyToString(&data_);
-    std::string argument = "('";
-    std::string api_key = google_apis::GetAPIKey();
-    argument += net::EscapeQueryParamValue(api_key, true);
-    argument += "');\n";
-    data_ += argument + data;
+    str.AppendToString(&data_);
+    data_ += data;
 
     // We'll expire the cached script after some time, to make sure long
     // running browsers still get fixes that might get pushed with newer

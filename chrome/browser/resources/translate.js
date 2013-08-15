@@ -9,7 +9,11 @@
 
 var cr = {};
 
-cr.googleTranslate = (function(key) {
+/**
+ * An object to provide functions to interact with the Translate library.
+ * @type {object}
+ */
+cr.googleTranslate = (function() {
   /**
    * The Translate Element library's instance.
    * @type {object}
@@ -259,11 +263,14 @@ cr.googleTranslate = (function(key) {
       loadedTime = performance.now();
       try {
         lib = google.translate.TranslateService({
-          'key': key,
+          // translateApiKey is predefined by translate_script.cc.
+          'key': translateApiKey,
           'useSecureConnection': true
         });
+        translateApiKey = undefined;
       } catch (err) {
         error = true;
+        translateApiKey = undefined;
         return;
       }
       // The TranslateService is not available immediately as it needs to start
@@ -271,4 +278,4 @@ cr.googleTranslate = (function(key) {
       checkLibReady();
     }
   };
-})/* Calling code '(|key|);' will be appended by TranslateHelper in C++ here. */
+})();
