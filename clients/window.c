@@ -4791,10 +4791,7 @@ display_add_output(struct display *d, uint32_t id)
 {
 	struct output *output;
 
-	output = zalloc(sizeof *output);
-	if (output == NULL)
-		return;
-
+	output = xzalloc(sizeof *output);
 	output->display = d;
 	output->scale = 1;
 	output->output =
