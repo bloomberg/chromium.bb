@@ -287,7 +287,7 @@ bool URLOverridesHandler::Parse(Extension* extension, string16* error) {
                    !(extension->location() == Manifest::COMPONENT &&
                      page == chrome::kChromeUIFileManagerHost));
 #endif
-#if defined(USE_AURA)
+#if defined(OS_CHROMEOS)
     is_override = (is_override && page != keyboard::kKeyboardWebUIHost);
 #endif
 
