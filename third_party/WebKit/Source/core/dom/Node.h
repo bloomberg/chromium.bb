@@ -245,12 +245,11 @@ public:
 
     enum CustomElementState {
         NotCustomElement,
-        UpgradeCandidate,
-        Defined,
+        WaitingForUpgrade,
         Upgraded
     };
     bool isCustomElement() const { return customElementState() != NotCustomElement; }
-    CustomElementState customElementState() const { return CustomElementState((getFlag(CustomElementHasDefinitionOrIsUpgraded) ? 2 : 0) | (getFlag(CustomElementIsUpgradeCandidateOrUpgraded) ? 1 : 0)); }
+    CustomElementState customElementState() const { return CustomElementState((getFlag(CustomElementWaitingForUpgrade) ? 1 : 0) | (getFlag(CustomElementIsUpgraded) ? 2 : 0)); }
     void setCustomElementState(CustomElementState newState);
 
     virtual bool isMediaControlElement() const { return false; }
@@ -750,8 +749,8 @@ private:
 
         NotifyRendererWithIdenticalStyles = 1 << 26,
 
-        CustomElementIsUpgradeCandidateOrUpgraded = 1 << 27,
-        CustomElementHasDefinitionOrIsUpgraded = 1 << 28,
+        CustomElementWaitingForUpgrade = 1 << 27,
+        CustomElementIsUpgraded = 1 << 28,
 
         ChildNeedsDistributionRecalc = 1 << 29,
 

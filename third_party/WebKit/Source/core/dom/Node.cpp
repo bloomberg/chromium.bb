@@ -2731,22 +2731,18 @@ void Node::setCustomElementState(CustomElementState newState)
         ASSERT_NOT_REACHED(); // Everything starts in this state
         return;
 
-    case UpgradeCandidate:
+    case WaitingForUpgrade:
         ASSERT(NotCustomElement == oldState);
         break;
 
-    case Defined:
-        ASSERT(UpgradeCandidate == oldState || NotCustomElement == oldState);
-        break;
-
     case Upgraded:
-        ASSERT(Defined == oldState);
+        ASSERT(WaitingForUpgrade == oldState);
         break;
     }
 
     ASSERT(isHTMLElement() || isSVGElement());
-    setFlag(newState & 1, CustomElementIsUpgradeCandidateOrUpgraded);
-    setFlag(newState & 2, CustomElementHasDefinitionOrIsUpgraded);
+    setFlag(newState & 1, CustomElementWaitingForUpgrade);
+    setFlag(newState & 2, CustomElementIsUpgraded);
 
     if (oldState == NotCustomElement || newState == Upgraded)
         setNeedsStyleRecalc(); // :unresolved has changed

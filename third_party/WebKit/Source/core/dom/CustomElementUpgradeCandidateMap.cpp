@@ -44,8 +44,6 @@ CustomElementUpgradeCandidateMap::~CustomElementUpgradeCandidateMap()
 
 void CustomElementUpgradeCandidateMap::add(const CustomElementDescriptor& descriptor, Element* element)
 {
-    element->setCustomElementState(Element::UpgradeCandidate);
-
     observe(element);
 
     UpgradeCandidateMap::AddResult result = m_upgradeCandidates.add(element, descriptor);

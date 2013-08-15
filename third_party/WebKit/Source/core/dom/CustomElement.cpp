@@ -88,12 +88,9 @@ bool CustomElement::isCustomTagName(const AtomicString& localName)
     return isValidTypeName(localName);
 }
 
-void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition> passDefinition)
+void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition> definition)
 {
-    RefPtr<CustomElementDefinition> definition(passDefinition);
-    element->setCustomElementState(Element::Defined);
     definitions().add(element, definition);
-    CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
 }
 
 CustomElementDefinition* CustomElement::definitionFor(Element* element)
@@ -130,11 +127,7 @@ void CustomElement::wasDestroyed(Element* element)
         ASSERT_NOT_REACHED();
         break;
 
-    case Element::UpgradeCandidate:
-        CustomElementObserver::notifyElementWasDestroyed(element);
-        break;
-
-    case Element::Defined:
+    case Element::WaitingForUpgrade:
     case Element::Upgraded:
         definitions().remove(element);
         CustomElementObserver::notifyElementWasDestroyed(element);

@@ -35,6 +35,7 @@
 #include "SVGNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/CustomElement.h"
+#include "core/dom/CustomElementCallbackScheduler.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/Element.h"
 #include "core/html/HTMLElement.h"
@@ -75,6 +76,7 @@ PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Doc
         return Element::create(tagName, document);
     }
 
+    element->setCustomElementState(Element::WaitingForUpgrade);
     resolve(element.get(), nullAtom);
     return element.release();
 }
@@ -104,10 +106,22 @@ void CustomElementRegistrationContext::resolve(Element* element, const AtomicStr
 void CustomElementRegistrationContext::didResolveElement(CustomElementDefinition* definition, Element* element)
 {
     CustomElement::define(element, definition);
+
+    switch (element->customElementState()) {
+    case Element::NotCustomElement:
+    case Element::Upgraded:
+        ASSERT_NOT_REACHED();
+        break;
+
+    case Element::WaitingForUpgrade:
+        CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
+        break;
+    }
 }
 
 void CustomElementRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
 {
+    ASSERT(element->customElementState() == Element::WaitingForUpgrade);
     m_candidates.add(descriptor, element);
 }
 
@@ -145,6 +159,8 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
 
     // Custom tags take precedence over type extensions
     ASSERT(!CustomElement::isCustomTagName(element->localName()));
+
+    element->setCustomElementState(Element::WaitingForUpgrade);
 
     if (CustomElementRegistrationContext* context = element->document()->registrationContext())
         context->didGiveTypeExtension(element, type);
