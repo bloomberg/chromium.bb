@@ -10,10 +10,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.chrome.browser.DevToolsServer;
+import org.chromium.chrome.testshell.sync.SyncController;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.AndroidBrowserProcess;
 import org.chromium.content.browser.BrowserStartupConfig;
@@ -23,12 +27,13 @@ import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
+import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.WindowAndroid;
 
 /**
  * The {@link Activity} component of a basic test shell to test Chrome features.
  */
-public class ChromiumTestShellActivity extends ChromiumActivity {
+public class ChromiumTestShellActivity extends ChromiumActivity implements MenuHandler {
     private static final String TAG = "ChromiumTestShellActivity";
     private static final String COMMAND_LINE_FILE =
             "/data/local/tmp/chromium-testshell-command-line";
@@ -90,6 +95,8 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
         if (!TextUtils.isEmpty(startupUrl)) {
             mTabManager.setStartupUrl(startupUrl);
         }
+        TestShellToolbar mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
+        mToolbar.setMenuHandler(this);
 
         mWindow = new WindowAndroid(this);
         mWindow.restoreInstanceState(savedInstanceState);
@@ -192,6 +199,46 @@ public class ChromiumTestShellActivity extends ChromiumActivity {
                 return new ActivityContentVideoViewClient(ChromiumTestShellActivity.this);
             }
         });
+    }
+
+    /**
+     * From {@link MenuHandler}.
+     */
+    @Override
+    public void showPopupMenu() {
+        openOptionsMenu();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.signin:
+                if (ChromeSigninController.get(this).isSignedIn())
+                    SyncController.openSignOutDialog(getFragmentManager());
+                else
+                    SyncController.openSigninDialog(getFragmentManager());
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.setGroupVisible(R.id.MAIN_MENU, true);
+        MenuItem signinItem = menu.findItem(R.id.signin);
+        if (ChromeSigninController.get(this).isSignedIn())
+            signinItem.setTitle(ChromeSigninController.get(this).getSignedInAccountName());
+        else
+            signinItem.setTitle(R.string.signin_sign_in);
+        return true;
     }
 
     private void waitForDebuggerIfNeeded() {

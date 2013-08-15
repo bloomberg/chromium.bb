@@ -39,6 +39,11 @@
             android:layout_height="38dp"
             android:src="@android:drawable/ic_media_next"
             android:scaleType="center" />
+        <ImageButton android:id="@+id/menu_button"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:src="@drawable/menu_dots"
+            android:scaleType="center" />
     </org.chromium.chrome.testshell.TestShellToolbar>
     <FrameLayout android:id="@+id/content_container"
         android:layout_width="match_parent"

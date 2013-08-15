@@ -42,6 +42,7 @@ public class TestShellToolbar extends LinearLayout {
 
     private TestShellTab mTab;
     private TestShellTabObserver mTabObserver = new TestShellTabObserverImpl();
+    private MenuHandler mMenuHandler;
 
     /**
      * @param context The Context the view is running in.
@@ -79,6 +80,11 @@ public class TestShellToolbar extends LinearLayout {
         mProgressDrawable = (ClipDrawable) findViewById(R.id.toolbar).getBackground();
         initializeUrlField();
         initializeNavigationButtons();
+        initializeMenuButton();
+    }
+
+    public void setMenuHandler(MenuHandler menuHandler) {
+        mMenuHandler = menuHandler;
     }
 
     private void initializeUrlField() {
@@ -126,6 +132,16 @@ public class TestShellToolbar extends LinearLayout {
             @Override
             public void onClick(View v) {
                 if (mTab.getContentView().canGoForward()) mTab.getContentView().goForward();
+            }
+        });
+    }
+
+    private void initializeMenuButton() {
+        ImageButton menuButton = (ImageButton) findViewById(R.id.menu_button);
+        menuButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mMenuHandler != null) mMenuHandler.showPopupMenu();
             }
         });
     }
