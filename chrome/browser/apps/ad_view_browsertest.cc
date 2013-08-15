@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/browser/extensions/platform_app_browsertest_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 #include "net/url_request/url_fetcher.h"

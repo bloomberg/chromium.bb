@@ -12,7 +12,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
-#include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/platform_app_browsertest_util.h"
+#include "chrome/browser/apps/app_browsertest_util.h"
 
 #include "apps/app_window_contents.h"
 #include "apps/native_app_window.h"
