@@ -168,6 +168,11 @@ void RenderGrid::addChild(RenderObject* newChild, RenderObject* beforeChild)
     if (gridIsDirty())
         return;
 
+    if (!newChild->isBox()) {
+        dirtyGrid();
+        return;
+    }
+
     RenderBox* newChildBox = toRenderBox(newChild);
     OwnPtr<GridSpan> rowPositions = resolveGridPositionsFromStyle(newChildBox, ForRows);
     OwnPtr<GridSpan> columnPositions = resolveGridPositionsFromStyle(newChildBox, ForColumns);
