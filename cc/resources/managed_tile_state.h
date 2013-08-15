@@ -86,12 +86,6 @@ class CC_EXPORT ManagedTileState {
 
       size_t GPUMemoryUsageInBytes() const;
 
-      void SetResourceForTesting(scoped_ptr<ResourcePool::Resource> resource) {
-        resource_ = resource.Pass();
-      }
-      const ResourcePool::Resource* GetResourceForTesting() const {
-        return resource_.get();
-      }
       void SetSolidColorForTesting(SkColor color) {
         set_solid_color(color);
       }

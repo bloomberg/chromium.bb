@@ -80,6 +80,24 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
     return all_tiles_required_for_activation_have_been_initialized_;
   }
 
+  void InitializeTilesWithResourcesForTesting(
+      const std::vector<Tile*>& tiles,
+      ResourceProvider* resource_provider) {
+    for (size_t i = 0; i < tiles.size(); ++i) {
+      ManagedTileState& mts = tiles[i]->managed_state();
+      ManagedTileState::TileVersion& tile_version =
+          mts.tile_versions[HIGH_QUALITY_NO_LCD_RASTER_MODE];
+
+      tile_version.resource_ = make_scoped_ptr(
+          new ResourcePool::Resource(resource_provider,
+                                     gfx::Size(1, 1),
+                                     resource_provider->best_texture_format()));
+
+      bytes_releasable_ += tiles[i]->bytes_consumed_if_allocated();
+      ++resources_releasable_;
+    }
+  }
+
  protected:
   TileManager(TileManagerClient* client,
               ResourceProvider* resource_provider,
@@ -147,6 +165,9 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient {
   bool all_tiles_that_need_to_be_rasterized_have_memory_;
   bool all_tiles_required_for_activation_have_memory_;
   bool all_tiles_required_for_activation_have_been_initialized_;
+
+  size_t bytes_releasable_;
+  size_t resources_releasable_;
 
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;

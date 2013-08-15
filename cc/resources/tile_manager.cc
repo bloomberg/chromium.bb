@@ -147,6 +147,8 @@ TileManager::TileManager(
       all_tiles_that_need_to_be_rasterized_have_memory_(true),
       all_tiles_required_for_activation_have_memory_(true),
       all_tiles_required_for_activation_have_been_initialized_(true),
+      bytes_releasable_(0),
+      resources_releasable_(0),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
@@ -170,6 +172,9 @@ TileManager::~TileManager() {
   // resources.
   raster_worker_pool_->Shutdown();
   raster_worker_pool_->CheckForCompletedTasks();
+
+  DCHECK_EQ(0u, bytes_releasable_);
+  DCHECK_EQ(0u, resources_releasable_);
 }
 
 void TileManager::SetGlobalState(
@@ -485,31 +490,16 @@ void TileManager::AssignGpuMemoryToTiles(
 
   // Now give memory out to the tiles until we're out, and build
   // the needs-to-be-rasterized queue.
-  size_t bytes_releasable = 0;
-  size_t resources_releasable = 0;
-  for (PrioritizedTileSet::Iterator it(tiles, false);
-       it;
-       ++it) {
-    const Tile* tile = *it;
-    const ManagedTileState& mts = tile->managed_state();
-    for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
-      if (mts.tile_versions[mode].resource_) {
-        bytes_releasable += tile->bytes_consumed_if_allocated();
-        resources_releasable++;
-      }
-    }
-  }
-
   all_tiles_that_need_to_be_rasterized_have_memory_ = true;
   all_tiles_required_for_activation_have_memory_ = true;
   all_tiles_required_for_activation_have_been_initialized_ = true;
 
   // Cast to prevent overflow.
   int64 bytes_available =
-      static_cast<int64>(bytes_releasable) +
+      static_cast<int64>(bytes_releasable_) +
       static_cast<int64>(global_state_.memory_limit_in_bytes) -
       static_cast<int64>(resource_pool_->acquired_memory_usage_bytes());
-  int resources_available = resources_releasable +
+  int resources_available = resources_releasable_ +
                             global_state_.num_resources_limit -
                             resource_pool_->NumResources();
 
@@ -624,7 +614,7 @@ void TileManager::AssignGpuMemoryToTiles(
   memory_stats_from_last_assign_.bytes_allocated =
       bytes_allocatable - bytes_left;
   memory_stats_from_last_assign_.bytes_unreleasable =
-      bytes_allocatable - bytes_releasable;
+      bytes_allocatable - bytes_releasable_;
   memory_stats_from_last_assign_.bytes_over =
       bytes_that_exceeded_memory_budget;
 }
@@ -658,6 +648,12 @@ void TileManager::FreeResourceForTile(Tile* tile, RasterMode mode) {
   if (mts.tile_versions[mode].resource_) {
     resource_pool_->ReleaseResource(
         mts.tile_versions[mode].resource_.Pass());
+
+    DCHECK_GE(bytes_releasable_, tile->bytes_consumed_if_allocated());
+    DCHECK_GE(resources_releasable_, 1u);
+
+    bytes_releasable_ -= tile->bytes_consumed_if_allocated();
+    --resources_releasable_;
   }
 }
 
@@ -837,6 +833,9 @@ void TileManager::OnRasterTaskCompleted(
   } else {
     tile_version.set_use_resource();
     tile_version.resource_ = resource.Pass();
+
+    bytes_releasable_ += tile->bytes_consumed_if_allocated();
+    ++resources_releasable_;
   }
 
   FreeUnusedResourcesForTile(tile);

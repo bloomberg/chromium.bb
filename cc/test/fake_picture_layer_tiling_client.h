@@ -40,6 +40,10 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
   void set_allow_create_tile(bool allow) { allow_create_tile_ = allow; }
   void set_invalidation(const Region& region) { invalidation_ = region; }
 
+  TileManager* tile_manager() const {
+    return tile_manager_.get();
+  }
+
  protected:
   FakeTileManagerClient tile_manager_client_;
   scoped_ptr<TileManager> tile_manager_;

@@ -74,17 +74,8 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
       PictureLayerTiling* tiling = set.AddTiling(scale);
       tiling->CreateAllTilesForTesting();
       std::vector<Tile*> tiles = tiling->AllTilesForTesting();
-      for (size_t i = 0; i < tiles.size(); ++i) {
-        ManagedTileState::TileVersion& tile_version =
-            tiles[i]->GetTileVersionForTesting(HIGH_QUALITY_NO_LCD_RASTER_MODE);
-        EXPECT_FALSE(tile_version.GetResourceForTesting());
-
-        tile_version.SetResourceForTesting(
-            make_scoped_ptr(new ResourcePool::Resource(
-                resource_provider.get(),
-                gfx::Size(1, 1),
-                resource_provider->best_texture_format())));
-      }
+      client.tile_manager()->InitializeTilesWithResourcesForTesting(
+          tiles, resource_provider.get());
     }
 
     float max_contents_scale = scale;
