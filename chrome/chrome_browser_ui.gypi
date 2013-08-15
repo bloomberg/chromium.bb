@@ -2136,10 +2136,6 @@
         'browser/ui/webui/inspect_ui.h',
         'browser/ui/webui/instant_ui.cc',
         'browser/ui/webui/instant_ui.h',
-        'browser/ui/webui/local_discovery/local_discovery_ui.cc',
-        'browser/ui/webui/local_discovery/local_discovery_ui.h',
-        'browser/ui/webui/local_discovery/local_discovery_ui_handler.cc',
-        'browser/ui/webui/local_discovery/local_discovery_ui_handler.h',
         'browser/ui/webui/media/webrtc_logs_ui.cc',
         'browser/ui/webui/media/webrtc_logs_ui.h',
         'browser/ui/webui/memory_internals/memory_internals_handler.cc',
@@ -3112,6 +3108,14 @@
           'sources!': [
             'browser/ui/webui/media/webrtc_logs_ui.cc',
             'browser/ui/webui/media/webrtc_logs_ui.h',
+          ],
+        }],
+        ['enable_mdns==1', {
+          'sources': [
+            'browser/ui/webui/local_discovery/local_discovery_ui.cc',
+            'browser/ui/webui/local_discovery/local_discovery_ui.h',
+            'browser/ui/webui/local_discovery/local_discovery_ui_handler.cc',
+            'browser/ui/webui/local_discovery/local_discovery_ui_handler.h',
           ],
         }],
       ],

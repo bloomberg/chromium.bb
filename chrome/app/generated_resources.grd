@@ -14934,9 +14934,42 @@ Do you accept?
       </message>
     </if>
 
-    </messages>
+    <!-- Local Device Discovery display strings -->
+    <message name="IDS_LOCAL_DISCOVERY_SERVICE_NAME" desc="Table header for service name">
+      Name
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_SERVICE_DOMAIN" desc="Table header for service domain">
+      Domain
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_SERVICE_PORT" desc="Table header for service port">
+      Port
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_SERVICE_IP" desc="Table header for IP">
+      IP
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_SERVICE_LASTSEEN" desc="Table header for when a service was last seen">
+      Last seen
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_SERVICE_REGISTER" desc="Table header for registering a service">
+      Register
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_REGISTERING_SERVICE" desc="Message to indicate a service is being registered">
+      Registering <ph name="DEVICE_NAME">$1</ph>...
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_REGISTRATION_FAILED" desc="Message to indicate service registration has failed">
+      Registration failed: <ph name="ERROR_STRING">$1</ph>.
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_REGISTRATION_SUCCEEDED" desc="Message to indicate service registration has succeeded">
+      Successfully registered device with ID <ph name="DEVICE_ID">$1</ph>.
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_REGISTERED" desc="Message to show that a listed service has already been registered">
+      Registered
+    </message>
 
-    <structures fallback_to_english="true">
+  </messages>
+
+
+  <structures fallback_to_english="true">
       <!-- Make sure these stay in sync with the structures in generated_resources.grd. -->
       <structure name="IDD_CHROME_FRAME_FIND_DIALOG" file="cf_resources.rc" type="dialog" >
       </structure>

@@ -10,6 +10,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
+#include "grit/generated_resources.h"
 
 namespace {
 
@@ -20,6 +21,31 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
   source->SetDefaultResource(IDR_LOCAL_DISCOVERY_HTML);
   source->AddResourcePath("local_discovery.css", IDR_LOCAL_DISCOVERY_CSS);
   source->AddResourcePath("local_discovery.js", IDR_LOCAL_DISCOVERY_JS);
+
+  source->SetUseJsonJSFormatV2();
+  source->AddLocalizedString("serviceName",
+                             IDS_LOCAL_DISCOVERY_SERVICE_NAME);
+  source->AddLocalizedString("serviceDomain",
+                             IDS_LOCAL_DISCOVERY_SERVICE_DOMAIN);
+  source->AddLocalizedString("servicePort",
+                             IDS_LOCAL_DISCOVERY_SERVICE_PORT);
+  source->AddLocalizedString("serviceIp",
+                             IDS_LOCAL_DISCOVERY_SERVICE_IP);
+  source->AddLocalizedString("serviceLastseen",
+                             IDS_LOCAL_DISCOVERY_SERVICE_LASTSEEN);
+  source->AddLocalizedString("serviceRegister",
+                             IDS_LOCAL_DISCOVERY_SERVICE_REGISTER);
+  source->AddLocalizedString("registeringService",
+                             IDS_LOCAL_DISCOVERY_REGISTERING_SERVICE);
+  source->AddLocalizedString("registrationFailed",
+                             IDS_LOCAL_DISCOVERY_REGISTRATION_FAILED);
+  source->AddLocalizedString("registrationSucceeded",
+                             IDS_LOCAL_DISCOVERY_REGISTRATION_SUCCEEDED);
+  source->AddLocalizedString("registered",
+                             IDS_LOCAL_DISCOVERY_REGISTERED);
+
+  source->SetJsonPath("strings.js");
+
   return source;
 }
 
@@ -33,5 +59,5 @@ LocalDiscoveryUI::LocalDiscoveryUI(content::WebUI* web_ui)
 
   // TODO(gene): Use LocalDiscoveryUIHandler to send updated to the devices
   // page. For example
-  // web_ui->AddMessageHandler(new LocalDiscoveryUIHandler());
+  web_ui->AddMessageHandler(local_discovery::LocalDiscoveryUIHandler::Create());
 }

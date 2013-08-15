@@ -46,6 +46,7 @@
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/cloud_print/cloud_print_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/print_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -81,9 +82,6 @@ using content::WebContents;
 using printing::Metafile;
 
 namespace {
-
-// The cloud print OAuth2 scope.
-const char kCloudPrintAuth[] = "https://www.googleapis.com/auth/cloudprint";
 
 enum UserActionBuckets {
   PRINT_TO_PRINTER,
@@ -169,7 +167,6 @@ const char kNumberFormat[] = "numberFormat";
 const char kPrintAutomaticallyInKioskMode[] = "printAutomaticallyInKioskMode";
 // Name of a dictionary field holding the state of selection for document.
 const char kDocumentHasSelection[] = "documentHasSelection";
-
 
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
@@ -293,7 +290,7 @@ class PrintPreviewHandler::AccessTokenService
 
     if (service) {
       OAuth2TokenService::ScopeSet oauth_scopes;
-      oauth_scopes.insert(kCloudPrintAuth);
+      oauth_scopes.insert(cloud_print::kCloudPrintAuth);
       scoped_ptr<OAuth2TokenService::Request> request(
           service->StartRequest(oauth_scopes, this));
       requests_[type].reset(request.release());
@@ -1088,4 +1085,3 @@ bool PrintPreviewHandler::GetPreviewDataAndTitle(
   *title = print_preview_ui->initiator_title();
   return true;
 }
-

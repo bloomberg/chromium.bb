@@ -6,24 +6,26 @@
   <link rel="stylesheet" href="local_discovery.css">
   <script src="chrome://resources/js/cr.js"></script>
   <script src="chrome://resources/js/util.js"></script>
+  <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="local_discovery.js"></script>
+  <script src="strings.js"></script>
 </head>
 <body>
-  <p>
-    Searching for discoverable devices...
-  </p>
   <div>
+    <div id="info-console"></div>
     <table id="devices-table" width="100%">
       <thead>
-        <th>Name</th>
-        <th>Domain</th>
-        <th>Port</th>
-        <th>IP</th>
-        <th>Metadata</th>
-        <th>Last seen</th>
-        <th>Registered</th>
+        <th i18n-content="serviceName"></th>
+        <th i18n-content="serviceDomain"></th>
+        <th i18n-content="servicePort"></th>
+        <th i18n-content="serviceIp"></th>
+        <th i18n-content="serviceLastseen"></th>
+        <th i18n-content="serviceRegister"></th>
       </thead>
     </table>
   </div>
+
+  <script src="chrome://resources/js/i18n_template2.js"></script>
+  <script src="chrome://resources/js/jstemplate_compiled.js"></script>
 </body>
 </html>

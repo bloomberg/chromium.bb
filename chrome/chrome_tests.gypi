@@ -2089,6 +2089,11 @@
             ['exclude', '^test/data/webui/print_preview.js'],
           ],
         }],
+        ['enable_mdns==1', {
+          'sources' : [
+            'browser/ui/webui/local_discovery/local_discovery_ui_browsertest.cc',
+          ]
+        }],
       ],  # conditions
     },  # target browser_tests
     {

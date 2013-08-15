@@ -13,3 +13,9 @@ th {
 td {
   background-color: #f0f0f0;
 }
+
+#info-console {
+  background-color: #f0f0f0;
+  height: 100px;
+  overflow: auto;
+}

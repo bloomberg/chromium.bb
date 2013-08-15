@@ -10,55 +10,114 @@
  * callbacks from the C++ code saying that a new device is available.
  */
 
-/**
- * Appends a row to the output table listing the new device.
- * @param {string} name of the device service.
- * @param {string} info - additional info of the device,
- *                        if empty device need to be deleted
- */
-function onServiceUpdate(name, info) {
-  var table = $('devices-table');
+cr.define('local_discovery', function() {
+  'use strict';
 
-  var params = [];
-  if (info) {
-    params[0] = info.domain;
-    params[1] = info.port;
-    params[2] = info.ip;
-    params[3] = info.metadata;
-    params[4] = info.lastSeen;
-    params[5] = info.registered;
-  }
+  /**
+   * Appends a row to the output table listing the new device.
+   * @param {string} name Name of the device.
+   * @param {string} info Additional info of the device, if empty device need to
+   *    be deleted.
+   */
+  function onServiceUpdate(name, info) {
+    name = name.replace(/[\r\n]/g, '');
+    var table = $('devices-table');
 
-  for (var i = 0, row; row = table.rows[i]; i++) {
-    if (row.cells[0].textContent == name) {
-      if (!info) {
-        // Delete service from the row.
-        table.removeChild(row);
-      } else {
-        // Replace existing service.
-        for (var j = 0; j < params.length; j++) {
-          row.cells[j + 1].textContent = params[j];
+    var params = [];
+    if (info) {
+      params[0] = info.domain;
+      params[1] = info.port;
+      params[2] = info.ip;
+      params[3] = info.lastSeen;
+    }
+
+    for (var i = 0, row; row = table.rows[i]; i++) {
+      if (row.cells[0].textContent == name) {
+        if (!info) {
+          // Delete service from the row.
+          table.removeChild(row);
+        } else {
+          // Replace existing service.
+          for (var j = 0; j < params.length; j++) {
+            row.cells[j + 1].textContent = params[j];
+          }
         }
+        return;
       }
+    }
+
+    if (!info) {
+      // Service could not be found in the table.
       return;
     }
-  }
 
-  if (!info) {
-    // Service could not be found in the table.
-    return;
-  }
-
-  var tr = document.createElement('tr');
-  var td = document.createElement('td');
-  td.textContent = name;
-  tr.appendChild(td);
-
-  for (var j = 0; j < params.length; j++) {
-    td = document.createElement('td');
-    td.textContent = params[j];
+    var tr = document.createElement('tr');
+    var td = document.createElement('td');
+    td.textContent = name;
     tr.appendChild(td);
+
+    for (var j = 0; j < params.length; j++) {
+      td = document.createElement('td');
+      td.textContent = params[j];
+      tr.appendChild(td);
+    }
+
+    td = document.createElement('td');
+    if (!info.registered) {
+      var button = document.createElement('button');
+      button.textContent = loadTimeData.getString('serviceRegister');
+      button.addEventListener('click', sendRegisterDevice.bind(null, name));
+      td.appendChild(button);
+    } else {
+      td.textContent = loadTimeData.getString('registered');
+    }
+    tr.appendChild(td);
+
+    table.appendChild(tr);
   }
 
-  table.appendChild(tr);
-}
+  /**
+   * Adds a row to the logging console.
+   * @param {string} msg The message to log.
+   */
+  function logToInfoConsole(msg) {
+    var div = document.createElement('div');
+    div.textContent = msg;
+    $('info-console').appendChild(div);
+  }
+
+  /**
+   * Register a device.
+   * @param {string} device The device to register.
+   */
+  function sendRegisterDevice(device) {
+    chrome.send('registerDevice', [device]);
+    logToInfoConsole(loadTimeData.getStringF('registeringService', device));
+  }
+
+  /**
+   * Announce that a registration failed.
+   * @param {string} reason The error message.
+   */
+  function registrationFailed(reason) {
+    logToInfoConsole(loadTimeData.getStringF('registrationFailed', reason));
+  }
+
+  /**
+   * Announce that a registration succeeeded.
+   * @param {string} id The id of the newly registered device.
+   */
+  function registrationSuccess(id) {
+    logToInfoConsole(loadTimeData.getStringF('registrationSucceeded', id));
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    chrome.send('start');
+  });
+
+  return {
+    registrationSuccess: registrationSuccess,
+    registrationFailed: registrationFailed,
+    onServiceUpdate: onServiceUpdate
+  };
+});
