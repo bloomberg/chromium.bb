@@ -35,6 +35,15 @@ if util.IsLinux():
   from pylib import valgrind_tools
 
 
+_NEGATIVE_FILTER = {}
+_NEGATIVE_FILTER['HEAD'] = [
+    # https://code.google.com/p/chromedriver/issues/detail?id=213
+    'ChromeDriverTest.testClickElementInSubFrame',
+    # This test is flaky since it uses setTimeout.
+    # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
+    'ChromeDriverTest.testAlert',
+]
+
 _DESKTOP_OS_SPECIFIC_FILTER = []
 if util.IsWindows():
   _DESKTOP_OS_SPECIFIC_FILTER = [
@@ -60,12 +69,8 @@ elif util.IsMac():
 
 _DESKTOP_NEGATIVE_FILTER = {}
 _DESKTOP_NEGATIVE_FILTER['HEAD'] = (
+    _NEGATIVE_FILTER['HEAD'] +
     _DESKTOP_OS_SPECIFIC_FILTER + [
-        # https://code.google.com/p/chromedriver/issues/detail?id=213
-        'ChromeDriverTest.testClickElementInSubFrame',
-        # This test is flaky since it uses setTimeout.
-        # Re-enable once crbug.com/177511 is fixed and we can remove setTimeout.
-        'ChromeDriverTest.testAlert',
         # Desktop doesn't support touch (without --touch-events).
         'ChromeDriverTest.testSingleTapElement',
         'ChromeDriverTest.testTouchDownUpElement',
@@ -82,14 +87,11 @@ def _GetDesktopNegativeFilter(version_name):
 
 _ANDROID_NEGATIVE_FILTER = {}
 _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
-    _DESKTOP_NEGATIVE_FILTER['HEAD'] + [
+    _NEGATIVE_FILTER['HEAD'] + [
         # Android doesn't support switches and extensions.
         'ChromeSwitchesCapabilityTest.*',
         'ChromeExtensionsCapabilityTest.*',
-        # https://code.google.com/p/chromedriver/issues/detail?id=262
-        'ChromeDriverTest.testCloseWindow',
-        'ChromeDriverTest.testGetWindowHandles',
-        'ChromeDriverTest.testSwitchToWindow',
+        # https://code.google.com/p/chromedriver/issues/detail?id=459
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
         # https://code.google.com/p/chromedriver/issues/detail?id=259
         'ChromeDriverTest.testSendKeysToElement',
@@ -107,7 +109,12 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
     ]
 )
 _ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
-    _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] + []
+    _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] + [
+        # ChromiumTestShell doesn't support multiple tabs.
+        'ChromeDriverTest.testCloseWindow',
+        'ChromeDriverTest.testGetWindowHandles',
+        'ChromeDriverTest.testSwitchToWindow',
+    ]
 )
 
 
