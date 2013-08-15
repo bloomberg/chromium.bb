@@ -12,18 +12,18 @@
 /**
  * Asks permission to use the webcam and mic from the browser.
  */
-function getUserMedia() {
+function doGetUserMedia() {
+  // Call into getUserMedia via the polyfill (adapter.js).
   var constraints = getConstraints_();
   var constraintsString = JSON.stringify(constraints, null, ' ');
   $('getusermedia-constraints').innerHTML = constraintsString;
-  if (!navigator.webkitGetUserMedia) {
+  if (!getUserMedia) {
     log_('Browser does not support WebRTC.');
     return;
   }
   log_('Requesting getUserMedia with constraints: ' + constraintsString);
-  navigator.webkitGetUserMedia(constraints,
-                               getUserMediaOkCallback_,
-                               getUserMediaFailedCallback_);
+  getUserMedia(constraints, getUserMediaOkCallback_,
+               getUserMediaFailedCallback_);
 }
 
 // Internals
@@ -104,7 +104,7 @@ function getConstraints_() {
 function getUserMediaOkCallback_(stream) {
   gLocalStream = stream;
   var videoTag = $('local-view');
-  videoTag.src = webkitURL.createObjectURL(stream);
+  attachMediaStream(videoTag, stream);
 
   // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
   // videoTag.onloadedmetadata = updateVideoTagSize_(videoTag);
