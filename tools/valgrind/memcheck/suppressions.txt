@@ -7229,3 +7229,16 @@
    fun:_ZN12ThemeService19SetManagedUserThemeEv
    fun:_ZN12ThemeService24OnManagedUserInitializedEv
 }
+{
+   bug_273385
+   Memcheck:Leak
+   ...
+   fun:ssl3_ResolvePK11CryptFunctions
+   fun:PR_CallOnce
+   fun:ssl3_HasGCMSupport
+   fun:ssl3_SendClientHello
+   fun:ssl2_BeginClientHandshake
+   fun:ssl_Do1stHandshake
+   fun:SSL_ForceHandshake
+   fun:_ZN3net18SSLClientSocketNSS4Core11DoHandshakeEv
+}
