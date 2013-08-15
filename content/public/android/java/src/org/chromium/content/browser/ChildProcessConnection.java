@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.CpuFeatures;
+import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.app.ChildProcessService;
 import org.chromium.content.common.CommandLine;
@@ -456,11 +457,13 @@ public class ChildProcessConnection {
         }
     }
 
-    private static final long DETACH_AS_ACTIVE_DELAY_MILLIS = 5 * 1000;  // Five seconds.
+    private static final long DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS = 5 * 1000;  // Five seconds.
 
     /**
-     * Called when the service is no longer considered active. Actual binding is removed after a
-     * fixed delay period so that the renderer will not be killed immediately after the call.
+     * Called when the service is no longer considered active. For devices that are not considered
+     * low memory the actual binding is removed after a fixed delay period so that the renderer will
+     * not be killed immediately after the call. We don't delay the unbinding for low memory devices
+     * to avoid putting the OS there on strain of having multiple renderers it can't kill.
      */
     void detachAsActive() {
         ThreadUtils.postOnUiThreadDelayed(new Runnable() {
@@ -478,7 +481,7 @@ public class ChildProcessConnection {
                     }
                 }
             }
-        }, DETACH_AS_ACTIVE_DELAY_MILLIS);
+        }, SysUtils.isLowEndDevice() ? 0 : DETACH_AS_ACTIVE_HIGH_END_DELAY_MILLIS);
     }
 
     /**
