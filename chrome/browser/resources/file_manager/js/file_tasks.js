@@ -551,7 +551,6 @@ FileTasks.prototype.openGalleryInternal_ = function(urls) {
 
   galleryFrame.onload = function() {
     galleryFrame.contentWindow.ImageUtil.metrics = metrics;
-    window.galleryTestAPI = galleryFrame.contentWindow.galleryTestAPI;
 
     // TODO(haruki): isOnReadonlyDirectory() only checks the permission for the
     // root. We should check more granular permission to know whether the file

@@ -60,8 +60,6 @@
 //<include src="slide_mode.js">
 //<include src="ribbon.js">
 
-//<include src="gallery_testapi.js">
-
 // Exports
 window.ImageUtil = ImageUtil;
 window.Gallery = Gallery;
