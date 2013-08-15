@@ -452,7 +452,7 @@ class CaptureGroupNameSocketPool : public ParentPool {
   virtual void CancelRequest(const std::string& group_name,
                              ClientSocketHandle* handle) {}
   virtual void ReleaseSocket(const std::string& group_name,
-                             StreamSocket* socket,
+                             scoped_ptr<StreamSocket> socket,
                              int id) {}
   virtual void CloseIdleSockets() {}
   virtual int IdleSocketCount() const {

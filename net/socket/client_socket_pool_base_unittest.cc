@@ -30,7 +30,9 @@
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_histograms.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/ssl_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/udp/datagram_client_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -189,30 +191,30 @@ class MockClientSocketFactory : public ClientSocketFactory {
  public:
   MockClientSocketFactory() : allocation_count_(0) {}
 
-  virtual DatagramClientSocket* CreateDatagramClientSocket(
+  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLog::Source& source) OVERRIDE {
     NOTREACHED();
-    return NULL;
+    return scoped_ptr<DatagramClientSocket>();
   }
 
-  virtual StreamSocket* CreateTransportClientSocket(
+  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* /* net_log */,
       const NetLog::Source& /*source*/) OVERRIDE {
     allocation_count_++;
-    return NULL;
+    return scoped_ptr<StreamSocket>();
   }
 
-  virtual SSLClientSocket* CreateSSLClientSocket(
-      ClientSocketHandle* transport_socket,
+  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) OVERRIDE {
     NOTIMPLEMENTED();
-    return NULL;
+    return scoped_ptr<SSLClientSocket>();
   }
 
   virtual void ClearSSLSessionCache() OVERRIDE {
@@ -294,7 +296,8 @@ class TestConnectJob : public ConnectJob {
     AddressList ignored;
     client_socket_factory_->CreateTransportClientSocket(
         ignored, NULL, net::NetLog::Source());
-    set_socket(new MockClientSocket(net_log().net_log()));
+    SetSocket(
+        scoped_ptr<StreamSocket>(new MockClientSocket(net_log().net_log())));
     switch (job_type_) {
       case kMockJob:
         return DoConnect(true /* successful */, false /* sync */,
@@ -373,7 +376,7 @@ class TestConnectJob : public ConnectJob {
         return ERR_IO_PENDING;
       default:
         NOTREACHED();
-        set_socket(NULL);
+        SetSocket(scoped_ptr<StreamSocket>());
         return ERR_FAILED;
     }
   }
@@ -386,7 +389,7 @@ class TestConnectJob : public ConnectJob {
       result = ERR_PROXY_AUTH_REQUESTED;
     } else {
       result = ERR_CONNECTION_FAILED;
-      set_socket(NULL);
+      SetSocket(scoped_ptr<StreamSocket>());
     }
 
     if (was_async)
@@ -430,7 +433,7 @@ class TestConnectJobFactory
 
   // ConnectJobFactory implementation.
 
-  virtual ConnectJob* NewConnectJob(
+  virtual scoped_ptr<ConnectJob> NewConnectJob(
       const std::string& group_name,
       const TestClientSocketPoolBase::Request& request,
       ConnectJob::Delegate* delegate) const OVERRIDE {
@@ -440,13 +443,13 @@ class TestConnectJobFactory
       job_type = job_types_->front();
       job_types_->pop_front();
     }
-    return new TestConnectJob(job_type,
-                              group_name,
-                              request,
-                              timeout_duration_,
-                              delegate,
-                              client_socket_factory_,
-                              net_log_);
+    return scoped_ptr<ConnectJob>(new TestConnectJob(job_type,
+                                                     group_name,
+                                                     request,
+                                                     timeout_duration_,
+                                                     delegate,
+                                                     client_socket_factory_,
+                                                     net_log_));
   }
 
   virtual base::TimeDelta ConnectionTimeout() const OVERRIDE {
@@ -509,9 +512,9 @@ class TestClientSocketPool : public ClientSocketPool {
 
   virtual void ReleaseSocket(
       const std::string& group_name,
-      StreamSocket* socket,
+      scoped_ptr<StreamSocket> socket,
       int id) OVERRIDE {
-    base_.ReleaseSocket(group_name, socket, id);
+    base_.ReleaseSocket(group_name, socket.Pass(), id);
   }
 
   virtual void FlushWithError(int error) OVERRIDE {
@@ -630,10 +633,10 @@ class TestConnectJobDelegate : public ConnectJob::Delegate {
 
   virtual void OnConnectJobComplete(int result, ConnectJob* job) OVERRIDE {
     result_ = result;
-    scoped_ptr<StreamSocket> socket(job->ReleaseSocket());
+    scoped_ptr<ConnectJob> owned_job(job);
+    scoped_ptr<StreamSocket> socket = owned_job->PassSocket();
     // socket.get() should be NULL iff result != OK
-    EXPECT_EQ(socket.get() == NULL, result != OK);
-    delete job;
+    EXPECT_EQ(socket == NULL, result != OK);
     have_result_ = true;
     if (waiting_for_result_)
       base::MessageLoop::current()->Quit();

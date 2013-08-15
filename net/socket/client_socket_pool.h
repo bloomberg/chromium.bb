@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/template_util.h"
 #include "base/time/time.h"
 #include "net/base/completion_callback.h"
@@ -111,7 +112,7 @@ class NET_EXPORT ClientSocketPool {
   // change when it flushes, so it can use this |id| to discard sockets with
   // mismatched ids.
   virtual void ReleaseSocket(const std::string& group_name,
-                             StreamSocket* socket,
+                             scoped_ptr<StreamSocket> socket,
                              int id) = 0;
 
   // This flushes all state from the ClientSocketPool.  This means that all

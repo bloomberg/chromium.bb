@@ -180,21 +180,21 @@ class TestSocketFactory : public MockClientSocketFactory {
   TestSocketFactory() : fail_next_socket_(false) {}
   virtual ~TestSocketFactory() {}
 
-  virtual DatagramClientSocket* CreateDatagramClientSocket(
+  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       net::NetLog* net_log,
       const net::NetLog::Source& source) OVERRIDE {
     if (fail_next_socket_) {
       fail_next_socket_ = false;
-      return new FailingUDPClientSocket(&empty_data_, net_log);
+      return scoped_ptr<DatagramClientSocket>(
+          new FailingUDPClientSocket(&empty_data_, net_log));
     }
     SocketDataProvider* data_provider = mock_data().GetNext();
-    TestUDPClientSocket* socket = new TestUDPClientSocket(this,
-                                                          data_provider,
-                                                          net_log);
-    data_provider->set_socket(socket);
-    return socket;
+    scoped_ptr<TestUDPClientSocket> socket(
+        new TestUDPClientSocket(this, data_provider, net_log));
+    data_provider->set_socket(socket.get());
+    return socket.PassAs<DatagramClientSocket>();
   }
 
   void OnConnect(const IPEndPoint& endpoint) {

@@ -289,7 +289,7 @@ int HttpProxyConnectJob::DoHttpProxyConnect() {
 int HttpProxyConnectJob::DoHttpProxyConnectComplete(int result) {
   if (result == OK || result == ERR_PROXY_AUTH_REQUESTED ||
       result == ERR_HTTPS_PROXY_TUNNEL_RESPONSE) {
-      set_socket(transport_socket_.release());
+    SetSocket(transport_socket_.PassAs<StreamSocket>());
   }
 
   return result;
@@ -380,19 +380,19 @@ HttpProxyConnectJobFactory::HttpProxyConnectJobFactory(
 }
 
 
-ConnectJob*
+scoped_ptr<ConnectJob>
 HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
     const std::string& group_name,
     const PoolBase::Request& request,
     ConnectJob::Delegate* delegate) const {
-  return new HttpProxyConnectJob(group_name,
-                                 request.params(),
-                                 ConnectionTimeout(),
-                                 transport_pool_,
-                                 ssl_pool_,
-                                 host_resolver_,
-                                 delegate,
-                                 net_log_);
+  return scoped_ptr<ConnectJob>(new HttpProxyConnectJob(group_name,
+                                                        request.params(),
+                                                        ConnectionTimeout(),
+                                                        transport_pool_,
+                                                        ssl_pool_,
+                                                        host_resolver_,
+                                                        delegate,
+                                                        net_log_));
 }
 
 base::TimeDelta
@@ -462,8 +462,9 @@ void HttpProxyClientSocketPool::CancelRequest(
 }
 
 void HttpProxyClientSocketPool::ReleaseSocket(const std::string& group_name,
-                                              StreamSocket* socket, int id) {
-  base_.ReleaseSocket(group_name, socket, id);
+                                              scoped_ptr<StreamSocket> socket,
+                                              int id) {
+  base_.ReleaseSocket(group_name, socket.Pass(), id);
 }
 
 void HttpProxyClientSocketPool::FlushWithError(int error) {

@@ -657,37 +657,39 @@ void MockClientSocketFactory::ResetNextMockIndexes() {
   mock_ssl_data_.ResetNextIndex();
 }
 
-DatagramClientSocket* MockClientSocketFactory::CreateDatagramClientSocket(
+scoped_ptr<DatagramClientSocket>
+MockClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
     const RandIntCallback& rand_int_cb,
     net::NetLog* net_log,
     const net::NetLog::Source& source) {
   SocketDataProvider* data_provider = mock_data_.GetNext();
-  MockUDPClientSocket* socket = new MockUDPClientSocket(data_provider, net_log);
-  data_provider->set_socket(socket);
-  return socket;
+  scoped_ptr<MockUDPClientSocket> socket(
+      new MockUDPClientSocket(data_provider, net_log));
+  data_provider->set_socket(socket.get());
+  return socket.PassAs<DatagramClientSocket>();
 }
 
-StreamSocket* MockClientSocketFactory::CreateTransportClientSocket(
+scoped_ptr<StreamSocket> MockClientSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
     net::NetLog* net_log,
     const net::NetLog::Source& source) {
   SocketDataProvider* data_provider = mock_data_.GetNext();
-  MockTCPClientSocket* socket =
-      new MockTCPClientSocket(addresses, net_log, data_provider);
-  data_provider->set_socket(socket);
-  return socket;
+  scoped_ptr<MockTCPClientSocket> socket(
+      new MockTCPClientSocket(addresses, net_log, data_provider));
+  data_provider->set_socket(socket.get());
+  return socket.PassAs<StreamSocket>();
 }
 
-SSLClientSocket* MockClientSocketFactory::CreateSSLClientSocket(
-    ClientSocketHandle* transport_socket,
+scoped_ptr<SSLClientSocket> MockClientSocketFactory::CreateSSLClientSocket(
+    scoped_ptr<ClientSocketHandle> transport_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
-  MockSSLClientSocket* socket =
-      new MockSSLClientSocket(transport_socket, host_and_port, ssl_config,
-                              mock_ssl_data_.GetNext());
-  return socket;
+  return scoped_ptr<SSLClientSocket>(
+      new MockSSLClientSocket(transport_socket.Pass(),
+                              host_and_port, ssl_config,
+                              mock_ssl_data_.GetNext()));
 }
 
 void MockClientSocketFactory::ClearSSLSessionCache() {
@@ -1278,7 +1280,7 @@ void DeterministicMockTCPClientSocket::OnConnectComplete(
 
 // static
 void MockSSLClientSocket::ConnectCallback(
-    MockSSLClientSocket *ssl_client_socket,
+    MockSSLClientSocket* ssl_client_socket,
     const CompletionCallback& callback,
     int rv) {
   if (rv == OK)
@@ -1287,7 +1289,7 @@ void MockSSLClientSocket::ConnectCallback(
 }
 
 MockSSLClientSocket::MockSSLClientSocket(
-    ClientSocketHandle* transport_socket,
+    scoped_ptr<ClientSocketHandle> transport_socket,
     const HostPortPair& host_port_pair,
     const SSLConfig& ssl_config,
     SSLSocketDataProvider* data)
@@ -1295,7 +1297,7 @@ MockSSLClientSocket::MockSSLClientSocket(
          // Have to use the right BoundNetLog for LoadTimingInfo regression
          // tests.
          transport_socket->socket()->NetLog()),
-      transport_(transport_socket),
+      transport_(transport_socket.Pass()),
       data_(data),
       is_npn_state_set_(false),
       new_npn_value_(false),
@@ -1664,10 +1666,10 @@ void ClientSocketPoolTest::ReleaseAllConnections(KeepAlive keep_alive) {
 }
 
 MockTransportClientSocketPool::MockConnectJob::MockConnectJob(
-    StreamSocket* socket,
+    scoped_ptr<StreamSocket> socket,
     ClientSocketHandle* handle,
     const CompletionCallback& callback)
-    : socket_(socket),
+    : socket_(socket.Pass()),
       handle_(handle),
       user_callback_(callback) {
 }
@@ -1698,7 +1700,7 @@ void MockTransportClientSocketPool::MockConnectJob::OnConnect(int rv) {
   if (!socket_.get())
     return;
   if (rv == OK) {
-    handle_->set_socket(socket_.release());
+    handle_->SetSocket(socket_.Pass());
 
     // Needed for socket pool tests that layer other sockets on top of mock
     // sockets.
@@ -1740,9 +1742,10 @@ int MockTransportClientSocketPool::RequestSocket(
     const std::string& group_name, const void* socket_params,
     RequestPriority priority, ClientSocketHandle* handle,
     const CompletionCallback& callback, const BoundNetLog& net_log) {
-  StreamSocket* socket = client_socket_factory_->CreateTransportClientSocket(
-      AddressList(), net_log.net_log(), net::NetLog::Source());
-  MockConnectJob* job = new MockConnectJob(socket, handle, callback);
+  scoped_ptr<StreamSocket> socket =
+      client_socket_factory_->CreateTransportClientSocket(
+          AddressList(), net_log.net_log(), net::NetLog::Source());
+  MockConnectJob* job = new MockConnectJob(socket.Pass(), handle, callback);
   job_list_.push_back(job);
   handle->set_pool_id(1);
   return job->Connect();
@@ -1759,11 +1762,12 @@ void MockTransportClientSocketPool::CancelRequest(const std::string& group_name,
   }
 }
 
-void MockTransportClientSocketPool::ReleaseSocket(const std::string& group_name,
-                                            StreamSocket* socket, int id) {
+void MockTransportClientSocketPool::ReleaseSocket(
+    const std::string& group_name,
+    scoped_ptr<StreamSocket> socket,
+    int id) {
   EXPECT_EQ(1, id);
   release_count_++;
-  delete socket;
 }
 
 DeterministicMockClientSocketFactory::DeterministicMockClientSocketFactory() {}
@@ -1791,42 +1795,45 @@ MockSSLClientSocket* DeterministicMockClientSocketFactory::
   return ssl_client_sockets_[index];
 }
 
-DatagramClientSocket*
+scoped_ptr<DatagramClientSocket>
 DeterministicMockClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
     const RandIntCallback& rand_int_cb,
     net::NetLog* net_log,
     const NetLog::Source& source) {
   DeterministicSocketData* data_provider = mock_data().GetNext();
-  DeterministicMockUDPClientSocket* socket =
-      new DeterministicMockUDPClientSocket(net_log, data_provider);
+  scoped_ptr<DeterministicMockUDPClientSocket> socket(
+      new DeterministicMockUDPClientSocket(net_log, data_provider));
   data_provider->set_delegate(socket->AsWeakPtr());
-  udp_client_sockets().push_back(socket);
-  return socket;
+  udp_client_sockets().push_back(socket.get());
+  return socket.PassAs<DatagramClientSocket>();
 }
 
-StreamSocket* DeterministicMockClientSocketFactory::CreateTransportClientSocket(
+scoped_ptr<StreamSocket>
+DeterministicMockClientSocketFactory::CreateTransportClientSocket(
     const AddressList& addresses,
     net::NetLog* net_log,
     const net::NetLog::Source& source) {
   DeterministicSocketData* data_provider = mock_data().GetNext();
-  DeterministicMockTCPClientSocket* socket =
-      new DeterministicMockTCPClientSocket(net_log, data_provider);
+  scoped_ptr<DeterministicMockTCPClientSocket> socket(
+      new DeterministicMockTCPClientSocket(net_log, data_provider));
   data_provider->set_delegate(socket->AsWeakPtr());
-  tcp_client_sockets().push_back(socket);
-  return socket;
+  tcp_client_sockets().push_back(socket.get());
+  return socket.PassAs<StreamSocket>();
 }
 
-SSLClientSocket* DeterministicMockClientSocketFactory::CreateSSLClientSocket(
-    ClientSocketHandle* transport_socket,
+scoped_ptr<SSLClientSocket>
+DeterministicMockClientSocketFactory::CreateSSLClientSocket(
+    scoped_ptr<ClientSocketHandle> transport_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context) {
-  MockSSLClientSocket* socket =
-      new MockSSLClientSocket(transport_socket, host_and_port, ssl_config,
-                              mock_ssl_data_.GetNext());
-  ssl_client_sockets_.push_back(socket);
-  return socket;
+  scoped_ptr<MockSSLClientSocket> socket(
+      new MockSSLClientSocket(transport_socket.Pass(),
+                              host_and_port, ssl_config,
+                              mock_ssl_data_.GetNext()));
+  ssl_client_sockets_.push_back(socket.get());
+  return socket.PassAs<SSLClientSocket>();
 }
 
 void DeterministicMockClientSocketFactory::ClearSSLSessionCache() {
@@ -1859,8 +1866,9 @@ void MockSOCKSClientSocketPool::CancelRequest(
 }
 
 void MockSOCKSClientSocketPool::ReleaseSocket(const std::string& group_name,
-                                              StreamSocket* socket, int id) {
-  return transport_pool_->ReleaseSocket(group_name, socket, id);
+                                              scoped_ptr<StreamSocket> socket,
+                                              int id) {
+  return transport_pool_->ReleaseSocket(group_name, socket.Pass(), id);
 }
 
 const char kSOCKS5GreetRequest[] = { 0x05, 0x01, 0x00 };

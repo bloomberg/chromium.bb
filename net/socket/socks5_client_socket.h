@@ -28,16 +28,13 @@ class BoundNetLog;
 // Currently no SOCKSv5 authentication is supported.
 class NET_EXPORT_PRIVATE SOCKS5ClientSocket : public StreamSocket {
  public:
-  // Takes ownership of the |transport_socket|, which should already be
-  // connected by the time Connect() is called.
-  //
   // |req_info| contains the hostname and port to which the socket above will
   // communicate to via the SOCKS layer.
   //
   // Although SOCKS 5 supports 3 different modes of addressing, we will
   // always pass it a hostname. This means the DNS resolving is done
   // proxy side.
-  SOCKS5ClientSocket(ClientSocketHandle* transport_socket,
+  SOCKS5ClientSocket(scoped_ptr<ClientSocketHandle> transport_socket,
                      const HostResolver::RequestInfo& req_info);
 
   // On destruction Disconnect() is called.

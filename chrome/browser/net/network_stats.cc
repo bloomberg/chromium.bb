@@ -189,28 +189,25 @@ bool NetworkStats::DoConnect(int result) {
     return false;
   }
 
-  net::DatagramClientSocket* udp_socket =
+  scoped_ptr<net::DatagramClientSocket> udp_socket =
       socket_factory_->CreateDatagramClientSocket(
           net::DatagramSocket::DEFAULT_BIND,
           net::RandIntCallback(),
           NULL,
           net::NetLog::Source());
-  if (!udp_socket) {
-    TestPhaseComplete(SOCKET_CREATE_FAILED, net::ERR_INVALID_ARGUMENT);
-    return false;
-  }
-  DCHECK(!socket_.get());
-  socket_.reset(udp_socket);
+  DCHECK(udp_socket);
+  DCHECK(!socket_);
+  socket_ = udp_socket.Pass();
 
   const net::IPEndPoint& endpoint = addresses_.front();
-  int rv = udp_socket->Connect(endpoint);
+  int rv = socket_->Connect(endpoint);
   if (rv < 0) {
     TestPhaseComplete(CONNECT_FAILED, rv);
     return false;
   }
 
-  udp_socket->SetSendBufferSize(kMaxUdpSendBufferSize);
-  udp_socket->SetReceiveBufferSize(kMaxUdpReceiveBufferSize);
+  socket_->SetSendBufferSize(kMaxUdpSendBufferSize);
+  socket_->SetReceiveBufferSize(kMaxUdpReceiveBufferSize);
   return ConnectComplete(rv);
 }
 

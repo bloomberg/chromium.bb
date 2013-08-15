@@ -408,10 +408,10 @@ QuicClientSession* QuicStreamFactory::CreateSession(
     const BoundNetLog& net_log) {
   QuicGuid guid = random_generator_->RandUint64();
   IPEndPoint addr = *address_list.begin();
-  DatagramClientSocket* socket =
+  scoped_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
           DatagramSocket::DEFAULT_BIND, base::Bind(&base::RandInt),
-          net_log.net_log(), net_log.source());
+          net_log.net_log(), net_log.source()));
   socket->Connect(addr);
 
   // We should adaptively set this buffer size, but for now, we'll use a size
@@ -437,7 +437,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
       base::MessageLoop::current()->message_loop_proxy().get(),
       clock_.get(),
       random_generator_,
-      socket);
+      socket.get());
 
   QuicConnection* connection = new QuicConnection(guid, addr, helper, false,
                                                   QuicVersionMax());
@@ -447,7 +447,7 @@ QuicClientSession* QuicStreamFactory::CreateSession(
   DCHECK(crypto_config);
 
   QuicClientSession* session =
-      new QuicClientSession(connection, socket, this,
+      new QuicClientSession(connection, socket.Pass(), this,
                             quic_crypto_client_stream_factory_,
                             host_port_proxy_pair.first.host(), config_,
                             crypto_config, net_log.net_log());

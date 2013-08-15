@@ -425,7 +425,7 @@ void SSLClientSocket::ClearSessionCache() {
 }
 
 SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
-    ClientSocketHandle* transport_socket,
+    scoped_ptr<ClientSocketHandle> transport_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context)
@@ -439,14 +439,14 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       cert_verifier_(context.cert_verifier),
       ssl_(NULL),
       transport_bio_(NULL),
-      transport_(transport_socket),
+      transport_(transport_socket.Pass()),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       ssl_session_cache_shard_(context.ssl_session_cache_shard),
       trying_cached_session_(false),
       next_handshake_state_(STATE_NONE),
       npn_status_(kNextProtoUnsupported),
-      net_log_(transport_socket->socket()->NetLog()) {
+      net_log_(transport_->socket()->NetLog()) {
 }
 
 SSLClientSocketOpenSSL::~SSLClientSocketOpenSSL() {

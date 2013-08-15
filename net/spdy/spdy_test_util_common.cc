@@ -649,8 +649,8 @@ base::WeakPtr<SpdySession> CreateFakeSpdySessionHelper(
   EXPECT_FALSE(HasSpdySession(pool, key));
   base::WeakPtr<SpdySession> spdy_session;
   scoped_ptr<ClientSocketHandle> handle(new ClientSocketHandle());
-  handle->set_socket(new FakeSpdySessionClientSocket(
-      expected_status == OK ? ERR_IO_PENDING : expected_status));
+  handle->SetSocket(scoped_ptr<StreamSocket>(new FakeSpdySessionClientSocket(
+      expected_status == OK ? ERR_IO_PENDING : expected_status)));
   EXPECT_EQ(
       expected_status,
       pool->CreateAvailableSessionFromSocket(

@@ -113,20 +113,20 @@ class MockXmppClientSocketFactory : public ResolvingClientSocketFactory {
   }
 
   // ResolvingClientSocketFactory implementation.
-  virtual net::StreamSocket* CreateTransportClientSocket(
+  virtual scoped_ptr<net::StreamSocket> CreateTransportClientSocket(
       const net::HostPortPair& host_and_port) OVERRIDE {
     return mock_client_socket_factory_->CreateTransportClientSocket(
         address_list_, NULL, net::NetLog::Source());
   }
 
-  virtual net::SSLClientSocket* CreateSSLClientSocket(
-      net::ClientSocketHandle* transport_socket,
+  virtual scoped_ptr<net::SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<net::ClientSocketHandle> transport_socket,
       const net::HostPortPair& host_and_port) OVERRIDE {
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
     return mock_client_socket_factory_->CreateSSLClientSocket(
-        transport_socket, host_and_port, ssl_config_, context);
+        transport_socket.Pass(), host_and_port, ssl_config_, context);
   }
 
  private:

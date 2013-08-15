@@ -73,16 +73,16 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
       return;
     }
 
-    net::SSLConfig ssl_config;
-    net::SSLServerSocket* server_socket =
-        net::CreateSSLServerSocket(socket.release(),
+    scoped_ptr<net::SSLServerSocket> server_socket =
+        net::CreateSSLServerSocket(socket.Pass(),
                                    cert.get(),
                                    local_key_pair_->private_key(),
-                                   ssl_config);
-    socket_.reset(server_socket);
-
-    result = server_socket->Handshake(base::Bind(
-        &SslHmacChannelAuthenticator::OnConnected, base::Unretained(this)));
+                                   net::SSLConfig());
+    net::SSLServerSocket* raw_server_socket = server_socket.get();
+    socket_ = server_socket.Pass();
+    result = raw_server_socket->Handshake(
+        base::Bind(&SslHmacChannelAuthenticator::OnConnected,
+                   base::Unretained(this)));
   } else {
     cert_verifier_.reset(net::CertVerifier::CreateDefault());
     transport_security_state_.reset(new net::TransportSecurityState);
@@ -105,10 +105,10 @@ void SslHmacChannelAuthenticator::SecureAndAuthenticate(
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
     scoped_ptr<net::ClientSocketHandle> connection(new net::ClientSocketHandle);
-    connection->set_socket(socket.release());
-    socket_.reset(
+    connection->SetSocket(socket.Pass());
+    socket_ =
         net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-            connection.release(), host_and_port, ssl_config, context));
+            connection.Pass(), host_and_port, ssl_config, context);
 
     result = socket_->Connect(
         base::Bind(&SslHmacChannelAuthenticator::OnConnected,

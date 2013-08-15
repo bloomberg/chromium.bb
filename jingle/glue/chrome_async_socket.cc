@@ -106,9 +106,9 @@ bool ChromeAsyncSocket::Connect(const talk_base::SocketAddress& address) {
 
   net::HostPortPair dest_host_port_pair(address.hostname(), address.port());
 
-  transport_socket_.reset(
+  transport_socket_ =
       resolving_client_socket_factory_->CreateTransportClientSocket(
-          dest_host_port_pair));
+          dest_host_port_pair);
   int status = transport_socket_->Connect(
       base::Bind(&ChromeAsyncSocket::ProcessConnectDone,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -404,10 +404,10 @@ bool ChromeAsyncSocket::StartTls(const std::string& domain_name) {
   DCHECK(transport_socket_.get());
   scoped_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle());
-  socket_handle->set_socket(transport_socket_.release());
-  transport_socket_.reset(
+  socket_handle->SetSocket(transport_socket_.Pass());
+  transport_socket_ =
       resolving_client_socket_factory_->CreateSSLClientSocket(
-          socket_handle.release(), net::HostPortPair(domain_name, 443)));
+          socket_handle.Pass(), net::HostPortPair(domain_name, 443));
   int status = transport_socket_->Connect(
       base::Bind(&ChromeAsyncSocket::ProcessSSLConnectDone,
                  weak_ptr_factory_.GetWeakPtr()));

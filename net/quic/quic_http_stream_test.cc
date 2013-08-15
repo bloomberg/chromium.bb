@@ -179,10 +179,12 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
     connection_->SetSendAlgorithm(send_algorithm_);
     connection_->SetReceiveAlgorithm(receive_algorithm_);
     crypto_config_.SetDefaults();
-    session_.reset(new QuicClientSession(connection_, socket, NULL,
-                                         &crypto_client_stream_factory_,
-                                         "www.google.com", DefaultQuicConfig(),
-                                         &crypto_config_, NULL));
+    session_.reset(
+        new QuicClientSession(connection_,
+                              scoped_ptr<DatagramClientSocket>(socket), NULL,
+                              &crypto_client_stream_factory_,
+                              "www.google.com", DefaultQuicConfig(),
+                              &crypto_config_, NULL));
     session_->GetCryptoStream()->CryptoConnect();
     EXPECT_TRUE(session_->IsCryptoHandshakeConfirmed());
     stream_.reset(use_closing_stream_ ?

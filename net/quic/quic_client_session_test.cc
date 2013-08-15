@@ -15,6 +15,7 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_client_session_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
+#include "net/udp/datagram_client_socket.h"
 
 using testing::_;
 
@@ -29,8 +30,9 @@ class QuicClientSessionTest : public ::testing::Test {
   QuicClientSessionTest()
       : guid_(1),
         connection_(new PacketSavingConnection(guid_, IPEndPoint(), false)),
-        session_(connection_, NULL, NULL, NULL, kServerHostname,
-                 DefaultQuicConfig(), &crypto_config_, &net_log_) {
+        session_(connection_, scoped_ptr<DatagramClientSocket>(), NULL,
+                 NULL, kServerHostname, DefaultQuicConfig(), &crypto_config_,
+                 &net_log_) {
     session_.config()->SetDefaults();
     crypto_config_.SetDefaults();
   }

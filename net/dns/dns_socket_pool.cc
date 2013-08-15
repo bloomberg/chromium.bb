@@ -76,8 +76,8 @@ scoped_ptr<DatagramClientSocket> DnsSocketPool::CreateConnectedSocket(
   scoped_ptr<DatagramClientSocket> socket;
 
   NetLog::Source no_source;
-  socket.reset(socket_factory_->CreateDatagramClientSocket(
-      kBindType, base::Bind(&base::RandInt), net_log_, no_source));
+  socket = socket_factory_->CreateDatagramClientSocket(
+      kBindType, base::Bind(&base::RandInt), net_log_, no_source);
 
   if (socket.get()) {
     int rv = socket->Connect((*nameservers_)[server_index]);

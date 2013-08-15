@@ -204,7 +204,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
                              ClientSocketHandle* handle) OVERRIDE;
 
   virtual void ReleaseSocket(const std::string& group_name,
-                             StreamSocket* socket,
+                             scoped_ptr<StreamSocket> socket,
                              int id) OVERRIDE;
 
   virtual void FlushWithError(int error) OVERRIDE;
@@ -250,7 +250,7 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
         NetLog* net_log);
 
     // ClientSocketPoolBase::ConnectJobFactory methods.
-    virtual ConnectJob* NewConnectJob(
+    virtual scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const PoolBase::Request& request,
         ConnectJob::Delegate* delegate) const OVERRIDE;

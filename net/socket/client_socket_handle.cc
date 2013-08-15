@@ -43,7 +43,7 @@ void ClientSocketHandle::ResetInternal(bool cancel) {
     if (pool_)
       // If we've still got a socket, release it back to the ClientSocketPool so
       // it can be deleted or reused.
-      pool_->ReleaseSocket(group_name_, release_socket(), pool_id_);
+      pool_->ReleaseSocket(group_name_, PassSocket(), pool_id_);
   } else if (cancel) {
     // If we did not get initialized yet, we've got a socket request pending.
     // Cancel it.
@@ -121,11 +121,19 @@ bool ClientSocketHandle::GetLoadTimingInfo(
   return true;
 }
 
+void ClientSocketHandle::SetSocket(scoped_ptr<StreamSocket> s) {
+  socket_ = s.Pass();
+}
+
 void ClientSocketHandle::OnIOComplete(int result) {
   CompletionCallback callback = user_callback_;
   user_callback_.Reset();
   HandleInitCompletion(result);
   callback.Run(result);
+}
+
+scoped_ptr<StreamSocket> ClientSocketHandle::PassSocket() {
+  return socket_.Pass();
 }
 
 void ClientSocketHandle::HandleInitCompletion(int result) {

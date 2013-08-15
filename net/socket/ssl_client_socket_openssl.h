@@ -41,7 +41,7 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   // The given hostname will be compared with the name(s) in the server's
   // certificate during the SSL handshake.  ssl_config specifies the SSL
   // settings.
-  SSLClientSocketOpenSSL(ClientSocketHandle* transport_socket,
+  SSLClientSocketOpenSSL(scoped_ptr<ClientSocketHandle> transport_socket,
                          const HostPortPair& host_and_port,
                          const SSLConfig& ssl_config,
                          const SSLClientSocketContext& context);

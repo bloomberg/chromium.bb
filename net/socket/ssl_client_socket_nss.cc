@@ -2751,12 +2751,12 @@ void SSLClientSocketNSS::Core::SetChannelIDProvided() {
 
 SSLClientSocketNSS::SSLClientSocketNSS(
     base::SequencedTaskRunner* nss_task_runner,
-    ClientSocketHandle* transport_socket,
+    scoped_ptr<ClientSocketHandle> transport_socket,
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context)
     : nss_task_runner_(nss_task_runner),
-      transport_(transport_socket),
+      transport_(transport_socket.Pass()),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       cert_verifier_(context.cert_verifier),
@@ -2765,7 +2765,7 @@ SSLClientSocketNSS::SSLClientSocketNSS(
       completed_handshake_(false),
       next_handshake_state_(STATE_NONE),
       nss_fd_(NULL),
-      net_log_(transport_socket->socket()->NetLog()),
+      net_log_(transport_->socket()->NetLog()),
       transport_security_state_(context.transport_security_state),
       valid_thread_id_(base::kInvalidThreadId) {
   EnterFunction("");

@@ -304,8 +304,11 @@ class SSLServerSocketTest : public PlatformTest {
 
  protected:
   void Initialize() {
-    FakeSocket* fake_client_socket = new FakeSocket(&channel_1_, &channel_2_);
-    FakeSocket* fake_server_socket = new FakeSocket(&channel_2_, &channel_1_);
+    scoped_ptr<ClientSocketHandle> client_connection(new ClientSocketHandle);
+    client_connection->SetSocket(
+        scoped_ptr<StreamSocket>(new FakeSocket(&channel_1_, &channel_2_)));
+    scoped_ptr<StreamSocket> server_socket(
+        new FakeSocket(&channel_2_, &channel_1_));
 
     base::FilePath certs_dir(GetTestCertsDirectory());
 
@@ -344,13 +347,12 @@ class SSLServerSocketTest : public PlatformTest {
     net::SSLClientSocketContext context;
     context.cert_verifier = cert_verifier_.get();
     context.transport_security_state = transport_security_state_.get();
-    scoped_ptr<ClientSocketHandle> connection(new ClientSocketHandle);
-    connection->set_socket(fake_client_socket);
-    client_socket_.reset(
+    client_socket_ =
         socket_factory_->CreateSSLClientSocket(
-            connection.release(), host_and_pair, ssl_config, context));
-    server_socket_.reset(net::CreateSSLServerSocket(
-        fake_server_socket, cert.get(), private_key.get(), net::SSLConfig()));
+            client_connection.Pass(), host_and_pair, ssl_config, context);
+    server_socket_ = net::CreateSSLServerSocket(
+        server_socket.Pass(),
+        cert.get(), private_key.get(), net::SSLConfig());
   }
 
   FakeDataChannel channel_1_;

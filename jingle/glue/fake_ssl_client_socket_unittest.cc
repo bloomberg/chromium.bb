@@ -91,7 +91,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 
   virtual ~FakeSSLClientSocketTest() {}
 
-  net::StreamSocket* MakeClientSocket() {
+  scoped_ptr<net::StreamSocket> MakeClientSocket() {
     return mock_client_socket_factory_.CreateTransportClientSocket(
         net::AddressList(), NULL, net::NetLog::Source());
   }
@@ -269,7 +269,7 @@ class FakeSSLClientSocketTest : public testing::Test {
 };
 
 TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
-  MockClientSocket* mock_client_socket = new MockClientSocket();
+  scoped_ptr<MockClientSocket> mock_client_socket(new MockClientSocket());
   const int kReceiveBufferSize = 10;
   const int kSendBufferSize = 20;
   net::IPEndPoint ip_endpoint(net::IPAddressNumber(net::kIPv4AddressSize), 80);
@@ -284,7 +284,8 @@ TEST_F(FakeSSLClientSocketTest, PassThroughMethods) {
   EXPECT_CALL(*mock_client_socket, SetOmniboxSpeculation());
 
   // Takes ownership of |mock_client_socket|.
-  FakeSSLClientSocket fake_ssl_client_socket(mock_client_socket);
+  FakeSSLClientSocket fake_ssl_client_socket(
+      mock_client_socket.PassAs<net::StreamSocket>());
   fake_ssl_client_socket.SetReceiveBufferSize(kReceiveBufferSize);
   fake_ssl_client_socket.SetSendBufferSize(kSendBufferSize);
   EXPECT_EQ(kPeerAddress,

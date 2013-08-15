@@ -136,7 +136,9 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
     StartTls();
   } else {
     if (IsPseudoTlsClientSocket(type_)) {
-      socket_.reset(new jingle_glue::FakeSSLClientSocket(socket_.release()));
+      scoped_ptr<net::StreamSocket> transport_socket = socket_.Pass();
+      socket_.reset(
+          new jingle_glue::FakeSSLClientSocket(transport_socket.Pass()));
     }
 
     // If we are not doing TLS, we are ready to send data now.
@@ -155,7 +157,7 @@ void P2PSocketHostTcpBase::StartTls() {
 
   scoped_ptr<net::ClientSocketHandle> socket_handle(
       new net::ClientSocketHandle());
-  socket_handle->set_socket(socket_.release());
+  socket_handle->SetSocket(socket_.Pass());
 
   net::SSLClientSocketContext context;
   context.cert_verifier = url_context_->GetURLRequestContext()->cert_verifier();
@@ -171,8 +173,8 @@ void P2PSocketHostTcpBase::StartTls() {
       net::ClientSocketFactory::GetDefaultFactory();
   DCHECK(socket_factory);
 
-  socket_.reset(socket_factory->CreateSSLClientSocket(
-      socket_handle.release(), dest_host_port_pair, ssl_config, context));
+  socket_ = socket_factory->CreateSSLClientSocket(
+      socket_handle.Pass(), dest_host_port_pair, ssl_config, context);
   int status = socket_->Connect(
       base::Bind(&P2PSocketHostTcpBase::ProcessTlsConnectDone,
                  base::Unretained(this)));

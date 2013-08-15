@@ -36,8 +36,7 @@ namespace jingle_glue {
 
 class FakeSSLClientSocket : public net::StreamSocket {
  public:
-  // Takes ownership of |transport_socket|.
-  explicit FakeSSLClientSocket(net::StreamSocket* transport_socket);
+  explicit FakeSSLClientSocket(scoped_ptr<net::StreamSocket> transport_socket);
 
   virtual ~FakeSSLClientSocket();
 

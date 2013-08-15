@@ -67,23 +67,25 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
     ClearSSLSessionCache();
   }
 
-  virtual DatagramClientSocket* CreateDatagramClientSocket(
+  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLog::Source& source) OVERRIDE {
-    return new UDPClientSocket(bind_type, rand_int_cb, net_log, source);
+    return scoped_ptr<DatagramClientSocket>(
+        new UDPClientSocket(bind_type, rand_int_cb, net_log, source));
   }
 
-  virtual StreamSocket* CreateTransportClientSocket(
+  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* net_log,
       const NetLog::Source& source) OVERRIDE {
-    return new TCPClientSocket(addresses, net_log, source);
+    return scoped_ptr<StreamSocket>(
+        new TCPClientSocket(addresses, net_log, source));
   }
 
-  virtual SSLClientSocket* CreateSSLClientSocket(
-      ClientSocketHandle* transport_socket,
+  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) OVERRIDE {
@@ -102,17 +104,19 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
       nss_task_runner = base::ThreadTaskRunnerHandle::Get();
 
 #if defined(USE_OPENSSL)
-    return new SSLClientSocketOpenSSL(transport_socket, host_and_port,
-                                      ssl_config, context);
+    return scoped_ptr<SSLClientSocket>(
+        new SSLClientSocketOpenSSL(transport_socket.Pass(), host_and_port,
+                                   ssl_config, context));
 #elif defined(USE_NSS) || defined(OS_MACOSX) || defined(OS_WIN)
-    return new SSLClientSocketNSS(nss_task_runner.get(),
-                                  transport_socket,
-                                  host_and_port,
-                                  ssl_config,
-                                  context);
+    return scoped_ptr<SSLClientSocket>(
+        new SSLClientSocketNSS(nss_task_runner.get(),
+                               transport_socket.Pass(),
+                               host_and_port,
+                               ssl_config,
+                               context));
 #else
     NOTIMPLEMENTED();
-    return NULL;
+    return scoped_ptr<SSLClientSocket>();
 #endif
   }
 

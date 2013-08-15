@@ -116,8 +116,8 @@ class NET_EXPORT ClientSocketHandle {
                          LoadTimingInfo* load_timing_info) const;
 
   // Used by ClientSocketPool to initialize the ClientSocketHandle.
+  void SetSocket(scoped_ptr<StreamSocket> s);
   void set_is_reused(bool is_reused) { is_reused_ = is_reused; }
-  void set_socket(StreamSocket* s) { socket_.reset(s); }
   void set_idle_time(base::TimeDelta idle_time) { idle_time_ = idle_time; }
   void set_pool_id(int id) { pool_id_ = id; }
   void set_is_ssl_error(bool is_ssl_error) { is_ssl_error_ = is_ssl_error; }
@@ -144,10 +144,10 @@ class NET_EXPORT ClientSocketHandle {
   }
 
   // These may only be used if is_initialized() is true.
+  scoped_ptr<StreamSocket> PassSocket();
+  StreamSocket* socket() { return socket_.get(); }
   const std::string& group_name() const { return group_name_; }
   int id() const { return pool_id_; }
-  StreamSocket* socket() { return socket_.get(); }
-  StreamSocket* release_socket() { return socket_.release(); }
   bool is_reused() const { return is_reused_; }
   base::TimeDelta idle_time() const { return idle_time_; }
   SocketReuseType reuse_type() const {

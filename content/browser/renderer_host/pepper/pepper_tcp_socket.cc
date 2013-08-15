@@ -141,16 +141,16 @@ void PepperTCPSocket::SSLHandshake(
   connection_state_ = SSL_HANDSHAKE_IN_PROGRESS;
   // TODO(raymes,rsleevi): Use trusted/untrusted certificates when connecting.
 
-  net::ClientSocketHandle* handle = new net::ClientSocketHandle();
-  handle->set_socket(socket_.release());
+  scoped_ptr<net::ClientSocketHandle> handle(new net::ClientSocketHandle());
+  handle->SetSocket(socket_.Pass());
   net::ClientSocketFactory* factory =
       net::ClientSocketFactory::GetDefaultFactory();
   net::HostPortPair host_port_pair(server_name, server_port);
   net::SSLClientSocketContext ssl_context;
   ssl_context.cert_verifier = manager_->GetCertVerifier();
   ssl_context.transport_security_state = manager_->GetTransportSecurityState();
-  socket_.reset(factory->CreateSSLClientSocket(
-      handle, host_port_pair, manager_->ssl_config(), ssl_context));
+  socket_ = factory->CreateSSLClientSocket(
+      handle.Pass(), host_port_pair, manager_->ssl_config(), ssl_context);
   if (!socket_) {
     LOG(WARNING) << "Failed to create an SSL client socket.";
     OnSSLHandshakeCompleted(net::ERR_UNEXPECTED);

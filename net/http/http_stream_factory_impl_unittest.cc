@@ -314,7 +314,7 @@ class CapturePreconnectsSocketPool : public ParentPool {
     ADD_FAILURE();
   }
   virtual void ReleaseSocket(const std::string& group_name,
-                             StreamSocket* socket,
+                             scoped_ptr<StreamSocket> socket,
                              int id) OVERRIDE {
     ADD_FAILURE();
   }

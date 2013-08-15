@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/base/rand_callback.h"
@@ -32,13 +33,13 @@ class NET_EXPORT ClientSocketFactory {
 
   // |source| is the NetLog::Source for the entity trying to create the socket,
   // if it has one.
-  virtual DatagramClientSocket* CreateDatagramClientSocket(
+  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLog::Source& source) = 0;
 
-  virtual StreamSocket* CreateTransportClientSocket(
+  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* net_log,
       const NetLog::Source& source) = 0;
@@ -46,8 +47,8 @@ class NET_EXPORT ClientSocketFactory {
   // It is allowed to pass in a |transport_socket| that is not obtained from a
   // socket pool. The caller could create a ClientSocketHandle directly and call
   // set_socket() on it to set a valid StreamSocket instance.
-  virtual SSLClientSocket* CreateSSLClientSocket(
-      ClientSocketHandle* transport_socket,
+  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) = 0;

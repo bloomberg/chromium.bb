@@ -592,17 +592,17 @@ class MockClientSocketFactory : public ClientSocketFactory {
   }
 
   // ClientSocketFactory
-  virtual DatagramClientSocket* CreateDatagramClientSocket(
+  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLog::Source& source) OVERRIDE;
-  virtual StreamSocket* CreateTransportClientSocket(
+  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* net_log,
       const NetLog::Source& source) OVERRIDE;
-  virtual SSLClientSocket* CreateSSLClientSocket(
-      ClientSocketHandle* transport_socket,
+  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) OVERRIDE;
@@ -857,7 +857,7 @@ class DeterministicMockTCPClientSocket
 class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
  public:
   MockSSLClientSocket(
-      ClientSocketHandle* transport_socket,
+      scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       SSLSocketDataProvider* socket);
@@ -1049,7 +1049,7 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
  public:
   class MockConnectJob {
    public:
-    MockConnectJob(StreamSocket* socket, ClientSocketHandle* handle,
+    MockConnectJob(scoped_ptr<StreamSocket> socket, ClientSocketHandle* handle,
                    const CompletionCallback& callback);
     ~MockConnectJob();
 
@@ -1088,7 +1088,8 @@ class MockTransportClientSocketPool : public TransportClientSocketPool {
   virtual void CancelRequest(const std::string& group_name,
                              ClientSocketHandle* handle) OVERRIDE;
   virtual void ReleaseSocket(const std::string& group_name,
-                             StreamSocket* socket, int id) OVERRIDE;
+                             scoped_ptr<StreamSocket> socket,
+                             int id) OVERRIDE;
 
  private:
   ClientSocketFactory* client_socket_factory_;
@@ -1123,17 +1124,17 @@ class DeterministicMockClientSocketFactory : public ClientSocketFactory {
   }
 
   // ClientSocketFactory
-  virtual DatagramClientSocket* CreateDatagramClientSocket(
+  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       NetLog* net_log,
       const NetLog::Source& source) OVERRIDE;
-  virtual StreamSocket* CreateTransportClientSocket(
+  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog* net_log,
       const NetLog::Source& source) OVERRIDE;
-  virtual SSLClientSocket* CreateSSLClientSocket(
-      ClientSocketHandle* transport_socket,
+  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) OVERRIDE;
@@ -1170,7 +1171,8 @@ class MockSOCKSClientSocketPool : public SOCKSClientSocketPool {
   virtual void CancelRequest(const std::string& group_name,
                              ClientSocketHandle* handle) OVERRIDE;
   virtual void ReleaseSocket(const std::string& group_name,
-                             StreamSocket* socket, int id) OVERRIDE;
+                             scoped_ptr<StreamSocket> socket,
+                             int id) OVERRIDE;
 
  private:
   TransportClientSocketPool* const transport_pool_;

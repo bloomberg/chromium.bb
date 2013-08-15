@@ -81,7 +81,7 @@ void QuicClientSession::StreamRequest::OnRequestCompleteFailure(int rv) {
 
 QuicClientSession::QuicClientSession(
     QuicConnection* connection,
-    DatagramClientSocket* socket,
+    scoped_ptr<DatagramClientSocket> socket,
     QuicStreamFactory* stream_factory,
     QuicCryptoClientStreamFactory* crypto_client_stream_factory,
     const string& server_hostname,
@@ -91,7 +91,7 @@ QuicClientSession::QuicClientSession(
     : QuicSession(connection, config, false),
       weak_factory_(this),
       stream_factory_(stream_factory),
-      socket_(socket),
+      socket_(socket.Pass()),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
       read_pending_(false),
       num_total_streams_(0),

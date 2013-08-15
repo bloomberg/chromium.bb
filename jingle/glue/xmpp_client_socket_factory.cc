@@ -8,6 +8,7 @@
 #include "jingle/glue/fake_ssl_client_socket.h"
 #include "jingle/glue/proxy_resolving_client_socket.h"
 #include "net/socket/client_socket_factory.h"
+#include "net/socket/client_socket_handle.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -28,20 +29,25 @@ XmppClientSocketFactory::XmppClientSocketFactory(
 
 XmppClientSocketFactory::~XmppClientSocketFactory() {}
 
-net::StreamSocket* XmppClientSocketFactory::CreateTransportClientSocket(
+scoped_ptr<net::StreamSocket>
+XmppClientSocketFactory::CreateTransportClientSocket(
     const net::HostPortPair& host_and_port) {
   // TODO(akalin): Use socket pools.
-  net::StreamSocket* transport_socket = new ProxyResolvingClientSocket(
-      NULL,
-      request_context_getter_,
-      ssl_config_,
-      host_and_port);
+  scoped_ptr<net::StreamSocket> transport_socket(
+      new ProxyResolvingClientSocket(
+          NULL,
+          request_context_getter_,
+          ssl_config_,
+          host_and_port));
   return (use_fake_ssl_client_socket_ ?
-          new FakeSSLClientSocket(transport_socket) : transport_socket);
+          scoped_ptr<net::StreamSocket>(
+              new FakeSSLClientSocket(transport_socket.Pass())) :
+          transport_socket.Pass());
 }
 
-net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
-    net::ClientSocketHandle* transport_socket,
+scoped_ptr<net::SSLClientSocket>
+XmppClientSocketFactory::CreateSSLClientSocket(
+    scoped_ptr<net::ClientSocketHandle> transport_socket,
     const net::HostPortPair& host_and_port) {
   net::SSLClientSocketContext context;
   context.cert_verifier =
@@ -52,7 +58,7 @@ net::SSLClientSocket* XmppClientSocketFactory::CreateSSLClientSocket(
   // TODO(rkn): context.server_bound_cert_service is NULL because the
   // ServerBoundCertService class is not thread safe.
   return client_socket_factory_->CreateSSLClientSocket(
-      transport_socket, host_and_port, ssl_config_, context);
+      transport_socket.Pass(), host_and_port, ssl_config_, context);
 }
 
 

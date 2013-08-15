@@ -220,7 +220,7 @@ TEST(HttpStreamParser, AsyncChunkAndAsyncSocket) {
   ASSERT_EQ(OK, rv);
 
   scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-  socket_handle->set_socket(transport.release());
+  socket_handle->SetSocket(transport.PassAs<StreamSocket>());
 
   HttpRequestInfo request_info;
   request_info.method = "GET";
@@ -375,7 +375,7 @@ TEST(HttpStreamParser, TruncatedHeaders) {
       ASSERT_EQ(OK, rv);
 
       scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
-      socket_handle->set_socket(transport.release());
+      socket_handle->SetSocket(transport.PassAs<StreamSocket>());
 
       HttpRequestInfo request_info;
       request_info.method = "GET";

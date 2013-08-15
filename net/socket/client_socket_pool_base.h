@@ -61,8 +61,11 @@ class NET_EXPORT_PRIVATE ConnectJob {
     Delegate() {}
     virtual ~Delegate() {}
 
-    // Alerts the delegate that the connection completed.
-    virtual void OnConnectJobComplete(int result, ConnectJob* job) = 0;
+    // Alerts the delegate that the connection completed. |job| must
+    // be destroyed by the delegate. A scoped_ptr<> isn't used because
+    // the caller of this function doesn't own |job|.
+    virtual void OnConnectJobComplete(int result,
+                                      ConnectJob* job) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -79,9 +82,10 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const std::string& group_name() const { return group_name_; }
   const BoundNetLog& net_log() { return net_log_; }
 
-  // Releases |socket_| to the client.  On connection error, this should return
-  // NULL.
-  StreamSocket* ReleaseSocket() { return socket_.release(); }
+  // Releases ownership of the underlying socket to the caller.
+  // Returns the released socket, or NULL if there was a connection
+  // error.
+  scoped_ptr<StreamSocket> PassSocket();
 
   // Begins connecting the socket.  Returns OK on success, ERR_IO_PENDING if it
   // cannot complete synchronously without blocking, or another net error code
@@ -105,7 +109,7 @@ class NET_EXPORT_PRIVATE ConnectJob {
   const BoundNetLog& net_log() const { return net_log_; }
 
  protected:
-  void set_socket(StreamSocket* socket);
+  void SetSocket(scoped_ptr<StreamSocket> socket);
   StreamSocket* socket() { return socket_.get(); }
   void NotifyDelegateOfCompletion(int rv);
   void ResetTimer(base::TimeDelta remainingTime);
@@ -188,7 +192,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     ConnectJobFactory() {}
     virtual ~ConnectJobFactory() {}
 
-    virtual ConnectJob* NewConnectJob(
+    virtual scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const Request& request,
         ConnectJob::Delegate* delegate) const = 0;
@@ -229,7 +233,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
 
   // See ClientSocketPool::ReleaseSocket for documentation on this function.
   void ReleaseSocket(const std::string& group_name,
-                     StreamSocket* socket,
+                     scoped_ptr<StreamSocket> socket,
                      int id);
 
   // See ClientSocketPool::FlushWithError for documentation on this function.
@@ -386,7 +390,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     // Otherwise, returns false.
     bool TryToUseUnassignedConnectJob();
 
-    void AddJob(ConnectJob* job, bool is_preconnect);
+    void AddJob(scoped_ptr<ConnectJob> job, bool is_preconnect);
     // Remove |job| from this group, which must already own |job|.
     void RemoveJob(ConnectJob* job);
     void RemoveAllJobs();
@@ -476,7 +480,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
     CleanupIdleSockets(false);
   }
 
-  // Removes |job| from |connect_job_set_|.  Also updates |group| if non-NULL.
+  // Removes |job| from |group|, which must already own |job|.
   void RemoveConnectJob(ConnectJob* job, Group* group);
 
   // Tries to see if we can handle any more requests for |group|.
@@ -486,7 +490,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   void ProcessPendingRequest(const std::string& group_name, Group* group);
 
   // Assigns |socket| to |handle| and updates |group|'s counters appropriately.
-  void HandOutSocket(StreamSocket* socket,
+  void HandOutSocket(scoped_ptr<StreamSocket> socket,
                      bool reused,
                      const LoadTimingInfo::ConnectTiming& connect_timing,
                      ClientSocketHandle* handle,
@@ -495,7 +499,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
                      const BoundNetLog& net_log);
 
   // Adds |socket| to the list of idle sockets for |group|.
-  void AddIdleSocket(StreamSocket* socket, Group* group);
+  void AddIdleSocket(scoped_ptr<StreamSocket> socket, Group* group);
 
   // Iterates through |group_map_|, canceling all ConnectJobs and deleting
   // groups if they are no longer needed.
@@ -625,7 +629,7 @@ class ClientSocketPoolBase {
     ConnectJobFactory() {}
     virtual ~ConnectJobFactory() {}
 
-    virtual ConnectJob* NewConnectJob(
+    virtual scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const Request& request,
         ConnectJob::Delegate* delegate) const = 0;
@@ -703,9 +707,10 @@ class ClientSocketPoolBase {
     return helper_.CancelRequest(group_name, handle);
   }
 
-  void ReleaseSocket(const std::string& group_name, StreamSocket* socket,
+  void ReleaseSocket(const std::string& group_name,
+                     scoped_ptr<StreamSocket> socket,
                      int id) {
-    return helper_.ReleaseSocket(group_name, socket, id);
+    return helper_.ReleaseSocket(group_name, socket.Pass(), id);
   }
 
   void FlushWithError(int error) { helper_.FlushWithError(error); }
@@ -786,13 +791,13 @@ class ClientSocketPoolBase {
         : connect_job_factory_(connect_job_factory) {}
     virtual ~ConnectJobFactoryAdaptor() {}
 
-    virtual ConnectJob* NewConnectJob(
+    virtual scoped_ptr<ConnectJob> NewConnectJob(
         const std::string& group_name,
         const internal::ClientSocketPoolBaseHelper::Request& request,
-        ConnectJob::Delegate* delegate) const {
-      const Request* casted_request = static_cast<const Request*>(&request);
+        ConnectJob::Delegate* delegate) const OVERRIDE {
+      const Request& casted_request = static_cast<const Request&>(request);
       return connect_job_factory_->NewConnectJob(
-          group_name, *casted_request, delegate);
+          group_name, casted_request, delegate);
     }
 
     virtual base::TimeDelta ConnectionTimeout() const {

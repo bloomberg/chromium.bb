@@ -14,6 +14,8 @@
 #include "net/dns/dns_protocol.h"
 #include "net/dns/dns_socket_pool.h"
 #include "net/socket/socket_test_util.h"
+#include "net/socket/ssl_client_socket.h"
+#include "net/socket/stream_socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -24,26 +26,26 @@ class TestClientSocketFactory : public ClientSocketFactory {
  public:
   virtual ~TestClientSocketFactory();
 
-  virtual DatagramClientSocket* CreateDatagramClientSocket(
+  virtual scoped_ptr<DatagramClientSocket> CreateDatagramClientSocket(
       DatagramSocket::BindType bind_type,
       const RandIntCallback& rand_int_cb,
       net::NetLog* net_log,
       const net::NetLog::Source& source) OVERRIDE;
 
-  virtual StreamSocket* CreateTransportClientSocket(
+  virtual scoped_ptr<StreamSocket> CreateTransportClientSocket(
       const AddressList& addresses,
       NetLog*, const NetLog::Source&) OVERRIDE {
     NOTIMPLEMENTED();
-    return NULL;
+    return scoped_ptr<StreamSocket>();
   }
 
-  virtual SSLClientSocket* CreateSSLClientSocket(
-      ClientSocketHandle* transport_socket,
+  virtual scoped_ptr<SSLClientSocket> CreateSSLClientSocket(
+      scoped_ptr<ClientSocketHandle> transport_socket,
       const HostPortPair& host_and_port,
       const SSLConfig& ssl_config,
       const SSLClientSocketContext& context) OVERRIDE {
     NOTIMPLEMENTED();
-    return NULL;
+    return scoped_ptr<SSLClientSocket>();
   }
 
   virtual void ClearSSLSessionCache() OVERRIDE {
@@ -179,7 +181,8 @@ bool DnsSessionTest::ExpectEvent(const PoolEvent& expected) {
   return true;
 }
 
-DatagramClientSocket* TestClientSocketFactory::CreateDatagramClientSocket(
+scoped_ptr<DatagramClientSocket>
+TestClientSocketFactory::CreateDatagramClientSocket(
     DatagramSocket::BindType bind_type,
     const RandIntCallback& rand_int_cb,
     net::NetLog* net_log,
@@ -188,9 +191,10 @@ DatagramClientSocket* TestClientSocketFactory::CreateDatagramClientSocket(
   // simplest SocketDataProvider with no data supplied.
   SocketDataProvider* data_provider = new StaticSocketDataProvider();
   data_providers_.push_back(data_provider);
-  MockUDPClientSocket* socket = new MockUDPClientSocket(data_provider, net_log);
-  data_provider->set_socket(socket);
-  return socket;
+  scoped_ptr<MockUDPClientSocket> socket(
+      new MockUDPClientSocket(data_provider, net_log));
+  data_provider->set_socket(socket.get());
+  return socket.PassAs<DatagramClientSocket>();
 }
 
 TestClientSocketFactory::~TestClientSocketFactory() {

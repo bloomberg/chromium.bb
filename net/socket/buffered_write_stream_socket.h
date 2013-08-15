@@ -5,6 +5,8 @@
 #ifndef NET_SOCKET_BUFFERED_WRITE_STREAM_SOCKET_H_
 #define NET_SOCKET_BUFFERED_WRITE_STREAM_SOCKET_H_
 
+#include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_log.h"
 #include "net/socket/stream_socket.h"
@@ -33,7 +35,7 @@ class IPEndPoint;
 // There are no bounds on the local buffer size. Use carefully.
 class NET_EXPORT_PRIVATE BufferedWriteStreamSocket : public StreamSocket {
  public:
-  BufferedWriteStreamSocket(StreamSocket* socket_to_wrap);
+  explicit BufferedWriteStreamSocket(scoped_ptr<StreamSocket> socket_to_wrap);
   virtual ~BufferedWriteStreamSocket();
 
   // Socket interface
@@ -71,6 +73,8 @@ class NET_EXPORT_PRIVATE BufferedWriteStreamSocket : public StreamSocket {
   bool callback_pending_;
   bool wrapped_write_in_progress_;
   int error_;
+
+  DISALLOW_COPY_AND_ASSIGN(BufferedWriteStreamSocket);
 };
 
 }  // namespace net

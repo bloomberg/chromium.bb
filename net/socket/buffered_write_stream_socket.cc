@@ -23,8 +23,8 @@ void AppendBuffer(GrowableIOBuffer* dst, IOBuffer* src, int src_len) {
 }  // anonymous namespace
 
 BufferedWriteStreamSocket::BufferedWriteStreamSocket(
-    StreamSocket* socket_to_wrap)
-    : wrapped_socket_(socket_to_wrap),
+    scoped_ptr<StreamSocket> socket_to_wrap)
+    : wrapped_socket_(socket_to_wrap.Pass()),
       io_buffer_(new GrowableIOBuffer()),
       backup_buffer_(new GrowableIOBuffer()),
       weak_factory_(this),
