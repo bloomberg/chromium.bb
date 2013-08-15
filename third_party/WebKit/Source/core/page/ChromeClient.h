@@ -155,9 +155,7 @@ public:
     virtual IntRect rootViewToScreen(const IntRect&) const = 0;
     virtual WebKit::WebScreenInfo screenInfo() const = 0;
     virtual void setCursor(const Cursor&) = 0;
-#if !USE(REQUEST_ANIMATION_FRAME_TIMER)
     virtual void scheduleAnimation() = 0;
-#endif
     // End methods used by HostWindow.
 
     virtual void dispatchViewportPropertiesDidChange(const ViewportArguments&) const { }
