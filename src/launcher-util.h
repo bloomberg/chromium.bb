@@ -23,6 +23,8 @@
 #ifndef _WESTON_LAUNCHER_UTIL_H_
 #define _WESTON_LAUNCHER_UTIL_H_
 
+#include "config.h"
+
 #include "compositor.h"
 
 int

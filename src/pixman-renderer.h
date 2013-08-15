@@ -20,7 +20,9 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include  "compositor.h"
+#include "config.h"
+
+#include "compositor.h"
 
 int
 pixman_renderer_init(struct weston_compositor *ec);

@@ -23,6 +23,8 @@
 #ifndef _UDEV_SEAT_H_
 #define _UDEV_SEAT_H_
 
+#include "config.h"
+
 #include <libudev.h>
 
 #include "compositor.h"

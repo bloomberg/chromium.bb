@@ -23,6 +23,8 @@
 #ifndef _FILTER_H_
 #define _FILTER_H_
 
+#include "config.h"
+
 #include <wayland-util.h>
 
 #include "compositor.h"

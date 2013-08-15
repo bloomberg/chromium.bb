@@ -23,6 +23,8 @@
 #ifndef _WESTON_CMS_H_
 #define _WESTON_CMS_H_
 
+#include "config.h"
+
 #include "compositor.h"
 
 /* General overview on how to be a CMS plugin:

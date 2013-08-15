@@ -23,6 +23,8 @@
 #ifndef EVDEV_H
 #define EVDEV_H
 
+#include "config.h"
+
 #include <linux/input.h>
 #include <wayland-util.h>
 
