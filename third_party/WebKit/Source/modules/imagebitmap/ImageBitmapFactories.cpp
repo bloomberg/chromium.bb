@@ -81,6 +81,9 @@ ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, H
 
 ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, HTMLImageElement* image, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
+    // This variant does not work in worker threads.
+    ASSERT(eventTarget->toDOMWindow());
+
     if (!image) {
         es.throwTypeError();
         return ScriptObject();
@@ -118,6 +121,9 @@ ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, H
 
 ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, HTMLVideoElement* video, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
+    // This variant does not work in worker threads.
+    ASSERT(eventTarget->toDOMWindow());
+
     if (!video) {
         es.throwTypeError();
         return ScriptObject();
@@ -167,6 +173,9 @@ ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, H
 
 ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, HTMLCanvasElement* canvas, int sx, int sy, int sw, int sh, ExceptionState& es)
 {
+    // This variant does not work in worker threads.
+    ASSERT(eventTarget->toDOMWindow());
+
     if (!canvas) {
         es.throwTypeError();
         return ScriptObject();
@@ -193,8 +202,8 @@ ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, B
         return ScriptObject();
     }
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(eventTarget->scriptExecutionContext());
-    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget->toDOMWindow()), resolver, IntRect());
-    from(eventTarget->toDOMWindow())->addLoader(loader);
+    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), resolver, IntRect());
+    from(eventTarget)->addLoader(loader);
     loader->loadBlobAsync(eventTarget->scriptExecutionContext(), blob);
     return resolver->promise();
 }
@@ -213,8 +222,8 @@ ScriptObject ImageBitmapFactories::createImageBitmap(EventTarget* eventTarget, B
         return ScriptObject();
     }
     RefPtr<ScriptPromiseResolver> resolver = ScriptPromiseResolver::create(eventTarget->scriptExecutionContext());
-    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget->toDOMWindow()), resolver, IntRect(sx, sy, sw, sh));
-    from(eventTarget->toDOMWindow())->addLoader(loader);
+    RefPtr<ImageBitmapLoader> loader = ImageBitmapFactories::ImageBitmapLoader::create(from(eventTarget), resolver, IntRect(sx, sy, sw, sh));
+    from(eventTarget)->addLoader(loader);
     loader->loadBlobAsync(eventTarget->scriptExecutionContext(), blob);
     return resolver->promise();
 }
@@ -262,12 +271,22 @@ const char* ImageBitmapFactories::supplementName()
     return "ImageBitmapFactories";
 }
 
-ImageBitmapFactories* ImageBitmapFactories::from(DOMWindow* window)
+ImageBitmapFactories* ImageBitmapFactories::from(EventTarget* eventTarget)
 {
-    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(Supplement<DOMWindow>::from(window, supplementName()));
+    if (DOMWindow* window = eventTarget->toDOMWindow())
+        return fromInternal(window);
+
+    ASSERT(eventTarget->scriptExecutionContext()->isWorkerGlobalScope());
+    return fromInternal(eventTarget->scriptExecutionContext());
+}
+
+template <class T>
+ImageBitmapFactories* ImageBitmapFactories::fromInternal(T* object)
+{
+    ImageBitmapFactories* supplement = static_cast<ImageBitmapFactories*>(Supplement<T>::from(object, supplementName()));
     if (!supplement) {
         supplement = new ImageBitmapFactories();
-        provideTo(window, supplementName(), adoptPtr(supplement));
+        Supplement<T>::provideTo(object, supplementName(), adoptPtr(supplement));
     }
     return supplement;
 }

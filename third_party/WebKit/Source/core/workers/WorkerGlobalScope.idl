@@ -44,5 +44,6 @@
     attribute URLConstructor webkitURL; // FIXME: deprecate this.
 };
 
+WorkerGlobalScope implements ImageBitmapFactories;
 WorkerGlobalScope implements WindowBase64;
 WorkerGlobalScope implements WindowTimers;

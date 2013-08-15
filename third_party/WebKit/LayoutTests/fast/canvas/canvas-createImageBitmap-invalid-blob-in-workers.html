@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body>
+<script>
+var worker = startWorker('./resources/canvas-createImageBitmap-invalid-blob-in-workers.js');
+
+var xhr = new XMLHttpRequest();
+xhr.open("GET", 'resources/empty.svg');
+xhr.responseType = 'blob';
+xhr.send();
+xhr.onload = function() {
+    worker.postMessage(xhr.response);
+}
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>

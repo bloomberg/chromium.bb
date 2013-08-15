@@ -29,14 +29,16 @@
  */
 
 [
-    NoInterfaceObject,
+    ImplementedAs=ImageBitmapFactories,
     EnabledAtRuntime=experimentalCanvasFeatures
-] interface ImageBitmapFactories {
+] partial interface Window {
     // FIXME: these methods should return |Promise|. http://crbug.com/266700
-    [RaisesException] any createImageBitmap(Blob blob);
-    [RaisesException] any createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);
-    [RaisesException] any createImageBitmap(ImageData data);
-    [RaisesException] any createImageBitmap(ImageData data, long sx, long sy, long sw, long sh);
-    [RaisesException] any createImageBitmap(ImageBitmap bitmap);
-    [RaisesException] any createImageBitmap(ImageBitmap bitmap, long sx, long sy, long sw, long sh);
+    [RaisesException] any createImageBitmap(HTMLImageElement image);
+    [RaisesException] any createImageBitmap(HTMLImageElement image, long sx, long sy, long sw, long sh);
+    [RaisesException] any createImageBitmap(HTMLVideoElement video);
+    [RaisesException] any createImageBitmap(HTMLVideoElement video, long sx, long sy, long sw, long sh);
+    [RaisesException] any createImageBitmap(CanvasRenderingContext2D context);
+    [RaisesException] any createImageBitmap(CanvasRenderingContext2D context, long sx, long sy, long sw, long sh);
+    [RaisesException] any createImageBitmap(HTMLCanvasElement canvas);
+    [RaisesException] any createImageBitmap(HTMLCanvasElement canvas, long sx, long sy, long sw, long sh);
 };

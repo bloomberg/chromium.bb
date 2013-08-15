@@ -53,7 +53,7 @@ class ImageBitmap;
 class ImageData;
 class ScriptExecutionContext;
 
-class ImageBitmapFactories : public Supplement<DOMWindow> {
+class ImageBitmapFactories : public Supplement<DOMWindow>, public Supplement<ScriptExecutionContext> {
 
 class ImageBitmapLoader;
 
@@ -73,11 +73,9 @@ public:
     static ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, ExceptionState&);
     static ScriptObject createImageBitmap(EventTarget*, ImageBitmap*, int sx, int sy, int sw, int sh, ExceptionState&);
 
-    void addLoader(PassRefPtr<ImageBitmapLoader>);
     void didFinishLoading(ImageBitmapLoader*);
 
     virtual ~ImageBitmapFactories() { }
-    static ImageBitmapFactories* from(DOMWindow*);
 
 private:
     class ImageBitmapLoader : public RefCounted<ImageBitmapLoader>, public FileReaderLoaderClient {
@@ -110,6 +108,12 @@ private:
     };
 
     static const char* supplementName();
+    static ImageBitmapFactories* from(EventTarget*);
+
+    template <class T>
+    static ImageBitmapFactories* fromInternal(T*);
+
+    void addLoader(PassRefPtr<ImageBitmapLoader>);
 
     HashSet<RefPtr<ImageBitmapLoader> > m_pendingLoaders;
 };
