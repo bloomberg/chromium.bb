@@ -1842,7 +1842,7 @@ PassRefPtr<Attr> Element::setAttributeNode(Attr* attrNode, ExceptionState& es)
     synchronizeAllAttributes();
     UniqueElementData* elementData = ensureUniqueElementData();
 
-    size_t index = elementData->getAttributeItemIndex(attrNode->qualifiedName());
+    size_t index = elementData->getAttributeItemIndex(attrNode->qualifiedName(), shouldIgnoreAttributeCase(this));
     if (index != notFound) {
         if (oldAttrNode)
             detachAttrNodeFromElementWithValue(oldAttrNode.get(), elementData->attributeItem(index)->value());
