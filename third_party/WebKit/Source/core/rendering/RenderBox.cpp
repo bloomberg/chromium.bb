@@ -1541,6 +1541,11 @@ bool RenderBox::pushContentsClip(PaintInfo& paintInfo, const LayoutPoint& accumu
         if (contentsVisualOverflow.isEmpty())
             return false;
 
+        // FIXME: Get rid of this slop from here and elsewhere.
+        // Instead, properly include the outline in visual overflow.
+        if (RenderView* view = this->view())
+            contentsVisualOverflow.inflate(view->maximalOutlineSize());
+
         LayoutRect conservativeClipRect = clipRect;
         if (hasBorderRadius)
             conservativeClipRect.intersect(clipRoundedRect.radiusCenterRect());
