@@ -195,7 +195,8 @@ TEST_F(PnaclHostTest, TranslationErrors) {
   EXPECT_EQ(0U, host_->pending_translations());
 }
 
-TEST_F(PnaclHostTest, OverlappedMissesAfterTempReturn) {
+// crbug.com/272492; flaky on all platforms.
+TEST_F(PnaclHostTest, DISABLED_OverlappedMissesAfterTempReturn) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, false, info, false);
   FlushQueues();
@@ -267,7 +268,8 @@ TEST_F(PnaclHostTest, OverlappedHitsAfterTempReturn) {
   EXPECT_EQ(0U, host_->pending_translations());
 }
 
-TEST_F(PnaclHostTest, OverlappedMissesRendererClosing) {
+// crbug.com/272492; flaky on all platforms.
+TEST_F(PnaclHostTest, DISABLED_OverlappedMissesRendererClosing) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, false, info, false);
   // Send the 2nd fd request from a different renderer.
@@ -305,7 +307,8 @@ TEST_F(PnaclHostTest, Incognito) {
   EXPECT_EQ(3, temp_callback_count_);
 }
 
-TEST_F(PnaclHostTest, IncognitoOverlappedMiss) {
+// crbug.com/272492; flaky on all platforms.
+TEST_F(PnaclHostTest, DISABLED_IncognitoOverlappedMiss) {
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
   GET_NEXE_FD(0, 0, true, info, false);
   GET_NEXE_FD(0, 1, false, info, false);
@@ -329,7 +332,8 @@ TEST_F(PnaclHostTest, IncognitoOverlappedMiss) {
   host_->RendererClosing(0);
 }
 
-TEST_F(PnaclHostTest, IncognitoSecondOverlappedMiss) {
+// crbug.com/272492; flaky on all platforms.
+TEST_F(PnaclHostTest, DISABLED_IncognitoSecondOverlappedMiss) {
   // If the non-incognito request comes first, it should
   // behave exactly like OverlappedMissBeforeTempReturn
   nacl::PnaclCacheInfo info = GetTestCacheInfo();
