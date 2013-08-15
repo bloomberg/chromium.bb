@@ -9,6 +9,15 @@
 #include "tools/gn/operators.h"
 #include "tools/gn/token.h"
 
+// grammar:
+//
+// file       := (statement)*
+// statement  := block | if | assignment
+// block      := '{' statement* '}'
+// if         := 'if' '(' expr ')' statement [ else ]
+// else       := 'else' (if | statement)*
+// assignment := ident {'=' | '+=' | '-='} expr
+
 namespace {
 
 // Returns true if the two tokens are on the same line. We assume they're in
@@ -20,10 +29,64 @@ bool IsSameLine(const Token& a, const Token& b) {
 
 }  // namespace
 
+enum Precedence {
+  PRECEDENCE_ASSIGNMENT = 1,
+  PRECEDENCE_OR = 2,
+  PRECEDENCE_AND = 3,
+  PRECEDENCE_EQUALITY = 4,
+  PRECEDENCE_RELATION = 5,
+  PRECEDENCE_SUM = 6,
+  PRECEDENCE_PREFIX = 7,
+  PRECEDENCE_CALL = 8,
+};
+
+// The top-level for blocks/ifs is still recursive descent, the expression
+// parser is a Pratt parser. The basic idea there is to have the precedences
+// (and associativities) encoded relative to each other and only parse up
+// until you hit something of that precedence. There's a dispatch table in
+// expressions_ at the top of parser.cc that describes how each token
+// dispatches if it's seen as either a prefix or infix operator, and if it's
+// infix, what its precedence is.
+//
+// Refs:
+// - http://javascript.crockford.com/tdop/tdop.html
+// - http://journal.stuffwithstuff.com/2011/03/19/pratt-parsers-expression-parsing-made-easy/
+
+// Indexed by Token::Type.
+ParserHelper Parser::expressions_[] = {
+  {NULL, NULL, -1},                                             // INVALID
+  {&Parser::Literal, NULL, -1},                                 // INTEGER
+  {&Parser::Literal, NULL, -1},                                 // STRING
+  {NULL, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},           // EQUAL
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_SUM},              // PLUS
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_SUM},              // MINUS
+  {NULL, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},           // PLUS_EQUALS
+  {NULL, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},           // MINUS_EQUALS
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_EQUALITY},         // EQUAL_EQUAL
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_EQUALITY},         // NOT_EQUAL
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // LESS_EQUAL
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // GREATER_EQUAL
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // LESS_THAN
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_RELATION},         // GREATER_THAN
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_AND},              // BOOLEAN_AND
+  {NULL, &Parser::BinaryOperator, PRECEDENCE_OR},               // BOOLEAN_OR
+  {&Parser::Not, NULL, -1},                                     // BANG
+  {&Parser::Group, NULL, -1},                                   // LEFT_PAREN
+  {NULL, NULL, -1},                                             // RIGHT_PAREN
+  {&Parser::List, &Parser::Subscript, PRECEDENCE_CALL},         // LEFT_BRACKET
+  {NULL, NULL, -1},                                             // RIGHT_BRACKET
+  {NULL, NULL, -1},                                             // LEFT_BRACE
+  {NULL, NULL, -1},                                             // RIGHT_BRACE
+  {NULL, NULL, -1},                                             // IF
+  {NULL, NULL, -1},                                             // ELSE
+  {&Parser::Name, &Parser::IdentifierOrCall, PRECEDENCE_CALL},  // IDENTIFIER
+  {NULL, NULL, -1},                                             // COMMA
+  {NULL, NULL, -1},                                             // COMMENT
+  {NULL, NULL, -1},                                             // NEWLINE
+};
+
 Parser::Parser(const std::vector<Token>& tokens, Err* err)
-    : tokens_(tokens),
-      err_(err),
-      cur_(0) {
+    : tokens_(tokens), err_(err), cur_(0) {
 }
 
 Parser::~Parser() {
@@ -33,7 +96,7 @@ Parser::~Parser() {
 scoped_ptr<ParseNode> Parser::Parse(const std::vector<Token>& tokens,
                                     Err* err) {
   Parser p(tokens, err);
-  return p.ParseBlock(false).PassAs<ParseNode>();
+  return p.ParseFile().PassAs<ParseNode>();
 }
 
 // static
@@ -43,428 +106,302 @@ scoped_ptr<ParseNode> Parser::ParseExpression(const std::vector<Token>& tokens,
   return p.ParseExpression().Pass();
 }
 
-bool Parser::IsToken(Token::Type type, char* str) const {
+bool Parser::IsAssignment(const ParseNode* node) const {
+  return node && node->AsBinaryOp() &&
+         (node->AsBinaryOp()->op().type() == Token::EQUAL ||
+          node->AsBinaryOp()->op().type() == Token::PLUS_EQUALS ||
+          node->AsBinaryOp()->op().type() == Token::MINUS_EQUALS);
+}
+
+bool Parser::LookAhead(Token::Type type) {
   if (at_end())
     return false;
-  return cur_token().type() == type || cur_token().value() == str;
+  return cur_token().type() == type;
 }
 
-scoped_ptr<AccessorNode> Parser::ParseAccessor() {
-  scoped_ptr<AccessorNode> accessor(new AccessorNode);
-
-  DCHECK(cur_token().type() == Token::IDENTIFIER);
-  accessor->set_base(cur_token());
-  cur_++;  // Skip identifier.
-  cur_++;  // Skip "[" (we know this exists because the existance of this
-           // token is how the caller knows it's an accessor.
-
-  if (at_end()) {
-    *err_ = MakeEOFError("Got EOF when looking for list index.");
-    return scoped_ptr<AccessorNode>();
-  }
-
-  // Get the expression.
-  scoped_ptr<ParseNode> expr = ParseExpression().Pass();
-  if (has_error())
-    return scoped_ptr<AccessorNode>();
-  if (at_end()) {
-    *err_ = MakeEOFError("Got EOF when looking for list accessor ]");
-    return scoped_ptr<AccessorNode>();
-  }
-  accessor->set_index(expr.Pass());
-
-  // Skip over "]"
-  if (!cur_token().IsScoperEqualTo("]")) {
-    *err_ = Err(cur_token(), "Expecting ]",
-               "You started a list access but didn't terminate it, and instead "
-               "I fould this\nstupid thing.");
-    return scoped_ptr<AccessorNode>();
-  }
-  cur_++;
-
-  return accessor.Pass();
+bool Parser::Match(Token::Type type) {
+  if (!LookAhead(type))
+    return false;
+  Consume();
+  return true;
 }
 
-// Blocks at the file scope don't need {} so we have the option to ignore
-// them. When need_braces is set, we'll expect a begin an end brace.
-//
-// block := "{" block_contents "}"
-// block_contents := (expression | conditional | block)*
-scoped_ptr<BlockNode> Parser::ParseBlock(bool need_braces) {
-  scoped_ptr<BlockNode> block(new BlockNode(true));
+Token Parser::Consume(Token::Type type, const char* error_message) {
+  Token::Type types[1] = { type };
+  return Consume(types, 1, error_message);
+}
 
-  // Eat initial { if necessary.
-  const Token* opening_curly_brace;
-  if (need_braces) {
-    if (at_end()) {
-      *err_ = MakeEOFError("Got EOF when looking for { for block.",
-                           "It should have been after here.");
-      return scoped_ptr<BlockNode>();
-    } else if(!IsScopeBeginScoper(cur_token())) {
-      *err_ = Err(cur_token(), "Expecting { instead of this thing.",
-                  "THOU SHALT USE CURLY BRACES FOR ALL BLOCKS.");
-      return scoped_ptr<BlockNode>();
-    }
-    opening_curly_brace = &cur_token();
-    block->set_begin_token(opening_curly_brace);
+Token Parser::Consume(Token::Type* types,
+                      size_t num_types,
+                      const char* error_message) {
+  if (has_error()) {
+    // Don't overwrite current error, but make progress through tokens so that
+    // a loop that's expecting a particular token will still terminate.
     cur_++;
+    return Token(Location(), Token::INVALID, base::StringPiece());
   }
-
-  // Loop until EOF or end brace found.
-  while (!at_end() && !IsScopeEndScoper(cur_token())) {
-    if (cur_token().IsIdentifierEqualTo("if")) {
-      // Conditional.
-      block->append_statement(ParseCondition().PassAs<ParseNode>());
-    } else if (IsScopeBeginScoper(cur_token())) {
-      // Nested block.
-      block->append_statement(ParseBlock(true).PassAs<ParseNode>());
-    } else {
-      // Everything else is an expression.
-      block->append_statement(ParseExpression().PassAs<ParseNode>());
-    }
-    if (has_error())
-      return scoped_ptr<BlockNode>();
+  for (size_t i = 0; i < num_types; ++i) {
+    if (cur_token().type() == types[i])
+      return tokens_[cur_++];
   }
-
-  // Eat the ending "}" if necessary.
-  if (need_braces) {
-    if (at_end() || !IsScopeEndScoper(cur_token())) {
-      *err_ = Err(*opening_curly_brace, "Expecting }",
-                  "I ran headlong into the end of the file looking for the "
-                  "closing brace\ncorresponding to this one.");
-      return scoped_ptr<BlockNode>();
-    }
-    block->set_end_token(&cur_token());
-    cur_++;  // Skip past "}".
-  }
-
-  return block.Pass();
+  *err_ = Err(cur_token(), error_message);
+  return Token(Location(), Token::INVALID, base::StringPiece());
 }
 
-// conditional := "if (" expression ")" block [else_conditional]
-// else_conditional := ("else" block) | ("else" conditional)
-scoped_ptr<ConditionNode> Parser::ParseCondition() {
-  scoped_ptr<ConditionNode> cond(new ConditionNode);
-
-  // Skip past "if".
-  const Token& if_token = cur_token();
-  cond->set_if_token(if_token);
-  DCHECK(if_token.IsIdentifierEqualTo("if"));
-  cur_++;
-
-  if (at_end() || !IsFunctionCallArgBeginScoper(cur_token())) {
-    *err_ = Err(if_token, "Expecting \"(\" after \"if\"",
-                "Did you think this was Python or something?");
-    return scoped_ptr<ConditionNode>();
-  }
-
-  // Skip over (.
-  const Token& open_paren_token = cur_token();
-  cur_++;
-  if (at_end()) {
-    *err_ = Err(if_token, "Unexpected EOF inside if condition");
-    return scoped_ptr<ConditionNode>();
-  }
-
-  // Condition inside ().
-  cond->set_condition(ParseExpression().Pass());
-  if (has_error())
-    return scoped_ptr<ConditionNode>();
-
-  if (at_end() || !IsFunctionCallArgEndScoper(cur_token())) {
-    *err_ = Err(open_paren_token, "Expecting \")\" for \"if\" condition",
-                "You didn't finish the thought you started here.");
-    return scoped_ptr<ConditionNode>();
-  }
-  cur_++;  // Skip over )
-
-  // Contents of {}.
-  cond->set_if_true(ParseBlock(true).Pass());
-  if (has_error())
-    return scoped_ptr<ConditionNode>();
-
-  // Optional "else" at the end.
-  if (!at_end() && cur_token().IsIdentifierEqualTo("else")) {
-    cur_++;
-
-    // The else may be followed by an if or a block.
-    if (at_end()) {
-      *err_ = MakeEOFError("Ran into end of file after \"else\".",
-                           "else, WHAT?!?!?");
-      return scoped_ptr<ConditionNode>();
-    }
-    if (cur_token().IsIdentifierEqualTo("if")) {
-      // "else if() {"
-      cond->set_if_false(ParseCondition().PassAs<ParseNode>());
-    } else if (IsScopeBeginScoper(cur_token())) {
-      // "else {"
-      cond->set_if_false(ParseBlock(true).PassAs<ParseNode>());
-    } else {
-      // else <anything else>
-      *err_ = Err(cur_token(), "Expected \"if\" or \"{\" after \"else\".",
-                  "This is neither of those things.");
-      return scoped_ptr<ConditionNode>();
-    }
-  }
-
-  if (has_error())
-    return scoped_ptr<ConditionNode>();
-  return cond.Pass();
+Token Parser::Consume() {
+  return tokens_[cur_++];
 }
 
-// expression := paren_expression | accessor | identifier | literal |
-//               funccall | unary_expression | binary_expression
-//
-// accessor := identifier <non-newline-whitespace>* "[" expression "]"
-//
-// The "non-newline-whitespace is used to differentiate between this case:
-//   a[1]
-// and this one:
-//   a
-//   [1]
-// The second one is kind of stupid (since it does nothing with the values)
-// but is still legal.
 scoped_ptr<ParseNode> Parser::ParseExpression() {
-  scoped_ptr<ParseNode> expr = ParseExpressionExceptBinaryOperators();
+  return ParseExpression(0);
+}
+
+scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
+  if (at_end())
+    return scoped_ptr<ParseNode>();
+  while (Match(Token::NEWLINE))
+    ;  // Skip.
+
+  Token token = Consume();
+  PrefixFunc prefix = expressions_[token.type()].prefix;
+
+  if (prefix == NULL) {
+    *err_ = Err(token,
+                std::string("Unexpected token '") + token.value().as_string() +
+                    std::string("'"));
+    return scoped_ptr<ParseNode>();
+  }
+
+  scoped_ptr<ParseNode> left = (this->*prefix)(token);
+
+  while (!at_end() &&
+         precedence <= expressions_[cur_token().type()].precedence) {
+    token = Consume();
+    InfixFunc infix = expressions_[token.type()].infix;
+    if (infix == NULL) {
+      *err_ = Err(token,
+                  std::string("Unexpected token '") +
+                      token.value().as_string() + std::string("'"));
+      return scoped_ptr<ParseNode>();
+    }
+    left = (this->*infix)(left.Pass(), token);
+    if (has_error())
+      return scoped_ptr<ParseNode>();
+  }
+
+  return left.Pass();
+}
+
+scoped_ptr<ParseNode> Parser::Literal(Token token) {
+  return scoped_ptr<LiteralNode>(new LiteralNode(token)).Pass();
+}
+
+scoped_ptr<ParseNode> Parser::Name(Token token) {
+  return IdentifierOrCall(scoped_ptr<ParseNode>(), token).Pass();
+}
+
+scoped_ptr<ParseNode> Parser::Group(Token token) {
+  scoped_ptr<ParseNode> expr = ParseExpression();
   if (has_error())
     return scoped_ptr<ParseNode>();
-
-  // That may have hit EOF, in which case we can't have any binary operators.
-  if (at_end())
-    return expr.Pass();
-
-  // TODO(brettw) handle operator precidence!
-  // Gobble up all subsequent expressions as long as there are binary
-  // operators.
-
-  if (IsBinaryOperator(cur_token())) {
-    scoped_ptr<BinaryOpNode> binary_op(new BinaryOpNode);
-    binary_op->set_left(expr.Pass());
-    const Token& operator_token = cur_token();
-    binary_op->set_op(operator_token);
-    cur_++;
-    if (at_end()) {
-      *err_ = Err(operator_token, "Unexpected EOF in expression.",
-                  "I was looking for the right-hand-side of this operator.");
-      return scoped_ptr<ParseNode>();
-    }
-    binary_op->set_right(ParseExpression().Pass());
-    if (has_error())
-      return scoped_ptr<ParseNode>();
-    return binary_op.PassAs<ParseNode>();
-  }
-
+  Consume(Token::RIGHT_PAREN, "Expected ')'");
   return expr.Pass();
 }
 
-
-// This internal one does not handle binary operators, since it requires
-// looking at the "next" thing. The regular ParseExpression above handles it.
-scoped_ptr<ParseNode> Parser::ParseExpressionExceptBinaryOperators() {
-  if (at_end())
+scoped_ptr<ParseNode> Parser::Not(Token token) {
+  scoped_ptr<ParseNode> expr = ParseExpression(PRECEDENCE_PREFIX + 1);
+  if (has_error())
     return scoped_ptr<ParseNode>();
-
-  const Token& token = cur_token();
-
-  // Unary expression.
-  if (IsUnaryOperator(token))
-    return ParseUnaryOp().PassAs<ParseNode>();
-
-  // Parenthesized expressions.
-  if (token.IsScoperEqualTo("("))
-    return ParseParenExpression();
-
-  // Function calls.
-  if (token.type() == Token::IDENTIFIER) {
-    if (has_next_token() && IsFunctionCallArgBeginScoper(next_token()))
-      return ParseFunctionCall().PassAs<ParseNode>();
-  }
-
-  // Lists.
-  if (token.IsScoperEqualTo("[")) {
-    return ParseList(Token(Location(), Token::SCOPER, "["),
-                     Token(Location(), Token::SCOPER, "]")).PassAs<ParseNode>();
-  }
-
-  // Literals.
-  if (token.type() == Token::STRING || token.type() == Token::INTEGER) {
-    cur_++;
-    return scoped_ptr<ParseNode>(new LiteralNode(token));
-  }
-
-  // Accessors.
-  if (token.type() == Token::IDENTIFIER &&
-      has_next_token() && next_token().IsScoperEqualTo("[") &&
-      IsSameLine(token, next_token())) {
-    return ParseAccessor().PassAs<ParseNode>();
-  }
-
-  // Identifiers.
-  if (token.type() == Token::IDENTIFIER) {
-    cur_++;
-    return scoped_ptr<ParseNode>(new IdentifierNode(token));
-  }
-
-  // Handle errors.
-  if (token.type() == Token::SEPARATOR) {
-    *err_ = Err(token, "Unexpected comma.",
-                "You can't put a comma here, it must be in list separating "
-                "complete\nthoughts.");
-  } else if (IsScopeBeginScoper(token)) {
-    *err_ = Err(token, "Unexpected token.",
-                "You can't put a \"{\" scope here, it must be in a block.");
-  } else {
-    *err_ = Err(token, "Unexpected token.",
-                "I was really hoping for something else here and you let me down.");
-  }
-  return scoped_ptr<ParseNode>();
+  scoped_ptr<UnaryOpNode> unary_op(new UnaryOpNode);
+  unary_op->set_op(token);
+  unary_op->set_operand(expr.Pass());
+  return unary_op.Pass();
 }
 
-// function_call := identifier "(" list_contents ")"
-//                  [<non-newline-whitespace>* block]
-scoped_ptr<FunctionCallNode> Parser::ParseFunctionCall() {
-  scoped_ptr<FunctionCallNode> func(new FunctionCallNode);
-
-  const Token& function_token = cur_token();
-  func->set_function(function_token);
-
-  // This function should only get called when we know we have a function,
-  // which only happens when there is a paren following the name. Skip past it.
-  DCHECK(has_next_token());
-  cur_++;  // Skip past function name to (.
-  const Token& open_paren_token = cur_token();
-  DCHECK(IsFunctionCallArgBeginScoper(open_paren_token));
-
-  if (at_end()) {
-    *err_ = Err(open_paren_token, "Unexpected EOF for function call.",
-                "You didn't finish the thought you started here.");
-    return scoped_ptr<FunctionCallNode>();
-  }
-
-  // Arguments.
-  func->set_args(ParseList(Token(Location(), Token::SCOPER, "("),
-                           Token(Location(), Token::SCOPER, ")")));
-  if (has_error())
-    return scoped_ptr<FunctionCallNode>();
-
-  // Optional {} after function call for certain functions. The "{" must be on
-  // the same line as the ")" to disambiguate the case of a function followed
-  // by a random block just used for scoping purposes.
-  if (!at_end() && IsScopeBeginScoper(cur_token())) {
-    const Token& args_end_token = tokens_[cur_ - 1];
-    DCHECK(args_end_token.IsScoperEqualTo(")"));
-    if (IsSameLine(args_end_token, cur_token()))
-      func->set_block(ParseBlock(true).Pass());
-  }
-
-  if (has_error())
-    return scoped_ptr<FunctionCallNode>();
-  return func.Pass();
+scoped_ptr<ParseNode> Parser::List(Token node) {
+  scoped_ptr<ParseNode> list(ParseList(Token::RIGHT_BRACKET, true));
+  if (!has_error() && !at_end())
+    Consume(Token::RIGHT_BRACKET, "Expected ']'");
+  return list.Pass();
 }
 
-// list := "[" expression* "]"
-// list_contents := [(expression ",")* expression [","]]
-//
-// The list_contents is also used in function calls surrounded by parens, so
-// this function takes the tokens that are expected to surround the list.
-scoped_ptr<ListNode> Parser::ParseList(const Token& expected_begin,
-                                       const Token& expected_end) {
+scoped_ptr<ParseNode> Parser::BinaryOperator(scoped_ptr<ParseNode> left,
+                                             Token token) {
+  scoped_ptr<ParseNode> right =
+      ParseExpression(expressions_[token.type()].precedence + 1);
+  if (!right) {
+    *err_ =
+        Err(token,
+            "Expected right hand side for '" + token.value().as_string() + "'");
+    return scoped_ptr<ParseNode>();
+  }
+  scoped_ptr<BinaryOpNode> binary_op(new BinaryOpNode);
+  binary_op->set_op(token);
+  binary_op->set_left(left.Pass());
+  binary_op->set_right(right.Pass());
+  return binary_op.Pass();
+}
+
+scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
+                                               Token token) {
   scoped_ptr<ListNode> list(new ListNode);
-
-  const Token& open_bracket_token = cur_token();
-  list->set_begin_token(open_bracket_token);
-  cur_++;  // Skip "[" or "(".
-
-  bool need_separator = false;
-  while(true) {
-    if (at_end()) {
-      *err_ = Err(open_bracket_token, "EOF found when parsing list.",
-                  "I expected a \"" + expected_end.value().as_string() +
-                  "\" corresponding to this one.");
-      return scoped_ptr<ListNode>();
+  scoped_ptr<BlockNode> block(new BlockNode(false));
+  bool has_arg = false;
+  if (Match(Token::LEFT_PAREN)) {
+    // Parsing a function call.
+    has_arg = true;
+    if (Match(Token::RIGHT_PAREN)) {
+      // Nothing, just an empty call.
+    } else {
+      list = ParseList(Token::RIGHT_PAREN, false);
+      if (has_error())
+        return scoped_ptr<FunctionCallNode>();
+      Consume(Token::RIGHT_PAREN, "Expected ')' after call");
     }
-    if (cur_token().type() == expected_end.type() &&
-        cur_token().value() == expected_end.value()) {
-      list->set_end_token(cur_token());
-      cur_++;
-      break;
+    // Optionally with a scope.
+    if (LookAhead(Token::LEFT_BRACE)) {
+      block = ParseBlock();
+      if (has_error())
+        return scoped_ptr<FunctionCallNode>();
     }
+  }
 
-    if (need_separator) {
-      DCHECK(!list->contents().empty());
-      LocationRange prev_item_range =
-          list->contents().at(list->contents().size() - 1)->GetRange();
-      *err_ = Err(prev_item_range.end(),
-                  "Need comma separating items in list.",
-                  "You probably need a comma after this thingy.");
-      err_->AppendRange(prev_item_range);
-      return scoped_ptr<ListNode>();
-    }
-    scoped_ptr<ParseNode> expr = ParseExpression().Pass();
+  if (!left && !has_arg) {
+    // Not a function call, just a standalone identifier.
+    return scoped_ptr<ParseNode>(new IdentifierNode(token)).Pass();
+  }
+  scoped_ptr<FunctionCallNode> func_call(new FunctionCallNode);
+  func_call->set_function(token);
+  func_call->set_args(list.Pass());
+  func_call->set_block(block.Pass());
+  return func_call.Pass();
+}
+
+scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
+                                         Token token) {
+  if (left->AsIdentifier() == NULL) {
+    *err_ = Err(left.get(), "Left-hand side of assignment must be identifier.");
+    return scoped_ptr<ParseNode>();
+  }
+  scoped_ptr<ParseNode> value = ParseExpression(PRECEDENCE_ASSIGNMENT);
+  scoped_ptr<BinaryOpNode> assign(new BinaryOpNode);
+  assign->set_op(token);
+  assign->set_left(left.Pass());
+  assign->set_right(value.Pass());
+  return assign.Pass();
+}
+
+scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
+                                        Token token) {
+  // TODO: Maybe support more complex expressions like a[0][0]. This would
+  // require work on the evaluator too.
+  if (left->AsIdentifier() == NULL) {
+    *err_ = Err(left.get(), "May only subscript simple identifiers");
+    return scoped_ptr<ParseNode>();
+  }
+  scoped_ptr<ParseNode> value = ParseExpression();
+  Consume(Token::RIGHT_BRACKET, "Expecting ']' after subscript.");
+  scoped_ptr<AccessorNode> accessor(new AccessorNode);
+  accessor->set_base(left->AsIdentifier()->value());
+  accessor->set_index(value.Pass());
+  return accessor.Pass();
+}
+
+// Does not Consume the start or end token.
+scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
+                                       bool allow_trailing_comma) {
+  scoped_ptr<ListNode> list(new ListNode);
+  bool just_got_comma = false;
+  Match(Token::NEWLINE);
+  while (!LookAhead(stop_before)) {
+    just_got_comma = false;
+    // Why _OR? We're parsing things that are higher precedence than the ,
+    // that separates the items of the list. , should appear lower than
+    // boolean expressions (the lowest of which is OR), but above assignments.
+    list->append_item(ParseExpression(PRECEDENCE_OR));
     if (has_error())
       return scoped_ptr<ListNode>();
-    list->append_item(expr.Pass());
-
-    need_separator = true;
-    if (!at_end()) {
-      // Skip over the separator, marking that we found it.
-      if (cur_token().type() == Token::SEPARATOR) {
-        cur_++;
-        need_separator = false;
-      }
+    if (at_end()) {
+      *err_ =
+          Err(tokens_[tokens_.size() - 1], "Unexpected end of file in list.");
+      return scoped_ptr<ListNode>();
     }
+    just_got_comma = Match(Token::COMMA);
+    Match(Token::NEWLINE);
+  }
+  if (just_got_comma && !allow_trailing_comma) {
+    *err_ = Err(cur_token(), "Trailing comma");
+    return scoped_ptr<ListNode>();
   }
   return list.Pass();
 }
 
-// paren_expression := "(" expression ")"
-scoped_ptr<ParseNode> Parser::ParseParenExpression() {
-  const Token& open_paren_token = cur_token();
-  cur_++;  // Skip over (
-
-  scoped_ptr<ParseNode> ret = ParseExpression();
+scoped_ptr<ParseNode> Parser::ParseFile() {
+  scoped_ptr<BlockNode> file(new BlockNode(false));
+  do {
+    if (at_end())
+      break;
+    scoped_ptr<ParseNode> statement = ParseStatement();
+    if (!statement)
+      break;
+    file->append_statement(statement.Pass());
+  } while (Match(Token::NEWLINE));
+  if (!at_end() && !has_error())
+    *err_ = Err(cur_token(), "Unexpected here, should be newline.");
   if (has_error())
     return scoped_ptr<ParseNode>();
-
-  if (at_end()) {
-    *err_ = Err(open_paren_token, "EOF found when parsing expression.",
-                "I was looking for a \")\" corresponding to this one.");
-    return scoped_ptr<ParseNode>();
-  }
-  if (!cur_token().IsScoperEqualTo(")")) {
-    *err_ = Err(open_paren_token, "Expected \")\" for expression",
-                "I was looking for a \")\" corresponding to this one.");
-    return scoped_ptr<ParseNode>();
-  }
-  cur_++;  // Skip over )
-  return ret.Pass();
+  return file.Pass();
 }
 
-// unary_expression := "!" expression
-scoped_ptr<UnaryOpNode> Parser::ParseUnaryOp() {
-  scoped_ptr<UnaryOpNode> unary(new UnaryOpNode);
-
-  DCHECK(!at_end() && IsUnaryOperator(cur_token()));
-  const Token& op_token = cur_token();
-  unary->set_op(op_token);
-  cur_++;
-
-  if (at_end()) {
-    *err_ = Err(op_token, "Expected expression.",
-                "This operator needs something to operate on.");
-    return scoped_ptr<UnaryOpNode>();
+scoped_ptr<ParseNode> Parser::ParseStatement() {
+  if (LookAhead(Token::LEFT_BRACE)) {
+    return ParseBlock();
+  } else if (LookAhead(Token::IF)) {
+    return ParseCondition();
+  } else {
+    // TODO(scottmg): Is this too strict? Just drop all the testing if we want
+    // to allow "pointless" expressions and return ParseExpression() directly.
+    scoped_ptr<ParseNode> stmt = ParseExpression();
+    if (stmt) {
+      if (stmt->AsFunctionCall() || IsAssignment(stmt.get()))
+        return stmt.Pass();
+    }
+    if (!has_error()) {
+      Token token = at_end() ? tokens_[tokens_.size() - 1] : cur_token();
+      *err_ = Err(token, "Expecting assignment or function call.");
+    }
+    return scoped_ptr<ParseNode>();
   }
-  unary->set_operand(ParseExpression().Pass());
+}
+
+scoped_ptr<BlockNode> Parser::ParseBlock() {
+  Consume(Token::LEFT_BRACE, "Expected '{' to start a block.");
+  scoped_ptr<BlockNode> block(new BlockNode(true));
+  Match(Token::NEWLINE);  // Optional newline to start after the brace.
+  do {
+    if (Match(Token::RIGHT_BRACE))
+      break;
+    scoped_ptr<ParseNode> statement = ParseStatement();
+    if (!statement)
+      break;
+    block->append_statement(statement.Pass());
+  } while (Match(Token::NEWLINE));
+  Match(Token::RIGHT_BRACE);
+  return block.Pass();
+}
+
+scoped_ptr<ParseNode> Parser::ParseCondition() {
+  scoped_ptr<ConditionNode> condition(new ConditionNode);
+  Consume(Token::IF, "Expected 'if'");
+  Consume(Token::LEFT_PAREN, "Expected '(' after 'if'.");
+  condition->set_condition(ParseExpression());
+  if (IsAssignment(condition->condition()))
+    *err_ = Err(condition->condition(), "Assignment not allowed in 'if'.");
+  Consume(Token::RIGHT_PAREN, "Expected ')' after condition of 'if'.");
+  condition->set_if_true(ParseBlock().Pass());
+  if (Match(Token::ELSE))
+    condition->set_if_false(ParseStatement().Pass());
   if (has_error())
-    return scoped_ptr<UnaryOpNode>();
-  return unary.Pass();
-}
-
-Err Parser::MakeEOFError(const std::string& message,
-                         const std::string& help) const {
-  if (tokens_.empty())
-    return Err(Location(NULL, 1, 1), message, help);
-
-  const Token& last = tokens_[tokens_.size() - 1];
-  return Err(last, message, help);
+    return scoped_ptr<BlockNode>();
+  return condition.Pass();
 }

@@ -44,10 +44,25 @@ TEST(Tokenizer, Empty) {
   EXPECT_TRUE(results.empty());
 
   InputFile whitespace_input(SourceFile("/test"));
-  whitespace_input.SetContents("  \n\r");
+  whitespace_input.SetContents("  \r");
 
   results = Tokenizer::Tokenize(&whitespace_input, &err);
   EXPECT_TRUE(results.empty());
+}
+
+TEST(Tokenizer, Newlines) {
+  InputFile empty_string_input(SourceFile("/test"));
+  empty_string_input.SetContents("");
+
+  Err err;
+  std::vector<Token> results = Tokenizer::Tokenize(&empty_string_input, &err);
+  EXPECT_TRUE(results.empty());
+
+  InputFile whitespace_input(SourceFile("/test"));
+  whitespace_input.SetContents(" \r\n \n \r");
+
+  results = Tokenizer::Tokenize(&whitespace_input, &err);
+  EXPECT_EQ(2u, results.size());
 }
 
 TEST(Tokenizer, Identifier) {
@@ -65,6 +80,14 @@ TEST(Tokenizer, Integer) {
   EXPECT_TRUE(CheckTokenizer("  123 -123 ", integers));
 }
 
+TEST(Tokenizer, IntegerNoSpace) {
+  TokenExpectation integers[] = {
+    { Token::INTEGER, "123" },
+    { Token::INTEGER, "-123" }
+  };
+  EXPECT_TRUE(CheckTokenizer("  123-123 ", integers));
+}
+
 TEST(Tokenizer, String) {
   TokenExpectation strings[] = {
     { Token::STRING, "\"foo\"" },
@@ -77,30 +100,33 @@ TEST(Tokenizer, String) {
 
 TEST(Tokenizer, Operator) {
   TokenExpectation operators[] = {
-    { Token::OPERATOR, "-" },
-    { Token::OPERATOR, "+" },
-    { Token::OPERATOR, "=" },
-    { Token::OPERATOR, "+=" },
-    { Token::OPERATOR, "-=" },
-    { Token::OPERATOR, "!=" },
-    { Token::OPERATOR, "==" },
-    { Token::OPERATOR, "<" },
-    { Token::OPERATOR, ">" },
-    { Token::OPERATOR, "<=" },
-    { Token::OPERATOR, ">=" },
+    { Token::MINUS, "-" },
+    { Token::PLUS, "+" },
+    { Token::EQUAL, "=" },
+    { Token::PLUS_EQUALS, "+=" },
+    { Token::MINUS_EQUALS, "-=" },
+    { Token::NOT_EQUAL, "!=" },
+    { Token::EQUAL_EQUAL, "==" },
+    { Token::LESS_THAN, "<" },
+    { Token::GREATER_THAN, ">" },
+    { Token::LESS_EQUAL, "<=" },
+    { Token::GREATER_EQUAL, ">=" },
+    { Token::BANG, "!" },
+    { Token::BOOLEAN_OR, "||" },
+    { Token::BOOLEAN_AND, "&&" },
   };
-  EXPECT_TRUE(CheckTokenizer("- + = += -= != ==  < > <= >=",
+  EXPECT_TRUE(CheckTokenizer("- + = += -= != ==  < > <= >= ! || &&",
               operators));
 }
 
 TEST(Tokenizer, Scoper) {
   TokenExpectation scopers[] = {
-    { Token::SCOPER, "{" },
-    { Token::SCOPER, "[" },
-    { Token::SCOPER, "]" },
-    { Token::SCOPER, "}" },
-    { Token::SCOPER, "(" },
-    { Token::SCOPER, ")" },
+    { Token::LEFT_BRACE, "{" },
+    { Token::LEFT_BRACKET, "[" },
+    { Token::RIGHT_BRACKET, "]" },
+    { Token::RIGHT_BRACE, "}" },
+    { Token::LEFT_PAREN, "(" },
+    { Token::RIGHT_PAREN, ")" },
   };
   EXPECT_TRUE(CheckTokenizer("{[ ]} ()", scopers));
 }
@@ -108,14 +134,15 @@ TEST(Tokenizer, Scoper) {
 TEST(Tokenizer, FunctionCall) {
   TokenExpectation fn[] = {
     { Token::IDENTIFIER, "fun" },
-    { Token::SCOPER, "(" },
+    { Token::LEFT_PAREN, "(" },
     { Token::STRING, "\"foo\"" },
-    { Token::SCOPER, ")" },
-    { Token::SCOPER, "{" },
+    { Token::RIGHT_PAREN, ")" },
+    { Token::LEFT_BRACE, "{" },
+    { Token::NEWLINE, "\n" },
     { Token::IDENTIFIER, "foo" },
-    { Token::OPERATOR, "=" },
+    { Token::EQUAL, "=" },
     { Token::INTEGER, "12" },
-    { Token::SCOPER, "}" },
+    { Token::RIGHT_BRACE, "}" },
   };
   EXPECT_TRUE(CheckTokenizer("fun(\"foo\") {\nfoo = 12}", fn));
 }
@@ -137,11 +164,12 @@ TEST(Tokenizer, Locations) {
   Err err;
   std::vector<Token> results = Tokenizer::Tokenize(&input, &err);
 
-  ASSERT_EQ(4u, results.size());
+  ASSERT_EQ(5u, results.size());
   ASSERT_TRUE(results[0].location() == Location(&input, 1, 1));
   ASSERT_TRUE(results[1].location() == Location(&input, 1, 3));
   ASSERT_TRUE(results[2].location() == Location(&input, 1, 5));
-  ASSERT_TRUE(results[3].location() == Location(&input, 2, 3));
+  ASSERT_TRUE(results[3].location() == Location(&input, 1, 12));
+  ASSERT_TRUE(results[4].location() == Location(&input, 2, 3));
 }
 
 TEST(Tokenizer, ByteOffsetOfNthLine) {

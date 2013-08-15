@@ -10,7 +10,7 @@
 namespace {
 
 bool IsNumberChar(char c) {
-  return c == '-' || (c >= '0' && c <= '9');
+  return c >= '0' && c <= '9';
 }
 
 bool CouldBeTwoCharOperatorBegin(char c) {
@@ -31,12 +31,41 @@ bool CouldBeOperator(char c) {
   return CouldBeOneCharOperator(c) || CouldBeTwoCharOperatorBegin(c);
 }
 
-bool IsSeparatorChar(char c) {
-  return c == ',';
-}
-
 bool IsScoperChar(char c) {
   return c == '(' || c == ')' || c == '[' || c == ']' || c == '{' || c == '}';
+}
+
+Token::Type GetSpecificOperatorType(base::StringPiece value) {
+  if (value == "=")
+    return Token::EQUAL;
+  if (value == "+")
+    return Token::PLUS;
+  if (value == "-")
+    return Token::MINUS;
+  if (value == "+=")
+    return Token::PLUS_EQUALS;
+  if (value == "-=")
+    return Token::MINUS_EQUALS;
+  if (value == "==")
+    return Token::EQUAL_EQUAL;
+  if (value == "!=")
+    return Token::NOT_EQUAL;
+  if (value == "<=")
+    return Token::LESS_EQUAL;
+  if (value == ">=")
+    return Token::GREATER_EQUAL;
+  if (value == "<")
+    return Token::LESS_THAN;
+  if (value == ">")
+    return Token::GREATER_THAN;
+  if (value == "&&")
+    return Token::BOOLEAN_AND;
+  if (value == "||")
+    return Token::BOOLEAN_OR;
+  if (value == "!")
+    return Token::BANG;
+  NOTREACHED();
+  return Token::INVALID;
 }
 
 }  // namespace
@@ -60,7 +89,7 @@ std::vector<Token> Tokenizer::Tokenize(const InputFile* input_file, Err* err) {
 }
 
 std::vector<Token> Tokenizer::Run() {
-  std::vector<Token> tokens;
+  DCHECK(tokens_.empty());
   while (!done()) {
     AdvanceToNextToken();
     if (done())
@@ -78,21 +107,28 @@ std::vector<Token> Tokenizer::Run() {
       break;
     size_t token_end = cur_;
 
+    base::StringPiece token_value(&input_.data()[token_begin],
+                                  token_end - token_begin);
+
+    if (type == Token::UNCLASSIFIED_OPERATOR)
+      type = GetSpecificOperatorType(token_value);
+    if (type == Token::IDENTIFIER) {
+      if (token_value == "if")
+        type = Token::IF;
+      if (token_value == "else")
+        type = Token::ELSE;
+    }
+
     // TODO(brettw) This just strips comments from the token stream. This
     // is probably wrong, they should be removed at a later stage so we can
     // do things like rewrite the file. But this makes the parser simpler and
     // is OK for now.
-    if (type != Token::COMMENT) {
-      tokens.push_back(Token(
-          location,
-          type,
-          base::StringPiece(&input_.data()[token_begin],
-                            token_end - token_begin)));
-    }
+    if (type != Token::COMMENT)
+      tokens_.push_back(Token(location, type, token_value));
   }
   if (err_->has_error())
-    tokens.clear();
-  return tokens;
+    tokens_.clear();
+  return tokens_;
 }
 
 // static
@@ -139,16 +175,26 @@ Token::Type Tokenizer::ClassifyCurrent() const {
 
   // Note: '-' handled specially below.
   if (next_char != '-' && CouldBeOperator(next_char))
-    return Token::OPERATOR;
+    return Token::UNCLASSIFIED_OPERATOR;
 
   if (IsIdentifierFirstChar(next_char))
     return Token::IDENTIFIER;
 
-  if (IsScoperChar(next_char))
-    return Token::SCOPER;
+  if (next_char == '[')
+    return Token::LEFT_BRACKET;
+  if (next_char == ']')
+    return Token::RIGHT_BRACKET;
+  if (next_char == '(')
+    return Token::LEFT_PAREN;
+  if (next_char == ')')
+    return Token::RIGHT_PAREN;
+  if (next_char == '{')
+    return Token::LEFT_BRACE;
+  if (next_char == '}')
+    return Token::RIGHT_BRACE;
 
-  if (IsSeparatorChar(next_char))
-    return Token::SEPARATOR;
+  if (next_char == ',')
+    return Token::COMMA;
 
   if (next_char == '#')
     return Token::COMMENT;
@@ -157,11 +203,12 @@ Token::Type Tokenizer::ClassifyCurrent() const {
   // else.
   if (next_char == '-') {
     if (!CanIncrement())
-      return Token::OPERATOR;  // Just the minus before end of file.
+      return Token::UNCLASSIFIED_OPERATOR;  // Just the minus before end of
+                                            // file.
     char following_char = input_[cur_ + 1];
     if (following_char >= '0' && following_char <= '9')
       return Token::INTEGER;
-    return Token::OPERATOR;
+    return Token::UNCLASSIFIED_OPERATOR;
   }
 
   return Token::INVALID;
@@ -179,7 +226,7 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
         // or operator.
         char c = cur_char();
         if (!IsCurrentWhitespace() && !CouldBeOperator(c) &&
-            !IsScoperChar(c) && !IsSeparatorChar(c)) {
+            !IsScoperChar(c) && c != ',') {
           *err_ = Err(GetCurrentLocation(),
               "This is not a valid number.",
               "Learn to count.");
@@ -213,7 +260,7 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
       break;
     }
 
-    case Token::OPERATOR:
+    case Token::UNCLASSIFIED_OPERATOR:
       // Some operators are two characters, some are one.
       if (CouldBeTwoCharOperatorBegin(cur_char())) {
         if (CanIncrement() && CouldBeTwoCharOperatorEnd(input_[cur_ + 1]))
@@ -227,8 +274,13 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
         Advance();
       break;
 
-    case Token::SCOPER:
-    case Token::SEPARATOR:
+    case Token::LEFT_BRACKET:
+    case Token::RIGHT_BRACKET:
+    case Token::LEFT_BRACE:
+    case Token::RIGHT_BRACE:
+    case Token::LEFT_PAREN:
+    case Token::RIGHT_PAREN:
+    case Token::COMMA:
       Advance();  // All are one char.
       break;
 
@@ -276,6 +328,7 @@ bool Tokenizer::IsCurrentNewline() const {
 void Tokenizer::Advance() {
   DCHECK(cur_ < input_.size());
   if (IsCurrentNewline()) {
+    tokens_.push_back(Token(GetCurrentLocation(), Token::NEWLINE, "\n"));
     line_number_++;
     char_in_line_ = 1;
   } else {

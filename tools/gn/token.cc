@@ -40,14 +40,6 @@ bool Token::IsIdentifierEqualTo(const char* v) const {
   return type_ == IDENTIFIER && value_ == v;
 }
 
-bool Token::IsOperatorEqualTo(const char* v) const {
-  return type_ == OPERATOR && value_ == v;
-}
-
-bool Token::IsScoperEqualTo(const char* v) const {
-  return type_ == SCOPER && value_ == v;
-}
-
 bool Token::IsStringEqualTo(const char* v) const {
   return type_ == STRING && value_ == v;
 }

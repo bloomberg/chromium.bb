@@ -137,7 +137,7 @@ class BinaryOpNode : public ParseNode {
 class BlockNode : public ParseNode {
  public:
   // Set has_scope if this block introduces a nested scope.
-  BlockNode(bool has_scope);
+  explicit BlockNode(bool has_scope);
   virtual ~BlockNode();
 
   virtual const BlockNode* AsBlock() const OVERRIDE;

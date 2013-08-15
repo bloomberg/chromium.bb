@@ -19,49 +19,6 @@ bool GetTokens(const InputFile* input, std::vector<Token>* result) {
   return !err.has_error();
 }
 
-bool IsIdentifierEqual(const ParseNode* node, const char* val) {
-  if (!node)
-    return false;
-  const IdentifierNode* ident = node->AsIdentifier();
-  if (!ident)
-    return false;
-  return ident->value().value() == val;
-}
-
-bool IsLiteralEqual(const ParseNode* node, const char* val) {
-  if (!node)
-    return false;
-  const LiteralNode* lit = node->AsLiteral();
-  if (!lit)
-    return false;
-  return lit->value().value() == val;
-}
-
-// Returns true if the given node as a simple assignment to a given value.
-bool IsAssignment(const ParseNode* node, const char* ident, const char* value) {
-  if (!node)
-    return false;
-  const BinaryOpNode* binary = node->AsBinaryOp();
-  if (!binary)
-    return false;
-  return binary->op().IsOperatorEqualTo("=") &&
-         IsIdentifierEqual(binary->left(), ident) &&
-         IsLiteralEqual(binary->right(), value);
-}
-
-// Returns true if the given node is a block with one assignment statement.
-bool IsBlockWithAssignment(const ParseNode* node,
-                           const char* ident, const char* value) {
-  if (!node)
-    return false;
-  const BlockNode* block = node->AsBlock();
-  if (!block)
-    return false;
-  if (block->statements().size() != 1)
-    return false;
-  return IsAssignment(block->statements()[0], ident, value);
-}
-
 void DoParserPrintTest(const char* input, const char* expected) {
   std::vector<Token> tokens;
   InputFile input_file(SourceFile("/test"));
@@ -70,6 +27,22 @@ void DoParserPrintTest(const char* input, const char* expected) {
 
   Err err;
   scoped_ptr<ParseNode> result = Parser::Parse(tokens, &err);
+  ASSERT_TRUE(result);
+
+  std::ostringstream collector;
+  result->Print(collector, 0);
+
+  EXPECT_EQ(expected, collector.str());
+}
+
+void DoExpressionPrintTest(const char* input, const char* expected) {
+  std::vector<Token> tokens;
+  InputFile input_file(SourceFile("/test"));
+  input_file.SetContents(input);
+  ASSERT_TRUE(GetTokens(&input_file, &tokens));
+
+  Err err;
+  scoped_ptr<ParseNode> result = Parser::ParseExpression(tokens, &err);
   ASSERT_TRUE(result);
 
   std::ostringstream collector;
@@ -96,108 +69,206 @@ void DoParserErrorTest(const char* input, int err_line, int err_char) {
   EXPECT_EQ(err_char, err.location().char_offset());
 }
 
-}  // namespace
+// Expects the tokenizer or parser to identify an error at the given line and
+// character.
+void DoExpressionErrorTest(const char* input, int err_line, int err_char) {
+  InputFile input_file(SourceFile("/test"));
+  input_file.SetContents(input);
 
-TEST(Parser, BinaryOp) {
-  std::vector<Token> tokens;
-
-  // Simple set expression.
-  InputFile expr_input(SourceFile("/test"));
-  expr_input.SetContents("a=2");
-  ASSERT_TRUE(GetTokens(&expr_input, &tokens));
   Err err;
-  Parser set(tokens, &err);
-  scoped_ptr<ParseNode> expr = set.ParseExpression();
-  ASSERT_TRUE(expr);
+  std::vector<Token> tokens = Tokenizer::Tokenize(&input_file, &err);
+  if (!err.has_error()) {
+    scoped_ptr<ParseNode> result = Parser::ParseExpression(tokens, &err);
+    ASSERT_FALSE(result);
+    ASSERT_TRUE(err.has_error());
+  }
 
-  const BinaryOpNode* binary_op = expr->AsBinaryOp();
-  ASSERT_TRUE(binary_op);
-
-  EXPECT_TRUE(binary_op->left()->AsIdentifier());
-
-  EXPECT_TRUE(binary_op->op().type() == Token::OPERATOR);
-  EXPECT_TRUE(binary_op->op().value() == "=");
-
-  EXPECT_TRUE(binary_op->right()->AsLiteral());
+  EXPECT_EQ(err_line, err.location().line_number());
+  EXPECT_EQ(err_char, err.location().char_offset());
 }
 
-TEST(Parser, Condition) {
-  std::vector<Token> tokens;
+}  // namespace
 
-  InputFile cond_input(SourceFile("/test"));
-  cond_input.SetContents("if(1) { a = 2 }");
-  ASSERT_TRUE(GetTokens(&cond_input, &tokens));
-  Err err;
-  Parser simple_if(tokens, &err);
-  scoped_ptr<ConditionNode> cond = simple_if.ParseCondition();
-  ASSERT_TRUE(cond);
+TEST(Parser, Literal) {
+  DoExpressionPrintTest("5", "LITERAL(5)\n");
+  DoExpressionPrintTest("\"stuff\"", "LITERAL(\"stuff\")\n");
+}
 
-  EXPECT_TRUE(IsLiteralEqual(cond->condition(), "1"));
-  EXPECT_FALSE(cond->if_false());  // No else block.
-  EXPECT_TRUE(IsBlockWithAssignment(cond->if_true(), "a", "2"));
-
-  // Now try a complicated if/else if/else one.
-  InputFile complex_if_input(SourceFile("/test"));
-  complex_if_input.SetContents(
-      "if(1) { a = 2 } else if (0) { a = 3 } else { a = 4 }");
-  ASSERT_TRUE(GetTokens(&complex_if_input, &tokens));
-  Parser complex_if(tokens, &err);
-  cond = complex_if.ParseCondition();
-  ASSERT_TRUE(cond);
-
-  EXPECT_TRUE(IsLiteralEqual(cond->condition(), "1"));
-  EXPECT_TRUE(IsBlockWithAssignment(cond->if_true(), "a", "2"));
-
-  ASSERT_TRUE(cond->if_false());
-  const ConditionNode* nested_cond = cond->if_false()->AsConditionNode();
-  ASSERT_TRUE(nested_cond);
-  EXPECT_TRUE(IsLiteralEqual(nested_cond->condition(), "0"));
-  EXPECT_TRUE(IsBlockWithAssignment(nested_cond->if_true(), "a", "3"));
-  EXPECT_TRUE(IsBlockWithAssignment(nested_cond->if_false(), "a", "4"));
+TEST(Parser, BinaryOp) {
+  // TODO(scottmg): The tokenizer is dumb, and treats "5-1" as two integers,
+  // not a binary operator between two positive integers.
+  DoExpressionPrintTest("5 - 1",
+      "BINARY(-)\n"
+      " LITERAL(5)\n"
+      " LITERAL(1)\n");
+  DoExpressionPrintTest("5+1",
+      "BINARY(+)\n"
+      " LITERAL(5)\n"
+      " LITERAL(1)\n");
+  DoExpressionPrintTest("5 - 1 - 2",
+      "BINARY(-)\n"
+      " BINARY(-)\n"
+      "  LITERAL(5)\n"
+      "  LITERAL(1)\n"
+      " LITERAL(2)\n");
 }
 
 TEST(Parser, FunctionCall) {
-  const char* input = "foo(a, 1, 2,) bar()";
-  const char* expected =
-      "BLOCK\n"
-      " FUNCTION(foo)\n"
-      "  LIST\n"
-      "   IDENTIFIER(a)\n"
-      "   LITERAL(1)\n"
-      "   LITERAL(2)\n"
-      " FUNCTION(bar)\n"
-      "  LIST\n";
-  DoParserPrintTest(input, expected);
+  DoExpressionPrintTest("foo()",
+      "FUNCTION(foo)\n"
+      " LIST\n"
+      " BLOCK\n");
+  DoExpressionPrintTest("blah(1, 2)",
+      "FUNCTION(blah)\n"
+      " LIST\n"
+      "  LITERAL(1)\n"
+      "  LITERAL(2)\n"
+      " BLOCK\n");
+  DoExpressionErrorTest("foo(1, 2,)", 1, 10);
 }
 
 TEST(Parser, ParenExpression) {
-  const char* input = "(foo(1)) + (a + b)";
+  const char* input = "(foo(1)) + (a + (b - c) + d)";
   const char* expected =
-      "BLOCK\n"
+      "BINARY(+)\n"
+      " FUNCTION(foo)\n"
+      "  LIST\n"
+      "   LITERAL(1)\n"
+      "  BLOCK\n"
       " BINARY(+)\n"
-      "  FUNCTION(foo)\n"
-      "   LIST\n"
-      "    LITERAL(1)\n"
       "  BINARY(+)\n"
       "   IDENTIFIER(a)\n"
-      "   IDENTIFIER(b)\n";
+      "   BINARY(-)\n"
+      "    IDENTIFIER(b)\n"
+      "    IDENTIFIER(c)\n"
+      "  IDENTIFIER(d)\n";
+  DoExpressionPrintTest(input, expected);
+  DoExpressionErrorTest("(a +", 1, 4);
+}
+
+TEST(Parser, OrderOfOperationsLeftAssociative) {
+  const char* input = "5 - 1 - 2\n";
+  const char* expected =
+      "BINARY(-)\n"
+      " BINARY(-)\n"
+      "  LITERAL(5)\n"
+      "  LITERAL(1)\n"
+      " LITERAL(2)\n";
+  DoExpressionPrintTest(input, expected);
+}
+
+TEST(Parser, OrderOfOperationsEqualityBoolean) {
+  const char* input =
+      "if (a == \"b\" && is_stuff) {\n"
+      "  print(\"hai\")\n"
+      "}\n";
+  const char* expected =
+      "BLOCK\n"
+      " CONDITION\n"
+      "  BINARY(&&)\n"
+      "   BINARY(==)\n"
+      "    IDENTIFIER(a)\n"
+      "    LITERAL(\"b\")\n"
+      "   IDENTIFIER(is_stuff)\n"
+      "  BLOCK\n"
+      "   FUNCTION(print)\n"
+      "    LIST\n"
+      "     LITERAL(\"hai\")\n"
+      "    BLOCK\n";
   DoParserPrintTest(input, expected);
-  DoParserErrorTest("(a +", 1, 4);
 }
 
 TEST(Parser, UnaryOp) {
-  std::vector<Token> tokens;
+  DoExpressionPrintTest("!foo",
+      "UNARY(!)\n"
+      " IDENTIFIER(foo)\n");
+}
 
-  InputFile ident_input(SourceFile("/test"));
-  ident_input.SetContents("!foo");
-  ASSERT_TRUE(GetTokens(&ident_input, &tokens));
-  Err err;
-  Parser ident(tokens, &err);
-  scoped_ptr<UnaryOpNode> op = ident.ParseUnaryOp();
+TEST(Parser, List) {
+  DoExpressionPrintTest("[]", "LIST\n");
+  DoExpressionPrintTest("[1,asd,]",
+      "LIST\n"
+      " LITERAL(1)\n"
+      " IDENTIFIER(asd)\n");
+  DoExpressionPrintTest("[1, 2+3 - foo]",
+      "LIST\n"
+      " LITERAL(1)\n"
+      " BINARY(-)\n"
+      "  BINARY(+)\n"
+      "   LITERAL(2)\n"
+      "   LITERAL(3)\n"
+      "  IDENTIFIER(foo)\n");
+  DoExpressionPrintTest("[1,\n2,\n 3,\n  4]",
+      "LIST\n"
+      " LITERAL(1)\n"
+      " LITERAL(2)\n"
+      " LITERAL(3)\n"
+      " LITERAL(4)\n");
 
-  ASSERT_TRUE(op);
-  EXPECT_TRUE(op->op().type() == Token::OPERATOR);
-  EXPECT_TRUE(op->op().value() == "!");
+  DoExpressionErrorTest("[a, 2+,]", 1, 6);
+  DoExpressionErrorTest("[,]", 1, 2);
+  DoExpressionErrorTest("[a,,]", 1, 4);
+}
+
+TEST(Parser, Assignment) {
+  DoParserPrintTest("a=2",
+                    "BLOCK\n"
+                    " BINARY(=)\n"
+                    "  IDENTIFIER(a)\n"
+                    "  LITERAL(2)\n");
+}
+
+TEST(Parser, Accessor) {
+  DoParserPrintTest("a=b[2]",
+                    "BLOCK\n"
+                    " BINARY(=)\n"
+                    "  IDENTIFIER(a)\n"
+                    "  ACCESSOR\n"
+                    "   b\n"  // AccessorNode is a bit weird in that it holds
+                              // a Token, not a ParseNode for the base.
+                    "   LITERAL(2)\n");
+  DoParserErrorTest("a = b[1][0]", 1, 5);
+}
+
+TEST(Parser, Condition) {
+  DoParserPrintTest("if(1) { a = 2 }",
+                    "BLOCK\n"
+                    " CONDITION\n"
+                    "  LITERAL(1)\n"
+                    "  BLOCK\n"
+                    "   BINARY(=)\n"
+                    "    IDENTIFIER(a)\n"
+                    "    LITERAL(2)\n");
+
+  DoParserPrintTest("if(1) { a = 2 } else if (0) { a = 3 } else { a = 4 }",
+                    "BLOCK\n"
+                    " CONDITION\n"
+                    "  LITERAL(1)\n"
+                    "  BLOCK\n"
+                    "   BINARY(=)\n"
+                    "    IDENTIFIER(a)\n"
+                    "    LITERAL(2)\n"
+                    "  CONDITION\n"
+                    "   LITERAL(0)\n"
+                    "   BLOCK\n"
+                    "    BINARY(=)\n"
+                    "     IDENTIFIER(a)\n"
+                    "     LITERAL(3)\n"
+                    "   BLOCK\n"
+                    "    BINARY(=)\n"
+                    "     IDENTIFIER(a)\n"
+                    "     LITERAL(4)\n");
+}
+
+TEST(Parser, OnlyCallAndAssignInBody) {
+  DoParserErrorTest("[]", 1, 2);
+  DoParserErrorTest("3 + 4", 1, 5);
+  DoParserErrorTest("6 - 7", 1, 5);
+  DoParserErrorTest("if (1) { 5 } else { print(4) }", 1, 12);
+}
+
+TEST(Parser, NoAssignmentInCondition) {
+  DoParserErrorTest("if (a=2) {}", 1, 5);
 }
 
 TEST(Parser, CompleteFunction) {
@@ -278,7 +349,7 @@ TEST(Parser, FunctionWithConditional) {
 }
 
 TEST(Parser, NestedBlocks) {
-  const char* input = "{cc_test(\"foo\") {{foo=1}{}}}";
+  const char* input = "{cc_test(\"foo\") {{foo=1}\n{}}}";
   const char* expected =
       "BLOCK\n"
       " BLOCK\n"
@@ -292,36 +363,11 @@ TEST(Parser, NestedBlocks) {
       "      LITERAL(1)\n"
       "    BLOCK\n";
   DoParserPrintTest(input, expected);
-}
-
-TEST(Parser, List) {
-  const char* input = "[] a = [1,asd,] b = [1, 2+3 - foo]";
-  const char* expected =
-      "BLOCK\n"
-      " LIST\n"
-      " BINARY(=)\n"
-      "  IDENTIFIER(a)\n"
-      "  LIST\n"
-      "   LITERAL(1)\n"
-      "   IDENTIFIER(asd)\n"
-      " BINARY(=)\n"
-      "  IDENTIFIER(b)\n"
-      "  LIST\n"
-      "   LITERAL(1)\n"
-      "   BINARY(+)\n"
-      "    LITERAL(2)\n"
-      "    BINARY(-)\n"
-      "     LITERAL(3)\n"
-      "     IDENTIFIER(foo)\n";
-  DoParserPrintTest(input, expected);
-
-  DoParserErrorTest("[a, 2+,]", 1, 7);
-  DoParserErrorTest("[,]", 1, 2);
-  DoParserErrorTest("[a,,]", 1, 4);
+  DoParserErrorTest("{cc_test(\"foo\") {{foo=1}{}}}", 1, 25);
 }
 
 TEST(Parser, UnterminatedBlock) {
-  DoParserErrorTest("hello {", 1, 7);
+  DoParserErrorTest("stuff() {", 1, 9);
 }
 
 TEST(Parser, BadlyTerminatedNumber) {

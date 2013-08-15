@@ -433,50 +433,47 @@ Value ExecuteAnd(Scope* scope,
 // ----------------------------------------------------------------------------
 
 bool IsUnaryOperator(const Token& token) {
-  if (token.type() != Token::OPERATOR)
-    return false;
-  return token.value() == "!";
+  return token.type() == Token::BANG;
 }
 
 bool IsBinaryOperator(const Token& token) {
-  if (token.type() != Token::OPERATOR)
-    return false;
-  return token.value() == "=" ||
-         token.value() == "+=" ||
-         token.value() == "-=" ||
-         token.value() == "+" ||
-         token.value() == "-" ||
-         token.value() == "==" ||
-         token.value() == "!=" ||
-         token.value() == "<=" ||
-         token.value() == ">=" ||
-         token.value() == "<" ||
-         token.value() == ">" ||
-         token.value() == "&&" ||
-         token.value() == "||";
+  return token.type() == Token::EQUAL ||
+         token.type() == Token::PLUS ||
+         token.type() == Token::MINUS ||
+         token.type() == Token::PLUS_EQUALS ||
+         token.type() == Token::MINUS_EQUALS ||
+         token.type() == Token::EQUAL_EQUAL ||
+         token.type() == Token::NOT_EQUAL ||
+         token.type() == Token::LESS_EQUAL ||
+         token.type() == Token::GREATER_EQUAL ||
+         token.type() == Token::LESS_THAN ||
+         token.type() == Token::GREATER_THAN ||
+         token.type() == Token::BOOLEAN_AND ||
+         token.type() == Token::BOOLEAN_OR;
 }
 
 bool IsFunctionCallArgBeginScoper(const Token& token) {
-  return token.IsScoperEqualTo("(");
+  return token.type() == Token::LEFT_PAREN;
 }
 
 bool IsFunctionCallArgEndScoper(const Token& token) {
-  return token.IsScoperEqualTo(")");
+  return token.type() == Token::RIGHT_PAREN;
 }
 
 bool IsScopeBeginScoper(const Token& token) {
-  return token.IsScoperEqualTo("{");
+  return token.type() == Token::LEFT_BRACE;
 }
 
 bool IsScopeEndScoper(const Token& token) {
-  return token.IsScoperEqualTo("}");
+  return token.type() == Token::RIGHT_BRACE;
 }
 
 Value ExecuteUnaryOperator(Scope* scope,
                            const UnaryOpNode* op_node,
                            const Value& expr,
                            Err* err) {
-  DCHECK(op_node->op().IsOperatorEqualTo("!"));
+  DCHECK(op_node->op().type() == Token::BANG);
+  // TODO(scottmg): Why no unary minus?
   return Value(op_node, !expr.InterpretAsInt());
 }
 
@@ -488,9 +485,9 @@ Value ExecuteBinaryOperator(Scope* scope,
   const Token& op = op_node->op();
 
   // First handle the ones that take an lvalue.
-  if (op.IsOperatorEqualTo("=") ||
-      op.IsOperatorEqualTo("+=") ||
-      op.IsOperatorEqualTo("-=")) {
+  if (op.type() == Token::EQUAL ||
+      op.type() == Token::PLUS_EQUALS ||
+      op.type() == Token::MINUS_EQUALS) {
     const IdentifierNode* left_id = left->AsIdentifier();
     if (!left_id) {
       *err = Err(op, "Operator requires an lvalue.",
@@ -510,11 +507,11 @@ Value ExecuteBinaryOperator(Scope* scope,
       return Value();
     }
 
-    if (op.IsOperatorEqualTo("="))
+    if (op.type() == Token::EQUAL)
       return ExecuteEquals(scope, op_node, dest, right_value, err);
-    if (op.IsOperatorEqualTo("+="))
+    if (op.type() == Token::PLUS_EQUALS)
       return ExecutePlusEquals(scope, op_node, dest, right_value, err);
-    if (op.IsOperatorEqualTo("-="))
+    if (op.type() == Token::MINUS_EQUALS)
       return ExecuteMinusEquals(scope, op_node, dest, right_value, err);
     NOTREACHED();
     return Value();
@@ -544,29 +541,29 @@ Value ExecuteBinaryOperator(Scope* scope,
   }
 
   // +, -.
-  if (op.IsOperatorEqualTo("-"))
+  if (op.type() == Token::MINUS)
     return ExecuteMinus(scope, op_node, left_value, right_value, err);
-  if (op.IsOperatorEqualTo("+"))
+  if (op.type() == Token::PLUS)
     return ExecutePlus(scope, op_node, left_value, right_value, err);
 
   // Comparisons.
-  if (op.IsOperatorEqualTo("=="))
+  if (op.type() == Token::EQUAL_EQUAL)
     return ExecuteEqualsEquals(scope, op_node, left_value, right_value, err);
-  if (op.IsOperatorEqualTo("!="))
+  if (op.type() == Token::NOT_EQUAL)
     return ExecuteNotEquals(scope, op_node, left_value, right_value, err);
-  if (op.IsOperatorEqualTo(">="))
+  if (op.type() == Token::GREATER_EQUAL)
     return ExecuteGreaterEquals(scope, op_node, left_value, right_value, err);
-  if (op.IsOperatorEqualTo("<="))
+  if (op.type() == Token::LESS_EQUAL)
     return ExecuteLessEquals(scope, op_node, left_value, right_value, err);
-  if (op.IsOperatorEqualTo(">"))
+  if (op.type() == Token::GREATER_THAN)
     return ExecuteGreater(scope, op_node, left_value, right_value, err);
-  if (op.IsOperatorEqualTo("<"))
+  if (op.type() == Token::LESS_THAN)
     return ExecuteLess(scope, op_node, left_value, right_value, err);
 
   // ||, &&.
-  if (op.IsOperatorEqualTo("||"))
+  if (op.type() == Token::BOOLEAN_OR)
     return ExecuteOr(scope, op_node, left_value, right_value, err);
-  if (op.IsOperatorEqualTo("&&"))
+  if (op.type() == Token::BOOLEAN_AND)
     return ExecuteAnd(scope, op_node, left_value, right_value, err);
 
   return Value();

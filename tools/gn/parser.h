@@ -5,6 +5,7 @@
 #ifndef TOOLS_GN_PARSER_H_
 #define TOOLS_GN_PARSER_H_
 
+#include <map>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -12,6 +13,17 @@
 #include "base/memory/scoped_ptr.h"
 #include "tools/gn/err.h"
 #include "tools/gn/parse_tree.h"
+
+class Parser;
+typedef scoped_ptr<ParseNode> (Parser::*PrefixFunc)(Token token);
+typedef scoped_ptr<ParseNode> (Parser::*InfixFunc)(scoped_ptr<ParseNode> left,
+                                                   Token token);
+
+struct ParserHelper {
+  PrefixFunc prefix;
+  InfixFunc infix;
+  int precedence;
+};
 
 // Parses a series of tokens. The resulting AST will refer to the tokens passed
 // to the input, so the tokens an the file data they refer to must outlive your
@@ -26,29 +38,49 @@ class Parser {
   static scoped_ptr<ParseNode> ParseExpression(const std::vector<Token>& tokens,
                                                Err* err);
 
+  scoped_ptr<ParseNode> ParseExpression();
+
  private:
   // Vector must be valid for lifetime of call.
   Parser(const std::vector<Token>& tokens, Err* err);
   ~Parser();
 
-  scoped_ptr<AccessorNode> ParseAccessor();
-  scoped_ptr<BlockNode> ParseBlock(bool need_braces);
-  scoped_ptr<ConditionNode> ParseCondition();
-  scoped_ptr<ParseNode> ParseExpression();
-  scoped_ptr<ParseNode> ParseExpressionExceptBinaryOperators();
-  scoped_ptr<FunctionCallNode> ParseFunctionCall();
-  scoped_ptr<ListNode> ParseList(const Token& expected_begin,
-                                 const Token& expected_end);
-  scoped_ptr<ParseNode> ParseParenExpression();
-  scoped_ptr<UnaryOpNode> ParseUnaryOp();
+  // Parses an expression with the given precedence or higher.
+  scoped_ptr<ParseNode> ParseExpression(int precedence);
 
-  bool IsToken(Token::Type type, char* str) const;
+  // |PrefixFunc|s used in parsing expressions.
+  scoped_ptr<ParseNode> Literal(Token token);
+  scoped_ptr<ParseNode> Name(Token token);
+  scoped_ptr<ParseNode> Group(Token token);
+  scoped_ptr<ParseNode> Not(Token token);
+  scoped_ptr<ParseNode> List(Token token);
 
-  // Gets an error corresponding to the last token. When we hit an EOF
-  // usually we've already gone beyond the end (or maybe there are no tokens)
-  // so there is some tricky logic to report this.
-  Err MakeEOFError(const std::string& message,
-                   const std::string& help = std::string()) const;
+  // |InfixFunc|s used in parsing expressions.
+  scoped_ptr<ParseNode> BinaryOperator(scoped_ptr<ParseNode> left, Token token);
+  scoped_ptr<ParseNode> IdentifierOrCall(scoped_ptr<ParseNode> left,
+                                         Token token);
+  scoped_ptr<ParseNode> Assignment(scoped_ptr<ParseNode> left, Token token);
+  scoped_ptr<ParseNode> Subscript(scoped_ptr<ParseNode> left, Token token);
+
+  // Helper to parse a comma separated list, optionally allowing trailing
+  // commas (allowed in [] lists, not in function calls).
+  scoped_ptr<ListNode> ParseList(Token::Type stop_before,
+                                 bool allow_trailing_comma);
+
+  scoped_ptr<ParseNode> ParseFile();
+  scoped_ptr<ParseNode> ParseStatement();
+  scoped_ptr<BlockNode> ParseBlock();
+  scoped_ptr<ParseNode> ParseCondition();
+
+  bool IsAssignment(const ParseNode* node) const;
+
+  bool LookAhead(Token::Type type);
+  bool Match(Token::Type type);
+  Token Consume(Token::Type type, const char* error_message);
+  Token Consume(Token::Type* types,
+                size_t num_types,
+                const char* error_message);
+  Token Consume();
 
   const Token& cur_token() const { return tokens_[cur_]; }
 
@@ -56,10 +88,9 @@ class Parser {
   bool at_end() const { return cur_ >= tokens_.size(); }
   bool has_error() const { return err_->has_error(); }
 
-  const Token& next_token() const { return tokens_[cur_ + 1]; }
-  bool has_next_token() const { return cur_ + 1 < tokens_.size(); }
-
   const std::vector<Token>& tokens_;
+
+  static ParserHelper expressions_[Token::NUM_TYPES];
 
   Err* err_;
 

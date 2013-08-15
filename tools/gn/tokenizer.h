@@ -72,6 +72,8 @@ class Tokenizer {
 
   bool has_error() const { return err_->has_error(); }
 
+  std::vector<Token> tokens_;
+
   const InputFile* input_file_;
   const base::StringPiece input_;
   Err* err_;
