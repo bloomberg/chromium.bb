@@ -282,11 +282,6 @@ int TestSystemTrayDelegate::GetSystemTrayMenuWidth() {
   return 300;
 }
 
-base::string16 TestSystemTrayDelegate::FormatTimeDuration(
-    const base::TimeDelta& delta) const {
-  return base::string16();
-}
-
 void TestSystemTrayDelegate::MaybeSpeak(const std::string& utterance) const {
 }
 

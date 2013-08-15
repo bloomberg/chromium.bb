@@ -817,11 +817,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
   }
 
-  virtual string16 FormatTimeDuration(
-      const base::TimeDelta& delta) const OVERRIDE {
-    return ui::TimeFormat::TimeDurationLong(delta);
-  }
-
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE {
     AccessibilityManager::Get()->MaybeSpeak(utterance);
   }

@@ -92,8 +92,6 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool GetSessionLengthLimit(
       base::TimeDelta* session_length_limit) OVERRIDE;
   virtual int GetSystemTrayMenuWidth() OVERRIDE;
-  virtual base::string16 FormatTimeDuration(
-      const base::TimeDelta& delta) const OVERRIDE;
   virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE;
 
   void set_should_show_display_notification(bool should_show) {

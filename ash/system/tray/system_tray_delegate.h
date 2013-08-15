@@ -307,12 +307,6 @@ class SystemTrayDelegate {
   // Get the system tray menu size in pixels (dependent on the language).
   virtual int GetSystemTrayMenuWidth() = 0;
 
-  // Returns the duration formatted as a localized string.
-  // TODO(stevenjb): Move TimeFormat from src/chrome to src/ui so that it can be
-  // accessed without going through the delegate. crbug.com/222697
-  virtual base::string16 FormatTimeDuration(
-      const base::TimeDelta& delta) const = 0;
-
   // Speaks the given text if spoken feedback is enabled.
   virtual void MaybeSpeak(const std::string& utterance) const = 0;
 

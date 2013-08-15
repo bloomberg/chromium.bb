@@ -23,6 +23,7 @@
 #include "grit/ash_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/time_format.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/border.h"
@@ -66,8 +67,7 @@ base::string16 FormatRemainingSessionTimeNotification(
     const base::TimeDelta& remaining_session_time) {
   return l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_REMAINING_SESSION_TIME_NOTIFICATION,
-      Shell::GetInstance()->system_tray_delegate()->
-          FormatTimeDuration(remaining_session_time));
+      ui::TimeFormat::TimeDurationLong(remaining_session_time));
 }
 
 }  // namespace
