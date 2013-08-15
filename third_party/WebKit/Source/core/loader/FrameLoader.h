@@ -248,8 +248,6 @@ private:
 
     void closeOldDataSources();
 
-    void dispatchDidCommitLoad();
-
     // Calls continueLoadAfterNavigationPolicy
     void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,
         FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, const String& overrideEncoding = String());

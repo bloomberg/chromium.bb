@@ -375,8 +375,9 @@ void FrameLoader::receivedFirstData()
 {
     if (m_stateMachine.creatingInitialEmptyDocument())
         return;
-
-    dispatchDidCommitLoad();
+    m_client->dispatchDidCommitLoad();
+    InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
+    m_frame->page()->didCommitLoad(m_frame);
     dispatchDidClearWindowObjectsInAllWorlds();
 }
 
@@ -1813,19 +1814,6 @@ SandboxFlags FrameLoader::effectiveSandboxFlags() const
     if (HTMLFrameOwnerElement* ownerElement = m_frame->ownerElement())
         flags |= ownerElement->sandboxFlags();
     return flags;
-}
-
-void FrameLoader::dispatchDidCommitLoad()
-{
-    m_client->dispatchDidCommitLoad();
-
-    InspectorInstrumentation::didCommitLoad(m_frame, m_documentLoader.get());
-
-    m_frame->page()->didCommitLoad(m_frame);
-
-    if (m_frame->page()->mainFrame() == m_frame)
-        m_frame->page()->useCounter()->didCommitLoad();
-
 }
 
 } // namespace WebCore
