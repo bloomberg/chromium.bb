@@ -1552,7 +1552,9 @@ window_destroy(struct window *window)
 
 	wl_list_remove(&window->redraw_task.link);
 
-	wl_list_for_each(input, &display->input_list, link) {
+	wl_list_for_each(input, &display->input_list, link) {	  
+		if (input->touch_focus == window)
+			input->touch_focus = NULL;
 		if (input->pointer_focus == window)
 			input->pointer_focus = NULL;
 		if (input->keyboard_focus == window)
@@ -2353,8 +2355,8 @@ frame_button_button_handler(struct widget *widget,
 }
 
 static void
-frame_button_touch_down_handler(struct widget *widget, uint32_t serial,
-				uint32_t time, int32_t id,
+frame_button_touch_down_handler(struct widget *widget, struct input *input,
+				uint32_t serial, uint32_t time, int32_t id,
 				float x, float y, void *data)
 {
 	struct frame_button *frame_button = data;
@@ -2692,6 +2694,19 @@ frame_button_handler(struct widget *widget,
 	}
 }
 
+static void 
+frame_touch_down_handler(struct widget *widget, struct input *input,
+			 uint32_t serial, uint32_t time, int32_t id,
+			 float x, float y, void *data)
+{
+	struct window *window = widget->window;
+	struct display *display = window->display;
+	
+	wl_shell_surface_move(window->shell_surface,
+			      input_get_seat(input),
+			      display->serial);
+}
+
 struct widget *
 frame_create(struct window *window, void *data)
 {
@@ -2706,6 +2721,7 @@ frame_create(struct window *window, void *data)
 	widget_set_enter_handler(frame->widget, frame_enter_handler);
 	widget_set_motion_handler(frame->widget, frame_motion_handler);
 	widget_set_button_handler(frame->widget, frame_button_handler);
+	widget_set_touch_down_handler(frame->widget, frame_touch_down_handler);
 
 	/* Create empty list for frame buttons */
 	wl_list_init(&frame->buttons_list);
@@ -3207,8 +3223,7 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 	float sx = wl_fixed_to_double(x_w);
 	float sy = wl_fixed_to_double(y_w);
 
-	DBG("touch_handle_down: %i %i\n", id, wl_list_length(&input->touch_point_list));
-
+	input->display->serial = serial;
 	input->touch_focus = wl_surface_get_user_data(surface);
 	if (!input->touch_focus) {
 		DBG("Failed to find to touch focus for surface %p\n", surface);
@@ -3226,8 +3241,8 @@ touch_handle_down(void *data, struct wl_touch *wl_touch,
 			wl_list_insert(&input->touch_point_list, &tp->link);
 
 			if (widget->touch_down_handler)
-				(*widget->touch_down_handler)(widget, serial,
-							      time, id,
+				(*widget->touch_down_handler)(widget, input, 
+							      serial, time, id,
 							      sx, sy,
 							      widget->user_data);
 		}
@@ -3241,8 +3256,6 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 	struct input *input = data;
 	struct touch_point *tp, *tmp;
 
-	DBG("touch_handle_up: %i %i\n", id, wl_list_length(&input->touch_point_list));
-
 	if (!input->touch_focus) {
 		DBG("No touch focus found for touch up event!\n");
 		return;
@@ -3253,7 +3266,7 @@ touch_handle_up(void *data, struct wl_touch *wl_touch,
 			continue;
 
 		if (tp->widget->touch_up_handler)
-			(*tp->widget->touch_up_handler)(tp->widget, serial,
+			(*tp->widget->touch_up_handler)(tp->widget, input, serial,
 							time, id,
 							tp->widget->user_data);
 
@@ -3285,7 +3298,7 @@ touch_handle_motion(void *data, struct wl_touch *wl_touch,
 			continue;
 
 		if (tp->widget->touch_motion_handler)
-			(*tp->widget->touch_motion_handler)(tp->widget, time,
+			(*tp->widget->touch_motion_handler)(tp->widget, input, time,
 							    id, sx, sy,
 							    tp->widget->user_data);
 		return;
@@ -3307,7 +3320,8 @@ touch_handle_frame(void *data, struct wl_touch *wl_touch)
 
 	wl_list_for_each_safe(tp, tmp, &input->touch_point_list, link) {
 		if (tp->widget->touch_frame_handler)
-			(*tp->widget->touch_frame_handler)(tp->widget, tp->widget->user_data);
+			(*tp->widget->touch_frame_handler)(tp->widget, input, 
+							   tp->widget->user_data);
 
 		wl_list_remove(&tp->link);
 		free(tp);
@@ -3329,7 +3343,8 @@ touch_handle_cancel(void *data, struct wl_touch *wl_touch)
 
 	wl_list_for_each_safe(tp, tmp, &input->touch_point_list, link) {
 		if (tp->widget->touch_cancel_handler)
-			(*tp->widget->touch_cancel_handler)(tp->widget, tp->widget->user_data);
+			(*tp->widget->touch_cancel_handler)(tp->widget, input,
+							    tp->widget->user_data);
 
 		wl_list_remove(&tp->link);
 		free(tp);
@@ -3811,6 +3826,16 @@ window_move(struct window *window, struct input *input, uint32_t serial)
 		return;
 
 	wl_shell_surface_move(window->shell_surface, input->seat, serial);
+}
+
+void
+window_touch_move(struct window *window, struct input *input, uint32_t serial)
+{
+	if (!window->shell_surface)
+		return;
+
+	wl_shell_surface_move(window->shell_surface, input->seat, 
+			      window->display->serial);
 }
 
 static void
@@ -4920,6 +4945,7 @@ display_add_input(struct display *d, uint32_t id)
 	input = xzalloc(sizeof *input);
 	input->display = d;
 	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
+	input->touch_focus = NULL;
 	input->pointer_focus = NULL;
 	input->keyboard_focus = NULL;
 	wl_list_init(&input->touch_point_list);

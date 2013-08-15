@@ -322,8 +322,8 @@ panel_launcher_button_handler(struct widget *widget,
 }
 
 static void
-panel_launcher_touch_down_handler(struct widget *widget, uint32_t serial,
-				  uint32_t time, int32_t id,
+panel_launcher_touch_down_handler(struct widget *widget, struct input *input,
+				  uint32_t serial, uint32_t time, int32_t id,
 				  float x, float y, void *data)
 {
 	struct panel_launcher *launcher;
@@ -334,8 +334,9 @@ panel_launcher_touch_down_handler(struct widget *widget, uint32_t serial,
 }
 
 static void
-panel_launcher_touch_up_handler(struct widget *widget, uint32_t serial,
-				uint32_t time, int32_t id, void *data)
+panel_launcher_touch_up_handler(struct widget *widget, struct input *input,
+				uint32_t serial, uint32_t time, int32_t id, 
+				void *data)
 {
 	struct panel_launcher *launcher;
 

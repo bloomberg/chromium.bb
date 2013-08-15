@@ -222,6 +222,16 @@ button_handler(struct widget *widget,
 }
 
 static void
+touch_handler(struct widget *widget, struct input *input, 
+		   uint32_t serial, uint32_t time, int32_t id, 
+		   float x, float y, void *data)
+{
+	struct transformed *transformed = data;
+	window_touch_move(transformed->window, input, 
+			  display_get_serial(transformed->display));
+}
+
+static void
 usage(int error_code)
 {
 	fprintf(stderr, "Usage: transformed [OPTIONS]\n\n"
@@ -286,6 +296,8 @@ int main(int argc, char *argv[])
 	widget_set_resize_handler(transformed.widget, resize_handler);
 	widget_set_redraw_handler(transformed.widget, redraw_handler);
 	widget_set_button_handler(transformed.widget, button_handler);
+
+	widget_set_touch_down_handler(transformed.widget, touch_handler);
 
 	window_set_key_handler(transformed.window, key_handler);
 	window_set_fullscreen_handler(transformed.window, fullscreen_handler);

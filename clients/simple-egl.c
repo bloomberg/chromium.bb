@@ -55,6 +55,7 @@ struct display {
 	struct wl_shell *shell;
 	struct wl_seat *seat;
 	struct wl_pointer *pointer;
+	struct wl_touch *touch;
 	struct wl_keyboard *keyboard;
 	struct wl_shm *shm;
 	struct wl_cursor_theme *cursor_theme;
@@ -529,6 +530,46 @@ static const struct wl_pointer_listener pointer_listener = {
 };
 
 static void
+touch_handle_down(void *data, struct wl_touch *wl_touch,
+		  uint32_t serial, uint32_t time, struct wl_surface *surface,
+		  int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
+{
+	struct display *d = (struct display *)data;
+
+	wl_shell_surface_move(d->window->shell_surface, d->seat, serial);
+}
+
+static void
+touch_handle_up(void *data, struct wl_touch *wl_touch,
+		uint32_t serial, uint32_t time, int32_t id)
+{
+}
+
+static void
+touch_handle_motion(void *data, struct wl_touch *wl_touch,
+		    uint32_t time, int32_t id, wl_fixed_t x_w, wl_fixed_t y_w)
+{
+}
+
+static void
+touch_handle_frame(void *data, struct wl_touch *wl_touch)
+{
+}
+
+static void
+touch_handle_cancel(void *data, struct wl_touch *wl_touch)
+{
+}
+
+static const struct wl_touch_listener touch_listener = {
+	touch_handle_down,
+	touch_handle_up,
+	touch_handle_motion,
+	touch_handle_frame,
+	touch_handle_cancel,
+};
+
+static void
 keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
 		       uint32_t format, int fd, uint32_t size)
 {
@@ -596,6 +637,15 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 	} else if (!(caps & WL_SEAT_CAPABILITY_KEYBOARD) && d->keyboard) {
 		wl_keyboard_destroy(d->keyboard);
 		d->keyboard = NULL;
+	}
+
+	if ((caps & WL_SEAT_CAPABILITY_TOUCH) && !d->touch) {
+		d->touch = wl_seat_get_touch(seat);
+		wl_touch_set_user_data(d->touch, d);
+		wl_touch_add_listener(d->touch, &touch_listener, d);
+	} else if (!(caps & WL_SEAT_CAPABILITY_TOUCH) && d->touch) {
+		wl_touch_destroy(d->touch);
+		d->touch = NULL;
 	}
 }
 

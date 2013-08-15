@@ -278,6 +278,16 @@ button_handler(struct widget *widget,
 }
 
 static void
+touch_handler(struct widget *widget, struct input *input, 
+		   uint32_t serial, uint32_t time, int32_t id, 
+		   float x, float y, void *data)
+{
+	struct fullscreen *fullscreen = data;
+	window_touch_move(fullscreen->window, input, 
+			  display_get_serial(fullscreen->display));
+}
+
+static void
 usage(int error_code)
 {
 	fprintf(stderr, "Usage: fullscreen [OPTIONS]\n\n"
@@ -339,6 +349,8 @@ int main(int argc, char *argv[])
 	widget_set_redraw_handler(fullscreen.widget, redraw_handler);
 	widget_set_button_handler(fullscreen.widget, button_handler);
 	widget_set_motion_handler(fullscreen.widget, motion_handler);
+
+	widget_set_touch_down_handler(fullscreen.widget, touch_handler);
 
 	window_set_key_handler(fullscreen.window, key_handler);
 	window_set_fullscreen_handler(fullscreen.window, fullscreen_handler);

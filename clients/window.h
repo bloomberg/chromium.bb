@@ -236,6 +236,7 @@ typedef void (*widget_button_handler_t)(struct widget *widget,
 					enum wl_pointer_button_state state,
 					void *data);
 typedef void (*widget_touch_down_handler_t)(struct widget *widget,
+					    struct input *input,
 					    uint32_t serial,
 					    uint32_t time,
 					    int32_t id,
@@ -243,18 +244,22 @@ typedef void (*widget_touch_down_handler_t)(struct widget *widget,
 					    float y,
 					    void *data);
 typedef void (*widget_touch_up_handler_t)(struct widget *widget,
+					  struct input *input,
 					  uint32_t serial,
 					  uint32_t time,
 					  int32_t id,
 					  void *data);
 typedef void (*widget_touch_motion_handler_t)(struct widget *widget,
+					      struct input *input,
 					      uint32_t time,
 					      int32_t id,
 					      float x,
 					      float y,
 					      void *data);
-typedef void (*widget_touch_frame_handler_t)(struct widget *widget,void *data);
-typedef void (*widget_touch_cancel_handler_t)(struct widget *widget, void *data);
+typedef void (*widget_touch_frame_handler_t)(struct widget *widget, 
+					     struct input *input, void *data);
+typedef void (*widget_touch_cancel_handler_t)(struct widget *widget, 
+					      struct input *input, void *data);
 typedef void (*widget_axis_handler_t)(struct widget *widget,
 				      struct input *input, uint32_t time,
 				      uint32_t axis,
@@ -323,6 +328,8 @@ struct display *
 window_get_display(struct window *window);
 void
 window_move(struct window *window, struct input *input, uint32_t time);
+void
+window_touch_move(struct window *window, struct input *input, uint32_t time);
 void
 window_get_allocation(struct window *window, struct rectangle *allocation);
 void

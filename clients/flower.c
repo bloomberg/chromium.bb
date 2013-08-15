@@ -152,6 +152,16 @@ button_handler(struct widget *widget,
 	}
 }
 
+static void
+touch_down_handler(struct widget *widget, struct input *input, 
+		   uint32_t serial, uint32_t time, int32_t id, 
+		   float x, float y, void *data)
+{
+	struct flower *flower = data;
+	window_touch_move(flower->window, input, 
+			  display_get_serial(flower->display));
+}
+
 int main(int argc, char *argv[])
 {
 	struct flower flower;
@@ -178,6 +188,7 @@ int main(int argc, char *argv[])
 	widget_set_redraw_handler(flower.widget, redraw_handler);
 	widget_set_button_handler(flower.widget, button_handler);
 	widget_set_default_cursor(flower.widget, CURSOR_HAND1);
+	widget_set_touch_down_handler(flower.widget, touch_down_handler);
 
 	window_schedule_resize(flower.window, flower.width, flower.height);
 
