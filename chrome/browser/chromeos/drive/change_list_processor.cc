@@ -157,12 +157,37 @@ void ChangeListProcessor::ApplyEntryMap(
       continue;
     }
 
-    // Start from entry_map_.begin() and traverse ancestors.
+    // Start from entry_map_.begin() and traverse ancestors using the
+    // parent-child relashonships in the result (after this apply) tree.
+    // Then apply the topmost change first.
+    //
+    // By doing this, assuming the result tree does not contain any cycles, we
+    // can guarantee that no cycle is made during this apply (i.e. no entry gets
+    // moved under any of its descendants) because the following conditions are
+    // always satisfied in any move:
+    // - The new parent entry is not a descendant of the moved entry.
+    // - The new parent and its ancestors will no longer move during this apply.
     std::vector<ResourceEntryMap::iterator> entries;
-    for (; it != entry_map_.end();
-         it = entry_map_.find(it->second.parent_resource_id())) {
-      DCHECK_EQ(it->first, it->second.resource_id());
-      entries.push_back(it);
+    entries.push_back(entry_map_.begin());
+    for (std::string parent_id = entries.back()->second.parent_resource_id();
+         !parent_id.empty();) {
+      ResourceEntryMap::iterator it_parent = entry_map_.find(parent_id);
+      if (it_parent != entry_map_.end()) {
+        // This entry is going to be updated, get the parent from the new data.
+        entries.push_back(it_parent);
+        parent_id = it_parent->second.parent_resource_id();
+      } else {
+        // This entry is already updated or not going to be updated, get the
+        // parent from the current tree.
+        ResourceEntry parent_entry;
+        FileError error =
+            resource_metadata_->GetResourceEntryById(parent_id, &parent_entry);
+        if (error != FILE_ERROR_OK) {
+          LOG(ERROR) << "Cannot get the parent: " << FileErrorToString(error);
+          break;
+        }
+        parent_id = parent_entry.parent_resource_id();
+      }
     }
 
     // Apply the parent first.
