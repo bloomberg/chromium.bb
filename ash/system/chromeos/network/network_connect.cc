@@ -254,25 +254,27 @@ void ConnectToNetwork(const std::string& service_path,
 
 void ActivateCellular(const std::string& service_path) {
   NET_LOG_USER("ActivateCellular", service_path);
+  const NetworkState* cellular =
+      NetworkHandler::Get()->network_state_handler()->
+      GetNetworkState(service_path);
+  if (!cellular || cellular->type() != flimflam::kTypeCellular) {
+    NET_LOG_ERROR("ActivateCellular with no Service", service_path);
+    return;
+  }
   const DeviceState* cellular_device =
       NetworkHandler::Get()->network_state_handler()->
-      GetDeviceStateByType(flimflam::kTypeCellular);
+      GetDeviceState(cellular->device_path());
   if (!cellular_device) {
     NET_LOG_ERROR("ActivateCellular with no Device", service_path);
     return;
   }
   if (!IsDirectActivatedCarrier(cellular_device->carrier())) {
     // For non direct activation, show the mobile setup dialog which can be
-    // used to activate the network.
-    ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSetup(
-        service_path);
-    return;
-  }
-  const NetworkState* cellular =
-      NetworkHandler::Get()->network_state_handler()->
-      GetNetworkState(service_path);
-  if (!cellular || cellular->type() != flimflam::kTypeCellular) {
-    NET_LOG_ERROR("ActivateCellular with no Service", service_path);
+    // used to activate the network. Only show the dialog, if an account
+    // management URL is available.
+    if (!cellular->payment_url().empty())
+      ash::Shell::GetInstance()->system_tray_delegate()->ShowMobileSetup(
+          service_path);
     return;
   }
   if (cellular->activation_state() == flimflam::kActivationStateActivated) {

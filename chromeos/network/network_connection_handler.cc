@@ -57,8 +57,8 @@ void CopyStringFromDictionary(const base::DictionaryValue& source,
 
 bool NetworkRequiresActivation(const NetworkState* network) {
   return (network->type() == flimflam::kTypeCellular &&
-          (network->activation_state() != flimflam::kActivationStateActivated ||
-           network->cellular_out_of_credits()));
+      ((network->activation_state() != flimflam::kActivationStateActivated &&
+        network->activation_state() != flimflam::kActivationStateUnknown)));
 }
 
 bool VPNIsConfigured(const std::string& service_path,

@@ -1805,6 +1805,16 @@ void PopulateCellularDetails(const NetworkState* cellular,
       cellular->activation_state() == flimflam::kActivationStateActivating ||
       cellular->IsConnectingState());
 
+  // Don't show any account management related buttons if the activation
+  // state is unknown or no payment portal URL is available.
+  std::string support_url;
+  if (cellular->activation_state() == flimflam::kActivationStateUnknown ||
+      !dictionary->GetString(kTagSupportUrl, &support_url) ||
+      support_url.empty()) {
+    VLOG(2) << "No support URL is available. Don't display buttons.";
+    return;
+  }
+
   if (cellular->activation_state() != flimflam::kActivationStateActivating &&
       cellular->activation_state() != flimflam::kActivationStateActivated) {
     dictionary->SetBoolean(kTagShowActivateButton, true);
