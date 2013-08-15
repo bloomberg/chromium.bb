@@ -35,7 +35,7 @@
 #include "core/editing/InsertLineBreakCommand.h"
 #include "core/editing/InsertParagraphSeparatorCommand.h"
 #include "core/editing/InsertTextCommand.h"
-#include "core/editing/SpellChecker.h"
+#include "core/editing/SpellCheckRequester.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
@@ -299,7 +299,7 @@ void TypingCommand::markMisspellingsAfterTyping(ETypingCommand commandType)
     if (!frame->editor()->isContinuousSpellCheckingEnabled())
         return;
 
-    frame->editor()->spellChecker()->cancelCheck();
+    frame->editor()->spellCheckRequester().cancelCheck();
 
     // Take a look at the selection that results after typing and determine whether we need to spellcheck.
     // Since the word containing the current selection is never marked, this does a check to

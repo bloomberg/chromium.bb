@@ -49,7 +49,6 @@
 #include "core/dom/EventNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/editing/Editor.h"
-#include "core/editing/SpellChecker.h"
 #include "core/editing/UndoStep.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/EventHandler.h"

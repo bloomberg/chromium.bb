@@ -33,7 +33,6 @@
 
 #include "EditorClientImpl.h"
 #include "WebTextCheckingResult.h"
-#include "core/editing/SpellChecker.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include "public/platform/WebVector.h"
 #include "wtf/Assertions.h"

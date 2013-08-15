@@ -47,7 +47,6 @@ class KeyboardEvent;
 class Node;
 class Range;
 class SharedBuffer;
-class SpellChecker;
 class StylePropertySet;
 class TextCheckerClient;
 class VisibleSelection;

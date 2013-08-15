@@ -47,7 +47,7 @@ SpellCheckRequest::SpellCheckRequest(
     TextCheckingProcessType processType,
     const Vector<uint32_t>& documentMarkersInRange,
     const Vector<unsigned>& documentMarkerOffsets)
-    : m_checker(0)
+    : m_requester(0)
     , m_checkingRange(checkingRange)
     , m_paragraphRange(paragraphRange)
     , m_rootEditableElement(m_checkingRange->startContainer()->rootEditableElement())
@@ -87,44 +87,44 @@ const TextCheckingRequestData& SpellCheckRequest::data() const
 
 void SpellCheckRequest::didSucceed(const Vector<TextCheckingResult>& results)
 {
-    if (!m_checker)
+    if (!m_requester)
         return;
-    SpellChecker* checker = m_checker;
-    m_checker = 0;
-    checker->didCheckSucceed(m_requestData.sequence(), results);
+    SpellCheckRequester* requester = m_requester;
+    m_requester = 0;
+    requester->didCheckSucceed(m_requestData.sequence(), results);
 }
 
 void SpellCheckRequest::didCancel()
 {
-    if (!m_checker)
+    if (!m_requester)
         return;
-    SpellChecker* checker = m_checker;
-    m_checker = 0;
-    checker->didCheckCancel(m_requestData.sequence());
+    SpellCheckRequester* requester = m_requester;
+    m_requester = 0;
+    requester->didCheckCancel(m_requestData.sequence());
 }
 
-void SpellCheckRequest::setCheckerAndSequence(SpellChecker* requester, int sequence)
+void SpellCheckRequest::setCheckerAndSequence(SpellCheckRequester* requester, int sequence)
 {
-    ASSERT(!m_checker);
+    ASSERT(!m_requester);
     ASSERT(m_requestData.sequence() == unrequestedTextCheckingSequence);
-    m_checker = requester;
+    m_requester = requester;
     m_requestData.m_sequence = sequence;
 }
 
 void SpellCheckRequest::requesterDestroyed()
 {
-    m_checker = 0;
+    m_requester = 0;
 }
 
-SpellChecker::SpellChecker(Frame* frame)
+SpellCheckRequester::SpellCheckRequester(Frame* frame)
     : m_frame(frame)
     , m_lastRequestSequence(0)
     , m_lastProcessedSequence(0)
-    , m_timerToProcessQueuedRequest(this, &SpellChecker::timerFiredToProcessQueuedRequest)
+    , m_timerToProcessQueuedRequest(this, &SpellCheckRequester::timerFiredToProcessQueuedRequest)
 {
 }
 
-SpellChecker::~SpellChecker()
+SpellCheckRequester::~SpellCheckRequester()
 {
     if (m_processingRequest)
         m_processingRequest->requesterDestroyed();
@@ -132,7 +132,7 @@ SpellChecker::~SpellChecker()
         (*i)->requesterDestroyed();
 }
 
-TextCheckerClient* SpellChecker::client() const
+TextCheckerClient* SpellCheckRequester::client() const
 {
     Page* page = m_frame->page();
     if (!page)
@@ -140,7 +140,7 @@ TextCheckerClient* SpellChecker::client() const
     return page->editorClient()->textChecker();
 }
 
-void SpellChecker::timerFiredToProcessQueuedRequest(Timer<SpellChecker>*)
+void SpellCheckRequester::timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*)
 {
     ASSERT(!m_requestQueue.isEmpty());
     if (m_requestQueue.isEmpty())
@@ -149,17 +149,17 @@ void SpellChecker::timerFiredToProcessQueuedRequest(Timer<SpellChecker>*)
     invokeRequest(m_requestQueue.takeFirst());
 }
 
-bool SpellChecker::isAsynchronousEnabled() const
+bool SpellCheckRequester::isAsynchronousEnabled() const
 {
     return m_frame->settings() && m_frame->settings()->asynchronousSpellCheckingEnabled();
 }
 
-bool SpellChecker::canCheckAsynchronously(Range* range) const
+bool SpellCheckRequester::canCheckAsynchronously(Range* range) const
 {
     return client() && isCheckable(range) && isAsynchronousEnabled();
 }
 
-bool SpellChecker::isCheckable(Range* range) const
+bool SpellCheckRequester::isCheckable(Range* range) const
 {
     if (!range || !range->firstNode() || !range->firstNode()->renderer())
         return false;
@@ -169,7 +169,7 @@ bool SpellChecker::isCheckable(Range* range) const
     return true;
 }
 
-void SpellChecker::requestCheckingFor(PassRefPtr<SpellCheckRequest> request)
+void SpellCheckRequester::requestCheckingFor(PassRefPtr<SpellCheckRequest> request)
 {
     if (!request || !canCheckAsynchronously(request->paragraphRange().get()))
         return;
@@ -189,13 +189,13 @@ void SpellChecker::requestCheckingFor(PassRefPtr<SpellCheckRequest> request)
     invokeRequest(request);
 }
 
-void SpellChecker::cancelCheck()
+void SpellCheckRequester::cancelCheck()
 {
     if (m_processingRequest)
         m_processingRequest->didCancel();
 }
 
-void SpellChecker::invokeRequest(PassRefPtr<SpellCheckRequest> request)
+void SpellCheckRequester::invokeRequest(PassRefPtr<SpellCheckRequest> request)
 {
     ASSERT(!m_processingRequest);
     if (!client())
@@ -204,7 +204,7 @@ void SpellChecker::invokeRequest(PassRefPtr<SpellCheckRequest> request)
     client()->requestCheckingOfString(m_processingRequest);
 }
 
-void SpellChecker::enqueueRequest(PassRefPtr<SpellCheckRequest> request)
+void SpellCheckRequester::enqueueRequest(PassRefPtr<SpellCheckRequest> request)
 {
     ASSERT(request);
 
@@ -219,7 +219,7 @@ void SpellChecker::enqueueRequest(PassRefPtr<SpellCheckRequest> request)
     m_requestQueue.append(request);
 }
 
-void SpellChecker::didCheck(int sequence, const Vector<TextCheckingResult>& results)
+void SpellCheckRequester::didCheck(int sequence, const Vector<TextCheckingResult>& results)
 {
     ASSERT(m_processingRequest);
     ASSERT(m_processingRequest->data().sequence() == sequence);
@@ -238,7 +238,7 @@ void SpellChecker::didCheck(int sequence, const Vector<TextCheckingResult>& resu
         m_timerToProcessQueuedRequest.startOneShot(0);
 }
 
-void SpellChecker::didCheckSucceed(int sequence, const Vector<TextCheckingResult>& results)
+void SpellCheckRequester::didCheckSucceed(int sequence, const Vector<TextCheckingResult>& results)
 {
     TextCheckingRequestData requestData = m_processingRequest->data();
     if (requestData.sequence() == sequence) {
@@ -253,7 +253,7 @@ void SpellChecker::didCheckSucceed(int sequence, const Vector<TextCheckingResult
     didCheck(sequence, results);
 }
 
-void SpellChecker::didCheckCancel(int sequence)
+void SpellCheckRequester::didCheckCancel(int sequence)
 {
     Vector<TextCheckingResult> results;
     didCheck(sequence, results);

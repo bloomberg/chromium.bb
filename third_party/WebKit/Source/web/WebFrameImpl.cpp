@@ -123,7 +123,7 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
-#include "core/editing/SpellChecker.h"
+#include "core/editing/SpellCheckRequester.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/htmlediting.h"
@@ -1231,7 +1231,7 @@ void WebFrameImpl::requestTextChecking(const WebElement& webElement)
     if (webElement.isNull())
         return;
     RefPtr<Range> rangeToCheck = rangeOfContents(const_cast<Element*>(webElement.constUnwrap<Element>()));
-    frame()->editor()->spellChecker()->requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    frame()->editor()->spellCheckRequester().requestCheckingFor(SpellCheckRequest::create(TextCheckingTypeSpelling | TextCheckingTypeGrammar, TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 
 void WebFrameImpl::replaceMisspelledRange(const WebString& text)

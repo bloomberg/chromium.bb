@@ -66,7 +66,7 @@
 #include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/Editor.h"
-#include "core/editing/SpellChecker.h"
+#include "core/editing/SpellCheckRequester.h"
 #include "core/editing/TextIterator.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -169,12 +169,12 @@ static bool markerTypesFrom(const String& markerType, DocumentMarker::MarkerType
     return true;
 }
 
-static SpellChecker* spellchecker(Document* document)
+static SpellCheckRequester* spellCheckRequester(Document* document)
 {
     if (!document || !document->frame() || !document->frame()->editor())
         return 0;
 
-    return document->frame()->editor()->spellChecker();
+    return &document->frame()->editor()->spellCheckRequester();
 }
 
 const char* Internals::internalsId = "internals";
@@ -1234,26 +1234,26 @@ PassRefPtr<ClientRect> Internals::bestZoomableAreaForTouchPoint(long x, long y, 
 
 int Internals::lastSpellCheckRequestSequence(Document* document, ExceptionState& es)
 {
-    SpellChecker* checker = spellchecker(document);
+    SpellCheckRequester* requester = spellCheckRequester(document);
 
-    if (!checker) {
+    if (!requester) {
         es.throwDOMException(InvalidAccessError);
         return -1;
     }
 
-    return checker->lastRequestSequence();
+    return requester->lastRequestSequence();
 }
 
 int Internals::lastSpellCheckProcessedSequence(Document* document, ExceptionState& es)
 {
-    SpellChecker* checker = spellchecker(document);
+    SpellCheckRequester* requester = spellCheckRequester(document);
 
-    if (!checker) {
+    if (!requester) {
         es.throwDOMException(InvalidAccessError);
         return -1;
     }
 
-    return checker->lastProcessedSequence();
+    return requester->lastProcessedSequence();
 }
 
 Vector<String> Internals::userPreferredLanguages() const

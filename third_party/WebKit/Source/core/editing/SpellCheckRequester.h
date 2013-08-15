@@ -40,8 +40,8 @@ namespace WebCore {
 
 class Frame;
 class Node;
+class SpellCheckRequester;
 class TextCheckerClient;
-class SpellChecker;
 
 class SpellCheckRequest : public TextCheckingRequest {
 public:
@@ -52,9 +52,9 @@ public:
     PassRefPtr<Range> paragraphRange() const { return m_paragraphRange; }
     PassRefPtr<Element> rootEditableElement() const { return m_rootEditableElement; }
 
-    void setCheckerAndSequence(SpellChecker*, int sequence);
+    void setCheckerAndSequence(SpellCheckRequester*, int sequence);
     void requesterDestroyed();
-    bool isStarted() const { return m_checker; }
+    bool isStarted() const { return m_requester; }
 
     virtual const TextCheckingRequestData& data() const OVERRIDE;
     virtual void didSucceed(const Vector<TextCheckingResult>&) OVERRIDE;
@@ -63,20 +63,20 @@ public:
 private:
     SpellCheckRequest(PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets);
 
-    SpellChecker* m_checker;
+    SpellCheckRequester* m_requester;
     RefPtr<Range> m_checkingRange;
     RefPtr<Range> m_paragraphRange;
     RefPtr<Element> m_rootEditableElement;
     TextCheckingRequestData m_requestData;
 };
 
-class SpellChecker {
-    WTF_MAKE_NONCOPYABLE(SpellChecker); WTF_MAKE_FAST_ALLOCATED;
+class SpellCheckRequester {
+    WTF_MAKE_NONCOPYABLE(SpellCheckRequester); WTF_MAKE_FAST_ALLOCATED;
 public:
     friend class SpellCheckRequest;
 
-    explicit SpellChecker(Frame*);
-    ~SpellChecker();
+    explicit SpellCheckRequester(Frame*);
+    ~SpellCheckRequester();
 
     bool isAsynchronousEnabled() const;
     bool isCheckable(Range*) const;
@@ -99,7 +99,7 @@ private:
 
     bool canCheckAsynchronously(Range*) const;
     TextCheckerClient* client() const;
-    void timerFiredToProcessQueuedRequest(Timer<SpellChecker>*);
+    void timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*);
     void invokeRequest(PassRefPtr<SpellCheckRequest>);
     void enqueueRequest(PassRefPtr<SpellCheckRequest>);
     void didCheckSucceed(int sequence, const Vector<TextCheckingResult>&);
@@ -110,7 +110,7 @@ private:
     int m_lastRequestSequence;
     int m_lastProcessedSequence;
 
-    Timer<SpellChecker> m_timerToProcessQueuedRequest;
+    Timer<SpellCheckRequester> m_timerToProcessQueuedRequest;
 
     RefPtr<SpellCheckRequest> m_processingRequest;
     RequestQueue m_requestQueue;

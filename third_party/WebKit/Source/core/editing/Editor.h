@@ -52,10 +52,10 @@ class HTMLElement;
 class HitTestResult;
 class KillRing;
 class Pasteboard;
-class SimpleFontData;
-class SpellChecker;
-class SpellCheckRequest;
 class SharedBuffer;
+class SimpleFontData;
+class SpellCheckRequest;
+class SpellCheckRequester;
 class StylePropertySet;
 class Text;
 class TextCheckerClient;
@@ -237,7 +237,7 @@ public:
     VisibleSelection selectionForCommand(Event*);
 
     KillRing* killRing() const { return m_killRing.get(); }
-    SpellChecker* spellChecker() const { return m_spellChecker.get(); }
+    SpellCheckRequester& spellCheckRequester() const { return *m_spellCheckRequester; }
 
     EditingBehavior behavior() const;
 
@@ -316,7 +316,7 @@ private:
     bool m_shouldStartNewKillRingSequence;
     bool m_shouldStyleWithCSS;
     OwnPtr<KillRing> m_killRing;
-    OwnPtr<SpellChecker> m_spellChecker;
+    const OwnPtr<SpellCheckRequester> m_spellCheckRequester;
     VisibleSelection m_mark;
     bool m_areMarkedTextMatchesHighlighted;
     EditorParagraphSeparator m_defaultParagraphSeparator;

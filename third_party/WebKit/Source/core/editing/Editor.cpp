@@ -53,7 +53,7 @@
 #include "core/editing/RenderedPosition.h"
 #include "core/editing/ReplaceSelectionCommand.h"
 #include "core/editing/SimplifyMarkupCommand.h"
-#include "core/editing/SpellChecker.h"
+#include "core/editing/SpellCheckRequester.h"
 #include "core/editing/TextCheckingHelper.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/TypingCommand.h"
@@ -421,7 +421,7 @@ void Editor::replaceSelectionWithFragment(PassRefPtr<DocumentFragment> fragment,
         return;
 
     RefPtr<Range> rangeToCheck = Range::create(m_frame->document(), firstPositionInNode(nodeToCheck), lastPositionInNode(nodeToCheck));
-    m_spellChecker->requestCheckingFor(SpellCheckRequest::create(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
+    m_spellCheckRequester->requestCheckingFor(SpellCheckRequest::create(resolveTextCheckingTypeMask(TextCheckingTypeSpelling | TextCheckingTypeGrammar), TextCheckingProcessBatch, rangeToCheck, rangeToCheck));
 }
 
 void Editor::replaceSelectionWithText(const String& text, bool selectReplacement, bool smartReplace)
@@ -802,7 +802,7 @@ Editor::Editor(Frame* frame)
     // This is off by default, since most editors want this behavior (this matches IE but not FF).
     , m_shouldStyleWithCSS(false)
     , m_killRing(adoptPtr(new KillRing))
-    , m_spellChecker(adoptPtr(new SpellChecker(frame)))
+    , m_spellCheckRequester(adoptPtr(new SpellCheckRequester(frame)))
     , m_areMarkedTextMatchesHighlighted(false)
     , m_defaultParagraphSeparator(EditorParagraphSeparatorIsDiv)
     , m_overwriteModeEnabled(false)
@@ -1334,7 +1334,7 @@ String Editor::misspelledWordAtCaretOrRange(Node* clickedNode) const
 void Editor::showSpellingGuessPanel()
 {
     if (!client()) {
-        LOG_ERROR("No NSSpellChecker");
+        LOG_ERROR("No EditorClient");
         return;
     }
 
@@ -1514,7 +1514,7 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
     RefPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessIncremental, asynchronous ? paragraphRange : rangeToCheck, paragraphRange);
 
     if (asynchronous) {
-        m_spellChecker->requestCheckingFor(request);
+        m_spellCheckRequester->requestCheckingFor(request);
         return;
     }
 
@@ -1880,7 +1880,7 @@ void Editor::textFieldDidEndEditing(Element* e)
 {
     // Remove markers when deactivating a selection in an <input type="text"/>.
     // Prevent new ones from appearing too.
-    m_spellChecker->cancelCheck();
+    m_spellCheckRequester->cancelCheck();
     HTMLTextFormControlElement* textFormControlElement = toHTMLTextFormControlElement(e);
     HTMLElement* innerText = textFormControlElement->innerTextElement();
     DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
