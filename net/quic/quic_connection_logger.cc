@@ -180,6 +180,16 @@ base::Value* NetLogQuicCryptoHandshakeMessageCallback(
   return dict;
 }
 
+base::Value* NetLogQuicConnectionClosedCallback(
+    QuicErrorCode error,
+    bool from_peer,
+    NetLog::LogLevel /* log_level */) {
+  base::DictionaryValue* dict = new base::DictionaryValue();
+  dict->SetInteger("quic_error", error);
+  dict->SetBoolean("from_peer", from_peer);
+  return dict;
+}
+
 void UpdatePacketGapSentHistogram(size_t num_consecutive_missing_packets) {
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.PacketGapSent",
                        num_consecutive_missing_packets);
@@ -394,6 +404,13 @@ void QuicConnectionLogger::OnCryptoHandshakeMessageSent(
   net_log_.AddEvent(
       NetLog::TYPE_QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT,
       base::Bind(&NetLogQuicCryptoHandshakeMessageCallback, &message));
+}
+
+void QuicConnectionLogger::OnConnectionClose(QuicErrorCode error,
+                                             bool from_peer) {
+  net_log_.AddEvent(
+      NetLog::TYPE_QUIC_SESSION_CLOSED,
+      base::Bind(&NetLogQuicConnectionClosedCallback, error, from_peer));
 }
 
 }  // namespace net

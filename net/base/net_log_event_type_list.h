@@ -1480,6 +1480,13 @@ EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT)
 
+// Session was closed, either remotely or by the peer.
+//   {
+//     "quic_error": <QuicErrorCode which caused the connection to be closed>,
+//     "from_peer":  <True if the peer closed the connection>
+//   }
+EVENT_TYPE(QUIC_SESSION_CLOSED)
+
 // ------------------------------------------------------------------------
 // QuicHttpStream
 // ------------------------------------------------------------------------

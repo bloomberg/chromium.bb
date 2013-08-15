@@ -271,6 +271,7 @@ void QuicClientSession::OnCryptoHandshakeMessageReceived(
 }
 
 void QuicClientSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
+  logger_.OnConnectionClose(error, from_peer);
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.ConnectionCloseErrorCode",
                               error);
   UMA_HISTOGRAM_SPARSE_SLOWLY("Net.QuicSession.QuicVersion",
