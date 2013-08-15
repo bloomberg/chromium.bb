@@ -22,6 +22,8 @@ usage() {
   echo "                     (Default is /sdcard/Download/chrome-profile-results-*)"
   echo "  --categories|-c C  Select categories to trace with comma-delimited wildcards."
   echo "                     e.g. '*', 'cat1*,-cat1a'. Default is '*'."
+  echo "  --continuous       Using the trace buffer as a ring buffer, continuously"
+  echo "                     profile until stopped."
   echo "  --stop             Stop profiling."
   echo "  --download|-d      Download latest trace."
   echo "  --time|-t N        Profile for N seconds and download the resulting trace."
@@ -110,6 +112,7 @@ while test -n "$1"; do
       CATEGORIES="-e categories '$2'"
       shift
       ;;
+    --continuous) CONTINUOUS="-e continuous ." ;;
     -t|--time)
       shift
       if [ -z "$1" ] ; then
@@ -131,9 +134,9 @@ if [ -z "${INTERVAL}" ] ; then
   if [ -z "${FUNCTION}" ] ; then
     usage
   else
-    send_intent ${PACKAGE} ${FUNCTION} ${OUTPUT} ${CATEGORIES}
+    send_intent ${PACKAGE} ${FUNCTION} ${OUTPUT} ${CATEGORIES} ${CONTINUOUS}
   fi
 else
-  do_timed_capture ${PACKAGE} ${INTERVAL} ${CATEGORIES}
+  do_timed_capture ${PACKAGE} ${INTERVAL} ${CATEGORIES} ${CONTINUOUS}
 fi
 exit 0
