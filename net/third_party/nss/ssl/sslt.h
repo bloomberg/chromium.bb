@@ -91,9 +91,10 @@ typedef enum {
     ssl_calg_3des     = 4,
     ssl_calg_idea     = 5,
     ssl_calg_fortezza = 6,      /* deprecated, now unused */
-    ssl_calg_aes      = 7,      /* coming soon */
+    ssl_calg_aes      = 7,
     ssl_calg_camellia = 8,
-    ssl_calg_seed     = 9
+    ssl_calg_seed     = 9,
+    ssl_calg_aes_gcm  = 10
 } SSLCipherAlgorithm;
 
 typedef enum { 

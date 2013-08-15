@@ -64,6 +64,7 @@ typedef SSLSignType     SSL3SignType;
 #define calg_aes	ssl_calg_aes
 #define calg_camellia	ssl_calg_camellia
 #define calg_seed	ssl_calg_seed
+#define calg_aes_gcm    ssl_calg_aes_gcm
 
 #define mac_null	ssl_mac_null
 #define mac_md5 	ssl_mac_md5
@@ -290,9 +291,9 @@ typedef struct {
 } ssl3CipherSuiteCfg;
 
 #ifdef NSS_ENABLE_ECC
-#define ssl_V3_SUITES_IMPLEMENTED 57
+#define ssl_V3_SUITES_IMPLEMENTED 61
 #else
-#define ssl_V3_SUITES_IMPLEMENTED 35
+#define ssl_V3_SUITES_IMPLEMENTED 37
 #endif /* NSS_ENABLE_ECC */
 
 #define MAX_DTLS_SRTP_CIPHER_SUITES 4
@@ -440,20 +441,6 @@ struct sslGatherStr {
 #define GS_DATA		3
 #define GS_PAD		4
 
-typedef SECStatus (*SSLCipher)(void *               context, 
-                               unsigned char *      out,
-			       int *                outlen, 
-			       int                  maxout, 
-			       const unsigned char *in,
-			       int                  inlen);
-typedef SECStatus (*SSLCompressor)(void *               context,
-                                   unsigned char *      out,
-                                   int *                outlen,
-                                   int                  maxout,
-                                   const unsigned char *in,
-                                   int                  inlen);
-typedef SECStatus (*SSLDestroy)(void *context, PRBool freeit);
-
 #if defined(NSS_PLATFORM_CLIENT_AUTH) && defined(XP_WIN32)
 typedef PCERT_KEY_CONTEXT PlatformKey;
 #elif defined(NSS_PLATFORM_CLIENT_AUTH) && defined(XP_MACOSX)
@@ -485,11 +472,12 @@ typedef enum {
     cipher_camellia_128,
     cipher_camellia_256,
     cipher_seed,
+    cipher_aes_128_gcm,
     cipher_missing              /* reserved for no such supported cipher */
     /* This enum must match ssl3_cipherName[] in ssl3con.c.  */
 } SSL3BulkCipher;
 
-typedef enum { type_stream, type_block } CipherType;
+typedef enum { type_stream, type_block, type_aead } CipherType;
 
 #define MAX_IV_LENGTH 24
 
@@ -531,6 +519,31 @@ typedef struct {
     PRUint64    cipher_context[MAX_CIPHER_CONTEXT_LLONGS];
 } ssl3KeyMaterial;
 
+typedef SECStatus (*SSLCipher)(void *               context, 
+                               unsigned char *      out,
+			       int *                outlen, 
+			       int                  maxout, 
+			       const unsigned char *in,
+			       int                  inlen);
+typedef SECStatus (*SSLAEADCipher)(
+			       ssl3KeyMaterial *    keys,
+			       PRBool               doDecrypt,
+			       unsigned char *      out,
+			       int *                outlen,
+			       int                  maxout,
+			       const unsigned char *in,
+			       int                  inlen,
+			       SSL3ContentType      type,
+			       SSL3ProtocolVersion  version,
+			       SSL3SequenceNumber   seqnum);
+typedef SECStatus (*SSLCompressor)(void *               context,
+                                   unsigned char *      out,
+                                   int *                outlen,
+                                   int                  maxout,
+                                   const unsigned char *in,
+                                   int                  inlen);
+typedef SECStatus (*SSLDestroy)(void *context, PRBool freeit);
+
 /* The DTLS anti-replay window. Defined here because we need it in
  * the cipher spec. Note that this is a ring buffer but left and
  * right represent the true window, with modular arithmetic used to
@@ -557,6 +570,7 @@ typedef struct {
     int                mac_size;
     SSLCipher          encode;
     SSLCipher          decode;
+    SSLAEADCipher      aead;
     SSLDestroy         destroy;
     void *             encodeContext;
     void *             decodeContext;
@@ -706,8 +720,6 @@ typedef struct {
     PRBool                   tls_keygen;
 } ssl3KEADef;
 
-typedef enum { kg_null, kg_strong, kg_export } SSL3KeyGenMode;
-
 /*
 ** There are tables of these, all const.
 */
@@ -719,7 +731,8 @@ struct ssl3BulkCipherDefStr {
     CipherType      type;
     int             iv_size;
     int             block_size;
-    SSL3KeyGenMode  keygen_mode;
+    int             tag_size;  /* authentication tag size for AEAD ciphers. */
+    int             explicit_nonce_size;               /* for AEAD ciphers. */
 };
 
 /*

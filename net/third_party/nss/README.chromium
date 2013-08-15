@@ -74,6 +74,8 @@ Patches:
     NSS that doesn't contain the CBC constant-time changes.
     patches/cbc.patch
     https://code.google.com/p/chromium/issues/detail?id=172658#c12
+    TODO(wtc): remove this patch now that NSS 3.14.3 is the minimum
+    compile-time and run-time version.
 
   * Change ssl3_SuiteBOnly to always return PR_TRUE. The softoken in NSS
     versions older than 3.15 report an EC key size range of 112 bits to 571
@@ -96,6 +98,14 @@ Patches:
   * Fix an issue with allocating an SSL socket when under memory pressure.
     https://bugzilla.mozilla.org/show_bug.cgi?id=903565
     patches/sslsock_903565.patch
+
+  * Implement the AES GCM cipher suites.
+    https://bugzilla.mozilla.org/show_bug.cgi?id=880543
+    patches/aesgcm.patch
+
+  * Add Chromium-specific code to detect AES GCM support in the system NSS
+    libraries at run time.
+    patches/aesgcmchromium.patch
 
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.

@@ -30,6 +30,13 @@ static const PRUint16 COMMON_MTU_VALUES[] = {
 
 /* List copied from ssl3con.c:cipherSuites */
 static const ssl3CipherSuite nonDTLSSuites[] = {
+    /* XXX Make AES-GCM work with DTLS. */
+#ifdef NSS_ENABLE_ECC
+    TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+    TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+#endif /* NSS_ENABLE_ECC */
+    TLS_DHE_RSA_WITH_AES_128_GCM_SHA256,
+    TLS_RSA_WITH_AES_128_GCM_SHA256,
 #ifdef NSS_ENABLE_ECC
     TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
     TLS_ECDHE_RSA_WITH_RC4_128_SHA,
