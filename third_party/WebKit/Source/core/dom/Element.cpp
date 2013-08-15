@@ -1229,6 +1229,9 @@ Node::InsertionNotificationRequest Element::insertedInto(ContainerNode* insertio
     if (Element* after = pseudoElement(AFTER))
         after->insertedInto(insertionPoint);
 
+    if (Element* backdrop = pseudoElement(BACKDROP))
+        backdrop->insertedInto(insertionPoint);
+
     if (!insertionPoint->isInTreeScope())
         return InsertionDone;
 
@@ -1564,8 +1567,10 @@ bool Element::recalcStyle(StyleChange change)
         forceReattachOfAnyWhitespaceSibling = didReattach || forceReattachOfAnyWhitespaceSibling;
     }
 
-    if (shouldRecalcStyle(change, this))
+    if (shouldRecalcStyle(change, this)) {
         updatePseudoElement(AFTER, change);
+        updatePseudoElement(BACKDROP, change);
+    }
 
     clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
