@@ -47,6 +47,7 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'depends_on' : [],
         'custom': False,
         'status': None,
+        'writeable': False,
     }
 
     def __init__(self, in_file_path, enabled_conditions):

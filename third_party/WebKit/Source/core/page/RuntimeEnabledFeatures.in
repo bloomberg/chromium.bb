@@ -24,6 +24,7 @@ CSSCompositing status=experimental
 CSSExclusions status=experimental
 CSSGridLayout status=experimental
 CSSRegions status=experimental
+CSSShapes status=experimental, writeable=True
 CSSTouchAction status=test
 CSSVariables status=experimental
 CSS3Text status=experimental

@@ -7,7 +7,7 @@
 description('Test that parsing of css exclusions related properties can be disabled.');
 
 if (window.internals)
-    window.internals.settings.setCSSExclusionsEnabled(false);
+    window.internals.runtimeFlags.cssShapesEnabled = false;
 
 function testInlineStyle(property, value) {
     var div = document.createElement("div");

@@ -56,13 +56,16 @@ static void setPropertySwitchesFromRuntimeFeatures()
     setCSSPropertiesEnabled(regionProperites, WTF_ARRAY_LENGTH(regionProperites), RuntimeEnabledFeatures::cssRegionsEnabled());
     CSSPropertyID exclusionProperties[] = {
         CSSPropertyWebkitWrapFlow,
+        CSSPropertyWebkitWrapThrough,
+    };
+    setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
+    CSSPropertyID shapeProperties[] = {
         CSSPropertyWebkitShapeMargin,
         CSSPropertyWebkitShapePadding,
-        CSSPropertyWebkitWrapThrough,
         CSSPropertyWebkitShapeInside,
         CSSPropertyWebkitShapeOutside,
     };
-    setCSSPropertiesEnabled(exclusionProperties, WTF_ARRAY_LENGTH(exclusionProperties), RuntimeEnabledFeatures::cssExclusionsEnabled());
+    setCSSPropertiesEnabled(shapeProperties, WTF_ARRAY_LENGTH(shapeProperties), RuntimeEnabledFeatures::cssShapesEnabled());
     CSSPropertyID css3TextDecorationProperties[] = {
         CSSPropertyTextDecorationColor,
         CSSPropertyTextDecorationLine,

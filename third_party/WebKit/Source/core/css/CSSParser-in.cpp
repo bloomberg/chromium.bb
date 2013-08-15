@@ -488,7 +488,7 @@ static inline bool isSimpleLengthPropertyID(CSSPropertyID propertyId, bool& acce
     case CSSPropertyWebkitShapeMargin:
     case CSSPropertyWebkitShapePadding:
         acceptsNegativeNumbers = false;
-        return RuntimeEnabledFeatures::cssExclusionsEnabled();
+        return RuntimeEnabledFeatures::cssShapesEnabled();
     case CSSPropertyBottom:
     case CSSPropertyLeft:
     case CSSPropertyMarginBottom:
@@ -2724,7 +2724,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     case CSSPropertyWebkitShapeInside:
     case CSSPropertyWebkitShapeOutside:
-        if (!RuntimeEnabledFeatures::cssExclusionsEnabled())
+        if (!RuntimeEnabledFeatures::cssShapesEnabled())
             return false;
         if (id == CSSValueAuto)
             validPrimitive = true;
@@ -2739,7 +2739,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
         break;
     case CSSPropertyWebkitShapeMargin:
     case CSSPropertyWebkitShapePadding:
-        validPrimitive = (RuntimeEnabledFeatures::cssExclusionsEnabled() && !id && validUnit(value, FLength | FNonNeg));
+        validPrimitive = (RuntimeEnabledFeatures::cssShapesEnabled() && !id && validUnit(value, FLength | FNonNeg));
         break;
     case CSSPropertyBorderBottomStyle:
     case CSSPropertyBorderCollapse:

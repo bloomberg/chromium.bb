@@ -9,7 +9,10 @@
     it's possible that some can be and should be conditionally readonly.
 #}
     {% if feature.condition -%} [Conditional={{feature.condition}}] {% endif -%}
+    {% if feature.writeable %}
+    attribute boolean {{feature.first_lowered_name}}Enabled;
+    {% else %}
     readonly attribute boolean {{feature.first_lowered_name}}Enabled;
+    {% endif %}
 {%- endfor %}
 };
-

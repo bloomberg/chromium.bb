@@ -27,6 +27,9 @@ public:
 {% for feature in features if not feature.custom %}
 {%- call wrap_with_condition(feature.condition) %}
     bool {{feature.first_lowered_name}}Enabled() { return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled(); }
+    {% if feature.writeable %}
+    void set{{feature.name}}Enabled(bool isEnabled) { RuntimeEnabledFeatures::set{{feature.name}}Enabled(isEnabled); }
+    {% endif %}
 {%- endcall %}
 {% endfor %}
 
