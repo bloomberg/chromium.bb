@@ -64,6 +64,8 @@
         'web_layer_impl.h',
         'web_layer_impl_fixed_bounds.cc',
         'web_layer_impl_fixed_bounds.h',
+        'web_nine_patch_layer_impl.cc',
+        'web_nine_patch_layer_impl.h',
         'web_scrollbar_layer_impl.cc',
         'web_scrollbar_layer_impl.h',
         'web_solid_color_layer_impl.cc',

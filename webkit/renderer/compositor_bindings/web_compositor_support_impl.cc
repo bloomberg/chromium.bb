@@ -17,6 +17,7 @@
 #include "webkit/renderer/compositor_bindings/web_float_animation_curve_impl.h"
 #include "webkit/renderer/compositor_bindings/web_image_layer_impl.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
+#include "webkit/renderer/compositor_bindings/web_nine_patch_layer_impl.h"
 #include "webkit/renderer/compositor_bindings/web_scrollbar_layer_impl.h"
 #include "webkit/renderer/compositor_bindings/web_solid_color_layer_impl.h"
 #include "webkit/renderer/compositor_bindings/web_transform_animation_curve_impl.h"
@@ -31,6 +32,7 @@ using WebKit::WebExternalTextureLayerClient;
 using WebKit::WebFilterOperations;
 using WebKit::WebFloatAnimationCurve;
 using WebKit::WebImageLayer;
+using WebKit::WebNinePatchLayer;
 using WebKit::WebLayer;
 using WebKit::WebScrollbar;
 using WebKit::WebScrollbarLayer;
@@ -62,6 +64,10 @@ WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(
 
 WebKit::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {
   return new WebImageLayerImpl();
+}
+
+WebKit::WebNinePatchLayer* WebCompositorSupportImpl::createNinePatchLayer() {
+  return new WebNinePatchLayerImpl();
 }
 
 WebSolidColorLayer* WebCompositorSupportImpl::createSolidColorLayer() {
