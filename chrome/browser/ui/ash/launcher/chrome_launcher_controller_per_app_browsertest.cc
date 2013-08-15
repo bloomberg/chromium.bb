@@ -1580,3 +1580,37 @@ IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTestNoDefaultBrowser,
   EXPECT_TRUE(item_controller->IsOpen());
   EXPECT_FALSE(ash::wm::IsWindowMinimized(window));
 }
+
+// Check that GetIDByWindow() returns |LauncherID| of the active tab.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserTest,
+    MatchingLauncherIDandActiveTab)  {
+  ChromeLauncherControllerPerApp* controller =
+      static_cast<ChromeLauncherControllerPerApp*>(launcher_->delegate());
+
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(2, model_->item_count());
+
+  aura::Window* window = browser()->window()->GetNativeWindow();
+
+  int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
+  ash::LauncherID browser_id = model_->items()[browser_index].id;
+  EXPECT_EQ(browser_id, controller->GetIDByWindow(window));
+
+  ash::LauncherID app_id = CreateShortcut("app1");
+  EXPECT_EQ(3, model_->item_count());
+
+  // Creates a new tab for "app1" and checks that GetIDByWindow() returns
+  // |LauncherID| of "app1".
+  ActivateLauncherItem(model_->ItemIndexByID(app_id));
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(app_id, controller->GetIDByWindow(window));
+
+  // Makes tab at index 0(NTP) as an active tab and checks that GetIDByWindow()
+  // returns |LauncherID| of browser shortcut.
+  browser()->tab_strip_model()->ActivateTabAt(0, false);
+  EXPECT_EQ(0, browser()->tab_strip_model()->active_index());
+  EXPECT_EQ(browser_id, controller->GetIDByWindow(window));
+}

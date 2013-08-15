@@ -135,7 +135,8 @@ string16 BrowserLauncherItemController::GetTitle() {
   return GetAppTitle();
 }
 
-bool BrowserLauncherItemController::HasWindow(aura::Window* window) const {
+bool BrowserLauncherItemController::IsCurrentlyShownInWindow(
+    aura::Window* window) const {
   return window_ == window;
 }
 

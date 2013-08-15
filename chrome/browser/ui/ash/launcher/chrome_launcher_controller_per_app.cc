@@ -306,19 +306,10 @@ ash::LauncherID ChromeLauncherControllerPerApp::CreateTabbedLauncherItem(
     LauncherItemController* controller,
     IncognitoState is_incognito,
     ash::LauncherItemStatus status) {
-  // We are using the launcher id only for addressing purposes to make the
-  // old launcher model happy. The |model_| does neither know anything about
-  // the browser proxy nor ever use it. As such the controller will only be
-  // used for event tracking.
-  ash::LauncherID id = model_->reserve_external_id();
-  CHECK(!HasItemController(id));
-  // TODO(skuhne): We should get rid of this entire controller and make sure
-  // that we add only some general observers to make sure that we get the
-  // state changes.
-  CHECK(controller);
-  id_to_item_controller_map_[id] = controller;
-  controller->set_launcher_id(id);
-  return id;
+  // The PerAppLauncher doesn't need an empty slot for TabbedLauncherItem and
+  // its LauncherItemController.
+  // TODO(skuhne): Remove function when PerBrowser launcher gets removed.
+  return 0;
 }
 
 ash::LauncherID ChromeLauncherControllerPerApp::CreateAppLauncherItem(
@@ -947,28 +938,23 @@ ash::LauncherMenuModel* ChromeLauncherControllerPerApp::CreateApplicationMenu(
 
 ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
     aura::Window* window) {
-  for (IDToItemControllerMap::const_iterator i =
-           id_to_item_controller_map_.begin();
-       i != id_to_item_controller_map_.end(); ++i) {
-    if (i->second->HasWindow(window)) {
-      // Since this might be a reserved index, there might be no item in the
-      // launcher for it.
-      if (model_->ItemIndexByID(i->first) < 0)
-        break;
+  int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
+  DCHECK_GE(browser_index, 0);
+  ash::LauncherID browser_id = model_->items()[browser_index].id;
+
+  IDToItemControllerMap::const_iterator i = id_to_item_controller_map_.begin();
+  for (; i != id_to_item_controller_map_.end(); ++i) {
+    // Since a |window| can be used by multiple applications, an explicit
+    // application always gets chosen over the generic browser.
+    if (i->first != browser_id && i->second->IsCurrentlyShownInWindow(window))
       return i->first;
-    }
   }
-  if (window->type() == aura::client::WINDOW_TYPE_NORMAL) {
-    // Coming here we are looking for the associated browser item as the
-    // default.
-    // TODO(flackr): This shouldn't return a default icon if no window is found.
-    //    The browser launcher item controller should know which windows it is
-    //    managing so that it is identified as the ID in the above loop.
-    int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
-    // Note that there should always be a browser item in the launcher.
-    DCHECK_GE(browser_index, 0);
-    return model_->items()[browser_index].id;
-  }
+
+  if (i == id_to_item_controller_map_.end() &&
+      GetBrowserShortcutLauncherItemController()->
+          IsCurrentlyShownInWindow(window))
+    return browser_id;
+
   return 0;
 }
 

@@ -95,7 +95,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
     return GetAppTitle();
   }
 
-  virtual bool HasWindow(aura::Window* window) const OVERRIDE {
+  virtual bool IsCurrentlyShownInWindow(aura::Window* window) const OVERRIDE {
     return false;
   }
 
@@ -949,7 +949,7 @@ ash::LauncherID ChromeLauncherControllerPerBrowser::GetIDByWindow(
   for (IDToItemControllerMap::const_iterator i =
            id_to_item_controller_map_.begin();
        i != id_to_item_controller_map_.end(); ++i) {
-    if (i->second->HasWindow(window))
+    if (i->second->IsCurrentlyShownInWindow(window))
       return i->first;
   }
   return 0;

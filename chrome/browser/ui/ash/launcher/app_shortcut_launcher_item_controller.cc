@@ -61,15 +61,19 @@ string16 AppShortcutLauncherItemController::GetTitle() {
   return GetAppTitle();
 }
 
-bool AppShortcutLauncherItemController::HasWindow(aura::Window* window) const {
+bool AppShortcutLauncherItemController::IsCurrentlyShownInWindow(
+    aura::Window* window) const {
+  Browser* browser = chrome::FindBrowserWithWindow(window);
+  content::WebContents* active_content_of_window =
+      browser ? browser->tab_strip_model()->GetActiveWebContents() : NULL;
+
   std::vector<content::WebContents*> content =
       app_controller_->GetV1ApplicationsFromAppId(app_id());
-  for (size_t i = 0; i < content.size(); i++) {
-    Browser* browser = chrome::FindBrowserWithWebContents(content[i]);
-    if (browser && browser->window()->GetNativeWindow() == window)
-      return true;
-  }
-  return false;
+
+  std::vector<content::WebContents*>::const_iterator iter =
+      std::find(content.begin(), content.end(), active_content_of_window);
+
+  return iter != content.end() ? true : false;
 }
 
 bool AppShortcutLauncherItemController::IsOpen() const {

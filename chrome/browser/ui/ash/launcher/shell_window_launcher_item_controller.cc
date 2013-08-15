@@ -96,7 +96,7 @@ string16 ShellWindowLauncherItemController::GetTitle() {
   return GetAppTitle();
 }
 
-bool ShellWindowLauncherItemController::HasWindow(
+bool ShellWindowLauncherItemController::IsCurrentlyShownInWindow(
     aura::Window* window) const {
   ShellWindowList::const_iterator iter =
       std::find_if(shell_windows_.begin(), shell_windows_.end(),

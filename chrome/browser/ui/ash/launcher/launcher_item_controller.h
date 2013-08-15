@@ -66,7 +66,9 @@ class LauncherItemController {
   virtual string16 GetTitle() = 0;
 
   // Returns true if this item controls |window|.
-  virtual bool HasWindow(aura::Window* window) const = 0;
+  // When this |window| has multiple applications/tabs, it only returns true
+  // it controls the currently visible app/tab.
+  virtual bool IsCurrentlyShownInWindow(aura::Window* window) const = 0;
 
   // Returns true if this item is open.
   virtual bool IsOpen() const = 0;

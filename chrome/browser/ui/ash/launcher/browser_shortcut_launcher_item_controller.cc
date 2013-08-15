@@ -53,7 +53,7 @@ string16 BrowserShortcutLauncherItemController::GetTitle() {
   return l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
 }
 
-bool BrowserShortcutLauncherItemController::HasWindow(
+bool BrowserShortcutLauncherItemController::IsCurrentlyShownInWindow(
     aura::Window* window) const {
   const BrowserList* ash_browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);

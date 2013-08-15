@@ -74,6 +74,8 @@ class ASH_EXPORT LauncherDelegate {
 
   // Returns the id of the item associated with the specified window, or 0 if
   // there isn't one.
+  // Note: Windows of tabbed browsers will return the |LauncherID| of the
+  // currently active tab or selected tab.
   virtual LauncherID GetIDByWindow(aura::Window* window) = 0;
 
   // Whether the given launcher item is draggable.
