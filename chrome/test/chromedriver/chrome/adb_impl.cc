@@ -62,9 +62,10 @@ class ResponseBuffer : public base::RefCountedThreadSafe<ResponseBuffer> {
 };
 
 void ExecuteCommandOnIOThread(
-    const std::string& command, scoped_refptr<ResponseBuffer> response_buffer) {
+    const std::string& command, scoped_refptr<ResponseBuffer> response_buffer,
+    int port) {
   CHECK(base::MessageLoop::current()->IsType(base::MessageLoop::TYPE_IO));
-  AdbClientSocket::AdbQuery(5037, command,
+  AdbClientSocket::AdbQuery(port, command,
       base::Bind(&ResponseBuffer::OnResponse, response_buffer));
 }
 
@@ -72,8 +73,8 @@ void ExecuteCommandOnIOThread(
 
 AdbImpl::AdbImpl(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner,
-    Log* log)
-    : io_task_runner_(io_task_runner), log_(log) {
+    Log* log, int port)
+    : io_task_runner_(io_task_runner), log_(log), port_(port) {
   CHECK(io_task_runner_.get());
 }
 
@@ -221,7 +222,7 @@ Status AdbImpl::ExecuteCommand(
   log_->AddEntry(Log::kDebug, "Sending adb command: " + command);
   io_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&ExecuteCommandOnIOThread, command, response_buffer));
+      base::Bind(&ExecuteCommandOnIOThread, command, response_buffer, port_));
   Status status = response_buffer->GetResponse(
       response, base::TimeDelta::FromSeconds(30));
   if (status.IsOk())

@@ -64,7 +64,8 @@ class HttpHandler {
   HttpHandler(const base::Closure& quit_func,
               const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
               Log* log,
-              const std::string& url_base);
+              const std::string& url_base,
+              int adb_port);
   ~HttpHandler();
 
   void Handle(const net::HttpServerRequestInfo& request,

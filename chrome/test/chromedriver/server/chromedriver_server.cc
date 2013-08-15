@@ -139,7 +139,8 @@ void StartServerOnIOThread(int port,
   lazy_tls_server.Pointer()->Set(temp_server.release());
 }
 
-void RunServer(Log::Level log_level, int port, const std::string& url_base) {
+void RunServer(Log::Level log_level, int port, const std::string& url_base,
+               int adb_port) {
   base::Thread io_thread("ChromeDriver IO");
   CHECK(io_thread.StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0)));
@@ -150,7 +151,8 @@ void RunServer(Log::Level log_level, int port, const std::string& url_base) {
   HttpHandler handler(cmd_run_loop.QuitClosure(),
                       io_thread.message_loop_proxy(),
                       &log,
-                      url_base);
+                      url_base,
+                      adb_port);
   HttpRequestHandlerFunc handle_request_func =
       base::Bind(&HandleRequestOnCmdThread, &handler);
 
@@ -181,6 +183,7 @@ int main(int argc, char *argv[]) {
 
   // Parse command line flags.
   int port = 9515;
+  int adb_port = 5037;
   std::string url_base;
   base::FilePath log_path;
   Log::Level log_level = Log::kError;
@@ -188,6 +191,7 @@ int main(int argc, char *argv[]) {
     std::string options;
     const char* kOptionAndDescriptions[] = {
         "port=PORT", "port to listen on",
+        "adb-port=PORT", "adb server port",
         "log-path=FILE", "write server log to file instead of stderr, "
             "increases log level to INFO",
         "verbose", "log verbosely",
@@ -205,6 +209,13 @@ int main(int argc, char *argv[]) {
   if (cmd_line->HasSwitch("port")) {
     if (!base::StringToInt(cmd_line->GetSwitchValueASCII("port"), &port)) {
       printf("Invalid port. Exiting...\n");
+      return 1;
+    }
+  }
+  if (cmd_line->HasSwitch("adb-port")) {
+    if (!base::StringToInt(cmd_line->GetSwitchValueASCII("adb-port"),
+                           &adb_port)) {
+      printf("Invalid adb-port. Exiting...\n");
       return 1;
     }
   }
@@ -255,6 +266,6 @@ int main(int argc, char *argv[]) {
   if (!cmd_line->HasSwitch("verbose"))
     logging::SetMinLogLevel(logging::LOG_FATAL);
 
-  RunServer(log_level, port, url_base);
+  RunServer(log_level, port, url_base, adb_port);
   return 0;
 }

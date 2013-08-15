@@ -67,7 +67,8 @@ HttpHandler::HttpHandler(
     const base::Closure& quit_func,
     const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     Log* log,
-    const std::string& url_base)
+    const std::string& url_base,
+    int adb_port)
     : quit_func_(quit_func),
       log_(log),
       url_base_(url_base),
@@ -78,7 +79,7 @@ HttpHandler::HttpHandler(
 #endif
   context_getter_ = new URLRequestContextGetter(io_task_runner);
   socket_factory_ = CreateSyncWebSocketFactory(context_getter_.get());
-  adb_.reset(new AdbImpl(io_task_runner, log_));
+  adb_.reset(new AdbImpl(io_task_runner, log_, adb_port));
   device_manager_.reset(new DeviceManager(adb_.get()));
 
   CommandMapping commands[] = {
