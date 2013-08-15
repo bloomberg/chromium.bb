@@ -19,12 +19,12 @@
 namespace sync_file_system {
 
 SyncFileSystemBackend::SyncFileSystemBackend()
-    : sandbox_context_(NULL) {
+    : delegate_(NULL) {
 }
 
 SyncFileSystemBackend::~SyncFileSystemBackend() {
   if (change_tracker_) {
-    sandbox_context_->file_task_runner()->DeleteSoon(
+    delegate_->file_task_runner()->DeleteSoon(
         FROM_HERE, change_tracker_.release());
   }
 }
@@ -37,14 +37,14 @@ bool SyncFileSystemBackend::CanHandleType(
 
 void SyncFileSystemBackend::Initialize(fileapi::FileSystemContext* context) {
   DCHECK(context);
-  DCHECK(!sandbox_context_);
-  sandbox_context_ = context->sandbox_context();
+  DCHECK(!delegate_);
+  delegate_ = context->sandbox_delegate();
   update_observers_ = update_observers_.AddObserver(
-      sandbox_context_->quota_observer(),
-      sandbox_context_->file_task_runner());
+      delegate_->quota_observer(),
+      delegate_->file_task_runner());
   syncable_update_observers_ = syncable_update_observers_.AddObserver(
-      sandbox_context_->quota_observer(),
-      sandbox_context_->file_task_runner());
+      delegate_->quota_observer(),
+      delegate_->file_task_runner());
 }
 
 void SyncFileSystemBackend::OpenFileSystem(
@@ -53,22 +53,21 @@ void SyncFileSystemBackend::OpenFileSystem(
     fileapi::OpenFileSystemMode mode,
     const OpenFileSystemCallback& callback) {
   DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  sandbox_context_->OpenFileSystem(
-      origin_url, type, mode, callback,
-      GetSyncableFileSystemRootURI(origin_url));
+  DCHECK(delegate_);
+  delegate_->OpenFileSystem(origin_url, type, mode, callback,
+                            GetSyncableFileSystemRootURI(origin_url));
 }
 
 fileapi::FileSystemFileUtil* SyncFileSystemBackend::GetFileUtil(
     fileapi::FileSystemType type) {
-  DCHECK(sandbox_context_);
-  return sandbox_context_->sync_file_util();
+  DCHECK(delegate_);
+  return delegate_->sync_file_util();
 }
 
 fileapi::AsyncFileUtil* SyncFileSystemBackend::GetAsyncFileUtil(
     fileapi::FileSystemType type) {
-  DCHECK(sandbox_context_);
-  return sandbox_context_->file_util();
+  DCHECK(delegate_);
+  return delegate_->file_util();
 }
 
 fileapi::CopyOrMoveFileValidatorFactory*
@@ -88,7 +87,7 @@ SyncFileSystemBackend::CreateFileSystemOperation(
   DCHECK(CanHandleType(url.type()));
   DCHECK(context);
   DCHECK(error_code);
-  if (!sandbox_context_->IsAccessValid(url)) {
+  if (!delegate_->IsAccessValid(url)) {
     *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
     return NULL;
   }
@@ -116,7 +115,7 @@ SyncFileSystemBackend::CreateFileStreamReader(
     const base::Time& expected_modification_time,
     fileapi::FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
-  if (!sandbox_context_->IsAccessValid(url))
+  if (!delegate_->IsAccessValid(url))
     return scoped_ptr<webkit_blob::FileStreamReader>();
   return scoped_ptr<webkit_blob::FileStreamReader>(
       new fileapi::FileSystemFileStreamReader(
@@ -129,7 +128,7 @@ SyncFileSystemBackend::CreateFileStreamWriter(
     int64 offset,
     fileapi::FileSystemContext* context) const {
   DCHECK(CanHandleType(url.type()));
-  if (!sandbox_context_->IsAccessValid(url))
+  if (!delegate_->IsAccessValid(url))
     return scoped_ptr<fileapi::FileStreamWriter>();
   return scoped_ptr<fileapi::FileStreamWriter>(
       new fileapi::SandboxFileStreamWriter(
@@ -146,8 +145,8 @@ base::PlatformFileError SyncFileSystemBackend::DeleteOriginDataOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  return sandbox_context_->DeleteOriginDataOnFileThread(
+  DCHECK(delegate_);
+  return delegate_->DeleteOriginDataOnFileThread(
       context, proxy, origin_url, type);
 }
 
@@ -155,8 +154,8 @@ void SyncFileSystemBackend::GetOriginsForTypeOnFileThread(
     fileapi::FileSystemType type,
     std::set<GURL>* origins) {
   DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  sandbox_context_->GetOriginsForTypeOnFileThread(type, origins);
+  DCHECK(delegate_);
+  delegate_->GetOriginsForTypeOnFileThread(type, origins);
 }
 
 void SyncFileSystemBackend::GetOriginsForHostOnFileThread(
@@ -164,8 +163,8 @@ void SyncFileSystemBackend::GetOriginsForHostOnFileThread(
     const std::string& host,
     std::set<GURL>* origins) {
   DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  sandbox_context_->GetOriginsForHostOnFileThread(type, host, origins);
+  DCHECK(delegate_);
+  delegate_->GetOriginsForHostOnFileThread(type, host, origins);
 }
 
 int64 SyncFileSystemBackend::GetOriginUsageOnFileThread(
@@ -173,9 +172,8 @@ int64 SyncFileSystemBackend::GetOriginUsageOnFileThread(
     const GURL& origin_url,
     fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
-  DCHECK(sandbox_context_);
-  return sandbox_context_->GetOriginUsageOnFileThread(
-      context, origin_url, type);
+  DCHECK(delegate_);
+  return delegate_->GetOriginUsageOnFileThread(context, origin_url, type);
 }
 
 void SyncFileSystemBackend::AddFileUpdateObserver(
@@ -240,15 +238,13 @@ void SyncFileSystemBackend::SetLocalFileChangeTracker(
   DCHECK(tracker);
   change_tracker_ = tracker.Pass();
 
-  DCHECK(sandbox_context_);
-  AddFileUpdateObserver(
-      fileapi::kFileSystemTypeSyncable,
-      change_tracker_.get(),
-      sandbox_context_->file_task_runner());
-  AddFileChangeObserver(
-      fileapi::kFileSystemTypeSyncable,
-      change_tracker_.get(),
-      sandbox_context_->file_task_runner());
+  DCHECK(delegate_);
+  AddFileUpdateObserver(fileapi::kFileSystemTypeSyncable,
+                        change_tracker_.get(),
+                        delegate_->file_task_runner());
+  AddFileChangeObserver(fileapi::kFileSystemTypeSyncable,
+                        change_tracker_.get(),
+                        delegate_->file_task_runner());
 }
 
 void SyncFileSystemBackend::set_sync_context(

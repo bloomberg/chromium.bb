@@ -276,7 +276,7 @@ PlatformFileError ObfuscatedFileUtil::CreateOrOpen(
       file_flags & base::PLATFORM_FILE_WRITE &&
       context->quota_limit_type() == quota::kQuotaLimitTypeUnlimited) {
     DCHECK_EQ(base::PLATFORM_FILE_OK, error);
-    context->file_system_context()->sandbox_context()->
+    context->file_system_context()->sandbox_delegate()->
         StickyInvalidateUsageCache(url.origin(), url.type());
   }
   return error;
@@ -1261,7 +1261,7 @@ void ObfuscatedFileUtil::InvalidateUsageCache(
     FileSystemOperationContext* context,
     const GURL& origin,
     FileSystemType type) {
-  context->file_system_context()->sandbox_context()->
+  context->file_system_context()->sandbox_delegate()->
       InvalidateUsageCache(origin, type);
 }
 

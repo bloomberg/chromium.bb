@@ -108,14 +108,14 @@ FileSystemContext::FileSystemContext(
     : io_task_runner_(io_task_runner),
       default_file_task_runner_(file_task_runner),
       quota_manager_proxy_(quota_manager_proxy),
-      sandbox_context_(new SandboxContext(
+      sandbox_delegate_(new SandboxFileSystemBackendDelegate(
           quota_manager_proxy,
           file_task_runner,
           partition_path,
           special_storage_policy,
           options)),
       sandbox_backend_(new SandboxFileSystemBackend(
-          sandbox_context_.get())),
+          sandbox_delegate_.get())),
       isolated_backend_(new IsolatedFileSystemBackend()),
       additional_backends_(additional_backends.Pass()),
       external_mount_points_(external_mount_points),

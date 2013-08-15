@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/sandbox_context.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/fileapi/task_runner_bound_observer_list.h"
 #include "webkit/browser/quota/special_storage_policy.h"
 #include "webkit/browser/webkit_storage_browser_export.h"
@@ -30,7 +30,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
     : public FileSystemBackend,
       public FileSystemQuotaUtil {
  public:
-  explicit SandboxFileSystemBackend(SandboxContext* sandbox_context);
+  explicit SandboxFileSystemBackend(SandboxFileSystemBackendDelegate* delegate);
   virtual ~SandboxFileSystemBackend();
 
   // FileSystemBackend overrides.
@@ -63,7 +63,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
 
   // Returns an origin enumerator of this backend.
   // This method can only be called on the file thread.
-  SandboxContext::OriginEnumerator* CreateOriginEnumerator();
+  SandboxFileSystemBackendDelegate::OriginEnumerator* CreateOriginEnumerator();
 
   // FileSystemQuotaUtil overrides.
   virtual base::PlatformFileError DeleteOriginDataOnFileThread(
@@ -106,7 +106,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackend
   }
 
  private:
-  SandboxContext* sandbox_context_;  // Not owned.
+  SandboxFileSystemBackendDelegate* delegate_;  // Not owned.
 
   bool enable_temporary_file_system_in_incognito_;
 

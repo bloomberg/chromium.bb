@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_CONTEXT_H_
-#define WEBKIT_BROWSER_FILEAPI_SANDBOX_CONTEXT_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_
+#define WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_
 
 #include <set>
 #include <string>
@@ -39,9 +39,9 @@ class SandboxFileSystemBackend;
 class SandboxFileSystemTestHelper;
 class SandboxQuotaObserver;
 
-// This class keeps and provides a sandbox file system context.
+// Delegate implementation of the some methods in Sandbox/SyncFileSystemBackend.
 // An instance of this class is created and owned by FileSystemContext.
-class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
+class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate {
  public:
   typedef FileSystemBackend::OpenFileSystemCallback OpenFileSystemCallback;
 
@@ -61,14 +61,14 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
     virtual bool HasFileSystemType(FileSystemType type) const = 0;
   };
 
-  SandboxContext(
+  SandboxFileSystemBackendDelegate(
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* file_task_runner,
       const base::FilePath& profile_path,
       quota::SpecialStoragePolicy* special_storage_policy,
       const FileSystemOptions& file_system_options);
 
-  ~SandboxContext();
+  ~SandboxFileSystemBackendDelegate();
 
   // Performs API-specific validity checks on the given path |url|.
   // Returns true if access to |url| is valid in this filesystem.
@@ -184,11 +184,11 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxContext {
 
   base::Time next_release_time_for_open_filesystem_stat_;
 
-  base::WeakPtrFactory<SandboxContext> weak_factory_;
+  base::WeakPtrFactory<SandboxFileSystemBackendDelegate> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(SandboxContext);
+  DISALLOW_COPY_AND_ASSIGN(SandboxFileSystemBackendDelegate);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_CONTEXT_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_SANDBOX_FILE_SYSTEM_BACKEND_DELEGATE_H_

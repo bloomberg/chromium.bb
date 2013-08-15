@@ -7,7 +7,7 @@
 
 #include "webkit/browser/fileapi/file_system_backend.h"
 #include "webkit/browser/fileapi/file_system_quota_util.h"
-#include "webkit/browser/fileapi/sandbox_context.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 
 namespace sync_file_system {
 
@@ -111,7 +111,7 @@ class SyncFileSystemBackend
   fileapi::ChangeObserverList syncable_change_observers_;
 
   // Owned by FileSystemContext.
-  fileapi::SandboxContext* sandbox_context_;
+  fileapi::SandboxFileSystemBackendDelegate* delegate_;
 
   scoped_ptr<sync_file_system::LocalFileChangeTracker> change_tracker_;
   scoped_refptr<sync_file_system::LocalFileSyncContext> sync_context_;

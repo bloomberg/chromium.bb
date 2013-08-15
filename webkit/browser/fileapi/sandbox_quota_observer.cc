@@ -7,7 +7,7 @@
 #include "base/sequenced_task_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
-#include "webkit/browser/fileapi/sandbox_context.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 #include "webkit/browser/fileapi/timed_task_helper.h"
 #include "webkit/browser/quota/quota_client.h"
 #include "webkit/browser/quota/quota_manager.h"
@@ -107,7 +107,7 @@ base::FilePath SandboxQuotaObserver::GetUsageCachePath(
   DCHECK(sandbox_file_util_);
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath path =
-      SandboxContext::GetUsageCachePathForOriginAndType(
+      SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
           sandbox_file_util_, url.origin(), url.type(), &error);
   if (error != base::PLATFORM_FILE_OK) {
     LOG(WARNING) << "Could not get usage cache path for: "

@@ -61,7 +61,7 @@ void SandboxFileSystemTestHelper::TearDown() {
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetOriginRootPath() {
-  return file_system_context_->sandbox_context()->
+  return file_system_context_->sandbox_delegate()->
       GetBaseDirectoryForOriginAndType(origin_, type_, false);
 }
 
@@ -80,8 +80,8 @@ base::FilePath SandboxFileSystemTestHelper::GetLocalPathFromASCII(
 }
 
 base::FilePath SandboxFileSystemTestHelper::GetUsageCachePath() const {
-  return file_system_context_->
-      sandbox_context()->GetUsageCachePathForOriginAndType(origin_, type_);
+  return file_system_context_->sandbox_delegate()->
+      GetUsageCachePathForOriginAndType(origin_, type_);
 }
 
 FileSystemURL SandboxFileSystemTestHelper::CreateURL(
@@ -129,7 +129,7 @@ void SandboxFileSystemTestHelper::AddFileChangeObserver(
 }
 
 FileSystemUsageCache* SandboxFileSystemTestHelper::usage_cache() {
-  return file_system_context()->sandbox_context()->usage_cache();
+  return file_system_context()->sandbox_delegate()->usage_cache();
 }
 
 void SandboxFileSystemTestHelper::SetUpFileSystem() {
@@ -140,7 +140,7 @@ void SandboxFileSystemTestHelper::SetUpFileSystem() {
   DCHECK(file_util_);
 
   // Prepare the origin's root directory.
-  file_system_context_->sandbox_context()->
+  file_system_context_->sandbox_delegate()->
       GetBaseDirectoryForOriginAndType(origin_, type_, true /* create */);
 
   // Initialize the usage cache file.

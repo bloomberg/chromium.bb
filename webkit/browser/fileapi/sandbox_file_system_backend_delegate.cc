@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/browser/fileapi/sandbox_context.h"
+#include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -53,7 +53,7 @@ const base::FilePath::CharType kRestrictedChars[] = {
 };
 
 class ObfuscatedOriginEnumerator
-    : public SandboxContext::OriginEnumerator {
+    : public SandboxFileSystemBackendDelegate::OriginEnumerator {
  public:
   explicit ObfuscatedOriginEnumerator(ObfuscatedFileUtil* file_util) {
     enum_.reset(file_util->CreateOriginEnumerator());
@@ -94,20 +94,21 @@ void OpenFileSystemOnFileThread(
 }
 
 void DidOpenFileSystem(
-    base::WeakPtr<SandboxContext> sandbox_context,
+    base::WeakPtr<SandboxFileSystemBackendDelegate> delegate,
     const base::Callback<void(base::PlatformFileError error)>& callback,
     base::PlatformFileError* error) {
-  if (sandbox_context.get())
-    sandbox_context.get()->CollectOpenFileSystemMetrics(*error);
+  if (delegate.get())
+    delegate.get()->CollectOpenFileSystemMetrics(*error);
   callback.Run(*error);
 }
 
 }  // namespace
 
 const base::FilePath::CharType
-SandboxContext::kFileSystemDirectory[] = FILE_PATH_LITERAL("File System");
+SandboxFileSystemBackendDelegate::kFileSystemDirectory[] =
+    FILE_PATH_LITERAL("File System");
 
-SandboxContext::SandboxContext(
+SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& profile_path,
@@ -130,7 +131,7 @@ SandboxContext::SandboxContext(
       weak_factory_(this) {
 }
 
-SandboxContext::~SandboxContext() {
+SandboxFileSystemBackendDelegate::~SandboxFileSystemBackendDelegate() {
   if (!file_task_runner_->RunsTasksOnCurrentThread()) {
     AsyncFileUtil* sandbox_file_util = sandbox_file_util_.release();
     SandboxQuotaObserver* quota_observer = quota_observer_.release();
@@ -145,7 +146,8 @@ SandboxContext::~SandboxContext() {
   }
 }
 
-bool SandboxContext::IsAccessValid(const FileSystemURL& url) const {
+bool SandboxFileSystemBackendDelegate::IsAccessValid(
+    const FileSystemURL& url) const {
   if (!IsAllowedScheme(url.origin()))
     return false;
 
@@ -176,7 +178,7 @@ bool SandboxContext::IsAccessValid(const FileSystemURL& url) const {
   return true;
 }
 
-bool SandboxContext::IsAllowedScheme(const GURL& url) const {
+bool SandboxFileSystemBackendDelegate::IsAllowedScheme(const GURL& url) const {
   // Basically we only accept http or https. We allow file:// URLs
   // only if --allow-file-access-from-files flag is given.
   if (url.SchemeIs("http") || url.SchemeIs("https"))
@@ -194,12 +196,16 @@ bool SandboxContext::IsAllowedScheme(const GURL& url) const {
   return false;
 }
 
-SandboxContext::OriginEnumerator* SandboxContext::CreateOriginEnumerator() {
+SandboxFileSystemBackendDelegate::OriginEnumerator*
+SandboxFileSystemBackendDelegate::CreateOriginEnumerator() {
   return new ObfuscatedOriginEnumerator(obfuscated_file_util());
 }
 
-base::FilePath SandboxContext::GetBaseDirectoryForOriginAndType(
-    const GURL& origin_url, fileapi::FileSystemType type, bool create) {
+base::FilePath
+SandboxFileSystemBackendDelegate::GetBaseDirectoryForOriginAndType(
+    const GURL& origin_url,
+    fileapi::FileSystemType type,
+    bool create) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath path = obfuscated_file_util()->GetDirectoryForOriginAndType(
       origin_url, type, create, &error);
@@ -208,7 +214,7 @@ base::FilePath SandboxContext::GetBaseDirectoryForOriginAndType(
   return path;
 }
 
-void SandboxContext::OpenFileSystem(
+void SandboxFileSystemBackendDelegate::OpenFileSystem(
     const GURL& origin_url,
     fileapi::FileSystemType type,
     OpenFileSystemMode mode,
@@ -233,7 +239,8 @@ void SandboxContext::OpenFileSystem(
                  base::Owned(error_ptr)));
 }
 
-base::PlatformFileError SandboxContext::DeleteOriginDataOnFileThread(
+base::PlatformFileError
+SandboxFileSystemBackendDelegate::DeleteOriginDataOnFileThread(
     FileSystemContext* file_system_context,
     quota::QuotaManagerProxy* proxy,
     const GURL& origin_url,
@@ -256,7 +263,7 @@ base::PlatformFileError SandboxContext::DeleteOriginDataOnFileThread(
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-void SandboxContext::GetOriginsForTypeOnFileThread(
+void SandboxFileSystemBackendDelegate::GetOriginsForTypeOnFileThread(
     fileapi::FileSystemType type, std::set<GURL>* origins) {
   DCHECK(origins);
   scoped_ptr<OriginEnumerator> enumerator(CreateOriginEnumerator());
@@ -267,7 +274,7 @@ void SandboxContext::GetOriginsForTypeOnFileThread(
   }
 }
 
-void SandboxContext::GetOriginsForHostOnFileThread(
+void SandboxFileSystemBackendDelegate::GetOriginsForHostOnFileThread(
     fileapi::FileSystemType type, const std::string& host,
     std::set<GURL>* origins) {
   DCHECK(origins);
@@ -280,7 +287,7 @@ void SandboxContext::GetOriginsForHostOnFileThread(
   }
 }
 
-int64 SandboxContext::GetOriginUsageOnFileThread(
+int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileThread(
     FileSystemContext* file_system_context,
     const GURL& origin_url,
     fileapi::FileSystemType type) {
@@ -318,7 +325,7 @@ int64 SandboxContext::GetOriginUsageOnFileThread(
   return usage;
 }
 
-void SandboxContext::InvalidateUsageCache(
+void SandboxFileSystemBackendDelegate::InvalidateUsageCache(
     const GURL& origin,
     fileapi::FileSystemType type) {
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
@@ -329,7 +336,7 @@ void SandboxContext::InvalidateUsageCache(
   usage_cache()->IncrementDirty(usage_file_path);
 }
 
-void SandboxContext::StickyInvalidateUsageCache(
+void SandboxFileSystemBackendDelegate::StickyInvalidateUsageCache(
     const GURL& origin,
     fileapi::FileSystemType type) {
   sticky_dirty_origins_.insert(std::make_pair(origin, type));
@@ -337,11 +344,12 @@ void SandboxContext::StickyInvalidateUsageCache(
   InvalidateUsageCache(origin, type);
 }
 
-FileSystemFileUtil* SandboxContext::sync_file_util() {
+FileSystemFileUtil* SandboxFileSystemBackendDelegate::sync_file_util() {
   return static_cast<AsyncFileUtilAdapter*>(file_util())->sync_file_util();
 }
 
-base::FilePath SandboxContext::GetUsageCachePathForOriginAndType(
+base::FilePath
+SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
     const GURL& origin_url,
     FileSystemType type) {
   base::PlatformFileError error;
@@ -353,7 +361,8 @@ base::FilePath SandboxContext::GetUsageCachePathForOriginAndType(
 }
 
 // static
-base::FilePath SandboxContext::GetUsageCachePathForOriginAndType(
+base::FilePath
+SandboxFileSystemBackendDelegate::GetUsageCachePathForOriginAndType(
     ObfuscatedFileUtil* sandbox_file_util,
     const GURL& origin_url,
     fileapi::FileSystemType type,
@@ -367,9 +376,10 @@ base::FilePath SandboxContext::GetUsageCachePathForOriginAndType(
   return base_path.Append(FileSystemUsageCache::kUsageFileName);
 }
 
-int64 SandboxContext::RecalculateUsage(FileSystemContext* context,
-                                       const GURL& origin,
-                                       FileSystemType type) {
+int64 SandboxFileSystemBackendDelegate::RecalculateUsage(
+    FileSystemContext* context,
+    const GURL& origin,
+    FileSystemType type) {
   FileSystemOperationContext operation_context(context);
   FileSystemURL url = context->CreateCrackedFileSystemURL(
       origin, type, base::FilePath());
@@ -388,7 +398,7 @@ int64 SandboxContext::RecalculateUsage(FileSystemContext* context,
   return usage;
 }
 
-void SandboxContext::CollectOpenFileSystemMetrics(
+void SandboxFileSystemBackendDelegate::CollectOpenFileSystemMetrics(
     base::PlatformFileError error_code) {
   base::Time now = base::Time::Now();
   bool throttled = now < next_release_time_for_open_filesystem_stat_;
@@ -425,7 +435,7 @@ void SandboxContext::CollectOpenFileSystemMetrics(
 #undef REPORT
 }
 
-ObfuscatedFileUtil* SandboxContext::obfuscated_file_util() {
+ObfuscatedFileUtil* SandboxFileSystemBackendDelegate::obfuscated_file_util() {
   return static_cast<ObfuscatedFileUtil*>(sync_file_util());
 }
 
