@@ -33,6 +33,10 @@
 
 #include "WebCommon.h"
 
+#if WEBKIT_IMPLEMENTATION
+#include "wtf/Assertions.h"
+#endif
+
 namespace WebKit {
 
 #pragma pack(push, 1)
@@ -57,8 +61,6 @@ public:
 };
 
 #if WEBKIT_IMPLEMENTATION
-#include "wtf/Assertions.h"
-
 COMPILE_ASSERT(sizeof(WebDeviceOrientationData) == (3 * sizeof(double) + 1 * sizeof(char)), WebDeviceOrientationData_has_wrong_size);
 #endif
 
