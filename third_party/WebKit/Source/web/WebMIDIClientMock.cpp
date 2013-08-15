@@ -28,58 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMIDIPermissionRequest_h
-#define WebMIDIPermissionRequest_h
+#include "config.h"
+#include "WebMIDIClientMock.h"
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
-
-namespace WebCore {
-class MIDIAccess;
-}
+#include "core/platform/mock/MIDIClientMock.h"
+#include "modules/webmidi/MIDIAccess.h"
+#include "public/web/WebMIDIPermissionRequest.h"
 
 namespace WebKit {
 
-class WebSecurityOrigin;
-
-// WebMIDIPermissionRequest encapsulates a WebCore MIDIAccess object and represents
-// a request from WebCore for permissions.
-// The underlying MIDIAccess object is guaranteed to be valid until the invocation of
-// either WebMIDIPermissionRequest::setIsAllowed (request complete) or
-// WebMIDIClient::cancelPermissionRequest (request canceled).
-class WebMIDIPermissionRequest {
-public:
-    WebMIDIPermissionRequest(const WebMIDIPermissionRequest& o) { assign(o); }
-    ~WebMIDIPermissionRequest() { reset(); };
-
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
-    WEBKIT_EXPORT void setIsAllowed(bool);
-
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebMIDIPermissionRequest&);
-    WEBKIT_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
-
-#if WEBKIT_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>&);
-    explicit WebMIDIPermissionRequest(WebCore::MIDIAccess*);
-
-    WebCore::MIDIAccess* midiAccess() const { return m_private.get(); }
-#endif
-
-private:
-    WebPrivatePtr<WebCore::MIDIAccess> m_private;
-};
-
-inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+WebMIDIClientMock::WebMIDIClientMock()
 {
-    return a.equals(b);
+    m_clientMock.reset(new WebCore::MIDIClientMock());
 }
 
-inline bool operator!=(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+WebMIDIClientMock* WebMIDIClientMock::create()
 {
-    return !(a == b);
+    return new WebMIDIClientMock();
 }
 
-} // namespace WebKit
+void WebMIDIClientMock::setSysExPermission(bool allowed)
+{
+    m_clientMock->setSysExPermission(allowed);
+}
 
-#endif // WebMIDIPermissionRequest_h
+void WebMIDIClientMock::resetMock()
+{
+    m_clientMock->resetMock();
+}
+
+void WebMIDIClientMock::requestSysExPermission(const WebMIDIPermissionRequest& request)
+{
+    m_clientMock->requestSysExPermission(adoptRef(request.midiAccess()));
+}
+
+void WebMIDIClientMock::cancelSysExPermissionRequest(const WebMIDIPermissionRequest& request)
+{
+    m_clientMock->cancelSysExPermissionRequest(request.midiAccess());
+}
+
+void WebMIDIClientMock::reset()
+{
+    m_clientMock.reset(0);
+}
+
+} // WebKit

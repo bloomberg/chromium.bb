@@ -60,6 +60,7 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebGeolocationClientMock.h"
 #include "public/web/WebHistoryItem.h"
+#include "public/web/WebMIDIClientMock.h"
 #include "public/web/WebNode.h"
 #include "public/web/WebPluginParams.h"
 #include "public/web/WebPrintParams.h"
@@ -513,6 +514,8 @@ void WebTestProxyBase::reset()
     m_logConsoleOutput = true;
     if (m_geolocationClient.get())
         m_geolocationClient->resetMock();
+    if (m_midiClient.get())
+        m_midiClient->resetMock();
 #if ENABLE_INPUT_SPEECH
     if (m_speechInputController.get())
         m_speechInputController->clearResults();
@@ -726,6 +729,13 @@ WebGeolocationClientMock* WebTestProxyBase::geolocationClientMock()
     if (!m_geolocationClient.get())
         m_geolocationClient.reset(WebGeolocationClientMock::create());
     return m_geolocationClient.get();
+}
+
+WebMIDIClientMock* WebTestProxyBase::midiClientMock()
+{
+    if (!m_midiClient.get())
+        m_midiClient.reset(WebMIDIClientMock::create());
+    return m_midiClient.get();
 }
 
 WebDeviceOrientationClientMock* WebTestProxyBase::deviceOrientationClientMock()
@@ -1082,6 +1092,11 @@ WebNotificationPresenter* WebTestProxyBase::notificationPresenter()
 WebGeolocationClient* WebTestProxyBase::geolocationClient()
 {
     return geolocationClientMock();
+}
+
+WebMIDIClient* WebTestProxyBase::webMIDIClient()
+{
+    return midiClientMock();
 }
 
 WebSpeechInputController* WebTestProxyBase::speechInputController(WebSpeechInputListener* listener)

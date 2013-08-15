@@ -28,37 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "MIDIClientImpl.h"
+#ifndef MIDIClientMock_h
+#define MIDIClientMock_h
 
-#include "WebMIDIClient.h"
-#include "WebMIDIPermissionRequest.h"
-#include "WebViewClient.h"
-#include "WebViewImpl.h"
-#include "modules/webmidi/MIDIAccess.h"
-#include "wtf/RefPtr.h"
+#include "modules/webmidi/MIDIClient.h"
 
-using namespace WebCore;
+namespace WebCore {
 
-namespace WebKit {
+class MIDIClientMock : public MIDIClient {
+public:
+    MIDIClientMock();
+    virtual ~MIDIClientMock();
 
-MIDIClientImpl::MIDIClientImpl(WebViewImpl* webView)
-    : m_client(webView->client() ? webView->client()->webMIDIClient() : 0)
-{
-}
+    void setSysExPermission(bool);
+    void resetMock();
 
-void MIDIClientImpl::requestSysExPermission(PassRefPtr<MIDIAccess> access)
-{
-    if (m_client)
-        m_client->requestSysExPermission(WebMIDIPermissionRequest(access));
-    else
-        access->setSysExEnabled(false);
-}
+    // MIDIClient
+    virtual void requestSysExPermission(PassRefPtr<MIDIAccess>) OVERRIDE;
+    virtual void cancelSysExPermissionRequest(MIDIAccess*) OVERRIDE;
 
-void MIDIClientImpl::cancelSysExPermissionRequest(MIDIAccess* access)
-{
-    if (m_client)
-        m_client->cancelSysExPermissionRequest(WebMIDIPermissionRequest(access));
-}
+private:
+    bool m_allowed;
+};
 
-} // namespace WebKit
+} // namespace WebCore
+
+#endif // MIDIClient_h

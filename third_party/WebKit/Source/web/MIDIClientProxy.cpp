@@ -28,58 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMIDIPermissionRequest_h
-#define WebMIDIPermissionRequest_h
+#include "config.h"
+#include "MIDIClientProxy.h"
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "WebMIDIClient.h"
+#include "WebMIDIPermissionRequest.h"
+#include "WebViewClient.h"
+#include "WebViewImpl.h"
+#include "modules/webmidi/MIDIAccess.h"
+#include "wtf/RefPtr.h"
 
-namespace WebCore {
-class MIDIAccess;
-}
+using namespace WebCore;
 
 namespace WebKit {
 
-class WebSecurityOrigin;
-
-// WebMIDIPermissionRequest encapsulates a WebCore MIDIAccess object and represents
-// a request from WebCore for permissions.
-// The underlying MIDIAccess object is guaranteed to be valid until the invocation of
-// either WebMIDIPermissionRequest::setIsAllowed (request complete) or
-// WebMIDIClient::cancelPermissionRequest (request canceled).
-class WebMIDIPermissionRequest {
-public:
-    WebMIDIPermissionRequest(const WebMIDIPermissionRequest& o) { assign(o); }
-    ~WebMIDIPermissionRequest() { reset(); };
-
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
-    WEBKIT_EXPORT void setIsAllowed(bool);
-
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebMIDIPermissionRequest&);
-    WEBKIT_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
-
-#if WEBKIT_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>&);
-    explicit WebMIDIPermissionRequest(WebCore::MIDIAccess*);
-
-    WebCore::MIDIAccess* midiAccess() const { return m_private.get(); }
-#endif
-
-private:
-    WebPrivatePtr<WebCore::MIDIAccess> m_private;
-};
-
-inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+MIDIClientProxy::MIDIClientProxy(WebMIDIClient* client)
+    : m_client(client)
 {
-    return a.equals(b);
 }
 
-inline bool operator!=(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+void MIDIClientProxy::requestSysExPermission(PassRefPtr<MIDIAccess> access)
 {
-    return !(a == b);
+    if (m_client)
+        m_client->requestSysExPermission(WebMIDIPermissionRequest(access));
+    else
+        access->setSysExEnabled(false);
+}
+
+void MIDIClientProxy::cancelSysExPermissionRequest(MIDIAccess* access)
+{
+    if (m_client)
+        m_client->cancelSysExPermissionRequest(WebMIDIPermissionRequest(access));
 }
 
 } // namespace WebKit
-
-#endif // WebMIDIPermissionRequest_h

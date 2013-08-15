@@ -3116,6 +3116,8 @@
             'platform/midi/MIDIAccessorClient.h',
             'platform/mock/DeviceOrientationClientMock.cpp',
             'platform/mock/GeolocationClientMock.cpp',
+            'platform/mock/MIDIClientMock.cpp',
+            'platform/mock/MIDIClientMock.h',
             'platform/mock/PlatformSpeechSynthesizerMock.cpp',
             'platform/mock/PlatformSpeechSynthesizerMock.h',
             'platform/mock/ScrollbarThemeMock.cpp',

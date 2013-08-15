@@ -463,6 +463,9 @@ private:
     void setMockGeolocationPosition(const CppArgumentList&, CppVariant*);
     void setMockGeolocationPositionUnavailableError(const CppArgumentList&, CppVariant*);
 
+    // MIDI function to control permission handling.
+    void setMIDISysExPermission(const CppArgumentList&, CppVariant*);
+
 #if ENABLE_NOTIFICATIONS
     // Grants permission for desktop notifications to an origin
     void grantWebNotificationPermission(const CppArgumentList&, CppVariant*);

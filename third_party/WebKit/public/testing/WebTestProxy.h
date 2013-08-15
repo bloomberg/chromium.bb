@@ -66,6 +66,8 @@ class WebGeolocationClientMock;
 class WebImage;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
+class WebMIDIClient;
+class WebMIDIClientMock;
 class WebNode;
 class WebNotificationPresenter;
 class WebPlugin;
@@ -136,6 +138,7 @@ public:
 
     WebKit::WebDeviceOrientationClientMock* deviceOrientationClientMock();
     WebKit::WebGeolocationClientMock* geolocationClientMock();
+    WebKit::WebMIDIClientMock* midiClientMock();
     MockWebSpeechInputController* speechInputControllerMock();
     MockWebSpeechRecognizer* speechRecognizerMock();
 #endif
@@ -174,6 +177,7 @@ protected:
     void printPage(WebKit::WebFrame*);
     WebKit::WebNotificationPresenter* notificationPresenter();
     WebKit::WebGeolocationClient* geolocationClient();
+    WebKit::WebMIDIClient* webMIDIClient();
     WebKit::WebSpeechInputController* speechInputController(WebKit::WebSpeechInputListener*);
     WebKit::WebSpeechRecognizer* speechRecognizer();
     WebKit::WebDeviceOrientationClient* deviceOrientationClient();
@@ -247,6 +251,7 @@ private:
     int m_chooserCount;
 
     std::auto_ptr<WebKit::WebGeolocationClientMock> m_geolocationClient;
+    std::auto_ptr<WebKit::WebMIDIClientMock> m_midiClient;
     std::auto_ptr<WebKit::WebDeviceOrientationClientMock> m_deviceOrientationClient;
     std::auto_ptr<MockWebSpeechRecognizer> m_speechRecognizer;
     std::auto_ptr<MockWebSpeechInputController> m_speechInputController;
@@ -402,6 +407,10 @@ public:
     virtual WebKit::WebGeolocationClient* geolocationClient()
     {
         return WebTestProxyBase::geolocationClient();
+    }
+    virtual WebKit::WebMIDIClient* webMIDIClient()
+    {
+        return WebTestProxyBase::webMIDIClient();
     }
     virtual WebKit::WebSpeechInputController* speechInputController(WebKit::WebSpeechInputListener* listener)
     {

@@ -28,33 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MIDIClientImpl_h
-#define MIDIClientImpl_h
+#ifndef WebMIDIClientMock_h
+#define WebMIDIClientMock_h
 
-#include "modules/webmidi/MIDIClient.h"
-#include "wtf/PassRefPtr.h"
+#include "../platform/WebCommon.h"
+#include "../platform/WebPrivateOwnPtr.h"
+#include "WebMIDIClient.h"
 
 namespace WebCore {
-class MIDIAccess;
+class MIDIClientMock;
 }
 
 namespace WebKit {
+class WebMIDIPermissionRequest;
 
-class WebMIDIClient;
-class WebViewImpl;
-
-class MIDIClientImpl : public WebCore::MIDIClient {
+class WebMIDIClientMock : public WebMIDIClient {
 public:
-    explicit MIDIClientImpl(WebViewImpl*);
+    WEBKIT_EXPORT static WebMIDIClientMock* create();
+    virtual ~WebMIDIClientMock() { reset(); }
 
-    // WebCore::MIDIClient ---------------------------------------------------
-    virtual void requestSysExPermission(PassRefPtr<WebCore::MIDIAccess>);
-    virtual void cancelSysExPermissionRequest(WebCore::MIDIAccess*);
+    WEBKIT_EXPORT void setSysExPermission(bool);
+    WEBKIT_EXPORT void resetMock();
+
+    // WebMIDIClient
+    virtual void requestSysExPermission(const WebMIDIPermissionRequest&) OVERRIDE;
+    virtual void cancelSysExPermissionRequest(const WebMIDIPermissionRequest&) OVERRIDE;
 
 private:
-    WebMIDIClient* m_client;
+    WebMIDIClientMock();
+    WEBKIT_EXPORT void reset();
+
+    WebPrivateOwnPtr<WebCore::MIDIClientMock> m_clientMock;
 };
 
 } // namespace WebKit
 
-#endif // MIDIClientImpl_h
+#endif // WebMIDIClientMock_h

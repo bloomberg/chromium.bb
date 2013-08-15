@@ -55,6 +55,7 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebGeolocationClientMock.h"
 #include "public/web/WebInputElement.h"
+#include "public/web/WebMIDIClientMock.h"
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSecurityPolicy.h"
 #include "public/web/WebSerializedScriptValue.h"
@@ -278,6 +279,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setGeolocationPermission", &TestRunner::setGeolocationPermission);
     bindMethod("setMockGeolocationPositionUnavailableError", &TestRunner::setMockGeolocationPositionUnavailableError);
     bindMethod("setMockGeolocationPosition", &TestRunner::setMockGeolocationPosition);
+    bindMethod("setMIDISysExPermission", &TestRunner::setMIDISysExPermission);
 #if ENABLE_NOTIFICATIONS
     bindMethod("grantWebNotificationPermission", &TestRunner::grantWebNotificationPermission);
     bindMethod("simulateLegacyWebNotificationClick", &TestRunner::simulateLegacyWebNotificationClick);
@@ -1825,6 +1827,16 @@ void TestRunner::setMockGeolocationPositionUnavailableError(const CppArgumentLis
     const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
     for (unsigned i = 0; i < windowList.size(); ++i)
         windowList.at(i)->geolocationClientMock()->setPositionUnavailableError(WebString::fromUTF8(arguments[0].toString()));
+}
+
+void TestRunner::setMIDISysExPermission(const CppArgumentList& arguments, CppVariant* result)
+{
+    result->setNull();
+    if (arguments.size() < 1 || !arguments[0].isBool())
+        return;
+    const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
+    for (unsigned i = 0; i < windowList.size(); ++i)
+        windowList.at(i)->midiClientMock()->setSysExPermission(arguments[0].toBoolean());
 }
 
 #if ENABLE_NOTIFICATIONS

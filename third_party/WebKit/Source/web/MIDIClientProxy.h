@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMIDIPermissionRequest_h
-#define WebMIDIPermissionRequest_h
+#ifndef MIDIClientProxy_h
+#define MIDIClientProxy_h
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "modules/webmidi/MIDIClient.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 class MIDIAccess;
@@ -40,46 +40,21 @@ class MIDIAccess;
 
 namespace WebKit {
 
-class WebSecurityOrigin;
+class WebMIDIClient;
+class WebViewImpl;
 
-// WebMIDIPermissionRequest encapsulates a WebCore MIDIAccess object and represents
-// a request from WebCore for permissions.
-// The underlying MIDIAccess object is guaranteed to be valid until the invocation of
-// either WebMIDIPermissionRequest::setIsAllowed (request complete) or
-// WebMIDIClient::cancelPermissionRequest (request canceled).
-class WebMIDIPermissionRequest {
+class MIDIClientProxy : public WebCore::MIDIClient {
 public:
-    WebMIDIPermissionRequest(const WebMIDIPermissionRequest& o) { assign(o); }
-    ~WebMIDIPermissionRequest() { reset(); };
+    explicit MIDIClientProxy(WebMIDIClient*);
 
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
-    WEBKIT_EXPORT void setIsAllowed(bool);
-
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebMIDIPermissionRequest&);
-    WEBKIT_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
-
-#if WEBKIT_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>&);
-    explicit WebMIDIPermissionRequest(WebCore::MIDIAccess*);
-
-    WebCore::MIDIAccess* midiAccess() const { return m_private.get(); }
-#endif
+    // WebCore::MIDIClient
+    virtual void requestSysExPermission(PassRefPtr<WebCore::MIDIAccess>);
+    virtual void cancelSysExPermissionRequest(WebCore::MIDIAccess*);
 
 private:
-    WebPrivatePtr<WebCore::MIDIAccess> m_private;
+    WebMIDIClient* m_client;
 };
-
-inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
-{
-    return a.equals(b);
-}
-
-inline bool operator!=(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
-{
-    return !(a == b);
-}
 
 } // namespace WebKit
 
-#endif // WebMIDIPermissionRequest_h
+#endif // MIDIClientProxy_h

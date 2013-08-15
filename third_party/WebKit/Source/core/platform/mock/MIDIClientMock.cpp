@@ -28,58 +28,39 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebMIDIPermissionRequest_h
-#define WebMIDIPermissionRequest_h
+#include "config.h"
+#include "core/platform/mock/MIDIClientMock.h"
 
-#include "../platform/WebCommon.h"
-#include "../platform/WebPrivatePtr.h"
+#include "modules/webmidi/MIDIAccess.h"
 
 namespace WebCore {
-class MIDIAccess;
-}
 
-namespace WebKit {
-
-class WebSecurityOrigin;
-
-// WebMIDIPermissionRequest encapsulates a WebCore MIDIAccess object and represents
-// a request from WebCore for permissions.
-// The underlying MIDIAccess object is guaranteed to be valid until the invocation of
-// either WebMIDIPermissionRequest::setIsAllowed (request complete) or
-// WebMIDIClient::cancelPermissionRequest (request canceled).
-class WebMIDIPermissionRequest {
-public:
-    WebMIDIPermissionRequest(const WebMIDIPermissionRequest& o) { assign(o); }
-    ~WebMIDIPermissionRequest() { reset(); };
-
-    WEBKIT_EXPORT WebSecurityOrigin securityOrigin() const;
-    WEBKIT_EXPORT void setIsAllowed(bool);
-
-    WEBKIT_EXPORT void reset();
-    WEBKIT_EXPORT void assign(const WebMIDIPermissionRequest&);
-    WEBKIT_EXPORT bool equals(const WebMIDIPermissionRequest&) const;
-
-#if WEBKIT_IMPLEMENTATION
-    explicit WebMIDIPermissionRequest(const PassRefPtr<WebCore::MIDIAccess>&);
-    explicit WebMIDIPermissionRequest(WebCore::MIDIAccess*);
-
-    WebCore::MIDIAccess* midiAccess() const { return m_private.get(); }
-#endif
-
-private:
-    WebPrivatePtr<WebCore::MIDIAccess> m_private;
-};
-
-inline bool operator==(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+MIDIClientMock::MIDIClientMock()
+    : m_allowed(false)
 {
-    return a.equals(b);
 }
 
-inline bool operator!=(const WebMIDIPermissionRequest& a, const WebMIDIPermissionRequest& b)
+MIDIClientMock::~MIDIClientMock()
 {
-    return !(a == b);
 }
 
-} // namespace WebKit
+void MIDIClientMock::setSysExPermission(bool allowed)
+{
+    m_allowed = allowed;
+}
 
-#endif // WebMIDIPermissionRequest_h
+void MIDIClientMock::resetMock()
+{
+    m_allowed = false;
+}
+
+void MIDIClientMock::requestSysExPermission(PassRefPtr<MIDIAccess> access)
+{
+    access->setSysExEnabled(m_allowed);
+}
+
+void MIDIClientMock::cancelSysExPermissionRequest(MIDIAccess*)
+{
+}
+
+} // WebCore

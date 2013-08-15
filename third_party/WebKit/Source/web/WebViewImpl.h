@@ -37,7 +37,6 @@
 #include "DragClientImpl.h"
 #include "EditorClientImpl.h"
 #include "InspectorClientImpl.h"
-#include "MIDIClientImpl.h"
 #include "NotificationPresenterImpl.h"
 #include "PageOverlayList.h"
 #include "PageWidgetDelegate.h"
@@ -95,6 +94,7 @@ class ContextMenuClientImpl;
 class DeviceOrientationClientProxy;
 class GeolocationClientProxy;
 class LinkHighlight;
+class MIDIClientProxy;
 class PinchViewports;
 class PrerendererClientImpl;
 class SpeechInputClientImpl;
@@ -811,7 +811,7 @@ private:
     float m_emulatedTextZoomFactor;
 
     UserMediaClientImpl m_userMediaClientImpl;
-    MIDIClientImpl m_midiClientImpl;
+    OwnPtr<MIDIClientProxy> m_midiClientProxy;
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
     OwnPtr<NavigatorContentUtilsClientImpl> m_navigatorContentUtilsClient;
 #endif
