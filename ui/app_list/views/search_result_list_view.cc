@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
-#include "ui/app_list/search_result_list_view_delegate.h"
+#include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/app_list/views/search_result_view.h"
 #include "ui/base/events/event.h"
 #include "ui/views/layout/box_layout.h"

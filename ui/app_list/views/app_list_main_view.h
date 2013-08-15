@@ -9,9 +9,9 @@
 
 #include "base/memory/scoped_vector.h"
 #include "base/timer/timer.h"
-#include "ui/app_list/apps_grid_view_delegate.h"
-#include "ui/app_list/search_box_view_delegate.h"
-#include "ui/app_list/search_result_list_view_delegate.h"
+#include "ui/app_list/views/apps_grid_view_delegate.h"
+#include "ui/app_list/views/search_box_view_delegate.h"
+#include "ui/app_list/views/search_result_list_view_delegate.h"
 #include "ui/views/view.h"
 
 namespace views {

@@ -7,10 +7,10 @@
 #include <algorithm>
 
 #include "ui/app_list/app_list_item_model.h"
-#include "ui/app_list/apps_grid_view_delegate.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
 #include "ui/app_list/views/app_list_item_view.h"
+#include "ui/app_list/views/apps_grid_view_delegate.h"
 #include "ui/app_list/views/page_switcher.h"
 #include "ui/app_list/views/pulsing_block_view.h"
 #include "ui/base/animation/animation.h"
