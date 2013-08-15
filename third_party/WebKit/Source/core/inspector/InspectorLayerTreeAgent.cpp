@@ -41,6 +41,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
@@ -69,6 +70,19 @@ static PassRefPtr<TypeBuilder::LayerTree::Layer> buildObjectForLayer(GraphicsLay
     if (graphicsLayer->parent() && !forceRoot)
         layerObject->setParentLayerId(String::number(graphicsLayer->parent()->platformLayer()->id()));
 
+    const TransformationMatrix& transform = graphicsLayer->transform();
+    if (!transform.isIdentity()) {
+        TransformationMatrix::FloatMatrix4 flattenedMatrix;
+        transform.toColumnMajorFloatArray(flattenedMatrix);
+        RefPtr<TypeBuilder::Array<double> > transformArray = TypeBuilder::Array<double>::create();
+        for (size_t i = 0; i < WTF_ARRAY_LENGTH(flattenedMatrix); ++i)
+            transformArray->addItem(flattenedMatrix[i]);
+        layerObject->setTransform(transformArray);
+        const FloatPoint3D& anchor = graphicsLayer->anchorPoint();
+        layerObject->setAnchorX(anchor.x());
+        layerObject->setAnchorY(anchor.y());
+        layerObject->setAnchorZ(anchor.z());
+    }
     return layerObject;
 }
 
