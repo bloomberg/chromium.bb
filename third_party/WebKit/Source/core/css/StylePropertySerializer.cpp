@@ -312,6 +312,8 @@ String StylePropertySerializer::getPropertyValue(CSSPropertyID propertyID) const
 {
     // Shorthand and 4-values properties
     switch (propertyID) {
+    case CSSPropertyAnimation:
+        return getLayeredShorthandValue(animationShorthand());
     case CSSPropertyBorderSpacing:
         return borderSpacingValue(borderSpacingShorthand());
     case CSSPropertyBackgroundPosition:

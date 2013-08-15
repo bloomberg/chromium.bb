@@ -17,7 +17,7 @@ style = e.style;
 computedStyle = window.getComputedStyle(e, null);
 
 // This function checks the return value of computedStyle.animation and verifies Blink can parse it.
-function checkTransitionShorthandValue() {
+function checkAnimationShorthandValue() {
     var before = computedStyle.getPropertyValue('animation');
     e.style.animation = '';
     e.style.animation = before;
@@ -815,8 +815,261 @@ shouldBe("computedStyle.animationFillMode", "'none'");
 shouldBe("style.webkitAnimationFillMode", "''");
 shouldBe("computedStyle.webkitAnimationFillMode", "'none'");
 
-// FIXME : Add tests for shorthand parsing.
-// https://code.google.com/p/chromium/issues/detail?id=234612
+debug("Valid animation shorthand values.");
+style.animation = "";
+// Initial test.
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "myShorthandAnim";
+shouldNotBe("Object.keys(style).indexOf('animation')", "-1");
+shouldNotBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
+shouldBe("style.animation", "'myShorthandAnim'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 0s ease 0s 1 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "none";
+shouldNotBe("Object.keys(style).indexOf('animation')", "-1");
+shouldNotBe("Object.keys(style).indexOf('webkitAnimation')", "-1");
+shouldBe("style.animation", "'none'");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'none'");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "none 20s";
+shouldBe("style.animation", "'20s none'");
+shouldBe("computedStyle.animation", "'none 20s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'20s none'");
+shouldBe("computedStyle.webkitAnimation", "'none 20s ease 0s 1 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim none 20s";
+shouldBe("style.animation", "'myShorthandAnim 20s none'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s none'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease 0s 1 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in none 20s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in none'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in none'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in 20s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 1 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in 20s 10s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
+// Let's double check here the delay and duration. As stated in the spec the first value parsed
+// is assigned to the duration.
+shouldBe("computedStyle.animationDuration", "'20s'");
+shouldBe("computedStyle.webkitAnimationDuration", "'20s'");
+shouldBe("computedStyle.animationDelay", "'10s'");
+shouldBe("computedStyle.webkitAnimationDelay", "'10s'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim 20s ease-in 10s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none running'");
+shouldBe("computedStyle.animationDuration", "'20s'");
+shouldBe("computedStyle.webkitAnimationDuration", "'20s'");
+shouldBe("computedStyle.animationDelay", "'10s'");
+shouldBe("computedStyle.webkitAnimationDelay", "'10s'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim paused 20s ease-in 10s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s paused'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s paused'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused'");
+shouldBe("computedStyle.animationDuration", "'20s'");
+shouldBe("computedStyle.webkitAnimationDuration", "'20s'");
+shouldBe("computedStyle.animationDelay", "'10s'");
+shouldBe("computedStyle.webkitAnimationDelay", "'10s'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in both 20s 5";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 both'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 normal both running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 both'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 normal both running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in 20s 5 backwards";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 backwards'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 normal backwards running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 backwards'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 normal backwards running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim forwards 20s 5";
+shouldBe("style.animation", "'myShorthandAnim 20s 5 forwards'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease 0s 5 normal forwards running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s 5 forwards'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease 0s 5 normal forwards running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in 20s 5";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim reverse ease-in 20s 5";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 reverse'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 reverse none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 reverse'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 reverse none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+// FIXME : https://code.google.com/p/chromium/issues/detail?id=273092
+/*style.animation = "ease-in ease-out 5s";
+shouldBe("style.animation", "'ease-in ease-out 5s'");
+shouldBe("computedStyle.animation", "'ease-in 0s ease-out 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'ease-in ease-out 5s'");
+shouldBe("computedStyle.webkitAnimation", "'ease-in 0s ease-out 0s 1 normal none running'");
+shouldBe("computedStyle.animationName", "'ease-in'");*/
+
+style.animation = "myShorthandAnim reverse ease-in backwards 20s 5 paused";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 5 reverse backwards paused'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 0s 5 reverse backwards paused'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 5 reverse backwards paused'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 0s 5 reverse backwards paused'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in 20s 10s, width cubic-bezier(0.32, 0, 1, 1) 10s 20s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none running, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none running, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
+// Let's double check here the delay and duration. As stated in the spec the first value parsed
+// is assigned to the duration.
+shouldBe("computedStyle.animationDuration", "'20s, 10s'");
+shouldBe("computedStyle.webkitAnimationDuration", "'20s, 10s'");
+shouldBe("computedStyle.animationDelay", "'10s, 20s'");
+shouldBe("computedStyle.webkitAnimationDelay", "'10s, 20s'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim ease-in 20s 10s paused, width cubic-bezier(0.32, 0, 1, 1) 10s 20s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal none paused, width 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal none running'");
+// Let's double check here the delay and duration. As stated in the spec the first value parsed
+// is assigned to the duration.
+shouldBe("computedStyle.animationDuration", "'20s, 10s'");
+shouldBe("computedStyle.webkitAnimationDuration", "'20s, 10s'");
+shouldBe("computedStyle.animationDelay", "'10s, 20s'");
+shouldBe("computedStyle.webkitAnimationDelay", "'10s, 20s'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim reverse ease-in 20s 10s paused, test cubic-bezier(0.32, 0, 1, 1) 10s 20s both";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s reverse paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s both'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 reverse none paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal both running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s reverse paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s both'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 reverse none paused, test 10s cubic-bezier(0.32, 0, 1, 1) 20s 1 normal both running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "none, none";
+shouldBe("style.animation", "'none, none'");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running, none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'none, none'");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running, none 0s ease 0s 1 normal none running'");
+
+style.animation = "ease-in test 20s 10s, none";
+shouldBe("style.animation", "'test 20s ease-in 10s, none'");
+shouldBe("computedStyle.animation", "'test 20s ease-in 10s 1 normal none running, none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'test 20s ease-in 10s, none'");
+shouldBe("computedStyle.webkitAnimation", "'test 20s ease-in 10s 1 normal none running, none 0s ease 0s 1 normal none running'");
+shouldBe("computedStyle.animationName", "'test, none'");
+
+style.animation = "none, ease-in test 20s 10s";
+shouldBe("style.animation", "'none, test 20s ease-in 10s'");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running, test 20s ease-in 10s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'none, test 20s ease-in 10s'");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running, test 20s ease-in 10s 1 normal none running'");
+shouldBe("computedStyle.animationName", "'none, test'");
+
+style.animation = "myShorthandAnim both 20s 10s ease-in paused, myShorthandAnim ease-out 20s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s both paused, myShorthandAnim 20s ease-out'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 1 normal both paused, myShorthandAnim 20s ease-out 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s both paused, myShorthandAnim 20s ease-out'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 1 normal both paused, myShorthandAnim 20s ease-out 0s 1 normal none running'");
+
+style.animation = "myShorthandAnim ease-in 4 20s 10s backwards, myShorthandAnim2 50 ease-out 20s";
+shouldBe("style.animation", "'myShorthandAnim 20s ease-in 10s 4 backwards, myShorthandAnim2 20s ease-out 50'");
+shouldBe("computedStyle.animation", "'myShorthandAnim 20s ease-in 10s 4 normal backwards running, myShorthandAnim2 20s ease-out 0s 50 normal none running'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 4 backwards, myShorthandAnim2 20s ease-out 50'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim 20s ease-in 10s 4 normal backwards running, myShorthandAnim2 20s ease-out 0s 50 normal none running'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+style.animation = "myShorthandAnim2 reverse ease-out 20s, ease-in myShorthandAnim 20s 10s paused";
+shouldBe("style.animation", "'myShorthandAnim2 20s ease-out reverse, myShorthandAnim 20s ease-in 10s paused'");
+shouldBe("computedStyle.animation", "'myShorthandAnim2 20s ease-out 0s 1 reverse none running, myShorthandAnim 20s ease-in 10s 1 normal none paused'");
+shouldBe("style.webkitAnimation", "'myShorthandAnim2 20s ease-out reverse, myShorthandAnim 20s ease-in 10s paused'");
+shouldBe("computedStyle.webkitAnimation", "'myShorthandAnim2 20s ease-out 0s 1 reverse none running, myShorthandAnim 20s ease-in 10s 1 normal none paused'");
+shouldBe("checkAnimationShorthandValue()", "true");
+
+debug("Invalid animation shorthand values.");
+style.animation = "";
+
+style.animation = "solid red";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "all 30s width ease-in";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "animName 30s ease-in 20s, 20px";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "test 30s ease-in 20s, step-start(2)";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "ease-in opacity 20s 10s myAnim, none";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+style.animation = "none, ease-in opacity 20s 10s myAnim";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");
+
+// FIXME : https://code.google.com/p/chromium/issues/detail?id=273092
+/*style.animation = "ease-in ease-otu 5s";
+shouldBe("style.animation", "''");
+shouldBe("computedStyle.animation", "'none 0s ease 0s 1 normal none running'");
+shouldBe("style.webkitAnimation", "''");
+shouldBe("computedStyle.webkitAnimation", "'none 0s ease 0s 1 normal none running'");*/
 
 document.body.removeChild(testContainer);
 </script>

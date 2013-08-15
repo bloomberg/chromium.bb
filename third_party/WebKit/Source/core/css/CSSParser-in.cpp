@@ -3087,7 +3087,7 @@ void CSSParser::addAnimationValue(RefPtr<CSSValue>& lval, PassRefPtr<CSSValue> r
 bool CSSParser::parseAnimationShorthand(CSSPropertyID propId, bool important)
 {
     const StylePropertyShorthand& animationProperties = parsingShorthandForProperty(propId);
-    const unsigned numProperties = 7;
+    const unsigned numProperties = 8;
 
     // The list of properties in the shorthand should be the same
     // length as the list with animation name in last position, even though they are
@@ -3127,10 +3127,6 @@ bool CSSParser::parseAnimationShorthand(CSSPropertyID propId, bool important)
                     break;
                 }
             }
-
-            // There are more values to process but 'none' or 'all' were already defined as the animation property, the declaration becomes invalid.
-            if (!context.animationPropertyKeywordAllowed() && context.hasCommittedFirstAnimation())
-                return false;
         }
 
         // if we didn't find at least one match, this is an

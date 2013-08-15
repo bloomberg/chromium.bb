@@ -54,6 +54,7 @@ const StylePropertyShorthand& animationShorthandForParsing()
         CSSPropertyAnimationIterationCount,
         CSSPropertyAnimationDirection,
         CSSPropertyAnimationFillMode,
+        CSSPropertyAnimationPlayState,
         CSSPropertyAnimationName
     };
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitAnimationLonghandsForParsing, (CSSPropertyAnimation, animationPropertiesForParsing, WTF_ARRAY_LENGTH(animationPropertiesForParsing)));
@@ -78,6 +79,7 @@ const StylePropertyShorthand& webkitAnimationShorthandForParsing()
         CSSPropertyWebkitAnimationIterationCount,
         CSSPropertyWebkitAnimationDirection,
         CSSPropertyWebkitAnimationFillMode,
+        CSSPropertyWebkitAnimationPlayState,
         CSSPropertyWebkitAnimationName
     };
     DEFINE_STATIC_LOCAL(StylePropertyShorthand, webkitAnimationLonghandsForParsing, (CSSPropertyWebkitAnimation, animationPropertiesForParsing, WTF_ARRAY_LENGTH(animationPropertiesForParsing)));

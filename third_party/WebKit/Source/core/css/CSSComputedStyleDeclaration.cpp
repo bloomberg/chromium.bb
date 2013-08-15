@@ -1189,6 +1189,40 @@ static PassRefPtr<CSSValue> getTimingFunctionValue(const CSSAnimationDataList* a
     return list.release();
 }
 
+static PassRefPtr<CSSValue> valueForAnimationFillMode(unsigned fillMode)
+{
+    switch (fillMode) {
+    case AnimationFillModeNone:
+        return cssValuePool().createIdentifierValue(CSSValueNone);
+    case AnimationFillModeForwards:
+        return cssValuePool().createIdentifierValue(CSSValueForwards);
+    case AnimationFillModeBackwards:
+        return cssValuePool().createIdentifierValue(CSSValueBackwards);
+    case AnimationFillModeBoth:
+        return cssValuePool().createIdentifierValue(CSSValueBoth);
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+}
+
+static PassRefPtr<CSSValue> valueForAnimationDirection(CSSAnimationData::AnimationDirection direction)
+{
+    switch (direction) {
+    case CSSAnimationData::AnimationDirectionNormal:
+        return cssValuePool().createIdentifierValue(CSSValueNormal);
+    case CSSAnimationData::AnimationDirectionAlternate:
+        return cssValuePool().createIdentifierValue(CSSValueAlternate);
+    case CSSAnimationData::AnimationDirectionReverse:
+        return cssValuePool().createIdentifierValue(CSSValueReverse);
+    case CSSAnimationData::AnimationDirectionAlternateReverse:
+        return cssValuePool().createIdentifierValue(CSSValueAlternateReverse);
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+}
+
 static PassRefPtr<CSSValue> createLineBoxContainValue(unsigned lineBoxContain)
 {
     if (!lineBoxContain)
@@ -2350,24 +2384,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const CSSAnimationDataList* t = style->animations();
             if (t) {
-                for (size_t i = 0; i < t->size(); ++i) {
-                    switch (t->animation(i)->direction()) {
-                    case CSSAnimationData::AnimationDirectionNormal:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueNormal));
-                        break;
-                    case CSSAnimationData::AnimationDirectionAlternate:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueAlternate));
-                        break;
-                    case CSSAnimationData::AnimationDirectionReverse:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueReverse));
-                        break;
-                    case CSSAnimationData::AnimationDirectionAlternateReverse:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueAlternateReverse));
-                        break;
-                    default:
-                        ASSERT_NOT_REACHED();
-                    }
-                }
+                for (size_t i = 0; i < t->size(); ++i)
+                    list->append(valueForAnimationDirection(t->animation(i)->direction()));
             } else
                 list->append(cssValuePool().createIdentifierValue(CSSValueNormal));
             return list.release();
@@ -2384,22 +2402,8 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             RefPtr<CSSValueList> list = CSSValueList::createCommaSeparated();
             const CSSAnimationDataList* t = style->animations();
             if (t) {
-                for (size_t i = 0; i < t->size(); ++i) {
-                    switch (t->animation(i)->fillMode()) {
-                    case AnimationFillModeNone:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueNone));
-                        break;
-                    case AnimationFillModeForwards:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueForwards));
-                        break;
-                    case AnimationFillModeBackwards:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueBackwards));
-                        break;
-                    case AnimationFillModeBoth:
-                        list->append(cssValuePool().createIdentifierValue(CSSValueBoth));
-                        break;
-                    }
-                }
+                for (size_t i = 0; i < t->size(); ++i)
+                    list->append(valueForAnimationFillMode(t->animation(i)->fillMode()));
             } else
                 list->append(cssValuePool().createIdentifierValue(CSSValueNone));
             return list.release();
@@ -2458,6 +2462,46 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 break;
         case CSSPropertyWebkitAnimationTimingFunction:
             return getTimingFunctionValue(style->animations());
+        case CSSPropertyAnimation:
+        case CSSPropertyWebkitAnimation: {
+            const CSSAnimationDataList* animations = style->animations();
+            if (animations) {
+                RefPtr<CSSValueList> animationsList = CSSValueList::createCommaSeparated();
+                for (size_t i = 0; i < animations->size(); ++i) {
+                    RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+                    const CSSAnimationData* animation = animations->animation(i);
+                    list->append(cssValuePool().createValue(animation->name(), CSSPrimitiveValue::CSS_STRING));
+                    list->append(cssValuePool().createValue(animation->duration(), CSSPrimitiveValue::CSS_S));
+                    list->append(createTimingFunctionValue(animation->timingFunction().get()));
+                    list->append(cssValuePool().createValue(animation->delay(), CSSPrimitiveValue::CSS_S));
+                    if (animation->iterationCount() == CSSAnimationData::IterationCountInfinite)
+                        list->append(cssValuePool().createIdentifierValue(CSSValueInfinite));
+                    else
+                        list->append(cssValuePool().createValue(animation->iterationCount(), CSSPrimitiveValue::CSS_NUMBER));
+                    list->append(valueForAnimationDirection(animation->direction()));
+                    list->append(valueForAnimationFillMode(animation->fillMode()));
+                    if (animation->playState() == AnimPlayStatePaused)
+                        list->append(cssValuePool().createIdentifierValue(CSSValuePaused));
+                    else
+                        list->append(cssValuePool().createIdentifierValue(CSSValueRunning));
+                    animationsList->append(list);
+                }
+                return animationsList.release();
+            }
+
+            RefPtr<CSSValueList> list = CSSValueList::createSpaceSeparated();
+            // animation-name default value.
+            list->append(cssValuePool().createIdentifierValue(CSSValueNone));
+            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDuration(), CSSPrimitiveValue::CSS_S));
+            list->append(createTimingFunctionValue(CSSAnimationData::initialAnimationTimingFunction().get()));
+            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationDelay(), CSSPrimitiveValue::CSS_S));
+            list->append(cssValuePool().createValue(CSSAnimationData::initialAnimationIterationCount(), CSSPrimitiveValue::CSS_NUMBER));
+            list->append(valueForAnimationDirection(CSSAnimationData::initialAnimationDirection()));
+            list->append(valueForAnimationFillMode(CSSAnimationData::initialAnimationFillMode()));
+            // Initial animation-play-state.
+            list->append(cssValuePool().createIdentifierValue(CSSValueRunning));
+            return list.release();
+        }
         case CSSPropertyWebkitAppearance:
             return cssValuePool().createValue(style->appearance());
         case CSSPropertyWebkitAspectRatio:
@@ -2810,8 +2854,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             break;
 
         /* Unimplemented -webkit- properties */
-        case CSSPropertyAnimation:
-        case CSSPropertyWebkitAnimation:
         case CSSPropertyWebkitBorderRadius:
         case CSSPropertyWebkitMarginCollapse:
         case CSSPropertyWebkitMarquee:
