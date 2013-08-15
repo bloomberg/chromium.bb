@@ -3,126 +3,201 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import json
+from copy import deepcopy
 import unittest
 
-from compiled_file_system import CompiledFileSystem
-from manifest_data_source import ManifestDataSource
-from object_store_creator import ObjectStoreCreator
-from test_file_system import TestFileSystem
+import manifest_data_source
 
-file_system = TestFileSystem({
-  "_manifest_features.json": json.dumps({
-    'req0': {
-      'extension_types': ['platform_app', 'extension']
-    },
-    'req1': {
-      'extension_types': 'all'
-    },
-    'opt0': {
-      'extension_types': ['extension']
-    },
-    'opt1': {
-      'extension_types': ['hosted_app']
-    },
-    'free0': {
-      'extension_types': ['platform_app']
-    },
-    'free1': {
-      'extension_types': ['platform_app', 'hosted_app', 'extension']
-    },
-    'only0': {
-      'extension_types': 'all'
-    },
-    'only1': {
-      'extension_types': ['platform_app']
-    },
-    'rec0': {
-    'extension_types': ['extension']
-    },
-    'rec1': {
-      'extension_types': ['platform_app', 'extension']
-    }
-  }),
-  "manifest.json": json.dumps({
-    'required': [
-      {
-        'name': 'req0',
-        'example': 'Extension'
+convert_and_annotate_docs = {
+  'name': {
+    'example': "My {{title}}",
+    'name': 'name',
+    'level': 'required'
+  },
+  'doc2': {
+    'level': 'required',
+    'name': 'doc2'
+  },
+  'doc1': {
+    'level': 'required',
+    'name': 'doc1',
+    'children': {
+      'sub1': {
+        'annotations': ['not so important'],
+        'level': 'optional',
+        'name': 'sub1'
       },
-      {'name': 'req1'}
-    ],
-    'only_one': [
-      {'name': 'only0'},
-      {'name': 'only1'}
-    ],
-    'recommended': [
-      {'name': 'rec0'},
-      {'name': 'rec1'}
-    ],
-    'optional': [
-      {'name': 'opt0'},
-      {'name': 'opt1'}
-    ]
-  })
-})
+      'sub2': {
+        'level': 'required',
+        'name': 'sub2'
+      }
+    }
+  },
+  'doc3': {
+    'level':  'only_one',
+    'name': 'doc3'
+  },
+  'doc4': {
+    'level': 'recommended',
+    'name': 'doc4'
+  },
+  'doc5': {
+    'level': 'only_one',
+    'name': 'doc5'
+  },
+  'doc6': {
+    'level': 'optional',
+    'name': 'doc6'
+  }
+}
 
 class ManifestDataSourceTest(unittest.TestCase):
-  def testCreateManifestData(self):
-    expected_extensions = {
-      'required': [
-        {
-          'name': 'req0',
-          'example': 'Extension'
-        },
-        {'name': 'req1'}
-      ],
-      'recommended': [
-        {'name': 'rec0'},
-        {'name': 'rec1'}
-      ],
-      'only_one': [
-        {'name': 'only0'}
-      ],
-      'optional': [
-        {'name': 'free1'},
-        {
-          'name': 'opt0',
-          'is_last': True
-        }
-      ]
+  def testListifyAndSortDocs(self):
+    expected_docs = [
+      {
+        'level': 'required',
+        'name': 'doc1',
+        'children': [
+          {
+            'level': 'required',
+            'name': 'sub2'
+          },
+          {
+            'annotations': ['not so important'],
+            'level': 'optional',
+            'name': 'sub1'
+          }
+        ]
+      },
+      {
+        'level': 'required',
+        'name': 'doc2'
+      },
+      {
+        'level': 'required',
+        'example': '"My App"',
+        'has_example': True,
+        'name': 'name'
+      },
+      {
+        'level': 'recommended',
+        'name': 'doc4'
+      },
+      {
+        'level': 'only_one',
+        'name': 'doc3'
+      },
+      {
+        'level': 'only_one',
+        'name': 'doc5'
+      },
+      {
+        'level': 'optional',
+        'name': 'doc6'
+      }
+    ]
+
+    self.assertEqual(expected_docs, manifest_data_source._ListifyAndSortDocs(
+        deepcopy(convert_and_annotate_docs), 'App'))
+
+  def testAnnotate(self):
+    expected_docs = [
+      {
+        'level': 'required',
+        'name': 'doc1',
+        'children': [
+          {
+            'level': 'required',
+            'name': 'sub2'
+          },
+          {
+            'annotations': ['Optional', 'not so important'],
+            'level': 'optional',
+            'name': 'sub1',
+            'is_last': True
+          }
+        ]
+      },
+      {
+        'level': 'required',
+        'name': 'doc2'
+      },
+      {
+        'name': 'name',
+        'level': 'required',
+        'example': '"My App"',
+        'has_example': True
+      },
+      {
+        'annotations': ['Recommended'],
+        'level': 'recommended',
+        'name': 'doc4'
+      },
+      {
+        'annotations': ['Pick one (or none)'],
+        'level': 'only_one',
+        'name': 'doc3'
+      },
+      {
+        'level': 'only_one',
+        'name': 'doc5'
+      },
+      {
+        'annotations': ['Optional'],
+        'level': 'optional',
+        'name': 'doc6',
+        'is_last': True
+      }
+    ]
+
+    annotated = manifest_data_source._ListifyAndSortDocs(
+        deepcopy(convert_and_annotate_docs), 'App')
+    manifest_data_source._AddLevelAnnotations(annotated)
+    self.assertEqual(expected_docs, annotated)
+
+  def testRestructureChildren(self):
+    docs = {
+      'doc1.sub2': {
+        'name': 'doc1.sub2'
+      },
+      'doc1': {
+        'name': 'doc1'
+      },
+      'doc2': {
+        'name': 'doc2'
+      },
+      'doc1.sub1.subsub1': {
+        'name': 'doc1.sub1.subsub1'
+      },
+      'doc1.sub1': {
+        'name': 'doc1.sub1'
+      }
     }
 
-    expected_apps = {
-      'required': [
-        {
-          'name': 'req0',
-          'example': 'Application'
-        },
-        {'name': 'req1'}
-      ],
-      'recommended': [
-        {'name': 'rec1'}
-      ],
-      'only_one': [
-        {'name': 'only0'},
-        {'name': 'only1'}
-      ],
-      'optional': [
-        {'name': 'free0'},
-        {
-          'name': 'free1',
-          'is_last': True
+    expected_docs = {
+      'doc1': {
+        'name': 'doc1',
+        'children': {
+          'sub1': {
+            'name': 'sub1',
+            'children': {
+              'subsub1': {
+                'name' :'subsub1'
+              }
+            }
+          },
+          'sub2': {
+            'name': 'sub2'
+          }
         }
-      ]
+      },
+      'doc2': {
+        'name': 'doc2'
+      }
     }
 
-    mds = ManifestDataSource(
-        CompiledFileSystem.Factory(file_system, ObjectStoreCreator.ForTest()),
-        file_system, 'manifest.json', '_manifest_features.json')
-
-    self.assertEqual(expected_extensions, mds.get('extensions'))
-    self.assertEqual(expected_apps, mds.get('apps'))
+    self.assertEqual(
+        expected_docs, manifest_data_source._RestructureChildren(docs))
 
 if __name__ == '__main__':
   unittest.main()

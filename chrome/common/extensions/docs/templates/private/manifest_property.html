@@ -1,0 +1,13 @@
+{{?annotations}}
+{{#annotations}}
+<em>// {{@}}</em>
+{{/annotations}}
+{{/annotations}}
+{{?documentation}}
+"<a href="{{documentation}}">{{name}}</a>":{{:documentation}}
+"{{name}}":{{^children}} ...{{/}}{{/documentation}}
+{{?children}} {
+{{#children}}
+  {{+partials.manifest_property}}
+{{/}}
+}{{:children}}{{?has_example}} {{example}}{{/}}{{/}}{{^is_last}},{{/}}
