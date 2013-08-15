@@ -67,7 +67,7 @@ bool BlockingUrlProtocol::GetPosition(int64* position_out) {
 
 bool BlockingUrlProtocol::SetPosition(int64 position) {
   int64 file_size;
-  if ((data_source_->GetSize(&file_size) && position >= file_size) ||
+  if ((data_source_->GetSize(&file_size) && position > file_size) ||
       position < 0) {
     return false;
   }

@@ -35,7 +35,7 @@ bool InMemoryUrlProtocol::GetPosition(int64* position_out) {
 }
 
 bool InMemoryUrlProtocol::SetPosition(int64 position) {
-  if (position < 0 || position >= size_)
+  if (position < 0 || position > size_)
     return false;
   position_ = position;
   return true;

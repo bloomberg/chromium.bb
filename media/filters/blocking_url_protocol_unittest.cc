@@ -90,11 +90,14 @@ TEST_F(BlockingUrlProtocolTest, GetSetPosition) {
   EXPECT_TRUE(url_protocol_.GetPosition(&position));
 
   EXPECT_TRUE(url_protocol_.SetPosition(512));
-  EXPECT_FALSE(url_protocol_.SetPosition(size));
   EXPECT_FALSE(url_protocol_.SetPosition(size + 1));
   EXPECT_FALSE(url_protocol_.SetPosition(-1));
   EXPECT_TRUE(url_protocol_.GetPosition(&position));
   EXPECT_EQ(512, position);
+
+  EXPECT_TRUE(url_protocol_.SetPosition(size));
+  EXPECT_TRUE(url_protocol_.GetPosition(&position));
+  EXPECT_EQ(size, position);
 }
 
 TEST_F(BlockingUrlProtocolTest, GetSize) {
