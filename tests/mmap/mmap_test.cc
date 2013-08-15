@@ -291,6 +291,41 @@ bool test_mprotect() {
   return true;
 }
 
+bool test_mprotect_offset() {
+  printf("test_mprotect_offset\n");
+  /*
+   * Note that, on Windows, NaCl's mprotect() has different code paths
+   * for anonymous and file-backed mappings.  This test case only
+   * covers the anonymous case.
+   */
+  size_t map_size = 0x40000;
+  volatile char *addr = (char *) mmap(NULL, map_size, PROT_READ | PROT_WRITE,
+                                      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  assert(addr != MAP_FAILED);
+  printf("mmap done\n");
+  /* Change the protection to make the pages unreadable. */
+  int rc = mprotect((char *) addr + 0x20000, 0x20000, PROT_NONE);
+  assert(rc == 0);
+  addr[0] = '5';
+  assert('5' == addr[0]);
+  assert_addr_is_unreadable(addr + 0x20000);
+  assert_addr_is_unreadable(addr + 0x30000);
+  /* Change the protection to make the pages read-only. */
+  rc = mprotect((char *) addr, 0x20000, PROT_READ);
+  assert(rc == 0);
+  assert_addr_is_unwritable(addr, '9');
+  assert('5' == addr[0]);
+  /* Change the protection to make the pages accessible again. */
+  rc = mprotect((char *) addr + 0x10000, 0x20000, PROT_READ | PROT_WRITE);
+  assert(rc == 0);
+  *(addr + 0x20000) = '7';
+  printf("mprotect good\n");
+  /* We can still munmap() the memory. */
+  rc = munmap((char *) addr, map_size);
+  assert(rc == 0);
+  return true;
+}
+
 /*
  *   Verify that mprotect() fails when changing protection of unmapped
  *   memory region.
@@ -409,6 +444,7 @@ bool testSuite() {
 
   ret &= test_munmap();
   ret &= test_mprotect();
+  ret &= test_mprotect_offset();
   ret &= test_mprotect_unmapped_memory();
   ret &= test_mmap_end_of_file();
 

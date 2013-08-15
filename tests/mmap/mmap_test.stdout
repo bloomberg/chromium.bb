@@ -13,6 +13,9 @@ test_munmap
 test_mprotect
 mmap done
 mprotect good
+test_mprotect_offset
+mmap done
+mprotect good
 test_mprotect_unmapped_memory
 mmap done
 munmap done

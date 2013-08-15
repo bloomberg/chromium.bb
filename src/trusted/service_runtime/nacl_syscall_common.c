@@ -2199,7 +2199,6 @@ static int32_t MprotectInternal(struct NaClApp *nap,
 #else
 static int32_t MprotectInternal(struct NaClApp *nap,
                                 uintptr_t sysaddr, size_t length, int prot) {
-  uintptr_t               addr;
   uintptr_t               usraddr;
   uintptr_t               last_page_num;
   int                     host_prot;
@@ -2211,16 +2210,23 @@ static int32_t MprotectInternal(struct NaClApp *nap,
   usraddr = NaClSysToUser(nap, sysaddr);
   last_page_num = (usraddr + length) >> NACL_PAGESHIFT;
 
-  for (NaClVmmapFindPageIter(&nap->mem_map,
-                             usraddr >> NACL_PAGESHIFT,
-                             &iter);
-       !NaClVmmapIterAtEnd(&iter) &&
-         (entry = NaClVmmapIterStar(&iter))->page_num < last_page_num;
-       NaClVmmapIterIncr(&iter)) {
-    size_t entry_len = entry->npages << NACL_PAGESHIFT;
+  NaClVmmapFindPageIter(&nap->mem_map,
+                        usraddr >> NACL_PAGESHIFT,
+                        &iter);
+  entry = NaClVmmapIterStar(&iter);
 
-    usraddr = entry->page_num << NACL_PAGESHIFT;
-    addr = NaClUserToSys(nap, usraddr);
+  CHECK(usraddr == (entry->page_num << NACL_PAGESHIFT));
+
+  for (; !NaClVmmapIterAtEnd(&iter) &&
+           (NaClVmmapIterStar(&iter))->page_num < last_page_num;
+       NaClVmmapIterIncr(&iter)) {
+    uintptr_t addr;
+    size_t    entry_len;
+
+    entry = NaClVmmapIterStar(&iter);
+
+    addr = NaClUserToSys(nap, entry->page_num << NACL_PAGESHIFT);
+    entry_len = entry->npages << NACL_PAGESHIFT;
 
     NaClLog(3, "MprotectInternal: "
             "addr 0x%08"NACL_PRIxPTR", desc 0x%08"NACL_PRIxPTR"\n",
@@ -2248,6 +2254,8 @@ static int32_t MprotectInternal(struct NaClApp *nap,
       }
     }
   }
+
+  CHECK((entry->page_num + entry->npages) == last_page_num);
 
   return 0;
 }
@@ -2283,21 +2291,22 @@ int32_t NaClSysMprotectInternal(struct NaClApp  *nap,
 
   holding_app_lock = 1;
 
-  if (!NaClVmmapCheckExistingMapping(
-           &nap->mem_map, NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
-           length >> NACL_PAGESHIFT, prot)) {
-    NaClLog(4, "mprotect: no such region\n");
-    retval = -NACL_ABI_EACCES;
-    goto cleanup;
-  }
-
   /*
    * User should be unable to change protection of any executable pages.
    */
   if (NaClSysCommonAddrRangeContainsExecutablePages(nap,
                                                     (uintptr_t) start,
                                                     length)) {
-    NaClLog(2, "NaClSysMprotect: region contains executable pages\n");
+    NaClLog(2, "mprotect: region contains executable pages\n");
+    retval = -NACL_ABI_EACCES;
+    goto cleanup;
+  }
+
+  if (!NaClVmmapChangeProt(&nap->mem_map,
+                           NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
+                           length >> NACL_PAGESHIFT,
+                           prot)) {
+    NaClLog(4, "mprotect: no such region\n");
     retval = -NACL_ABI_EACCES;
     goto cleanup;
   }
@@ -2307,13 +2316,6 @@ int32_t NaClSysMprotectInternal(struct NaClApp  *nap,
                           (uint32_t) ((uintptr_t) start + length - 1));
 
   retval = MprotectInternal(nap, sysaddr, length, prot);
-  if (retval == 0 &&
-      !NaClVmmapChangeProt(&nap->mem_map,
-                           NaClSysToUser(nap, sysaddr) >> NACL_PAGESHIFT,
-                           length >> NACL_PAGESHIFT,
-                           prot)) {
-    retval = -NACL_ABI_EACCES;
-  }
 cleanup:
   if (holding_app_lock) {
     NaClXMutexUnlock(&nap->mu);
