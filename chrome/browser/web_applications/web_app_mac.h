@@ -52,7 +52,8 @@ class WebAppShortcutCreator {
   // folder. E.g. ~/Applications or /Applications.
   virtual base::FilePath GetDestinationPath() const;
 
-  bool CreateShortcuts(ShortcutCreationReason creation_reason);
+  bool CreateShortcuts(ShortcutCreationReason creation_reason,
+                       ShellIntegration::ShortcutLocations creation_locations);
   void DeleteShortcuts();
   bool UpdateShortcuts();
 

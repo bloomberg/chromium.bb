@@ -420,7 +420,8 @@ size_t WebAppShortcutCreator::CreateShortcutsIn(
 }
 
 bool WebAppShortcutCreator::CreateShortcuts(
-    ShortcutCreationReason creation_reason) {
+    ShortcutCreationReason creation_reason,
+    ShellIntegration::ShortcutLocations creation_locations) {
   const base::FilePath applications_path = GetDestinationPath();
   if (applications_path.empty() ||
       !base::DirectoryExists(applications_path.DirName())) {
@@ -461,7 +462,7 @@ bool WebAppShortcutCreator::CreateShortcuts(
   if (success_count != paths.size())
     return false;
 
-  if (path_to_add_to_dock)
+  if (creation_locations.in_quick_launch_bar && path_to_add_to_dock)
     dock::AddIcon(path_to_add_to_dock, nil);
 
   if (creation_reason == SHORTCUT_CREATION_BY_USER)
@@ -723,7 +724,7 @@ bool CreatePlatformShortcuts(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   WebAppShortcutCreator shortcut_creator(
       app_data_path, shortcut_info, base::mac::BaseBundleID());
-  return shortcut_creator.CreateShortcuts(creation_reason);
+  return shortcut_creator.CreateShortcuts(creation_reason, creation_locations);
 }
 
 void DeletePlatformShortcuts(

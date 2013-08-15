@@ -8,6 +8,7 @@
 #include "apps/app_launcher.h"
 #include "apps/app_shim/app_shim_handler_mac.h"
 #include "apps/app_shim/app_shim_mac.h"
+#include "apps/pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -46,6 +47,9 @@ class ImageSkia;
 }
 
 namespace {
+
+// Version of the app list shortcut version installed.
+const int kShortcutVersion = 1;
 
 // AppListServiceMac manages global resources needed for the app list to
 // operate, and controls when the app list is opened and closed.
@@ -172,10 +176,24 @@ void CreateAppListShim(const base::FilePath& profile_path) {
         *resource_bundle.GetImageSkiaNamed(IDR_APP_LIST_256));
   }
 
-  // TODO(tapted): Create a dock icon using chrome/browser/mac/dock.h .
+  ShellIntegration::ShortcutLocations shortcut_locations;
+  PrefService* local_state = g_browser_process->local_state();
+  int installed_version =
+      local_state->GetInteger(apps::prefs::kAppLauncherShortcutVersion);
+
+  // If this is a first-time install, add a dock icon. Otherwise just update
+  // the target, and wait for OSX to refresh its icon caches. This might not
+  // occur until a reboot, but OSX does not offer a nicer way. Deleting cache
+  // files on disk and killing processes can easily result in icon corruption.
+  if (installed_version == 0)
+    shortcut_locations.in_quick_launch_bar = true;
+
   web_app::CreateShortcuts(shortcut_info,
-                           ShellIntegration::ShortcutLocations(),
+                           shortcut_locations,
                            web_app::SHORTCUT_CREATION_AUTOMATED);
+
+  local_state->SetInteger(apps::prefs::kAppLauncherShortcutVersion,
+                          kShortcutVersion);
 }
 
 // Check that there is an app list shim. If enabling and there is not, make one.
@@ -277,12 +295,21 @@ void AppListServiceMac::Init(Profile* initial_profile) {
   if (initial_profile && !init_called_with_profile) {
     init_called_with_profile = true;
     HandleCommandLineFlags(initial_profile);
+    PrefService* local_state = g_browser_process->local_state();
     if (!apps::IsAppLauncherEnabled()) {
+      local_state->SetInteger(apps::prefs::kAppLauncherShortcutVersion, 0);
+
       // Not yet enabled via the Web Store. Check for the chrome://flag.
       content::BrowserThread::PostTask(
           content::BrowserThread::FILE, FROM_HERE,
           base::Bind(&CheckAppListShimOnFileThread,
                      initial_profile->GetPath()));
+    } else {
+      int installed_shortcut_version =
+          local_state->GetInteger(apps::prefs::kAppLauncherShortcutVersion);
+
+      if (kShortcutVersion > installed_shortcut_version)
+        CreateShortcut();
     }
   }
 
