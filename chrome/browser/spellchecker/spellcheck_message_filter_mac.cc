@@ -79,6 +79,7 @@ SpellingRequest::SpellingRequest(SpellingServiceClient* client,
                                  int render_process_id)
     : local_pending_(true),
       remote_pending_(true),
+      remote_success_(false),
       client_(client),
       destination_(destination),
       render_process_id_(render_process_id),
