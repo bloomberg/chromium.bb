@@ -288,8 +288,21 @@ void LocationBarView::Init() {
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
   ime_inline_autocomplete_view_ = new views::Label(string16(), font);
-  ime_inline_autocomplete_view_->set_border(
-      views::Border::CreateEmptyBorder(font_y_offset, 0, 0, 0));
+  {
+    // views::Label (|ime_inline_autocomplete_view_|) supports only gfx::Font
+    // and ignores the rest of fonts but the first in |font_list| while
+    // views::Textfield (|location_entry_view_|) supports gfx::FontList and
+    // layouts text based on all fonts in the list.  Thus the font height and
+    // baseline can be different between them.  We add padding to align them
+    // on the same baseline.
+    // TODO(yukishiino): Remove this hack once views::Label supports
+    // gfx::FontList.
+    const int baseline_diff = location_entry_view_->GetBaseline() -
+        ime_inline_autocomplete_view_->GetBaseline();
+    ime_inline_autocomplete_view_->set_border(
+        views::Border::CreateEmptyBorder(
+            font_y_offset + baseline_diff, 0, 0, 0));
+  }
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
   ime_inline_autocomplete_view_->set_background(
