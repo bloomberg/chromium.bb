@@ -4920,10 +4920,7 @@ display_add_input(struct display *d, uint32_t id)
 {
 	struct input *input;
 
-	input = zalloc(sizeof *input);
-	if (input == NULL)
-		return;
-
+	input = xzalloc(sizeof *input);
 	input->display = d;
 	input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
 	input->pointer_focus = NULL;
