@@ -281,6 +281,10 @@ touch_create(int width, int height)
 	struct touch *touch;
 
 	touch = malloc(sizeof *touch);
+	if (touch == NULL) {
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+	}
 	touch->display = wl_display_connect(NULL);
 	assert(touch->display);
 
