@@ -335,6 +335,10 @@ create_display(void)
 	struct display *display;
 
 	display = malloc(sizeof *display);
+	if (display == NULL) {
+		fprintf(stderr, "out of memory\n");
+		exit(1);
+	}
 	display->display = wl_display_connect(NULL);
 	assert(display->display);
 
