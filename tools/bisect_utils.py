@@ -225,6 +225,23 @@ def RemoveThirdPartyWebkitDirectory():
   return True
 
 
+def RemoveThirdPartyLibjingleDirectory():
+  """Removes third_party/libjingle. At some point, libjingle was causing issues
+  syncing when using the git workflow (crbug.com/266324).
+
+  Returns:
+    True on success.
+  """
+  try:
+    path_to_dir = os.path.join(os.getcwd(), 'third_party', 'libjingle')
+    if os.path.exists(path_to_dir):
+      shutil.rmtree(path_to_dir)
+  except OSError, e:
+    if e.errno != errno.ENOENT:
+      return False
+  return True
+
+
 def RunGClientAndSync(cwd=None):
   """Runs gclient and does a normal sync.
 
@@ -265,6 +282,8 @@ def SetupGitDepot(opts):
         passed_deps_check = RemoveThirdPartyWebkitDirectory()
       else:
         passed_deps_check = True
+      if passed_deps_check:
+        passed_deps_check = RemoveThirdPartyLibjingleDirectory()
       os.chdir(cwd)
 
     if passed_deps_check:

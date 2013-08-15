@@ -1245,6 +1245,8 @@ class BisectPerformanceMetrics(object):
       True if successful.
     """
     if depot == 'chromium':
+      if not bisect_utils.RemoveThirdPartyLibjingleDirectory():
+        return False
       return self.PerformWebkitDirectoryCleanup(revision)
     elif depot == 'cros':
       return self.PerformCrosChrootCleanup()
