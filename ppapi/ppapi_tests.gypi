@@ -219,9 +219,6 @@
           ['os_posix==1 and OS!="mac"', {
             'cflags': ['-fvisibility=hidden'],
             'type': 'shared_library',
-            # -gstabs, used in the official builds, causes an ICE. Simply remove
-            # it.
-            'cflags!': ['-gstabs'],
           }],
           ['OS=="win"', {
             'type': 'shared_library',
