@@ -36,7 +36,14 @@ class PPAPI_SHARED_EXPORT ResourceTracker {
   // count of the resource is unaffected.
   Resource* GetResource(PP_Resource res) const;
 
+  // Takes a reference on the given resource.
+  // Do not call this method on on the host side for resources backed by a
+  // ResourceHost.
   void AddRefResource(PP_Resource res);
+
+  // Releases a reference on the given resource.
+  // Do not call this method on on the host side for resources backed by a
+  // ResourceHost.
   void ReleaseResource(PP_Resource res);
 
   // Releases a reference on the given resource once the message loop returns.
