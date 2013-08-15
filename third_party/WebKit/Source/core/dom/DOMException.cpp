@@ -86,34 +86,27 @@ static const CoreException* getErrorEntry(ExceptionCode ec)
     return tableIndex < tableSize ? &coreExceptions[tableIndex] : 0;
 }
 
-DOMException::DOMException(unsigned short code, const String& name, const String& sanitizedMessage, const String& unsanitizedMessage)
+DOMException::DOMException(unsigned short code, const String& name, const String& message)
 {
     ASSERT(name);
     m_code = code;
     m_name = name;
-    m_sanitizedMessage = sanitizedMessage;
-    m_unsanitizedMessage = unsanitizedMessage;
+    m_message = message;
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<DOMException> DOMException::create(ExceptionCode ec, const String& sanitizedMessage, const String& unsanitizedMessage)
+PassRefPtr<DOMException> DOMException::create(ExceptionCode ec, const String& message)
 {
     const CoreException* entry = getErrorEntry(ec);
     ASSERT(entry);
     return adoptRef(new DOMException(entry->code,
         entry->name ? entry->name : "Error",
-        sanitizedMessage.isNull() ? String(entry->message) : sanitizedMessage,
-        unsanitizedMessage));
+        message.isNull() ? String(entry->message) : message));
 }
 
 String DOMException::toString() const
 {
     return name() + ": " + message();
-}
-
-String DOMException::toStringForConsole() const
-{
-    return name() + ": " + messageForConsole();
 }
 
 String DOMException::getErrorName(ExceptionCode ec)

@@ -1,38 +1,39 @@
 <html>
 <head>
     <script>
-        if (window.testRunner) {
-            testRunner.dumpAsText();
-            testRunner.dumpChildFramesAsText();
-            testRunner.waitUntilDone();
-        }
+        window.onload = function()
+        {
+            if (window.testRunner) {
+                testRunner.dumpAsText();
+                testRunner.dumpChildFramesAsText();
+                testRunner.waitUntilDone();
+            }
 
-        window.addEventListener('message', function() {
-            runTest();
-            if (window.testRunner)
-                testRunner.notifyDone();
-        });
-        
-        setFrameLocation = function(url) {
-            var frame = document.getElementById('aFrame');
-            var jsErrorMessage = 'Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.';
-            try {
-                frame.location = url;
-            } catch (e) {
-                console.log("Caught exception while setting frame's location to '" + url + "'. '" + e + "'.");
-                if (e.message == jsErrorMessage)
-                    console.log("PASS: Exception was '" + e.message + "'.");
-                else
-                    console.log("FAIL: Exception should have been '" + jsErrorMessage + "', was '" + e.message + "'.");
+            if (window.testRunner) {
+                setTimeout(pollForTest, 1);
+            } else {
+                alert("This test requires it be run in DRT.");
             }
         }
 
-        function runTest() {
-            setFrameLocation('javascript:"FAIL: this should not have been loaded."');
-            setFrameLocation(' javascript:"FAIL: this should not have been loaded."');
-            setFrameLocation('java\0script:"FAIL: this should not have been loaded."');
-            setFrameLocation('javascript\t:"FAIL: this should not have been loaded."');
-            setFrameLocation('javascript\1:"FAIL: this should not have been loaded."');
+        pollForTest = function()
+        {
+            if (!testRunner.globalFlag) {
+                setTimeout(pollForTest, 1);
+                return;
+            }
+            runTest();
+            testRunner.notifyDone();
+        }
+
+        runTest = function()
+        {
+            var frame = document.getElementById('aFrame');
+            frame.location = 'javascript:"FAIL: this should not have been loaded."';
+            frame.location = ' javascript:"FAIL: this should not have been loaded."';
+            frame.location = 'java\0script:"FAIL: this should not have been loaded."';
+            frame.location = 'javascript\t:"FAIL: this should not have been loaded."';
+            frame.location = 'javascript\1:"FAIL: this should not have been loaded."';
         }
     </script>
 </head>

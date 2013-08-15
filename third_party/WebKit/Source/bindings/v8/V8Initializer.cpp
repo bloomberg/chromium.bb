@@ -26,7 +26,6 @@
 #include "config.h"
 #include "bindings/v8/V8Initializer.h"
 
-#include "V8DOMException.h"
 #include "V8ErrorEvent.h"
 #include "V8History.h"
 #include "V8Location.h"
@@ -100,18 +99,8 @@ static void messageHandlerInMainThread(v8::Handle<v8::Message> message, v8::Hand
     v8::Handle<v8::Value> resourceName = message->GetScriptResourceName();
     bool shouldUseDocumentURL = resourceName.IsEmpty() || !resourceName->IsString();
     String resource = shouldUseDocumentURL ? firstWindow->document()->url() : toWebCoreString(resourceName);
-    AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
-
     RefPtr<ErrorEvent> event = ErrorEvent::create(errorMessage, resource, message->GetLineNumber(), message->GetStartColumn());
-    if (data->IsObject()) {
-        v8::Handle<v8::Object> obj = v8::Handle<v8::Object>::Cast(data);
-        WrapperTypeInfo* type = toWrapperTypeInfo(obj);
-        if (V8DOMException::info.isSubclass(type)) {
-            DOMException* exception = V8DOMException::toNative(obj);
-            if (exception && !exception->messageForConsole().isEmpty())
-                event->setUnsanitizedMessage("Uncaught " + exception->toStringForConsole());
-        }
-    }
+    AccessControlStatus corsStatus = message->IsSharedCrossOrigin() ? SharableCrossOrigin : NotSharableCrossOrigin;
 
     // This method might be called while we're creating a new context. In this case, we
     // avoid storing the exception object, as we can't create a wrapper during context creation.

@@ -50,7 +50,7 @@ ErrorEvent::ErrorEvent()
 
 ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializer)
     : Event(type, initializer)
-    , m_sanitizedMessage(initializer.message)
+    , m_message(initializer.message)
     , m_fileName(initializer.filename)
     , m_lineNumber(initializer.lineno)
     , m_columnNumber(initializer.colno)
@@ -60,18 +60,12 @@ ErrorEvent::ErrorEvent(const AtomicString& type, const ErrorEventInit& initializ
 
 ErrorEvent::ErrorEvent(const String& message, const String& fileName, unsigned lineNumber, unsigned columnNumber)
     : Event(eventNames().errorEvent, false, true)
-    , m_sanitizedMessage(message)
+    , m_message(message)
     , m_fileName(fileName)
     , m_lineNumber(lineNumber)
     , m_columnNumber(columnNumber)
 {
     ScriptWrappable::init(this);
-}
-
-void ErrorEvent::setUnsanitizedMessage(const String& message)
-{
-    ASSERT(m_unsanitizedMessage.isEmpty());
-    m_unsanitizedMessage = message;
 }
 
 ErrorEvent::~ErrorEvent()

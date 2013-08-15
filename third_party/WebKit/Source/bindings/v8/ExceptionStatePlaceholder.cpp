@@ -50,11 +50,6 @@ void NoExceptionStateAssertionChecker::throwTypeError(const String&)
     ASSERT_AT(false, m_file, m_line, "");
 }
 
-void NoExceptionStateAssertionChecker::throwSecurityError(const String&, const String&)
-{
-    ASSERT_AT(false, m_file, m_line, "");
-}
-
 #endif
 
 } // namespace WebCore
