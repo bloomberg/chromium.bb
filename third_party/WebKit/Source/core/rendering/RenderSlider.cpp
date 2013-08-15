@@ -21,7 +21,9 @@
 #include "config.h"
 #include "core/rendering/RenderSlider.h"
 
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
 #include "wtf/MathExtras.h"
 
@@ -88,12 +90,17 @@ void RenderSlider::computePreferredLogicalWidths()
     setPreferredLogicalWidthsDirty(false);
 }
 
+inline SliderThumbElement* RenderSlider::sliderThumbElement() const
+{
+    return toSliderThumbElement(toElement(node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb()));
+}
+
 void RenderSlider::layout()
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
     // FIXME: Find a way to cascade appearance.
     // http://webkit.org/b/62535
-    RenderBox* thumbBox = sliderThumbElementOf(node())->renderBox();
+    RenderBox* thumbBox = sliderThumbElement()->renderBox();
     if (thumbBox && thumbBox->isSliderThumb())
         static_cast<RenderSliderThumb*>(thumbBox)->updateAppearance(style());
 
@@ -102,7 +109,7 @@ void RenderSlider::layout()
 
 bool RenderSlider::inDragMode() const
 {
-    return sliderThumbElementOf(node())->active();
+    return sliderThumbElement()->active();
 }
 
 } // namespace WebCore

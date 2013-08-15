@@ -188,16 +188,6 @@ HTMLElement* HTMLInputElement::passwordGeneratorButtonElement() const
     return m_inputType->passwordGeneratorButtonElement();
 }
 
-HTMLElement* HTMLInputElement::sliderThumbElement() const
-{
-    return m_inputType->sliderThumbElement();
-}
-
-HTMLElement* HTMLInputElement::sliderTrackElement() const
-{
-    return m_inputType->sliderTrackElement();
-}
-
 HTMLElement* HTMLInputElement::placeholderElement() const
 {
     return m_inputType->placeholderElement();

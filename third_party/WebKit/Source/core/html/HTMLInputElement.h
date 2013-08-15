@@ -121,8 +121,6 @@ public:
     HTMLElement* containerElement() const;
     virtual HTMLElement* innerTextElement() const;
     HTMLElement* innerBlockElement() const;
-    HTMLElement* sliderThumbElement() const;
-    HTMLElement* sliderTrackElement() const;
     HTMLElement* passwordGeneratorButtonElement() const;
     virtual HTMLElement* placeholderElement() const;
 

@@ -48,6 +48,8 @@ private:
     virtual void computePreferredLogicalWidths() OVERRIDE;
     virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
     virtual void layout();
+
+    SliderThumbElement* sliderThumbElement() const;
 };
 
 inline RenderSlider* toRenderSlider(RenderObject* object)

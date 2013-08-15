@@ -30,8 +30,10 @@
 #include "core/accessibility/AccessibilitySlider.h"
 
 #include "core/accessibility/AXObjectCache.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/shadow/SliderThumbElement.h"
+#include "core/html/shadow/ShadowElementNames.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 
@@ -161,7 +163,7 @@ LayoutRect AccessibilitySliderThumb::elementRect() const
     RenderObject* sliderRenderer = m_parent->renderer();
     if (!sliderRenderer || !sliderRenderer->isSlider())
         return LayoutRect();
-    return sliderThumbElementOf(sliderRenderer->node())->boundingBox();
+    return toElement(sliderRenderer->node())->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->boundingBox();
 }
 
 bool AccessibilitySliderThumb::computeAccessibilityIsIgnored() const

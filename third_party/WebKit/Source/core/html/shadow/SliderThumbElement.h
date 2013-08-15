@@ -73,17 +73,6 @@ private:
     bool m_inDragMode;
 };
 
-inline SliderThumbElement::SliderThumbElement(Document* document)
-    : HTMLDivElement(HTMLNames::divTag, document)
-    , m_inDragMode(false)
-{
-}
-
-inline PassRefPtr<SliderThumbElement> SliderThumbElement::create(Document* document)
-{
-    return adoptRef(new SliderThumbElement(document));
-}
-
 inline PassRefPtr<Element> SliderThumbElement::cloneElementWithoutAttributesAndChildren()
 {
     return create(document());
@@ -94,11 +83,6 @@ inline SliderThumbElement* toSliderThumbElement(Node* node)
     ASSERT_WITH_SECURITY_IMPLICATION(!node || node->isHTMLElement());
     return static_cast<SliderThumbElement*>(node);
 }
-
-// This always return a valid pointer.
-// An assertion fails if the specified node is not a range input.
-SliderThumbElement* sliderThumbElementOf(Node*);
-HTMLElement* sliderTrackElementOf(Node*);
 
 // --------------------------------
 

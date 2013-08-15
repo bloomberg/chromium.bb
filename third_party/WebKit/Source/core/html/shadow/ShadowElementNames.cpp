@@ -65,6 +65,18 @@ const AtomicString& searchDecoration()
     return name;
 }
 
+const AtomicString& sliderThumb()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("thumb", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
+const AtomicString& sliderTrack()
+{
+    DEFINE_STATIC_LOCAL(AtomicString, name, ("track", AtomicString::ConstructFromLiteral));
+    return name;
+}
+
 const AtomicString& speechButton()
 {
     DEFINE_STATIC_LOCAL(AtomicString, name, ("speech", AtomicString::ConstructFromLiteral));

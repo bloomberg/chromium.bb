@@ -67,8 +67,8 @@ private:
     virtual String fallbackValue() const OVERRIDE;
     virtual String sanitizeValue(const String& proposedValue) const OVERRIDE;
     virtual bool shouldRespectListAttribute() OVERRIDE;
-    virtual HTMLElement* sliderThumbElement() const OVERRIDE;
-    virtual HTMLElement* sliderTrackElement() const OVERRIDE;
+    SliderThumbElement* sliderThumbElement() const;
+    Element* sliderTrackElement() const;
     virtual void listAttributeTargetChanged() OVERRIDE;
     void updateTickMarkValues();
     virtual Decimal findClosestTickMarkValue(const Decimal&) OVERRIDE;

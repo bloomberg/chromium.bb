@@ -39,6 +39,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderFlexibleBox.h"
@@ -67,26 +68,6 @@ inline static bool hasVerticalAppearance(HTMLInputElement* input)
         return true;
 
     return sliderStyle->appearance() == SliderVerticalPart;
-}
-
-SliderThumbElement* sliderThumbElementOf(Node* node)
-{
-    RELEASE_ASSERT(node->hasTagName(inputTag));
-    ShadowRoot* shadow = toHTMLInputElement(node)->userAgentShadowRoot();
-    ASSERT(shadow);
-    Node* thumb = shadow->firstChild()->firstChild()->firstChild();
-    ASSERT(thumb);
-    return toSliderThumbElement(thumb);
-}
-
-HTMLElement* sliderTrackElementOf(Node* node)
-{
-    RELEASE_ASSERT(node->hasTagName(inputTag));
-    ShadowRoot* shadow = toHTMLInputElement(node)->userAgentShadowRoot();
-    ASSERT(shadow);
-    Node* track = shadow->firstChild()->firstChild();
-    ASSERT(track);
-    return toHTMLElement(track);
 }
 
 // --------------------------------
@@ -171,8 +152,10 @@ void RenderSliderContainer::layout()
         style()->setDirection(LTR);
     }
 
-    RenderBox* thumb = input->sliderThumbElement() ? input->sliderThumbElement()->renderBox() : 0;
-    RenderBox* track = input->sliderTrackElement() ? input->sliderTrackElement()->renderBox() : 0;
+    Element* thumbElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb());
+    Element* trackElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
+    RenderBox* thumb = thumbElement ? thumbElement->renderBox() : 0;
+    RenderBox* track = trackElement ? trackElement->renderBox() : 0;
     // Force a layout to reset the position of the thumb so the code below doesn't move the thumb to the wrong place.
     // FIXME: Make a custom Render class for the track and move the thumb positioning code there.
     if (track)
@@ -209,6 +192,19 @@ void RenderSliderContainer::layout()
 }
 
 // --------------------------------
+
+inline SliderThumbElement::SliderThumbElement(Document* document)
+    : HTMLDivElement(HTMLNames::divTag, document)
+    , m_inDragMode(false)
+{
+}
+
+PassRefPtr<SliderThumbElement> SliderThumbElement::create(Document* document)
+{
+    RefPtr<SliderThumbElement> element = adoptRef(new SliderThumbElement(document));
+    element->setAttribute(idAttr, ShadowElementNames::sliderThumb());
+    return element.release();
+}
 
 void SliderThumbElement::setPositionFromValue()
 {
@@ -253,7 +249,7 @@ void SliderThumbElement::dragFrom(const LayoutPoint& point)
 void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point)
 {
     RefPtr<HTMLInputElement> input(hostInput());
-    HTMLElement* trackElement = sliderTrackElementOf(input.get());
+    Element* trackElement = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
 
     if (!input->renderer() || !renderBox() || !trackElement->renderBox())
         return;

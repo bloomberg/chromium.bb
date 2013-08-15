@@ -50,6 +50,7 @@
 #include "core/html/InputTypeNames.h"
 #include "core/html/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SliderThumbElement.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/rendering/RenderSlider.h"
@@ -152,7 +153,7 @@ void RangeInputType::handleMouseDownEvent(MouseEvent* event)
     ASSERT(element()->shadow());
     if (targetNode != element() && !targetNode->isDescendantOf(element()->userAgentShadowRoot()))
         return;
-    SliderThumbElement* thumb = sliderThumbElementOf(element());
+    SliderThumbElement* thumb = sliderThumbElement();
     if (targetNode == thumb)
         return;
     thumb->dragFrom(event->absoluteLocation());
@@ -170,9 +171,7 @@ void RangeInputType::handleTouchEvent(TouchEvent* event)
 
     TouchList* touches = event->targetTouches();
     if (touches->length() == 1) {
-        Touch* touch = touches->item(0);
-        SliderThumbElement* thumb = sliderThumbElementOf(element());
-        thumb->setPositionFromPoint(touch->absoluteLocation());
+        sliderThumbElement()->setPositionFromPoint(touches->item(0)->absoluteLocation());
         event->setDefaultHandled();
     }
 }
@@ -248,6 +247,7 @@ void RangeInputType::createShadowSubtree()
     Document* document = element()->document();
     RefPtr<HTMLDivElement> track = HTMLDivElement::create(document);
     track->setPart(AtomicString("-webkit-slider-runnable-track", AtomicString::ConstructFromLiteral));
+    track->setAttribute(idAttr, ShadowElementNames::sliderTrack());
     track->appendChild(SliderThumbElement::create(document), IGNORE_EXCEPTION);
     RefPtr<HTMLElement> container = SliderContainerElement::create(document);
     container->appendChild(track.release(), IGNORE_EXCEPTION);
@@ -287,7 +287,7 @@ void RangeInputType::minOrMaxAttributeChanged()
     if (element()->hasDirtyValue())
         element()->setValue(element()->value());
 
-    sliderThumbElementOf(element())->setPositionFromValue();
+    sliderThumbElement()->setPositionFromValue();
 }
 
 void RangeInputType::setValue(const String& value, bool valueChanged, TextFieldEventBehavior eventBehavior)
@@ -297,7 +297,7 @@ void RangeInputType::setValue(const String& value, bool valueChanged, TextFieldE
     if (!valueChanged)
         return;
 
-    sliderThumbElementOf(element())->setPositionFromValue();
+    sliderThumbElement()->setPositionFromValue();
 }
 
 String RangeInputType::fallbackValue() const
@@ -317,20 +317,20 @@ bool RangeInputType::shouldRespectListAttribute()
     return InputType::themeSupportsDataListUI(this);
 }
 
-HTMLElement* RangeInputType::sliderThumbElement() const
+inline SliderThumbElement* RangeInputType::sliderThumbElement() const
 {
-    return sliderThumbElementOf(element());
+    return toSliderThumbElement(element()->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb()));
 }
 
-HTMLElement* RangeInputType::sliderTrackElement() const
+inline Element* RangeInputType::sliderTrackElement() const
 {
-    return sliderTrackElementOf(element());
+    return element()->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack());
 }
 
 void RangeInputType::listAttributeTargetChanged()
 {
     m_tickMarkValuesDirty = true;
-    HTMLElement* sliderTrackElement = sliderTrackElementOf(element());
+    Element* sliderTrackElement = this->sliderTrackElement();
     if (sliderTrackElement->renderer())
         sliderTrackElement->renderer()->setNeedsLayout();
 }

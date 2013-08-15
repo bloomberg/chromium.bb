@@ -37,6 +37,7 @@
 #include "core/html/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
+#include "core/html/shadow/ShadowElementNames.h"
 #include "core/html/shadow/SpinButtonElement.h"
 #include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/FocusController.h"
@@ -1001,7 +1002,7 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     bool isHorizontal = part ==  SliderHorizontalPart;
 
     IntSize thumbSize;
-    RenderObject* thumbRenderer = input->sliderThumbElement()->renderer();
+    RenderObject* thumbRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderThumb())->renderer();
     if (thumbRenderer) {
         RenderStyle* thumbStyle = thumbRenderer->style();
         int thumbWidth = thumbStyle->width().intValue();
@@ -1016,7 +1017,7 @@ void RenderTheme::paintSliderTicks(RenderObject* o, const PaintInfo& paintInfo, 
     int tickRegionSideMargin = 0;
     int tickRegionWidth = 0;
     IntRect trackBounds;
-    RenderObject* trackRenderer = input->sliderTrackElement()->renderer();
+    RenderObject* trackRenderer = input->userAgentShadowRoot()->getElementById(ShadowElementNames::sliderTrack())->renderer();
     // We can ignoring transforms because transform is handled by the graphics context.
     if (trackRenderer)
         trackBounds = trackRenderer->absoluteBoundingBoxRectIgnoringTransforms();

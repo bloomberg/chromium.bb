@@ -213,8 +213,6 @@ public:
     virtual HTMLElement* innerBlockElement() const { return 0; }
     virtual HTMLElement* innerTextElement() const { return 0; }
     virtual HTMLElement* passwordGeneratorButtonElement() const { return 0; }
-    virtual HTMLElement* sliderThumbElement() const { return 0; }
-    virtual HTMLElement* sliderTrackElement() const { return 0; }
     virtual HTMLElement* placeholderElement() const;
 
     // Miscellaneous functions
