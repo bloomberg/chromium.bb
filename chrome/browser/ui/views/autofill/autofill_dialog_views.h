@@ -10,6 +10,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
@@ -483,6 +484,8 @@ class AutofillDialogViews : public AutofillDialogView,
 
   typedef std::map<DialogSection, DetailsGroup> DetailGroupMap;
 
+  gfx::Size CalculatePreferredSize();
+
   void InitChildViews();
 
   // Creates and returns a view that holds all detail sections.
@@ -560,6 +563,7 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Call this when the size of anything in |contents_| might've changed.
   void ContentsPreferredSizeChanged();
+  void DoContentsPreferredSizeChanged();
 
   // Gets the textfield view that is shown for the given DetailInput model, or
   // NULL.
@@ -575,9 +579,15 @@ class AutofillDialogViews : public AutofillDialogView,
   // The delegate that drives this view. Weak pointer, always non-NULL.
   AutofillDialogViewDelegate* const delegate_;
 
+  // The preferred size of the view, cached to avoid needless recomputation.
+  gfx::Size preferred_size_;
+
   // The window that displays |contents_|. Weak pointer; may be NULL when the
   // dialog is closing.
   views::Widget* window_;
+
+  // A timer used to coalesce re-layouts due to browser window resizes.
+  base::Timer browser_resize_timer_;
 
   // A DialogSection-keyed map of the DetailGroup structs.
   DetailGroupMap detail_groups_;
