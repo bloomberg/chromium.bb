@@ -69,7 +69,7 @@ public:
 
     bool operator==(const GridLength& o) const
     {
-        return m_length == o.m_length;
+        return m_length == o.m_length && m_flex == o.m_flex && m_type == o.m_type;
     }
 
 private:
