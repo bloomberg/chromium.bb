@@ -1320,6 +1320,9 @@ bool RenderLayer::userInputScrollable(ScrollbarOrientation orientation) const
     RenderBox* box = renderBox();
     ASSERT(box);
 
+    if (box->isIntristicallyScrollable(orientation))
+        return true;
+
     EOverflow overflowStyle = (orientation == HorizontalScrollbar) ?
         renderer()->style()->overflowX() : renderer()->style()->overflowY();
     return (overflowStyle == OSCROLL || overflowStyle == OAUTO || overflowStyle == OOVERLAY);
@@ -1948,6 +1951,12 @@ void RenderLayer::convertToLayerCoords(const RenderLayer* ancestorLayer, LayoutR
 
 bool RenderLayer::usesCompositedScrolling() const
 {
+    RenderBox* box = renderBox();
+
+    // Scroll form controls on the main thread so they exhibit correct touch scroll event bubbling
+    if (box && (box->isIntristicallyScrollable(VerticalScrollbar) || box->isIntristicallyScrollable(HorizontalScrollbar)))
+        return false;
+
     return isComposited() && backing()->scrollingLayer();
 }
 

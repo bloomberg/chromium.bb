@@ -113,7 +113,13 @@ public:
     RenderTextControlInnerBlock(Element* element) : RenderBlock(element) { }
 
 private:
-    virtual bool hasLineIfEmpty() const { return true; }
+    virtual bool isIntristicallyScrollable(ScrollbarOrientation orientation) const OVERRIDE
+    {
+        return orientation == HorizontalScrollbar;
+    }
+    virtual bool scrollsOverflowX() const OVERRIDE { return hasOverflowClip(); }
+    virtual bool scrollsOverflowY() const OVERRIDE { return false; }
+    virtual bool hasLineIfEmpty() const OVERRIDE { return true; }
 };
 
 }
