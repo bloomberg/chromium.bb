@@ -17,11 +17,11 @@ if (fork()) {
     var proto = Object.create(HTMLElement.prototype);
     proto.createdCallback = function () {
         if (n++ == 2)
-            this.nextSibling.setAttribute('tick', '...');
+            this.previousSibling.setAttribute('tick', '...');
     };
     proto.attributeChangedCallback = function (name) {
         if (name == 'tick')
-            this.nextSibling.setAttribute('boom', 'tsk');
+            this.previousSibling.setAttribute('boom', 'tsk');
         if (name == 'boom')
             destroyContext();
     };

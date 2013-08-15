@@ -62,6 +62,7 @@ public:
 
     // API for Element to kick off changes
 
+    static void didFinishParsingChildren(Element*);
     static void attributeDidChange(Element*, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue);
     static void didEnterDocument(Element*, Document*);
     static void didLeaveDocument(Element*, Document*);
@@ -81,8 +82,8 @@ private:
         ~DefinitionMap() { }
 
         void add(Element*, PassRefPtr<CustomElementDefinition>);
-        void remove(Element*);
-        CustomElementDefinition* get(Element*);
+        void remove(Element* element) { m_definitions.remove(element); }
+        CustomElementDefinition* get(Element* element) const { return m_definitions.get(element); }
 
     private:
         typedef HashMap<Element*, RefPtr<CustomElementDefinition> > ElementDefinitionHashMap;

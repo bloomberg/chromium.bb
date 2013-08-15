@@ -37,10 +37,10 @@ testUpgrade_oneDefinitionShouldUpgradeMultipleDocuments = function () {
 
     assert_array_equals(
         invocations,
-        ['created document B upgrade candidate with prototype tagged U',
-         'created document A upgrade candidate with prototype tagged U'],
+        ['created document A upgrade candidate with prototype tagged U',
+         'created document B upgrade candidate with prototype tagged U'],
         'the created callback should have been called for both elements ' +
-        'in reverse creation order');
+        'in creation order');
 };
 
 TestRegistrationContextSharing.prototype.

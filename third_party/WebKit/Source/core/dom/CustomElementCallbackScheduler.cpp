@@ -52,7 +52,7 @@ void CustomElementCallbackScheduler::scheduleCreatedCallback(PassRefPtr<CustomEl
     if (!callbacks->hasCreatedCallback())
         return;
 
-    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().createAtFrontOfCurrentElementQueue(element);
+    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().ensureInCurrentElementQueue(element);
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
 }
 

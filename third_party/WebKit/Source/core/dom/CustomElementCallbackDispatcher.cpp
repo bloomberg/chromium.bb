@@ -147,17 +147,4 @@ CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureInCurrentElem
     return queue;
 }
 
-CustomElementCallbackQueue* CustomElementCallbackDispatcher::createAtFrontOfCurrentElementQueue(PassRefPtr<Element> element)
-{
-    CustomElementCallbackQueue* queue = createCallbackQueue(element);
-    queue->setOwner(currentElementQueue());
-
-    // The created callback is unique in being prepended to the front
-    // of the element queue
-    m_flattenedProcessingStack.insert(inCallbackDeliveryScope() ? s_elementQueueStart : kNumSentinels, queue);
-    ++s_elementQueueEnd;
-
-    return queue;
-}
-
 } // namespace WebCore

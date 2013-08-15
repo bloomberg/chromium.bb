@@ -73,7 +73,6 @@ public:
 protected:
     friend class CustomElementCallbackScheduler;
 
-    CustomElementCallbackQueue* createAtFrontOfCurrentElementQueue(PassRefPtr<Element>);
     CustomElementCallbackQueue* ensureInCurrentElementQueue(PassRefPtr<Element>);
 
 private:

@@ -38,19 +38,19 @@ t.step(function () {
     function created() {
         createdInvocations++;
 
-        if (this.id != 'v')
+        if (this.id != 'u')
             return;
 
         t.step(function () {
             var t = div.querySelector('#t');
-            var u = div.querySelector('#u');
+            var v = div.querySelector('#v');
             var w = div.querySelector('#w');
 
-            assert_equals(div.querySelector('x-c:not(:unresolved)'), this, 'the :unresolved pseudoclass should cease to apply when the created callback is invoked');
-            assert_array_equals(div.querySelectorAll(':unresolved'), [t, u], 'the :unresolved pseudoclass should be processed in order');
+            assert_equals(div.querySelector('x-b:not(:unresolved)'), this, 'the :unresolved pseudoclass should cease to apply when the created callback is invoked');
+            assert_array_equals(div.querySelectorAll(':unresolved'), [v, w], 'the :unresolved pseudoclass should be processed in order');
 
-            assert_false(t instanceof C, 'prototype upgrade should happen in order (#t)');
-            assert_false(u instanceof B, 'prototype upgrade should happen in order (#u)');
+            assert_true(t instanceof C, 'prototype upgrade should happen in order (#t)');
+            assert_false(v instanceof C, 'prototype upgrade should happen in order (#v)');
         }, this);
     }
 
@@ -67,7 +67,7 @@ t.step(function () {
                     '<x-c id="v"></x-c>' +
                     '<x-b id="w"></x-b>';
     assert_equals(createdInvocations, 2, 'the created callback should have been invoked once for each x-c element');
-    assert_true(div.querySelector('#t') instanceof C, '#t\'s prototype should have ultimately been upgraded');
+    assert_true(div.querySelector('#w') instanceof B, '#w\'s prototype should have ultimately been upgraded');
     t.done();
 });
 </script>

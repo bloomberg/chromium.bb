@@ -44,12 +44,14 @@ public:
 
     // API for CustomElement to kick off notifications
 
+    static void notifyElementDidFinishParsingChildren(Element*);
     static void notifyElementWasDestroyed(Element*);
 
 protected:
     void observe(Element*);
     void unobserve(Element*);
 
+    virtual void elementDidFinishParsingChildren(Element*) = 0;
     virtual void elementWasDestroyed(Element* element) { unobserve(element); }
 
 private:

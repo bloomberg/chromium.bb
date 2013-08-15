@@ -45,14 +45,14 @@ var D = document.register('x-d', {prototype: Object.create(HTMLDivElement.protot
 shouldBeFalse('host.firstChild instanceof D');
 shouldBe('document.querySelector(":unresolved")', 'host.firstChild');
 
-// Scenario E: The order of upgrades should be the reverse of their creation.
+// Scenario E: The order of upgrades should be the order of completing parsing.
 // Use a good number of elements to avoid false positives from random correct ordering.
 host.innerHTML = '<x-e id="e1"><x-e id="e2"></x-e></x-e><x-e id="e3"></x-e><x-e id="e4"></x-e><x-e id="e5"></x-e>';
 var upgradedOrder = [];
 var protoE = Object.create(HTMLElement.prototype);
 protoE.createdCallback = function() { upgradedOrder.push(this.id); };
 document.register('x-e', {prototype: protoE});
-shouldBe('upgradedOrder', '["e5","e4","e3","e2","e1"]');
+shouldBe('upgradedOrder', '["e2","e1","e3","e4","e5"]');
 
 successfullyParsed = true;
 </script>

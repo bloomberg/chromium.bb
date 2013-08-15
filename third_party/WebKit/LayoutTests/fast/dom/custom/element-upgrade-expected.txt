@@ -10,7 +10,7 @@ PASS element instanceof C is false
 PASS Object.getPrototypeOf(element) is HTMLElement.prototype
 PASS host.firstChild instanceof D is false
 PASS document.querySelector(":unresolved") is host.firstChild
-PASS upgradedOrder is ["e5","e4","e3","e2","e1"]
+PASS upgradedOrder is ["e2","e1","e3","e4","e5"]
 PASS successfullyParsed is true
 
 TEST COMPLETE

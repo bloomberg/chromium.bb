@@ -88,20 +88,49 @@ bool CustomElement::isCustomTagName(const AtomicString& localName)
     return isValidTypeName(localName);
 }
 
-void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition> definition)
+void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition> passDefinition)
 {
-    definitions().add(element, definition);
+    RefPtr<CustomElementDefinition> definition(passDefinition);
+
+    switch (element->customElementState()) {
+    case Element::NotCustomElement:
+    case Element::Upgraded:
+        ASSERT_NOT_REACHED();
+        break;
+
+    case Element::WaitingForParser:
+        definitions().add(element, definition);
+        break;
+
+    case Element::WaitingForUpgrade:
+        definitions().add(element, definition);
+        CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
+        break;
+    }
 }
 
 CustomElementDefinition* CustomElement::definitionFor(Element* element)
 {
-    return definitions().get(element);
+    CustomElementDefinition* definition = definitions().get(element);
+    ASSERT(definition);
+    return definition;
+}
+
+void CustomElement::didFinishParsingChildren(Element* element)
+{
+    ASSERT(element->customElementState() == Element::WaitingForParser);
+    element->setCustomElementState(Element::WaitingForUpgrade);
+
+    CustomElementObserver::notifyElementDidFinishParsingChildren(element);
+
+    if (CustomElementDefinition* definition = definitions().get(element))
+        CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
 }
 
 void CustomElement::attributeDidChange(Element* element, const AtomicString& name, const AtomicString& oldValue, const AtomicString& newValue)
 {
     ASSERT(element->customElementState() == Element::Upgraded);
-    CustomElementCallbackScheduler::scheduleAttributeChangedCallback(definitions().get(element)->callbacks(), element, name, oldValue, newValue);
+    CustomElementCallbackScheduler::scheduleAttributeChangedCallback(definitionFor(element)->callbacks(), element, name, oldValue, newValue);
 }
 
 void CustomElement::didEnterDocument(Element* element, Document* document)
@@ -109,7 +138,7 @@ void CustomElement::didEnterDocument(Element* element, Document* document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document->defaultView())
         return;
-    CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(definitions().get(element)->callbacks(), element);
+    CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(definitionFor(element)->callbacks(), element);
 }
 
 void CustomElement::didLeaveDocument(Element* element, Document* document)
@@ -117,7 +146,7 @@ void CustomElement::didLeaveDocument(Element* element, Document* document)
     ASSERT(element->customElementState() == Element::Upgraded);
     if (!document->defaultView())
         return;
-    CustomElementCallbackScheduler::scheduleLeftDocumentCallback(definitions().get(element)->callbacks(), element);
+    CustomElementCallbackScheduler::scheduleLeftDocumentCallback(definitionFor(element)->callbacks(), element);
 }
 
 void CustomElement::wasDestroyed(Element* element)
@@ -127,6 +156,7 @@ void CustomElement::wasDestroyed(Element* element)
         ASSERT_NOT_REACHED();
         break;
 
+    case Element::WaitingForParser:
     case Element::WaitingForUpgrade:
     case Element::Upgraded:
         definitions().remove(element);
@@ -140,18 +170,6 @@ void CustomElement::DefinitionMap::add(Element* element, PassRefPtr<CustomElemen
     ASSERT(definition.get());
     DefinitionMap::ElementDefinitionHashMap::AddResult result = m_definitions.add(element, definition);
     ASSERT(result.isNewEntry);
-}
-
-void CustomElement::DefinitionMap::remove(Element* element)
-{
-    m_definitions.remove(element);
-}
-
-CustomElementDefinition* CustomElement::DefinitionMap::get(Element* element)
-{
-    DefinitionMap::ElementDefinitionHashMap::const_iterator it = m_definitions.find(element);
-    ASSERT(it != m_definitions.end());
-    return it->value.get();
 }
 
 CustomElement::DefinitionMap& CustomElement::definitions()

@@ -23,7 +23,7 @@ document.register("x-baz", { prototype: Object.create(HTMLElement.prototype, { c
 // Testing element siblings
 window.callbacksCalled = [];
 container.innerHTML = "<x-foo id='a'></x-foo><div id='b' is='x-bar'></div><x-baz id='c'></x-baz>";
-shouldBe("window.callbacksCalled", "['c', 'b', 'a']");
+shouldBe("window.callbacksCalled", "['a', 'b', 'c']");
 
 // Testing nested elements
 window.callbacksCalled = [];

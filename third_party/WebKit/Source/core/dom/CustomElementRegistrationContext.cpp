@@ -58,7 +58,7 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
         didResolveElement(definition, *it);
 }
 
-PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName)
+PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName, CreationMode mode)
 {
     ASSERT(CustomElement::isCustomTagName(tagName.localName()));
 
@@ -76,7 +76,7 @@ PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Doc
         return Element::create(tagName, document);
     }
 
-    element->setCustomElementState(Element::WaitingForUpgrade);
+    element->setCustomElementState(mode == CreatedByParser ? Element::WaitingForParser : Element::WaitingForUpgrade);
     resolve(element.get(), nullAtom);
     return element.release();
 }
@@ -106,28 +106,12 @@ void CustomElementRegistrationContext::resolve(Element* element, const AtomicStr
 void CustomElementRegistrationContext::didResolveElement(CustomElementDefinition* definition, Element* element)
 {
     CustomElement::define(element, definition);
-
-    switch (element->customElementState()) {
-    case Element::NotCustomElement:
-    case Element::Upgraded:
-        ASSERT_NOT_REACHED();
-        break;
-
-    case Element::WaitingForUpgrade:
-        CustomElementCallbackScheduler::scheduleCreatedCallback(definition->callbacks(), element);
-        break;
-    }
 }
 
 void CustomElementRegistrationContext::didCreateUnresolvedElement(const CustomElementDescriptor& descriptor, Element* element)
 {
-    ASSERT(element->customElementState() == Element::WaitingForUpgrade);
+    ASSERT(element->customElementState() == Element::WaitingForParser || element->customElementState() == Element::WaitingForUpgrade);
     m_candidates.add(descriptor, element);
-}
-
-void CustomElementRegistrationContext::customElementWasDestroyed(Element* element)
-{
-    m_candidates.remove(element);
 }
 
 PassRefPtr<CustomElementRegistrationContext> CustomElementRegistrationContext::create()
@@ -143,7 +127,7 @@ void CustomElementRegistrationContext::setIsAttributeAndTypeExtension(Element* e
     setTypeExtension(element, type);
 }
 
-void CustomElementRegistrationContext::setTypeExtension(Element* element, const AtomicString& type)
+void CustomElementRegistrationContext::setTypeExtension(Element* element, const AtomicString& type, CreationMode mode)
 {
     if (!element->isHTMLElement() && !element->isSVGElement())
         return;
@@ -160,7 +144,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     // Custom tags take precedence over type extensions
     ASSERT(!CustomElement::isCustomTagName(element->localName()));
 
-    element->setCustomElementState(Element::WaitingForUpgrade);
+    element->setCustomElementState(mode == CreatedByParser ? Element::WaitingForParser : Element::WaitingForUpgrade);
 
     if (CustomElementRegistrationContext* context = element->document()->registrationContext())
         context->didGiveTypeExtension(element, type);

@@ -953,7 +953,7 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
     if (name == isAttr)
-        CustomElementRegistrationContext::setTypeExtension(this, newValue);
+        CustomElementRegistrationContext::setTypeExtension(this, newValue, reason == ModifiedDirectly ? CustomElementRegistrationContext::CreatedByParser : CustomElementRegistrationContext::NotCreatedByParser);
     attributeChanged(name, newValue, reason);
 }
 
@@ -1783,6 +1783,8 @@ void Element::finishParsingChildren()
     checkForSiblingStyleChanges(this, renderStyle(), true, lastChild(), 0, 0);
     if (StyleResolver* styleResolver = document()->styleResolverIfExists())
         styleResolver->popParentElement(this);
+    if (isCustomElement())
+        CustomElement::didFinishParsingChildren(this);
 }
 
 #ifndef NDEBUG

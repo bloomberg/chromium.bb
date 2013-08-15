@@ -78,6 +78,23 @@ void CustomElementUpgradeCandidateMap::removeCommon(Element* element)
     m_upgradeCandidates.remove(candidate);
 }
 
+void CustomElementUpgradeCandidateMap::elementDidFinishParsingChildren(Element* element)
+{
+    // An upgrade candidate finished parsing; reorder so that eventual
+    // upgrade order matches finished-parsing order.
+    moveToEnd(element);
+}
+
+void CustomElementUpgradeCandidateMap::moveToEnd(Element* element)
+{
+    UpgradeCandidateMap::iterator candidate = m_upgradeCandidates.find(element);
+    ASSERT(candidate != m_upgradeCandidates.end());
+
+    UnresolvedDefinitionMap::iterator elements = m_unresolvedDefinitions.find(candidate->value);
+    ASSERT(elements != m_unresolvedDefinitions.end());
+    elements->value.appendOrMoveToLast(element);
+}
+
 ListHashSet<Element*> CustomElementUpgradeCandidateMap::takeUpgradeCandidatesFor(const CustomElementDescriptor& descriptor)
 {
     const ListHashSet<Element*>& candidates = m_unresolvedDefinitions.take(descriptor);

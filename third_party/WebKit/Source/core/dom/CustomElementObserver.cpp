@@ -39,6 +39,14 @@ CustomElementObserver::ElementObserverMap& CustomElementObserver::elementObserve
     return map;
 }
 
+void CustomElementObserver::notifyElementDidFinishParsingChildren(Element* element)
+{
+    ElementObserverMap::iterator it = elementObservers().find(element);
+    if (it == elementObservers().end())
+        return;
+    it->value->elementDidFinishParsingChildren(element);
+}
+
 void CustomElementObserver::notifyElementWasDestroyed(Element* element)
 {
     ElementObserverMap::iterator it = elementObservers().find(element);

@@ -60,6 +60,9 @@ private:
     virtual void elementWasDestroyed(Element*) OVERRIDE;
     void removeCommon(Element*);
 
+    virtual void elementDidFinishParsingChildren(Element*) OVERRIDE;
+    void moveToEnd(Element*);
+
     typedef HashMap<Element*, CustomElementDescriptor> UpgradeCandidateMap;
     UpgradeCandidateMap m_upgradeCandidates;
 
