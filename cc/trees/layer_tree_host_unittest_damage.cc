@@ -6,6 +6,7 @@
 
 #include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
+#include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -284,6 +285,107 @@ class LayerTreeHostDamageTestForcedFullDamage : public LayerTreeHostDamageTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostDamageTestForcedFullDamage);
+
+class LayerTreeHostDamageTestScrollbarDoesDamage
+    : public LayerTreeHostDamageTest {
+  virtual void BeginTest() OVERRIDE {
+    did_swaps_ = 0;
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    scoped_refptr<Layer> root_layer = Layer::Create();
+    root_layer->SetBounds(gfx::Size(400,400));
+    layer_tree_host()->SetRootLayer(root_layer);
+
+    scoped_refptr<Layer> content_layer = FakeContentLayer::Create(&client_);
+    content_layer->SetScrollable(true);
+    content_layer->SetScrollOffset(gfx::Vector2d(10, 20));
+    content_layer->SetMaxScrollOffset(gfx::Vector2d(30, 50));
+    content_layer->SetBounds(gfx::Size(100, 200));
+    root_layer->AddChild(content_layer);
+
+    scoped_refptr<Layer> scrollbar_layer =
+        FakeScrollbarLayer::Create(false, true, content_layer->id());
+    scrollbar_layer->SetPosition(gfx::Point(300, 300));
+    scrollbar_layer->SetBounds(gfx::Size(10, 100));
+    root_layer->AddChild(scrollbar_layer);
+
+    gfx::RectF content_rect(content_layer->position(),
+                            content_layer->bounds());
+    gfx::RectF scrollbar_rect(scrollbar_layer->position(),
+                              scrollbar_layer->bounds());
+    EXPECT_FALSE(content_rect.Intersects(scrollbar_rect));
+
+    LayerTreeHostDamageTest::SetupTree();
+  }
+
+  virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
+                                     LayerTreeHostImpl::FrameData* frame_data,
+                                     bool result) OVERRIDE {
+    EXPECT_TRUE(result);
+    RenderSurfaceImpl* root_surface =
+        host_impl->active_tree()->root_layer()->render_surface();
+    gfx::RectF root_damage =
+        root_surface->damage_tracker()->current_damage_rect();
+    root_damage.Intersect(root_surface->content_rect());
+    switch (did_swaps_) {
+      case 0:
+        // The first frame has damage, so we should draw and swap.
+        break;
+      case 1:
+        // The second frame should damage the scrollbars.
+        EXPECT_TRUE(root_damage.Contains(gfx::Rect(300, 300, 10, 100)));
+        break;
+      case 2:
+        // The third frame should damage the scrollbars.
+        EXPECT_TRUE(root_damage.Contains(gfx::Rect(300, 300, 10, 100)));
+        break;
+      case 3:
+        // The fourth frame should not damage the scrollbars.
+        EXPECT_FALSE(root_damage.Intersects(gfx::Rect(300, 300, 10, 100)));
+        EndTest();
+        break;
+    }
+    return result;
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ++did_swaps_;
+    EXPECT_TRUE(result);
+    LayerImpl* root = host_impl->active_tree()->root_layer();
+    LayerImpl* scroll_layer = root->children()[0];
+    switch (did_swaps_) {
+      case 1:
+        host_impl->ScrollBegin(gfx::Point(1,1), InputHandler::Wheel);
+        EXPECT_TRUE(host_impl->ScrollBy(gfx::Point(),
+                                        gfx::Vector2dF(10.0, 10.0)));
+        break;
+      case 2:
+        scroll_layer->SetMaxScrollOffset(gfx::Vector2d(60, 100));
+        host_impl->SetNeedsRedraw();
+        break;
+      case 3:
+        // Test that modifying the position of the content layer (not
+        // scrolling) won't damage the scrollbar.
+        scroll_layer->SetPosition(gfx::Point(1,1));
+        scroll_layer->SetScrollOffset(scroll_layer->scroll_offset());
+        host_impl->SetNeedsRedraw();
+        break;
+    }
+
+  }
+
+  virtual void AfterTest() OVERRIDE {
+    EXPECT_EQ(4, did_swaps_);
+  }
+
+  FakeContentLayerClient client_;
+  int did_swaps_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarDoesDamage);
 
 }  // namespace
 }  // namespace cc

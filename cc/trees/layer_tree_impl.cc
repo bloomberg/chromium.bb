@@ -259,13 +259,13 @@ void LayerTreeImpl::UpdateSolidColorScrollbars() {
     vertical_adjust = layer_tree_host_impl_->VisibleViewportSize().height() -
                       RootContainerLayer()->bounds().height();
   if (ScrollbarLayerImpl* horiz = root_scroll->horizontal_scrollbar_layer()) {
-    horiz->set_vertical_adjust(vertical_adjust);
-    horiz->set_visible_to_total_length_ratio(
+    horiz->SetVerticalAdjust(vertical_adjust);
+    horiz->SetVisibleToTotalLengthRatio(
         scrollable_viewport.width() / ScrollableSize().width());
   }
   if (ScrollbarLayerImpl* vertical = root_scroll->vertical_scrollbar_layer()) {
-    vertical->set_vertical_adjust(vertical_adjust);
-    vertical->set_visible_to_total_length_ratio(
+    vertical->SetVerticalAdjust(vertical_adjust);
+    vertical->SetVisibleToTotalLengthRatio(
         scrollable_viewport.height() / ScrollableSize().height());
   }
 }

@@ -110,23 +110,23 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
     int thickness_override =
         layer_tree_host()->settings().solid_color_scrollbar_thickness_dip;
     if (thickness_override != -1) {
-      scrollbar_layer->set_thumb_thickness(thickness_override);
+      scrollbar_layer->SetThumbThickness(thickness_override);
     } else {
       if (Orientation() == HORIZONTAL)
-        scrollbar_layer->set_thumb_thickness(bounds().height());
+        scrollbar_layer->SetThumbThickness(bounds().height());
       else
-        scrollbar_layer->set_thumb_thickness(bounds().width());
+        scrollbar_layer->SetThumbThickness(bounds().width());
     }
   } else {
-    scrollbar_layer->set_thumb_thickness(thumb_thickness_);
+    scrollbar_layer->SetThumbThickness(thumb_thickness_);
   }
-  scrollbar_layer->set_thumb_length(thumb_length_);
+  scrollbar_layer->SetThumbLength(thumb_length_);
   if (Orientation() == HORIZONTAL) {
-    scrollbar_layer->set_track_start(track_rect_.x());
-    scrollbar_layer->set_track_length(track_rect_.width());
+    scrollbar_layer->SetTrackStart(track_rect_.x());
+    scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
-    scrollbar_layer->set_track_start(track_rect_.y());
-    scrollbar_layer->set_track_length(track_rect_.height());
+    scrollbar_layer->SetTrackStart(track_rect_.y());
+    scrollbar_layer->SetTrackLength(track_rect_.height());
   }
 
   if (track_resource_.get())

@@ -41,38 +41,26 @@ class CC_EXPORT ScrollbarLayerImpl : public LayerImpl {
   float CurrentPos() const;
   int Maximum() const;
 
-  void set_thumb_thickness(int thumb_thickness) {
-    thumb_thickness_ = thumb_thickness;
-  }
+  void SetThumbThickness(int thumb_thickness);
   int thumb_thickness() const { return thumb_thickness_; }
-  void set_thumb_length(int thumb_length) {
-    thumb_length_ = thumb_length;
-  }
-  void set_track_start(int track_start) {
-    track_start_ = track_start;
-  }
-  void set_track_length(int track_length) {
-    track_length_ = track_length;
-  }
-  void set_vertical_adjust(float vertical_adjust) {
-    vertical_adjust_ = vertical_adjust;
-  }
+  void SetThumbLength(int thumb_length);
+  void SetTrackStart(int track_start);
+  void SetTrackLength(int track_length);
+  void SetVerticalAdjust(float vertical_adjust);
   void set_track_ui_resource_id(UIResourceId uid) {
     track_ui_resource_id_ = uid;
   }
   void set_thumb_ui_resource_id(UIResourceId uid) {
     thumb_ui_resource_id_ = uid;
   }
-  void set_visible_to_total_length_ratio(float ratio) {
-    visible_to_total_length_ratio_ = ratio;
-  }
+  void SetVisibleToTotalLengthRatio(float ratio);
   void set_is_overlay_scrollbar(bool is_overlay_scrollbar) {
     is_overlay_scrollbar_ = is_overlay_scrollbar;
   }
   bool is_overlay_scrollbar() const { return is_overlay_scrollbar_; }
 
-  void SetCurrentPos(float current_pos) { current_pos_ = current_pos; }
-  void SetMaximum(int maximum) { maximum_ = maximum; }
+  void SetCurrentPos(float current_pos);
+  void SetMaximum(int maximum);
 
   gfx::Rect ComputeThumbQuadRect() const;
 

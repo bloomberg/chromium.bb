@@ -168,11 +168,11 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
       LayerImplForScrollAreaAndScrollbar(host.get(), scrollbar.Pass(), false);
   ScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
-  scrollbar_layer_impl->set_thumb_thickness(3);
+  scrollbar_layer_impl->SetThumbThickness(3);
   scrollbar_layer_impl->SetCurrentPos(10.f);
   scrollbar_layer_impl->SetMaximum(100);
-  scrollbar_layer_impl->set_track_length(100);
-  scrollbar_layer_impl->set_visible_to_total_length_ratio(0.4f);
+  scrollbar_layer_impl->SetTrackLength(100);
+  scrollbar_layer_impl->SetVisibleToTotalLengthRatio(0.4f);
 
   // Thickness should be overridden to 3.
   {
@@ -204,7 +204,7 @@ TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
 
   // For solid color scrollbars, position and size should reflect the
   // current viewport state.
-  scrollbar_layer_impl->set_visible_to_total_length_ratio(0.2f);
+  scrollbar_layer_impl->SetVisibleToTotalLengthRatio(0.2f);
   {
     MockQuadCuller quad_culler;
     AppendQuadsData data;
@@ -230,8 +230,8 @@ TEST(ScrollbarLayerTest, LayerDrivenSolidColorDrawQuads) {
   ScrollbarLayerImpl* scrollbar_layer_impl =
       static_cast<ScrollbarLayerImpl*>(layer_impl_tree_root->children()[1]);
 
-  scrollbar_layer_impl->set_thumb_thickness(3);
-  scrollbar_layer_impl->set_track_length(10);
+  scrollbar_layer_impl->SetThumbThickness(3);
+  scrollbar_layer_impl->SetTrackLength(10);
   scrollbar_layer_impl->SetCurrentPos(4.f);
   scrollbar_layer_impl->SetMaximum(8);
 
@@ -276,24 +276,24 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
 TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbLength) {
   horizontal_scrollbar_layer_->SetCurrentPos(0);
   horizontal_scrollbar_layer_->SetMaximum(10);
-  horizontal_scrollbar_layer_->set_thumb_thickness(3);
+  horizontal_scrollbar_layer_->SetThumbThickness(3);
 
   // Simple case - one third of the scrollable area is visible, so the thumb
   // should be one third as long as the track.
-  horizontal_scrollbar_layer_->set_visible_to_total_length_ratio(0.33f);
-  horizontal_scrollbar_layer_->set_track_length(100);
+  horizontal_scrollbar_layer_->SetVisibleToTotalLengthRatio(0.33f);
+  horizontal_scrollbar_layer_->SetTrackLength(100);
   EXPECT_EQ(33, horizontal_scrollbar_layer_->ComputeThumbQuadRect().width());
 
   // The thumb's length should never be less than its thickness.
-  horizontal_scrollbar_layer_->set_visible_to_total_length_ratio(0.01f);
-  horizontal_scrollbar_layer_->set_track_length(100);
+  horizontal_scrollbar_layer_->SetVisibleToTotalLengthRatio(0.01f);
+  horizontal_scrollbar_layer_->SetTrackLength(100);
   EXPECT_EQ(3, horizontal_scrollbar_layer_->ComputeThumbQuadRect().width());
 }
 
 TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbPosition) {
-  horizontal_scrollbar_layer_->set_track_length(100);
-  horizontal_scrollbar_layer_->set_visible_to_total_length_ratio(0.1f);
-  horizontal_scrollbar_layer_->set_thumb_thickness(3);
+  horizontal_scrollbar_layer_->SetTrackLength(100);
+  horizontal_scrollbar_layer_->SetVisibleToTotalLengthRatio(0.1f);
+  horizontal_scrollbar_layer_->SetThumbThickness(3);
 
   horizontal_scrollbar_layer_->SetCurrentPos(0);
   horizontal_scrollbar_layer_->SetMaximum(100);
@@ -315,9 +315,9 @@ TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbVerticalAdjust) {
   ScrollbarLayerImpl* layers[2] =
       { horizontal_scrollbar_layer_.get(), vertical_scrollbar_layer_.get() };
   for (size_t i = 0; i < 2; ++i) {
-    layers[i]->set_track_length(100);
-    layers[i]->set_visible_to_total_length_ratio(0.2f);
-    layers[i]->set_thumb_thickness(3);
+    layers[i]->SetTrackLength(100);
+    layers[i]->SetVisibleToTotalLengthRatio(0.2f);
+    layers[i]->SetThumbThickness(3);
     layers[i]->SetCurrentPos(25);
     layers[i]->SetMaximum(100);
   }
@@ -327,8 +327,8 @@ TEST_F(ScrollbarLayerSolidColorThumbTest, SolidColorThumbVerticalAdjust) {
   EXPECT_RECT_EQ(gfx::RectF(0.f, 20.f, 3.f, 20.f),
                  vertical_scrollbar_layer_->ComputeThumbQuadRect());
 
-  horizontal_scrollbar_layer_->set_vertical_adjust(10.f);
-  vertical_scrollbar_layer_->set_vertical_adjust(10.f);
+  horizontal_scrollbar_layer_->SetVerticalAdjust(10.f);
+  vertical_scrollbar_layer_->SetVerticalAdjust(10.f);
 
   // The vertical adjustment factor has two effects:
   // 1.) Moves the horizontal scrollbar down
