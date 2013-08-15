@@ -105,6 +105,15 @@ namespace disconnectedFromWorker {
 
 }  // Worker
 
+
+namespace SystemInfo {
+  extern const char kName[];
+
+namespace getInfo {
+  extern const char kName[];
+}  // getInfo
+}  // SystemInfo
+
 }  // devtools
 }  // content
 

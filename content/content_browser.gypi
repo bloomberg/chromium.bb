@@ -371,6 +371,8 @@
     'browser/devtools/devtools_protocol.h',
     'browser/devtools/devtools_protocol_constants.cc',
     'browser/devtools/devtools_protocol_constants.h',
+    'browser/devtools/devtools_system_info_handler.cc',
+    'browser/devtools/devtools_system_info_handler.h',
     'browser/devtools/devtools_tracing_handler.h',
     'browser/devtools/devtools_tracing_handler.cc',
     'browser/devtools/ipc_devtools_agent_host.cc',

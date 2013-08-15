@@ -140,6 +140,41 @@ struct GPU_EXPORT GPUInfo {
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
 #endif
+  // Note: when adding new members, please remember to update EnumerateFields
+  // in gpu_info.cc.
+
+  // In conjunction with EnumerateFields, this allows the embedder to
+  // enumerate the values in this structure without having to embed
+  // references to its specific member variables. This simplifies the
+  // addition of new fields to this type.
+  class Enumerator {
+   public:
+    // The following methods apply to the "current" object. Initially this
+    // is the root object, but calls to BeginGPUDevice/EndGPUDevice and
+    // BeginAuxAttributes/EndAuxAttributes change the object to which these
+    // calls should apply.
+    virtual void AddInt64(const char* name, int64 value) = 0;
+    virtual void AddInt(const char* name, int value) = 0;
+    virtual void AddString(const char* name, const std::string& value) = 0;
+    virtual void AddBool(const char* name, bool value) = 0;
+    virtual void AddTimeDeltaInSecondsF(const char* name,
+                                        const base::TimeDelta& value) = 0;
+
+    // Markers indicating that a GPUDevice is being described.
+    virtual void BeginGPUDevice() = 0;
+    virtual void EndGPUDevice() = 0;
+
+    // Markers indicating that "auxiliary" attributes of the GPUInfo
+    // (according to the DevTools protocol) are being described.
+    virtual void BeginAuxAttributes() = 0;
+    virtual void EndAuxAttributes() = 0;
+
+   protected:
+    virtual ~Enumerator() {}
+  };
+
+  // Outputs the fields in this structure to the provided enumerator.
+  void EnumerateFields(Enumerator* enumerator) const;
 };
 
 }  // namespace gpu

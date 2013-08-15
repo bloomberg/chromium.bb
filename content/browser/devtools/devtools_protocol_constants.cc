@@ -100,6 +100,14 @@ namespace dataCollected {
 
 }  // Tracing
 
+namespace SystemInfo {
+  const char kName[] = "SystemInfo";
+
+namespace getInfo {
+  const char kName[] = "SystemInfo.getInfo";
+}  // getInfo
+}  // SystemInfo
+
 }  // devtools
 }  // content
 
