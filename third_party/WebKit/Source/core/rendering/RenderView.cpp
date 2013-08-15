@@ -39,7 +39,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
-#include "core/rendering/RenderLazyBlock.h"
 #include "core/rendering/RenderSelectionInfo.h"
 #include "core/rendering/RenderWidget.h"
 
@@ -57,7 +56,6 @@ RenderView::RenderView(Document* document)
     , m_pageLogicalHeightChanged(false)
     , m_layoutState(0)
     , m_layoutStateDisableCount(0)
-    , m_firstLazyBlock(0)
     , m_renderQuoteHead(0)
     , m_renderCounterCount(0)
 {
@@ -114,12 +112,6 @@ LayoutUnit RenderView::availableLogicalHeight(AvailableLogicalHeightType heightT
 bool RenderView::isChildAllowed(RenderObject* child, RenderStyle*) const
 {
     return child->isBox();
-}
-
-void RenderView::markLazyBlocksForLayout()
-{
-    for (RenderLazyBlock* block = m_firstLazyBlock; block; block = block->next())
-        block->setNeedsLayout();
 }
 
 void RenderView::layoutContent(const LayoutState& state)

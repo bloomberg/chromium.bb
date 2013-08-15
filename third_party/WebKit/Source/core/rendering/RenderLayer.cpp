@@ -2155,10 +2155,7 @@ void RenderLayer::setScrollOffset(const IntPoint& newScrollOffset)
         if (view) {
             // Update regions, scrolling may change the clip of a particular region.
             view->frameView()->updateAnnotatedRegions();
-
             view->updateWidgetPositions();
-
-            view->markLazyBlocksForLayout();
         }
 
         updateCompositingLayersAfterScroll();

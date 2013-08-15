@@ -606,8 +606,6 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
             return true;
         if (valueID == CSSValueGrid || valueID == CSSValueInlineGrid)
             return RuntimeEnabledFeatures::cssGridLayoutEnabled();
-        if (valueID == CSSValueLazyBlock)
-            return RuntimeEnabledFeatures::lazyLayoutEnabled();
         break;
 
     case CSSPropertyEmptyCells: // show | hide | inherit

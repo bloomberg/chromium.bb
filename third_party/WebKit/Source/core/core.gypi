@@ -1383,8 +1383,6 @@
             'rendering/RenderLayerFilterInfo.cpp',
             'rendering/RenderLayerFilterInfo.h',
             'rendering/RenderLayerModelObject.cpp',
-            'rendering/RenderLazyBlock.cpp',
-            'rendering/RenderLazyBlock.h',
             'rendering/RenderLineBoxList.cpp',
             'rendering/RenderListBox.cpp',
             'rendering/RenderListBox.h',

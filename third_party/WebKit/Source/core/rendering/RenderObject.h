@@ -331,7 +331,6 @@ public:
     virtual bool isProgress() const { return false; }
     virtual bool isRenderBlock() const { return false; }
     virtual bool isRenderSVGBlock() const { return false; };
-    virtual bool isRenderLazyBlock() const { return false; }
     virtual bool isRenderButton() const { return false; }
     virtual bool isRenderIFrame() const { return false; }
     virtual bool isRenderImage() const { return false; }

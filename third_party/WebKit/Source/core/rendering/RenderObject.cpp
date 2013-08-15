@@ -63,7 +63,6 @@
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"
 #include "core/rendering/RenderLayerCompositor.h"
-#include "core/rendering/RenderLazyBlock.h"
 #include "core/rendering/RenderListItem.h"
 #include "core/rendering/RenderMarquee.h"
 #include "core/rendering/RenderMultiColumnBlock.h"
@@ -214,8 +213,6 @@ RenderObject* RenderObject::createObject(Element* element, RenderStyle* style)
     case GRID:
     case INLINE_GRID:
         return new RenderGrid(element);
-    case LAZY_BLOCK:
-        return new RenderLazyBlock(element);
     }
 
     return 0;

@@ -431,7 +431,6 @@ enum EDisplay {
     TABLE_CAPTION, BOX, INLINE_BOX,
     FLEX, INLINE_FLEX,
     GRID, INLINE_GRID,
-    LAZY_BLOCK,
     NONE
 };
 
