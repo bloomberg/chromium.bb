@@ -151,8 +151,7 @@ class ASH_EXPORT DisplayManager
   bool GetSelectedResolutionForDisplayId(int64 display_id,
                                          gfx::Size* resolution_out) const;
 
-  // Tells if display rotation/ui scaling features are enabled.
-  bool IsDisplayRotationEnabled() const;
+  // Tells if the virtual resolution feature is enabled.
   bool IsDisplayUIScalingEnabled() const;
 
   // Returns the current overscan insets for the specified |display_id|.

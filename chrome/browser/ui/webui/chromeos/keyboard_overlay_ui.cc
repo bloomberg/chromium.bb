@@ -259,8 +259,6 @@ content::WebUIDataSource* CreateKeyboardOverlayUIHTMLSource() {
                          chromeos::switches::kHasChromeOSDiamondKey));
   ash::Shell* shell = ash::Shell::GetInstance();
   ash::internal::DisplayManager* display_manager = shell->display_manager();
-  source->AddBoolean("keyboardOverlayIsDisplayRotationEnabled",
-                     display_manager->IsDisplayRotationEnabled());
   source->AddBoolean("keyboardOverlayIsDisplayUIScalingEnabled",
                      display_manager->IsDisplayUIScalingEnabled());
   source->SetJsonPath("strings.js");

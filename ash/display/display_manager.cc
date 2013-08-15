@@ -321,8 +321,6 @@ void DisplayManager::SetOverscanInsets(int64 display_id,
 
 void DisplayManager::SetDisplayRotation(int64 display_id,
                                         gfx::Display::Rotation rotation) {
-  if (!IsDisplayRotationEnabled())
-    return;
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
        iter != displays_.end(); ++iter) {
@@ -426,17 +424,7 @@ bool DisplayManager::GetSelectedResolutionForDisplayId(
   return true;
 }
 
-bool DisplayManager::IsDisplayRotationEnabled() const {
-  static bool enabled = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kAshDisableDisplayRotation);
-  return enabled;
-}
-
 bool DisplayManager::IsDisplayUIScalingEnabled() const {
-  static bool enabled = !CommandLine::ForCurrentProcess()->
-      HasSwitch(switches::kAshDisableUIScaling);
-  if (!enabled)
-    return false;
   return GetDisplayIdForUIScaling() != gfx::Display::kInvalidDisplayID;
 }
 

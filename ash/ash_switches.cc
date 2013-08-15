@@ -69,15 +69,9 @@ const char kAshDisableNewLockAnimations[] = "ash-disable-new-lock-animations";
 // Disable the per application grouping version of the launcher.
 const char kAshDisablePerAppLauncher[] = "ash-disable-per-app-launcher";
 
-// Disables display rotation.
-const char kAshDisableDisplayRotation[] = "ash-disable-display-rotation";
-
 // Disable immersive fullscreen mode, regardless of default setting.
 const char kAshDisableImmersiveFullscreen[] =
     "ash-disable-immersive-fullscreen";
-
-// Disables ui scaling.
-const char kAshDisableUIScaling[] = "ash-disable-ui-scaling";
 
 #if defined(OS_CHROMEOS)
 // Disable compositor based mirroring.

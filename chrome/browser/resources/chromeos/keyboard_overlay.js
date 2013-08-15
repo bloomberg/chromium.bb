@@ -128,10 +128,6 @@ function getShortcutData() {
 
   shortcutDataCache = keyboardOverlayData['shortcut'];
 
-  if (!isDisplayRotationEnabled()) {
-    // Rotate screen
-    delete shortcutDataCache['reload<>CTRL<>SHIFT'];
-  }
   if (!isDisplayUIScalingEnabled()) {
     // Zoom screen in
     delete shortcutDataCache['+<>CTRL<>SHIFT'];
@@ -572,14 +568,6 @@ function initLayout() {
  */
 function hasDiamondKey() {
   return loadTimeData.getBoolean('keyboardOverlayHasChromeOSDiamondKey');
-}
-
-/**
- * Returns true if display rotation feature is enabled.
- * @return {boolean} True if display rotation feature is enabled.
- */
-function isDisplayRotationEnabled() {
-  return loadTimeData.getBoolean('keyboardOverlayIsDisplayRotationEnabled');
 }
 
 /**
