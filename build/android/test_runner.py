@@ -602,7 +602,7 @@ def _RunPerfTests(options, error_func):
 
   runner_factory, tests = perf_setup.Setup(perf_options)
 
-  results, exit_code = test_dispatcher.RunTests(
+  results, _ = test_dispatcher.RunTests(
       tests, runner_factory, False, None, shard=True, test_timeout=None)
 
   report_results.LogFull(
@@ -610,8 +610,9 @@ def _RunPerfTests(options, error_func):
       test_type='Perf',
       test_package='Perf',
       build_type=options.build_type)
-
-  return exit_code
+  # Always return 0 on the sharding stage. Individual tests exit_code
+  # will be returned on the print_step stage.
+  return 0
 
 
 def RunTestsCommand(command, options, args, option_parser):
