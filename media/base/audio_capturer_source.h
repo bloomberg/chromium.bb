@@ -26,7 +26,8 @@ class AudioCapturerSource
     // Callback to deliver the captured data from the OS.
     virtual void Capture(AudioBus* audio_source,
                          int audio_delay_milliseconds,
-                         double volume) = 0;
+                         double volume,
+                         bool key_pressed) = 0;
 
     // Signals an error has occurred.
     virtual void OnCaptureError() = 0;

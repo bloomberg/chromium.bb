@@ -52,6 +52,7 @@
 #include "crypto/nss_util.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media.h"
+#include "media/base/user_input_monitor.h"
 #include "media/midi/midi_manager.h"
 #include "net/base/network_change_notifier.h"
 #include "net/socket/client_socket_factory.h"
@@ -870,6 +871,14 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       "BrowserMainLoop::BrowserThreadsStarted:InitSpeechRecognition");
     speech_recognition_manager_.reset(new SpeechRecognitionManagerImpl(
         audio_manager_.get(), media_stream_manager_.get()));
+  }
+
+  {
+    TRACE_EVENT0(
+        "startup",
+        "BrowserMainLoop::BrowserThreadsStarted::InitUserInputMonitor");
+    user_input_monitor_ = media::UserInputMonitor::Create(
+        io_thread_->message_loop_proxy(), main_thread_->message_loop_proxy());
   }
 
   // Alert the clipboard class to which threads are allowed to access the

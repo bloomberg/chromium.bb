@@ -29,14 +29,17 @@ void AudioInputSyncWriter::UpdateRecordedBytes(uint32 bytes) {
   socket_->Send(&bytes, sizeof(bytes));
 }
 
-uint32 AudioInputSyncWriter::Write(
-    const void* data, uint32 size, double volume) {
+uint32 AudioInputSyncWriter::Write(const void* data,
+                                   uint32 size,
+                                   double volume,
+                                   bool key_pressed) {
   uint8* ptr = static_cast<uint8*>(shared_memory_->memory());
   ptr += current_segment_id_ * shared_memory_segment_size_;
   media::AudioInputBuffer* buffer =
       reinterpret_cast<media::AudioInputBuffer*>(ptr);
   buffer->params.volume = volume;
   buffer->params.size = size;
+  buffer->params.key_pressed = key_pressed;
   memcpy(buffer->audio, data, size);
 
   if (++current_segment_id_ >= shared_memory_segment_count_)

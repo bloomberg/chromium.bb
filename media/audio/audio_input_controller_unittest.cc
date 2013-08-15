@@ -83,9 +83,13 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
   AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
                          kSampleRate, kBitsPerSample, kSamplesPerPacket);
+
   scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId);
+      AudioInputController::Create(audio_manager.get(),
+                                   &event_handler,
+                                   params,
+                                   AudioManagerBase::kDefaultDeviceId,
+                                   NULL);
   ASSERT_TRUE(controller.get());
 
   // Wait for OnCreated() to fire.
@@ -120,8 +124,11 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
 
   // Creating the AudioInputController should render an OnCreated() call.
   scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId);
+      AudioInputController::Create(audio_manager.get(),
+                                   &event_handler,
+                                   params,
+                                   AudioManagerBase::kDefaultDeviceId,
+                                   NULL);
   ASSERT_TRUE(controller.get());
 
   // Start recording and trigger one OnRecording() call.
@@ -167,8 +174,11 @@ TEST_F(AudioInputControllerTest, RecordAndError) {
 
   // Creating the AudioInputController should render an OnCreated() call.
   scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId);
+      AudioInputController::Create(audio_manager.get(),
+                                   &event_handler,
+                                   params,
+                                   AudioManagerBase::kDefaultDeviceId,
+                                   NULL);
   ASSERT_TRUE(controller.get());
 
   // Start recording and trigger one OnRecording() call.
@@ -196,11 +206,17 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
     .Times(Exactly(0));
 
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
-  AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
-                         kSampleRate, kBitsPerSample, kSamplesPerPacket * 1000);
+  AudioParameters params(AudioParameters::AUDIO_FAKE,
+                         kChannelLayout,
+                         kSampleRate,
+                         kBitsPerSample,
+                         kSamplesPerPacket * 1000);
   scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId);
+      AudioInputController::Create(audio_manager.get(),
+                                   &event_handler,
+                                   params,
+                                   AudioManagerBase::kDefaultDeviceId,
+                                   NULL);
   ASSERT_FALSE(controller.get());
 }
 
@@ -216,11 +232,17 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
       .Times(Exactly(1));
 
   scoped_ptr<AudioManager> audio_manager(AudioManager::Create());
-  AudioParameters params(AudioParameters::AUDIO_FAKE, kChannelLayout,
-                         kSampleRate, kBitsPerSample, kSamplesPerPacket);
+  AudioParameters params(AudioParameters::AUDIO_FAKE,
+                         kChannelLayout,
+                         kSampleRate,
+                         kBitsPerSample,
+                         kSamplesPerPacket);
   scoped_refptr<AudioInputController> controller =
-      AudioInputController::Create(audio_manager.get(), &event_handler, params,
-                                   AudioManagerBase::kDefaultDeviceId);
+      AudioInputController::Create(audio_manager.get(),
+                                   &event_handler,
+                                   params,
+                                   AudioManagerBase::kDefaultDeviceId,
+                                   NULL);
   ASSERT_TRUE(controller.get());
 
   controller->Record();

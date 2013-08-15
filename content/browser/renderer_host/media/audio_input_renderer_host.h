@@ -44,6 +44,7 @@
 namespace media {
 class AudioManager;
 class AudioParameters;
+class UserInputMonitor;
 }
 
 namespace content {
@@ -55,10 +56,11 @@ class CONTENT_EXPORT AudioInputRendererHost
       public media::AudioInputController::EventHandler {
  public:
   // Called from UI thread from the owner of this object.
-  AudioInputRendererHost(
-      media::AudioManager* audio_manager,
-      MediaStreamManager* media_stream_manager,
-      AudioMirroringManager* audio_mirroring_manager);
+  // |user_input_monitor| is used for typing detection and can be NULL.
+  AudioInputRendererHost(media::AudioManager* audio_manager,
+                         MediaStreamManager* media_stream_manager,
+                         AudioMirroringManager* audio_mirroring_manager,
+                         media::UserInputMonitor* user_input_monitor);
 
   // BrowserMessageFilter implementation.
   virtual void OnChannelClosing() OVERRIDE;
@@ -153,6 +155,9 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // A map of stream IDs to audio sources.
   AudioEntryMap audio_entries_;
+
+  // Raw pointer of the UserInputMonitor.
+  media::UserInputMonitor* user_input_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };

@@ -12,8 +12,9 @@ TestAudioInputController::TestAudioInputController(
     AudioManager* audio_manager,
     const AudioParameters& audio_parameters,
     EventHandler* event_handler,
-    SyncWriter* sync_writer)
-    : AudioInputController(event_handler, sync_writer),
+    SyncWriter* sync_writer,
+    UserInputMonitor* user_input_monitor)
+    : AudioInputController(event_handler, sync_writer, user_input_monitor),
       audio_parameters_(audio_parameters),
       factory_(factory),
       event_handler_(event_handler) {
@@ -48,10 +49,11 @@ TestAudioInputControllerFactory::~TestAudioInputControllerFactory() {
 AudioInputController* TestAudioInputControllerFactory::Create(
     AudioManager* audio_manager,
     AudioInputController::EventHandler* event_handler,
-    AudioParameters params) {
+    AudioParameters params,
+    UserInputMonitor* user_input_monitor) {
   DCHECK(!controller_);  // Only one test instance managed at a time.
-  controller_ = new TestAudioInputController(this, audio_manager, params,
-      event_handler, NULL);
+  controller_ = new TestAudioInputController(
+      this, audio_manager, params, event_handler, NULL, user_input_monitor);
   return controller_;
 }
 
