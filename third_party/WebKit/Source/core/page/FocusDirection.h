@@ -27,15 +27,22 @@
 #define FocusDirection_h
 
 namespace WebCore {
+// FIXME: Rename FocusDirection to FocusType or something.
     enum FocusDirection {
+        // Element::focus(), etc.
         FocusDirectionNone = 0,
+        // TAB, or Shift + TAB
         FocusDirectionForward,
         FocusDirectionBackward,
+        // Spatial navigation.
         FocusDirectionUp,
         FocusDirectionDown,
         FocusDirectionLeft,
         FocusDirectionRight,
-        FocusDirectionMouse
+        // Mouse press
+        FocusDirectionMouse,
+        // Re-focus by a page focus
+        FocusDirectionPage
     };
 }
 

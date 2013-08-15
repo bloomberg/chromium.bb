@@ -380,7 +380,7 @@ void BaseMultipleFieldsDateAndTimeInputType::handleFocusEvent(Element* oldFocuse
     if (direction == FocusDirectionBackward) {
         if (element()->document()->page())
             element()->document()->page()->focusController().advanceFocus(direction);
-    } else if (direction == FocusDirectionNone || direction == FocusDirectionMouse) {
+    } else if (direction == FocusDirectionNone || direction == FocusDirectionMouse || direction == FocusDirectionPage) {
         edit->focusByOwner(oldFocusedElement);
     } else
         edit->focusByOwner();
