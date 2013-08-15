@@ -33,8 +33,8 @@ class GithubFileSystemTest(unittest.TestCase):
                      self._file_system.Read(['/']).Get())
 
   def testRead(self):
-   self.assertEqual(self._ReadLocalFile('expected_read.txt'),
-                    self._file_system.ReadSingle('/analytics/launch.js'))
+    self.assertEqual(self._ReadLocalFile('expected_read.txt'),
+                     self._file_system.ReadSingle('/analytics/launch.js'))
 
   def testStat(self):
     self.assertEqual(0, self._file_system.Stat('zipball').version)

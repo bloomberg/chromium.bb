@@ -78,7 +78,7 @@ class APIListDataSource(object):
     names = []
     for platform in ['apps', 'extensions']:
       for category in ['chrome', 'experimental', 'private']:
-       names.extend(self.get(platform).get(category))
+        names.extend(self.get(platform).get(category))
     return [api_name['name'] for api_name in names]
 
   def get(self, key):

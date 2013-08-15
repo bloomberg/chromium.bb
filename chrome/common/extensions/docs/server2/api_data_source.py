@@ -304,7 +304,7 @@ class _JSCModel(object):
     return None
 
   def _IsExperimental(self):
-     return self._namespace.name.startswith('experimental')
+    return self._namespace.name.startswith('experimental')
 
   def _GenerateTypes(self, types):
     return [self._GenerateType(t) for t in types]

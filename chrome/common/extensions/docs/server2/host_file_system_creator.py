@@ -16,12 +16,12 @@ class HostFileSystemCreator(object):
                object_store_creator,
                offline=False,
                constructor_for_test=None):
-     self._object_store_creator = object_store_creator
-     # Determines whether or not created file systems will be wrapped in an
-     # OfflineFileSystem.
-     self._offline = offline
-     # Provides custom create behavior, useful in tests.
-     self._constructor_for_test = constructor_for_test
+    self._object_store_creator = object_store_creator
+    # Determines whether or not created file systems will be wrapped in an
+    # OfflineFileSystem.
+    self._offline = offline
+    # Provides custom create behavior, useful in tests.
+    self._constructor_for_test = constructor_for_test
 
   def Create(self, branch='trunk', revision=None, offline=None):
     '''Creates either SVN file systems or specialized file systems from the

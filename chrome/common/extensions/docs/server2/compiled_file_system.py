@@ -82,7 +82,7 @@ class CompiledFileSystem(object):
     version = self._file_system.Stat(path).version
     cache_entry = self._list_object_store.Get(path).Get()
     if (cache_entry is not None) and (version == cache_entry.version):
-        return cache_entry._cache_data
+      return cache_entry._cache_data
     cache_data = self._populate_function(path, self._RecursiveList(path))
     self._list_object_store.Set(path, _CacheEntry(cache_data, version))
     return cache_data
