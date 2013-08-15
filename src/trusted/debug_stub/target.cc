@@ -70,10 +70,6 @@ bool Target::Init() {
   NaClXMutexCtor(&mutex_);
   ctx_ = new uint8_t[abi_->GetContextSize()];
 
-  if (NULL == ctx_) {
-    Destroy();
-    return false;
-  }
   initial_breakpoint_addr_ = (uint32_t) nap_->initial_entry_pt;
   if (!AddBreakpoint(initial_breakpoint_addr_))
     return false;
@@ -106,8 +102,6 @@ bool Target::AddBreakpoint(uint32_t user_address) {
   // to be able to remove the breakpoint later, we save a copy of the
   // locations we are overwriting into breakpoint_map_.
   uint8_t *data = new uint8_t[bp->size_];
-  if (NULL == data)
-    return false;
 
   // Copy the old code from here
   if (!IPlatform::GetMemory(sysaddr, bp->size_, data)) {
