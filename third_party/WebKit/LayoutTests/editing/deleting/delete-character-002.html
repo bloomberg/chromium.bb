@@ -1,0 +1,20 @@
+<div id="container">
+<textarea id="sample"></textarea>
+</div>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script>
+function $(id) { return document.getElementById(id); }
+var sample = $('sample');
+sample.value = 'a\nb';
+sample.setSelectionRange(sample.value.length, sample.value.length);
+sample.focus();
+document.execCommand('Delete', false);
+
+shouldBeEqualToString('sample.value', 'a\n');
+shouldBe('sample.selectionStart', '2');
+shouldBe('sample.selectionEnd', '2');
+
+if (window.testRunner)
+    $('container').outerHTML = '';
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>

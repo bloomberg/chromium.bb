@@ -1,0 +1,7 @@
+PASS sample.value is "a\n"
+PASS sample.selectionStart is 2
+PASS sample.selectionEnd is 2
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

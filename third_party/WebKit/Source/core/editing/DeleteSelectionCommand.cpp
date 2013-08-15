@@ -814,6 +814,14 @@ void DeleteSelectionCommand::doApply()
 
     removePreviouslySelectedEmptyTableRows();
 
+    if (!m_needPlaceholder && rootWillStayOpenWithoutPlaceholder) {
+        VisiblePosition visualEnding(m_endingPosition);
+        m_needPlaceholder = !isStartOfParagraph(visualEnding, CanCrossEditingBoundary)
+            && isEndOfParagraph(visualEnding, CanCrossEditingBoundary)
+            && lineBreakExistsAtVisiblePosition(visualEnding)
+            && visualEnding.next(CannotCrossEditingBoundary).isNull();
+    }
+
     RefPtr<Node> placeholder = m_needPlaceholder ? createBreakElement(document()).get() : 0;
 
     if (placeholder) {

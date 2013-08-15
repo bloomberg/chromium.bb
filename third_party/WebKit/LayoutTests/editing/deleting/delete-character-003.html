@@ -1,0 +1,26 @@
+<div id="container">
+<div id="sample" contenteditable="true"></div>
+</div>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script>
+function $(id) { return document.getElementById(id); }
+var sample = $('sample');
+sample.innerHTML = 'a<br>b';
+sample.focus();
+var range = document.createRange();
+range.selectNodeContents(sample);
+range.collapse(false);
+var selection = window.getSelection();
+selection.removeAllRanges();
+selection.addRange(range);
+document.execCommand('Delete', false);
+
+shouldBeEqualToString('sample.innerHTML', 'a<br><br>');
+shouldBeEqualToString('selection.type', 'Caret');
+shouldBe('selection.focusNode', 'sample');
+shouldBe('selection.focusOffset', '2');
+
+if (window.testRunner)
+    $('container').outerHTML = '';
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
