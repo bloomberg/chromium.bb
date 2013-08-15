@@ -180,6 +180,10 @@ screenshooter_shoot(struct wl_client *client,
 	struct weston_buffer *buffer =
 		weston_buffer_from_resource(buffer_resource);
 
+	if (buffer == NULL) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
 	if (!wl_shm_buffer_get(buffer->resource))
 		return;
 	

@@ -1077,17 +1077,18 @@ weston_buffer_from_resource(struct wl_resource *resource)
 	listener = wl_resource_get_destroy_listener(resource,
 						    weston_buffer_destroy_handler);
 
-	if (listener) {
-		buffer = container_of(listener, struct weston_buffer,
-				      destroy_listener);
-	} else {
-		buffer = zalloc(sizeof *buffer);
-		buffer->resource = resource;
-		wl_signal_init(&buffer->destroy_signal);
-		buffer->destroy_listener.notify = weston_buffer_destroy_handler;
-		wl_resource_add_destroy_listener(resource,
-						 &buffer->destroy_listener);
-	}
+	if (listener)
+		return container_of(listener, struct weston_buffer,
+				    destroy_listener);
+
+	buffer = zalloc(sizeof *buffer);
+	if (buffer == NULL)
+		return NULL;
+
+	buffer->resource = resource;
+	wl_signal_init(&buffer->destroy_signal);
+	buffer->destroy_listener.notify = weston_buffer_destroy_handler;
+	wl_resource_add_destroy_listener(resource, &buffer->destroy_listener);
 	
 	return buffer;
 }
@@ -1443,6 +1444,10 @@ surface_attach(struct wl_client *client,
 
 	if (buffer_resource)
 		buffer = weston_buffer_from_resource(buffer_resource);
+	if (buffer == NULL) {
+		wl_client_post_no_memory(client);
+		return;
+	}
 
 	/* Attach, attach, without commit in between does not send
 	 * wl_buffer.release. */
