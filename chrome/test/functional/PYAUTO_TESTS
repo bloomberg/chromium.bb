@@ -476,43 +476,8 @@
   # the test machine.
   'WEBRTC': {
     'all': [
-      'media_stream_infobar',
-      'webrtc_brutality_test',
-      'webrtc_call',
-
-      # ==================================================
-      # Disabled tests that need to be investigated/fixed.
-      # ==================================================
-      # crbug.com/248079
-      '-webrtc_brutality_test.WebrtcBrutalityTest.testReloadsAfterGetUserMedia',
-    ],
-  },
-
-  # WebRTC / AppRTC Integration tests.
-  'WEBRTC_APPRTC': {
-    'all': [
-      'webrtc_apprtc_call',
-      # ==================================================
-      # Disabled tests that need to be investigated/fixed.
-      # ==================================================
-      # crbug.com/254412
-      '-webrtc_apprtc_call.WebrtcApprtcCallTest.testApprtcTabToTabCall',
-      '-webrtc_apprtc_call.WebrtcApprtcCallTest.testApprtcLoopbackCall',
-    ],
-  },
-
-  # WebRTC quality tests. The video quality test requires a webcam, an audio
-  # device and a special setup where the webcam plays a barcode-encoded video.
-  # The webrtc_audio_quality test requires additional configuration as described
-  # in the test's class comments.
-  'WEBRTC_QUALITY': {
-    'all': [
-      'webrtc_video_quality',
-      # Disabled until crbug.com/254437 is resolved.
-      '-webrtc_audio_quality',
-    ],
-    'mac': [
-      '-webrtc_audio_quality',  # Not implemented.
+      # The only remaining WebRTC tests which hasn't been ported.
+      'webrtc_call.WebrtcCallTest.testWebrtcJsep01CallAndMeasureCpu20Seconds',
     ],
   },
 
