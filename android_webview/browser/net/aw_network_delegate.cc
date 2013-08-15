@@ -5,6 +5,7 @@
 #include "android_webview/browser/net/aw_network_delegate.h"
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
+#include "base/android/build_info.h"
 #include "net/base/net_errors.h"
 #include "net/base/completion_callback.h"
 #include "net/url_request/url_request.h"
@@ -28,6 +29,11 @@ int AwNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
+
+  DCHECK(headers);
+  headers->SetHeaderIfMissing(
+      "X-Requested-With",
+      base::android::BuildInfo::GetInstance()->package_name());
   return net::OK;
 }
 
