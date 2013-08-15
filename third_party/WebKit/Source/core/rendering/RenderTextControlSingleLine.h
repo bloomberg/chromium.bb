@@ -111,6 +111,7 @@ void toRenderTextControlSingleLine(const RenderTextControlSingleLine*);
 class RenderTextControlInnerBlock : public RenderBlock {
 public:
     RenderTextControlInnerBlock(Element* element) : RenderBlock(element) { }
+    virtual int inlineBlockBaseline(LineDirectionMode direction) const OVERRIDE { return lastLineBoxBaseline(direction); }
 
 private:
     virtual bool isIntristicallyScrollable(ScrollbarOrientation orientation) const OVERRIDE

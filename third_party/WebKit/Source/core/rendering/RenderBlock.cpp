@@ -6417,10 +6417,8 @@ int RenderBlock::baselinePosition(FontBaseline baselineType, bool firstLine, Lin
         // (the content inside them moves).  This matches WinIE as well, which just bottom-aligns them.
         // We also give up on finding a baseline if we have a vertical scrollbar, or if we are scrolled
         // vertically (e.g., an overflow:hidden block that has had scrollTop moved).
-        // inline-block with overflow should use the bottom of margin box as well.
         bool ignoreBaseline = (layer() && (isMarquee() || (direction == HorizontalLine ? (layer()->verticalScrollbar() || layer()->scrollYOffset())
-            : (layer()->horizontalScrollbar() || layer()->scrollXOffset())))) || (isWritingModeRoot() && !isRubyRun())
-            || (style()->isDisplayInlineType() && style()->overflowY() != OVISIBLE);
+            : (layer()->horizontalScrollbar() || layer()->scrollXOffset())))) || (isWritingModeRoot() && !isRubyRun());
 
         int baselinePos = ignoreBaseline ? -1 : inlineBlockBaseline(direction);
 
@@ -6474,6 +6472,11 @@ int RenderBlock::firstLineBoxBaseline() const
 
 int RenderBlock::inlineBlockBaseline(LineDirectionMode direction) const
 {
+    if (style()->overflowY() != OVISIBLE) {
+        // We are not calling RenderBox::baselinePosition here because the caller should add the margin-top/margin-right, not us.
+        return direction == HorizontalLine ? height() + m_marginBox.bottom() : width() + m_marginBox.left();
+    }
+
     return lastLineBoxBaseline(direction);
 }
 
