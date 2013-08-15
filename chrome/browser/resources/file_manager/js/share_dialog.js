@@ -56,7 +56,7 @@ ShareDialog.WebViewAuthorizer.prototype.initialize = function(callback) {
 
   var registerInjectionHooks = function() {
     this.webView_.removeEventListener('loadstop', registerInjectionHooks);
-    this.webView_.onBeforeSendHeaders.addListener(
+    this.webView_.request.onBeforeSendHeaders.addListener(
       this.authorizeRequest_.bind(this),
       {urls: [this.urlPattern_]},
       ['blocking', 'requestHeaders']);
