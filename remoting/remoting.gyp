@@ -2048,8 +2048,10 @@
       'sources': [
         'client/plugin/chromoting_instance.cc',
         'client/plugin/chromoting_instance.h',
-        'client/plugin/mac_key_event_processor.cc',
-        'client/plugin/mac_key_event_processor.h',
+        'client/plugin/normalizing_input_filter.cc',
+        'client/plugin/normalizing_input_filter_cros.cc',
+        'client/plugin/normalizing_input_filter_mac.cc',
+        'client/plugin/normalizing_input_filter.h',
         'client/plugin/pepper_audio_player.cc',
         'client/plugin/pepper_audio_player.h',
         'client/plugin/pepper_entrypoints.cc',
@@ -2072,6 +2074,13 @@
         'client/plugin/pepper_util.h',
         'client/plugin/pepper_signal_strategy.cc',
         'client/plugin/pepper_signal_strategy.h',
+      ],
+      'conditions' : [
+        [ '(OS!="linux" or chromeos==0)', {
+          'sources!': [
+            'client/plugin/normalizing_input_filter_cros.cc',
+          ],
+        }],
       ],
     },  # end of target 'remoting_client_plugin'
 
@@ -2740,7 +2749,8 @@
         'base/util_unittest.cc',
         'client/audio_player_unittest.cc',
         'client/key_event_mapper_unittest.cc',
-        'client/plugin/mac_key_event_processor_unittest.cc',
+        'client/plugin/normalizing_input_filter_cros_unittest.cc',
+        'client/plugin/normalizing_input_filter_mac_unittest.cc',
         'codec/audio_encoder_opus_unittest.cc',
         'codec/codec_test.cc',
         'codec/codec_test.h',
@@ -2853,7 +2863,7 @@
             ],
           },
         }],
-        ['OS=="mac" or (OS=="linux" and chromeos==0)', {
+        [ 'OS=="mac" or (OS=="linux" and chromeos==0)', {
           # Javascript unittests are disabled on CrOS because they cause
           # valgrind and test errors.
           #
@@ -2885,6 +2895,11 @@
             'webapp/all_js_load.gtestjs',
             'webapp/format_iq.gtestjs',
             '<@(remoting_webapp_js_files)',
+          ],
+        }],
+        [ '(OS!="linux" or chromeos==0)', {
+          'sources!': [
+            'client/plugin/normalizing_input_filter_cros_unittest.cc',
           ],
         }],
         ['enable_remoting_host == 0', {
