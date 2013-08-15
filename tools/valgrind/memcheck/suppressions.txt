@@ -7242,3 +7242,14 @@
    fun:SSL_ForceHandshake
    fun:_ZN3net18SSLClientSocketNSS4Core11DoHandshakeEv
 }
+{
+   bug_273398
+   Memcheck:Leak
+   ...
+   fun:_ZN6Pickle6ResizeEm
+   fun:_ZN6PickleC1Ev
+   fun:_ZN7content14ZygoteHostImpl20GetTerminationStatusEibPi
+   fun:_ZN7content20ChildProcessLauncher25GetChildTerminationStatusEbPi
+   fun:_ZN7content27BrowserChildProcessHostImpl20GetTerminationStatusEPi
+   fun:_ZN7content27BrowserChildProcessHostImpl19OnChildDisconnectedEv
+}
