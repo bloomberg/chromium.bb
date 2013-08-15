@@ -54,9 +54,9 @@ void RuntimeCustomBindings::OpenChannelToExtension(
   CHECK(args[0]->IsString() && args[1]->IsString());
 
   ExtensionMsg_ExternalConnectionInfo info;
-  info.source_id = context()->extension() ? context()->extension()->id() : "";
+  info.source_id = context()->GetExtensionID();
   info.target_id = *v8::String::Utf8Value(args[0]->ToString());
-  info.source_url = renderview->GetWebView()->mainFrame()->document().url();
+  info.source_url = context()->GetURL();
   std::string channel_name = *v8::String::Utf8Value(args[1]->ToString());
   int port_id = -1;
   renderview->Send(new ExtensionHostMsg_OpenChannelToExtension(

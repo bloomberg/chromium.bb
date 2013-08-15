@@ -142,21 +142,45 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     INCORRECT_RESPONSE_MESSAGE = 6,
   };
 
+  bool AppendIframe(const GURL& src) {
+    bool result;
+    CHECK(content::ExecuteScriptAndExtractBool(
+        browser()->tab_strip_model()->GetActiveWebContents(),
+        "actions.appendIframe('" + src.spec() + "');", &result));
+    return result;
+  }
+
   Result CanConnectAndSendMessages(const std::string& extension_id) {
-    return CanConnectAndSendMessages(browser(), extension_id);
+    return CanConnectAndSendMessages(browser(), extension_id, "");
   }
 
   Result CanConnectAndSendMessages(Browser* browser,
                                    const std::string& extension_id) {
+    return CanConnectAndSendMessages(browser, extension_id, "");
+  }
+
+  Result CanConnectAndSendMessages(const std::string& extension_id,
+                                   const char* frame_xpath) {
+    return CanConnectAndSendMessages(browser(), extension_id, frame_xpath);
+  }
+
+  Result CanConnectAndSendMessages(Browser* browser,
+                                   const std::string& extension_id,
+                                   const char* frame_xpath) {
     int result;
-    CHECK(content::ExecuteScriptAndExtractInt(
+    CHECK(content::ExecuteScriptInFrameAndExtractInt(
         browser->tab_strip_model()->GetActiveWebContents(),
+        frame_xpath,
         "assertions.canConnectAndSendMessages('" + extension_id + "')",
         &result));
     return static_cast<Result>(result);
   }
 
   testing::AssertionResult AreAnyNonWebApisDefined() {
+    return AreAnyNonWebApisDefined("");
+  }
+
+  testing::AssertionResult AreAnyNonWebApisDefined(const char* frame_xpath) {
     // All runtime API methods are non-web except for sendRequest and connect.
     const char* non_messaging_apis[] = {
         "getBackgroundPage",
@@ -189,8 +213,9 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
     as_js_array += "]";
 
     bool any_defined;
-    CHECK(content::ExecuteScriptAndExtractBool(
+    CHECK(content::ExecuteScriptInFrameAndExtractBool(
         browser()->tab_strip_model()->GetActiveWebContents(),
+        frame_xpath,
         "assertions.areAnyRuntimePropertiesDefined(" + as_js_array + ")",
         &any_defined));
     return any_defined ?
@@ -214,24 +239,30 @@ class ExternallyConnectableMessagingTest : public ExtensionApiTest {
   }
 
   const Extension* LoadChromiumConnectableExtension() {
-    return LoadExtensionIntoDir(&web_connectable_dir_, base::StringPrintf(
-        "{"
-        "  \"name\": \"chromium_connectable\","
-        "  %s,"
-        "  \"externally_connectable\": {"
-        "    \"matches\": [\"*://*.chromium.org:*/*\"]"
-        "  }"
-        "}",
-        common_manifest()));
+    const Extension* extension =
+        LoadExtensionIntoDir(&web_connectable_dir_, base::StringPrintf(
+            "{"
+            "  \"name\": \"chromium_connectable\","
+            "  %s,"
+            "  \"externally_connectable\": {"
+            "    \"matches\": [\"*://*.chromium.org:*/*\"]"
+            "  }"
+            "}",
+            common_manifest()));
+    CHECK(extension);
+    return extension;
   }
 
-  scoped_refptr<const Extension> LoadNotConnectableExtension() {
-    return LoadExtensionIntoDir(&not_connectable_dir_, base::StringPrintf(
-        "{"
-        "  \"name\": \"not_connectable\","
-        "  %s"
-        "}",
-        common_manifest()));
+  const Extension* LoadNotConnectableExtension() {
+    const Extension* extension =
+        LoadExtensionIntoDir(&not_connectable_dir_, base::StringPrintf(
+            "{"
+            "  \"name\": \"not_connectable\","
+            "  %s"
+            "}",
+            common_manifest()));
+    CHECK(extension);
+    return extension;
   }
 
   void InitializeTestServer() {
@@ -295,7 +326,6 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   // Install the web connectable extension. chromium.org can connect to it,
   // google.com can't.
   const Extension* chromium_connectable = LoadChromiumConnectableExtension();
-  ASSERT_TRUE(chromium_connectable);
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
   EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
@@ -308,7 +338,6 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
 
   // Install the non-connectable extension. Nothing can connect to it.
   const Extension* not_connectable = LoadNotConnectableExtension();
-  ASSERT_TRUE(not_connectable);
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
   // Namespace will be defined here because |chromium_connectable| can connect
@@ -333,9 +362,7 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   InitializeTestServer();
 
   const Extension* chromium_connectable = LoadChromiumConnectableExtension();
-  ASSERT_TRUE(chromium_connectable);
   const Extension* not_connectable = LoadNotConnectableExtension();
-  ASSERT_TRUE(not_connectable);
 
   ui_test_utils::NavigateToURL(browser(), chromium_org_url());
   EXPECT_EQ(OK, CanConnectAndSendMessages(chromium_connectable->id()));
@@ -361,7 +388,6 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognito) {
   InitializeTestServer();
 
   const Extension* chromium_connectable = LoadChromiumConnectableExtension();
-  ASSERT_TRUE(chromium_connectable);
 
   Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
       profile()->GetOffTheRecordProfile(),
@@ -377,5 +403,44 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest, FromIncognito) {
   EXPECT_EQ(OK, CanConnectAndSendMessages(incognito_browser, id));
 }
 
+// Tests a connection from an iframe within a tab which doesn't have
+// permission. Iframe should work.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
+                       FromIframeWithPermission) {
+  InitializeTestServer();
+
+  const Extension* extension = LoadChromiumConnectableExtension();
+
+  ui_test_utils::NavigateToURL(browser(), google_com_url());
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED, CanConnectAndSendMessages(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefined());
+
+  ASSERT_TRUE(AppendIframe(chromium_org_url()));
+
+  const char* frame_xpath = "//iframe[1]";
+  EXPECT_EQ(OK, CanConnectAndSendMessages(extension->id(), frame_xpath));
+  EXPECT_FALSE(AreAnyNonWebApisDefined(frame_xpath));
+}
+
+// Tests connection from an iframe without permission within a tab that does.
+// Iframe shouldn't work.
+IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
+                       FromIframeWithoutPermission) {
+  InitializeTestServer();
+
+  const Extension* extension = LoadChromiumConnectableExtension();
+
+  ui_test_utils::NavigateToURL(browser(), chromium_org_url());
+  EXPECT_EQ(OK, CanConnectAndSendMessages(extension->id()));
+  EXPECT_FALSE(AreAnyNonWebApisDefined());
+
+  ASSERT_TRUE(AppendIframe(google_com_url()));
+
+  const char* frame_xpath = "//iframe[1]";
+  EXPECT_EQ(NAMESPACE_NOT_DEFINED,
+            CanConnectAndSendMessages(extension->id(), frame_xpath));
+  EXPECT_FALSE(AreAnyNonWebApisDefined(frame_xpath));
+}
+
 }  // namespace
-}  // namespace extensions
+};  // namespace extensions
