@@ -130,31 +130,14 @@ DirectoryTreeUtil.generateTopLevelEntries = function() {
  * Retrieves the file list with the latest information.
  *
  * @param {DirectoryTree|DirectoryItem} item Parent to be reloaded.
- * @param {DirectoryModel} dm The directory model.
  * @param {function(Array.<Entry>)} successCallback Callback on success.
  * @param {function()=} opt_errorCallback Callback on failure.
  */
 DirectoryTreeUtil.updateSubDirectories = function(
-    item, dm, successCallback, opt_errorCallback) {
-  // Tries to retrieve new entry if the cached entry is dummy.
+    item, successCallback, opt_errorCallback) {
   if (util.isFakeDirectoryEntry(item.entry)) {
-    // Fake Drive root.
-    dm.resolveDirectory(
-        item.fullPath,
-        function(entry) {
-          item.dirEntry_ = entry;
-
-          // If the retrieved entry is dummy again, returns with an error.
-          if (util.isFakeDirectoryEntry(entry)) {
-            if (opt_errorCallback)
-              opt_errorCallback();
-            return;
-          }
-
-          DirectoryTreeUtil.updateSubDirectories(
-              item, dm, successCallback, opt_errorCallback);
-        },
-        opt_errorCallback || function() {});
+    if (opt_errorCallback)
+      opt_errorCallback();
     return;
   }
 
@@ -372,7 +355,6 @@ DirectoryItem.prototype.updateSubDirectories = function(
     recursive, opt_successCallback, opt_errorCallback) {
   DirectoryTreeUtil.updateSubDirectories(
       this,
-      this.directoryModel_,
       function(entries) {
         this.entries_ = entries;
         this.redrawSubDirectoryList_(recursive);
@@ -551,20 +533,53 @@ DirectoryTree.prototype.selectByEntry = function(entry) {
   if (!DirectoryTreeUtil.isEligiblePathForDirectoryTree(entry.fullPath))
     return;
 
-  if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry))
-    return;
+  this.maybeResolveMyDriveRoot_(function() {
+    if (this.selectedItem && util.isSameEntry(entry, this.selectedItem.entry))
+      return;
 
-  if (DirectoryTreeUtil.searchAndSelectByEntry(this.items, entry))
-    return;
+    if (DirectoryTreeUtil.searchAndSelectByEntry(this.items, entry))
+      return;
 
-  this.selectedItem = null;
-  this.updateSubDirectories(
-      false /* recursive */,
-      // Success callback, failure is not handled.
-      function() {
-        if (!DirectoryTreeUtil.searchAndSelectByEntry(this.items, entry))
-          this.selectedItem = null;
-      }.bind(this));
+    this.selectedItem = null;
+    this.updateSubDirectories(
+        false /* recursive */,
+        // Success callback, failure is not handled.
+        function() {
+          if (!DirectoryTreeUtil.searchAndSelectByEntry(this.items, entry))
+            this.selectedItem = null;
+        }.bind(this));
+  }.bind(this));
+};
+
+/**
+ * Resolves the My Drive root's entry, if it is a fake. If the entry is already
+ * resolved to a DirectoryEntry, completionCallback() will be called
+ * immediately.
+ * @param {function()} completionCallback Called when the resolving is
+ *     done (or the entry is already resolved), regardless if it is
+ *     successfully done or not.
+ * @private
+ */
+DirectoryTree.prototype.maybeResolveMyDriveRoot_ = function(
+    completionCallback) {
+  var myDriveItem = this.items[0];
+  if (!util.isFakeDirectoryEntry(myDriveItem.entry)) {
+    // The entry is already resolved. Don't need to try again.
+    completionCallback();
+    return;
+  }
+
+  // The entry is a fake.
+  this.directoryModel_.resolveDirectory(
+      myDriveItem.fullPath,
+      function(entry) {
+        if (!util.isFakeDirectoryEntry(entry)) {
+          myDriveItem.dirEntry_ = entry;
+        }
+
+        completionCallback();
+      },
+      completionCallback);
 };
 
 /**
@@ -578,7 +593,6 @@ DirectoryTree.prototype.updateSubDirectories = function(
   var myDriveItem = this.items[0];
   DirectoryTreeUtil.updateSubDirectories(
       myDriveItem,
-      this.directoryModel_,
       function(entries) {
         this.entries_ = entries;
         this.redraw(recursive);
