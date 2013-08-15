@@ -269,7 +269,6 @@ surface_attach(struct wl_client *client,
 {
 	struct nested_surface *surface = wl_resource_get_user_data(resource);
 	struct nested *nested = surface->nested;
-	void *buffer = wl_resource_get_user_data(buffer_resource);
 	EGLint format, width, height;
 	cairo_device_t *device;
 
@@ -277,7 +276,7 @@ surface_attach(struct wl_client *client,
 		wl_buffer_send_release(surface->buffer_resource);
 
 	surface->buffer_resource = buffer_resource;
-	if (!query_buffer(nested->egl_display, buffer,
+	if (!query_buffer(nested->egl_display, buffer_resource,
 			  EGL_TEXTURE_FORMAT, &format)) {
 		fprintf(stderr, "attaching non-egl wl_buffer\n");
 		return;
@@ -298,14 +297,15 @@ surface_attach(struct wl_client *client,
 	}
 
 	surface->image = create_image(nested->egl_display, NULL,
-				      EGL_WAYLAND_BUFFER_WL, buffer, NULL);
+				      EGL_WAYLAND_BUFFER_WL, buffer_resource,
+				      NULL);
 	if (surface->image == EGL_NO_IMAGE_KHR) {
 		fprintf(stderr, "failed to create img\n");
 		return;
 	}
 
-	query_buffer(nested->egl_display, buffer, EGL_WIDTH, &width);
-	query_buffer(nested->egl_display, buffer, EGL_HEIGHT, &height);
+	query_buffer(nested->egl_display, buffer_resource, EGL_WIDTH, &width);
+	query_buffer(nested->egl_display, buffer_resource, EGL_HEIGHT, &height);
 
 	device = display_get_cairo_device(nested->display);
 	surface->cairo_surface = 
