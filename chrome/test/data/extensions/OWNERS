@@ -1,0 +1,13 @@
+set noparent
+
+# This should match chrome/browser/extensions/OWNERS
+asargent@chromium.org
+benwells@chromium.org
+finnur@chromium.org
+jyasskin@chromium.org
+kalman@chromium.org
+koz@chromium.org
+mek@chromium.org
+miket@chromium.org
+mpcomplete@chromium.org
+yoz@chromium.org
