@@ -9,15 +9,14 @@ from telemetry.page import page_measurement
 class LoadingTimeline(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
     super(LoadingTimeline, self).__init__(*args, **kwargs)
-    self._metrics = None
+    self._timeline_metric = timeline.TimelineMetric(timeline.TIMELINE_MODE)
 
   @property
   def results_are_the_same_on_every_page(self):
     return False
 
   def WillNavigateToPage(self, page, tab):
-    self._metrics = timeline.TimelineMetrics(timeline.TIMELINE_MODE)
-    self._metrics.Start(tab)
+    self._timeline_metric.Start(page, tab)
 
   def MeasurePage(self, page, tab, results):
     # In current telemetry tests, all tests wait for DocumentComplete state,
@@ -28,7 +27,7 @@ class LoadingTimeline(page_measurement.PageMeasurement):
 
     # TODO(nduca): when crbug.com/168431 is fixed, modify the page sets to
     # recognize loading as a toplevel action.
-    self._metrics.Stop(tab)
+    self._timeline_metric.Stop(page, tab)
 
     loading.LoadingMetric().AddResults(tab, results)
-    self._metrics.AddResults(results)
+    self._timeline_metric.AddResults(tab, results)

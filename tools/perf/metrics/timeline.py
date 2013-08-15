@@ -3,17 +3,20 @@
 # found in the LICENSE file.
 import collections
 
+from metrics import Metric
+
 TRACING_MODE = 'tracing-mode'
 TIMELINE_MODE = 'timeline-mode'
 
-class TimelineMetrics(object):
+class TimelineMetric(Metric):
   def __init__(self, mode):
     assert mode in (TRACING_MODE, TIMELINE_MODE)
+    super(TimelineMetric, self).__init__()
     self._mode = mode
     self._model = None
     self._thread_for_tab = None
 
-  def Start(self, tab):
+  def Start(self, page, tab):
     self._model = None
     self._thread_for_tab = None
 
@@ -25,7 +28,7 @@ class TimelineMetrics(object):
       assert self._mode == TIMELINE_MODE
       tab.StartTimelineRecording()
 
-  def Stop(self, tab):
+  def Stop(self, page, tab):
     if self._mode == TRACING_MODE:
       # This creates an async trace event in the render process for tab that
       # will allow us to find that tab during the AddTracingResultsForTab
@@ -49,7 +52,7 @@ class TimelineMetrics(object):
       self._model = tab.timeline_model
       self._thread_for_tab = self._model.GetAllThreads()[0]
 
-  def AddResults(self, results):
+  def AddResults(self, tab, results):
     assert self._model
 
     events = self._thread_for_tab.all_slices
@@ -58,10 +61,11 @@ class TimelineMetrics(object):
     for e in events:
       events_by_name[e.name].append(e)
 
-    for key, group in events_by_name.items():
-      times = [e.self_time for e in group]
+    for event_name, event_group in events_by_name.iteritems():
+      times = [event.self_time for event in event_group]
       total = sum(times)
       biggest_jank = max(times)
-      results.Add(key, 'ms', total)
-      results.Add(key + '_max', 'ms', biggest_jank)
-      results.Add(key + '_avg', 'ms', total / len(times))
+      results.Add(event_name, 'ms', total)
+      results.Add(event_name + '_max', 'ms', biggest_jank)
+      results.Add(event_name + '_avg', 'ms', total / len(times))
+
