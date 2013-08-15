@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/gfx/vector3d_f.h"
 
@@ -39,6 +40,42 @@ gfx::Transform TransformOperations::Blend(
   gfx::Transform to_return;
   BlendInternal(from, progress, &to_return);
   return to_return;
+}
+
+bool TransformOperations::BlendedBoundsForBox(const gfx::BoxF& box,
+                                              const TransformOperations& from,
+                                              double min_progress,
+                                              double max_progress,
+                                              gfx::BoxF* bounds) const {
+  *bounds = box;
+
+  bool from_identity = from.IsIdentity();
+  bool to_identity = IsIdentity();
+  if (from_identity && to_identity)
+    return true;
+
+  if (!MatchesTypes(from))
+    return false;
+
+  size_t num_operations =
+      std::max(from_identity ? 0 : from.operations_.size(),
+               to_identity ? 0 : operations_.size());
+  for (size_t i = 0; i < num_operations; ++i) {
+    gfx::BoxF bounds_for_operation;
+    const TransformOperation* from_op =
+        from_identity ? NULL : &from.operations_[i];
+    const TransformOperation* to_op = to_identity ? NULL : &operations_[i];
+    if (!TransformOperation::BlendedBoundsForBox(*bounds,
+                                                 from_op,
+                                                 to_op,
+                                                 min_progress,
+                                                 max_progress,
+                                                 &bounds_for_operation))
+      return false;
+    *bounds = bounds_for_operation;
+  }
+
+  return true;
 }
 
 bool TransformOperations::MatchesTypes(const TransformOperations& other) const {

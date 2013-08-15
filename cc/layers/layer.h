@@ -30,6 +30,10 @@
 #include "ui/gfx/rect_f.h"
 #include "ui/gfx/transform.h"
 
+namespace gfx {
+class BoxF;
+}
+
 namespace cc {
 
 class Animation;
@@ -327,6 +331,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   void SuspendAnimations(double monotonic_time);
   void ResumeAnimations(double monotonic_time);
+
+  bool AnimatedBoundsForBox(const gfx::BoxF& box, gfx::BoxF* bounds) {
+    return layer_animation_controller_->AnimatedBoundsForBox(box, bounds);
+  }
 
   LayerAnimationController* layer_animation_controller() {
     return layer_animation_controller_.get();

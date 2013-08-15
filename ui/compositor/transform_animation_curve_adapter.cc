@@ -51,4 +51,13 @@ gfx::Transform TransformAnimationCurveAdapter::GetValue(
   return gfx::ComposeTransform(to_return);
 }
 
+bool TransformAnimationCurveAdapter::AnimatedBoundsForBox(
+    const gfx::BoxF& box,
+    gfx::BoxF* bounds) const {
+  // TODO(ajuma): Once cc::TransformOperation::BlendedBoundsForBox supports
+  // computing bounds for TransformOperationMatrix, use that to compute
+  // the bounds we need here.
+  return false;
+}
+
 }  // namespace ui

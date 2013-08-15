@@ -10,6 +10,10 @@
 #include "cc/output/filter_operations.h"
 #include "ui/gfx/transform.h"
 
+namespace gfx {
+class BoxF;
+}
+
 namespace cc {
 
 class FilterAnimationCurve;
@@ -48,6 +52,12 @@ class CC_EXPORT TransformAnimationCurve : public AnimationCurve {
   virtual ~TransformAnimationCurve() {}
 
   virtual gfx::Transform GetValue(double t) const = 0;
+
+  // Sets |bounds| to be the bounding box for the region within which |box|
+  // will move during this animation. If this region cannot be computed,
+  // returns false.
+  virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
+                                    gfx::BoxF* bounds) const = 0;
 
   // Partial Animation implementation.
   virtual CurveType Type() const OVERRIDE;

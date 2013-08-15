@@ -12,7 +12,7 @@ namespace cc {
 
 namespace {
 
-static const double BEZIER_EPSILON = 1e-7;
+static const double kBezierEpsilon = 1e-7;
 static const int MAX_STEPS = 30;
 
 static double eval_bezier(double x1, double x2, double t) {
@@ -48,14 +48,14 @@ static double bezier_interp(double x1,
   double step = 1.0;
   for (int i = 0; i < MAX_STEPS; ++i, step *= 0.5) {
     const double error = eval_bezier(x1, x2, t) - x;
-    if (std::abs(error) < BEZIER_EPSILON)
+    if (std::abs(error) < kBezierEpsilon)
       break;
     t += error > 0.0 ? -step : step;
   }
 
   // We should have terminated the above loop because we got close to x, not
   // because we exceeded MAX_STEPS. Do a DCHECK here to confirm.
-  DCHECK_GT(BEZIER_EPSILON, std::abs(eval_bezier(x1, x2, t) - x));
+  DCHECK_GT(kBezierEpsilon, std::abs(eval_bezier(x1, x2, t) - x));
 
   // Step 2. Return the interpolated y values at the t we computed above.
   return eval_bezier(y1, y2, t);
@@ -91,6 +91,53 @@ float CubicBezierTimingFunction::GetValue(double x) const {
 scoped_ptr<AnimationCurve> CubicBezierTimingFunction::Clone() const {
   return make_scoped_ptr(
       new CubicBezierTimingFunction(*this)).PassAs<AnimationCurve>();
+}
+
+void CubicBezierTimingFunction::Range(float* min, float* max) const {
+  *min = 0.f;
+  *max = 1.f;
+  if (0.f <= y1_ && y1_ < 1.f && 0.f <= y2_ && y2_ <= 1.f)
+    return;
+
+  // Represent the function's derivative in the form at^2 + bt + c.
+  float a = 3.f * (y1_ - y2_) + 1.f;
+  float b = 2.f * (y2_ - 2.f * y1_);
+  float c = y1_;
+
+  // Check if the derivative is constant.
+  if (std::abs(a) < kBezierEpsilon &&
+      std::abs(b) < kBezierEpsilon)
+    return;
+
+  // Zeros of the function's derivative.
+  float t_1 = 0.f;
+  float t_2 = 0.f;
+
+  if (std::abs(a) < kBezierEpsilon) {
+    // The function's derivative is linear.
+    t_1 = -c / b;
+  } else {
+    // The function's derivative is a quadratic. We find the zeros of this
+    // quadratic using the quadratic formula.
+    float discriminant = b * b - 4 * a * c;
+    if (discriminant < 0.f)
+      return;
+    float discriminant_sqrt = sqrt(discriminant);
+    t_1 = (-b + discriminant_sqrt) / (2.f * a);
+    t_2 = (-b - discriminant_sqrt) / (2.f * a);
+  }
+
+  float sol_1 = 0.f;
+  float sol_2 = 0.f;
+
+  if (0.f < t_1 && t_1 < 1.f)
+    sol_1 = eval_bezier(y1_, y2_, t_1);
+
+  if (0.f < t_2 && t_2 < 1.f)
+    sol_2 = eval_bezier(y1_, y2_, t_2);
+
+  *min = std::min(std::min(*min, sol_1), sol_2);
+  *max = std::max(std::max(*max, sol_1), sol_2);
 }
 
 // These numbers come from

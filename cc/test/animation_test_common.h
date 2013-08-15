@@ -38,6 +38,8 @@ class FakeTransformTransition : public TransformAnimationCurve {
 
   virtual double Duration() const OVERRIDE;
   virtual gfx::Transform GetValue(double time) const OVERRIDE;
+  virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
+                                    gfx::BoxF* bounds) const OVERRIDE;
 
   virtual scoped_ptr<AnimationCurve> Clone() const OVERRIDE;
 

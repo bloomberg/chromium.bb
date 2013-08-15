@@ -7,6 +7,7 @@
 #include "cc/animation/transform_operations.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/box_f.h"
 
 namespace cc {
 namespace {
@@ -330,6 +331,30 @@ TEST(KeyframedAnimationCurveTest, CubicBezierTimingFunction) {
   EXPECT_LT(0.75f, curve->GetValue(0.75f));
   EXPECT_GT(1.f, curve->GetValue(0.75f));
   EXPECT_FLOAT_EQ(1.f, curve->GetValue(1.f));
+}
+
+// Tests that animated bounds are computed as expected.
+TEST(KeyframedAnimationCurveTest, AnimatedBounds) {
+  scoped_ptr<KeyframedTransformAnimationCurve> curve(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  curve->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations1, scoped_ptr<TimingFunction>()));
+  operations1.AppendTranslate(2.0, 3.0, -1.0);
+  curve->AddKeyframe(TransformKeyframe::Create(
+      0.5, operations1, scoped_ptr<TimingFunction>()));
+  TransformOperations operations2;
+  operations2.AppendTranslate(4.0, 1.0, 2.0);
+  curve->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations2, EaseTimingFunction::Create()));
+
+  gfx::BoxF box(2.f, 3.f, 4.f, 1.f, 3.f, 2.f);
+  gfx::BoxF bounds;
+
+  EXPECT_TRUE(curve->AnimatedBoundsForBox(box, &bounds));
+  EXPECT_EQ(gfx::BoxF(2.f, 3.f, 3.f, 5.f, 6.f, 5.f).ToString(),
+            bounds.ToString());
 }
 
 }  // namespace

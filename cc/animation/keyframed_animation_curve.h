@@ -135,6 +135,8 @@ class CC_EXPORT KeyframedTransformAnimationCurve
 
   // TransformAnimationCurve implementation
   virtual gfx::Transform GetValue(double t) const OVERRIDE;
+  virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
+                                    gfx::BoxF* bounds) const OVERRIDE;
 
  private:
   KeyframedTransformAnimationCurve();

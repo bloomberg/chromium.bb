@@ -124,6 +124,11 @@ gfx::Transform FakeTransformTransition::GetValue(double time) const {
   return gfx::Transform();
 }
 
+bool FakeTransformTransition::AnimatedBoundsForBox(const gfx::BoxF& box,
+                                                   gfx::BoxF* bounds) const {
+  return false;
+}
+
 scoped_ptr<cc::AnimationCurve> FakeTransformTransition::Clone() const {
   return make_scoped_ptr(
       new FakeTransformTransition(*this)).PassAs<cc::AnimationCurve>();

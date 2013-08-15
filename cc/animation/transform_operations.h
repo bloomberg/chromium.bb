@@ -13,6 +13,7 @@
 #include "ui/gfx/transform.h"
 
 namespace gfx {
+class BoxF;
 struct DecomposedTransform;
 }
 
@@ -44,6 +45,16 @@ class CC_EXPORT TransformOperations {
   // then decomposed and interpolated. For more information, see
   // http://www.w3.org/TR/2011/WD-css3-2d-transforms-20111215/#matrix-decomposition.
   gfx::Transform Blend(const TransformOperations& from, double progress) const;
+
+  // Sets |bounds| be the bounding box for the region within which |box| will
+  // exist when it is transformed by the result of calling Blend on |from| and
+  // with progress in the range [min_progress, max_progress]. If this region
+  // cannot be computed, returns false.
+  bool BlendedBoundsForBox(const gfx::BoxF& box,
+                           const TransformOperations& from,
+                           double min_progress,
+                           double max_progress,
+                           gfx::BoxF* bounds) const;
 
   // Returns true if this operation and its descendants have the same types
   // as other and its descendants.

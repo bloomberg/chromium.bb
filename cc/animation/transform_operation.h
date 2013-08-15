@@ -7,6 +7,10 @@
 
 #include "ui/gfx/transform.h"
 
+namespace gfx {
+class BoxF;
+}
+
 namespace cc {
 
 struct TransformOperation {
@@ -56,6 +60,13 @@ struct TransformOperation {
                                        const TransformOperation* to,
                                        double progress,
                                        gfx::Transform* result);
+
+  static bool BlendedBoundsForBox(const gfx::BoxF& box,
+                                  const TransformOperation* from,
+                                  const TransformOperation* to,
+                                  double min_progress,
+                                  double max_progress,
+                                  gfx::BoxF* bounds);
 };
 
 }  // namespace cc

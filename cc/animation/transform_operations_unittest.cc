@@ -8,6 +8,7 @@
 #include "cc/animation/transform_operations.h"
 #include "cc/test/geometry_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace cc {
@@ -705,6 +706,177 @@ TEST(TransformOperationTest, ExtrapolateMatrixBlending) {
   expected.Translate3d(4, 4, 4);
   EXPECT_TRANSFORMATION_MATRIX_EQ(
       expected, operations1.Blend(operations2, -0.5));
+}
+
+TEST(TransformOperationTest, BlendedBoundsWhenTypesDoNotMatch) {
+  TransformOperations operations_from;
+  operations_from.AppendScale(2.0, 4.0, 8.0);
+  operations_from.AppendTranslate(1.0, 2.0, 3.0);
+
+  TransformOperations operations_to;
+  operations_to.AppendTranslate(10.0, 20.0, 30.0);
+  operations_to.AppendScale(4.0, 8.0, 16.0);
+
+  gfx::BoxF box(1.f, 1.f, 1.f);
+  gfx::BoxF bounds;
+
+  double min_progress = 0.0;
+  double max_progress = 1.0;
+
+  EXPECT_FALSE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+}
+
+TEST(TransformOperationTest, BlendedBoundsForIdentity) {
+  TransformOperations operations_from;
+  operations_from.AppendIdentity();
+  TransformOperations operations_to;
+  operations_to.AppendIdentity();
+
+  gfx::BoxF box(1.f, 2.f, 3.f);
+  gfx::BoxF bounds;
+
+  double min_progress = 0.0;
+  double max_progress = 1.0;
+
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(box.ToString(), bounds.ToString());
+}
+
+TEST(TransformOperationTest, BlendedBoundsForTranslate) {
+  TransformOperations operations_from;
+  operations_from.AppendTranslate(3.0, -4.0, 2.0);
+  TransformOperations operations_to;
+  operations_to.AppendTranslate(7.0, 4.0, -2.0);
+
+  gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
+  gfx::BoxF bounds;
+
+  double min_progress = -0.5;
+  double max_progress = 1.5;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(2.f, -6.f, -1.f, 12.f, 20.f, 12.f).ToString(),
+            bounds.ToString());
+
+  min_progress = 0.0;
+  max_progress = 1.0;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(4.f, -2.f, 1.f, 8.f, 12.f, 8.f).ToString(),
+            bounds.ToString());
+
+  TransformOperations identity;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+        box, identity, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(1.f, 2.f, 1.f, 11.f, 8.f, 6.f).ToString(),
+            bounds.ToString());
+
+  EXPECT_TRUE(identity.BlendedBoundsForBox(
+        box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(1.f, -2.f, 3.f, 7.f, 8.f, 6.f).ToString(),
+            bounds.ToString());
+}
+
+TEST(TransformOperationTest, BlendedBoundsForScale) {
+  TransformOperations operations_from;
+  operations_from.AppendScale(3.0, 0.5, 2.0);
+  TransformOperations operations_to;
+  operations_to.AppendScale(7.0, 4.0, -2.0);
+
+  gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
+  gfx::BoxF bounds;
+
+  double min_progress = -0.5;
+  double max_progress = 1.5;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(1.f, -7.5f, -28.f, 44.f, 42.f, 56.f).ToString(),
+            bounds.ToString());
+
+  min_progress = 0.0;
+  max_progress = 1.0;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(3.f, 1.f, -14.f, 32.f, 23.f, 28.f).ToString(),
+            bounds.ToString());
+
+  TransformOperations identity;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+        box, identity, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(1.f, 2.f, -14.f, 34.f, 22.f, 21.f).ToString(),
+            bounds.ToString());
+
+  EXPECT_TRUE(identity.BlendedBoundsForBox(
+        box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(1.f, 1.f, 3.f, 14.f, 5.f, 11.f).ToString(),
+            bounds.ToString());
+}
+
+TEST(TransformOperationTest, BlendedBoundsWithZeroScale) {
+  TransformOperations zero_scale;
+  zero_scale.AppendScale(0.0, 0.0, 0.0);
+  TransformOperations non_zero_scale;
+  non_zero_scale.AppendScale(2.0, -4.0, 5.0);
+
+  gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
+  gfx::BoxF bounds;
+
+  double min_progress = 0.0;
+  double max_progress = 1.0;
+  EXPECT_TRUE(zero_scale.BlendedBoundsForBox(
+      box, non_zero_scale, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(0.f, -24.f, 0.f, 10.f, 24.f, 35.f).ToString(),
+            bounds.ToString());
+
+  EXPECT_TRUE(non_zero_scale.BlendedBoundsForBox(
+      box, zero_scale, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(0.f, -24.f, 0.f, 10.f, 24.f, 35.f).ToString(),
+            bounds.ToString());
+
+  EXPECT_TRUE(zero_scale.BlendedBoundsForBox(
+      box, zero_scale, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF().ToString(), bounds.ToString());
+}
+
+TEST(TransformOperationTest, BlendedBoundsForSequence) {
+  TransformOperations operations_from;
+  operations_from.AppendTranslate(2.0, 4.0, -1.0);
+  operations_from.AppendScale(-1.0, 2.0, 3.0);
+  operations_from.AppendTranslate(1.0, -5.0, 1.0);
+  TransformOperations operations_to;
+  operations_to.AppendTranslate(6.0, -2.0, 3.0);
+  operations_to.AppendScale(-3.0, -2.0, 5.0);
+  operations_to.AppendTranslate(13.0, -1.0, 5.0);
+
+  gfx::BoxF box(1.f, 2.f, 3.f, 4.f, 4.f, 4.f);
+  gfx::BoxF bounds;
+
+  double min_progress = -0.5;
+  double max_progress = 1.5;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(-57.f, -59.f, -1.f, 76.f, 112.f, 80.f).ToString(),
+            bounds.ToString());
+
+  min_progress = 0.0;
+  max_progress = 1.0;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+      box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(-32.f, -25.f, 7.f, 42.f, 44.f, 48.f).ToString(),
+            bounds.ToString());
+
+  TransformOperations identity;
+  EXPECT_TRUE(operations_to.BlendedBoundsForBox(
+        box, identity, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(-33.f, -13.f, 3.f, 57.f, 19.f, 52.f).ToString(),
+            bounds.ToString());
+
+  EXPECT_TRUE(identity.BlendedBoundsForBox(
+        box, operations_from, min_progress, max_progress, &bounds));
+  EXPECT_EQ(gfx::BoxF(-7.f, -3.f, 2.f, 15.f, 23.f, 20.f).ToString(),
+            bounds.ToString());
 }
 
 }  // namespace

@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
 #include "cc/animation/transform_operation.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/vector3d_f.h"
 
 namespace {
@@ -175,6 +177,125 @@ bool TransformOperation::BlendTransformOperations(
   }
 
   return true;
+}
+
+static void ApplyScaleToBox(float x_scale,
+                            float y_scale,
+                            float z_scale,
+                            gfx::BoxF* box) {
+  if (x_scale < 0)
+    box->set_x(-box->right());
+  if (y_scale < 0)
+    box->set_y(-box->bottom());
+  if (z_scale < 0)
+    box->set_z(-box->front());
+  box->Scale(std::abs(x_scale), std::abs(y_scale), std::abs(z_scale));
+}
+
+static void UnionBoxWithZeroScale(gfx::BoxF* box) {
+  float min_x = std::min(box->x(), 0.f);
+  float min_y = std::min(box->y(), 0.f);
+  float min_z = std::min(box->z(), 0.f);
+  float max_x = std::max(box->right(), 0.f);
+  float max_y = std::max(box->bottom(), 0.f);
+  float max_z = std::max(box->front(), 0.f);
+  *box = gfx::BoxF(
+      min_x, min_y, min_z, max_x - min_x, max_y - min_y, max_z - min_z);
+}
+
+bool TransformOperation::BlendedBoundsForBox(const gfx::BoxF& box,
+                                             const TransformOperation* from,
+                                             const TransformOperation* to,
+                                             double min_progress,
+                                             double max_progress,
+                                             gfx::BoxF* bounds) {
+  bool is_identity_from = IsOperationIdentity(from);
+  bool is_identity_to = IsOperationIdentity(to);
+  if (is_identity_from && is_identity_to) {
+    *bounds = box;
+    return true;
+  }
+
+  TransformOperation::Type interpolation_type =
+      TransformOperation::TransformOperationIdentity;
+  if (is_identity_to)
+    interpolation_type = from->type;
+  else
+    interpolation_type = to->type;
+
+  switch (interpolation_type) {
+    case TransformOperation::TransformOperationTranslate: {
+      double from_x, from_y, from_z;
+      if (is_identity_from) {
+        from_x = from_y = from_z = 0.0;
+      } else {
+        from_x = from->translate.x;
+        from_y = from->translate.y;
+        from_z = from->translate.z;
+      }
+      double to_x, to_y, to_z;
+      if (is_identity_to) {
+        to_x = to_y = to_z = 0.0;
+      } else {
+        to_x = to->translate.x;
+        to_y = to->translate.y;
+        to_z = to->translate.z;
+      }
+      *bounds = box;
+      *bounds += gfx::Vector3dF(BlendDoubles(from_x, to_x, min_progress),
+                                BlendDoubles(from_y, to_y, min_progress),
+                                BlendDoubles(from_z, to_z, min_progress));
+      gfx::BoxF bounds_max = box;
+      bounds_max += gfx::Vector3dF(BlendDoubles(from_x, to_x, max_progress),
+                                   BlendDoubles(from_y, to_y, max_progress),
+                                   BlendDoubles(from_z, to_z, max_progress));
+      bounds->Union(bounds_max);
+      return true;
+    }
+    case TransformOperation::TransformOperationScale: {
+      double from_x, from_y, from_z;
+      if (is_identity_from) {
+        from_x = from_y = from_z = 1.0;
+      } else {
+        from_x = from->scale.x;
+        from_y = from->scale.y;
+        from_z = from->scale.z;
+      }
+      double to_x, to_y, to_z;
+      if (is_identity_to) {
+        to_x = to_y = to_z = 1.0;
+      } else {
+        to_x = to->scale.x;
+        to_y = to->scale.y;
+        to_z = to->scale.z;
+      }
+      *bounds = box;
+      ApplyScaleToBox(BlendDoubles(from_x, to_x, min_progress),
+                      BlendDoubles(from_y, to_y, min_progress),
+                      BlendDoubles(from_z, to_z, min_progress),
+                      bounds);
+      gfx::BoxF bounds_max = box;
+      ApplyScaleToBox(BlendDoubles(from_x, to_x, max_progress),
+                      BlendDoubles(from_y, to_y, max_progress),
+                      BlendDoubles(from_z, to_z, max_progress),
+                      &bounds_max);
+      if (!bounds->IsEmpty() && !bounds_max.IsEmpty()) {
+        bounds->Union(bounds_max);
+      } else if (!bounds->IsEmpty()) {
+        UnionBoxWithZeroScale(bounds);
+      } else if (!bounds_max.IsEmpty()) {
+        UnionBoxWithZeroScale(&bounds_max);
+        *bounds = bounds_max;
+      }
+
+      return true;
+    }
+    case TransformOperation::TransformOperationIdentity:
+      *bounds = box;
+      return true;
+    default:
+      return false;
+  }
 }
 
 }  // namespace cc

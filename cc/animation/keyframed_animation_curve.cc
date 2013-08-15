@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "cc/animation/keyframed_animation_curve.h"
+#include "ui/gfx/box_f.h"
 
 namespace cc {
 
@@ -229,6 +230,28 @@ gfx::Transform KeyframedTransformAnimationCurve::GetValue(double t) const {
     return keyframes_.back()->Value().Apply();
 
   return GetCurveValue<gfx::Transform, TransformKeyframe>(&keyframes_, t);
+}
+
+bool KeyframedTransformAnimationCurve::AnimatedBoundsForBox(
+    const gfx::BoxF& box,
+    gfx::BoxF* bounds) const {
+  DCHECK_GE(keyframes_.size(), 2ul);
+  *bounds = gfx::BoxF();
+  for (size_t i = 0; i < keyframes_.size() - 1; ++i) {
+    gfx::BoxF bounds_for_step;
+    float min_progress = 0.0;
+    float max_progress = 1.0;
+    if (keyframes_[i]->timing_function())
+      keyframes_[i]->timing_function()->Range(&min_progress, &max_progress);
+    if (!keyframes_[i+1]->Value().BlendedBoundsForBox(box,
+                                                      keyframes_[i]->Value(),
+                                                      min_progress,
+                                                      max_progress,
+                                                      &bounds_for_step))
+      return false;
+    bounds->Union(bounds_for_step);
+  }
+  return true;
 }
 
 scoped_ptr<KeyframedFilterAnimationCurve> KeyframedFilterAnimationCurve::

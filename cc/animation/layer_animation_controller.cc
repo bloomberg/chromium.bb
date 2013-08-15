@@ -12,6 +12,7 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_value_observer.h"
 #include "cc/base/scoped_ptr_algorithm.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -341,6 +342,31 @@ void LayerAnimationController::AddEventObserver(
 void LayerAnimationController::RemoveEventObserver(
     LayerAnimationEventObserver* observer) {
   event_observers_.RemoveObserver(observer);
+}
+
+bool LayerAnimationController::AnimatedBoundsForBox(const gfx::BoxF& box,
+                                                    gfx::BoxF* bounds) {
+  // Compute bounds based on animations for which is_finished() is false.
+  // Do nothing if there are no such animations; in this case, it is assumed
+  // that callers will take care of computing bounds based on the owning layer's
+  // actual transform.
+  *bounds = gfx::BoxF();
+  for (size_t i = 0; i < active_animations_.size(); ++i) {
+    if (active_animations_[i]->is_finished() ||
+        active_animations_[i]->target_property() != Animation::Transform)
+      continue;
+
+    const TransformAnimationCurve* transform_animation_curve =
+        active_animations_[i]->curve()->ToTransformAnimationCurve();
+    gfx::BoxF animation_bounds;
+    bool success =
+        transform_animation_curve->AnimatedBoundsForBox(box, &animation_bounds);
+    if (!success)
+      return false;
+    bounds->Union(animation_bounds);
+  }
+
+  return true;
 }
 
 void LayerAnimationController::PushNewAnimationsToImplThread(

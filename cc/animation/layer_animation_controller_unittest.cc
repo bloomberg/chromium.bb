@@ -12,6 +12,7 @@
 #include "cc/test/animation_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -1115,6 +1116,75 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   controller->Animate(3.5);
   EXPECT_NE(0.5f, inactive_dummy.opacity());
   EXPECT_NE(0.5f, dummy.opacity());
+}
+
+TEST(LayerAnimationControllerTest, AnimatedBounds) {
+  scoped_refptr<LayerAnimationController> controller_impl(
+      LayerAnimationController::Create(0));
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve1(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations1;
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations1, scoped_ptr<TimingFunction>()));
+  operations1.AppendTranslate(10.0, 15.0, 0.0);
+  curve1->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations1, scoped_ptr<TimingFunction>()));
+
+  scoped_ptr<Animation> animation(Animation::Create(
+      curve1.PassAs<AnimationCurve>(), 1, 1, Animation::Transform));
+  controller_impl->AddAnimation(animation.Pass());
+
+  scoped_ptr<KeyframedTransformAnimationCurve> curve2(
+      KeyframedTransformAnimationCurve::Create());
+
+  TransformOperations operations2;
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations2, scoped_ptr<TimingFunction>()));
+  operations2.AppendScale(2.0, 3.0, 4.0);
+  curve2->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations2, scoped_ptr<TimingFunction>()));
+
+  animation = Animation::Create(
+      curve2.PassAs<AnimationCurve>(), 2, 2, Animation::Transform);
+  controller_impl->AddAnimation(animation.Pass());
+
+  gfx::BoxF box(1.f, 2.f, -1.f, 3.f, 4.f, 5.f);
+  gfx::BoxF bounds;
+
+  EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));
+  EXPECT_EQ(gfx::BoxF(1.f, 2.f, -4.f, 13.f, 19.f, 20.f).ToString(),
+            bounds.ToString());
+
+  controller_impl->GetAnimation(1, Animation::Transform)->SetRunState(
+      cc::Animation::Finished, 0.0);
+
+  // Only the unfinished animation should affect the animated bounds.
+  EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));
+  EXPECT_EQ(gfx::BoxF(1.f, 2.f, -4.f, 7.f, 16.f, 20.f).ToString(),
+            bounds.ToString());
+
+  controller_impl->GetAnimation(2, Animation::Transform)->SetRunState(
+      cc::Animation::Finished, 0.0);
+
+  // There are no longer any running animations.
+  EXPECT_TRUE(controller_impl->AnimatedBoundsForBox(box, &bounds));
+  EXPECT_EQ(gfx::BoxF().ToString(), bounds.ToString());
+
+  // Add an animation whose bounds we don't yet support computing.
+  scoped_ptr<KeyframedTransformAnimationCurve> curve3(
+      KeyframedTransformAnimationCurve::Create());
+  TransformOperations operations3;
+  curve3->AddKeyframe(TransformKeyframe::Create(
+      0.0, operations3, scoped_ptr<TimingFunction>()));
+  operations3.AppendSkew(1.0, 2.0);
+  curve3->AddKeyframe(TransformKeyframe::Create(
+      1.0, operations3, scoped_ptr<TimingFunction>()));
+  animation = Animation::Create(
+      curve3.PassAs<AnimationCurve>(), 3, 3, Animation::Transform);
+  controller_impl->AddAnimation(animation.Pass());
+  EXPECT_FALSE(controller_impl->AnimatedBoundsForBox(box, &bounds));
 }
 
 }  // namespace

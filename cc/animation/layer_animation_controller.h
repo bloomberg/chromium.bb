@@ -17,7 +17,10 @@
 #include "cc/base/scoped_ptr_vector.h"
 #include "ui/gfx/transform.h"
 
-namespace gfx { class Transform; }
+namespace gfx {
+class BoxF;
+class Transform;
+}
 
 namespace cc {
 
@@ -99,6 +102,8 @@ class CC_EXPORT LayerAnimationController
   void set_layer_animation_delegate(AnimationDelegate* delegate) {
     layer_animation_delegate_ = delegate;
   }
+
+  bool AnimatedBoundsForBox(const gfx::BoxF& box, gfx::BoxF* bounds);
 
  protected:
   friend class base::RefCounted<LayerAnimationController>;
