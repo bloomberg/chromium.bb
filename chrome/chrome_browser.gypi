@@ -491,6 +491,8 @@
         'browser/download/download_danger_prompt.h',
         'browser/download/download_extensions.cc',
         'browser/download/download_extensions.h',
+        'browser/download/download_field_trial.cc',
+        'browser/download/download_field_trial.h',
         'browser/download/download_file_picker.cc',
         'browser/download/download_file_picker.h',
         'browser/download/download_history.cc',

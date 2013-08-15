@@ -42,6 +42,10 @@ class DownloadItemModel {
   // Returns a short one-line status string for the download.
   string16 GetStatusText() const;
 
+  // Returns the localized status text for an in-progress download. This
+  // is the progress status used in the WebUI interface.
+  string16 GetTabProgressStatusText() const;
+
   // Returns a string suitable for use as a tooltip. For a regular download, the
   // tooltip is the filename. For an interrupted download, the string states the
   // filename and a short description of the reason for interruption. For

@@ -13,7 +13,7 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_field_trial.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -235,11 +235,9 @@ string16 InterruptReasonMessage(int reason) {
 // DownloadItemModel
 
 DownloadItemModel::DownloadItemModel(DownloadItem* download)
-    : download_(download) {
-}
+    : download_(download) {}
 
-DownloadItemModel::~DownloadItemModel() {
-}
+DownloadItemModel::~DownloadItemModel() {}
 
 string16 DownloadItemModel::GetInterruptReasonText() const {
   if (download_->GetState() != DownloadItem::INTERRUPTED ||
@@ -285,6 +283,46 @@ string16 DownloadItemModel::GetStatusText() const {
   return status_text;
 }
 
+string16 DownloadItemModel::GetTabProgressStatusText() const {
+  int64 total = GetTotalBytes();
+  int64 size = download_->GetReceivedBytes();
+  string16 received_size = ui::FormatBytes(size);
+  string16 amount = received_size;
+
+  // Adjust both strings for the locale direction since we don't yet know which
+  // string we'll end up using for constructing the final progress string.
+  base::i18n::AdjustStringForLocaleDirection(&amount);
+
+  if (total) {
+    string16 total_text = ui::FormatBytes(total);
+    base::i18n::AdjustStringForLocaleDirection(&total_text);
+
+    base::i18n::AdjustStringForLocaleDirection(&received_size);
+    amount = l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_TAB_PROGRESS_SIZE, received_size, total_text);
+  } else {
+    amount.assign(received_size);
+  }
+  int64 current_speed = download_->CurrentSpeed();
+  string16 speed_text = ui::FormatSpeed(current_speed);
+  base::i18n::AdjustStringForLocaleDirection(&speed_text);
+
+  base::TimeDelta remaining;
+  string16 time_remaining;
+  if (download_->IsPaused())
+    time_remaining = l10n_util::GetStringUTF16(IDS_DOWNLOAD_PROGRESS_PAUSED);
+  else if (download_->TimeRemaining(&remaining))
+    time_remaining = ui::TimeFormat::TimeRemaining(remaining);
+
+  if (time_remaining.empty()) {
+    base::i18n::AdjustStringForLocaleDirection(&amount);
+    return l10n_util::GetStringFUTF16(
+        IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN, speed_text, amount);
+  }
+  return l10n_util::GetStringFUTF16(
+      IDS_DOWNLOAD_TAB_PROGRESS_STATUS, speed_text, amount, time_remaining);
+}
+
 string16 DownloadItemModel::GetTooltipText(const gfx::Font& font,
                                            int max_width) const {
   string16 tooltip = ui::ElideFilename(
@@ -308,11 +346,10 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
   switch (download_->GetDangerType()) {
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
       std::string trial_condition =
-          base::FieldTrialList::FindFullName(download_util::kFinchTrialName);
+          base::FieldTrialList::FindFullName(kMalwareWarningFinchTrialName);
       if (trial_condition.empty())
         return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
-      return download_util::AssembleMalwareFinchString(trial_condition,
-                                                       elided_filename);
+      return AssembleMalwareFinchString(trial_condition, elided_filename);
     }
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE: {
       if (download_crx_util::IsExtensionDownload(*download_)) {
@@ -326,13 +363,12 @@ string16 DownloadItemModel::GetWarningText(const gfx::Font& font,
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case content::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
       std::string trial_condition =
-          base::FieldTrialList::FindFullName(download_util::kFinchTrialName);
+          base::FieldTrialList::FindFullName(kMalwareWarningFinchTrialName);
       if (trial_condition.empty()) {
         return l10n_util::GetStringFUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
                                           elided_filename);
       }
-      return download_util::AssembleMalwareFinchString(trial_condition,
-                                                       elided_filename);
+      return AssembleMalwareFinchString(trial_condition, elided_filename);
     }
     case content::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
       return l10n_util::GetStringFUTF16(IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
