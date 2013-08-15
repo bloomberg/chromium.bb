@@ -39,8 +39,8 @@ var gRequestWebcamAndMicrophoneResult = 'not-called-yet';
  *     and optional constraints defined. The contents of this parameter depends
  *     on the WebRTC version. This should be JavaScript code that we eval().
  */
-function doGetUserMedia(constraints) {
-  if (!getUserMedia) {
+function getUserMedia(constraints) {
+  if (!navigator.webkitGetUserMedia) {
     returnToTest('Browser does not support WebRTC.');
     return;
   }
@@ -50,14 +50,15 @@ function doGetUserMedia(constraints) {
   } catch (exception) {
     throw failTest('Not valid JavaScript expression: ' + constraints);
   }
-  debug('Requesting doGetUserMedia: constraints: ' + constraints);
-  getUserMedia(evaluatedConstraints, getUserMediaOkCallback_,
-               getUserMediaFailedCallback_);
+  debug('Requesting getUserMedia: constraints: ' + constraints);
+  navigator.webkitGetUserMedia(evaluatedConstraints,
+                               getUserMediaOkCallback_,
+                               getUserMediaFailedCallback_);
   returnToTest('ok-requested');
 }
 
 /**
- * Must be called after calling doGetUserMedia.
+ * Must be called after calling getUserMedia.
  * @return {string} Returns not-called-yet if we have not yet been called back
  *     by WebRTC. Otherwise it returns either ok-got-stream or
  *     failed-with-error-x (where x is the error code from the error
@@ -131,7 +132,7 @@ function getLocalStream() {
 function getUserMediaOkCallback_(stream) {
   gLocalStream = stream;
   var videoTag = $('local-view');
-  attachMediaStream(videoTag, stream);
+  videoTag.src = webkitURL.createObjectURL(stream);
 
   // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
   // videoTag.onloadedmetadata = displayVideoSize_(videoTag);.

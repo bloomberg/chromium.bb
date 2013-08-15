@@ -2,8 +2,6 @@
 <html>
 <head>
   <title>WebRTC GetUserMedia Constraints Manual Test</title>
-  <!-- Load the polyfill to switch-hit between Chrome and Firefox -->
-  <script type="text/javascript" src="../adapter.js"></script>
   <script type="text/javascript" src="constraints.js"></script>
   <link rel="StyleSheet" type="text/css" href="stylesheet.css">
   <meta charset="utf-8">
@@ -48,7 +46,7 @@
     <input type="text" id="optional-max-height" size="4"/>
     FPS: <input type="text" id="optional-max-fps" size="2"/>
     Aspect ratio: <input type="text" id="optional-max-ar" size="2"/><br/>
-    <button id="re-request" onclick="doGetUserMedia();">
+    <button id="re-request" onclick="getUserMedia();">
       Request GetUserMedia
     </button>
     <h2>Messages</h2>

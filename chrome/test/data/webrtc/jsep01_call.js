@@ -224,7 +224,7 @@ function setLocalAndSendMessage_(session_description) {
 function addStreamCallback_(event) {
   debug('Receiving remote stream...');
   var videoTag = document.getElementById('remote-view');
-  attachMediaStream(videoTag, event.stream);
+  videoTag.src = webkitURL.createObjectURL(event.stream);
 
   // Due to crbug.com/110938 the size is 0 when onloadedmetadata fires.
   // videoTag.onloadedmetadata = displayVideoSize_(videoTag);

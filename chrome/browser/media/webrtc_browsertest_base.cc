@@ -81,7 +81,7 @@ void WebRtcTestBase::GetUserMedia(content::WebContents* tab_contents,
   // Request user media: this will launch the media stream info bar.
   std::string result;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      tab_contents, "doGetUserMedia(" + constraints + ");", &result));
+      tab_contents, "getUserMedia(" + constraints + ");", &result));
   EXPECT_EQ("ok-requested", result);
 }
 
