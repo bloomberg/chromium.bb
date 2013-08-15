@@ -27,8 +27,6 @@ function set(name, message, stack, targetChrome) {
     throw new Error('No chrome object to set error: ' + errorMessage);
   clear(targetChrome);  // in case somebody has set a sneaky getter/setter
 
-  console.error(errorMessage);
-
   var errorObject = { message: message };
   if (GetAvailability('extension.lastError').is_available)
     targetChrome.extension.lastError = errorObject;

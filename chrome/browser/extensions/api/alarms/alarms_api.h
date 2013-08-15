@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARMS_API_H__
 #define CHROME_BROWSER_EXTENSIONS_API_ALARMS_ALARMS_API_H__
 
+#include <vector>
+
 #include "chrome/browser/extensions/extension_function.h"
 
 namespace base {
@@ -12,8 +14,10 @@ class Clock;
 }  // namespace base
 
 namespace extensions {
+struct Alarm;
+typedef std::vector<Alarm> AlarmList;
 
-class AlarmsCreateFunction : public SyncExtensionFunction {
+class AlarmsCreateFunction : public AsyncExtensionFunction {
  public:
   AlarmsCreateFunction();
   // Use |clock| instead of the default clock. Does not take ownership
@@ -26,6 +30,8 @@ class AlarmsCreateFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
   DECLARE_EXTENSION_FUNCTION("alarms.create", ALARMS_CREATE)
  private:
+  void Callback();
+
   base::Clock* const clock_;
   // Whether or not we own |clock_|. This is needed because we own it
   // when we create it ourselves, but not when it's passed in for
@@ -33,39 +39,48 @@ class AlarmsCreateFunction : public SyncExtensionFunction {
   bool owns_clock_;
 };
 
-class AlarmsGetFunction : public SyncExtensionFunction {
+class AlarmsGetFunction : public AsyncExtensionFunction {
  protected:
   virtual ~AlarmsGetFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+
+ private:
+  void Callback(const std::string& name, Alarm* alarm);
   DECLARE_EXTENSION_FUNCTION("alarms.get", ALARMS_GET)
 };
 
-class AlarmsGetAllFunction : public SyncExtensionFunction {
+class AlarmsGetAllFunction : public AsyncExtensionFunction {
  protected:
   virtual ~AlarmsGetAllFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+ private:
+  void Callback(const AlarmList* alarms);
   DECLARE_EXTENSION_FUNCTION("alarms.getAll", ALARMS_GETALL)
 };
 
-class AlarmsClearFunction : public SyncExtensionFunction {
+class AlarmsClearFunction : public AsyncExtensionFunction {
  protected:
   virtual ~AlarmsClearFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+ private:
+  void Callback(const std::string& name, bool success);
   DECLARE_EXTENSION_FUNCTION("alarms.clear", ALARMS_CLEAR)
 };
 
-class AlarmsClearAllFunction : public SyncExtensionFunction {
+class AlarmsClearAllFunction : public AsyncExtensionFunction {
  protected:
   virtual ~AlarmsClearAllFunction() {}
 
   // ExtensionFunction:
   virtual bool RunImpl() OVERRIDE;
+ private:
+  void Callback();
   DECLARE_EXTENSION_FUNCTION("alarms.clearAll", ALARMS_CLEARALL)
 };
 
