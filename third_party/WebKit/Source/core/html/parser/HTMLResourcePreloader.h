@@ -58,7 +58,7 @@ public:
 
 private:
     PreloadRequest(const String& initiatorName, const TextPosition& initiatorPosition, const String& resourceURL, const KURL& baseURL, Resource::Type resourceType, const String& mediaAttribute)
-        : m_initiatorName(initiatorName.isolatedCopy())
+        : m_initiatorName(initiatorName)
         , m_initiatorPosition(initiatorPosition)
         , m_resourceURL(resourceURL.isolatedCopy())
         , m_baseURL(baseURL.copy())
