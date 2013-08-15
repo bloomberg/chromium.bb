@@ -3080,31 +3080,11 @@ bool Document::canReplaceChild(Node* newChild, Node* oldChild)
     return true;
 }
 
-PassRefPtr<Node> Document::cloneNode(bool deep)
+PassRefPtr<Node> Document::cloneNode(bool /*deep*/)
 {
-    RefPtr<Document> clone = cloneDocumentWithoutChildren();
-    clone->cloneDataFromDocument(*this);
-    if (deep)
-        cloneChildNodes(clone.get());
-    return clone.release();
-}
-
-PassRefPtr<Document> Document::cloneDocumentWithoutChildren()
-{
-    return create();
-}
-
-void Document::cloneDataFromDocument(const Document& other)
-{
-    m_url = other.url();
-    m_baseURL = other.baseURL();
-    m_baseURLOverride = other.baseURLOverride();
-    m_documentURI = other.documentURI();
-
-    setCompatibilityMode(other.compatibilityMode());
-    setContextFeatures(other.contextFeatures());
-    setSecurityOrigin(other.securityOrigin());
-    setDecoder(other.decoder());
+    // Spec says cloning Document nodes is "implementation dependent"
+    // so we do not support it...
+    return 0;
 }
 
 StyleSheetList* Document::styleSheets()

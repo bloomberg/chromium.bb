@@ -216,11 +216,6 @@ void HTMLDocument::setVlinkColor(const String& value)
     }
 }
 
-PassRefPtr<Document> HTMLDocument::cloneDocumentWithoutChildren()
-{
-    return create();
-}
-
 // --------------------------------------------------------------------------
 // not part of the DOM
 // --------------------------------------------------------------------------
