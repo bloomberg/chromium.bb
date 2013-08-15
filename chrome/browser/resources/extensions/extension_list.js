@@ -329,7 +329,7 @@ cr.define('options', function() {
         var list = panel.querySelector('ul');
         extension.installWarnings.forEach(function(warning) {
           var li = document.createElement('li');
-          li[warning.isHTML ? 'innerHTML' : 'innerText'] = warning.message;
+          li.innerText = warning.message;
           list.appendChild(li);
         });
       }

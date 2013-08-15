@@ -118,9 +118,11 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // Wildcard hosts are not allowed.
       if (pattern.host().empty()) {
         // Warning not error for forwards compatibility.
-        install_warnings->push_back(
-            InstallWarning::Text(ErrorUtils::FormatErrorMessage(
-                errors::kErrorWildcardHostsNotAllowed, *it)));
+        install_warnings->push_back(InstallWarning(
+            ErrorUtils::FormatErrorMessage(
+                errors::kErrorWildcardHostsNotAllowed, *it),
+            keys::kExternallyConnectable,
+            *it));
         continue;
       }
 
@@ -146,11 +148,13 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
       // are not allowed. However just "appspot.com" is ok.
       if (registry_length == 0 && pattern.match_subdomains()) {
         // Warning not error for forwards compatibility.
-        install_warnings->push_back(InstallWarning::Text(
+        install_warnings->push_back(InstallWarning(
             ErrorUtils::FormatErrorMessage(
                 errors::kErrorTopLevelDomainsNotAllowed,
                 pattern.host().c_str(),
-                *it)));
+                *it),
+            keys::kExternallyConnectable,
+            *it));
         continue;
       }
 
@@ -179,8 +183,9 @@ scoped_ptr<ExternallyConnectableInfo> ExternallyConnectableInfo::FromValue(
 
   if (!externally_connectable->matches &&
       !externally_connectable->ids) {
-    install_warnings->push_back(InstallWarning::Text(
-        errors::kErrorNothingSpecified));
+    install_warnings->push_back(InstallWarning(
+        errors::kErrorNothingSpecified,
+        keys::kExternallyConnectable));
   }
 
   return make_scoped_ptr(

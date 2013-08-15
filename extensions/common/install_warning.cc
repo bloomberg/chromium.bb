@@ -6,19 +6,27 @@
 
 namespace extensions {
 
+InstallWarning::InstallWarning(const std::string& message) : message(message) {
+}
+
+InstallWarning::InstallWarning(const std::string& message,
+                               const std::string& key)
+    : message(message), key(key) {
+}
+
+InstallWarning::InstallWarning(const std::string& message,
+                               const std::string& key,
+                               const std::string& specific)
+    : message(message), key(key), specific(specific) {
+}
+
+InstallWarning::~InstallWarning() {
+}
+
 void PrintTo(const InstallWarning& warning, ::std::ostream* os) {
-  *os << "InstallWarning(";
-  switch (warning.format) {
-    case InstallWarning::FORMAT_TEXT:
-      *os << "FORMAT_TEXT, \"";
-      break;
-    case InstallWarning::FORMAT_HTML:
-      *os << "FORMAT_HTML, \"";
-      break;
-  }
   // This is just for test error messages, so no need to escape '"'
   // characters inside the message.
-  *os << warning.message << "\")";
+  *os << "InstallWarning(\"" << warning.message << "\")";
 }
 
 }  // namespace extensions

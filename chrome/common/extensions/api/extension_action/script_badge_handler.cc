@@ -45,8 +45,7 @@ bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
   // going to have any effect.
   if (!FeatureSwitch::script_badges()->IsEnabled()) {
     extension->AddInstallWarning(
-        InstallWarning(InstallWarning::FORMAT_TEXT,
-                       errors::kScriptBadgeRequiresFlag));
+        InstallWarning(errors::kScriptBadgeRequiresFlag, keys::kScriptBadge));
   }
 
   const base::DictionaryValue* dict = NULL;
@@ -68,14 +67,16 @@ bool ScriptBadgeHandler::Parse(Extension* extension, string16* error) {
 
   if (!action_info->default_title.empty()) {
     extension->AddInstallWarning(
-        InstallWarning(InstallWarning::FORMAT_TEXT,
-                       errors::kScriptBadgeTitleIgnored));
+        InstallWarning(errors::kScriptBadgeTitleIgnored,
+                       keys::kScriptBadge,
+                       keys::kPageActionDefaultTitle));
   }
 
   if (!action_info->default_icon.empty()) {
     extension->AddInstallWarning(
-        InstallWarning(InstallWarning::FORMAT_TEXT,
-                       errors::kScriptBadgeIconIgnored));
+        InstallWarning(errors::kScriptBadgeIconIgnored,
+                       keys::kScriptBadge,
+                       keys::kPageActionDefaultIcon));
   }
 
   SetActionInfoDefaults(extension, action_info.get());

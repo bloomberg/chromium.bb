@@ -259,7 +259,6 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
       for (std::vector<InstallWarning>::const_iterator it =
                install_warnings.begin(); it != install_warnings.end(); ++it) {
         DictionaryValue* item = new DictionaryValue();
-        item->SetBoolean("isHTML", it->format == InstallWarning::FORMAT_HTML);
         item->SetString("message", it->message);
         list->Append(item);
       }

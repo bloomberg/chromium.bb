@@ -287,7 +287,7 @@ cr.define('apps_dev_tool', function() {
         var list = panel.querySelector('ul');
         item.install_warnings.forEach(function(warning) {
           var li = document.createElement('li');
-          li[warning.isHTML ? 'innerHTML' : 'textContent'] = warning.message;
+          li.textContent = warning.message;
           list.appendChild(li);
         });
       }

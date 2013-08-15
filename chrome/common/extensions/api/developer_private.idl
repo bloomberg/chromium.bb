@@ -28,7 +28,6 @@ namespace developerPrivate {
   };
 
   dictionary InstallWarning {
-    boolean is_html;
     DOMString message;
   };
 

@@ -157,8 +157,8 @@ bool ParseHelper(Extension* extension,
       // Don't fail, but warn the developer that the manifest contains
       // unrecognized permissions. This may happen legitimately if the
       // extensions requests platform- or channel-specific permissions.
-      extension->AddInstallWarning(InstallWarning(InstallWarning::FORMAT_TEXT,
-                                                  availability.message()));
+      extension->AddInstallWarning(InstallWarning(availability.message(),
+                                                  feature->name()));
       to_remove.push_back(iter->id());
       continue;
     }
@@ -231,10 +231,11 @@ bool ParseHelper(Extension* extension,
     // It's probably an unknown API permission. Do not throw an error so
     // extensions can retain backwards compatability (http://crbug.com/42742).
     extension->AddInstallWarning(InstallWarning(
-        InstallWarning::FORMAT_TEXT,
-        base::StringPrintf(
+       base::StringPrintf(
             "Permission '%s' is unknown or URL pattern is malformed.",
-            permission_str.c_str())));
+            permission_str.c_str()),
+        key,
+        permission_str));
   }
 
   return true;

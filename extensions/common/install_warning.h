@@ -10,24 +10,34 @@
 
 namespace extensions {
 
+// A struct to describe a non-fatal issue discovered in the installation of an
+// extension.
 struct InstallWarning {
-  enum Format {
-    // IMPORTANT: Do not build HTML strings from user or developer-supplied
-    // input.
-    FORMAT_TEXT,
-    FORMAT_HTML,
-  };
-  static InstallWarning Text(const std::string& message) {
-    return InstallWarning(FORMAT_TEXT, message);
-  }
-  InstallWarning(Format format, const std::string& message)
-      : format(format), message(message) {
-  }
+  InstallWarning(const std::string& message);
+  InstallWarning(const std::string& message,
+                 const std::string& key);
+  InstallWarning(const std::string& message,
+                 const std::string& key,
+                 const std::string& specific);
+  ~InstallWarning();
+
   bool operator==(const InstallWarning& other) const {
-    return format == other.format && message == other.message;
+    // We don't have to look at |key| or |specific| here, because they are each
+    // used in the the message itself.
+    // For example, a full message would be "Permission 'foo' is unknown or URL
+    // pattern is malformed." |key| here is "permissions", and |specific| is
+    // "foo", but these are redundant with the message.
+    return message == other.message;
   }
-  Format format;
+
+  // The warning's message (human-friendly).
   std::string message;
+  // Optional - for specifying the incorrect key in the manifest (e.g.,
+  // "permissions").
+  std::string key;
+  // Optional - for specifying the incorrect portion of a key in the manifest
+  // (e.g., an unrecognized permission "foo" in "permissions").
+  std::string specific;
 };
 
 // Let gtest print InstallWarnings.

@@ -304,7 +304,6 @@ scoped_ptr<developer::ItemInfo>
              item.install_warnings().begin();
          it != item.install_warnings().end(); ++it) {
       developer::InstallWarning* warning = new developer::InstallWarning();
-      warning->is_html = (it->format == InstallWarning::FORMAT_HTML);
       warning->message = it->message;
       info->install_warnings.push_back(make_linked_ptr(warning));
     }

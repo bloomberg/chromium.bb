@@ -284,7 +284,6 @@ bool ValidateExtension(const Extension* extension,
   } else {
     for (size_t i = 0; i < private_keys.size(); ++i) {
       warnings->push_back(extensions::InstallWarning(
-          extensions::InstallWarning::FORMAT_TEXT,
           l10n_util::GetStringFUTF8(
               IDS_EXTENSION_CONTAINS_PRIVATE_KEY,
               private_keys[i].LossyDisplayName())));

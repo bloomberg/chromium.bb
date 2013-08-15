@@ -152,8 +152,7 @@ bool Manifest::ValidateManifest(
         extension_id_, type_, Feature::ConvertLocation(location_),
         GetManifestVersion());
     if (!result.is_available())
-      warnings->push_back(InstallWarning(
-          InstallWarning::FORMAT_TEXT, result.message()));
+      warnings->push_back(InstallWarning(result.message(), *feature_name));
   }
 
   // Also generate warnings for keys that are not features.
@@ -161,9 +160,9 @@ bool Manifest::ValidateManifest(
        it.Advance()) {
     if (!provider->GetFeature(it.key())) {
       warnings->push_back(InstallWarning(
-          InstallWarning::FORMAT_TEXT,
           base::StringPrintf("Unrecognized manifest key '%s'.",
-                             it.key().c_str())));
+                             it.key().c_str()),
+          it.key()));
     }
   }
   return true;

@@ -88,7 +88,6 @@ bool ValidateExtension(const extensions::Extension* extension,
 std::set<base::FilePath> GetBrowserImagePaths(
     const extensions::Extension* extension);
 
-
 // Returns a list of files that contain private keys inside |extension_dir|.
 std::vector<base::FilePath> FindPrivateKeyFiles(
     const base::FilePath& extension_dir);
