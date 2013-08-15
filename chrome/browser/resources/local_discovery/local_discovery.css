@@ -19,3 +19,13 @@ td {
   height: 100px;
   overflow: auto;
 }
+
+.info-item {
+  border-bottom: 2px #f0f0f0 solid;
+  margin-bottom: 5px;
+}
+
+.info-item .info-item-name {
+  font-weight: bold;
+  padding-right: 20px;
+}

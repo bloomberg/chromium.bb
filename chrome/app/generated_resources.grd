@@ -14965,7 +14965,15 @@ Do you accept?
     <message name="IDS_LOCAL_DISCOVERY_REGISTERED" desc="Message to show that a listed service has already been registered">
       Registered
     </message>
-
+    <message name="IDS_LOCAL_DISCOVERY_INFO_STARTED" desc="Message to show that a listed service is being asked for info">
+      Info request started for <ph name="DEVICE_NAME">$1</ph>...
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_INFO_FAILED" desc="Message to show that an info request has failed">
+      Info request failed: <ph name="ERROR_STRING">$1</ph>...
+    </message>
+    <message name="IDS_LOCAL_DISCOVERY_SERVICE_INFO" desc="Table header and button for info requests">
+      Info
+    </message>
   </messages>
 
 

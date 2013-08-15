@@ -18,6 +18,7 @@
 #include "content/public/browser/web_ui.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_util.h"
+#include "net/http/http_status_code.h"
 
 namespace local_discovery {
 
@@ -57,6 +58,9 @@ void LocalDiscoveryUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("registerDevice", base::Bind(
       &LocalDiscoveryUIHandler::HandleRegisterDevice,
       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("info", base::Bind(
+      &LocalDiscoveryUIHandler::HandleInfoRequested,
+      base::Unretained(this)));
 }
 
 void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
@@ -75,27 +79,42 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
 void LocalDiscoveryUIHandler::HandleRegisterDevice(
     const base::ListValue* args) {
   std::string device_name;
+
   bool rv = args->GetString(0, &device_name);
   DCHECK(rv);
-  currently_registering_device_ = device_name;
+  current_http_device_ = device_name;
 
   domain_resolver_ = service_discovery_client_->CreateLocalDomainResolver(
       device_descriptions_[device_name].address.host(),
       net::ADDRESS_FAMILY_UNSPECIFIED,
-      base::Bind(&LocalDiscoveryUIHandler::OnDomainResolved,
+      base::Bind(&LocalDiscoveryUIHandler::StartRegisterHTTP,
+                 base::Unretained(this)));
+
+    domain_resolver_->Start();
+}
+
+void LocalDiscoveryUIHandler::HandleInfoRequested(const base::ListValue* args) {
+  std::string device_name;
+  args->GetString(0, &device_name);
+  current_http_device_ = device_name;
+
+  domain_resolver_ = service_discovery_client_->CreateLocalDomainResolver(
+      device_descriptions_[device_name].address.host(),
+      net::ADDRESS_FAMILY_UNSPECIFIED,
+      base::Bind(&LocalDiscoveryUIHandler::StartInfoHTTP,
                  base::Unretained(this)));
 
   domain_resolver_->Start();
 }
 
-void LocalDiscoveryUIHandler::OnDomainResolved(bool success,
+void LocalDiscoveryUIHandler::StartRegisterHTTP(bool success,
     const net::IPAddressNumber& address) {
   if (!success) {
     LogRegisterErrorToWeb("Resolution failed");
     return;
   }
 
-  if (device_descriptions_.count(currently_registering_device_) == 0) {
+  if (device_descriptions_.count(current_http_device_) == 0) {
     LogRegisterErrorToWeb("Device no longer exists");
     return;
   }
@@ -112,7 +131,7 @@ void LocalDiscoveryUIHandler::OnDomainResolved(bool success,
   std::string username = signin_manager->GetAuthenticatedUsername();
 
   std::string address_str = net::IPAddressToString(address);
-  int port = device_descriptions_[currently_registering_device_].address.port();
+  int port = device_descriptions_[current_http_device_].address.port();
 
   current_http_client_.reset(new PrivetHTTPClientImpl(
       net::HostPortPair(address_str, port),
@@ -122,17 +141,39 @@ void LocalDiscoveryUIHandler::OnDomainResolved(bool success,
   current_register_operation_->Start();
 }
 
+void LocalDiscoveryUIHandler::StartInfoHTTP(bool success,
+    const net::IPAddressNumber& address) {
+  if (!success) {
+    LogInfoErrorToWeb("Resolution failed");
+    return;
+  }
+
+  if (device_descriptions_.count(current_http_device_) == 0) {
+    LogRegisterErrorToWeb("Device no longer exists");
+    return;
+  }
+
+  std::string address_str = net::IPAddressToString(address);
+  int port = device_descriptions_[current_http_device_].address.port();
+
+  current_http_client_.reset(new PrivetHTTPClientImpl(
+      net::HostPortPair(address_str, port),
+      Profile::FromWebUI(web_ui())->GetRequestContext()));
+  current_info_operation_ = current_http_client_->CreateInfoOperation(this);
+  current_info_operation_->Start();
+}
+
 void LocalDiscoveryUIHandler::OnPrivetRegisterClaimToken(
     const std::string& token,
     const GURL& url) {
-  if (device_descriptions_.count(currently_registering_device_) == 0) {
+  if (device_descriptions_.count(current_http_device_) == 0) {
     LogRegisterErrorToWeb("Device no longer exists");
     return;
   }
 
   GURL automated_claim_url(base::StringPrintf(
       kPrivetAutomatedClaimURLFormat,
-      device_descriptions_[currently_registering_device_].url.c_str(),
+      device_descriptions_[current_http_device_].url.c_str(),
       token.c_str()));
 
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -227,6 +268,23 @@ void LocalDiscoveryUIHandler::LogRegisterDoneToWeb(const std::string& id) {
   web_ui()->CallJavascriptFunction("local_discovery.registrationSuccess",
                                    id_value);
   DLOG(INFO) << "Registered " << id;
+}
+
+void LocalDiscoveryUIHandler::LogInfoErrorToWeb(const std::string& error) {
+  base::StringValue error_value(error);
+  web_ui()->CallJavascriptFunction("local_discovery.infoFailed", error_value);
+  LOG(ERROR) << error;
+}
+
+void LocalDiscoveryUIHandler::OnPrivetInfoDone(
+    int http_code,
+    const base::DictionaryValue* json_value) {
+  if (http_code != net::HTTP_OK || !json_value) {
+    LogInfoErrorToWeb(base::StringPrintf("HTTP error %d", http_code));
+    return;
+  }
+
+  web_ui()->CallJavascriptFunction("local_discovery.renderInfo", *json_value);
 }
 
 }  // namespace local_discovery

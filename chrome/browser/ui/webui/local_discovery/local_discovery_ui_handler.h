@@ -23,7 +23,8 @@ namespace local_discovery {
 // into the Javascript to update the page.
 class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
                                 public PrivetRegisterOperation::Delegate,
-                                public PrivetDeviceLister::Delegate {
+                                public PrivetDeviceLister::Delegate,
+                                public PrivetInfoOperation::Delegate {
  public:
   class Factory {
    public:
@@ -60,15 +61,28 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
       const DeviceDescription& description) OVERRIDE;
   virtual void DeviceRemoved(const std::string& name) OVERRIDE;
 
+  // PrivetInfoOperation::Delegate implementation:
+  virtual void OnPrivetInfoDone(
+      int http_code,
+      const base::DictionaryValue* json_value) OVERRIDE;
+
  private:
   // Message handlers:
   // For registering a device.
   void HandleRegisterDevice(const base::ListValue* args);
   // For when the page is ready to recieve device notifications.
-  void HandleStart(const base::ListValue* args);
 
-  // For when the IP address of the printer has been resolved.
-  void OnDomainResolved(bool success, const net::IPAddressNumber& address);
+  void HandleStart(const base::ListValue* args);
+  // For when info for a device is requested.
+  void HandleInfoRequested(const base::ListValue* args);
+
+  // For when the IP address of the printer has been resolved for registration.
+  void StartRegisterHTTP(bool success,
+                         const net::IPAddressNumber& address);
+
+  // For when the IP address of the printer has been resolved for registration.
+  void StartInfoHTTP(bool success,
+                     const net::IPAddressNumber& address);
 
   // For when the confirm operation on the cloudprint server has finished
   // executing.
@@ -80,17 +94,24 @@ class LocalDiscoveryUIHandler : public content::WebUIMessageHandler,
   // Log a successful registration to the web inteface.
   void LogRegisterDoneToWeb(const std::string& id);
 
+
+  // Log an error to the web interface.
+  void LogInfoErrorToWeb(const std::string& error);
+
   // The current HTTP client (used for the current operation).
   scoped_ptr<PrivetHTTPClient> current_http_client_;
+
+  // The current device being used in an HTTP operation.
+  std::string current_http_device_;
+
+  // The current info operation (operations are currently exclusive).
+  scoped_ptr<PrivetInfoOperation> current_info_operation_;
 
   // The current register operation. Only one allowed at any time.
   scoped_ptr<PrivetRegisterOperation> current_register_operation_;
 
   // The current confirm call used during the registration flow.
   scoped_ptr<PrivetConfirmApiCallFlow> confirm_api_call_flow_;
-
-  // The name of the currently registering device.
-  std::string currently_registering_device_;
 
   // The device lister used to list devices on the local network.
   scoped_ptr<PrivetDeviceLister> privet_lister_;

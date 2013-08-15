@@ -43,6 +43,10 @@ content::WebUIDataSource* CreateLocalDiscoveryHTMLSource() {
                              IDS_LOCAL_DISCOVERY_REGISTRATION_SUCCEEDED);
   source->AddLocalizedString("registered",
                              IDS_LOCAL_DISCOVERY_REGISTERED);
+  source->AddLocalizedString("infoStarted", IDS_LOCAL_DISCOVERY_INFO_STARTED);
+  source->AddLocalizedString("infoFailed", IDS_LOCAL_DISCOVERY_INFO_FAILED);
+  source->AddLocalizedString("serviceInfo",
+                             IDS_LOCAL_DISCOVERY_SERVICE_INFO);
 
   source->SetJsonPath("strings.js");
 
