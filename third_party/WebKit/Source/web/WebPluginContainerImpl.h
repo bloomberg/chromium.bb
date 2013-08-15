@@ -93,7 +93,6 @@ public:
     virtual void widgetPositionsUpdated();
     virtual void clipRectChanged() OVERRIDE;
     virtual bool isPluginContainer() const { return true; }
-    virtual void eventListenersRemoved() OVERRIDE;
 
     // WebPluginContainer methods
     virtual WebElement element();

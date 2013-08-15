@@ -662,7 +662,7 @@ protected:
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;
     virtual void childrenChanged(bool changedByParser = false, Node* beforeChange = 0, Node* afterChange = 0, int childCountDelta = 0) OVERRIDE;
-    virtual void removeAllEventListeners() OVERRIDE;
+    virtual void removeAllEventListeners() OVERRIDE FINAL;
 
     virtual void willRecalcStyle(StyleChange);
     virtual void didRecalcStyle(StyleChange);

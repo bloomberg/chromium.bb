@@ -4851,11 +4851,8 @@ void Document::didRemoveTouchEventHandler(Node* handler)
 void Document::didRemoveEventTargetNode(Node* handler)
 {
     if (m_touchEventTargets) {
-        if (handler == this)
-            m_touchEventTargets->clear();
-        else
-            m_touchEventTargets->removeAll(handler);
-        if (m_touchEventTargets->isEmpty() && parentDocument())
+        m_touchEventTargets->removeAll(handler);
+        if ((handler == this || m_touchEventTargets->isEmpty()) && parentDocument())
             parentDocument()->didRemoveEventTargetNode(this);
     }
 }

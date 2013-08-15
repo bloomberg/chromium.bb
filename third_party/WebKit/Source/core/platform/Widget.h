@@ -130,9 +130,6 @@ public:
     // A means to access the AX cache when this object can get a pointer to it.
     virtual AXObjectCache* axObjectCache() const { return 0; }
 
-    // Notifies this widget that it will no longer be receiving events.
-    virtual void eventListenersRemoved() { }
-
 private:
     ScrollView* m_parent;
     IntRect m_frame;
