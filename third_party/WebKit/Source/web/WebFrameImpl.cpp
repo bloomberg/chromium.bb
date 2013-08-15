@@ -218,8 +218,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, StringBuilder
 
     // TextIterator iterates over the visual representation of the DOM. As such,
     // it requires you to do a layout before using it (otherwise it'll crash).
-    if (frame->view()->needsLayout())
-        frame->view()->layout();
+    document->updateLayout();
 
     // Select the document body.
     RefPtr<Range> range(document->createRange());
