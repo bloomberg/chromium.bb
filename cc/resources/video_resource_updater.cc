@@ -10,6 +10,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/video_frame.h"
 #include "media/filters/skcanvas_video_renderer.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/size_conversions.h"
@@ -23,8 +24,10 @@ VideoFrameExternalResources::VideoFrameExternalResources() : type(NONE) {}
 
 VideoFrameExternalResources::~VideoFrameExternalResources() {}
 
-VideoResourceUpdater::VideoResourceUpdater(ResourceProvider* resource_provider)
-    : resource_provider_(resource_provider) {
+VideoResourceUpdater::VideoResourceUpdater(ContextProvider* context_provider,
+                                           ResourceProvider* resource_provider)
+    : context_provider_(context_provider),
+      resource_provider_(resource_provider) {
 }
 
 VideoResourceUpdater::~VideoResourceUpdater() {
@@ -138,7 +141,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       input_frame_format != media::VideoFrame::YV16)
     return VideoFrameExternalResources();
 
-  bool software_compositor = !resource_provider_->GraphicsContext3D();
+  bool software_compositor = context_provider_ == NULL;
 
   GLenum output_resource_format = kYUVResourceFormat;
   size_t output_plane_count =
@@ -197,9 +200,10 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       DCHECK(mailbox.IsZero());
 
       if (!software_compositor) {
+        DCHECK(context_provider_);
+
         WebKit::WebGraphicsContext3D* context =
-            resource_provider_->GraphicsContext3D();
-        DCHECK(context);
+            context_provider_->Context3d();
 
         GLC(context, context->genMailboxCHROMIUM(mailbox.name));
         if (mailbox.IsZero()) {
@@ -330,9 +334,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   if (frame_format != media::VideoFrame::NATIVE_TEXTURE)
       return VideoFrameExternalResources();
 
-  WebKit::WebGraphicsContext3D* context =
-      resource_provider_->GraphicsContext3D();
-  if (!context)
+  if (!context_provider_)
     return VideoFrameExternalResources();
 
   VideoFrameExternalResources external_resources;
@@ -377,10 +379,11 @@ void VideoResourceUpdater::RecycleResource(
     return;
   }
 
-  WebKit::WebGraphicsContext3D* context =
-      updater->resource_provider_->GraphicsContext3D();
-  if (context && sync_point)
-    GLC(context, context->waitSyncPoint(sync_point));
+  ContextProvider* context_provider = updater->context_provider_;
+  if (context_provider && sync_point) {
+    GLC(context_provider->Context3d(),
+        context_provider->Context3d()->waitSyncPoint(sync_point));
+  }
 
   if (lost_resource) {
     updater->DeleteResource(data.resource_id);

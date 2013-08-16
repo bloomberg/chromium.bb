@@ -468,7 +468,7 @@ void LayerTreeHostImpl::FrameData::AppendRenderPass(
 static DrawMode GetDrawMode(OutputSurface* output_surface) {
   if (output_surface->ForcedDrawToSoftwareDevice()) {
     return DRAW_MODE_RESOURCELESS_SOFTWARE;
-  } else if (output_surface->context3d()) {
+  } else if (output_surface->context_provider()) {
     return DRAW_MODE_HARDWARE;
   } else {
     DCHECK(output_surface->software_device());
@@ -1581,7 +1581,7 @@ void LayerTreeHostImpl::CreateAndSetRenderer(
   if (output_surface->capabilities().delegated_rendering) {
     renderer_ =
         DelegatingRenderer::Create(this, output_surface, resource_provider);
-  } else if (output_surface->context3d() && !skip_gl_renderer) {
+  } else if (output_surface->context_provider() && !skip_gl_renderer) {
     renderer_ = GLRenderer::Create(this,
                                    output_surface,
                                    resource_provider,
@@ -1692,7 +1692,7 @@ bool LayerTreeHostImpl::DeferredInitialize(
   DCHECK(output_surface_->capabilities().deferred_gl_initialization);
   DCHECK(settings_.impl_side_painting);
   DCHECK(settings_.solid_color_scrollbars);
-  DCHECK(output_surface_->context3d());
+  DCHECK(output_surface_->context_provider());
 
   ReleaseTreeResources();
   renderer_.reset();
@@ -1715,7 +1715,7 @@ void LayerTreeHostImpl::ReleaseGL() {
   DCHECK(output_surface_->capabilities().deferred_gl_initialization);
   DCHECK(settings_.impl_side_painting);
   DCHECK(settings_.solid_color_scrollbars);
-  DCHECK(output_surface_->context3d());
+  DCHECK(output_surface_->context_provider());
 
   ReleaseTreeResources();
   renderer_.reset();

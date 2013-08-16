@@ -10,15 +10,13 @@
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-
-using WebKit::WebGraphicsContext3D;
 
 namespace {
 // There are several compositor surfaces in a process, but they share the same
@@ -50,11 +48,10 @@ IPC::ForwardingMessageFilter* CompositorOutputSurface::CreateFilter(
 CompositorOutputSurface::CompositorOutputSurface(
     int32 routing_id,
     uint32 output_surface_id,
-    WebGraphicsContext3DCommandBufferImpl* context3D,
-    cc::SoftwareOutputDevice* software_device,
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    scoped_ptr<cc::SoftwareOutputDevice> software_device,
     bool use_swap_compositor_frame_message)
-    : OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D>(context3D),
-                    make_scoped_ptr(software_device)),
+    : OutputSurface(context_provider, software_device.Pass()),
       output_surface_id_(output_surface_id),
       use_swap_compositor_frame_message_(use_swap_compositor_frame_message),
       output_surface_filter_(
@@ -111,12 +108,13 @@ void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   }
 
   if (frame->gl_frame_data) {
-    WebGraphicsContext3DCommandBufferImpl* command_buffer =
-        static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
+    WebGraphicsContext3DCommandBufferImpl* command_buffer_context =
+        static_cast<WebGraphicsContext3DCommandBufferImpl*>(
+            context_provider_->Context3d());
     CommandBufferProxyImpl* command_buffer_proxy =
-        command_buffer->GetCommandBufferProxy();
+        command_buffer_context->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
-    context3d()->shallowFlushCHROMIUM();
+    context_provider_->Context3d()->shallowFlushCHROMIUM();
     command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
   }
 

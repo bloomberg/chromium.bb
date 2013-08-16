@@ -13,6 +13,7 @@
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/test/render_pass_test_common.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -32,6 +33,8 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
       scoped_ptr<SoftwareOutputDevice> software_output_device) {
     output_surface_ = FakeOutputSurface::CreateSoftware(
         software_output_device.Pass());
+    CHECK(output_surface_->BindToClient(&output_surface_client_));
+
     resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
     renderer_ = SoftwareRenderer::Create(
         this, output_surface_.get(), resource_provider());
@@ -75,6 +78,7 @@ class SoftwareRendererTest : public testing::Test, public RendererClient {
   virtual bool ExternalStencilTestEnabled() const OVERRIDE { return false; }
 
  protected:
+  FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<SoftwareRenderer> renderer_;

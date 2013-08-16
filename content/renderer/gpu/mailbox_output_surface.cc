@@ -21,12 +21,12 @@ namespace content {
 MailboxOutputSurface::MailboxOutputSurface(
     int32 routing_id,
     uint32 output_surface_id,
-    WebGraphicsContext3DCommandBufferImpl* context3D,
-    cc::SoftwareOutputDevice* software_device)
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    scoped_ptr<cc::SoftwareOutputDevice> software_device)
     : CompositorOutputSurface(routing_id,
                               output_surface_id,
-                              context3D,
-                              software_device,
+                              context_provider,
+                              software_device.Pass(),
                               true),
       fbo_(0),
       is_backbuffer_discarded_(false) {
@@ -37,14 +37,18 @@ MailboxOutputSurface::MailboxOutputSurface(
 MailboxOutputSurface::~MailboxOutputSurface() {
   DiscardBackbuffer();
   while (!pending_textures_.empty()) {
-    if (pending_textures_.front().texture_id)
-      context3d_->deleteTexture(pending_textures_.front().texture_id);
+    if (pending_textures_.front().texture_id) {
+      context_provider_->Context3d()->deleteTexture(
+          pending_textures_.front().texture_id);
+    }
     pending_textures_.pop_front();
   }
 }
 
 void MailboxOutputSurface::EnsureBackbuffer() {
   is_backbuffer_discarded_ = false;
+
+  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
 
   if (!current_backing_.texture_id) {
     // Find a texture of matching size to recycle.
@@ -53,33 +57,33 @@ void MailboxOutputSurface::EnsureBackbuffer() {
       if (texture.size == surface_size_) {
         current_backing_ = texture;
         if (current_backing_.sync_point)
-          context3d_->waitSyncPoint(current_backing_.sync_point);
+          context3d->waitSyncPoint(current_backing_.sync_point);
         returned_textures_.pop();
         break;
       }
 
-      context3d_->deleteTexture(texture.texture_id);
+      context3d->deleteTexture(texture.texture_id);
       returned_textures_.pop();
     }
 
     if (!current_backing_.texture_id) {
-      current_backing_.texture_id = context3d_->createTexture();
+      current_backing_.texture_id = context3d->createTexture();
       current_backing_.size = surface_size_;
-      context3d_->bindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
-      context3d_->texParameteri(
+      context3d->bindTexture(GL_TEXTURE_2D, current_backing_.texture_id);
+      context3d->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      context3d_->texParameteri(
+      context3d->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      context3d_->texParameteri(
+      context3d->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-      context3d_->texParameteri(
+      context3d->texParameteri(
           GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-      context3d_->texImage2D(
+      context3d->texImage2D(
           GL_TEXTURE_2D, 0, GL_RGBA,
           surface_size_.width(), surface_size_.height(), 0,
           GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-      context3d_->genMailboxCHROMIUM(current_backing_.mailbox.name);
-      context3d_->produceTextureCHROMIUM(
+      context3d->genMailboxCHROMIUM(current_backing_.mailbox.name);
+      context3d->produceTextureCHROMIUM(
           GL_TEXTURE_2D, current_backing_.mailbox.name);
     }
   }
@@ -88,20 +92,22 @@ void MailboxOutputSurface::EnsureBackbuffer() {
 void MailboxOutputSurface::DiscardBackbuffer() {
   is_backbuffer_discarded_ = true;
 
+  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+
   if (current_backing_.texture_id) {
-    context3d_->deleteTexture(current_backing_.texture_id);
+    context3d->deleteTexture(current_backing_.texture_id);
     current_backing_ = TransferableFrame();
   }
 
   while (!returned_textures_.empty()) {
     const TransferableFrame& frame = returned_textures_.front();
-    context3d_->deleteTexture(frame.texture_id);
+    context3d->deleteTexture(frame.texture_id);
     returned_textures_.pop();
   }
 
   if (fbo_) {
-    context3d_->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
-    context3d_->deleteFramebuffer(fbo_);
+    context3d->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
+    context3d->deleteFramebuffer(fbo_);
     fbo_ = 0;
   }
 }
@@ -120,10 +126,12 @@ void MailboxOutputSurface::BindFramebuffer() {
   EnsureBackbuffer();
   DCHECK(current_backing_.texture_id);
 
+  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+
   if (!fbo_)
-    fbo_ = context3d_->createFramebuffer();
-  context3d_->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
-  context3d_->framebufferTexture2D(
+    fbo_ = context3d->createFramebuffer();
+  context3d->bindFramebuffer(GL_FRAMEBUFFER, fbo_);
+  context3d->framebufferTexture2D(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
       current_backing_.texture_id, 0);
 }
@@ -156,7 +164,7 @@ void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
     if (!is_backbuffer_discarded_) {
       returned_textures_.push(*it);
     } else {
-      context3d_->deleteTexture(it->texture_id);
+      context_provider_->Context3d()->deleteTexture(it->texture_id);
     }
 
     pending_textures_.erase(it);
@@ -167,7 +175,7 @@ void MailboxOutputSurface::OnSwapAck(uint32 output_surface_id,
     // the oldest texture we sent.
     uint32 texture_id = pending_textures_.front().texture_id;
     if (texture_id)
-      context3d_->deleteTexture(texture_id);
+      context_provider_->Context3d()->deleteTexture(texture_id);
     pending_textures_.pop_front();
   }
   CompositorOutputSurface::OnSwapAck(output_surface_id, ack);
@@ -178,11 +186,13 @@ void MailboxOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(!surface_size_.IsEmpty());
   DCHECK(surface_size_ == current_backing_.size);
   DCHECK(frame->gl_frame_data->size == current_backing_.size);
-  DCHECK(!current_backing_.mailbox.IsZero() || context3d_->isContextLost());
+  DCHECK(!current_backing_.mailbox.IsZero() ||
+         context_provider_->Context3d()->isContextLost());
 
   frame->gl_frame_data->mailbox = current_backing_.mailbox;
-  context3d_->flush();
-  frame->gl_frame_data->sync_point = context3d_->insertSyncPoint();
+  context_provider_->Context3d()->flush();
+  frame->gl_frame_data->sync_point =
+      context_provider_->Context3d()->insertSyncPoint();
   CompositorOutputSurface::SwapBuffers(frame);
 
   pending_textures_.push_back(current_backing_);

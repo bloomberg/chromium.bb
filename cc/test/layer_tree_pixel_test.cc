@@ -52,12 +52,9 @@ scoped_ptr<OutputSurface> LayerTreePixelTest::CreateOutputSurface(
     case GL_WITH_BITMAP: {
       CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
-      using WebKit::WebGraphicsContext3D;
-      using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-      scoped_ptr<WebGraphicsContext3D> context(
-          WebGraphicsContext3DInProcessCommandBufferImpl::
-              CreateOffscreenContext(WebGraphicsContext3D::Attributes()));
-      output_surface.reset(new PixelTestOutputSurface(context.Pass()));
+      using webkit::gpu::ContextProviderInProcess;
+      output_surface = make_scoped_ptr(new PixelTestOutputSurface(
+          ContextProviderInProcess::CreateOffscreen()));
       break;
     }
   }

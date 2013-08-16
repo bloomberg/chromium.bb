@@ -31,8 +31,7 @@ class CompositorFrameAck;
 }
 
 namespace content {
-
-class WebGraphicsContext3DCommandBufferImpl;
+class ContextProviderCommandBuffer;
 
 // This class can be created only on the main thread, but then becomes pinned
 // to a fixed thread when bindToClient is called.
@@ -43,11 +42,12 @@ class CompositorOutputSurface
   static IPC::ForwardingMessageFilter* CreateFilter(
       base::TaskRunner* target_task_runner);
 
-  CompositorOutputSurface(int32 routing_id,
-                          uint32 output_surface_id,
-                          WebGraphicsContext3DCommandBufferImpl* context3d,
-                          cc::SoftwareOutputDevice* software,
-                          bool use_swap_compositor_frame_message);
+  CompositorOutputSurface(
+      int32 routing_id,
+      uint32 output_surface_id,
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+      scoped_ptr<cc::SoftwareOutputDevice> software,
+      bool use_swap_compositor_frame_message);
   virtual ~CompositorOutputSurface();
 
   // cc::OutputSurface implementation.

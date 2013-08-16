@@ -93,8 +93,11 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
   if (!LayerImpl::WillDraw(draw_mode, resource_provider))
     return false;
 
-  if (!updater_)
-    updater_.reset(new VideoResourceUpdater(resource_provider));
+  if (!updater_) {
+    updater_.reset(
+        new VideoResourceUpdater(layer_tree_impl()->context_provider(),
+                                 layer_tree_impl()->resource_provider()));
+  }
 
   VideoFrameExternalResources external_resources =
       updater_->CreateExternalResourcesFromVideoFrame(frame_);

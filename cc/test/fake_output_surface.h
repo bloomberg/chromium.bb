@@ -6,13 +6,14 @@
 #define CC_TEST_FAKE_OUTPUT_SURFACE_H_
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/time/time.h"
+#include "cc/debug/test_context_provider.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/output_surface.h"
 #include "cc/output/software_output_device.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 
@@ -20,34 +21,42 @@ class FakeOutputSurface : public OutputSurface {
  public:
   virtual ~FakeOutputSurface();
 
-  static scoped_ptr<FakeOutputSurface> Create3d(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
-    return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), false));
+  static scoped_ptr<FakeOutputSurface> Create3d() {
+    return make_scoped_ptr(new FakeOutputSurface(
+        TestContextProvider::Create(), false));
   }
 
-  static scoped_ptr<FakeOutputSurface> Create3d() {
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        TestWebGraphicsContext3D::Create()
-        .PassAs<WebKit::WebGraphicsContext3D>();
-    return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), false));
+  static scoped_ptr<FakeOutputSurface> Create3d(
+      scoped_refptr<TestContextProvider> context_provider) {
+    return make_scoped_ptr(new FakeOutputSurface(context_provider, false));
+  }
+
+  static scoped_ptr<FakeOutputSurface> Create3d(
+      scoped_ptr<TestWebGraphicsContext3D> context) {
+    return make_scoped_ptr(new FakeOutputSurface(
+        TestContextProvider::Create(context.Pass()), false));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateSoftware(
       scoped_ptr<SoftwareOutputDevice> software_device) {
-    return make_scoped_ptr(
-        new FakeOutputSurface(software_device.Pass(), false));
-  }
-
-  static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
-    return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), true));
+    return make_scoped_ptr(new FakeOutputSurface(software_device.Pass(),
+                                                 false));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegating3d() {
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d =
-        TestWebGraphicsContext3D::Create()
-        .PassAs<WebKit::WebGraphicsContext3D>();
-    return make_scoped_ptr(new FakeOutputSurface(context3d.Pass(), true));
+    return make_scoped_ptr(new FakeOutputSurface(
+        TestContextProvider::Create(), true));
+  }
+
+  static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
+      scoped_refptr<TestContextProvider> context_provider) {
+    return make_scoped_ptr(new FakeOutputSurface(context_provider, true));
+  }
+
+  static scoped_ptr<FakeOutputSurface> CreateDelegating3d(
+      scoped_ptr<TestWebGraphicsContext3D> context) {
+    return make_scoped_ptr(new FakeOutputSurface(
+        TestContextProvider::Create(context.Pass()), true));
   }
 
   static scoped_ptr<FakeOutputSurface> CreateDelegatingSoftware(
@@ -66,9 +75,9 @@ class FakeOutputSurface : public OutputSurface {
   }
 
   static scoped_ptr<FakeOutputSurface> CreateAlwaysDrawAndSwap3d() {
-    scoped_ptr<FakeOutputSurface> result(Create3d());
-    result->capabilities_.draw_and_swap_full_viewport_every_frame = true;
-    return result.Pass();
+    scoped_ptr<FakeOutputSurface> surface(Create3d());
+    surface->capabilities_.draw_and_swap_full_viewport_every_frame = true;
+    return surface.Pass();
   }
 
   CompositorFrame& last_sent_frame() { return last_sent_frame_; }
@@ -88,10 +97,8 @@ class FakeOutputSurface : public OutputSurface {
 
   virtual bool BindToClient(OutputSurfaceClient* client) OVERRIDE;
 
-  bool SetAndInitializeContext3D(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
-
   using OutputSurface::ReleaseGL;
+  using OutputSurface::InitializeAndSetContext3d;
 
   void SetTreeActivationCallback(const base::Closure& callback);
 
@@ -103,7 +110,7 @@ class FakeOutputSurface : public OutputSurface {
 
  protected:
   FakeOutputSurface(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+      scoped_refptr<ContextProvider> context_provider,
       bool delegated_rendering);
 
   FakeOutputSurface(
@@ -111,7 +118,7 @@ class FakeOutputSurface : public OutputSurface {
       bool delegated_rendering);
 
   FakeOutputSurface(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+      scoped_refptr<ContextProvider> context_provider,
       scoped_ptr<SoftwareOutputDevice> software_device,
       bool delegated_rendering);
 
@@ -126,8 +133,8 @@ class FakeOutputSurface : public OutputSurface {
   TransferableResourceArray resources_held_by_parent_;
 };
 
-static inline scoped_ptr<cc::OutputSurface> CreateFakeOutputSurface() {
-  return FakeOutputSurface::Create3d().PassAs<cc::OutputSurface>();
+static inline scoped_ptr<OutputSurface> CreateFakeOutputSurface() {
+  return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
 }
 
 }  // namespace cc

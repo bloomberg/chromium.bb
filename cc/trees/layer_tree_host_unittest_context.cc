@@ -108,11 +108,11 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     }
 
     if (delegating_renderer()) {
-      return FakeOutputSurface::CreateDelegating3d(
-          context3d.PassAs<WebGraphicsContext3D>()).PassAs<OutputSurface>();
+      return FakeOutputSurface::CreateDelegating3d(context3d.Pass())
+          .PassAs<OutputSurface>();
     }
-    return FakeOutputSurface::Create3d(
-        context3d.PassAs<WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(context3d.Pass())
+        .PassAs<OutputSurface>();
   }
 
   scoped_ptr<TestWebGraphicsContext3D> CreateOffscreenContext3d() {
@@ -141,10 +141,11 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     if (!offscreen_contexts_main_thread_.get() ||
         offscreen_contexts_main_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_main_thread_ = TestContextProvider::Create(
-          base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
-                     base::Unretained(this)));
-      if (offscreen_contexts_main_thread_.get() &&
+      offscreen_contexts_main_thread_ =
+          TestContextProvider::Create(
+              base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
+                         base::Unretained(this)));
+      if (offscreen_contexts_main_thread_ &&
           !offscreen_contexts_main_thread_->BindToCurrentThread())
         offscreen_contexts_main_thread_ = NULL;
     }
@@ -157,9 +158,10 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     if (!offscreen_contexts_compositor_thread_.get() ||
         offscreen_contexts_compositor_thread_->DestroyedOnMainThread()) {
-      offscreen_contexts_compositor_thread_ = TestContextProvider::Create(
-          base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
-                     base::Unretained(this)));
+      offscreen_contexts_compositor_thread_ =
+          TestContextProvider::Create(
+              base::Bind(&LayerTreeHostContextTest::CreateOffscreenContext3d,
+                         base::Unretained(this)));
     }
     return offscreen_contexts_compositor_thread_;
   }
@@ -1219,6 +1221,10 @@ class LayerTreeHostContextTestDontUseLostResources
     LayerTreeHostContextTest::CommitCompleteOnThread(host_impl);
 
     ResourceProvider* resource_provider = host_impl->resource_provider();
+    ContextProvider* context_provider =
+        host_impl->output_surface()->context_provider();
+
+    DCHECK(context_provider);
 
     if (host_impl->active_tree()->source_frame_number() == 0) {
       // Set up impl resources on the first commit.
@@ -1255,9 +1261,8 @@ class LayerTreeHostContextTestDontUseLostResources
           static_cast<TextureLayerImpl*>(
               host_impl->active_tree()->root_layer()->children()[2]);
       texture_impl->set_texture_id(
-          resource_provider->GraphicsContext3D()->createTexture());
+          context_provider->Context3d()->createTexture());
 
-      DCHECK(resource_provider->GraphicsContext3D());
       ResourceProvider::ResourceId texture = resource_provider->CreateResource(
           gfx::Size(4, 4),
           resource_provider->default_resource_type(),
@@ -1265,9 +1270,8 @@ class LayerTreeHostContextTestDontUseLostResources
       ResourceProvider::ScopedWriteLockGL lock(resource_provider, texture);
 
       gpu::Mailbox mailbox;
-      resource_provider->GraphicsContext3D()->genMailboxCHROMIUM(mailbox.name);
-      unsigned sync_point =
-          resource_provider->GraphicsContext3D()->insertSyncPoint();
+      context_provider->Context3d()->genMailboxCHROMIUM(mailbox.name);
+      unsigned sync_point = context_provider->Context3d()->insertSyncPoint();
 
       color_video_frame_ = VideoFrame::CreateColorFrame(
           gfx::Size(4, 4), 0x80, 0x80, 0x80, base::TimeDelta());

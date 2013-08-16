@@ -616,7 +616,7 @@ scoped_refptr<cc::ContextProvider> LayerTreeTest::
   if (!main_thread_contexts_.get() ||
       main_thread_contexts_->DestroyedOnMainThread()) {
     main_thread_contexts_ = TestContextProvider::Create();
-    if (!main_thread_contexts_->BindToCurrentThread())
+    if (main_thread_contexts_ && !main_thread_contexts_->BindToCurrentThread())
       main_thread_contexts_ = NULL;
   }
   return main_thread_contexts_;

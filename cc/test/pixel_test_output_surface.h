@@ -12,8 +12,8 @@ namespace cc {
 class PixelTestOutputSurface : public OutputSurface {
  public:
   explicit PixelTestOutputSurface(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
-      : OutputSurface(context3d.Pass()) {}
+      scoped_refptr<ContextProvider> context_provider)
+      : OutputSurface(context_provider) {}
   explicit PixelTestOutputSurface(
       scoped_ptr<cc::SoftwareOutputDevice> software_device)
       : OutputSurface(software_device.Pass()) {}

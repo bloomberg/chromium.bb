@@ -28,6 +28,7 @@ struct hash<cc::LayerImpl*> {
 
 namespace cc {
 
+class ContextProvider;
 class DebugRectHistory;
 class FrameRateCounter;
 class HeadsUpDisplayLayerImpl;
@@ -58,6 +59,7 @@ class CC_EXPORT LayerTreeImpl {
   // ---------------------------------------------------------------------------
   const LayerTreeSettings& settings() const;
   const RendererCapabilities& GetRendererCapabilities() const;
+  ContextProvider* context_provider() const;
   OutputSurface* output_surface() const;
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;

@@ -9,6 +9,7 @@
 #include "cc/resources/prioritized_tile_set.h"
 #include "cc/resources/tile.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/fake_tile_manager.h"
 #include "cc/test/fake_tile_manager_client.h"
@@ -54,12 +55,16 @@ namespace {
 
 class PrioritizedTileSetTest : public testing::Test {
  public:
-  PrioritizedTileSetTest()
-      : output_surface_(FakeOutputSurface::Create3d()),
-        resource_provider_(ResourceProvider::Create(output_surface_.get(), 0)),
-        tile_manager_(new FakeTileManager(&tile_manager_client_,
-                                          resource_provider_.get())),
-        picture_pile_(FakePicturePileImpl::CreatePile()) {}
+  PrioritizedTileSetTest() {
+    output_surface_ = FakeOutputSurface::Create3d().Pass();
+    CHECK(output_surface_->BindToClient(&output_surface_client_));
+
+    resource_provider_ = ResourceProvider::Create(output_surface_.get(),
+                                                  0).Pass();
+    tile_manager_.reset(new FakeTileManager(&tile_manager_client_,
+                                            resource_provider_.get()));
+    picture_pile_ = FakePicturePileImpl::CreatePile();
+  }
 
   scoped_refptr<Tile> CreateTile() {
     return make_scoped_refptr(new Tile(tile_manager_.get(),
@@ -74,10 +79,11 @@ class PrioritizedTileSetTest : public testing::Test {
   }
 
  private:
-  FakeTileManagerClient tile_manager_client_;
   LayerTreeSettings settings_;
+  FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<FakeOutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
+  FakeTileManagerClient tile_manager_client_;
   scoped_ptr<FakeTileManager> tile_manager_;
   scoped_refptr<FakePicturePileImpl> picture_pile_;
 };

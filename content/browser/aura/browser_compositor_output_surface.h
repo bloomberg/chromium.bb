@@ -15,7 +15,9 @@ namespace base { class MessageLoopProxy; }
 namespace ui { class Compositor; }
 
 namespace content {
+class ContextProviderCommandBuffer;
 class ReflectorImpl;
+class WebGraphicsContext3DCommandBufferImpl;
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
 // cc::OutputSurface that also handles vsync parameter updates
@@ -25,7 +27,7 @@ class BrowserCompositorOutputSurface
       public base::NonThreadSafe {
  public:
   BrowserCompositorOutputSurface(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context,
+      const scoped_refptr<ContextProviderCommandBuffer>& context,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
       base::MessageLoopProxy* compositor_message_loop,

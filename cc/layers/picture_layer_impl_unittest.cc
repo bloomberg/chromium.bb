@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/append_quads_data.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/test/fake_content_layer_client.h"
@@ -822,7 +823,7 @@ TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
-      context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>());
+      context.Pass()).PassAs<OutputSurface>());
 
   pending_layer_->CalculateContentsScale(
       1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
@@ -873,7 +874,7 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
       TestWebGraphicsContext3D::Create();
   context->set_max_texture_size(140);
   host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
-      context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>());
+      context.Pass()).PassAs<OutputSurface>());
 
   pending_layer_->CalculateContentsScale(
       1.f, 1.f, 1.f, false, &result_scale_x, &result_scale_y, &result_bounds);

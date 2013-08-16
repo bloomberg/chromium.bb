@@ -8,12 +8,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/lock.h"
 #include "cc/base/switches.h"
-#include "cc/debug/fake_web_graphics_context_3d.h"
+#include "cc/debug/test_context_provider.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
-#include "cc/output/context_provider.h"
 #include "cc/output/output_surface.h"
-#include "cc/output/software_output_device.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
@@ -159,11 +157,8 @@ void WebLayerTreeViewImplForTesting::ApplyScrollAndScale(
 
 scoped_ptr<cc::OutputSurface>
 WebLayerTreeViewImplForTesting::CreateOutputSurface(bool fallback) {
-  scoped_ptr<cc::OutputSurface> surface;
-  scoped_ptr<WebGraphicsContext3D> context3d(
-      new cc::FakeWebGraphicsContext3D);
-  surface.reset(new cc::OutputSurface(context3d.Pass()));
-  return surface.Pass();
+  return make_scoped_ptr(
+      new cc::OutputSurface(cc::TestContextProvider::Create()));
 }
 
 void WebLayerTreeViewImplForTesting::ScheduleComposite() {

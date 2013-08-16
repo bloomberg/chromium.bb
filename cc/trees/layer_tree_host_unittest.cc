@@ -10,6 +10,7 @@
 #include "base/synchronization/lock.h"
 #include "cc/animation/timing_function.h"
 #include "cc/debug/frame_rate_counter.h"
+#include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/io_surface_layer.h"
@@ -1146,7 +1147,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context3d());
+        impl->output_surface()->context_provider()->Context3d());
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
@@ -1188,7 +1189,7 @@ class LayerTreeHostTestDirectRendererAtomicCommit : public LayerTreeHostTest {
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context3d());
+        impl->output_surface()->context_provider()->Context3d());
 
     if (drew_frame_ == impl->active_tree()->source_frame_number()) {
       EXPECT_EQ(0u, context->NumUsedTextures()) << "For frame " << drew_frame_;
@@ -1225,7 +1226,7 @@ class LayerTreeHostTestDelegatingRendererAtomicCommit
     ASSERT_EQ(0u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context3d());
+        impl->output_surface()->context_provider()->Context3d());
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
@@ -1347,7 +1348,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     ASSERT_EQ(1u, layer_tree_host()->settings().max_partial_texture_updates);
 
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context3d());
+        impl->output_surface()->context_provider()->Context3d());
 
     switch (impl->active_tree()->source_frame_number()) {
       case 0:
@@ -1412,7 +1413,7 @@ class LayerTreeHostTestAtomicCommitWithPartialUpdate
     EXPECT_LT(impl->active_tree()->source_frame_number(), 5);
 
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context3d());
+        impl->output_surface()->context_provider()->Context3d());
 
     // Number of textures used for drawing should one per layer except for
     // frame 3 where the viewport only contains one layer.
@@ -2370,21 +2371,10 @@ class LayerTreeHostTestChangeLayerPropertiesInPaintContents
 
 SINGLE_THREAD_TEST_F(LayerTreeHostTestChangeLayerPropertiesInPaintContents);
 
-class MockIOSurfaceWebGraphicsContext3D : public FakeWebGraphicsContext3D {
+class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
  public:
-  MockIOSurfaceWebGraphicsContext3D()
-      : FakeWebGraphicsContext3D() {}
-
   virtual WebKit::WebGLId createTexture() OVERRIDE {
     return 1;
-  }
-
-  virtual WebKit::WebString getString(WebKit::WGC3Denum name) OVERRIDE {
-    if (name == GL_EXTENSIONS) {
-      return WebKit::WebString(
-          "GL_CHROMIUM_iosurface GL_ARB_texture_rectangle");
-    }
-    return WebKit::WebString();
   }
 
   MOCK_METHOD1(activeTexture, void(WebKit::WGC3Denum texture));
@@ -2402,6 +2392,7 @@ class MockIOSurfaceWebGraphicsContext3D : public FakeWebGraphicsContext3D {
                                   WebKit::WGC3Dsizei count,
                                   WebKit::WGC3Denum type,
                                   WebKit::WGC3Dintptr offset));
+  MOCK_METHOD1(deleteTexture, void(WebKit::WGC3Denum texture));
 };
 
 
@@ -2409,11 +2400,14 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
  protected:
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE {
-    scoped_ptr<MockIOSurfaceWebGraphicsContext3D> context(
+    scoped_ptr<MockIOSurfaceWebGraphicsContext3D> mock_context_owned(
         new MockIOSurfaceWebGraphicsContext3D);
-    mock_context_ = context.get();
-    scoped_ptr<OutputSurface> output_surface = FakeOutputSurface::Create3d(
-        context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    mock_context_ = mock_context_owned.get();
+
+    mock_context_->set_have_extension_io_surface(true);
+
+    scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d(
+        mock_context_owned.PassAs<TestWebGraphicsContext3D>()));
     return output_surface.Pass();
   }
 
@@ -2492,6 +2486,8 @@ class LayerTreeHostTestIOSurfaceDrawing : public LayerTreeHostTest {
 
   virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
     Mock::VerifyAndClearExpectations(&mock_context_);
+
+    EXPECT_CALL(*mock_context_, deleteTexture(1)).Times(1);
     EndTest();
   }
 
@@ -2595,10 +2591,14 @@ class LayerTreeHostTestAsyncReadback : public LayerTreeHostTest {
 
   virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
       OVERRIDE {
-    if (use_gl_renderer_)
-      return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
-    return FakeOutputSurface::CreateSoftware(
-        make_scoped_ptr(new SoftwareOutputDevice)).PassAs<OutputSurface>();
+    scoped_ptr<FakeOutputSurface> output_surface;
+    if (use_gl_renderer_) {
+      output_surface = FakeOutputSurface::Create3d().Pass();
+    } else {
+      output_surface = FakeOutputSurface::CreateSoftware(
+          make_scoped_ptr(new SoftwareOutputDevice)).Pass();
+    }
+    return output_surface.PassAs<OutputSurface>();
   }
 
   bool use_gl_renderer_;
@@ -3183,10 +3183,12 @@ class LayerTreeHostTestDeferredInitialize : public LayerTreeHostTest {
   void DeferredInitializeAndRedraw(LayerTreeHostImpl* host_impl) {
     EXPECT_FALSE(did_initialize_gl_);
     // SetAndInitializeContext3D calls SetNeedsCommit.
-    EXPECT_TRUE(static_cast<FakeOutputSurface*>(host_impl->output_surface())
-                    ->SetAndInitializeContext3D(
-                          scoped_ptr<WebKit::WebGraphicsContext3D>(
-                              TestWebGraphicsContext3D::Create())));
+    FakeOutputSurface* fake_output_surface =
+        static_cast<FakeOutputSurface*>(host_impl->output_surface());
+    scoped_refptr<TestContextProvider> context_provider =
+        TestContextProvider::Create();  // Not bound to thread.
+    EXPECT_TRUE(fake_output_surface->InitializeAndSetContext3d(
+        context_provider, NULL));
     did_initialize_gl_ = true;
   }
 
@@ -3254,7 +3256,7 @@ class LayerTreeHostTestUIResource : public LayerTreeHostTest {
 
   void PerformTest(LayerTreeHostImpl* impl) {
     TestWebGraphicsContext3D* context = static_cast<TestWebGraphicsContext3D*>(
-        impl->output_surface()->context3d());
+        impl->output_surface()->context_provider()->Context3d());
 
     int frame = num_commits_;
     switch (frame) {

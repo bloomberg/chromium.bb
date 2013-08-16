@@ -58,12 +58,13 @@ bool DelegatingRenderer::Initialize() {
   capabilities_.allow_partial_texture_updates = false;
   capabilities_.using_offscreen_context3d = false;
 
-  WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
-
-  if (!context3d) {
-    // Software compositing.
+  if (!output_surface_->context_provider()) {
+    // TODO(danakj): Make software compositing work.
     return true;
   }
+
+  WebGraphicsContext3D* context3d =
+      output_surface_->context_provider()->Context3d();
 
   if (!context3d->makeContextCurrent())
     return false;
@@ -171,10 +172,11 @@ void DelegatingRenderer::ReceiveSwapBuffersAck(
 }
 
 bool DelegatingRenderer::IsContextLost() {
-  WebGraphicsContext3D* context3d = resource_provider_->GraphicsContext3D();
-  if (!context3d)
+  ContextProvider* context_provider = output_surface_->context_provider();
+  if (!context_provider)
     return false;
-  return context3d->getGraphicsResetStatusARB() != GL_NO_ERROR;
+  return context_provider->Context3d()->getGraphicsResetStatusARB() !=
+         GL_NO_ERROR;
 }
 
 void DelegatingRenderer::SetVisible(bool visible) {
@@ -182,27 +184,27 @@ void DelegatingRenderer::SetVisible(bool visible) {
     return;
 
   visible_ = visible;
-  WebGraphicsContext3D* context = resource_provider_->GraphicsContext3D();
+  ContextProvider* context_provider = output_surface_->context_provider();
   if (!visible_) {
     TRACE_EVENT0("cc", "DelegatingRenderer::SetVisible dropping resources");
     resource_provider_->ReleaseCachedData();
-    if (context)
-      context->flush();
+    if (context_provider)
+      context_provider->Context3d()->flush();
   }
   if (capabilities_.using_set_visibility) {
     // We loop visibility to the GPU process, since that's what manages memory.
     // That will allow it to feed us with memory allocations that we can act
     // upon.
-    DCHECK(context);
-    context->setVisibilityCHROMIUM(visible);
+    DCHECK(context_provider);
+    context_provider->Context3d()->setVisibilityCHROMIUM(visible);
   }
 }
 
 void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,
                                                 size_t bytes_visible_and_nearby,
                                                 size_t bytes_allocated) {
-  WebGraphicsContext3D* context = resource_provider_->GraphicsContext3D();
-  if (!context) {
+  ContextProvider* context_provider = output_surface_->context_provider();
+  if (!context_provider) {
     // TODO(piman): software path.
     NOTIMPLEMENTED();
     return;
@@ -212,7 +214,7 @@ void DelegatingRenderer::SendManagedMemoryStats(size_t bytes_visible,
   stats.bytesVisibleAndNearby = bytes_visible_and_nearby;
   stats.bytesAllocated = bytes_allocated;
   stats.backbufferRequested = false;
-  context->sendManagedMemoryStatsCHROMIUM(&stats);
+  context_provider->Context3d()->sendManagedMemoryStatsCHROMIUM(&stats);
 }
 
 void DelegatingRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {

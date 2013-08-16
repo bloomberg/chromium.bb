@@ -19,7 +19,6 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-#include "third_party/WebKit/public/platform/WebGraphicsMemoryAllocation.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "ui/gfx/rect.h"
@@ -30,67 +29,10 @@ using std::string;
 using std::vector;
 
 namespace cc {
-namespace {
-
-ManagedMemoryPolicy::PriorityCutoff ConvertPriorityCutoff(
-    WebKit::WebGraphicsMemoryAllocation::PriorityCutoff priority_cutoff) {
-  // This is simple a 1:1 map, the names differ only because the WebKit names
-  // should be to match the cc names.
-  switch (priority_cutoff) {
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowNothing:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowVisibleOnly:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_REQUIRED_ONLY;
-    case WebKit::WebGraphicsMemoryAllocation::
-        PriorityCutoffAllowVisibleAndNearby:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_NICE_TO_HAVE;
-    case WebKit::WebGraphicsMemoryAllocation::PriorityCutoffAllowEverything:
-      return ManagedMemoryPolicy::CUTOFF_ALLOW_EVERYTHING;
-  }
-  NOTREACHED();
-  return ManagedMemoryPolicy::CUTOFF_ALLOW_NOTHING;
-}
-
-}  // anonymous namespace
-
-class OutputSurfaceCallbacks
-    : public WebKit::WebGraphicsContext3D::
-        WebGraphicsSwapBuffersCompleteCallbackCHROMIUM,
-      public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback,
-    public WebKit::WebGraphicsContext3D::
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
- public:
-  explicit OutputSurfaceCallbacks(OutputSurface* client)
-      : client_(client) {
-    DCHECK(client_);
-  }
-
-  // WK:WGC3D::WGSwapBuffersCompleteCallbackCHROMIUM implementation.
-  virtual void onSwapBuffersComplete() { client_->OnSwapBuffersComplete(NULL); }
-
-  // WK:WGC3D::WGContextLostCallback implementation.
-  virtual void onContextLost() { client_->DidLoseOutputSurface(); }
-
-  // WK:WGC3D::WGMemoryAllocationChangedCallbackCHROMIUM implementation.
-  virtual void onMemoryAllocationChanged(
-      WebKit::WebGraphicsMemoryAllocation allocation) {
-    ManagedMemoryPolicy policy(
-        allocation.bytesLimitWhenVisible,
-        ConvertPriorityCutoff(allocation.priorityCutoffWhenVisible),
-        allocation.bytesLimitWhenNotVisible,
-        ConvertPriorityCutoff(allocation.priorityCutoffWhenNotVisible),
-        ManagedMemoryPolicy::kDefaultNumResourcesLimit);
-    bool discard_backbuffer = !allocation.suggestHaveBackbuffer;
-    client_->SetMemoryPolicy(policy, discard_backbuffer);
-  }
-
- private:
-  OutputSurface* client_;
-};
 
 OutputSurface::OutputSurface(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d)
-    : context3d_(context3d.Pass()),
+    scoped_refptr<ContextProvider> context_provider)
+    : context_provider_(context_provider),
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
       device_scale_factor_(-1),
@@ -119,9 +61,9 @@ OutputSurface::OutputSurface(
 }
 
 OutputSurface::OutputSurface(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+    scoped_refptr<ContextProvider> context_provider,
     scoped_ptr<cc::SoftwareOutputDevice> software_device)
-    : context3d_(context3d.Pass()),
+    : context_provider_(context_provider),
       software_device_(software_device.Pass()),
       has_gl_discard_backbuffer_(false),
       has_swap_buffers_complete_callback_(false),
@@ -289,12 +231,7 @@ void OutputSurface::SetExternalDrawConstraints(const gfx::Transform& transform,
 OutputSurface::~OutputSurface() {
   if (frame_rate_controller_)
     frame_rate_controller_->SetActive(false);
-
-  if (context3d_) {
-    context3d_->setSwapBuffersCompleteCallbackCHROMIUM(NULL);
-    context3d_->setContextLostCallback(NULL);
-    context3d_->setMemoryAllocationChangedCallbackCHROMIUM(NULL);
-  }
+  ResetContext3d();
 }
 
 bool OutputSurface::ForcedDrawToSoftwareDevice() const {
@@ -306,10 +243,10 @@ bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   client_ = client;
   bool success = true;
 
-  if (context3d_) {
-    success = context3d_->makeContextCurrent();
+  if (context_provider_) {
+    success = context_provider_->BindToCurrentThread();
     if (success)
-      SetContext3D(context3d_.Pass());
+      SetUpContext3d();
   }
 
   if (!success)
@@ -318,40 +255,42 @@ bool OutputSurface::BindToClient(cc::OutputSurfaceClient* client) {
   return success;
 }
 
-bool OutputSurface::InitializeAndSetContext3D(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+bool OutputSurface::InitializeAndSetContext3d(
+    scoped_refptr<ContextProvider> context_provider,
     scoped_refptr<ContextProvider> offscreen_context_provider) {
-  DCHECK(!context3d_);
-  DCHECK(context3d);
+  DCHECK(!context_provider_);
+  DCHECK(context_provider);
   DCHECK(client_);
 
   bool success = false;
-  if (context3d->makeContextCurrent()) {
-    SetContext3D(context3d.Pass());
+  if (context_provider->BindToCurrentThread()) {
+    context_provider_ = context_provider;
+    SetUpContext3d();
     if (client_->DeferredInitialize(offscreen_context_provider))
       success = true;
   }
 
   if (!success)
-    ResetContext3D();
+    ResetContext3d();
 
   return success;
 }
 
 void OutputSurface::ReleaseGL() {
   DCHECK(client_);
-  DCHECK(context3d_);
+  DCHECK(context_provider_);
   client_->ReleaseGL();
-  ResetContext3D();
+  ResetContext3d();
 }
 
-void OutputSurface::SetContext3D(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d) {
-  DCHECK(!context3d_);
-  DCHECK(context3d);
+void OutputSurface::SetUpContext3d() {
+  DCHECK(context_provider_);
   DCHECK(client_);
 
-  string extensions_string = UTF16ToASCII(context3d->getString(GL_EXTENSIONS));
+  WebKit::WebGraphicsContext3D* context3d = context_provider_->Context3d();
+
+  string extensions_string =
+      UTF16ToASCII(context3d->getString(GL_EXTENSIONS));
   vector<string> extensions_list;
   base::SplitString(extensions_string, ' ', &extensions_list);
   set<string> extensions(extensions_list.begin(), extensions_list.end());
@@ -360,29 +299,40 @@ void OutputSurface::SetContext3D(
   has_swap_buffers_complete_callback_ =
        extensions.count("GL_CHROMIUM_swapbuffers_complete_callback") > 0;
 
-
-  context3d_ = context3d.Pass();
-  callbacks_.reset(new OutputSurfaceCallbacks(this));
-  context3d_->setSwapBuffersCompleteCallbackCHROMIUM(callbacks_.get());
-  context3d_->setContextLostCallback(callbacks_.get());
-  context3d_->setMemoryAllocationChangedCallbackCHROMIUM(callbacks_.get());
+  context_provider_->SetLostContextCallback(
+      base::Bind(&OutputSurface::DidLoseOutputSurface,
+                 base::Unretained(this)));
+  context_provider_->SetSwapBuffersCompleteCallback(
+      base::Bind(&OutputSurface::OnSwapBuffersComplete,
+                 base::Unretained(this),
+                 static_cast<CompositorFrameAck*>(NULL)));
+  context_provider_->SetMemoryPolicyChangedCallback(
+      base::Bind(&OutputSurface::SetMemoryPolicy,
+                 base::Unretained(this)));
 }
 
-void OutputSurface::ResetContext3D() {
-  context3d_.reset();
-  callbacks_.reset();
+void OutputSurface::ResetContext3d() {
+  if (context_provider_.get()) {
+    context_provider_->SetLostContextCallback(
+        ContextProvider::LostContextCallback());
+    context_provider_->SetSwapBuffersCompleteCallback(
+        ContextProvider::SwapBuffersCompleteCallback());
+    context_provider_->SetMemoryPolicyChangedCallback(
+        ContextProvider::MemoryPolicyChangedCallback());
+  }
+  context_provider_ = NULL;
 }
 
 void OutputSurface::EnsureBackbuffer() {
-  DCHECK(context3d_);
+  DCHECK(context_provider_);
   if (has_gl_discard_backbuffer_)
-    context3d_->ensureBackbufferCHROMIUM();
+    context_provider_->Context3d()->ensureBackbufferCHROMIUM();
 }
 
 void OutputSurface::DiscardBackbuffer() {
-  DCHECK(context3d_);
+  DCHECK(context_provider_);
   if (has_gl_discard_backbuffer_)
-    context3d_->discardBackbufferCHROMIUM();
+    context_provider_->Context3d()->discardBackbufferCHROMIUM();
 }
 
 void OutputSurface::Reshape(gfx::Size size, float scale_factor) {
@@ -391,8 +341,8 @@ void OutputSurface::Reshape(gfx::Size size, float scale_factor) {
 
   surface_size_ = size;
   device_scale_factor_ = scale_factor;
-  if (context3d_) {
-    context3d_->reshapeWithScaleFactor(
+  if (context_provider_) {
+    context_provider_->Context3d()->reshapeWithScaleFactor(
         size.width(), size.height(), scale_factor);
   }
   if (software_device_)
@@ -404,8 +354,8 @@ gfx::Size OutputSurface::SurfaceSize() const {
 }
 
 void OutputSurface::BindFramebuffer() {
-  DCHECK(context3d_);
-  context3d_->bindFramebuffer(GL_FRAMEBUFFER, 0);
+  DCHECK(context_provider_);
+  context_provider_->Context3d()->bindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
@@ -415,20 +365,21 @@ void OutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
     return;
   }
 
-  DCHECK(context3d_);
+  DCHECK(context_provider_);
   DCHECK(frame->gl_frame_data);
 
   if (frame->gl_frame_data->sub_buffer_rect ==
       gfx::Rect(frame->gl_frame_data->size)) {
     // Note that currently this has the same effect as SwapBuffers; we should
     // consider exposing a different entry point on WebGraphicsContext3D.
-    context3d()->prepareTexture();
+    context_provider_->Context3d()->prepareTexture();
   } else {
     gfx::Rect sub_buffer_rect = frame->gl_frame_data->sub_buffer_rect;
-    context3d()->postSubBufferCHROMIUM(sub_buffer_rect.x(),
-                                       sub_buffer_rect.y(),
-                                       sub_buffer_rect.width(),
-                                       sub_buffer_rect.height());
+    context_provider_->Context3d()->postSubBufferCHROMIUM(
+        sub_buffer_rect.x(),
+        sub_buffer_rect.y(),
+        sub_buffer_rect.width(),
+        sub_buffer_rect.height());
   }
 
   if (!has_swap_buffers_complete_callback_)

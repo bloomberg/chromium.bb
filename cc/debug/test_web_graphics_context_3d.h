@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
@@ -20,15 +19,11 @@
 #include "cc/debug/fake_web_graphics_context_3d.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-namespace WebKit { struct WebGraphicsMemoryAllocation; }
-
 namespace cc {
 
 class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
  public:
   static scoped_ptr<TestWebGraphicsContext3D> Create();
-  static base::Callback<
-    scoped_ptr<TestWebGraphicsContext3D>()> CreateFactory();
 
   virtual ~TestWebGraphicsContext3D();
 
@@ -119,9 +114,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void setSwapBuffersCompleteCallbackCHROMIUM(
       WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
 
-  virtual void setMemoryAllocationChangedCallbackCHROMIUM(
-      WebGraphicsMemoryAllocationChangedCallbackCHROMIUM* callback);
-
   virtual void prepareTexture();
   virtual void finish();
   virtual void flush();
@@ -207,8 +199,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual WebKit::WebGLId NextImageId();
 
-  void SetMemoryAllocation(WebKit::WebGraphicsMemoryAllocation allocation);
-
  protected:
   struct Buffer {
     Buffer();
@@ -271,8 +261,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   int times_map_buffer_chromium_succeeds_;
   WebGraphicsContextLostCallback* context_lost_callback_;
   WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* swap_buffers_callback_;
-  WebGraphicsMemoryAllocationChangedCallbackCHROMIUM*
-      memory_allocation_changed_callback_;
   std::vector<WebGraphicsSyncPointCallback*> sync_point_callbacks_;
   base::hash_set<WebKit::WebGLId> used_textures_;
   std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;

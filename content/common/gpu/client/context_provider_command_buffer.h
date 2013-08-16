@@ -35,6 +35,12 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) OVERRIDE;
+  virtual void SetSwapBuffersCompleteCallback(
+      const SwapBuffersCompleteCallback& swap_buffers_complete_callback)
+      OVERRIDE;
+  virtual void SetMemoryPolicyChangedCallback(
+      const MemoryPolicyChangedCallback& memory_policy_changed_callback)
+      OVERRIDE;
 
   void set_leak_on_destroy() {
     base::AutoLock lock(main_thread_lock_);
@@ -50,7 +56,9 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   bool InitializeOnMainThread(const CreateCallback& create_callback);
 
   void OnLostContext();
-  void OnMemoryAllocationChanged(bool nonzero_allocation);
+  void OnSwapBuffersComplete();
+  void OnMemoryAllocationChanged(
+      const WebKit::WebGraphicsMemoryAllocation& allocation);
 
  private:
   base::ThreadChecker main_thread_checker_;
@@ -60,6 +68,8 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   scoped_ptr<webkit::gpu::GrContextForWebGraphicsContext3D> gr_context_;
 
   LostContextCallback lost_context_callback_;
+  SwapBuffersCompleteCallback swap_buffers_complete_callback_;
+  MemoryPolicyChangedCallback memory_policy_changed_callback_;
 
   base::Lock main_thread_lock_;
   bool leak_on_destroy_;
@@ -67,6 +77,10 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
 
   class LostContextCallbackProxy;
   scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
+
+  class SwapBuffersCompleteCallbackProxy;
+  scoped_ptr<SwapBuffersCompleteCallbackProxy>
+      swap_buffers_complete_callback_proxy_;
 
   class MemoryAllocationCallbackProxy;
   scoped_ptr<MemoryAllocationCallbackProxy> memory_allocation_callback_proxy_;

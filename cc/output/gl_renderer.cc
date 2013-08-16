@@ -151,7 +151,7 @@ GLRenderer::GLRenderer(RendererClient* client,
     : DirectRenderer(client, output_surface, resource_provider),
       offscreen_framebuffer_id_(0),
       shared_geometry_quad_(gfx::RectF(-0.5f, -0.5f, 1.0f, 1.0f)),
-      context_(output_surface->context3d()),
+      context_(output_surface->context_provider()->Context3d()),
       is_backbuffer_discarded_(false),
       discard_backbuffer_when_not_visible_(false),
       is_using_bind_uniform_(false),
@@ -510,7 +510,7 @@ static inline SkBitmap ApplyFilters(GLRenderer* renderer,
   offscreen_contexts->Context3d()->flush();
 
   // Use the compositor's GL context again.
-  renderer->resource_provider()->GraphicsContext3D()->makeContextCurrent();
+  renderer->Context()->makeContextCurrent();
   return source;
 }
 
@@ -592,7 +592,7 @@ static SkBitmap ApplyImageFilter(GLRenderer* renderer,
   offscreen_contexts->Context3d()->flush();
 
   // Use the compositor's GL context again.
-  renderer->resource_provider()->GraphicsContext3D()->makeContextCurrent();
+  renderer->Context()->makeContextCurrent();
 
   return device.accessBitmap(false);
 }

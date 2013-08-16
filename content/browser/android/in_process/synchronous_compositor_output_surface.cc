@@ -13,7 +13,6 @@
 #include "cc/output/output_surface_client.h"
 #include "cc/output/software_output_device.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/command_buffer/client/gl_in_process_context.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -22,18 +21,18 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/transform.h"
 #include "ui/gl/gl_surface.h"
+#include "webkit/common/gpu/context_provider_in_process.h"
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
-
 
 namespace content {
 
 namespace {
 
-scoped_ptr<WebKit::WebGraphicsContext3D> CreateWebGraphicsContext3D(
-    scoped_refptr<gfx::GLSurface> surface) {
+scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
+CreateWebGraphicsContext3D(scoped_refptr<gfx::GLSurface> surface) {
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
   if (!gfx::GLSurface::InitializeOneOff())
-    return scoped_ptr<WebKit::WebGraphicsContext3D>();
+    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
 
   const char* allowed_extensions = "*";
   const gfx::GpuPreference gpu_preference = gfx::PreferDiscreteGpu;
@@ -54,11 +53,10 @@ scoped_ptr<WebKit::WebGraphicsContext3D> CreateWebGraphicsContext3D(
                                                  gpu_preference));
 
   if (!context.get())
-    return scoped_ptr<WebKit::WebGraphicsContext3D>();
+    return scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>();
 
-  return scoped_ptr<WebKit::WebGraphicsContext3D>(
-      WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
-          context.Pass(), attributes));
+  return WebGraphicsContext3DInProcessCommandBufferImpl::WrapContext(
+      context.Pass(), attributes).Pass();
 }
 
 void DidActivatePendingTree(int routing_id) {
@@ -176,8 +174,8 @@ void SynchronousCompositorOutputSurface::SetNeedsBeginFrame(
 void SynchronousCompositorOutputSurface::SwapBuffers(
     cc::CompositorFrame* frame) {
   if (!ForcedDrawToSoftwareDevice()) {
-    DCHECK(context3d());
-    context3d()->shallowFlushCHROMIUM();
+    DCHECK(context_provider_);
+    context_provider_->Context3d()->shallowFlushCHROMIUM();
   }
   SynchronousCompositorOutputSurfaceDelegate* delegate = GetDelegate();
   if (delegate)
@@ -197,14 +195,17 @@ void AdjustTransformForClip(gfx::Transform* transform, gfx::Rect clip) {
 
 bool SynchronousCompositorOutputSurface::InitializeHwDraw(
     scoped_refptr<gfx::GLSurface> surface,
-    scoped_refptr<cc::ContextProvider> offscreen_context) {
+    scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
-  DCHECK(!context3d_);
+  DCHECK(!context_provider_);
   DCHECK(surface);
 
-  return InitializeAndSetContext3D(
-      CreateWebGraphicsContext3D(surface).Pass(), offscreen_context);
+  scoped_refptr<cc::ContextProvider> onscreen_context_provider =
+      webkit::gpu::ContextProviderInProcess::Create(
+          base::Bind(&CreateWebGraphicsContext3D, surface));
+  return InitializeAndSetContext3d(onscreen_context_provider,
+                                   offscreen_context_provider);
 }
 
 void SynchronousCompositorOutputSurface::ReleaseHwDraw() {
@@ -218,7 +219,7 @@ bool SynchronousCompositorOutputSurface::DemandDrawHw(
     bool stencil_enabled) {
   DCHECK(CalledOnValidThread());
   DCHECK(HasClient());
-  DCHECK(context3d());
+  DCHECK(context_provider_);
 
   gfx::Transform adjusted_transform = transform;
   AdjustTransformForClip(&adjusted_transform, clip);

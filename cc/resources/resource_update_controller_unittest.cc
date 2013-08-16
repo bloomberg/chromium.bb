@@ -8,6 +8,7 @@
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/resources/prioritized_resource_manager.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/scheduler_test_common.h"
 #include "cc/test/tiled_layer_test_common.h"
@@ -124,9 +125,6 @@ class ResourceUpdateControllerTest : public Test {
 
  protected:
   virtual void SetUp() {
-    output_surface_ =
-        FakeOutputSurface::Create3d(scoped_ptr<WebKit::WebGraphicsContext3D>(
-            new WebGraphicsContext3DForUploadTest(this)));
     bitmap_.setConfig(SkBitmap::kARGB_8888_Config, 300, 150);
     bitmap_.allocPixels();
 
@@ -137,6 +135,11 @@ class ResourceUpdateControllerTest : public Test {
           set_request_priority(PriorityCalculator::VisiblePriority(true));
     }
     resource_manager_->PrioritizeTextures();
+
+    output_surface_ = FakeOutputSurface::Create3d(
+        scoped_ptr<TestWebGraphicsContext3D>(
+            new WebGraphicsContext3DForUploadTest(this)));
+    CHECK(output_surface_->BindToClient(&output_surface_client_));
 
     resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
   }
@@ -193,6 +196,7 @@ class ResourceUpdateControllerTest : public Test {
  protected:
   // Classes required to interact and test the ResourceUpdateController
   FakeProxy proxy_;
+  FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<ResourceUpdateQueue> queue_;

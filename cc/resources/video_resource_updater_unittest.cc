@@ -8,6 +8,7 @@
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "media/base/video_frame.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,8 +22,9 @@ class VideoResourceUpdaterTest : public testing::Test {
         TestWebGraphicsContext3D::Create();
     context3d_ = context3d.get();
 
-    output_surface3d_ = FakeOutputSurface::Create3d(
-        context3d.PassAs<WebKit::WebGraphicsContext3D>());
+    output_surface3d_ =
+        FakeOutputSurface::Create3d(context3d.Pass());
+    CHECK(output_surface3d_->BindToClient(&client_));
     resource_provider3d_ =
         ResourceProvider::Create(output_surface3d_.get(), 0);
   }
@@ -50,12 +52,14 @@ class VideoResourceUpdaterTest : public testing::Test {
   }
 
   TestWebGraphicsContext3D* context3d_;
+  FakeOutputSurfaceClient client_;
   scoped_ptr<FakeOutputSurface> output_surface3d_;
   scoped_ptr<ResourceProvider> resource_provider3d_;
 };
 
 TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
-  VideoResourceUpdater updater(resource_provider3d_.get());
+  VideoResourceUpdater updater(output_surface3d_->context_provider().get(),
+                               resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 
   VideoFrameExternalResources resources =
@@ -64,7 +68,8 @@ TEST_F(VideoResourceUpdaterTest, SoftwareFrame) {
 }
 
 TEST_F(VideoResourceUpdaterTest, LostContextForSoftwareFrame) {
-  VideoResourceUpdater updater(resource_provider3d_.get());
+  VideoResourceUpdater updater(output_surface3d_->context_provider().get(),
+                               resource_provider3d_.get());
   scoped_refptr<media::VideoFrame> video_frame = CreateTestYUVVideoFrame();
 
   // Fail while creating the mailbox for the second YUV plane.

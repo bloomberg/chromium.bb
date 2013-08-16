@@ -620,8 +620,10 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
+    ContextProvider* context_provider =
+        host_impl_.output_surface()->context_provider();
     unsigned texture =
-        host_impl_.output_surface()->context3d()->createTexture();
+        context_provider->Context3d()->createTexture();
     impl_layer->set_texture_id(texture);
     EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_HARDWARE));
   }
@@ -659,8 +661,10 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
+    ContextProvider* context_provider =
+        host_impl_.output_surface()->context_provider();
     unsigned texture =
-        host_impl_.output_surface()->context3d()->createTexture();
+        context_provider->Context3d()->createTexture();
     impl_layer->set_texture_id(texture);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
@@ -683,8 +687,10 @@ TEST_F(TextureLayerImplWithMailboxTest, TestWillDraw) {
   {
     scoped_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1, false);
+    ContextProvider* context_provider =
+        host_impl_.output_surface()->context_provider();
     unsigned texture =
-        host_impl_.output_surface()->context3d()->createTexture();
+        context_provider->Context3d()->createTexture();
     impl_layer->set_texture_id(texture);
     EXPECT_FALSE(WillDraw(impl_layer.get(), DRAW_MODE_RESOURCELESS_SOFTWARE));
   }
@@ -801,8 +807,7 @@ class TextureLayerClientTest
         TestWebGraphicsContext3D::Create());
     context_ = context.get();
     texture_ = context->createTexture();
-    return FakeOutputSurface::Create3d(
-        context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>();
+    return FakeOutputSurface::Create3d(context.Pass()).PassAs<OutputSurface>();
   }
 
   virtual unsigned PrepareTexture() OVERRIDE {

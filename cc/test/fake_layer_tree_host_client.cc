@@ -32,22 +32,21 @@ scoped_ptr<OutputSurface> FakeLayerTreeHostClient::CreateOutputSurface(
 
   if (use_delegating_renderer_)
     return FakeOutputSurface::CreateDelegating3d().PassAs<OutputSurface>();
-
-  return CreateFakeOutputSurface();
+  return FakeOutputSurface::Create3d().PassAs<OutputSurface>();
 }
 
-scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
+scoped_refptr<ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForMainThread() {
   if (!main_thread_contexts_.get() ||
       main_thread_contexts_->DestroyedOnMainThread()) {
     main_thread_contexts_ = TestContextProvider::Create();
-    if (!main_thread_contexts_->BindToCurrentThread())
+    if (main_thread_contexts_ && !main_thread_contexts_->BindToCurrentThread())
       main_thread_contexts_ = NULL;
   }
   return main_thread_contexts_;
 }
 
-scoped_refptr<cc::ContextProvider> FakeLayerTreeHostClient::
+scoped_refptr<ContextProvider> FakeLayerTreeHostClient::
     OffscreenContextProviderForCompositorThread() {
   if (!compositor_thread_contexts_.get() ||
       compositor_thread_contexts_->DestroyedOnMainThread())

@@ -5,7 +5,9 @@
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 
 #include "base/callback_helpers.h"
+#include "cc/output/managed_memory_policy.h"
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
+#include "webkit/common/gpu/managed_memory_policy_convert.h"
 
 namespace content {
 
@@ -29,6 +31,28 @@ class ContextProviderCommandBuffer::LostContextCallbackProxy
   ContextProviderCommandBuffer* provider_;
 };
 
+class ContextProviderCommandBuffer::SwapBuffersCompleteCallbackProxy
+    : public WebKit::WebGraphicsContext3D::
+          WebGraphicsSwapBuffersCompleteCallbackCHROMIUM {
+ public:
+  explicit SwapBuffersCompleteCallbackProxy(
+      ContextProviderCommandBuffer* provider)
+      : provider_(provider) {
+    provider_->context3d_->setSwapBuffersCompleteCallbackCHROMIUM(this);
+  }
+
+  virtual ~SwapBuffersCompleteCallbackProxy() {
+    provider_->context3d_->setSwapBuffersCompleteCallbackCHROMIUM(NULL);
+  }
+
+  virtual void onSwapBuffersComplete() {
+    provider_->OnSwapBuffersComplete();
+  }
+
+ private:
+  ContextProviderCommandBuffer* provider_;
+};
+
 class ContextProviderCommandBuffer::MemoryAllocationCallbackProxy
     : public WebKit::WebGraphicsContext3D::
           WebGraphicsMemoryAllocationChangedCallbackCHROMIUM {
@@ -43,8 +67,8 @@ class ContextProviderCommandBuffer::MemoryAllocationCallbackProxy
   }
 
   virtual void onMemoryAllocationChanged(
-      WebKit::WebGraphicsMemoryAllocation alloc) {
-    provider_->OnMemoryAllocationChanged(!!alloc.gpuResourceSizeInBytes);
+      WebKit::WebGraphicsMemoryAllocation allocation) {
+    provider_->OnMemoryAllocationChanged(allocation);
   }
 
  private:
@@ -103,6 +127,10 @@ bool ContextProviderCommandBuffer::BindToCurrentThread() {
     return false;
 
   lost_context_callback_proxy_.reset(new LostContextCallbackProxy(this));
+  swap_buffers_complete_callback_proxy_.reset(
+      new SwapBuffersCompleteCallbackProxy(this));
+  memory_allocation_callback_proxy_.reset(
+      new MemoryAllocationCallbackProxy(this));
   return true;
 }
 
@@ -125,8 +153,6 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 
   gr_context_.reset(
       new webkit::gpu::GrContextForWebGraphicsContext3D(context3d_.get()));
-  memory_allocation_callback_proxy_.reset(
-      new MemoryAllocationCallbackProxy(this));
   return gr_context_->get();
 }
 
@@ -151,6 +177,34 @@ void ContextProviderCommandBuffer::OnLostContext() {
     base::ResetAndReturn(&lost_context_callback_).Run();
 }
 
+void ContextProviderCommandBuffer::OnSwapBuffersComplete() {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  if (!swap_buffers_complete_callback_.is_null())
+    swap_buffers_complete_callback_.Run();
+}
+
+void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
+    const WebKit::WebGraphicsMemoryAllocation& allocation) {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  if (gr_context_) {
+    bool nonzero_allocation = !!allocation.gpuResourceSizeInBytes;
+    gr_context_->SetMemoryLimit(nonzero_allocation);
+  }
+
+  if (memory_policy_changed_callback_.is_null())
+    return;
+
+  bool discard_backbuffer_when_not_visible;
+  cc::ManagedMemoryPolicy policy =
+      webkit::gpu::ManagedMemoryPolicyConvert::Convert(
+          allocation,
+          &discard_backbuffer_when_not_visible);
+
+  memory_policy_changed_callback_.Run(
+      policy, discard_backbuffer_when_not_visible);
+}
+
 bool ContextProviderCommandBuffer::DestroyedOnMainThread() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
@@ -161,15 +215,25 @@ bool ContextProviderCommandBuffer::DestroyedOnMainThread() {
 void ContextProviderCommandBuffer::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  DCHECK(lost_context_callback_.is_null());
+  DCHECK(lost_context_callback_.is_null() ||
+         lost_context_callback.is_null());
   lost_context_callback_ = lost_context_callback;
 }
 
-void ContextProviderCommandBuffer::OnMemoryAllocationChanged(
-    bool nonzero_allocation) {
+void ContextProviderCommandBuffer::SetSwapBuffersCompleteCallback(
+    const SwapBuffersCompleteCallback& swap_buffers_complete_callback) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  if (gr_context_)
-    gr_context_->SetMemoryLimit(nonzero_allocation);
+  DCHECK(swap_buffers_complete_callback_.is_null() ||
+         swap_buffers_complete_callback.is_null());
+  swap_buffers_complete_callback_ = swap_buffers_complete_callback;
+}
+
+void ContextProviderCommandBuffer::SetMemoryPolicyChangedCallback(
+    const MemoryPolicyChangedCallback& memory_policy_changed_callback) {
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+  DCHECK(memory_policy_changed_callback_.is_null() ||
+         memory_policy_changed_callback.is_null());
+  memory_policy_changed_callback_ = memory_policy_changed_callback;
 }
 
 }  // namespace content

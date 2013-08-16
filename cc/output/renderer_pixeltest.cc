@@ -13,6 +13,7 @@
 #include "cc/test/fake_picture_pile_impl.h"
 #include "cc/test/pixel_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
@@ -1003,7 +1004,8 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
 class ExternalStencilPixelTest : public GLRendererPixelTest {
  protected:
   void ClearBackgroundToGreen() {
-    WebKit::WebGraphicsContext3D* context3d = output_surface_->context3d();
+    WebKit::WebGraphicsContext3D* context3d =
+        output_surface_->context_provider()->Context3d();
     output_surface_->EnsureBackbuffer();
     output_surface_->Reshape(device_viewport_size_, 1);
     context3d->clearColor(0.f, 1.f, 0.f, 1.f);
@@ -1012,7 +1014,8 @@ class ExternalStencilPixelTest : public GLRendererPixelTest {
 
   void PopulateStencilBuffer() {
     // Set two quadrants of the stencil buffer to 1.
-    WebKit::WebGraphicsContext3D* context3d = output_surface_->context3d();
+    WebKit::WebGraphicsContext3D* context3d =
+        output_surface_->context_provider()->Context3d();
     ASSERT_TRUE(context3d->getContextAttributes().stencil);
     output_surface_->EnsureBackbuffer();
     output_surface_->Reshape(device_viewport_size_, 1);

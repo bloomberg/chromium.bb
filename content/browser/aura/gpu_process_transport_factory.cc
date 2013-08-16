@@ -219,13 +219,17 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   if (!data)
     data = CreatePerCompositorData(compositor);
 
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context;
+  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
-    context =
-        CreateContextCommon(data->swap_client->AsWeakPtr(), data->surface_id);
+    context_provider = ContextProviderCommandBuffer::Create(
+        base::Bind(&GpuProcessTransportFactory::CreateContextCommon,
+                   base::Unretained(this),
+                   data->swap_client->AsWeakPtr(),
+                   data->surface_id));
   }
-  if (!context) {
+  if (!context_provider.get()) {
     if (ui::Compositor::WasInitializedWithThread()) {
       LOG(FATAL) << "Failed to create UI context, but can't use software "
                  " compositing with browser threaded compositing. Aborting.";
@@ -249,7 +253,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
 
   scoped_ptr<BrowserCompositorOutputSurface> surface(
       new BrowserCompositorOutputSurface(
-          context.PassAs<WebKit::WebGraphicsContext3D>(),
+          context_provider,
           per_compositor_data_[compositor]->surface_id,
           &output_surface_map_,
           base::MessageLoopProxy::current().get(),

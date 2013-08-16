@@ -10,6 +10,7 @@
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_tile_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -59,8 +60,11 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
       float scale_increment,
       float ideal_contents_scale,
       float expected_scale) {
+    FakeOutputSurfaceClient output_surface_client;
     scoped_ptr<FakeOutputSurface> output_surface =
         FakeOutputSurface::Create3d();
+    CHECK(output_surface->BindToClient(&output_surface_client));
+
     scoped_ptr<ResourceProvider> resource_provider =
         ResourceProvider::Create(output_surface.get(), 0);
 

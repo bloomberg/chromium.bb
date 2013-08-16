@@ -68,7 +68,8 @@ void ReflectorImpl::ShutdownOnImplThread() {
 // ImplThread.
 void ReflectorImpl::AttachToOutputSurface(
     BrowserCompositorOutputSurface* output_surface) {
-  gl_helper_.reset(new GLHelper(output_surface->context3d()));
+  gl_helper_.reset(
+      new GLHelper(output_surface->context_provider()->Context3d()));
   output_surface->SetReflector(this);
 }
 

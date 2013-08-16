@@ -6,6 +6,7 @@
 
 #include "cc/output/renderer.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/tiled_layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2.h"
@@ -14,9 +15,12 @@ namespace cc {
 namespace {
 
 TEST(ScopedResourceTest, NewScopedResource) {
-  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(context.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::create(resource_provider.get());
 
@@ -29,9 +33,12 @@ TEST(ScopedResourceTest, NewScopedResource) {
 }
 
 TEST(ScopedResourceTest, CreateScopedResource) {
-  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(context.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0));
   scoped_ptr<ScopedResource> texture =
       ScopedResource::create(resource_provider.get());
   texture->Allocate(
@@ -47,9 +54,12 @@ TEST(ScopedResourceTest, CreateScopedResource) {
 }
 
 TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
-  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(context.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::create(resource_provider.get());
@@ -76,9 +86,12 @@ TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
 }
 
 TEST(ScopedResourceTest, LeakScopedResource) {
-  scoped_ptr<OutputSurface> context(CreateFakeOutputSurface());
+  FakeOutputSurfaceClient output_surface_client;
+  scoped_ptr<OutputSurface> output_surface(FakeOutputSurface::Create3d());
+  CHECK(output_surface->BindToClient(&output_surface_client));
+
   scoped_ptr<ResourceProvider> resource_provider(
-      ResourceProvider::Create(context.get(), 0));
+      ResourceProvider::Create(output_surface.get(), 0));
   {
     scoped_ptr<ScopedResource> texture =
         ScopedResource::create(resource_provider.get());

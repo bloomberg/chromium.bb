@@ -19,6 +19,7 @@
 #include "cc/output/output_surface.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/child/npapi/webplugin.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/swapped_out_messages.h"
@@ -669,37 +670,56 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   attributes.stencil = false;
   if (command_line.HasSwitch(cc::switches::kForceDirectLayerDrawing))
     attributes.stencil = true;
-  WebGraphicsContext3DCommandBufferImpl* context = NULL;
-  if (!fallback)
-    context = CreateGraphicsContext3D(attributes);
+  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+  if (!fallback) {
+    context_provider = ContextProviderCommandBuffer::Create(
+        base::Bind(&RenderWidget::CreateGraphicsContext3D,
+                   base::Unretained(this),
+                   attributes));
+  }
 
-  if (!context) {
+  if (!context_provider.get()) {
     if (!command_line.HasSwitch(switches::kEnableSoftwareCompositing))
       return scoped_ptr<cc::OutputSurface>();
-    return scoped_ptr<cc::OutputSurface>(
-        new CompositorOutputSurface(routing_id(),
-                                    output_surface_id,
-                                    NULL,
-                                    new CompositorSoftwareOutputDevice(),
-                                    true));
+
+    scoped_ptr<cc::SoftwareOutputDevice> software_device(
+        new CompositorSoftwareOutputDevice());
+
+    return scoped_ptr<cc::OutputSurface>(new CompositorOutputSurface(
+        routing_id(),
+        output_surface_id,
+        NULL,
+        software_device.Pass(),
+        true));
   }
 
   if (command_line.HasSwitch(switches::kEnableDelegatedRenderer) &&
       !command_line.HasSwitch(switches::kDisableDelegatedRenderer)) {
     DCHECK(is_threaded_compositing_enabled_);
     return scoped_ptr<cc::OutputSurface>(
-        new DelegatedCompositorOutputSurface(routing_id(), output_surface_id,
-                                             context, NULL));
+        new DelegatedCompositorOutputSurface(
+            routing_id(),
+            output_surface_id,
+            context_provider,
+            scoped_ptr<cc::SoftwareOutputDevice>()));
   }
   if (command_line.HasSwitch(cc::switches::kCompositeToMailbox)) {
     DCHECK(is_threaded_compositing_enabled_);
     return scoped_ptr<cc::OutputSurface>(
-        new MailboxOutputSurface(routing_id(), output_surface_id,
-                                 context, NULL));
+        new MailboxOutputSurface(
+            routing_id(),
+            output_surface_id,
+            context_provider,
+            scoped_ptr<cc::SoftwareOutputDevice>()));
   }
+  bool use_swap_compositor_frame_message = false;
   return scoped_ptr<cc::OutputSurface>(
-      new CompositorOutputSurface(routing_id(), output_surface_id,
-                                  context, NULL, false));
+      new CompositorOutputSurface(
+          routing_id(),
+          output_surface_id,
+          context_provider,
+          scoped_ptr<cc::SoftwareOutputDevice>(),
+          use_swap_compositor_frame_message));
 }
 
 void RenderWidget::OnViewContextSwapBuffersAborted() {
@@ -2506,13 +2526,14 @@ bool RenderWidget::HasTouchEventHandlersAt(const gfx::Point& point) const {
   return true;
 }
 
-WebGraphicsContext3DCommandBufferImpl* RenderWidget::CreateGraphicsContext3D(
+scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
+RenderWidget::CreateGraphicsContext3D(
     const WebKit::WebGraphicsContext3D::Attributes& attributes) {
   if (!webwidget_)
-    return NULL;
+    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGpuCompositing))
-    return NULL;
+    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
       new WebGraphicsContext3DCommandBufferImpl(
           surface_id(),
@@ -2524,8 +2545,8 @@ WebGraphicsContext3DCommandBufferImpl* RenderWidget::CreateGraphicsContext3D(
           attributes,
           false /* bind generates resources */,
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE))
-    return NULL;
-  return context.release();
+    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+  return context.Pass();
 }
 
 }  // namespace content

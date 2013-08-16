@@ -63,7 +63,6 @@ class CC_EXPORT ResourceProvider {
 
   void DidLoseOutputSurface() { lost_output_surface_ = true; }
 
-  WebKit::WebGraphicsContext3D* GraphicsContext3D();
   int max_texture_size() const { return max_texture_size_; }
   GLenum best_texture_format() const { return best_texture_format_; }
   size_t num_resources() const { return resources_.size(); }
@@ -324,11 +323,11 @@ class CC_EXPORT ResourceProvider {
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
 
-  cc::ContextProvider* offscreen_context_provider() {
+  ContextProvider* offscreen_context_provider() {
     return offscreen_context_provider_.get();
   }
   void set_offscreen_context_provider(
-      scoped_refptr<cc::ContextProvider> offscreen_context_provider) {
+      scoped_refptr<ContextProvider> offscreen_context_provider) {
     offscreen_context_provider_ = offscreen_context_provider;
   }
   static GLint GetActiveTextureUnit(WebKit::WebGraphicsContext3D* context);
@@ -420,6 +419,9 @@ class CC_EXPORT ResourceProvider {
   void UnbindForSampling(ResourceProvider::ResourceId resource_id,
                          GLenum target,
                          GLenum unit);
+
+  // Returns NULL if the output_surface_ does not have a ContextProvider.
+  WebKit::WebGraphicsContext3D* Context3d() const;
 
   OutputSurface* output_surface_;
   bool lost_output_surface_;

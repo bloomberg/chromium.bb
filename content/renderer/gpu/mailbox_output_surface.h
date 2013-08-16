@@ -23,10 +23,11 @@ namespace content {
 // to a fixed thread when bindToClient is called.
 class MailboxOutputSurface : public CompositorOutputSurface {
  public:
-  MailboxOutputSurface(int32 routing_id,
-                       uint32 output_surface_id,
-                       WebGraphicsContext3DCommandBufferImpl* context3d,
-                       cc::SoftwareOutputDevice* software);
+  MailboxOutputSurface(
+      int32 routing_id,
+      uint32 output_surface_id,
+      const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+      scoped_ptr<cc::SoftwareOutputDevice> software_device);
   virtual ~MailboxOutputSurface();
 
   // cc::OutputSurface implementation.

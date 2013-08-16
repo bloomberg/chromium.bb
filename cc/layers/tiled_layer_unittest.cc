@@ -16,6 +16,7 @@
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_proxy.h"
 #include "cc/test/fake_rendering_stats_instrumentation.h"
 #include "cc/test/geometry_test_utils.h"
@@ -47,7 +48,7 @@ class TiledLayerTest : public testing::Test {
  public:
   TiledLayerTest()
       : proxy_(NULL),
-        output_surface_(CreateFakeOutputSurface()),
+        output_surface_(FakeOutputSurface::Create3d()),
         queue_(make_scoped_ptr(new ResourceUpdateQueue)),
         fake_layer_impl_tree_host_client_(FakeLayerTreeHostClient::DIRECT_3D),
         occlusion_(NULL) {
@@ -64,8 +65,10 @@ class TiledLayerTest : public testing::Test {
     layer_tree_host_->InitializeOutputSurfaceIfNeeded();
     layer_tree_host_->SetRootLayer(Layer::Create());
 
+    CHECK(output_surface_->BindToClient(&output_surface_client_));
+
     DebugScopedSetImplThreadAndMainThreadBlocked
-    impl_thread_and_main_thread_blocked(proxy_);
+        impl_thread_and_main_thread_blocked(proxy_);
     resource_provider_ = ResourceProvider::Create(output_surface_.get(), 0);
     host_impl_ = make_scoped_ptr(new FakeLayerTreeHostImpl(proxy_));
   }
@@ -183,6 +186,7 @@ class TiledLayerTest : public testing::Test {
  public:
   Proxy* proxy_;
   LayerTreeSettings settings_;
+  FakeOutputSurfaceClient output_surface_client_;
   scoped_ptr<OutputSurface> output_surface_;
   scoped_ptr<ResourceProvider> resource_provider_;
   scoped_ptr<ResourceUpdateQueue> queue_;

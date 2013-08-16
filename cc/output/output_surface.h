@@ -13,7 +13,6 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/software_output_device.h"
 #include "cc/scheduler/frame_rate_controller.h"
-#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace base { class SingleThreadTaskRunner; }
 
@@ -31,7 +30,6 @@ class CompositorFrame;
 class CompositorFrameAck;
 struct ManagedMemoryPolicy;
 class OutputSurfaceClient;
-class OutputSurfaceCallbacks;
 
 // Represents the output surface for a compositor. The compositor owns
 // and manages its destruction. Its lifetime is:
@@ -46,11 +44,11 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
     DEFAULT_MAX_FRAMES_PENDING = 2
   };
 
-  explicit OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
+  explicit OutputSurface(scoped_refptr<ContextProvider> context_provider);
 
   explicit OutputSurface(scoped_ptr<cc::SoftwareOutputDevice> software_device);
 
-  OutputSurface(scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+  OutputSurface(scoped_refptr<ContextProvider> context_provider,
                 scoped_ptr<cc::SoftwareOutputDevice> software_device);
 
   virtual ~OutputSurface();
@@ -79,10 +77,9 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // surface. Either of these may return a null pointer, but not both.
   // In the event of a lost context, the entire output surface should be
   // recreated.
-  WebKit::WebGraphicsContext3D* context3d() const {
-    return context3d_.get();
+  scoped_refptr<ContextProvider> context_provider() const {
+    return context_provider_.get();
   }
-
   SoftwareOutputDevice* software_device() const {
     return software_device_.get();
   }
@@ -127,21 +124,22 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   // OutputSurfaceClient::BeginFrame until the callback is disabled.
   virtual void SetNeedsBeginFrame(bool enable);
 
+  bool HasClient() { return !!client_; }
+
  protected:
   // Synchronously initialize context3d and enter hardware mode.
   // This can only supported in threaded compositing mode.
   // |offscreen_context_provider| should match what is returned by
   // LayerTreeClient::OffscreenContextProviderForCompositorThread.
-  bool InitializeAndSetContext3D(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+  bool InitializeAndSetContext3d(
+      scoped_refptr<ContextProvider> context_provider,
       scoped_refptr<ContextProvider> offscreen_context_provider);
   void ReleaseGL();
 
   void PostSwapBuffersComplete();
 
   struct cc::OutputSurface::Capabilities capabilities_;
-  scoped_ptr<OutputSurfaceCallbacks> callbacks_;
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3d_;
+  scoped_refptr<ContextProvider> context_provider_;
   scoped_ptr<cc::SoftwareOutputDevice> software_device_;
   bool has_gl_discard_backbuffer_;
   bool has_swap_buffers_complete_callback_;
@@ -163,7 +161,6 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
 
   // Forwarded to OutputSurfaceClient but threaded through OutputSurface
   // first so OutputSurface has a chance to update the FrameRateController
-  bool HasClient() { return !!client_; }
   void SetNeedsRedrawRect(gfx::Rect damage_rect);
   void BeginFrame(const BeginFrameArgs& args);
   void DidSwapBuffers();
@@ -182,8 +179,8 @@ class CC_EXPORT OutputSurface : public FrameRateControllerClient {
   OutputSurfaceClient* client_;
   friend class OutputSurfaceCallbacks;
 
-  void SetContext3D(scoped_ptr<WebKit::WebGraphicsContext3D> context3d);
-  void ResetContext3D();
+  void SetUpContext3d();
+  void ResetContext3d();
   void SetMemoryPolicy(const ManagedMemoryPolicy& policy,
                        bool discard_backbuffer_when_not_visible);
 

@@ -12,6 +12,7 @@ class GrContext;
 namespace WebKit { class WebGraphicsContext3D; }
 
 namespace cc {
+struct ManagedMemoryPolicy;
 
 class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
  public:
@@ -40,6 +41,20 @@ class ContextProvider : public base::RefCountedThreadSafe<ContextProvider> {
   typedef base::Closure LostContextCallback;
   virtual void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) = 0;
+
+  // Sets a callback to be called when the context is lost. This should be
+  // called from the same thread that the context is bound to.
+  typedef base::Closure SwapBuffersCompleteCallback;
+  virtual void SetSwapBuffersCompleteCallback(
+      const SwapBuffersCompleteCallback& swap_buffers_complete_callback) = 0;
+
+  // Sets a callback to be called when the memory policy changes. This should be
+  // called from the same thread that the context is bound to.
+  typedef base::Callback<void(
+    const cc::ManagedMemoryPolicy& policy,
+    bool discard_backbuffer_when_not_visible)> MemoryPolicyChangedCallback;
+  virtual void SetMemoryPolicyChangedCallback(
+      const MemoryPolicyChangedCallback& memory_policy_changed_callback) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<ContextProvider>;

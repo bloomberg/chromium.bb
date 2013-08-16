@@ -38,20 +38,15 @@ class DelegatedRendererLayerImplTest : public testing::Test {
     LayerTreeSettings settings;
     settings.minimum_occlusion_tracking_size = gfx::Size();
 
-    host_impl_ = LayerTreeHostImpl::Create(settings,
-                                           &client_,
-                                           &proxy_,
-                                           &stats_instrumentation_);
+    host_impl_.reset(new FakeLayerTreeHostImpl(settings, &proxy_));
     host_impl_->InitializeRenderer(CreateFakeOutputSurface());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
 
  protected:
   FakeProxy proxy_;
-  FakeLayerTreeHostImplClient client_;
   DebugScopedSetImplThreadAndMainThreadBlocked
       always_impl_thread_and_main_thread_blocked_;
-  FakeRenderingStatsInstrumentation stats_instrumentation_;
   scoped_ptr<LayerTreeHostImpl> host_impl_;
 };
 

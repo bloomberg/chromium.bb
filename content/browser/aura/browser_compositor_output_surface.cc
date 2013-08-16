@@ -11,6 +11,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "cc/output/compositor_frame.h"
 #include "content/browser/aura/reflector_impl.h"
+#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
@@ -18,12 +19,12 @@
 namespace content {
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context,
+    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     base::MessageLoopProxy* compositor_message_loop,
     base::WeakPtr<ui::Compositor> compositor)
-    : OutputSurface(context.Pass()),
+    : OutputSurface(context_provider),
       surface_id_(surface_id),
       output_surface_map_(output_surface_map),
       compositor_message_loop_(compositor_message_loop),
@@ -70,12 +71,13 @@ void BrowserCompositorOutputSurface::Reshape(gfx::Size size,
 void BrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   DCHECK(frame->gl_frame_data);
 
-  WebGraphicsContext3DCommandBufferImpl* command_buffer =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(context3d());
+  WebGraphicsContext3DCommandBufferImpl* command_buffer_context =
+      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
+          context_provider_->Context3d());
   CommandBufferProxyImpl* command_buffer_proxy =
-      command_buffer->GetCommandBufferProxy();
+      command_buffer_context->GetCommandBufferProxy();
   DCHECK(command_buffer_proxy);
-  context3d()->shallowFlushCHROMIUM();
+  context_provider_->Context3d()->shallowFlushCHROMIUM();
   command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
 
   if (reflector_.get()) {

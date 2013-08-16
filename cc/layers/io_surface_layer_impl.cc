@@ -39,11 +39,11 @@ void IOSurfaceLayerImpl::DestroyTexture() {
   }
 
   if (io_surface_texture_id_) {
-    OutputSurface* output_surface = layer_tree_impl()->output_surface();
+    ContextProvider* context_provider =
+        layer_tree_impl()->output_surface()->context_provider().get();
     // TODO(skaslev): Implement this path for software compositing.
-    WebKit::WebGraphicsContext3D* context3d = output_surface->context3d();
-    if (context3d)
-      context3d->deleteTexture(io_surface_texture_id_);
+    if (context_provider)
+      context_provider->Context3d()->deleteTexture(io_surface_texture_id_);
     io_surface_texture_id_ = 0;
   }
 }
@@ -67,12 +67,14 @@ bool IOSurfaceLayerImpl::WillDraw(DrawMode draw_mode,
     return false;
 
   if (io_surface_changed_) {
-    WebKit::WebGraphicsContext3D* context3d =
-        resource_provider->GraphicsContext3D();
-    if (!context3d) {
+    ContextProvider* context_provider =
+        layer_tree_impl()->output_surface()->context_provider().get();
+    if (!context_provider) {
       // TODO(skaslev): Implement this path for software compositing.
       return false;
     }
+
+    WebKit::WebGraphicsContext3D* context3d = context_provider->Context3d();
 
     // TODO(ernstm): Do this in a way that we can track memory usage.
     if (!io_surface_texture_id_) {

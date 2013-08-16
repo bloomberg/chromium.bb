@@ -511,7 +511,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void hasTouchEventHandlers(bool has_handlers);
 
   // Creates a 3D context associated with this view.
-  WebGraphicsContext3DCommandBufferImpl* CreateGraphicsContext3D(
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateGraphicsContext3D(
       const WebKit::WebGraphicsContext3D::Attributes& attributes);
 
   bool OnSnapshotHelper(const gfx::Rect& src_subrect, SkBitmap* bitmap);

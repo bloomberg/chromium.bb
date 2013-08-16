@@ -26,6 +26,8 @@ class CC_EXPORT TestContextProvider
   static scoped_refptr<TestContextProvider> Create();
   static scoped_refptr<TestContextProvider> Create(
       const CreateCallback& create_callback);
+  static scoped_refptr<TestContextProvider> Create(
+      scoped_ptr<TestWebGraphicsContext3D> context);
 
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
@@ -33,14 +35,24 @@ class CC_EXPORT TestContextProvider
   virtual void VerifyContexts() OVERRIDE;
   virtual bool DestroyedOnMainThread() OVERRIDE;
   virtual void SetLostContextCallback(const LostContextCallback& cb) OVERRIDE;
+  virtual void SetSwapBuffersCompleteCallback(
+      const SwapBuffersCompleteCallback& cb) OVERRIDE;
+  virtual void SetMemoryPolicyChangedCallback(
+      const MemoryPolicyChangedCallback& cb) OVERRIDE;
 
   TestWebGraphicsContext3D* TestContext3d() { return context3d_.get(); }
+
+  void SetMemoryAllocation(const ManagedMemoryPolicy& policy,
+                           bool discard_backbuffer_when_not_visible);
 
  protected:
   TestContextProvider();
   virtual ~TestContextProvider();
 
   bool InitializeOnMainThread(const CreateCallback& create_callback);
+
+  void OnLostContext();
+  void OnSwapBuffersComplete();
 
   scoped_ptr<TestWebGraphicsContext3D> context3d_;
   bool bound_;
@@ -50,6 +62,17 @@ class CC_EXPORT TestContextProvider
 
   base::Lock destroyed_lock_;
   bool destroyed_;
+
+  LostContextCallback lost_context_callback_;
+  SwapBuffersCompleteCallback swap_buffers_complete_callback_;
+  MemoryPolicyChangedCallback memory_policy_changed_callback_;
+
+  class LostContextCallbackProxy;
+  scoped_ptr<LostContextCallbackProxy> lost_context_callback_proxy_;
+
+  class SwapBuffersCompleteCallbackProxy;
+  scoped_ptr<SwapBuffersCompleteCallbackProxy>
+      swap_buffers_complete_callback_proxy_;
 };
 
 }  // namespace cc

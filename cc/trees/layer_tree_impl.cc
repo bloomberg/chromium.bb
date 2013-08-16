@@ -408,6 +408,10 @@ const RendererCapabilities& LayerTreeImpl::GetRendererCapabilities() const {
   return layer_tree_host_impl_->GetRendererCapabilities();
 }
 
+ContextProvider* LayerTreeImpl::context_provider() const {
+  return output_surface()->context_provider();
+}
+
 OutputSurface* LayerTreeImpl::output_surface() const {
   return layer_tree_host_impl_->output_surface();
 }

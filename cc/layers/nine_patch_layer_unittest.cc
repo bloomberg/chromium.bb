@@ -11,6 +11,7 @@
 #include "cc/scheduler/texture_uploader.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
+#include "cc/test/fake_output_surface_client.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/occlusion_tracker.h"
@@ -95,12 +96,14 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
       1024 * 1024);
   layer_tree_host_->contents_texture_manager()->PrioritizeTextures();
 
+  FakeOutputSurfaceClient output_surface_client;
   scoped_ptr<OutputSurface> output_surface;
   scoped_ptr<ResourceProvider> resource_provider;
   {
     DebugScopedSetImplThread impl_thread(Proxy());
     DebugScopedSetMainThreadBlocked main_thread_blocked(Proxy());
-    output_surface = CreateFakeOutputSurface();
+    output_surface = FakeOutputSurface::Create3d();
+    CHECK(output_surface->BindToClient(&output_surface_client));
     resource_provider = ResourceProvider::Create(output_surface.get(), 0);
     params.texture->AcquireBackingTexture(resource_provider.get());
     ASSERT_TRUE(params.texture->have_backing_texture());

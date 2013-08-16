@@ -19,6 +19,7 @@
 #include "cc/test/layer_tree_test.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 
 namespace cc {
 namespace {
@@ -246,8 +247,8 @@ class LayerTreeHostDelegatedTestCreateChildId
     FakeDelegatedRendererLayerImpl* delegated_impl =
         static_cast<FakeDelegatedRendererLayerImpl*>(root_impl->children()[0]);
 
-    WebKit::WebGraphicsContext3D* context =
-        host_impl->resource_provider()->GraphicsContext3D();
+    ContextProvider* context_provider =
+        host_impl->output_surface()->context_provider();
 
     ++num_activates_;
     switch (num_activates_) {
@@ -255,8 +256,9 @@ class LayerTreeHostDelegatedTestCreateChildId
         EXPECT_TRUE(delegated_impl->ChildId());
         EXPECT_FALSE(did_reset_child_id_);
 
-        context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
-                                     GL_INNOCENT_CONTEXT_RESET_ARB);
+        context_provider->Context3d()->loseContextCHROMIUM(
+            GL_GUILTY_CONTEXT_RESET_ARB,
+            GL_INNOCENT_CONTEXT_RESET_ARB);
         break;
       case 3:
         EXPECT_TRUE(delegated_impl->ChildId());

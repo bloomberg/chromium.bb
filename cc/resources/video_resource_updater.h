@@ -21,6 +21,7 @@ class VideoFrame;
 }
 
 namespace cc {
+class ContextProvider;
 class ResourceProvider;
 
 class CC_EXPORT VideoFrameExternalResources {
@@ -61,7 +62,8 @@ class CC_EXPORT VideoFrameExternalResources {
 class CC_EXPORT VideoResourceUpdater
     : public base::SupportsWeakPtr<VideoResourceUpdater> {
  public:
-  explicit VideoResourceUpdater(ResourceProvider* resource_provider);
+  explicit VideoResourceUpdater(ContextProvider* context_provider,
+                                ResourceProvider* resource_provider);
   ~VideoResourceUpdater();
 
   VideoFrameExternalResources CreateExternalResourcesFromVideoFrame(
@@ -102,6 +104,7 @@ class CC_EXPORT VideoResourceUpdater
                               unsigned sync_point,
                               bool lost_resource);
 
+  ContextProvider* context_provider_;
   ResourceProvider* resource_provider_;
   scoped_ptr<media::SkCanvasVideoRenderer> video_renderer_;
 
