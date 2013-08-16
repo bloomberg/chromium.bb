@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/InspectorResourceAgent.h"
 
+#include "FetchInitiatorTypeNames.h"
 #include "InspectorFrontend.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptCallStackFactory.h"
@@ -308,8 +309,16 @@ void InspectorResourceAgent::willSendRequest(unsigned long identifier, DocumentL
         request.setHTTPHeaderField("Cache-Control", "no-cache");
     }
 
+    String frameId = m_pageAgent->frameId(loader->frame());
+
     RefPtr<TypeBuilder::Network::Initiator> initiatorObject = buildInitiatorObject(loader->frame() ? loader->frame()->document() : 0, initiatorInfo);
-    m_frontend->requestWillBeSent(requestId, m_pageAgent->frameId(loader->frame()), m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), buildObjectForResourceRequest(request), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader));
+    if (initiatorInfo.name == FetchInitiatorTypeNames::document) {
+        FrameNavigationInitiatorMap::iterator it = m_frameNavigationInitiatorMap.find(frameId);
+        if (it != m_frameNavigationInitiatorMap.end())
+            initiatorObject = it->value;
+    }
+
+    m_frontend->requestWillBeSent(requestId, frameId, m_pageAgent->loaderId(loader), urlWithoutFragment(loader->url()).string(), buildObjectForResourceRequest(request), currentTime(), initiatorObject, buildObjectForResourceResponse(redirectResponse, loader));
 }
 
 void InspectorResourceAgent::markResourceAsCached(unsigned long identifier)
@@ -753,6 +762,17 @@ void InspectorResourceAgent::didCommitLoad(Frame* frame, DocumentLoader* loader)
         memoryCache()->evictResources();
 
     m_resourcesData->clear(m_pageAgent->loaderId(loader));
+}
+
+void InspectorResourceAgent::frameScheduledNavigation(Frame* frame, double)
+{
+    RefPtr<TypeBuilder::Network::Initiator> initiator = buildInitiatorObject(frame->document(), FetchInitiatorInfo());
+    m_frameNavigationInitiatorMap.set(m_pageAgent->frameId(frame), initiator);
+}
+
+void InspectorResourceAgent::frameClearedScheduledNavigation(Frame* frame)
+{
+    m_frameNavigationInitiatorMap.remove(m_pageAgent->frameId(frame));
 }
 
 InspectorResourceAgent::InspectorResourceAgent(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorClient* client, InspectorCompositeState* state, InspectorOverlay* overlay)

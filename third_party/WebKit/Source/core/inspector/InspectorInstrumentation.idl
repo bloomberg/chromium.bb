@@ -336,10 +336,10 @@ interface InspectorInstrumentation {
     [Page]
     void frameStoppedLoading([Keep] Frame*);
 
-    [Page]
+    [Page, Resource]
     void frameScheduledNavigation([Keep] Frame*, double delay);
 
-    [Page]
+    [Page, Resource]
     void frameClearedScheduledNavigation([Keep] Frame*);
 
     [Page, Inline=FastReturn]

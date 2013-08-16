@@ -115,6 +115,9 @@ public:
     void didRecalculateStyle();
     void didScheduleStyleRecalculation(Document*);
 
+    void frameScheduledNavigation(Frame*, double);
+    void frameClearedScheduledNavigation(Frame*);
+
     PassRefPtr<TypeBuilder::Network::Initiator> buildInitiatorObject(Document*, const FetchInitiatorInfo&);
 
     void didCreateWebSocket(Document*, unsigned long identifier, const KURL& requestURL, const String&);
@@ -160,6 +163,10 @@ private:
 
     typedef HashMap<ThreadableLoaderClient*, RefPtr<XHRReplayData> > PendingXHRReplayDataMap;
     PendingXHRReplayDataMap m_pendingXHRReplayData;
+
+    typedef HashMap<String, RefPtr<TypeBuilder::Network::Initiator> > FrameNavigationInitiatorMap;
+    FrameNavigationInitiatorMap m_frameNavigationInitiatorMap;
+
     // FIXME: InspectorResourceAgent should now be aware of style recalculation.
     RefPtr<TypeBuilder::Network::Initiator> m_styleRecalculationInitiator;
     bool m_isRecalculatingStyle;
