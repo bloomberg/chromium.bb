@@ -4114,19 +4114,32 @@ TEST_F(URLRequestTestHTTP, ProtocolHandlerAndFactoryRestrictRedirects) {
   FileProtocolHandler file_protocol_handler;
   EXPECT_FALSE(file_protocol_handler.IsSafeRedirectTarget(file_url));
   DataProtocolHandler data_protocol_handler;
-  EXPECT_TRUE(data_protocol_handler.IsSafeRedirectTarget(data_url));
+  EXPECT_FALSE(data_protocol_handler.IsSafeRedirectTarget(data_url));
 
   // Test URLRequestJobFactoryImpl::IsSafeRedirectTarget().
   EXPECT_FALSE(job_factory_.IsSafeRedirectTarget(file_url));
-  EXPECT_TRUE(job_factory_.IsSafeRedirectTarget(data_url));
+  EXPECT_FALSE(job_factory_.IsSafeRedirectTarget(data_url));
 }
 
-TEST_F(URLRequestTestHTTP, RestrictRedirects) {
+TEST_F(URLRequestTestHTTP, RestrictFileRedirects) {
   ASSERT_TRUE(test_server_.Start());
 
   TestDelegate d;
   URLRequest req(test_server_.GetURL(
       "files/redirect-to-file.html"), &d, &default_context_);
+  req.Start();
+  base::MessageLoop::current()->Run();
+
+  EXPECT_EQ(URLRequestStatus::FAILED, req.status().status());
+  EXPECT_EQ(ERR_UNSAFE_REDIRECT, req.status().error());
+}
+
+TEST_F(URLRequestTestHTTP, RestrictDataRedirects) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  URLRequest req(test_server_.GetURL(
+      "files/redirect-to-data.html"), &d, &default_context_);
   req.Start();
   base::MessageLoop::current()->Run();
 

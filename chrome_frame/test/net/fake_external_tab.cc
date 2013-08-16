@@ -331,7 +331,10 @@ void FilterDisabledTests() {
     "HTTPSCRLSetTest.*",
 
     // Chrome Frame doesn't support GetFullRequestHeaders.
-    "URLRequestTest*.*_GetFullRequestHeaders"
+    "URLRequestTest*.*_GetFullRequestHeaders",
+
+    // IE redirects to data: URLs differently.
+    "URLRequestTestHTTP.RestrictDataRedirects"
   };
 
   const char* ie9_disabled_tests[] = {

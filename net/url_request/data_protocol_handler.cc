@@ -16,4 +16,8 @@ URLRequestJob* DataProtocolHandler::MaybeCreateJob(
   return new URLRequestDataJob(request, network_delegate);
 }
 
+bool DataProtocolHandler::IsSafeRedirectTarget(const GURL& location) const {
+  return false;
+}
+
 }  // namespace net
