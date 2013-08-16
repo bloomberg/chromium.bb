@@ -5251,6 +5251,9 @@ void RenderViewImpl::OnMediaPlayerActionAt(const gfx::Point& location,
 }
 
 void RenderViewImpl::OnOrientationChangeEvent(int orientation) {
+  FOR_EACH_OBSERVER(RenderViewObserver,
+                    observers_,
+                    OrientationChangeEvent(orientation));
   webview()->mainFrame()->sendOrientationChangeEvent(orientation);
 }
 

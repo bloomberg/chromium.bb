@@ -292,6 +292,10 @@ void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
   MaybeShowAutocheckoutBubble();
 }
 
+void AutofillAgent::OrientationChangeEvent(int orientation) {
+  HideAutofillUI();
+}
+
 void AutofillAgent::MaybeShowAutocheckoutBubble() {
   if (element_.isNull() || !element_.focused())
     return;
