@@ -93,6 +93,8 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
         'ChromeExtensionsCapabilityTest.*',
         # https://code.google.com/p/chromedriver/issues/detail?id=459
         'ChromeDriverTest.testShouldHandleNewWindowLoadingProperly',
+        # https://crbug.com/274650
+        'ChromeDriverTest.testCloseWindow',
         # https://code.google.com/p/chromedriver/issues/detail?id=259
         'ChromeDriverTest.testSendKeysToElement',
         # https://code.google.com/p/chromedriver/issues/detail?id=270
@@ -111,7 +113,6 @@ _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] = (
 _ANDROID_NEGATIVE_FILTER['org.chromium.chrome.testshell'] = (
     _ANDROID_NEGATIVE_FILTER['com.google.android.apps.chrome'] + [
         # ChromiumTestShell doesn't support multiple tabs.
-        'ChromeDriverTest.testCloseWindow',
         'ChromeDriverTest.testGetWindowHandles',
         'ChromeDriverTest.testSwitchToWindow',
     ]
