@@ -208,6 +208,13 @@
    fun:dlopen@@GLIBC_2.1
 }
 {
+   dlopen leak on error. Chromium issues 268368,273385. See http://sourceware.org/bugzilla/show_bug.cgi?id=12878.
+   Memcheck:Leak
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+}
+{
    glibc leak.  See also http://sources.redhat.com/bugzilla/show_bug.cgi?id=2451
    Memcheck:Leak
    fun:malloc
@@ -7153,16 +7160,6 @@
    fun:_ZN4base45WeakPtrTest_MoveOwnershipAfterInvalidate_Test8TestBodyEv
 }
 {
-  bug_268368
-  Memcheck:Leak
-  fun:calloc
-  fun:_dlerror_run
-  ...
-  fun:_ZN4base17LoadNativeLibraryERKNS_8FilePathEPSs
-  fun:_ZN7content10PluginList17ReadWebPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
-  fun:_ZN7content10PluginList14ReadPluginInfoERKN4base8FilePathEPNS_13WebPluginInfoE
-}
-{
    bug_269201
    Memcheck:Unaddressable
    ...
@@ -7228,19 +7225,6 @@
    fun:_Znw*
    fun:_ZN12ThemeService19SetManagedUserThemeEv
    fun:_ZN12ThemeService24OnManagedUserInitializedEv
-}
-{
-   bug_273385
-   Memcheck:Leak
-   ...
-   fun:ssl3_ResolvePK11CryptFunctions
-   fun:PR_CallOnce
-   fun:ssl3_HasGCMSupport
-   fun:ssl3_SendClientHello
-   fun:ssl2_BeginClientHandshake
-   fun:ssl_Do1stHandshake
-   fun:SSL_ForceHandshake
-   fun:_ZN3net18SSLClientSocketNSS4Core11DoHandshakeEv
 }
 {
    bug_273398
