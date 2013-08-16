@@ -160,6 +160,34 @@ static bool IsSharedModule(const Extension* extension) {
   return SharedModuleInfo::IsSharedModule(extension);
 }
 
+static bool IsCWSSharedModule(const Extension* extension) {
+  return extension->from_webstore() && IsSharedModule(extension);
+}
+
+class SharedModuleProvider : public extensions::ManagementPolicy::Provider {
+ public:
+  SharedModuleProvider() {}
+  virtual ~SharedModuleProvider() {}
+
+  virtual std::string GetDebugPolicyProviderName() const OVERRIDE {
+    return "SharedModuleProvider";
+  }
+
+  virtual bool UserMayModifySettings(const Extension* extension,
+                                     string16* error) const OVERRIDE {
+    return !IsCWSSharedModule(extension);
+  }
+
+  virtual bool MustRemainEnabled(const Extension* extension,
+                                 string16* error) const OVERRIDE {
+    return IsCWSSharedModule(extension);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SharedModuleProvider);
+};
+
+
 }  // namespace
 
 ExtensionService::ExtensionRuntimeData::ExtensionRuntimeData()
@@ -411,6 +439,8 @@ ExtensionService::ExtensionService(Profile* profile,
       new extensions::ExtensionActionStorageManager(profile_));
 #endif
 
+  shared_module_policy_provider_.reset(new SharedModuleProvider);
+
   // How long is the path to the Extensions directory?
   UMA_HISTOGRAM_CUSTOM_COUNTS("Extensions.ExtensionRootPathLength",
                               install_directory_.value().length(), 0, 500, 100);
@@ -479,7 +509,8 @@ void ExtensionService::InitEventRouters() {
 }
 
 void ExtensionService::Shutdown() {
-  // Do nothing for now.
+  system_->management_policy()->UnregisterProvider(
+      shared_module_policy_provider_.get());
 }
 
 const Extension* ExtensionService::GetExtensionById(
@@ -603,6 +634,8 @@ void ExtensionService::Init() {
       GarbageCollectIsolatedStorage();
       extension_prefs_->SetNeedsStorageGarbageCollection(false);
     }
+    system_->management_policy()->RegisterProvider(
+        shared_module_policy_provider_.get());
   }
 }
 
@@ -2346,7 +2379,7 @@ void ExtensionService::PruneSharedModulesOnUninstall(
         scoped_ptr<const ExtensionSet> dependents =
             GetDependentExtensions(imported_module);
         if (dependents->size() == 0) {
-          UninstallExtension(i->extension_id, false, NULL);
+          UninstallExtension(i->extension_id, true, NULL);
         }
       }
     }
