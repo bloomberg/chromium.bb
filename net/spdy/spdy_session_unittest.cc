@@ -193,6 +193,96 @@ TEST_P(SpdySessionTest, InitialReadError) {
       spdy_session_pool_, key_, ERR_FAILED);
 }
 
+namespace {
+
+// A helper class that vends a callback that, when fired, destroys a
+// given SpdyStreamRequest.
+class StreamRequestDestroyingCallback : public TestCompletionCallbackBase {
+ public:
+  StreamRequestDestroyingCallback() {}
+
+  virtual ~StreamRequestDestroyingCallback() {}
+
+  void SetRequestToDestroy(scoped_ptr<SpdyStreamRequest> request) {
+    request_ = request.Pass();
+  }
+
+  CompletionCallback MakeCallback() {
+    return base::Bind(&StreamRequestDestroyingCallback::OnComplete,
+                      base::Unretained(this));
+  }
+
+ private:
+  void OnComplete(int result) {
+    request_.reset();
+    SetResult(result);
+  }
+
+  scoped_ptr<SpdyStreamRequest> request_;
+};
+
+}  // namespace
+
+// Request kInitialMaxConcurrentStreams streams.  Request two more
+// streams, but have the callback for one destroy the second stream
+// request. Close the session. Nothing should blow up. This is a
+// regression test for http://crbug.com/250841 .
+TEST_P(SpdySessionTest, PendingStreamCancellingAnother) {
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockRead reads[] = {MockRead(ASYNC, 0, 0), };
+
+  DeterministicSocketData data(reads, arraysize(reads), NULL, 0);
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  data.set_connect_data(connect_data);
+  session_deps_.deterministic_socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.deterministic_socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateDeterministicNetworkSession();
+
+  base::WeakPtr<SpdySession> session =
+      CreateInsecureSpdySession(http_session_, key_, BoundNetLog());
+
+  // Create the maximum number of concurrent streams.
+  for (size_t i = 0; i < kInitialMaxConcurrentStreams; ++i) {
+    base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+        SPDY_BIDIRECTIONAL_STREAM, session, test_url_, MEDIUM, BoundNetLog());
+    ASSERT_TRUE(spdy_stream != NULL);
+  }
+
+  SpdyStreamRequest request1;
+  scoped_ptr<SpdyStreamRequest> request2(new SpdyStreamRequest);
+
+  StreamRequestDestroyingCallback callback1;
+  ASSERT_EQ(ERR_IO_PENDING,
+            request1.StartRequest(SPDY_BIDIRECTIONAL_STREAM,
+                                  session,
+                                  test_url_,
+                                  MEDIUM,
+                                  BoundNetLog(),
+                                  callback1.MakeCallback()));
+
+  // |callback2| is never called.
+  TestCompletionCallback callback2;
+  ASSERT_EQ(ERR_IO_PENDING,
+            request2->StartRequest(SPDY_BIDIRECTIONAL_STREAM,
+                                   session,
+                                   test_url_,
+                                   MEDIUM,
+                                   BoundNetLog(),
+                                   callback2.callback()));
+
+  callback1.SetRequestToDestroy(request2.Pass());
+
+  session->CloseSessionOnError(ERR_ABORTED, "Aborting session");
+
+  EXPECT_EQ(ERR_ABORTED, callback1.WaitForResult());
+
+  data.RunFor(1);
+}
+
 // A session receiving a GOAWAY frame with no active streams should
 // immediately close.
 TEST_P(SpdySessionTest, GoAwayWithNoActiveStreams) {

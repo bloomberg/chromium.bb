@@ -205,13 +205,38 @@ base::Value* NetLogSpdyGoAwayCallback(SpdyStreamId last_stream_id,
   return dict;
 }
 
+// Helper function to return the total size of an array of objects
+// with .size() member functions.
+template <typename T, size_t N> size_t GetTotalSize(const T (&arr)[N]) {
+  size_t total_size = 0;
+  for (size_t i = 0; i < N; ++i) {
+    total_size += arr[i].size();
+  }
+  return total_size;
+}
+
+// Helper class for std:find_if on STL container containing
+// SpdyStreamRequest weak pointers.
+class RequestEquals {
+ public:
+  RequestEquals(const base::WeakPtr<SpdyStreamRequest>& request)
+      : request_(request) {}
+
+  bool operator()(const base::WeakPtr<SpdyStreamRequest>& request) const {
+    return request_.get() == request.get();
+  }
+
+ private:
+  const base::WeakPtr<SpdyStreamRequest> request_;
+};
+
 // The maximum number of concurrent streams we will ever create.  Even if
 // the server permits more, we will never exceed this limit.
 const size_t kMaxConcurrentStreamLimit = 256;
 
 }  // namespace
 
-SpdyStreamRequest::SpdyStreamRequest() {
+SpdyStreamRequest::SpdyStreamRequest() : weak_ptr_factory_(this) {
   Reset();
 }
 
@@ -226,9 +251,9 @@ int SpdyStreamRequest::StartRequest(
     RequestPriority priority,
     const BoundNetLog& net_log,
     const CompletionCallback& callback) {
-  DCHECK(session.get());
-  DCHECK(!session_.get());
-  DCHECK(!stream_.get());
+  DCHECK(session);
+  DCHECK(!session_);
+  DCHECK(!stream_);
   DCHECK(callback_.is_null());
 
   type_ = type;
@@ -239,7 +264,7 @@ int SpdyStreamRequest::StartRequest(
   callback_ = callback;
 
   base::WeakPtr<SpdyStream> stream;
-  int rv = session->TryCreateStream(this, &stream);
+  int rv = session->TryCreateStream(weak_ptr_factory_.GetWeakPtr(), &stream);
   if (rv == OK) {
     Reset();
     stream_ = stream;
@@ -248,34 +273,36 @@ int SpdyStreamRequest::StartRequest(
 }
 
 void SpdyStreamRequest::CancelRequest() {
-  if (session_.get())
-    session_->CancelStreamRequest(this);
+  if (session_)
+    session_->CancelStreamRequest(weak_ptr_factory_.GetWeakPtr());
   Reset();
+  // Do this to cancel any pending CompleteStreamRequest() tasks.
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 base::WeakPtr<SpdyStream> SpdyStreamRequest::ReleaseStream() {
-  DCHECK(!session_.get());
+  DCHECK(!session_);
   base::WeakPtr<SpdyStream> stream = stream_;
-  DCHECK(stream.get());
+  DCHECK(stream);
   Reset();
   return stream;
 }
 
 void SpdyStreamRequest::OnRequestCompleteSuccess(
-    base::WeakPtr<SpdyStream>* stream) {
-  DCHECK(session_.get());
-  DCHECK(!stream_.get());
+    const base::WeakPtr<SpdyStream>& stream) {
+  DCHECK(session_);
+  DCHECK(!stream_);
   DCHECK(!callback_.is_null());
   CompletionCallback callback = callback_;
   Reset();
-  DCHECK(*stream);
-  stream_ = *stream;
+  DCHECK(stream);
+  stream_ = stream;
   callback.Run(OK);
 }
 
 void SpdyStreamRequest::OnRequestCompleteFailure(int rv) {
-  DCHECK(session_.get());
-  DCHECK(!stream_.get());
+  DCHECK(session_);
+  DCHECK(!stream_);
   DCHECK(!callback_.is_null());
   CompletionCallback callback = callback_;
   Reset();
@@ -565,9 +592,10 @@ Error SpdySession::TryAccessStream(const GURL& url) {
   return OK;
 }
 
-int SpdySession::TryCreateStream(SpdyStreamRequest* request,
-                                 base::WeakPtr<SpdyStream>* stream) {
-  CHECK(request);
+int SpdySession::TryCreateStream(
+    const base::WeakPtr<SpdyStreamRequest>& request,
+    base::WeakPtr<SpdyStream>* stream) {
+  DCHECK(request);
 
   if (availability_state_ == STATE_GOING_AWAY)
     return ERR_FAILED;
@@ -641,8 +669,9 @@ int SpdySession::CreateStream(const SpdyStreamRequest& request,
   return OK;
 }
 
-void SpdySession::CancelStreamRequest(SpdyStreamRequest* request) {
-  CHECK(request);
+void SpdySession::CancelStreamRequest(
+    const base::WeakPtr<SpdyStreamRequest>& request) {
+  DCHECK(request);
 
   if (DCHECK_IS_ON()) {
     // |request| should not be in a queue not matching its priority.
@@ -650,7 +679,9 @@ void SpdySession::CancelStreamRequest(SpdyStreamRequest* request) {
       if (request->priority() == i)
         continue;
       PendingStreamRequestQueue* queue = &pending_create_stream_queues_[i];
-      DCHECK(std::find(queue->begin(), queue->end(), request) == queue->end());
+      DCHECK(std::find_if(queue->begin(),
+                          queue->end(),
+                          RequestEquals(request)) == queue->end());
     }
   }
 
@@ -659,18 +690,30 @@ void SpdySession::CancelStreamRequest(SpdyStreamRequest* request) {
   // Remove |request| from |queue| while preserving the order of the
   // other elements.
   PendingStreamRequestQueue::iterator it =
-      std::find(queue->begin(), queue->end(), request);
+      std::find_if(queue->begin(), queue->end(), RequestEquals(request));
+  // The request may already be removed if there's a
+  // CompleteStreamRequest() in flight.
   if (it != queue->end()) {
     it = queue->erase(it);
     // |request| should be in the queue at most once, and if it is
     // present, should not be pending completion.
-    DCHECK(std::find(it, queue->end(), request) == queue->end());
-    DCHECK(!ContainsKey(pending_stream_request_completions_,
-                        request));
-    return;
+    DCHECK(std::find_if(it, queue->end(), RequestEquals(request)) ==
+           queue->end());
   }
+}
 
-  pending_stream_request_completions_.erase(request);
+base::WeakPtr<SpdyStreamRequest> SpdySession::GetNextPendingStreamRequest() {
+  for (int j = NUM_PRIORITIES - 1; j >= MINIMUM_PRIORITY; --j) {
+    if (pending_create_stream_queues_[j].empty())
+      continue;
+
+    base::WeakPtr<SpdyStreamRequest> pending_request =
+        pending_create_stream_queues_[j].front();
+    DCHECK(pending_request);
+    pending_create_stream_queues_[j].pop_front();
+    return pending_request;
+  }
+  return base::WeakPtr<SpdyStreamRequest>();
 }
 
 void SpdySession::ProcessPendingStreamRequests() {
@@ -684,27 +727,16 @@ void SpdySession::ProcessPendingStreamRequests() {
   }
   for (size_t i = 0;
        max_requests_to_process == 0 || i < max_requests_to_process; ++i) {
-    bool processed_request = false;
-    for (int j = NUM_PRIORITIES - 1; j >= MINIMUM_PRIORITY; --j) {
-      if (pending_create_stream_queues_[j].empty())
-        continue;
+    base::WeakPtr<SpdyStreamRequest> pending_request =
+        GetNextPendingStreamRequest();
+    if (!pending_request)
+      break;
 
-      SpdyStreamRequest* pending_request =
-          pending_create_stream_queues_[j].front();
-      CHECK(pending_request);
-      pending_create_stream_queues_[j].pop_front();
-      processed_request = true;
-      DCHECK(!ContainsKey(pending_stream_request_completions_,
-                          pending_request));
-      pending_stream_request_completions_.insert(pending_request);
-      base::MessageLoop::current()->PostTask(
-          FROM_HERE,
-          base::Bind(&SpdySession::CompleteStreamRequest,
-                     weak_factory_.GetWeakPtr(), pending_request));
-      break;
-    }
-    if (!processed_request)
-      break;
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(&SpdySession::CompleteStreamRequest,
+                   weak_factory_.GetWeakPtr(),
+                   pending_request));
   }
 }
 
@@ -1377,7 +1409,6 @@ void SpdySession::DcheckGoingAway() const {
       DCHECK(pending_create_stream_queues_[i].empty());
     }
   }
-  DCHECK(pending_stream_request_completions_.empty());
   DCHECK(created_streams_.empty());
 }
 
@@ -1395,41 +1426,40 @@ void SpdySession::StartGoingAway(SpdyStreamId last_good_stream_id,
   DCHECK_GE(availability_state_, STATE_GOING_AWAY);
 
   // The loops below are carefully written to avoid reentrancy problems.
-  //
-  // TODO(akalin): Any of the functions below can cause |this| to be
-  // deleted, so handle that below (and add tests for it).
 
-  for (int i = 0; i < NUM_PRIORITIES; ++i) {
-    PendingStreamRequestQueue queue;
-    queue.swap(pending_create_stream_queues_[i]);
-    for (PendingStreamRequestQueue::const_iterator it = queue.begin();
-         it != queue.end(); ++it) {
-      CHECK(*it);
-      (*it)->OnRequestCompleteFailure(ERR_ABORTED);
-    }
-  }
-
-  PendingStreamRequestCompletionSet pending_completions;
-  pending_completions.swap(pending_stream_request_completions_);
-  for (PendingStreamRequestCompletionSet::const_iterator it =
-           pending_completions.begin();
-       it != pending_completions.end(); ++it) {
-    (*it)->OnRequestCompleteFailure(ERR_ABORTED);
+  while (true) {
+    size_t old_size = GetTotalSize(pending_create_stream_queues_);
+    base::WeakPtr<SpdyStreamRequest> pending_request =
+        GetNextPendingStreamRequest();
+    if (!pending_request)
+      break;
+    // No new stream requests should be added while the session is
+    // going away.
+    DCHECK_GT(old_size, GetTotalSize(pending_create_stream_queues_));
+    pending_request->OnRequestCompleteFailure(ERR_ABORTED);
   }
 
   while (true) {
+    size_t old_size = active_streams_.size();
     ActiveStreamMap::iterator it =
         active_streams_.lower_bound(last_good_stream_id + 1);
     if (it == active_streams_.end())
       break;
     LogAbandonedActiveStream(it, status);
     CloseActiveStreamIterator(it, status);
+    // No new streams should be activated while the session is going
+    // away.
+    DCHECK_GT(old_size, active_streams_.size());
   }
 
   while (!created_streams_.empty()) {
+    size_t old_size = created_streams_.size();
     CreatedStreamSet::iterator it = created_streams_.begin();
     LogAbandonedStream(*it, status);
     CloseCreatedStreamIterator(it, status);
+    // No new streams should be created while the session is going
+    // away.
+    DCHECK_GT(old_size, created_streams_.size());
   }
 
   write_queue_.RemovePendingWritesForStreamsAfter(last_good_stream_id);
@@ -2677,25 +2707,20 @@ void SpdySession::RecordHistograms() {
   }
 }
 
-void SpdySession::CompleteStreamRequest(SpdyStreamRequest* pending_request) {
-  CHECK(pending_request);
-
-  PendingStreamRequestCompletionSet::iterator it =
-      pending_stream_request_completions_.find(pending_request);
-
+void SpdySession::CompleteStreamRequest(
+    const base::WeakPtr<SpdyStreamRequest>& pending_request) {
   // Abort if the request has already been cancelled.
-  if (it == pending_stream_request_completions_.end())
+  if (!pending_request)
     return;
 
   base::WeakPtr<SpdyStream> stream;
   int rv = CreateStream(*pending_request, &stream);
-  pending_stream_request_completions_.erase(it);
 
   if (rv == OK) {
-    DCHECK(stream.get());
-    pending_request->OnRequestCompleteSuccess(&stream);
+    DCHECK(stream);
+    pending_request->OnRequestCompleteSuccess(stream);
   } else {
-    DCHECK(!stream.get());
+    DCHECK(!stream);
     pending_request->OnRequestCompleteFailure(rv);
   }
 }
@@ -2858,20 +2883,6 @@ void SpdySession::QueueSendStalledStream(const SpdyStream& stream) {
   DCHECK(stream.send_stalled_by_flow_control());
   stream_send_unstall_queue_[stream.priority()].push_back(stream.stream_id());
 }
-
-namespace {
-
-// Helper function to return the total size of an array of objects
-// with .size() member functions.
-template <typename T, size_t N> size_t GetTotalSize(const T (&arr)[N]) {
-  size_t total_size = 0;
-  for (size_t i = 0; i < N; ++i) {
-    total_size += arr[i].size();
-  }
-  return total_size;
-}
-
-}  // namespace
 
 void SpdySession::ResumeSendStalledStreams() {
   DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);

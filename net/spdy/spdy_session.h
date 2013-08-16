@@ -157,7 +157,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 
   // Called by |session_| when the stream attempt has finished
   // successfully.
-  void OnRequestCompleteSuccess(base::WeakPtr<SpdyStream>* stream);
+  void OnRequestCompleteSuccess(const base::WeakPtr<SpdyStream>& stream);
 
   // Called by |session_| when the stream attempt has finished with an
   // error. Also called with ERR_ABORTED if |session_| is destroyed
@@ -172,6 +172,7 @@ class NET_EXPORT_PRIVATE SpdyStreamRequest {
 
   void Reset();
 
+  base::WeakPtrFactory<SpdyStreamRequest> weak_ptr_factory_;
   SpdyStreamType type_;
   base::WeakPtr<SpdySession> session_;
   base::WeakPtr<SpdyStream> stream_;
@@ -501,8 +502,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlNoSendLeaks);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlEndToEnd);
 
-  typedef std::deque<SpdyStreamRequest*> PendingStreamRequestQueue;
-  typedef std::set<SpdyStreamRequest*> PendingStreamRequestCompletionSet;
+  typedef std::deque<base::WeakPtr<SpdyStreamRequest> >
+      PendingStreamRequestQueue;
 
   struct ActiveStreamInfo {
     ActiveStreamInfo();
@@ -574,7 +575,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // |request->OnRequestComplete{Success,Failure}()| will be called
   // when the stream is created (unless it is cancelled). Otherwise,
   // no stream is created and the error is returned.
-  int TryCreateStream(SpdyStreamRequest* request,
+  int TryCreateStream(const base::WeakPtr<SpdyStreamRequest>& request,
                       base::WeakPtr<SpdyStream>* stream);
 
   // Actually create a stream into |stream|. Returns OK if successful;
@@ -584,7 +585,11 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Called by SpdyStreamRequest to remove |request| from the stream
   // creation queue.
-  void CancelStreamRequest(SpdyStreamRequest* request);
+  void CancelStreamRequest(const base::WeakPtr<SpdyStreamRequest>& request);
+
+  // Returns the next pending stream request to process, or NULL if
+  // there is none.
+  base::WeakPtr<SpdyStreamRequest> GetNextPendingStreamRequest();
 
   // Called when there is room to create more streams (e.g., a stream
   // was closed). Processes as many pending stream requests as
@@ -783,7 +788,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Invokes a user callback for stream creation.  We provide this method so it
   // can be deferred to the MessageLoop, so we avoid re-entrancy problems.
-  void CompleteStreamRequest(SpdyStreamRequest* pending_request);
+  void CompleteStreamRequest(
+      const base::WeakPtr<SpdyStreamRequest>& pending_request);
 
   // Remove old unclaimed pushed streams.
   void DeleteExpiredPushedStreams();
@@ -959,12 +965,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Queue, for each priority, of pending stream requests that have
   // not yet been satisfied.
   PendingStreamRequestQueue pending_create_stream_queues_[NUM_PRIORITIES];
-
-  // A set of requests that are waiting to be completed (i.e., for the
-  // stream to actually be created). This is necessary since we kick
-  // off the stream creation asynchronously, and so the request may be
-  // cancelled before the asynchronous task to create the stream runs.
-  PendingStreamRequestCompletionSet pending_stream_request_completions_;
 
   // Map from stream id to all active streams.  Streams are active in the sense
   // that they have a consumer (typically SpdyNetworkTransaction and regardless
