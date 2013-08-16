@@ -1430,7 +1430,6 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyGridRow:
     case CSSPropertyGridArea:
     case CSSPropertyWebkitMarginCollapse:
-    case CSSPropertyWebkitMarquee:
     case CSSPropertyWebkitMask:
     case CSSPropertyWebkitMaskPosition:
     case CSSPropertyWebkitMaskRepeat:

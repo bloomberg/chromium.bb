@@ -337,7 +337,6 @@ grid-template
 -webkit-margin-before
 -webkit-margin-end
 -webkit-margin-start
--webkit-marquee
 -webkit-marquee-direction
 -webkit-marquee-increment
 -webkit-marquee-repetition

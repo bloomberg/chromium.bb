@@ -41,7 +41,6 @@ transition longhands=transition-property;transition-duration;transition-timing-f
 -webkit-columns longhands=-webkit-column-width;-webkit-column-count
 -webkit-column-rule longhands=-webkit-column-rule-width;-webkit-column-rule-style;-webkit-column-rule-color
 -webkit-margin-collapse longhands=-webkit-margin-before-collapse;-webkit-margin-after-collapse
--webkit-marquee longhands=-webkit-marquee-direction;-webkit-marquee-increment;-webkit-marquee-repetition;-webkit-marquee-style;-webkit-marquee-speed
 -webkit-mask longhands=-webkit-mask-image;-webkit-mask-position-x;-webkit-mask-position-y;-webkit-mask-size;-webkit-mask-repeat-x;-webkit-mask-repeat-y;-webkit-mask-origin;-webkit-mask-clip
 -webkit-mask-position longhands=-webkit-mask-position-x;-webkit-mask-position-y
 -webkit-mask-repeat longhands=-webkit-mask-repeat-x;-webkit-mask-repeat-y
