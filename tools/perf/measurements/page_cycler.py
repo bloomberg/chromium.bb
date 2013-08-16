@@ -16,7 +16,6 @@ cycling all pages.
 """
 
 import os
-import sys
 
 from metrics import io
 from metrics import memory
@@ -64,11 +63,6 @@ class PageCycler(page_measurement.PageMeasurement):
 
     # Old commandline flags used for reference builds.
     options.AppendExtraBrowserArg('--dom-automation')
-
-    # Temporarily disable typical_25 page set on mac.
-    if sys.platform == 'darwin' and sys.argv[-1].endswith('/typical_25.json'):
-      print 'typical_25 is currently disabled on mac. Skipping test.'
-      sys.exit(0)
 
   def MeasurePage(self, page, tab, results):
     def _IsDone():
