@@ -4,11 +4,11 @@ var a = document.createElement("a");
 a.setAttribute("href", "http://www.apple.com/");
 document.body.appendChild(a);
 
-shouldThrow("location.protocol = ''");
-shouldThrow("location.protocol = ':'");
-shouldThrow("location.protocol = 'é'");
-shouldThrow("location.protocol = '['");
-shouldThrow("location.protocol = '0'");
+shouldThrow("location.protocol = ''", '"SyntaxError: Failed to set the \'protocol\' property on \'Location\': \'\' is an invalid protocol."');
+shouldThrow("location.protocol = ':'", '"SyntaxError: Failed to set the \'protocol\' property on \'Location\': \':\' is an invalid protocol."');
+shouldThrow("location.protocol = 'é'", '"SyntaxError: Failed to set the \'protocol\' property on \'Location\': \'é\' is an invalid protocol."');
+shouldThrow("location.protocol = '['", '"SyntaxError: Failed to set the \'protocol\' property on \'Location\': \'[\' is an invalid protocol."');
+shouldThrow("location.protocol = '0'", '"SyntaxError: Failed to set the \'protocol\' property on \'Location\': \'0\' is an invalid protocol."');
 
 // IE raises exceptions for anchors, too - but Firefox does not. In either case, protocol shouldn't change.
 try { a.protocol = '' } catch (ex) { }

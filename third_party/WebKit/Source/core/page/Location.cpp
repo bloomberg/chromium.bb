@@ -29,6 +29,7 @@
 #include "config.h"
 #include "core/page/Location.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -158,7 +159,7 @@ void Location::setProtocol(DOMWindow* activeWindow, DOMWindow* firstWindow, cons
         return;
     KURL url = m_frame->document()->url();
     if (!url.setProtocol(protocol)) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToSet("protocol", "Location", "'" + protocol + "' is an invalid protocol."));
         return;
     }
     setLocation(url.string(), activeWindow, firstWindow);
