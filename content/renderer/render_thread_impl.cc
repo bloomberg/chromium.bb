@@ -962,9 +962,7 @@ RenderThreadImpl::OffscreenContextProviderForMainThread() {
   if (!shared_contexts_main_thread_.get() ||
       shared_contexts_main_thread_->DestroyedOnMainThread()) {
     shared_contexts_main_thread_ =
-        ContextProviderCommandBuffer::Create(
-            base::Bind(&RenderThreadImpl::CreateOffscreenContext3d,
-                       base::Unretained(this)));
+        ContextProviderCommandBuffer::Create(CreateOffscreenContext3d());
     if (shared_contexts_main_thread_.get() &&
         !shared_contexts_main_thread_->BindToCurrentThread())
       shared_contexts_main_thread_ = NULL;
@@ -986,9 +984,7 @@ RenderThreadImpl::OffscreenContextProviderForCompositorThread() {
   if (!shared_contexts_compositor_thread_.get() ||
       shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
     shared_contexts_compositor_thread_ =
-        ContextProviderCommandBuffer::Create(
-            base::Bind(&RenderThreadImpl::CreateOffscreenContext3d,
-                       base::Unretained(this)));
+        ContextProviderCommandBuffer::Create(CreateOffscreenContext3d());
   }
   return shared_contexts_compositor_thread_;
 }

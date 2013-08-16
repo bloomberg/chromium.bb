@@ -224,10 +224,9 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
     context_provider = ContextProviderCommandBuffer::Create(
-        base::Bind(&GpuProcessTransportFactory::CreateContextCommon,
-                   base::Unretained(this),
-                   data->swap_client->AsWeakPtr(),
-                   data->surface_id));
+        GpuProcessTransportFactory::CreateContextCommon(
+            data->swap_client->AsWeakPtr(),
+            data->surface_id));
   }
   if (!context_provider.get()) {
     if (ui::Compositor::WasInitializedWithThread()) {
@@ -391,9 +390,7 @@ GpuProcessTransportFactory::OffscreenContextProviderForMainThread() {
   if (!shared_contexts_main_thread_.get() ||
       shared_contexts_main_thread_->DestroyedOnMainThread()) {
     shared_contexts_main_thread_ = ContextProviderCommandBuffer::Create(
-        base::Bind(&GpuProcessTransportFactory::
-                       CreateOffscreenCommandBufferContext,
-                   base::Unretained(this)));
+        GpuProcessTransportFactory::CreateOffscreenCommandBufferContext());
     if (shared_contexts_main_thread_) {
       shared_contexts_main_thread_->SetLostContextCallback(base::Bind(
           &GpuProcessTransportFactory::
@@ -412,9 +409,7 @@ GpuProcessTransportFactory::OffscreenContextProviderForCompositorThread() {
   if (!shared_contexts_compositor_thread_.get() ||
       shared_contexts_compositor_thread_->DestroyedOnMainThread()) {
     shared_contexts_compositor_thread_ = ContextProviderCommandBuffer::Create(
-        base::Bind(&GpuProcessTransportFactory::
-                       CreateOffscreenCommandBufferContext,
-                   base::Unretained(this)));
+        GpuProcessTransportFactory::CreateOffscreenCommandBufferContext());
   }
   return shared_contexts_compositor_thread_;
 }

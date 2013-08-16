@@ -673,9 +673,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   if (!fallback) {
     context_provider = ContextProviderCommandBuffer::Create(
-        base::Bind(&RenderWidget::CreateGraphicsContext3D,
-                   base::Unretained(this),
-                   attributes));
+        CreateGraphicsContext3D(attributes));
   }
 
   if (!context_provider.get()) {

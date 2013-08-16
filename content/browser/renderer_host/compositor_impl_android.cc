@@ -364,15 +364,6 @@ bool CompositorImpl::CopyTextureToBitmap(WebKit::WebGLId texture_id,
   return true;
 }
 
-static scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
-CreateInProcessViewContext(
-    const WebKit::WebGraphicsContext3D::Attributes attributes,
-    ANativeWindow* window) {
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  return WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-      attributes, window).Pass();
-}
-
 static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 CreateGpuProcessViewContext(
     const WebKit::WebGraphicsContext3D::Attributes attributes,
@@ -414,9 +405,12 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
   attrs.noAutomaticFlushes = true;
 
   if (g_use_direct_gl) {
+    using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+    scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d =
+        WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
+            attrs, window_);
     scoped_refptr<webkit::gpu::ContextProviderInProcess> context_provider =
-        webkit::gpu::ContextProviderInProcess::Create(
-            base::Bind(&CreateInProcessViewContext, attrs, window_));
+        webkit::gpu::ContextProviderInProcess::Create(context3d.Pass());
 
     scoped_ptr<cc::OutputSurface> output_surface;
     if (!window_)
@@ -430,11 +424,8 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
   DCHECK(surface_id_);
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider =
-      ContextProviderCommandBuffer::Create(
-          base::Bind(&CreateGpuProcessViewContext,
-                     attrs,
-                     surface_id_,
-                     weak_factory_.GetWeakPtr()));
+      ContextProviderCommandBuffer::Create(CreateGpuProcessViewContext(
+          attrs, surface_id_, weak_factory_.GetWeakPtr()));
   if (!context_provider.get()) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
     return scoped_ptr<cc::OutputSurface>();

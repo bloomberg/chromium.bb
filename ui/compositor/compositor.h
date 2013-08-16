@@ -134,9 +134,6 @@ class COMPOSITOR_EXPORT DefaultContextFactory : public ContextFactory {
   bool Initialize();
 
  private:
-  static scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
-      CreateViewContext(Compositor* compositor);
-
   scoped_refptr<webkit::gpu::ContextProviderInProcess>
       offscreen_contexts_main_thread_;
   scoped_refptr<webkit::gpu::ContextProviderInProcess>

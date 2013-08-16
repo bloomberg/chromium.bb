@@ -25,12 +25,8 @@ class GrContextForWebGraphicsContext3D;
 class WEBKIT_GPU_EXPORT ContextProviderInProcess
     : NON_EXPORTED_BASE(public cc::ContextProvider) {
  public:
-  typedef base::Callback<
-      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>(void)>
-      CreateCallback;
-
   static scoped_refptr<ContextProviderInProcess> Create(
-      const CreateCallback& create_callback);
+      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d);
 
   // Calls Create() with a default factory method for creating an offscreen
   // context.
@@ -52,11 +48,9 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
       OVERRIDE;
 
  protected:
-  ContextProviderInProcess();
+  ContextProviderInProcess(
+      scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d);
   virtual ~ContextProviderInProcess();
-
-  bool InitializeOnMainThread(
-      const CreateCallback& create_callback);
 
   void OnLostContext();
   void OnSwapBuffersComplete();

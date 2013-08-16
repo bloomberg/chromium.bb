@@ -109,12 +109,22 @@ bool DefaultContextFactory::Initialize() {
 
 scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(
     Compositor* compositor) {
+  WebKit::WebGraphicsContext3D::Attributes attrs;
+  attrs.depth = false;
+  attrs.stencil = false;
+  attrs.antialias = false;
+  attrs.shareResources = true;
+
+  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
+  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d(
+      WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
+          attrs, compositor->widget()));
+  CHECK(context3d);
 
   using webkit::gpu::ContextProviderInProcess;
   scoped_refptr<ContextProviderInProcess> context_provider =
-      ContextProviderInProcess::Create(
-          base::Bind(&DefaultContextFactory::CreateViewContext, compositor));
-  DCHECK(context_provider.get());
+      ContextProviderInProcess::Create(context3d.Pass());
+
   return make_scoped_ptr(new cc::OutputSurface(context_provider));
 }
 
@@ -155,23 +165,6 @@ void DefaultContextFactory::RemoveCompositor(Compositor* compositor) {
 }
 
 bool DefaultContextFactory::DoesCreateTestContexts() { return false; }
-
-// static
-scoped_ptr<webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl>
-DefaultContextFactory::CreateViewContext(Compositor* compositor) {
-  WebKit::WebGraphicsContext3D::Attributes attrs;
-  attrs.depth = false;
-  attrs.stencil = false;
-  attrs.antialias = false;
-  attrs.shareResources = true;
-
-  using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context(
-      WebGraphicsContext3DInProcessCommandBufferImpl::CreateViewContext(
-          attrs, compositor->widget()));
-  CHECK(context);
-  return context.Pass();
-}
 
 TestContextFactory::TestContextFactory() {}
 

@@ -76,18 +76,21 @@ class ContextProviderCommandBuffer::MemoryAllocationCallbackProxy
 };
 
 scoped_refptr<ContextProviderCommandBuffer>
-ContextProviderCommandBuffer::Create(const CreateCallback& create_callback) {
-  scoped_refptr<ContextProviderCommandBuffer> provider =
-      new ContextProviderCommandBuffer;
-  if (!provider->InitializeOnMainThread(create_callback))
+ContextProviderCommandBuffer::Create(
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d) {
+  if (!context3d)
     return NULL;
-  return provider;
+
+  return new ContextProviderCommandBuffer(context3d.Pass());
 }
 
-ContextProviderCommandBuffer::ContextProviderCommandBuffer()
-    : leak_on_destroy_(false),
+ContextProviderCommandBuffer::ContextProviderCommandBuffer(
+    scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d)
+    : context3d_(context3d.Pass()),
+      leak_on_destroy_(false),
       destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
 }
 
@@ -102,16 +105,6 @@ ContextProviderCommandBuffer::~ContextProviderCommandBuffer() {
     webkit::gpu::GrContextForWebGraphicsContext3D* gr_context ALLOW_UNUSED =
         gr_context_.release();
   }
-}
-
-bool ContextProviderCommandBuffer::InitializeOnMainThread(
-    const CreateCallback& create_callback) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-
-  DCHECK(!context3d_);
-  DCHECK(!create_callback.is_null());
-  context3d_ = create_callback.Run();
-  return !!context3d_;
 }
 
 bool ContextProviderCommandBuffer::BindToCurrentThread() {

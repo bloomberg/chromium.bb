@@ -23,10 +23,8 @@ namespace content {
 // WebGraphicsContext3DCommandBufferImpl context and a GrContext.
 class ContextProviderCommandBuffer : public cc::ContextProvider {
  public:
-  typedef base::Callback<
-      scoped_ptr<WebGraphicsContext3DCommandBufferImpl>(void)> CreateCallback;
   static scoped_refptr<ContextProviderCommandBuffer> Create(
-      const CreateCallback& create_callback);
+      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d);
 
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual WebGraphicsContext3DCommandBufferImpl* Context3d() OVERRIDE;
@@ -48,12 +46,9 @@ class ContextProviderCommandBuffer : public cc::ContextProvider {
   }
 
  protected:
-  ContextProviderCommandBuffer();
+  ContextProviderCommandBuffer(
+      scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context3d);
   virtual ~ContextProviderCommandBuffer();
-
-  // This must be called immedately after creating this object, and it should
-  // be thrown away if this returns false.
-  bool InitializeOnMainThread(const CreateCallback& create_callback);
 
   void OnLostContext();
   void OnSwapBuffersComplete();

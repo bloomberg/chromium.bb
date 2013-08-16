@@ -78,16 +78,15 @@ class ContextProviderInProcess::MemoryAllocationCallbackProxy
 
 // static
 scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
-    const CreateCallback& create_callback) {
-  scoped_refptr<ContextProviderInProcess> provider =
-      new ContextProviderInProcess;
-  if (!provider->InitializeOnMainThread(create_callback))
+    scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d) {
+  if (!context3d)
     return NULL;
-  return provider;
+  return new ContextProviderInProcess(context3d.Pass());
 }
 
-static scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl>
-CreateOffscreenContext() {
+// static
+scoped_refptr<ContextProviderInProcess>
+ContextProviderInProcess::CreateOffscreen() {
   WebKit::WebGraphicsContext3D::Attributes attributes;
   attributes.depth = false;
   attributes.stencil = true;
@@ -95,35 +94,23 @@ CreateOffscreenContext() {
   attributes.shareResources = true;
   attributes.noAutomaticFlushes = true;
 
-  return WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-      attributes).Pass();
+  return Create(
+      WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
+          attributes));
 }
 
-// static
-scoped_refptr<ContextProviderInProcess>
-ContextProviderInProcess::CreateOffscreen() {
-  return Create(base::Bind(&CreateOffscreenContext));
-}
-
-ContextProviderInProcess::ContextProviderInProcess()
-    : destroyed_(false) {
+ContextProviderInProcess::ContextProviderInProcess(
+    scoped_ptr<WebGraphicsContext3DInProcessCommandBufferImpl> context3d)
+    : context3d_(context3d.Pass()),
+      destroyed_(false) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(context3d_);
   context_thread_checker_.DetachFromThread();
 }
 
 ContextProviderInProcess::~ContextProviderInProcess() {
   DCHECK(main_thread_checker_.CalledOnValidThread() ||
          context_thread_checker_.CalledOnValidThread());
-}
-
-bool ContextProviderInProcess::InitializeOnMainThread(
-    const CreateCallback& create_callback) {
-  DCHECK(!context3d_);
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK(!create_callback.is_null());
-
-  context3d_ = create_callback.Run();
-  return context3d_;
 }
 
 bool ContextProviderInProcess::BindToCurrentThread() {
