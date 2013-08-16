@@ -26,6 +26,7 @@
 #include "config.h"
 #include "core/loader/appcache/DOMApplicationCache.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventListener.h"
@@ -73,14 +74,14 @@ void DOMApplicationCache::update(ExceptionState& es)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->update())
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "ApplicationCache", "there is no application cache to update."));
 }
 
 void DOMApplicationCache::swapCache(ExceptionState& es)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->swapCache())
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("swapCache", "ApplicationCache", "there is no newer application cache to swap to."));
 }
 
 void DOMApplicationCache::abort()
