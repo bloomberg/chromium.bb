@@ -25,15 +25,23 @@ public final class R {
         public static int ondemand_overlay;
     }
     public static final class id {
+        public static int ampm;
         public static int date_picker;
-        public static int position_in_year;
+        public static int hour;
+        public static int milli;
+        public static int minute;
         public static int pickers;
+        public static int position_in_year;
+        public static int second;
+        public static int second_colon;
+        public static int second_dot;
         public static int time_picker;
         public static int year;
     }
     public static final class layout {
         public static int date_time_picker_dialog;
         public static int two_field_date_picker;
+        public static int multi_field_time_picker_dialog;
     }
     public static final class string {
         public static int accessibility_content_view;
@@ -54,6 +62,11 @@ public final class R {
         public static int media_player_error_title;
         public static int media_player_loading_video;
         public static int month_picker_dialog_title;
+        public static int time_picker_dialog_am;
+        public static int time_picker_dialog_hour_minute_separator;
+        public static int time_picker_dialog_minute_second_separator;
+        public static int time_picker_dialog_second_subsecond_separator;
+        public static int time_picker_dialog_pm;
         public static int week_picker_dialog_title;
     }
 }

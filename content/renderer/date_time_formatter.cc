@@ -28,10 +28,61 @@ void DateTimeFormatter::CreatePatternMap() {
   patterns_[ui::TEXT_INPUT_TYPE_WEEK] = "Y-'W'ww";
 }
 
+// Returns true if icu_value parses as a valid for the specified date/time
+// pattern. The date/time pattern given is for icu::SimpleDateFormat.
+static bool TryPattern(const char* pattern,
+                       const icu::UnicodeString& icu_value) {
+  icu::UnicodeString time_pattern = pattern;
+  UErrorCode success = U_ZERO_ERROR;
+  icu::SimpleDateFormat formatter(time_pattern, success);
+  formatter.parse(icu_value, success);
+  return success == U_ZERO_ERROR;
+}
+
+// For a time value represented as a string find the longest time
+// pattern which matches it. A valid time can have hours and minutes
+// or hours, minutes and seconds or hour, minutes, seconds and upto 3
+// digits of fractional seconds. Specify step in milliseconds, it is 1000
+// times the value specified as "step" in the "<input type=time step=...>
+// HTML fragment. A value of 60000 or more indicates that seconds
+// are not expected and a value of 1000 or more indicates that fractional
+// seconds are not expected.
+static const char* FindLongestTimePatternWhichMatches(const std::string& value,
+                                                      double step) {
+  const char* pattern = "HH:mm";
+  if (step >= 60000)
+    return pattern;
+
+  icu::UnicodeString icu_value = icu::UnicodeString::fromUTF8(
+      icu::StringPiece(value.data(), value.size()));
+  const char* last_pattern = pattern;
+  pattern = "HH:mm:ss";
+  if (!TryPattern(pattern, icu_value))
+    return last_pattern;
+  if (step >= 1000)
+    return pattern;
+  last_pattern = pattern;
+  pattern = "HH:mm:ss.S";
+  if (!TryPattern(pattern, icu_value))
+    return last_pattern;
+  last_pattern = pattern;
+  pattern = "HH:mm:ss.SS";
+  if (!TryPattern(pattern, icu_value))
+    return last_pattern;
+  last_pattern = pattern;
+  pattern = "HH:mm:ss.SSS";
+  if (!TryPattern(pattern, icu_value))
+    return last_pattern;
+  return pattern;
+}
+
 DateTimeFormatter::DateTimeFormatter(
     const WebKit::WebDateTimeChooserParams& source)
-  : formatted_string_(source.currentValue.utf8()) {
+    : formatted_string_(source.currentValue.utf8()) {
   CreatePatternMap();
+  if (source.type == WebKit::WebDateTimeInputTypeTime)
+    time_pattern_ =
+        FindLongestTimePatternWhichMatches(formatted_string_, source.step);
   ExtractType(source);
   if (!ParseValues()) {
     type_ = ui::TEXT_INPUT_TYPE_NONE;
@@ -40,22 +91,41 @@ DateTimeFormatter::DateTimeFormatter(
   }
 }
 
-DateTimeFormatter::DateTimeFormatter(
-    ui::TextInputType type,
-    int year, int month, int day, int hour, int minute, int second,
-    int week_year, int week)
-  : type_(type),
-    year_(year),
-    month_(month),
-    day_(day),
-    hour_(hour),
-    minute_(minute),
-    second_(second),
-    week_year_(week_year),
-    week_(week) {
+DateTimeFormatter::DateTimeFormatter(ui::TextInputType type,
+                                     int year,
+                                     int month,
+                                     int day,
+                                     int hour,
+                                     int minute,
+                                     int second,
+                                     int milli,
+                                     int week_year,
+                                     int week)
+    : type_(type),
+      year_(year),
+      month_(month),
+      day_(day),
+      hour_(hour),
+      minute_(minute),
+      second_(second),
+      milli_(milli),
+      week_year_(week_year),
+      week_(week) {
   CreatePatternMap();
-  pattern_ = type_ > 0 && type_ <= ui::TEXT_INPUT_TYPE_MAX ?
-      &patterns_[type_] : &patterns_[ui::TEXT_INPUT_TYPE_NONE];
+  if (type_ == ui::TEXT_INPUT_TYPE_TIME && (second != 0 || milli != 0)) {
+    if (milli == 0)
+      time_pattern_ = "HH:mm:ss";
+    else if (milli % 100 == 0)
+      time_pattern_ = "HH:mm:ss.S";
+    else if (milli % 10 == 0)
+      time_pattern_ = "HH:mm:ss.SS";
+    else
+      time_pattern_ = "HH:mm:ss.SSS";
+    pattern_ = &time_pattern_;
+  } else {
+    pattern_ = type_ > 0 && type_ <= ui::TEXT_INPUT_TYPE_MAX ?
+        &patterns_[type_] : &patterns_[ui::TEXT_INPUT_TYPE_NONE];
+  }
 
   formatted_string_ = FormatString();
 }
@@ -87,9 +157,9 @@ int DateTimeFormatter::GetSecond() const {
   return second_;
 }
 
-int DateTimeFormatter::GetWeekYear() const {
-  return week_year_;
-}
+int DateTimeFormatter::GetMilli() const { return milli_; }
+
+int DateTimeFormatter::GetWeekYear() const { return week_year_; }
 
 int DateTimeFormatter::GetWeek() const {
   return week_;
@@ -105,9 +175,8 @@ const std::string& DateTimeFormatter::GetFormattedValue() const {
 
 const std::string DateTimeFormatter::FormatString() const {
   UErrorCode success = U_ZERO_ERROR;
-  if (year_ == 0 && month_ == 0 && day_ == 0 &&
-      hour_ == 0 && minute_ == 0 && second_ == 0 &&
-      week_year_ == 0 && week_ == 0) {
+  if (year_ == 0 && month_ == 0 && day_ == 0 && hour_ == 0 && minute_ == 0 &&
+      second_ == 0 && milli_ == 0 && week_year_ == 0 && week_ == 0) {
     return std::string();
   }
 
@@ -129,6 +198,7 @@ const std::string DateTimeFormatter::FormatString() const {
       calendar.set(UCAL_HOUR_OF_DAY, hour_);
       calendar.set(UCAL_MINUTE, minute_);
       calendar.set(UCAL_SECOND, second_);
+      calendar.set(UCAL_MILLISECOND, milli_);
     }
     icu::SimpleDateFormat formatter(*pattern_, success);
     icu::UnicodeString formatted_time;
@@ -194,7 +264,8 @@ bool DateTimeFormatter::ParseValues() {
   icu::UnicodeString icu_value = icu::UnicodeString::fromUTF8(
       icu::StringPiece(formatted_string_.data(), formatted_string_.size()));
   if (type_ > 0 && type_ <= ui::TEXT_INPUT_TYPE_MAX) {
-    const icu::UnicodeString pattern = patterns_[type_];
+    const icu::UnicodeString pattern =
+        type_ == ui::TEXT_INPUT_TYPE_TIME ? time_pattern_ : patterns_[type_];
     icu::SimpleDateFormat formatter(pattern, success);
     formatter.parse(icu_value, success);
     if (success <= U_ZERO_ERROR) {
@@ -205,6 +276,7 @@ bool DateTimeFormatter::ParseValues() {
       hour_ = ExtractValue(cal, UCAL_HOUR_OF_DAY);  // 24h format
       minute_ = ExtractValue(cal, UCAL_MINUTE);
       second_ = ExtractValue(cal, UCAL_SECOND);
+      milli_ = ExtractValue(cal, UCAL_MILLISECOND);
       week_year_ = ExtractValue(cal, UCAL_YEAR_WOY);
       week_ = ExtractValue(cal, UCAL_WEEK_OF_YEAR);
     }
@@ -220,6 +292,7 @@ void DateTimeFormatter::ClearAll() {
   hour_ = 0;
   minute_ = 0;
   second_ = 0;
+  milli_ = 0;
   week_year_ = 0;
   week_ = 0;
 }

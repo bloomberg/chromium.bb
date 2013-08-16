@@ -24,14 +24,31 @@ class DateTimeChooserAndroid {
   // DateTimeChooser implementation:
   void ShowDialog(ContentViewCore* content,
                   RenderViewHost* sender,
-                  int type, int year, int month, int day,
-                  int hour, int minute, int second, int week,
-                  double min, double max);
+                  int type,
+                  int year,
+                  int month,
+                  int day,
+                  int hour,
+                  int minute,
+                  int second,
+                  int milli,
+                  int week,
+                  double min,
+                  double max,
+                  double step);
 
   // Replaces the current value with the one passed the different fields
-  void ReplaceDateTime(JNIEnv* env, jobject, jint dialog_type,
-                       jint year, jint month, jint day,
-                       jint hour, jint minute, jint second, jint week);
+  void ReplaceDateTime(JNIEnv* env,
+                       jobject,
+                       jint dialog_type,
+                       jint year,
+                       jint month,
+                       jint day,
+                       jint hour,
+                       jint minute,
+                       jint second,
+                       jint milli,
+                       jint week);
 
   // Closes the dialog without propagating any changes.
   void CancelDialog(JNIEnv* env, jobject);

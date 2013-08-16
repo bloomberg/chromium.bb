@@ -43,9 +43,11 @@ bool RendererDateTimePicker::Open() {
     message.hour = parser.GetHour();
     message.minute = parser.GetMinute();
     message.second = parser.GetSecond();
+    message.milli = parser.GetMilli();
   }
   message.minimum = chooser_params_.minimum;
   message.maximum = chooser_params_.maximum;
+  message.step = chooser_params_.step;
   Send(new ViewHostMsg_OpenDateTimeDialog(routing_id(), message));
   return true;
 }
@@ -64,10 +66,16 @@ bool RendererDateTimePicker::OnMessageReceived(
 void RendererDateTimePicker::OnReplaceDateTime(
     const ViewHostMsg_DateTimeDialogValue_Params& value) {
 
-  DateTimeFormatter formatter(
-      static_cast<ui::TextInputType>(value.dialog_type),
-      value.year, value.month, value.day,
-      value.hour, value.minute, value.second, value.year, value.week);
+  DateTimeFormatter formatter(static_cast<ui::TextInputType>(value.dialog_type),
+                              value.year,
+                              value.month,
+                              value.day,
+                              value.hour,
+                              value.minute,
+                              value.second,
+                              value.milli,
+                              value.year,
+                              value.week);
 
   if (chooser_completion_)
     chooser_completion_->didChooseValue(WebString::fromUTF8(

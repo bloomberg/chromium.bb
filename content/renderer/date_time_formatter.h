@@ -20,15 +20,21 @@ struct WebDateTimeChooserParams;
 namespace content {
 
 // Converts between a text string representing a date/time and
-// a set of year/month/day/hour/minute/second and vice versa.
+// a set of year/month/day/hour/minute/second/milli and vice versa.
 // It is timezone agnostic.
 class CONTENT_EXPORT DateTimeFormatter {
  public:
   explicit DateTimeFormatter(const WebKit::WebDateTimeChooserParams& source);
-  DateTimeFormatter(
-      ui::TextInputType type,
-      int year, int month, int day, int hour, int minute, int second,
-      int week_year, int week);
+  DateTimeFormatter(ui::TextInputType type,
+                    int year,
+                    int month,
+                    int day,
+                    int hour,
+                    int minute,
+                    int second,
+                    int milli,
+                    int week_year,
+                    int week);
   ~DateTimeFormatter();
 
   int GetYear() const;
@@ -37,6 +43,7 @@ class CONTENT_EXPORT DateTimeFormatter {
   int GetHour() const;
   int GetMinute() const;
   int GetSecond() const;
+  int GetMilli() const;
   int GetWeekYear() const;
   int GetWeek() const;
   ui::TextInputType GetType() const;
@@ -53,12 +60,14 @@ class CONTENT_EXPORT DateTimeFormatter {
 
   ui::TextInputType type_;
   icu::UnicodeString patterns_[ui::TEXT_INPUT_TYPE_MAX + 1];
+  icu::UnicodeString time_pattern_;
   int year_;
   int month_;
   int day_;
   int hour_;
   int minute_;
   int second_;
+  int milli_;
   int week_year_;
   int week_;
   const icu::UnicodeString* pattern_;
