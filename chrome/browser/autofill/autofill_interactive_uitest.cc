@@ -363,7 +363,8 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
         "      };"
         "    }"
         "  };"
-        "})();";
+        "})();"
+        "cr.googleTranslate.onTranslateElementLoad();";
 
     fetcher->set_url(fetcher->GetOriginalURL());
     fetcher->set_status(status);
@@ -818,9 +819,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterReload) {
   TryBasicFormFill();
 }
 
-// DISABLED: http://crbug.com/150084
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       DISABLED_AutofillAfterTranslate) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillAfterTranslate) {
   CreateTestProfile();
 
   GURL url(std::string(kDataURIPrefix) +
@@ -853,15 +852,20 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                " </select><br>"
                "<label for=\"ph\">Phone number:</label>"
                " <input type=\"text\" id=\"ph\"><br>"
-               "</form>");
-  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(), url));
+               "</form>"
+               // Add additional Japanese characters to ensure the translate bar
+               // will appear.
+               "我々は重要な、興味深いものになるが、時折状況が発生するため苦労や痛みは"
+               "彼にいくつかの素晴らしいを調達することができます。それから、いくつかの利");
 
-  // Get translation bar.
-  LanguageDetectionDetails details;
-  details.adopted_language = "ja";
-  content::RenderViewHostTester::TestOnMessageReceived(
-      GetRenderViewHost(),
-      ChromeViewHostMsg_TranslateLanguageDetermined(0, details, true));
+  content::WindowedNotificationObserver infobar(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+      content::NotificationService::AllSources());
+  ASSERT_NO_FATAL_FAILURE(
+      ui_test_utils::NavigateToURL(browser(), url));
+
+  // Wait for the translation bar to appear and get it.
+  infobar.Wait();
   TranslateInfoBarDelegate* delegate = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents())->infobar_at(0)->
           AsTranslateInfoBarDelegate();
@@ -879,12 +883,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
   content::WindowedNotificationObserver translation_observer(
       chrome::NOTIFICATION_PAGE_TRANSLATED,
       content::NotificationService::AllSources());
-
-  // Simulate translation to kick onTranslateElementLoad.
-  // But right now, the call stucks here.
-  // Once click the text field, it starts again.
-  ASSERT_TRUE(content::ExecuteScript(
-      GetRenderViewHost(), "cr.googleTranslate.onTranslateElementLoad();"));
 
   // Simulate the render notifying the translation has been done.
   translation_observer.Wait();
