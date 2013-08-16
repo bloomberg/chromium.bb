@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel.h"
 #include "ui/base/animation/animation_delegate.h"
-#include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -28,7 +27,6 @@ class WebView;
 class PanelView : public NativePanel,
                   public views::WidgetObserver,
                   public views::WidgetDelegateView,
-                  public views::WidgetFocusChangeListener,
 #if defined(OS_WIN)
                   public ui::HWNDMessageFilter,
 #endif
@@ -150,10 +148,6 @@ class PanelView : public NativePanel,
                                          bool active) OVERRIDE;
   virtual void OnWidgetBoundsChanged(views::Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
-
-  // Overridden from views::WidgetFocusChangeListener:
-  virtual void OnNativeFocusChange(gfx::NativeView focused_before,
-                                   gfx::NativeView focused_now) OVERRIDE;
 
   // Overridden from ui::HWNDMessageFilter:
 #if defined(OS_WIN)
