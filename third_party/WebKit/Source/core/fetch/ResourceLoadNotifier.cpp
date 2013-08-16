@@ -46,11 +46,21 @@ ResourceLoadNotifier::ResourceLoadNotifier(Frame* frame)
 {
 }
 
+
+// FIXME(http://crbug.com/274173):
+// |loader| can be null if the resource is loaded from imported document.
+// This means inspector, which uses DocumentLoader as an grouping entity,
+// cannot see imported documents.
+inline DocumentLoader* ResourceLoadNotifier::ensureLoader(DocumentLoader* loader)
+{
+    return loader ? loader : m_frame->loader()->activeDocumentLoader();
+}
+
 void ResourceLoadNotifier::dispatchWillSendRequest(DocumentLoader* loader, unsigned long identifier, ResourceRequest& request, const ResourceResponse& redirectResponse, const FetchInitiatorInfo& initiatorInfo)
 {
     m_frame->loader()->applyUserAgent(request);
     m_frame->loader()->client()->dispatchWillSendRequest(loader, identifier, request, redirectResponse);
-    InspectorInstrumentation::willSendRequest(m_frame, identifier, loader, request, redirectResponse, initiatorInfo);
+    InspectorInstrumentation::willSendRequest(m_frame, identifier, ensureLoader(loader), request, redirectResponse, initiatorInfo);
 }
 
 void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& r, ResourceLoader* resourceLoader)
@@ -59,7 +69,7 @@ void ResourceLoadNotifier::dispatchDidReceiveResponse(DocumentLoader* loader, un
         page->progress()->incrementProgress(identifier, r);
     InspectorInstrumentationCookie cookie = InspectorInstrumentation::willReceiveResourceResponse(m_frame, identifier, r);
     m_frame->loader()->client()->dispatchDidReceiveResponse(loader, identifier, r);
-    InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, loader, r, resourceLoader);
+    InspectorInstrumentation::didReceiveResourceResponse(cookie, identifier, ensureLoader(loader), r, resourceLoader);
 }
 
 void ResourceLoadNotifier::dispatchDidReceiveData(DocumentLoader*, unsigned long identifier, const char* data, int dataLength, int encodedDataLength)
@@ -75,28 +85,28 @@ void ResourceLoadNotifier::dispatchDidFinishLoading(DocumentLoader* loader, unsi
         page->progress()->completeProgress(identifier);
     m_frame->loader()->client()->dispatchDidFinishLoading(loader, identifier);
 
-    InspectorInstrumentation::didFinishLoading(m_frame, identifier, loader, finishTime);
+    InspectorInstrumentation::didFinishLoading(m_frame, identifier, ensureLoader(loader), finishTime);
 }
 
 void ResourceLoadNotifier::dispatchDidFail(DocumentLoader* loader, unsigned long identifier, const ResourceError& error)
 {
     if (Page* page = m_frame->page())
         page->progress()->completeProgress(identifier);
-    InspectorInstrumentation::didFailLoading(m_frame, identifier, loader, error);
+    InspectorInstrumentation::didFailLoading(m_frame, identifier, ensureLoader(loader), error);
 }
 
 void ResourceLoadNotifier::sendRemainingDelegateMessages(DocumentLoader* loader, unsigned long identifier, const ResourceResponse& response, const char* data, int dataLength, int encodedDataLength, const ResourceError& error)
 {
     if (!response.isNull())
-        dispatchDidReceiveResponse(loader, identifier, response);
+        dispatchDidReceiveResponse(ensureLoader(loader), identifier, response);
 
     if (dataLength > 0)
-        dispatchDidReceiveData(loader, identifier, data, dataLength, encodedDataLength);
+        dispatchDidReceiveData(ensureLoader(loader), identifier, data, dataLength, encodedDataLength);
 
     if (error.isNull())
-        dispatchDidFinishLoading(loader, identifier, 0);
+        dispatchDidFinishLoading(ensureLoader(loader), identifier, 0);
     else
-        dispatchDidFail(loader, identifier, error);
+        dispatchDidFail(ensureLoader(loader), identifier, error);
 }
 
 } // namespace WebCore

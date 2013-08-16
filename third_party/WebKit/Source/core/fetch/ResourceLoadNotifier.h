@@ -57,6 +57,8 @@ public:
     void sendRemainingDelegateMessages(DocumentLoader*, unsigned long identifier, const ResourceResponse&, const char* data, int dataLength, int encodedDataLength, const ResourceError&);
 
 private:
+    inline DocumentLoader* ensureLoader(DocumentLoader*);
+
     Frame* m_frame;
 };
 

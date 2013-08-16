@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../../js/resources/js-test-pre.js"></script>
+<script>
+if (window.testRunner) {
+    testRunner.showWebInspector();
+    testRunner.waitUntilDone();
+}
+</script>
+  <title>basic import</title>
+  <link rel="import" href="resources/hello-with-script.html">
+</head>
+<body>
+<script>
+shouldBe("window.greeting", "'Hello, World!'");
+if (window.localStorage["import-oening-ispector"] == "loaded") {
+  delete window.localStorage["import-oening-ispector"];
+  if (window.testRunner) {
+    window.setTimeout(function() {
+      testRunner.closeWebInspector();
+      testRunner.notifyDone();
+    }, 0);
+  }
+} else {
+  window.localStorage["import-oening-ispector"] = "loaded";
+  window.setTimeout(function() { window.location.reload(); }, 100);
+} 
+</script>
+<script src="../../js/resources/js-test-post.js"></script>
+</body>
+</html>
