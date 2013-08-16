@@ -1,41 +1,45 @@
 BUILD LOG
 ---------
-Build Time: 2013-07-11T14:50:28
+Build Time: 2013-08-15T16:02:48
 
 NODEJS INFORMATION
 ==================
 nodejs: v0.10.4
-chai: 1.7.1
+chai: 1.7.2
 grunt: 0.4.1
 grunt-audit: 0.0.1
 grunt-contrib-uglify: 0.2.2
 grunt-contrib-yuidoc: 0.4.0
 grunt-karma: 0.5.0
-karma: 0.9.3
+karma: 0.9.7
 karma-chrome-launcher: 0.0.2
-karma-coffee-preprocessor: 0.0.1
+karma-coffee-preprocessor: 0.0.3
 karma-crbot-reporter: 0.0.3
-karma-firefox-launcher: 0.0.2
-karma-jasmine: 0.0.1
-karma-mocha: 0.0.1
+karma-firefox-launcher: 0.0.3
+karma-html2js-preprocessor: 0.0.2
+karma-jasmine: 0.0.3
+karma-mocha: 0.0.4
 karma-phantomjs-launcher: 0.0.2
-karma-requirejs: 0.0.1
-karma-script-launcher: 0.0.1
-mocha: 1.11.0
+karma-requirejs: 0.0.3
+karma-script-launcher: 0.0.2
+mocha: 1.12.0
 
 REPO REVISIONS
 ==============
-polymer: b3727b3cc08225e27a2f72105d6ea495ff975661
-platform: cd92266d192dbc2b82cf37a477b3a5213989114c
-ShadowDOM: 99775988a711e4093153e0f4d68a4d73814f2a1f
-HTMLImports: 69e86c01bde0e88e2a9d85fd5dec01f454edaf55
-CustomElements: ac5a5aba2296d758580063bce5fe8feb59bcc54a
-PointerEvents: ea792e163c90a7199a036b9026b835de2d7d93fb
-PointerGestures: 39a1434940e01109157161110158f8727a981f42
-mdv: 6691933756030c7653234054db34f23f20fe576a
+polymer: a32f21b234129a290ea4931a2c6d7345f6825789
+platform: 8645fe5180f3c122aa509f0c55c956b70ce4bd96
+ShadowDOM: 9d8aa3b41401ebb215bb0879296ce85a28c30f98
+HTMLImports: 71b260f6391bb6174c2699b538127c4cce78dbbd
+CustomElements: 284aa7f202ddd9fd015a6f666e20af784e574e23
+PointerEvents: 1fd01697ac021718453ea0ea8712246578dfc55f
+PointerGestures: 128f4c1c30837f99f9b7282e8cc1ceaef112c2de
+polymer-expressions: 3741c09c245e29db1d697a8bf40014c59800c76f
+observe-js: 35498d97fa6dfe06d15cb7488f1186fa4f5d46ae
+NodeBind: 1e32d4703ce57c31483834c4527c98b9b08597fb
+TemplateBinding: 548f86d763051c59472ad17ac0274efe55cf9d4f
 
 BUILD HASHES
 ============
-polymer.min.js: 983a363af92ef42f02d54999ef284b706655d15d
-polymer.native.min.js: 5b47f9ddbe75673975b5b2b25807e9ca88b6d44f
-polymer.sandbox.min.js: dbdfbb0e57423136557f9fe8959709e294d9560c
+polymer.min.js: e07f3c2148fa37eb5eb50b49d724efcfad4af3c8
+polymer.native.min.js: 1bf3aec7bf2236711599e94efe4a1720b8ca0ee3
+polymer.sandbox.min.js: f7267b34d6c9dcc47f129a52d2117ecdec3f4bd9
