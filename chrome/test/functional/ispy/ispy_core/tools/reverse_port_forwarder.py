@@ -60,8 +60,8 @@ class ReversePortForwarder(object):
   def Stop(self):
     """Cleans up after the start call by closing the forwarder."""
     # shut down the forwarder.
-    forwarder.Forwarder.UnmapDevicePort(self._device_http, self._cmd)
-    forwarder.Forwarder.UnmapDevicePort(self._device_https, self._cmd)
+    forwarder.Forwarder.UnmapDevicePort(self._device_http, self._adb)
+    forwarder.Forwarder.UnmapDevicePort(self._device_https, self._adb)
 
   def GetChromeArgs(self):
     """Makes a list of arguments to enable reverse port forwarding on chrome.

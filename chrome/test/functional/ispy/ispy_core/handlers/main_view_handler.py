@@ -13,11 +13,12 @@ import webapp2
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
-import auth_constants
 import views
 
 from tests.rendering_test_manager import cloud_bucket_impl
 from tools import rendering_test_manager
+
+import ispy_auth_constants
 
 JINJA = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(views.__file__)),

@@ -16,7 +16,7 @@ from tests.rendering_test_manager import cloud_bucket_impl
 from tools import image_tools
 from tools import rendering_test_manager
 
-import auth_constants
+import ispy_auth_constants
 
 class MissingArgError(Exception):
   pass
@@ -85,7 +85,8 @@ class CommandHandler(webapp2.RequestHandler):
       self._InvalidCommand(self.request)
       return
     self.bucket = cloud_bucket_impl.CloudBucketImpl(
-        auth_constants.KEY, auth_constants.SECRET, auth_constants.BUCKET)
+        ispy_auth_constants.KEY, ispy_auth_constants.SECRET,
+        ispy_auth_constants.BUCKET)
     self.manager = rendering_test_manager.RenderingTestManager(self.bucket)
     self.command_functions.get(cmd)(self.request)
 
@@ -152,7 +153,7 @@ class CommandHandler(webapp2.RequestHandler):
         [image_tools.DeserializeImage(image) for image in images])
     return {'success': True}
 
-  @Command('batch_name', 'test_name', 'images', 'pink_out')
+  @Command('batch_name', 'test_name', 'images', 'pink_out', 'RGB')
   def _UploadTestPinkOut(self, request):
     """Uploads an ispy-test to GCS with the pink_out workaround.
 
@@ -161,6 +162,7 @@ class CommandHandler(webapp2.RequestHandler):
         test_name: The name of the test to be uploaded.
         images: a json encoded list of base64 encoded png images.
         pink_out: a base64 encoded png image.
+        RGB: a json list representing the RGB values of a color to mask out.
       Response JSON:
         succeeded: True.
 
@@ -172,12 +174,15 @@ class CommandHandler(webapp2.RequestHandler):
     """
     batch_name = request.get('batch_name')
     test_name = request.get('test_name')
+    rgb = json.loads(request.get('RGB'))
     images = [image_tools.DeserializeImage(i)
               for i in json.loads(request.get('images'))]
     pink_out = image_tools.DeserializeImage(request.get('pink_out'))
     # convert the pink_out into a mask
+    black = (0, 0, 0, 255)
+    white = (255, 255, 255, 255)
     pink_out.putdata(
-        [(0, 0, 0, 255) if px == (255, 71, 191, 255) else (255, 255, 255, 255)
+        [black if px == (rgb[0], rgb[1], rgb[2], 255) else white
          for px in pink_out.getdata()])
     mask = image_tools.CreateMask(images)
     mask = image_tools.InflateMask(image_tools.CreateMask(images), 7)
@@ -219,7 +224,7 @@ class CommandHandler(webapp2.RequestHandler):
     self.manager.UploadImage(path, combined_mask)
     return {'success': True}
 
-  @Command('image', 'batch_name', 'test_name', 'run_name')
+  @Command('image', 'batch_name', 'test_name')
   def _RunTest(self, request):
     """Runs a test on GCS and stores a failure if it doesn't pass.
 
@@ -233,7 +238,6 @@ class CommandHandler(webapp2.RequestHandler):
       Request Parameters:
         'image': A base64 encoded screenshot that corresponds to a test in GCS.
         'test_name': The name of the test that 'image' corresponds to.
-        'run_name': The title of this particular test run.
       Response JSON:
         'succeeded': True
 
@@ -246,10 +250,9 @@ class CommandHandler(webapp2.RequestHandler):
     raw_image = request.get('image')
     batch_name = request.get('batch_name')
     test_name = request.get('test_name')
-    run_name = request.get('run_name')
     image = image_tools.DeserializeImage(raw_image)
     try:
-      self.manager.RunTest(batch_name, test_name, run_name, image)
+      self.manager.RunTest(batch_name, test_name, image)
     except cloud_bucket.FileNotFoundError, e:
       return {'success': False, 'error': str(e)}
     else:
@@ -282,14 +285,13 @@ class CommandHandler(webapp2.RequestHandler):
     return {'success': True, 'exists': self.manager.TestExists(batch_name,
                                                                  test_name)}
 
-  @Command('batch_name', 'test_name', 'run_name')
+  @Command('batch_name', 'test_name')
   def _FailureExists(self, request):
     """Checks to see if a particular failed run exists in GCS.
 
     This method is run if the command parameter is 'failure_exists'.
       Request Parameters:
         'test_name': the name of the test that failure occurred on.
-        'run_name': the name of the particular run that failed.
       Response JSON:
         'exists': boolean indicating whether the failure exists.
         'succeeded': True.
@@ -303,10 +305,9 @@ class CommandHandler(webapp2.RequestHandler):
     """
     batch_name = request.get('batch_name')
     test_name = request.get('test_name')
-    run_name = request.get('run_name')
     return {'success': True,
             'exists': self.manager.FailureExists(
-                batch_name, test_name, run_name)}
+                batch_name, test_name)}
 
   @Command('batch_name', 'test_name')
   def _RemoveTest(self, request):
@@ -334,7 +335,7 @@ class CommandHandler(webapp2.RequestHandler):
     self.manager.RemoveTest(batch_name, test_name)
     return {'success': True}
 
-  @Command('batch_name', 'test_name', 'run_name')
+  @Command('batch_name', 'test_name')
   def _RemoveFailure(self, request):
     """Removes a failure from GCS.
 
@@ -352,6 +353,5 @@ class CommandHandler(webapp2.RequestHandler):
     """
     batch_name = request.get('batch_name')
     test_name = request.get('test_name')
-    run_name = request.get('run_name')
-    self.manager.RemoveFailure(batch_name, test_name, run_name)
+    self.manager.RemoveFailure(batch_name, test_name)
     return {'success': True}

@@ -10,11 +10,11 @@ import sys
 import os
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
-import auth_constants
 from tools import rendering_test_manager
 from tools import image_tools
 from tests.rendering_test_manager import cloud_bucket_impl
 
+import ispy_auth_constants
 
 class UpdateMaskHandler(webapp2.RequestHandler):
   """Request handler to allow test mask updates."""
@@ -40,7 +40,8 @@ class UpdateMaskHandler(webapp2.RequestHandler):
       return
     # Otherwise, set up the rendering_test_manager.
     self.bucket = cloud_bucket_impl.CloudBucketImpl(
-        auth_constants.KEY, auth_constants.SECRET, auth_constants.BUCKET)
+        ispy_auth_constants.KEY, ispy_auth_constants.SECRET,
+        ispy_auth_constants.BUCKET)
     self.manager = rendering_test_manager.RenderingTestManager(self.bucket)
     # Short-circuit if the failure does not exist.
     if not self.manager.FailureExists(batch_name, test_name):

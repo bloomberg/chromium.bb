@@ -11,10 +11,10 @@ import webapp2
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir))
 
-import auth_constants
-
 from tests.rendering_test_manager import cloud_bucket
 from tests.rendering_test_manager import cloud_bucket_impl
+
+import ispy_auth_constants
 
 
 class ImageHandler(webapp2.RequestHandler):
@@ -31,7 +31,8 @@ class ImageHandler(webapp2.RequestHandler):
       self.error(404)
       return
     bucket = cloud_bucket_impl.CloudBucketImpl(
-        auth_constants.KEY, auth_constants.SECRET, auth_constants.BUCKET)
+        ispy_auth_constants.KEY, ispy_auth_constants.SECRET,
+        ispy_auth_constants.BUCKET)
     try:
       image = bucket.DownloadFile(file_path)
     except cloud_bucket.FileNotFoundError:

@@ -71,7 +71,7 @@ class RenderingTestManager(object):
     self.UploadImage(posixpath.join(path, 'expected.png'), images[0])
     self.UploadImage(posixpath.join(path, 'mask.png'), mask)
 
-  def RunTest(self, batch_name, test_name, run_name, actual):
+  def RunTest(self, batch_name, test_name, actual):
     """Runs an image comparison, and uploads discrepancies to GCS.
 
     Args:
@@ -84,7 +84,7 @@ class RenderingTestManager(object):
     Raises:
       cloud_bucket.NotFoundError: if the given test_name is not found.
     """
-    path = posixpath.join('failures', batch_name, test_name, run_name)
+    path = posixpath.join('failures', batch_name, test_name)
     test = self.GetTest(batch_name, test_name)
     if not image_tools.SameImage(actual, test.expected, mask=test.mask):
       self.UploadImage(posixpath.join(path, 'actual.png'), actual)
@@ -132,7 +132,7 @@ class RenderingTestManager(object):
         posixpath.join(path, 'mask.png'))
     return expected_image_exists and mask_image_exists
 
-  def FailureExists(self, batch_name, test_name, run_name):
+  def FailureExists(self, batch_name, test_name):
     """Returns whether the given run exists in GCS.
 
     Args:
@@ -143,7 +143,7 @@ class RenderingTestManager(object):
     Returns:
       A boolean indicating whether the failure exists.
     """
-    failure_path = posixpath.join('failures', batch_name, test_name, run_name)
+    failure_path = posixpath.join('failures', batch_name, test_name)
     actual_image_exists = self.cloud_bucket.FileExists(
         posixpath.join(failure_path, 'actual.png'))
     test_exists = self.TestExists(batch_name, test_name)
@@ -165,7 +165,7 @@ class RenderingTestManager(object):
     for path in itertools.chain(failure_paths, test_paths):
       self.cloud_bucket.RemoveFile(path)
 
-  def RemoveFailure(self, batch_name, test_name, run_name):
+  def RemoveFailure(self, batch_name, test_name):
     """Removes a failure from GCS.
 
     Args:
@@ -173,13 +173,12 @@ class RenderingTestManager(object):
       test_name: the test on which the failure to be removed occured.
       run_name: the name of the run on the given test that failed.
     """
-    failure_path = posixpath.join('failures', batch_name, test_name, run_name)
-    print failure_path
+    failure_path = posixpath.join('failures', batch_name, test_name)
     failure_paths = self.cloud_bucket.GetAllPaths(failure_path)
     for path in failure_paths:
       self.cloud_bucket.RemoveFile(path)
 
-  def GetFailure(self, batch_name, test_name, run_name):
+  def GetFailure(self, batch_name, test_name):
     """Returns a given test failure's expected, diff, and actual images.
 
     Args:
@@ -195,7 +194,7 @@ class RenderingTestManager(object):
       cloud_bucket.NotFoundError: if the result is not found in GCS.
     """
     test_path = posixpath.join('tests', batch_name, test_name)
-    failure_path = posixpath.join('failures', batch_name, test_name, run_name)
+    failure_path = posixpath.join('failures', batch_name, test_name)
     expected = self.DownloadImage(posixpath.join(test_path, 'expected.png'))
     actual = self.DownloadImage(posixpath.join(failure_path, 'actual.png'))
     diff = self.DownloadImage(posixpath.join(failure_path, 'diff.png'))
