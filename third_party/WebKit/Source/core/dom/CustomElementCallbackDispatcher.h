@@ -73,7 +73,8 @@ public:
 protected:
     friend class CustomElementCallbackScheduler;
 
-    CustomElementCallbackQueue* ensureInCurrentElementQueue(PassRefPtr<Element>);
+    CustomElementCallbackQueue* schedule(PassRefPtr<Element>);
+    CustomElementCallbackQueue* scheduleInCurrentElementQueue(PassRefPtr<Element>);
 
 private:
     CustomElementCallbackDispatcher()
@@ -105,8 +106,8 @@ private:
     static void processElementQueueAndPop();
     void processElementQueueAndPop(size_t start, size_t end);
 
-    CustomElementCallbackQueue* createCallbackQueue(PassRefPtr<Element>);
     CustomElementCallbackQueue* ensureCallbackQueue(PassRefPtr<Element>);
+    void ensureInCurrentElementQueue(CustomElementCallbackQueue*);
 
     // The processing stack, flattened. Element queues lower in the
     // stack appear toward the head of the vector. The first element

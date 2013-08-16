@@ -43,7 +43,7 @@ void CustomElementCallbackScheduler::scheduleAttributeChangedCallback(PassRefPtr
     if (!callbacks->hasAttributeChangedCallback())
         return;
 
-    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().ensureInCurrentElementQueue(element);
+    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().schedule(element);
     queue->append(CustomElementCallbackInvocation::createAttributeChangedInvocation(callbacks, name, oldValue, newValue));
 }
 
@@ -52,7 +52,7 @@ void CustomElementCallbackScheduler::scheduleCreatedCallback(PassRefPtr<CustomEl
     if (!callbacks->hasCreatedCallback())
         return;
 
-    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().ensureInCurrentElementQueue(element);
+    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().scheduleInCurrentElementQueue(element);
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::Created));
 }
 
@@ -61,7 +61,7 @@ void CustomElementCallbackScheduler::scheduleEnteredDocumentCallback(PassRefPtr<
     if (!callbacks->hasEnteredDocumentCallback())
         return;
 
-    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().ensureInCurrentElementQueue(element);
+    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().schedule(element);
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::EnteredDocument));
 }
 
@@ -70,7 +70,7 @@ void CustomElementCallbackScheduler::scheduleLeftDocumentCallback(PassRefPtr<Cus
     if (!callbacks->hasLeftDocumentCallback())
         return;
 
-    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().ensureInCurrentElementQueue(element);
+    CustomElementCallbackQueue* queue = CustomElementCallbackDispatcher::instance().schedule(element);
     queue->append(CustomElementCallbackInvocation::createInvocation(callbacks, CustomElementLifecycleCallbacks::LeftDocument));
 }
 

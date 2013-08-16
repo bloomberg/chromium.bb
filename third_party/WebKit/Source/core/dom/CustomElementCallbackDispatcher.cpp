@@ -113,14 +113,6 @@ void CustomElementCallbackDispatcher::processElementQueueAndPop(size_t start, si
     }
 }
 
-CustomElementCallbackQueue* CustomElementCallbackDispatcher::createCallbackQueue(PassRefPtr<Element> element)
-{
-    Element* key = element.get();
-    ElementCallbackQueueMap::AddResult result = m_elementCallbackQueueMap.add(key, CustomElementCallbackQueue::create(element));
-    ASSERT(result.isNewEntry);
-    return result.iterator->value.get();
-}
-
 CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureCallbackQueue(PassRefPtr<Element> element)
 {
     Element* key = element.get();
@@ -130,21 +122,38 @@ CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureCallbackQueue
     return it->value.get();
 }
 
+// Finds or creates the callback queue for element. If the
+// createdCallback has not finished running, the callback queue is not
+// moved to the top-of-stack. Otherwise like
+// scheduleInCurrentElementQueue.
+CustomElementCallbackQueue* CustomElementCallbackDispatcher::schedule(PassRefPtr<Element> element)
+{
+    CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
+    if (!callbackQueue->inCreatedCallback())
+        ensureInCurrentElementQueue(callbackQueue);
+    return callbackQueue;
+}
+
 // Finds or creates the callback queue for element. If the element's
 // callback queue is scheduled in an earlier processing stack frame,
 // its owner is set to the element queue on the top of the processing
 // stack. Because callback queues are processed exhaustively, this
 // effectively moves the callback queue to the top of the stack.
-CustomElementCallbackQueue* CustomElementCallbackDispatcher::ensureInCurrentElementQueue(PassRefPtr<Element> element)
+CustomElementCallbackQueue* CustomElementCallbackDispatcher::scheduleInCurrentElementQueue(PassRefPtr<Element> element)
 {
-    CustomElementCallbackQueue* queue = ensureCallbackQueue(element);
-    bool isInCurrentQueue = queue->owner() == currentElementQueue();
-    if (!isInCurrentQueue) {
-        queue->setOwner(currentElementQueue());
-        m_flattenedProcessingStack.append(queue);
-        ++s_elementQueueEnd;
-    }
-    return queue;
+    CustomElementCallbackQueue* callbackQueue = ensureCallbackQueue(element);
+    ensureInCurrentElementQueue(callbackQueue);
+    return callbackQueue;
+}
+
+void CustomElementCallbackDispatcher::ensureInCurrentElementQueue(CustomElementCallbackQueue* callbackQueue)
+{
+    if (callbackQueue->owner() == currentElementQueue())
+        return;
+
+    callbackQueue->setOwner(currentElementQueue());
+    m_flattenedProcessingStack.append(callbackQueue);
+    ++s_elementQueueEnd;
 }
 
 } // namespace WebCore

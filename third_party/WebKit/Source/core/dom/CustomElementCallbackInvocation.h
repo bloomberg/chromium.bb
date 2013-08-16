@@ -49,6 +49,7 @@ public:
 
     virtual ~CustomElementCallbackInvocation() { }
     virtual void dispatch(Element*) = 0;
+    virtual bool isCreated() const { return false; }
 
 protected:
     CustomElementCallbackInvocation(PassRefPtr<CustomElementLifecycleCallbacks> callbacks)

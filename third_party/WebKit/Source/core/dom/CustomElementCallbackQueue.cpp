@@ -44,16 +44,22 @@ CustomElementCallbackQueue::CustomElementCallbackQueue(PassRefPtr<Element> eleme
     : m_element(element)
     , m_owner(-1)
     , m_index(0)
+    , m_inCreatedCallback(false)
 {
 }
 
 void CustomElementCallbackQueue::processInElementQueue(ElementQueue caller)
 {
+    ASSERT(!m_inCreatedCallback);
+
     while (m_index < m_queue.size() && owner() == caller) {
+        m_inCreatedCallback = m_queue[m_index]->isCreated();
+
         // dispatch() may cause recursion which steals this callback
         // queue and reenters processInQueue. owner() == caller
         // detects this recursion and cedes processing.
         m_queue[m_index++]->dispatch(m_element.get());
+        m_inCreatedCallback = false;
     }
 
     if (owner() == caller && m_index == m_queue.size()) {

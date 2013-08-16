@@ -56,6 +56,7 @@ public:
 
     void append(PassOwnPtr<CustomElementCallbackInvocation> invocation) { m_queue.append(invocation); }
     void processInElementQueue(ElementQueue);
+    bool inCreatedCallback() const { return m_inCreatedCallback; }
 
 private:
     CustomElementCallbackQueue(PassRefPtr<Element>);
@@ -64,6 +65,7 @@ private:
     Vector<OwnPtr<CustomElementCallbackInvocation> > m_queue;
     ElementQueue m_owner;
     size_t m_index;
+    bool m_inCreatedCallback;
 };
 
 }

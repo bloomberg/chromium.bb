@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
+<script src="test-harness-utils.js"></script>
 <body>
 <script>
-test(function () {
+test(function() {
     var createdInvocations = 0;
     function created() {
         createdInvocations++;
@@ -32,8 +33,10 @@ test(function () {
     assert_equals(createdInvocations, 1, 'the created callback retrieved at registration must be invoked');
 }, 'transfer created callback');
 
+(function() {
+
 t = async_test('__proto__, :unresolved and created callback timing');
-t.step(function () {
+t.step(function() {
     var createdInvocations = 0;
     function created() {
         createdInvocations++;
@@ -41,7 +44,7 @@ t.step(function () {
         if (this.id != 'u')
             return;
 
-        t.step(function () {
+        t.step(function() {
             var t = div.querySelector('#t');
             var v = div.querySelector('#v');
             var w = div.querySelector('#w');
@@ -70,4 +73,43 @@ t.step(function () {
     assert_true(div.querySelector('#w') instanceof B, '#w\'s prototype should have ultimately been upgraded');
     t.done();
 });
+
+})();
+
+(function() {
+
+t = async_test('other callbacks for a given element are queued during the ' +
+               'created callback and dispatched when the created callback ' +
+               'completes');
+withFrame(t.step_func(function(frame) {
+    var messages = [];
+    function log(msg) {
+        messages.push(msg);
+    }
+
+    var proto = Object.create(frame.contentWindow.HTMLElement.prototype);
+    proto.createdCallback = function() {
+        log('created started');
+        this.remove();
+        this.setAttribute('prey', 'gargoyles');
+        log('created finished');
+    };
+    proto.enteredDocumentCallback = function() { log('entered'); };
+    proto.leftDocumentCallback = function() { log('left'); };
+    proto.attributeChangedCallback = function() { log('attribute changed'); };
+    var D = frame.contentDocument.register('x-d', {prototype: proto});
+
+    frame.contentDocument.body.innerHTML = '<x-d></x-d>';
+    log('done');
+
+    assert_array_equals(
+        messages,
+        ['created started', 'created finished', 'entered', 'left',
+         'attribute changed', 'done'],
+        'callbacks should not be dispatched until the created callback has ' +
+        'finished');
+    t.done();
+}));
+
+})();
 </script>
