@@ -198,7 +198,7 @@ void GeolocationNotificationObserver::Observe(
     navigation_completed_ = true;
   }
 
-  // We're either waiting for just the inforbar, or for both a javascript
+  // We're either waiting for just the infobar, or for both a javascript
   // prompt and response.
   if ((wait_for_infobar_ && infobar_) ||
       (navigation_completed_ && !javascript_response_.empty()))
@@ -264,16 +264,37 @@ class GeolocationBrowserTest : public InProcessBrowserTest {
   double fake_latitude() const { return fake_latitude_; }
   double fake_longitude() const { return fake_longitude_; }
 
+  // Initializes the test server and navigates to the initial url.
   bool Initialize(InitializationOptions options) WARN_UNUSED_RESULT;
+
+  // Loads the specified number of iframes.
   void LoadIFrames(int number_iframes);
+
+  // Start watching for geolocation notifications. If |wait_for_infobar| is
+  // true, wait for the infobar to be displayed. Otherwise wait for a javascript
+  // response.
   void AddGeolocationWatch(bool wait_for_infobar);
+
+  // Checks that no errors have been received in javascript, and checks that the
+  // position most recently received in javascript matches |latitude| and
+  // |longitude|.
   void CheckGeoposition(double latitude, double longitude);
+
+  // For |requesting_url| if |allowed| is true accept the infobar. Otherwise
+  // cancel it.
   void SetInfoBarResponse(const GURL& requesting_url, bool allowed);
+
+  // Executes |function| in |web_contents| and checks that the return value
+  // matches |expected|.
   void CheckStringValueFromJavascriptForTab(const std::string& expected,
                                             const std::string& function,
                                             WebContents* web_contents);
+
+  // Executes |function| and checks that the return value matches |expected|.
   void CheckStringValueFromJavascript(const std::string& expected,
                                       const std::string& function);
+
+  // Sets a new position and sends a notification with the new position.
   void NotifyGeoposition(double latitude, double longitude);
 
  private:
