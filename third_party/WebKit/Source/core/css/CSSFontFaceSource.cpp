@@ -71,6 +71,17 @@ void CSSFontFaceSource::pruneTable()
     m_fontDataTable.clear();
 }
 
+bool CSSFontFaceSource::isLocal() const
+{
+    if (m_font)
+        return false;
+#if ENABLE(SVG_FONTS)
+    if (m_svgFontFaceElement)
+        return false;
+#endif
+    return true;
+}
+
 bool CSSFontFaceSource::isLoaded() const
 {
     if (m_font)
@@ -109,11 +120,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     if (!isValid())
         return 0;
 
-    if (!m_font
-#if ENABLE(SVG_FONTS)
-            && !m_svgFontFaceElement
-#endif
-    ) {
+    if (isLocal()) {
         // We're local. Just return a SimpleFontData from the normal cache.
         // We don't want to check alternate font family names here, so pass true as the checkingAlternateName parameter.
         RefPtr<SimpleFontData> fontData = fontCache()->getFontResourceData(fontDescription, m_string, true);
@@ -234,10 +241,46 @@ bool CSSFontFaceSource::ensureFontData()
     return m_font->ensureCustomFontData();
 }
 
+bool CSSFontFaceSource::isLocalFontAvailable(const FontDescription& fontDescription)
+{
+    if (!isLocal())
+        return false;
+    return fontCache()->isPlatformFontAvailable(fontDescription, m_string, true);
+}
+
+void CSSFontFaceSource::willUseFontData()
+{
+    if (!isLoaded())
+        m_histograms.willUseFontData();
+}
+
+CSSFontFaceSource::FontLoadHistograms::~FontLoadHistograms()
+{
+    if (m_styledTime > 0)
+        HistogramSupport::histogramEnumeration("WebFont.UsageType", StyledButNotUsed, UsageTypeMax);
+}
+
+void CSSFontFaceSource::FontLoadHistograms::willUseFontData()
+{
+    if (!m_styledTime)
+        m_styledTime = currentTimeMS();
+}
+
 void CSSFontFaceSource::FontLoadHistograms::loadStarted()
 {
     if (!m_loadStartTime)
         m_loadStartTime = currentTimeMS();
+
+    if (m_styledTime < 0)
+        return;
+    if (!m_styledTime) {
+        HistogramSupport::histogramEnumeration("WebFont.UsageType", NotStyledButUsed, UsageTypeMax);
+    } else {
+        int duration = static_cast<int>(currentTimeMS() - m_styledTime);
+        HistogramSupport::histogramCustomCounts("WebFont.LayoutLatency", duration, 0, 10000, 50);
+        HistogramSupport::histogramEnumeration("WebFont.UsageType", StyledAndUsed, UsageTypeMax);
+    }
+    m_styledTime = -1;
 }
 
 void CSSFontFaceSource::FontLoadHistograms::recordLocalFont(bool loadSuccess)

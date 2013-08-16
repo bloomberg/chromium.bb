@@ -40,6 +40,7 @@ class FontSelector : public RefCounted<FontSelector> {
 public:
     virtual ~FontSelector() { }
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString& familyName) = 0;
+    virtual void willUseFontData(const FontDescription&, const AtomicString& familyName) = 0;
 
     virtual void fontCacheInvalidated() { }
 

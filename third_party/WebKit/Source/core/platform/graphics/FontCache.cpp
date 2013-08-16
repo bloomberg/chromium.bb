@@ -340,6 +340,11 @@ PassRefPtr<SimpleFontData> FontCache::getFontResourceData(const FontPlatformData
     return result.get()->value.first;
 }
 
+bool FontCache::isPlatformFontAvailable(const FontDescription& fontDescription, const AtomicString& family, bool checkingAlternateName)
+{
+    return getFontResourcePlatformData(fontDescription, family, checkingAlternateName);
+}
+
 SimpleFontData* FontCache::getNonRetainedLastResortFallbackFont(const FontDescription& fontDescription)
 {
     return getLastResortFallbackFont(fontDescription, DoNotRetain).leakRef();

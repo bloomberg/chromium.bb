@@ -235,6 +235,8 @@ public:
     bool needsTranscoding() const { return m_needsTranscoding; }
     FontFallbackList* fontList() const { return m_fontFallbackList.get(); }
 
+    void willUseFontData() const;
+
 private:
     bool loadingCustomFonts() const
     {

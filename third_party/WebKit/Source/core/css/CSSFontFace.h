@@ -81,6 +81,7 @@ public:
 
     enum LoadState { NotLoaded, Loading, Loaded, Error };
     LoadState loadState() const { return m_loadState; }
+    void willUseFontData(const FontDescription&);
 
 private:
     CSSFontFace(PassRefPtr<CSSFontFaceRule> rule, bool isLocalFallback)

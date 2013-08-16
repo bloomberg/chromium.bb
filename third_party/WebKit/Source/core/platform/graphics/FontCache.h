@@ -78,6 +78,7 @@ public:
     PassRefPtr<SimpleFontData> getFontResourceData(const FontDescription&, const AtomicString&, bool checkingAlternateName = false, ShouldRetain = Retain);
     PassRefPtr<SimpleFontData> getLastResortFallbackFont(const FontDescription&, ShouldRetain = Retain);
     SimpleFontData* getNonRetainedLastResortFallbackFont(const FontDescription&);
+    bool isPlatformFontAvailable(const FontDescription&, const AtomicString&, bool checkingAlternateName = false);
 
     void addClient(FontSelector*);
     void removeClient(FontSelector*);

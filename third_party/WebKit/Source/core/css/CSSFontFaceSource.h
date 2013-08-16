@@ -50,6 +50,7 @@ public:
     CSSFontFaceSource(const String&, FontResource* = 0);
     virtual ~CSSFontFaceSource();
 
+    bool isLocal() const;
     bool isLoaded() const;
     bool isValid() const;
 
@@ -73,16 +74,27 @@ public:
 
     bool isDecodeError() const;
     bool ensureFontData();
+    bool isLocalFontAvailable(const FontDescription&);
+    void willUseFontData();
 
 private:
     class FontLoadHistograms {
     public:
-        FontLoadHistograms() : m_loadStartTime(0) { }
+        enum UsageType {
+            StyledAndUsed,
+            StyledButNotUsed,
+            NotStyledButUsed,
+            UsageTypeMax
+        };
+        FontLoadHistograms() : m_styledTime(0), m_loadStartTime(0) { }
+        ~FontLoadHistograms();
+        void willUseFontData();
         void loadStarted();
         void recordLocalFont(bool loadSuccess);
         void recordRemoteFont(const FontResource*);
     private:
         const char* histogramName(const FontResource*);
+        double m_styledTime;
         double m_loadStartTime;
     };
 

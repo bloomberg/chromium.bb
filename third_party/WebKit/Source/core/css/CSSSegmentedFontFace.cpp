@@ -165,6 +165,13 @@ bool CSSSegmentedFontFace::isLoading() const
     return false;
 }
 
+void CSSSegmentedFontFace::willUseFontData(const FontDescription& fontDescription)
+{
+    unsigned size = m_fontFaces.size();
+    for (unsigned i = 0; i < size; i++)
+        m_fontFaces[i]->willUseFontData(fontDescription);
+}
+
 bool CSSSegmentedFontFace::checkFont() const
 {
     unsigned size = m_fontFaces.size();

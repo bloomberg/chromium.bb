@@ -694,4 +694,11 @@ bool Font::canReceiveTextEmphasis(UChar32 c)
     return true;
 }
 
+void Font::willUseFontData() const
+{
+    const FontFamily& family = fontDescription().family();
+    if (m_fontFallbackList && m_fontFallbackList->fontSelector() && !family.familyIsEmpty())
+        m_fontFallbackList->fontSelector()->willUseFontData(fontDescription(), family.family());
+}
+
 }

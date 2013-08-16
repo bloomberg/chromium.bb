@@ -215,6 +215,9 @@ void RenderText::styleDidChange(StyleDifference diff, const RenderStyle* oldStyl
     ETextSecurity oldSecurity = oldStyle ? oldStyle->textSecurity() : TSNONE;
     if (needsResetText || oldTransform != newStyle->textTransform() || oldSecurity != newStyle->textSecurity())
         transformText();
+
+    if (!text().containsOnlyWhitespace())
+        newStyle->font().willUseFontData();
 }
 
 void RenderText::removeAndDestroyTextBoxes()

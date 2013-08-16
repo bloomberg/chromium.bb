@@ -68,6 +68,7 @@ public:
 
     bool checkFont() const;
     void loadFont(const FontDescription&, PassRefPtr<LoadFontCallback> loadCallback);
+    void willUseFontData(const FontDescription&);
 
 private:
     CSSSegmentedFontFace(CSSFontSelector*, FontTraitsMask, bool isLocalFallback);

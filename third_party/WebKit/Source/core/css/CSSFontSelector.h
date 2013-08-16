@@ -56,6 +56,7 @@ public:
 
     virtual PassRefPtr<FontData> getFontData(const FontDescription&, const AtomicString&);
     CSSSegmentedFontFace* getFontFace(const FontDescription&, const AtomicString& family);
+    virtual void willUseFontData(const FontDescription&, const AtomicString& family) OVERRIDE;
 
     void clearDocument();
 

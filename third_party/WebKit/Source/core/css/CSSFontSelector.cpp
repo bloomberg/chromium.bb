@@ -543,6 +543,13 @@ CSSSegmentedFontFace* CSSFontSelector::getFontFace(const FontDescription& fontDe
     return face.get();
 }
 
+void CSSFontSelector::willUseFontData(const FontDescription& fontDescription, const AtomicString& family)
+{
+    CSSSegmentedFontFace* face = getFontFace(fontDescription, family);
+    if (face)
+        face->willUseFontData(fontDescription);
+}
+
 void CSSFontSelector::clearDocument()
 {
     if (!m_document) {

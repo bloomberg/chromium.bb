@@ -118,6 +118,24 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
     return 0;
 }
 
+void CSSFontFace::willUseFontData(const FontDescription& fontDescription)
+{
+    if (m_loadState != NotLoaded)
+        return;
+
+    ASSERT(m_segmentedFontFace);
+    CSSFontSelector* fontSelector = m_segmentedFontFace->fontSelector();
+
+    size_t size = m_sources.size();
+    for (size_t i = 0; i < size; ++i) {
+        if (!m_sources[i]->isValid() || (m_sources[i]->isLocal() && !m_sources[i]->isLocalFontAvailable(fontDescription)))
+            continue;
+        if (!m_sources[i]->isLocal())
+            m_sources[i]->willUseFontData();
+        break;
+    }
+}
+
 void CSSFontFace::setLoadState(LoadState newState)
 {
     m_loadState = newState;
