@@ -47,6 +47,17 @@ using content::GpuDataManager;
 
 namespace extensions {
 
+namespace BeginInstallWithManifest3 =
+    api::webstore_private::BeginInstallWithManifest3;
+namespace CompleteInstall = api::webstore_private::CompleteInstall;
+namespace GetBrowserLogin = api::webstore_private::GetBrowserLogin;
+namespace GetIsLauncherEnabled = api::webstore_private::GetIsLauncherEnabled;
+namespace GetStoreLogin = api::webstore_private::GetStoreLogin;
+namespace GetWebGLStatus = api::webstore_private::GetWebGLStatus;
+namespace InstallBundle = api::webstore_private::InstallBundle;
+namespace IsInIncognitoMode = api::webstore_private::IsInIncognitoMode;
+namespace SetStoreLogin = api::webstore_private::SetStoreLogin;
+
 namespace {
 
 // Holds the Approvals between the time we prompt and start the installs.
@@ -142,15 +153,6 @@ static base::LazyInstance<PendingApprovals> g_pending_approvals =
 static base::LazyInstance<PendingInstalls> g_pending_installs =
     LAZY_INSTANCE_INITIALIZER;
 
-const char kAppInstallBubbleKey[] = "appInstallBubble";
-const char kEnableLauncherKey[] = "enableLauncher";
-const char kIconDataKey[] = "iconData";
-const char kIconUrlKey[] = "iconUrl";
-const char kIdKey[] = "id";
-const char kLocalizedNameKey[] = "localizedName";
-const char kLoginKey[] = "login";
-const char kManifestKey[] = "manifest";
-
 // A preference set by the web store to indicate login information for
 // purchased apps.
 const char kWebstoreLogin[] = "extensions.webstore_login";
@@ -163,16 +165,6 @@ const char kInvalidManifestError[] = "Invalid manifest";
 const char kNoPreviousBeginInstallWithManifestError[] =
     "* does not match a previous call to beginInstallWithManifest3";
 const char kUserCancelledError[] = "User cancelled install";
-
-// Helper to create a dictionary with login properties set from the appropriate
-// values in the passed-in |profile|.
-base::DictionaryValue* CreateLoginResult(Profile* profile) {
-  base::DictionaryValue* dictionary = new base::DictionaryValue();
-  std::string username = profile->GetPrefs()->GetString(
-      prefs::kGoogleServicesUsername);
-  dictionary->SetString(kLoginKey, username);
-  return dictionary;
-}
 
 WebstoreInstaller::Delegate* test_webstore_installer_delegate = NULL;
 
@@ -210,11 +202,12 @@ WebstorePrivateInstallBundleFunction::WebstorePrivateInstallBundleFunction() {}
 WebstorePrivateInstallBundleFunction::~WebstorePrivateInstallBundleFunction() {}
 
 bool WebstorePrivateInstallBundleFunction::RunImpl() {
-  base::ListValue* extensions = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetList(0, &extensions));
+  scoped_ptr<InstallBundle::Params> params(
+      InstallBundle::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   BundleInstaller::ItemList items;
-  if (!ReadBundleInfo(extensions, &items))
+  if (!ReadBundleInfo(*params, &items))
     return false;
 
   bundle_ = new BundleInstaller(GetCurrentBrowser(), items);
@@ -226,20 +219,13 @@ bool WebstorePrivateInstallBundleFunction::RunImpl() {
 }
 
 bool WebstorePrivateInstallBundleFunction::
-    ReadBundleInfo(base::ListValue* extensions,
+    ReadBundleInfo(const InstallBundle::Params& params,
     BundleInstaller::ItemList* items) {
-  for (size_t i = 0; i < extensions->GetSize(); ++i) {
-    base::DictionaryValue* details = NULL;
-    EXTENSION_FUNCTION_VALIDATE(extensions->GetDictionary(i, &details));
-
+  for (size_t i = 0; i < params.details.size(); ++i) {
     BundleInstaller::Item item;
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(
-        kIdKey, &item.id));
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(
-        kManifestKey, &item.manifest));
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(
-        kLocalizedNameKey, &item.localized_name));
-
+    item.id = params.details[i]->id;
+    item.manifest = params.details[i]->manifest;
+    item.localized_name = params.details[i]->localized_name;
     items->push_back(item);
   }
 
@@ -271,40 +257,31 @@ void WebstorePrivateInstallBundleFunction::OnBundleInstallCompleted() {
 }
 
 WebstorePrivateBeginInstallWithManifest3Function::
-    WebstorePrivateBeginInstallWithManifest3Function()
-    : use_app_installed_bubble_(false), enable_launcher_(false) {}
+    WebstorePrivateBeginInstallWithManifest3Function() {}
 
 WebstorePrivateBeginInstallWithManifest3Function::
     ~WebstorePrivateBeginInstallWithManifest3Function() {}
 
 bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
-  base::DictionaryValue* details = NULL;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &details));
-  CHECK(details);
+  params_ = BeginInstallWithManifest3::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_);
 
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(kIdKey, &id_));
-  if (!extensions::Extension::IdIsValid(id_)) {
+  if (!extensions::Extension::IdIsValid(params_->details.id)) {
     SetResultCode(INVALID_ID);
     error_ = kInvalidIdError;
     return false;
   }
 
-  EXTENSION_FUNCTION_VALIDATE(details->GetString(kManifestKey, &manifest_));
-
-  if (details->HasKey(kIconDataKey) && details->HasKey(kIconUrlKey)) {
+  if (params_->details.icon_data && params_->details.icon_url) {
     SetResultCode(ICON_ERROR);
     error_ = kCannotSpecifyIconDataAndUrlError;
     return false;
   }
 
-  if (details->HasKey(kIconDataKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(kIconDataKey, &icon_data_));
-
   GURL icon_url;
-  if (details->HasKey(kIconUrlKey)) {
+  if (params_->details.icon_url) {
     std::string tmp_url;
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(kIconUrlKey, &tmp_url));
-    icon_url = source_url().Resolve(tmp_url);
+    icon_url = source_url().Resolve(*params_->details.icon_url);
     if (!icon_url.is_valid()) {
       SetResultCode(INVALID_ICON_URL);
       error_ = kInvalidIconUrlError;
@@ -312,22 +289,13 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
     }
   }
 
-  if (details->HasKey(kLocalizedNameKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetString(kLocalizedNameKey,
-                                                   &localized_name_));
-
-  if (details->HasKey(kAppInstallBubbleKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(
-        kAppInstallBubbleKey, &use_app_installed_bubble_));
-
-  if (details->HasKey(kEnableLauncherKey))
-    EXTENSION_FUNCTION_VALIDATE(details->GetBoolean(
-        kEnableLauncherKey, &enable_launcher_));
+  std::string icon_data = params_->details.icon_data ?
+      *params_->details.icon_data : std::string();
 
   ExtensionService* service =
     extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (service->GetInstalledExtension(id_) ||
-      !g_pending_installs.Get().InsertInstall(profile_, id_)) {
+  if (service->GetInstalledExtension(params_->details.id) ||
+      !g_pending_installs.Get().InsertInstall(profile_, params_->details.id)) {
     SetResultCode(ALREADY_INSTALLED);
     error_ = kAlreadyInstalledError;
     return false;
@@ -338,7 +306,8 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
     context_getter = profile()->GetRequestContext();
 
   scoped_refptr<WebstoreInstallHelper> helper = new WebstoreInstallHelper(
-      this, id_, manifest_, icon_data_, icon_url, context_getter);
+      this, params_->details.id, params_->details.manifest, icon_data, icon_url,
+          context_getter);
 
   // The helper will call us back via OnWebstoreParseSuccess or
   // OnWebstoreParseFailure.
@@ -352,65 +321,63 @@ bool WebstorePrivateBeginInstallWithManifest3Function::RunImpl() {
   return true;
 }
 
+const char* WebstorePrivateBeginInstallWithManifest3Function::
+    ResultCodeToString(ResultCode code) {
+  switch (code) {
+    case ERROR_NONE:
+      return "";
+    case UNKNOWN_ERROR:
+      return "unknown_error";
+    case USER_CANCELLED:
+      return "user_cancelled";
+    case MANIFEST_ERROR:
+      return "manifest_error";
+    case ICON_ERROR:
+      return "icon_error";
+    case INVALID_ID:
+      return "invalid_id";
+    case PERMISSION_DENIED:
+      return "permission_denied";
+    case INVALID_ICON_URL:
+      return "invalid_icon_url";
+    case SIGNIN_FAILED:
+      return "signin_failed";
+    case ALREADY_INSTALLED:
+      return "already_installed";
+  }
+  NOTREACHED();
+  return "";
+}
 
 void WebstorePrivateBeginInstallWithManifest3Function::SetResultCode(
     ResultCode code) {
-  switch (code) {
-    case ERROR_NONE:
-      SetResult(new base::StringValue(std::string()));
-      break;
-    case UNKNOWN_ERROR:
-      SetResult(new base::StringValue("unknown_error"));
-      break;
-    case USER_CANCELLED:
-      SetResult(new base::StringValue("user_cancelled"));
-      break;
-    case MANIFEST_ERROR:
-      SetResult(new base::StringValue("manifest_error"));
-      break;
-    case ICON_ERROR:
-      SetResult(new base::StringValue("icon_error"));
-      break;
-    case INVALID_ID:
-      SetResult(new base::StringValue("invalid_id"));
-      break;
-    case PERMISSION_DENIED:
-      SetResult(new base::StringValue("permission_denied"));
-      break;
-    case INVALID_ICON_URL:
-      SetResult(new base::StringValue("invalid_icon_url"));
-      break;
-    case SIGNIN_FAILED:
-      SetResult(new base::StringValue("signin_failed"));
-      break;
-    case ALREADY_INSTALLED:
-      SetResult(new base::StringValue("already_installed"));
-      break;
-    default:
-      CHECK(false);
-  }
+  results_ = BeginInstallWithManifest3::Results::Create(
+      ResultCodeToString(code));
 }
 
 void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseSuccess(
     const std::string& id,
     const SkBitmap& icon,
     base::DictionaryValue* parsed_manifest) {
-  CHECK_EQ(id_, id);
+  CHECK_EQ(params_->details.id, id);
   CHECK(parsed_manifest);
   icon_ = icon;
   parsed_manifest_.reset(parsed_manifest);
+
+  std::string localized_name = params_->details.localized_name ?
+      *params_->details.localized_name : std::string();
 
   std::string error;
   dummy_extension_ = ExtensionInstallPrompt::GetLocalizedExtensionForDisplay(
       parsed_manifest_.get(),
       Extension::FROM_WEBSTORE,
       id,
-      localized_name_,
+      localized_name,
       std::string(),
       &error);
 
   if (!dummy_extension_.get()) {
-    OnWebstoreParseFailure(id_,
+    OnWebstoreParseFailure(params_->details.id,
                            WebstoreInstallHelper::Delegate::MANIFEST_ERROR,
                            kInvalidManifestError);
     return;
@@ -433,7 +400,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::OnWebstoreParseFailure(
     const std::string& id,
     WebstoreInstallHelper::Delegate::InstallHelperResultCode result_code,
     const std::string& error_message) {
-  CHECK_EQ(id_, id);
+  CHECK_EQ(params_->details.id, id);
 
   // Map from WebstoreInstallHelper's result codes to ours.
   switch (result_code) {
@@ -463,7 +430,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::SigninFailed(
 
   SetResultCode(SIGNIN_FAILED);
   error_ = error.ToString();
-  g_pending_installs.Get().EraseInstall(profile_, id_);
+  g_pending_installs.Get().EraseInstall(profile_, params_->details.id);
   SendResponse(false);
 
   // Matches the AddRef in RunImpl().
@@ -496,12 +463,12 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIProceed() {
   // entry is only valid for some number of minutes.
   scoped_ptr<WebstoreInstaller::Approval> approval(
       WebstoreInstaller::Approval::CreateWithNoInstallPrompt(
-          profile(), id_, parsed_manifest_.Pass()));
-  approval->use_app_installed_bubble = use_app_installed_bubble_;
-  approval->enable_launcher = enable_launcher_;
+          profile(), params_->details.id, parsed_manifest_.Pass()));
+  approval->use_app_installed_bubble = params_->details.app_install_bubble;
+  approval->enable_launcher = params_->details.enable_launcher;
   // If we are enabling the launcher, we should not show the app list in order
   // to train the user to open it themselves at least once.
-  approval->skip_post_install_ui = enable_launcher_;
+  approval->skip_post_install_ui = params_->details.enable_launcher;
   approval->installing_icon = gfx::ImageSkia::CreateFrom1xBitmap(icon_);
   g_pending_approvals.Get().PushApproval(approval.Pass());
 
@@ -522,7 +489,7 @@ void WebstorePrivateBeginInstallWithManifest3Function::InstallUIAbort(
     bool user_initiated) {
   error_ = kUserCancelledError;
   SetResultCode(USER_CANCELLED);
-  g_pending_installs.Get().EraseInstall(profile_, id_);
+  g_pending_installs.Get().EraseInstall(profile_, params_->details.id);
   SendResponse(false);
 
   // The web store install histograms are a subset of the install histograms.
@@ -551,17 +518,19 @@ WebstorePrivateCompleteInstallFunction::
     ~WebstorePrivateCompleteInstallFunction() {}
 
 bool WebstorePrivateCompleteInstallFunction::RunImpl() {
-  std::string id;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &id));
-  if (!extensions::Extension::IdIsValid(id)) {
+  scoped_ptr<CompleteInstall::Params> params(
+      CompleteInstall::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  if (!extensions::Extension::IdIsValid(params->expected_id)) {
     error_ = kInvalidIdError;
     return false;
   }
 
-  approval_ = g_pending_approvals.Get().PopApproval(profile(), id).Pass();
+  approval_ = g_pending_approvals.Get().PopApproval(profile(),
+      params->expected_id).Pass();
   if (!approval_) {
     error_ = ErrorUtils::FormatErrorMessage(
-        kNoPreviousBeginInstallWithManifestError, id);
+        kNoPreviousBeginInstallWithManifestError, params->expected_id);
     return false;
   }
 
@@ -585,7 +554,7 @@ bool WebstorePrivateCompleteInstallFunction::RunImpl() {
   scoped_refptr<WebstoreInstaller> installer = new WebstoreInstaller(
       profile(), this,
       &(dispatcher()->delegate()->GetAssociatedWebContents()->GetController()),
-      id, approval_.Pass(), WebstoreInstaller::FLAG_NONE);
+      params->expected_id, approval_.Pass(), WebstoreInstaller::FLAG_NONE);
   installer->Start();
 
   return true;
@@ -630,24 +599,27 @@ WebstorePrivateEnableAppLauncherFunction::
 
 bool WebstorePrivateEnableAppLauncherFunction::RunImpl() {
   AppListService::Get()->EnableAppList(profile());
-  SendResponse(true);
   return true;
 }
 
 bool WebstorePrivateGetBrowserLoginFunction::RunImpl() {
-  SetResult(CreateLoginResult(profile_->GetOriginalProfile()));
+  GetBrowserLogin::Results::Info info;
+  info.login = profile_->GetOriginalProfile()->GetPrefs()->GetString(
+      prefs::kGoogleServicesUsername);
+  results_ = GetBrowserLogin::Results::Create(info);
   return true;
 }
 
 bool WebstorePrivateGetStoreLoginFunction::RunImpl() {
-  SetResult(new base::StringValue(GetWebstoreLogin(profile_)));
+  results_ = GetStoreLogin::Results::Create(GetWebstoreLogin(profile_));
   return true;
 }
 
 bool WebstorePrivateSetStoreLoginFunction::RunImpl() {
-  std::string login;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &login));
-  SetWebstoreLogin(profile_, login);
+  scoped_ptr<SetStoreLogin::Params> params(
+      SetStoreLogin::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+  SetWebstoreLogin(profile_, params->login);
   return true;
 }
 
@@ -662,8 +634,8 @@ WebstorePrivateGetWebGLStatusFunction::
     ~WebstorePrivateGetWebGLStatusFunction() {}
 
 void WebstorePrivateGetWebGLStatusFunction::CreateResult(bool webgl_allowed) {
-  SetResult(new base::StringValue(
-      webgl_allowed ? "webgl_allowed" : "webgl_blocked"));
+  results_ = GetWebGLStatus::Results::Create(GetWebGLStatus::Results::
+      ParseWebgl_status(webgl_allowed ? "webgl_allowed" : "webgl_blocked"));
 }
 
 bool WebstorePrivateGetWebGLStatusFunction::RunImpl() {
@@ -678,15 +650,14 @@ void WebstorePrivateGetWebGLStatusFunction::
 }
 
 bool WebstorePrivateGetIsLauncherEnabledFunction::RunImpl() {
-  SetResult(new base::FundamentalValue(apps::IsAppLauncherEnabled()));
-  SendResponse(true);
+  results_ = GetIsLauncherEnabled::Results::Create(
+      apps::IsAppLauncherEnabled());
   return true;
 }
 
 bool WebstorePrivateIsInIncognitoModeFunction::RunImpl() {
-  SetResult(
-      new base::FundamentalValue(profile_ != profile_->GetOriginalProfile()));
-  SendResponse(true);
+  results_ = IsInIncognitoMode::Results::Create(
+      profile_ != profile_->GetOriginalProfile());
   return true;
 }
 
