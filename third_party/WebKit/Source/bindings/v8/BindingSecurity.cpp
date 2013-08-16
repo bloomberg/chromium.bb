@@ -34,7 +34,6 @@
 #include "bindings/v8/V8Binding.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLFrameElementBase.h"
-#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/Settings.h"
@@ -42,21 +41,39 @@
 
 namespace WebCore {
 
-static bool canAccessDocument(Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
+static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindow* activeWindow)
 {
     if (!targetDocument)
         return false;
 
-    DOMWindow* active = activeDOMWindow();
-    if (!active)
+    if (!activeWindow)
         return false;
 
-    if (active->document()->securityOrigin()->canAccess(targetDocument->securityOrigin()))
+    if (activeWindow->document()->securityOrigin()->canAccess(targetDocument->securityOrigin()))
+        return true;
+
+    return false;
+}
+
+static bool canAccessDocument(Document* targetDocument, ExceptionState& es)
+{
+    DOMWindow* activeWindow = activeDOMWindow();
+    if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
+        return true;
+
+    es.throwSecurityError(targetDocument->domWindow()->sanitizedCrossDomainAccessErrorMessage(activeWindow), targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
+    return false;
+}
+
+static bool canAccessDocument(Document* targetDocument, SecurityReportingOption reportingOption = ReportSecurityError)
+{
+    DOMWindow* activeWindow = activeDOMWindow();
+    if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
         return true;
 
     if (reportingOption == ReportSecurityError) {
         if (Frame* frame = targetDocument->frame())
-            frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(active));
+            frame->domWindow()->printErrorMessage(targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
     }
 
     return false;
@@ -67,14 +84,14 @@ bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, SecurityReportingO
     return target && canAccessDocument(target->document(), reportingOption);
 }
 
+bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, ExceptionState& es)
+{
+    return target && canAccessDocument(target->document(), es);
+}
+
 bool BindingSecurity::shouldAllowAccessToNode(Node* target)
 {
     return target && canAccessDocument(target->document());
-}
-
-bool BindingSecurity::allowSettingFrameSrcToJavascriptUrl(HTMLFrameElementBase* frame, const String& value)
-{
-    return !protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(value)) || canAccessDocument(frame->contentDocument());
 }
 
 }

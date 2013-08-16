@@ -44,16 +44,18 @@ static void domExceptionStackSetter(v8::Local<v8::String> name, v8::Local<v8::Va
     info.Data()->ToObject()->Set(v8::String::NewSymbol("stack"), value);
 }
 
-v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, v8::Isolate* isolate)
 {
     if (ec <= 0 || v8::V8::IsExecutionTerminating())
         return v8Undefined();
 
+    ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
+
     // FIXME: Handle other WebIDL exception types.
     if (ec == TypeError)
-        return V8ThrowException::createTypeError(message, isolate);
+        return V8ThrowException::createTypeError(sanitizedMessage, isolate);
 
-    RefPtr<DOMException> domException = DOMException::create(ec, message);
+    RefPtr<DOMException> domException = DOMException::create(ec, sanitizedMessage, unsanitizedMessage);
     v8::Handle<v8::Value> exception = toV8(domException, v8::Handle<v8::Object>(), isolate);
 
     if (exception.IsEmpty())
@@ -68,9 +70,10 @@ v8::Handle<v8::Value> V8ThrowException::createDOMException(int ec, const String&
     return exception;
 }
 
-v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& message, v8::Isolate* isolate)
+v8::Handle<v8::Value> V8ThrowException::throwDOMException(int ec, const String& sanitizedMessage, const String& unsanitizedMessage, v8::Isolate* isolate)
 {
-    v8::Handle<v8::Value> exception = createDOMException(ec, message, isolate);
+    ASSERT(ec == SecurityError || unsanitizedMessage.isEmpty());
+    v8::Handle<v8::Value> exception = createDOMException(ec, sanitizedMessage, unsanitizedMessage, isolate);
     if (exception.IsEmpty())
         return v8Undefined();
 

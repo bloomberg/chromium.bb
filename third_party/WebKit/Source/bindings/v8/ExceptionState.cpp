@@ -50,6 +50,13 @@ void ExceptionState::throwDOMException(const ExceptionCode& ec, const String& me
     setException(V8ThrowException::createDOMException(ec, message, m_isolate));
 }
 
+void ExceptionState::throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage)
+{
+    ASSERT(m_isolate);
+    m_code = SecurityError;
+    setException(V8ThrowException::createDOMException(SecurityError, sanitizedMessage, unsanitizedMessage, m_isolate));
+}
+
 void ExceptionState::setException(v8::Handle<v8::Value> exception)
 {
     // FIXME: Assert that exception is not empty?
@@ -76,6 +83,11 @@ void TrackExceptionState::throwDOMException(const ExceptionCode& ec, const Strin
 void TrackExceptionState::throwTypeError(const String&)
 {
     m_code = TypeError;
+}
+
+void TrackExceptionState::throwSecurityError(const String&, const String&)
+{
+    m_code = SecurityError;
 }
 
 } // namespace WebCore

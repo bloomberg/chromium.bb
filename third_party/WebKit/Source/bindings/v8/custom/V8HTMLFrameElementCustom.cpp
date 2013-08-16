@@ -33,8 +33,10 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/BindingSecurity.h"
+#include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/V8Binding.h"
 #include "core/html/HTMLFrameElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 
 namespace WebCore {
 
@@ -45,8 +47,11 @@ void V8HTMLFrameElement::locationAttrSetterCustom(v8::Local<v8::String> name, v8
     HTMLFrameElement* frame = V8HTMLFrameElement::toNative(info.Holder());
     String locationValue = toWebCoreStringWithNullCheck(value);
 
-    if (!BindingSecurity::allowSettingFrameSrcToJavascriptUrl(frame, locationValue))
+    ExceptionState es(info.GetIsolate());
+    if (protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(locationValue)) && !BindingSecurity::shouldAllowAccessToFrame(frame->contentFrame(), es)) {
+        es.throwIfNeeded();
         return;
+    }
 
     frame->setLocation(locationValue);
 }

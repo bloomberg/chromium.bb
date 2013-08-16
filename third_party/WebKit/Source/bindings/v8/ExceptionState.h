@@ -50,6 +50,7 @@ public:
 
     virtual void throwDOMException(const ExceptionCode&,  const String& message = String());
     virtual void throwTypeError(const String& message = String());
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String());
 
     bool hadException() const { return !m_exception.isEmpty() || m_code; }
     void clearException();
@@ -83,6 +84,7 @@ public:
     TrackExceptionState(): ExceptionState(0) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message = String()) OVERRIDE FINAL;
     virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
+    virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL;
 };
 
 } // namespace WebCore

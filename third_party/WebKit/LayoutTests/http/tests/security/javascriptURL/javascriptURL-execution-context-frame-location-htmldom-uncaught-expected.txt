@@ -1,0 +1,13 @@
+CONSOLE MESSAGE: line 19: PASS: Exception was 'Uncaught SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame.'.
+CONSOLE MESSAGE: line 31: Uncaught SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
+
+
+--------
+Frame: 'main'
+--------
+This test passes as long as the onerror handler logs PASS to the console, and the uncaught exception reported to the console has unsanitized detail.
+
+--------
+Frame: 'aFrame'
+--------
+Inner iframe.
