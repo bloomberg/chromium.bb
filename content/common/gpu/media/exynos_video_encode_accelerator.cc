@@ -115,17 +115,17 @@ ExynosVideoEncodeAccelerator::~ExynosVideoEncodeAccelerator() {
     HANDLE_EINTR(close(device_poll_interrupt_fd_));
     device_poll_interrupt_fd_ = -1;
   }
-  if (mfc_fd_ != -1) {
-    DestroyMfcInputBuffers();
-    DestroyMfcOutputBuffers();
-    HANDLE_EINTR(close(mfc_fd_));
-    mfc_fd_ = -1;
-  }
   if (gsc_fd_ != -1) {
     DestroyGscInputBuffers();
     DestroyGscOutputBuffers();
     HANDLE_EINTR(close(gsc_fd_));
     gsc_fd_ = -1;
+  }
+  if (mfc_fd_ != -1) {
+    DestroyMfcInputBuffers();
+    DestroyMfcOutputBuffers();
+    HANDLE_EINTR(close(mfc_fd_));
+    mfc_fd_ = -1;
   }
 }
 
@@ -1443,6 +1443,13 @@ void ExynosVideoEncodeAccelerator::DestroyMfcInputBuffers() {
   DVLOG(3) << "DestroyMfcInputBuffers()";
   DCHECK(child_message_loop_proxy_->BelongsToCurrentThread());
   DCHECK(!mfc_input_streamon_);
+
+  for (size_t buf = 0; buf < mfc_input_buffer_map_.size(); ++buf) {
+    MfcInputRecord& input_record = mfc_input_buffer_map_[buf];
+
+    for (size_t plane = 0; plane < arraysize(input_record.fd); ++plane)
+      HANDLE_EINTR(close(mfc_input_buffer_map_[buf].fd[plane]));
+  }
 
   struct v4l2_requestbuffers reqbufs;
   memset(&reqbufs, 0, sizeof(reqbufs));
