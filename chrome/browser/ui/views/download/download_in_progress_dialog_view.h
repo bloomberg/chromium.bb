@@ -7,9 +7,8 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/browser.h"
 #include "ui/views/window/dialog_delegate.h"
-
-class Browser;
 
 namespace views {
 class MessageBoxView;
@@ -17,10 +16,17 @@ class MessageBoxView;
 
 class DownloadInProgressDialogView : public views::DialogDelegate {
  public:
-  static void Show(Browser* browser, gfx::NativeWindow parent);
+  static void Show(gfx::NativeWindow parent_window,
+                   int download_count,
+                   Browser::DownloadClosePreventionType dialog_type,
+                   bool app_modal,
+                   const base::Callback<void(bool)>& callback);
 
  private:
-  explicit DownloadInProgressDialogView(Browser* browser);
+  DownloadInProgressDialogView(int download_count,
+                               Browser::DownloadClosePreventionType dialog_type,
+                               bool app_modal,
+                               const base::Callback<void(bool)>& callback);
   virtual ~DownloadInProgressDialogView();
 
   // views::DialogDelegate:
@@ -37,7 +43,8 @@ class DownloadInProgressDialogView : public views::DialogDelegate {
   virtual const views::Widget* GetWidget() const OVERRIDE;
   virtual views::View* GetContentsView() OVERRIDE;
 
-  Browser* browser_;
+  const bool app_modal_;
+  const base::Callback<void(bool)> callback_;
   views::MessageBoxView* message_box_view_;
 
   string16 title_text_;

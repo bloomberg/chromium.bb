@@ -5,11 +5,17 @@
 #include "chrome/browser/lifetime/browser_close_manager.h"
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
+#include "chrome/browser/download/download_service.h"
+#include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents.h"
@@ -52,7 +58,7 @@ void BrowserCloseManager::TryToCloseBrowsers() {
       return;
     }
   }
-  CloseBrowsers();
+  CheckForDownloadsInProgress();
 }
 
 void BrowserCloseManager::OnBrowserReportCloseable(bool proceed) {
@@ -65,6 +71,55 @@ void BrowserCloseManager::OnBrowserReportCloseable(bool proceed) {
     TryToCloseBrowsers();
   else
     CancelBrowserClose();
+}
+
+void BrowserCloseManager::CheckForDownloadsInProgress() {
+  int download_count = DownloadService::DownloadCountAllProfiles();
+  if (download_count == 0) {
+    CloseBrowsers();
+    return;
+  }
+  ConfirmCloseWithPendingDownloads(
+      download_count,
+      base::Bind(&BrowserCloseManager::OnReportDownloadsCancellable, this));
+}
+
+void BrowserCloseManager::ConfirmCloseWithPendingDownloads(
+    int download_count,
+    const base::Callback<void(bool)>& callback) {
+  Browser* browser =
+      BrowserList::GetInstance(chrome::GetActiveDesktop())->GetLastActive();
+  DCHECK(browser);
+  browser->window()->ConfirmBrowserCloseWithPendingDownloads(
+      download_count,
+      Browser::DOWNLOAD_CLOSE_BROWSER_SHUTDOWN,
+      true,
+      callback);
+}
+
+void BrowserCloseManager::OnReportDownloadsCancellable(bool proceed) {
+  if (proceed) {
+    CloseBrowsers();
+    return;
+  }
+
+  CancelBrowserClose();
+
+  // Open the downloads page for each profile with downloads in progress.
+  std::vector<Profile*> profiles(
+      g_browser_process->profile_manager()->GetLoadedProfiles());
+  for (std::vector<Profile*>::iterator it = profiles.begin();
+       it != profiles.end();
+       ++it) {
+    DownloadService* download_service =
+        DownloadServiceFactory::GetForBrowserContext(*it);
+    if (download_service->DownloadCount() > 0) {
+      Browser* browser =
+          chrome::FindOrCreateTabbedBrowser(*it, chrome::GetActiveDesktop());
+      DCHECK(browser);
+      chrome::ShowDownloads(browser);
+    }
+  }
 }
 
 void BrowserCloseManager::CloseBrowsers() {

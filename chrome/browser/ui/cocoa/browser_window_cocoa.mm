@@ -118,7 +118,6 @@ BrowserWindowCocoa::BrowserWindowCocoa(Browser* browser,
                                        BrowserWindowController* controller)
   : browser_(browser),
     controller_(controller),
-    confirm_close_factory_(browser),
     initial_show_state_(ui::SHOW_STATE_DEFAULT),
     attention_request_id_(0) {
 
@@ -532,12 +531,12 @@ DownloadShelf* BrowserWindowCocoa::GetDownloadShelf() {
 
 // We allow closing the window here since the real quit decision on Mac is made
 // in [AppController quit:].
-void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads() {
-  // Call InProgressDownloadResponse asynchronously to avoid a crash when the
-  // browser window is closed here (http://crbug.com/44454).
-  base::MessageLoop::current()->PostTask(FROM_HERE,
-      base::Bind(&Browser::InProgressDownloadResponse,
-                 confirm_close_factory_.GetWeakPtr(), true));
+void BrowserWindowCocoa::ConfirmBrowserCloseWithPendingDownloads(
+      int download_count,
+      Browser::DownloadClosePreventionType dialog_type,
+      bool app_modal,
+      const base::Callback<void(bool)>& callback) {
+  callback.Run(true);
 }
 
 void BrowserWindowCocoa::UserChangedTheme() {

@@ -5,23 +5,33 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
+#include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_app_modal_dialog.h"
 #include "chrome/browser/ui/app_modal_dialogs/native_app_modal_dialog.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_iterator.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_item.h"
+#include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/download_test_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/test/net/url_request_slow_download_job.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace {
@@ -106,6 +116,46 @@ class RepeatedNotificationObserver : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(RepeatedNotificationObserver);
 };
 
+class TestBrowserCloseManager : public BrowserCloseManager {
+ public:
+  enum UserChoice {
+    USER_CHOICE_USER_CANCELS_CLOSE,
+    USER_CHOICE_USER_ALLOWS_CLOSE,
+  };
+
+  static void AttemptClose(UserChoice user_choice) {
+    scoped_refptr<BrowserCloseManager> browser_close_manager =
+        new TestBrowserCloseManager(user_choice);
+    browser_close_manager->StartClosingBrowsers();
+  }
+
+ protected:
+  virtual ~TestBrowserCloseManager() {}
+
+  virtual void ConfirmCloseWithPendingDownloads(
+      int download_count,
+      const base::Callback<void(bool)>& callback) OVERRIDE {
+    switch (user_choice_) {
+      case USER_CHOICE_USER_CANCELS_CLOSE: {
+        callback.Run(false);
+        break;
+      }
+      case USER_CHOICE_USER_ALLOWS_CLOSE: {
+        callback.Run(true);
+        break;
+      }
+    }
+  }
+
+ private:
+  explicit TestBrowserCloseManager(UserChoice user_choice)
+      : user_choice_(user_choice) {}
+
+  UserChoice user_choice_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestBrowserCloseManager);
+};
+
 }  // namespace
 
 class BrowserCloseManagerBrowserTest
@@ -118,12 +168,30 @@ class BrowserCloseManagerBrowserTest
         browser()->profile(), SessionStartupPref(SessionStartupPref::LAST));
     browsers_.push_back(browser());
     dialogs_.Start();
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&chrome_browser_net::SetUrlRequestMocksEnabled, true));
   }
 
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(switches::kEnableBatchedShutdown);
     if (GetParam())
       command_line->AppendSwitch(switches::kEnableFastUnload);
+  }
+
+  void CreateStalledDownload(Browser* browser) {
+    content::DownloadTestObserverInProgress observer(
+        content::BrowserContext::GetDownloadManager(browser->profile()), 1);
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser,
+        GURL(content::URLRequestSlowDownloadJob::kKnownSizeUrl),
+        NEW_BACKGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_NONE);
+    observer.WaitForFinished();
+    EXPECT_EQ(
+        1UL,
+        observer.NumDownloadsSeenInState(content::DownloadItem::IN_PROGRESS));
   }
 
   std::vector<Browser*> browsers_;
@@ -531,6 +599,102 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
   ASSERT_NO_FATAL_FAILURE(dialogs_.AcceptClose());
   ASSERT_NO_FATAL_FAILURE(dialogs_.AcceptClose());
 
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(chrome::BrowserIterator().done());
+}
+
+// Test shutdown with a download in progress.
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestWithDownloads) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
+  content::TestNavigationObserver navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 1);
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_CANCELS_CLOSE);
+  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
+  navigation_observer.Wait();
+  EXPECT_EQ(GURL(chrome::kChromeUIDownloadsURL),
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(chrome::BrowserIterator().done());
+}
+
+// Test shutdown with a download in progress from one profile, where the only
+// open windows are for another profile.
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       TestWithDownloadsFromDifferentProfiles) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  base::FilePath path =
+      profile_manager->user_data_dir().AppendASCII("test_profile");
+  if (!base::PathExists(path))
+    ASSERT_TRUE(file_util::CreateDirectory(path));
+  Profile* other_profile =
+      Profile::CreateProfile(path, NULL, Profile::CREATE_MODE_SYNCHRONOUS);
+  profile_manager->RegisterTestingProfile(other_profile, true, false);
+  Browser* other_profile_browser = CreateBrowser(other_profile);
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
+  {
+    RepeatedNotificationObserver close_observer(
+        chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+    browser()->window()->Close();
+    close_observer.Wait();
+  }
+
+  // When the shutdown is cancelled, the downloads page should be opened in a
+  // browser for that profile. Because there are no browsers for that profile, a
+  // new browser should be opened.
+  ui_test_utils::BrowserAddedObserver new_browser_observer;
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_CANCELS_CLOSE);
+  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
+  Browser* opened_browser = new_browser_observer.WaitForSingleNewBrowser();
+  EXPECT_EQ(
+      GURL(chrome::kChromeUIDownloadsURL),
+      opened_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+  EXPECT_EQ(GURL("about:blank"),
+            other_profile_browser->tab_strip_model()->GetActiveWebContents()
+                ->GetURL());
+
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 2);
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
+  close_observer.Wait();
+  EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
+  EXPECT_TRUE(chrome::BrowserIterator().done());
+}
+
+// Test shutdown with downloads in progress and beforeunload handlers.
+IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
+                       TestBeforeUnloadAndDownloads) {
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  ASSERT_NO_FATAL_FAILURE(CreateStalledDownload(browser()));
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/beforeunload.html")));
+
+  content::WindowedNotificationObserver cancel_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSE_CANCELLED,
+      content::NotificationService::AllSources());
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_CANCELS_CLOSE);
+  ASSERT_NO_FATAL_FAILURE(dialogs_.AcceptClose());
+  cancel_observer.Wait();
+  EXPECT_FALSE(browser_shutdown::IsTryingToQuit());
+
+  RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+  TestBrowserCloseManager::AttemptClose(
+      TestBrowserCloseManager::USER_CHOICE_USER_ALLOWS_CLOSE);
   close_observer.Wait();
   EXPECT_TRUE(browser_shutdown::IsTryingToQuit());
   EXPECT_TRUE(chrome::BrowserIterator().done());

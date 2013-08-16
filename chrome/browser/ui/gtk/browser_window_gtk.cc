@@ -1176,8 +1176,13 @@ void BrowserWindowGtk::ShowPasswordGenerationBubble(
   new PasswordGenerationBubbleGtk(rect, form, web_contents, password_generator);
 }
 
-void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads() {
-  DownloadInProgressDialogGtk::Show(browser(), GetNativeWindow());
+void BrowserWindowGtk::ConfirmBrowserCloseWithPendingDownloads(
+    int download_count,
+    Browser::DownloadClosePreventionType dialog_type,
+    bool app_modal,
+    const base::Callback<void(bool)>& callback) {
+  DownloadInProgressDialogGtk::Show(
+      GetNativeWindow(), download_count, dialog_type, app_modal, callback);
 }
 
 void BrowserWindowGtk::Observe(int type,

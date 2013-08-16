@@ -8,6 +8,7 @@
 #include "base/callback_forward.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
@@ -244,9 +245,12 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Shows the confirmation dialog box warning that the browser is closing with
   // in-progress downloads.
-  // This method should call Browser::InProgressDownloadResponse once the user
-  // has confirmed.
-  virtual void ConfirmBrowserCloseWithPendingDownloads() = 0;
+  // This method should call |callback| with the user's response.
+  virtual void ConfirmBrowserCloseWithPendingDownloads(
+      int download_count,
+      Browser::DownloadClosePreventionType dialog_type,
+      bool app_modal,
+      const base::Callback<void(bool)>& callback) = 0;
 
   // ThemeService calls this when a user has changed his or her theme,
   // indicating that it's time to redraw everything.

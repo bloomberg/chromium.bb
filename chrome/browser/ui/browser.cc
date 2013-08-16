@@ -604,6 +604,7 @@ bool Browser::ShouldCloseWindow() {
 
 bool Browser::CallBeforeUnloadHandlers(
     const base::Callback<void(bool)>& on_close_confirmed) {
+  cancel_download_confirmation_state_ = RESPONSE_RECEIVED;
   if (IsFastTabUnloadEnabled()) {
     return fast_unload_controller_->CallBeforeUnloadHandlers(
         on_close_confirmed);
@@ -612,6 +613,7 @@ bool Browser::CallBeforeUnloadHandlers(
 }
 
 void Browser::ResetBeforeUnloadHandlers() {
+  cancel_download_confirmation_state_ = NOT_PROMPTED;
   if (IsFastTabUnloadEnabled())
     fast_unload_controller_->ResetBeforeUnloadHandlers();
   else
@@ -2055,14 +2057,20 @@ bool Browser::CanCloseWithInProgressDownloads() {
     return cancel_download_confirmation_state_ != WAITING_FOR_RESPONSE;
 
   int num_downloads_blocking;
-  if (DOWNLOAD_CLOSE_OK ==
-      OkToCloseWithInProgressDownloads(&num_downloads_blocking))
+  Browser::DownloadClosePreventionType dialog_type =
+      OkToCloseWithInProgressDownloads(&num_downloads_blocking);
+  if (dialog_type == DOWNLOAD_CLOSE_OK)
     return true;
 
   // Closing this window will kill some downloads; prompt to make sure
   // that's ok.
   cancel_download_confirmation_state_ = WAITING_FOR_RESPONSE;
-  window_->ConfirmBrowserCloseWithPendingDownloads();
+  window_->ConfirmBrowserCloseWithPendingDownloads(
+      num_downloads_blocking,
+      dialog_type,
+      false,
+      base::Bind(&Browser::InProgressDownloadResponse,
+                 weak_factory_.GetWeakPtr()));
 
   // Return false so the browser does not close.  We'll close if the user
   // confirms in the dialog.

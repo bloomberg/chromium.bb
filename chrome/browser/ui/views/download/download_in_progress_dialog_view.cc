@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -21,20 +20,25 @@
 #include "ui/views/widget/widget.h"
 
 // static
-void DownloadInProgressDialogView::Show(Browser* browser,
-                                        gfx::NativeWindow parent) {
-  DownloadInProgressDialogView* window =
-      new DownloadInProgressDialogView(browser);
+void DownloadInProgressDialogView::Show(
+    gfx::NativeWindow parent,
+    int download_count,
+    Browser::DownloadClosePreventionType dialog_type,
+    bool app_modal,
+    const base::Callback<void(bool)>& callback) {
+  DownloadInProgressDialogView* window = new DownloadInProgressDialogView(
+      download_count, dialog_type, app_modal, callback);
   CreateBrowserModalDialogViews(window, parent)->Show();
 }
 
-DownloadInProgressDialogView::DownloadInProgressDialogView(Browser* browser)
-    : browser_(browser),
+DownloadInProgressDialogView::DownloadInProgressDialogView(
+    int download_count,
+    Browser::DownloadClosePreventionType dialog_type,
+    bool app_modal,
+    const base::Callback<void(bool)>& callback)
+    : app_modal_(app_modal),
+      callback_(callback),
       message_box_view_(NULL) {
-  int download_count;
-  Browser::DownloadClosePreventionType dialog_type =
-      browser_->OkToCloseWithInProgressDownloads(&download_count);
-
   string16 explanation_text;
   switch (dialog_type) {
     case Browser::DOWNLOAD_CLOSE_BROWSER_SHUTDOWN:
@@ -93,17 +97,17 @@ string16 DownloadInProgressDialogView::GetDialogButtonLabel(
 }
 
 bool DownloadInProgressDialogView::Cancel() {
-  browser_->InProgressDownloadResponse(false);
+  callback_.Run(false);
   return true;
 }
 
 bool DownloadInProgressDialogView::Accept() {
-  browser_->InProgressDownloadResponse(true);
+  callback_.Run(true);
   return true;
 }
 
 ui::ModalType DownloadInProgressDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return app_modal_ ? ui::MODAL_TYPE_SYSTEM : ui::MODAL_TYPE_WINDOW;
 }
 
 string16 DownloadInProgressDialogView::GetWindowTitle() const {

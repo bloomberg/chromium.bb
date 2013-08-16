@@ -6,28 +6,33 @@
 
 #include <gtk/gtk.h>
 
+#include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // static
-void DownloadInProgressDialogGtk::Show(Browser* browser,
-                                       gfx::NativeWindow parent_window) {
-  new DownloadInProgressDialogGtk(browser, parent_window);
+void DownloadInProgressDialogGtk::Show(
+    gfx::NativeWindow parent_window,
+    int download_count,
+    Browser::DownloadClosePreventionType dialog_type,
+    bool app_modal,
+    const base::Callback<void(bool)>& callback) {
+  new DownloadInProgressDialogGtk(parent_window, download_count, dialog_type,
+                                  app_modal, callback);
 }
 
 DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(
-    Browser* browser,
-    gfx::NativeWindow parent_window)
-    : browser_(browser) {
-  int download_count;
-  Browser::DownloadClosePreventionType dialog_type =
-      browser_->OkToCloseWithInProgressDownloads(&download_count);
-
+    gfx::NativeWindow parent_window,
+    int download_count,
+    Browser::DownloadClosePreventionType dialog_type,
+    bool app_modal,
+    const base::Callback<void(bool)>& callback)
+    : app_modal_(app_modal),
+      callback_(callback) {
   std::string title_text;
   std::string explanation_text;
   std::string ok_button_text;
@@ -71,6 +76,8 @@ DownloadInProgressDialogGtk::DownloadInProgressDialogGtk(
   std::string cancel_button_text = l10n_util::GetStringUTF8(
       IDS_DOWNLOAD_REMOVE_CONFIRM_CANCEL_BUTTON_LABEL);
 
+  if (app_modal_)
+    gtk_util::MakeAppModalWindowGroup();
   GtkWidget* dialog = gtk_message_dialog_new(
       parent_window,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL),
@@ -98,6 +105,8 @@ DownloadInProgressDialogGtk::~DownloadInProgressDialogGtk() {
 void DownloadInProgressDialogGtk::OnResponse(GtkWidget* dialog,
                                              int response_id) {
   gtk_widget_destroy(dialog);
-  browser_->InProgressDownloadResponse(response_id == GTK_RESPONSE_ACCEPT);
+  if (app_modal_)
+    gtk_util::AppModalDismissedUngroupWindows();
+  callback_.Run(response_id == GTK_RESPONSE_ACCEPT);
   delete this;
 }

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_LIFETIME_BROWSER_CLOSE_MANAGER_H_
 #define CHROME_BROWSER_LIFETIME_BROWSER_CLOSE_MANAGER_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 
 class Browser;
@@ -18,11 +19,16 @@ class BrowserCloseManager : public base::RefCounted<BrowserCloseManager> {
   // Starts closing all browser windows.
   void StartClosingBrowsers();
 
- private:
+ protected:
   friend class base::RefCounted<BrowserCloseManager>;
 
   virtual ~BrowserCloseManager();
 
+  virtual void ConfirmCloseWithPendingDownloads(
+      int download_count,
+      const base::Callback<void(bool)>& callback);
+
+ private:
   // Notifies all browser windows that the close is cancelled.
   void CancelBrowserClose();
 
@@ -35,6 +41,17 @@ class BrowserCloseManager : public base::RefCounted<BrowserCloseManager> {
 
   // Closes all browser windows.
   void CloseBrowsers();
+
+  // Checks whether there are any downloads in-progress and prompts the user to
+  // cancel them. If there are no downloads or the user accepts the cancel
+  // downloads dialog, CloseBrowsers is called to continue with the shutdown.
+  // Otherwise, if the user declines to cancel downloads, the shutdown is
+  // aborted and the downloads page is shown for each profile with in-progress
+  // downloads.
+  void CheckForDownloadsInProgress();
+
+  // Called to report whether downloads may be cancelled during shutdown.
+  void OnReportDownloadsCancellable(bool proceed);
 
   // The browser for which we are waiting for a callback to
   // OnBrowserReportCloseable.
