@@ -90,6 +90,7 @@
         <include name="IDR_FILE_MANAGER_ICON_96" file="file_manager/images/icon96.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/images/icon128.png" type="BINDATA" />
         <include name="IDR_FILE_MANAGER_ICON_256" file="file_manager/images/icon256.png" type="BINDATA" />
+        <include name="IDR_FILE_MANAGER_AUDIO_PLAYER_ICON_2X" file="file_manager/images/media/2x/audio_player.png" type="BINDATA" />
 
         <!-- Resources used for non-flattened HTML files. -->
         <include name="IDR_FILE_MANAGER_DRIVE_WELCOME_STYLE" file="file_manager/css/drive_welcome.css" type="BINDATA" />

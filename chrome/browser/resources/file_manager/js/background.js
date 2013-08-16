@@ -110,7 +110,6 @@ AppWindowWrapper.prototype.launch = function(appState, callback) {
     options = options();
   options.id = this.url_;  // This is to make Chrome reuse window geometries.
   options.singleton = false;
-  options.hidden = true;
 
   // Get similar windows, it means with the same initial url, eg. different
   // main windows of Files.app.
@@ -129,11 +128,6 @@ AppWindowWrapper.prototype.launch = function(appState, callback) {
         appWindow.moveTo(bounds.left + AppWindowWrapper.SHIFT_DISTANCE,
                          bounds.top + AppWindowWrapper.SHIFT_DISTANCE);
       }
-
-      // Show after changing bounds is done. For the new UI, Files.app shows
-      // it's window as soon as the UI is pre-initialized.
-      if (!this.id_.match(FILES_ID_PATTERN))
-        appWindow.show();
 
       appWindows[this.id_] = appWindow;
       var contentWindow = appWindow.contentWindow;
@@ -276,6 +270,7 @@ function createFileManagerOptions() {
     minWidth: 320,
     minHeight: 240,
     frame: 'none',
+    hidden: true,
     transparentBackground: true
   };
 }
@@ -434,6 +429,7 @@ function createAudioPlayerOptions() {
   var HEIGHT = 35 + 58;
   return {
     type: 'panel',
+    hidden: true,
     minHeight: HEIGHT,
     minWidth: WIDTH,
     height: HEIGHT,
