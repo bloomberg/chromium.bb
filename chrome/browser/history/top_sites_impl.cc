@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
@@ -691,6 +692,13 @@ bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) {
 
 void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
                                   MostVisitedURLList* out) {
+  // Log the number of times ApplyBlacklist is called so we can compute the
+  // average number of blacklisted items per user.
+  const DictionaryValue* blacklist =
+      profile_->GetPrefs()->GetDictionary(prefs::kNtpMostVisitedURLsBlacklist);
+  UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
+  UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
+      (blacklist ? blacklist->size() : 0));
   for (size_t i = 0; i < urls.size() && i < kTopSitesNumber; ++i) {
     if (!IsBlacklisted(urls[i].url))
       out->push_back(urls[i]);
