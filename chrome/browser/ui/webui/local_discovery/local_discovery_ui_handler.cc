@@ -50,6 +50,8 @@ LocalDiscoveryUIHandler::LocalDiscoveryUIHandler(
 }
 
 LocalDiscoveryUIHandler::~LocalDiscoveryUIHandler() {
+  if (service_discovery_client_)
+    service_discovery_client_->Shutdown();
 }
 
 // static

@@ -127,9 +127,12 @@ ServiceDiscoveryHostClient::ServiceDiscoveryHostClient() : current_id_(0) {
 }
 
 ServiceDiscoveryHostClient::~ServiceDiscoveryHostClient() {
-  DCHECK(CalledOnValidThread());
+  // The ServiceDiscoveryHostClient may be destroyed from the IO thread or the
+  // owning thread.
+  DetachFromThread();
   DCHECK(service_watcher_callbacks_.empty());
   DCHECK(service_resolver_callbacks_.empty());
+  DCHECK(domain_resolver_callbacks_.empty());
 }
 
 scoped_ptr<ServiceWatcher> ServiceDiscoveryHostClient::CreateServiceWatcher(
@@ -230,8 +233,10 @@ void ServiceDiscoveryHostClient::StartOnIOThread() {
 
 void ServiceDiscoveryHostClient::ShutdownOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  if (utility_host_)
+  if (utility_host_) {
+    utility_host_->Send(new LocalDiscoveryMsg_ShutdownLocalDiscovery);
     utility_host_->EndBatchMode();
+  }
 }
 
 void ServiceDiscoveryHostClient::Send(IPC::Message* msg) {

@@ -71,6 +71,9 @@ class ServiceDiscoveryMessageHandler : public chrome::UtilityMessageHandler {
                           net::AddressFamily address_family);
   void DestroyLocalDomainResolver(uint64 id);
 
+  void ShutdownLocalDiscovery();
+  void ShutdownOnIOThread();
+
   // Is called by ServiceWatcher as callback.
   void OnServiceUpdated(uint64 id,
                         ServiceWatcher::UpdateType update,

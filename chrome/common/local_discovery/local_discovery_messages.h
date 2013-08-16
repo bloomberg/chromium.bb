@@ -58,6 +58,10 @@ IPC_MESSAGE_CONTROL3(LocalDiscoveryMsg_ResolveLocalDomain,
 IPC_MESSAGE_CONTROL1(LocalDiscoveryMsg_DestroyLocalDomainResolver,
                      uint64 /* id */)
 
+// Stops local discovery in utility process. http://crbug.com/268466.
+IPC_MESSAGE_CONTROL0(LocalDiscoveryMsg_ShutdownLocalDiscovery)
+
+
 //------------------------------------------------------------------------------
 // Utility process host messages:
 // These are messages from the utility process to the browser.

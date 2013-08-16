@@ -147,7 +147,7 @@ ServiceDiscoveryMessageHandler::ServiceDiscoveryMessageHandler() {
 }
 
 ServiceDiscoveryMessageHandler::~ServiceDiscoveryMessageHandler() {
-  discovery_thread_.reset();
+  DCHECK(!discovery_thread_);
 }
 
 void ServiceDiscoveryMessageHandler::PreSandboxStartup() {
@@ -200,6 +200,8 @@ bool ServiceDiscoveryMessageHandler::OnMessageReceived(
                         OnResolveLocalDomain)
     IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_DestroyLocalDomainResolver,
                         OnDestroyLocalDomainResolver)
+    IPC_MESSAGE_HANDLER(LocalDiscoveryMsg_ShutdownLocalDiscovery,
+                        ShutdownLocalDiscovery)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -336,6 +338,26 @@ void ServiceDiscoveryMessageHandler::DestroyLocalDomainResolver(uint64 id) {
     return;
   DCHECK(ContainsKey(local_domain_resolvers_, id));
   local_domain_resolvers_.erase(id);
+}
+
+void ServiceDiscoveryMessageHandler::ShutdownLocalDiscovery() {
+  discovery_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&ServiceDiscoveryMessageHandler::ShutdownOnIOThread,
+                 base::Unretained(this)));
+
+  // This will wait for message loop to drain, so ShutdownOnIOThread will
+  // definitely be called.
+  discovery_thread_.reset();
+}
+
+void ServiceDiscoveryMessageHandler::ShutdownOnIOThread() {
+  service_watchers_.clear();
+  service_resolvers_.clear();
+  local_domain_resolvers_.clear();
+
+  service_discovery_client_.reset();
+  mdns_client_.reset();
 }
 
 void ServiceDiscoveryMessageHandler::OnServiceUpdated(
