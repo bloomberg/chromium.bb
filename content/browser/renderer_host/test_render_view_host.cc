@@ -15,7 +15,6 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/password_form.h"
 #include "content/test/test_web_contents.h"
 #include "media/base/video_frame.h"
 #include "ui/gfx/rect.h"
@@ -42,7 +41,6 @@ void InitNavigateParams(ViewHostMsg_FrameNavigate_Params* params,
   params->should_update_history = false;
   params->searchable_form_url = GURL();
   params->searchable_form_encoding = std::string();
-  params->password_form = PasswordForm();
   params->security_info = std::string();
   params->gesture = NavigationGestureUser;
   params->was_within_same_page = false;
@@ -333,7 +331,6 @@ void TestRenderViewHost::SendNavigateWithParameters(
   params.should_update_history = true;
   params.searchable_form_url = GURL();
   params.searchable_form_encoding = std::string();
-  params.password_form = PasswordForm();
   params.security_info = std::string();
   params.gesture = NavigationGestureUser;
   params.contents_mime_type = contents_mime_type_;

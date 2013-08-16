@@ -4,7 +4,6 @@
 
 #include "content/public/renderer/document_state.h"
 
-#include "content/public/common/password_form.h"
 #include "content/public/renderer/navigation_state.h"
 
 namespace content {
@@ -25,11 +24,6 @@ DocumentState::DocumentState()
 }
 
 DocumentState::~DocumentState() {}
-
-void DocumentState::set_password_form_data(
-    scoped_ptr<PasswordForm> data) {
-  password_form_data_.reset(data.release());
-}
 
 void DocumentState::set_navigation_state(NavigationState* navigation_state) {
   navigation_state_.reset(navigation_state);

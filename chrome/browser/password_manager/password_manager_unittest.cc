@@ -30,6 +30,8 @@ using testing::Exactly;
 using testing::Return;
 using testing::WithArg;
 
+namespace {
+
 class MockPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   MOCK_METHOD1(FillPasswordForm, void(const autofill::PasswordFormFillData&));
@@ -46,6 +48,31 @@ ACTION_P(SaveToScopedPtr, scoped) {
   scoped->reset(arg0);
 }
 
+class TestPasswordManager : public PasswordManager {
+ public:
+  TestPasswordManager(content::WebContents* contents,
+                      PasswordManagerDelegate* delegate)
+      : PasswordManager(contents, delegate) {}
+  virtual ~TestPasswordManager() {}
+
+  virtual void OnPasswordFormSubmitted(const PasswordForm& form) OVERRIDE {
+    PasswordManager::OnPasswordFormSubmitted(form);
+  }
+
+  static TestPasswordManager* CreateForWebContentsAndDelegate(
+      content::WebContents* contents,
+      PasswordManagerDelegate* delegate) {
+    TestPasswordManager* tpm = new TestPasswordManager(contents, delegate);
+    contents->SetUserData(UserDataKey(), tpm);
+    return tpm;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPasswordManager);
+};
+
+}  // namespace
+
 class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
  protected:
   virtual void SetUp() {
@@ -55,7 +82,7 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
             profile(), MockPasswordStore::Build).get());
 
     EXPECT_CALL(delegate_, GetProfile()).WillRepeatedly(Return(profile()));
-    PasswordManager::CreateForWebContentsAndDelegate(
+    manager_ = TestPasswordManager::CreateForWebContentsAndDelegate(
         web_contents(), &delegate_);
     EXPECT_CALL(delegate_, DidLastPageLoadEncounterSSLErrors())
         .WillRepeatedly(Return(false));
@@ -81,12 +108,50 @@ class PasswordManagerTest : public ChromeRenderViewHostTestHarness {
     return form;
   }
 
-  PasswordManager* manager() {
-    return PasswordManager::FromWebContents(web_contents());
+  bool FormsAreEqual(const content::PasswordForm& lhs,
+                     const content::PasswordForm& rhs) {
+    if (lhs.origin != rhs.origin)
+      return false;
+    if (lhs.action != rhs.action)
+      return false;
+    if (lhs.username_element != rhs.username_element)
+      return false;
+    if (lhs.password_element != rhs.password_element)
+      return false;
+    if (lhs.username_value != rhs.username_value)
+      return false;
+    if (lhs.password_value != rhs.password_value)
+      return false;
+    if (lhs.password_autocomplete_set != rhs.password_autocomplete_set)
+      return false;
+    if (lhs.submit_element != rhs.submit_element)
+      return false;
+    if (lhs.signon_realm != rhs.signon_realm)
+      return false;
+    return true;
+  }
+
+  TestPasswordManager* manager() {
+    return manager_;
+  }
+
+  void OnPasswordFormSubmitted(const content::PasswordForm& form) {
+    manager()->OnPasswordFormSubmitted(form);
+  }
+
+  PasswordManager::PasswordSubmittedCallback SubmissionCallback() {
+    return base::Bind(&PasswordManagerTest::FormSubmitted,
+                      base::Unretained(this));
+  }
+
+  void FormSubmitted(const content::PasswordForm& form) {
+    submitted_form_ = form;
   }
 
   scoped_refptr<MockPasswordStore> store_;
+  TestPasswordManager* manager_;
   MockPasswordManagerDelegate delegate_;  // Owned by manager_.
+  PasswordForm submitted_form_;
 };
 
 MATCHER_P(FormMatches, form, "") {
@@ -208,15 +273,8 @@ TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
   manager()->OnPasswordFormsParsed(observed);  // The initial load.
   manager()->OnPasswordFormsRendered(observed);  // The initial layout.
 
-  PasswordForm empty_form(form);
-  empty_form.username_value = string16();
-  empty_form.password_value = string16();
-  content::LoadCommittedDetails details;
-  content::FrameNavigateParams params;
-  params.password_form = empty_form;
-  manager()->DidNavigateAnyFrame(details, params);
-
-  // No expected calls.
+  // No message from the renderer that a password was submitted. No
+  // expected calls.
   EXPECT_CALL(delegate_, AddSavePasswordInfoBarIfPermitted(_)).Times(0);
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);  // The post-navigation load.
@@ -238,14 +296,11 @@ TEST_F(PasswordManagerTest, FormSubmitAfterNavigateSubframe) {
 
   // Simulate navigating a sub-frame.
   content::LoadCommittedDetails details;
-  details.is_main_frame = false;
   content::FrameNavigateParams params;
   manager()->DidNavigateAnyFrame(details, params);
 
-  // Simulate navigating the real page.
-  details.is_main_frame = true;
-  params.password_form = form;
-  manager()->DidNavigateAnyFrame(details, params);
+  // Simulate submitting the password.
+  OnPasswordFormSubmitted(form);
 
   // Now the password manager waits for the navigation to complete.
   scoped_ptr<PasswordFormManager> form_to_save;
@@ -289,7 +344,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   content::LoadCommittedDetails details;
   details.is_main_frame = true;
   content::FrameNavigateParams params;
-  manager()->DidNavigateAnyFrame(details, params);
+  manager()->DidNavigateMainFrame(details, params);
 
   // This page contains a form with the same markup, but on a different
   // URL.
@@ -298,8 +353,7 @@ TEST_F(PasswordManagerTest, FormSubmitWithFormOnPreviousPage) {
   manager()->OnPasswordFormsRendered(observed);
 
   // Now submit this form
-  params.password_form = second_form;
-  manager()->DidNavigateAnyFrame(details, params);
+  OnPasswordFormSubmitted(second_form);
 
   // Navigation after form submit.
   scoped_ptr<PasswordFormManager> form_to_save;
@@ -474,4 +528,11 @@ TEST_F(PasswordManagerTest, GeneratedPasswordFormSavedAutocompleteOff) {
   observed.clear();
   manager()->OnPasswordFormsParsed(observed);  // The post-navigation load.
   manager()->OnPasswordFormsRendered(observed);  // The post-navigation layout.
+}
+
+TEST_F(PasswordManagerTest, SubmissionCallbackTest) {
+  manager()->AddSubmissionCallback(SubmissionCallback());
+  PasswordForm form = MakeSimpleForm();
+  OnPasswordFormSubmitted(form);
+  EXPECT_TRUE(FormsAreEqual(form, submitted_form_));
 }

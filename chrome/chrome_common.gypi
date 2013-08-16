@@ -419,7 +419,6 @@
         'common/omaha_query_params/omaha_query_params.cc',
         'common/omaha_query_params/omaha_query_params.h',
         'common/omnibox_focus_state.h',
-        'common/one_click_signin_messages.h',
         'common/partial_circular_buffer.cc',
         'common/partial_circular_buffer.h',
         'common/pepper_flash.cc',

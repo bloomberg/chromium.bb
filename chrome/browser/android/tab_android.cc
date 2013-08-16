@@ -78,7 +78,8 @@ void BrowserTabContents::AttachTabHelpers(WebContents* contents) {
   PasswordManager::CreateForWebContentsAndDelegate(
       contents, PasswordManagerDelegateImpl::FromWebContents(contents));
   PrefsTabHelper::CreateForWebContents(contents);
-  prerender::PrerenderTabHelper::CreateForWebContents(contents);
+  prerender::PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
+      contents, PasswordManager::FromWebContents(contents));
   SSLTabHelper::CreateForWebContents(contents);
   TabSpecificContentSettings::CreateForWebContents(contents);
   TranslateTabHelper::CreateForWebContents(contents);

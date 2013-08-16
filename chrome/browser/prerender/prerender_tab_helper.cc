@@ -4,9 +4,11 @@
 
 #include "chrome/browser/prerender/prerender_tab_helper.h"
 
+#include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
 #include "chrome/browser/prerender/prerender_local_predictor.h"
@@ -150,9 +152,24 @@ class PrerenderTabHelper::PixelStats {
   PrerenderTabHelper* tab_helper_;
 };
 
-PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents)
+// static
+void PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
+    content::WebContents* web_contents,
+    PasswordManager* password_manager) {
+  if (!FromWebContents(web_contents)) {
+    web_contents->SetUserData(UserDataKey(),
+                              new PrerenderTabHelper(web_contents,
+                                                     password_manager));
+  }
+}
+
+PrerenderTabHelper::PrerenderTabHelper(content::WebContents* web_contents,
+                                       PasswordManager* password_manager)
     : content::WebContentsObserver(web_contents),
       weak_factory_(this) {
+  password_manager->AddSubmissionCallback(
+      base::Bind(&PrerenderTabHelper::PasswordSubmitted,
+                 weak_factory_.GetWeakPtr()));
 }
 
 PrerenderTabHelper::~PrerenderTabHelper() {
@@ -243,22 +260,13 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
   }
 }
 
-void PrerenderTabHelper::DidNavigateAnyFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) {
+void PrerenderTabHelper::PasswordSubmitted(const content::PasswordForm& form) {
   PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (params.password_form.origin.is_valid() && prerender_manager) {
-    prerender_manager->RecordLikelyLoginOnURL(params.url);
+  if (prerender_manager) {
+    prerender_manager->RecordLikelyLoginOnURL(form.origin);
     RecordEvent(EVENT_LOGIN_ACTION_ADDED);
-    if (details.is_main_frame) {
-      RecordEvent(EVENT_LOGIN_ACTION_ADDED_MAINFRAME);
-      if (params.password_form.password_value.empty())
-        RecordEvent(EVENT_LOGIN_ACTION_ADDED_MAINFRAME_PW_EMPTY);
-    } else {
-      RecordEvent(EVENT_LOGIN_ACTION_ADDED_SUBFRAME);
-      if (params.password_form.password_value.empty())
-        RecordEvent(EVENT_LOGIN_ACTION_ADDED_SUBFRAME_PW_EMPTY);
-    }
+    if (form.password_value.empty())
+      RecordEvent(EVENT_LOGIN_ACTION_ADDED_PW_EMPTY);
   }
 }
 

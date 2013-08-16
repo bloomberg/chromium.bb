@@ -228,6 +228,11 @@ void PasswordManager::RecordFailure(ProvisionalSaveFailure failure) {
                             failure, MAX_FAILURE_VALUE);
 }
 
+void PasswordManager::AddSubmissionCallback(
+    const PasswordSubmittedCallback& callback) {
+  submission_callbacks_.push_back(callback);
+}
+
 void PasswordManager::AddObserver(LoginModelObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -236,20 +241,13 @@ void PasswordManager::RemoveObserver(LoginModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PasswordManager::DidNavigateAnyFrame(
+void PasswordManager::DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) {
-  bool password_form_submitted = params.password_form.origin.is_valid();
-
-  // Try to save the password if one was submitted.
-  if (password_form_submitted)
-    ProvisionallySavePassword(params.password_form);
-
-  // Clear data after submission or main frame navigation. We don't want
-  // to clear data after subframe navigation as there might be password
-  // forms on other frames that could be submitted.
-  if (password_form_submitted || details.is_main_frame)
-    pending_login_managers_.clear();
+  // Clear data after main frame navigation. We don't want to clear data after
+  // subframe navigation as there might be password forms on other frames that
+  // could be submitted.
+  pending_login_managers_.clear();
 }
 
 bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
@@ -259,9 +257,21 @@ bool PasswordManager::OnMessageReceived(const IPC::Message& message) {
                         OnPasswordFormsParsed)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormsRendered,
                         OnPasswordFormsRendered)
+    IPC_MESSAGE_HANDLER(AutofillHostMsg_PasswordFormSubmitted,
+                        OnPasswordFormSubmitted)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+void PasswordManager::OnPasswordFormSubmitted(
+    const PasswordForm& password_form) {
+  ProvisionallySavePassword(password_form);
+  for (size_t i = 0; i < submission_callbacks_.size(); ++i) {
+    submission_callbacks_[i].Run(password_form);
+  }
+
+  pending_login_managers_.clear();
 }
 
 void PasswordManager::OnPasswordFormsParsed(
@@ -391,7 +401,7 @@ void PasswordManager::Autofill(
   PossiblyInitializeUsernamesExperiment(best_matches);
   switch (form_for_autofill.scheme) {
     case PasswordForm::SCHEME_HTML: {
-      // Note the check above is required because the observer_ for a non-HTML
+      // Note the check above is required because the observers_ for a non-HTML
       // schemed password form may have been freed, so we need to distinguish.
       autofill::PasswordFormFillData fill_data;
       InitPasswordFormFillData(form_for_autofill,

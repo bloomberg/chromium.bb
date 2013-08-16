@@ -12,6 +12,12 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "url/gurl.h"
 
+class PasswordManager;
+
+namespace content {
+struct PasswordForm;
+}
+
 namespace predictors {
 class LoggedInPredictorTable;
 }
@@ -34,12 +40,13 @@ class PrerenderTabHelper
     EVENT_MAINFRAME_COMMIT = 4,
     EVENT_MAINFRAME_COMMIT_DOMAIN_LOGGED_IN = 5,
     EVENT_LOGIN_ACTION_ADDED = 6,
-    EVENT_LOGIN_ACTION_ADDED_MAINFRAME = 7,
-    EVENT_LOGIN_ACTION_ADDED_MAINFRAME_PW_EMPTY = 8,
-    EVENT_LOGIN_ACTION_ADDED_SUBFRAME = 9,
-    EVENT_LOGIN_ACTION_ADDED_SUBFRAME_PW_EMPTY = 10,
+    EVENT_LOGIN_ACTION_ADDED_PW_EMPTY = 7,
     EVENT_MAX_VALUE
   };
+
+  static void CreateForWebContentsWithPasswordManager(
+      content::WebContents* web_contents,
+      PasswordManager* password_manager);
 
   virtual ~PrerenderTabHelper();
 
@@ -63,15 +70,16 @@ class PrerenderTabHelper
       const GURL& validated_url,
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE;
-  virtual void DidNavigateAnyFrame(
-      const content::LoadCommittedDetails& details,
-      const content::FrameNavigateParams& params) OVERRIDE;
+
+  // Called when a password form has been submitted.
+  void PasswordSubmitted(const content::PasswordForm& form);
 
   // Called when this prerendered WebContents has just been swapped in.
   void PrerenderSwappedIn();
 
  private:
-  explicit PrerenderTabHelper(content::WebContents* web_contents);
+  PrerenderTabHelper(content::WebContents* web_contents,
+                     PasswordManager* password_manager);
   friend class content::WebContentsUserData<PrerenderTabHelper>;
 
   void RecordEvent(Event event) const;

@@ -10,7 +10,6 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/page_transition_types.h"
-#include "content/public/common/password_form.h"
 #include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
 #include "url/gurl.h"
@@ -58,9 +57,6 @@ struct CONTENT_EXPORT FrameNavigateParams {
   // See SearchableFormData for a description of these.
   GURL searchable_form_url;
   std::string searchable_form_encoding;
-
-  // See password_form.h.
-  content::PasswordForm password_form;
 
   // Contents MIME type of main frame.
   std::string contents_mime_type;

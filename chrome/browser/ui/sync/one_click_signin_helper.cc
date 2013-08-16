@@ -26,6 +26,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -54,7 +55,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/net/url_util.h"
-#include "chrome/common/one_click_signin_messages.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
@@ -560,7 +560,8 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(OneClickSigninHelper);
 // static
 const int OneClickSigninHelper::kMaxNavigationsSince = 10;
 
-OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
+OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents,
+                                           PasswordManager* password_manager)
     : content::WebContentsObserver(web_contents),
       showing_signin_(false),
       auto_accept_(AUTO_ACCEPT_NONE),
@@ -570,6 +571,12 @@ OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
       untrusted_confirmation_required_(false),
       do_not_clear_pending_email_(false),
       weak_pointer_factory_(this) {
+  // May be NULL during testing.
+  if (password_manager) {
+    password_manager->AddSubmissionCallback(
+        base::Bind(&OneClickSigninHelper::PasswordSubmitted,
+                   weak_pointer_factory_.GetWeakPtr()));
+  }
 }
 
 OneClickSigninHelper::~OneClickSigninHelper() {
@@ -581,6 +588,16 @@ OneClickSigninHelper::~OneClickSigninHelper() {
         ProfileSyncServiceFactory::GetForProfile(profile);
     if (sync_service && sync_service->HasObserver(this))
       sync_service->RemoveObserver(this);
+  }
+}
+
+// static
+void OneClickSigninHelper::CreateForWebContentsWithPasswordManager(
+    content::WebContents* contents,
+    PasswordManager* password_manager) {
+  if (!FromWebContents(contents)) {
+    contents->SetUserData(UserDataKey(),
+                          new OneClickSigninHelper(contents, password_manager));
   }
 }
 
@@ -999,29 +1016,13 @@ void OneClickSigninHelper::CleanTransientState() {
   }
 }
 
-bool OneClickSigninHelper::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(OneClickSigninHelper, message)
-    IPC_MESSAGE_HANDLER(OneClickSigninHostMsg_FormSubmitted, OnFormSubmitted)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-bool OneClickSigninHelper::OnFormSubmitted(const content::PasswordForm& form) {
-  // |password_| used to be set in DidNavigateAnyFrame, this is too late because
-  // it is not executed until the end of redirect chains and password may
-  // get lost if one of the redirects requires context swap.
-
+void OneClickSigninHelper::PasswordSubmitted(
+    const content::PasswordForm& form) {
   // We only need to scrape the password for Gaia logins.
-  if (form.origin.is_valid() &&
-      gaia::IsGaiaSignonRealm(GURL(form.signon_realm))) {
+  if (gaia::IsGaiaSignonRealm(GURL(form.signon_realm))) {
     VLOG(1) << "OneClickSigninHelper::DidNavigateAnyFrame: got password";
     password_ = UTF16ToUTF8(form.password_value);
   }
-
-  return true;
 }
 
 void OneClickSigninHelper::SetDoNotClearPendingEmailForTesting() {

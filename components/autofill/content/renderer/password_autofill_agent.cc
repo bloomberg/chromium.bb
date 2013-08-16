@@ -24,6 +24,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/keycodes/keyboard_codes.h"
 
@@ -426,6 +427,65 @@ void PasswordAutofillAgent::FrameDetached(WebKit::WebFrame* frame) {
 
 void PasswordAutofillAgent::FrameWillClose(WebKit::WebFrame* frame) {
   FrameClosing(frame);
+}
+
+void PasswordAutofillAgent::WillSendSubmitEvent(
+    WebKit::WebFrame* frame,
+    const WebKit::WebFormElement& form) {
+  // Some login forms have onSubmit handlers that put a hash of the password
+  // into a hidden field and then clear the password (http://crbug.com/28910).
+  // This method gets called before any of those handlers run, so save away
+  // a copy of the password in case it gets lost.
+  provisionally_saved_forms_[frame].reset(
+      content::CreatePasswordForm(form).release());
+}
+
+void PasswordAutofillAgent::WillSubmitForm(WebKit::WebFrame* frame,
+                                           const WebKit::WebFormElement& form) {
+  scoped_ptr<content::PasswordForm> submitted_form =
+      content::CreatePasswordForm(form);
+
+  // If there is a provisionally saved password, copy over the previous
+  // password value so we get the user's typed password, not the value that
+  // may have been transformed for submit.
+  // TODO(gcasto): Do we need to have this action equality check? Is it trying
+  // to prevent accidentally copying over passwords from a different form?
+  if (submitted_form) {
+    if (provisionally_saved_forms_[frame].get() &&
+        submitted_form->action == provisionally_saved_forms_[frame]->action) {
+      submitted_form->password_value =
+          provisionally_saved_forms_[frame]->password_value;
+    }
+
+    // Some observers depend on sending this information now instead of when
+    // the frame starts loading. If there are redirects that cause a new
+    // RenderView to be instantiated (such as redirects to the WebStore)
+    // we will never get to finish the load.
+    Send(new AutofillHostMsg_PasswordFormSubmitted(routing_id(),
+                                                   *submitted_form));
+    // Remove reference since we have already submitted this form.
+    provisionally_saved_forms_.erase(frame);
+  }
+}
+
+void PasswordAutofillAgent::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
+  if (!frame->parent()) {
+    // If the navigation is not triggered by a user gesture, e.g. by some ajax
+    // callback, then inherit the submitted password form from the previous
+    // state. This fixes the no password save issue for ajax login, tracked in
+    // [http://crbug/43219]. Note that there are still some sites that this
+    // fails for because they use some element other than a submit button to
+    // trigger submission (which means WillSendSubmitEvent will not be called).
+    if (!WebKit::WebUserGestureIndicator::isProcessingUserGesture() &&
+        provisionally_saved_forms_[frame].get()) {
+      Send(new AutofillHostMsg_PasswordFormSubmitted(
+          routing_id(),
+          *provisionally_saved_forms_[frame]));
+      provisionally_saved_forms_.erase(frame);
+    }
+    // Clear the whole map during main frame navigation.
+    provisionally_saved_forms_.clear();
+  }
 }
 
 void PasswordAutofillAgent::OnFillPasswordForm(

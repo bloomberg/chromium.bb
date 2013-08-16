@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
@@ -42,6 +43,14 @@ class PasswordManager : public LoginModel,
       PasswordManagerDelegate* delegate);
   virtual ~PasswordManager();
 
+  typedef base::Callback<void(const content::PasswordForm&)>
+      PasswordSubmittedCallback;
+
+  // There is no corresponding remove function as currently all of the
+  // owners of these callbacks have sufficient lifetimes so that the callbacks
+  // should always be valid when called.
+  void AddSubmissionCallback(const PasswordSubmittedCallback& callback);
+
   // Is saving new data for password autofill enabled for the current profile?
   // For example, saving new data is disabled in Incognito mode, whereas filling
   // data is not.
@@ -69,7 +78,7 @@ class PasswordManager : public LoginModel,
   void ProvisionallySavePassword(const content::PasswordForm& form);
 
   // content::WebContentsObserver overrides.
-  virtual void DidNavigateAnyFrame(
+  virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -85,6 +94,10 @@ class PasswordManager : public LoginModel,
   // Subclassed for unit tests.
   PasswordManager(content::WebContents* web_contents,
                   PasswordManagerDelegate* delegate);
+
+  // Handle notification that a password form was submitted.
+  virtual void OnPasswordFormSubmitted(
+      const content::PasswordForm& password_form);
 
  private:
   friend class content::WebContentsUserData<PasswordManager>;
@@ -155,6 +168,9 @@ class PasswordManager : public LoginModel,
   // Observers to be notified of LoginModel events.  This is mutable to allow
   // notification in const member functions.
   mutable ObserverList<LoginModelObserver> observers_;
+
+  // Callbacks to be notified when a password form has been submitted.
+  std::vector<PasswordSubmittedCallback> submission_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManager);
 };

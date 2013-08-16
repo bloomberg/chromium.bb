@@ -24,6 +24,8 @@ using content::PasswordForm;
 
 using ::testing::Eq;
 
+namespace {
+
 class TestPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
   explicit TestPasswordManagerDelegate(Profile* profile) : profile_(profile) {}
@@ -50,6 +52,8 @@ class TestPasswordManager : public PasswordManager {
       const content::PasswordForm& preferred_match,
       bool wait_for_username) const OVERRIDE {}
 };
+
+}  // namespace
 
 class TestPasswordFormManager : public PasswordFormManager {
  public:

@@ -112,8 +112,109 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTest);
 };
 
-
 // Actual tests ---------------------------------------------------------------
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForNormalSubmit) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL("files/password/password_form.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Fill a form and submit through a <input type="submit"> button. Nothing
+  // special.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('input_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForSubmitUsingJavaScript) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL("files/password/password_form.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Fill a form and submit using <button> that calls submit() on the form.
+  // This should work regardless of the type of element, as long as submit() is
+  // called.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_field').value = 'temp';"
+      "document.getElementById('password_field').value = 'random';"
+      "document.getElementById('submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, NoPromptForNavigation) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL("files/password/password_form.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Don't fill the password form, just navigate away. Shouldn't prompt.
+  NavigationObserver observer(WebContents());
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
+                                     "window.location.href = 'done.html';"));
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       NoPromptForSubFrameNavigation) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL("files/password/multi_frames.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // If you are filling out a password form in one frame and a different frame
+  // navigates, this should not trigger the infobar.
+  NavigationObserver observer(WebContents());
+  std::string fill =
+      "var first_frame = document.getElementById('first_frame');"
+      "var frame_doc = first_frame.contentDocument;"
+      "frame_doc.getElementById('username_field').value = 'temp';"
+      "frame_doc.getElementById('password_field').value = 'random';";
+  std::string navigate_frame =
+      "var second_iframe = document.getElementById('second_frame');"
+      "second_iframe.contentWindow.location.href = 'done.html';";
+
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
+  observer.Wait();
+  EXPECT_FALSE(observer.infobar_shown());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptAfterSubmitWithSubFrameNavigation) {
+  ASSERT_TRUE(test_server()->Start());
+
+  GURL url = test_server()->GetURL("files/password/multi_frames.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Make sure that we prompt to save password even if a sub-frame navigation
+  // happens first.
+  NavigationObserver observer(WebContents());
+  std::string navigate_frame =
+      "var second_iframe = document.getElementById('second_frame');"
+      "second_iframe.contentWindow.location.href = 'done.html';";
+  std::string fill_and_submit =
+      "var first_frame = document.getElementById('first_frame');"
+      "var frame_doc = first_frame.contentDocument;"
+      "frame_doc.getElementById('username_field').value = 'temp';"
+      "frame_doc.getElementById('password_field').value = 'random';"
+      "frame_doc.getElementById('input_submit_button').click();";
+
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForXHRSubmit) {
 #if defined(OS_WIN) && defined(USE_ASH)

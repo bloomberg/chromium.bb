@@ -212,6 +212,10 @@ IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsParsed,
 IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormsRendered,
                     std::vector<content::PasswordForm> /* forms */)
 
+// Notification that this password form was submitted by the user.
+IPC_MESSAGE_ROUTED1(AutofillHostMsg_PasswordFormSubmitted,
+                    content::PasswordForm /* form */)
+
 // Notification that a form has been submitted.  The user hit the button.
 IPC_MESSAGE_ROUTED2(AutofillHostMsg_FormSubmitted,
                     autofill::FormData /* form */,

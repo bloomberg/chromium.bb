@@ -325,7 +325,7 @@ void OneClickSigninHelperTest::SubmitGAIAPassword(
   password_form.origin = GURL("https://accounts.google.com");
   password_form.signon_realm = "https://accounts.google.com";
   password_form.password_value = UTF8ToUTF16("password");
-  helper->OnFormSubmitted(password_form);
+  helper->PasswordSubmitted(password_form);
 }
 
 class OneClickSigninHelperIOTest : public OneClickSigninHelperTest {
@@ -650,7 +650,7 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
 
   content::WebContents* contents = web_contents();
 
-  OneClickSigninHelper::CreateForWebContents(contents);
+  OneClickSigninHelper::CreateForWebContentsWithPasswordManager(contents, NULL);
   OneClickSigninHelper* helper =
       OneClickSigninHelper::FromWebContents(contents);
   helper->SetDoNotClearPendingEmailForTesting();
@@ -678,7 +678,7 @@ TEST_F(OneClickSigninHelperTest, SigninFromWebstoreWithConfigSyncfirst) {
 TEST_F(OneClickSigninHelperTest, CleanTransientStateOnNavigate) {
   content::WebContents* contents = web_contents();
 
-  OneClickSigninHelper::CreateForWebContents(contents);
+  OneClickSigninHelper::CreateForWebContentsWithPasswordManager(contents, NULL);
   OneClickSigninHelper* helper =
       OneClickSigninHelper::FromWebContents(contents);
   helper->SetDoNotClearPendingEmailForTesting();

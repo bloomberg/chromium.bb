@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "base/memory/linked_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -67,14 +68,21 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
     PasswordInfo() : backspace_pressed_last(false) {}
   };
   typedef std::map<WebKit::WebElement, PasswordInfo> LoginToPasswordInfoMap;
+  typedef std::map<WebKit::WebFrame*,
+                   linked_ptr<content::PasswordForm> > FrameToPasswordFormMap;
 
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
   virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
   virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void WillSendSubmitEvent(WebKit::WebFrame* frame,
+                                   const WebKit::WebFormElement& form) OVERRIDE;
+  virtual void WillSubmitForm(WebKit::WebFrame* frame,
+                              const WebKit::WebFormElement& form) OVERRIDE;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data);
@@ -122,6 +130,10 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
 
   // Pointer to the WebView. Used to access page scale factor.
   WebKit::WebView* web_view_;
+
+  // Set if the user might be submitting a password form on the current page,
+  // but the submit may still fail (i.e. doesn't pass JavaScript validation).
+  FrameToPasswordFormMap provisionally_saved_forms_;
 
   base::WeakPtrFactory<PasswordAutofillAgent> weak_ptr_factory_;
 

@@ -67,7 +67,6 @@
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/history_item_serialization.h"
 #include "content/public/renderer/navigation_state.h"
-#include "content/public/renderer/password_form_conversion_utils.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
@@ -1991,10 +1990,6 @@ void RenderViewImpl::UpdateURL(WebFrame* frame) {
   params.searchable_form_url = internal_data->searchable_form_url();
   params.searchable_form_encoding = internal_data->searchable_form_encoding();
 
-  const PasswordForm* password_form_data = document_state->password_form_data();
-  if (password_form_data)
-    params.password_form = *password_form_data;
-
   params.gesture = navigation_gesture_;
   navigation_gesture_ = NavigationGestureUnknown;
 
@@ -3385,7 +3380,8 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
 
 void RenderViewImpl::willSendSubmitEvent(WebKit::WebFrame* frame,
     const WebKit::WebFormElement& form) {
-  NOTREACHED();
+  FOR_EACH_OBSERVER(
+      RenderViewObserver, observers_, WillSendSubmitEvent(frame, form));
 }
 
 void RenderViewImpl::willSubmitForm(WebFrame* frame,
@@ -3599,23 +3595,6 @@ void RenderViewImpl::didStartProvisionalLoad(WebFrame* frame) {
   if (is_top_most) {
     navigation_gesture_ = WebUserGestureIndicator::isProcessingUserGesture() ?
         NavigationGestureUser : NavigationGestureAuto;
-
-    // If the navigation is not triggered by a user gesture, e.g. by some ajax
-    // callback, then inherit the submitted password form from the previous
-    // state. This fixes the no password save issue for ajax login, tracked in
-    // [http://crbug/43219]. Note that there are still some sites that this
-    // fails for because they use some element other than a submit button to
-    // trigger submission.
-    if (navigation_gesture_ == NavigationGestureAuto) {
-      DocumentState* old_document_state = DocumentState::FromDataSource(
-          frame->dataSource());
-      const content::PasswordForm* old_password_form =
-          old_document_state->password_form_data();
-      if (old_password_form) {
-        document_state->set_password_form_data(
-            make_scoped_ptr(new content::PasswordForm(*old_password_form)));
-      }
-    }
   } else if (frame->parent()->isLoading()) {
     // Take note of AUTO_SUBFRAME loads here, so that we can know how to
     // load an error page.  See didFailProvisionalLoad.

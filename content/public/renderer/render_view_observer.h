@@ -67,6 +67,8 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
                             WebKit::WebFrame* frame) {}
   virtual void FrameDetached(WebKit::WebFrame* frame) {}
   virtual void FrameWillClose(WebKit::WebFrame* frame) {}
+  virtual void WillSendSubmitEvent(WebKit::WebFrame* frame,
+                                   const WebKit::WebFormElement& form) {}
   virtual void WillSubmitForm(WebKit::WebFrame* frame,
                               const WebKit::WebFormElement& form) {}
   virtual void DidCreateDataSource(WebKit::WebFrame* frame,

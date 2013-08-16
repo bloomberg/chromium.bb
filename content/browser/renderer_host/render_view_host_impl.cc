@@ -1239,8 +1239,6 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
     FilterURL(policy, process, false, &(*it));
   }
   FilterURL(policy, process, true, &validated_params.searchable_form_url);
-  FilterURL(policy, process, true, &validated_params.password_form.origin);
-  FilterURL(policy, process, true, &validated_params.password_form.action);
 
   // Without this check, the renderer can trick the browser into using
   // filenames it can't access in a future session restore.

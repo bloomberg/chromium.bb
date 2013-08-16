@@ -18,7 +18,6 @@
 namespace content {
 
 class NavigationState;
-struct PasswordForm;
 
 // The RenderView stores an instance of this class in the "extra data" of each
 // WebDataSource (see RenderView::DidCreateDataSource).
@@ -162,20 +161,6 @@ class CONTENT_EXPORT DocumentState
     was_fetched_via_proxy_ = value;
   }
 
-  // If set, contains the PasswordForm that we believe triggered the current
-  // navigation (there is some ambiguity in the case of javascript initiated
-  // navigations). This information is used by the PasswordManager to determine
-  // if the user should be prompted to save their password.
-  //
-  // Note that setting this field doesn't affect where the data is sent or what
-  // origin we associate it with, only whether we prompt the user to save it.
-  // That is, a false positive is a usability issue (e.g. may try to save a
-  // mis-typed password) not a security issue.
-  PasswordForm* password_form_data() const {
-    return password_form_data_.get();
-  }
-  void set_password_form_data(scoped_ptr<PasswordForm> data);
-
   void set_was_prefetcher(bool value) { was_prefetcher_ = value; }
   bool was_prefetcher() const { return was_prefetcher_; }
 
@@ -219,8 +204,6 @@ class CONTENT_EXPORT DocumentState
   bool was_alternate_protocol_available_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
   bool was_fetched_via_proxy_;
-
-  scoped_ptr<PasswordForm> password_form_data_;
 
   // A prefetcher is a page that contains link rel=prefetch elements.
   bool was_prefetcher_;

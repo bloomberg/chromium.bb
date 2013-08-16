@@ -44,7 +44,6 @@
 #include "chrome/renderer/net/prescient_networking_dispatcher.h"
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
-#include "chrome/renderer/one_click_signin_agent.h"
 #include "chrome/renderer/page_load_histograms.h"
 #include "chrome/renderer/pepper/pepper_helper.h"
 #include "chrome/renderer/pepper/ppb_nacl_private_impl.h"
@@ -389,10 +388,6 @@ void ChromeContentRendererClient::RenderViewCreated(
 #endif
 
   new NetErrorHelper(render_view);
-
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  new OneClickSigninAgent(render_view);
-#endif
 }
 
 void ChromeContentRendererClient::SetNumberOfViews(int number_of_views) {

@@ -144,7 +144,8 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
     PopupBlockerTabHelper::CreateForWebContents(web_contents);
   }
   PrefsTabHelper::CreateForWebContents(web_contents);
-  prerender::PrerenderTabHelper::CreateForWebContents(web_contents);
+  prerender::PrerenderTabHelper::CreateForWebContentsWithPasswordManager(
+      web_contents, PasswordManager::FromWebContents(web_contents));
   SadTabHelper::CreateForWebContents(web_contents);
   safe_browsing::SafeBrowsingTabObserver::CreateForWebContents(web_contents);
   SearchEngineTabHelper::CreateForWebContents(web_contents);
@@ -183,7 +184,8 @@ void BrowserTabContents::AttachTabHelpers(WebContents* web_contents) {
                                      OneClickSigninHelper::CAN_OFFER_FOR_ALL,
                                      std::string(),
                                      NULL)) {
-    OneClickSigninHelper::CreateForWebContents(web_contents);
+    OneClickSigninHelper::CreateForWebContentsWithPasswordManager(
+        web_contents, PasswordManager::FromWebContents(web_contents));
   }
 #endif
 
