@@ -60,7 +60,7 @@ void CustomElementRegistrationContext::registerElement(Document* document, Custo
 
 PassRefPtr<Element> CustomElementRegistrationContext::createCustomTagElement(Document* document, const QualifiedName& tagName, CreationMode mode)
 {
-    ASSERT(CustomElement::isCustomTagName(tagName.localName()));
+    ASSERT(CustomElement::isValidName(tagName.localName()));
 
     if (!document)
         return 0;
@@ -90,7 +90,7 @@ void CustomElementRegistrationContext::resolve(Element* element, const AtomicStr
 {
     // If an element has a custom tag name it takes precedence over
     // the "is" attribute (if any).
-    const AtomicString& type = CustomElement::isCustomTagName(element->localName())
+    const AtomicString& type = CustomElement::isValidName(element->localName())
         ? element->localName()
         : typeExtension;
     ASSERT(!type.isNull());
@@ -142,7 +142,7 @@ void CustomElementRegistrationContext::setTypeExtension(Element* element, const 
     }
 
     // Custom tags take precedence over type extensions
-    ASSERT(!CustomElement::isCustomTagName(element->localName()));
+    ASSERT(!CustomElement::isValidName(element->localName()));
 
     element->setCustomElementState(mode == CreatedByParser ? Element::WaitingForParser : Element::WaitingForUpgrade);
 

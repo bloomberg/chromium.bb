@@ -73,7 +73,7 @@ CustomElementDefinition* CustomElementRegistry::registerElement(Document* docume
         return 0;
     }
 
-    if (!CustomElement::isValidTypeName(type)) {
+    if (!CustomElement::isValidName(type)) {
         CustomElementException::throwException(CustomElementException::InvalidName, type, es);
         return 0;
     }

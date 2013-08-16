@@ -49,12 +49,12 @@ Vector<AtomicString>& CustomElement::allowedCustomTagNames()
 void CustomElement::allowTagName(const AtomicString& localName)
 {
     AtomicString lower = localName.lower();
-    if (isCustomTagName(lower))
+    if (isValidName(lower))
         return;
     allowedCustomTagNames().append(lower);
 }
 
-bool CustomElement::isValidTypeName(const AtomicString& name)
+bool CustomElement::isValidName(const AtomicString& name)
 {
     if (notFound != allowedCustomTagNames().find(name))
         return true;
@@ -81,11 +81,6 @@ bool CustomElement::isValidTypeName(const AtomicString& name)
         return false;
 
     return Document::isValidName(name.string());
-}
-
-bool CustomElement::isCustomTagName(const AtomicString& localName)
-{
-    return isValidTypeName(localName);
 }
 
 void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition> passDefinition)

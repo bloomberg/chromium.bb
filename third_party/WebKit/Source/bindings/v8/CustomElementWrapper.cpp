@@ -78,7 +78,7 @@ v8::Handle<v8::Object> createFallbackWrapper<SVGElement>(SVGElement* element, v8
 template<typename ElementType>
 v8::Handle<v8::Object> createUpgradeCandidateWrapper(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate, v8::Handle<v8::Object> (*createSpecificWrapper)(ElementType* element, v8::Handle<v8::Object> creationContext, v8::Isolate*))
 {
-    if (CustomElement::isCustomTagName(element->localName()))
+    if (CustomElement::isValidName(element->localName()))
         return createDirectWrapper(element, creationContext, isolate);
     if (createSpecificWrapper)
         return createSpecificWrapper(element, creationContext, isolate);

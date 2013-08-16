@@ -716,7 +716,7 @@ PassRefPtr<Element> Document::createElement(const AtomicString& localName, const
 
     RefPtr<Element> element;
 
-    if (CustomElement::isCustomTagName(localName) && registrationContext())
+    if (CustomElement::isValidName(localName) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, QualifiedName(nullAtom, localName, xhtmlNamespaceURI));
     else
         element = createElement(localName, es);
@@ -740,7 +740,7 @@ PassRefPtr<Element> Document::createElementNS(const AtomicString& namespaceURI, 
     }
 
     RefPtr<Element> element;
-    if (CustomElement::isCustomTagName(qName.localName()) && registrationContext())
+    if (CustomElement::isValidName(qName.localName()) && registrationContext())
         element = registrationContext()->createCustomTagElement(this, qName);
     else
         element = createElementNS(namespaceURI, qualifiedName, es);

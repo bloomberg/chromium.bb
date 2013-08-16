@@ -46,12 +46,7 @@ class Element;
 
 class CustomElement {
 public:
-    // FIXME: CustomElementRegistry requires isValidTypeName to be a
-    // superset of isCustomTagName; consider either merging these or
-    // separating them completely into
-    // isCustomTagName/isTypeExtensionName.
-    static bool isValidTypeName(const AtomicString& type);
-    static bool isCustomTagName(const AtomicString& localName);
+    static bool isValidName(const AtomicString& name);
     static void allowTagName(const AtomicString& localName);
 
     // API for registration contexts
