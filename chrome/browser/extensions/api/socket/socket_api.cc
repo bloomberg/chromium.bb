@@ -47,28 +47,37 @@ const char kMulticastSocketTypeError[] =
 const char kWildcardAddress[] = "*";
 const int kWildcardPort = 0;
 
-SocketAsyncApiFunction::SocketAsyncApiFunction()
-    : manager_(NULL) {
+SocketAsyncApiFunction::SocketAsyncApiFunction() {
 }
 
 SocketAsyncApiFunction::~SocketAsyncApiFunction() {
 }
 
 bool SocketAsyncApiFunction::PrePrepare() {
-  manager_ = ApiResourceManager<Socket>::Get(profile());
-  DCHECK(manager_) << "There is no socket manager. "
-    "If this assertion is failing during a test, then it is likely that "
-    "TestExtensionSystem is failing to provide an instance of "
-    "ApiResourceManager<Socket>.";
-  return manager_ != NULL;
+  manager_ = CreateSocketResourceManager();
+  return manager_->SetProfile(profile());
 }
 
 bool SocketAsyncApiFunction::Respond() {
   return error_.empty();
 }
 
+scoped_ptr<SocketResourceManagerInterface>
+    SocketAsyncApiFunction::CreateSocketResourceManager() {
+  return scoped_ptr<SocketResourceManagerInterface>(
+      new SocketResourceManager<Socket>()).Pass();
+}
+
+int SocketAsyncApiFunction::AddSocket(Socket* socket) {
+  return manager_->Add(socket);
+}
+
 Socket* SocketAsyncApiFunction::GetSocket(int api_resource_id) {
   return manager_->Get(extension_->id(), api_resource_id);
+}
+
+base::hash_set<int>* SocketAsyncApiFunction::GetSocketIds() {
+  return manager_->GetResourceIds(extension_->id());
 }
 
 void SocketAsyncApiFunction::RemoveSocket(int api_resource_id) {
@@ -152,7 +161,7 @@ void SocketCreateFunction::Work() {
   DCHECK(socket);
 
   base::DictionaryValue* result = new base::DictionaryValue();
-  result->SetInteger(kSocketIdKey, manager_->Add(socket));
+  result->SetInteger(kSocketIdKey, AddSocket(socket));
   SetResult(result);
 }
 
@@ -352,7 +361,7 @@ void SocketAcceptFunction::OnAccept(int result_code,
   result->SetInteger(kResultCodeKey, result_code);
   if (socket) {
     Socket *client_socket = new TCPSocket(socket, extension_id(), true);
-    result->SetInteger(kSocketIdKey, manager_->Add(client_socket));
+    result->SetInteger(kSocketIdKey, AddSocket(client_socket));
   }
   SetResult(result);
 

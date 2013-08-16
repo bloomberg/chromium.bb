@@ -27,6 +27,66 @@ namespace extensions {
 
 class Socket;
 
+// A simple interface to ApiResourceManager<Socket> or derived class. The goal
+// of this interface is to allow Socket API functions to use distinct instances
+// of ApiResourceManager<> depending on the type of socket (old version in
+// "socket" namespace vs new version in "socket.xxx" namespaces).
+class SocketResourceManagerInterface {
+ public:
+  virtual ~SocketResourceManagerInterface() {}
+
+  virtual bool SetProfile(Profile* profile) = 0;
+  virtual int Add(Socket *socket) = 0;
+  virtual Socket* Get(const std::string& extension_id,
+                      int api_resource_id) = 0;
+  virtual void Remove(const std::string& extension_id,
+                      int api_resource_id) = 0;
+  virtual base::hash_set<int>* GetResourceIds(
+      const std::string& extension_id) = 0;
+};
+
+// Implementation of SocketResourceManagerInterface using an
+// ApiResourceManager<T> instance (where T derives from Socket).
+template<typename T>
+class SocketResourceManager : public SocketResourceManagerInterface {
+ public:
+  SocketResourceManager()
+      : manager_(NULL) {
+  }
+
+  virtual bool SetProfile(Profile* profile) OVERRIDE {
+    manager_ = ApiResourceManager<T>::Get(profile);
+    DCHECK(manager_) << "There is no socket manager. "
+      "If this assertion is failing during a test, then it is likely that "
+      "TestExtensionSystem is failing to provide an instance of "
+      "ApiResourceManager<Socket>.";
+    return manager_ != NULL;
+  }
+
+  virtual int Add(Socket *socket) OVERRIDE {
+    // Note: Cast needed here, because "T" may be a subclass of "Socket".
+    return manager_->Add(static_cast<T*>(socket));
+  }
+
+  virtual Socket* Get(const std::string& extension_id,
+                      int api_resource_id) OVERRIDE {
+    return manager_->Get(extension_id, api_resource_id);
+  }
+
+  virtual void Remove(const std::string& extension_id,
+                      int api_resource_id) OVERRIDE {
+    manager_->Remove(extension_id, api_resource_id);
+  }
+
+  virtual base::hash_set<int>* GetResourceIds(
+      const std::string& extension_id) OVERRIDE {
+    return manager_->GetResourceIds(extension_id);
+  }
+
+ private:
+  ApiResourceManager<T>* manager_;
+};
+
 class SocketAsyncApiFunction : public AsyncApiFunction {
  public:
   SocketAsyncApiFunction();
@@ -38,10 +98,16 @@ class SocketAsyncApiFunction : public AsyncApiFunction {
   virtual bool PrePrepare() OVERRIDE;
   virtual bool Respond() OVERRIDE;
 
+  virtual scoped_ptr<SocketResourceManagerInterface>
+      CreateSocketResourceManager();
+
+  int AddSocket(Socket* socket);
   Socket* GetSocket(int api_resource_id);
   void RemoveSocket(int api_resource_id);
+  base::hash_set<int>* GetSocketIds();
 
-  ApiResourceManager<Socket>* manager_;
+ private:
+  scoped_ptr<SocketResourceManagerInterface> manager_;
 };
 
 class SocketExtensionWithDnsLookupFunction : public SocketAsyncApiFunction {

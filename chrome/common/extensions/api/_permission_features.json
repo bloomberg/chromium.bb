@@ -562,6 +562,10 @@
       "kodldpbjkkmmnilagfdheibampofhaom"
     ]
   }],
+  "sockets.udp": {
+    "channel": "dev",
+    "extension_types": ["platform_app"]
+  },
   "syncFileSystem": {
     "channel": "stable",
     "extension_types": ["platform_app"]

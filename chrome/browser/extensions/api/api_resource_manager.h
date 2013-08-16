@@ -7,11 +7,13 @@
 
 #include <map>
 
+#include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
 #include "base/memory/linked_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
+#include "chrome/browser/extensions/extension_host.h"
 #include "chrome/common/extensions/extension.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -69,6 +71,10 @@ class ApiResourceManager : public ProfileKeyedAPI,
       this,
       chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::NotificationService::AllSources());
+    registrar_.Add(
+      this,
+      chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED,
+      content::NotificationService::AllSources());
   }
 
   // For Testing.
@@ -113,6 +119,10 @@ class ApiResourceManager : public ProfileKeyedAPI,
     return data_->Get(extension_id, api_resource_id);
   }
 
+  base::hash_set<int>* GetResourceIds(const std::string& extension_id) {
+    return data_->GetResourceIds(extension_id);
+  }
+
  protected:
   // content::NotificationObserver:
   virtual void Observe(int type,
@@ -123,7 +133,12 @@ class ApiResourceManager : public ProfileKeyedAPI,
         std::string id =
             content::Details<extensions::UnloadedExtensionInfo>(details)->
                 extension->id();
-        data_->InitiateCleanup(id);
+        data_->InitiateExtensionUnloadedCleanup(id);
+        break;
+      }
+      case chrome::NOTIFICATION_EXTENSION_HOST_DESTROYED: {
+        ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
+        data_->InitiateExtensionSuspendedCleanup(host->extension_id());
         break;
       }
     }
@@ -185,9 +200,20 @@ class ApiResourceManager : public ProfileKeyedAPI,
       return GetOwnedResource(extension_id, api_resource_id);
     }
 
-    void InitiateCleanup(const std::string& extension_id) {
+    base::hash_set<int>* GetResourceIds(const std::string& extension_id) {
+      DCHECK(content::BrowserThread::CurrentlyOn(thread_id_));
+      return GetOwnedResourceIds(extension_id);
+    }
+
+    void InitiateExtensionUnloadedCleanup(const std::string& extension_id) {
       content::BrowserThread::PostTask(thread_id_, FROM_HERE,
-          base::Bind(&ApiResourceData::CleanupResourcesFromExtension,
+          base::Bind(&ApiResourceData::CleanupResourcesFromUnloadedExtension,
+                     base::Unretained(this), extension_id));
+    }
+
+    void InitiateExtensionSuspendedCleanup(const std::string& extension_id) {
+      content::BrowserThread::PostTask(thread_id_, FROM_HERE,
+          base::Bind(&ApiResourceData::CleanupResourcesFromSuspendedExtension,
                      base::Unretained(this), extension_id));
     }
 
@@ -201,16 +227,59 @@ class ApiResourceManager : public ProfileKeyedAPI,
       return NULL;
     }
 
-    void CleanupResourcesFromExtension(const std::string& extension_id) {
+    base::hash_set<int>* GetOwnedResourceIds(const std::string& extension_id) {
       DCHECK(content::BrowserThread::CurrentlyOn(thread_id_));
-      if (extension_resource_map_.find(extension_id) !=
+      if (extension_resource_map_.find(extension_id) ==
+          extension_resource_map_.end())
+        return NULL;
+
+      return &extension_resource_map_[extension_id];
+    }
+
+    void CleanupResourcesFromUnloadedExtension(
+        const std::string& extension_id) {
+      CleanupResourcesFromExtension(extension_id, true);
+    }
+
+    void CleanupResourcesFromSuspendedExtension(
+        const std::string& extension_id) {
+      CleanupResourcesFromExtension(extension_id, false);
+    }
+
+    void CleanupResourcesFromExtension(const std::string& extension_id,
+                                       bool remove_all) {
+      DCHECK(content::BrowserThread::CurrentlyOn(thread_id_));
+
+      if (extension_resource_map_.find(extension_id) ==
           extension_resource_map_.end()) {
-        base::hash_set<int>& resource_ids =
-            extension_resource_map_[extension_id];
-        for (base::hash_set<int>::iterator it = resource_ids.begin();
-             it != resource_ids.end(); ++it) {
-          api_resource_map_.erase(*it);
+        return;
+      }
+
+      // Remove all resources, or the non persistent ones only if |remove_all|
+      // is false.
+      base::hash_set<int>& resource_ids =
+          extension_resource_map_[extension_id];
+      for (base::hash_set<int>::iterator it = resource_ids.begin();
+            it != resource_ids.end(); ) {
+        bool erase = false;
+        if (remove_all) {
+          erase = true;
+        } else {
+          linked_ptr<T> ptr = api_resource_map_[*it];
+          T* resource = ptr.get();
+          erase = (resource && !resource->persistent());
         }
+
+        if (erase) {
+          api_resource_map_.erase(*it);
+          resource_ids.erase(it++);
+        } else {
+          ++it;
+        }
+      }  // end for
+
+      // Remove extension entry if we removed all its resources.
+      if (resource_ids.size() == 0) {
         extension_resource_map_.erase(extension_id);
       }
     }

@@ -253,6 +253,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kSocket, "socket",
       APIPermissionInfo::kFlagCannotBeOptional, 0,
       PermissionMessage::kNone, &CreateAPIPermission<SocketPermission> },
+    { APIPermission::kSocketsUdp, "sockets.udp" },
     { APIPermission::kAppCurrentWindowInternal, "app.currentWindowInternal" },
     { APIPermission::kAppRuntime, "app.runtime" },
     { APIPermission::kAppWindow, "app.window" },

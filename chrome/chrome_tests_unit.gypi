@@ -822,6 +822,7 @@
         'browser/extensions/api/socket/socket_api_unittest.cc',
         'browser/extensions/api/socket/tcp_socket_unittest.cc',
         'browser/extensions/api/socket/udp_socket_unittest.cc',
+        'browser/extensions/api/sockets_udp/sockets_udp_api_unittest.cc',
         'browser/extensions/api/storage/policy_value_store_unittest.cc',
         'browser/extensions/api/storage/settings_frontend_unittest.cc',
         'browser/extensions/api/storage/settings_quota_unittest.cc',

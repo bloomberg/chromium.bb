@@ -734,6 +734,7 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kFileSystem);
   skip.insert(APIPermission::kFileSystemRetainEntries);
   skip.insert(APIPermission::kSocket);
+  skip.insert(APIPermission::kSocketsUdp);
   skip.insert(APIPermission::kUsbDevice);
 
   PermissionsInfo* info = PermissionsInfo::GetInstance();

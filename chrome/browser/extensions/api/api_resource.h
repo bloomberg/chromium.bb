@@ -23,6 +23,8 @@ class ApiResource {
     return owner_extension_id_;
   }
 
+  virtual bool persistent() const;
+
   static const content::BrowserThread::ID kThreadId =
       content::BrowserThread::IO;
 

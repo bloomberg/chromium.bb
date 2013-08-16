@@ -89,6 +89,7 @@
           'serial.idl',
           'session_restore.json',
           'socket.idl',
+          'sockets_udp.idl',
           'storage.json',
           'sync_file_system.idl',
           'system_indicator.idl',

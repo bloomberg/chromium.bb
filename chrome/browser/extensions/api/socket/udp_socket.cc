@@ -14,6 +14,17 @@
 
 namespace extensions {
 
+static base::LazyInstance<ProfileKeyedAPIFactory<
+      ApiResourceManager<ResumableUDPSocket> > >
+          g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+template <>
+ProfileKeyedAPIFactory<ApiResourceManager<ResumableUDPSocket> >*
+ApiResourceManager<ResumableUDPSocket>::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
 UDPSocket::UDPSocket(const std::string& owner_extension_id)
     : Socket(owner_extension_id),
       socket_(net::DatagramSocket::DEFAULT_BIND,
@@ -276,6 +287,36 @@ int UDPSocket::SetMulticastLoopbackMode(bool loopback) {
 
 const std::vector<std::string>& UDPSocket::GetJoinedGroups() const {
   return multicast_groups_;
+}
+
+ResumableUDPSocket::ResumableUDPSocket(const std::string& owner_extension_id)
+    : UDPSocket(owner_extension_id),
+      persistent_(false),
+      buffer_size_(0) {
+}
+
+const std::string& ResumableUDPSocket::name() const {
+  return name_;
+}
+
+void ResumableUDPSocket::set_name(const std::string& name) {
+  name_ = name;
+}
+
+bool ResumableUDPSocket::persistent() const {
+  return persistent_;
+}
+
+void ResumableUDPSocket::set_persistent(bool persistent) {
+  persistent_ = persistent;
+}
+
+int ResumableUDPSocket::buffer_size() const {
+  return buffer_size_;
+}
+
+void ResumableUDPSocket::set_buffer_size(int buffer_size) {
+  buffer_size_ = buffer_size;
 }
 
 }  // namespace extensions

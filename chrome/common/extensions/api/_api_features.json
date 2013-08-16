@@ -470,6 +470,11 @@
     "dependencies": ["permission:socket"],
     "contexts": ["blessed_extension"]
   },
+  "sockets.udp": {
+    "dependencies": ["permission:sockets.udp"],
+    "channel": "dev",
+    "contexts": ["blessed_extension"]
+  },
   "storage": {
     "dependencies": ["permission:storage"],
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
