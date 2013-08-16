@@ -1092,7 +1092,7 @@ FlowThreadController* RenderView::flowThreadController()
     return m_flowThreadController.get();
 }
 
-RenderBlock::IntervalArena* RenderView::intervalArena()
+IntervalArena* RenderView::intervalArena()
 {
     if (!m_intervalArena)
         m_intervalArena = IntervalArena::create();

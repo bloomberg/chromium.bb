@@ -36,7 +36,6 @@
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
-#include "core/platform/PODFreeListArena.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
 #include "core/platform/graphics/transforms/TransformState.h"
@@ -81,13 +80,6 @@ struct SameSizeAsRenderBlock : public RenderBox {
 };
 
 COMPILE_ASSERT(sizeof(RenderBlock) == sizeof(SameSizeAsRenderBlock), RenderBlock_should_stay_small);
-
-struct SameSizeAsFloatingObject {
-    void* pointers[2];
-    LayoutRect rect;
-    int paginationStrut;
-    uint32_t bitfields : 8;
-};
 
 COMPILE_ASSERT(sizeof(RenderBlock::MarginValues) == sizeof(LayoutUnit[4]), MarginValues_should_stay_small);
 
@@ -200,7 +192,6 @@ RenderBlock::RenderBlock(ContainerNode* node)
     , m_hasBorderOrPaddingLogicalWidthChanged(false)
 {
     setChildrenInline(true);
-    COMPILE_ASSERT(sizeof(RenderBlock::FloatingObject) == sizeof(SameSizeAsFloatingObject), FloatingObject_should_stay_small);
     COMPILE_ASSERT(sizeof(RenderBlock::MarginInfo) == sizeof(SameSizeAsMarginInfo), MarginInfo_should_stay_small);
 }
 
@@ -230,12 +221,6 @@ RenderBlock::~RenderBlock()
         removeBlockFromDescendantAndContainerMaps(this, gPercentHeightDescendantsMap, gPercentHeightContainerMap);
     if (gPositionedDescendantsMap)
         removeBlockFromDescendantAndContainerMaps(this, gPositionedDescendantsMap, gPositionedContainerMap);
-}
-
-RenderBlock::FloatingObjects::~FloatingObjects()
-{
-    // FIXME: m_set should use OwnPtr instead.
-    deleteAllValues(m_set);
 }
 
 RenderBlock* RenderBlock::createAnonymous(Document* document)
@@ -968,16 +953,6 @@ static void getInlineRun(RenderObject* start, RenderObject* boundary,
             curr = curr->nextSibling();
         }
     } while (!sawInline);
-}
-
-void RenderBlock::FloatingObjects::clearLineBoxTreePointers()
-{
-    // Clear references to originating lines, since the lines are being deleted
-    FloatingObjectSetIterator end = m_set.end();
-    for (FloatingObjectSetIterator it = m_set.begin(); it != end; ++it) {
-        ASSERT(!((*it)->originatingLine()) || (*it)->originatingLine()->renderer() == m_renderer);
-        (*it)->setOriginatingLine(0);
-    }
 }
 
 void RenderBlock::deleteLineBoxTree()
@@ -3901,7 +3876,7 @@ void RenderBlock::removeFloatingObjects()
     m_floatingObjects->clear();
 }
 
-RenderBlock::FloatingObject* RenderBlock::insertFloatingObject(RenderBox* o)
+FloatingObject* RenderBlock::insertFloatingObject(RenderBox* o)
 {
     ASSERT(o->isFloating());
 
@@ -4253,71 +4228,6 @@ void RenderBlock::clearPercentHeightDescendantsFrom(RenderBox* parent)
 
         removePercentHeightDescendant(box);
     }
-}
-
-inline static bool rangesIntersect(int floatTop, int floatBottom, int objectTop, int objectBottom)
-{
-    if (objectTop >= floatBottom || objectBottom < floatTop)
-        return false;
-
-    // The top of the object overlaps the float
-    if (objectTop >= floatTop)
-        return true;
-
-    // The object encloses the float
-    if (objectTop < floatTop && objectBottom > floatBottom)
-        return true;
-
-    // The bottom of the object overlaps the float
-    if (objectBottom > objectTop && objectBottom > floatTop && objectBottom <= floatBottom)
-        return true;
-
-    return false;
-}
-
-template<>
-inline bool RenderBlock::ComputeFloatOffsetAdapter<RenderBlock::FloatingObject::FloatLeft>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
-{
-    LayoutUnit logicalRight = floatingObject->logicalRight(m_renderer->isHorizontalWritingMode());
-    if (logicalRight > m_offset) {
-        m_offset = logicalRight;
-        return true;
-    }
-    return false;
-}
-
-template<>
-inline bool RenderBlock::ComputeFloatOffsetAdapter<RenderBlock::FloatingObject::FloatRight>::updateOffsetIfNeeded(const FloatingObject* floatingObject)
-{
-    LayoutUnit logicalLeft = floatingObject->logicalLeft(m_renderer->isHorizontalWritingMode());
-    if (logicalLeft < m_offset) {
-        m_offset = logicalLeft;
-        return true;
-    }
-    return false;
-}
-
-template <RenderBlock::FloatingObject::Type FloatTypeValue>
-inline void RenderBlock::ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const IntervalType& interval)
-{
-    const FloatingObject* floatingObject = interval.data();
-    if (floatingObject->type() != FloatTypeValue || !rangesIntersect(interval.low(), interval.high(), m_lineTop, m_lineBottom))
-        return;
-
-    // Make sure the float hasn't changed since it was added to the placed floats tree.
-    ASSERT(floatingObject->isPlaced());
-    ASSERT(interval.low() == floatingObject->pixelSnappedLogicalTop(m_renderer->isHorizontalWritingMode()));
-    ASSERT(interval.high() == floatingObject->pixelSnappedLogicalBottom(m_renderer->isHorizontalWritingMode()));
-
-    bool floatIsNewExtreme = updateOffsetIfNeeded(floatingObject);
-    if (floatIsNewExtreme)
-        m_outermostFloat = floatingObject;
-}
-
-template <RenderBlock::FloatingObject::Type FloatTypeValue>
-LayoutUnit RenderBlock::ComputeFloatOffsetAdapter<FloatTypeValue>::getHeightRemaining() const
-{
-    return m_outermostFloat ? m_outermostFloat->logicalBottom(m_renderer->isHorizontalWritingMode()) - m_lineTop : LayoutUnit(1);
 }
 
 LayoutUnit RenderBlock::textIndentOffset() const
@@ -7925,152 +7835,9 @@ const char* RenderBlock::renderName() const
     return "RenderBlock";
 }
 
-inline RenderBlock::FloatingObjects::FloatingObjects(const RenderBlock* renderer, bool horizontalWritingMode)
-    : m_placedFloatsTree(UninitializedTree)
-    , m_leftObjectsCount(0)
-    , m_rightObjectsCount(0)
-    , m_horizontalWritingMode(horizontalWritingMode)
-    , m_renderer(renderer)
-{
-}
-
 void RenderBlock::createFloatingObjects()
 {
     m_floatingObjects = adoptPtr(new FloatingObjects(this, isHorizontalWritingMode()));
-}
-
-inline void RenderBlock::FloatingObjects::clear()
-{
-    // FIXME: This should call deleteAllValues, except RenderBlock::clearFloats
-    // like to play fast and loose with ownership of these pointers.
-    // If we move to OwnPtr that will fix this ownership oddness.
-    m_set.clear();
-    m_placedFloatsTree.clear();
-    m_leftObjectsCount = 0;
-    m_rightObjectsCount = 0;
-}
-
-inline void RenderBlock::FloatingObjects::increaseObjectsCount(FloatingObject::Type type)
-{
-    if (type == FloatingObject::FloatLeft)
-        m_leftObjectsCount++;
-    else
-        m_rightObjectsCount++;
-}
-
-inline void RenderBlock::FloatingObjects::decreaseObjectsCount(FloatingObject::Type type)
-{
-    if (type == FloatingObject::FloatLeft)
-        m_leftObjectsCount--;
-    else
-        m_rightObjectsCount--;
-}
-
-inline RenderBlock::FloatingObjectInterval RenderBlock::FloatingObjects::intervalForFloatingObject(FloatingObject* floatingObject)
-{
-    if (m_horizontalWritingMode)
-        return RenderBlock::FloatingObjectInterval(floatingObject->frameRect().pixelSnappedY(), floatingObject->frameRect().pixelSnappedMaxY(), floatingObject);
-    return RenderBlock::FloatingObjectInterval(floatingObject->frameRect().pixelSnappedX(), floatingObject->frameRect().pixelSnappedMaxX(), floatingObject);
-}
-
-void RenderBlock::FloatingObjects::addPlacedObject(FloatingObject* floatingObject)
-{
-    ASSERT(!floatingObject->isInPlacedTree());
-
-    floatingObject->setIsPlaced(true);
-    if (m_placedFloatsTree.isInitialized())
-        m_placedFloatsTree.add(intervalForFloatingObject(floatingObject));
-
-#ifndef NDEBUG
-    floatingObject->setIsInPlacedTree(true);
-#endif
-}
-
-void RenderBlock::FloatingObjects::removePlacedObject(FloatingObject* floatingObject)
-{
-    ASSERT(floatingObject->isPlaced() && floatingObject->isInPlacedTree());
-
-    if (m_placedFloatsTree.isInitialized()) {
-        bool removed = m_placedFloatsTree.remove(intervalForFloatingObject(floatingObject));
-        ASSERT_UNUSED(removed, removed);
-    }
-
-    floatingObject->setIsPlaced(false);
-#ifndef NDEBUG
-    floatingObject->setIsInPlacedTree(false);
-#endif
-}
-
-inline void RenderBlock::FloatingObjects::add(FloatingObject* floatingObject)
-{
-    increaseObjectsCount(floatingObject->type());
-    m_set.add(floatingObject);
-    if (floatingObject->isPlaced())
-        addPlacedObject(floatingObject);
-}
-
-inline void RenderBlock::FloatingObjects::remove(FloatingObject* floatingObject)
-{
-    decreaseObjectsCount(floatingObject->type());
-    m_set.remove(floatingObject);
-    ASSERT(floatingObject->isPlaced() || !floatingObject->isInPlacedTree());
-    if (floatingObject->isPlaced())
-        removePlacedObject(floatingObject);
-}
-
-void RenderBlock::FloatingObjects::computePlacedFloatsTree()
-{
-    ASSERT(!m_placedFloatsTree.isInitialized());
-    if (m_set.isEmpty())
-        return;
-    m_placedFloatsTree.initIfNeeded(m_renderer->view()->intervalArena());
-    FloatingObjectSetIterator it = m_set.begin();
-    FloatingObjectSetIterator end = m_set.end();
-    for (; it != end; ++it) {
-        FloatingObject* floatingObject = *it;
-        if (floatingObject->isPlaced())
-            m_placedFloatsTree.add(intervalForFloatingObject(floatingObject));
-    }
-}
-
-LayoutUnit RenderBlock::FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
-{
-    LayoutUnit offset = fixedOffset;
-    ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
-    placedFloatsTree().allOverlapsWithAdapter(adapter);
-
-    if (heightRemaining)
-        *heightRemaining = adapter.getHeightRemaining();
-
-    const FloatingObject* outermostFloat = adapter.outermostFloat();
-    if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
-        if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-            shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, outermostFloat->logicalTop(m_horizontalWritingMode), logicalHeight);
-            offset += shapeOutside->rightSegmentMarginBoxDelta();
-        }
-    }
-
-    return offset;
-}
-
-LayoutUnit RenderBlock::FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
-{
-    LayoutUnit offset = fixedOffset;
-    ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
-    placedFloatsTree().allOverlapsWithAdapter(adapter);
-
-    if (heightRemaining)
-        *heightRemaining = adapter.getHeightRemaining();
-
-    const FloatingObject* outermostFloat = adapter.outermostFloat();
-    if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
-        if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-            shapeOutside->computeSegmentsForContainingBlockLine(logicalTop, outermostFloat->logicalTop(m_horizontalWritingMode), logicalHeight);
-            offset += shapeOutside->leftSegmentMarginBoxDelta();
-        }
-    }
-
-    return min(fixedOffset, offset);
 }
 
 template <typename CharacterType>
@@ -8206,18 +7973,6 @@ void RenderBlock::showLineTreeAndMark(const InlineBox* markedBox1, const char* m
     for (const RootInlineBox* root = firstRootBox(); root; root = root->nextRootBox())
         root->showLineTreeAndMark(markedBox1, markedLabel1, markedBox2, markedLabel2, obj, 1);
 }
-
-// These helpers are only used by the PODIntervalTree for debugging purposes.
-String ValueToString<int>::string(const int value)
-{
-    return String::number(value);
-}
-
-String ValueToString<RenderBlock::FloatingObject*>::string(const RenderBlock::FloatingObject* floatingObject)
-{
-    return String::format("%p (%dx%d %dx%d)", floatingObject, floatingObject->frameRect().pixelSnappedX(), floatingObject->frameRect().pixelSnappedY(), floatingObject->frameRect().pixelSnappedMaxX(), floatingObject->frameRect().pixelSnappedMaxY());
-}
-
 
 #endif
 

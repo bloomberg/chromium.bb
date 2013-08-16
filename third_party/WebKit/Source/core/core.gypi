@@ -1307,6 +1307,8 @@
             'rendering/FilterEffectRenderer.h',
             'rendering/FixedTableLayout.cpp',
             'rendering/FixedTableLayout.h',
+            'rendering/FloatingObjects.cpp',
+            'rendering/FloatingObjects.h',
             'rendering/FlowThreadController.cpp',
             'rendering/FlowThreadController.h',
             'rendering/TextAutosizer.cpp',
