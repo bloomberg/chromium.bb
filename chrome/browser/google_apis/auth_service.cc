@@ -216,8 +216,7 @@ void AuthService::OnRefreshTokenAvailable(const std::string& account_id) {
   OnHandleRefreshToken(true);
 }
 
-void AuthService::OnRefreshTokenRevoked(const std::string& account_id,
-                                        const GoogleServiceAuthError& error) {
+void AuthService::OnRefreshTokenRevoked(const std::string& account_id) {
   OnHandleRefreshToken(false);
 }
 

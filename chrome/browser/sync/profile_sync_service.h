@@ -610,9 +610,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // OAuth2TokenService::Observer implementation.
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
   virtual void OnRefreshTokensLoaded() OVERRIDE;
   virtual void OnRefreshTokensCleared() OVERRIDE;
 

@@ -40,9 +40,6 @@ const char kChromeSyncManagedOAuth2Scope[] =
 const char kGoogleTalkOAuth2Scope[] =
     "https://www.googleapis.com/auth/googletalk";
 
-// Service for LSO endpoint of Google that exposes OAuth APIs.
-const char kLSOService[] = "lso";
-
 // Used to mint uber auth tokens when needed.
 const char kGaiaSid[] = "sid";
 const char kGaiaLsid[] = "lsid";

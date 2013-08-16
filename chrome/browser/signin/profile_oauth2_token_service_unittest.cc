@@ -16,6 +16,10 @@
 
 using content::BrowserThread;
 
+// Defining constant here to handle backward compatiblity tests, but this
+// constant is no longer used in current versions of chrome.
+static const char kLSOService[] = "lso";
+
 class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
                                       public OAuth2TokenService::Observer {
  public:
@@ -44,9 +48,7 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE {
     ++token_available_count_;
   }
-  virtual void OnRefreshTokenRevoked(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE {
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE {
     ++token_revoked_count_;
   }
   virtual void OnRefreshTokensLoaded() OVERRIDE {
@@ -132,8 +134,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   // Populate DB with legacy tokens.
   service()->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService,
                                      "syncServiceToken");
-  service()->OnIssueAuthTokenSuccess(GaiaConstants::kLSOService,
-                                     "lsoToken");
+  service()->OnIssueAuthTokenSuccess(kLSOService, "lsoToken");
   service()->OnIssueAuthTokenSuccess(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       main_refresh_token);
@@ -158,8 +159,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
       GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       "secondOldRefreshToken");
   // Add some other legacy token. (Expected to get discarded).
-  service()->OnIssueAuthTokenSuccess(GaiaConstants::kLSOService,
-                                     "lsoToken");
+  service()->OnIssueAuthTokenSuccess(kLSOService, "lsoToken");
   // Also add a token using PO2TS.UpdateCredentials and make sure upgrade does
   // not wipe it.
   std::string other_account_id("other_account_id");
@@ -273,22 +273,6 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistanceNotifications) {
   oauth2_service_->RevokeAllCredentials();
   EXPECT_EQ(1, tokens_cleared_count_);
   ResetObserverCounts();
-}
-
-// Until the TokenService class is removed, problems fetching the LSO token
-// should translate to problems fetching the oauth2 refresh token.
-TEST_F(ProfileOAuth2TokenServiceTest, LsoNotification) {
-  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-
-  // Get a valid token.
-  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                   "refreshToken");
-  ExpectOneTokenAvailableNotification();
-
-  service()->OnIssueAuthTokenFailure(
-      GaiaConstants::kLSOService,
-      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-  ExpectOneTokenRevokedNotification();
 }
 
 // Until the TokenService class is removed, finish token loading in TokenService

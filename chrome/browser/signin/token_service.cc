@@ -33,8 +33,7 @@ namespace {
 
 // List of services that are capable of ClientLogin-based authentication.
 const char* kServices[] = {
-  GaiaConstants::kSyncService,
-  GaiaConstants::kLSOService
+  GaiaConstants::kSyncService
 };
 
 #define FOR_DIAGNOSTICS_OBSERVERS(func)                               \
@@ -110,23 +109,6 @@ void TokenService::AddAuthTokenManually(const std::string& service,
   token_map_[service] = auth_token;
   FireTokenAvailableNotification(service, auth_token);
   SaveAuthTokenToDB(service, auth_token);
-
-// We don't ever want to fetch OAuth2 tokens from LSO service token in case
-// when ChromeOS is in forced OAuth2 use mode. OAuth2 token should only
-// arrive into token service exclusively through UpdateCredentialsWithOAuth2.
-#if !defined(OS_CHROMEOS)
-  // If we got ClientLogin token for "lso" service, and we don't already have
-  // OAuth2 tokens, start fetching OAuth2 login scoped token pair.
-  if (service == GaiaConstants::kLSOService && !HasOAuthLoginToken()) {
-    int index = GetServiceIndex(service);
-    CHECK_GE(index, 0);
-    // iOS fetches the service tokens outside of the TokenService.
-    if (!fetchers_[index].get()) {
-      fetchers_[index].reset(new GaiaAuthFetcher(this, source_, getter_.get()));
-    }
-    fetchers_[index]->StartLsoForOAuthLoginTokenExchange(auth_token);
-  }
-#endif
 }
 
 

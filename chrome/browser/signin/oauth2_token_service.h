@@ -87,8 +87,7 @@ class OAuth2TokenService {
     virtual void OnRefreshTokenAvailable(const std::string& account_id) {}
     // Called whenever the login-scoped refresh token becomes unavailable for
     // account |account_id|.
-    virtual void OnRefreshTokenRevoked(const std::string& account_id,
-                                       const GoogleServiceAuthError& error) {}
+    virtual void OnRefreshTokenRevoked(const std::string& account_id) {}
     // Called after all refresh tokens are loaded during OAuth2TokenService
     // startup.
     virtual void OnRefreshTokensLoaded() {}
@@ -205,8 +204,7 @@ class OAuth2TokenService {
 
   // Called by subclasses to notify observers.
   void FireRefreshTokenAvailable(const std::string& account_id);
-  void FireRefreshTokenRevoked(const std::string& account_id,
-                               const GoogleServiceAuthError& error);
+  void FireRefreshTokenRevoked(const std::string& account_id);
   void FireRefreshTokensLoaded();
   void FireRefreshTokensCleared();
 

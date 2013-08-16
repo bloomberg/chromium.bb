@@ -577,10 +577,9 @@ void OAuth2TokenService::FireRefreshTokenAvailable(
 }
 
 void OAuth2TokenService::FireRefreshTokenRevoked(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
+    const std::string& account_id) {
   FOR_EACH_OBSERVER(Observer, observer_list_,
-                    OnRefreshTokenRevoked(account_id, error));
+                    OnRefreshTokenRevoked(account_id));
 }
 
 void OAuth2TokenService::FireRefreshTokensLoaded() {

@@ -697,8 +697,7 @@ void ProfileSyncService::OnRefreshTokenAvailable(
 }
 
 void ProfileSyncService::OnRefreshTokenRevoked(
-    const std::string& account_id,
-    const GoogleServiceAuthError& error) {
+    const std::string& account_id) {
   if (!IsOAuthRefreshTokenAvailable()) {
     // The additional check around IsOAuthRefreshTokenAvailable() above
     // prevents us sounding the alarm if we actually have a valid token but
@@ -706,7 +705,8 @@ void ProfileSyncService::OnRefreshTokenRevoked(
     // (e.g. flaky network). It's possible the token we do have is also
     // invalid, but in that case we should already have (or can expect) an
     // auth error sent from the sync backend.
-    UpdateAuthErrorState(error);
+    UpdateAuthErrorState(
+        GoogleServiceAuthError(GoogleServiceAuthError::REQUEST_CANCELED));
   }
 }
 

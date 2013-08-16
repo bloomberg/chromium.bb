@@ -50,9 +50,7 @@ class AuthService : public AuthServiceInterface,
 
   // Overridden from OAuth2TokenService::Observer:
   virtual void OnRefreshTokenAvailable(const std::string& account_id) OVERRIDE;
-  virtual void OnRefreshTokenRevoked(
-      const std::string& account_id,
-      const GoogleServiceAuthError& error) OVERRIDE;
+  virtual void OnRefreshTokenRevoked(const std::string& account_id) OVERRIDE;
 
  private:
   // Called when the state of the refresh token changes.
