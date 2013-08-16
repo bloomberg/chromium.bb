@@ -95,30 +95,72 @@ void HostStarter::OnRefreshTokenResponse(
   NOTREACHED();
 }
 
+// This function is called twice: once with the host owner credentials, and once
+// with the service account credentials.
 void HostStarter::OnGetUserEmailResponse(const std::string& user_email) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(FROM_HERE, base::Bind(
         &HostStarter::OnGetUserEmailResponse, weak_ptr_, user_email));
     return;
   }
-  user_email_ = user_email;
-  // Register the host.
-  host_id_ = base::GenerateGUID();
-  key_pair_ = RsaKeyPair::Generate();
-  service_client_->RegisterHost(
-      host_id_, host_name_, key_pair_->GetPublicKey(), access_token_, this);
+
+  if (host_owner_.empty()) {
+    // This is the first callback, with the host owner credentials. Store the
+    // owner's email, and register the host.
+    host_owner_ = user_email;
+    host_id_ = base::GenerateGUID();
+    key_pair_ = RsaKeyPair::Generate();
+
+    std::string host_client_id;
+    host_client_id = google_apis::GetOAuth2ClientID(
+        google_apis::CLIENT_REMOTING_HOST);
+
+    service_client_->RegisterHost(
+        host_id_, host_name_, key_pair_->GetPublicKey(), host_client_id,
+        access_token_, this);
+  } else {
+    // This is the second callback, with the service account credentials.
+    // This email is the service account's email, used to login to XMPP.
+    xmpp_login_ = user_email;
+    StartHostProcess();
+  }
 }
 
-void HostStarter::OnHostRegistered() {
+void HostStarter::OnHostRegistered(const std::string& authorization_code) {
   if (!main_task_runner_->BelongsToCurrentThread()) {
     main_task_runner_->PostTask(FROM_HERE, base::Bind(
-        &HostStarter::OnHostRegistered, weak_ptr_));
+        &HostStarter::OnHostRegistered, weak_ptr_, authorization_code));
     return;
   }
+
+  if (authorization_code.empty()) {
+    // No service account code, start the host with the owner's credentials.
+    xmpp_login_ = host_owner_;
+    StartHostProcess();
+    return;
+  }
+
+  // Received a service account authorization code, update oauth_client_info_
+  // to use the service account client keys, and get service account tokens.
+  oauth_client_info_.client_id =
+      google_apis::GetOAuth2ClientID(
+          google_apis::CLIENT_REMOTING_HOST);
+  oauth_client_info_.client_secret =
+      google_apis::GetOAuth2ClientSecret(
+          google_apis::CLIENT_REMOTING_HOST);
+  oauth_client_info_.redirect_uri = "oob";
+  oauth_client_->GetTokensFromAuthCode(
+      oauth_client_info_, authorization_code, kMaxGetTokensRetries, this);
+}
+
+void HostStarter::StartHostProcess() {
   // Start the host.
   std::string host_secret_hash = remoting::MakeHostPinHash(host_id_, host_pin_);
   scoped_ptr<base::DictionaryValue> config(new base::DictionaryValue());
-  config->SetString("xmpp_login", user_email_);
+  if (host_owner_ != xmpp_login_) {
+    config->SetString("host_owner", host_owner_);
+  }
+  config->SetString("xmpp_login", xmpp_login_);
   config->SetString("oauth_refresh_token", refresh_token_);
   config->SetString("host_id", host_id_);
   config->SetString("host_name", host_name_);

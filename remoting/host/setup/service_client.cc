@@ -4,6 +4,7 @@
 
 #include "remoting/host/setup/service_client.h"
 
+#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
@@ -30,6 +31,7 @@ class ServiceClient::Core
   void RegisterHost(const std::string& host_id,
                     const std::string& host_name,
                     const std::string& public_key,
+                    const std::string& host_client_id,
                     const std::string& oauth_access_token,
                     ServiceClient::Delegate* delegate);
 
@@ -50,7 +52,7 @@ class ServiceClient::Core
     PENDING_REQUEST_UNREGISTER_HOST
   };
 
-  void MakeGaiaRequest(net::URLFetcher::RequestType request_type,
+  void MakeChromotingRequest(net::URLFetcher::RequestType request_type,
                        const std::string& post_body,
                        const std::string& url_suffix,
                        const std::string& oauth_access_token,
@@ -68,6 +70,7 @@ void ServiceClient::Core::RegisterHost(
     const std::string& host_id,
     const std::string& host_name,
     const std::string& public_key,
+    const std::string& host_client_id,
     const std::string& oauth_access_token,
     Delegate* delegate) {
   DCHECK(pending_request_type_ == PENDING_REQUEST_NONE);
@@ -76,13 +79,16 @@ void ServiceClient::Core::RegisterHost(
   post_body.SetString("data.hostId", host_id);
   post_body.SetString("data.hostName", host_name);
   post_body.SetString("data.publicKey", public_key);
+  std::string url_suffix;
+  if (!host_client_id.empty())
+    url_suffix = "?hostClientId=" + host_client_id;
   std::string post_body_str;
   base::JSONWriter::Write(&post_body, &post_body_str);
-  MakeGaiaRequest(net::URLFetcher::POST,
-                  std::string(),
-                  post_body_str,
-                  oauth_access_token,
-                  delegate);
+  MakeChromotingRequest(net::URLFetcher::POST,
+                        url_suffix,
+                        post_body_str,
+                        oauth_access_token,
+                        delegate);
 }
 
 void ServiceClient::Core::UnregisterHost(
@@ -91,14 +97,14 @@ void ServiceClient::Core::UnregisterHost(
     Delegate* delegate) {
   DCHECK(pending_request_type_ == PENDING_REQUEST_NONE);
   pending_request_type_ = PENDING_REQUEST_UNREGISTER_HOST;
-  MakeGaiaRequest(net::URLFetcher::DELETE_REQUEST,
-                  host_id,
-                  std::string(),
-                  oauth_access_token,
-                  delegate);
+  MakeChromotingRequest(net::URLFetcher::DELETE_REQUEST,
+                        host_id,
+                        std::string(),
+                        oauth_access_token,
+                        delegate);
 }
 
-void ServiceClient::Core::MakeGaiaRequest(
+void ServiceClient::Core::MakeChromotingRequest(
     net::URLFetcher::RequestType request_type,
     const std::string& url_suffix,
     const std::string& request_body,
@@ -133,7 +139,21 @@ void ServiceClient::Core::HandleResponse(const net::URLFetcher* source) {
       case PENDING_REQUEST_NONE:
         break;
       case PENDING_REQUEST_REGISTER_HOST:
-        delegate_->OnHostRegistered();
+        {
+          std::string data;
+          source->GetResponseAsString(&data);
+          scoped_ptr<Value> message_value(base::JSONReader::Read(data));
+          DictionaryValue *dict;
+          std::string code;
+          if (message_value.get() &&
+              message_value->IsType(Value::TYPE_DICTIONARY) &&
+              message_value->GetAsDictionary(&dict) &&
+              dict->GetString("data.authorizationCode", &code)) {
+            delegate_->OnHostRegistered(code);
+          } else {
+            delegate_->OnHostRegistered(std::string());
+          }
+        }
         break;
       case PENDING_REQUEST_UNREGISTER_HOST:
         delegate_->OnHostUnregistered();
@@ -156,10 +176,11 @@ void ServiceClient::RegisterHost(
     const std::string& host_id,
     const std::string& host_name,
     const std::string& public_key,
+    const std::string& host_client_id,
     const std::string& oauth_access_token,
     Delegate* delegate) {
-  return core_->RegisterHost(host_id, host_name, public_key, oauth_access_token,
-                             delegate);
+  return core_->RegisterHost(host_id, host_name, public_key, host_client_id,
+                             oauth_access_token, delegate);
 }
 
 void ServiceClient::UnregisterHost(

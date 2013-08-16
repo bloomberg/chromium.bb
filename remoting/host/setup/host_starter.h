@@ -55,7 +55,7 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   virtual void OnGetUserEmailResponse(const std::string& user_email) OVERRIDE;
 
   // remoting::ServiceClient::Delegate
-  virtual void OnHostRegistered() OVERRIDE;
+  virtual void OnHostRegistered(const std::string& authorization_code) OVERRIDE;
   virtual void OnHostUnregistered() OVERRIDE;
 
   // TODO(sergeyu): Following methods are members of all three delegate
@@ -70,6 +70,8 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
               scoped_ptr<remoting::ServiceClient> service_client,
               scoped_ptr<remoting::DaemonController> daemon_controller);
 
+  void StartHostProcess();
+
   void OnHostStarted(DaemonController::AsyncResult result);
 
   scoped_ptr<gaia::GaiaOAuthClient> oauth_client_;
@@ -83,9 +85,11 @@ class HostStarter : public gaia::GaiaOAuthClient::Delegate,
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   std::string refresh_token_;
   std::string access_token_;
-  std::string user_email_;
+  std::string host_owner_;
+  std::string xmpp_login_;
   scoped_refptr<remoting::RsaKeyPair> key_pair_;
   std::string host_id_;
+  bool use_service_account_;
 
   base::WeakPtrFactory<HostStarter> weak_ptr_factory_;
   base::WeakPtr<HostStarter> weak_ptr_;
