@@ -174,9 +174,11 @@ class GLES2_UTILS_EXPORT GLES2Util {
   int num_shader_binary_formats_;
 };
 
-class GLES2_UTILS_EXPORT ContextCreationAttribParser {
+class GLES2_UTILS_EXPORT ContextCreationAttribHelper {
  public:
-  ContextCreationAttribParser();
+  ContextCreationAttribHelper();
+
+  void Serialize(std::vector<int32>* attribs);
   bool Parse(const std::vector<int32>& attribs);
 
   // -1 if invalid or unspecified.

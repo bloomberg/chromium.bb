@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
@@ -100,14 +101,6 @@ void GLManager::Initialize(const GLManager::Options& options) {
     real_gl_context = options.virtual_manager->context();
   }
 
-  // From <EGL/egl.h>.
-  const int32 EGL_ALPHA_SIZE = 0x3021;
-  const int32 EGL_BLUE_SIZE = 0x3022;
-  const int32 EGL_GREEN_SIZE = 0x3023;
-  const int32 EGL_RED_SIZE = 0x3024;
-  const int32 EGL_DEPTH_SIZE = 0x3025;
-  const int32 EGL_NONE = 0x3038;
-
   mailbox_manager_ =
       mailbox_manager ? mailbox_manager : new gles2::MailboxManager;
   share_group_ =
@@ -116,17 +109,13 @@ void GLManager::Initialize(const GLManager::Options& options) {
   gfx::GpuPreference gpu_preference(gfx::PreferDiscreteGpu);
   const char* allowed_extensions = "*";
   std::vector<int32> attribs;
-  attribs.push_back(EGL_RED_SIZE);
-  attribs.push_back(8);
-  attribs.push_back(EGL_GREEN_SIZE);
-  attribs.push_back(8);
-  attribs.push_back(EGL_BLUE_SIZE);
-  attribs.push_back(8);
-  attribs.push_back(EGL_ALPHA_SIZE);
-  attribs.push_back(8);
-  attribs.push_back(EGL_DEPTH_SIZE);
-  attribs.push_back(16);
-  attribs.push_back(EGL_NONE);
+  gles2::ContextCreationAttribHelper attrib_helper;
+  attrib_helper.red_size_ = 8;
+  attrib_helper.green_size_ = 8;
+  attrib_helper.blue_size_ = 8;
+  attrib_helper.alpha_size_ = 8;
+  attrib_helper.depth_size_ = 16;
+  attrib_helper.Serialize(&attribs);
 
   if (!context_group) {
     context_group = new gles2::ContextGroup(mailbox_manager_.get(),

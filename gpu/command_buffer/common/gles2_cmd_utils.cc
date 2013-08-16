@@ -715,7 +715,29 @@ bool GLES2Util::ParseUniformName(
   return true;
 }
 
-ContextCreationAttribParser::ContextCreationAttribParser()
+namespace {
+
+// From <EGL/egl.h>.
+const int32 kAlphaSize       = 0x3021;  // EGL_ALPHA_SIZE
+const int32 kBlueSize        = 0x3022;  // EGL_BLUE_SIZE
+const int32 kGreenSize       = 0x3023;  // EGL_GREEN_SIZE
+const int32 kRedSize         = 0x3024;  // EGL_RED_SIZE
+const int32 kDepthSize       = 0x3025;  // EGL_DEPTH_SIZE
+const int32 kStencilSize     = 0x3026;  // EGL_STENCIL_SIZE
+const int32 kSamples         = 0x3031;  // EGL_SAMPLES
+const int32 kSampleBuffers   = 0x3032;  // EGL_SAMPLE_BUFFERS
+const int32 kNone            = 0x3038;  // EGL_NONE
+const int32 kSwapBehavior    = 0x3093;  // EGL_SWAP_BEHAVIOR
+const int32 kBufferPreserved = 0x3094;  // EGL_BUFFER_PRESERVED
+const int32 kBufferDestroyed = 0x3095;  // EGL_BUFFER_DESTROYED
+
+// Chromium only.
+const int32 kShareResources        = 0x10000;
+const int32 kBindGeneratesResource = 0x10001;
+
+}  // namespace
+
+ContextCreationAttribHelper::ContextCreationAttribHelper()
   : alpha_size_(-1),
     blue_size_(-1),
     green_size_(-1),
@@ -729,28 +751,53 @@ ContextCreationAttribParser::ContextCreationAttribParser()
     bind_generates_resource_(true) {
 }
 
-bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
-  // From <EGL/egl.h>.
-  const int32 EGL_ALPHA_SIZE = 0x3021;
-  const int32 EGL_BLUE_SIZE = 0x3022;
-  const int32 EGL_GREEN_SIZE = 0x3023;
-  const int32 EGL_RED_SIZE = 0x3024;
-  const int32 EGL_DEPTH_SIZE = 0x3025;
-  const int32 EGL_STENCIL_SIZE = 0x3026;
-  const int32 EGL_SAMPLES = 0x3031;
-  const int32 EGL_SAMPLE_BUFFERS = 0x3032;
-  const int32 EGL_NONE = 0x3038;
-  const int32 EGL_SWAP_BEHAVIOR = 0x3093;
-  const int32 EGL_BUFFER_PRESERVED = 0x3094;
+void ContextCreationAttribHelper::Serialize(std::vector<int32>* attribs) {
+  if (alpha_size_ != -1) {
+    attribs->push_back(kAlphaSize);
+    attribs->push_back(alpha_size_);
+  }
+  if (blue_size_ != -1) {
+    attribs->push_back(kBlueSize);
+    attribs->push_back(blue_size_);
+  }
+  if (green_size_ != -1) {
+    attribs->push_back(kGreenSize);
+    attribs->push_back(green_size_);
+  }
+  if (red_size_ != -1) {
+    attribs->push_back(kRedSize);
+    attribs->push_back(red_size_);
+  }
+  if (depth_size_ != -1) {
+    attribs->push_back(kDepthSize);
+    attribs->push_back(depth_size_);
+  }
+  if (stencil_size_ != -1) {
+    attribs->push_back(kStencilSize);
+    attribs->push_back(stencil_size_);
+  }
+  if (samples_ != -1) {
+    attribs->push_back(kSamples);
+    attribs->push_back(samples_);
+  }
+  if (sample_buffers_ != -1) {
+    attribs->push_back(kSampleBuffers);
+    attribs->push_back(sample_buffers_);
+  }
+  attribs->push_back(kSwapBehavior);
+  attribs->push_back(buffer_preserved_ ? kBufferPreserved : kBufferDestroyed);
+  attribs->push_back(kShareResources);
+  attribs->push_back(share_resources_ ? 1 : 0);
+  attribs->push_back(kBindGeneratesResource);
+  attribs->push_back(bind_generates_resource_ ? 1 : 0);
+  attribs->push_back(kNone);
+}
 
-  // Chromium only.
-  const int32 SHARE_RESOURCES           = 0x10000;
-  const int32 BIND_GENERATES_RESOURCES  = 0x10001;
-
+bool ContextCreationAttribHelper::Parse(const std::vector<int32>& attribs) {
   for (size_t i = 0; i < attribs.size(); i += 2) {
     const int32 attrib = attribs[i];
     if (i + 1 >= attribs.size()) {
-      if (attrib == EGL_NONE) {
+      if (attrib == kNone) {
         return true;
       }
 
@@ -761,40 +808,40 @@ bool ContextCreationAttribParser::Parse(const std::vector<int32>& attribs) {
 
     const int32 value = attribs[i+1];
     switch (attrib) {
-      case EGL_ALPHA_SIZE:
+      case kAlphaSize:
         alpha_size_ = value;
         break;
-      case EGL_BLUE_SIZE:
+      case kBlueSize:
         blue_size_ = value;
         break;
-      case EGL_GREEN_SIZE:
+      case kGreenSize:
         green_size_ = value;
         break;
-      case EGL_RED_SIZE:
+      case kRedSize:
         red_size_ = value;
         break;
-      case EGL_DEPTH_SIZE:
+      case kDepthSize:
         depth_size_ = value;
         break;
-      case EGL_STENCIL_SIZE:
+      case kStencilSize:
         stencil_size_ = value;
         break;
-      case EGL_SAMPLES:
+      case kSamples:
         samples_ = value;
         break;
-      case EGL_SAMPLE_BUFFERS:
+      case kSampleBuffers:
         sample_buffers_ = value;
         break;
-      case EGL_SWAP_BEHAVIOR:
-        buffer_preserved_ = value == EGL_BUFFER_PRESERVED;
+      case kSwapBehavior:
+        buffer_preserved_ = value == kBufferPreserved;
         break;
-      case SHARE_RESOURCES:
+      case kShareResources:
         share_resources_ = value != 0;
         break;
-      case BIND_GENERATES_RESOURCES:
+      case kBindGeneratesResource:
         bind_generates_resource_ = value != 0;
         break;
-      case EGL_NONE:
+      case kNone:
         // Terminate list, even if more attributes.
         return true;
       default:
