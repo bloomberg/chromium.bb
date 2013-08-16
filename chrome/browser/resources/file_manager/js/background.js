@@ -431,19 +431,12 @@ function onExecute(action, details) {
  */
 function createAudioPlayerOptions() {
   var WIDTH = 280;
-  var MIN_HEIGHT = 35 + 58;
-  var MAX_HEIGHT = 35 + 58 * 3;
-  var BOTTOM = 80;
-  var RIGHT = 20;
-
+  var HEIGHT = 35 + 58;
   return {
-    defaultLeft: (window.screen.availWidth - WIDTH - RIGHT),
-    defaultTop: (window.screen.availHeight - MIN_HEIGHT - BOTTOM),
-    minHeight: MIN_HEIGHT,
-    maxHeight: MAX_HEIGHT,
-    height: MIN_HEIGHT,
+    type: 'panel',
+    minHeight: HEIGHT,
     minWidth: WIDTH,
-    maxWidth: WIDTH,
+    height: HEIGHT,
     width: WIDTH
   };
 }
