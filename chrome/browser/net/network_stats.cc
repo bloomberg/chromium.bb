@@ -237,7 +237,9 @@ void NetworkStats::SendHelloRequest() {
   probe_packet.set_group_id(current_test_index_);
   std::string output = probe_message_.MakeEncodedPacket(probe_packet);
 
-  SendData(output);
+  int result = SendData(output);
+  if (result < 0 && result != net::ERR_IO_PENDING)
+    TestPhaseComplete(WRITE_FAILED, result);
 }
 
 void NetworkStats::SendProbeRequest() {
@@ -284,7 +286,9 @@ void NetworkStats::SendProbeRequest() {
 
   StartReadDataTimer(timeout_seconds, current_test_index_);
   probe_request_time_ = base::TimeTicks::Now();
-  SendData(output);
+  int result = SendData(output);
+  if (result < 0 && result != net::ERR_IO_PENDING)
+    TestPhaseComplete(WRITE_FAILED, result);
 }
 
 void NetworkStats::ReadData() {
@@ -407,8 +411,9 @@ bool NetworkStats::UpdateReception(const ProbePacket& probe_packet) {
   return true;
 }
 
-void NetworkStats::SendData(const std::string& output) {
-  DCHECK(!write_buffer_.get());
+int NetworkStats::SendData(const std::string& output) {
+  if (write_buffer_.get() || !socket_.get())
+    return net::ERR_UNEXPECTED;
   scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(output));
   write_buffer_ = new net::DrainableIOBuffer(buffer.get(), buffer->size());
 
@@ -416,13 +421,10 @@ void NetworkStats::SendData(const std::string& output) {
       write_buffer_.get(),
       write_buffer_->BytesRemaining(),
       base::Bind(&NetworkStats::OnWriteComplete, base::Unretained(this)));
-  if (bytes_written < 0) {
-    if (bytes_written != net::ERR_IO_PENDING)
-      // There is some unexpected error.
-      TestPhaseComplete(WRITE_FAILED, bytes_written);
-  } else {
-    UpdateSendBuffer(bytes_written);
-  }
+  if (bytes_written < 0)
+    return bytes_written;
+  UpdateSendBuffer(bytes_written);
+  return net::OK;
 }
 
 void NetworkStats::OnWriteComplete(int result) {
