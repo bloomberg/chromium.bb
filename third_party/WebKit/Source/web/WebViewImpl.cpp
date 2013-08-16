@@ -434,6 +434,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_continuousPaintingEnabled(false)
     , m_showScrollBottleneckRects(false)
     , m_baseBackgroundColor(Color::white)
+    , m_helperPluginCloseTimer(this, &WebViewImpl::closePendingHelperPlugins)
 {
     Page::PageClients pageClients;
     pageClients.chromeClient = &m_chromeClientImpl;
@@ -480,6 +481,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 WebViewImpl::~WebViewImpl()
 {
     ASSERT(!m_page);
+    ASSERT(!m_helperPluginCloseTimer.isActive());
+    ASSERT(m_helperPluginsPendingClose.isEmpty());
 }
 
 RenderTheme* WebViewImpl::theme() const
@@ -1561,6 +1564,27 @@ WebHelperPluginImpl* WebViewImpl::createHelperPlugin(const String& pluginType, c
     return helperPlugin;
 }
 
+void WebViewImpl::closeHelperPluginSoon(PassRefPtr<WebHelperPluginImpl> helperPlugin)
+{
+    m_helperPluginsPendingClose.append(helperPlugin);
+    if (!m_helperPluginCloseTimer.isActive())
+        m_helperPluginCloseTimer.startOneShot(0);
+}
+
+void WebViewImpl::closePendingHelperPlugins(Timer<WebViewImpl>* timer)
+{
+    ASSERT_UNUSED(timer, !timer || timer == &m_helperPluginCloseTimer);
+    ASSERT(!m_helperPluginsPendingClose.isEmpty());
+
+    Vector<RefPtr<WebHelperPluginImpl> > helperPlugins;
+    helperPlugins.swap(m_helperPluginsPendingClose);
+    for (Vector<RefPtr<WebHelperPluginImpl> >::iterator it = helperPlugins.begin();
+        it != helperPlugins.end(); ++it) {
+        (*it)->closeHelperPlugin();
+    }
+    ASSERT(m_helperPluginsPendingClose.isEmpty());
+}
+
 Frame* WebViewImpl::focusedWebCoreFrame() const
 {
     return m_page ? m_page->focusController().focusedOrMainFrame() : 0;
@@ -1591,6 +1615,13 @@ void WebViewImpl::close()
     // Should happen after m_page.clear().
     if (m_devToolsAgent)
         m_devToolsAgent.clear();
+
+    // Helper Plugins must be closed now since doing so accesses RenderViewImpl,
+    // which will be destroyed after this function returns.
+    if (m_helperPluginCloseTimer.isActive()) {
+        m_helperPluginCloseTimer.stop();
+        closePendingHelperPlugins(0);
+    }
 
     // Reset the delegate to prevent notifications being sent as we're being
     // deleted.

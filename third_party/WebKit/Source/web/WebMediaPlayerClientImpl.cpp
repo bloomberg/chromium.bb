@@ -172,11 +172,20 @@ WebPlugin* WebMediaPlayerClientImpl::createHelperPlugin(const WebString& pluginT
     return plugin;
 }
 
+
+// FIXME: Remove this override and cast when Chromium is updated to use closeHelperPluginSoon().
 void WebMediaPlayerClientImpl::closeHelperPlugin()
 {
+    Frame* frame = static_cast<HTMLMediaElement*>(m_client)->document()->frame();
+    WebFrameImpl* webFrame = WebFrameImpl::fromFrame(frame);
+    closeHelperPluginSoon(webFrame);
+}
+
+void WebMediaPlayerClientImpl::closeHelperPluginSoon(WebFrame* frame)
+{
     ASSERT(m_helperPlugin);
-    m_helperPlugin->closeHelperPlugin();
-    m_helperPlugin = 0;
+    WebViewImpl* webView = static_cast<WebViewImpl*>(frame->view());
+    webView->closeHelperPluginSoon(m_helperPlugin.release());
 }
 
 void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
@@ -671,6 +680,7 @@ WebMediaPlayerClientImpl::WebMediaPlayerClientImpl(MediaPlayerClient* client)
     , m_isMediaStream(false)
     , m_delayingLoad(false)
     , m_preload(MediaPlayer::Auto)
+    , m_helperPlugin(0)
     , m_videoLayer(0)
     , m_opaque(false)
     , m_needsWebLayerForVideo(false)

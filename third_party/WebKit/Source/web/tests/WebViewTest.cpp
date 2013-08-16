@@ -41,6 +41,7 @@
 #include "WebFrame.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
+#include "WebHelperPluginImpl.h"
 #include "WebHitTestResult.h"
 #include "WebInputEvent.h"
 #include "WebSettings.h"
@@ -55,6 +56,7 @@
 #include "public/platform/WebSize.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/WebUnitTestSupport.h"
+#include "public/web/WebWidgetClient.h"
 
 using namespace WebKit;
 using WebKit::FrameTestHelpers::runPendingTasks;
@@ -159,6 +161,45 @@ private:
     int m_tapY;
     int m_longpressX;
     int m_longpressY;
+};
+
+class HelperPluginCreatingWebViewClient : public WebViewClient {
+public:
+    // WebViewClient methods
+    virtual WebKit::WebWidget* createPopupMenu(WebKit::WebPopupType popupType) OVERRIDE
+    {
+        EXPECT_EQ(WebPopupTypeHelperPlugin, popupType);
+        m_helperPluginWebWidget = WebKit::WebHelperPlugin::create(this);
+        // The caller owns the object, but we retain a pointer for use in closeWidgetSoon().
+        return m_helperPluginWebWidget;
+    }
+
+    virtual void initializeHelperPluginWebFrame(WebKit::WebHelperPlugin* plugin) OVERRIDE
+    {
+        ASSERT_TRUE(m_webFrameClient);
+        plugin->initializeFrame(m_webFrameClient);
+    }
+
+    // WebWidgetClient methods
+    virtual void closeWidgetSoon() OVERRIDE
+    {
+        ASSERT_TRUE(m_helperPluginWebWidget);
+        m_helperPluginWebWidget->close();
+        m_helperPluginWebWidget = 0;
+    }
+
+    // Local methods
+    HelperPluginCreatingWebViewClient()
+        :   m_helperPluginWebWidget(0)
+        ,   m_webFrameClient(0)
+    {
+    }
+
+    void setWebFrameClient(WebFrameClient* client) { m_webFrameClient = client; }
+
+private:
+    WebWidget* m_helperPluginWebWidget;
+    WebFrameClient* m_webFrameClient;
 };
 
 class WebViewTest : public testing::Test {
@@ -1053,6 +1094,23 @@ TEST_F(WebViewTest, ShadowRoot)
         WebNode shadowRoot = elementWithoutShadowRoot.shadowRoot();
         EXPECT_TRUE(shadowRoot.isNull());
     }
+    webViewImpl->close();
+}
+
+TEST_F(WebViewTest, HelperPlugin)
+{
+    HelperPluginCreatingWebViewClient client;
+    WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(FrameTestHelpers::createWebView(true, 0, &client));
+
+    WebFrameImpl* frame = static_cast<WebFrameImpl*>(webViewImpl->mainFrame());
+    client.setWebFrameClient(frame->client());
+
+    WebHelperPluginImpl* helperPlugin = webViewImpl->createHelperPlugin("dummy-plugin-type", frame->document());
+    EXPECT_TRUE(helperPlugin);
+    EXPECT_EQ(0, helperPlugin->getPlugin()); // Invalid plugin type means no plugin.
+
+    webViewImpl->closeHelperPluginSoon(helperPlugin);
+
     webViewImpl->close();
 }
 

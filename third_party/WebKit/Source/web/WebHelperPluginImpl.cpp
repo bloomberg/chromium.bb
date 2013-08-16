@@ -237,8 +237,7 @@ void WebHelperPluginImpl::close()
 
 WebHelperPlugin* WebHelperPlugin::create(WebWidgetClient* client)
 {
-    if (!client)
-        CRASH();
+    RELEASE_ASSERT(client);
     // A WebHelperPluginImpl instance usually has two references.
     //  - One owned by the instance itself. It represents the visible widget.
     //  - One owned by the hosting element. It's released when the hosting

@@ -47,6 +47,7 @@
 #include "WebViewBenchmarkSupportImpl.h"
 #include "core/page/PagePopupDriver.h"
 #include "core/page/PageScaleConstraintsSet.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/GraphicsLayer.h"
@@ -61,6 +62,7 @@
 #include "public/platform/WebString.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 class ChromiumDataObject;
@@ -490,6 +492,7 @@ public:
 
     // Creates a Helper Plugin of |pluginType| for |hostDocument|.
     WebHelperPluginImpl* createHelperPlugin(const String& pluginType, const WebDocument& hostDocument);
+    void closeHelperPluginSoon(PassRefPtr<WebHelperPluginImpl>);
 
     // Returns the input event we're currently processing. This is used in some
     // cases where the WebCore DOM event doesn't have the information we need.
@@ -646,6 +649,8 @@ private:
     virtual bool handleGestureEvent(const WebGestureEvent&) OVERRIDE;
     virtual bool handleKeyEvent(const WebKeyboardEvent&) OVERRIDE;
     virtual bool handleCharEvent(const WebKeyboardEvent&) OVERRIDE;
+
+    void closePendingHelperPlugins(WebCore::Timer<WebViewImpl>*);
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebAutofillClient* m_autofillClient;
@@ -830,6 +835,9 @@ private:
     bool m_continuousPaintingEnabled;
     bool m_showScrollBottleneckRects;
     WebColor m_baseBackgroundColor;
+
+    WebCore::Timer<WebViewImpl> m_helperPluginCloseTimer;
+    Vector<RefPtr<WebHelperPluginImpl> > m_helperPluginsPendingClose;
 };
 
 } // namespace WebKit
