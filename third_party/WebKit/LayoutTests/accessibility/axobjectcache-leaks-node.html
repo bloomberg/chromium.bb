@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <script id='targetHTML' type='text/html'>
+        <select id="menu">
+            <option>abcd</option>
+            <option>efgh</option>
+        </select>
+    </script>
+    <script id='targetJS' type='text/html'>
+        document.getElementById('menu').focus();
+        eventSender.keyDown('e');
+    </script>
+
+    <script src="../fast/js/resources/js-test-pre.js"></script>
+    <script src="../fast/dom/resources/leak-check.js"></script>
+    <script>
+        var target = grabScriptText('targetHTML')+
+                     '<script>'+grabScriptText('targetJS')+'<'+'/script>';
+        var tolerance = {'numberOfLiveDocuments': 0};
+
+        doLeakTest(htmlToUrl(target), tolerance);
+    </script>
+    <script src="../fast/js/resources/js-test-post.js"></script>
+</body>
+</html>
