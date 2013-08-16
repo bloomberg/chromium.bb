@@ -6,15 +6,13 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
-#include "gpu/command_buffer/client/image_factory.h"
-#include "ui/gfx/gpu_memory_buffer.h"
+#include "gpu/command_buffer/common/gpu_control.h"
 
 namespace gpu {
 namespace gles2 {
 
-GpuMemoryBufferTracker::GpuMemoryBufferTracker(ImageFactory* factory)
-    : buffers_(),
-      factory_(factory) {
+GpuMemoryBufferTracker::GpuMemoryBufferTracker(GpuControl* gpu_control)
+    : gpu_control_(gpu_control) {
 }
 
 GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
@@ -23,37 +21,33 @@ GpuMemoryBufferTracker::~GpuMemoryBufferTracker() {
   }
 }
 
-GLuint GpuMemoryBufferTracker::CreateBuffer(
-    GLsizei width, GLsizei height, GLenum internalformat) {
-  GLuint image_id = 0;
-  DCHECK(factory_);
-  scoped_ptr<gfx::GpuMemoryBuffer> buffer =
-      factory_->CreateGpuMemoryBuffer(width, height, internalformat, &image_id);
-
-  if (buffer.get() == NULL)
+int32 GpuMemoryBufferTracker::CreateBuffer(
+    size_t width, size_t height, int32 internalformat) {
+  int32 image_id = 0;
+  DCHECK(gpu_control_);
+  gfx::GpuMemoryBuffer* buffer = gpu_control_->CreateGpuMemoryBuffer(
+      width, height, internalformat, &image_id);
+  if (!buffer)
     return 0;
 
   std::pair<BufferMap::iterator, bool> result =
-      buffers_.insert(std::make_pair(image_id, buffer.release()));
+      buffers_.insert(std::make_pair(image_id, buffer));
   GPU_DCHECK(result.second);
 
   return image_id;
 }
 
-gfx::GpuMemoryBuffer* GpuMemoryBufferTracker::GetBuffer(GLuint image_id) {
+gfx::GpuMemoryBuffer* GpuMemoryBufferTracker::GetBuffer(int32 image_id) {
   BufferMap::iterator it = buffers_.find(image_id);
   return (it != buffers_.end()) ? it->second : NULL;
 }
 
-void GpuMemoryBufferTracker::RemoveBuffer(GLuint image_id) {
+void GpuMemoryBufferTracker::RemoveBuffer(int32 image_id) {
   BufferMap::iterator buffer_it = buffers_.find(image_id);
-  if (buffer_it != buffers_.end()) {
-    gfx::GpuMemoryBuffer* buffer = buffer_it->second;
+  if (buffer_it != buffers_.end())
     buffers_.erase(buffer_it);
-    delete buffer;
-  }
-  DCHECK(factory_);
-  factory_->DeleteGpuMemoryBuffer(image_id);
+  DCHECK(gpu_control_);
+  gpu_control_->DestroyGpuMemoryBuffer(image_id);
 }
 
 }  // namespace gles2

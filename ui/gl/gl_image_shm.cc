@@ -10,7 +10,11 @@
 
 namespace gfx {
 
-GLImageShm::GLImageShm(gfx::Size size) : size_(size) {
+GLImageShm::GLImageShm(gfx::Size size, unsigned internalformat)
+    : size_(size),
+      internalformat_(internalformat) {
+  // GL_RGBA8_OES is currently the only supported internalformat.
+  DCHECK_EQ(static_cast<GLenum>(GL_RGBA8_OES), internalformat);
 }
 
 GLImageShm::~GLImageShm() {
@@ -40,8 +44,23 @@ bool GLImageShm::BindTexImage() {
   TRACE_EVENT0("gpu", "GLImageShm::BindTexImage");
   DCHECK(shared_memory_);
 
-  const int kBytesPerPixel = 4;
-  size_t size = size_.GetArea() * kBytesPerPixel;
+  GLenum internalformat;
+  GLenum format;
+  GLenum type;
+  int bytes_per_pixel;
+  switch (internalformat_) {
+    case GL_RGBA8_OES:
+      internalformat = GL_RGBA;
+      format = GL_RGBA;
+      type = GL_UNSIGNED_BYTE;
+      bytes_per_pixel = 4;
+      break;
+    default:
+      DVLOG(0) << "Invalid format: " << internalformat_;
+      return false;
+  }
+
+  size_t size = size_.GetArea() * bytes_per_pixel;
   DCHECK(!shared_memory_->memory());
   if (!shared_memory_->Map(size)) {
     DVLOG(0) << "Failed to map shared memory.";
@@ -51,12 +70,12 @@ bool GLImageShm::BindTexImage() {
   DCHECK(shared_memory_->memory());
   glTexImage2D(GL_TEXTURE_2D,
                0,  // mip level
-               GL_RGBA,
+               internalformat,
                size_.width(),
                size_.height(),
                0,  // border
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
+               format,
+               type,
                shared_memory_->memory());
 
   shared_memory_->Unmap();

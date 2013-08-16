@@ -86,7 +86,7 @@ GLES2Implementation::GLES2Implementation(
       ShareGroup* share_group,
       TransferBufferInterface* transfer_buffer,
       bool bind_generates_resource,
-      ImageFactory* image_factory)
+      GpuControl* gpu_control)
     : helper_(helper),
       transfer_buffer_(transfer_buffer),
       angle_pack_reverse_row_order_status_(kUnknownExtensionStatus),
@@ -111,7 +111,7 @@ GLES2Implementation::GLES2Implementation(
       use_count_(0),
       current_query_(NULL),
       error_message_callback_(NULL),
-      image_factory_(image_factory) {
+      gpu_control_(gpu_control) {
   GPU_DCHECK(helper);
   GPU_DCHECK(transfer_buffer);
 
@@ -165,7 +165,7 @@ bool GLES2Implementation::Initialize(
 
   query_tracker_.reset(new QueryTracker(mapped_memory_.get()));
   buffer_tracker_.reset(new BufferTracker(mapped_memory_.get()));
-  gpu_memory_buffer_tracker_.reset(new GpuMemoryBufferTracker(image_factory_));
+  gpu_memory_buffer_tracker_.reset(new GpuMemoryBufferTracker(gpu_control_));
 
 #if defined(GLES2_SUPPORT_CLIENT_SIDE_ARRAYS)
   GetIdHandler(id_namespaces::kBuffers)->MakeIds(
@@ -2089,7 +2089,7 @@ const GLubyte* GLES2Implementation::GetStringHelper(GLenum name) {
             "GL_CHROMIUM_map_sub "
             "GL_CHROMIUM_shallow_flush "
             "GL_EXT_unpack_subimage";
-        if (image_factory_ != NULL) {
+        if (gpu_control_ != NULL) {
           // The first space character is intentional.
           str += " GL_CHROMIUM_map_image";
         }

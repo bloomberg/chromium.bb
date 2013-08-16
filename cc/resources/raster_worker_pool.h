@@ -13,6 +13,7 @@
 #include "cc/resources/raster_mode.h"
 #include "cc/resources/tile_priority.h"
 #include "cc/resources/worker_pool.h"
+#include "third_party/khronos/GLES2/gl2.h"
 
 class SkDevice;
 
@@ -182,6 +183,9 @@ class CC_EXPORT RasterWorkerPool : public WorkerPool {
   // Once scheduled, reply callbacks are guaranteed to run for all tasks
   // even if they later get canceled by another call to ScheduleTasks().
   virtual void ScheduleTasks(RasterTask::Queue* queue) = 0;
+
+  // Returns the format that needs to be used for raster task resources.
+  virtual GLenum GetResourceFormat() const = 0;
 
   // TODO(vmpstr): Figure out an elegant way to not pass this many parameters.
   static RasterTask CreateRasterTask(

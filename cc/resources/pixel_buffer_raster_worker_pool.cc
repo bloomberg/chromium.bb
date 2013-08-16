@@ -236,6 +236,10 @@ void PixelBufferRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       "state", TracedValue::FromValue(StateAsValue().release()));
 }
 
+GLenum PixelBufferRasterWorkerPool::GetResourceFormat() const {
+  return resource_provider()->best_texture_format();
+}
+
 void PixelBufferRasterWorkerPool::CheckForCompletedTasks() {
   TRACE_EVENT0("cc", "PixelBufferRasterWorkerPool::CheckForCompletedTasks");
 

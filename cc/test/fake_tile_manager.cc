@@ -32,6 +32,7 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
       completed_tasks_.pop_front();
     }
   }
+  virtual GLenum GetResourceFormat() const OVERRIDE { return GL_RGBA; }
   virtual void OnRasterTasksFinished() OVERRIDE {}
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {}
 
@@ -47,8 +48,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
-                  NULL,
-                  GL_RGBA) {}
+                  NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
                                  ResourceProvider* resource_provider)
@@ -56,8 +56,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   resource_provider,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
-                  NULL,
-                  resource_provider->best_texture_format()) {}
+                  NULL) {}
 
 FakeTileManager::~FakeTileManager() {}
 

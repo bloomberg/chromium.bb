@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/compiler_specific.h"
+#include "gpu/command_buffer/common/gpu_control.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -79,6 +80,22 @@ class MockClientCommandBufferMockFlush : public MockClientCommandBuffer {
   MOCK_METHOD1(Flush, void(int32 put_offset));
 
   void DelegateToFake();
+};
+
+class MockClientGpuControl : public GpuControl {
+ public:
+  MockClientGpuControl();
+  virtual ~MockClientGpuControl();
+
+  MOCK_METHOD4(CreateGpuMemoryBuffer,
+               gfx::GpuMemoryBuffer*(size_t width,
+                                     size_t height,
+                                     unsigned internalformat,
+                                     int32* id));
+  MOCK_METHOD1(DestroyGpuMemoryBuffer, void(int32 id));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockClientGpuControl);
 };
 
 }  // namespace gpu

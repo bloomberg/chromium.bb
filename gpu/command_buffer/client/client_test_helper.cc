@@ -151,6 +151,12 @@ void MockClientCommandBufferMockFlush::DelegateToFake() {
           this, &MockCommandBufferBase::FlushHelper));
 }
 
+MockClientGpuControl::MockClientGpuControl() {
+}
+
+MockClientGpuControl::~MockClientGpuControl() {
+}
+
 }  // namespace gpu
 
 

@@ -15,6 +15,36 @@ ImageManager::ImageManager() {
 ImageManager::~ImageManager() {
 }
 
+bool ImageManager::RegisterGpuMemoryBuffer(int32 id,
+                                           gfx::GpuMemoryBufferHandle buffer,
+                                           size_t width,
+                                           size_t height,
+                                           unsigned internalformat) {
+  if (id <= 0) {
+    DVLOG(0) << "Cannot register GPU memory buffer with non-positive ID.";
+    return false;
+  }
+
+  if (LookupImage(id)) {
+    DVLOG(0) << "GPU memory buffer ID already in use.";
+    return false;
+  }
+
+  scoped_refptr<gfx::GLImage> gl_image =
+      gfx::GLImage::CreateGLImageForGpuMemoryBuffer(buffer,
+                                                    gfx::Size(width, height),
+                                                    internalformat);
+  if (!gl_image)
+    return false;
+
+  AddImage(gl_image.get(), id);
+  return true;
+}
+
+void ImageManager::DestroyGpuMemoryBuffer(int32 id) {
+  RemoveImage(id);
+}
+
 void ImageManager::AddImage(gfx::GLImage* image, int32 service_id) {
   gl_images_[service_id] = image;
 }

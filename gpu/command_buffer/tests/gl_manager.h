@@ -21,8 +21,10 @@ class GLSurface;
 namespace gpu {
 
 class CommandBufferService;
-class TransferBuffer;
+class GpuControlService;
+class GpuMemoryBufferFactory;
 class GpuScheduler;
+class TransferBuffer;
 
 namespace gles2 {
 
@@ -55,8 +57,8 @@ class GLManager {
     bool context_lost_allowed;
     // Image manager to be used.
     gles2::ImageManager* image_manager;
-    // Image factory to be used.
-    gles2::ImageFactory* image_factory;
+    // GpuMemoryBuffer factory to be used.
+    GpuMemoryBufferFactory* gpu_memory_buffer_factory;
   };
   GLManager();
   ~GLManager();
@@ -98,6 +100,7 @@ class GLManager {
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;
   scoped_ptr<CommandBufferService> command_buffer_;
+  scoped_ptr<GpuControlService> gpu_control_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<GpuScheduler> gpu_scheduler_;
   scoped_refptr<gfx::GLSurface> surface_;

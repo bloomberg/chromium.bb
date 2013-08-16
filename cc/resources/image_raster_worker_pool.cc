@@ -156,6 +156,10 @@ void ImageRasterWorkerPool::ScheduleTasks(RasterTask::Queue* queue) {
       "state", TracedValue::FromValue(StateAsValue().release()));
 }
 
+GLenum ImageRasterWorkerPool::GetResourceFormat() const {
+  return GL_RGBA;  // Only format supported by CHROMIUM_map_image
+}
+
 void ImageRasterWorkerPool::OnRasterTasksFinished() {
   DCHECK(raster_tasks_pending_);
   raster_tasks_pending_ = false;

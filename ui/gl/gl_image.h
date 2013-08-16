@@ -38,7 +38,9 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
 
   // Create a GL image for a GPU Memory buffer.
   static scoped_refptr<GLImage> CreateGLImageForGpuMemoryBuffer(
-      gfx::GpuMemoryBufferHandle buffer, gfx::Size size);
+      gfx::GpuMemoryBufferHandle buffer,
+      gfx::Size size,
+      unsigned internalformat);
 
  protected:
   virtual ~GLImage();
