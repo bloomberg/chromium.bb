@@ -79,7 +79,9 @@ DEPOT_DEPS_NAME = {
     "src" : "src/v8",
     "recurse" : True,
     "depends" : None,
-    "build_with": 'v8_bleeding_edge',
+    # Bisecting into v8 is broken at the moment.
+    # crbug.com/274818
+    #"build_with": 'v8_bleeding_edge',
     "from" : 'chromium',
     "custom_deps": bisect_utils.GCLIENT_CUSTOM_DEPS_V8
   },
@@ -1465,6 +1467,11 @@ class BisectPerformanceMetrics(object):
       self.cleanup_commands.append(['mv', old_name + '.bak', old_name])
 
       os.chdir(self.depot_cwd[current_depot])
+
+    if current_depot == 'v8':
+      self.warnings.append('Unfortunately, V8 bisection is broken at '
+          'the moment. The script won\'t be able to narrow down the range '
+          'past major releases of V8.')
 
     depot_revision_list = self.GetRevisionList(current_depot,
                                                end_revision,
