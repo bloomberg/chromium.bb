@@ -2986,6 +2986,7 @@
                   ['chromeos==1 and disable_sse2==0', {
                     'cflags': [
                       '-msse2',
+                      '-mfpmath=sse',
                     ],
                   }],
                   # Use gold linker for Android ia32 target.
