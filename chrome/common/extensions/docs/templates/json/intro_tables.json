@@ -250,8 +250,7 @@
   "tabs": {
     "Permissions": [
       {
-        "class": "code",
-        "text": "\"tabs\""
+        "partial": "intro_tables/tabs_permissions.html"
       }
     ]
   },
@@ -288,6 +287,13 @@
       {
         "link": "https://developers.google.com/chrome/web-store/docs/inline_installation",
         "text": "Using Inline Installation"
+      }
+    ]
+  },
+  "windows": {
+    "Permissions": [
+      {
+        "partial": "intro_tables/windows_permissions.html"
       }
     ]
   }

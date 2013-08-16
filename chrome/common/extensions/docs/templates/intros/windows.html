@@ -1,14 +1,14 @@
-<img src="{{static}}/images/windows.png"
-     width="256" height="76" alt="Two windows, each with one tab" />
-
 <h2 id="manifest">Manifest</h2>
 <p>
-To use the windows API,
-you must declare the "tabs" permission
-in <a href="manifest.html">manifest.json</a>.
-(No, that isn't a typo &mdash;
-the window and tabs modules interact so closely we
-decided to just share one permission between them.)
+When requested, a <code>$ref:windows.Window</code>
+will contain an array of <code>$ref:tabs.Tab</code> objects.
+
+You must declare the <code>"tabs"</code> permission in your
+<a href="manifest.html">manifest</a> if you require access to the
+<code>$ref:[tabs.Tab.url url]</code>,
+<code>$ref:[tabs.Tab.title title]</code>, or
+<code>$ref:[tabs.Tab.favIconUrl favIconUrl]</code> properties of
+<code>$ref:tabs.Tab</code>.
 For example:
 </p>
 
@@ -49,6 +49,9 @@ circumstances, there may be no current window for background pages.
 <h2 id="examples"> Examples </h2>
 
 <p>
+<img src="{{static}}/images/windows.png"
+     width="256" height="76" alt="Two windows, each with one tab" />
+<br>
 You can find simple examples of using the windows module in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/windows/">examples/api/windows</a>
 directory.

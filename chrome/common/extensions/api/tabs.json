@@ -15,14 +15,14 @@
           // TODO(kalman): Investigate how this is ending up as -1 (based on window type? a bug?) and whether it should be optional instead.
           "index": {"type": "integer", "minimum": -1, "description": "The zero-based index of the tab within its window."},
           "windowId": {"type": "integer", "minimum": 0, "description": "The ID of the window the tab is contained within."},
-          "openerTabId": {"type": "integer", "minimum": 0, "optional": true, "description": "The ID of the tab that opened this tab, if any. This will only be present if the opener tab still exists."},
+          "openerTabId": {"type": "integer", "minimum": 0, "optional": true, "description": "The ID of the tab that opened this tab, if any. This property is only present if the opener tab still exists."},
           "selected": {"type": "boolean", "description": "Whether the tab is selected.", "nodoc": true},
           "highlighted": {"type": "boolean", "description": "Whether the tab is highlighted."},
           "active": {"type": "boolean", "description": "Whether the tab is active in its window. (Does not necessarily mean the window is focused.)"},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
-          "url": {"type": "string", "optional": true, "description": "The URL the tab is displaying. This will only be present if the extension has the 'tabs' or 'webNavigation' permission."},
-          "title": {"type": "string", "optional": true, "optional": true, "description": "The title of the tab. This will only be present if the extension has the 'tabs' or 'webNavigation' permission. It may also be an empty string if the tab is loading."},
-          "favIconUrl": {"type": "string", "optional": true, "optional": true, "description": "The URL of the tab's favicon. This will only be present if the extension has the 'tabs' or 'webNavigation' permission. It may also be an empty string if the tab is loading."},
+          "url": {"type": "string", "optional": true, "description": "The URL the tab is displaying. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
+          "title": {"type": "string", "optional": true, "optional": true, "description": "The title of the tab. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission."},
+          "favIconUrl": {"type": "string", "optional": true, "optional": true, "description": "The URL of the tab's favicon. This property is only present if the extension's manifest includes the <code>\"tabs\"</code> permission. It may also be an empty string if the tab is loading."},
           "status": {"type": "string", "optional": true, "description": "Either <em>loading</em> or <em>complete</em>."},
           "incognito": {"type": "boolean", "description": "Whether the tab is in an incognito window."},
           "width": {"type": "integer", "optional": true, "description": "The width of the tab in pixels."},
@@ -36,7 +36,7 @@
         "properties": {
           "code": {"type": "string", "optional": true, "description": "JavaScript or CSS code to inject."},
           "file": {"type": "string", "optional": true, "description": "JavaScript or CSS file to inject."},
-          "allFrames": {"type": "boolean", "optional": true, "description": "If allFrames is <code>true</code>, implies that the JavaScript or CSS should be injected into all frames of current page. By default, it's <code>false</code> and will only be injected into the top frame."},
+          "allFrames": {"type": "boolean", "optional": true, "description": "If allFrames is <code>true</code>, implies that the JavaScript or CSS should be injected into all frames of current page. By default, it's <code>false</code> and is only injected into the top frame."},
           "runAt": {
             "type": "string",
             "optional": true,
@@ -215,7 +215,7 @@
       {
         "name": "create",
         "type": "function",
-        "description": "Creates a new tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
+        "description": "Creates a new tab.",
         "parameters": [
           {
             "type": "object",
@@ -279,7 +279,7 @@
       {
         "name": "duplicate",
         "type": "function",
-        "description": "Duplicates a tab. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
+        "description": "Duplicates a tab.",
         "parameters": [
           {
             "type": "integer",
@@ -295,7 +295,7 @@
               {
                 "name": "tab",
                 "optional": true,
-                "description": "Details about the duplicated tab. The Tab object doesn't contain url, title and faviconUrl if the 'tabs' permission has not been requested.",
+                "description": "Details about the duplicated tab. The $ref:tabs.Tab object doesn't contain <code>url</code>, <code>title</code> and <code>favIconUrl</code> if the <code>\"tabs\"</code> permission has not been requested.",
                 "$ref": "Tab"
               }
             ]
@@ -427,7 +427,7 @@
       {
         "name": "update",
         "type": "function",
-        "description": "Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
+        "description": "Modifies the properties of a tab. Properties that are not specified in <var>updateProperties</var> are not modified.",
         "parameters": [
           {
             "type": "integer",
@@ -483,7 +483,7 @@
                 "name": "tab",
                 "$ref": "Tab",
                 "optional": true,
-                "description": "Details about the updated tab, or <code>null</code> if the 'tabs' permission has not been requested."
+                "description": "Details about the updated tab. The $ref:tabs.Tab object doesn't contain <code>url</code>, <code>title</code> and <code>favIconUrl</code> if the <code>\"tabs\"</code> permission has not been requested."
               }
             ]
           }
@@ -560,7 +560,7 @@
       {
         "name": "remove",
         "type": "function",
-        "description": "Closes one or more tabs. Note: This function can be used without requesting the 'tabs' permission in the manifest.",
+        "description": "Closes one or more tabs.",
         "parameters": [
           {
             "name": "tabIds",
@@ -914,7 +914,7 @@
       {
         "name": "onRemoved",
         "type": "function",
-        "description": "Fired when a tab is closed. Note: A listener can be registered for this event without requesting the 'tabs' permission in the manifest.",
+        "description": "Fired when a tab is closed.",
         "parameters": [
           {"type": "integer", "name": "tabId", "minimum": 0},
           {
