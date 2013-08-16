@@ -45,7 +45,7 @@ class TextCheckerClient;
 
 class SpellCheckRequest : public TextCheckingRequest {
 public:
-    static PassRefPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, int requestNumber = 0);
+    static PassRefPtr<SpellCheckRequest> create(TextCheckingTypeMask, TextCheckingProcessType, PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange);
     virtual ~SpellCheckRequest();
 
     PassRefPtr<Range> checkingRange() const { return m_checkingRange; }
@@ -60,17 +60,14 @@ public:
     virtual void didSucceed(const Vector<TextCheckingResult>&) OVERRIDE;
     virtual void didCancel() OVERRIDE;
 
-    int requestNumber() const { return m_requestNumber; }
-
 private:
-    SpellCheckRequest(PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets, int requestNumber);
+    SpellCheckRequest(PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, const String&, TextCheckingTypeMask, TextCheckingProcessType, const Vector<uint32_t>& documentMarkersInRange, const Vector<unsigned>& documentMarkerOffsets);
 
     SpellCheckRequester* m_requester;
     RefPtr<Range> m_checkingRange;
     RefPtr<Range> m_paragraphRange;
     RefPtr<Element> m_rootEditableElement;
     TextCheckingRequestData m_requestData;
-    int m_requestNumber;
 };
 
 class SpellCheckRequester {

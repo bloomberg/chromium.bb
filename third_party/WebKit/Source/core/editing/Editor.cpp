@@ -1503,38 +1503,24 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
         return;
 
     Range* rangeToCheck = shouldMarkGrammar ? grammarRange : spellingRange;
-    TextCheckingParagraph fullParagraphToCheck(rangeToCheck);
-    if (fullParagraphToCheck.isRangeEmpty() || fullParagraphToCheck.isEmpty())
+    TextCheckingParagraph paragraphToCheck(rangeToCheck);
+    if (paragraphToCheck.isRangeEmpty() || paragraphToCheck.isEmpty())
         return;
+    RefPtr<Range> paragraphRange = paragraphToCheck.paragraphRange();
 
-    // Since the text may be quite big chunk it up and adjust to the sentence boundary.
-    const int kChunkSize = 16 * 1024;
-    int start = fullParagraphToCheck.checkingStart();
-    int end = fullParagraphToCheck.checkingEnd();
-    start = std::min(start, end);
-    end = std::max(start, end);
     bool asynchronous = m_frame && m_frame->settings() && m_frame->settings()->asynchronousSpellCheckingEnabled();
-    const int kNumChunksToCheck = asynchronous ? (end - start + kChunkSize - 1) / (kChunkSize) : 1;
-    int currentChunkStart = start;
-    for (int iter = 0; iter < kNumChunksToCheck; ++iter) {
-        RefPtr<Range> checkRange = fullParagraphToCheck.subrange(currentChunkStart, kChunkSize);
-        setStart(checkRange.get(), startOfSentence(checkRange->startPosition()));
-        setEnd(checkRange.get(), endOfSentence(checkRange->endPosition()));
-        TextCheckingParagraph sentenceToCheck(checkRange, checkRange);
 
-        currentChunkStart += sentenceToCheck.checkingLength();
+    // In asynchronous mode, we intentionally check paragraph-wide sentence.
+    RefPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessIncremental, asynchronous ? paragraphRange : rangeToCheck, paragraphRange);
 
-        RefPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, checkRange, iter);
-
-        if (asynchronous) {
-            m_spellCheckRequester->requestCheckingFor(request);
-            continue;
-        }
-
-        Vector<TextCheckingResult> results;
-        checkTextOfParagraph(textChecker(), sentenceToCheck.text(), resolveTextCheckingTypeMask(textCheckingOptions), results);
-        markAndReplaceFor(request, results);
+    if (asynchronous) {
+        m_spellCheckRequester->requestCheckingFor(request);
+        return;
     }
+
+    Vector<TextCheckingResult> results;
+    checkTextOfParagraph(textChecker(), paragraphToCheck.text(), resolveTextCheckingTypeMask(textCheckingOptions), results);
+    markAndReplaceFor(request, results);
 }
 
 void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vector<TextCheckingResult>& results)
@@ -1570,7 +1556,7 @@ void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vect
     for (unsigned i = 0; i < results.size(); i++) {
         int spellingRangeEndOffset = paragraph.checkingEnd();
         const TextCheckingResult* result = &results[i];
-        int resultLocation = result->location + paragraph.checkingStart();
+        int resultLocation = result->location;
         int resultLength = result->length;
         bool resultEndsAtAmbiguousBoundary = ambiguousBoundaryOffset >= 0 && resultLocation + resultLength == ambiguousBoundaryOffset;
 
