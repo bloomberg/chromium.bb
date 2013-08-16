@@ -85,19 +85,6 @@ inline v8::Handle<v8::Value> toV8Fast(Uint8ClampedArray* impl, const HolderConta
 }
 
 template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(Uint8ClampedArray* impl, const HolderContainer& container, Wrappable* wrappable)
-{
-    return V8TypedArray<Uint8ClampedArray>::toV8FastForMainWorld(impl, container, wrappable);
-}
-
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< Uint8ClampedArray > impl, const HolderContainer& container, Wrappable* wrappable)
-{
-    return toV8FastForMainWorld(impl.get(), container, wrappable);
-}
-
-
-template<class HolderContainer, class Wrappable>
 inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< Uint8ClampedArray > impl, const HolderContainer& container, Wrappable* wrappable)
 {
     return toV8Fast(impl.get(), container, wrappable);

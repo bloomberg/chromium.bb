@@ -84,12 +84,6 @@ inline v8::Handle<v8::Value> toV8Fast(Float32Array* impl, const HolderContainer&
     return V8TypedArray<Float32Array>::toV8Fast(impl, container, wrappable);
 }
 
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(Float32Array* impl, const HolderContainer& container, Wrappable* wrappable)
-{
-    return V8TypedArray<Float32Array>::toV8FastForMainWorld(impl, container, wrappable);
-}
-
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Float32Array* impl, v8::Handle<v8::Object> creationContext)
 {
@@ -106,12 +100,6 @@ template<class CallbackInfo, class Wrappable>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Float32Array* impl, Wrappable* wrappable)
 {
     V8TypedArray<Float32Array>::v8SetReturnValueFast(callbackInfo, impl, wrappable);
-}
-
-template<class HolderContainer, class Wrappable>
-inline v8::Handle<v8::Value> toV8FastForMainWorld(PassRefPtr< Float32Array > impl, const HolderContainer& container, Wrappable* wrappable)
-{
-    return toV8FastForMainWorld(impl.get(), container, wrappable);
 }
 
 template<class HolderContainer, class Wrappable>
