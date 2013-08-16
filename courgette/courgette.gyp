@@ -203,5 +203,32 @@
         },
       ],
     }],
+    # The build infrastructure needs courgette to be named courgette64.
+    ['OS=="win" and target_arch=="x64"', {
+      'targets': [
+        {
+          'target_name': 'courgette64',
+          'type': 'none',
+          'dependencies': [
+            'courgette',
+          ],
+          'actions': [{
+            'action_name': 'courgette64',
+            'inputs': [
+              '<(PRODUCT_DIR)/courgette.exe',
+            ],
+            'outputs': [
+              '<(PRODUCT_DIR)/courgette64.exe',
+            ],
+            'action': [
+              'python',
+              '../build/cp.py',
+              '<@(_inputs)',
+              '<@(_outputs)'
+            ],
+          }],
+        },
+      ],
+    }],
   ],
 }

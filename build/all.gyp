@@ -755,6 +755,7 @@
               'dependencies': [
                 '../chrome/chrome.gyp:crash_service',
                 '../chrome/chrome.gyp:policy_templates',
+                '../courgette/courgette.gyp:courgette64',
                 '../chrome/installer/mini_installer.gyp:mini_installer',
                 '../courgette/courgette.gyp:courgette',
                 '../cloud_print/cloud_print.gyp:cloud_print',
@@ -778,7 +779,6 @@
                   'dependencies': [
                     '../chrome/chrome.gyp:crash_service_win64',
                     '../chrome_frame/chrome_frame.gyp:npchrome_frame',
-                    '../courgette/courgette.gyp:courgette64',
                     # Omitting tests from Win64 to speed up cycle times.
                     '../chrome/chrome.gyp:automated_ui_tests',
                     '../chrome/chrome.gyp:chromedriver',
