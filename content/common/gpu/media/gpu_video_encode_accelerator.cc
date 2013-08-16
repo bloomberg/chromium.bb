@@ -8,12 +8,13 @@
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "build/build_config.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/video_frame.h"
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
 #include "content/common/gpu/media/exynos_video_encode_accelerator.h"
 #endif
 
@@ -84,7 +85,7 @@ std::vector<media::VideoEncodeAccelerator::SupportedProfile>
 GpuVideoEncodeAccelerator::GetSupportedProfiles() {
   std::vector<media::VideoEncodeAccelerator::SupportedProfile> profiles;
 
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
   profiles = ExynosVideoEncodeAccelerator::GetSupportedProfiles();
 #endif
 
@@ -93,7 +94,7 @@ GpuVideoEncodeAccelerator::GetSupportedProfiles() {
 }
 
 void GpuVideoEncodeAccelerator::CreateEncoder() {
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL)
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_ARMEL) && defined(USE_X11)
   encoder_.reset(new ExynosVideoEncodeAccelerator(this));
 #endif
 }
