@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/memory/singleton.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/common/local_discovery/service_discovery_client.h"
 #include "content/public/browser/utility_process_host_client.h"
@@ -118,6 +119,26 @@ class ServiceDiscoveryHostClient : public base::NonThreadSafe,
   scoped_refptr<base::TaskRunner> callback_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscoveryHostClient);
+};
+
+class ServiceDiscoveryHostClientFactory : public base::NonThreadSafe {
+ public:
+  ServiceDiscoveryHostClientFactory();
+  ~ServiceDiscoveryHostClientFactory();
+
+  static ServiceDiscoveryHostClient* GetClient();
+  static void ReleaseClient();
+
+ private:
+  friend class Singleton<ServiceDiscoveryHostClientFactory>;
+
+  static ServiceDiscoveryHostClientFactory* GetInstance();
+
+  ServiceDiscoveryHostClient* GetClientInternal();
+  void ReleaseClientInternal();
+
+  scoped_refptr<ServiceDiscoveryHostClient> instance_;
+  int references_;
 };
 
 }  // namespace local_discovery

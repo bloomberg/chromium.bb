@@ -331,4 +331,48 @@ void ServiceDiscoveryHostClient::RunLocalDomainResolverCallback(
     it->second.Run(success, ip_address);
 }
 
+ServiceDiscoveryHostClientFactory::ServiceDiscoveryHostClientFactory()
+    : instance_(NULL), references_(0) {
+}
+
+ServiceDiscoveryHostClientFactory::~ServiceDiscoveryHostClientFactory() {
+}
+
+// static
+ServiceDiscoveryHostClient* ServiceDiscoveryHostClientFactory::GetClient() {
+  return GetInstance()->GetClientInternal();
+}
+
+// static
+void ServiceDiscoveryHostClientFactory::ReleaseClient() {
+  GetInstance()->ReleaseClientInternal();
+}
+
+// static
+ServiceDiscoveryHostClientFactory*
+ServiceDiscoveryHostClientFactory::GetInstance() {
+  return Singleton<ServiceDiscoveryHostClientFactory>::get();
+}
+
+ServiceDiscoveryHostClient*
+ServiceDiscoveryHostClientFactory::GetClientInternal() {
+  DCHECK(CalledOnValidThread());
+  if (references_ == 0) {
+    instance_ = new ServiceDiscoveryHostClient;
+    instance_->Start();
+  }
+
+  references_++;
+  return instance_.get();
+}
+
+void ServiceDiscoveryHostClientFactory::ReleaseClientInternal() {
+  DCHECK(CalledOnValidThread());
+  references_--;
+  if (references_ == 0) {
+    instance_->Shutdown();
+    instance_ = NULL;
+  }
+}
+
 }  // namespace local_discovery
