@@ -66,13 +66,23 @@ class Error(Exception):
   pass
 
 
-def JoinChildNodes(tag):
-  return ''.join([c.toxml() for c in tag.childNodes]).strip()
+def _JoinChildNodes(tag):
+  """Join child nodes into a single text.
+
+  Applicable to leafs like 'summary' and 'detail'.
+
+  Args:
+    tag: parent node
+
+  Returns:
+    a string with concatenated nodes' text representation.
+  """
+  return ''.join(c.toxml() for c in tag.childNodes).strip()
 
 
-def NormalizeAttributeValue(s):
-  """Normalizes an attribute value (which might be wrapped over multiple lines)
-  by replacing each whitespace sequence with a single space.
+def _NormalizeString(s):
+  """Normalizes a string (possibly of multiple lines) by replacing each
+  whitespace sequence with a single space.
 
   Args:
     s: The string to normalize, e.g. '  \n a  b c\n d  '
@@ -83,7 +93,7 @@ def NormalizeAttributeValue(s):
   return ' '.join(s.split())
 
 
-def NormalizeAllAttributeValues(node):
+def _NormalizeAllAttributeValues(node):
   """Recursively normalizes all tag attribute values in the given tree.
 
   Args:
@@ -94,10 +104,9 @@ def NormalizeAllAttributeValues(node):
   """
   if node.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
     for a in node.attributes.keys():
-      node.attributes[a].value = NormalizeAttributeValue(
-        node.attributes[a].value)
+      node.attributes[a].value = _NormalizeString(node.attributes[a].value)
 
-  for c in node.childNodes: NormalizeAllAttributeValues(c)
+  for c in node.childNodes: _NormalizeAllAttributeValues(c)
   return node
 
 
@@ -151,32 +160,12 @@ def _ExpandHistogramNameWithFieldTrial(group_name, histogram_name, fieldtrial):
   return cluster + group_name + separator + remainder
 
 
-def ExtractHistograms(filename):
-  """Compute the histogram names and descriptions from the XML representation.
+def _ExtractEnumsFromXmlTree(tree):
+  """Extract all <enum> nodes in the tree into a dictionary."""
 
-  Args:
-    filename: The path to the histograms XML file.
-
-  Returns:
-    { 'histogram_name': 'histogram_description', ... }
-
-  Raises:
-    Error if the file is not well-formatted.
-  """
-  # Slurp in histograms.xml
-  raw_xml = ''
-  with open(filename, 'r') as f:
-    raw_xml = f.read()
-
-  # Parse the XML into a tree
-  tree = xml.dom.minidom.parseString(raw_xml)
-  NormalizeAllAttributeValues(tree)
-
-  histograms = {}
+  enums = {}
   have_errors = False
 
-  # Load the enums.
-  enums = {}
   last_name = None
   for enum in tree.getElementsByTagName("enum"):
     if enum.getAttribute('type') != 'int':
@@ -214,16 +203,24 @@ def ExtractHistograms(filename):
         have_errors = True
         continue
       value_dict['label'] = int_tag.getAttribute('label')
-      value_dict['summary'] = JoinChildNodes(int_tag)
+      value_dict['summary'] = _JoinChildNodes(int_tag)
       enum_dict['values'][int_value] = value_dict
 
     summary_nodes = enum.getElementsByTagName("summary")
     if len(summary_nodes) > 0:
-      enum_dict['summary'] = JoinChildNodes(summary_nodes[0])
+      enum_dict['summary'] = _NormalizeString(_JoinChildNodes(summary_nodes[0]))
 
     enums[name] = enum_dict
 
+  return enums, have_errors
+
+
+def _ExtractHistogramsFromXmlTree(tree, enums):
+  """Extract all <histogram> nodes in the tree into a dictionary."""
+
   # Process the histograms. The descriptions can include HTML tags.
+  histograms = {}
+  have_errors = False
   last_name = None
   for histogram in tree.getElementsByTagName("histogram"):
     name = histogram.getAttribute('name')
@@ -236,29 +233,31 @@ def ExtractHistograms(filename):
       logging.error('Duplicate histogram definition %s' % name)
       have_errors = True
       continue
-    histograms[name] = {}
+    histograms[name] = histogram_entry = {}
 
     # Find <summary> tag.
     summary_nodes = histogram.getElementsByTagName("summary")
     if len(summary_nodes) > 0:
-      histograms[name]['summary'] = JoinChildNodes(summary_nodes[0])
+      histogram_entry['summary'] = _NormalizeString(
+          _JoinChildNodes(summary_nodes[0]))
     else:
-      histograms[name]['summary'] = 'TBD'
+      histogram_entry['summary'] = 'TBD'
 
     # Find <obsolete> tag.
     obsolete_nodes = histogram.getElementsByTagName("obsolete")
     if len(obsolete_nodes) > 0:
-      reason = JoinChildNodes(obsolete_nodes[0])
-      histograms[name]['obsolete'] = reason
+      reason = _JoinChildNodes(obsolete_nodes[0])
+      histogram_entry['obsolete'] = reason
 
     # Handle units.
     if histogram.hasAttribute('units'):
-      histograms[name]['units'] = histogram.getAttribute('units')
+      histogram_entry['units'] = histogram.getAttribute('units')
 
     # Find <details> tag.
     details_nodes = histogram.getElementsByTagName("details")
     if len(details_nodes) > 0:
-      histograms[name]['details'] = JoinChildNodes(details_nodes[0])
+      histogram_entry['details'] = _NormalizeString(
+          _JoinChildNodes(details_nodes[0]))
 
     # Handle enum types.
     if histogram.hasAttribute('enum'):
@@ -267,10 +266,28 @@ def ExtractHistograms(filename):
         logging.error('Unknown enum %s in histogram %s' % (enum_name, name))
         have_errors = True
       else:
-        histograms[name]['enum'] = enums[enum_name]
+        histogram_entry['enum'] = enums[enum_name]
 
-  # Process the field trials and compute the combinations with their affected
-  # histograms.
+  return histograms, have_errors
+
+
+def _UpdateHistogramsWithFieldTrialInformation(tree, histograms):
+  """Process field trials' tags and combine with affected histograms.
+
+  The histograms dictionary will be updated in-place by adding new histograms
+  created by combining histograms themselves with field trials targetting these
+  histograms.
+
+  Args:
+    tree: XML dom tree.
+    histograms: a dictinary of histograms previously extracted from the tree;
+
+  Returns:
+    True if any errors were found.
+  """
+  have_errors = False
+
+  # Verify order of fieldtrial fields first.
   last_name = None
   for fieldtrial in tree.getElementsByTagName("fieldtrial"):
     name = fieldtrial.getAttribute('name')
@@ -279,6 +296,7 @@ def ExtractHistograms(filename):
                     % (last_name, name))
       have_errors = True
     last_name = name
+
   # Field trials can depend on other field trials, so we need to be careful.
   # Make a temporary copy of the list of field trials to use as a queue.
   # Field trials whose dependencies have not yet been processed will get
@@ -287,6 +305,7 @@ def ExtractHistograms(filename):
   def GenerateFieldTrials():
     for f in tree.getElementsByTagName("fieldtrial"): yield 0, f
     for r, f in reprocess_queue: yield r, f
+
   for reprocess_count, fieldtrial in GenerateFieldTrials():
     # Check dependencies first
     dependencies_valid = True
@@ -314,6 +333,7 @@ def ExtractHistograms(filename):
     group_labels = {}
     for group in groups:
       group_labels[group.getAttribute('name')] = group.getAttribute('label')
+
     last_histogram_name = None
     for affected_histogram in affected_histograms:
       histogram_name = affected_histogram.getAttribute('name')
@@ -357,11 +377,44 @@ def ExtractHistograms(filename):
         except Error:
           have_errors = True
 
-  if have_errors:
-    logging.error('Error parsing %s' % filename)
-    raise Error()
+  return have_errors
 
-  return histograms
+
+def ExtractHistogramsFromFile(file_handle):
+  """Compute the histogram names and descriptions from the XML representation.
+
+  Args:
+    file_handle: A file or file-like with XML content.
+
+  Returns:
+    a tuple of (histograms, status) where histograms is a dictionary mapping
+    histogram names to dictionaries containing histogram descriptions and status
+    is a boolean indicating if errros were encoutered in processing.
+  """
+  tree = xml.dom.minidom.parse(file_handle)
+  _NormalizeAllAttributeValues(tree)
+
+  enums, enum_errors = _ExtractEnumsFromXmlTree(tree)
+  histograms, histogram_errors = _ExtractHistogramsFromXmlTree(tree, enums)
+  update_errors = _UpdateHistogramsWithFieldTrialInformation(tree, histograms)
+
+  return histograms, enum_errors or histogram_errors or update_errors
+
+
+def ExtractHistograms(filename):
+  """Load histogram definitions from a disk file.
+  Args:
+    filename: a file path to load data from.
+
+  Raises:
+    Error if the file is not well-formatted.
+  """
+  with open(filename, 'r') as f:
+    histograms, had_errors = ExtractHistogramsFromFile(f)
+    if had_errors:
+      logging.error('Error parsing %s' % filename)
+      raise Error()
+    return histograms
 
 
 def ExtractNames(histograms):
