@@ -21,6 +21,7 @@
 """
 
 import contextlib
+import datetime
 import os
 import optparse
 import shutil
@@ -252,16 +253,18 @@ def LlvmRegression(env, options):
       if env['PNACL_BUILDBOT'] != 'false':
         # The buildbots need to be fully verbose and print all output
         # from "make check-all".
-        print line,
+        print str(datetime.datetime.now()) + ' ' + line,
       lines.append(line)
-    print "Waiting for 'make check-all' to complete."
+    print (str(datetime.datetime.now()) + ' ' +
+           "Waiting for 'make check-all' to complete.")
     make_pipe.wait()
     make_stdout = ''.join(lines)
     parse_options = vars(options)
     parse_options['lit'] = True
     parse_options['excludes'].append(env['LIT_KNOWN_FAILURES'])
     parse_options['attributes'].append(env['BUILD_PLATFORM'])
-    print 'Parsing LLVM test report output.'
+    print (str(datetime.datetime.now()) + ' ' +
+           'Parsing LLVM test report output.')
     parse_llvm_test_report.Report(parse_options, filecontents=make_stdout)
   return 0
 
