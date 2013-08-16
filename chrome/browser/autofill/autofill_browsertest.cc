@@ -691,8 +691,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, ProfileWithEmailInOtherFieldNotSaved) {
 // 'Address Line 1' and 'City' data match. When two profiles are merged, any
 // remaining address fields are expected to be overwritten. Any non-address
 // fields should accumulate multi-valued data.
+// DISABLED: http://crbug.com/150084
 IN_PROC_BROWSER_TEST_F(AutofillTest,
-                       MergeAggregatedProfilesWithSameAddress) {
+                       DISABLED_MergeAggregatedProfilesWithSameAddress) {
   AggregateProfilesIntoAutofillPrefs("dataset_2.txt");
 
   ASSERT_EQ(3u, personal_data_manager()->GetProfiles().size());
@@ -702,8 +703,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 // Mininum address values needed during aggregation are: address line 1, city,
 // state, and zip code.
 // Profiles are merged when data for address line 1 and city match.
+// DISABLED: http://crbug.com/150084
 IN_PROC_BROWSER_TEST_F(AutofillTest,
-                       ProfilesNotMergedWhenNoMinAddressData) {
+                       DISABLED_ProfilesNotMergedWhenNoMinAddressData) {
   AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
   ASSERT_EQ(0u, personal_data_manager()->GetProfiles().size());
@@ -711,8 +713,9 @@ IN_PROC_BROWSER_TEST_F(AutofillTest,
 
 // Test Autofill ability to merge duplicate profiles and throw away junk.
 // TODO(isherman): this looks redundant, consider removing.
+// DISABLED: http://crbug.com/150084
 IN_PROC_BROWSER_TEST_F(AutofillTest,
-                       MergeAggregatedDuplicatedProfiles) {
+                       DISABLED_MergeAggregatedDuplicatedProfiles) {
   int num_of_profiles =
       AggregateProfilesIntoAutofillPrefs("dataset_no_address.txt");
 
