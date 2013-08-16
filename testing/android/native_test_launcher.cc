@@ -115,8 +115,6 @@ void EnsureRedirectStream(FILE* stream,
 
 }  // namespace
 
-// This method is called on a separate java thread so that we won't trigger
-// an ANR.
 static void RunTests(JNIEnv* env,
                      jobject obj,
                      jstring jfiles_dir,
