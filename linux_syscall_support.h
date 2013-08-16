@@ -2721,7 +2721,7 @@ struct kernel_statfs {
   #define __NR__exit   __NR_exit
   #define __NR__gettid __NR_gettid
   #define __NR__mremap __NR_mremap
-  LSS_INLINE _syscall1(int,     brk,             void *,      e)
+  LSS_INLINE _syscall1(void *,  brk,             void *,      e)
   LSS_INLINE _syscall1(int,     chdir,           const char *,p)
   LSS_INLINE _syscall1(int,     close,           int,         f)
   LSS_INLINE _syscall2(int,     clock_getres,    int,         c,
