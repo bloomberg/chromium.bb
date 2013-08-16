@@ -7,7 +7,6 @@
 
 """A git-command for integrating reviews on Rietveld."""
 
-import difflib
 from distutils.version import LooseVersion
 import json
 import logging
@@ -36,9 +35,11 @@ import gclient_utils
 import presubmit_support
 import rietveld
 import scm
+import subcommand
 import subprocess2
 import watchlists
 
+__version__ = '1.0'
 
 DEFAULT_SERVER = 'https://codereview.appspot.com'
 POSTUPSTREAM_HOOK_PATTERN = '.git/hooks/post-cl-%s'
@@ -96,13 +97,6 @@ def IsGitVersionAtLeast(min_version):
   version = RunGit(['--version']).strip()
   return (version.startswith(prefix) and
       LooseVersion(version[len(prefix):]) >= LooseVersion(min_version))
-
-
-def usage(more):
-  def hook(fn):
-    fn.usage_more = more
-    return fn
-  return hook
 
 
 def ask_for_data(prompt):
@@ -1031,7 +1025,7 @@ def DownloadHooks(force):
       DieWithError('\nFailed to download hooks from %s' % src)
 
 
-@usage('[repo root containing codereview.settings]')
+@subcommand.usage('[repo root containing codereview.settings]')
 def CMDconfig(parser, args):
   """Edits configuration for this tree."""
 
@@ -1189,7 +1183,7 @@ def CMDstatus(parser, args):
   return 0
 
 
-@usage('[issue_number]')
+@subcommand.usage('[issue_number]')
 def CMDissue(parser, args):
   """Sets or displays the current code review issue number.
 
@@ -1448,7 +1442,7 @@ def cleanup_list(l):
   return sorted(filter(None, stripped_items))
 
 
-@usage('[args to "git diff"]')
+@subcommand.usage('[args to "git diff"]')
 def CMDupload(parser, args):
   """Uploads the current changelist to codereview."""
   parser.add_option('--bypass-hooks', action='store_true', dest='bypass_hooks',
@@ -1772,7 +1766,7 @@ def SendUpstream(parser, args, cmd):
   return 0
 
 
-@usage('[upstream branch to apply against]')
+@subcommand.usage('[upstream branch to apply against]')
 def CMDdcommit(parser, args):
   """Commits the current changelist via git-svn."""
   if not settings.GetIsGitSvn():
@@ -1788,7 +1782,7 @@ will instead be silently ignored."""
   return SendUpstream(parser, args, 'dcommit')
 
 
-@usage('[upstream branch to apply against]')
+@subcommand.usage('[upstream branch to apply against]')
 def CMDpush(parser, args):
   """Commits the current changelist via git."""
   if settings.GetIsGitSvn():
@@ -1798,7 +1792,7 @@ def CMDpush(parser, args):
   return SendUpstream(parser, args, 'push')
 
 
-@usage('<patch url or issue id>')
+@subcommand.usage('<patch url or issue id>')
 def CMDpatch(parser, args):
   """Patchs in a code review."""
   parser.add_option('-b', dest='newbranch',
@@ -2045,7 +2039,7 @@ def CMDtry(parser, args):
   return 0
 
 
-@usage('[new upstream branch]')
+@subcommand.usage('[new upstream branch]')
 def CMDupstream(parser, args):
   """Prints or sets the name of the upstream branch, if any."""
   _, args = parser.parse_args(args)
@@ -2147,72 +2141,11 @@ def CMDformat(parser, args):
   return 0
 
 
-### Glue code for subcommand handling.
-
-
-def Commands():
-  """Returns a dict of command and their handling function."""
-  module = sys.modules[__name__]
-  cmds = (fn[3:] for fn in dir(module) if fn.startswith('CMD'))
-  return dict((cmd, getattr(module, 'CMD' + cmd)) for cmd in cmds)
-
-
-def Command(name):
-  """Retrieves the function to handle a command."""
-  commands = Commands()
-  if name in commands:
-    return commands[name]
-
-  # Try to be smart and look if there's something similar.
-  commands_with_prefix = [c for c in commands if c.startswith(name)]
-  if len(commands_with_prefix) == 1:
-    return commands[commands_with_prefix[0]]
-
-  # A #closeenough approximation of levenshtein distance.
-  def close_enough(a, b):
-    return difflib.SequenceMatcher(a=a, b=b).ratio()
-
-  hamming_commands = sorted(
-      ((close_enough(c, name), c) for c in commands),
-      reverse=True)
-  if (hamming_commands[0][0] - hamming_commands[1][0]) < 0.3:
-    # Too ambiguous.
-    return
-
-  if hamming_commands[0][0] < 0.8:
-    # Not similar enough. Don't be a fool and run a random command.
-    return
-
-  return commands[hamming_commands[0][1]]
-
-
-def CMDhelp(parser, args):
-  """Prints list of commands or help for a specific command."""
-  _, args = parser.parse_args(args)
-  if len(args) == 1:
-    return main(args + ['--help'])
-  parser.print_help()
-  return 0
-
-
-def GenUsage(parser, command):
-  """Modify an OptParse object with the function's documentation."""
-  obj = Command(command)
-  # Get back the real command name in case Command() guess the actual command
-  # name.
-  command = obj.__name__[3:]
-  more = getattr(obj, 'usage_more', '')
-  if command == 'help':
-    command = '<command>'
-  else:
-    parser.description = obj.__doc__
-  parser.set_usage('usage: %%prog %s [options] %s' % (command, more))
-
-
 class OptionParser(optparse.OptionParser):
   """Creates the option parse and add --verbose support."""
   def __init__(self, *args, **kwargs):
-    optparse.OptionParser.__init__(self, *args, **kwargs)
+    optparse.OptionParser.__init__(
+        self, *args, prog='git cl', version=__version__, **kwargs)
     self.add_option(
         '-v', '--verbose', action='count', default=0,
         help='Use 2 times for more debugging info')
@@ -2232,8 +2165,6 @@ class OptionParser(optparse.OptionParser):
 
 
 def main(argv):
-  """Doesn't parse the arguments here, just find the right subcommand to
-  execute."""
   if sys.hexversion < 0x02060000:
     print >> sys.stderr, (
         '\nYour python version %s is unsupported, please upgrade.\n' %
@@ -2244,39 +2175,15 @@ def main(argv):
   global settings
   settings = Settings()
 
-  # Do it late so all commands are listed.
-  commands = Commands()
-  length = max(len(c) for c in commands)
-
-  def gen_summary(x):
-    """Creates a oneline summary from the docstring."""
-    line = x.split('\n', 1)[0].rstrip('.')
-    return line[0].lower() + line[1:]
-
-  docs = sorted(
-      (name, gen_summary(handler.__doc__).strip())
-      for name, handler in commands.iteritems())
-  CMDhelp.usage_more = ('\n\nCommands are:\n' + '\n'.join(
-      '  %-*s %s' % (length, name, doc) for name, doc in docs))
-
-  parser = OptionParser()
-  if argv:
-    command = Command(argv[0])
-    if command:
-      # "fix" the usage and the description now that we know the subcommand.
-      GenUsage(parser, argv[0])
-      try:
-        return command(parser, argv[1:])
-      except urllib2.HTTPError, e:
-        if e.code != 500:
-          raise
-        DieWithError(
-            ('AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
-             'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
-
-  # Not a known command. Default to help.
-  GenUsage(parser, 'help')
-  return CMDhelp(parser, argv)
+  dispatcher = subcommand.CommandDispatcher(__name__)
+  try:
+    return dispatcher.execute(OptionParser(), argv)
+  except urllib2.HTTPError, e:
+    if e.code != 500:
+      raise
+    DieWithError(
+        ('AppEngine is misbehaving and returned HTTP %d, again. Keep faith '
+          'and retry or visit go/isgaeup.\n%s') % (e.code, str(e)))
 
 
 if __name__ == '__main__':
