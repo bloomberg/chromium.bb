@@ -611,36 +611,6 @@ void ConstrainedWindowFrameView::InitClass() {
   }
 }
 
-#if defined(USE_ASH)
-// Ash has its own window frames, but we need the special close semantics for
-// constrained windows.
-class ConstrainedWindowFrameViewAsh : public ash::CustomFrameViewAsh {
- public:
-  explicit ConstrainedWindowFrameViewAsh()
-      : ash::CustomFrameViewAsh(),
-        container_(NULL) {
-  }
-
-  void Init(views::Widget* container) {
-    container_ = container;
-    ash::CustomFrameViewAsh::Init(container);
-    // Always use "active" look.
-    SetInactiveRenderingDisabled(true);
-  }
-
-  // views::ButtonListener overrides:
-  virtual void ButtonPressed(views::Button* sender,
-                             const ui::Event& event) OVERRIDE {
-    if (sender == close_button())
-      container_->Close();
-  }
-
- private:
-  views::Widget* container_;  // not owned
-  DISALLOW_COPY_AND_ASSIGN(ConstrainedWindowFrameViewAsh);
-};
-#endif  // defined(USE_ASH)
-
 views::Widget* CreateWebContentsModalDialogViews(
     views::WidgetDelegate* widget_delegate,
     gfx::NativeView parent,
@@ -711,8 +681,10 @@ views::NonClientFrameView* CreateConstrainedStyleNonClientFrameView(
                                                           force_opaque_border);
   }
 #if defined(USE_ASH)
-  ConstrainedWindowFrameViewAsh* frame = new ConstrainedWindowFrameViewAsh;
+  ash::CustomFrameViewAsh* frame = new ash::CustomFrameViewAsh;
   frame->Init(widget);
+  // Always use "active" look.
+  frame->SetInactiveRenderingDisabled(true);
   return frame;
 #endif
   return new ConstrainedWindowFrameView(widget,
