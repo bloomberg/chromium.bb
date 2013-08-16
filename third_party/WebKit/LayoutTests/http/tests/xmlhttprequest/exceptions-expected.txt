@@ -1,16 +1,16 @@
 Test that XMLHttpRequest raises exceptions when it should.
 
 new XMLHttpRequest()
-PASS: req.setRequestHeader("Foo", "bar") threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS: req.send(null) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS: req.setRequestHeader("Foo", "bar") threw exception InvalidStateError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': the object's state must be OPENED..
+PASS: req.send(null) threw exception InvalidStateError: Failed to execute 'send' on 'XMLHttpRequest': the object's state must be OPENED..
 open()
 PASS: req.setRequestHeader() threw exception TypeError: Not enough arguments.
 PASS: req.setRequestHeader("Foo") threw exception TypeError: Not enough arguments.
-PASS: req.status() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS: req.statusText() threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS: req.status() threw exception InvalidStateError: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED..
+PASS: req.statusText() threw exception InvalidStateError: Failed to read the 'statusText' property from 'XMLHttpRequest': the object's state must not be OPENED..
 send()
-PASS: req.send(null) threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS: req.setRequestHeader("Foo", "bar") threw exception InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS: req.send(null) threw exception InvalidStateError: Failed to execute 'send' on 'XMLHttpRequest': the object's state must be OPENED..
+PASS: req.setRequestHeader("Foo", "bar") threw exception InvalidStateError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': the object's state must be OPENED..
 PASS: req.getResponseHeader() threw exception TypeError: Not enough arguments.
 PASS: req.open() threw exception TypeError: Not enough arguments.
 PASS: req.open(null) threw exception TypeError: Not enough arguments.

@@ -18,7 +18,7 @@ function bar(doOpen) {
 }
 
 for (var i = 0; i < 200; ++i) {
-    shouldBe("bar(i >= 100)", i >= 100 ? "\"Threw exception: InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable.\"" : "\"Returned result: 0\"");
+    shouldBe("bar(i >= 100)", i >= 100 ? "\"Threw exception: InvalidStateError: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED.\"" : "\"Returned result: 0\"");
 }
 
 

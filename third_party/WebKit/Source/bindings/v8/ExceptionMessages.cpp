@@ -38,4 +38,14 @@ String ExceptionMessages::failedToExecute(const String& method, const String& ty
     return "Failed to execute '" + method + "' on '" + type + "': " + detail;
 }
 
+String ExceptionMessages::failedToGet(const String& property, const String& type, const String& detail)
+{
+    return "Failed to read the '" + property + "' property from '" + type + "': " + detail;
+}
+
+String ExceptionMessages::failedToSet(const String& property, const String& type, const String& detail)
+{
+    return "Failed to set the '" + property + "' property on '" + type + "': " + detail;
+}
+
 } // namespace WebCore

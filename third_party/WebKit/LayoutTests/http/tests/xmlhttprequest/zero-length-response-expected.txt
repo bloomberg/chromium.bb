@@ -8,14 +8,14 @@ after creation: Uninitialized
   ResponseXML serialized: n/a
 after setting onreadystatechange: Uninitialized
 onreadystatechange: Open
-  Exception getting status: An attempt was made to use an object that is not, or is no longer, usable.
-  Exception getting StatusText: An attempt was made to use an object that is not, or is no longer, usable.
+  Exception getting status: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED.
+  Exception getting StatusText: Failed to read the 'statusText' property from 'XMLHttpRequest': the object's state must not be OPENED.
   ResponseText: ""
   ResponseXML: null
   ResponseXML serialized: n/a
 after open(): Open
-  Exception getting status: An attempt was made to use an object that is not, or is no longer, usable.
-  Exception getting StatusText: An attempt was made to use an object that is not, or is no longer, usable.
+  Exception getting status: Failed to read the 'status' property from 'XMLHttpRequest': the object's state must not be OPENED.
+  Exception getting StatusText: Failed to read the 'statusText' property from 'XMLHttpRequest': the object's state must not be OPENED.
   ResponseText: ""
   ResponseXML: null
   ResponseXML serialized: n/a

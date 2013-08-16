@@ -3,7 +3,7 @@ Test that XMLHttpRequest GET succeeds.
 Status: 200
 Response: Hello
 Test that XMLHttpRequest POST fails.
-Received exception, code: 19, name: NetworkError, message: A network error occurred.
+Received exception, code: 19, name: NetworkError, message: Failed to execute 'send' on 'XMLHttpRequest': 'GET' is the only method allowed for 'blob:' URLs.
 Test that XMLHttpRequest GET fails after the blob URL is revoked.
 Status: 404
 Response: 

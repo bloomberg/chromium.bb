@@ -24,6 +24,7 @@
 #include "core/xml/XMLHttpRequest.h"
 
 #include "FetchInitiatorTypeNames.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DOMImplementation.h"
@@ -215,7 +216,7 @@ XMLHttpRequest::State XMLHttpRequest::readyState() const
 ScriptString XMLHttpRequest::responseText(ExceptionState& es)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeText) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("responseText", "XMLHttpRequest", "the value is only accessible if the object's 'responseType' is '' or 'text' (was '" + responseType() + "')."));
         return ScriptString();
     }
     if (m_error || (m_state != LOADING && m_state != DONE))
@@ -226,7 +227,7 @@ ScriptString XMLHttpRequest::responseText(ExceptionState& es)
 Document* XMLHttpRequest::responseXML(ExceptionState& es)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeDocument) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("responseXML", "XMLHttpRequest", "the value is only accessible if the object's 'responseType' is '' or 'document' (was '" + responseType() + "')."));
         return 0;
     }
 
@@ -313,8 +314,7 @@ void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& es)
     // FIXME: Need to trigger or update the timeout Timer here, if needed. http://webkit.org/b/98156
     // XHR2 spec, 4.7.3. "This implies that the timeout attribute can be set while fetching is in progress. If that occurs it will still be measured relative to the start of fetching."
     if (scriptExecutionContext()->isDocument() && !m_async) {
-        logConsoleError(scriptExecutionContext(), "XMLHttpRequest.timeout cannot be set for synchronous HTTP(S) requests made from the window context.");
-        es.throwDOMException(InvalidAccessError);
+        es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("timeout", "XMLHttpRequest", "timeouts cannot be set for synchronous requests made from a document."));
         return;
     }
     m_timeoutMilliseconds = timeout;
@@ -323,7 +323,7 @@ void XMLHttpRequest::setTimeout(unsigned long timeout, ExceptionState& es)
 void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState& es)
 {
     if (m_state >= LOADING) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "the response type cannot be set if the object's state is LOADING or DONE."));
         return;
     }
 
@@ -332,8 +332,7 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
     // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
     // such as file: and data: still make sense to allow.
     if (!m_async && scriptExecutionContext()->isDocument() && m_url.protocolIsInHTTPFamily()) {
-        logConsoleError(scriptExecutionContext(), "XMLHttpRequest.responseType cannot be changed for synchronous HTTP(S) requests made from the window context.");
-        es.throwDOMException(InvalidAccessError);
+        es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToSet("responseType", "XMLHttpRequest", "the response type can only be changed for asynchronous HTTP requests made from a document."));
         return;
     }
 
@@ -405,7 +404,7 @@ void XMLHttpRequest::callReadyStateChangeListener()
 void XMLHttpRequest::setWithCredentials(bool value, ExceptionState& es)
 {
     if (m_state > OPENED || m_loader) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToSet("withCredentials", "XMLHttpRequest", "the value may only be set if the object's state is UNSENT or OPENED."));
         return;
     }
 
@@ -458,12 +457,12 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
     ASSERT(m_state == UNSENT);
 
     if (!isValidHTTPToken(method)) {
-        es.throwDOMException(SyntaxError);
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "'" + method + "' is not a valid HTTP method."));
         return;
     }
 
     if (!isAllowedHTTPMethod(method)) {
-        es.throwDOMException(SecurityError, "'XMLHttpRequest.open' does not support the '" + method + "' method.");
+        es.throwDOMException(SecurityError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "'" + method + "' HTTP method is unsupported."));
         return;
     }
 
@@ -474,8 +473,7 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
 
     if (!async && scriptExecutionContext()->isDocument()) {
         if (document()->settings() && !document()->settings()->syncXHRInDocumentsEnabled()) {
-            logConsoleError(scriptExecutionContext(), "Synchronous XMLHttpRequests are disabled for this page.");
-            es.throwDOMException(InvalidAccessError);
+            es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous requests are disabled for this page."));
             return;
         }
 
@@ -484,15 +482,13 @@ void XMLHttpRequest::open(const String& method, const KURL& url, bool async, Exc
         // We'll only disable this functionality for HTTP(S) requests since sync requests for local protocols
         // such as file: and data: still make sense to allow.
         if (url.protocolIsInHTTPFamily() && m_responseTypeCode != ResponseTypeDefault) {
-            logConsoleError(scriptExecutionContext(), "Synchronous HTTP(S) requests made from the window context cannot have XMLHttpRequest.responseType set.");
-            es.throwDOMException(InvalidAccessError);
+            es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous HTTP requests from a document must not set a response type."));
             return;
         }
 
         // Similarly, timeouts are disabled for synchronous requests as well.
         if (m_timeoutMilliseconds > 0) {
-            logConsoleError(scriptExecutionContext(), "Synchronous XMLHttpRequests must not have a timeout value set.");
-            es.throwDOMException(InvalidAccessError);
+            es.throwDOMException(InvalidAccessError, ExceptionMessages::failedToExecute("open", "XMLHttpRequest", "synchronous requests must not set a timeout."));
             return;
         }
     }
@@ -536,7 +532,7 @@ bool XMLHttpRequest::initSend(ExceptionState& es)
         return false;
 
     if (m_state != OPENED || m_loader) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("send", "XMLHttpRequest", "the object's state must be OPENED."));
         return false;
     }
 
@@ -691,7 +687,7 @@ void XMLHttpRequest::createRequest(ExceptionState& es)
 {
     // Only GET request is supported for blob URL.
     if (m_url.protocolIs("blob") && m_method != "GET") {
-        es.throwDOMException(NetworkError);
+        es.throwDOMException(NetworkError, ExceptionMessages::failedToExecute("send", "XMLHttpRequest", "'GET' is the only method allowed for 'blob:' URLs."));
         return;
     }
 
@@ -898,12 +894,17 @@ void XMLHttpRequest::overrideMimeType(const String& override)
 void XMLHttpRequest::setRequestHeader(const AtomicString& name, const String& value, ExceptionState& es)
 {
     if (m_state != OPENED || m_loader) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "the object's state must be OPENED."));
         return;
     }
 
-    if (!isValidHTTPToken(name) || !isValidHTTPHeaderValue(value)) {
-        es.throwDOMException(SyntaxError);
+    if (!isValidHTTPToken(name)) {
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + name + "' is not a valid HTTP header field name."));
+        return;
+    }
+
+    if (!isValidHTTPHeaderValue(value)) {
+        es.throwDOMException(SyntaxError, ExceptionMessages::failedToExecute("setRequestHeader", "XMLHttpRequest", "'" + value + "' is not a valid HTTP header field value."));
         return;
     }
 
@@ -931,7 +932,7 @@ String XMLHttpRequest::getRequestHeader(const AtomicString& name) const
 String XMLHttpRequest::getAllResponseHeaders(ExceptionState& es) const
 {
     if (m_state < HEADERS_RECEIVED) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("getAllResponseHeaders", "XMLHttpRequest", "the object's state must not be UNSENT or OPENED."));
         return "";
     }
 
@@ -967,7 +968,7 @@ String XMLHttpRequest::getAllResponseHeaders(ExceptionState& es) const
 String XMLHttpRequest::getResponseHeader(const AtomicString& name, ExceptionState& es) const
 {
     if (m_state < HEADERS_RECEIVED) {
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("getResponseHeader", "XMLHttpRequest", "the object's state must not be UNSENT or OPENED."));
         return String();
     }
 
@@ -1017,7 +1018,7 @@ int XMLHttpRequest::status(ExceptionState& es) const
     if (m_state == OPENED) {
         // Firefox only raises an exception in this state; we match it.
         // Note the case of local file requests, where we have no HTTP response code! Firefox never raises an exception for those, but we match HTTP case for consistency.
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("status", "XMLHttpRequest", "the object's state must not be OPENED."));
     }
 
     return 0;
@@ -1030,7 +1031,7 @@ String XMLHttpRequest::statusText(ExceptionState& es) const
 
     if (m_state == OPENED) {
         // See comments in status() above.
-        es.throwDOMException(InvalidStateError);
+        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToGet("statusText", "XMLHttpRequest", "the object's state must not be OPENED."));
     }
 
     return String();

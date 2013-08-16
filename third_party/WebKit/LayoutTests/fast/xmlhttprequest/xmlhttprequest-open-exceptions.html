@@ -15,7 +15,7 @@
             testFailed("xhr.open should throw an exception with a forbidden method type.");
         } catch (e) {
             xhrException = e;
-            shouldBeEqualToString("xhrException.message", "'XMLHttpRequest.open' does not support the 'TRACE' method.");
+            shouldBeEqualToString("xhrException.message", "Failed to execute 'open' on 'XMLHttpRequest': 'TRACE' HTTP method is unsupported.");
         }
 
         try {

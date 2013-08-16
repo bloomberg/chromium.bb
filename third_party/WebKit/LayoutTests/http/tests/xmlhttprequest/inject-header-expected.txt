@@ -1,9 +1,9 @@
 Test that setRequestHeader properly checks for line feeds in header values.
 
-%0AEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: An invalid or illegal string was specified.
+%0AEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': ' Evil: on' is not a valid HTTP header field value.
 
-%0DEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: An invalid or illegal string was specified.
+%0DEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': ' Evil: on' is not a valid HTTP header field value.
 
-%0D%0AEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: An invalid or illegal string was specified.
+%0D%0AEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': ' Evil: on' is not a valid HTTP header field value.
 
-%0A%0DEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: An invalid or illegal string was specified.
+%0A%0DEvil%3A%20on -> SUCCESS, setRequestHeader() raised an exception SyntaxError: Failed to execute 'setRequestHeader' on 'XMLHttpRequest': ' Evil: on' is not a valid HTTP header field value.

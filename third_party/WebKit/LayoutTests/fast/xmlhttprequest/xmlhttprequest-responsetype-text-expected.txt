@@ -17,7 +17,7 @@ PASS response property exists.
 PASS xhr.responseType has been correctly set to 'text'.
 PASS DONE LOADING
 PASS received response object of type : string.
-PASS exception correctly thrown when xhr.responseType is set to valid value too late in the loading process : InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS exception correctly thrown when xhr.responseType is set to valid value too late in the loading process : InvalidStateError: Failed to set the 'responseType' property on 'XMLHttpRequest': the response type cannot be set if the object's state is LOADING or DONE..
 PASS xhr.response == xhr.responseText.
 PASS successfullyParsed is true
 

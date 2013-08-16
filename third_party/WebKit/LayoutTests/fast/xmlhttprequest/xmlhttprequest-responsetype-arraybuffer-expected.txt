@@ -15,14 +15,14 @@ PASS 'arraybuffer' .response does not exist when .readyState is 3.
 PASS 'arraybuffer' .response exists when .readyState is 4.
 PASS DONE LOADING
 PASS received response object : [object ArrayBuffer].
-PASS exception correctly thrown when xhr.responseType is set to valid value too late in the loading process : InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS exception correctly thrown when xhr.responseType is set to valid value too late in the loading process : InvalidStateError: Failed to set the 'responseType' property on 'XMLHttpRequest': the response type cannot be set if the object's state is LOADING or DONE..
 response length : 670184.
 bytes at offset 0 : 46 4f 52 4d 0 a 39 e0 
 bytes at offset 356874 : a 91 f 5f 8 2f e fd 
 bytes at offset 670166 : 8 be 3 c 6 91 2 8 
 checksum : 84637740
-PASS exception correctly thrown when xhr.responseText is accessed but responseType is 'arraybuffer' : InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
-PASS exception correctly thrown when xhr.responseXML is accessed but responseType is 'arraybuffer' : InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable..
+PASS exception correctly thrown when xhr.responseText is accessed but responseType is 'arraybuffer' : InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': the value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer')..
+PASS exception correctly thrown when xhr.responseXML is accessed but responseType is 'arraybuffer' : InvalidStateError: Failed to read the 'responseXML' property from 'XMLHttpRequest': the value is only accessible if the object's 'responseType' is '' or 'document' (was 'arraybuffer')..
 PASS xhr.response.foo is 'bar'
 PASS successfullyParsed is true
 
