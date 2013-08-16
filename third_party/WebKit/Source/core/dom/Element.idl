@@ -62,6 +62,9 @@
     // iht.com relies on id returning the empty string when no id is present.
     // Other browsers do this as well. So we don't convert null to JS null.
     [Reflect] attribute DOMString id;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString prefix;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
 
     // Common extensions
 

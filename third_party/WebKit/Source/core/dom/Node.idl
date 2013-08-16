@@ -64,9 +64,9 @@
     [MeasureAs=NodeIsSupported] boolean isSupported([Default=Undefined] optional DOMString feature,
                                                     [TreatNullAs=NullString,Default=Undefined] optional DOMString version); // Removed in DOM4.
 
-    [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Removed from DOM4.
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, MeasureAs=NodePrefix] attribute DOMString prefix; // Removed from DOM4.
-    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString        localName;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeNamespaceURI] readonly attribute DOMString namespaceURI; // Moved to Element and Attr in DOM4.
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException, MeasureAs=NodePrefix] attribute DOMString prefix; // Moved to Element and Attr in DOM4.
+    [TreatReturnedNullStringAs=Null, PerWorldBindings, MeasureAs=NodeLocalName] readonly attribute DOMString localName; // Moved to Element and Attr in DOM4.
 
     // Introduced in DOM Level 3:
     [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString       baseURI;

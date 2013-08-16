@@ -63,6 +63,12 @@ public:
     void attachToElement(Element*);
     void detachFromElementWithValue(const AtomicString&);
 
+    virtual const AtomicString& localName() const OVERRIDE { return m_name.localName(); }
+    virtual const AtomicString& namespaceURI() const OVERRIDE { return m_name.namespaceURI(); }
+    virtual const AtomicString& prefix() const OVERRIDE { return m_name.prefix(); }
+
+    virtual void setPrefix(const AtomicString&, ExceptionState&) OVERRIDE;
+
 private:
     Attr(Element*, const QualifiedName&);
     Attr(Document*, const QualifiedName&, const AtomicString& value);
@@ -71,12 +77,6 @@ private:
 
     virtual String nodeName() const OVERRIDE { return name(); }
     virtual NodeType nodeType() const OVERRIDE { return ATTRIBUTE_NODE; }
-
-    virtual const AtomicString& localName() const OVERRIDE { return m_name.localName(); }
-    virtual const AtomicString& namespaceURI() const OVERRIDE { return m_name.namespaceURI(); }
-    virtual const AtomicString& prefix() const OVERRIDE { return m_name.prefix(); }
-
-    virtual void setPrefix(const AtomicString&, ExceptionState&);
 
     virtual String nodeValue() const OVERRIDE { return value(); }
     virtual void setNodeValue(const String&);

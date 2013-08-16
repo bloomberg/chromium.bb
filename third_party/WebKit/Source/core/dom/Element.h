@@ -643,6 +643,8 @@ public:
 
     InputMethodContext* inputMethodContext();
 
+    virtual void setPrefix(const AtomicString&, ExceptionState&) OVERRIDE FINAL;
+
 protected:
     Element(const QualifiedName& tagName, Document* document, ConstructionType type)
         : ContainerNode(document, type)
@@ -727,7 +729,6 @@ private:
 
     void scrollByUnits(int units, ScrollGranularity);
 
-    virtual void setPrefix(const AtomicString&, ExceptionState&) OVERRIDE FINAL;
     virtual NodeType nodeType() const OVERRIDE FINAL;
     virtual bool childTypeAllowed(NodeType) const OVERRIDE FINAL;
 

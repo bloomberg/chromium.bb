@@ -35,5 +35,11 @@ interface Attr : Node {
     // DOM Level 3
 
     readonly attribute boolean isId;
+
+    // DOM 4
+
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, PerWorldBindings, SetterRaisesException] attribute DOMString prefix;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString namespaceURI;
+    [TreatReturnedNullStringAs=Null, PerWorldBindings] readonly attribute DOMString localName;
 };
 
