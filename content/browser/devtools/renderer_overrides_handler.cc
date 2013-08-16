@@ -76,6 +76,10 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
           &RendererOverridesHandler::GrantPermissionsForSetFileInputFiles,
           base::Unretained(this)));
   RegisterCommandHandler(
+      devtools::Page::disable::kName,
+      base::Bind(
+          &RendererOverridesHandler::PageDisable, base::Unretained(this)));
+  RegisterCommandHandler(
       devtools::Page::handleJavaScriptDialog::kName,
       base::Bind(
           &RendererOverridesHandler::PageHandleJavaScriptDialog,
@@ -103,6 +107,10 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
 }
 
 RendererOverridesHandler::~RendererOverridesHandler() {}
+
+void RendererOverridesHandler::OnClientDetached() {
+  screencast_command_ = NULL;
+}
 
 void RendererOverridesHandler::OnSwapCompositorFrame() {
   if (!screencast_command_)
@@ -149,6 +157,13 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadFile(
         host->GetProcess()->GetID(), base::FilePath(file));
   }
+  return NULL;
+}
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::PageDisable(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  screencast_command_ = NULL;
   return NULL;
 }
 

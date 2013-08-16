@@ -195,6 +195,11 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
 }
 
 void RenderViewDevToolsAgentHost::OnClientDetached() {
+  overrides_handler_->OnClientDetached();
+  ClientDetachedFromRenderer();
+}
+
+void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
   if (!render_view_host_)
     return;
 
@@ -279,7 +284,7 @@ void RenderViewDevToolsAgentHost::ConnectRenderViewHost(RenderViewHost* rvh) {
 }
 
 void RenderViewDevToolsAgentHost::DisconnectRenderViewHost() {
-  OnClientDetached();
+  ClientDetachedFromRenderer();
   rvh_observer_.reset();
   render_view_host_ = NULL;
 }

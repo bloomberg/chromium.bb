@@ -26,12 +26,15 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
   explicit RendererOverridesHandler(DevToolsAgentHost* agent);
   virtual ~RendererOverridesHandler();
 
+  void OnClientDetached();
   void OnSwapCompositorFrame();
 
  private:
   scoped_refptr<DevToolsProtocol::Response>
       GrantPermissionsForSetFileInputFiles(
           scoped_refptr<DevToolsProtocol::Command> command);
+  scoped_refptr<DevToolsProtocol::Response> PageDisable(
+      scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageHandleJavaScriptDialog(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageNavigate(

@@ -66,6 +66,8 @@ class CONTENT_EXPORT RenderViewDevToolsAgentHost
   void OnClearBrowserCache();
   void OnClearBrowserCookies();
 
+  void ClientDetachedFromRenderer();
+
   RenderViewHost* render_view_host_;
   scoped_ptr<DevToolsAgentHostRvhObserver> rvh_observer_;
   scoped_ptr<RendererOverridesHandler> overrides_handler_;

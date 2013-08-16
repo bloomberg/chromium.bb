@@ -31,6 +31,10 @@ namespace setFileInputFiles {
 
 namespace Page {
 
+namespace disable {
+  const char kName[] = "Page.disable";
+}  // disable
+
 namespace handleJavaScriptDialog {
   const char kName[] = "Page.handleJavaScriptDialog";
   const char kParamAccept[] = "accept";
