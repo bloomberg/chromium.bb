@@ -34,12 +34,12 @@ namespace WebCore {
 
 class PerformanceMeasure : public PerformanceEntry {
 public:
-    static PassRefPtr<PerformanceMeasure> create(const String& name, double startTime, double duration) { return adoptRef(new PerformanceMeasure(name, startTime, duration)); }
+    static PassRefPtr<PerformanceMeasure> create(const String& name, double startTime, double endTime) { return adoptRef(new PerformanceMeasure(name, startTime, endTime)); }
 
     virtual bool isMeasure() { return true; }
 
 private:
-    PerformanceMeasure(const String& name, double startTime, double duration) : PerformanceEntry(name, "measure", startTime, duration)
+    PerformanceMeasure(const String& name, double startTime, double endTime) : PerformanceEntry(name, "measure", startTime, endTime)
     {
         ScriptWrappable::init(this);
     }
