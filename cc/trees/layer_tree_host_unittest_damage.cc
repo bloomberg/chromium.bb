@@ -385,7 +385,12 @@ class LayerTreeHostDamageTestScrollbarDoesDamage
   int did_swaps_;
 };
 
+// Flaky on win.  http://crbug.com/274116
+// Can't specify the normal DISABLED_ since we don't have access to the test
+// names through this macro.  Just ifdef it out completely.
+#if !defined(OS_WIN)
 MULTI_THREAD_TEST_F(LayerTreeHostDamageTestScrollbarDoesDamage);
+#endif
 
 }  // namespace
 }  // namespace cc
