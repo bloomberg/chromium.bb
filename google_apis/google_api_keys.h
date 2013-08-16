@@ -71,6 +71,7 @@ enum OAuth2Client {
   CLIENT_MAIN,         // Several different features use this.
   CLIENT_CLOUD_PRINT,
   CLIENT_REMOTING,
+  CLIENT_REMOTING_HOST,
 
   CLIENT_NUM_ITEMS     // Must be last item.
 };

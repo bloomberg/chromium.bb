@@ -49,6 +49,14 @@
 #define GOOGLE_CLIENT_SECRET_REMOTING DUMMY_API_TOKEN
 #endif
 
+#if !defined(GOOGLE_CLIENT_ID_REMOTING_HOST)
+#define GOOGLE_CLIENT_ID_REMOTING_HOST DUMMY_API_TOKEN
+#endif
+
+#if !defined(GOOGLE_CLIENT_SECRET_REMOTING_HOST)
+#define GOOGLE_CLIENT_SECRET_REMOTING_HOST DUMMY_API_TOKEN
+#endif
+
 // These are used as shortcuts for developers and users providing
 // OAuth credentials via preprocessor defines or environment
 // variables.  If set, they will be used to replace any of the client
@@ -148,6 +156,21 @@ class APIKeyCache {
     client_secrets_[CLIENT_REMOTING] = CalculateKeyValue(
         GOOGLE_CLIENT_SECRET_REMOTING,
         STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_REMOTING),
+        NULL,
+        default_client_secret,
+        environment.get(),
+        command_line);
+
+    client_ids_[CLIENT_REMOTING_HOST] = CalculateKeyValue(
+        GOOGLE_CLIENT_ID_REMOTING_HOST,
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_ID_REMOTING_HOST),
+        NULL,
+        default_client_id,
+        environment.get(),
+        command_line);
+    client_secrets_[CLIENT_REMOTING_HOST] = CalculateKeyValue(
+        GOOGLE_CLIENT_SECRET_REMOTING_HOST,
+        STRINGIZE_NO_EXPANSION(GOOGLE_CLIENT_SECRET_REMOTING_HOST),
         NULL,
         default_client_secret,
         environment.get(),

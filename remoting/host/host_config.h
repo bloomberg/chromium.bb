@@ -19,6 +19,8 @@ namespace remoting {
 
 // Status of the host, whether it is enabled or disabled.
 extern const char kHostEnabledConfigPath[];
+// Google account of the owner of this host.
+extern const char kHostOwnerConfigPath[];
 // Login used to authenticate in XMPP network.
 extern const char kXmppLoginConfigPath[];
 // Auth token used to authenticate to XMPP network.

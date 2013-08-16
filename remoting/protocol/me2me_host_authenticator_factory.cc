@@ -61,12 +61,14 @@ class RejectingAuthenticator : public Authenticator {
 // static
 scoped_ptr<AuthenticatorFactory>
 Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
+    const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     const SharedSecretHash& shared_secret_hash,
     scoped_refptr<PairingRegistry> pairing_registry) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
+  result->host_owner_ = host_owner;
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
   result->shared_secret_hash_ = shared_secret_hash;
@@ -78,12 +80,14 @@ Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
 // static
 scoped_ptr<AuthenticatorFactory>
 Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
+    const std::string& host_owner,
     const std::string& local_cert,
     scoped_refptr<RsaKeyPair> key_pair,
     scoped_ptr<ThirdPartyHostAuthenticator::TokenValidatorFactory>
         token_validator_factory) {
   scoped_ptr<Me2MeHostAuthenticatorFactory> result(
       new Me2MeHostAuthenticatorFactory());
+  result->host_owner_ = host_owner;
   result->local_cert_ = local_cert;
   result->key_pair_ = key_pair;
   result->token_validator_factory_ = token_validator_factory.Pass();
@@ -107,18 +111,12 @@ scoped_ptr<Authenticator> Me2MeHostAuthenticatorFactory::CreateAuthenticator(
     const std::string& remote_jid,
     const buzz::XmlElement* first_message) {
 
-  size_t slash_pos = local_jid.find('/');
-  if (slash_pos == std::string::npos) {
-    LOG(DFATAL) << "Invalid local JID:" << local_jid;
-    return scoped_ptr<Authenticator>(new RejectingAuthenticator());
-  }
-
   // Verify that the client's jid is an ASCII string, and then check
   // that the client has the same bare jid as the host, i.e. client's
   // full JID starts with host's bare jid. Comparison is case
   // insensitive.
   if (!IsStringASCII(remote_jid) ||
-      !StartsWithASCII(remote_jid, local_jid.substr(0, slash_pos + 1), false)) {
+      !StartsWithASCII(remote_jid, host_owner_ + '/', false)) {
     LOG(ERROR) << "Rejecting incoming connection from " << remote_jid;
     return scoped_ptr<Authenticator>(new RejectingAuthenticator());
   }

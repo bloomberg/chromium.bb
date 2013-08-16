@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/strings/string_util.h"
 #include "google_apis/google_api_keys.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -26,9 +27,11 @@ const int kTokenUpdateTimeBeforeExpirySeconds = 60;
 
 SignalingConnector::OAuthCredentials::OAuthCredentials(
     const std::string& login_value,
-    const std::string& refresh_token_value)
+    const std::string& refresh_token_value,
+    bool is_service_account)
     : login(login_value),
-      refresh_token(refresh_token_value) {
+      refresh_token(refresh_token_value),
+      is_service_account(is_service_account) {
 }
 
 SignalingConnector::SignalingConnector(
@@ -228,12 +231,20 @@ void SignalingConnector::RefreshOAuthToken() {
   LOG(INFO) << "Refreshing OAuth token.";
   DCHECK(!refreshing_oauth_token_);
 
+  // Service accounts use different API keys, as they use the client app flow.
+  google_apis::OAuth2Client oauth2_client;
+  if (oauth_credentials_->is_service_account) {
+    oauth2_client = google_apis::CLIENT_REMOTING_HOST;
+  } else {
+    oauth2_client = google_apis::CLIENT_REMOTING;
+  }
+
   gaia::OAuthClientInfo client_info = {
-      google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
-      google_apis::GetOAuth2ClientSecret(google_apis::CLIENT_REMOTING),
-      // Redirect URL is only used when getting tokens from auth code. It
-      // is not required when getting access tokens.
-      ""
+    google_apis::GetOAuth2ClientID(oauth2_client),
+    google_apis::GetOAuth2ClientSecret(oauth2_client),
+    // Redirect URL is only used when getting tokens from auth code. It
+    // is not required when getting access tokens.
+    ""
   };
 
   refreshing_oauth_token_ = true;

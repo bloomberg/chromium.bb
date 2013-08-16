@@ -266,7 +266,9 @@ class HostProcess
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string oauth_refresh_token_;
   std::string serialized_config_;
+  std::string host_owner_;
   std::string xmpp_login_;
+  bool use_service_account_;
   std::string xmpp_auth_token_;
   std::string xmpp_auth_service_;
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
@@ -303,6 +305,7 @@ HostProcess::HostProcess(scoped_ptr<ChromotingHostContext> context,
                          int* exit_code_out)
     : context_(context.Pass()),
       state_(HOST_INITIALIZING),
+      use_service_account_(false),
       allow_nat_traversal_(true),
       allow_pairing_(true),
       curtain_required_(false),
@@ -520,7 +523,8 @@ void HostProcess::CreateAuthenticatorFactory() {
 
   if (token_url_.is_empty() && token_validation_url_.is_empty()) {
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithSharedSecret(
-        local_certificate, key_pair_, host_secret_hash_, pairing_registry);
+        host_owner_, local_certificate, key_pair_, host_secret_hash_,
+        pairing_registry);
 
   } else if (token_url_.is_valid() && token_validation_url_.is_valid()) {
     scoped_ptr<protocol::ThirdPartyHostAuthenticator::TokenValidatorFactory>
@@ -528,7 +532,8 @@ void HostProcess::CreateAuthenticatorFactory() {
             token_url_, token_validation_url_, key_pair_,
             context_->url_request_context_getter()));
     factory = protocol::Me2MeHostAuthenticatorFactory::CreateWithThirdPartyAuth(
-        local_certificate, key_pair_, token_validator_factory.Pass());
+        host_owner_, local_certificate, key_pair_,
+        token_validator_factory.Pass());
 
   } else {
     // TODO(rmsousa): If the policy is bad the host should not go online. It
@@ -727,6 +732,15 @@ bool HostProcess::ApplyConfig(scoped_ptr<JsonHostConfig> config) {
     // request an OAuth2 access token.
     xmpp_auth_service_ = kChromotingTokenDefaultServiceName;
   }
+
+  if (config->GetString(kHostOwnerConfigPath, &host_owner_)) {
+    // Service account configs have a host_owner, different from the xmpp_login.
+    use_service_account_ = true;
+  } else {
+    // User credential configs only have an xmpp_login, which is also the owner.
+    host_owner_ = xmpp_login_;
+    use_service_account_ = false;
+  }
   return true;
 }
 
@@ -799,7 +813,7 @@ bool HostProcess::OnHostDomainPolicyUpdate(const std::string& host_domain) {
   LOG(INFO) << "Policy sets host domain: " << host_domain;
 
   if (!host_domain.empty() &&
-      !EndsWith(xmpp_login_, std::string("@") + host_domain, false)) {
+      !EndsWith(host_owner_, std::string("@") + host_domain, false)) {
     ShutdownHost(kInvalidHostDomainExitCode);
   }
   return false;
@@ -814,7 +828,7 @@ bool HostProcess::OnUsernamePolicyUpdate(bool curtain_required,
     LOG(INFO) << "Policy requires host username match.";
     std::string username = GetUsername();
     bool shutdown = username.empty() ||
-        !StartsWithASCII(xmpp_login_, username + std::string("@"),
+        !StartsWithASCII(host_owner_, username + std::string("@"),
                          false);
 
 #if defined(OS_MACOSX)
@@ -972,7 +986,7 @@ void HostProcess::StartHost() {
   if (!oauth_refresh_token_.empty()) {
     scoped_ptr<SignalingConnector::OAuthCredentials> oauth_credentials(
         new SignalingConnector::OAuthCredentials(
-            xmpp_login_, oauth_refresh_token_));
+            xmpp_login_, oauth_refresh_token_, use_service_account_));
     signaling_connector_->EnableOAuth(oauth_credentials.Pass());
   }
 
@@ -1026,7 +1040,7 @@ void HostProcess::StartHost() {
 #endif  // !defined(REMOTING_MULTI_PROCESS)
 
   host_->SetEnableCurtaining(curtain_required_);
-  host_->Start(xmpp_login_);
+  host_->Start(host_owner_);
 
   CreateAuthenticatorFactory();
 }

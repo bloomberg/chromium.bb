@@ -27,6 +27,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
  public:
   // Create a factory that dispenses shared secret authenticators.
   static scoped_ptr<AuthenticatorFactory> CreateWithSharedSecret(
+      const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       const SharedSecretHash& shared_secret_hash,
@@ -34,6 +35,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
 
   // Create a factory that dispenses third party authenticators.
   static scoped_ptr<AuthenticatorFactory> CreateWithThirdPartyAuth(
+      const std::string& host_owner,
       const std::string& local_cert,
       scoped_refptr<RsaKeyPair> key_pair,
       scoped_ptr<ThirdPartyHostAuthenticator::TokenValidatorFactory>
@@ -54,6 +56,7 @@ class Me2MeHostAuthenticatorFactory : public AuthenticatorFactory {
 
  private:
   // Used for all host authenticators.
+  std::string host_owner_;
   std::string local_cert_;
   scoped_refptr<RsaKeyPair> key_pair_;
 

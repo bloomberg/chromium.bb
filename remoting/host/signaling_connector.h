@@ -40,13 +40,17 @@ class SignalingConnector
   // authentication to OAuth2.
   struct OAuthCredentials {
     OAuthCredentials(const std::string& login_value,
-                     const std::string& refresh_token_value);
+                     const std::string& refresh_token_value,
+                     bool is_service_account);
 
     // The user's account name (i.e. their email address).
     std::string login;
 
     // Token delegating authority to us to act as the user.
     std::string refresh_token;
+
+    // Whether these credentials belong to a service account.
+    bool is_service_account;
   };
 
   // The |auth_failed_callback| is called when authentication fails.
