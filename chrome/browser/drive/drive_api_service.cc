@@ -65,7 +65,7 @@ using google_apis::drive::GetUploadStatusRequest;
 using google_apis::drive::InitiateUploadExistingFileRequest;
 using google_apis::drive::InitiateUploadNewFileRequest;
 using google_apis::drive::InsertResourceRequest;
-using google_apis::drive::RenameResourceRequest;
+using google_apis::drive::MoveResourceRequest;
 using google_apis::drive::ResumeUploadRequest;
 using google_apis::drive::TouchResourceRequest;
 using google_apis::drive::TrashResourceRequest;
@@ -257,6 +257,13 @@ void ExtractOpenUrlAndRun(const std::string& app_id,
 
   // Not found.
   callback.Run(GDATA_OTHER_ERROR, GURL());
+}
+
+// Ignores the |entry|, and runs the |callback|.
+void EntryActionCallbackAdapter(
+    const EntryActionCallback& callback,
+    GDataErrorCode error, scoped_ptr<FileResource> entry) {
+  callback.Run(error);
 }
 
 // The resource ID for the root directory for Drive API is defined in the spec:
@@ -608,9 +615,14 @@ CancelCallback DriveAPIService::MoveResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
-  return CancelCallback();
+  return sender_->StartRequestWithRetry(
+      new MoveResourceRequest(
+          sender_.get(),
+          url_generator_,
+          resource_id,
+          parent_resource_id,
+          new_title,
+          base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
 CancelCallback DriveAPIService::RenameResource(
@@ -621,12 +633,13 @@ CancelCallback DriveAPIService::RenameResource(
   DCHECK(!callback.is_null());
 
   return sender_->StartRequestWithRetry(
-      new RenameResourceRequest(
+      new MoveResourceRequest(
           sender_.get(),
           url_generator_,
           resource_id,
+          std::string(),
           new_title,
-          callback));
+          base::Bind(&EntryActionCallbackAdapter, callback)));
 }
 
 CancelCallback DriveAPIService::TouchResource(

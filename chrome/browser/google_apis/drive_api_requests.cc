@@ -238,51 +238,6 @@ bool CreateDirectoryRequest::GetContentData(std::string* upload_content_type,
   return true;
 }
 
-//=========================== RenameResourceRequest ==========================
-
-RenameResourceRequest::RenameResourceRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const std::string& resource_id,
-    const std::string& new_title,
-    const EntryActionCallback& callback)
-    : EntryActionRequest(sender, callback),
-      url_generator_(url_generator),
-      resource_id_(resource_id),
-      new_title_(new_title) {
-  DCHECK(!callback.is_null());
-}
-
-RenameResourceRequest::~RenameResourceRequest() {}
-
-net::URLFetcher::RequestType RenameResourceRequest::GetRequestType() const {
-  return net::URLFetcher::PATCH;
-}
-
-std::vector<std::string>
-RenameResourceRequest::GetExtraRequestHeaders() const {
-  std::vector<std::string> headers;
-  headers.push_back(util::kIfMatchAllHeader);
-  return headers;
-}
-
-GURL RenameResourceRequest::GetURL() const {
-  return url_generator_.GetFileUrl(resource_id_);
-}
-
-bool RenameResourceRequest::GetContentData(std::string* upload_content_type,
-                                           std::string* upload_content) {
-  *upload_content_type = kContentTypeApplicationJson;
-
-  base::DictionaryValue root;
-  root.SetString("title", new_title_);
-  base::JSONWriter::Write(&root, upload_content);
-
-  DVLOG(1) << "RenameResource data: " << *upload_content_type << ", ["
-           << *upload_content << "]";
-  return true;
-}
-
 //=========================== TouchResourceRequest ===========================
 
 TouchResourceRequest::TouchResourceRequest(
@@ -383,6 +338,64 @@ bool CopyResourceRequest::GetContentData(std::string* upload_content_type,
   base::JSONWriter::Write(&root, upload_content);
 
   DVLOG(1) << "CopyResource data: " << *upload_content_type << ", ["
+           << *upload_content << "]";
+  return true;
+}
+
+//=========================== MoveResourceRequest ============================
+
+MoveResourceRequest::MoveResourceRequest(
+    RequestSender* sender,
+    const DriveApiUrlGenerator& url_generator,
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& new_title,
+    const FileResourceCallback& callback)
+    : GetDataRequest(sender,
+                     base::Bind(&ParseJsonAndRun<FileResource>, callback)),
+      url_generator_(url_generator),
+      resource_id_(resource_id),
+      parent_resource_id_(parent_resource_id),
+      new_title_(new_title) {
+  DCHECK(!callback.is_null());
+}
+
+MoveResourceRequest::~MoveResourceRequest() {
+}
+
+net::URLFetcher::RequestType MoveResourceRequest::GetRequestType() const {
+  return net::URLFetcher::PATCH;
+}
+
+std::vector<std::string> MoveResourceRequest::GetExtraRequestHeaders() const {
+  std::vector<std::string> headers;
+  headers.push_back(util::kIfMatchAllHeader);
+  return headers;
+}
+
+GURL MoveResourceRequest::GetURL() const {
+  return url_generator_.GetFileUrl(resource_id_);
+}
+
+bool MoveResourceRequest::GetContentData(std::string* upload_content_type,
+                                         std::string* upload_content) {
+  *upload_content_type = kContentTypeApplicationJson;
+
+  base::DictionaryValue root;
+  root.SetString("title", new_title_);
+
+  if (!parent_resource_id_.empty()) {
+    // Set the parent resource (destination directory) of the new resource.
+    base::ListValue* parents = new base::ListValue;
+    root.Set("parents", parents);
+    base::DictionaryValue* parent_value = new base::DictionaryValue;
+    parents->Append(parent_value);
+    parent_value->SetString("id", parent_resource_id_);
+  }
+
+  base::JSONWriter::Write(&root, upload_content);
+
+  DVLOG(1) << "MoveResource data: " << *upload_content_type << ", ["
            << *upload_content << "]";
   return true;
 }

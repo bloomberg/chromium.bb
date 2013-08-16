@@ -199,36 +199,6 @@ class CreateDirectoryRequest : public GetDataRequest {
   DISALLOW_COPY_AND_ASSIGN(CreateDirectoryRequest);
 };
 
-//=========================== RenameResourceRequest ==========================
-
-// This class performs the request for renaming a document/file/directory.
-class RenameResourceRequest : public EntryActionRequest {
- public:
-  // |callback| must not be null.
-  RenameResourceRequest(RequestSender* sender,
-                        const DriveApiUrlGenerator& url_generator,
-                        const std::string& resource_id,
-                        const std::string& new_title,
-                        const EntryActionCallback& callback);
-  virtual ~RenameResourceRequest();
-
- protected:
-  // UrlFetchRequestBase overrides.
-  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
-  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
-  virtual GURL GetURL() const OVERRIDE;
-  virtual bool GetContentData(std::string* upload_content_type,
-                              std::string* upload_content) OVERRIDE;
-
- private:
-  const DriveApiUrlGenerator url_generator_;
-
-  const std::string resource_id_;
-  const std::string new_title_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenameResourceRequest);
-};
-
 //=========================== TouchResourceRequest ===========================
 
 // This class performs the request to touch a document/file/directory.
@@ -299,6 +269,43 @@ class CopyResourceRequest : public GetDataRequest {
   const std::string new_title_;
 
   DISALLOW_COPY_AND_ASSIGN(CopyResourceRequest);
+};
+
+//=========================== MoveResourceRequest ============================
+
+// This class performs the request for moving a resource.
+//
+// Moves the resource with |resource_id| into a directory with
+// |parent_resource_id| and renames it as |new_title|.
+// |parent_resource_id| can be empty. In the case, the resource will still be
+// in the current directory.
+//
+// This request uses "Files: patch" request on Drive API v2. See also:
+// https://developers.google.com/drive/v2/reference/files/patch
+class MoveResourceRequest : public GetDataRequest {
+ public:
+  // Upon completion, |callback| will be called. |callback| must not be null.
+  MoveResourceRequest(RequestSender* sender,
+                      const DriveApiUrlGenerator& url_generator,
+                      const std::string& resource_id,
+                      const std::string& parent_resource_id,
+                      const std::string& new_title,
+                      const FileResourceCallback& callback);
+  virtual ~MoveResourceRequest();
+
+ protected:
+  virtual net::URLFetcher::RequestType GetRequestType() const OVERRIDE;
+  virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
+  virtual GURL GetURL() const OVERRIDE;
+  virtual bool GetContentData(std::string* upload_content_type,
+                              std::string* upload_content) OVERRIDE;
+ private:
+  const DriveApiUrlGenerator url_generator_;
+  const std::string resource_id_;
+  const std::string parent_resource_id_;
+  const std::string new_title_;
+
+  DISALLOW_COPY_AND_ASSIGN(MoveResourceRequest);
 };
 
 //=========================== TrashResourceRequest ===========================
