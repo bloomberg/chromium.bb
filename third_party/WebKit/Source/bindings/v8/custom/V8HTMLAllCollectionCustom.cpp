@@ -112,7 +112,7 @@ void V8HTMLAllCollection::legacyCallCustom(const v8::FunctionCallbackInfo<v8::Va
         return;
 
     if (Node* node = imp->namedItemWithIndex(name, index->Uint32Value())) {
-        v8SetReturnValue(args, toV8Fast(node, args, imp));
+        v8SetReturnValueFast(args, node, imp);
         return;
     }
 }

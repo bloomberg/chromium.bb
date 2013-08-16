@@ -374,7 +374,7 @@ void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
     if (!openedWindow)
         return;
 
-    v8SetReturnValue(args, toV8Fast(openedWindow.release(), args, impl));
+    v8SetReturnValueFast(args, openedWindow.release(), impl);
 }
 
 void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -393,7 +393,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
     AtomicString propName = toWebCoreAtomicString(name);
     Frame* child = frame->tree()->scopedChild(propName);
     if (child) {
-        v8SetReturnValue(info, toV8Fast(child->domWindow(), info, window));
+        v8SetReturnValueFast(info, child->domWindow(), window);
         return;
     }
 
@@ -409,10 +409,10 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
             RefPtr<HTMLCollection> items = doc->windowNamedItems(propName);
             if (!items->isEmpty()) {
                 if (items->hasExactlyOneItem()) {
-                    v8SetReturnValue(info, toV8Fast(items->item(0), info, window));
+                    v8SetReturnValueFast(info, items->item(0), window);
                     return;
                 }
-                v8SetReturnValue(info, toV8Fast(items.release(), info, window));
+                v8SetReturnValueFast(info, items.release(), window);
                 return;
             }
         }

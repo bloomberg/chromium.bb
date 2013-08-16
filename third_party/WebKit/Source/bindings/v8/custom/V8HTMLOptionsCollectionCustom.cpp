@@ -57,7 +57,7 @@ static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString&
     }
 
     if (namedItems.size() == 1) {
-        v8SetReturnValue(callbackInfo, toV8Fast(namedItems.at(0).release(), callbackInfo, collection));
+        v8SetReturnValueFast(callbackInfo, namedItems.at(0).release(), collection);
         return;
     }
 

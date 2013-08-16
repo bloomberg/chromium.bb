@@ -96,14 +96,14 @@ void V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, cons
             Document* document = xmlHttpRequest->responseXML(es);
             if (es.throwIfNeeded())
                 return;
-            v8SetReturnValue(info, toV8Fast(document, info, xmlHttpRequest));
+            v8SetReturnValueFast(info, document, xmlHttpRequest);
             return;
         }
 
     case XMLHttpRequest::ResponseTypeBlob:
         {
             Blob* blob = xmlHttpRequest->responseBlob();
-            v8SetReturnValue(info, toV8Fast(blob, info, xmlHttpRequest));
+            v8SetReturnValueFast(info, blob, xmlHttpRequest);
             return;
         }
 
@@ -114,7 +114,7 @@ void V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, cons
                 arrayBuffer->setDeallocationObserver(V8ArrayBufferDeallocationObserver::instance());
                 v8::V8::AdjustAmountOfExternalAllocatedMemory(arrayBuffer->byteLength());
             }
-            v8SetReturnValue(info, toV8Fast(arrayBuffer, info, xmlHttpRequest));
+            v8SetReturnValueFast(info, arrayBuffer, xmlHttpRequest);
             return;
         }
     }

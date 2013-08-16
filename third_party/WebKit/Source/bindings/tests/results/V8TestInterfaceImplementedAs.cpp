@@ -95,7 +95,7 @@ static void aAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value>
 static void bAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     RealClass* imp = V8TestInterfaceImplementedAs::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(imp->b(), info, imp));
+    v8SetReturnValueFast(info, imp->b(), imp);
     return;
 }
 

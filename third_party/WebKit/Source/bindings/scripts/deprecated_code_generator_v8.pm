@@ -829,6 +829,24 @@ inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const CallbackInfo& c
     return toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
+template<class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+{
+    v8SetReturnValue(callbackInfo, toV8(impl, creationContext, callbackInfo.GetIsolate()));
+}
+
+template<class CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+{
+     v8SetReturnValue(callbackInfo, toV8ForMainWorld(impl, creationContext, callbackInfo.GetIsolate()));
+}
+
+template<class CallbackInfo, class Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ${nativeType}* impl, Wrappable*)
+{
+     v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+}
+
 END
     } else {
 
@@ -890,6 +908,46 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< ${nativeType} > impl, 
     return toV8ForMainWorld(impl.get(), creationContext, isolate);
 }
 
+template<typename CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFromWrapper<${v8ClassName}>(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Object> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<typename CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
+{
+    ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFromWrapperForMainWorld<${v8ClassName}>(callbackInfo.GetReturnValue(), impl))
+        return;
+    v8::Handle<v8::Value> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
+template<class CallbackInfo, class Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ${nativeType}* impl, Wrappable* wrappable)
+{
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFromWrapperFast<${v8ClassName}>(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+        return;
+    v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
+}
+
 END
     }
 
@@ -904,6 +962,24 @@ inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ${nativeType} > impl, const Ca
 inline v8::Handle<v8::Value> toV8(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8(impl.get(), creationContext, isolate);
+}
+
+template<class CallbackInfo>
+inline void v8SetReturnValue(const CallbackInfo& callbackInfo, PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext)
+{
+    v8SetReturnValue(callbackInfo, impl.get(), creationContext);
+}
+
+template<class CallbackInfo>
+inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext)
+{
+    v8SetReturnValueForMainWorld(callbackInfo, impl.get(), creationContext);
+}
+
+template<class CallbackInfo, class Wrappable>
+inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, PassRefPtr< ${nativeType} > impl, Wrappable* wrappable)
+{
+    v8SetReturnValueFast(callbackInfo, impl.get(), wrappable);
 }
 
 END
@@ -1507,9 +1583,9 @@ END
         my $svgNativeType = GetSVGTypeNeedingTearOff($attrType);
         # Convert from abstract SVGProperty to real type, so the right toJS() method can be invoked.
         if ($forMainWorldSuffix eq "ForMainWorld") {
-            $code .= "    v8SetReturnValue(info, toV8ForMainWorld(static_cast<$svgNativeType*>($expression), info.Holder(), info.GetIsolate()));\n";
+            $code .= "    v8SetReturnValueForMainWorld(info, static_cast<$svgNativeType*>($expression), info.Holder());\n";
         } else {
-            $code .= "    v8SetReturnValue(info, toV8Fast(static_cast<$svgNativeType*>($expression), info, imp));\n";
+            $code .= "    v8SetReturnValueFast(info, static_cast<$svgNativeType*>($expression), imp);\n";
         }
         $code .= "    return;\n";
     } elsif (IsSVGTypeNeedingTearOff($attrType) and not $interfaceName =~ /List$/) {
@@ -1544,9 +1620,9 @@ END
                 $wrappedValue = "WTF::getPtr(${tearOffType}::create($expression))";
         }
         if ($forMainWorldSuffix eq "ForMainWorld") {
-            $code .= "    v8SetReturnValue(info, toV8ForMainWorld($wrappedValue, info.Holder(), info.GetIsolate()));\n";
+            $code .= "    v8SetReturnValueForMainWorld(info, $wrappedValue, info.Holder());\n";
         } else {
-            $code .= "    v8SetReturnValue(info, toV8Fast($wrappedValue, info, imp));\n";
+            $code .= "    v8SetReturnValueFast(info, $wrappedValue, imp);\n";
         }
         $code .= "    return;\n";
     } elsif ($attribute->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
@@ -4901,12 +4977,12 @@ sub GenerateFunctionCallString
         # FIXME: Update for all ScriptWrappables.
         if (IsDOMNodeType($interfaceName)) {
             if ($forMainWorldSuffix eq "ForMainWorld") {
-                $code .= $indent . "v8SetReturnValue(args, toV8ForMainWorld(WTF::getPtr(${svgNativeType}::create($return)), args.Holder(), args.GetIsolate()));\n";
+                $code .= $indent . "v8SetReturnValueForMainWorld(args, WTF::getPtr(${svgNativeType}::create($return), args.Holder()));\n";
             } else {
-                $code .= $indent . "v8SetReturnValue(args, toV8Fast(WTF::getPtr(${svgNativeType}::create($return)), args, imp));\n";
+                $code .= $indent . "v8SetReturnValueFast(args, WTF::getPtr(${svgNativeType}::create($return)), imp);\n";
             }
         } else {
-            $code .= $indent . "v8SetReturnValue(args, toV8${forMainWorldSuffix}(WTF::getPtr(${svgNativeType}::create($return)), args.Holder(), args.GetIsolate()));\n";
+            $code .= $indent . "v8SetReturnValue${forMainWorldSuffix}(args, WTF::getPtr(${svgNativeType}::create($return)), args.Holder());\n";
         }
         $code .= $indent . "return;\n";
         return $code;
@@ -5440,9 +5516,9 @@ sub NativeToJSValue
         # FIXME: Use safe handles
         if ($isReturnValue) {
             if ($forMainWorldSuffix eq "ForMainWorld") {
-                return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8ForMainWorld($nativeValue, $getCallbackInfo.Holder(), $getCallbackInfo.GetIsolate()));";
+                return "${indent}v8SetReturnValueForMainWorld(${getCallbackInfo}, $nativeValue, $getCallbackInfo.Holder());";
             }
-            return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8Fast($nativeValue$getCallbackInfoArg$getScriptWrappableArg));";
+            return "${indent}v8SetReturnValueFast(${getCallbackInfo}, $nativeValue$getScriptWrappableArg);";
         }
         if ($forMainWorldSuffix eq "ForMainWorld") {
             return "$indent$receiver toV8ForMainWorld($nativeValue, $getCallbackInfo.Holder(), $getCallbackInfo.GetIsolate());";
@@ -5450,7 +5526,7 @@ sub NativeToJSValue
         return "$indent$receiver toV8Fast($nativeValue$getCallbackInfoArg$getScriptWrappableArg);";
     }
     # FIXME: Use safe handles
-    return "${indent}v8SetReturnValue(${getCallbackInfo}, toV8($nativeValue, $getCreationContext, $getIsolate));" if $isReturnValue;
+    return "${indent}v8SetReturnValue(${getCallbackInfo}, $nativeValue, $getCreationContext);" if $isReturnValue;
     return "$indent$receiver toV8($nativeValue, $getCreationContext, $getIsolate);";
 }
 

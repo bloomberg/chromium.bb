@@ -43,7 +43,7 @@ void V8FileReader::resultAttrGetterCustom(v8::Local<v8::String> name, const v8::
     v8::Handle<v8::Object> holder = info.Holder();
     FileReader* imp = V8FileReader::toNative(holder);
     if (imp->readType() == FileReaderLoader::ReadAsArrayBuffer) {
-        v8SetReturnValue(info, toV8Fast(imp->arrayBufferResult(), info, imp));
+        v8SetReturnValueFast(info, imp->arrayBufferResult(), imp);
         return;
     }
     v8SetReturnValueStringOrNull(info, imp->stringResult(), info.GetIsolate());

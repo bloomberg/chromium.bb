@@ -228,7 +228,7 @@ static void implementsStr3AttrSetterCallback(v8::Local<v8::String> name, v8::Loc
 static void implementsNodeAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestImplements::implementsNode(imp), info, imp));
+    v8SetReturnValueFast(info, TestImplements::implementsNode(imp), imp);
     return;
 }
 
@@ -273,7 +273,7 @@ static void implementsNodeAttrSetterCallback(v8::Local<v8::String> name, v8::Loc
 static void Node23AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestImplements::node23(imp), info, imp));
+    v8SetReturnValueFast(info, TestImplements::node23(imp), imp);
     return;
 }
 
@@ -318,7 +318,7 @@ static void Node23AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void Node24AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestImplements::node24(imp), info, imp));
+    v8SetReturnValueFast(info, TestImplements::node24(imp), imp);
     return;
 }
 
@@ -363,7 +363,7 @@ static void Node24AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void Node25AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestImplements::node25(imp), info, imp));
+    v8SetReturnValueFast(info, TestImplements::node25(imp), imp);
     return;
 }
 
@@ -561,7 +561,7 @@ static void supplementalStr3AttrSetterCallback(v8::Local<v8::String> name, v8::L
 static void supplementalNodeAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestPartialInterface::supplementalNode(imp), info, imp));
+    v8SetReturnValueFast(info, TestPartialInterface::supplementalNode(imp), imp);
     return;
 }
 
@@ -606,7 +606,7 @@ static void supplementalNodeAttrSetterCallback(v8::Local<v8::String> name, v8::L
 static void Node13AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestPartialInterface::node13(imp), info, imp));
+    v8SetReturnValueFast(info, TestPartialInterface::node13(imp), imp);
     return;
 }
 
@@ -651,7 +651,7 @@ static void Node13AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void Node14AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestPartialInterface::node14(imp), info, imp));
+    v8SetReturnValueFast(info, TestPartialInterface::node14(imp), imp);
     return;
 }
 
@@ -696,7 +696,7 @@ static void Node14AttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::V
 static void Node15AttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    v8SetReturnValue(info, toV8Fast(TestPartialInterface::node15(imp), info, imp));
+    v8SetReturnValueFast(info, TestPartialInterface::node15(imp), imp);
     return;
 }
 
@@ -775,7 +775,7 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& a
     RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, toV8(result.release(), args.Holder(), args.GetIsolate()));
+    v8SetReturnValue(args, result.release(), args.Holder());
     return;
 }
 
@@ -864,7 +864,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, toV8(result.release(), args.Holder(), args.GetIsolate()));
+    v8SetReturnValue(args, result.release(), args.Holder());
     return;
 }
 
@@ -952,12 +952,12 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     RefPtr<NodeList> element1;
     collection->getItem(propertyName, element0Enabled, element0, element1Enabled, element1);
     if (element0Enabled) {
-        v8SetReturnValue(info, toV8Fast(element0.release(), info, collection));
+        v8SetReturnValueFast(info, element0.release(), collection);
         return;
     }
 
     if (element1Enabled) {
-        v8SetReturnValue(info, toV8Fast(element1.release(), info, collection));
+        v8SetReturnValueFast(info, element1.release(), collection);
         return;
     }
 

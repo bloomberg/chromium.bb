@@ -73,7 +73,7 @@ static void itemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     V8TRYCATCH_VOID(unsigned, index, toUInt32(args[0]));
-    v8SetReturnValue(args, toV8(imp->item(index), args.Holder(), args.GetIsolate()));
+    v8SetReturnValue(args, imp->item(index), args.Holder());
     return;
 }
 
@@ -92,7 +92,7 @@ static void namedItemMethod(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
     TestEventTarget* imp = V8TestEventTarget::toNative(args.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, name, args[0]);
-    v8SetReturnValue(args, toV8(imp->namedItem(name), args.Holder(), args.GetIsolate()));
+    v8SetReturnValue(args, imp->namedItem(name), args.Holder());
     return;
 }
 
@@ -110,7 +110,7 @@ static void indexedPropertyGetter(uint32_t index, const v8::PropertyCallbackInfo
     RefPtr<Node> element = collection->item(index);
     if (!element)
         return;
-    v8SetReturnValue(info, toV8Fast(element.release(), info, collection));
+    v8SetReturnValueFast(info, element.release(), collection);
 }
 
 static void indexedPropertyGetterCallback(uint32_t index, const v8::PropertyCallbackInfo<v8::Value>& info)
@@ -169,7 +169,7 @@ static void namedPropertyGetter(v8::Local<v8::String> name, const v8::PropertyCa
     RefPtr<Node> element = collection->namedItem(propertyName);
     if (!element)
         return;
-    v8SetReturnValue(info, toV8Fast(element.release(), info, collection));
+    v8SetReturnValueFast(info, element.release(), collection);
 }
 
 static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

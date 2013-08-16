@@ -115,6 +115,46 @@ public:
         return wrap(impl, container.Holder(), container.GetIsolate());
     }
 
+    template<typename CallbackInfo>
+    static void v8SetReturnValue(const CallbackInfo& callbackInfo, TypedArray* impl, v8::Handle<v8::Object> creationContext)
+    {
+        if (UNLIKELY(!impl)) {
+            v8SetReturnValueNull(callbackInfo);
+            return;
+        }
+        if (DOMDataStore::setReturnValueFromWrapper<Binding>(callbackInfo.GetReturnValue(), impl))
+            return;
+        v8::Handle<v8::Object> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+        callbackInfo.GetReturnValue().Set(wrapper);
+    }
+
+    template<typename CallbackInfo>
+    static void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, TypedArray* impl, v8::Handle<v8::Object> creationContext)
+    {
+        ASSERT(worldType(callbackInfo.GetIsolate()) == MainWorld);
+        if (UNLIKELY(!impl)) {
+            v8SetReturnValueNull(callbackInfo);
+            return;
+        }
+        if (DOMDataStore::setReturnValueFromWrapperForMainWorld<Binding>(callbackInfo.GetReturnValue(), impl))
+            return;
+        v8::Handle<v8::Value> wrapper = wrap(impl, creationContext, callbackInfo.GetIsolate());
+        callbackInfo.GetReturnValue().Set(wrapper);
+    }
+
+    template<class CallbackInfo, class Wrappable>
+    static void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TypedArray* impl, Wrappable* wrappable)
+    {
+        if (UNLIKELY(!impl)) {
+            v8SetReturnValueNull(callbackInfo);
+            return;
+        }
+        if (DOMDataStore::setReturnValueFromWrapperFast<Binding>(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+            return;
+        v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+        callbackInfo.GetReturnValue().Set(wrapper);
+    }
+
     static inline void* toInternalPointer(TypedArray* impl)
     {
         return impl;

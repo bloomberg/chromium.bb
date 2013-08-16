@@ -313,7 +313,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& ar
     RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, es);
     if (es.throwIfNeeded())
         return;
-    v8SetReturnValue(args, toV8Fast(element.release(), args, document));
+    v8SetReturnValueFast(args, element.release(), document);
 }
 
 } // namespace WebCore

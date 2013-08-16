@@ -84,7 +84,7 @@ void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     if (es.throwIfNeeded())
         return;
 
-    v8SetReturnValue(args, toV8Fast(result.release(), args, document.get()));
+    v8SetReturnValueFast(args, result.release(), document.get());
 }
 
 v8::Handle<v8::Object> wrap(Document* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

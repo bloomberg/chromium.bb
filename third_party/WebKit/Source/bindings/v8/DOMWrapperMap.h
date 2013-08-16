@@ -59,6 +59,15 @@ public:
         return m_map.get(key).newLocal(isolate);
     }
 
+    bool setReturnValueFrom(v8::ReturnValue<v8::Value> returnValue, KeyType* key)
+    {
+        typename MapType::iterator it = m_map.find(key);
+        if (it == m_map.end())
+            return false;
+        returnValue.Set(*(it->value.persistent()));
+        return true;
+    }
+
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)
     {
         ASSERT(static_cast<KeyType*>(toNative(wrapper)) == key);

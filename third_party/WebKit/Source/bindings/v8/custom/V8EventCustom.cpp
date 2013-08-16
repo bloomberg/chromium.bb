@@ -47,7 +47,7 @@ void V8Event::clipboardDataAttrGetterCustom(v8::Local<v8::String> name, const v8
     Event* event = V8Event::toNative(info.Holder());
 
     if (event->isClipboardEvent()) {
-        v8SetReturnValue(info, toV8Fast(static_cast<ClipboardEvent*>(event)->clipboard(), info, event));
+        v8SetReturnValueFast(info, static_cast<ClipboardEvent*>(event)->clipboard(), event);
         return;
     }
 }
