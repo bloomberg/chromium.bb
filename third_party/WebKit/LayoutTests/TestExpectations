@@ -1236,8 +1236,6 @@ crbug.com/267302 [ Win ] http/tests/htmlimports/import-script-block-crossorigin-
 crbug.com/268111 [ Win7 Release ] http/tests/inspector/appcache/appcache-swap.html [ Timeout ]
 crbug.com/268111 [ Win7 Release ] http/tests/appcache/online-whitelist.html [ Failure ]
 
-crbug.com/261029 fast/css/font-face-locally-installed.html [ NeedsRebaseline ]
-
 crbug.com/268231 [ Mac Debug ] http/tests/security/mixedContent/insecure-plugin-in-iframe.html [ Pass Failure ]
 
 # crbug.com/268246 http/tests/inspector/search/scripts-search-scope.html [ Pass Failure ]
