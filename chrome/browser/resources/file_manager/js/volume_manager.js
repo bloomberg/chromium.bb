@@ -5,6 +5,77 @@
 'use strict';
 
 /**
+ * Utilities for volume manager implementation.
+ */
+var volumeManagerUtil = {};
+
+/**
+ * Throws an Error when the given error is not in VolumeManager.Error.
+ * @param {VolumeManager.Error} error Status string usually received from APIs.
+ */
+volumeManagerUtil.validateError = function(error) {
+  for (var key in VolumeManager.Error) {
+    if (error == VolumeManager.Error[key])
+      return;
+  }
+
+  throw new Error('Invalid mount error: ' + error);
+};
+
+/**
+ * The regex pattern which matches valid mount paths.
+ * The valid paths are:
+ * - Either of '/drive', '/drive_shared_with_me', '/drive_offline',
+ *   '/drive_recent' or '/Download'
+ * - For archive, drive, removable can have (exactly one) sub directory in the
+ *  root path. E.g. '/arhive/foo', '/removable/usb1' etc.
+ *
+ * @type {RegExp}
+ * @private
+ */
+volumeManagerUtil.validateMountPathRegExp_ = new RegExp(
+    '^/(drive|drive_shared_with_me|drive_offline|drive_recent|Downloads|' +
+    '((archive|drive|removable)\/[^/]+))$');
+
+/**
+ * Throws an Error if the validation fails.
+ * @param {string} mountPath The target path of the validation.
+ */
+volumeManagerUtil.validateMountPath = function(mountPath) {
+  if (!volumeManagerUtil.validateMountPathRegExp_.test(mountPath))
+    throw new Error('Invalid mount path: ' + mountPath);
+};
+
+/**
+ * Builds the VolumeInfo data for mountPath.
+ * @param {string} mountPath Path to the volume.
+ * @param {VolumeManager.Error} error The error string if available.
+ * @param {function(Object)} callback Called on completion.
+ *     TODO(hidehiko): Replace the type from Object to its original type.
+ */
+volumeManagerUtil.createVolumeInfo = function(mountPath, error, callback) {
+  // Validation of the input.
+  volumeManagerUtil.validateMountPath(mountPath);
+  if (error)
+    volumeManagerUtil.validateError(error);
+
+  // TODO(hidehiko): Do we really need to create a volume info for error
+  // case?
+  chrome.fileBrowserPrivate.getVolumeMetadata(
+      util.makeFilesystemUrl(mountPath),
+      function(metadata) {
+        if (chrome.runtime.lastError && !error)
+          error = VolumeManager.Error.UNKNOWN;
+        callback({
+          mountPath: mountPath,
+          error: error,
+          deviceType: metadata && metadata.deviceType,
+          readonly: !!metadata && metadata.isReadOnly
+        });
+      });
+};
+
+/**
  * VolumeManager is responsible for tracking list of mounted volumes.
  *
  * @param {Entry} root The root of file system.
@@ -52,7 +123,6 @@ function VolumeManager(root) {
   chrome.fileBrowserPrivate.onDriveConnectionStatusChanged.addListener(
       this.onDriveConnectionStatusChanged_.bind(this));
   this.onDriveConnectionStatusChanged_();
-
 }
 
 /**
@@ -205,7 +275,7 @@ VolumeManager.prototype.getDriveStatus = function() {
  * @return {boolean} True if mounted.
  */
 VolumeManager.prototype.isMounted = function(mountPath) {
-  this.validateMountPath_(mountPath);
+  volumeManagerUtil.validateMountPath(mountPath);
   return mountPath in this.mountedVolumes_;
 };
 
@@ -236,7 +306,8 @@ VolumeManager.prototype.initMountPoints_ = function() {
         index++;
         step(mountPoints);
       };
-      self.makeVolumeInfo_('/' + info.mountPath, error, onVolumeInfo);
+      volumeManagerUtil.createVolumeInfo(
+          '/' + info.mountPath, error, onVolumeInfo);
     } else {
       for (var i = 0; i < mountedVolumes.length; i++) {
         var volume = mountedVolumes[i];
@@ -274,18 +345,19 @@ VolumeManager.prototype.onMountCompleted_ = function(event) {
       var requestKey = this.makeRequestKey_(
           'mount', event.mountType, event.sourcePath);
       var error = event.status == 'success' ? '' : event.status;
-      this.makeVolumeInfo_(event.mountPath, error, function(volume) {
-        this.mountedVolumes_[volume.mountPath] = volume;
-        this.finishRequest_(requestKey, event.status, event.mountPath);
-        cr.dispatchSimpleEvent(this, 'change');
-      }.bind(this));
+      volumeManagerUtil.createVolumeInfo(
+          event.mountPath, error, function(volume) {
+            this.mountedVolumes_[volume.mountPath] = volume;
+            this.finishRequest_(requestKey, event.status, event.mountPath);
+            cr.dispatchSimpleEvent(this, 'change');
+          }.bind(this));
     } else {
       console.warn('No mount path.');
       this.finishRequest_(requestKey, event.status);
     }
   } else if (event.eventType == 'unmount') {
     var mountPath = event.mountPath;
-    this.validateMountPath_(mountPath);
+    volumeManagerUtil.validateMountPath(mountPath);
     var status = event.status;
     if (status == VolumeManager.Error.PATH_UNMOUNTED) {
       console.warn('Volume already unmounted: ', mountPath);
@@ -364,29 +436,6 @@ VolumeManager.prototype.waitDriveLoaded_ = function(mountPath, callback) {
 };
 
 /**
- * @param {string} mountPath Path to the volume.
- * @param {VolumeManager?} error Mounting error if any.
- * @param {function(Object)} callback Result acceptor.
- * @private
- */
-VolumeManager.prototype.makeVolumeInfo_ = function(
-    mountPath, error, callback) {
-  if (error)
-    this.validateError_(error);
-  this.validateMountPath_(mountPath);
-  var onVolumeMetadata = function(metadata) {
-   callback({
-     mountPath: mountPath,
-     error: error,
-     deviceType: metadata && metadata.deviceType,
-     readonly: !!metadata && metadata.isReadOnly
-   });
-  };
-  chrome.fileBrowserPrivate.getVolumeMetadata(
-      util.makeFilesystemUrl(mountPath), onVolumeMetadata);
-};
-
-/**
  * Creates string to match mount events with requests.
  * @param {string} requestType 'mount' | 'unmount'.
  * @param {string} mountType 'device' | 'file' | 'network' | 'drive'.
@@ -446,7 +495,7 @@ VolumeManager.prototype.mountArchive = function(fileUrl, successCallback,
 VolumeManager.prototype.unmount = function(mountPath,
                                            successCallback,
                                            errorCallback) {
-  this.validateMountPath_(mountPath);
+  volumeManagerUtil.validateMountPath(mountPath);
   if (this.deferredQueue_) {
     this.deferredQueue_.push(this.unmount.bind(this,
         mountPath, successCallback, errorCallback));
@@ -507,7 +556,7 @@ VolumeManager.prototype.isReadOnly = function(mountPath) {
  * @private
  */
 VolumeManager.prototype.getVolumeInfo_ = function(mountPath) {
-  this.validateMountPath_(mountPath);
+  volumeManagerUtil.validateMountPath(mountPath);
   return this.mountedVolumes_[mountPath] || {};
 };
 
@@ -605,30 +654,7 @@ VolumeManager.prototype.invokeRequestCallbacks_ = function(request, status,
   if (status == 'success') {
     callEach(request.successCallbacks, this, [opt_mountPath]);
   } else {
-    this.validateError_(status);
+    volumeManagerUtil.validateError(status);
     callEach(request.errorCallbacks, this, [status]);
   }
-};
-
-/**
- * @param {VolumeManager.Error} error Status string iusually received from API.
- * @private
- */
-VolumeManager.prototype.validateError_ = function(error) {
-  for (var i in VolumeManager.Error) {
-    if (error == VolumeManager.Error[i])
-      return;
-  }
-  throw new Error('Invalid mount error: ', error);
-};
-
-/**
- * @param {string} mountPath Mount path.
- * @private
- */
-VolumeManager.prototype.validateMountPath_ = function(mountPath) {
-  if (!/^\/(drive|drive_shared_with_me|drive_offline|drive_recent|Downloads)$/
-       .test(mountPath) &&
-      !/^\/((archive|removable|drive)\/[^\/]+)$/.test(mountPath))
-    throw new Error('Invalid mount path: ', mountPath);
 };
