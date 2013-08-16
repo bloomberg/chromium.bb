@@ -168,10 +168,15 @@ void CloudPrintRequester::OnFetchError(const std::string& server_api,
   VLOG(3) << "Function: " << __FUNCTION__;
   EraseRequest();
   current_print_job_.reset();
-  delegate_->OnServerError("Fetch error");
 
-  // TODO(maksymb): |server_api| and other
-  NOTIMPLEMENTED();
+  if (server_http_code == net::HTTP_FORBIDDEN) {
+    delegate_->OnAuthError();
+  } else {
+    delegate_->OnServerError("Fetch error");
+  }
+
+  // TODO(maksymb): Add Privet |server_http_code| and |server_api| support in
+  // case of server errors.
 }
 
 void CloudPrintRequester::OnFetchTimeoutReached() {
@@ -186,8 +191,8 @@ void CloudPrintRequester::OnGetTokensResponse(const std::string& refresh_token,
                                               int expires_in_seconds) {
   VLOG(3) << "Function: " << __FUNCTION__;
   gaia_.reset();
-  delegate_->OnGetAuthCodeResponseParsed(refresh_token,
-                                         access_token, expires_in_seconds);
+  delegate_->OnRegistrationFinished(refresh_token,
+                                    access_token, expires_in_seconds);
 }
 
 void CloudPrintRequester::OnRefreshTokenResponse(

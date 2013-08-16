@@ -315,6 +315,10 @@ void PrivetHttpServer::ProcessRegistrationStatus(
     case REG_ERROR_INVALID_ACTION:
       *current_response = CreateError("invalid_action");
       break;
+    case REG_ERROR_OFFLINE:
+      *current_response = CreateError("offline");
+      break;
+
     case REG_ERROR_SERVER_ERROR: {
       std::string description;
       delegate_->GetRegistrationServerError(&description);

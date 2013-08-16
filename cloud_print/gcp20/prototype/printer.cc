@@ -39,9 +39,9 @@ const char kPrinterDescription[] = "Printer emulator";
 
 const char kUserConfirmationTitle[] = "Confirm registration: type 'y' if you "
                                       "agree and any other to discard\n";
-const int64 kUserConfirmationTimeout = 30;  // in seconds
-
-const uint32 kReconnectTimeout = 5;  // in seconds
+const int kUserConfirmationTimeout = 30;  // in seconds
+const int kRegistrationTimeout = 60;  // in seconds
+const int kReconnectTimeout = 5;  // in seconds
 
 const double kTimeToNextAccessTokenUpdate = 0.8;  // relatively to living time.
 
@@ -184,9 +184,8 @@ void Printer::Stop() {
 
 void Printer::OnAuthError() {
   LOG(ERROR) << "Auth error occurred";
-  access_token_update_ = base::Time::Now();
-  ChangeState(OFFLINE);
-  // TODO(maksymb): Implement *instant* updating of access_token.
+  access_token_update_ = base::Time();
+  FallOffline(true);
 }
 
 std::string Printer::GetAccessToken() {
@@ -195,12 +194,23 @@ std::string Printer::GetAccessToken() {
 
 PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
     const std::string& user) {
+  CheckRegistrationExpiration();
+
+  RegistrationInfo::ConfirmationState conf_state = reg_info_.confirmation_state;
+  if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_ERROR ||
+      conf_state == RegistrationInfo::CONFIRMATION_TIMEOUT ||
+      conf_state == RegistrationInfo::CONFIRMATION_DISCARDED) {
+    reg_info_ = RegistrationInfo();
+  }
+
   PrivetHttpServer::RegistrationErrorStatus status = CheckCommonRegErrors(user);
   if (status != PrivetHttpServer::REG_ERROR_OK)
     return status;
 
   if (reg_info_.state != RegistrationInfo::DEV_REG_UNREGISTERED)
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
+
+  UpdateRegistrationExpiration();
 
   reg_info_ = RegistrationInfo();
   reg_info_.user = user;
@@ -242,6 +252,8 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationGetClaimToken(
   if (reg_info_.confirmation_state != RegistrationInfo::CONFIRMATION_CONFIRMED)
     return ConfirmationToRegistrationError(reg_info_.confirmation_state);
 
+  UpdateRegistrationExpiration();
+
   // If reply wasn't received yet, reply with |pending_user_action| error.
   if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_STARTED)
     return PrivetHttpServer::REG_ERROR_PENDING_USER_ACTION;
@@ -268,6 +280,8 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationComplete(
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
   }
 
+  UpdateRegistrationExpiration();
+
   if (reg_info_.confirmation_state != RegistrationInfo::CONFIRMATION_CONFIRMED)
     return ConfirmationToRegistrationError(reg_info_.confirmation_state);
 
@@ -289,6 +303,8 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationCancel(
   if (reg_info_.state == RegistrationInfo::DEV_REG_UNREGISTERED)
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
 
+  InvalidateRegistrationExpiration();
+
   reg_info_ = RegistrationInfo();
   requester_.reset(new CloudPrintRequester(GetTaskRunner(), this));
 
@@ -296,13 +312,15 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationCancel(
 }
 
 void Printer::GetRegistrationServerError(std::string* description) {
-  DCHECK_EQ(reg_info_.state, RegistrationInfo::DEV_REG_REGISTRATION_ERROR) <<
-      "Method shouldn't be called when not needed.";
+  DCHECK_EQ(reg_info_.state, RegistrationInfo::DEV_REG_REGISTRATION_ERROR)
+      << "Method shouldn't be called when not needed.";
 
   *description = reg_info_.error_description;
 }
 
 void Printer::CreateInfo(PrivetHttpServer::DeviceInfo* info) {
+  CheckRegistrationExpiration();
+
   // TODO(maksymb): Replace "text" with constants.
 
   *info = PrivetHttpServer::DeviceInfo();
@@ -345,9 +363,11 @@ void Printer::OnRegistrationStartResponseParsed(
   reg_info_.complete_invite_url = complete_invite_url;
 }
 
-void Printer::OnGetAuthCodeResponseParsed(const std::string& refresh_token,
-                                          const std::string& access_token,
-                                          int access_token_expires_in_seconds) {
+void Printer::OnRegistrationFinished(const std::string& refresh_token,
+                                     const std::string& access_token,
+                                     int access_token_expires_in_seconds) {
+  InvalidateRegistrationExpiration();
+
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTERED;
   reg_info_.refresh_token = refresh_token;
   RememberAccessToken(access_token, access_token_expires_in_seconds);
@@ -380,20 +400,19 @@ void Printer::OnRegistrationError(const std::string& description) {
   LOG(ERROR) << "server_error: " << description;
 
   // TODO(maksymb): Implement waiting after error and timeout of registration.
-  reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_ERROR;
-  reg_info_.error_description = description;
+  SetRegistrationError(description);
 }
 
 void Printer::OnNetworkError() {
   VLOG(3) << "Function: " << __FUNCTION__;
-  ChangeState(OFFLINE);
+  FallOffline(false);
 }
 
 void Printer::OnServerError(const std::string& description) {
   VLOG(3) << "Function: " << __FUNCTION__;
   LOG(ERROR) << "Server error: " << description;
 
-  ChangeState(OFFLINE);
+  FallOffline(false);
 }
 
 void Printer::OnPrintJobsAvailable(const std::vector<Job>& jobs) {
@@ -439,7 +458,7 @@ void Printer::OnXmppAuthError() {
 }
 
 void Printer::OnXmppNetworkError() {
-  ChangeState(OFFLINE);
+  FallOffline(false);
 }
 
 void Printer::OnXmppNewPrintJob(const std::string& device_id) {
@@ -542,9 +561,18 @@ void Printer::RememberAccessToken(const std::string& access_token,
   SaveToFile();
 }
 
-PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
-    const std::string& user) const {
+void Printer::SetRegistrationError(const std::string& description) {
   DCHECK(!IsRegistered());
+  reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_ERROR;
+  reg_info_.error_description = description;
+}
+
+PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
+    const std::string& user) {
+  CheckRegistrationExpiration();
+  DCHECK(!IsRegistered());
+  if (connection_state_ != ONLINE)
+    return PrivetHttpServer::REG_ERROR_OFFLINE;
 
   if (reg_info_.state != RegistrationInfo::DEV_REG_UNREGISTERED &&
       user != reg_info_.user) {
@@ -554,10 +582,14 @@ PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
   if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_ERROR)
     return PrivetHttpServer::REG_ERROR_SERVER_ERROR;
 
+  DCHECK(connection_state_ == ONLINE);
+
   return PrivetHttpServer::REG_ERROR_OK;
 }
 
 void Printer::WaitUserConfirmation(base::Time valid_until) {
+  // TODO(maksymb): Move to separate class.
+
   if (base::Time::Now() > valid_until) {
     reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_TIMEOUT;
     LOG(INFO) << "Confirmation timeout reached.";
@@ -723,9 +755,28 @@ void Printer::PostOnIdle() {
       base::Bind(&Printer::OnIdle, AsWeakPtr()));
 }
 
+void Printer::CheckRegistrationExpiration() {
+  if (!registration_expiration_.is_null() &&
+      registration_expiration_ < base::Time::Now()) {
+    reg_info_ = RegistrationInfo();
+    InvalidateRegistrationExpiration();
+    if (connection_state_ != ONLINE)
+      TryConnect();
+  }
+}
+
+void Printer::UpdateRegistrationExpiration() {
+  registration_expiration_ =
+      base::Time::Now() + base::TimeDelta::FromSeconds(kRegistrationTimeout);
+}
+
+void Printer::InvalidateRegistrationExpiration() {
+  registration_expiration_ = base::Time();
+}
+
 PrivetHttpServer::RegistrationErrorStatus
-    Printer::ConfirmationToRegistrationError(
-        RegistrationInfo::ConfirmationState state) {
+Printer::ConfirmationToRegistrationError(
+    RegistrationInfo::ConfirmationState state) {
   switch (state) {
     case RegistrationInfo::CONFIRMATION_PENDING:
       return PrivetHttpServer::REG_ERROR_PENDING_USER_ACTION;
@@ -759,6 +810,23 @@ std::string Printer::ConnectionStateToString(ConnectionState state) const {
   }
 }
 
+void Printer::FallOffline(bool instant_reconnect) {
+  bool changed = ChangeState(OFFLINE);
+  DCHECK(changed) << "Falling offline from offline is now allowed";
+
+  if (!IsRegistered())
+    SetRegistrationError("Cannot access server during registration process");
+
+  if (instant_reconnect) {
+    TryConnect();
+  } else {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&Printer::TryConnect, AsWeakPtr()),
+        base::TimeDelta::FromSeconds(kReconnectTimeout));
+  }
+}
+
 bool Printer::ChangeState(ConnectionState new_state) {
   if (connection_state_ == new_state)
     return false;
@@ -771,26 +839,9 @@ bool Printer::ChangeState(ConnectionState new_state) {
 
   dns_server_.UpdateMetadata(CreateTxt());
 
-  switch (connection_state_) {
-    case CONNECTING:
-      break;
-
-    case ONLINE:
-      break;
-
-    case OFFLINE:
-      requester_.reset();
-      xmpp_listener_.reset();
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&Printer::TryConnect, AsWeakPtr()),
-          base::TimeDelta::FromSeconds(kReconnectTimeout));
-
-    case NOT_CONFIGURED:
-      break;
-
-    default:
-      NOTREACHED();
+  if (connection_state_ == OFFLINE) {
+    requester_.reset();
+    xmpp_listener_.reset();
   }
 
   return true;

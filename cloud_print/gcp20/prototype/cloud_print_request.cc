@@ -60,7 +60,6 @@ scoped_ptr<CloudPrintRequest> CloudPrintRequest::CreatePost(
 void CloudPrintRequest::Run(
     const std::string& access_token,
     scoped_refptr<net::URLRequestContextGetter> context_getter) {
-
   if (!access_token.empty())
     fetcher_->AddExtraRequestHeader(base::StringPrintf(
         "Authorization: Bearer \"%s\"", access_token.c_str()));
@@ -106,13 +105,13 @@ void CloudPrintRequest::OnURLFetchComplete(const URLFetcher* source) {
                                            // this call.
 
   } else {
-    // TODO(maksymb): Add |server_http_code| and |server_api| info for errors.
+    // TODO(maksymb): Add Privet |server_http_code| and |server_api| support in
+    // case of server errors.
+    NOTIMPLEMENTED() << "HTTP code: " << http_code;
     delegate_->OnFetchError("dummy", -1, http_code);  // After this object can
                                                       // be deleted.
                                                       // Do *NOT* access members
                                                       // after this call.
-
-    NOTIMPLEMENTED() << "HTTP code: " << http_code;
   }
 }
 

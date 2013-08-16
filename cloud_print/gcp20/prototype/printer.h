@@ -115,7 +115,7 @@ class Printer : public base::SupportsWeakPtr<Printer>,
       const std::string& registration_token,
       const std::string& complete_invite_url,
       const std::string& device_id) OVERRIDE;
-  virtual void OnGetAuthCodeResponseParsed(
+  virtual void OnRegistrationFinished(
       const std::string& refresh_token,
       const std::string& access_token,
       int access_token_expires_in_seconds) OVERRIDE;
@@ -165,11 +165,14 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   void RememberAccessToken(const std::string& access_token,
                            int expires_in_seconds);
 
+  // Sets registration state to error and adds description.
+  void SetRegistrationError(const std::string& description);
+
   // Checks if register call is called correctly (|user| is correct,
   // error is no set etc). Returns |false| if error status is put into |status|.
   // Otherwise no error was occurred.
   PrivetHttpServer::RegistrationErrorStatus CheckCommonRegErrors(
-      const std::string& user) const;
+      const std::string& user);
 
   // Checks if confirmation was received.
   void WaitUserConfirmation(base::Time valid_until);
@@ -187,13 +190,27 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   // Adds |OnIdle| method to the MessageLoop.
   void PostOnIdle();
 
+  // Registration timeout.
+  void CheckRegistrationExpiration();
+
+  // Delays expiration after user action.
+  void UpdateRegistrationExpiration();
+
+  // Deletes registration expiration at all.
+  void InvalidateRegistrationExpiration();
+
   // Converts errors.
   PrivetHttpServer::RegistrationErrorStatus ConfirmationToRegistrationError(
       RegistrationInfo::ConfirmationState state);
 
   std::string ConnectionStateToString(ConnectionState state) const;
 
-  // Changes state and update info in DNS server.
+  // Changes state to OFFLINE and posts TryReconnect.
+  // For registration reconnect is instant every time.
+  void FallOffline(bool instant_reconnect);
+
+  // Changes state and update info in DNS server. Returns |true| if state
+  // was changed (otherwise state was the same).
   bool ChangeState(ConnectionState new_state);
 
   RegistrationInfo reg_info_;
@@ -223,6 +240,9 @@ class Printer : public base::SupportsWeakPtr<Printer>,
 
   // Uses for calculating uptime.
   base::Time starttime_;
+
+  // Uses to validate registration timeout.
+  base::Time registration_expiration_;
 
   // Used for preventing two and more OnIdle posted in message loop.
   bool on_idle_posted_;

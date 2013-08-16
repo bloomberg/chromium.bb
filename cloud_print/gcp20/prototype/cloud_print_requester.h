@@ -39,9 +39,9 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
         const std::string& complete_invite_url,
         const std::string& device_id) = 0;
 
-    // Invoked when server respond for registration-getAuthCode query and
+    // Invoked when server responded for registration-getAuthCode query and
     // response is successfully parsed.
-    virtual void OnGetAuthCodeResponseParsed(
+    virtual void OnRegistrationFinished(
         const std::string& refresh_token,
         const std::string& access_token,
         int access_token_expires_in_seconds) = 0;

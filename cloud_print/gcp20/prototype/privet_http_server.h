@@ -29,6 +29,7 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
     REG_ERROR_USER_CANCEL,
     REG_ERROR_CONFIRMATION_TIMEOUT,
     REG_ERROR_INVALID_ACTION,
+    REG_ERROR_OFFLINE,
     REG_ERROR_SERVER_ERROR
   };
 
