@@ -23,8 +23,13 @@ extern const char kUserPolicySigninServiceToken[];
 extern const char kProfileDownloaderToken[];
 extern const char kObfuscatedGaiaIdFetcherToken[];
 extern const char kOAuth2MintTokenFlowToken[];
+extern const char kSIDToken[];
+extern const char kLSIDToken[];
 extern const char* kTokenPrefsArray[];
 extern const size_t kNumTokenPrefs;
+
+// The length of strings returned by GetTruncatedHash() below.
+const size_t kTruncateTokenStringLength = 6;
 
 // Helper enums to access fields from SigninStatus (declared below).
 enum {
@@ -63,13 +68,13 @@ enum {
 // values, we replicate the service name within this struct for a cleaner
 // serialization (with ToValue()).
 struct TokenInfo {
-  std::string token;    // The actual token.
-  std::string status;   // Status of the last token fetch.
-  std::string time;     // Timestamp of the last token fetch
+  std::string truncated_token;  // The hashed and truncated token.
+  std::string status;  // Status of the last token fetch.
+  std::string time;  // Timestamp of the last token fetch
   int64 time_internal;  // Same as |time|, but in base::Time internal format.
   std::string service;  // The service that this token is for.
 
-  TokenInfo(const std::string& token,
+  TokenInfo(const std::string& truncated_token,
             const std::string& status,
             const std::string& time,
             const int64& time_internal,
@@ -140,6 +145,14 @@ class SigninDiagnosticsObserver {
   virtual void NotifyClearStoredToken(const std::string& token_name) {}
 
 };
+
+// Gets the first 6 hex characters of the SHA256 hash of the passed in string.
+// These are enough to perform equality checks across a single users tokens,
+// while preventing outsiders from reverse-engineering the actual token from
+// the displayed value.
+// Note that for readability (in about:signin-internals), an empty string
+// is not hashed, but simply returned as an empty string.
+std::string GetTruncatedHash(const std::string& str);
 
 } // namespace signin_internals_util
 

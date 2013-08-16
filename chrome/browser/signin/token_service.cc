@@ -145,9 +145,12 @@ void TokenService::UpdateCredentials(
   }
 
   // Notify AboutSigninInternals that a new lsid and sid are available.
-  FOR_DIAGNOSTICS_OBSERVERS(NotifySigninValueChanged(
-      signin_internals_util::SID, credentials.sid));
-  FOR_DIAGNOSTICS_OBSERVERS(NotifySigninValueChanged(LSID, credentials.lsid));
+  FOR_DIAGNOSTICS_OBSERVERS(
+      NotifyTokenReceivedSuccess(signin_internals_util::kSIDToken,
+                                 credentials.sid, true));
+  FOR_DIAGNOSTICS_OBSERVERS(
+      NotifyTokenReceivedSuccess(signin_internals_util::kLSIDToken,
+                                 credentials.lsid, true));
 }
 
 void TokenService::UpdateCredentialsWithOAuth2(
@@ -396,10 +399,12 @@ void TokenService::LoadTokensIntoMemory(
       sid = db_tokens.find(GaiaConstants::kGaiaSid)->second;
 
     if (!lsid.empty() && !sid.empty()) {
-      FOR_DIAGNOSTICS_OBSERVERS(NotifySigninValueChanged(
-          signin_internals_util::SID, sid));
-      FOR_DIAGNOSTICS_OBSERVERS(NotifySigninValueChanged(LSID, lsid));
-
+      FOR_DIAGNOSTICS_OBSERVERS(
+          NotifyTokenReceivedSuccess(signin_internals_util::kSIDToken, sid,
+                                     false));
+      FOR_DIAGNOSTICS_OBSERVERS(
+          NotifyTokenReceivedSuccess(signin_internals_util::kLSIDToken, lsid,
+                                     false));
       credentials_ = GaiaAuthConsumer::ClientLoginResult(sid,
                                                          lsid,
                                                          std::string(),

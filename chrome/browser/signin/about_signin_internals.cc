@@ -92,6 +92,10 @@ void AboutSigninInternals::RefreshSigninPrefs() {
     const std::string pref_path =
         SigninStatusFieldToString(static_cast<UntimedSigninStatusField>(i));
 
+    // Erase SID and LSID, since those are written as service tokens below.
+    if (i == signin_internals_util::SID || i == signin_internals_util::LSID)
+      pref_service->SetString(pref_path.c_str(), std::string());
+
     signin_status_.untimed_signin_fields[i - UNTIMED_FIELDS_BEGIN] =
         pref_service->GetString(pref_path.c_str());
   }
@@ -114,7 +118,17 @@ void AboutSigninInternals::RefreshSigninPrefs() {
     const std::string time = pref + ".time";
     const std::string time_internal = pref + ".time_internal";
 
-    TokenInfo token_info(pref_service->GetString(value.c_str()),
+    // If the length is too long, assume its a full token and truncate it.
+    // We don't want to continue to persist full tokens in the preferences.
+    std::string truncated_value = pref_service->GetString(value.c_str());
+    if (truncated_value.length() >
+        signin_internals_util::kTruncateTokenStringLength) {
+      truncated_value =
+          GetTruncatedHash(pref_service->GetString(value.c_str()));
+      profile_->GetPrefs()->SetString(value.c_str(), truncated_value);
+    }
+
+    TokenInfo token_info(truncated_value,
                          pref_service->GetString(status.c_str()),
                          pref_service->GetString(time.c_str()),
                          pref_service->GetInt64(time_internal.c_str()),
@@ -133,8 +147,10 @@ void AboutSigninInternals::NotifyTokenReceivedSuccess(
   // This should have been initialized already.
   DCHECK(signin_status_.token_info_map.count(token_name));
 
+  std::string truncated_token = GetTruncatedHash(token);
+
   const std::string status_success = "Successful";
-  signin_status_.token_info_map[token_name].token = token;
+  signin_status_.token_info_map[token_name].truncated_token = truncated_token;
   signin_status_.token_info_map[token_name].status = status_success;
 
   // Also update preferences.
@@ -143,7 +159,7 @@ void AboutSigninInternals::NotifyTokenReceivedSuccess(
   const std::string time_internal_pref =
       TokenPrefPath(token_name) + ".time_internal";
   const std::string status_pref = TokenPrefPath(token_name) + ".status";
-  profile_->GetPrefs()->SetString(value_pref.c_str(), token);
+  profile_->GetPrefs()->SetString(value_pref.c_str(), truncated_token);
   profile_->GetPrefs()->SetString(status_pref.c_str(), "Successful");
 
   // Update timestamp if needed.
@@ -173,7 +189,7 @@ void AboutSigninInternals::NotifyTokenReceivedFailure(
   // This should have been initialized already.
   DCHECK(signin_status_.token_info_map.count(token_name));
 
-  signin_status_.token_info_map[token_name].token.clear();
+  signin_status_.token_info_map[token_name].truncated_token.clear();
   signin_status_.token_info_map[token_name].status = error;
   signin_status_.token_info_map[token_name].time = time_as_str;
   signin_status_.token_info_map[token_name].time_internal = time_as_int;
@@ -198,7 +214,7 @@ void AboutSigninInternals::NotifyClearStoredToken(
   // This should have been initialized already.
   DCHECK(signin_status_.token_info_map.count(token_name));
 
-  signin_status_.token_info_map[token_name].token.clear();
+  signin_status_.token_info_map[token_name].truncated_token.clear();
 
   const std::string value_pref = TokenPrefPath(token_name) + ".value";
   profile_->GetPrefs()->SetString(value_pref.c_str(), std::string());

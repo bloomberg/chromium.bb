@@ -350,9 +350,6 @@ void SigninManager::SignOut() {
 
   // Erase (now) stale information from AboutSigninInternals.
   NotifyDiagnosticsObservers(USERNAME, "");
-  NotifyDiagnosticsObservers(LSID, "");
-  NotifyDiagnosticsObservers(
-      signin_internals_util::SID, "");
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
@@ -500,9 +497,6 @@ void SigninManager::OnClientLoginSuccess(const ClientLoginResult& result) {
   last_result_ = result;
   // Update signin_internals_
   NotifyDiagnosticsObservers(CLIENT_LOGIN_STATUS, "Successful");
-  NotifyDiagnosticsObservers(LSID, result.lsid);
-  NotifyDiagnosticsObservers(
-      signin_internals_util::SID, result.sid);
   // Make a request for the canonical email address and services.
   client_login_->StartGetUserInfo(result.lsid);
 }
