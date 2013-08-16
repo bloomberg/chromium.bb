@@ -724,6 +724,29 @@ scoped_refptr<Connection::StatementRef> Connection::GetUntrackedStatement(
   return new StatementRef(NULL, stmt, true);
 }
 
+std::string Connection::GetSchema() const {
+  // The ORDER BY should not be necessary, but relying on organic
+  // order for something like this is questionable.
+  const char* kSql =
+      "SELECT type, name, tbl_name, sql "
+      "FROM sqlite_master ORDER BY 1, 2, 3, 4";
+  Statement statement(GetUntrackedStatement(kSql));
+
+  std::string schema;
+  while (statement.Step()) {
+    schema += statement.ColumnString(0);
+    schema += '|';
+    schema += statement.ColumnString(1);
+    schema += '|';
+    schema += statement.ColumnString(2);
+    schema += '|';
+    schema += statement.ColumnString(3);
+    schema += '\n';
+  }
+
+  return schema;
+}
+
 bool Connection::IsSQLValid(const char* sql) {
   AssertIOAllowed();
   if (!db_) {

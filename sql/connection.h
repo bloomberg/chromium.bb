@@ -389,6 +389,11 @@ class SQL_EXPORT Connection {
   // last sqlite operation.
   const char* GetErrorMessage() const;
 
+  // Return a reproducible representation of the schema equivalent to
+  // running the following statement at a sqlite3 command-line:
+  //   SELECT type, name, tbl_name, sql FROM sqlite_master ORDER BY 1, 2, 3, 4;
+  std::string GetSchema() const;
+
  private:
   // For recovery module.
   friend class Recovery;

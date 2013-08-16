@@ -274,37 +274,10 @@ class ThumbnailDatabase {
   bool InitIconMappingEnumerator(chrome::IconType type,
                                  IconMappingEnumerator* enumerator);
 
-  // Temporary Tables ---------------------------------------------------------
-  //
-  // Creates empty temporary tables for each of the tables in the thumbnail
-  // database. Favicon data which is not copied into the temporary tables will
-  // be deleted when CommitTemporaryTables() is called. This is used to delete
-  // most of the favicons when clearing history.
-  bool InitTemporaryTables();
-
-  // Replaces the main tables in the thumbnail database with the temporary
-  // tables created with InitTemporaryTables(). This means that any data not
-  // copied over will be deleted.
-  bool CommitTemporaryTables();
-
-  // Copies the given icon mapping from the "main" icon_mapping table to the
-  // temporary one. This is only valid in between calls to
-  // InitTemporaryTables() and CommitTemporaryTables().
-  //
-  // The ID of the favicon will change when this copy takes place. The new ID
-  // is returned, or 0 on failure.
-  IconMappingID AddToTemporaryIconMappingTable(const GURL& page_url,
-                                               const chrome::FaviconID icon_id);
-
-  // Copies the given favicon and associated favicon bitmaps from the "main"
-  // favicon and favicon_bitmaps tables to the temporary ones. This is only
-  // valid in between calls to InitTemporaryTables() and
-  // CommitTemporaryTables().
-  //
-  // The ID of the favicon will change when this copy takes place. The new ID
-  // is returned, or 0 on failure.
-  chrome::FaviconID CopyFaviconAndFaviconBitmapsToTemporaryTables(
-      chrome::FaviconID source);
+  // Remove all data except that associated with the passed page urls.
+  // Returns false in case of failure.  A nested transaction is used,
+  // so failure causes any outer transaction to be rolled back.
+  bool RetainDataForPageUrls(const std::vector<GURL>& urls_to_keep);
 
   // Returns true iff the thumbnails table exists.
   // Migrating to TopSites is dropping the thumbnails table.
@@ -322,6 +295,7 @@ class ThumbnailDatabase {
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion5);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion6);
   FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, UpgradeToVersion7);
+  FRIEND_TEST_ALL_PREFIXES(ThumbnailDatabaseTest, RetainDataForPageUrls);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MigrationIconMapping);
 
   // Creates the thumbnail table, returning true if the table already exists
@@ -351,13 +325,11 @@ class ThumbnailDatabase {
   bool MigrateIconMappingData(URLDatabase* url_db);
 
   // Creates the favicon table, returning true if the table already exists,
-  // or was successfully created. |is_temporary| will be false when generating
-  // the "regular" favicons table. The expirer sets this to true to generate the
-  // temporary table, which will have a different name but the same schema.
+  // or was successfully created.
   // |db| is the connection to use for initializing the table.
   // A different connection is used in RenameAndDropThumbnails, when we
   // need to copy the favicons between two database files.
-  bool InitFaviconsTable(sql::Connection* db, bool is_temporary);
+  bool InitFaviconsTable(sql::Connection* db);
 
   // Creates the index over the favicon table. This will be called during
   // initialization after the table is created. This is a separate function
@@ -367,7 +339,7 @@ class ThumbnailDatabase {
 
   // Creates the favicon_bitmaps table, return true if the table already exists
   // or was successfully created.
-  bool InitFaviconBitmapsTable(sql::Connection* db, bool is_temporary);
+  bool InitFaviconBitmapsTable(sql::Connection* db);
 
   // Creates the index over the favicon_bitmaps table. This will be called
   // during initialization after the table is created. This is a separate
@@ -378,7 +350,7 @@ class ThumbnailDatabase {
 
   // Creates the icon_map table, return true if the table already exists or was
   // successfully created.
-  bool InitIconMappingTable(sql::Connection* db, bool is_temporary);
+  bool InitIconMappingTable(sql::Connection* db);
 
   // Creates the index over the icon_mapping table, This will be called during
   // initialization after the table is created. This is a separate function
@@ -389,13 +361,6 @@ class ThumbnailDatabase {
 
   // Returns true if the |favicons| database is missing a column.
   bool IsFaviconDBStructureIncorrect();
-
-  // Adds a mapping between the given page_url and icon_id; The mapping will be
-  // added to temp_icon_mapping table if is_temporary is true.
-  // Returns the new mapping id if the adding succeeds, otherwise 0 is returned.
-  IconMappingID AddIconMapping(const GURL& page_url,
-                               chrome::FaviconID icon_id,
-                               bool is_temporary);
 
   // Returns True if the current database is latest.
   bool IsLatestVersion();

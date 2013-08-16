@@ -337,11 +337,11 @@ sql::InitStatus ThumbnailDatabase::Init(
   if (!meta_table_.Init(&db_, kCurrentVersionNumber,
                         kCompatibleVersionNumber) ||
       !InitThumbnailTable() ||
-      !InitFaviconBitmapsTable(&db_, false) ||
+      !InitFaviconBitmapsTable(&db_) ||
       !InitFaviconBitmapsIndex() ||
-      !InitFaviconsTable(&db_, false) ||
+      !InitFaviconsTable(&db_) ||
       !InitFaviconsIndex() ||
-      !InitIconMappingTable(&db_, false) ||
+      !InitIconMappingTable(&db_) ||
       !InitIconMappingIndex()) {
     db_.Close();
     return sql::INIT_FAILURE;
@@ -505,25 +505,17 @@ bool ThumbnailDatabase::RecreateThumbnailTable() {
   return InitThumbnailTable();
 }
 
-bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db,
-                                          bool is_temporary) {
-  // Note: if you update the schema, don't forget to update
-  // CopyFaviconAndFaviconBitmapsToTemporaryTables as well.
-  const char* name = is_temporary ? "temp_favicons" : "favicons";
-  if (!db->DoesTableExist(name)) {
-    std::string sql;
-    sql.append("CREATE TABLE ");
-    sql.append(name);
-    sql.append("("
-               "id INTEGER PRIMARY KEY,"
-               "url LONGVARCHAR NOT NULL,"
-               // Set the default icon_type as FAVICON to be consistent with
-               // table upgrade in UpgradeToVersion4().
-               "icon_type INTEGER DEFAULT 1)");
-    if (!db->Execute(sql.c_str()))
-      return false;
-  }
-  return true;
+bool ThumbnailDatabase::InitFaviconsTable(sql::Connection* db) {
+  const char kSql[] =
+      "CREATE TABLE IF NOT EXISTS favicons"
+      "("
+      "id INTEGER PRIMARY KEY,"
+      "url LONGVARCHAR NOT NULL,"
+      // Set the default icon_type as FAVICON to be consistent with
+      // table upgrade in UpgradeToVersion4().
+      "icon_type INTEGER DEFAULT 1"
+      ")";
+  return db->Execute(kSql);
 }
 
 bool ThumbnailDatabase::InitFaviconsIndex() {
@@ -532,26 +524,18 @@ bool ThumbnailDatabase::InitFaviconsIndex() {
       db_.Execute("CREATE INDEX IF NOT EXISTS favicons_url ON favicons(url)");
 }
 
-bool ThumbnailDatabase::InitFaviconBitmapsTable(sql::Connection* db,
-                                                bool is_temporary) {
-  // Note: if you update the schema, don't forget to update
-  // CopyFaviconAndFaviconBitmapsToTemporaryTables as well.
-  const char* name = is_temporary ? "temp_favicon_bitmaps" : "favicon_bitmaps";
-  if (!db->DoesTableExist(name)) {
-    std::string sql;
-    sql.append("CREATE TABLE ");
-    sql.append(name);
-    sql.append("("
-               "id INTEGER PRIMARY KEY,"
-               "icon_id INTEGER NOT NULL,"
-               "last_updated INTEGER DEFAULT 0,"
-               "image_data BLOB,"
-               "width INTEGER DEFAULT 0,"
-               "height INTEGER DEFAULT 0)");
-    if (!db->Execute(sql.c_str()))
-      return false;
-  }
-  return true;
+bool ThumbnailDatabase::InitFaviconBitmapsTable(sql::Connection* db) {
+  const char kSql[] =
+      "CREATE TABLE IF NOT EXISTS favicon_bitmaps"
+      "("
+      "id INTEGER PRIMARY KEY,"
+      "icon_id INTEGER NOT NULL,"
+      "last_updated INTEGER DEFAULT 0,"
+      "image_data BLOB,"
+      "width INTEGER DEFAULT 0,"
+      "height INTEGER DEFAULT 0"
+      ")";
+  return db->Execute(kSql);
 }
 
 bool ThumbnailDatabase::InitFaviconBitmapsIndex() {
@@ -991,11 +975,6 @@ bool ThumbnailDatabase::GetIconMappingsForPageURL(
   return result;
 }
 
-IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
-                                                chrome::FaviconID icon_id) {
-  return AddIconMapping(page_url, icon_id, false);
-}
-
 bool ThumbnailDatabase::UpdateIconMapping(IconMappingID mapping_id,
                                           chrome::FaviconID icon_id) {
   sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE,
@@ -1083,76 +1062,108 @@ bool ThumbnailDatabase::MigrateIconMappingData(URLDatabase* url_db) {
   return true;
 }
 
-bool ThumbnailDatabase::InitTemporaryTables() {
-  return InitIconMappingTable(&db_, true) &&
-         InitFaviconsTable(&db_, true) &&
-         InitFaviconBitmapsTable(&db_, true);
-}
+bool ThumbnailDatabase::RetainDataForPageUrls(
+    const std::vector<GURL>& urls_to_keep) {
+  sql::Transaction transaction(&db_);
+  if (!transaction.Begin())
+    return false;
 
-bool ThumbnailDatabase::CommitTemporaryTables() {
-  const char* main_tables[] = { "icon_mapping",
-                                "favicons",
-                                "favicon_bitmaps" };
-  const char* temporary_tables[] = { "temp_icon_mapping",
-                                     "temp_favicons",
-                                     "temp_favicon_bitmaps" };
-  DCHECK_EQ(arraysize(main_tables), arraysize(temporary_tables));
-
-  for (size_t i = 0; i < arraysize(main_tables); ++i) {
-    // Delete the main table.
-    std::string sql;
-    sql.append("DROP TABLE ");
-    sql.append(main_tables[i]);
-    if (!db_.Execute(sql.c_str()))
+  // temp.icon_id_mapping generates new icon ids as consecutive
+  // integers starting from 1, and maps them to the old icon ids.
+  {
+    const char kIconMappingCreate[] =
+        "CREATE TEMP TABLE icon_id_mapping "
+        "("
+        "new_icon_id INTEGER PRIMARY KEY,"
+        "old_icon_id INTEGER NOT NULL UNIQUE"
+        ")";
+    if (!db_.Execute(kIconMappingCreate))
       return false;
 
-    // Rename the temporary table.
-    sql.clear();
-    sql.append("ALTER TABLE ");
-    sql.append(temporary_tables[i]);
-    sql.append(" RENAME TO ");
-    sql.append(main_tables[i]);
-    if (!db_.Execute(sql.c_str()))
-      return false;
+    // Insert the icon ids for retained urls, skipping duplicates.
+    const char kIconMappingSql[] =
+        "INSERT OR IGNORE INTO temp.icon_id_mapping (old_icon_id) "
+        "SELECT icon_id FROM icon_mapping WHERE page_url = ?";
+    sql::Statement statement(db_.GetUniqueStatement(kIconMappingSql));
+    for (std::vector<GURL>::const_iterator
+             i = urls_to_keep.begin(); i != urls_to_keep.end(); ++i) {
+      statement.BindString(0, URLDatabase::GURLToDatabaseURL(*i));
+      if (!statement.Run())
+        return false;
+    }
   }
 
-  // The renamed tables needs indices (the temporary tables don't have any).
-  return InitIconMappingIndex() &&
-         InitFaviconsIndex() &&
-         InitFaviconBitmapsIndex();
-}
+  {
+    const char kRenameIconMappingTable[] =
+        "ALTER TABLE icon_mapping RENAME TO old_icon_mapping";
+    const char kCopyIconMapping[] =
+        "INSERT INTO icon_mapping (page_url, icon_id) "
+        "SELECT old.page_url, mapping.new_icon_id "
+        "FROM old_icon_mapping AS old "
+        "JOIN temp.icon_id_mapping AS mapping "
+        "ON (old.icon_id = mapping.old_icon_id)";
+    const char kDropOldIconMappingTable[] = "DROP TABLE old_icon_mapping";
+    if (!db_.Execute(kRenameIconMappingTable) ||
+        !InitIconMappingTable(&db_) ||
+        !db_.Execute(kCopyIconMapping) ||
+        !db_.Execute(kDropOldIconMappingTable)) {
+      return false;
+    }
+  }
 
-IconMappingID ThumbnailDatabase::AddToTemporaryIconMappingTable(
-    const GURL& page_url,
-    const chrome::FaviconID icon_id) {
-  return AddIconMapping(page_url, icon_id, true);
-}
+  {
+    const char kRenameFaviconsTable[] =
+        "ALTER TABLE favicons RENAME TO old_favicons";
+    const char kCopyFavicons[] =
+        "INSERT INTO favicons (id, url, icon_type) "
+        "SELECT mapping.new_icon_id, old.url, old.icon_type "
+        "FROM old_favicons AS old "
+        "JOIN temp.icon_id_mapping AS mapping "
+        "ON (old.id = mapping.old_icon_id)";
+    const char kDropOldFaviconsTable[] = "DROP TABLE old_favicons";
+    if (!db_.Execute(kRenameFaviconsTable) ||
+        !InitFaviconsTable(&db_) ||
+        !db_.Execute(kCopyFavicons) ||
+        !db_.Execute(kDropOldFaviconsTable)) {
+      return false;
+    }
+  }
 
-chrome::FaviconID
-ThumbnailDatabase::CopyFaviconAndFaviconBitmapsToTemporaryTables(
-    chrome::FaviconID source) {
-  sql::Statement statement;
-  statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO temp_favicons (url, icon_type) "
-      "SELECT url, icon_type FROM favicons WHERE id = ?"));
-  statement.BindInt64(0, source);
+  {
+    const char kRenameFaviconBitmapsTable[] =
+        "ALTER TABLE favicon_bitmaps RENAME TO old_favicon_bitmaps";
+    const char kCopyFaviconBitmaps[] =
+        "INSERT INTO favicon_bitmaps "
+        "  (icon_id, last_updated, image_data, width, height) "
+        "SELECT mapping.new_icon_id, old.last_updated, "
+        "    old.image_data, old.width, old.height "
+        "FROM old_favicon_bitmaps AS old "
+        "JOIN temp.icon_id_mapping AS mapping "
+        "ON (old.icon_id = mapping.old_icon_id)";
+    const char kDropOldFaviconBitmapsTable[] =
+        "DROP TABLE old_favicon_bitmaps";
+    if (!db_.Execute(kRenameFaviconBitmapsTable) ||
+        !InitFaviconBitmapsTable(&db_) ||
+        !db_.Execute(kCopyFaviconBitmaps) ||
+        !db_.Execute(kDropOldFaviconBitmapsTable)) {
+      return false;
+    }
+  }
 
-  if (!statement.Run())
-    return 0;
+  // Renaming the tables adjusts the indices to reference the new
+  // name, BUT DOES NOT RENAME THE INDICES.  The DROP will drop the
+  // indices, now re-create them against the new tables.
+  if (!InitIconMappingIndex() ||
+      !InitFaviconsIndex() ||
+      !InitFaviconBitmapsIndex()) {
+    return false;
+  }
 
-  chrome::FaviconID new_favicon_id = db_.GetLastInsertRowId();
+  const char kIconMappingDrop[] = "DROP TABLE temp.icon_id_mapping";
+  if (!db_.Execute(kIconMappingDrop))
+    return false;
 
-  statement.Assign(db_.GetCachedStatement(SQL_FROM_HERE,
-      "INSERT INTO temp_favicon_bitmaps (icon_id, last_updated, image_data, "
-      "width, height) "
-      "SELECT ?, last_updated, image_data, width, height "
-      "FROM favicon_bitmaps WHERE icon_id = ?"));
-  statement.BindInt64(0, new_favicon_id);
-  statement.BindInt64(1, source);
-  if (!statement.Run())
-    return 0;
-
-  return new_favicon_id;
+  return transaction.Commit();
 }
 
 bool ThumbnailDatabase::NeedsMigrationToTopSites() {
@@ -1167,9 +1178,9 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(
   if (OpenDatabase(&favicons, new_db_file) != sql::INIT_OK)
     return false;
 
-  if (!InitFaviconBitmapsTable(&favicons, false) ||
-      !InitFaviconsTable(&favicons, false) ||
-      !InitIconMappingTable(&favicons, false)) {
+  if (!InitFaviconBitmapsTable(&favicons) ||
+      !InitFaviconsTable(&favicons) ||
+      !InitIconMappingTable(&favicons)) {
     favicons.Close();
     return false;
   }
@@ -1241,21 +1252,15 @@ bool ThumbnailDatabase::RenameAndDropThumbnails(
   return true;
 }
 
-bool ThumbnailDatabase::InitIconMappingTable(sql::Connection* db,
-                                             bool is_temporary) {
-  const char* name = is_temporary ? "temp_icon_mapping" : "icon_mapping";
-  if (!db->DoesTableExist(name)) {
-    std::string sql;
-    sql.append("CREATE TABLE ");
-    sql.append(name);
-    sql.append("("
-               "id INTEGER PRIMARY KEY,"
-               "page_url LONGVARCHAR NOT NULL,"
-               "icon_id INTEGER)");
-    if (!db->Execute(sql.c_str()))
-      return false;
-  }
-  return true;
+bool ThumbnailDatabase::InitIconMappingTable(sql::Connection* db) {
+  const char kSql[] =
+      "CREATE TABLE IF NOT EXISTS icon_mapping"
+      "("
+      "id INTEGER PRIMARY KEY,"
+      "page_url LONGVARCHAR NOT NULL,"
+      "icon_id INTEGER"
+      ")";
+  return db->Execute(kSql);
 }
 
 bool ThumbnailDatabase::InitIconMappingIndex() {
@@ -1268,19 +1273,10 @@ bool ThumbnailDatabase::InitIconMappingIndex() {
 }
 
 IconMappingID ThumbnailDatabase::AddIconMapping(const GURL& page_url,
-                                                chrome::FaviconID icon_id,
-                                                bool is_temporary) {
-  const char* name = is_temporary ? "temp_icon_mapping" : "icon_mapping";
-  const char* statement_name =
-      is_temporary ? "add_temp_icon_mapping" : "add_icon_mapping";
-
-  std::string sql;
-  sql.append("INSERT INTO ");
-  sql.append(name);
-  sql.append("(page_url, icon_id) VALUES (?, ?)");
-
-  sql::Statement statement(
-      db_.GetCachedStatement(sql::StatementID(statement_name), sql.c_str()));
+                                                chrome::FaviconID icon_id) {
+  const char kSql[] =
+      "INSERT INTO icon_mapping (page_url, icon_id) VALUES (?, ?)";
+  sql::Statement statement(db_.GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindString(0, URLDatabase::GURLToDatabaseURL(page_url));
   statement.BindInt64(1, icon_id);
 

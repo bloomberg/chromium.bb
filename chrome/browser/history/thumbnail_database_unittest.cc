@@ -470,16 +470,12 @@ TEST_F(ThumbnailDatabaseTest, UpgradeToVersion7) {
   EXPECT_EQ(chrome::TOUCH_ICON, statement.ColumnInt(2));
 }
 
-// Test that only data moved to a temporary table is left in the main table
-// once the temporary table is committed.
-TEST_F(ThumbnailDatabaseTest, TemporaryTables) {
+TEST_F(ThumbnailDatabaseTest, RetainDataForPageUrls) {
   ThumbnailDatabase db;
 
   ASSERT_EQ(sql::INIT_OK, db.Init(file_name_, NULL, NULL));
 
   db.BeginTransaction();
-
-  EXPECT_TRUE(db.InitTemporaryTables());
 
   std::vector<unsigned char> data(blob1, blob1 + sizeof(blob1));
   scoped_refptr<base::RefCountedBytes> favicon(new base::RefCountedBytes(data));
@@ -492,24 +488,25 @@ TEST_F(ThumbnailDatabaseTest, TemporaryTables) {
   chrome::FaviconID kept_id = db.AddFavicon(kept_url, chrome::FAVICON);
   db.AddFaviconBitmap(kept_id, favicon, base::Time::Now(), kLargeSize);
 
-  GURL page_url("http://google.com");
-  db.AddIconMapping(page_url, unkept_id);
-  db.AddIconMapping(page_url, kept_id);
+  GURL unkept_page_url("http://chromium.org");
+  db.AddIconMapping(unkept_page_url, unkept_id);
+  db.AddIconMapping(unkept_page_url, kept_id);
 
-  chrome::FaviconID new_favicon_id =
-      db.CopyFaviconAndFaviconBitmapsToTemporaryTables(kept_id);
-  EXPECT_NE(0, new_favicon_id);
-  EXPECT_TRUE(db.AddToTemporaryIconMappingTable(page_url, new_favicon_id));
+  GURL kept_page_url("http://google.com");
+  db.AddIconMapping(kept_page_url, kept_id);
 
-  EXPECT_TRUE(db.CommitTemporaryTables());
+  // RetainDataForPageUrls() uses schema manipulations for efficiency.
+  // Grab a copy of the schema to make sure the final schema matches.
+  const std::string original_schema = db.db_.GetSchema();
+
+  EXPECT_TRUE(db.RetainDataForPageUrls(std::vector<GURL>(1, kept_page_url)));
 
   // Only copied data should be left.
   std::vector<IconMapping> icon_mappings;
-  EXPECT_TRUE(
-      db.GetIconMappingsForPageURL(page_url, chrome::FAVICON, &icon_mappings));
+  EXPECT_TRUE(db.GetIconMappingsForPageURL(
+                  kept_page_url, chrome::FAVICON, &icon_mappings));
   EXPECT_EQ(1u, icon_mappings.size());
-  EXPECT_EQ(new_favicon_id, icon_mappings[0].icon_id);
-  EXPECT_EQ(page_url, icon_mappings[0].page_url);
+  EXPECT_EQ(kept_page_url, icon_mappings[0].page_url);
 
   std::vector<FaviconBitmap> favicon_bitmaps;
   EXPECT_TRUE(db.GetFaviconBitmaps(icon_mappings[0].icon_id, &favicon_bitmaps));
@@ -517,6 +514,9 @@ TEST_F(ThumbnailDatabaseTest, TemporaryTables) {
   EXPECT_EQ(kLargeSize, favicon_bitmaps[0].pixel_size);
 
   EXPECT_FALSE(db.GetFaviconIDForFaviconURL(unkept_url, false, NULL));
+
+  // Schema should be the same.
+  EXPECT_EQ(original_schema, db.db_.GetSchema());
 }
 
 // Tests that deleting a favicon deletes the favicon row and favicon bitmap

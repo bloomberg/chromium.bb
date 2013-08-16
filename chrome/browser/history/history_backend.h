@@ -824,9 +824,8 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   // Given a vector of all URLs that we will keep, removes all thumbnails
   // referenced by any URL, and also all favicons that aren't used by those
-  // URLs. The favicon IDs will change, so this will update the url rows in the
-  // vector to reference the new IDs.
-  bool ClearAllThumbnailHistory(URLRows* kept_urls);
+  // URLs.
+  bool ClearAllThumbnailHistory(const URLRows& kept_urls);
 
   // Deletes all information in the history database, except for the supplied
   // set of URLs in the URL table (these should correspond to the bookmarked
