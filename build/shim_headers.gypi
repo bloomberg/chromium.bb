@@ -17,10 +17,17 @@
     '<(shim_headers_path)',
   ],
   'all_dependent_settings': {
+    # Repeating this with different numbers of plusses is unfortunately required
+    # to make sure that even if this include is inside nested conditions/etc, it
+    # still gets inserted at the beginning of the include_dirs list. See
+    # http://crbug.com/263818 for details.
     'include_dirs+++': [
       '<(shim_headers_path)',
     ],
     'include_dirs++++': [
+      '<(shim_headers_path)',
+    ],
+    'include_dirs+++++': [
       '<(shim_headers_path)',
     ],
   },

@@ -9,6 +9,13 @@
   'direct_dependent_settings': {
     # This makes the Android build system set the include path appropriately.
     'libraries': [ '-lskia' ],
+    # Some Chrome code uses non-public header files (http://crbug.com/274425),
+    # so we need to add this include path for now to make it build. The system
+    # version of skia is already required to be the same as the chromium version
+    # so using the bundled headers shouldn't break anything.
+    'include_dirs': [
+      '../third_party/skia/src/core',
+    ],
   },
   'link_settings': {
     # This actually causes the final binary to be linked against skia.
