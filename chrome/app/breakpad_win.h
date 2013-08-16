@@ -28,9 +28,6 @@ extern size_t g_experiment_chunks_offset;
 
 }  // namespace breakpad_win
 
-// The maximum number of 64-char URL chunks we will report.
-static const int kMaxUrlChunks = 8;
-
 void InitCrashReporter();
 
 // Intercepts a crash but does not process it, just ask if we want to restart

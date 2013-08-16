@@ -16,14 +16,10 @@
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "gpu/config/gpu_info.h"
-#include "url/gurl.h"
 
 namespace child_process_logging {
 
 namespace {
-
-// exported in breakpad_win.cc: void __declspec(dllexport) __cdecl SetActiveURL.
-typedef void (__cdecl *MainSetActiveURL)(const wchar_t*);
 
 // exported in breakpad_win.cc: void __declspec(dllexport) __cdecl SetClientId.
 typedef void (__cdecl *MainSetClientId)(const wchar_t*);
@@ -76,22 +72,6 @@ void StringVectorToCStringVector(const std::vector<std::wstring>& wstrings,
 }
 
 }  // namespace
-
-void SetActiveURL(const GURL& url) {
-  static MainSetActiveURL set_active_url = NULL;
-  // note: benign race condition on set_active_url.
-  if (!set_active_url) {
-    HMODULE exe_module = GetModuleHandle(chrome::kBrowserProcessExecutableName);
-    if (!exe_module)
-      return;
-    set_active_url = reinterpret_cast<MainSetActiveURL>(
-        GetProcAddress(exe_module, "SetActiveURL"));
-    if (!set_active_url)
-      return;
-  }
-
-  (set_active_url)(UTF8ToWide(url.possibly_invalid_spec()).c_str());
-}
 
 void SetClientId(const std::string& client_id) {
   std::string str(client_id);

@@ -100,7 +100,6 @@ typedef NTSTATUS (WINAPI* NtTerminateProcessPtr)(HANDLE ProcessHandle,
                                                  NTSTATUS ExitStatus);
 char* g_real_terminate_process_stub = NULL;
 
-static size_t g_url_chunks_offset = 0;
 static size_t g_num_of_extensions_offset = 0;
 static size_t g_extension_ids_offset = 0;
 static size_t g_client_id_offset = 0;
@@ -461,15 +460,6 @@ google_breakpad::CustomClientInfo* GetCustomInfo(const std::wstring& exe_path,
     g_num_of_views_offset = g_custom_entries->size();
     g_custom_entries->push_back(
         google_breakpad::CustomInfoEntry(L"num-views", L""));
-    // Create entries for the URL. Currently we only allow each chunk to be 64
-    // characters, which isn't enough for a URL. As a hack we create 8 entries
-    // and split the URL across the g_custom_entries.
-    g_url_chunks_offset = g_custom_entries->size();
-    // one-based index for the name suffix.
-    for (int i = 1; i <= kMaxUrlChunks; ++i) {
-      g_custom_entries->push_back(google_breakpad::CustomInfoEntry(
-          base::StringPrintf(L"url-chunk-%i", i).c_str(), L""));
-    }
 
     if (type == L"plugin" || type == L"ppapi") {
       std::wstring plugin_path =
@@ -613,38 +603,6 @@ long WINAPI ChromeExceptionFilter(EXCEPTION_POINTERS* info) {
 long WINAPI ServiceExceptionFilter(EXCEPTION_POINTERS* info) {
   DumpDoneCallback(NULL, NULL, NULL, info, NULL, false);
   return EXCEPTION_EXECUTE_HANDLER;
-}
-
-extern "C" void __declspec(dllexport) __cdecl SetActiveURL(
-    const wchar_t* url_cstring) {
-  DCHECK(url_cstring);
-
-  if (!g_custom_entries)
-    return;
-
-  std::wstring url(url_cstring);
-  size_t chunk_index = 0;
-  size_t url_size = url.size();
-
-  // Split the url across all the chunks.
-  for (size_t url_offset = 0;
-       chunk_index < kMaxUrlChunks && url_offset < url_size; ++chunk_index) {
-    size_t current_chunk_size = std::min(url_size - url_offset,
-        static_cast<size_t>(
-            google_breakpad::CustomInfoEntry::kValueMaxLength - 1));
-
-    wchar_t* entry_value =
-        (*g_custom_entries)[g_url_chunks_offset + chunk_index].value;
-    url._Copy_s(entry_value,
-                google_breakpad::CustomInfoEntry::kValueMaxLength,
-                current_chunk_size, url_offset);
-    entry_value[current_chunk_size] = L'\0';
-    url_offset += current_chunk_size;
-  }
-
-  // And null terminate any unneeded chunks.
-  for (; chunk_index < kMaxUrlChunks; ++chunk_index)
-    (*g_custom_entries)[g_url_chunks_offset + chunk_index].value[0] = L'\0';
 }
 
 extern "C" void __declspec(dllexport) __cdecl SetClientId(

@@ -18,14 +18,12 @@
 namespace child_process_logging {
 
 // Account for the terminating null character.
-static const size_t kMaxActiveURLSize = 1024 + 1;
 static const size_t kClientIdSize = 32 + 1;
 static const size_t kChannelSize = 32;
 
 // We use static strings to hold the most recent active url and the client
 // identifier. If we crash, the crash handler code will send the contents of
 // these strings to the browser.
-char g_active_url[kMaxActiveURLSize];
 char g_client_id[kClientIdSize];
 
 char g_channel[kChannelSize] = "";
@@ -58,11 +56,6 @@ char g_switches[kMaxSwitchesSize] = "";
 static const size_t kMaxVariationChunksSize =
     kMaxVariationChunkSize * kMaxReportedVariationChunks + 1;
 char g_variation_chunks[kMaxVariationChunksSize] = "";
-
-void SetActiveURL(const GURL& url) {
-  base::strlcpy(g_active_url, url.possibly_invalid_spec().c_str(),
-                arraysize(g_active_url));
-}
 
 void SetClientId(const std::string& client_id) {
   std::string str(client_id);

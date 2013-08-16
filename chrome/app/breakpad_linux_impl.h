@@ -17,7 +17,6 @@
 
 typedef google_breakpad::NonAllocatingMap<256, 256, 64> CrashKeyStorage;
 
-static const size_t kMaxActiveURLSize = 1024;
 static const size_t kGuidSize = 32;  // 128 bits = 32 chars in hex.
 static const size_t kDistroSize = 128;
 #if defined(ADDRESS_SANITIZER)
@@ -31,10 +30,10 @@ static const off_t kMaxMinidumpFileSize = 1258291;
 // The size of the iovec used to transfer crash data from a child back to the
 // browser.
 #if !defined(ADDRESS_SANITIZER)
-const size_t kCrashIovSize = 9;
+const size_t kCrashIovSize = 8;
 #else
 // Additional field to pass the AddressSanitizer log to the crash handler.
-const size_t kCrashIovSize = 10;
+const size_t kCrashIovSize = 9;
 #endif
 
 // BreakpadInfo describes a crash report.
@@ -50,8 +49,6 @@ struct BreakpadInfo {
 #endif
   const char* process_type;        // Process type, e.g. "renderer".
   unsigned process_type_length;    // Length of |process_type|.
-  const char* crash_url;           // Active URL in the crashing process.
-  unsigned crash_url_length;       // Length of |crash_url|.
   const char* guid;                // Client ID.
   unsigned guid_length;            // Length of |guid|.
   const char* distro;              // Linux distro string.

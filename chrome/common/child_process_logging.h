@@ -12,7 +12,6 @@
 #include "base/basictypes.h"
 #include "base/debug/crash_logging.h"
 #include "base/strings/string16.h"
-#include "url/gurl.h"
 
 class CommandLine;
 
@@ -50,7 +49,6 @@ namespace child_process_logging {
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 // These are declared here so the crash reporter can access them directly in
 // compromised context without going through the standard library.
-extern char g_active_url[];
 extern char g_channel[];
 extern char g_client_id[];
 extern char g_extension_ids[];
@@ -78,10 +76,6 @@ static const size_t kSwitchLen = 64;
 // Assume printer info strings are less than 64 chars.
 static const size_t kPrinterInfoStrLen = 64;
 #endif
-
-// Sets the URL that is logged if the child process crashes. Use GURL() to clear
-// the URL.
-void SetActiveURL(const GURL& url);
 
 // Sets the Client ID that is used as GUID if a Chrome process crashes.
 void SetClientId(const std::string& client_id);
@@ -121,22 +115,6 @@ void SetExperimentList(const std::vector<string16>& state);
 void SetChannel(const std::string& channel);
 #endif
 
-// Simple wrapper class that sets the active URL in it's constructor and clears
-// the active URL in the destructor.
-class ScopedActiveURLSetter {
- public:
-  explicit ScopedActiveURLSetter(const GURL& url)  {
-    SetActiveURL(url);
-  }
-
-  ~ScopedActiveURLSetter()  {
-    SetActiveURL(GURL());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedActiveURLSetter);
-};
-
 // Set/clear information about currently accessed printer.
 class ScopedPrinterInfoSetter {
  public:
@@ -154,29 +132,13 @@ class ScopedPrinterInfoSetter {
 
 }  // namespace child_process_logging
 
-#if defined(OS_MACOSX)
-
-namespace child_process_logging {
-
-void SetActiveURLImpl(const GURL& url,
-                      base::debug::SetCrashKeyValueFuncT set_key_func,
-                      base::debug::ClearCrashKeyValueFuncT clear_key_func);
-
-extern const size_t kMaxNumCrashURLChunks;
-extern const size_t kMaxNumURLChunkValueLength;
-extern const char* kUrlChunkFormatStr;
-
-}  // namespace child_process_logging
-
-#endif  // defined(OS_MACOSX)
-
 #if defined(OS_WIN)
 namespace child_process_logging {
 
 // Sets up the base/debug/crash_logging.h mechanism.
 void Init();
 
-}  // namespace child_process_loggging
+}  // namespace child_process_logging
 #endif  // defined(OS_WIN)
 
 #endif  // CHROME_COMMON_CHILD_PROCESS_LOGGING_H_

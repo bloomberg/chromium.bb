@@ -16,7 +16,6 @@
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "gpu/config/gpu_info.h"
-#include "url/gurl.h"
 
 namespace child_process_logging {
 
@@ -25,9 +24,6 @@ using base::debug::ClearCrashKeyValueFuncT;
 using base::debug::SetCrashKeyValue;
 using base::debug::ClearCrashKey;
 
-const size_t kMaxNumCrashURLChunks = 8;
-const size_t kMaxNumURLChunkValueLength = 255;
-const char* kUrlChunkFormatStr = "url-chunk-%d";
 const char* kGuidParamName = "guid";
 const char* kGPUVendorIdParamName = "gpu-venid";
 const char* kGPUDeviceIdParamName = "gpu-devid";
@@ -44,48 +40,9 @@ const char* kPrinterInfoNameFormat = "prn-info-%zu";
 static const size_t kClientIdSize = 32 + 1;
 static char g_client_id[kClientIdSize];
 
-void SetActiveURLImpl(const GURL& url,
-                      SetCrashKeyValueFuncT set_key_func,
-                      ClearCrashKeyValueFuncT clear_key_func) {
-  // First remove any old url chunks we might have lying around.
-  for (size_t i = 0; i < kMaxNumCrashURLChunks; i++) {
-    // On Windows the url-chunk items are 1-based, so match that.
-    clear_key_func(base::StringPrintf(kUrlChunkFormatStr, i + 1));
-  }
-
-  const std::string& raw_url = url.possibly_invalid_spec();
-  size_t raw_url_length = raw_url.length();
-
-  // Bail on zero-length URLs.
-  if (raw_url_length == 0) {
-    return;
-  }
-
-  // Parcel the URL up into up to 8, 255 byte segments.
-  size_t offset = 0;
-  for (size_t i = 0;
-       i < kMaxNumCrashURLChunks && offset < raw_url_length;
-       ++i) {
-
-    // On Windows the url-chunk items are 1-based, so match that.
-    std::string key = base::StringPrintf(kUrlChunkFormatStr, i + 1);
-    size_t length = std::min(kMaxNumURLChunkValueLength,
-                             raw_url_length - offset);
-    std::string value = raw_url.substr(offset, length);
-    set_key_func(key, value);
-
-    // Next chunk.
-    offset += kMaxNumURLChunkValueLength;
-  }
-}
-
 void SetClientIdImpl(const std::string& client_id,
                      SetCrashKeyValueFuncT set_key_func) {
   set_key_func(kGuidParamName, client_id);
-}
-
-void SetActiveURL(const GURL& url) {
-  SetActiveURLImpl(url, SetCrashKeyValue, ClearCrashKey);
 }
 
 void SetClientId(const std::string& client_id) {

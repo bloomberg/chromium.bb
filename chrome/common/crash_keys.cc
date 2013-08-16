@@ -45,8 +45,8 @@ COMPILE_ASSERT(kMediumSize <= kSingleChunkLength,
 
 size_t RegisterChromeCrashKeys() {
   base::debug::CrashKey keys[] = {
-    // TODO(rsesek): Remove when done testing. Needed so arraysize > 0.
-    { "rsesek_key", kSmallSize },
+    { kActiveURL, kLargeSize },
+
     // content/:
     { "ppapi_path", kMediumSize },
     { "subresource_url", kLargeSize },
@@ -71,6 +71,8 @@ size_t RegisterChromeCrashKeys() {
 
   return base::debug::InitCrashKeys(keys, arraysize(keys), kSingleChunkLength);
 }
+
+const char kActiveURL[] = "url-chunk";
 
 #if defined(OS_MACOSX)
 namespace mac {

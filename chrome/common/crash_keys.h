@@ -15,6 +15,9 @@ size_t RegisterChromeCrashKeys();
 
 // Crash Key Name Constants ////////////////////////////////////////////////////
 
+// The URL of the active tab.
+extern const char kActiveURL[];
+
 #if defined(OS_MACOSX)
 namespace mac {
 
