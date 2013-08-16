@@ -466,6 +466,10 @@
     "dependencies": ["permission:sessionRestore"],
     "contexts": ["blessed_extension"]
   },
+  "signedInDevices": {
+    "dependencies": ["permission:signedInDevices"],
+    "contexts": ["blessed_extension"]
+  }.
   "socket": {
     "dependencies": ["permission:socket"],
     "contexts": ["blessed_extension"]

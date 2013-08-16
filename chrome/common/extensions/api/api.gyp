@@ -88,6 +88,7 @@
           'runtime.json',
           'serial.idl',
           'session_restore.json',
+          'signedin_devices.idl',
           'socket.idl',
           'sockets_udp.idl',
           'storage.json',
