@@ -5,6 +5,8 @@
 #ifndef CC_LAYERS_HEADS_UP_DISPLAY_LAYER_H_
 #define CC_LAYERS_HEADS_UP_DISPLAY_LAYER_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/layers/contents_scaling_layer.h"
@@ -22,6 +24,8 @@ class CC_EXPORT HeadsUpDisplayLayer : public ContentsScalingLayer {
 
   virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
       OVERRIDE;
+
+  virtual std::string DebugName() OVERRIDE;
 
  protected:
   HeadsUpDisplayLayer();

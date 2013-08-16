@@ -6,12 +6,14 @@
 
 #include <algorithm>
 
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/metrics/histogram.h"
 #include "base/single_thread_task_runner.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_events.h"
 #include "cc/animation/layer_animation_controller.h"
+#include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
@@ -55,7 +57,8 @@ Layer::Layer()
       draw_checkerboard_for_missing_tiles_(false),
       force_render_surface_(false),
       replica_layer_(NULL),
-      raster_scale_(0.f) {
+      raster_scale_(0.f),
+      client_(NULL) {
   if (layer_id_ < 0) {
     s_next_layer_id = 1;
     layer_id_ = s_next_layer_id++;
@@ -742,7 +745,15 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
                                         : bounds_);
   layer->SetContentBounds(content_bounds());
   layer->SetContentsScale(contents_scale_x(), contents_scale_y());
-  layer->SetDebugName(debug_name_);
+
+  bool is_tracing;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+                                     &is_tracing);
+  if (is_tracing)
+      layer->SetDebugName(DebugName());
+  else
+      layer->SetDebugName(std::string());
+
   layer->SetCompositingReasons(compositing_reasons_);
   layer->SetDoubleSided(double_sided_);
   layer->SetDrawCheckerboardForMissingTiles(
@@ -868,9 +879,8 @@ bool Layer::NeedMoreUpdates() {
   return false;
 }
 
-void Layer::SetDebugName(const std::string& debug_name) {
-  debug_name_ = debug_name;
-  SetNeedsCommit();
+std::string Layer::DebugName() {
+  return client_ ? client_->DebugName() : std::string();
 }
 
 void Layer::SetCompositingReasons(CompositingReasons reasons) {

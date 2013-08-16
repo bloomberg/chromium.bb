@@ -1115,6 +1115,7 @@ CompositingReasonsAsValue(CompositingReasons reasons) {
 void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
   TracedValue::MakeDictIntoImplicitSnapshot(state, LayerTypeAsString(), this);
   state->SetInteger("layer_id", id());
+  state->SetString("layer_name", debug_name());
   state->Set("bounds", MathUtil::AsValue(bounds()).release());
   state->SetInteger("draws_content", DrawsContent());
   state->SetInteger("gpu_memory_usage", GPUMemoryUsageInBytes());

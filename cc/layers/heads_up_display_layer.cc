@@ -55,4 +55,8 @@ scoped_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
       PassAs<LayerImpl>();
 }
 
+std::string HeadsUpDisplayLayer::DebugName() {
+  return std::string("Heads Up Display Layer");
+}
+
 }  // namespace cc

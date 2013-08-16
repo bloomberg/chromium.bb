@@ -42,6 +42,7 @@ struct AnimationEvent;
 class CopyOutputRequest;
 class LayerAnimationDelegate;
 class LayerAnimationEventObserver;
+class LayerClient;
 class LayerImpl;
 class LayerTreeHost;
 class LayerTreeImpl;
@@ -296,7 +297,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   virtual void SetIsMask(bool is_mask) {}
   virtual void ReduceMemoryUsage() {}
 
-  void SetDebugName(const std::string& debug_name);
+  virtual std::string DebugName();
+
+  void SetLayerClient(LayerClient* client) { client_ = client; }
+
   void SetCompositingReasons(CompositingReasons reasons);
 
   virtual void PushPropertiesTo(LayerImpl* layer);
@@ -521,6 +525,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
 
   // Transient properties.
   float raster_scale_;
+
+  LayerClient* client_;
 
   ScopedPtrVector<CopyOutputRequest> copy_requests_;
 

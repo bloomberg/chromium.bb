@@ -125,6 +125,7 @@
         'layers/io_surface_layer_impl.h',
         'layers/layer.cc',
         'layers/layer.h',
+        'layers/layer_client.h',
         'layers/layer_impl.cc',
         'layers/layer_impl.h',
         'layers/layer_iterator.cc',

@@ -5,9 +5,13 @@
 #ifndef WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_LAYER_IMPL_H_
 #define WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_LAYER_IMPL_H_
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/layers/layer_client.h"
 #include "third_party/WebKit/public/platform/WebAnimation.h"
+#include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebColor.h"
 #include "third_party/WebKit/public/platform/WebCompositingReasons.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -35,7 +39,7 @@ namespace webkit {
 
 class WebToCCAnimationDelegateAdapter;
 
-class WebLayerImpl : public WebKit::WebLayer {
+class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerImpl();
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebLayerImpl(
@@ -83,7 +87,6 @@ class WebLayerImpl : public WebKit::WebLayer {
   virtual void setFilter(SkImageFilter* filter);
   virtual void setFilters(const WebKit::WebFilterOperations& filters);
   virtual void setBackgroundFilters(const WebKit::WebFilterOperations& filters);
-  virtual void setDebugName(WebKit::WebString name);
   virtual void setCompositingReasons(WebKit::WebCompositingReasons);
   virtual void setAnimationDelegate(WebKit::WebAnimationDelegate* delegate);
   virtual bool addAnimation(WebKit::WebAnimation* animation);
@@ -119,6 +122,9 @@ class WebLayerImpl : public WebKit::WebLayer {
   virtual void setScrollClient(WebKit::WebLayerScrollClient* client);
   virtual bool isOrphan() const;
   virtual void setWebLayerClient(WebKit::WebLayerClient* client);
+
+  // LayerClient implementation.
+  virtual std::string DebugName() OVERRIDE;
 
  protected:
   scoped_refptr<cc::Layer> layer_;

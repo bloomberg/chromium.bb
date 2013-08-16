@@ -13,6 +13,7 @@
 #include "third_party/WebKit/public/platform/WebCompositingReasons.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
+#include "third_party/WebKit/public/platform/WebLayerClient.h"
 #include "third_party/WebKit/public/platform/WebLayerPositionConstraint.h"
 #include "third_party/WebKit/public/platform/WebLayerScrollClient.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -33,13 +34,20 @@ using WebKit::WebFilterOperations;
 
 namespace webkit {
 
-WebLayerImpl::WebLayerImpl() : layer_(Layer::Create()) {}
+WebLayerImpl::WebLayerImpl() : layer_(Layer::Create()) {
+  web_layer_client_ = NULL;
+  layer_->SetLayerClient(this);
+}
 
-WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer) : layer_(layer) {}
+WebLayerImpl::WebLayerImpl(scoped_refptr<Layer> layer) : layer_(layer) {
+  web_layer_client_ = NULL;
+  layer_->SetLayerClient(this);
+}
 
 WebLayerImpl::~WebLayerImpl() {
   layer_->ClearRenderSurface();
   layer_->set_layer_animation_delegate(NULL);
+  web_layer_client_ = NULL;
 }
 
 int WebLayerImpl::id() const { return layer_->id(); }
@@ -172,10 +180,6 @@ void WebLayerImpl::setBackgroundFilters(const WebFilterOperations& filters) {
 
 void WebLayerImpl::setFilter(SkImageFilter* filter) {
   layer_->SetFilter(skia::SharePtr(filter));
-}
-
-void WebLayerImpl::setDebugName(WebKit::WebString name) {
-  layer_->SetDebugName(UTF16ToASCII(name));
 }
 
 void WebLayerImpl::setCompositingReasons(
@@ -364,6 +368,15 @@ bool WebLayerImpl::isOrphan() const { return !layer_->layer_tree_host(); }
 
 void WebLayerImpl::setWebLayerClient(WebKit::WebLayerClient* client) {
   web_layer_client_ = client;
+}
+
+std::string WebLayerImpl::DebugName() {
+  if (!web_layer_client_)
+    return std::string();
+
+  std::string name = web_layer_client_->debugName(this).utf8();
+  DCHECK(IsStringASCII(name));
+  return name;
 }
 
 Layer* WebLayerImpl::layer() const { return layer_.get(); }
