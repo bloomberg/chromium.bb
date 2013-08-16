@@ -58,6 +58,9 @@ inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
   gfx::Rect minimal_surface_rect = target_surface_rect;
   minimal_surface_rect.Intersect(layer_rect_in_target_space);
 
+  if (minimal_surface_rect.IsEmpty())
+      return gfx::Rect();
+
   // Project the corners of the target surface rect into the layer space.
   // This bounding rectangle may be larger than it needs to be (being
   // axis-aligned), but is a reasonable filter on the space to consider.
@@ -65,11 +68,10 @@ inline gfx::Rect CalculateVisibleRectWithCachedLayerRect(
 
   gfx::Transform surface_to_layer(gfx::Transform::kSkipInitialization);
   if (!transform.GetInverse(&surface_to_layer)) {
-    // TODO(shawnsingh): Some uninvertible transforms may be visible, but
-    // their behaviour is undefined thoughout the compositor. Make their
-    // behaviour well-defined and allow the visible content rect to be non-
-    // empty when needed.
-    return gfx::Rect();
+    // Because we cannot use the surface bounds to determine what portion of
+    // the layer is visible, we must conservatively assume the full layer is
+    // visible.
+    return layer_bound_rect;
   }
 
   gfx::Rect layer_rect = gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(

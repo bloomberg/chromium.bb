@@ -3185,8 +3185,10 @@ TEST_F(LayerTreeHostCommonTest,
   scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
   host->SetRootLayer(root);
 
+  // Case 1: a truly degenerate matrix
   gfx::Transform identity_matrix;
   gfx::Transform uninvertible_matrix(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+  ASSERT_FALSE(uninvertible_matrix.IsInvertible());
 
   SetLayerPropertiesForTesting(root.get(),
                                identity_matrix,
@@ -3207,6 +3209,48 @@ TEST_F(LayerTreeHostCommonTest,
 
   EXPECT_TRUE(child->visible_content_rect().IsEmpty());
   EXPECT_TRUE(child->drawable_content_rect().IsEmpty());
+
+  // Case 2: a matrix with flattened z, technically uninvertible but still
+  // drawable and visible. In this case, we must assume that the entire layer
+  // bounds are visible since there is no way to inverse-project the surface
+  // bounds to intersect.
+  uninvertible_matrix.MakeIdentity();
+  uninvertible_matrix.matrix().setDouble(2, 2, 0.0);
+  ASSERT_FALSE(uninvertible_matrix.IsInvertible());
+
+  SetLayerPropertiesForTesting(child.get(),
+                               uninvertible_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(5.f, 5.f),
+                               gfx::Size(50, 50),
+                               false);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_RECT_EQ(gfx::Rect(0, 0, 50, 50), child->visible_content_rect());
+  EXPECT_RECT_EQ(gfx::Rect(5, 5, 50, 50), child->drawable_content_rect());
+
+  // Case 3: a matrix with flattened z, technically uninvertible but still
+  // drawable, but not visible. In this case, we don't need to conservatively
+  // assume that the whole layer is visible.
+  uninvertible_matrix.MakeIdentity();
+  uninvertible_matrix.Translate(500.0, 0.0);
+  uninvertible_matrix.matrix().setDouble(2, 2, 0.0);
+  ASSERT_FALSE(uninvertible_matrix.IsInvertible());
+
+  SetLayerPropertiesForTesting(child.get(),
+                               uninvertible_matrix,
+                               identity_matrix,
+                               gfx::PointF(),
+                               gfx::PointF(5.f, 5.f),
+                               gfx::Size(50, 50),
+                               false);
+
+  ExecuteCalculateDrawProperties(root.get());
+
+  EXPECT_TRUE(child->visible_content_rect().IsEmpty());
+  EXPECT_RECT_EQ(gfx::Rect(505, 5, 50, 50), child->drawable_content_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest,
