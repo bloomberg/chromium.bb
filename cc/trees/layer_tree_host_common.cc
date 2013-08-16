@@ -1416,29 +1416,6 @@ static void CalculateDrawPropertiesInternal(
     }
   }
 
-  if (layer == globals.page_scale_application_layer) {
-    data_for_children.parent_matrix.Scale(
-        globals.page_scale_factor,
-        globals.page_scale_factor);
-    data_for_children.in_subtree_of_page_scale_application_layer = true;
-  }
-
-  // Flatten to 2D if the layer doesn't preserve 3D.
-  if (!layer->preserves_3d())
-    data_for_children.parent_matrix.FlattenTo2d();
-
-  // Apply the sublayer transform at the anchor point of the layer.
-  if (!layer->sublayer_transform().IsIdentity()) {
-    data_for_children.parent_matrix.Translate(
-        layer->anchor_point().x() * bounds.width(),
-        layer->anchor_point().y() * bounds.height());
-    data_for_children.parent_matrix.PreconcatTransform(
-        layer->sublayer_transform());
-    data_for_children.parent_matrix.Translate(
-        -layer->anchor_point().x() * bounds.width(),
-        -layer->anchor_point().y() * bounds.height());
-  }
-
   LayerListType& descendants =
       (layer->render_surface() ? layer->render_surface()->layer_list()
                                : *layer_list);
@@ -1450,23 +1427,48 @@ static void CalculateDrawPropertiesInternal(
   if (!LayerShouldBeSkipped(layer, layer_is_visible))
     descendants.push_back(layer);
 
-  data_for_children.scroll_compensation_matrix =
-      ComputeScrollCompensationMatrixForChildren(
-          layer,
-          data_from_ancestor.parent_matrix,
-          data_from_ancestor.scroll_compensation_matrix);
-  data_for_children.fixed_container =
-      layer->IsContainerForFixedPositionLayers() ?
-          layer : data_from_ancestor.fixed_container;
+  if (!layer->children().empty()) {
+    if (layer == globals.page_scale_application_layer) {
+      data_for_children.parent_matrix.Scale(
+          globals.page_scale_factor,
+          globals.page_scale_factor);
+      data_for_children.in_subtree_of_page_scale_application_layer = true;
+    }
 
-  data_for_children.clip_rect_in_target_space = clip_rect_in_target_space;
-  data_for_children.clip_rect_of_target_surface_in_target_space =
-      clip_rect_of_target_surface_in_target_space;
-  data_for_children.ancestor_clips_subtree =
-      layer_or_ancestor_clips_descendants;
-  data_for_children.nearest_ancestor_surface_that_moves_pixels =
-      nearest_ancestor_surface_that_moves_pixels;
-  data_for_children.subtree_is_visible_from_ancestor = layer_is_visible;
+    // Flatten to 2D if the layer doesn't preserve 3D.
+    if (!layer->preserves_3d())
+      data_for_children.parent_matrix.FlattenTo2d();
+
+    // Apply the sublayer transform at the anchor point of the layer.
+    if (!layer->sublayer_transform().IsIdentity()) {
+      data_for_children.parent_matrix.Translate(
+          layer->anchor_point().x() * bounds.width(),
+          layer->anchor_point().y() * bounds.height());
+      data_for_children.parent_matrix.PreconcatTransform(
+          layer->sublayer_transform());
+      data_for_children.parent_matrix.Translate(
+          -layer->anchor_point().x() * bounds.width(),
+          -layer->anchor_point().y() * bounds.height());
+    }
+
+    data_for_children.scroll_compensation_matrix =
+        ComputeScrollCompensationMatrixForChildren(
+            layer,
+            data_from_ancestor.parent_matrix,
+            data_from_ancestor.scroll_compensation_matrix);
+    data_for_children.fixed_container =
+        layer->IsContainerForFixedPositionLayers() ?
+            layer : data_from_ancestor.fixed_container;
+
+    data_for_children.clip_rect_in_target_space = clip_rect_in_target_space;
+    data_for_children.clip_rect_of_target_surface_in_target_space =
+        clip_rect_of_target_surface_in_target_space;
+    data_for_children.ancestor_clips_subtree =
+        layer_or_ancestor_clips_descendants;
+    data_for_children.nearest_ancestor_surface_that_moves_pixels =
+        nearest_ancestor_surface_that_moves_pixels;
+    data_for_children.subtree_is_visible_from_ancestor = layer_is_visible;
+  }
 
   gfx::Rect accumulated_drawable_content_rect_of_children;
   for (size_t i = 0; i < layer->children().size(); ++i) {
