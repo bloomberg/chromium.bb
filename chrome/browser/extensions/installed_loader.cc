@@ -71,7 +71,9 @@ enum ExternalItemState {
   EXTERNAL_ITEM_WEBSTORE_ENABLED = 3,
   EXTERNAL_ITEM_NONWEBSTORE_DISABLED = 4,
   EXTERNAL_ITEM_NONWEBSTORE_ENABLED = 5,
-  EXTERNAL_ITEM_MAX_ITEMS = 6
+  EXTERNAL_ITEM_WEBSTORE_UNINSTALLED = 6,
+  EXTERNAL_ITEM_NONWEBSTORE_UNINSTALLED = 7,
+  EXTERNAL_ITEM_MAX_ITEMS = 8
 };
 
 bool IsManifestCorrupt(const DictionaryValue* manifest) {
@@ -411,6 +413,7 @@ void InstalledLoader::LoadAllExtensions() {
     extension_service_->RecordPermissionMessagesHistogram(
         ex->get(), "Extensions.Permissions_Load");
   }
+
   const ExtensionSet* disabled_extensions =
       extension_service_->disabled_extensions();
   for (ex = disabled_extensions->begin();
@@ -428,6 +431,25 @@ void InstalledLoader::LoadAllExtensions() {
       } else {
         UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
                                   EXTERNAL_ITEM_NONWEBSTORE_DISABLED,
+                                  EXTERNAL_ITEM_MAX_ITEMS);
+      }
+    }
+  }
+
+  scoped_ptr<ExtensionPrefs::ExtensionsInfo> uninstalled_extensions_info(
+      extension_prefs_->GetUninstalledExtensionsInfo());
+  for (size_t i = 0; i < uninstalled_extensions_info->size(); ++i) {
+    ExtensionInfo* info = uninstalled_extensions_info->at(i).get();
+    if (Manifest::IsExternalLocation(info->extension_location)) {
+      std::string update_url;
+      if (info->extension_manifest->GetString("update_url", &update_url) &&
+          extension_urls::IsWebstoreUpdateUrl(GURL(update_url))) {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                  EXTERNAL_ITEM_WEBSTORE_UNINSTALLED,
+                                  EXTERNAL_ITEM_MAX_ITEMS);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalItemState",
+                                  EXTERNAL_ITEM_NONWEBSTORE_UNINSTALLED,
                                   EXTERNAL_ITEM_MAX_ITEMS);
       }
     }

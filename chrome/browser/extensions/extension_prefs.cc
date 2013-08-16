@@ -1327,6 +1327,28 @@ ExtensionPrefs::GetInstalledExtensionsInfo() const {
   return extensions_info.Pass();
 }
 
+scoped_ptr<ExtensionPrefs::ExtensionsInfo>
+ExtensionPrefs::GetUninstalledExtensionsInfo() const {
+  scoped_ptr<ExtensionsInfo> extensions_info(new ExtensionsInfo);
+
+  const DictionaryValue* extensions = prefs_->GetDictionary(kExtensionsPref);
+  for (DictionaryValue::Iterator extension_id(*extensions);
+       !extension_id.IsAtEnd(); extension_id.Advance()) {
+    const DictionaryValue* ext = NULL;
+    if (!Extension::IdIsValid(extension_id.key()) ||
+        !IsExternalExtensionUninstalled(extension_id.key()) ||
+        !extension_id.value().GetAsDictionary(&ext))
+      continue;
+
+    scoped_ptr<ExtensionInfo> info =
+        GetInstalledInfoHelper(extension_id.key(), ext);
+    if (info)
+      extensions_info->push_back(linked_ptr<ExtensionInfo>(info.release()));
+  }
+
+  return extensions_info.Pass();
+}
+
 void ExtensionPrefs::SetDelayedInstallInfo(
     const Extension* extension,
     Extension::State initial_state,

@@ -404,6 +404,10 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Caller takes ownership of returned structure.
   scoped_ptr<ExtensionsInfo> GetInstalledExtensionsInfo() const;
 
+  // Same as above, but only includes external extensions the user has
+  // explicitly uninstalled.
+  scoped_ptr<ExtensionsInfo> GetUninstalledExtensionsInfo() const;
+
   // Returns the ExtensionInfo from the prefs for the given extension. If the
   // extension is not present, NULL is returned.
   scoped_ptr<ExtensionInfo> GetInstalledExtensionInfo(

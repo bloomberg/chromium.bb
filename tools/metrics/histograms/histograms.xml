@@ -17831,6 +17831,8 @@ other types of suffix sets.
   <int value="3" label="ENABLED (in webstore)"/>
   <int value="4" label="DISABLED (not in webstore)"/>
   <int value="5" label="ENABLED (not in webstore)"/>
+  <int value="6" label="UNINSTALLED (in webstore)"/>
+  <int value="7" label="UNINSTALLED (not in webstore)"/>
 </enum>
 
 <enum name="Exynos5250LotIdEnum" type="int">
