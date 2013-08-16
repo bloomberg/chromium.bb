@@ -14,7 +14,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/src/include/nacl/nacl_exception.h"
 
 
 #define PRINT_HEADER 0
@@ -47,7 +47,7 @@ static jmp_buf g_jmp_buf;
 
 static void exception_handler(struct NaClExceptionContext *context) {
   /* We got an exception as expected.  Return from the handler. */
-  int rc = NACL_SYSCALL(exception_clear_flag)();
+  int rc = nacl_exception_clear_flag();
   assert(rc == 0);
   longjmp(g_jmp_buf, 1);
 }
@@ -62,7 +62,7 @@ static void assert_addr_is_unreadable(volatile char *addr) {
     return;
   }
 
-  int rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
+  int rc = nacl_exception_set_handler(exception_handler);
   assert(rc == 0);
   if (!setjmp(g_jmp_buf)) {
     char value = *addr;
@@ -75,7 +75,7 @@ static void assert_addr_is_unreadable(volatile char *addr) {
    * Clean up: Unregister the exception handler so that we do not
    * accidentally return through g_jmp_buf if an exception occurs.
    */
-  rc = NACL_SYSCALL(exception_handler)(NULL, NULL);
+  rc = nacl_exception_set_handler(NULL);
   assert(rc == 0);
 }
 
@@ -93,7 +93,7 @@ static void assert_addr_is_unwritable(volatile char *addr, char value) {
     return;
   }
 
-  int rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
+  int rc = nacl_exception_set_handler(exception_handler);
   assert(rc == 0);
   if (!setjmp(g_jmp_buf)) {
     *addr = value;
@@ -106,7 +106,7 @@ static void assert_addr_is_unwritable(volatile char *addr, char value) {
    * Clean up: Unregister the exception handler so that we do not
    * accidentally return through g_jmp_buf if an exception occurs.
    */
-  rc = NACL_SYSCALL(exception_handler)(NULL, NULL);
+  rc = nacl_exception_set_handler(NULL);
   assert(rc == 0);
 }
 

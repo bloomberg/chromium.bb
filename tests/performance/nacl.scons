@@ -27,7 +27,10 @@ nexe = env.ComponentProgram(
      'perf_test_basics.cc',
      'perf_test_exceptions.cc',
      'perf_test_threads.cc'],
-    EXTRA_LIBS=['${NONIRT_LIBS}', '${PTHREAD_LIBS}'] + libs)
+    EXTRA_LIBS=['${NONIRT_LIBS}',
+                '${PTHREAD_LIBS}',
+                '${EXCEPTION_LIBS}']
+               + libs)
 
 if 'TRUSTED_ENV' not in env:
   Return()

@@ -2703,6 +2703,7 @@ nacl_env = MakeArchSpecificEnv().Clone(
     NONIRT_LIBS = ['nacl_sys_private'],
     PTHREAD_LIBS = ['pthread_private'],
     DYNCODE_LIBS = ['nacl_dyncode_private'],
+    EXCEPTION_LIBS = ['nacl_exception_private'],
     LIST_MAPPINGS_LIBS = ['nacl_list_mappings_private'],
     )
 
@@ -2864,13 +2865,13 @@ def TestsUsePublicLibs(env):
   """Change the environment so it uses public libraries for in-tree tests."""
   env.Replace(NONIRT_LIBS=[],
               PTHREAD_LIBS=['pthread'],
-              DYNCODE_LIBS=['nacl_dyncode', 'nacl'])
+              DYNCODE_LIBS=['nacl_dyncode', 'nacl'],
+              EXCEPTION_LIBS=['nacl_exception', 'nacl'])
 
-# glibc is incompatible with the private libraries.
-# It's probably really only wholly incompatible with libpthread_private,
-# but we make it use only the public libraries altogether anyway.
+# glibc is incompatible with libpthread_private and libnacl_sys_private.
 if nacl_env.Bit('nacl_glibc'):
-  TestsUsePublicLibs(nacl_env)
+  nacl_env.Replace(NONIRT_LIBS=[],
+                   PTHREAD_LIBS=['pthread'])
 
 # These add on to those set in pre_base_env, above.
 nacl_env.Append(

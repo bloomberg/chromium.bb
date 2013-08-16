@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_test_crash.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
@@ -37,9 +38,9 @@ static void exception_handler(struct NaClExceptionContext *context) {
 }
 
 static void register_exception_handler(void) {
-  int rc = NACL_SYSCALL(exception_handler)(exception_handler, NULL);
+  int rc = nacl_exception_set_handler(exception_handler);
   assert(rc == 0);
-  rc = NACL_SYSCALL(exception_stack)(g_stack, sizeof(g_stack));
+  rc = nacl_exception_set_stack(g_stack, sizeof(g_stack));
   assert(rc == 0);
 }
 

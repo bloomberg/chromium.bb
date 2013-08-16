@@ -7,7 +7,8 @@ Import('env')
 
 
 test_prog = env.ComponentProgram('test_guest', ['test_guest.c'],
-                                 EXTRA_LIBS=['${NONIRT_LIBS}'])
+                                 EXTRA_LIBS=['${NONIRT_LIBS}',
+                                             '${EXCEPTION_LIBS}'])
 test_prog = env.GetTranslatedNexe(test_prog)
 
 # This test covers how NaCl interacts with host-OS-specific

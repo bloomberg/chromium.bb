@@ -112,6 +112,7 @@ env.ComponentLibrary('libnacl_dyncode_private', ['dyncode_private.c'])
 libnacl_exception = env.NaClSdkLibrary('libnacl_exception',
                                        ['nacl_exception.c'])
 env.AddLibraryToSdk(libnacl_exception)
+env.ComponentLibrary('libnacl_exception_private', ['nacl_exception_private.c'])
 
 libnacl_list_mappings = env.NaClSdkLibrary(
     'libnacl_list_mappings', ['list_mappings.c'])

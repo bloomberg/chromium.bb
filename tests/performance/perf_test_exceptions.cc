@@ -7,19 +7,19 @@
 #include <setjmp.h>
 
 #include "native_client/src/include/nacl_assert.h"
-#include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
+#include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/tests/performance/perf_test_runner.h"
 
 
 class TestCatchingFault : public PerfTest {
  public:
   TestCatchingFault() {
-    ASSERT_EQ(NACL_SYSCALL(exception_handler)(Handler, NULL), 0);
+    ASSERT_EQ(nacl_exception_set_handler(Handler), 0);
   }
 
   ~TestCatchingFault() {
     // Unregister handler so that we do not invoke it accidentally.
-    ASSERT_EQ(NACL_SYSCALL(exception_handler)(NULL, NULL), 0);
+    ASSERT_EQ(nacl_exception_set_handler(NULL), 0);
   }
 
   virtual void run() {
@@ -33,7 +33,7 @@ class TestCatchingFault : public PerfTest {
  private:
   static void Handler(struct NaClExceptionContext *context) {
     // Clear flag to allow future faults to invoke this handler.
-    ASSERT_EQ(NACL_SYSCALL(exception_clear_flag)(), 0);
+    ASSERT_EQ(nacl_exception_clear_flag(), 0);
     longjmp(return_jmp_buf_, 1);
   }
 
