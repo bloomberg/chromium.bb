@@ -1,0 +1,11 @@
+FAIL - "left" property for "anim" element at 1s expected: 0 but saw: 300
+PASS - "left" property for "fillanim" element at 1s saw something close to: 300
+
+Log:
+8.055000000013024 - runAnimationTest
+10.352000000011685 - First webkitAnimationStart event fired
+10.427000000049702 - Finished waiting for animations to start
+10.56000000005497 - Pausing at time: 1000, active animations: 2
+10.906999999974687 - Checking expectation: [null,1,"anim","left",0,0]
+12.593000000038046 - Checking expectation: [null,1,"fillanim","left",300,0]
+12.788999999997941 - Ending test

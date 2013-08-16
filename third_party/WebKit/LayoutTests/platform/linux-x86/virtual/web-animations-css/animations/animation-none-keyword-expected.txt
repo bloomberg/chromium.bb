@@ -1,0 +1,21 @@
+FAIL - "max-width" property for "test" element at 0s expected: 10 but saw: none
+PASS - "max-width" property for "test" element at 0.25s saw something close to: 10
+PASS - "max-width" property for "test" element at 1s saw something close to: 10
+PASS - "max-width" property for "test" element at 1.75s saw something close to: none
+PASS - "max-width" property for "test" element at 2s saw something close to: none
+
+Log:
+7.968000000005304 - runAnimationTest
+10.249000000044362 - First webkitAnimationStart event fired
+10.324000000082378 - Finished waiting for animations to start
+10.461000000077547 - Pausing at time: 0, active animations: 1
+10.779000000070482 - Checking expectation: ["none-test",0,"test","max-width",10,0]
+12.561000000005151 - Pausing at time: 250, active animations: 1
+12.767000000053486 - Checking expectation: ["none-test",0.25,"test","max-width",10,0]
+12.953000000038628 - Pausing at time: 1000, active animations: 1
+12.968000000000757 - Checking expectation: ["none-test",1,"test","max-width",10,0]
+13.196000000107233 - Pausing at time: 1750, active animations: 1
+13.212000000066837 - Checking expectation: ["none-test",1.75,"test","max-width","none",0]
+13.394000000062078 - Pausing at time: 2000, active animations: 1
+13.409000000024207 - Checking expectation: ["none-test",2,"test","max-width","none",0]
+13.570000000072469 - Ending test
