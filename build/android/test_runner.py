@@ -597,8 +597,7 @@ def _RunPerfTests(options, error_func):
   report_results.LogFull(
       results=results,
       test_type='Perf',
-      test_package='Perf',
-      build_type=options.build_type)
+      test_package='Perf')
   # Always return 0 on the sharding stage. Individual tests exit_code
   # will be returned on the print_step stage.
   return 0
