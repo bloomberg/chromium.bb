@@ -11,6 +11,7 @@
       "voice_data_hmm_es-ES.js",
       "voice_data_hmm_fr-FR.js",
       "voice_data_hmm_it-IT.js",
+      "tts_controller.js",
       "tts_main.js"
     ]
   },
