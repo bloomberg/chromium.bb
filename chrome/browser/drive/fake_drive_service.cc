@@ -742,9 +742,9 @@ CancelCallback FakeDriveService::CopyResource(
 
         // Reset parent directory.
         base::ListValue* links = NULL;
-        if (!entry->GetList("link", &links)) {
+        if (!copied_entry->GetList("link", &links)) {
           links = new base::ListValue;
-          entry->Set("link", links);
+          copied_entry->Set("link", links);
         }
         links->Clear();
 

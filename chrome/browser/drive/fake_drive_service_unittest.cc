@@ -967,7 +967,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
   int64 old_largest_change_id = GetLargestChangeByAboutResource();
 
   const std::string kResourceId = "file:2_file_resource_id";
-  const std::string kParentResourceId = "folder:1_folder_resource_id";
+  const std::string kParentResourceId = "folder:2_folder_resource_id";
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceEntry> resource_entry;
   fake_service_.CopyResource(
@@ -982,7 +982,7 @@ TEST_F(FakeDriveServiceTest, CopyResource) {
   // The copied entry should have the new resource ID and the title.
   EXPECT_EQ(kResourceId + "_copied", resource_entry->resource_id());
   EXPECT_EQ("new title", resource_entry->title());
-  EXPECT_TRUE(HasParent(kResourceId, kParentResourceId));
+  EXPECT_TRUE(HasParent(resource_entry->resource_id(), kParentResourceId));
   // Should be incremented as a new hosted document was created.
   EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
   EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
