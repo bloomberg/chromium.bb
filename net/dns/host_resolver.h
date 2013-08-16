@@ -53,11 +53,12 @@ class NET_EXPORT HostResolver {
     bool enable_caching;
   };
 
-  // The parameters for doing a Resolve(). A hostname and port are required,
-  // the rest are optional (and have reasonable defaults).
+  // The parameters for doing a Resolve(). A hostname, port, and
+  // priority are required; the rest are optional (and have reasonable
+  // defaults).
   class NET_EXPORT RequestInfo {
    public:
-    explicit RequestInfo(const HostPortPair& host_port_pair);
+    RequestInfo(const HostPortPair& host_port_pair, RequestPriority priority);
 
     const HostPortPair& host_port_pair() const { return host_port_pair_; }
     void set_host_port_pair(const HostPortPair& host_port_pair) {
@@ -86,7 +87,6 @@ class NET_EXPORT HostResolver {
     void set_is_speculative(bool b) { is_speculative_ = b; }
 
     RequestPriority priority() const { return priority_; }
-    void set_priority(RequestPriority priority) { priority_ = priority; }
 
    private:
     // The hostname to resolve, and the port to use in resulting sockaddrs.

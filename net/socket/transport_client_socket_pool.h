@@ -49,8 +49,6 @@ class NET_EXPORT_PRIVATE TransportSocketParams
   friend class base::RefCounted<TransportSocketParams>;
   ~TransportSocketParams();
 
-  void Initialize(RequestPriority priority, bool disable_resolver_cache);
-
   HostResolver::RequestInfo destination_;
   bool ignore_limits_;
   const OnHostResolutionCallback host_resolution_callback_;

@@ -7282,8 +7282,12 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   AddressList addrlist;
   TestCompletionCallback callback;
   int rv = session_deps_.host_resolver->Resolve(
-      HostResolver::RequestInfo(HostPortPair("www.google.com", 80)), &addrlist,
-      callback.callback(), NULL, BoundNetLog());
+      HostResolver::RequestInfo(HostPortPair("www.google.com", 80),
+                                DEFAULT_PRIORITY),
+      &addrlist,
+      callback.callback(),
+      NULL,
+      BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
@@ -7291,8 +7295,12 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   // Verify that it was added to host cache, by doing a subsequent async lookup
   // and confirming it completes synchronously.
   rv = session_deps_.host_resolver->Resolve(
-      HostResolver::RequestInfo(HostPortPair("www.google.com", 80)), &addrlist,
-      callback.callback(), NULL, BoundNetLog());
+      HostResolver::RequestInfo(HostPortPair("www.google.com", 80),
+                                DEFAULT_PRIORITY),
+      &addrlist,
+      callback.callback(),
+      NULL,
+      BoundNetLog());
   ASSERT_EQ(OK, rv);
 
   // Inject a failure the next time that "www.google.com" is resolved. This way
@@ -10485,7 +10493,7 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest, MAYBE_UseIPConnectionPooling) {
 
   // Preload www.gmail.com into HostCache.
   HostPortPair host_port("www.gmail.com", 443);
-  HostResolver::RequestInfo resolve_info(host_port);
+  HostResolver::RequestInfo resolve_info(host_port, DEFAULT_PRIORITY);
   AddressList ignored;
   rv = session_deps_.host_resolver->Resolve(resolve_info, &ignored,
                                            callback.callback(), NULL,
@@ -10730,7 +10738,8 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("hello!", response_data);
 
   // Preload cache entries into HostCache.
-  HostResolver::RequestInfo resolve_info(HostPortPair("www.gmail.com", 443));
+  HostResolver::RequestInfo resolve_info(HostPortPair("www.gmail.com", 443),
+                                         DEFAULT_PRIORITY);
   AddressList ignored;
   rv = host_resolver.Resolve(resolve_info, &ignored, callback.callback(),
                              NULL, BoundNetLog());

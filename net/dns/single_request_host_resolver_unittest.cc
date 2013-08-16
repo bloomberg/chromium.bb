@@ -75,7 +75,8 @@ TEST(SingleRequestHostResolverTest, NormalResolve) {
   // Resolve "watsup:90" using our SingleRequestHostResolver.
   AddressList addrlist;
   TestCompletionCallback callback;
-  HostResolver::RequestInfo request(HostPortPair("watsup", 90));
+  HostResolver::RequestInfo request(HostPortPair("watsup", 90),
+                                    DEFAULT_PRIORITY);
   int rv = single_request_resolver.Resolve(
       request, &addrlist, callback.callback(), BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -96,7 +97,8 @@ TEST(SingleRequestHostResolverTest, Cancel) {
     // Resolve "watsup:90" using our SingleRequestHostResolver.
     AddressList addrlist;
     TestCompletionCallback callback;
-    HostResolver::RequestInfo request(HostPortPair("watsup", 90));
+    HostResolver::RequestInfo request(HostPortPair("watsup", 90),
+                                      DEFAULT_PRIORITY);
     int rv = single_request_resolver.Resolve(
         request, &addrlist, callback.callback(), BoundNetLog());
     EXPECT_EQ(ERR_IO_PENDING, rv);

@@ -468,8 +468,7 @@ class HostResolverImplTest : public testing::Test {
                          int port,
                          RequestPriority priority,
                          AddressFamily family) {
-    HostResolver::RequestInfo info(HostPortPair(hostname, port));
-    info.set_priority(priority);
+    HostResolver::RequestInfo info(HostPortPair(hostname, port), priority);
     info.set_address_family(family);
     return CreateRequest(info);
   }
@@ -815,7 +814,8 @@ TEST_F(HostResolverImplTest, BypassCache) {
 
         // Ok good. Now make sure that if we ask to bypass the cache, it can no
         // longer service the request synchronously.
-        HostResolver::RequestInfo info(HostPortPair(hostname, 71));
+        HostResolver::RequestInfo info(HostPortPair(hostname, 71),
+                                       DEFAULT_PRIORITY);
         info.set_allow_cached_response(false);
         EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info)->Resolve());
       } else if (71 == req->info().port()) {
@@ -1186,7 +1186,8 @@ TEST_F(HostResolverImplTest, ResolveFromCache) {
   proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
   proc_->SignalMultiple(1u);  // Need only one.
 
-  HostResolver::RequestInfo info(HostPortPair("just.testing", 80));
+  HostResolver::RequestInfo info(HostPortPair("just.testing", 80),
+                                 DEFAULT_PRIORITY);
 
   // First hit will miss the cache.
   EXPECT_EQ(ERR_DNS_CACHE_MISS, CreateRequest(info)->ResolveFromCache());
@@ -1227,7 +1228,7 @@ TEST_F(HostResolverImplTest, MultipleAttempts) {
                            NULL));
 
   // Resolve "host1".
-  HostResolver::RequestInfo info(HostPortPair("host1", 70));
+  HostResolver::RequestInfo info(HostPortPair("host1", 70), DEFAULT_PRIORITY);
   Request* req = CreateRequest(info);
   EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
 
@@ -1603,7 +1604,8 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   if (!saw_ipv4 && !saw_ipv6)
     return;
 
-  HostResolver::RequestInfo info(HostPortPair("localhost", 80));
+  HostResolver::RequestInfo info(HostPortPair("localhost", 80),
+                                 DEFAULT_PRIORITY);
   info.set_address_family(ADDRESS_FAMILY_UNSPECIFIED);
   info.set_host_resolver_flags(HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
 

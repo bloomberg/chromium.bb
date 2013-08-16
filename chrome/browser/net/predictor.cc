@@ -101,7 +101,7 @@ class Predictor::LookupRequest {
   // anything else ==> Host was not found synchronously.
   int Start() {
     net::HostResolver::RequestInfo resolve_info(
-        net::HostPortPair::FromURL(url_));
+        net::HostPortPair::FromURL(url_), net::DEFAULT_PRIORITY);
 
     // Make a note that this is a speculative resolve request. This allows us
     // to separate it from real navigations in the observer's callback, and

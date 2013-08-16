@@ -647,7 +647,8 @@ int FtpNetworkTransaction::DoLoop(int result) {
 int FtpNetworkTransaction::DoCtrlResolveHost() {
   next_state_ = STATE_CTRL_RESOLVE_HOST_COMPLETE;
 
-  HostResolver::RequestInfo info(HostPortPair::FromURL(request_->url));
+  HostResolver::RequestInfo info(HostPortPair::FromURL(request_->url),
+                                 DEFAULT_PRIORITY);
   // No known referrer.
   return resolver_.Resolve(
       info, &addresses_,

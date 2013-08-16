@@ -675,7 +675,7 @@ int SocketStream::DoResolveHost() {
     host_port_pair = HostPortPair::FromURL(url_);
   }
 
-  HostResolver::RequestInfo resolve_info(host_port_pair);
+  HostResolver::RequestInfo resolve_info(host_port_pair, DEFAULT_PRIORITY);
 
   DCHECK(context_->host_resolver());
   resolver_.reset(new SingleRequestHostResolver(context_->host_resolver()));
@@ -960,7 +960,8 @@ int SocketStream::DoSOCKSConnect() {
 
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
 
-  HostResolver::RequestInfo req_info(HostPortPair::FromURL(url_));
+  HostResolver::RequestInfo req_info(HostPortPair::FromURL(url_),
+                                     DEFAULT_PRIORITY);
 
   DCHECK(!proxy_info_.is_empty());
   scoped_ptr<StreamSocket> s;

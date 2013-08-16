@@ -123,7 +123,8 @@ void TransportClientSocketTest::SetUp() {
   AddressList addr;
   // MockHostResolver resolves everything to 127.0.0.1.
   scoped_ptr<HostResolver> resolver(new MockHostResolver());
-  HostResolver::RequestInfo info(HostPortPair("localhost", listen_port_));
+  HostResolver::RequestInfo info(HostPortPair("localhost", listen_port_),
+                                 DEFAULT_PRIORITY);
   TestCompletionCallback callback;
   int rv = resolver->Resolve(info, &addr, callback.callback(), NULL,
                              BoundNetLog());

@@ -77,11 +77,13 @@ class SocketTunnel {
 
     host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
     net::HostResolver::RequestInfo request_info(
-        net::HostPortPair(tokens[0], port));
+        net::HostPortPair(tokens[0], port), net::DEFAULT_PRIORITY);
     result = host_resolver_->Resolve(
-        request_info, &address_list_,
+        request_info,
+        &address_list_,
         base::Bind(&SocketTunnel::OnResolved, base::Unretained(this)),
-        NULL, net::BoundNetLog());
+        NULL,
+        net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnResolved(result);
   }

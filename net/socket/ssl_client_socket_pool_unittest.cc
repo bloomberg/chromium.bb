@@ -744,9 +744,13 @@ TEST_P(SSLClientSocketPoolTest, IPPooling) {
 
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    host_resolver_.Resolve(info, &test_hosts[i].addresses, CompletionCallback(),
-                           NULL, BoundNetLog());
+    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort),
+                                   DEFAULT_PRIORITY);
+    host_resolver_.Resolve(info,
+                           &test_hosts[i].addresses,
+                           CompletionCallback(),
+                           NULL,
+                           BoundNetLog());
 
     // Setup a SpdySessionKey
     test_hosts[i].key = SpdySessionKey(
@@ -800,9 +804,13 @@ void SSLClientSocketPoolTest::TestIPPoolingDisabled(
 
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
-    rv = host_resolver_.Resolve(info, &test_hosts[i].addresses,
-                                callback.callback(), NULL, BoundNetLog());
+    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort),
+                                   DEFAULT_PRIORITY);
+    rv = host_resolver_.Resolve(info,
+                                &test_hosts[i].addresses,
+                                callback.callback(),
+                                NULL,
+                                BoundNetLog());
     EXPECT_EQ(OK, callback.GetResult(rv));
 
     // Setup a SpdySessionKey

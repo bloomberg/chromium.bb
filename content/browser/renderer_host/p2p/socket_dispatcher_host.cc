@@ -49,9 +49,11 @@ class P2PSocketDispatcherHost::DnsRequest {
     if (host_name_.at(host_name_.size() - 1) != '.')
       host_name_ = host_name_ + '.';
 
-    net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0));
+    net::HostResolver::RequestInfo info(net::HostPortPair(host_name_, 0),
+                                        net::DEFAULT_PRIORITY);
     int result = resolver_.Resolve(
-        info, &addresses_,
+        info,
+        &addresses_,
         base::Bind(&P2PSocketDispatcherHost::DnsRequest::OnDone,
                    base::Unretained(this)),
         net::BoundNetLog());

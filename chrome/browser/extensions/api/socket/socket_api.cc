@@ -106,11 +106,14 @@ void SocketExtensionWithDnsLookupFunction::StartDnsLookup(
   // determining its answer.
   net::HostPortPair host_port_pair(hostname, 0);
 
-  net::HostResolver::RequestInfo request_info(host_port_pair);
+  net::HostResolver::RequestInfo request_info(host_port_pair,
+                                              net::DEFAULT_PRIORITY);
   int resolve_result = host_resolver->Resolve(
-      request_info, addresses_.get(),
+      request_info,
+      addresses_.get(),
       base::Bind(&SocketExtensionWithDnsLookupFunction::OnDnsLookup, this),
-      request_handle_.get(), net::BoundNetLog());
+      request_handle_.get(),
+      net::BoundNetLog());
 
   if (resolve_result != net::ERR_IO_PENDING)
     OnDnsLookup(resolve_result);

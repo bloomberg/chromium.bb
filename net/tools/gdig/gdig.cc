@@ -449,7 +449,8 @@ void GDig::ReplayNextEntry() {
       return;
     }
 
-    HostResolver::RequestInfo info(HostPortPair(entry.domain_name.c_str(), 80));
+    HostResolver::RequestInfo info(HostPortPair(entry.domain_name.c_str(), 80),
+                                   DEFAULT_PRIORITY);
     AddressList* addrlist = new AddressList();
     unsigned current_index = replay_log_index_;
     CompletionCallback callback = base::Bind(&GDig::OnResolveComplete,

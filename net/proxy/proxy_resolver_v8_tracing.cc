@@ -971,7 +971,7 @@ HostResolver::RequestInfo ProxyResolverV8Tracing::Job::MakeDnsRequestInfo(
     host_port.set_host(GetHostName());
   }
 
-  HostResolver::RequestInfo info(host_port);
+  HostResolver::RequestInfo info(host_port, DEFAULT_PRIORITY);
 
   // The non-ex flavors are limited to IPv4 results.
   if (op == MY_IP_ADDRESS || op == DNS_RESOLVE) {

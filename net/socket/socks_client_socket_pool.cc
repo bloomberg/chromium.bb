@@ -24,13 +24,12 @@ SOCKSSocketParams::SOCKSSocketParams(
     const HostPortPair& host_port_pair,
     RequestPriority priority)
     : transport_params_(proxy_server),
-      destination_(host_port_pair),
+      destination_(host_port_pair, priority),
       socks_v5_(socks_v5) {
   if (transport_params_.get())
     ignore_limits_ = transport_params_->ignore_limits();
   else
     ignore_limits_ = false;
-  destination_.set_priority(priority);
 }
 
 SOCKSSocketParams::~SOCKSSocketParams() {}

@@ -86,11 +86,13 @@ void PepperTCPSocket::Connect(const std::string& host, uint16_t port) {
   }
 
   connection_state_ = CONNECT_IN_PROGRESS;
-  net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port));
-  resolver_.reset(new net::SingleRequestHostResolver(
-      manager_->GetHostResolver()));
+  net::HostResolver::RequestInfo request_info(net::HostPortPair(host, port),
+                                              net::DEFAULT_PRIORITY);
+  resolver_.reset(
+      new net::SingleRequestHostResolver(manager_->GetHostResolver()));
   int net_result = resolver_->Resolve(
-      request_info, &address_list_,
+      request_info,
+      &address_list_,
       base::Bind(&PepperTCPSocket::OnResolveCompleted, base::Unretained(this)),
       net::BoundNetLog());
   if (net_result != net::ERR_IO_PENDING)

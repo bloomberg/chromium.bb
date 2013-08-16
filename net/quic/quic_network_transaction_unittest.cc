@@ -677,7 +677,8 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   // synchronously.
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("www.google.com", "192.168.0.1", "");
-  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80));
+  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80),
+                                 DEFAULT_PRIORITY);
   AddressList address;
   host_resolver_.Resolve(info, &address, CompletionCallback(), NULL,
                          net_log_.bound());

@@ -83,7 +83,7 @@ scoped_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   connection->SetSocket(scoped_ptr<StreamSocket>(tcp_sock_));
   return scoped_ptr<SOCKSClientSocket>(new SOCKSClientSocket(
       connection.Pass(),
-      HostResolver::RequestInfo(HostPortPair(hostname, port)),
+      HostResolver::RequestInfo(HostPortPair(hostname, port), DEFAULT_PRIORITY),
       host_resolver));
 }
 

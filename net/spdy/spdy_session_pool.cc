@@ -163,7 +163,8 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
     return base::WeakPtr<SpdySession>();
 
   // Look up the key's from the resolver's cache.
-  net::HostResolver::RequestInfo resolve_info(key.host_port_pair());
+  net::HostResolver::RequestInfo resolve_info(key.host_port_pair(),
+                                              DEFAULT_PRIORITY);
   AddressList addresses;
   int rv = resolver_->ResolveFromCache(resolve_info, &addresses, net_log);
   DCHECK_NE(rv, ERR_IO_PENDING);

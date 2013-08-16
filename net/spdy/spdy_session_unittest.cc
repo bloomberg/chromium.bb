@@ -2817,7 +2817,7 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Set up an alias for the idle SPDY session, increasing its ref count to 2.
   SpdySessionKey key2(HostPortPair("2.com", 80), ProxyServer::Direct(),
                       kPrivacyModeDisabled);
-  HostResolver::RequestInfo info(key2.host_port_pair());
+  HostResolver::RequestInfo info(key2.host_port_pair(), DEFAULT_PRIORITY);
   AddressList addresses;
   // Pre-populate the DNS cache, since a synchronous resolution is required in
   // order to create the alias.

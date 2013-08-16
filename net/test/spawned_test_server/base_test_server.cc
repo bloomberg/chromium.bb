@@ -169,7 +169,7 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
   DCHECK(address_list);
 
   scoped_ptr<HostResolver> resolver(HostResolver::CreateDefaultResolver(NULL));
-  HostResolver::RequestInfo info(host_port_pair_);
+  HostResolver::RequestInfo info(host_port_pair_, DEFAULT_PRIORITY);
   TestCompletionCallback callback;
   int rv = resolver->Resolve(info, address_list, callback.callback(), NULL,
                              BoundNetLog());

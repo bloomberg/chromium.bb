@@ -147,9 +147,9 @@ void QuicStreamFactory::Job::OnIOComplete(int rv) {
 int QuicStreamFactory::Job::DoResolveHost() {
   io_state_ = STATE_RESOLVE_HOST_COMPLETE;
   return host_resolver_.Resolve(
-      HostResolver::RequestInfo(host_port_proxy_pair_.first), &address_list_,
-      base::Bind(&QuicStreamFactory::Job::OnIOComplete,
-                 base::Unretained(this)),
+      HostResolver::RequestInfo(host_port_proxy_pair_.first, DEFAULT_PRIORITY),
+      &address_list_,
+      base::Bind(&QuicStreamFactory::Job::OnIOComplete, base::Unretained(this)),
       net_log_);
 }
 

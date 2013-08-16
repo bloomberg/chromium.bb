@@ -52,20 +52,14 @@ TransportSocketParams::TransportSocketParams(
     bool disable_resolver_cache,
     bool ignore_limits,
     const OnHostResolutionCallback& host_resolution_callback)
-    : destination_(host_port_pair),
+    : destination_(host_port_pair, priority),
       ignore_limits_(ignore_limits),
       host_resolution_callback_(host_resolution_callback) {
-  Initialize(priority, disable_resolver_cache);
-}
-
-TransportSocketParams::~TransportSocketParams() {}
-
-void TransportSocketParams::Initialize(RequestPriority priority,
-                                       bool disable_resolver_cache) {
-  destination_.set_priority(priority);
   if (disable_resolver_cache)
     destination_.set_allow_cached_response(false);
 }
+
+TransportSocketParams::~TransportSocketParams() {}
 
 // TransportConnectJobs will time out after this many seconds.  Note this is
 // the total time, including both host resolution and TCP connect() times.
