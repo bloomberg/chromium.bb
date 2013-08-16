@@ -462,6 +462,7 @@ base::DictionaryValue* ManagedUserSpecificsToValue(
   SET_STR(id);
   SET_STR(name);
   SET_BOOL(acknowledged);
+  SET_STR(master_key);
   return value;
 }
 
