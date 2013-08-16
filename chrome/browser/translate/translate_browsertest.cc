@@ -162,9 +162,7 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslateInIsolatedWorld) {
   element_js +=
     "google = { 'translate' : { 'TranslateService' : function() { return {\n"
     "  isAvailable: function() {\n"
-    "    var script = document.createElement('script');\n"
-    "    script.src = main_script_url;\n"
-    "    document.getElementsByTagName('head')[0].appendChild(script);\n"
+    "    cr.googleTranslate.onLoadJavascript(main_script_url);\n"
     "    return true;\n"
     "  },\n"
     "  translatePage: function(sl, tl, cb) {\n"

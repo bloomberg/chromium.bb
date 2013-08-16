@@ -78,55 +78,6 @@ cr.googleTranslate = (function() {
    */
   var endTime = 0.0;
 
-  // Create another call point for appendChild.
-  var head = document.head;
-  head._appendChild = head.appendChild;
-
-  // TODO(toyoshim): This is temporary solution and will be removed once server
-  // side fixed to use https always. See also, http://crbug.com/164584 .
-  function forceToHttps(url) {
-    if (url.indexOf('http:') == 0)
-      return url.replace('http', 'https');
-
-    return url;
-  }
-
-  /**
-   * Inserts CSS element into the main world.
-   * @param {Object} child Link element for CSS.
-   */
-  function insertCSS(child) {
-    child.href = forceToHttps(child.href);
-    head._appendChild(child);
-  }
-
-  /**
-   * Inserts JavaScript into the isolated world.
-   * @param {string} src JavaScript URL.
-   */
-  function insertJS(src) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', forceToHttps(src), true);
-    xhr.onreadystatechange = function() {
-      if (this.readyState != this.DONE || this.status != 200)
-        return;
-      eval(this.responseText);
-    }
-    xhr.send();
-  }
-
-  /**
-   * Alternate implementation of appendChild. In the isolated world, appendChild
-   * for the first head element is replaced with this function in order to make
-   * CSS link tag and script tag injection work fine like the main world.
-   */
-  head.appendChild = function(child) {
-    if (child.type == 'text/css')
-      insertCSS(child);
-    else
-      insertJS(child.src);
-  };
-
   function checkLibReady() {
     if (lib.isAvailable()) {
       readyTime = performance.now();
@@ -276,6 +227,36 @@ cr.googleTranslate = (function() {
       // The TranslateService is not available immediately as it needs to start
       // Flash.  Let's wait until it is ready.
       checkLibReady();
+    },
+
+    /**
+     * Entry point called by the Translate Element when it want to load an
+     * external CSS resource into the page.
+     * @param {string} url URL of an external CSS resource to load.
+     */
+    onLoadCSS: function(url) {
+      var element = document.createElement('link');
+      element.type = 'text/css';
+      element.rel = 'stylesheet';
+      element.charset = 'UTF-8';
+      element.href = url;
+      document.head.appendChild(element);
+    },
+
+    /**
+     * Entry point called by the Translate Element when it want to load and run
+     * an external JavaScript on the page.
+     * @param {string} url URL of an external JavaScript to load.
+     */
+    onLoadJavascript: function(url) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.onreadystatechange = function() {
+        if (this.readyState != this.DONE || this.status != 200)
+          return;
+        eval(this.responseText);
+      }
+      xhr.send();
     }
   };
 })();

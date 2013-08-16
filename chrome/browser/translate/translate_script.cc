@@ -33,6 +33,20 @@ const char kCallbackQueryName[] = "cb";
 const char kCallbackQueryValue[] =
     "cr.googleTranslate.onTranslateElementLoad";
 
+// Used in kTranslateScriptURL to specify using always ssl to load resources.
+const char kAlwaysUseSslQueryName[] = "aus";
+const char kAlwaysUseSslQueryValue[] = "true";
+
+// Used in kTranslateScriptURL to specify a CSS loader callback function name.
+const char kCssLoaderCallbackQueryName[] = "clc";
+const char kCssLoaderCallbackQueryValue[] = "cr.googleTranslate.onLoadCSS";
+
+// Used in kTranslateScriptURL to specify a JavaScript loader callback function
+// name.
+const char kJavascriptLoaderCallbackQueryName[] = "jlc";
+const char kJavascriptLoaderCallbackQueryValue[] =
+    "cr.googleTranslate.onLoadJavascript";
+
 }  // namespace
 
 TranslateScript::TranslateScript()
@@ -76,6 +90,18 @@ void TranslateScript::Request(const Callback& callback) {
       translate_script_url,
       kCallbackQueryName,
       kCallbackQueryValue);
+  translate_script_url = net::AppendQueryParameter(
+      translate_script_url,
+      kAlwaysUseSslQueryName,
+      kAlwaysUseSslQueryValue);
+  translate_script_url = net::AppendQueryParameter(
+      translate_script_url,
+      kCssLoaderCallbackQueryName,
+      kCssLoaderCallbackQueryValue);
+  translate_script_url = net::AppendQueryParameter(
+      translate_script_url,
+      kJavascriptLoaderCallbackQueryName,
+      kJavascriptLoaderCallbackQueryValue);
 
   translate_script_url =
       TranslateURLUtil::AddHostLocaleToUrl(translate_script_url);

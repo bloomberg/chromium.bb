@@ -15,7 +15,4 @@ if (typeof world != 'undefined') {
 }
 div_log('The first script pseudo_main.js is loaded');
 div_log('Loading the second script pseudo_element_main.js ...');
-var head = document.getElementsByTagName('head')[0];
-var script = document.createElement('script');
-script.src = element_main_script_url;
-head.appendChild(script);
+cr.googleTranslate.onLoadJavascript(element_main_script_url);
