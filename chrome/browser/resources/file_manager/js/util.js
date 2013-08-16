@@ -148,15 +148,19 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
         if (!recurse)
           return;
         pendingSubdirectories++;
-        util.forEachDirEntry(entry, function(inEntry) {
-          if (inEntry == null) {
-            // Null entry indicates we're done scanning this directory.
-            pendingSubdirectories--;
-            steps.areWeThereYet();
-            return;
-          }
-          steps.tallyEntry(inEntry, originalSourcePath);
-        });
+        util.forEachDirEntry(
+            entry,
+            function(inEntry, callback) {
+              steps.tallyEntry(inEntry, originalSourcePath);
+              callback();
+            },
+            function() {
+              pendingSubdirectories--;
+              steps.areWeThereYet();
+            },
+            function(err) {
+              console.error('Failed to read dir entries at ' + entry.fullPath);
+            });
       } else {
         fileEntries.push(entry);
         pendingFiles++;
@@ -193,33 +197,35 @@ util.recurseAndResolveEntries = function(entries, recurse, successCallback) {
 };
 
 /**
- * Utility function to invoke callback once for each entry in dirEntry.
- * callback is called with 'null' after all entries are visited to indicate
- * the end of the directory scan.
+ * Iterates the entries contained by dirEntry, and invokes callback once for
+ * each entry. On completion, successCallback will be invoked.
  *
- * @param {DirectoryEntry} dirEntry The directory entry to enumerate.
- * @param {function(Entry)} callback The function to invoke for each entry in
- *     dirEntry.
+ * @param {DirectoryEntry} dirEntry The entry of the directory.
+ * @param {function(Entry, function())} callback Invoked for each entry.
+ * @param {function()} successCallback Invoked on completion.
+ * @param {function(FileError)} errorCallback Invoked if an error is found on
+ *     directory entry reading.
  */
-util.forEachDirEntry = function(dirEntry, callback) {
-  var reader;
+util.forEachDirEntry = function(
+    dirEntry, callback, successCallback, errorCallback) {
+  var reader = dirEntry.createReader();
+  var iterate = function() {
+    reader.readEntries(function(entries) {
+      if (entries.length == 0) {
+        successCallback();
+        return;
+      }
 
-  var onError = function(err) {
-    console.error('Failed to read  dir entries at ' + dirEntry.fullPath);
+      AsyncUtil.forEach(
+          entries,
+          function(forEachCallback, entry) {
+            // Do not pass index nor entries.
+            callback(entry, forEachCallback);
+          },
+          iterate);
+    }, errorCallback);
   };
-
-  var onReadSome = function(results) {
-    if (results.length == 0)
-      return callback(null);
-
-    for (var i = 0; i < results.length; i++)
-      callback(results[i]);
-
-    reader.readEntries(onReadSome, onError);
-  };
-
-  reader = dirEntry.createReader();
-  reader.readEntries(onReadSome, onError);
+  iterate();
 };
 
 /**
@@ -771,15 +777,20 @@ util.forEachEntryInTree = function(root, callback, max_depth, opt_filter) {
       return;
 
     pending++;
-    util.forEachDirEntry(entry, function(childEntry) {
-      if (childEntry == null) {
-        // Null entry indicates we're done scanning this directory.
-        pending--;
-        maybeDone();
-      } else {
-        readEntry(childEntry, depth + 1);
-      }
-    });
+    util.forEachDirEntry(
+        entry,
+        function(childEntry) {
+          readEntry(childEntry, depth + 1);
+        },
+        function() {
+          pending--;
+          maybeDone();
+        },
+        // TODO(hidehiko): This is actually unsafe error handling, because
+        // caller cannot know the failure so that Files.app may just stuck.
+        function(err) {
+          console.error('Failed to read dir entries at ' + entry.fullPath);
+        });
   };
 
   readEntry(root, 0);
