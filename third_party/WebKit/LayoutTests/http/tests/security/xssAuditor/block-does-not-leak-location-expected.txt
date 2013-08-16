@@ -6,8 +6,7 @@ CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from access
 CONSOLE MESSAGE: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "http://localhost:8000". Protocols, domains, and ports must match.
 PASS xssed.contentDocument is null
 PASS xssed.contentDocument is crossorigin.contentDocument
-PASS xssed.contentWindow.location.href threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a frame with origin "null".  The frame requesting access has a protocol of "http", the frame being accessed has a protocol of "data". Protocols must match.
-.
+PASS xssed.contentWindow.location.href threw exception SecurityError: Blocked a frame with origin "http://127.0.0.1:8000" from accessing a cross-origin frame..
 PASS successfullyParsed is true
 
 TEST COMPLETE
