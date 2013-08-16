@@ -79,7 +79,6 @@ class RenderServlet(Servlet):
         content = templates.Render(path)
         content_type = 'text/html'
       else:
-        logging.warning('Nothing can handle %s' % path)
         content = None
     except FileNotFoundError:
       content = None

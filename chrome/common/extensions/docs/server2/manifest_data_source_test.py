@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 from copy import deepcopy
+import json
 import unittest
 
 import manifest_data_source
@@ -198,6 +199,46 @@ class ManifestDataSourceTest(unittest.TestCase):
 
     self.assertEqual(
         expected_docs, manifest_data_source._RestructureChildren(docs))
+
+  def testExpandedExamples(self):
+    docs = {
+      'doc1': {
+        'name': 'doc1',
+        'example': {
+          'big': {
+            'nested': {
+              'json_example': ['with', 'more', 'json']
+            }
+          }
+        }
+      }
+    }
+
+    expected_docs = [
+      {
+        'name': 'doc1',
+        'children': [
+          {
+            'name': 'big',
+            'children': [
+              {
+                'name': 'nested',
+                'children': [
+                  {
+                    'name': 'json_example',
+                    'example': json.dumps(['with', 'more', 'json']),
+                    'has_example': True
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+
+    self.assertEqual(
+        expected_docs, manifest_data_source._ListifyAndSortDocs(docs, 'app'))
 
 if __name__ == '__main__':
   unittest.main()

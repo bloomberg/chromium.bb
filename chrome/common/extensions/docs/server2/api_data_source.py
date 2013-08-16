@@ -250,7 +250,7 @@ class _JSCModel(object):
         manifest_content.append(make_code_node('"%s": {...}' % name))
       elif context == 'api':
         transitive_dependencies = (
-            self._api_features.get(context, {}).get('dependencies', []))
+            self._api_features.get(name, {}).get('dependencies', []))
         for transitive_dependency in transitive_dependencies:
           categorize_dependency(transitive_dependency)
       else:

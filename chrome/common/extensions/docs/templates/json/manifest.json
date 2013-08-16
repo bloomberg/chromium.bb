@@ -4,15 +4,17 @@
     "example": {},
     "level": "required"
   },
+  "app.background": {
+    "example": {"scripts": ["background.js"]},
+    "level": "required"
+  },
   "background": {
-    "documentation": "background_pages.html",
-    "example": {
-      "persistent": true
-    }
+    "documentation": "background_pages.html"
   },
   "background.persistent": {
     "documentation": "event_pages.html",
-    "example": false
+    "example": false,
+    "level": "recommended"
   },
   "browser_action": {
     "documentation": "browserAction.html",

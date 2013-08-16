@@ -5,7 +5,7 @@
 {{/annotations}}
 {{?documentation}}
 "<a href="{{documentation}}">{{name}}</a>":{{:documentation}}
-"{{name}}":{{^children}} ...{{/}}{{/documentation}}
+"{{name}}":{{^children}}{{^has_example}} ...{{/}}{{/}}{{/documentation}}
 {{?children}} {
 {{#children}}
   {{+partials.manifest_property}}

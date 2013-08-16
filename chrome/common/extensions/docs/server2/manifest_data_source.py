@@ -19,6 +19,23 @@ def _ListifyAndSortDocs(features, app_name):
 
     return (levels.index(item.get('level', 'optional')), item['name'])
 
+  def coerce_example_to_feature(feature):
+    '''To display json in examples more clearly, convert the example of
+    |feature| into the feature format, with a name and children, to be rendered
+    by the templates. Only applicable to examples that are dictionaries.
+    '''
+    if not isinstance(feature.get('example'), dict):
+      if 'example' in feature:
+        feature['example'] = json.dumps(feature['example'])
+      return
+    # Add any keys/value pairs in the dict as children
+    for key, value in feature['example'].iteritems():
+      if not 'children' in feature:
+        feature['children'] = {}
+      feature['children'][key] = { 'name': key, 'example': value }
+    del feature['example']
+    del feature['has_example']
+
   def convert_and_sort(features):
     for key, value in features.items():
       if 'example' in value:
@@ -29,17 +46,19 @@ def _ListifyAndSortDocs(features, app_name):
         elif example == '[]':
           value['example'] = '[...]'
         else:
-          value['example'] = example
-
+          coerce_example_to_feature(value)
       if 'children' in value:
         features[key]['children'] = convert_and_sort(value['children'])
-
     return sorted(features.values(), key=sort_key)
 
-  name = features['name']
-  name['example'] = name['example'].replace('{{title}}', app_name)
+  # Replace {{title}} in the 'name' manifest property example with |app_name|
+  if 'name' in features:
+    name = features['name']
+    name['example'] = name['example'].replace('{{title}}', app_name)
 
-  return convert_and_sort(features)
+  features = convert_and_sort(features)
+
+  return features
 
 def _AddLevelAnnotations(features):
   '''Add level annotations to |features|. |features| and children lists must be
@@ -120,11 +139,10 @@ class ManifestDataSource(object):
     |_manifest_path|.
     '''
     manifest_json = Parse(self._file_system.ReadSingle(self._manifest_path))
-    manifest_features = FeaturesModel.FromJson(
+    manifest_features = features.Parse(
         Parse(self._file_system.ReadSingle(self._features_path)))
 
-    return manifest_features.MergeWith(manifest_json)
-
+    return features.MergedWith(manifest_features, manifest_json)
 
   def _CreateManifestData(self, _, content):
     '''Combine the contents of |_manifest_path| and |_features_path| and filter
