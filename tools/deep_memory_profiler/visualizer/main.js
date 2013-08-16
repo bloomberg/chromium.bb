@@ -3,111 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * This class provides data access interface for dump file profiler
- * @constructor
- */
-var Profiler = function(jsonData) {
-  this._jsonData = jsonData;
-};
-
-/**
- * Get units of a snapshot in a world.
- * Exception will be thrown when no world of given name exists.
- * @param  {string} worldName
- * @param  {number} snapshotIndex
- * @return {Object.<string, number>}
- */
-Profiler.prototype.getUnits = function(worldName, snapshotIndex) {
-  var snapshot = this._jsonData.snapshots[snapshotIndex];
-  if (!snapshot.worlds[worldName])
-    throw 'no world ' + worldName + ' in snapshot ' + index;
-
-  // Return units.
-  var world = snapshot.worlds[worldName];
-  var units = {};
-  for (var unitName in world.units)
-    units[unitName] = world.units[unitName][0];
-  return units;
-};
-
-/**
- * Get first-level breakdowns of a snapshot in a world.
- * Exception will be thrown when no world of given name exists.
- * @param  {string} worldName
- * @param  {number} snapshotIndex
- * @return {Object.<string, Object>}
- */
-Profiler.prototype.getBreakdowns = function(worldName, snapshotIndex) {
-  var snapshot = this._jsonData.snapshots[snapshotIndex];
-  if (!snapshot.worlds[worldName])
-    throw 'no world ' + worldName + ' in snapshot ' + index;
-
-  // Return breakdowns.
-  // TODO(junjianx): handle breakdown with arbitrary-level structure.
-  return snapshot.worlds[worldName].breakdown;
-};
-
-/**
- * Get categories from fixed hard-coded worlds and breakdowns temporarily.
- * TODO(junjianx): remove the hard-code and support general cases.
- * @return {Array.<Object>}
- */
-Profiler.prototype.getCategories = function() {
-  var categories = [];
-  var snapshotNum = this._jsonData.snapshots.length;
-
-  for (var snapshotIndex = 0; snapshotIndex < snapshotNum; ++snapshotIndex) {
-    // Initial categories object for one snapshot.
-    categories.push({});
-
-    // Handle breakdowns in malloc world.
-    var mallocBreakdown = this.getBreakdowns('malloc', snapshotIndex);
-    var mallocUnits = this.getUnits('malloc', snapshotIndex);
-    if (!mallocBreakdown['component'])
-      throw 'no breakdown ' + 'component' + ' in snapshot ' + snapshotIndex;
-
-    var componentBreakdown = mallocBreakdown['component'];
-    var componentMemory = 0;
-    Object.keys(componentBreakdown).forEach(function(breakdownName) {
-      var breakdown = componentBreakdown[breakdownName];
-      var memory = breakdown.units.reduce(function(previous, current) {
-        return previous + mallocUnits[current];
-      }, 0);
-      componentMemory += memory;
-
-      if (componentBreakdown['hidden'] === true)
-        return;
-      else
-        categories[snapshotIndex][breakdownName] = memory;
-    });
-
-    // Handle breakdowns in vm world.
-    var vmBreakdown = this.getBreakdowns('vm', snapshotIndex);
-    var vmUnits = this.getUnits('vm', snapshotIndex);
-    if (!vmBreakdown['map'])
-      throw 'no breakdown ' + 'map' + ' in snapshot ' + snapshotIndex;
-
-    var mapBreakdown = vmBreakdown['map'];
-
-    Object.keys(mapBreakdown).forEach(function(breakdownName) {
-      var breakdown = mapBreakdown[breakdownName];
-      var memory = breakdown.units.reduce(function(previous, current) {
-        return previous + vmUnits[current];
-      }, 0);
-
-      if (vmBreakdown['hidden'] === true)
-        return;
-      else if (breakdownName === 'mmap-tcmalloc')
-        categories[snapshotIndex]['tc-unused'] = memory - componentMemory;
-      else
-        categories[snapshotIndex][breakdownName] = memory;
-    });
-  }
-
-  return categories;
-};
-
-/**
  * Generate lines for flot plotting.
  * @param  {Array.<Object>} categories
  * @return {Array.<Object>}
@@ -148,12 +43,58 @@ $(function() {
     var profiler = new Profiler(jsonData);
     var categories = profiler.getCategories();
     var lines = generateLines(categories);
+    var placeholder = '#plot';
+
+    // Bind click event so that user can select breakdown by clicking stack
+    // area. It firstly checks x range which clicked point is in, and all lines
+    // share same x values, so it is checked only once at first. Secondly, it
+    // checked y range by accumulated y values because this is a stack graph.
+    $(placeholder).bind('plotclick', function(event, pos, item) {
+      // If only <=1 line exists or axis area clicked, return.
+      var right = binarySearch.call(lines[0].data.map(function(point) {
+        return point[0];
+      }), pos.x);
+      if (lines.length <= 1 || right === lines.length || right === 0)
+        return;
+
+      // Calculate interpolate y value of every line.
+      for (var i = 0; i < lines.length; ++i) {
+        var line = lines[i].data;
+        // [left, right] is the range including clicked point.
+        var left = right - 1;
+        var leftPoint = {
+          x: line[left][0],
+          y: (leftPoint ? leftPoint.y : 0) + line[left][1]
+        };
+        var rightPoint = {
+          x: line[right][0],
+          y: (rightPoint ? rightPoint.y : 0) + line[right][1]
+        };
+
+        // Calculate slope of the linear equation.
+        var slope = (rightPoint.y - leftPoint.y) / (rightPoint.x - leftPoint.x);
+        var interpolateY = slope * (pos.x - rightPoint.x) + rightPoint.y;
+        if (interpolateY >= pos.y)
+          break;
+      }
+
+      // If pos.y is higher than all lines, return.
+      if (i === lines.length)
+        return;
+
+      // TODO(junjianx): temporary log for checking selected object.
+      console.log('line ' + i + ' is selected.');
+    });
 
     // Plot stack graph.
-    $.plot('#plot', lines, {
+    $.plot(placeholder, lines, {
       series: {
         stack: true,
         lines: { show: true, fill: true }
+      },
+      grid: {
+        hoverable: true,
+        clickable: true
       }
     });
   });
