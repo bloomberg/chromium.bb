@@ -1165,7 +1165,7 @@ crbug.com/247981 [ Win Debug ] inspector/profiler/heap-snapshot-get-profile-cras
 crbug.com/247982 [ Mac Debug ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/247982 [ Win ] virtual/gpu/compositedscrolling/overflow/overflow-positioning.html [ ImageOnlyFailure Pass ]
 crbug.com/248063 [ Debug ] plugins/plugin-clip-subframe.html [ Pass Failure ]
-crbug.com/248063 [ Release Win ] plugins/plugin-clip-subframe.html [ Pass Failure ]
+crbug.com/248063 [ Release Win Linux Lion ] plugins/plugin-clip-subframe.html [ Pass Failure ]
 crbug.com/248065 [ Linux ] svg/text/foreignObject-text-clipping-bug.xml [ Pass ImageOnlyFailure ]
 crbug.com/248067 fast/workers/shared-worker-storagequota-query-usage.html [ Pass Failure ]
 crbug.com/248067 [ Release ] fast/workers/worker-storagequota-query-usage.html [ Pass Failure ]
