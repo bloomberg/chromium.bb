@@ -28,8 +28,6 @@
 [
     ActiveDOMObject
 ] interface MessagePort : EventTarget {
-// We need to have something as an ObjC binding, because MessagePort is used in MessageEvent, which already has one,
-// but we don't want to actually expose the API while it is in flux.
     [Custom, RaisesException] void postMessage(any message, optional Array messagePorts);
 
     void start();

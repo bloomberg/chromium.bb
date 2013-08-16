@@ -35,7 +35,6 @@
     [RaisesException, CustomElementCallbacks=Enable, MeasureAs=ElementRemoveAttributeNode] Attr removeAttributeNode([Default=Undefined, StrictTypeChecking] optional Attr oldAttr); // Removed from DOM4.
     [PerWorldBindings] NodeList getElementsByTagName([Default=Undefined] optional DOMString name);
 
-    // For ObjC this is defined on Node for legacy support.
     [PerWorldBindings] readonly attribute NamedNodeMap     attributes;
     boolean            hasAttributes();
 
