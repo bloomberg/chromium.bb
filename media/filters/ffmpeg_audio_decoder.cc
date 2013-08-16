@@ -176,24 +176,38 @@ int FFmpegAudioDecoder::GetAudioBuffer(AVCodecContext* codec,
     return AVERROR(EINVAL);
 
   // Determine how big the buffer should be and allocate it. FFmpeg may adjust
-  // how big each channel data is in order to meet it's alignment policy, so
+  // how big each channel data is in order to meet the alignment policy, so
   // we need to take this into consideration.
   int buffer_size_in_bytes =
-      av_samples_get_buffer_size(NULL, channels, frame->nb_samples, format, 1);
+      av_samples_get_buffer_size(&frame->linesize[0],
+                                 channels,
+                                 frame->nb_samples,
+                                 format,
+                                 AudioBuffer::kChannelAlignment);
   int frames_required = buffer_size_in_bytes / bytes_per_channel / channels;
   DCHECK_GE(frames_required, frame->nb_samples);
   scoped_refptr<AudioBuffer> buffer =
       AudioBuffer::CreateBuffer(sample_format, channels, frames_required);
 
-  // Initialize the data[], linesize[], and extended_data[] fields.
-  int ret = avcodec_fill_audio_frame(frame,
-                                     channels,
-                                     format,
-                                     buffer->writable_data(),
-                                     buffer_size_in_bytes,
-                                     1);
-  if (ret < 0)
-    return ret;
+  // Initialize the data[] and extended_data[] fields to point into the memory
+  // allocated for AudioBuffer. |number_of_planes| will be 1 for interleaved
+  // audio and equal to |channels| for planar audio.
+  int number_of_planes = buffer->channel_data().size();
+  if (number_of_planes <= AV_NUM_DATA_POINTERS) {
+    DCHECK_EQ(frame->extended_data, frame->data);
+    for (int i = 0; i < number_of_planes; ++i)
+      frame->data[i] = buffer->channel_data()[i];
+  } else {
+    // There are more channels than can fit into data[], so allocate
+    // extended_data[] and fill appropriately.
+    frame->extended_data = static_cast<uint8**>(
+        av_malloc(number_of_planes * sizeof(*frame->extended_data)));
+    int i = 0;
+    for (; i < AV_NUM_DATA_POINTERS; ++i)
+      frame->extended_data[i] = frame->data[i] = buffer->channel_data()[i];
+    for (; i < number_of_planes; ++i)
+      frame->extended_data[i] = buffer->channel_data()[i];
+  }
 
   // Now create an AVBufferRef for the data just allocated. It will own the
   // reference to the AudioBuffer object.

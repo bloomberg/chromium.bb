@@ -11,11 +11,6 @@
 
 namespace media {
 
-// Alignment of each channel's data; this must match what ffmpeg expects
-// (which may be 0, 16, or 32, depending on the processor). Selecting 32 in
-// order to work on all processors.
-enum { kChannelAlignment = 32 };
-
 AudioBuffer::AudioBuffer(SampleFormat sample_format,
                          int channel_count,
                          int frame_count,
@@ -73,6 +68,8 @@ AudioBuffer::AudioBuffer(SampleFormat sample_format,
   data_size *= channel_count;
   data_.reset(
       static_cast<uint8*>(base::AlignedAlloc(data_size, kChannelAlignment)));
+  channel_data_.reserve(1);
+  channel_data_.push_back(data_.get());
   if (data)
     memcpy(data_.get(), data[0], data_size);
 }

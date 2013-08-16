@@ -23,6 +23,11 @@ class AudioBus;
 class MEDIA_EXPORT AudioBuffer
     : public base::RefCountedThreadSafe<AudioBuffer> {
  public:
+  // Alignment of each channel's data; this must match what ffmpeg expects
+  // (which may be 0, 16, or 32, depending on the processor). Selecting 32 in
+  // order to work on all processors.
+  enum { kChannelAlignment = 32 };
+
   // Create an AudioBuffer whose channel data is copied from |data|. For
   // interleaved data, only the first buffer is used. For planar data, the
   // number of buffers must be equal to |channel_count|. |frame_count| is the
@@ -95,8 +100,8 @@ class MEDIA_EXPORT AudioBuffer
   bool end_of_stream() const { return end_of_stream_; }
 
   // Access to the raw buffer for ffmpeg to write directly to. Data for planar
-  // data is grouped by channel.
-  uint8* writable_data() { return data_.get(); }
+  // data is grouped by channel. There is only 1 entry for interleaved formats.
+  const std::vector<uint8*>& channel_data() const { return channel_data_; }
 
  private:
   friend class base::RefCountedThreadSafe<AudioBuffer>;
