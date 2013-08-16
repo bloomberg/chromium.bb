@@ -9,8 +9,6 @@
 #include <string>
 
 #include "base/metrics/field_trial.h"
-#include "base/strings/string16.h"
-#include "chrome/common/metrics/variations/variation_ids.h"
 
 // This file provides various helpers that extend the functionality around
 // base::FieldTrial.
@@ -43,6 +41,10 @@
 // }
 
 namespace chrome_variations {
+
+typedef int VariationID;
+
+const VariationID EMPTY_ID = 0;
 
 // The Unique ID of a trial and its active group, where the name and group
 // identifiers are hashes of the trial and group name strings.

@@ -12,7 +12,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/metrics/field_trial.h"
 #include "base/synchronization/lock.h"
-#include "chrome/common/metrics/variations/variation_ids.h"
+#include "chrome/common/metrics/variations/variations_associated_data.h"
 
 namespace content {
 class ResourceContext;

@@ -4,9 +4,12 @@
 
 #include "chrome/common/metrics/variations/uniformity_field_trials.h"
 
+#include <string>
+
 #include "base/metrics/field_trial.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "chrome/common/metrics/variations/variation_ids.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 
 namespace chrome_variations {

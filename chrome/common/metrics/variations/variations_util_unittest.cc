@@ -18,6 +18,11 @@ namespace chrome_variations {
 
 namespace {
 
+const VariationID TEST_VALUE_A = 3300200;
+const VariationID TEST_VALUE_B = 3300201;
+const VariationID TEST_VALUE_C = 3300202;
+const VariationID TEST_VALUE_D = 3300203;
+
 // Tests whether a field trial is active (i.e. group() has been called on it).
 bool IsFieldTrialActive(const std::string& trial_name) {
   base::FieldTrial::ActiveGroups active_groups;

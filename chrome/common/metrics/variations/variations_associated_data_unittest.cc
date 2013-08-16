@@ -11,6 +11,9 @@ namespace chrome_variations {
 
 namespace {
 
+const VariationID TEST_VALUE_A = 3300200;
+const VariationID TEST_VALUE_B = 3300201;
+
 // Convenience helper to retrieve the chrome_variations::VariationID for a
 // FieldTrial. Note that this will do the group assignment in |trial| if not
 // already done.

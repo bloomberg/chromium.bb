@@ -31,17 +31,15 @@ namespace chrome_variations {
 //
 // Ex:
 // // Name: UMA-Uniformity-Trial-5-Percent
-// // Range: 330000 - 3300099
+// // Range: 330000 - 3300019
 // // The 5% Uniformity Trial. This is a reserved range.
-// UNIFORMITY_TRIAL_5_PERCENT_ID_START = 330000,
-// UNIFORMITY_TRIAL_5_PERCENT_ID_END   = 330099,
+// UNIFORMITY_TRIAL_5_PERCENT_ID_BASE = 330000,
+// UNIFORMITY_TRIAL_5_PERCENT_ID_LIMIT =
+//     UNIFORMITY_TRIAL_5_PERCENT_ID_BASE + 20,
 //
 // Anything within the range of a uint32 should be castable to an ID, but
 // please ensure that they are within the range of the min and max values.
-enum VariationID {
-  // Used to represent no associated Chrome variation ID.
-  EMPTY_ID = 0,
-
+enum ReservedVariationID {
   // The smallest possible Chrome Variation ID in the reserved range. The
   // first 10,000 values are reserved for internal variations infrastructure
   // use. Please do not use values in this range.
@@ -66,7 +64,7 @@ enum VariationID {
   // Name: UMA-Uniformity-Trial-50-Percent
   // Range: 3300135 - 3300136
   UNIFORMITY_50_PERCENT_BASE  = UNIFORMITY_20_PERCENT_LIMIT,
-  UNIFORMITY_50_PERCENT_LIMIT = UNIFORMITY_50_PERCENT_BASE+ 2,
+  UNIFORMITY_50_PERCENT_LIMIT = UNIFORMITY_50_PERCENT_BASE + 2,
 
   // Name: UMA-Dynamic-Binary-Uniformity-Trial
   // The dynamic uniformity trial is only specified on the server, this is just
@@ -88,10 +86,9 @@ enum VariationID {
   UNIFORMITY_DYNAMIC_TRIAL_LIMIT = UNIFORMITY_DYNAMIC_TRIAL_BASE + 6,
 
   // Some values reserved for unit and integration tests.
-  TEST_VALUE_A = 3300200,
-  TEST_VALUE_B = 3300201,
-  TEST_VALUE_C = 3300202,
-  TEST_VALUE_D = 3300203,
+  // Range: 3300159 - 3300299
+  TEST_VALUE_BASE = 3300200,
+  TEST_VALUE_LIMIT = TEST_VALUE_BASE + 100,
 
   // USABLE IDs BEGIN HERE.
   //
