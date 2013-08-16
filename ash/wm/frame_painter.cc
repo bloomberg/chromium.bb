@@ -787,19 +787,6 @@ void FramePainter::SetButtonImages(views::ImageButton* button,
                    theme_provider->GetImageSkiaNamed(pushed_image_id));
 }
 
-void FramePainter::SetToggledButtonImages(views::ToggleImageButton* button,
-                                          int normal_image_id,
-                                          int hot_image_id,
-                                          int pushed_image_id) {
-  ui::ThemeProvider* theme_provider = frame_->GetThemeProvider();
-  button->SetToggledImage(views::CustomButton::STATE_NORMAL,
-                          theme_provider->GetImageSkiaNamed(normal_image_id));
-  button->SetToggledImage(views::CustomButton::STATE_HOVERED,
-                          theme_provider->GetImageSkiaNamed(hot_image_id));
-  button->SetToggledImage(views::CustomButton::STATE_PRESSED,
-                          theme_provider->GetImageSkiaNamed(pushed_image_id));
-}
-
 int FramePainter::GetTitleOffsetX() const {
   return window_icon_ ?
       window_icon_->bounds().right() + kTitleIconOffsetX :
