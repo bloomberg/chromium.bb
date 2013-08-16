@@ -28,6 +28,7 @@
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "url/gurl.h"
 
 namespace keys = extensions::tabs_constants;
@@ -144,6 +145,10 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
                      tab_strip && tab_strip->IsTabPinned(tab_index));
   result->SetBoolean(keys::kIncognitoKey,
                      contents->GetBrowserContext()->IsOffTheRecord());
+  result->SetInteger(keys::kWidthKey,
+                     contents->GetView()->GetContainerSize().width());
+  result->SetInteger(keys::kHeightKey,
+                     contents->GetView()->GetContainerSize().height());
 
   // Privacy-sensitive fields: these should be stripped off by
   // ScrubTabValueForExtension if the extension should not see them.
