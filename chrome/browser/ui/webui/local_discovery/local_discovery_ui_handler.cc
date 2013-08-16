@@ -26,8 +26,20 @@ namespace {
 // TODO(noamsml): This is a temporary shim until automated_url is in the
 // response.
 const char kPrivetAutomatedClaimURLFormat[] = "%s/confirm?token=%s";
+
+std::string IPAddressToHostString(const net::IPAddressNumber& address) {
+  std::string address_str = net::IPAddressToString(address);
+
+  // IPv6 addresses need to be surrounded by brackets.
+  if (address.size() == net::kIPv6AddressSize) {
+    address_str = base::StringPrintf("[%s]", address_str.c_str());
+  }
+
+  return address_str;
+}
+
 LocalDiscoveryUIHandler::Factory* g_factory = NULL;
-}  // namepsace
+}  // namespace
 
 LocalDiscoveryUIHandler::LocalDiscoveryUIHandler() {
 }
@@ -130,7 +142,7 @@ void LocalDiscoveryUIHandler::StartRegisterHTTP(bool success,
 
   std::string username = signin_manager->GetAuthenticatedUsername();
 
-  std::string address_str = net::IPAddressToString(address);
+  std::string address_str = IPAddressToHostString(address);
   int port = device_descriptions_[current_http_device_].address.port();
 
   current_http_client_.reset(new PrivetHTTPClientImpl(
@@ -153,7 +165,8 @@ void LocalDiscoveryUIHandler::StartInfoHTTP(bool success,
     return;
   }
 
-  std::string address_str = net::IPAddressToString(address);
+  std::string address_str = IPAddressToHostString(address);
+
   int port = device_descriptions_[current_http_device_].address.port();
 
   current_http_client_.reset(new PrivetHTTPClientImpl(
