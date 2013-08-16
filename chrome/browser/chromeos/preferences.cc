@@ -141,7 +141,7 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kSpokenFeedbackEnabled,
       false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(
       prefs::kHighContrastEnabled,
       false,
