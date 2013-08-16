@@ -309,7 +309,7 @@ void MockTimeSingleThreadTaskRunner::RunUntilIdle() {
 bool MockTimeSingleThreadTaskRunner::TemporalOrder::operator()(
     const std::pair<base::TimeTicks, base::Closure>& first_task,
     const std::pair<base::TimeTicks, base::Closure>& second_task) const {
-  return first_task.first >= second_task.first;
+  return first_task.first > second_task.first;
 }
 
 MockTimeSingleThreadTaskRunner::~MockTimeSingleThreadTaskRunner() {
