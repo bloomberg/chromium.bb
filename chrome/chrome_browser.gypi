@@ -122,6 +122,8 @@
         'browser/android/resource_mapper.cc',
         'browser/android/resource_mapper.h',
         'browser/android/resource_id.h',
+        'browser/android/signin/google_auto_login_helper.cc',
+        'browser/android/signin/google_auto_login_helper.h',
         'browser/android/signin/signin_manager_android.cc',
         'browser/android/signin/signin_manager_android.h',
         'browser/android/tab_android.cc',

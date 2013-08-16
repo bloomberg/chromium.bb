@@ -244,6 +244,10 @@ public class SigninManager {
         return nativeGetManagementDomain(mNativeSigninManagerAndroid);
     }
 
+    public void logInSignedInUser() {
+        nativeLogInSignedInUser(mNativeSigninManagerAndroid);
+    }
+
     private void cancelSignIn() {
         if (mSignInObserver != null)
             mSignInObserver.onSigninCancelled();
@@ -292,4 +296,5 @@ public class SigninManager {
     private native void nativeSignOut(int nativeSigninManagerAndroid);
     private native String nativeGetManagementDomain(int nativeSigninManagerAndroid);
     private native void nativeWipeProfileData(int nativeSigninManagerAndroid);
+    private native void nativeLogInSignedInUser(int nativeSigninManagerAndroid);
 }

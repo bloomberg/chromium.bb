@@ -48,6 +48,8 @@ class SigninManagerAndroid {
 
   void WipeProfileData(JNIEnv* env, jobject obj);
 
+  void LogInSignedInUser(JNIEnv* env, jobject obj);
+
  private:
   virtual ~SigninManagerAndroid();
 
