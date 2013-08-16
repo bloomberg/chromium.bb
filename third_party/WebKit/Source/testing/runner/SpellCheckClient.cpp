@@ -116,6 +116,9 @@ void SpellCheckClient::requestCheckingOfText(
         return;
     }
 
+    if (m_lastRequestedTextCheckingCompletion)
+        m_lastRequestedTextCheckingCompletion->didCancelCheckingText();
+
     m_lastRequestedTextCheckingCompletion = completion;
     m_lastRequestedTextCheckString = text;
     if (m_spellcheck.hasInCache(text))
