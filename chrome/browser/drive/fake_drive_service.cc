@@ -789,6 +789,19 @@ CancelCallback FakeDriveService::CopyHostedDocument(
   return CopyResource(resource_id, std::string(), new_title, callback);
 }
 
+CancelCallback FakeDriveService::MoveResource(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& new_title,
+    const google_apis::GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+  return CancelCallback();
+}
+
 CancelCallback FakeDriveService::RenameResource(
     const std::string& resource_id,
     const std::string& new_title,

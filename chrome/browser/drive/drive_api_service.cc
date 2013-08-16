@@ -600,6 +600,19 @@ CancelCallback DriveAPIService::CopyHostedDocument(
           base::Bind(&ParseResourceEntryAndRun, callback)));
 }
 
+CancelCallback DriveAPIService::MoveResource(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& new_title,
+    const GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+  return CancelCallback();
+}
+
 CancelCallback DriveAPIService::RenameResource(
     const std::string& resource_id,
     const std::string& new_title,

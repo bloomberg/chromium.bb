@@ -432,6 +432,22 @@ CancelCallback GDataWapiService::CopyHostedDocument(
                                     new_title));
 }
 
+CancelCallback GDataWapiService::MoveResource(
+    const std::string& resource_id,
+    const std::string& parent_resource_id,
+    const std::string& new_title,
+    const google_apis::GetResourceEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  // GData WAPI doesn't support to "move" resources.
+  // This method should never be called if GData WAPI is enabled.
+  // Instead, client code should rename the file, add new parent, and then
+  // remove the old parent.
+  NOTREACHED();
+  return CancelCallback();
+}
+
 CancelCallback GDataWapiService::RenameResource(
     const std::string& resource_id,
     const std::string& new_title,
