@@ -397,11 +397,9 @@ void DesktopNativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
 
 void DesktopNativeWidgetAura::InitModalType(ui::ModalType modal_type) {
   // 99% of the time, we should not be asked to create a
-  // DesktopNativeWidgetAura that is modal. The case where this breaks down is
-  // when there are no browser windows and a background extension tries to
-  // display a simple alert dialog. (This case was masked because we used to
-  // have a hidden RootWindow which was the parent of these modal dialogs; they
-  // weren't displayed to the user.)
+  // DesktopNativeWidgetAura that is modal. We only support window modal
+  // dialogs on the same lines as non AURA.
+  desktop_root_window_host_->InitModalType(modal_type);
 }
 
 gfx::Rect DesktopNativeWidgetAura::GetWindowBoundsInScreen() const {
