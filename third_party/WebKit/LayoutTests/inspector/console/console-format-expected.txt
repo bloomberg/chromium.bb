@@ -52,9 +52,11 @@ CONSOLE MESSAGE: line 54: function () {}
 CONSOLE MESSAGE: line 55: function () {}
 CONSOLE MESSAGE: line 54: [object Object]
 CONSOLE MESSAGE: line 55: [object Object]
+CONSOLE MESSAGE: line 54: [object SVGSVGElement]
+CONSOLE MESSAGE: line 55: [object SVGSVGElement]
 Tests that console logging dumps proper messages.
 
-Array[10] console-format.html:20
+ Array[10] console-format.html:20
 Array[10] console-format.html:21
 Array[10] console-format.html:22
 Test for zero "0" in formatter console-format.html:23
@@ -154,4 +156,8 @@ Object {bar: "bar", foo: "foo"} console-format.html:54
 [Object] console-format.html:55
 globals[22]
 Object {bar: "bar", foo: "foo"}
+<svg id="svg-node"></svg> console-format.html:54
+[svg#svg-node] console-format.html:55
+globals[23]
+<svg id="svg-node"></svg>
 

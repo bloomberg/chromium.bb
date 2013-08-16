@@ -12,11 +12,11 @@ function onload()
     var foo = { foo: "foo"};
     var bar = { bar: "bar" };
     bar.__proto__ = foo;
-
     var array = ["test", "test2"]; array.length = 10;
     array.foo = {}; 
     array[4] = "test4";
 
+    var svg = document.getElementById("svg-node");
     console.log(array);
     console.log("%o", array);
     console.log("%O", array);
@@ -43,7 +43,7 @@ function onload()
     globals = [
         regex1, regex2, str, str2, error, node, func, multilinefunc, num, linkify,
         null, undefined, valuelessAttribute, valuedAttribute, existingAttribute, throwingLengthGetter,
-        NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar 
+        NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, array, {}, [function() {}], bar, svg
     ];
 
     runTest();
@@ -88,4 +88,5 @@ function test()
 <div id="x"></div>
 <p id="p">Tests that console logging dumps proper messages.</p>
 </body>
+<svg id="svg-node"></svg>
 </html>
