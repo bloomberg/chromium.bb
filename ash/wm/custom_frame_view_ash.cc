@@ -45,7 +45,6 @@ CustomFrameViewAsh::CustomFrameViewAsh()
     : frame_(NULL),
       maximize_button_(NULL),
       close_button_(NULL),
-      window_icon_(NULL),
       frame_painter_(new ash::FramePainter) {
 }
 
@@ -66,12 +65,7 @@ void CustomFrameViewAsh::Init(views::Widget* frame) {
 
   maximize_button_->SetVisible(frame_->widget_delegate()->CanMaximize());
 
-  if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
-    window_icon_ = new views::ImageButton(this);
-    AddChildView(window_icon_);
-  }
-
-  frame_painter_->Init(frame_, window_icon_, maximize_button_, close_button_,
+  frame_painter_->Init(frame_, NULL, maximize_button_, close_button_,
                        FramePainter::SIZE_BUTTON_MAXIMIZES);
 }
 
@@ -104,8 +98,6 @@ void CustomFrameViewAsh::ResetWindowControls() {
 }
 
 void CustomFrameViewAsh::UpdateWindowIcon() {
-  if (window_icon_)
-    window_icon_->SchedulePaint();
 }
 
 void CustomFrameViewAsh::UpdateWindowTitle() {

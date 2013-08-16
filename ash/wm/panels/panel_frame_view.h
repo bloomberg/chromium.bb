@@ -14,6 +14,7 @@
 
 namespace views {
 class ImageButton;
+class ImageView;
 }
 
 namespace ash {
@@ -66,7 +67,7 @@ class ASH_EXPORT PanelFrameView : public views::NonClientFrameView,
   views::Widget* frame_;
   views::ImageButton* close_button_;
   views::ImageButton* minimize_button_;
-  views::ImageButton* window_icon_;
+  views::ImageView* window_icon_;
   gfx::Rect client_view_bounds_;
   const gfx::Font title_font_;
 

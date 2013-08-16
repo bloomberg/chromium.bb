@@ -17,6 +17,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -57,7 +58,7 @@ void PanelFrameView::InitFramePainter() {
   AddChildView(minimize_button_);
 
   if (frame_->widget_delegate()->ShouldShowWindowIcon()) {
-    window_icon_ = new views::ImageButton(this);
+    window_icon_ = new views::ImageView();
     AddChildView(window_icon_);
   }
 
@@ -85,10 +86,8 @@ void PanelFrameView::UpdateWindowIcon() {
   if (!window_icon_)
     return;
   views::WidgetDelegate* delegate = frame_->widget_delegate();
-  if (delegate) {
-    gfx::ImageSkia image = delegate->GetWindowIcon();
-    window_icon_->SetImage(views::CustomButton::STATE_NORMAL, &image);
-  }
+  if (delegate)
+    window_icon_->SetImage(delegate->GetWindowIcon());
   window_icon_->SchedulePaint();
 }
 

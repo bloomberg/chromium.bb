@@ -86,7 +86,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
 
   ash::FrameMaximizeButton* maximize_button_;
   views::ImageButton* close_button_;
-  views::ImageButton* window_icon_;
 
   scoped_ptr<FramePainter> frame_painter_;
 
