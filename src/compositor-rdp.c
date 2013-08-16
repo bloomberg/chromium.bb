@@ -571,7 +571,7 @@ static void
 rdp_peer_context_new(freerdp_peer* client, RdpPeerContext* context)
 {
 	context->item.peer = client;
-	context->item.flags = 0;
+	context->item.flags = RDP_PEER_OUTPUT_ENABLED;
 
 	context->rfx_context = rfx_context_new();
 	context->rfx_context->mode = RLGR3;
