@@ -83,11 +83,11 @@ void V8MessageEvent::dataAttrGetterCustom(v8::Local<v8::String> name, const v8::
     }
 
     case MessageEvent::DataTypeBlob:
-        result = toV8Fast(event->dataAsBlob(), info, event);
+        result = toV8(event->dataAsBlob(), info.Holder(), info.GetIsolate());
         break;
 
     case MessageEvent::DataTypeArrayBuffer:
-        result = toV8Fast(event->dataAsArrayBuffer(), info, event);
+        result = toV8(event->dataAsArrayBuffer(), info.Holder(), info.GetIsolate());
         break;
     }
 

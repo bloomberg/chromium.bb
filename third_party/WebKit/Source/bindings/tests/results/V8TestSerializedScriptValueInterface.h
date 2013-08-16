@@ -92,17 +92,6 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(TestSerializedScriptValueInterface
     return wrap(impl, creationContext, isolate);
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(TestSerializedScriptValueInterface* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8TestSerializedScriptValueInterface>(impl, callbackInfo, wrappable);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
 inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< TestSerializedScriptValueInterface > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8ForMainWorld(impl.get(), creationContext, isolate);
@@ -148,12 +137,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestSerialize
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< TestSerializedScriptValueInterface > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8Fast(impl.get(), callbackInfo, wrappable);
-}
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< TestSerializedScriptValueInterface > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

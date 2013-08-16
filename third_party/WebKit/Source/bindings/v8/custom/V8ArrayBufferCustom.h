@@ -106,17 +106,6 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(ArrayBuffer* impl, v8::Handle<v8::
     return wrap(impl, creationContext, isolate);
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(ArrayBuffer* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8ArrayBuffer>(impl, callbackInfo, wrappable);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ArrayBuffer* impl, v8::Handle<v8::Object> creationContext)
 {
@@ -134,14 +123,14 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Array
 template<class CallbackInfo, class Wrappable>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, ArrayBuffer* impl, Wrappable* wrappable)
 {
-    // FIXME: continue pushing the return value down
-    v8SetReturnValue(callbackInfo, toV8Fast(impl, callbackInfo, wrappable));
-}
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ArrayBuffer > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8Fast(impl.get(), callbackInfo, wrappable);
+    if (UNLIKELY(!impl)) {
+        v8SetReturnValueNull(callbackInfo);
+        return;
+    }
+    if (DOMDataStore::setReturnValueFromWrapperFast<V8ArrayBuffer>(callbackInfo.GetReturnValue(), impl, callbackInfo.Holder(), wrappable))
+        return;
+    v8::Handle<v8::Object> wrapper = wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
+    v8SetReturnValue(callbackInfo, wrapper);
 }
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< ArrayBuffer > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

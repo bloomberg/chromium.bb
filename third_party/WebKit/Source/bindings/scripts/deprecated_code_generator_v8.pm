@@ -823,12 +823,6 @@ class ${nativeType};
 v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable*)
-{
-    return toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
 {
@@ -892,17 +886,6 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}* impl, v8::Handle<v8
     return wrap(impl, creationContext, isolate);
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(${nativeType}* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<${v8ClassName}>(impl, callbackInfo, wrappable);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
 inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8ForMainWorld(impl.get(), creationContext, isolate);
@@ -952,12 +935,6 @@ END
     }
 
     $header{nameSpaceWebCore}->add(<<END);
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< ${nativeType} > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8Fast(impl.get(), callbackInfo, wrappable);
-}
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
@@ -5523,7 +5500,6 @@ sub NativeToJSValue
         if ($forMainWorldSuffix eq "ForMainWorld") {
             return "$indent$receiver toV8ForMainWorld($nativeValue, $getCallbackInfo.Holder(), $getCallbackInfo.GetIsolate());";
         }
-        return "$indent$receiver toV8Fast($nativeValue$getCallbackInfoArg$getScriptWrappableArg);";
     }
     # FIXME: Use safe handles
     return "${indent}v8SetReturnValue(${getCallbackInfo}, $nativeValue, $getCreationContext);" if $isReturnValue;

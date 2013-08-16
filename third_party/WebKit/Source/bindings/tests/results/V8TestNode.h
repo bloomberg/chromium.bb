@@ -94,17 +94,6 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(TestNode* impl, v8::Handle<v8::Obj
     return wrap(impl, creationContext, isolate);
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(TestNode* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8TestNode>(impl, callbackInfo, wrappable);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
 inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< TestNode > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8ForMainWorld(impl.get(), creationContext, isolate);
@@ -150,12 +139,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, TestNode* imp
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< TestNode > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8Fast(impl.get(), callbackInfo, wrappable);
-}
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< TestNode > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

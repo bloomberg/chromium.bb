@@ -61,7 +61,7 @@ static void getNamedItems(HTMLOptionsCollection* collection, const AtomicString&
         return;
     }
 
-    v8SetReturnValue(callbackInfo, toV8Fast(NamedNodesCollection::create(namedItems), callbackInfo, collection));
+    v8SetReturnValueFast(callbackInfo, NamedNodesCollection::create(namedItems), collection);
 }
 
 void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

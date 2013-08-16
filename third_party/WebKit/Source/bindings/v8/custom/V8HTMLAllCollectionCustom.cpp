@@ -50,11 +50,11 @@ static v8::Handle<v8::Value> getNamedItems(HTMLAllCollection* collection, Atomic
         return v8Undefined();
 
     if (namedItems.size() == 1)
-        return toV8Fast(namedItems.at(0).release(), callbackInfo, collection);
+        return toV8(namedItems.at(0).release(), callbackInfo.Holder(), callbackInfo.GetIsolate());
 
     // FIXME: HTML5 specification says this should be a HTMLCollection.
     // http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#htmlallcollection
-    return toV8Fast(NamedNodesCollection::create(namedItems), callbackInfo, collection);
+    return toV8(NamedNodesCollection::create(namedItems), callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
 template<class CallbackInfo>
@@ -71,7 +71,7 @@ static v8::Handle<v8::Value> getItem(HTMLAllCollection* collection, v8::Handle<v
     }
 
     RefPtr<Node> result = collection->item(index->Uint32Value());
-    return toV8Fast(result.release(), callbackInfo, collection);
+    return toV8(result.release(), callbackInfo.Holder(), callbackInfo.GetIsolate());
 }
 
 void V8HTMLAllCollection::itemMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)

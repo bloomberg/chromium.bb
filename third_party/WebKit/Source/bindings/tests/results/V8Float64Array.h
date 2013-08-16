@@ -90,17 +90,6 @@ inline v8::Handle<v8::Value> toV8ForMainWorld(Float64Array* impl, v8::Handle<v8:
     return wrap(impl, creationContext, isolate);
 }
 
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(Float64Array* impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    if (UNLIKELY(!impl))
-        return v8::Null(callbackInfo.GetIsolate());
-    v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperFast<V8Float64Array>(impl, callbackInfo, wrappable);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, callbackInfo.Holder(), callbackInfo.GetIsolate());
-}
-
 inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< Float64Array > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     return toV8ForMainWorld(impl.get(), creationContext, isolate);
@@ -146,12 +135,6 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, Float64Array*
     v8SetReturnValue(callbackInfo, wrapper);
 }
 
-
-template<class CallbackInfo, class Wrappable>
-inline v8::Handle<v8::Value> toV8Fast(PassRefPtr< Float64Array > impl, const CallbackInfo& callbackInfo, Wrappable* wrappable)
-{
-    return toV8Fast(impl.get(), callbackInfo, wrappable);
-}
 
 inline v8::Handle<v8::Value> toV8(PassRefPtr< Float64Array > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {

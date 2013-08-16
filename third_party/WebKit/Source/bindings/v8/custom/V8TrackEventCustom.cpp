@@ -55,7 +55,7 @@ void V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> name, const v8::P
         break;
 
     case TrackBase::TextTrack:
-        v8SetReturnValue(info, toV8Fast(static_cast<TextTrack*>(track), info, trackEvent));
+        v8SetReturnValueFast(info, static_cast<TextTrack*>(track), trackEvent);
         return;
 
     case TrackBase::AudioTrack:
@@ -69,4 +69,3 @@ void V8TrackEvent::trackAttrGetterCustom(v8::Local<v8::String> name, const v8::P
 }
 
 } // namespace WebCore
-
