@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -110,6 +111,21 @@ static void assert_addr_is_unwritable(volatile char *addr, char value) {
   assert(rc == 0);
 }
 
+static void assert_page_is_allocated(void *addr) {
+  static const int page_size = 0x10000;
+  assert(((uintptr_t) addr & (page_size - 1)) == 0);
+  /*
+   * Try mapping at addr without MAP_FIXED.  If something is already
+   * mapped there, the system will pick another address.  Otherwise,
+   * we will get the address we asked for.
+   */
+  void *result = mmap(addr, page_size, PROT_READ | PROT_WRITE,
+                      MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+  assert(result != MAP_FAILED);
+  assert(result != addr);
+  int rc = munmap(result, page_size);
+  assert(rc == 0);
+}
 
 /*
  * function test*()
@@ -412,6 +428,8 @@ bool test_mmap_end_of_file() {
   assert_addr_is_unreadable(alloc + 0x2000);
   assert_addr_is_unreadable(alloc + 0x10000);
   assert_addr_is_unreadable(alloc + 0x11000);
+  assert_page_is_allocated(alloc);
+  assert_page_is_allocated(alloc + 0x10000);
   rc = munmap(alloc, map_size);
   if (rc != 0) {
     printf("munmap() failed\n");
