@@ -30,7 +30,8 @@ function startTestWithCredentials(paramClientId, paramClientSecret,
   refreshToken = paramRefreshToken;
   console.log("Getting channel Id");
   // Start by getting the channel Id, the callback will continue the test.
-  chrome.pushMessaging.getChannelId(getChannelIdCallback);
+  chrome.pushMessaging.getChannelId(
+      chrome.test.callbackPass(getChannelIdCallback));
 }
 
 // Once we get the channel ID, start a push.
@@ -38,7 +39,11 @@ function getChannelIdCallback(details) {
   console.log("channelId callback arrived, channel Id is '" +
               details.channelId + "'");
   var channelId = details.channelId;
-  getAccessToken(channelId);
+  if ("" == channelId) {
+    chrome.test.fail("No channelId, test failed.");
+  } else {
+    getAccessToken(channelId);
+  }
 }
 
 // This function will go to the server and ask it to send us

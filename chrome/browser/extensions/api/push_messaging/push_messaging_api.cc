@@ -117,6 +117,8 @@ bool PushMessagingGetChannelIdFunction::RunImpl() {
     }
   }
 
+  DVLOG(2) << "Logged in profile name: " << profile()->GetProfileName();
+
   StartAccessTokenFetch();
   return true;
 }
@@ -134,6 +136,7 @@ void PushMessagingGetChannelIdFunction::OnRefreshTokenAvailable(
     const std::string& account_id) {
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile())
       ->RemoveObserver(this);
+  DVLOG(2) << "Newly logged in: " << profile()->GetProfileName();
   StartAccessTokenFetch();
 }
 
@@ -156,6 +159,8 @@ void PushMessagingGetChannelIdFunction::OnGetTokenFailure(
   // TODO(fgorski): We are currently ignoring the error passed in upon failure.
   // It should be revisited when we are working on improving general error
   // handling for the identity related code.
+  DVLOG(1) << "Cannot obtain access token for this user "
+           << error.error_message() << " " << error.state();
   error_ = kUserAccessTokenFailure;
   ReportResult(std::string(), error_);
 }

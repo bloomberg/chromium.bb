@@ -134,12 +134,18 @@ void PushMessagingInvalidationHandler::OnIncomingInvalidation(
       suppressed_ids_.erase(suppressed_id);
       continue;
     }
+    DVLOG(2) << "Incoming push message, id is: "
+             << syncer::ObjectIdToString(it->first)
+             << " and payload is:" << it->second.payload;
 
     std::string extension_id;
     int subchannel;
     if (ObjectIdToExtensionAndSubchannel(it->first,
                                          &extension_id,
                                          &subchannel)) {
+      DVLOG(2) << "Sending push message to reciever, extension is "
+               << extension_id << ", subchannel is " << subchannel
+               << ", and payload is " << it->second.payload;
       delegate_->OnMessage(extension_id, subchannel, it->second.payload);
     }
   }
