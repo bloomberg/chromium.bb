@@ -29,7 +29,8 @@ CN = Duplicate
 subjectAltName = IP:127.0.0.1
 
 [req_san_sanity]
-subjectAltName = @san_sanity
+basicConstraints = critical, CA:true
+subjectAltName   = @san_sanity
 
 [san_sanity]
 IP.1  = 127.0.0.2

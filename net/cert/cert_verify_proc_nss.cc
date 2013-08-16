@@ -764,8 +764,7 @@ int CertVerifyProcNSS::VerifyInternal(
 #endif  // defined(OS_IOS)
 
   // Make sure that the hostname matches with the common name of the cert.
-  SECStatus status = CERT_VerifyCertName(cert_handle, hostname.c_str());
-  if (status != SECSuccess)
+  if (!cert->VerifyNameMatch(hostname))
     verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
 
   // Make sure that the cert is valid now.
@@ -805,9 +804,9 @@ int CertVerifyProcNSS::VerifyInternal(
         CertificateListToCERTCertList(additional_trust_anchors));
   }
 
-  status = PKIXVerifyCert(cert_handle, check_revocation, false,
-                          cert_io_enabled, NULL, 0, trust_anchors.get(),
-                          cvout);
+  SECStatus status = PKIXVerifyCert(cert_handle, check_revocation, false,
+                                    cert_io_enabled, NULL, 0,
+                                    trust_anchors.get(), cvout);
 
   if (status == SECSuccess &&
       (flags & CertVerifier::VERIFY_REV_CHECKING_REQUIRED_LOCAL_ANCHORS) &&

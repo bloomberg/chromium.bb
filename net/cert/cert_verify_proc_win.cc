@@ -727,7 +727,10 @@ int CertVerifyProcWin::VerifyInternal(
   memset(&extra_policy_para, 0, sizeof(extra_policy_para));
   extra_policy_para.cbSize = sizeof(extra_policy_para);
   extra_policy_para.dwAuthType = AUTHTYPE_SERVER;
-  extra_policy_para.fdwChecks = 0;
+  // Certificate name validation happens separately, later, using an internal
+  // routine that has better support for RFC 6125 name matching.
+  extra_policy_para.fdwChecks =
+      0x00001000;  // SECURITY_FLAG_IGNORE_CERT_CN_INVALID
   extra_policy_para.pwszServerName =
       const_cast<wchar_t*>(wstr_hostname.c_str());
 
@@ -752,56 +755,16 @@ int CertVerifyProcWin::VerifyInternal(
   if (policy_status.dwError) {
     verify_result->cert_status |= MapNetErrorToCertStatus(
         MapSecurityError(policy_status.dwError));
-
-    // CertVerifyCertificateChainPolicy reports only one error (in
-    // policy_status.dwError) if the certificate has multiple errors.
-    // CertGetCertificateChain doesn't report certificate name mismatch, so
-    // CertVerifyCertificateChainPolicy is the only function that can report
-    // certificate name mismatch.
-    //
-    // To prevent a potential certificate name mismatch from being hidden by
-    // some other certificate error, if we get any other certificate error,
-    // we call CertVerifyCertificateChainPolicy again, ignoring all other
-    // certificate errors.  Both extra_policy_para.fdwChecks and
-    // policy_para.dwFlags allow us to ignore certificate errors, so we set
-    // them both.
-    if (policy_status.dwError != CERT_E_CN_NO_MATCH) {
-      const DWORD extra_ignore_flags =
-          0x00000080 |  // SECURITY_FLAG_IGNORE_REVOCATION
-          0x00000100 |  // SECURITY_FLAG_IGNORE_UNKNOWN_CA
-          0x00002000 |  // SECURITY_FLAG_IGNORE_CERT_DATE_INVALID
-          0x00000200;   // SECURITY_FLAG_IGNORE_WRONG_USAGE
-      extra_policy_para.fdwChecks = extra_ignore_flags;
-      const DWORD ignore_flags =
-          CERT_CHAIN_POLICY_IGNORE_ALL_NOT_TIME_VALID_FLAGS |
-          CERT_CHAIN_POLICY_IGNORE_INVALID_BASIC_CONSTRAINTS_FLAG |
-          CERT_CHAIN_POLICY_ALLOW_UNKNOWN_CA_FLAG |
-          CERT_CHAIN_POLICY_IGNORE_WRONG_USAGE_FLAG |
-          CERT_CHAIN_POLICY_IGNORE_INVALID_NAME_FLAG |
-          CERT_CHAIN_POLICY_IGNORE_INVALID_POLICY_FLAG |
-          CERT_CHAIN_POLICY_IGNORE_ALL_REV_UNKNOWN_FLAGS |
-          CERT_CHAIN_POLICY_ALLOW_TESTROOT_FLAG |
-          CERT_CHAIN_POLICY_TRUST_TESTROOT_FLAG |
-          CERT_CHAIN_POLICY_IGNORE_NOT_SUPPORTED_CRITICAL_EXT_FLAG |
-          CERT_CHAIN_POLICY_IGNORE_PEER_TRUST_FLAG;
-      policy_para.dwFlags = ignore_flags;
-      if (!CertVerifyCertificateChainPolicy(
-               CERT_CHAIN_POLICY_SSL,
-               chain_context,
-               &policy_para,
-               &policy_status)) {
-        return MapSecurityError(GetLastError());
-      }
-      if (policy_status.dwError) {
-        verify_result->cert_status |= MapNetErrorToCertStatus(
-            MapSecurityError(policy_status.dwError));
-      }
-    }
   }
 
   // TODO(wtc): Suppress CERT_STATUS_NO_REVOCATION_MECHANISM for now to be
   // compatible with WinHTTP, which doesn't report this error (bug 3004).
   verify_result->cert_status &= ~CERT_STATUS_NO_REVOCATION_MECHANISM;
+
+  // Perform hostname verification independent of
+  // CertVerifyCertificateChainPolicy.
+  if (!cert->VerifyNameMatch(hostname))
+    verify_result->cert_status |= CERT_STATUS_COMMON_NAME_INVALID;
 
   if (!rev_checking_enabled) {
     // If we didn't do online revocation checking then Windows will report
