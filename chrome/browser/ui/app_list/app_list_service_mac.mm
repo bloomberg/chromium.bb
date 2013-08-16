@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_view_delegate.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -114,6 +115,7 @@ class AppListControllerDelegateCocoa : public AppListControllerDelegate {
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual bool CanPin() OVERRIDE;
   virtual bool CanDoCreateShortcutsFlow(bool is_platform_app) OVERRIDE;
+  virtual void CreateNewWindow(Profile* profile, bool incognito) OVERRIDE;
   virtual void DoCreateShortcutsFlow(Profile* profile,
                                      const std::string& extension_id) OVERRIDE;
   virtual void ActivateApp(Profile* profile,
@@ -273,6 +275,13 @@ void AppListControllerDelegateCocoa::DoCreateShortcutsFlow(
 
   web_app::UpdateShortcutInfoAndIconForApp(
       *extension, profile, base::Bind(&CreateShortcutsInDefaultLocation));
+}
+
+void AppListControllerDelegateCocoa::CreateNewWindow(
+    Profile* profile, bool incognito) {
+  Profile* window_profile = incognito ?
+      profile->GetOffTheRecordProfile() : profile;
+  chrome::NewEmptyWindow(window_profile, chrome::GetActiveDesktop());
 }
 
 void AppListControllerDelegateCocoa::ActivateApp(
