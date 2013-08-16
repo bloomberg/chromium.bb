@@ -6,8 +6,8 @@
 
 #include "chrome/browser/extensions/event_listener_map.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/test/base/testing_profile.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_context.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -32,8 +32,8 @@ class EventListenerMapUnittest : public testing::Test {
   EventListenerMapUnittest()
     : delegate_(new EmptyDelegate),
       listeners_(new EventListenerMap(delegate_.get())),
-      browser_context_(new content::TestBrowserContext),
-      process_(new content::MockRenderProcessHost(browser_context_.get())) {
+      profile_(new TestingProfile),
+      process_(new content::MockRenderProcessHost(profile_.get())) {
   }
 
   scoped_ptr<DictionaryValue> CreateHostSuffixFilter(
@@ -66,7 +66,7 @@ class EventListenerMapUnittest : public testing::Test {
  protected:
   scoped_ptr<EventListenerMap::Delegate> delegate_;
   scoped_ptr<EventListenerMap> listeners_;
-  scoped_ptr<content::TestBrowserContext> browser_context_;
+  scoped_ptr<TestingProfile> profile_;
   scoped_ptr<content::MockRenderProcessHost> process_;
 };
 

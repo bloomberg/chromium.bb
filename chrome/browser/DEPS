@@ -50,6 +50,9 @@ include_rules = [
   "+win8/viewer",
   "+xib_localizers", # For generated mac localization helpers
 
+  # Unsafe to use from //chrome, see http://goo.gl/QQG5wo
+  "-content/public/test/test_browser_context.h",
+
   # TODO(stuartmorgan): Remove these by refactoring necessary code out of
   # webkit/. See crbug.com/146251
   # DO NOT ADD ANY MORE ITEMS TO THE LIST BELOW!
