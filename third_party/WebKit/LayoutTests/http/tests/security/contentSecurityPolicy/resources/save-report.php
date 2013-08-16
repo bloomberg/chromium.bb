@@ -5,7 +5,7 @@ function undoMagicQuotes($value) {
     return $value;
 }
 
-$reportFile = fopen("csp-report.txt.tmp", 'w');
+$reportFile = fopen("csp-report." . $_GET["test"] . ".tmp", 'w');
 $httpHeaders = $_SERVER;
 ksort($httpHeaders, SORT_STRING);
 foreach ($httpHeaders as $name => $value) {
@@ -24,5 +24,5 @@ foreach ($_COOKIE as $name => $value)
 fwrite($reportFile, "=== POST DATA ===\n");
 fwrite($reportFile, file_get_contents("php://input"));
 fclose($reportFile);
-rename("csp-report.txt.tmp", "csp-report.txt");
+rename("csp-report." . $_GET["test"] . ".tmp", "csp-report." . $_GET["test"] . ".txt");
 ?>

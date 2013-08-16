@@ -4,5 +4,9 @@ if (window.testRunner) {
 }
 
 window.onload = function () {
-    window.location = "/security/contentSecurityPolicy/resources/echo-report.php";
+    var test = window.location.pathname.replace(/^.+\//, '');
+    var match = window.location.search.match(/^\?test=([^&]+)/);
+    if (match)
+        test = match[1];
+    window.location = "/security/contentSecurityPolicy/resources/echo-report.php?test=" + test;
 }

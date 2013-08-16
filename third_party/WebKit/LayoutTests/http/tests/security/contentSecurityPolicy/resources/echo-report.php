@@ -1,5 +1,5 @@
 <?php
-while (!file_exists("csp-report.txt")) {
+while (!file_exists("csp-report." . $_GET["test"] . ".txt")) {
     usleep(10000);
     // file_exists() caches results, we want to invalidate the cache.
     clearstatcache();
@@ -7,13 +7,13 @@ while (!file_exists("csp-report.txt")) {
 
 echo "<html><body>\n";
 echo "CSP report received:";
-$reportFile = fopen("csp-report.txt", 'r');
+$reportFile = fopen("csp-report." . $_GET["test"] . ".txt", 'r');
 while ($line = fgets($reportFile)) {
     echo "<br>";
     echo trim($line);
 }
 fclose($reportFile);
-unlink("csp-report.txt");
+unlink("csp-report." . $_GET["test"] . ".txt");
 echo "<script>";
 echo "if (window.testRunner)";
 echo "    testRunner.notifyDone();";
