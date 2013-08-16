@@ -87,9 +87,9 @@
     shouldEvaluateTo("rules[0].cssRules.length", 2);
 
     debug("\n@charset, @namespace, @import rules are not allowed inside @supports.")
-    shouldThrow("rules[0].insertRule('@charset \"UTF-8\"', 2)");
-    shouldThrow("rules[0].insertRule('@namespace \"\"', 2)");
-    shouldThrow("rules[0].insertRule('@import url(\"../fast/cssom/resources/import.css\")', 2)");
+    shouldThrow("rules[0].insertRule('@charset \"UTF-8\"', 2)", '"SyntaxError: Failed to execute \'insertRule\' on \'CSSGroupingRule\': the rule \'@charset \\"UTF-8\\"\' is invalid and cannot be parsed."');
+    shouldThrow("rules[0].insertRule('@namespace \"\"', 2)", '"SyntaxError: Failed to execute \'insertRule\' on \'CSSGroupingRule\': the rule \'@namespace \\"\\"\' is invalid and cannot be parsed."');
+    shouldThrow("rules[0].insertRule('@import url(\"../fast/cssom/resources/import.css\")', 2)", '"HierarchyRequestError: Failed to execute \'insertRule\' on \'CSSGroupingRule\': \'@import\' rules cannot be inserted inside a group rule."');
 
 
     debug("\nWhitespace and formatting should be preserved within the condition, whitespace outside the condition should be trimmed.");
