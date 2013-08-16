@@ -32,6 +32,10 @@ _V8_PATTERNS = [
   _V8_BUILD_NUMBER_PATTERN,
   _V8_PATCH_LEVEL_PATTERN]
 
+_NONESSENTIAL_DIRS = (
+    'third_party/icu',
+)
+
 
 def GetV8Version(v8_directory):
   """
@@ -63,10 +67,23 @@ def GetV8Directory():
 # Workaround lack of the exclude parameter in add method in python-2.4.
 # TODO(phajdan.jr): remove the workaround when it's not needed on the bot.
 class MyTarFile(tarfile.TarFile):
+  def set_remove_nonessential_files(self, remove):
+    self.__remove_nonessential_files = remove
+
   def add(self, name, arcname=None, recursive=True, exclude=None, filter=None):
     head, tail = os.path.split(name)
     if tail in ('.svn', '.git'):
       return
+
+    if self.__remove_nonessential_files:
+      # Remove contents of non-essential directories, but preserve gyp files,
+      # so that build/gyp_chromium can work.
+      for nonessential_dir in _NONESSENTIAL_DIRS:
+        dir_path = os.path.join(GetV8Directory(), nonessential_dir)
+        if (name.startswith(dir_path) and
+            os.path.isfile(name) and
+            'gyp' not in name):
+          return
 
     tarfile.TarFile.add(self, name, arcname=arcname, recursive=recursive)
 
@@ -86,20 +103,30 @@ def main(argv):
 
   v8_version = GetV8Version(v8_directory)
   print 'Packaging V8 version %s...' % v8_version
-  output_basename = 'v8-%s' % v8_version
-  output_fullname = os.path.join(args[0], output_basename + '.tar.bz2')
-
-  if os.path.exists(output_fullname):
-    print 'Already packaged, exiting.'
-    return 0
 
   subprocess.check_call(["make", "dependencies"], cwd=v8_directory)
 
-  archive = MyTarFile.open(output_fullname, 'w:bz2')
-  try:
-    archive.add(v8_directory, arcname=output_basename)
-  finally:
-    archive.close()
+  output_basename = 'v8-%s' % v8_version
+
+  # Package full tarball.
+  output_fullname = os.path.join(args[0], output_basename + '.tar.bz2')
+  if not os.path.exists(output_fullname):
+    archive = MyTarFile.open(output_fullname, 'w:bz2')
+    archive.set_remove_nonessential_files(False)
+    try:
+      archive.add(v8_directory, arcname=output_basename)
+    finally:
+      archive.close()
+
+  # Package lite tarball.
+  output_fullname = os.path.join(args[0], output_basename + '-lite.tar.bz2')
+  if not os.path.exists(output_fullname):
+    archive = MyTarFile.open(output_fullname, 'w:bz2')
+    archive.set_remove_nonessential_files(True)
+    try:
+      archive.add(v8_directory, arcname=output_basename)
+    finally:
+      archive.close()
 
   return 0
 
