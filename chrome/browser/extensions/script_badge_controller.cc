@@ -176,7 +176,7 @@ ExtensionService* ScriptBadgeController::GetExtensionService() const {
 
 int32 ScriptBadgeController::GetPageID() {
   content::NavigationEntry* nav_entry =
-      web_contents()->GetController().GetActiveEntry();
+      web_contents()->GetController().GetVisibleEntry();
   return nav_entry ? nav_entry->GetPageID() : -1;
 }
 

@@ -52,7 +52,7 @@ void NavigationObserver::PromptToEnableExtensionIfNecessary(
   if (!in_progress_prompt_extension_id_.empty())
     return;
 
-  NavigationEntry* nav_entry = nav_controller->GetActiveEntry();
+  NavigationEntry* nav_entry = nav_controller->GetVisibleEntry();
   if (!nav_entry)
     return;
 

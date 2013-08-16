@@ -55,8 +55,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, OverrideNewtab) {
     // will call chrome.test.notifyPass() .
     ui_test_utils::NavigateToURL(browser(), GURL("chrome://newtab/"));
     WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(tab->GetController().GetActiveEntry());
-    EXPECT_TRUE(tab->GetController().GetActiveEntry()->GetURL().
+    ASSERT_TRUE(tab->GetController().GetVisibleEntry());
+    EXPECT_TRUE(tab->GetController().GetVisibleEntry()->GetURL().
                 SchemeIs(extensions::kExtensionScheme));
 
     ASSERT_TRUE(catcher.GetNextResult());
@@ -80,8 +80,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionOverrideTest, MAYBE_OverrideNewtabIncognito) {
   Browser* otr_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(), GURL("chrome://newtab/"));
   WebContents* tab = otr_browser->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(tab->GetController().GetActiveEntry());
-  EXPECT_FALSE(tab->GetController().GetActiveEntry()->GetURL().
+  ASSERT_TRUE(tab->GetController().GetVisibleEntry());
+  EXPECT_FALSE(tab->GetController().GetVisibleEntry()->GetURL().
                SchemeIs(extensions::kExtensionScheme));
 }
 

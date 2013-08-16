@@ -717,7 +717,7 @@ base::Value* SerializePageInfo(RenderViewHost* rvh) {
     dictionary->SetString(kTargetTitleField, web_contents->GetTitle());
 
     content::NavigationController& controller = web_contents->GetController();
-    content::NavigationEntry* entry = controller.GetActiveEntry();
+    content::NavigationEntry* entry = controller.GetVisibleEntry();
     if (entry != NULL && entry->GetURL().is_valid()) {
       dictionary->SetString(kTargetFaviconUrlField,
                             entry->GetFavicon().url.spec());

@@ -155,7 +155,7 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetString(keys::kUrlKey, contents->GetURL().spec());
   result->SetString(keys::kTitleKey, contents->GetTitle());
   if (!is_loading) {
-    NavigationEntry* entry = contents->GetController().GetActiveEntry();
+    NavigationEntry* entry = contents->GetController().GetVisibleEntry();
     if (entry && entry->GetFavicon().valid)
       result->SetString(keys::kFaviconUrlKey, entry->GetFavicon().url.spec());
   }

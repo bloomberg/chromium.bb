@@ -116,7 +116,7 @@ void ActiveTabPermissionGranter::ClearActiveExtensionsAndNotify() {
 }
 
 int32 ActiveTabPermissionGranter::GetPageID() {
-  return web_contents()->GetController().GetActiveEntry()->GetPageID();
+  return web_contents()->GetController().GetVisibleEntry()->GetPageID();
 }
 
 }  // namespace extensions

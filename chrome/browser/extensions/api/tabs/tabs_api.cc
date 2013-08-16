@@ -1631,7 +1631,7 @@ bool TabsReloadFunction::RunImpl() {
 
   if (web_contents->ShowingInterstitialPage()) {
     // This does as same as Browser::ReloadInternal.
-    NavigationEntry* entry = web_contents->GetController().GetActiveEntry();
+    NavigationEntry* entry = web_contents->GetController().GetVisibleEntry();
     OpenURLParams params(entry->GetURL(), Referrer(), CURRENT_TAB,
                          content::PAGE_TRANSITION_RELOAD, false);
     GetCurrentBrowser()->OpenURL(params);

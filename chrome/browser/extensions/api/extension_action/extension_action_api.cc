@@ -746,7 +746,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
   }
 
   // Make sure the URL hasn't changed.
-  content::NavigationEntry* entry = contents->GetController().GetActiveEntry();
+  content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   if (!entry || url != entry->GetURL().spec()) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::kUrlNotActiveError, url);

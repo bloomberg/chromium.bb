@@ -369,7 +369,7 @@ void BrowserEventRouter::FaviconUrlUpdated(WebContents* contents,
     if (!icon_url_changed || !*icon_url_changed)
       return;
     content::NavigationEntry* entry =
-        contents->GetController().GetActiveEntry();
+        contents->GetController().GetVisibleEntry();
     if (!entry || !entry->GetFavicon().valid)
       return;
     scoped_ptr<DictionaryValue> changed_properties(new DictionaryValue());

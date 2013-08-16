@@ -46,7 +46,7 @@ class ExtensionURLRewriteBrowserTest : public ExtensionBrowserTest {
   }
 
   NavigationEntry* GetNavigationEntry() const {
-    return GetNavigationController()->GetActiveEntry();
+    return GetNavigationController()->GetVisibleEntry();
   }
 
   base::FilePath GetTestExtensionPath(const char* extension_name) const {
