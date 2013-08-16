@@ -400,10 +400,11 @@ void DockedWindowLayoutManager::OnWindowBoundsChanged(
 }
 
 void DockedWindowLayoutManager::OnWindowDestroying(aura::Window* window) {
-  if (dragged_window_ == window)
+  if (dragged_window_ == window) {
     FinishDragging();
-  DCHECK(!dragged_window_);
-  DCHECK (!is_dragged_window_docked_);
+    DCHECK(!dragged_window_);
+    DCHECK (!is_dragged_window_docked_);
+  }
   if (window == last_active_window_)
     last_active_window_ = NULL;
 }
@@ -648,8 +649,10 @@ void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
   for (aura::Window::Windows::const_iterator it =
            dock_container_->children().begin();
        it != dock_container_->children().end(); ++it) {
-    if (!IsUsedByLayout(*it))
+    if (!IsUsedByLayout(*it) ||
+        ((*it) == dragged_window_ && !is_dragged_window_docked_)) {
       continue;
+    }
     gfx::Rect bounds = (*it)->bounds();
     window_ordering.insert(std::make_pair(bounds.y() + bounds.height() / 2,
                                           *it));
@@ -664,8 +667,6 @@ void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
       dock_container_->StackChildAbove(it->second, previous_window);
     previous_window = it->second;
   }
-
-  previous_window = NULL;
   for (std::map<int, aura::Window*>::const_reverse_iterator it =
        window_ordering.rbegin();
        it != window_ordering.rend() && it->first > active_center_y; ++it) {
@@ -674,8 +675,8 @@ void DockedWindowLayoutManager::UpdateStacking(aura::Window* active_window) {
     previous_window = it->second;
   }
 
-  if (active_window->parent() == dock_container_)
-    dock_container_->StackChildAtTop(active_window);
+  if (previous_window && active_window->parent() == dock_container_)
+    dock_container_->StackChildAbove(active_window, previous_window);
   if (active_window != dragged_window_)
     last_active_window_ = active_window;
 }

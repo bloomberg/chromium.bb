@@ -2006,14 +2006,45 @@ void TabDragController::BringWindowUnderPointToFront(
         point_in_screen,
         dock_windows_);
     dock_windows_.erase(dragged_native_view);
+    // Only bring browser windows to front - only windows with a TabStrip can
+    // be tab drag targets.
+    if (!GetTabStripForWindow(window))
+      return;
   }
   if (window) {
     views::Widget* widget_window = views::Widget::GetWidgetForNativeView(
         window);
-    if (widget_window)
-      widget_window->StackAtTop();
-    else
+    if (!widget_window)
       return;
+
+#if defined(USE_ASH)
+    // TODO(varkha): A better strategy would be for DragWindowController to
+    // be able to observe stacking changes to the phantom drag widget's
+    // siblings in order to keep it on top.
+    // One way is to implement a notification that is sent to a window parent's
+    // observers when a stacking order is changed among the children of that
+    // same parent. Note that OnWindowStackingChanged is sent only to the
+    // child that is the argument of one of the Window::StackChildX calls and
+    // not to all its siblings affected by the stacking change.
+    aura::Window* browser_window = widget_window->GetNativeView();
+    // Find a topmost non-popup window and stack the recipient browser window
+    // above it in order to avoid stacking the browser window on top of the
+    // phantom drag widget created by DragWindowController in a second display.
+    for (aura::Window::Windows::const_reverse_iterator it =
+         browser_window->parent()->children().rbegin();
+         it != browser_window->parent()->children().rend(); ++it) {
+      // If the iteration reached the recipient browser window then it is
+      // already topmost and it is safe to return early with no stacking change.
+      if (*it == browser_window)
+        return;
+      if ((*it)->type() != aura::client::WINDOW_TYPE_POPUP) {
+        widget_window->StackAbove(*it);
+        break;
+      }
+    }
+#else
+    widget_window->StackAtTop();
+#endif
 
     // The previous call made the window appear on top of the dragged window,
     // move the dragged window to the front.
