@@ -896,6 +896,45 @@ TEST_F(CrasAudioHandlerTest, UnplugUSBHeadphonesWithActiveSpeaker) {
   EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
 }
 
+TEST_F(CrasAudioHandlerTest, OneActiveAudioOutputAfterLoginNewUserSession) {
+  // This tests the case found with crbug.com/273271.
+  // Initialize with internal speaker, bluetooth headphone and headphone jack
+  // for a new chrome session after user signs out from the previous session.
+  // Headphone jack is plugged in later than bluetooth headphone, but bluetooth
+  // headphone is selected as the active output by user from previous user
+  // session.
+  AudioNodeList audio_nodes;
+  audio_nodes.push_back(kInternalSpeaker);
+  AudioNode bluetooth_headphone(kBluetoothHeadset);
+  bluetooth_headphone.active = true;
+  bluetooth_headphone.plugged_time = 70000000;
+  audio_nodes.push_back(bluetooth_headphone);
+  AudioNode headphone_jack(kHeadphone);
+  headphone_jack.plugged_time = 80000000;
+  audio_nodes.push_back(headphone_jack);
+  SetUpCrasAudioHandler(audio_nodes);
+  const size_t init_nodes_size = audio_nodes.size();
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(init_nodes_size, audio_devices.size());
+  EXPECT_EQ(0, test_observer_->audio_nodes_changed_count());
+
+  // Verify the headphone jack is selected as the active output and all other
+  // audio devices are not active.
+  EXPECT_EQ(0, test_observer_->active_output_node_changed_count());
+  AudioDevice active_output;
+  EXPECT_TRUE(cras_audio_handler_->GetActiveOutputDevice(&active_output));
+  EXPECT_EQ(kHeadphone.id, active_output.id);
+  EXPECT_EQ(kHeadphone.id, cras_audio_handler_->GetActiveOutputNode());
+  EXPECT_TRUE(cras_audio_handler_->has_alternative_output());
+  for (size_t i = 0; i < audio_devices.size(); ++i) {
+    if (audio_devices[i].id != kHeadphone.id)
+      EXPECT_FALSE(audio_devices[i].active);
+  }
+}
+
 TEST_F(CrasAudioHandlerTest, PlugUSBMic) {
   // Set up initial audio devices, only with internal mic.
   AudioNodeList audio_nodes;

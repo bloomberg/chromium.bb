@@ -466,8 +466,18 @@ bool CrasAudioHandler::ChangeActiveDevice(const AudioDevice& new_active_device,
       new_active_device.id == *current_active_node_id) {
     return false;
   }
-  if (GetDeviceFromId(*current_active_node_id))
-    audio_devices_[*current_active_node_id].active = false;
+
+  // Reset all other input or output devices' active status. The active audio
+  // device from the previous user session can be remembered by cras, but not
+  // in chrome. see crbug.com/273271.
+  for (AudioDeviceMap::iterator it = audio_devices_.begin();
+       it != audio_devices_.end(); ++it) {
+    if (it->second.is_input == new_active_device.is_input &&
+        it->second.id != new_active_device.id)
+      it->second.active = false;
+  }
+
+  // Set the current active input/output device to the new_active_device.
   *current_active_node_id = new_active_device.id;
   audio_devices_[*current_active_node_id].active = true;
   return true;
@@ -477,8 +487,16 @@ bool CrasAudioHandler::NonActiveDeviceUnplugged(
     size_t old_devices_size,
     size_t new_devices_size,
     uint64 current_active_node) {
+  // There could be cases that more than one NodesChanged signals are
+  // triggered by cras for unplugging or plugging one audio devices, both coming
+  // with the same node data. After handling the first NodesChanged signal, the
+  // audio_devices_ can be overwritten by staled node data from handling 2nd
+  // NodesChanged signal. Therefore, we need to check if the device with
+  // current_active_node is consistently active or not.
+  // crbug.com/274641.
   return (new_devices_size <= old_devices_size &&
-          GetDeviceFromId(current_active_node));
+          GetDeviceFromId(current_active_node) &&
+          audio_devices_[current_active_node].active);
 }
 
 void CrasAudioHandler::SwitchToDevice(const AudioDevice& device) {
@@ -531,13 +549,13 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
   // devices, the previously set active audio device will stay active.
   // Otherwise, switch to a new active audio device according to their priority.
   if (!NonActiveDeviceUnplugged(old_audio_devices_size,
-                                     audio_devices_.size(),
-                                     active_input_node_id_) &&
+                                audio_devices_.size(),
+                                active_input_node_id_) &&
       !input_devices_pq_.empty())
     SwitchToDevice(input_devices_pq_.top());
   if (!NonActiveDeviceUnplugged(old_audio_devices_size,
-                                     audio_devices_.size(),
-                                     active_output_node_id_) &&
+                                audio_devices_.size(),
+                                active_output_node_id_) &&
       !output_devices_pq_.empty()) {
     SwitchToDevice(output_devices_pq_.top());
   }
