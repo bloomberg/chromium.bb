@@ -25,18 +25,6 @@ canvas {
   padding: 0 10px;
 }
 
-.audio-stream[status='created'] {
-  color: blue;
-}
-
-.audio-stream[status='closed'] {
-  text-decoration: line-through;
-}
-
-.audio-stream[status='error'] {
-  color: red;
-}
-
 #cache-entries ul,
 #media-players ul,
 #media-players {

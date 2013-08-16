@@ -184,4 +184,73 @@ int ChannelOrder(ChannelLayout layout, Channels channel) {
   return kChannelOrderings[layout][channel];
 }
 
+const char* ChannelLayoutToString(ChannelLayout layout) {
+  switch (layout) {
+    case CHANNEL_LAYOUT_NONE:
+      return "NONE";
+    case CHANNEL_LAYOUT_UNSUPPORTED:
+      return "UNSUPPORTED";
+    case CHANNEL_LAYOUT_MONO:
+      return "MONO";
+    case CHANNEL_LAYOUT_STEREO:
+      return "STEREO";
+    case CHANNEL_LAYOUT_2_1:
+      return "2.1";
+    case CHANNEL_LAYOUT_SURROUND:
+      return "SURROUND";
+    case CHANNEL_LAYOUT_4_0:
+      return "4.0";
+    case CHANNEL_LAYOUT_2_2:
+      return "2.2";
+    case CHANNEL_LAYOUT_QUAD:
+      return "QUAD";
+    case CHANNEL_LAYOUT_5_0:
+      return "5.0";
+    case CHANNEL_LAYOUT_5_1:
+      return "5.1";
+    case CHANNEL_LAYOUT_5_0_BACK:
+      return "5.0_BACK";
+    case CHANNEL_LAYOUT_5_1_BACK:
+      return "5.1_BACK";
+    case CHANNEL_LAYOUT_7_0:
+      return "7.0";
+    case CHANNEL_LAYOUT_7_1:
+      return "7.1";
+    case CHANNEL_LAYOUT_7_1_WIDE:
+      return "7.1_WIDE";
+    case CHANNEL_LAYOUT_STEREO_DOWNMIX:
+      return "STEREO_DOWNMIX";
+    case CHANNEL_LAYOUT_2POINT1:
+      return "2POINT1";
+    case CHANNEL_LAYOUT_3_1:
+      return "3.1";
+    case CHANNEL_LAYOUT_4_1:
+      return "4.1";
+    case CHANNEL_LAYOUT_6_0:
+      return "6.0";
+    case CHANNEL_LAYOUT_6_0_FRONT:
+      return "6.0_FRONT";
+    case CHANNEL_LAYOUT_HEXAGONAL:
+      return "HEXAGONAL";
+    case CHANNEL_LAYOUT_6_1:
+      return "6.1";
+    case CHANNEL_LAYOUT_6_1_BACK:
+      return "6.1_BACK";
+    case CHANNEL_LAYOUT_6_1_FRONT:
+      return "6.1_FRONT";
+    case CHANNEL_LAYOUT_7_0_FRONT:
+      return "7.0_FRONT";
+    case CHANNEL_LAYOUT_7_1_WIDE_BACK:
+      return "7.1_WIDE_BACK";
+    case CHANNEL_LAYOUT_OCTAGONAL:
+      return "OCTAGONAL";
+    case CHANNEL_LAYOUT_DISCRETE:
+      return "DISCRETE";
+    case CHANNEL_LAYOUT_MAX:
+      break;
+  }
+  NOTREACHED() << "Invalid channel layout provided: " << layout;
+  return "";
+}
+
 }  // namespace media

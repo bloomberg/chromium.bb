@@ -207,8 +207,6 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void Create(bool unified_stream) {
-    EXPECT_CALL(*observer_,
-                OnSetAudioStreamStatus(_, kStreamId, "created"));
     EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _))
         .WillOnce(DoAll(Assign(&is_stream_active_, true),
                         QuitMessageLoop(message_loop_.get())));

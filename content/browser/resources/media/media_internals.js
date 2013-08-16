@@ -60,16 +60,22 @@ cr.define('media', function() {
      */
     function printStream(stream) {
       var out = document.createElement('li');
-      out.id = stream.id;
-      out.className = 'audio-stream';
-      out.setAttribute('status', stream.status);
 
-      out.textContent += 'Audio stream ' + stream.id.split('.')[1];
-      out.textContent += ' is ' + (stream.playing ? 'playing' : 'paused');
-      if (typeof stream.volume != 'undefined') {
-        out.textContent += ' at ' + (stream.volume * 100).toFixed(0);
-        out.textContent += '% volume.';
+      function tableFromObject(obj) {
+        var table = document.createElement('table');
+        for (var key in obj) {
+          var value = obj[key];
+          var row = table.insertRow(-1);
+          var k = row.insertCell(-1);
+          var v = row.insertCell(-1);
+          k.appendChild(document.createTextNode(key));
+          v.appendChild(document.createTextNode(value.toString()));
+        }
+        return table;
       }
+
+      out.appendChild(tableFromObject(stream));
+
       return out;
     }
 
@@ -111,7 +117,7 @@ cr.define('media', function() {
    * Add it to audioStreams and update the page.
    * @param {Object} stream JSON representation of an audio stream.
    */
-  function addAudioStream(stream) {
+  function updateAudioStream(stream) {
     audioStreams.addItem(stream);
     printAudioStreams();
   }
@@ -262,7 +268,7 @@ cr.define('media', function() {
 
   return {
     initialize: initialize,
-    addAudioStream: addAudioStream,
+    updateAudioStream: updateAudioStream,
     cacheEntriesByKey: cacheEntriesByKey,
     onReceiveEverything: onReceiveEverything,
     onItemDeleted: onItemDeleted,

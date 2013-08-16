@@ -130,6 +130,9 @@ MEDIA_EXPORT int ChannelLayoutToChannelCount(ChannelLayout layout);
 // or return CHANNEL_LAYOUT_UNSUPPORTED if there is no good match.
 MEDIA_EXPORT ChannelLayout GuessChannelLayout(int channels);
 
+// Returns a string representation of the channel layout.
+MEDIA_EXPORT const char* ChannelLayoutToString(ChannelLayout layout);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_CHANNEL_LAYOUT_H_

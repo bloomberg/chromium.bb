@@ -354,8 +354,10 @@ void AudioRendererHost::OnCreateStream(
         render_process_id_, entry->render_view_id(), entry->controller());
   }
   audio_entries_.insert(std::make_pair(stream_id, entry.release()));
-  if (media_internals_)
-    media_internals_->OnSetAudioStreamStatus(this, stream_id, "created");
+  if (media_internals_) {
+    media_internals_->OnAudioStreamCreated(
+        this, stream_id, params, input_device_id);
+  }
 }
 
 void AudioRendererHost::OnPlayStream(int stream_id) {

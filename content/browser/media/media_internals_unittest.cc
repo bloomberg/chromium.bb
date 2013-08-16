@@ -7,7 +7,10 @@
 #include "base/bind.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "content/public/test/test_browser_thread.h"
+#include "media/audio/audio_parameters.h"
+#include "media/base/channel_layout.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,6 +60,46 @@ class MediaInternalsTest : public testing::Test {
   TestBrowserThread io_thread_;
   scoped_ptr<MediaInternals> internals_;
 };
+
+TEST_F(MediaInternalsTest, AudioStreamCreatedSendsMessage) {
+  media::AudioParameters params =
+      media::AudioParameters(media::AudioParameters::AUDIO_PCM_LINEAR,
+                             media::CHANNEL_LAYOUT_MONO,
+                             48000,
+                             16,
+                             129);
+
+  const int stream_id = 0;
+  const std::string device_id = "test";
+  const std::string name =
+      base::StringPrintf("audio_streams.%p:%d", this, stream_id);
+
+  internals_->OnAudioStreamCreated(this, stream_id, params, device_id);
+
+  std::string channel_layout;
+  data()->GetString(name + ".channel_layout", &channel_layout);
+  EXPECT_EQ("MONO", channel_layout);
+
+  int sample_rate;
+  data()->GetInteger(name + ".sample_rate", &sample_rate);
+  EXPECT_EQ(params.sample_rate(), sample_rate);
+
+  int frames_per_buffer;
+  data()->GetInteger(name + ".frames_per_buffer", &frames_per_buffer);
+  EXPECT_EQ(params.frames_per_buffer(), frames_per_buffer);
+
+  int output_channels;
+  data()->GetInteger(name + ".output_channels", &output_channels);
+  EXPECT_EQ(params.channels(), output_channels);
+
+  std::string device_id_out;
+  data()->GetString(name + ".input_device_id", &device_id_out);
+  EXPECT_EQ(device_id, device_id_out);
+
+  int input_channels;
+  data()->GetInteger(name + ".input_channels", &input_channels);
+  EXPECT_EQ(params.input_channels(), input_channels);
+}
 
 TEST_F(MediaInternalsTest, UpdateAddsNewItem) {
   UpdateItem("some.item", "testing", new base::FundamentalValue(true));

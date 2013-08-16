@@ -16,6 +16,7 @@
 #include "content/public/common/media_stream_request.h"
 
 namespace media {
+class AudioParameters;
 struct MediaLogEvent;
 }
 
@@ -36,8 +37,14 @@ class CONTENT_EXPORT MediaInternals {
   virtual void OnDeleteAudioStream(void* host, int stream_id);
 
   // Called when an audio stream is set to playing or paused.
-  virtual void OnSetAudioStreamPlaying(void* host, int stream_id,
-                                       bool playing);
+  virtual void OnSetAudioStreamPlaying(void* host, int stream_id, bool playing);
+
+  // Called when an audio stream is created with the parameters that
+  // it attempts to use to make the stream.
+  virtual void OnAudioStreamCreated(void* host,
+                                    int stream_id,
+                                    const media::AudioParameters& params,
+                                    const std::string& input_device_id);
 
   // Called when the status of an audio stream is set to "created", "closed", or
   // "error".
@@ -73,8 +80,20 @@ class CONTENT_EXPORT MediaInternals {
   void UpdateAudioStream(void* host, int stream_id,
                          const std::string& property, base::Value* value);
 
+  // See UpdateAudioStream.  The difference is that StoreAudioStream does not
+  // immediately send the data to the client, instead it waits until
+  // SendEverything is called.
+  void StoreAudioStream(void* host,
+                        int stream_id,
+                        const std::string& property,
+                        base::Value* value);
+
   // Removes |item| from |data_|.
   void DeleteItem(const std::string& item);
+
+  base::DictionaryValue* StoreItem(const std::string& id,
+                                   const std::string& property,
+                                   base::Value* value);
 
   // Sets data_.id.property = value and notifies attached UIs using update_fn.
   // id may be any depth, e.g. "video.decoders.1.2.3"

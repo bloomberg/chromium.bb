@@ -772,8 +772,6 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
     return;
 
   EXPECT_CALL(media_observer(),
-      OnSetAudioStreamStatus(_, 1, StrEq("created")));
-  EXPECT_CALL(media_observer(),
       OnSetAudioStreamPlaying(_, 1, true));
   EXPECT_CALL(media_observer(),
       OnSetAudioStreamStatus(_, 1, StrEq("closed")));

@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
+#include "media/audio/audio_parameters.h"
 #include "media/base/media_log.h"
 #include "media/base/media_log_event.h"
 
@@ -20,11 +21,15 @@ MediaInternals* MediaInternals::GetInstance() {
 
 MediaInternals::~MediaInternals() {}
 
+namespace {
+std::string FormatAudioStreamName(void* host, int stream_id) {
+  return base::StringPrintf("audio_streams.%p:%d", host, stream_id);
+}
+}
+
 void MediaInternals::OnDeleteAudioStream(void* host, int stream_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  std::string stream = base::StringPrintf("audio_streams.%p:%d",
-                                          host, stream_id);
-  DeleteItem(stream);
+  DeleteItem(FormatAudioStreamName(host, stream_id));
 }
 
 void MediaInternals::OnSetAudioStreamPlaying(
@@ -34,8 +39,55 @@ void MediaInternals::OnSetAudioStreamPlaying(
                     "playing", new base::FundamentalValue(playing));
 }
 
-void MediaInternals::OnSetAudioStreamStatus(
-    void* host, int stream_id, const std::string& status) {
+void MediaInternals::OnAudioStreamCreated(void* host,
+                                          int stream_id,
+                                          const media::AudioParameters& params,
+                                          const std::string& input_device_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  StoreAudioStream(host,
+                   stream_id,
+                   "input_device_id",
+                   Value::CreateStringValue(input_device_id));
+
+  StoreAudioStream(
+      host, stream_id, "status", Value::CreateStringValue("created"));
+
+  StoreAudioStream(
+      host, stream_id, "stream_id", Value::CreateIntegerValue(stream_id));
+
+  StoreAudioStream(host,
+                   stream_id,
+                   "input_channels",
+                   Value::CreateIntegerValue(params.input_channels()));
+
+  StoreAudioStream(host,
+                   stream_id,
+                   "frames_per_buffer",
+                   Value::CreateIntegerValue(params.frames_per_buffer()));
+
+  StoreAudioStream(host,
+                   stream_id,
+                   "sample_rate",
+                   Value::CreateIntegerValue(params.sample_rate()));
+
+  StoreAudioStream(host,
+                   stream_id,
+                   "output_channels",
+                   Value::CreateIntegerValue(params.channels()));
+
+  StoreAudioStream(
+      host,
+      stream_id,
+      "channel_layout",
+      Value::CreateStringValue(ChannelLayoutToString(params.channel_layout())));
+
+  SendEverything();
+}
+
+void MediaInternals::OnSetAudioStreamStatus(void* host,
+                                            int stream_id,
+                                            const std::string& status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   UpdateAudioStream(host, stream_id,
                     "status", new base::StringValue(status));
@@ -92,13 +144,21 @@ void MediaInternals::SendEverything() {
 MediaInternals::MediaInternals() {
 }
 
+void MediaInternals::StoreAudioStream(void* host,
+                                      int stream_id,
+                                      const std::string& property,
+                                      base::Value* value) {
+  StoreItem(FormatAudioStreamName(host, stream_id), property, value);
+}
+
 void MediaInternals::UpdateAudioStream(void* host,
                                        int stream_id,
                                        const std::string& property,
                                        base::Value* value) {
-  std::string stream = base::StringPrintf("audio_streams.%p:%d",
-                                          host, stream_id);
-  UpdateItem("media.addAudioStream", stream, property, value);
+  UpdateItem("media.updateAudioStream",
+             FormatAudioStreamName(host, stream_id),
+             property,
+             value);
 }
 
 void MediaInternals::DeleteItem(const std::string& item) {
@@ -107,9 +167,9 @@ void MediaInternals::DeleteItem(const std::string& item) {
   SendUpdate("media.onItemDeleted", value.get());
 }
 
-void MediaInternals::UpdateItem(
-    const std::string& update_fn, const std::string& id,
-    const std::string& property, base::Value* value) {
+base::DictionaryValue* MediaInternals::StoreItem(const std::string& id,
+                                                 const std::string& property,
+                                                 base::Value* value) {
   base::DictionaryValue* item_properties;
   if (!data_.GetDictionary(id, &item_properties)) {
     item_properties = new base::DictionaryValue();
@@ -117,6 +177,14 @@ void MediaInternals::UpdateItem(
     item_properties->SetString("id", id);
   }
   item_properties->Set(property, value);
+  return item_properties;
+}
+
+void MediaInternals::UpdateItem(const std::string& update_fn,
+                                const std::string& id,
+                                const std::string& property,
+                                base::Value* value) {
+  base::DictionaryValue* item_properties = StoreItem(id, property, value);
   SendUpdate(update_fn, item_properties);
 }
 
