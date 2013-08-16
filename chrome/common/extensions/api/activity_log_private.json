@@ -8,75 +8,40 @@
     "description": "none",
     "types": [
       {
-        "id": "DomActivityDetail",
+        "id": "ExtensionActivity",
         "type": "object",
-        "description": "Stores the fields associated with an ActivityLog DomAction.",
+        "description": "This corresponds to a row from the ActivityLog database. Fields will be blank if they were specified precisely in a lookup filter.",
         "properties": {
-          "domActivityType": {"type": "string", "enum": ["getter", "setter", "method", "inserted", "xhr", "webrequest", "modified"], "optional": true},
-          "url": {"type": "string", "optional": true},
-          "urlTitle": {"type": "string", "optional": true},
+          "extensionId": {"type": "string", "optional": true},
+          "activityType": {"type": "string", "enum": ["api_call", "api_event", "api_blocked", "content_script", "dom_access", "dom_event", "web_request"]},
+          "time": {"type": "number", "optional": true},
           "apiCall": {"type": "string", "optional": true},
           "args": {"type": "string", "optional": true},
-          "extra": {"type": "string", "optional": true}
-        }
-      },
-      {
-        "id": "ChromeActivityDetail",
-        "type": "object",
-        "description": "Stores the fields associated with an ActivityLog ApiAction.",
-        "properties": {
-          "apiActivityType": {"type": "string", "enum": ["call", "event_callback", "unknown_type"], "optional": true},
-          "apiCall": {"type": "string", "optional": true},
-          "args": {"type": "string", "optional": true},
-          "extra": {"type": "string", "optional": true}
-        }
-      },
-      {
-        "id": "BlockedChromeActivityDetail",
-        "type": "object",
-        "description": "Stores the fields associated with an ActivityLog BlockedAction.",
-        "properties": {
-          "apiCall": {"type": "string", "optional": true},
-          "args": {"type": "string", "optional": true},
-          "reason": {"type": "string", "enum": ["unknown_reason_type", "access_denied", "quota_exceeded"], "optional": true},
+          "count": {"type": "number", "optional": true},
+          "pageUrl": {"type": "string", "optional": true},
+          "pageTitle": {"type": "string", "optional": true},
+          "argUrl": {"type": "string", "optional": true},
           "extra": {"type": "string", "optional": true}
         }
       },
       {
         "id": "ActivityFilter",
         "type": "object",
-        "description": "The result set will be limited to rows that match the specification. All matches will be exact except for the URL field of domActivityDetail, which is considered a prefix.",
+        "description": "The result set will be limited to rows that match the specification. All matches will be exact except for URL fields, which are considered prefixes.",
         "properties": {
-          "extensionId": {"type": "string", "optional": true},
           "daysAgo": {"type": "string", "optional": true},
-          "activityType": {"type": "string", "enum": ["dom", "chrome", "blocked_chrome"], "optional": true},
-          "domActivityDetail": {"$ref": "DomActivityDetail", "optional": true},
-          "chromeActivityDetail": {"$ref": "ChromeActivityDetail", "optional": true},
-          "blockedChromeActivityDetail": {"$ref": "BlockedChromeActivityDetail", "optional": true}
-        }
-      },
-      {
-        "id": "ExtensionActivity",
-        "type": "object",
-        "description": "This corresponds to a row from the ActivityLog database. Fields will be blank if they were specified precisely in a lookup filter.",
-        "properties": {
-          "extensionId": {"type": "string", "optional": true},
-          "time": {"type": "number", "optional": true},
-          "count": {"type": "integer", "optional": true},
-          "activityType": {"type": "string", "enum": ["dom", "chrome", "blocked_chrome"], "optional": true},
-          "domActivityDetail": {"$ref": "DomActivityDetail", "optional": true},
-          "chromeActivityDetail": {"$ref": "ChromeActivityDetail", "optional": true},
-          "blockedChromeActivityDetail": {"$ref": "BlockedChromeActivityDetail", "optional": true}
+          "activityDetail": {"$ref": "ExtensionActivity", "optional": true}
         }
       },
       {
         "id": "ActivityResultSet",
         "type": "object",
-        "description": "This holds the results of a lookup, the filter of the lookup, and the page of the lookup if there is more than one page of results.",
+        "description": "This holds the results of a lookup, the filter of the lookup, the time of the lookup, and whether there are more results that match.",
         "properties": {
           "result": {"type": "array", "items": {"$ref": "ExtensionActivity"}},
           "filter": {"$ref": "ActivityFilter"},
-          "page": {"type": "integer", "optional": true}
+          "maxTime": {"type": "integer", "optional": true},
+          "moreResults": {"type": "boolean"}
         }
       }
     ],
@@ -91,10 +56,10 @@
             "$ref": "ActivityFilter"
           },
           {
-            "name": "page",
+            "name": "maxTime",
             "type": "integer",
             "optional": true,
-            "description": "Specify this if you want a specific page of results."
+            "description": "Specify this if you want results that weren't available in the first page."
           },
           {
             "name": "callback",

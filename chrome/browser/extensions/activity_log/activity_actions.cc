@@ -40,9 +40,6 @@ std::string Serialize(const base::Value* value) {
 
 namespace extensions {
 
-using api::activity_log_private::BlockedChromeActivityDetail;
-using api::activity_log_private::ChromeActivityDetail;
-using api::activity_log_private::DomActivityDetail;
 using api::activity_log_private::ExtensionActivity;
 
 Action::Action(const std::string& extension_id,
@@ -133,82 +130,45 @@ void Action::ParseArgUrl(const std::string& url) {
 scoped_ptr<ExtensionActivity> Action::ConvertToExtensionActivity() {
   scoped_ptr<ExtensionActivity> result(new ExtensionActivity);
 
-  result->extension_id.reset(new std::string(extension_id()));
-  result->time.reset(new double(time().ToJsTime()));
-
+  // We do this translation instead of using the same enum because the database
+  // values need to be stable; this allows us to change the extension API
+  // without affecting the database.
   switch (action_type()) {
     case ACTION_API_CALL:
-    case ACTION_API_EVENT: {
-      ChromeActivityDetail* details = new ChromeActivityDetail;
-      if (action_type() == ACTION_API_CALL) {
-        details->api_activity_type =
-            ChromeActivityDetail::API_ACTIVITY_TYPE_CALL;
-      } else {
-        details->api_activity_type =
-            ChromeActivityDetail::API_ACTIVITY_TYPE_EVENT_CALLBACK;
-      }
-      details->api_call.reset(new std::string(api_name()));
-      details->args.reset(new std::string(Serialize(args())));
-      details->extra.reset(new std::string(Serialize(other())));
-
-      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_CHROME;
-      result->chrome_activity_detail.reset(details);
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_API_CALL;
       break;
-    }
-
-    case ACTION_API_BLOCKED: {
-      BlockedChromeActivityDetail* details = new BlockedChromeActivityDetail;
-      details->api_call.reset(new std::string(api_name()));
-      details->args.reset(new std::string(Serialize(args())));
-      details->extra.reset(new std::string(Serialize(other())));
-      // TODO(mvrable): details->reason isn't filled in; fix this after
-      // converting logging to using the types from
-      // BlockedChromeActivityDetail::Reason.
-      details->reason = BlockedChromeActivityDetail::REASON_NONE;
-
-      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_BLOCKED_CHROME;
-      result->blocked_chrome_activity_detail.reset(details);
+    case ACTION_API_EVENT:
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_API_EVENT;
       break;
-    }
-
-    case ACTION_DOM_EVENT:
-    case ACTION_DOM_ACCESS:
+    case ACTION_API_BLOCKED:
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_API_BLOCKED;
+      break;
     case ACTION_CONTENT_SCRIPT:
-    case ACTION_WEB_REQUEST: {
-      DomActivityDetail* details = new DomActivityDetail;
-
-      if (action_type() == ACTION_WEB_REQUEST) {
-        details->dom_activity_type =
-            DomActivityDetail::DOM_ACTIVITY_TYPE_WEBREQUEST;
-      } else if (action_type() == ACTION_CONTENT_SCRIPT) {
-        details->dom_activity_type =
-            DomActivityDetail::DOM_ACTIVITY_TYPE_INSERTED;
-      } else {
-        // TODO(mvrable): This ought to be filled in properly, but since the
-        // API will change soon don't worry about it now.
-        details->dom_activity_type =
-            DomActivityDetail::DOM_ACTIVITY_TYPE_NONE;
-      }
-      details->api_call.reset(new std::string(api_name()));
-      details->args.reset(new std::string(Serialize(args())));
-      details->extra.reset(new std::string(Serialize(other())));
-      if (page_incognito()) {
-        details->url.reset(new std::string(constants::kIncognitoUrl));
-      } else {
-        details->url.reset(new std::string(page_url().spec()));
-        if (!page_title().empty())
-          details->url_title.reset(new std::string(page_title()));
-      }
-
-      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_DOM;
-      result->dom_activity_detail.reset(details);
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_CONTENT_SCRIPT;
       break;
-    }
-
-    default:
-      LOG(WARNING) << "Bad activity log entry read from database (type="
-                   << action_type_ << ")!";
+    case ACTION_DOM_ACCESS:
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_DOM_ACCESS;
+      break;
+    case ACTION_DOM_EVENT:
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_DOM_EVENT;
+      break;
+    case ACTION_WEB_REQUEST:
+      result->activity_type = ExtensionActivity::ACTIVITY_TYPE_WEB_REQUEST;
+      break;
   }
+
+  result->extension_id.reset(new std::string(extension_id()));
+  result->time.reset(new double(time().ToJsTime()));
+  result->api_call.reset(new std::string(api_name()));
+  result->args.reset(new std::string(Serialize(args())));
+  if (page_url().is_valid()) {
+    if (!page_title().empty())
+      result->page_title.reset(new std::string(page_title()));
+    result->page_url.reset(new std::string(page_url().spec()));
+  }
+  if (arg_url().is_valid())
+    result->arg_url.reset(new std::string(arg_url().spec()));
+  result->extra.reset(new std::string(Serialize(other())));
 
   return result.Pass();
 }

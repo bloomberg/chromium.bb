@@ -38,7 +38,6 @@
 #include "ipc/ipc_message_macros.h"
 #include "webkit/common/resource_type.h"
 
-using extensions::api::activity_log_private::BlockedChromeActivityDetail;
 using extensions::Extension;
 using extensions::ExtensionAPI;
 using extensions::Feature;
@@ -76,7 +75,6 @@ void LogSuccess(const std::string& extension_id,
 void LogFailure(const std::string& extension_id,
                 const std::string& api_name,
                 scoped_ptr<base::ListValue> args,
-                BlockedChromeActivityDetail::Reason reason,
                 Profile* profile) {
   // The ActivityLog can only be accessed from the main (UI) thread.  If we're
   // running on the wrong thread, re-dispatch from the main thread.
@@ -87,7 +85,6 @@ void LogFailure(const std::string& extension_id,
                                        extension_id,
                                        api_name,
                                        base::Passed(&args),
-                                       reason,
                                        profile));
   } else {
     extensions::ActivityLog* activity_log =
@@ -98,9 +95,6 @@ void LogFailure(const std::string& extension_id,
                                extensions::Action::ACTION_API_BLOCKED,
                                api_name);
     action->set_args(args.Pass());
-    action->mutable_other()
-        ->SetString(activity_log_constants::kActionBlockedReason,
-                    BlockedChromeActivityDetail::ToString(reason));
     activity_log->LogAction(action);
   }
 }
@@ -286,7 +280,6 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     LogFailure(extension->id(),
                params.name,
                args.Pass(),
-               BlockedChromeActivityDetail::REASON_ACCESS_DENIED,
                profile_cast);
     return;
   }
@@ -306,7 +299,6 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
     LogFailure(extension->id(),
                params.name,
                args.Pass(),
-               BlockedChromeActivityDetail::REASON_ACCESS_DENIED,
                profile_cast);
     return;
   }
@@ -323,11 +315,6 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
                profile_cast);
     function->Run();
   } else {
-    LogFailure(extension->id(),
-               params.name,
-               args.Pass(),
-               BlockedChromeActivityDetail::REASON_QUOTA_EXCEEDED,
-               profile_cast);
     function->OnQuotaExceeded(violation_error);
   }
 }
@@ -389,7 +376,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
     LogFailure(extension->id(),
                params.name,
                args.Pass(),
-               BlockedChromeActivityDetail::REASON_ACCESS_DENIED,
                profile());
     return;
   }
@@ -409,7 +395,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
     LogFailure(extension->id(),
                params.name,
                args.Pass(),
-               BlockedChromeActivityDetail::REASON_ACCESS_DENIED,
                profile());
     return;
   }
@@ -425,11 +410,6 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
     LogSuccess(extension->id(), params.name, args.Pass(), profile());
     function->Run();
   } else {
-    LogFailure(extension->id(),
-               params.name,
-               args.Pass(),
-               BlockedChromeActivityDetail::REASON_QUOTA_EXCEEDED,
-               profile());
     function->OnQuotaExceeded(violation_error);
   }
 

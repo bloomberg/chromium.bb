@@ -41,7 +41,6 @@
 
 using content::BrowserThread;
 using extensions::APIPermission;
-using extensions::api::activity_log_private::BlockedChromeActivityDetail;
 using WebKit::WebCache;
 
 namespace {
@@ -553,10 +552,6 @@ void ChromeRenderMessageFilter::OnAddBlockedCallToExtensionActivityLog(
   scoped_refptr<extensions::Action> action = new extensions::Action(
       extension_id, base::Time::Now(), extensions::Action::ACTION_API_BLOCKED,
       function_name);
-  action->mutable_other()->SetString(
-      activity_log_constants::kActionBlockedReason,
-      BlockedChromeActivityDetail::ToString(
-          BlockedChromeActivityDetail::REASON_ACCESS_DENIED));
   AddActionToExtensionActivityLog(profile_, action);
 }
 
