@@ -7237,3 +7237,20 @@
    fun:_ZN7content27BrowserChildProcessHostImpl20GetTerminationStatusEPi
    fun:_ZN7content27BrowserChildProcessHostImpl19OnChildDisconnectedEv
 }
+{
+   bug_274193
+   Memcheck:Leak
+   fun:calloc
+   fun:ralloc_size
+   ...
+   fun:_mesa_glsl_compile_shader
+   fun:compile_shader
+   fun:_mesa_CompileShaderARB
+   fun:shared_dispatch_stub_529
+   fun:_ZN3gfx9GLApiBase17glCompileShaderFnEj
+   fun:_ZN3gpu5gles214ProgramManager15DoCompileShaderEPNS0_6ShaderEPNS0_16ShaderTranslatorEPNS0_11FeatureInfoE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl15DoCompileShaderEj
+   fun:_ZN3gpu5gles216GLES2DecoderImpl19HandleCompileShaderEjRKNS0_4cmds13CompileShaderE
+   fun:_ZN3gpu5gles216GLES2DecoderImpl9DoCommandEjjPKv
+   fun:_ZN3gpu13CommandParser14ProcessCommandEv
+}
