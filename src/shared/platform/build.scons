@@ -186,7 +186,8 @@ node = env.CommandTest('nacl_clock_test.out',
 env.AddNodeToTestSuite(node, ['small_tests'], 'run_nacl_clock_test')
 
 node = env.CommandTest('nacl_clock_cputime_test.out',
-                       [nacl_clock_test_exe] + time_slop_args + cputime_args)
+                       [nacl_clock_test_exe] + time_slop_args + cputime_args,
+                       size='large')
 
 env.AddNodeToTestSuite(node, ['large_tests'], 'run_nacl_clock_cputime_test')
 
