@@ -335,10 +335,9 @@ button.google-button:active {
   padding: 0;
 }
 
-#gc-pagecontent table.intro th {
-  border-style: none;
-  padding: 6px 12px;
-  text-align: left;
+#gc-pagecontent table.intro td.title {
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 #gc-pagecontent table.intro td {

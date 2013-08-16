@@ -1,55 +1,44 @@
-<p>
-  For general information about permissions and details about each permission,
-  see the <a href="declare_permissions.html">declare permissions</a> documentation.
-</p>
-
 <h2 id="howto"> Implementing optional permissions </h2>
 
 <h3 id="types">
-  Step 1: Decide which permissions are optional and required
+Step 1: Decide which permissions are required and which are optional
 </h3>
+
 <p>
-  Extensions should generally require permissions when they are needed for the
-  extension's basic functionality and employ optional permissions for optional
-  features.
+An extension can declare both required and optional permissions. In general, you should:
+<ul>
+  <li>Use required permissions when they are needed for your extension’s basic functionality.</li>
+  <li>Use optional permissions when they are needed for optional features in your extension.</li>
+</ul>
 </p>
 
 <p>
-  Advantages of optional permissions:
-  <ul>
-    <li>
-      Users run with less permissions since they enable only what is needed.
-    </li>
-    <li>
-      The extension can help explain why it needs particular permissions by
-      requesting them when the user enables the relevant feature.
-    </li>
-    <li>
-      Chrome can avoid disabling extensions that upgrade if they add permissions
-      as optional rather than required.
-    </li>
-  </ul>
+Advantages of <em>required</em> permissions:
+<ul>
+  <li><strong>Fewer prompts:</strong>
+      An extension can prompt the user once to accept all permissions.</li>
+  <li><strong>Simpler development:</strong>
+      Required permissions are guaranteed to be present.</li>
+</ul>
 </p>
 
 <p>
-  Advantages of required permissions:
-  <ul>
-    <li>
-      The extension can prompt the user once to accept all permissions.
-    </li>
-    <li>
-      They simplify extension development by guaranteeing which permissions are
-      present.
-    </li>
-  </ul>
+Advantages of <em>optional</em> permissions:
+<ul>
+  <li><strong>Better security:</strong>
+      Extensions run with fewer permissions since users only enable permissions that are needed.</li>
+  <li><strong>Better information for users:</strong>
+      An extension can explain why it needs a particular permission when the user enables the relevant feature.</li>
+  <li><strong>Easier upgrades:</strong>
+      When you upgrade your extension, Chrome will not disable it for your users if the upgrade adds optional rather than required permissions.</li>
+</ul>
 </p>
-
 
 <h3 id="manifest"> Step 2: Declare optional permissions in the manifest </h3>
 <p>
   Declare optional permissions in your <a href="manifest.html">extension
   manifest</a> with the <code>optional_permissions</code> key, using the
-  same format as the <a href="declare_permissions.html">permissions</a>
+  same format as the <a href="declare_permissions.html#manifest">permissions</a>
   field:
 
 <pre>{
@@ -61,7 +50,8 @@
 </p>
 
 <p>
-You can specify any of the following as optional permissions:
+You can specify any of the following as optional
+<a href="declare_permissions.html">permissions</a>:
 <ul>
   <li><i>host permissions</i></li>
   <li>background</li>

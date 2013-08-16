@@ -50,7 +50,7 @@
         "text": "\"cookies\""
       },
       {
-        "link": "declare_permissions.html",
+        "link": "declare_permissions.html#host-permissions",
         "text": "host permissions"
       }
     ]
@@ -74,7 +74,7 @@
         "text": "\"declarativeWebRequest\""
       },
       {
-        "link": "declare_permissions.html",
+        "link": "declare_permissions.html#host-permissions",
         "text": "host permissions"
       }
     ]
@@ -151,6 +151,14 @@
       {
         "link": "https://developers.google.com/live/shows/83992232-1001/",
         "text": "Chrome Apps Office Hours: Rich Notifications"
+      }
+    ]
+  },
+  "permissions": {
+    "Learn More": [
+      {
+        "link": "declare_permissions.html#host-permissions",
+        "text": "Declaring permissions"
       }
     ]
   },
@@ -270,7 +278,7 @@
         "text": "\"webRequest\""
       },
       {
-        "link": "declare_permissions.html",
+        "link": "declare_permissions.html#host-permissions",
         "text": "host permissions"
       }
     ]
