@@ -34,14 +34,14 @@ function doubleStart() {
                         finishJSTest();
                     }
                 } else {
-                    shouldThrow("r.start()", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
+                    shouldThrow("r.start()", '"InvalidStateError: Failed to execute \'start\' on \'SpeechRecognition\': recognition has already started."');
                 }
             }
         }
     }
 
     shouldNotThrow("r.start()");
-    shouldThrow("r.start()", '"InvalidStateError: An attempt was made to use an object that is not, or is no longer, usable."');
+    shouldThrow("r.start()", '"InvalidStateError: Failed to execute \'start\' on \'SpeechRecognition\': recognition has already started."');
 }
 
 window.onload = run;
