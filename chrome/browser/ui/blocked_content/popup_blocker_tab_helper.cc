@@ -14,6 +14,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_view.h"
@@ -99,9 +100,12 @@ void PopupBlockerTabHelper::AddBlockedPopup(
     const WebWindowFeatures& features,
     bool user_gesture,
     bool opener_suppressed) {
+  GURL popup_url(target_url);
+  content::RenderViewHost::FilterURL(
+      web_contents()->GetRenderProcessHost(), true, &popup_url);
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
-      target_url,
+      popup_url,
       content::PAGE_TRANSITION_LINK);
   nav_params.referrer = referrer;
   nav_params.source_contents = web_contents();
