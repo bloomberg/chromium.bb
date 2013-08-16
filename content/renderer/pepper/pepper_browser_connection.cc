@@ -32,8 +32,8 @@ bool PepperBrowserConnection::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PepperBrowserConnection, msg)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostFromHostReply,
-                        OnMsgCreateResourceHostFromHostReply)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHostReply,
+                        OnMsgCreateResourceHostsFromHostReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -49,9 +49,9 @@ void PepperBrowserConnection::DidCreateInProcessInstance(
       instance,
       // Browser provides the render process id.
       PepperRendererInstanceData(0,
-                                  render_view_id,
-                                  document_url,
-                                  plugin_url)));
+                                 render_view_id,
+                                 document_url,
+                                 plugin_url)));
 }
 
 void PepperBrowserConnection::DidDeleteInProcessInstance(PP_Instance instance) {
@@ -61,17 +61,17 @@ void PepperBrowserConnection::DidDeleteInProcessInstance(PP_Instance instance) {
 void PepperBrowserConnection::SendBrowserCreate(
     int child_process_id,
     PP_Instance instance,
-    const IPC::Message& nested_msg,
+    const std::vector<IPC::Message>& nested_msgs,
     const PendingResourceIDCallback& callback) {
   int32_t sequence_number = GetNextSequence();
   pending_create_map_[sequence_number] = callback;
   ppapi::proxy::ResourceMessageCallParams params(0, sequence_number);
-  Send(new PpapiHostMsg_CreateResourceHostFromHost(
+  Send(new PpapiHostMsg_CreateResourceHostsFromHost(
       routing_id(),
       child_process_id,
       params,
       instance,
-      nested_msg));
+      nested_msgs));
 }
 
 void PepperBrowserConnection::SendBrowserFileRefGetInfo(
@@ -84,15 +84,15 @@ void PepperBrowserConnection::SendBrowserFileRefGetInfo(
       routing_id(), child_process_id, sequence_number, resources));
 }
 
-void PepperBrowserConnection::OnMsgCreateResourceHostFromHostReply(
+void PepperBrowserConnection::OnMsgCreateResourceHostsFromHostReply(
     int32_t sequence_number,
-    int pending_resource_host_id) {
+    const std::vector<int>& pending_resource_host_ids) {
   // Check that the message is destined for the plugin this object is associated
   // with.
   std::map<int32_t, PendingResourceIDCallback>::iterator it =
       pending_create_map_.find(sequence_number);
   if (it != pending_create_map_.end()) {
-    it->second.Run(pending_resource_host_id);
+    it->second.Run(pending_resource_host_ids);
     pending_create_map_.erase(it);
   } else {
     NOTREACHED();

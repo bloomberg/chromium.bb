@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -26,7 +27,8 @@ class PepperBrowserConnection
     : public RenderViewObserver,
       public RenderViewObserverTracker<PepperBrowserConnection> {
  public:
-  typedef base::Callback<void(int)> PendingResourceIDCallback;
+  typedef base::Callback<void(const std::vector<int>&)>
+      PendingResourceIDCallback;
   typedef base::Callback<void(
       const std::vector<PP_Resource>&,
       const std::vector<PP_FileSystemType>&,
@@ -41,12 +43,12 @@ class PepperBrowserConnection
   // TODO(teravest): Instead of having separate methods per message, we should
   // add generic functionality similar to PluginResource::Call().
 
-  // Sends a request to the browser to create a ResourceHost for the given
+  // Sends a request to the browser to create ResourceHosts for the given
   // |instance| of a plugin identified by |child_process_id|. |callback| will be
-  // run when a reply is received with the pending resource ID.
+  // run when a reply is received with the pending resource IDs.
   void SendBrowserCreate(PP_Instance instance,
                          int child_process_id,
-                         const IPC::Message& create_message,
+                         const std::vector<IPC::Message>& create_messages,
                          const PendingResourceIDCallback& callback);
 
   // Sends a request to the browser to get information about the given FileRef
@@ -67,8 +69,9 @@ class PepperBrowserConnection
 
  private:
   // Message handlers.
-  void OnMsgCreateResourceHostFromHostReply(int32_t sequence_number,
-                                            int pending_resource_host_id);
+  void OnMsgCreateResourceHostsFromHostReply(
+      int32_t sequence_number,
+      const std::vector<int>& pending_resource_host_ids);
   void OnMsgFileRefGetInfoReply(
       int32_t sequence_number,
       const std::vector<PP_Resource>& resources,
