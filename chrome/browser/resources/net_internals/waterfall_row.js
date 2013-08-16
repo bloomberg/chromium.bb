@@ -26,7 +26,7 @@ var WaterfallRow = (function() {
   }
 
   // Offset of popup from mouse location.
-  var POPUP_OFFSET_FROM_CURSOR = 15;
+  var POPUP_OFFSET_FROM_CURSOR = 25;
 
   WaterfallRow.prototype = {
     onSourceUpdated: function() {
@@ -39,9 +39,9 @@ var WaterfallRow = (function() {
       // URL Request to start the job has not been received. In that case, the
       // description obtained is incorrect. The following fixes that.
       if (this.description_ == '') {
-        this.urlCell_.innerHTML = '';
+        this.sourceCell_.innerHTML = '';
         this.description_ = this.sourceEntry_.getDescription();
-        addTextNode(this.urlCell_, this.description_);
+        addTextNode(this.sourceCell_, this.description_);
       }
 
       this.rowCell_.innerHTML = '';
@@ -53,6 +53,7 @@ var WaterfallRow = (function() {
       var sourceEntryStartTime = this.sourceEntry_.getStartTime();
       var delay = sourceEntryStartTime - startTime;
       var frontNode = addNode(this.rowCell_, 'div');
+      frontNode.classList.add('waterfall-view-padding');
       setNodeWidth(frontNode, delay * scale);
 
       var barCell = addNode(this.rowCell_, 'div');
@@ -151,7 +152,8 @@ var WaterfallRow = (function() {
         popupLeft = mouse.pageX;
       }
       newPopup.style.left = popupLeft +
-          $(WaterfallView.MAIN_BOX_ID).scrollLeft + 'px';
+          $(WaterfallView.MAIN_BOX_ID).scrollLeft -
+          $(WaterfallView.BAR_TABLE_ID).offsetLeft + 'px';
 
       var popupTop = mouse.pageY - newPopup.offsetHeight -
           POPUP_OFFSET_FROM_CURSOR;
@@ -159,7 +161,8 @@ var WaterfallRow = (function() {
         popupTop = mouse.pageY;
       }
       newPopup.style.top = popupTop +
-          $(WaterfallView.MAIN_BOX_ID).scrollTop + 'px';
+          $(WaterfallView.MAIN_BOX_ID).scrollTop -
+          $(WaterfallView.BAR_TABLE_ID).offsetTop + 'px';
     },
 
     createPopupItem_: function(parentPopup, key, popupInformation) {
@@ -170,19 +173,8 @@ var WaterfallRow = (function() {
 
     createRow_: function() {
       // Create a row.
-      var tr = addNode($(WaterfallView.TBODY_ID), 'tr');
-      tr._id = this.sourceEntry_.getSourceId();
-      this.tableRow = tr;
-
-      var idCell = addNode(tr, 'td');
-      var idValue = this.sourceEntry_.getSourceId();
-      var idLink = addNodeWithText(idCell, 'a', idValue);
-      idLink.href = '#events&s=' + idValue;
-
-      var urlCell = addNode(tr, 'td');
-      urlCell.classList.add('waterfall-view-url-cell');
-      addTextNode(urlCell, this.description_);
-      this.urlCell_ = urlCell;
+      var tr = addNode($(WaterfallView.BAR_TBODY_ID), 'tr');
+      tr.classList.add('waterfall-view-table-row');
 
       // Creates the color bar.
 
@@ -192,6 +184,20 @@ var WaterfallRow = (function() {
 
       var sourceTypeString = this.sourceEntry_.getSourceTypeString();
       this.type_ = eventTypeToCssClass_(sourceTypeString);
+
+      var infoTr = addNode($(WaterfallView.INFO_TBODY_ID), 'tr');
+      infoTr.classList.add('waterfall-view-information-row');
+
+      var idCell = addNode(infoTr, 'td');
+      idCell.classList.add('waterfall-view-id-cell');
+      var idValue = this.sourceEntry_.getSourceId();
+      var idLink = addNodeWithText(idCell, 'a', idValue);
+      idLink.href = '#events&s=' + idValue;
+
+      var sourceCell = addNode(infoTr, 'td');
+      sourceCell.classList.add('waterfall-view-url-cell');
+      addTextNode(sourceCell, this.description_);
+      this.sourceCell_ = sourceCell;
 
       this.updateRow();
     },

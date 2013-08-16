@@ -7,16 +7,25 @@
       <input id=waterfall-view-adjust-to-window type=button value="Fit Range in Window">
     </div>
     <p>
-    <table id=waterfall-view-source-list-table>
+    <!-- Table that displays time bars -->
+    <table id=waterfall-view-time-bar-table>
       <thead>
-      <tr>
-        <td id=waterfall-view-source-id>ID</td>
-        <td id=waterfall-view-source-header>Source</td>
+      <tr id=waterfall-view-table-header>
         <td id=waterfall-view-time-scale-labels></td>
       </tr>
       </thead>
       <!-- Events Waterfall table body: This is where request rows go into -->
-      <tbody id=waterfall-view-source-list-tbody></tbody>
+      <tbody id=waterfall-view-time-bar-tbody></tbody>
+    </table>
+    <!-- Fixed table that contains the id and url information. -->
+    <table id=waterfall-view-information-table>
+      <thead id=waterfall-view-information-thead>
+        <tr>
+          <td class=waterfall-view-id-cell id=waterfall-view-id-header>ID</td>
+          <td class=waterfall-view-url-cell id=waterfall-view-url-header>URL</td>
+        </tr>
+      </thead>
+      <tbody id=waterfall-view-information-tbody></tbody>
     </table>
   </div>
 </div>

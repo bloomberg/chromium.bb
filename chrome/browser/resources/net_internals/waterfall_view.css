@@ -11,18 +11,67 @@
   padding-left: 5px;
   position: fixed;
   top: 40px;
+  /* Displays above time bar and information tables. */
+  z-index: 3;
+}
+
+#waterfall-view-time-bar-table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  position: absolute;
+  /* Displays above main tab and under information table. */
+  z-index: 1;
+}
+
+#waterfall-view-information-table {
+  background-color: #FFF;
+  border-collapse: collapse;
+  border-spacing: 0;
+  left: 0;
+  overflow: hidden;
+  position: fixed;
+  /* Displays above time bar table. */
+  z-index: 2;
+}
+
+.waterfall-view-information-row {
+  height: 25px;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
 }
 
 .waterfall-view-url-cell {
   display: inline-block;
+  font-size: 15px;
+  height: 25px;
   overflow: hidden;
+  padding-bottom: 0;
+  padding-top: 0;
   text-overflow: ellipsis;
   white-space: nowrap;
   width: 250px;
 }
 
-.waterfall-view-row {
+.waterfall-view-id-cell {
+  display: inline-block;
+  font-size: 15px;
+  height: 25px;
+  min-width: 30px;
+  overflow: hidden;
+  padding-bottom: 0;
+  padding-left: 5px;
+  padding-right: 2px;
+  padding-top: 0;
+}
+
+.waterfall-view-table-row {
   white-space: nowrap;
+}
+
+.waterfall-view-row {
+  height: 25px;
+  padding: 0;
 }
 
 .waterfall-view-row * {
@@ -34,6 +83,13 @@
   height: 15px;
 }
 
+.waterfall-view-popup {
+  display: inline-block;
+  position: absolute;
+  /* Displays above info table and controls */
+  z-index: 4;
+}
+
 .waterfall-view-popup-list {
   background-color: rgba(255, 255, 255, 0.8);
   border-color: #000;
@@ -41,7 +97,6 @@
   border-width: 2px;
   color: #000;
   padding-right: 1em;
-  z-index: -1;
 }
 
 .waterfall-view-popup-list > li {
@@ -88,7 +143,7 @@
   background: -webkit-linear-gradient(top, #EEE, rgba(0, 122, 122, 0.5));
 }
 
-.waterfall-view-row .host-resolver-impl {
+.waterfall-view-row .host-resolver-impl-request {
   background: -webkit-linear-gradient(top, #EEE, rgba(122, 0, 122, 0.5));
 }
 
@@ -102,11 +157,6 @@
 
 .waterfall-view-row .ssl-connect {
   background: -webkit-linear-gradient(top, #EEE, rgba(55, 122, 178, 0.5));
-}
-
-.waterfall-view-popup {
-  display: inline-block;
-  position: absolute;
 }
 
 .waterfall-view-time-scale-row {
