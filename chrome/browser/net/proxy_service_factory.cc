@@ -25,6 +25,10 @@
 #include "chromeos/network/dhcp_proxy_script_fetcher_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if defined(OS_WIN)
+#include "win8/util/win8_util.h"
+#endif
+
 using content::BrowserThread;
 
 // static
@@ -100,6 +104,12 @@ net::ProxyService* ProxyServiceFactory::CreateProxyService(
     use_v8 = false;  // Fallback to non-v8 implementation.
   }
 #endif  // defined(OS_IOS)
+
+#if defined(OS_WIN)
+  // Crashes. http://crbug.com/266838
+  if (use_v8 && win8::IsSingleWindowMetroMode())
+    use_v8 = false;
+#endif
 
   size_t num_pac_threads = 0u;  // Use default number of threads.
 
