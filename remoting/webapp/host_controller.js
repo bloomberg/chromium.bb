@@ -16,7 +16,7 @@ remoting.HostController = function() {
     var container = document.getElementById('daemon-plugin-container');
     container.appendChild(plugin);
     return plugin;
-  }
+  };
 
   /** @type {remoting.HostDispatcher} @private */
   this.hostDispatcher_ = new remoting.HostDispatcher(createNpapiPlugin);
@@ -33,7 +33,7 @@ remoting.HostController = function() {
   this.hostDispatcher_.getDaemonVersion(printVersion, function() {
     console.log('Host version not available.');
   });
-}
+};
 
 // Note that the values in the enums below are copied from
 // daemon_controller.h and must be kept in sync.
@@ -63,7 +63,8 @@ remoting.HostController.AsyncResult = {
  * @enum {string}
  */
 remoting.HostController.Feature = {
-  PAIRING_REGISTRY: 'pairingRegistry'
+  PAIRING_REGISTRY: 'pairingRegistry',
+  OAUTH_CLIENT: 'oauthClient'
 };
 
 /**
@@ -145,19 +146,24 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} hostName
    * @param {string} publicKey
    * @param {string} privateKey
-   * @param {XMLHttpRequest} xhr
+   * @param {string} xmppLogin
+   * @param {string} refreshToken
    * @param {string} hostSecretHash
    */
-  function startHostWithHash(hostName, publicKey, privateKey, xhr,
-                             hostSecretHash) {
+  function startHostWithHash(hostName, publicKey, privateKey,
+                             xmppLogin, refreshToken, hostSecretHash) {
     var hostConfig = {
-        xmpp_login: remoting.identity.getCachedEmail(),
-        oauth_refresh_token: remoting.oauth2.exportRefreshToken(),
-        host_id: newHostId,
-        host_name: hostName,
-        host_secret_hash: hostSecretHash,
-        private_key: privateKey
+      xmpp_login: xmppLogin,
+      oauth_refresh_token: refreshToken,
+      host_id: newHostId,
+      host_name: hostName,
+      host_secret_hash: hostSecretHash,
+      private_key: privateKey
     };
+    var hostOwner = remoting.identity.getCachedEmail();
+    if (hostOwner != xmppLogin) {
+      hostConfig['host_owner'] = hostOwner;
+    }
     that.hostDispatcher_.startDaemon(hostConfig, consent,
                                      onStarted.bind(null, hostName, publicKey),
                                      onStartError);
@@ -167,29 +173,61 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} hostName
    * @param {string} publicKey
    * @param {string} privateKey
+   * @param {string} email
+   * @param {string} refreshToken
+   */
+  function onServiceAccountCredentials(
+      hostName, publicKey, privateKey, email, refreshToken) {
+    that.hostDispatcher_.getPinHash(
+        newHostId, hostPin,
+        startHostWithHash.bind(
+            null, hostName, publicKey, privateKey, email, refreshToken),
+        onError);
+  }
+
+  /**
+   * @param {string} hostName
+   * @param {string} publicKey
+   * @param {string} privateKey
    * @param {XMLHttpRequest} xhr
    */
-  function onRegistered(hostName, publicKey, privateKey, xhr) {
+  function onRegistered(
+      hostName, publicKey, privateKey, xhr) {
     var success = (xhr.status == 200);
 
     if (success) {
-      that.hostDispatcher_.getPinHash(newHostId, hostPin,
-          startHostWithHash.bind(null, hostName, publicKey, privateKey, xhr),
+      var result = jsonParseSafe(xhr.responseText);
+      if ('data' in result && 'authorizationCode' in result['data']) {
+        that.hostDispatcher_.getCredentialsFromAuthCode(
+            result['data']['authorizationCode'],
+            onServiceAccountCredentials.bind(
+                null, hostName, publicKey, privateKey),
+            onError);
+      } else {
+        // No authorization code returned, use regular user credential flow.
+        that.hostDispatcher_.getPinHash(
+            newHostId, hostPin, startHostWithHash.bind(
+                null, hostName, publicKey, privateKey,
+                remoting.identity.getCachedEmail(),
+                remoting.oauth2.exportRefreshToken()),
           onError);
+      }
     } else {
       console.log('Failed to register the host. Status: ' + xhr.status +
                   ' response: ' + xhr.responseText);
       onError(remoting.Error.REGISTRATION_FAILED);
     }
-  };
+  }
 
   /**
    * @param {string} hostName
    * @param {string} privateKey
    * @param {string} publicKey
+   * @param {string} hostClientId
    * @param {string} oauthToken
    */
-  function doRegisterHost(hostName, privateKey, publicKey, oauthToken) {
+  function doRegisterHost(
+      hostName, privateKey, publicKey, hostClientId, oauthToken) {
     var headers = {
       'Authorization': 'OAuth ' + oauthToken,
       'Content-type' : 'application/json; charset=UTF-8'
@@ -200,12 +238,52 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
        hostName: hostName,
        publicKey: publicKey
     } };
+
+    var registerHostUrl =
+        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts';
+
+    if (hostClientId) {
+      registerHostUrl += '?' + remoting.xhr.urlencodeParamHash(
+          { hostClientId: hostClientId });
+    }
+
     remoting.xhr.post(
-        remoting.settings.DIRECTORY_API_BASE_URL + '/@me/hosts/',
+        registerHostUrl,
         onRegistered.bind(null, hostName, publicKey, privateKey),
         JSON.stringify(newHostDetails),
         headers);
-  };
+  }
+
+  /**
+   * @param {string} hostName
+   * @param {string} privateKey
+   * @param {string} publicKey
+   * @param {string} hostClientId
+   */
+  function onHostClientId(
+      hostName, privateKey, publicKey, hostClientId) {
+    remoting.identity.callWithToken(
+        doRegisterHost.bind(
+            null, hostName, privateKey, publicKey, hostClientId), onError);
+  }
+
+  /**
+   * @param {string} hostName
+   * @param {string} privateKey
+   * @param {string} publicKey
+   * @param {boolean} hasFeature
+   */
+  function onHasFeatureOAuthClient(
+      hostName, privateKey, publicKey, hasFeature) {
+    if (hasFeature) {
+      that.hostDispatcher_.getHostClientId(
+          onHostClientId.bind(null, hostName, privateKey, publicKey), onError);
+    } else {
+      remoting.identity.callWithToken(
+          doRegisterHost.bind(
+              null, hostName, privateKey, publicKey, null), onError);
+    }
+  }
 
   /**
    * @param {string} hostName
@@ -213,10 +291,10 @@ remoting.HostController.prototype.start = function(hostPin, consent, onDone,
    * @param {string} publicKey
    */
   function onKeyGenerated(hostName, privateKey, publicKey) {
-    remoting.identity.callWithToken(
-        doRegisterHost.bind(null, hostName, privateKey, publicKey),
-        onError);
-  };
+    that.hasFeature(
+        remoting.HostController.Feature.OAUTH_CLIENT,
+        onHasFeatureOAuthClient.bind(null, hostName, privateKey, publicKey));
+  }
 
   /**
    * @param {string} hostName
@@ -247,7 +325,7 @@ remoting.HostController.prototype.stop = function(onDone, onError) {
       remoting.HostList.unregisterHostById(hostId);
     }
     onDone();
-  };
+  }
 
   /** @param {remoting.HostController.AsyncResult} result */
   function onStopped(result) {

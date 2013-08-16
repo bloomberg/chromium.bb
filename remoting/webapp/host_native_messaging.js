@@ -344,6 +344,29 @@ remoting.HostNativeMessaging.prototype.onIncomingMessage_ = function(message) {
       }
       break;
 
+    case 'getHostClientIdResponse':
+      /** @type {string} */
+      var clientId = message['clientId'];
+      if (checkType_('clientId', clientId, 'string')) {
+        onDone(clientId);
+      } else {
+        onError(remoting.Error.UNEXPECTED);
+      }
+      break;
+
+    case 'getCredentialsFromAuthCodeResponse':
+      /** @type {string} */
+      var userEmail = message['userEmail'];
+      /** @type {string} */
+      var refreshToken = message['refreshToken'];
+      if (checkType_('userEmail', userEmail, 'string') && userEmail &&
+          checkType_('refreshToken', refreshToken, 'string') && refreshToken) {
+        onDone(userEmail, refreshToken);
+      } else {
+        onError(remoting.Error.UNEXPECTED);
+      }
+      break;
+
     default:
       console.error('Unexpected native message: ', message);
       onError(remoting.Error.UNEXPECTED);
@@ -560,3 +583,32 @@ remoting.HostNativeMessaging.prototype.deletePairedClient =
     clientId: client
   }, onDone, onError);
 }
+
+/**
+ * Gets the API keys to obtain/use service account credentials.
+ *
+ * @param {function(string):void} onDone Callback.
+ * @param {function(remoting.Error):void} onError The callback to be triggered
+ *     on error.
+ * @return {void} Nothing.
+ */
+remoting.HostNativeMessaging.prototype.getHostClientId =
+    function(onDone, onError) {
+  this.postMessage_({type: 'getHostClientId'}, onDone, onError);
+};
+
+/**
+ *
+ * @param {string} authorizationCode OAuth authorization code.
+ * @param {function(string, string):void} onDone Callback.
+ * @param {function(remoting.Error):void} onError The callback to be triggered
+ *     on error.
+ * @return {void} Nothing.
+ */
+remoting.HostNativeMessaging.prototype.getCredentialsFromAuthCode =
+    function(authorizationCode, onDone, onError) {
+  this.postMessage_({
+    type: 'getCredentialsFromAuthCode',
+    authorizationCode: authorizationCode
+  }, onDone, onError);
+};

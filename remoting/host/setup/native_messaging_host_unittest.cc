@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringize_macros.h"
 #include "base/values.h"
+#include "google_apis/gaia/gaia_oauth_client.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_util.h"
 #include "remoting/host/pin_hash.h"
@@ -273,6 +274,7 @@ void NativeMessagingHostTest::SetUp() {
 
   host_.reset(new NativeMessagingHost(daemon_controller.Pass(),
                                       pairing_registry,
+                                      scoped_ptr<remoting::OAuthClient>(),
                                       input_read_handle_, output_write_handle_,
                                       message_loop_.message_loop_proxy(),
                                       run_loop_.QuitClosure()));

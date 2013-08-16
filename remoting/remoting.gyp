@@ -590,6 +590,8 @@
             'host/setup/native_messaging_reader.h',
             'host/setup/native_messaging_writer.cc',
             'host/setup/native_messaging_writer.h',
+            'host/setup/oauth_client.cc',
+            'host/setup/oauth_client.h',
             'host/setup/oauth_helper.cc',
             'host/setup/oauth_helper.h',
             'host/setup/pin_validator.cc',

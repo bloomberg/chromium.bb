@@ -479,3 +479,52 @@ remoting.HostDispatcher.prototype.deletePairedClient =
       break;
   }
 };
+
+/**
+ * @param {function(string):void} onDone
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.getHostClientId =
+    function(onDone, onError) {
+  switch (this.state_) {
+    case remoting.HostDispatcher.State.UNKNOWN:
+      this.pendingRequests_.push(
+          this.getHostClientId.bind(this, onDone, onError));
+      break;
+    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
+      this.nativeMessagingHost_.getHostClientId(onDone, onError);
+      break;
+    case remoting.HostDispatcher.State.NPAPI:
+      // The NPAPI plugin is packaged with the webapp, not the host, so it
+      // doesn't have access to the API keys baked into the installed host.
+      onError(remoting.Error.UNEXPECTED);
+      break;
+  }
+};
+
+/**
+ * @param {string} authorizationCode
+ * @param {function(string, string):void} onDone
+ * @param {function(remoting.Error):void} onError
+ * @return {void}
+ */
+remoting.HostDispatcher.prototype.getCredentialsFromAuthCode =
+    function(authorizationCode, onDone, onError) {
+  switch (this.state_) {
+    case remoting.HostDispatcher.State.UNKNOWN:
+      this.pendingRequests_.push(
+          this.getCredentialsFromAuthCode.bind(
+              this, authorizationCode, onDone, onError));
+      break;
+    case remoting.HostDispatcher.State.NATIVE_MESSAGING:
+      this.nativeMessagingHost_.getCredentialsFromAuthCode(
+          authorizationCode, onDone, onError);
+      break;
+    case remoting.HostDispatcher.State.NPAPI:
+      // The NPAPI plugin is packaged with the webapp, not the host, so it
+      // doesn't have access to the API keys baked into the installed host.
+      onError(remoting.Error.UNEXPECTED);
+      break;
+  }
+};
