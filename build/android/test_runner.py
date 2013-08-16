@@ -734,6 +734,8 @@ def main(argv):
       command_list=VALID_COMMANDS.keys())
 
   if len(argv) < 2 or argv[1] not in VALID_COMMANDS:
+    # Parse args first, if this is '--help', optparse will display help and exit
+    option_parser.parse_args(argv)
     option_parser.error('Invalid command.')
   command = argv[1]
   VALID_COMMANDS[command].add_options_func(option_parser)
