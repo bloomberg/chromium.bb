@@ -1492,8 +1492,6 @@ static void diffTextDecorations(MutableStylePropertySet* style, CSSPropertyID pr
 
 static bool fontWeightIsBold(CSSValue* fontWeight)
 {
-    if (!fontWeight)
-        return false;
     if (!fontWeight->isPrimitiveValue())
         return false;
 
@@ -1521,18 +1519,13 @@ static bool fontWeightIsBold(CSSValue* fontWeight)
     return false;
 }
 
-static bool fontWeightIsBold(CSSStyleDeclaration* style)
+static bool fontWeightNeedsResolving(CSSValue* fontWeight)
 {
-    ASSERT(style);
-    RefPtr<CSSValue> fontWeight = style->getPropertyCSSValueInternal(CSSPropertyFontWeight);
-    return fontWeightIsBold(fontWeight.get());
-}
+    if (!fontWeight->isPrimitiveValue())
+        return true;
 
-static bool fontWeightIsBold(StylePropertySet* style)
-{
-    ASSERT(style);
-    RefPtr<CSSValue> fontWeight = style->getPropertyCSSValue(CSSPropertyFontWeight);
-    return fontWeightIsBold(fontWeight.get());
+    CSSValueID value = toCSSPrimitiveValue(fontWeight)->getValueID();
+    return value == CSSValueLighter || value == CSSValueBolder;
 }
 
 PassRefPtr<MutableStylePropertySet> getPropertiesNotIn(StylePropertySet* styleWithRedundantProperties, CSSStyleDeclaration* baseStyle)
@@ -1547,8 +1540,12 @@ PassRefPtr<MutableStylePropertySet> getPropertiesNotIn(StylePropertySet* styleWi
     diffTextDecorations(result.get(), CSSPropertyTextDecoration, baseTextDecorationsInEffect.get());
     diffTextDecorations(result.get(), CSSPropertyWebkitTextDecorationsInEffect, baseTextDecorationsInEffect.get());
 
-    if (baseStyle->getPropertyCSSValueInternal(CSSPropertyFontWeight) && fontWeightIsBold(result.get()) == fontWeightIsBold(baseStyle))
-        result->removeProperty(CSSPropertyFontWeight);
+    if (RefPtr<CSSValue> baseFontWeight = baseStyle->getPropertyCSSValueInternal(CSSPropertyFontWeight)) {
+        if (RefPtr<CSSValue> fontWeight = result->getPropertyCSSValue(CSSPropertyFontWeight)) {
+            if (!fontWeightNeedsResolving(fontWeight.get()) && (fontWeightIsBold(fontWeight.get()) == fontWeightIsBold(baseFontWeight.get())))
+                result->removeProperty(CSSPropertyFontWeight);
+        }
+    }
 
     if (baseStyle->getPropertyCSSValueInternal(CSSPropertyColor) && getRGBAFontColor(result.get()) == getRGBAFontColor(baseStyle))
         result->removeProperty(CSSPropertyColor);
