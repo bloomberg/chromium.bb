@@ -44,6 +44,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
       state.memory_limit_in_bytes = 100 * 1000 * 1000;
       state.num_resources_limit = max_tiles;
     }
+    state.unused_memory_limit_in_bytes = state.memory_limit_in_bytes;
     state.memory_limit_policy = memory_limit_policy;
     state.tree_priority = tree_priority;
 
@@ -56,6 +57,7 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     gfx::Size tile_size = settings_.default_tile_size;
     state.memory_limit_in_bytes =
         max_memory_tiles_ * 4 * tile_size.width() * tile_size.height();
+    state.unused_memory_limit_in_bytes = state.memory_limit_in_bytes;
     state.memory_limit_policy = memory_limit_policy_;
     state.num_resources_limit = 100;
     state.tree_priority = tree_priority;
@@ -69,15 +71,16 @@ class TileManagerTest : public testing::TestWithParam<bool> {
     testing::Test::TearDown();
   }
 
-  TileVector CreateTiles(int count,
-                         TilePriority active_priority,
-                         TilePriority pending_priority) {
+  TileVector CreateTilesWithSize(int count,
+                                 TilePriority active_priority,
+                                 TilePriority pending_priority,
+                                 gfx::Size tile_size) {
     TileVector tiles;
     for (int i = 0; i < count; ++i) {
       scoped_refptr<Tile> tile =
           make_scoped_refptr(new Tile(tile_manager_.get(),
                                       picture_pile_.get(),
-                                      settings_.default_tile_size,
+                                      tile_size,
                                       gfx::Rect(),
                                       gfx::Rect(),
                                       1.0,
@@ -89,6 +92,15 @@ class TileManagerTest : public testing::TestWithParam<bool> {
       tiles.push_back(tile);
     }
     return tiles;
+  }
+
+  TileVector CreateTiles(int count,
+                         TilePriority active_priority,
+                         TilePriority pending_priority) {
+    return CreateTilesWithSize(count,
+                               active_priority,
+                               pending_priority,
+                               settings_.default_tile_size);
   }
 
   FakeTileManager* tile_manager() {
@@ -463,6 +475,48 @@ TEST_P(TileManagerTest, TextReRasterAsNoLCD) {
 
   EXPECT_EQ(0, TilesWithLCDCount(active_tree_tiles));
   EXPECT_EQ(0, TilesWithLCDCount(pending_tree_tiles));
+}
+
+TEST_P(TileManagerTest, RespectMemoryLimit) {
+  Initialize(5, ALLOW_ANYTHING, SMOOTHNESS_TAKES_PRIORITY);
+  TileVector large_tiles = CreateTiles(
+      5, TilePriorityForNowBin(), TilePriority());
+
+  size_t memory_required_bytes;
+  size_t memory_nice_to_have_bytes;
+  size_t memory_allocated_bytes;
+  size_t memory_used_bytes;
+
+  tile_manager()->ManageTiles();
+  tile_manager()->GetMemoryStats(&memory_required_bytes,
+                                 &memory_nice_to_have_bytes,
+                                 &memory_allocated_bytes,
+                                 &memory_used_bytes);
+  // Allocated bytes should never be more than the memory limit.
+  EXPECT_LE(memory_allocated_bytes,
+            tile_manager()->GlobalState().memory_limit_in_bytes);
+
+  // Finish raster of large tiles.
+  tile_manager()->UpdateVisibleTiles();
+
+  // Remove all large tiles. This will leave the memory currently
+  // used by these tiles as unused when ManageTiles() is called.
+  large_tiles.clear();
+
+  // Create a new set of tiles using a different size. These tiles
+  // can use the memory currently assigned to the lerge tiles but
+  // they can't use the same resources as the size doesn't match.
+  TileVector small_tiles = CreateTilesWithSize(
+      5, TilePriorityForNowBin(), TilePriority(), gfx::Size(128, 128));
+
+  tile_manager()->ManageTiles();
+  tile_manager()->GetMemoryStats(&memory_required_bytes,
+                                 &memory_nice_to_have_bytes,
+                                 &memory_allocated_bytes,
+                                 &memory_used_bytes);
+  // Allocated bytes should never be more than the memory limit.
+  EXPECT_LE(memory_allocated_bytes,
+            tile_manager()->GlobalState().memory_limit_in_bytes);
 }
 
 // If true, the max tile limit should be applied as bytes; if false,

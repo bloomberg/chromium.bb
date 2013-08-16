@@ -4,6 +4,8 @@
 
 #include "cc/test/fake_tile_manager.h"
 
+#include <deque>
+
 #include "cc/resources/raster_worker_pool.h"
 
 namespace cc {
@@ -14,9 +16,28 @@ class FakeRasterWorkerPool : public RasterWorkerPool {
  public:
   FakeRasterWorkerPool() : RasterWorkerPool(NULL, 1) {}
 
-  virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {}
+  virtual void ScheduleTasks(RasterTask::Queue* queue) OVERRIDE {
+    RasterWorkerPool::SetRasterTasks(queue);
+    for (RasterTaskVector::const_iterator it = raster_tasks().begin();
+         it != raster_tasks().end(); ++it) {
+      completed_tasks_.push_back(it->get());
+    }
+  }
+  virtual void CheckForCompletedTasks() OVERRIDE {
+    while (!completed_tasks_.empty()) {
+      internal::RasterWorkerPoolTask* task = completed_tasks_.front().get();
+      task->WillComplete();
+      task->CompleteOnOriginThread();
+      task->DidComplete();
+      completed_tasks_.pop_front();
+    }
+  }
   virtual void OnRasterTasksFinished() OVERRIDE {}
   virtual void OnRasterTasksRequiredForActivationFinished() OVERRIDE {}
+
+ private:
+  typedef std::deque<scoped_refptr<internal::RasterWorkerPoolTask> > TaskDeque;
+  TaskDeque completed_tasks_;
 };
 
 }  // namespace

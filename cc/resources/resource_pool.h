@@ -40,9 +40,11 @@ class CC_EXPORT ResourcePool {
                                                      GLenum format);
   void ReleaseResource(scoped_ptr<ResourcePool::Resource>);
 
-  void SetMemoryUsageLimits(size_t max_memory_usage_bytes,
-                            size_t max_unused_memory_usage_bytes,
-                            size_t num_resources_limit);
+  void SetResourceUsageLimits(size_t max_memory_usage_bytes,
+                              size_t max_unused_memory_usage_bytes,
+                              size_t max_resource_count);
+
+  void ReduceResourceUsage();
 
   size_t total_memory_usage_bytes() const {
     return memory_usage_bytes_;
@@ -50,23 +52,26 @@ class CC_EXPORT ResourcePool {
   size_t acquired_memory_usage_bytes() const {
     return memory_usage_bytes_ - unused_memory_usage_bytes_;
   }
-  size_t NumResources() const { return resources_.size(); }
+  size_t acquired_resource_count() const {
+    return resource_count_ - unused_resources_.size();
+  }
 
  protected:
   explicit ResourcePool(ResourceProvider* resource_provider);
 
-  bool MemoryUsageTooHigh();
+  bool ResourceUsageTooHigh();
 
  private:
   ResourceProvider* resource_provider_;
   size_t max_memory_usage_bytes_;
   size_t max_unused_memory_usage_bytes_;
+  size_t max_resource_count_;
   size_t memory_usage_bytes_;
   size_t unused_memory_usage_bytes_;
-  size_t num_resources_limit_;
+  size_t resource_count_;
 
   typedef std::list<Resource*> ResourceList;
-  ResourceList resources_;
+  ResourceList unused_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePool);
 };

@@ -31,19 +31,20 @@ ResourcePool::ResourcePool(ResourceProvider* resource_provider)
     : resource_provider_(resource_provider),
       max_memory_usage_bytes_(0),
       max_unused_memory_usage_bytes_(0),
+      max_resource_count_(0),
       memory_usage_bytes_(0),
       unused_memory_usage_bytes_(0),
-      num_resources_limit_(0) {
+      resource_count_(0) {
 }
 
 ResourcePool::~ResourcePool() {
-  SetMemoryUsageLimits(0, 0, 0);
+  SetResourceUsageLimits(0, 0, 0);
 }
 
 scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
     gfx::Size size, GLenum format) {
-  for (ResourceList::iterator it = resources_.begin();
-       it != resources_.end(); ++it) {
+  for (ResourceList::iterator it = unused_resources_.begin();
+       it != unused_resources_.end(); ++it) {
     Resource* resource = *it;
 
     // TODO(epenner): It would be nice to DCHECK that this
@@ -57,14 +58,13 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
     if (resource->format() != format)
       continue;
 
-    resources_.erase(it);
+    unused_resources_.erase(it);
     unused_memory_usage_bytes_ -= resource->bytes();
     return make_scoped_ptr(resource);
   }
 
   // Create new resource.
-  Resource* resource = new Resource(
-      resource_provider_, size, format);
+  Resource* resource = new Resource(resource_provider_, size, format);
 
   // Extend all read locks on all resources until the resource is
   // finished being used, such that we know when resources are
@@ -72,44 +72,51 @@ scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
   resource_provider_->EnableReadLockFences(resource->id(), true);
 
   memory_usage_bytes_ += resource->bytes();
+  ++resource_count_;
   return make_scoped_ptr(resource);
 }
 
 void ResourcePool::ReleaseResource(
     scoped_ptr<ResourcePool::Resource> resource) {
-  if (MemoryUsageTooHigh()) {
+  if (ResourceUsageTooHigh()) {
     memory_usage_bytes_ -= resource->bytes();
+    --resource_count_;
     return;
   }
 
   unused_memory_usage_bytes_ += resource->bytes();
-  resources_.push_back(resource.release());
+  unused_resources_.push_back(resource.release());
 }
 
-void ResourcePool::SetMemoryUsageLimits(
+void ResourcePool::SetResourceUsageLimits(
     size_t max_memory_usage_bytes,
     size_t max_unused_memory_usage_bytes,
-    size_t num_resources_limit) {
+    size_t max_resource_count) {
   max_memory_usage_bytes_ = max_memory_usage_bytes;
   max_unused_memory_usage_bytes_ = max_unused_memory_usage_bytes;
-  num_resources_limit_ = num_resources_limit;
+  max_resource_count_ = max_resource_count;
 
-  while (!resources_.empty()) {
-    if (!MemoryUsageTooHigh())
+  ReduceResourceUsage();
+}
+
+void ResourcePool::ReduceResourceUsage() {
+  while (!unused_resources_.empty()) {
+    if (!ResourceUsageTooHigh())
       break;
 
     // MRU eviction pattern as least recently used is less likely to
     // be blocked by read lock fence.
-    Resource* resource = resources_.back();
-    resources_.pop_back();
+    Resource* resource = unused_resources_.back();
+    unused_resources_.pop_back();
     memory_usage_bytes_ -= resource->bytes();
     unused_memory_usage_bytes_ -= resource->bytes();
+    --resource_count_;
     delete resource;
   }
 }
 
-bool ResourcePool::MemoryUsageTooHigh() {
-  if (resources_.size() > num_resources_limit_)
+bool ResourcePool::ResourceUsageTooHigh() {
+  if (resource_count_ > max_resource_count_)
     return true;
   if (memory_usage_bytes_ > max_memory_usage_bytes_)
     return true;
