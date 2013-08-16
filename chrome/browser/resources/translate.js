@@ -249,6 +249,8 @@ cr.googleTranslate = (function() {
      * @param {string} url URL of an external JavaScript to load.
      */
     onLoadJavascript: function(url) {
+      if (url.indexOf('https://') != 0)
+        return;
       var xhr = new XMLHttpRequest();
       xhr.open('GET', url, true);
       xhr.onreadystatechange = function() {
