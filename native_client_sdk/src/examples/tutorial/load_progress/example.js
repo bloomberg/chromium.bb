@@ -39,13 +39,12 @@ function moduleLoadProgress(event) {
   if (event.lengthComputable && event.total > 0) {
     loadPercent = event.loaded / event.total * 100.0;
     loadPercentString = loadPercent + '%';
+    common.logMessage('progress: ' + event.url + ' ' + loadPercentString +
+                     ' (' + event.loaded + ' of ' + event.total + ' bytes)');
   } else {
     // The total length is not yet known.
-    loadPercent = -1.0;
-    loadPercentString = 'Computing...';
+    common.logMessage('progress: Computing...');
   }
-  common.logMessage('progress: ' + loadPercentString +
-                   ' (' + event.loaded + ' of ' + event.total + ' bytes)');
 }
 
 // Handler that gets called if an error occurred while loading the NaCl
