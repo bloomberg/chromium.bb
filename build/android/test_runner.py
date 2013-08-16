@@ -218,8 +218,7 @@ def AddInstrumentationTestOptions(option_parser):
   option_parser.add_option('-p', '--python_only', action='store_true',
                            default=False,
                            help='Run only the host-driven tests.')
-  option_parser.add_option('--python_test_root', '--host-driven-root',
-                           dest='host_driven_root',
+  option_parser.add_option('--host-driven-root',
                            help='Root of the host-driven tests.')
   option_parser.add_option('-w', '--wait_debugger', dest='wait_for_debugger',
                            action='store_true',
