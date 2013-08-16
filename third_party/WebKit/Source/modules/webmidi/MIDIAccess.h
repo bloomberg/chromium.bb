@@ -82,7 +82,7 @@ public:
     void sendMIDIData(unsigned portIndex, const unsigned char* data, size_t length, double timeStampInMilliseconds);
 
 private:
-    explicit MIDIAccess(ScriptExecutionContext*, MIDIAccessPromise*);
+    MIDIAccess(ScriptExecutionContext*, MIDIAccessPromise*);
 
     void startRequest();
     virtual void permissionDenied();

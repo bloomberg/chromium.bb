@@ -59,7 +59,7 @@ void WebMIDIClientMock::resetMock()
 
 void WebMIDIClientMock::requestSysExPermission(const WebMIDIPermissionRequest& request)
 {
-    m_clientMock->requestSysExPermission(adoptRef(request.midiAccess()));
+    m_clientMock->requestSysExPermission(request.midiAccess());
 }
 
 void WebMIDIClientMock::cancelSysExPermissionRequest(const WebMIDIPermissionRequest& request)
