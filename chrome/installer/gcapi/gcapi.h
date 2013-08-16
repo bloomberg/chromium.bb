@@ -22,6 +22,14 @@
 #define REACTIVATE_ERROR_INVALID_INPUT           (1 << 3)
 #define REACTIVATE_ERROR_REACTIVATION_FAILED     (1 << 4)
 
+// Error conditions for CanOfferRelaunch().
+#define RELAUNCH_ERROR_NOTINSTALLED              (1 << 0)
+#define RELAUNCH_ERROR_INVALID_PARTNER           (1 << 1)
+#define RELAUNCH_ERROR_PINGS_SENT                (1 << 2)
+#define RELAUNCH_ERROR_NOTDORMANT                (1 << 3)
+#define RELAUNCH_ERROR_ALREADY_RELAUNCHED        (1 << 4)
+#define RELAUNCH_ERROR_INVALID_INPUT             (1 << 5)
+
 // Flags to indicate how GCAPI is invoked
 #define GCAPI_INVOKED_STANDARD_SHELL             (1 << 0)
 #define GCAPI_INVOKED_UAC_ELEVATION              (1 << 1)
@@ -33,6 +41,10 @@ extern "C" {
 // The minimum number of days an installation can be dormant before reactivation
 // may be offered.
 const int kReactivationMinDaysDormant = 50;
+
+// The minimum number of days an installation can be dormant before a relaunch
+// may be offered.
+const int kRelaunchMinDaysDormant = 30;
 
 // This function returns TRUE if Google Chrome should be offered.
 // If the return is FALSE, the |reasons| DWORD explains why.  If you don't care
@@ -104,6 +116,18 @@ BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
                                 int shell_mode,
                                 DWORD* error_code);
 
+// Returns true if a vendor may offer relaunch at this time. Returns false if
+// the vendor may not offer reactivation at this time, and places one of the
+// RELAUNCH_ERROR_XXX values in |error_code| if |error_code| is non-null. The
+// installed brandcode must be in |partner_brandcode_list|. |shell_mode| should
+// be set to one of GCAPI_INVOKED_STANDARD_SHELL or GCAPI_INVOKED_UAC_ELEVATION
+// depending on whether this method is invoked from an elevated or non-elevated
+// process.
+BOOL __stdcall CanOfferRelaunch(const wchar_t** partner_brandcode_list,
+                                int partner_brandcode_list_length,
+                                int shell_mode,
+                                DWORD* error_code);
+
 // Function pointer type declarations to use with GetProcAddress.
 typedef BOOL (__stdcall *GCCC_CompatibilityCheck)(BOOL, int, DWORD *);
 typedef BOOL (__stdcall *GCCC_LaunchGC)();
@@ -114,6 +138,10 @@ typedef BOOL (__stdcall *GCCC_CanOfferReactivation)(const wchar_t*,
                                                     int,
                                                     DWORD*);
 typedef BOOL (__stdcall *GCCC_ReactivateChrome)(const wchar_t*,
+                                                int,
+                                                DWORD*);
+typedef BOOL (__stdcall *GCCC_CanOfferRelaunch)(const wchar_t**,
+                                                int,
                                                 int,
                                                 DWORD*);
 
