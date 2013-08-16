@@ -1871,8 +1871,9 @@ void RenderObject::setStyle(PassRefPtr<RenderStyle> style)
 
     // We need to ensure that view->maximalOutlineSize() is valid for any repaints that happen
     // during styleDidChange (it's used by clippedOverflowRectForRepaint()).
-    if (m_style->outlineWidth() > 0 && m_style->outlineSize() > maximalOutlineSize(PaintPhaseOutline))
-        toRenderView(document()->renderer())->setMaximalOutlineSize(m_style->outlineSize());
+    // FIXME: Do this more cleanly. http://crbug.com/273904
+    if (m_style->outlineWidth() > 0 && m_style->outlineSize() > view()->maximalOutlineSize())
+        view()->setMaximalOutlineSize(m_style->outlineSize());
 
     bool doesNotNeedLayout = !m_parent || isText();
 
