@@ -612,8 +612,12 @@ bool ObjectProxy::AddMatchRuleWithoutCallback(
 
 void ObjectProxy::UpdateNameOwnerAndBlock() {
   bus_->AssertOnDBusThread();
+  // Errors should be suppressed here, as the service may not be yet running
+  // when connecting to signals of the service, which is just fine.
+  // The ObjectProxy will be notified when the service is launched via
+  // NameOwnerChanged signal. See also comments in ConnectToSignalInternal().
   service_name_owner_ =
-      bus_->GetServiceOwnerAndBlock(service_name_, Bus::REPORT_ERRORS);
+      bus_->GetServiceOwnerAndBlock(service_name_, Bus::SUPPRESS_ERRORS);
 }
 
 DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
