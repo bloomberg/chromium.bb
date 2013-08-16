@@ -10,11 +10,30 @@
 #include "ui/gfx/image/image.h"
 
 namespace {
+
 const SkColor kDefaultColorFrameManagedUser = SkColorSetRGB(165, 197, 225);
 const SkColor kDefaultColorFrameManagedUserInactive =
     SkColorSetRGB(180, 225, 247);
 const SkColor kDefaultColorManagedUserLabelBackground =
     SkColorSetRGB(108, 167, 210);
+
+// Map resource ids to the managed user resource ids.
+int MapToManagedUserResourceIds(int id) {
+  switch (id) {
+    case IDR_THEME_FRAME:
+    case IDR_THEME_FRAME_WIN:
+      return IDR_MANAGED_USER_THEME_FRAME;
+    case IDR_THEME_FRAME_INACTIVE:
+    case IDR_THEME_FRAME_INACTIVE_WIN:
+      return IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
+    case IDR_THEME_TAB_BACKGROUND:
+    case IDR_THEME_TAB_BACKGROUND_V:
+    case IDR_THEME_TAB_BACKGROUND_WIN:
+      return IDR_MANAGED_USER_THEME_TAB_BACKGROUND;
+  }
+  return id;
+}
+
 }  // namespace
 
 ManagedUserTheme::ManagedUserTheme()
@@ -44,18 +63,10 @@ gfx::Image ManagedUserTheme::GetImageNamed(int id) {
   if (!HasCustomImage(id))
     return gfx::Image();
 
-  if (id == IDR_THEME_FRAME)
-    id = IDR_MANAGED_USER_THEME_FRAME;
-  else if (id == IDR_THEME_FRAME_INACTIVE)
-    id = IDR_MANAGED_USER_THEME_FRAME_INACTIVE;
-  else if (id == IDR_THEME_TAB_BACKGROUND || id == IDR_THEME_TAB_BACKGROUND_V)
-    id = IDR_MANAGED_USER_THEME_TAB_BACKGROUND;
+  id = MapToManagedUserResourceIds(id);
   return ResourceBundle::GetSharedInstance().GetNativeImageNamed(id);
 }
 
 bool ManagedUserTheme::HasCustomImage(int id) const {
-  return (id == IDR_THEME_FRAME ||
-          id == IDR_THEME_FRAME_INACTIVE ||
-          id == IDR_THEME_TAB_BACKGROUND ||
-          id == IDR_THEME_TAB_BACKGROUND_V);
+  return id != MapToManagedUserResourceIds(id);
 }
