@@ -1181,7 +1181,15 @@ TEST_F(WidgetTest, ExitFullscreenRestoreState) {
 // Checks that if a mouse-press triggers a capture on a different widget (which
 // consumes the mouse-release event), then the target of the press does not have
 // capture.
-TEST_F(WidgetTest, CaptureWidgetFromMousePress) {
+// Fails on chromium.webkit Windows bot, see crbug.com/264872.
+#if defined(OS_WIN)
+#define MAYBE_DisableCaptureWidgetFromMousePress\
+    DISABLED_CaptureWidgetFromMousePress
+#else
+#define MAYBE_DisableCaptureWidgetFromMousePress\
+    CaptureWidgetFromMousePress
+#endif
+TEST_F(WidgetTest, MAYBE_DisableCaptureWidgetFromMousePress) {
   // The test creates two widgets: |first| and |second|.
   // The View in |first| makes |second| visible, sets capture on it, and starts
   // a nested loop (like a menu does). The View in |second| terminates the
@@ -2063,7 +2071,15 @@ class RootViewTestView : public View {
 };
 
 // Checks if RootView::*_handler_ fields are unset when widget is hidden.
-TEST_F(WidgetTest, TestRootViewHandlersWhenHidden) {
+// Fails on chromium.webkit Windows bot, see crbug.com/264872.
+#if defined(OS_WIN)
+#define MAYBE_DisableTestRootViewHandlersWhenHidden\
+    DISABLED_TestRootViewHandlersWhenHidden
+#else
+#define MAYBE_DisableTestRootViewHandlersWhenHidden\
+    TestRootViewHandlersWhenHidden
+#endif
+TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   Widget* widget = CreateTopLevelNativeWidget();
   widget->SetBounds(gfx::Rect(0, 0, 300, 300));
   View* view = new RootViewTestView();
