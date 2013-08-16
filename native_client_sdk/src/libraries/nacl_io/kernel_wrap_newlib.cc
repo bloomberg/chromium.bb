@@ -89,7 +89,11 @@ int WRAP(fstat)(int fd, struct stat* buf) {
 }
 
 int WRAP(getdents)(int fd, dirent* buf, size_t count, size_t* nread) {
-  return (ki_getdents(fd, buf, count) < 0) ? errno : 0;
+  int rtn = ki_getdents(fd, buf, count);
+  if (rtn < 0)
+    return errno;
+  *nread = rtn;
+  return 0;
 }
 
 int WRAP(mmap)(void** addr, size_t length, int prot, int flags, int fd,

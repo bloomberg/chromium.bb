@@ -179,8 +179,14 @@ TEST_F(KernelWrapTest, getcwd) {
 }
 
 TEST_F(KernelWrapTest, getdents) {
-  EXPECT_CALL(mock, getdents(456, NULL, 567)).Times(1);
-  getdents(456, NULL, 567);
+#ifndef __GLIBC__
+  // TODO(sbc): Find a way to test the getdents wrapper under glibc.
+  // It looks like the only way to excerside it is to call readdir(2).
+  // There is an internal glibc function __getdents that will call the
+  // IRT but that cannot be accessed from here as glibc does not export it.
+  EXPECT_CALL(mock, getdents(456, NULL, 567)).WillOnce(Return(678));
+  EXPECT_EQ(getdents(456, NULL, 567), 678);
+#endif
 }
 
 // gcc gives error: getwd is deprecated.

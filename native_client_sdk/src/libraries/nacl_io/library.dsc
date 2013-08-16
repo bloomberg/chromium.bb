@@ -55,7 +55,6 @@
         "syscalls/fsync.c",
         "syscalls/ftruncate.c",
         "syscalls/getcwd.c",
-        "syscalls/getdents.c",
         "syscalls/gethostbyname.c",
         "syscalls/getpeername.c",
         "syscalls/getsockname.c",
