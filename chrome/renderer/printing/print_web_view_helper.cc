@@ -1163,19 +1163,13 @@ void PrintWebViewHelper::OnPrintNodeUnderContextMenu() {
 
 void PrintWebViewHelper::OnInitiatePrintPreview(bool selection_only) {
   DCHECK(is_preview_enabled_);
-  WebKit::WebFrame* frame;
-  if (GetPrintFrame(&frame)) {
-    print_preview_context_.InitWithFrame(frame);
-    RequestPrintPreview(selection_only ?
-                        PRINT_PREVIEW_USER_INITIATED_SELECTION :
-                        PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
-  } else {
-    // This should not happen. Let's add a CHECK here to see how often this
-    // gets hit.
-    // TODO(thestig) Remove this later when we have sufficient usage of this
-    // code on the M19 stable channel.
-    CHECK(false);
-  }
+  WebKit::WebFrame* frame = NULL;
+  GetPrintFrame(&frame);
+  DCHECK(frame);
+  print_preview_context_.InitWithFrame(frame);
+  RequestPrintPreview(selection_only ?
+                      PRINT_PREVIEW_USER_INITIATED_SELECTION :
+                      PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME);
 }
 
 bool PrintWebViewHelper::IsPrintingEnabled() {
