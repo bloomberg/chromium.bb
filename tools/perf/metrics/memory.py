@@ -1,31 +1,81 @@
 # Copyright 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 import sys
 
+from metrics import histogram_util
 from metrics import Metric
 
+_HISTOGRAMS = [
+    {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent',
+     'type': histogram_util.RENDERER_HISTOGRAM},
+    {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb',
+     'type': histogram_util.RENDERER_HISTOGRAM},
+    {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb',
+     'type': histogram_util.RENDERER_HISTOGRAM},
+    {'name': 'Memory.RendererUsed', 'units': 'kb',
+     'type': histogram_util.RENDERER_HISTOGRAM},
+    {'name': 'Memory.BrowserUsed', 'units': 'kb',
+     'type': histogram_util.BROWSER_HISTOGRAM}]
+
 class MemoryMetric(Metric):
-  """MemoryMetric gathers memory statistics from the browser object."""
+  """MemoryMetric gathers memory statistics from the browser object.
+
+  This includes both per-page histogram stats, most about javascript
+  memory usage, and overall memory stats from the system for the whole
+  test run."""
 
   def __init__(self, browser):
     super(MemoryMetric, self).__init__()
     self._browser = browser
-    self._memory_stats = None
-    self._start_commit_charge = None
-
-  def Start(self, page=None, tab=None):
-    """Record the initial value of 'SystemCommitCharge'."""
     self._start_commit_charge = self._browser.memory_stats['SystemCommitCharge']
+    self._memory_stats = None
+    self._histogram_start = dict()
+    self._histogram_delta = dict()
 
-  def Stop(self, page=None, tab=None):
-    """Fetch the browser memory stats."""
-    assert self._start_commit_charge, 'Must call Start() first'
-    self._memory_stats = self._browser.memory_stats
+  def Start(self, page, tab):
+    """Start the per-page preparation for this metric.
+
+    Here, this consists of recording the start value of all the histograms.
+    """
+    for h in _HISTOGRAMS:
+      histogram_data = histogram_util.GetHistogramFromDomAutomation(
+          h['type'], h['name'], tab)
+      # Histogram data may not be available
+      if not histogram_data:
+        continue
+      self._histogram_start[h['name']] = histogram_data
+
+  def Stop(self, page, tab):
+    """Prepare the results for this page.
+
+    The results are the differences between the current histogram values
+    and the values when Start() was called.
+    """
+    assert self._histogram_start, 'Must call Start() first'
+    for h in _HISTOGRAMS:
+      # Histogram data may not be available
+      if h['name'] not in self._histogram_start:
+        continue
+      histogram_data = histogram_util.GetHistogramFromDomAutomation(
+          h['type'], h['name'], tab)
+      self._histogram_delta[h['name']] = histogram_util.SubtractHistogram(
+          histogram_data, self._histogram_start[h['name']])
 
   def AddResults(self, tab, results):
-    """Add summary results to the results object."""
-    assert self._memory_stats, 'Must call Stop() first'
+    """Add results for this page to the results object."""
+    assert self._histogram_delta, 'Must call Stop() first'
+    for h in _HISTOGRAMS:
+      # Histogram data may not be available
+      if h['name'] not in self._histogram_start:
+        continue
+      results.Add(h['name'], h['units'], self._histogram_delta[h['name']],
+                  data_type='unimportant-histogram')
+
+  def AddSummaryResults(self, results):
+    """Add summary (overall) results to the results object."""
+    self._memory_stats = self._browser.memory_stats
     if not self._memory_stats['Browser']:
       return
 

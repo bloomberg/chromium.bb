@@ -18,18 +18,10 @@ cycling all pages.
 import os
 import sys
 
-from metrics import histogram
 from metrics import io
 from metrics import memory
 from telemetry.core import util
 from telemetry.page import page_measurement
-
-
-MEMORY_HISTOGRAMS = [
-    {'name': 'V8.MemoryExternalFragmentationTotal', 'units': 'percent'},
-    {'name': 'V8.MemoryHeapSampleTotalCommitted', 'units': 'kb'},
-    {'name': 'V8.MemoryHeapSampleTotalUsed', 'units': 'kb'}]
-
 
 class PageCycler(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
@@ -40,7 +32,6 @@ class PageCycler(page_measurement.PageMeasurement):
       self._page_cycler_js = f.read()
 
     self._memory_metric = None
-    self._histograms = None
 
   def AddCommandLineOptions(self, parser):
     # The page cyclers should default to 10 iterations. In order to change the
@@ -54,10 +45,6 @@ class PageCycler(page_measurement.PageMeasurement):
   def DidStartBrowser(self, browser):
     """Initialize metrics once right after the browser has been launched."""
     self._memory_metric = memory.MemoryMetric(browser)
-    self._memory_metric.Start()
-    self._histograms = [histogram.HistogramMetric(
-                           h, histogram.RENDERER_HISTOGRAM)
-                       for h in MEMORY_HISTOGRAMS]
 
   def DidStartHTTPServer(self, tab):
     # Avoid paying for a cross-renderer navigation on the first page on legacy
@@ -68,8 +55,7 @@ class PageCycler(page_measurement.PageMeasurement):
     page.script_to_evaluate_on_commit = self._page_cycler_js
 
   def DidNavigateToPage(self, page, tab):
-    for h in self._histograms:
-      h.Start(page, tab)
+    self._memory_metric.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
@@ -84,21 +70,18 @@ class PageCycler(page_measurement.PageMeasurement):
       print 'typical_25 is currently disabled on mac. Skipping test.'
       sys.exit(0)
 
-
   def MeasurePage(self, page, tab, results):
     def _IsDone():
       return bool(tab.EvaluateJavaScript('__pc_load_time'))
     util.WaitFor(_IsDone, 60)
-
-    for h in self._histograms:
-      h.GetValue(page, tab, results)
-
     results.Add('page_load_time', 'ms',
                 int(float(tab.EvaluateJavaScript('__pc_load_time'))),
                 chart_name='times')
 
-  def DidRunTest(self, tab, results):
-    self._memory_metric.Stop()
+    self._memory_metric.Stop(page, tab)
     self._memory_metric.AddResults(tab, results)
+
+  def DidRunTest(self, tab, results):
+    self._memory_metric.AddSummaryResults(results)
     io.IOMetric().AddSummaryResults(tab, results)
 

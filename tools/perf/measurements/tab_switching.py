@@ -38,7 +38,7 @@ class TabSwitching(page_measurement.PageMeasurement):
     thenrecord a single histogram for the tab switching metric.
     """
     histogram_name = 'MPArch.RWH_TabSwitchPaintDuration'
-    histogram_type = 'getBrowserHistogram'
+    histogram_type = histogram_util.BROWSER_HISTOGRAM
     first_histogram = histogram_util.GetHistogramFromDomAutomation(
         histogram_type, histogram_name, tab)
     prev_histogram = first_histogram
