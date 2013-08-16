@@ -387,9 +387,8 @@ CreateGpuProcessViewContext(
           false,
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE,
           64 * 1024,  // command buffer size
-          std::min(full_screen_texture_size_in_bytes,
-                   kDefaultStartTransferBufferSize),
-          kDefaultMinTransferBufferSize,
+          64 * 1024,  // start transfer buffer size
+          64 * 1024,  // min transfer buffer size
           std::min(3 * full_screen_texture_size_in_bytes,
                    kDefaultMaxTransferBufferSize))) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
