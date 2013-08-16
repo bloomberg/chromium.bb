@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -156,7 +157,8 @@ void ProfileChooserView::OnAvatarMenuModelChanged(
       other_profiles.push_back(i);
     }
   }
-  DCHECK(current_profile_view_);
+  if (!current_profile_view_)  // Guest windows don't have an entry.
+    current_profile_view_ = CreateGuestProfileView();
 
   layout->StartRow(1, 0);
   layout->AddView(current_profile_view_);
@@ -198,12 +200,11 @@ views::View* ProfileChooserView::CreateProfileImageView(const gfx::Image& icon,
   return view;
 }
 
-views::View* ProfileChooserView::CreateProfileCardView(size_t avatar_to_show) {
+views::View* ProfileChooserView::CreateProfileCardView(
+    const AvatarMenuModel::Item& avatar_item) {
   views::View* view = new views::View();
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const AvatarMenuModel::Item& avatar_item =
-      avatar_menu_model_->GetItemAt(avatar_to_show);
 
   const int kLargeImageSide = 64;
   views::View* photo_image =
@@ -248,8 +249,47 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
     size_t avatar_to_show) {
   views::View* view = new views::View();
 
-  views::View* card_view = CreateProfileCardView(avatar_to_show);
+  views::View* card_view = CreateProfileCardView(
+      avatar_menu_model_->GetItemAt(avatar_to_show));
 
+  views::LabelButton* signout_button = new views::LabelButton(
+      this,
+      l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON));
+  signout_button->SetStyle(views::Button::STYLE_BUTTON);
+  DCHECK(!signout_current_profile_view_);
+  signout_current_profile_view_ = signout_button;
+
+  views::GridLayout* layout = new views::GridLayout(view);
+  view->SetLayoutManager(layout);
+
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(0, 30);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddPaddingColumn(0, 10);
+
+  layout->StartRow(1, 0);
+  layout->AddView(card_view, 1, 1);
+  layout->AddView(signout_button);
+
+  return view;
+}
+
+views::View* ProfileChooserView::CreateGuestProfileView() {
+  views::View* view = new views::View();
+
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+
+  gfx::Image guest_icon = rb.GetImageNamed(IDR_GUEST_ICON);
+  AvatarMenuModel::Item guest_avatar_item(0, guest_icon);
+  guest_avatar_item.active = true;
+  guest_avatar_item.name = l10n_util::GetStringUTF16(
+      IDS_PROFILES_PROFILE_GUEST_BUTTON);
+  guest_avatar_item.signed_in = false;
+
+  views::View* card_view = CreateProfileCardView(guest_avatar_item);
   views::LabelButton* signout_button = new views::LabelButton(
       this,
       l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON));

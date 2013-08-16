@@ -56,8 +56,9 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
         avatar_label_ = new AvatarLabel(browser_view_);
         AddChildView(avatar_label_);
       }
-      avatar_button_ = new AvatarMenuButton(browser_view_->browser(),
-                                            browser_view_->IsOffTheRecord());
+      avatar_button_ = new AvatarMenuButton(
+          browser_view_->browser(),
+          browser_view_->IsOffTheRecord() && !browser_view_->IsGuestSession());
       AddChildView(avatar_button_);
       frame_->GetRootView()->Layout();
     }
@@ -78,7 +79,9 @@ void BrowserNonClientFrameView::UpdateAvatarInfo() {
   gfx::Image avatar;
   string16 text;
   bool is_gaia_picture = false;
-  if (browser_view_->IsOffTheRecord()) {
+  if (browser_view_->IsGuestSession()) {
+    avatar = rb.GetImageNamed(browser_view_->GetGuestIconResourceID());
+  } else if (browser_view_->IsOffTheRecord()) {
     avatar = rb.GetImageNamed(browser_view_->GetOTRIconResourceID());
   } else if (AvatarMenuModel::ShouldShowAvatarMenu()) {
     ProfileInfoCache& cache =

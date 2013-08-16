@@ -37,12 +37,14 @@
       <structure name="IDR_HELP_HTML" file="resources\help\help.html" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_HELP_CHANNEL_CHANGE_PAGE_CSS" file="resources\help\channel_change_page.css" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_HELP_CHANNEL_CHANGE_PAGE_HTML" file="resources\help\channel_change_page.html" flattenhtml="true" type="chrome_html" />
-      <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\incognito_tab.html" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_INCOGNITO_TAB_HTML" file="resources\ntp4\incognito_tab.html" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_GUEST_TAB_HTML" file="resources\ntp4\guest_tab.html" flattenhtml="true" type="chrome_html" />
       <if expr="pp_ifdef('chromeos')">
         <structure name="IDR_LOGIN_HTML" file="resources\chromeos\login\login.html" flattenhtml="true" type="chrome_html" variables="OOBE=login" expand_variables="true"/>
         <structure name="IDR_LOGIN_JS" file="resources\chromeos\login\login.js" flattenhtml="true" type="chrome_html" />
       </if>
-      <structure name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\new_incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_NEW_INCOGNITO_TAB_THEME_CSS" file="resources\ntp4\new_incognito_tab_theme.css" flattenhtml="true" type="chrome_html" />
+      <structure name="IDR_NEW_GUEST_TAB_THEME_CSS" file="resources\ntp4\new_guest_tab_theme.css" flattenhtml="true" type="chrome_html" />
       <if expr="not is_android">
         <structure name="IDR_NEW_TAB_4_HTML" file="resources\ntp4\new_tab.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_NEW_TAB_4_THEME_CSS" file="resources\ntp4\new_tab_theme.css" flattenhtml="true" type="chrome_html" />

@@ -8,6 +8,7 @@
 #include <map>
 #include <vector>
 
+#include "chrome/browser/profiles/avatar_menu_model.h"
 #include "chrome/browser/profiles/avatar_menu_model_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -20,7 +21,6 @@ namespace views {
 class LabelButton;
 }
 
-class AvatarMenuModel;
 class Browser;
 class ProfileItemView;
 
@@ -82,8 +82,9 @@ class ProfileChooserView : public views::BubbleDelegateView,
   static bool close_on_deactivate_;
 
   views::View* CreateProfileImageView(const gfx::Image& icon, int side);
-  views::View* CreateProfileCardView(size_t avatar_to_show);
+  views::View* CreateProfileCardView(const AvatarMenuModel::Item& avatar_item);
   views::View* CreateCurrentProfileView(size_t avatars_to_show);
+  views::View* CreateGuestProfileView();
   views::View* CreateOtherProfilesView(const Indexes& avatars_to_show);
   views::View* CreateOptionsView();
 

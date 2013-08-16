@@ -43,6 +43,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -222,33 +223,56 @@ bool NTPResourceCache::NewTabCacheNeedsRefresh() {
   return false;
 }
 
-base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
+NTPResourceCache::WindowType NTPResourceCache::GetWindowType(
+    Profile* profile, content::RenderProcessHost* render_host) {
+  if (profile->IsGuestSession()) {
+    return NTPResourceCache::GUEST;
+  } else if (render_host) {
+    // Sometimes the |profile| is the parent (non-incognito) version of the user
+    // so we check the |render_host| if it is provided.
+    if (render_host->GetBrowserContext()->IsOffTheRecord())
+      return NTPResourceCache::INCOGNITO;
+  } else if (profile->IsOffTheRecord()) {
+    return NTPResourceCache::INCOGNITO;
+  }
+  return NTPResourceCache::NORMAL;
+}
+
+base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (is_incognito) {
+  if (win_type == GUEST) {
+    if (!new_tab_guest_html_.get())
+      CreateNewTabGuestHTML();
+    return new_tab_guest_html_.get();
+  } else if (win_type == INCOGNITO) {
     if (!new_tab_incognito_html_.get())
       CreateNewTabIncognitoHTML();
+    return new_tab_incognito_html_.get();
   } else {
     // Refresh the cached HTML if necessary.
     // NOTE: NewTabCacheNeedsRefresh() must be called every time the new tab
     // HTML is fetched, because it needs to initialize cached values.
     if (NewTabCacheNeedsRefresh() || !new_tab_html_.get())
       CreateNewTabHTML();
+    return new_tab_html_.get();
   }
-  return is_incognito ? new_tab_incognito_html_.get() :
-                        new_tab_html_.get();
 }
 
-base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
+base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(WindowType win_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (is_incognito) {
+  if (win_type == GUEST) {
+    if (!new_tab_guest_css_.get())
+      CreateNewTabGuestCSS();
+    return new_tab_guest_css_.get();
+  } else if (win_type == INCOGNITO) {
     if (!new_tab_incognito_css_.get())
       CreateNewTabIncognitoCSS();
+    return new_tab_incognito_css_.get();
   } else {
     if (!new_tab_css_.get())
       CreateNewTabCSS();
+    return new_tab_css_.get();
   }
-  return is_incognito ? new_tab_incognito_css_.get() :
-                        new_tab_css_.get();
 }
 
 void NTPResourceCache::Observe(int type,
@@ -329,6 +353,27 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       incognito_tab_html, &localized_strings);
 
   new_tab_incognito_html_ = base::RefCountedString::TakeString(&full_html);
+}
+
+void NTPResourceCache::CreateNewTabGuestHTML() {
+  DictionaryValue localized_strings;
+  localized_strings.SetString("title",
+      l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE));
+  const char* new_tab_link = kLearnMoreGuestSessionUrl;
+  localized_strings.SetString("content",
+      l10n_util::GetStringFUTF16(IDS_NEW_TAB_GUEST_SESSION_MESSAGE,
+                                 GetUrlWithLang(GURL(new_tab_link))));
+
+  webui::SetFontAndTextDirection(&localized_strings);
+
+  static const base::StringPiece guest_tab_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_GUEST_TAB_HTML));
+
+  std::string full_html = webui::GetI18nTemplateHtml(
+      guest_tab_html, &localized_strings);
+
+  new_tab_guest_html_ = base::RefCountedString::TakeString(&full_html);
 }
 
 void NTPResourceCache::CreateNewTabHTML() {
@@ -538,6 +583,39 @@ void NTPResourceCache::CreateNewTabIncognitoCSS() {
       new_tab_theme_css, subst, NULL);
 
   new_tab_incognito_css_ = base::RefCountedString::TakeString(&full_css);
+}
+
+void NTPResourceCache::CreateNewTabGuestCSS() {
+  ui::ThemeProvider* tp = ThemeServiceFactory::GetForProfile(profile_);
+  DCHECK(tp);
+
+  // Get our theme colors
+  SkColor color_background =
+      GetThemeColor(tp, ThemeProperties::COLOR_NTP_BACKGROUND);
+
+  // Generate the replacements.
+  std::vector<std::string> subst;
+
+  // Cache-buster for background.
+  subst.push_back(
+      profile_->GetPrefs()->GetString(prefs::kCurrentThemeID));  // $1
+
+  // Colors.
+  subst.push_back(SkColorToRGBAString(color_background));  // $2
+  subst.push_back(GetNewTabBackgroundCSS(tp, false));  // $3
+  subst.push_back(GetNewTabBackgroundCSS(tp, true));  // $4
+  subst.push_back(GetNewTabBackgroundTilingCSS(tp));  // $5
+
+  // Get our template.
+  static const base::StringPiece new_tab_theme_css(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          IDR_NEW_GUEST_TAB_THEME_CSS));
+
+  // Create the string from our template and the replacements.
+  std::string full_css = ReplaceStringPlaceholders(
+      new_tab_theme_css, subst, NULL);
+
+  new_tab_guest_css_ = base::RefCountedString::TakeString(&full_css);
 }
 
 void NTPResourceCache::CreateNewTabCSS() {

@@ -43,8 +43,10 @@ static const char* kNewIncognitoTabCSSPath = "css/incognito_new_tab_theme.css";
 
 ThemeSource::ThemeSource(Profile* profile)
     : profile_(profile->GetOriginalProfile()) {
-  css_bytes_ = NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(
-      profile->IsOffTheRecord());
+  NTPResourceCache::WindowType win_type = NTPResourceCache::GetWindowType(
+      profile_, NULL);
+  css_bytes_ =
+      NTPResourceCacheFactory::GetForProfile(profile)->GetNewTabCSS(win_type);
 }
 
 ThemeSource::~ThemeSource() {

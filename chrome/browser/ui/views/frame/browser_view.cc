@@ -568,11 +568,20 @@ bool BrowserView::IsGuestSession() const {
   return browser_->profile()->IsGuestSession();
 }
 
+int BrowserView::GetGuestIconResourceID() const {
+  return IDR_GUEST_ICON;
+}
+
 bool BrowserView::ShouldShowAvatar() const {
   if (!IsBrowserTypeNormal())
     return false;
+#if defined(OS_CHROMEOS)
   if (IsOffTheRecord() && !IsGuestSession())
     return true;
+#else
+  if (IsOffTheRecord())  // Desktop guest is incognito and needs avatar.
+    return true;
+#endif
   // Tests may not have a profile manager.
   if (!g_browser_process->profile_manager())
     return false;

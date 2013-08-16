@@ -25,10 +25,10 @@ static inline int Round(double x) {
   return static_cast<int>(x + 0.5);
 }
 
-AvatarMenuButton::AvatarMenuButton(Browser* browser, bool incognito)
+AvatarMenuButton::AvatarMenuButton(Browser* browser, bool disabled)
     : MenuButton(NULL, string16(), this, false),
       browser_(browser),
-      incognito_(incognito),
+      disabled_(disabled),
       is_gaia_picture_(false),
       old_height_(0) {
   // In RTL mode, the avatar icon should be looking the opposite direction.
@@ -70,7 +70,7 @@ void AvatarMenuButton::OnPaint(gfx::Canvas* canvas) {
 }
 
 bool AvatarMenuButton::HitTestRect(const gfx::Rect& rect) const {
-  if (incognito_)
+  if (disabled_)
     return false;
   return views::MenuButton::HitTestRect(rect);
 }
@@ -86,7 +86,7 @@ void AvatarMenuButton::SetAvatarIcon(const gfx::Image& icon,
 // views::MenuButtonListener implementation
 void AvatarMenuButton::OnMenuButtonClicked(views::View* source,
                                            const gfx::Point& point) {
-  if (incognito_)
+  if (disabled_)
     return;
 
   ShowAvatarBubble();

@@ -332,6 +332,7 @@
       <structure type="chrome_scaled_image" name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" />
       <structure type="chrome_scaled_image" name="IDR_FULLSCREEN_MENU_BUTTON" file="fullscreen_menu_button.png" />
       <structure type="chrome_scaled_image" name="IDR_GEOLOCATION_INFOBAR_ICON" file="infobar_geolocation.png" />
+      <structure type="chrome_scaled_image" name="IDR_GUEST_ICON" file="common/guest_icon.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="help_16.png" />
       </if>

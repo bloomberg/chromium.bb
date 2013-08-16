@@ -110,9 +110,10 @@ void AppLauncherPageUI::HTMLSource::StartDataRequest(
 
   content::RenderProcessHost* render_host =
       content::RenderProcessHost::FromID(render_process_id);
-  bool is_incognito = render_host->GetBrowserContext()->IsOffTheRecord();
+  NTPResourceCache::WindowType win_type = NTPResourceCache::GetWindowType(
+      profile_, render_host);
   scoped_refptr<base::RefCountedMemory> html_bytes(
-      resource->GetNewTabHTML(is_incognito));
+      resource->GetNewTabHTML(win_type));
 
   callback.Run(html_bytes.get());
 }

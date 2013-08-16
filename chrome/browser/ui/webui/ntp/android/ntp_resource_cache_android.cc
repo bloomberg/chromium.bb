@@ -15,6 +15,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -35,7 +36,20 @@ NTPResourceCache::NTPResourceCache(Profile* profile) : profile_(profile) {}
 
 NTPResourceCache::~NTPResourceCache() {}
 
-base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
+NTPResourceCache::WindowType NTPResourceCache::GetWindowType(
+    Profile* profile, content::RenderProcessHost* render_host) {
+  if (render_host) {
+    // Sometimes the |profile| is the parent (non-incognito) version of the user
+    // so we check the |render_host| if it is provided.
+    if (render_host->GetBrowserContext()->IsOffTheRecord())
+      return NTPResourceCache::INCOGNITO;
+  } else if (profile->IsOffTheRecord()) {
+    return NTPResourceCache::INCOGNITO;
+  }
+  return NTPResourceCache::NORMAL;
+}
+
+base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(WindowType win_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // Android uses same html/css for incognito NTP and normal NTP
   if (!new_tab_html_.get())
@@ -43,7 +57,7 @@ base::RefCountedMemory* NTPResourceCache::GetNewTabHTML(bool is_incognito) {
   return new_tab_html_.get();
 }
 
-base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(bool is_incognito) {
+base::RefCountedMemory* NTPResourceCache::GetNewTabCSS(WindowType win_type) {
   // This is used for themes, which are not currently supported on Android.
   NOTIMPLEMENTED();
   return NULL;

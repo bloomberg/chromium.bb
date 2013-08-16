@@ -26,9 +26,9 @@ class Browser;
 class AvatarMenuButton : public views::MenuButton,
                          public views::MenuButtonListener {
  public:
-  // Creates a new button. If |incognito| is true and we're not in managed mode,
+  // Creates a new button. If |disabled| is true and we're not in managed mode,
   // clicking on the button will cause the profile menu to be displayed.
-  AvatarMenuButton(Browser* browser, bool incognito);
+  AvatarMenuButton(Browser* browser, bool disabled);
 
   virtual ~AvatarMenuButton();
 
@@ -46,7 +46,7 @@ class AvatarMenuButton : public views::MenuButton,
                                    const gfx::Point& point) OVERRIDE;
 
   Browser* browser_;
-  bool incognito_;
+  bool disabled_;
   scoped_ptr<ui::MenuModel> menu_model_;
 
   // Use a scoped ptr because gfx::Image doesn't have a default constructor.
