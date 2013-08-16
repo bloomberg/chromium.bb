@@ -38,8 +38,7 @@ config.kPlatforms = {
         builders: {
             'WebKit XP': {version: 'xp'},
             'WebKit Win7': {version: 'win7'},
-            'WebKit Win7 (dbg)(1)': {version: 'win7', debug: true},
-            'WebKit Win7 (dbg)(2)': {version: 'win7', debug: true},
+            'WebKit Win7 (dbg)': {version: 'win7', debug: true},
             'WebKit Linux': {version: 'lucid', is64bit: true},
             'WebKit Linux 32': {version: 'lucid'},
             'WebKit Linux (dbg)': {version: 'lucid', is64bit: true, debug: true},
