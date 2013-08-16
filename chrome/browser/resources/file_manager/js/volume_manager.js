@@ -291,47 +291,57 @@ VolumeManager.prototype.isReady = function() {
  * @private
  */
 VolumeManager.prototype.initMountPoints_ = function() {
-  var mountedVolumes = [];
-  var self = this;
-  var index = 0;
   this.deferredQueue_ = [];
-  var step = function(mountPoints) {
-    if (index < mountPoints.length) {
-      var info = mountPoints[index];
-      if (info.mountType == 'drive')
-        console.error('Drive is not expected initially mounted');
-      var error = info.mountCondition ? 'error_' + info.mountCondition : '';
-      var onVolumeInfo = function(volume) {
-        mountedVolumes.push(volume);
-        index++;
-        step(mountPoints);
-      };
-      volumeManagerUtil.createVolumeInfo(
-          '/' + info.mountPath, error, onVolumeInfo);
-    } else {
-      for (var i = 0; i < mountedVolumes.length; i++) {
-        var volume = mountedVolumes[i];
-        self.mountedVolumes_[volume.mountPath] = volume;
-      }
+  chrome.fileBrowserPrivate.getMountPoints(function(mountPointList) {
+    // According to the C++ implementation, getMountPoints only looks at
+    // the connected devices (such as USB memory), and doesn't return anything
+    // about Drive, Downloads nor archives.
+    // TODO(hidehiko): Figure out the historical intention of the method,
+    // and clean them up.
 
+    // Create VolumeInfo for each mount point.
+    var group = new AsyncUtil.Group();
+    for (var i = 0; i < mountPointList.length; i++) {
+      var mountPoint = mountPointList[i];
+
+      // TODO(hidehiko): It should be ok that the drive is mounted already.
+      if (mountPoint.mountType == 'drive')
+        console.error('Drive is not expected initially mounted');
+
+      var error = mountPoint.mountCondition ?
+          'error_' + mountPoint.mountCondition : '';
+      group.add(function(mountPoint, error, callback) {
+        volumeManagerUtil.createVolumeInfo(
+            '/' + mountPoint.mountPath, error,
+            function(volumeInfo) {
+              this.mountedVolumes_[volumeInfo.mountPath] = volumeInfo;
+              callback();
+            }.bind(this));
+      }.bind(this, mountPoint, error));
+    }
+
+    // Then, finalize the initialization.
+    group.run(function() {
       // Subscribe to the mount completed event when mount points initialized.
       chrome.fileBrowserPrivate.onMountCompleted.addListener(
-          self.onMountCompleted_.bind(self));
+          this.onMountCompleted_.bind(this));
 
-      var deferredQueue = self.deferredQueue_;
-      self.deferredQueue_ = null;
+      // Run pending tasks.
+      var deferredQueue = this.deferredQueue_;
+      this.deferredQueue_ = null;
       for (var i = 0; i < deferredQueue.length; i++) {
         deferredQueue[i]();
       }
 
-      cr.dispatchSimpleEvent(self, 'ready');
-      self.ready_ = true;
-      if (mountedVolumes.length > 0)
-        cr.dispatchSimpleEvent(self, 'change');
-    }
-  };
+      // Now, the initialization is completed. Set the state to the ready.
+      this.ready_ = true;
 
-  chrome.fileBrowserPrivate.getMountPoints(step);
+      // Notify event listeners that the initialization is done.
+      cr.dispatchSimpleEvent(this, 'ready');
+      if (mountPointList.length > 0)
+        cr.dispatchSimpleEvent(self, 'change');
+    }.bind(this));
+  }.bind(this));
 };
 
 /**
