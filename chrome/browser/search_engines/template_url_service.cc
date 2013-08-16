@@ -57,29 +57,6 @@ typedef TemplateURLService::SyncDataMap SyncDataMap;
 
 namespace {
 
-// String in the URL that is replaced by the search term.
-const char kSearchTermParameter[] = "{searchTerms}";
-
-// String in Initializer that is replaced with kSearchTermParameter.
-const char kTemplateParameter[] = "%s";
-
-// Term used when generating a search url. Use something obscure so that on
-// the rare case the term replaces the URL it's unlikely another keyword would
-// have the same url.
-const char kReplacementTerm[] = "blah.blah.blah.blah.blah";
-
-// The name of the histogram used to track default search changes. See the
-// comment for DefaultSearchChangeOrigin.
-const char kDSPChangeHistogramName[] = "Search.DefaultSearchChangeOrigin";
-
-// The name of the histogram used to track whether or not the user has a default
-// search provider.
-const char kHasDSPHistogramName[] = "Search.HasDefaultSearchProvider";
-
-// The name of the histogram used to store the id of the default search
-// provider.
-const char kDSPHistogramName[] = "Search.DefaultSearchProvider";
-
 bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
                                const TemplateURL* url2) {
   if (url1 == url2)
@@ -436,12 +413,14 @@ GURL TemplateURLService::GenerateSearchURLUsingTermsData(
   if (!search_ref.SupportsReplacementUsingTermsData(search_terms_data))
     return GURL(t_url->url());
 
-  // TODO(jnd): Adds additional parameters to get post data when the search URL
+  // Use something obscure for the search terms argument so that in the rare
+  // case the term replaces the URL it's unlikely another keyword would have the
+  // same url.
+  // TODO(jnd): Add additional parameters to get post data when the search URL
   // has post parameters.
   return GURL(search_ref.ReplaceSearchTermsUsingTermsData(
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16(kReplacementTerm)),
-      search_terms_data,
-      NULL));
+      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("blah.blah.blah.blah.blah")),
+      search_terms_data, NULL));
 }
 
 bool TemplateURLService::CanReplaceKeyword(
@@ -1448,19 +1427,12 @@ void TemplateURLService::Init(const Initializer* initializers,
       DCHECK(initializers[i].url);
       DCHECK(initializers[i].content);
 
-      size_t template_position =
-          std::string(initializers[i].url).find(kTemplateParameter);
-      DCHECK(template_position != std::string::npos);
-      std::string osd_url(initializers[i].url);
-      osd_url.replace(template_position, arraysize(kTemplateParameter) - 1,
-                      kSearchTermParameter);
-
       // TemplateURLService ends up owning the TemplateURL, don't try and free
       // it.
       TemplateURLData data;
       data.short_name = UTF8ToUTF16(initializers[i].content);
       data.SetKeyword(UTF8ToUTF16(initializers[i].keyword));
-      data.SetURL(osd_url);
+      data.SetURL(initializers[i].url);
       TemplateURL* template_url = new TemplateURL(profile_, data);
       AddNoNotify(template_url, true);
 
@@ -2122,8 +2094,8 @@ bool TemplateURLService::SetDefaultSearchProviderNoNotify(TemplateURL* url) {
   // changed, and needs to be persisted below (for example, when this is called
   // from UpdateNoNotify).
   if (default_search_provider_ != url) {
-    UMA_HISTOGRAM_ENUMERATION(kDSPChangeHistogramName, dsp_change_origin_,
-                              DSP_CHANGE_MAX);
+    UMA_HISTOGRAM_ENUMERATION("Search.DefaultSearchChangeOrigin",
+                              dsp_change_origin_, DSP_CHANGE_MAX);
     default_search_provider_ = url;
   }
 
@@ -2623,7 +2595,7 @@ void TemplateURLService::EnsureDefaultSearchProviderExists() {
   if (!is_default_search_managed_) {
     bool has_default_search_provider = default_search_provider_ &&
         default_search_provider_->SupportsReplacement();
-    UMA_HISTOGRAM_BOOLEAN(kHasDSPHistogramName,
+    UMA_HISTOGRAM_BOOLEAN("Search.HasDefaultSearchProvider",
                           has_default_search_provider);
     // Ensure that default search provider exists. See http://crbug.com/116952.
     if (!has_default_search_provider) {
@@ -2631,11 +2603,15 @@ void TemplateURLService::EnsureDefaultSearchProviderExists() {
           SetDefaultSearchProviderNoNotify(FindNewDefaultSearchProvider());
       DCHECK(success);
     }
-    // Don't log anything if the user has a NULL default search provider. A
-    // logged value of 0 indicates a custom default search provider.
+    // Don't log anything if the user has a NULL default search provider.
     if (default_search_provider_) {
+      // TODO(pkasting): This histogram obsoletes the next one.  Remove the next
+      // one in Chrome 32 or later.
+      UMA_HISTOGRAM_ENUMERATION("Search.DefaultSearchProviderType",
+          TemplateURLPrepopulateData::GetEngineType(*default_search_provider_),
+          SEARCH_ENGINE_MAX);
       UMA_HISTOGRAM_ENUMERATION(
-          kDSPHistogramName,
+          "Search.DefaultSearchProvider",
           default_search_provider_->prepopulate_id(),
           TemplateURLPrepopulateData::kMaxPrepopulatedEngineID);
     }

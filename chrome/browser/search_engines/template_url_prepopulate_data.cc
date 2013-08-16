@@ -1287,23 +1287,18 @@ TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile) {
   return default_search_provider;
 }
 
-SearchEngineType GetEngineType(const std::string& url) {
+SearchEngineType GetEngineType(const TemplateURL& url) {
   // Restricted to UI thread because ReplaceSearchTerms() is so restricted.
   using content::BrowserThread;
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
          BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  // We may get a valid URL, or we may get the Google prepopulate URL which
-  // can't be converted directly to a GURL.  To handle the latter, we first
-  // construct a TemplateURL from the provided |url|, then call
-  // ReplaceSearchTerms().  This should return a valid URL even when the input
-  // has Google base URLs.
-  TemplateURLData data;
-  data.SetURL(url);
-  TemplateURL turl(NULL, data);
-  GURL as_gurl(turl.url_ref().ReplaceSearchTerms(
-      TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("x"))));
-  if (!as_gurl.is_valid())
+  // By calling ReplaceSearchTerms, we ensure that even TemplateURLs whose URLs
+  // can't be directly inspected (e.g. due to containing {google:baseURL}) can
+  // be converted to GURLs we can look at.
+  GURL gurl(url.url_ref().ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(
+      ASCIIToUTF16("x"))));
+  if (!gurl.is_valid())
     return SEARCH_ENGINE_OTHER;
 
   // Check using TLD+1s, in order to more aggressively match search engine types
@@ -1312,19 +1307,19 @@ SearchEngineType GetEngineType(const std::string& url) {
   // First special-case Google, because the prepopulate URL for it will not
   // convert to a GURL and thus won't have an origin.  Instead see if the
   // incoming URL's host is "[*.]google.<TLD>".
-  if (google_util::IsGoogleHostname(as_gurl.host(),
+  if (google_util::IsGoogleHostname(gurl.host(),
                                     google_util::DISALLOW_SUBDOMAIN))
     return google.type;
 
   // Now check the rest of the prepopulate data.
   for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
     // First check the main search URL.
-    if (SameDomain(as_gurl, GURL(kAllEngines[i]->search_url)))
+    if (SameDomain(gurl, GURL(kAllEngines[i]->search_url)))
       return kAllEngines[i]->type;
 
     // Then check the alternate URLs.
     for (size_t j = 0; j < kAllEngines[i]->alternate_urls_size; ++j) {
-      if (SameDomain(as_gurl, GURL(kAllEngines[i]->alternate_urls[j])))
+      if (SameDomain(gurl, GURL(kAllEngines[i]->alternate_urls[j])))
         return kAllEngines[i]->type;
     }
   }
@@ -1333,12 +1328,10 @@ SearchEngineType GetEngineType(const std::string& url) {
 }
 
 GURL GetLogoURL(const TemplateURL& template_url, LogoSize size) {
-  if (GetEngineType(template_url.url()) == SEARCH_ENGINE_GOOGLE) {
-    return GURL((size == LOGO_200_PERCENT) ?
-                google_logos.logo_200_percent_url :
-                google_logos.logo_100_percent_url);
-  }
-  return GURL();
+  if (GetEngineType(template_url) != SEARCH_ENGINE_GOOGLE)
+    return GURL();
+  return GURL((size == LOGO_200_PERCENT) ?
+      google_logos.logo_200_percent_url : google_logos.logo_100_percent_url);
 }
 
 }  // namespace TemplateURLPrepopulateData

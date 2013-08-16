@@ -69,7 +69,7 @@ bool DefaultSearchProviderIsGoogle(Profile* profile) {
   const TemplateURL* default_provider =
       template_url_service->GetDefaultSearchProvider();
   return default_provider &&
-      (TemplateURLPrepopulateData::GetEngineType(default_provider->url()) ==
+      (TemplateURLPrepopulateData::GetEngineType(*default_provider) ==
        SEARCH_ENGINE_GOOGLE);
 }
 

@@ -950,7 +950,7 @@ TEST_F(TemplateURLServiceExtensionTest, ResetURLs) {
       std::string(), std::string(), false, "UTF-8", Time(), Time());
   TemplateURL* default_provider = model()->GetDefaultSearchProvider();
   EXPECT_NE(SEARCH_ENGINE_GOOGLE,
-      TemplateURLPrepopulateData::GetEngineType(default_provider->url()));
+            TemplateURLPrepopulateData::GetEngineType(*default_provider));
 
   DictionaryValue manifest;
   manifest.SetString(extensions::manifest_keys::kVersion, "1.0.0.0");
@@ -976,7 +976,7 @@ TEST_F(TemplateURLServiceExtensionTest, ResetURLs) {
   default_provider = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_provider);
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
-      TemplateURLPrepopulateData::GetEngineType(default_provider->url()));
+            TemplateURLPrepopulateData::GetEngineType(*default_provider));
   CheckExtensionKeyword(ASCIIToUTF16("ext_keyword"), ASCIIToUTF16("ext1"));
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext_keyword2")));
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));
@@ -987,7 +987,7 @@ TEST_F(TemplateURLServiceExtensionTest, ResetURLs) {
   default_provider = model()->GetDefaultSearchProvider();
   ASSERT_TRUE(default_provider);
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
-      TemplateURLPrepopulateData::GetEngineType(default_provider->url()));
+            TemplateURLPrepopulateData::GetEngineType(*default_provider));
   CheckExtensionKeyword(ASCIIToUTF16("ext_keyword"), ASCIIToUTF16("ext1"));
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("ext_keyword2")));
   EXPECT_FALSE(model()->GetTemplateURLForKeyword(ASCIIToUTF16("keyword")));

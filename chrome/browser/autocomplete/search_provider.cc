@@ -572,7 +572,7 @@ void SearchProvider::OnURLFetchComplete(const net::URLFetcher* source) {
   // non-keyword mode.
   const TemplateURL* default_url = providers_.GetDefaultProviderURL();
   if (!is_keyword && default_url &&
-      (TemplateURLPrepopulateData::GetEngineType(default_url->url()) ==
+      (TemplateURLPrepopulateData::GetEngineType(*default_url) ==
        SEARCH_ENGINE_GOOGLE)) {
     const base::TimeDelta elapsed_time =
         base::TimeTicks::Now() - time_suggest_request_sent_;

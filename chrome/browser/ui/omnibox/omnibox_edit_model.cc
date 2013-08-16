@@ -695,6 +695,11 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
       // in template_url.h.
     }
 
+    // TODO(pkasting): This histogram obsoletes the next one.  Remove the next
+    // one in Chrome 32 or later.
+    UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType",
+        TemplateURLPrepopulateData::GetEngineType(*template_url),
+        SEARCH_ENGINE_MAX);
     // NOTE: Non-prepopulated engines will all have ID 0, which is fine as
     // the prepopulate IDs start at 1.  Distribution-specific engines will
     // all have IDs above the maximum, and will be automatically lumped

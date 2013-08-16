@@ -49,13 +49,13 @@ class KeywordProviderTest : public testing::Test {
 
 // static
 const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
-  { "aa", "aa.com?foo=%s", "aa" },
-  { "aaaa", "http://aaaa/?aaaa=1&b=%s&c", "aaaa" },
-  { "aaaaa", "%s", "aaaaa" },
-  { "ab", "bogus URL %s", "ab" },
-  { "weasel", "weasel%sweasel", "weasel" },
-  { "www", " +%2B?=%sfoo ", "www" },
-  { "z", "%s=z", "z" },
+  { "aa", "aa.com?foo={searchTerms}", "aa" },
+  { "aaaa", "http://aaaa/?aaaa=1&b={searchTerms}&c", "aaaa" },
+  { "aaaaa", "{searchTerms}", "aaaaa" },
+  { "ab", "bogus URL {searchTerms}", "ab" },
+  { "weasel", "weasel{searchTerms}weasel", "weasel" },
+  { "www", " +%2B?={searchTerms}foo ", "www" },
+  { "z", "{searchTerms}=z", "z" },
 };
 
 void KeywordProviderTest::SetUp() {

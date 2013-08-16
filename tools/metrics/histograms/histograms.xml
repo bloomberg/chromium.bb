@@ -9560,6 +9560,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SearchEngineType" enum="OmniboxSearchEngineType">
+  <summary>
+    The type of search engine associated with a match opened from the omnibox.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SuggestRequest.Failure.GoogleResponseTime"
     units="milliseconds">
   <summary>
@@ -13326,6 +13332,15 @@ other types of suffix sets.
   <summary>
     The id of the default search engine that is loaded after Chrome startup. See
     src/chrome/browser/search_engines/prepopulate_engines.json for more info.
+  </summary>
+</histogram>
+
+<histogram name="Search.DefaultSearchProviderType"
+    enum="OmniboxSearchEngineType">
+  <summary>
+    The type of the default search engine that is loaded when a profile is
+    opened or after a profile reset.  Note that at least one profile is opened
+    on startup.
   </summary>
 </histogram>
 
@@ -20493,6 +20508,57 @@ other types of suffix sets.
   <int value="99" label="Spray"/>
   <int value="100" label="Sanook!"/>
   <int value="101" label="MYNET"/>
+</enum>
+
+<enum name="OmniboxSearchEngineType" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="AOL"/>
+  <int value="2" label="Ask"/>
+  <int value="3" label="Atlas"/>
+  <int value="4" label="AVG"/>
+  <int value="5" label="Baidu"/>
+  <int value="6" label="Babylon"/>
+  <int value="7" label="Bing"/>
+  <int value="8" label="Conduit"/>
+  <int value="9" label="Daum"/>
+  <int value="10" label="DELFI"/>
+  <int value="11" label="Delta"/>
+  <int value="12" label="Funmoods"/>
+  <int value="13" label="goo"/>
+  <int value="14" label="Google"/>
+  <int value="15" label="iminent.com"/>
+  <int value="16" label="IMesh"/>
+  <int value="17" label="in.gr"/>
+  <int value="18" label="incredibar.com"/>
+  <int value="19" label="Kvasir"/>
+  <int value="20" label="Libero"/>
+  <int value="21" label="@MAIL.RU"/>
+  <int value="22" label="Najdi.si"/>
+  <int value="23" label="Nate"/>
+  <int value="24" label="Naver"/>
+  <int value="25" label="NETI"/>
+  <int value="26" label="Nigma"/>
+  <int value="27" label="OK.hu"/>
+  <int value="28" label="Onet.pl"/>
+  <int value="29" label="Rambler"/>
+  <int value="30" label="SAPO"/>
+  <int value="31" label="searchnu"/>
+  <int value="32" label="search-results.com"/>
+  <int value="33" label="Seznam"/>
+  <int value="34" label="snap.do"/>
+  <int value="35" label="softonic.com"/>
+  <int value="36" label="Sogou"/>
+  <int value="37" label="Soso"/>
+  <int value="38" label="sweetim.com/sweetpacks.com"/>
+  <int value="39" label="Terra"/>
+  <int value="40" label="TUT.BY"/>
+  <int value="41" label="Vinden.nl"/>
+  <int value="42" label="Virgilio"/>
+  <int value="43" label="Walla!"/>
+  <int value="44" label="Wirtualna Polska"/>
+  <int value="45" label="Yahoo!"/>
+  <int value="46" label="Yandex"/>
+  <int value="47" label="Zoznam"/>
 </enum>
 
 <enum name="OmniboxSuggestRequests" type="int">
