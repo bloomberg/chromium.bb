@@ -102,11 +102,6 @@ void BrowserTestBase::SetUp() {
 
   command_line->AppendSwitch(switches::kSkipGpuDataLoading);
 
-  MainFunctionParams params(*command_line);
-  params.ui_task =
-      new base::Closure(
-          base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));
-
 #if defined(USE_AURA)
   // Use test contexts for browser tests unless they override and force us to
   // use a real context.
@@ -152,6 +147,12 @@ void BrowserTestBase::SetUp() {
   }
 
   SetUpInProcessBrowserTestFixture();
+
+  MainFunctionParams params(*command_line);
+  params.ui_task =
+      new base::Closure(
+          base::Bind(&BrowserTestBase::ProxyRunTestOnMainThreadLoop, this));
+
 #if defined(OS_ANDROID)
   BrowserMainRunner::Create()->Initialize(params);
   // We are done running the test by now. During teardown we
