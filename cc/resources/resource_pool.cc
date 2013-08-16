@@ -104,10 +104,15 @@ void ResourcePool::ReduceResourceUsage() {
     if (!ResourceUsageTooHigh())
       break;
 
-    // MRU eviction pattern as least recently used is less likely to
-    // be blocked by read lock fence.
-    Resource* resource = unused_resources_.back();
-    unused_resources_.pop_back();
+    // LRU eviction pattern. Most recently used might be blocked by
+    // a read lock fence but it's still better to evict the least
+    // recently used as it prevents a resource that is hard to reuse
+    // because of unique size from being kept around. Resources that
+    // can't be locked for write might also not be truly free-able.
+    // We can free the resource here but it doesn't mean that the
+    // memory is necessarily returned to the OS.
+    Resource* resource = unused_resources_.front();
+    unused_resources_.pop_front();
     memory_usage_bytes_ -= resource->bytes();
     unused_memory_usage_bytes_ -= resource->bytes();
     --resource_count_;
