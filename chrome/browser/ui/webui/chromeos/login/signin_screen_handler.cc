@@ -851,6 +851,7 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleShowLoadingTimeoutError);
   AddCallback("updateOfflineLogin",
               &SigninScreenHandler::HandleUpdateOfflineLogin);
+  AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
 }
 
 void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -1619,6 +1620,10 @@ void SigninScreenHandler::HandleShowLoadingTimeoutError() {
 
 void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
   offline_login_active_ = offline_login_active;
+}
+
+void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
+  SetUserInputMethod(user_id);
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

@@ -326,6 +326,7 @@ class SigninScreenHandler
   void HandleShowLoadingTimeoutError();
   void HandleUpdateOfflineLogin(bool offline_login_active);
   void HandleShowLocallyManagedUserCreationScreen();
+  void HandleFocusPod(const std::string& user_id);
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(User* user,
