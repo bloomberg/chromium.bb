@@ -329,12 +329,7 @@ void IBusDaemonController::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   DCHECK(g_ibus_daemon_controller == NULL)
       << "Do not call Initialize function multiple times.";
-  if (base::chromeos::IsRunningOnChromeOS()) {
-    g_ibus_daemon_controller = new IBusDaemonControllerImpl(ui_task_runner,
-                                                            file_task_runner);
-  } else {
-    g_ibus_daemon_controller = new IBusDaemonControllerDaemonlessImpl();
-  }
+  g_ibus_daemon_controller = new IBusDaemonControllerDaemonlessImpl();
 }
 
 // static

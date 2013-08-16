@@ -33,14 +33,8 @@ void Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   IBusDaemonController::Initialize(ui_task_runner, file_task_runner);
-  if (!base::chromeos::IsRunningOnChromeOS()) {
-    // IBusBridge is for ChromeOS on desktop Linux not for ChromeOS Devices or
-    // production at this moment.
-    // TODO(nona): Remove this condition when ibus-daemon is gone.
-    //             (crbug.com/170671)
-    IBusBridge::Initialize();
-    IBusDaemonController::GetInstance()->Start();
-  }
+  IBusBridge::Initialize();
+  IBusDaemonController::GetInstance()->Start();
 
   InputMethodManagerImpl* impl = new InputMethodManagerImpl(
       scoped_ptr<InputMethodDelegate>(new InputMethodDelegateImpl));

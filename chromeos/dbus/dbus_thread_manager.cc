@@ -201,9 +201,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     ibus_address_ = ibus_address;
     VLOG(1) << "Connected to ibus-daemon: " << ibus_address;
 
-    DBusClientImplementationType client_type =
-        base::chromeos::IsRunningOnChromeOS() ? REAL_DBUS_CLIENT_IMPLEMENTATION
-                                              : STUB_DBUS_CLIENT_IMPLEMENTATION;
+    DBusClientImplementationType client_type = STUB_DBUS_CLIENT_IMPLEMENTATION;
 
     ibus_client_.reset(
         IBusClient::Create(client_type, ibus_bus_.get()));
@@ -350,14 +348,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
 
   virtual IBusEngineService* GetIBusEngineService(
       const dbus::ObjectPath& object_path) OVERRIDE {
-    const DBusClientImplementationType client_type =
-        base::chromeos::IsRunningOnChromeOS() ? REAL_DBUS_CLIENT_IMPLEMENTATION
-                                              : STUB_DBUS_CLIENT_IMPLEMENTATION;
-
     if (ibus_engine_services_.find(object_path)
             == ibus_engine_services_.end()) {
       ibus_engine_services_[object_path] =
-          IBusEngineService::Create(client_type, ibus_bus_.get(), object_path);
+          IBusEngineService::Create(STUB_DBUS_CLIENT_IMPLEMENTATION,
+                                    ibus_bus_.get(), object_path);
     }
     return ibus_engine_services_[object_path];
   }
