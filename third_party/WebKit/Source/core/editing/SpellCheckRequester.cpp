@@ -46,12 +46,14 @@ SpellCheckRequest::SpellCheckRequest(
     TextCheckingTypeMask mask,
     TextCheckingProcessType processType,
     const Vector<uint32_t>& documentMarkersInRange,
-    const Vector<unsigned>& documentMarkerOffsets)
+    const Vector<unsigned>& documentMarkerOffsets,
+    int requestNumber)
     : m_requester(0)
     , m_checkingRange(checkingRange)
     , m_paragraphRange(paragraphRange)
     , m_rootEditableElement(m_checkingRange->startContainer()->rootEditableElement())
     , m_requestData(unrequestedTextCheckingSequence, text, mask, processType, documentMarkersInRange, documentMarkerOffsets)
+    , m_requestNumber(requestNumber)
 {
 }
 
@@ -60,7 +62,7 @@ SpellCheckRequest::~SpellCheckRequest()
 }
 
 // static
-PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange)
+PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask textCheckingOptions, TextCheckingProcessType processType, PassRefPtr<Range> checkingRange, PassRefPtr<Range> paragraphRange, int requestNubmer)
 {
     ASSERT(checkingRange);
     ASSERT(paragraphRange);
@@ -77,7 +79,7 @@ PassRefPtr<SpellCheckRequest> SpellCheckRequest::create(TextCheckingTypeMask tex
         offsets[i] = markers[i]->startOffset();
     }
 
-    return adoptRef(new SpellCheckRequest(checkingRange, paragraphRange, text, textCheckingOptions, processType, hashes, offsets));
+    return adoptRef(new SpellCheckRequest(checkingRange, paragraphRange, text, textCheckingOptions, processType, hashes, offsets, requestNubmer));
 }
 
 const TextCheckingRequestData& SpellCheckRequest::data() const
@@ -207,13 +209,24 @@ void SpellCheckRequester::invokeRequest(PassRefPtr<SpellCheckRequest> request)
 void SpellCheckRequester::enqueueRequest(PassRefPtr<SpellCheckRequest> request)
 {
     ASSERT(request);
+    bool continuation = false;
+    if (!m_requestQueue.isEmpty()) {
+        RefPtr<SpellCheckRequest> lastRequest = m_requestQueue.last();
+        // It's a continuation if the number of the last request got incremented in the new one and
+        // both apply to the same editable.
+        continuation = request->rootEditableElement() == lastRequest->rootEditableElement()
+            && request->requestNumber() == lastRequest->requestNumber() + 1;
+    }
 
-    for (RequestQueue::iterator it = m_requestQueue.begin(); it != m_requestQueue.end(); ++it) {
-        if (request->rootEditableElement() != (*it)->rootEditableElement())
-            continue;
+    // Spellcheck requests for chunks of text in the same element should not overwrite each other.
+    if (!continuation) {
+        for (RequestQueue::iterator it = m_requestQueue.begin(); it != m_requestQueue.end(); ++it) {
+            if (request->rootEditableElement() != (*it)->rootEditableElement())
+                continue;
 
-        *it = request;
-        return;
+            *it = request;
+            return;
+        }
     }
 
     m_requestQueue.append(request);
