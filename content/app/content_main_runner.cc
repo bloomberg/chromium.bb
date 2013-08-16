@@ -26,17 +26,23 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "content/browser/browser_main.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
+#include "content/gpu/gpu_main_thread.h"
 #include "content/public/app/content_main_delegate.h"
 #include "content/public/app/startup_helper_win.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/utility_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/renderer/renderer_main_thread.h"
+#include "content/utility/utility_main_thread.h"
 #include "crypto/nss_util.h"
 #include "ipc/ipc_switches.h"
 #include "media/base/media.h"
@@ -423,6 +429,13 @@ int RunNamedProcessTypeMain(
     { switches::kGpuProcess,         GpuMain },
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
   };
+
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+  UtilityProcessHost::RegisterUtilityMainThreadFactory(CreateUtilityMainThread);
+  RenderProcessHost::RegisterRendererMainThreadFactory(
+      CreateRendererMainThread);
+  GpuProcessHost::RegisterGpuMainThreadFactory(CreateGpuMainThread);
+#endif
 
   for (size_t i = 0; i < arraysize(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name) {

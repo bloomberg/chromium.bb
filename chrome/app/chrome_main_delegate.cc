@@ -744,8 +744,7 @@ int ChromeMainDelegate::RunProcess(
     const content::MainFunctionParams& main_function_params) {
   // ANDROID doesn't support "service", so no ServiceProcessMain, and arraysize
   // doesn't support empty array. So we comment out the block for Android.
-#if !defined(OS_ANDROID) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_BROWSER))
+#if !defined(OS_ANDROID) && !defined(CHROME_MULTIPLE_DLL_CHILD)
   static const MainFunction kMainFunctions[] = {
 #if defined(ENABLE_FULL_PRINTING)
     { switches::kServiceProcess,     ServiceProcessMain },
@@ -756,9 +755,8 @@ int ChromeMainDelegate::RunProcess(
       mac_relauncher::internal::RelauncherMain },
 #endif
 
-#if !defined(DISABLE_NACL) && \
-    (!defined(CHROME_MULTIPLE_DLL) || defined(CHROME_MULTIPLE_DLL_CHILD))
-    { switches::kNaClLoaderProcess, NaClMain },
+#if !defined(DISABLE_NACL) && !defined(CHROME_MULTIPLE_DLL_BROWSER)
+    { switches::kNaClLoaderProcess,  NaClMain },
 #endif  // DISABLE_NACL
   };
 

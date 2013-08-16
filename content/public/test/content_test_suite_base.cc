@@ -10,9 +10,15 @@
 #include "base/test/test_suite.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/url_schemes.h"
+#include "content/gpu/gpu_main_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/utility_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_paths.h"
+#include "content/renderer/renderer_main_thread.h"
+#include "content/utility/utility_main_thread.h"
 #include "media/base/media.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_paths.h"
@@ -58,6 +64,13 @@ void ContentTestSuiteBase::Initialize() {
   net::android::RegisterJni(env);
   ui::android::RegisterJni(env);
   ui::shell_dialogs::RegisterJni(env);
+#endif
+
+#if !defined(OS_IOS)
+  UtilityProcessHost::RegisterUtilityMainThreadFactory(CreateUtilityMainThread);
+  RenderProcessHost::RegisterRendererMainThreadFactory(
+      CreateRendererMainThread);
+  GpuProcessHost::RegisterGpuMainThreadFactory(CreateGpuMainThread);
 #endif
 
   if (external_libraries_enabled_)

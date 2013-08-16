@@ -436,6 +436,9 @@
             '../third_party/widevine/cdm/widevine_cdm.gyp:widevinecdmadapter',
           ],
         }],
+        ['chrome_multiple_dll', {
+          'defines': ['CHROME_MULTIPLE_DLL'],
+        }],
         ['OS=="mac" and asan==1', {
           'xcode_settings': {
             # Override the outer definition of CHROMIUM_STRIP_SAVE_FILE.

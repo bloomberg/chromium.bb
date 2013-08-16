@@ -1899,9 +1899,6 @@
           '<(DEPTH)/base/allocator/allocator.gyp:type_profiler',
         ],
       }],
-      ['chrome_multiple_dll', {
-        'defines': ['CHROME_MULTIPLE_DLL'],
-      }],
       ['OS=="linux" and clang==1 and host_arch=="ia32"', {
         # TODO(dmikurube): Remove -Wno-sentinel when Clang/LLVM is fixed.
         # See http://crbug.com/162818.

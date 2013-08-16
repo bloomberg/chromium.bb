@@ -278,43 +278,6 @@ class GpuSandboxedProcessLauncherDelegate
 
 }  // anonymous namespace
 
-// Single process not supported in multiple dll mode currently.
-#if !defined(CHROME_MULTIPLE_DLL)
-// This class creates a GPU thread (instead of a GPU process), when running
-// with --in-process-gpu or --single-process.
-class GpuMainThread : public base::Thread {
- public:
-  explicit GpuMainThread(const std::string& channel_id)
-      : base::Thread("Chrome_InProcGpuThread"),
-        channel_id_(channel_id),
-        gpu_process_(NULL) {
-  }
-
-  virtual ~GpuMainThread() {
-    Stop();
-  }
-
- protected:
-  virtual void Init() OVERRIDE {
-    gpu_process_ = new GpuProcess();
-    // The process object takes ownership of the thread object, so do not
-    // save and delete the pointer.
-    gpu_process_->set_main_thread(new GpuChildThread(channel_id_));
-  }
-
-  virtual void CleanUp() OVERRIDE {
-    delete gpu_process_;
-  }
-
- private:
-  std::string channel_id_;
-  // Deleted in CleanUp() on the gpu thread, so don't use smart pointers.
-  GpuProcess* gpu_process_;
-
-  DISALLOW_COPY_AND_ASSIGN(GpuMainThread);
-};
-#endif  // !CHROME_MULTIPLE_DLL
-
 // static
 bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
   if (!host)
@@ -399,6 +362,13 @@ void GpuProcessHost::SendOnIO(GpuProcessKind kind,
               &SendGpuProcessMessage, kind, cause, message))) {
     delete message;
   }
+}
+
+GpuMainThreadFactoryFunction g_gpu_main_thread_factory = NULL;
+
+void GpuProcessHost::RegisterGpuMainThreadFactory(
+    GpuMainThreadFactoryFunction create) {
+  g_gpu_main_thread_factory = create;
 }
 
 // static
@@ -598,19 +568,15 @@ bool GpuProcessHost::Init() {
   if (channel_id.empty())
     return false;
 
-  // Single process not supported in multiple dll mode currently.
-#if !defined(CHROME_MULTIPLE_DLL)
-  if (in_process_) {
+  if (in_process_ && g_gpu_main_thread_factory) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableGpuWatchdog);
 
-    in_process_gpu_thread_.reset(new GpuMainThread(channel_id));
+    in_process_gpu_thread_.reset(g_gpu_main_thread_factory(channel_id));
     in_process_gpu_thread_->Start();
 
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else
-#endif  // !CHROME_MULTIPLE_DLL
-      if (!LaunchGpuProcess(channel_id)) {
+  } else if (!LaunchGpuProcess(channel_id)) {
     return false;
   }
 

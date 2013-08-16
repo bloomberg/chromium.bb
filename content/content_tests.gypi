@@ -168,6 +168,7 @@
         }, {  # OS != "ios"
           'dependencies': [
             'content_child',
+            'content_gpu',
             'content_ppapi_plugin',
             'content_renderer',
             'content_utility',

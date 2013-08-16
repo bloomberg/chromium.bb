@@ -5,10 +5,6 @@ include_rules = [
   "+third_party/zlib",
   "+third_party/libyuv",
 
-  # For single-process mode.
-  "+content/renderer/render_process_impl.h",
-  "+content/renderer/render_thread_impl.h",
-
   # The renderer_host files should only call upwards in the layering via the
   # delegate interfaces.
   "-content/browser/web_contents",

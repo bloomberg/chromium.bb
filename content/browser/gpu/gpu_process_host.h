@@ -44,6 +44,8 @@ class GpuMainThread;
 class RenderWidgetHostViewFrameSubscriber;
 class ShaderDiskCache;
 
+typedef base::Thread* (*GpuMainThreadFactoryFunction)(const std::string& id);
+
 class GpuProcessHost : public BrowserChildProcessHostDelegate,
                        public IPC::Sender,
                        public base::NonThreadSafe {
@@ -81,6 +83,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   CONTENT_EXPORT static void SendOnIO(GpuProcessKind kind,
                                       CauseForGpuLaunch cause,
                                       IPC::Message* message);
+
+  CONTENT_EXPORT static void RegisterGpuMainThreadFactory(
+      GpuMainThreadFactoryFunction create);
 
   // Get the GPU process host for the GPU process with the given ID. Returns
   // null if the process no longer exists.
@@ -214,9 +219,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   bool swiftshader_rendering_;
   GpuProcessKind kind_;
 
-#if !defined(CHROME_MULTIPLE_DLL)
-  scoped_ptr<GpuMainThread> in_process_gpu_thread_;
-#endif
+  scoped_ptr<base::Thread> in_process_gpu_thread_;
 
   // Whether we actually launched a GPU process.
   bool process_launched_;

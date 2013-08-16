@@ -118,8 +118,6 @@
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_constants.h"
-#include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_logging.h"
@@ -157,8 +155,6 @@ static const char* kSiteProcessMapKeyName = "content_site_process_map";
 namespace content {
 namespace {
 
-base::MessageLoop* g_in_process_thread;
-
 void CacheShaderInfo(int32 id, base::FilePath path) {
   ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
 }
@@ -166,57 +162,6 @@ void CacheShaderInfo(int32 id, base::FilePath path) {
 void RemoveShaderInfo(int32 id) {
   ShaderCacheFactory::GetInstance()->RemoveCacheInfo(id);
 }
-
-}  // namespace
-
-#if !defined(CHROME_MULTIPLE_DLL)
-
-// This class creates the IO thread for the renderer when running in
-// single-process mode.  It's not used in multi-process mode.
-class RendererMainThread : public base::Thread {
- public:
-  explicit RendererMainThread(const std::string& channel_id)
-      : Thread("Chrome_InProcRendererThread"),
-        channel_id_(channel_id) {
-  }
-
-  virtual ~RendererMainThread() {
-    Stop();
-  }
-
- protected:
-  virtual void Init() OVERRIDE {
-    render_process_.reset(new RenderProcessImpl());
-    new RenderThreadImpl(channel_id_);
-    g_in_process_thread = message_loop();
-  }
-
-  virtual void CleanUp() OVERRIDE {
-    g_in_process_thread = NULL;
-    render_process_.reset();
-
-    // It's a little lame to manually set this flag.  But the single process
-    // RendererThread will receive the WM_QUIT.  We don't need to assert on
-    // this thread, so just force the flag manually.
-    // If we want to avoid this, we could create the InProcRendererThread
-    // directly with _beginthreadex() rather than using the Thread class.
-    // We used to set this flag in the Init function above. However there
-    // other threads like WebThread which are created by this thread
-    // which resets this flag. Please see Thread::StartWithOptions. Setting
-    // this flag to true in Cleanup works around these problems.
-    SetThreadWasQuitProperly(true);
-  }
-
- private:
-  std::string channel_id_;
-  scoped_ptr<RenderProcess> render_process_;
-
-  DISALLOW_COPY_AND_ASSIGN(RendererMainThread);
-};
-
-#endif
-
-namespace {
 
 // Helper class that we pass to ResourceMessageFilter so that it can find the
 // right net::URLRequestContext for a request.
@@ -338,6 +283,20 @@ class RendererSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
 
 }  // namespace
+
+RendererMainThreadFactoryFunction g_renderer_main_thread_factory = NULL;
+
+void RenderProcessHost::RegisterRendererMainThreadFactory(
+    RendererMainThreadFactoryFunction create) {
+  g_renderer_main_thread_factory = create;
+}
+
+base::MessageLoop* g_in_process_thread;
+
+base::MessageLoop*
+    RenderProcessHostImpl::GetInProcessRendererThreadForTesting() {
+  return g_in_process_thread;
+}
 
 // Stores the maximum number of renderer processes the content module can
 // create.
@@ -511,15 +470,14 @@ bool RenderProcessHostImpl::Init() {
   CreateMessageFilters();
 
   // Single-process mode not supported in multiple-dll mode currently.
-#if !defined(CHROME_MULTIPLE_DLL)
-  if (run_renderer_in_process()) {
+  if (run_renderer_in_process() && g_renderer_main_thread_factory) {
     // Crank up a thread and run the initialization there.  With the way that
     // messages flow between the browser and renderer, this thread is required
     // to prevent a deadlock in single-process mode.  Since the primordial
     // thread in the renderer process runs the WebKit code and can sometimes
     // make blocking calls to the UI thread (i.e. this thread), they need to run
     // on separate threads.
-    in_process_renderer_.reset(new RendererMainThread(channel_id));
+    in_process_renderer_.reset(g_renderer_main_thread_factory(channel_id));
 
     base::Thread::Options options;
 #if defined(OS_WIN) && !defined(OS_MACOSX)
@@ -532,10 +490,10 @@ bool RenderProcessHostImpl::Init() {
 #endif
     in_process_renderer_->StartWithOptions(options);
 
+    g_in_process_thread = in_process_renderer_->message_loop();
+
     OnProcessLaunched();  // Fake a callback that the process is ready.
-  } else
-#endif  // !CHROME_MULTIPLE_DLL
-  {
+  } else {
     // Build command line for renderer.  We call AppendRendererCommandLine()
     // first so the process type argument will appear first.
     CommandLine* cmd_line = new CommandLine(renderer_path);
@@ -1615,11 +1573,6 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
       .possibly_invalid_spec();
   if (!site.empty())
     map->RegisterProcess(site, process);
-}
-
-base::MessageLoop*
-    RenderProcessHostImpl::GetInProcessRendererThreadForTesting() {
-  return g_in_process_thread;
 }
 
 void RenderProcessHostImpl::ProcessDied(bool already_dead) {

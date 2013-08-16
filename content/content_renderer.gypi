@@ -466,6 +466,8 @@
     'renderer/renderer_main_platform_delegate_linux.cc',
     'renderer/renderer_main_platform_delegate_mac.mm',
     'renderer/renderer_main_platform_delegate_win.cc',
+    'renderer/renderer_main_thread.cc',
+    'renderer/renderer_main_thread.h',
     'renderer/renderer_webapplicationcachehost_impl.cc',
     'renderer/renderer_webapplicationcachehost_impl.h',
     'renderer/renderer_webcookiejar_impl.cc',

@@ -10,10 +10,6 @@ include_rules = [
   "+ui/webui",
   "+win8/util",
 
-  # For single-process mode.
-  "+content/child/child_process.h",
-  "+content/utility/utility_thread_impl.h",
-
   # TODO(joi): This was misplaced; need to move it somewhere else,
   # since //content shouldn't depend on //components, which is a layer
   # above.

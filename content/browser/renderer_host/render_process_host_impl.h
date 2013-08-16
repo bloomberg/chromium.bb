@@ -264,10 +264,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // This is used to clear our cache five seconds after the last use.
   base::DelayTimer<RenderProcessHostImpl> cached_dibs_cleaner_;
 
-#if !defined(CHROME_MULTIPLE_DLL)
   // Used in single-process mode.
-  scoped_ptr<RendererMainThread> in_process_renderer_;
-#endif
+  scoped_ptr<base::Thread> in_process_renderer_;
 
   // True after Init() has been called. We can't just check channel_ because we
   // also reset that in the case of process termination.

@@ -12,6 +12,8 @@
     'public/utility/utility_thread.cc',
     'public/utility/utility_thread.h',
     'utility/utility_main.cc',
+    'utility/utility_main_thread.cc',
+    'utility/utility_main_thread.h',
     'utility/utility_thread_impl.cc',
     'utility/utility_thread_impl.h',
   ],

@@ -18,11 +18,11 @@
 
 namespace base {
 class SequencedTaskRunner;
+class Thread;
 }
 
 namespace content {
 class BrowserChildProcessHostImpl;
-class UtilityMainThread;
 
 class CONTENT_EXPORT UtilityProcessHostImpl
     : public NON_EXPORTED_BASE(UtilityProcessHost),
@@ -83,10 +83,8 @@ class CONTENT_EXPORT UtilityProcessHostImpl
 
   scoped_ptr<BrowserChildProcessHostImpl> process_;
 
-#if !defined(CHROME_MULTIPLE_DLL)
   // Used in single-process mode instead of process_.
-  scoped_ptr<UtilityMainThread> in_process_thread_;
-#endif
+  scoped_ptr<base::Thread> in_process_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(UtilityProcessHostImpl);
 };
