@@ -603,12 +603,17 @@ TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
       .WillOnce(Return(fileref_name_2));
 
   EXPECT_CALL(*var, VarToUtf8(IsEqualToVar(fileref_name_1), _))
-      .WillOnce(Return(fileref_name_cstr_1));
+      .WillOnce(DoAll(SetArgPointee<1>(strlen(fileref_name_cstr_1)),
+                      Return(fileref_name_cstr_1)));
   EXPECT_CALL(*var, VarToUtf8(IsEqualToVar(fileref_name_2), _))
-      .WillOnce(Return(fileref_name_cstr_2));
+      .WillOnce(DoAll(SetArgPointee<1>(strlen(fileref_name_cstr_2)),
+                      Return(fileref_name_cstr_2)));
+  EXPECT_CALL(*var, Release(IsEqualToVar(fileref_name_1)));
+  EXPECT_CALL(*var, Release(IsEqualToVar(fileref_name_2)));
 
   EXPECT_CALL(*core_, ReleaseResource(fileref_resource_1));
   EXPECT_CALL(*core_, ReleaseResource(fileref_resource_2));
+
 
   struct dirent dirents[2];
   memset(&dirents[0], 0, sizeof(dirents));

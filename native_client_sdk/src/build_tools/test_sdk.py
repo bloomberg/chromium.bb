@@ -101,6 +101,7 @@ def StepRunBrowserTests(toolchains, experimental):
   args = [
     sys.executable,
     os.path.join(SCRIPT_DIR, 'test_projects.py'),
+    '--retry-times=3',
   ]
 
   if experimental:

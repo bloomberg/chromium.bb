@@ -50,6 +50,10 @@ class GTestEventListener : public ::testing::EmptyTestEventListener {
         << "," << (test_info.result()->Failed() ? "failed" : "ok");
     pp::Instance(PSGetInstanceId()).PostMessage(msg.str());
   }
+
+  virtual void OnTestProgramEnd(const ::testing::UnitTest&) {
+    pp::Instance(PSGetInstanceId()).PostMessage("testend");
+  }
 };
 
 int example_main(int argc, char* argv[]) {

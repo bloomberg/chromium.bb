@@ -9,6 +9,8 @@ function moduleDidLoad() {
 }
 
 var currentTestEl = null;
+var failedTests = 0;
+var testsFinished = false;
 
 function startCommand(testName) {
   var testListEl = document.getElementById('tests');
@@ -32,6 +34,7 @@ function failCommand(fileName, lineNumber, summary) {
   var testMessageEl = document.createElement('pre');
   testMessageEl.textContent += fileName + ':' + lineNumber + ': ' + summary;
   currentTestEl.appendChild(testMessageEl);
+  failedTests++;
 }
 
 function endCommand(testName, testResult) {
@@ -41,10 +44,14 @@ function endCommand(testName, testResult) {
   testResultEl.textContent = testResult;
 }
 
+function testendCommand() {
+  testsFinished = true;
+}
+
 function handleMessage(event) {
   var msg = event.data;
   var firstColon = msg.indexOf(':');
-  var cmd = msg.substr(0, firstColon);
+  var cmd = firstColon !== -1 ? msg.substr(0, firstColon) : msg;
   var cmdFunctionName = cmd + 'Command';
   var cmdFunction = window[cmdFunctionName];
 

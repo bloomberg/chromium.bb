@@ -64,6 +64,56 @@ var common = (function() {
   }
 
   /**
+   * Inject a script into the DOM, and call a callback when it is loaded.
+   *
+   * @param {string} url The url of the script to load.
+   * @param {Function} onload The callback to call when the script is loaded.
+   * @param {Function} onerror The callback to call if the script fails to load.
+   */
+  function injectScript(url, onload, onerror) {
+    var scriptEl = document.createElement('script');
+    scriptEl.type = 'text/javascript';
+    scriptEl.src = url;
+    scriptEl.onload = onload;
+    if (onerror) {
+      scriptEl.addEventListener('error', onerror, false);
+    }
+    document.head.appendChild(scriptEl);
+  }
+
+  /**
+   * Run all tests for this example.
+   *
+   * @param {bool} waitForModule True if the tests should wait for the module
+   *     to load. This is not necessary for trusted plugins (i.e. host plugins).
+   * @param {Object} moduleEl The module DOM element.
+   */
+  function runTests(waitForModule, moduleEl) {
+    console.log('runTests()');
+    common.tester = new Tester();
+
+    // All NaCl SDK examples are OK if the example exits cleanly; (i.e. the
+    // NaCl module returns 0 or calls exit(0)).
+    //
+    // Without this exception, the browser_tester thinks that the module
+    // has crashed.
+    common.tester.exitCleanlyIsOK();
+
+    common.tester.addAsyncTest('loaded', function(test) {
+      test.pass();
+    });
+
+    if (typeof window.addTests !== 'undefined') {
+      window.addTests();
+    }
+
+    if (waitForModule) {
+      common.tester.waitFor(moduleEl);
+    }
+    common.tester.run();
+  }
+
+  /**
    * Create the Native Client <embed> element as a child of the DOM element
    * named "listener".
    *
@@ -86,7 +136,7 @@ var common = (function() {
     // Add any optional arguments
     if (attrs) {
       for (var key in attrs) {
-        moduleEl.setAttribute(key, attrs[key])
+        moduleEl.setAttribute(key, attrs[key]);
       }
     }
 
@@ -113,34 +163,16 @@ var common = (function() {
 
     // This is code that is only used to test the SDK.
     if (isTest) {
-      var scriptEl = document.createElement('script');
-      scriptEl.type = 'text/javascript';
-      scriptEl.src = 'nacltest.js';
-      document.head.appendChild(scriptEl);
-
-      scriptEl.onload = function() {
-        common.tester = new Tester();
-
-        // All NaCl SDK examples are OK if the example exits cleanly; (i.e. the
-        // NaCl module returns 0 or calls exit(0)).
-        //
-        // Without this exception, the browser_tester thinks that the module
-        // has crashed.
-        common.tester.exitCleanlyIsOK();
-
-        common.tester.addAsyncTest('loaded', function(test) {
-          test.pass();
+      var loadNaClTest = function() {
+        injectScript('nacltest.js', function() {
+          var waitForModule = !isHost;
+          runTests(waitForModule, moduleEl);
         });
-
-        if (typeof window.addTests !== 'undefined') {
-          window.addTests();
-        }
-
-        if (!isHost) {
-          common.tester.waitFor(moduleEl);
-        }
-        common.tester.run();
       };
+
+      // Try to load test.js for the example. Whether or not it exists, load
+      // nacltest.js.
+      injectScript('test.js', loadNaClTest, loadNaClTest);
     }
   }
 
@@ -171,9 +203,9 @@ var common = (function() {
    */
   function handleCrash(event) {
     if (common.naclModule.exitStatus == -1) {
-      updateStatus('CRASHED')
+      updateStatus('CRASHED');
     } else {
-      updateStatus('EXITED [' + common.naclModule.exitStatus + ']')
+      updateStatus('EXITED [' + common.naclModule.exitStatus + ']');
     }
     if (typeof window.handleCrash !== 'undefined') {
       window.handleCrash(common.naclModule.lastError);
@@ -276,7 +308,7 @@ var common = (function() {
       return;
     }
 
-    logMessage('Unhandled message: ' + message_event.data)
+    logMessage('Unhandled message: ' + message_event.data);
   }
 
   /**

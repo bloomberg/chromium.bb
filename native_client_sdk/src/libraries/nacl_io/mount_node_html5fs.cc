@@ -122,22 +122,21 @@ Error MountNodeHtml5Fs::GetDents(size_t offs,
     const char* file_name = mount_->ppapi()->GetVarInterface()
         ->VarToUtf8(file_name_var, &file_name_length);
 
+    if (file_name) {
+      file_name_length = std::min(
+          static_cast<size_t>(file_name_length),
+          sizeof(static_cast<struct dirent*>(0)->d_name) - 1);  // -1 for NULL.
+
+      dirents.push_back(dirent());
+      struct dirent& direntry = dirents.back();
+      direntry.d_ino = 1;  // Must be > 0.
+      direntry.d_off = sizeof(struct dirent);
+      direntry.d_reclen = sizeof(struct dirent);
+      strncpy(direntry.d_name, file_name, file_name_length);
+      direntry.d_name[file_name_length] = 0;
+    }
+
     mount_->ppapi()->GetVarInterface()->Release(file_name_var);
-
-    if (!file_name)
-      continue;
-
-    file_name_length = std::min(
-        static_cast<size_t>(file_name_length),
-        sizeof(static_cast<struct dirent*>(0)->d_name) - 1);  // -1 for NULL.
-
-    dirents.push_back(dirent());
-    struct dirent& direntry = dirents.back();
-    direntry.d_ino = 1;  // Must be > 0.
-    direntry.d_off = sizeof(struct dirent);
-    direntry.d_reclen = sizeof(struct dirent);
-    strncpy(direntry.d_name, file_name, file_name_length);
-    direntry.d_name[file_name_length] = 0;
   }
 
   // Release the output buffer.
