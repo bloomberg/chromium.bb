@@ -5,6 +5,7 @@
 #include "ui/views/win/fullscreen_handler.h"
 
 #include "base/logging.h"
+#include "base/win/win_util.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 
@@ -75,8 +76,8 @@ void FullscreenHandler::SetFullscreenImpl(bool fullscreen, bool for_metro) {
     if (!for_metro) {
       MONITORINFO monitor_info;
       monitor_info.cbSize = sizeof(monitor_info);
-      GetMonitorInfo(MonitorFromWindow(hwnd_, MONITOR_DEFAULTTONEAREST),
-                     &monitor_info);
+      base::win::GetMonitorInfoWrapper(
+          MonitorFromWindow(hwnd_, MONITOR_DEFAULTTONEAREST), &monitor_info);
       gfx::Rect window_rect(monitor_info.rcMonitor);
       SetWindowPos(hwnd_, NULL, window_rect.x(), window_rect.y(),
                    window_rect.width(), window_rect.height(),

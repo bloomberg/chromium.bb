@@ -312,7 +312,7 @@ void GetScreenInfoForWindow(gfx::NativeViewId id,
 
   MONITORINFOEX monitor_info;
   monitor_info.cbSize = sizeof(MONITORINFOEX);
-  if (!GetMonitorInfo(monitor, &monitor_info))
+  if (!base::win::GetMonitorInfoWrapper(monitor, &monitor_info))
     return;
 
   DEVMODE dev_mode;

@@ -51,10 +51,13 @@ OSInfo::OSInfo()
         // Treat Windows Server 2008 R2 the same as Windows 7.
         version_ = VERSION_WIN7;
         break;
-      default:
-        DCHECK_EQ(version_number_.minor, 2);
+      case 2:
         // Treat Windows Server 2012 the same as Windows 8.
         version_ = VERSION_WIN8;
+        break;
+      default:
+        DCHECK_EQ(version_number_.minor, 3);
+        version_ = VERSION_WIN8_1;
         break;
     }
   } else if (version_number_.major > 6) {

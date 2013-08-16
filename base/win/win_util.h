@@ -121,6 +121,10 @@ BASE_EXPORT bool DisplayVirtualKeyboard();
 // above. Returns true on success.
 BASE_EXPORT bool DismissVirtualKeyboard();
 
+// Returns monitor info after correcting rcWorkArea based on metro version.
+// see bug #247430 for more details.
+BASE_EXPORT BOOL GetMonitorInfoWrapper(HMONITOR monitor, MONITORINFO* mi);
+
 }  // namespace win
 }  // namespace base
 

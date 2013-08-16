@@ -7,6 +7,7 @@
 #include <windows.h>
 
 #include "base/logging.h"
+#include "base/win/win_util.h"
 #include "ui/base/win/dpi.h"
 #include "ui/gfx/display.h"
 
@@ -15,7 +16,7 @@ namespace {
 MONITORINFO GetMonitorInfoForMonitor(HMONITOR monitor) {
   MONITORINFO monitor_info = { 0 };
   monitor_info.cbSize = sizeof(monitor_info);
-  GetMonitorInfo(monitor, &monitor_info);
+  base::win::GetMonitorInfoWrapper(monitor, &monitor_info);
   return monitor_info;
 }
 
@@ -69,8 +70,8 @@ gfx::Display ScreenWin::GetDisplayNearestWindow(gfx::NativeView window) const {
 
   MONITORINFO monitor_info;
   monitor_info.cbSize = sizeof(monitor_info);
-  GetMonitorInfo(MonitorFromWindow(window_hwnd, MONITOR_DEFAULTTONEAREST),
-                 &monitor_info);
+  base::win::GetMonitorInfoWrapper(
+      MonitorFromWindow(window_hwnd, MONITOR_DEFAULTTONEAREST), &monitor_info);
   return GetDisplay(monitor_info);
 }
 
@@ -79,8 +80,9 @@ gfx::Display ScreenWin::GetDisplayNearestPoint(const gfx::Point& point) const {
   HMONITOR monitor = MonitorFromPoint(initial_loc, MONITOR_DEFAULTTONEAREST);
   MONITORINFO mi = {0};
   mi.cbSize = sizeof(mi);
-  if (monitor && GetMonitorInfo(monitor, &mi))
+  if (monitor && base::win::GetMonitorInfoWrapper(monitor, &mi)) {
     return GetDisplay(mi);
+  }
   return gfx::Display();
 }
 

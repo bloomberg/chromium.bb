@@ -7,6 +7,7 @@
 #include <shellapi.h>
 
 #include "base/logging.h"
+#include "base/win/win_util.h"
 #include "ui/gfx/rect.h"
 
 namespace views {
@@ -17,7 +18,7 @@ gfx::Rect GetMonitorBoundsForRect(const gfx::Rect& rect) {
   if (monitor) {
     MONITORINFO mi = {0};
     mi.cbSize = sizeof(mi);
-    GetMonitorInfo(monitor, &mi);
+    base::win::GetMonitorInfoWrapper(monitor, &mi);
     return gfx::Rect(mi.rcWork);
   }
   NOTREACHED();

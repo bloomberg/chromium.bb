@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
 #include "base/win/metro.h"
+#include "base/win/win_util.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/size.h"
@@ -23,7 +24,7 @@ void AdjustWindowToFit(HWND hwnd, const RECT& bounds, bool fit_to_monitor) {
     if (hmon) {
       MONITORINFO mi;
       mi.cbSize = sizeof(mi);
-      GetMonitorInfo(hmon, &mi);
+      base::win::GetMonitorInfoWrapper(hmon, &mi);
       gfx::Rect window_rect(bounds);
       gfx::Rect monitor_rect(mi.rcWork);
       gfx::Rect new_window_rect = window_rect;
@@ -131,7 +132,7 @@ void CenterAndSizeWindow(HWND parent,
     if (monitor) {
       MONITORINFO mi = {0};
       mi.cbSize = sizeof(mi);
-      GetMonitorInfo(monitor, &mi);
+      base::win::GetMonitorInfoWrapper(monitor, &mi);
       center_bounds = mi.rcWork;
     } else {
       NOTREACHED() << "Unable to get default monitor";

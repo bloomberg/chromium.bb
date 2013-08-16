@@ -26,6 +26,7 @@ enum Version {
   VERSION_VISTA,       // Also includes Windows Server 2008.
   VERSION_WIN7,        // Also includes Windows Server 2008 R2.
   VERSION_WIN8,        // Also includes Windows Server 2012.
+  VERSION_WIN8_1,      // Code named Windows Blue
   VERSION_WIN_LAST,    // Indicates error condition.
 };
 
