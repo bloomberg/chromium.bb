@@ -145,7 +145,6 @@ GraphicsLayer::~GraphicsLayer()
 {
     if (m_linkHighlight) {
         m_linkHighlight->clearCurrentGraphicsLayer();
-        m_linkHighlight->layer()->setWebLayerClient(0);
         m_linkHighlight = 0;
     }
 
@@ -605,7 +604,6 @@ void GraphicsLayer::setContentsTo(ContentsLayerPurpose purpose, WebLayer* layer)
             childrenChanged = true;
 
             // The old contents layer will be removed via updateChildList.
-            m_contentsLayer->setWebLayerClient(0);
             m_contentsLayer = 0;
         }
     }
@@ -1076,8 +1074,6 @@ void GraphicsLayer::setContentsToImage(Image* image)
             m_imageLayer.clear();
         }
         // The old contents layer will be removed via updateChildList.
-        if (m_contentsLayer)
-            m_contentsLayer->setWebLayerClient(0);
         m_contentsLayer = 0;
     }
 
