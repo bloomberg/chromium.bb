@@ -1299,11 +1299,13 @@ bool BatchShortcutAction(const ShortcutFilterCallback& shortcut_filter,
   return success;
 }
 
-// Removes folder spsecified by {|location|, |dist|, |level|}.
-bool RemoveShortcutFolder(ShellUtil::ShortcutLocation location,
-                          BrowserDistribution* dist,
-                          ShellUtil::ShellChange level) {
 
+// If the folder specified by {|location|, |dist|, |level|} is empty, remove it.
+// Otherwise do nothing. Returns true on success, including the vacuous case
+// where no deletion occurred because directory is non-empty.
+bool RemoveShortcutFolderIfEmpty(ShellUtil::ShortcutLocation location,
+                                 BrowserDistribution* dist,
+                                 ShellUtil::ShellChange level) {
   // Explicitly whitelist locations, since accidental calls can be very harmful.
   if (location != ShellUtil::SHORTCUT_LOCATION_START_MENU &&
       location != ShellUtil::SHORTCUT_LOCATION_APP_SHORTCUTS) {
@@ -1316,7 +1318,8 @@ bool RemoveShortcutFolder(ShellUtil::ShortcutLocation location,
     LOG(WARNING) << "Cannot find path at location " << location;
     return false;
   }
-  if (!base::DeleteFile(shortcut_folder, true)) {
+  if (file_util::IsDirectoryEmpty(shortcut_folder) &&
+      !base::DeleteFile(shortcut_folder, true)) {
     LOG(ERROR) << "Cannot remove folder " << shortcut_folder.value();
     return false;
   }
@@ -2039,27 +2042,20 @@ bool ShellUtil::RemoveShortcuts(ShellUtil::ShortcutLocation location,
   if (!ShellUtil::ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
-  switch (location) {
-    case SHORTCUT_LOCATION_START_MENU:  // Falls through.
-    case SHORTCUT_LOCATION_APP_SHORTCUTS:
-      return RemoveShortcutFolder(location, dist, level);
-
-    case SHORTCUT_LOCATION_TASKBAR_PINS:
-      return BatchShortcutAction(FilterTargetEq(target_exe).
-                                     AsShortcutFilterCallback(),
-                                 base::Bind(&ShortcutOpUnpin),
-                                 location,
-                                 dist,
-                                 level);
-
-    default:
-      return BatchShortcutAction(FilterTargetEq(target_exe).
-                                     AsShortcutFilterCallback(),
-                                 base::Bind(&ShortcutOpDelete),
-                                 location,
-                                 dist,
-                                 level);
+  FilterTargetEq shortcut_filter(target_exe);
+  // Main operation to apply to each shortcut in the directory specified.
+  ShortcutOperationCallback shortcut_operation(
+      location == SHORTCUT_LOCATION_TASKBAR_PINS ?
+          base::Bind(&ShortcutOpUnpin) : base::Bind(&ShortcutOpDelete));
+  bool success = BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
+                                     shortcut_operation, location, dist, level);
+  // Remove chrome-specific shortcut folders if they are now empty.
+  if (success &&
+      (location == SHORTCUT_LOCATION_START_MENU ||
+       location == SHORTCUT_LOCATION_APP_SHORTCUTS)) {
+    success = RemoveShortcutFolderIfEmpty(location, dist, level);
   }
+  return success;
 }
 
 // static
@@ -2072,14 +2068,11 @@ bool ShellUtil::UpdateShortcuts(
   if (!ShellUtil::ShortcutLocationIsSupported(location))
     return true;  // Vacuous success.
 
-  base::win::ShortcutProperties shortcut_properties(
-      TranslateShortcutProperties(properties));
-  return BatchShortcutAction(FilterTargetEq(target_exe).
-                                 AsShortcutFilterCallback(),
-                             base::Bind(&ShortcutOpUpdate, shortcut_properties),
-                             location,
-                             dist,
-                             level);
+  FilterTargetEq shortcut_filter(target_exe);
+  ShortcutOperationCallback shortcut_operation(
+      base::Bind(&ShortcutOpUpdate, TranslateShortcutProperties(properties)));
+  return BatchShortcutAction(shortcut_filter.AsShortcutFilterCallback(),
+                             shortcut_operation, location, dist, level);
 }
 
 bool ShellUtil::GetUserSpecificRegistrySuffix(string16* suffix) {
