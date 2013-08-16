@@ -47,10 +47,14 @@ class PageFlipWaiter : public PaginationModelObserver {
     DCHECK(!wait_);
     wait_ = true;
     page_changed_ = false;
-    wait_timer_.Stop();
-    wait_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromMilliseconds(time_out_ms),
-                      this, &PageFlipWaiter::OnWaitTimeOut);
+
+    if (time_out_ms) {
+      wait_timer_.Stop();
+      wait_timer_.Start(FROM_HERE,
+                        base::TimeDelta::FromMilliseconds(time_out_ms),
+                        this, &PageFlipWaiter::OnWaitTimeOut);
+    }
+
     ui_loop_->Run();
     wait_ = false;
     return page_changed_;
@@ -260,15 +264,7 @@ TEST_F(AppsGridViewTest, MouseDrag) {
   test_api_->LayoutToIdealBounds();
 }
 
-// Test fails sometimes on chrome os.
-// http://crbug.com/242248
-#if defined(OS_CHROMEOS)
-#define MAYBE_MouseDragFlipPage DISABLED_MouseDragFlipPage
-#else
-#define MAYBE_MouseDragFlipPage MouseDragFlipPage
-#endif  // defined(OS_CHROMEOS)
-
-TEST_F(AppsGridViewTest, MAYBE_MouseDragFlipPage) {
+TEST_F(AppsGridViewTest, MouseDragFlipPage) {
   test_api_->SetPageFlipDelay(10);
   pagination_model_->SetTransitionDurations(10, 10);
 
@@ -288,11 +284,11 @@ TEST_F(AppsGridViewTest, MAYBE_MouseDragFlipPage) {
   SimulateDrag(AppsGridView::MOUSE, from, to);
 
   // Page should be flipped after sometime.
-  EXPECT_TRUE(page_flip_waiter.Wait(100));
+  EXPECT_TRUE(page_flip_waiter.Wait(0));
   EXPECT_EQ(1, pagination_model_->selected_page());
 
   // Stay there and page should be flipped again.
-  EXPECT_TRUE(page_flip_waiter.Wait(100));
+  EXPECT_TRUE(page_flip_waiter.Wait(0));
   EXPECT_EQ(2, pagination_model_->selected_page());
 
   // Stay there longer and no page flip happen since we are at the last page.
@@ -306,10 +302,10 @@ TEST_F(AppsGridViewTest, MAYBE_MouseDragFlipPage) {
 
   SimulateDrag(AppsGridView::MOUSE, from, to);
 
-  EXPECT_TRUE(page_flip_waiter.Wait(100));
+  EXPECT_TRUE(page_flip_waiter.Wait(0));
   EXPECT_EQ(1, pagination_model_->selected_page());
 
-  EXPECT_TRUE(page_flip_waiter.Wait(100));
+  EXPECT_TRUE(page_flip_waiter.Wait(0));
   EXPECT_EQ(0, pagination_model_->selected_page());
 
   EXPECT_FALSE(page_flip_waiter.Wait(100));
