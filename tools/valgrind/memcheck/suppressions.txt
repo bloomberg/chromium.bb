@@ -7240,8 +7240,6 @@
 {
    bug_274193
    Memcheck:Leak
-   fun:calloc
-   fun:ralloc_size
    ...
    fun:_mesa_glsl_compile_shader
    fun:compile_shader
