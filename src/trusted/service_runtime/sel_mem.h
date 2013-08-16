@@ -119,15 +119,6 @@ int NaClVmmapChangeProt(struct NaClVmmap  *self,
                         int               prot);
 
 /*
- * NaClVmmapCheckMapping checks whether there is an existing mapping with
- * maximum protection equivalent or higher to the given one.
- */
-int NaClVmmapCheckExistingMapping(struct NaClVmmap  *self,
-                                  uintptr_t         page_num,
-                                  size_t            npages,
-                                  int               prot);
-
-/*
  * NaClVmmapFindPage and NaClVmmapFindPageIter only works if pnum is
  * in the NaClVmmap.  If not, NULL and an AtEnd iterator is returned.
  */
