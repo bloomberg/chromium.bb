@@ -85,13 +85,13 @@ UPSTREAM_FLAKINESS_SERVER = 'test-results.appspot.com'
 
 def GetBuildType():
   try:
-    return os.environ['CHROMIUM_BUILD_TYPE']
+    return os.environ['BUILDTYPE']
   except KeyError:
-    raise Exception('The build type has not been set')
+    raise Exception('The BUILDTYPE environment variable has not been set')
 
 
 def SetBuildType(build_type):
-  os.environ['CHROMIUM_BUILD_TYPE'] = build_type
+  os.environ['BUILDTYPE'] = build_type
 
 
 def _GetADBPath():
