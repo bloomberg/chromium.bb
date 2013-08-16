@@ -13,7 +13,6 @@
 #include "chrome/browser/sync/glue/device_info.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/common/extensions/api/signedin_devices.h"
 
 using base::DictionaryValue;
 using browser_sync::DeviceInfo;
@@ -48,11 +47,11 @@ const base::DictionaryValue* GetIdMappingDictionary(
 // Helper routine to get all signed in devices. The helper takes in
 // the pointers for |ProfileSyncService| and |Extensionprefs|. This
 // makes it easier to test by passing mock values for these pointers.
-ScopedVector<DeviceInfo> GetAllSignedinDevices(
+ScopedVector<DeviceInfo> GetAllSignedInDevices(
     const std::string& extension_id,
     ProfileSyncService* pss,
     ExtensionPrefs* extension_prefs) {
-  ScopedVector<DeviceInfo> devices = pss->GetAllSignedinDevices();
+  ScopedVector<DeviceInfo> devices = pss->GetAllSignedInDevices();
   const DictionaryValue* mapping_dictionary = GetIdMappingDictionary(
       extension_prefs,
       extension_id);
@@ -73,7 +72,7 @@ ScopedVector<DeviceInfo> GetAllSignedinDevices(
   return devices.Pass();
 }
 
-ScopedVector<DeviceInfo> GetAllSignedinDevices(
+ScopedVector<DeviceInfo> GetAllSignedInDevices(
     const std::string& extension_id,
     Profile* profile) {
   // Get the profile sync service and extension prefs pointers
@@ -81,38 +80,9 @@ ScopedVector<DeviceInfo> GetAllSignedinDevices(
   ProfileSyncService* pss = ProfileSyncServiceFactory::GetForProfile(profile);
   ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile);
 
-  return GetAllSignedinDevices(extension_id,
+  return GetAllSignedInDevices(extension_id,
                                pss,
                                extension_prefs);
-}
-
-bool SignedinDevicesGetFunction::RunImpl() {
-  scoped_ptr<api::signedin_devices::Get::Params> params(
-      api::signedin_devices::Get::Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params.get());
-
-  bool is_local = params->is_local.get() ? *params->is_local : false;
-
-  if (is_local) {
-    // TODO(lipalani): Set the device info for local device.
-    base::ListValue* result = new base::ListValue();
-    SetResult(result);
-    return true;
-  }
-
-  ScopedVector<DeviceInfo> devices = GetAllSignedinDevices(extension_id(),
-                                                           profile());
-
-  scoped_ptr<base::ListValue> result(new base::ListValue());
-
-  for (ScopedVector<DeviceInfo>::const_iterator it = devices.begin();
-       it != devices.end();
-       ++it) {
-    result->Append((*it)->ToValue());
-  }
-
-  SetResult(result.release());
-  return true;
 }
 
 }  // namespace extensions

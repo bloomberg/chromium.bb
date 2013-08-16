@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/extensions/extension_function.h"
 
 namespace browser_sync {
 class DeviceInfo;
@@ -28,23 +27,14 @@ namespace extensions {
 // filled with the list of devices associated with the account signed into this
 // |profile|. This function needs the |extension_id| because the
 // public device ids are set per extension.
-ScopedVector<browser_sync::DeviceInfo> GetAllSignedinDevices(
+ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices(
     const std::string& extension_id,
     Profile* profile);
 
-ScopedVector<browser_sync::DeviceInfo> GetAllSignedinDevices(
+ScopedVector<browser_sync::DeviceInfo> GetAllSignedInDevices(
     const std::string& extension_id,
     ProfileSyncService* pss,
     ExtensionPrefs* extension_prefs);
-
-class SignedinDevicesGetFunction : public SyncExtensionFunction {
- protected:
-  virtual ~SignedinDevicesGetFunction() {}
-
-  // ExtensionFunction:
-  virtual bool RunImpl() OVERRIDE;
-  DECLARE_EXTENSION_FUNCTION("SignedinDevices.get", SIGNEDIN_DEVICES_GET)
-};
 
 }  // namespace extensions
 
