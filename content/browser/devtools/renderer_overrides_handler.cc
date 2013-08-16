@@ -15,6 +15,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/browser_thread.h"
@@ -28,11 +29,16 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
+#include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size_conversions.h"
 #include "ui/snapshot/snapshot.h"
 #include "url/gurl.h"
+
+using WebKit::WebGestureEvent;
+using WebKit::WebInputEvent;
+using WebKit::WebMouseEvent;
 
 namespace content {
 
@@ -63,6 +69,25 @@ void ParseCaptureParameters(DevToolsProtocol::Command* command,
     *quality = kDefaultScreenshotQuality;
   if (*scale <= 0 || *scale > 1)
     *scale = 1;
+}
+
+void ParseGenericInputParams(base::DictionaryValue* params,
+                             WebInputEvent* event) {
+  int modifiers = 0;
+  if (params->GetInteger(devtools::Input::kParamModifiers,
+                         &modifiers)) {
+    if (modifiers & 1)
+      event->modifiers |= WebInputEvent::AltKey;
+    if (modifiers & 2)
+      event->modifiers |= WebInputEvent::ControlKey;
+    if (modifiers & 4)
+      event->modifiers |= WebInputEvent::MetaKey;
+    if (modifiers & 8)
+      event->modifiers |= WebInputEvent::ShiftKey;
+  }
+
+  params->GetDouble(devtools::Input::kParamTimestamp,
+                    &event->timeStampSeconds);
 }
 
 }  // namespace
@@ -104,6 +129,11 @@ RendererOverridesHandler::RendererOverridesHandler(DevToolsAgentHost* agent)
       base::Bind(
           &RendererOverridesHandler::PageStopScreencast,
           base::Unretained(this)));
+  RegisterCommandHandler(
+      devtools::Input::dispatchMouseEvent::kName,
+      base::Bind(
+          &RendererOverridesHandler::InputDispatchMouseEvent,
+          base::Unretained(this)));
 }
 
 RendererOverridesHandler::~RendererOverridesHandler() {}
@@ -137,6 +167,9 @@ void RendererOverridesHandler::OnSwapCompositorFrame() {
                  scale));
 }
 
+
+// DOM agent handlers  --------------------------------------------------------
+
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
     scoped_refptr<DevToolsProtocol::Command> command) {
@@ -159,6 +192,9 @@ RendererOverridesHandler::GrantPermissionsForSetFileInputFiles(
   }
   return NULL;
 }
+
+
+// Page agent handlers  -------------------------------------------------------
 
 scoped_refptr<DevToolsProtocol::Response>
 RendererOverridesHandler::PageDisable(
@@ -348,6 +384,87 @@ void RendererOverridesHandler::ScreenshotCaptured(
         devtools::Page::screencastFrame::kResponseData, base_64_data);
     SendNotification(devtools::Page::screencastFrame::kName, response);
   }
+}
+
+
+// Input agent handlers  ------------------------------------------------------
+
+scoped_refptr<DevToolsProtocol::Response>
+RendererOverridesHandler::InputDispatchMouseEvent(
+    scoped_refptr<DevToolsProtocol::Command> command) {
+  base::DictionaryValue* params = command->params();
+  if (!params)
+    return NULL;
+
+  bool device_space = false;
+  if (!params->GetBoolean(devtools::Input::kParamDeviceSpace,
+                          &device_space) ||
+      !device_space) {
+    return NULL;
+  }
+
+  RenderViewHost* host = agent_->GetRenderViewHost();
+  WebKit::WebMouseEvent mouse_event;
+  ParseGenericInputParams(params, &mouse_event);
+
+  std::string type;
+  if (params->GetString(devtools::Input::kParamType,
+                        &type)) {
+    if (type == "mousePressed")
+      mouse_event.type = WebInputEvent::MouseDown;
+    else if (type == "mouseReleased")
+      mouse_event.type = WebInputEvent::MouseUp;
+    else if (type == "mouseMoved")
+      mouse_event.type = WebInputEvent::MouseMove;
+    else
+      return NULL;
+  } else {
+    return NULL;
+  }
+
+  int x;
+  int y;
+  if (!params->GetInteger(devtools::Input::dispatchMouseEvent::kParamX, &x) ||
+      !params->GetInteger(devtools::Input::dispatchMouseEvent::kParamY, &y)) {
+    return NULL;
+  }
+
+  float device_scale_factor = ui::GetScaleFactorScale(
+      GetScaleFactorForView(host->GetView()));
+  mouse_event.x = floor(x / device_scale_factor);
+  mouse_event.y = floor(y / device_scale_factor);
+  mouse_event.windowX = mouse_event.x;
+  mouse_event.windowY = mouse_event.y;
+  mouse_event.globalX = mouse_event.x;
+  mouse_event.globalY = mouse_event.y;
+
+  params->GetInteger(devtools::Input::dispatchMouseEvent::kParamClickCount,
+                     &mouse_event.clickCount);
+
+  std::string button;
+  if (!params->GetString(devtools::Input::dispatchMouseEvent::kParamButton,
+                         &button)) {
+    return NULL;
+  }
+
+  if (button == "none") {
+    mouse_event.button = WebMouseEvent::ButtonNone;
+  } else if (button == "left") {
+    mouse_event.button = WebMouseEvent::ButtonLeft;
+    mouse_event.modifiers |= WebInputEvent::LeftButtonDown;
+  } else if (button == "middle") {
+    mouse_event.button = WebMouseEvent::ButtonMiddle;
+    mouse_event.modifiers |= WebInputEvent::MiddleButtonDown;
+  } else if (button == "right") {
+    mouse_event.button = WebMouseEvent::ButtonRight;
+    mouse_event.modifiers |= WebInputEvent::RightButtonDown;
+  } else {
+    return NULL;
+  }
+
+  host->ForwardMouseEvent(mouse_event);
+
+  return command->SuccessResponse(NULL);
 }
 
 }  // namespace content

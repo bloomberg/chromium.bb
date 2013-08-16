@@ -7,6 +7,32 @@
 namespace content {
 namespace devtools {
 
+namespace DOM {
+
+namespace setFileInputFiles {
+  const char kName[] = "DOM.setFileInputFiles";
+  const char kParamFiles[] = "files";
+}  // setFileInputFiles
+
+}  // DOM
+
+namespace Input {
+
+const char kParamType[] = "type";
+const char kParamModifiers[] = "modifiers";
+const char kParamTimestamp[] = "timestamp";
+const char kParamDeviceSpace[] = "deviceSpace";
+
+namespace dispatchMouseEvent {
+  const char kName[] = "Input.dispatchMouseEvent";
+  const char kParamX[] = "x";
+  const char kParamY[] = "y";
+  const char kParamButton[] = "button";
+  const char kParamClickCount[] = "clickCount";
+}  // dispatchMouseEvent
+
+}  // Input
+
 namespace Inspector {
 
 namespace detached {
@@ -19,15 +45,6 @@ namespace targetCrashed {
 }  // targetCrashed
 
 }  // Inspector
-
-namespace DOM {
-
-namespace setFileInputFiles {
-  const char kName[] = "DOM.setFileInputFiles";
-  const char kParamFiles[] = "files";
-}  // setFileInputFiles
-
-}  // DOM
 
 namespace Page {
 

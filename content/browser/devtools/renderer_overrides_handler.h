@@ -30,9 +30,13 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
   void OnSwapCompositorFrame();
 
  private:
+
+  // DOM domain.
   scoped_refptr<DevToolsProtocol::Response>
       GrantPermissionsForSetFileInputFiles(
           scoped_refptr<DevToolsProtocol::Command> command);
+
+  // Page domain.
   scoped_refptr<DevToolsProtocol::Response> PageDisable(
       scoped_refptr<DevToolsProtocol::Command> command);
   scoped_refptr<DevToolsProtocol::Response> PageHandleJavaScriptDialog(
@@ -53,6 +57,10 @@ class RendererOverridesHandler : public DevToolsProtocol::Handler {
       double scale,
       bool success,
       const SkBitmap& bitmap);
+
+  // Input domain.
+  scoped_refptr<DevToolsProtocol::Response> InputDispatchMouseEvent(
+      scoped_refptr<DevToolsProtocol::Command> command);
 
   DevToolsAgentHost* agent_;
   base::WeakPtrFactory<RendererOverridesHandler> weak_factory_;
