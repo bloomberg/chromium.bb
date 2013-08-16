@@ -46,7 +46,8 @@ class VectorPlatformDeviceEmf : public SkDevice, public PlatformDevice {
                         bool pathIsMutable = false) OVERRIDE;
   virtual void drawBitmapRect(const SkDraw& draw, const SkBitmap& bitmap,
                               const SkRect* src, const SkRect& dst,
-                              const SkPaint& paint) SK_OVERRIDE;
+                              const SkPaint& paint,
+                              SkCanvas::DrawBitmapRectFlags flags) SK_OVERRIDE;
   virtual void drawBitmap(const SkDraw& draw, const SkBitmap& bitmap,
                           const SkMatrix& matrix,
                           const SkPaint& paint) OVERRIDE;

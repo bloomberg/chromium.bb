@@ -102,7 +102,8 @@ class SK_API AnalysisDevice : public SkDevice {
                               const SkBitmap& bitmap,
                               const SkRect* src_or_null,
                               const SkRect& dst,
-                              const SkPaint& paint) OVERRIDE;
+                              const SkPaint& paint,
+                              SkCanvas::DrawBitmapRectFlags flags) OVERRIDE;
   virtual void drawText(const SkDraw& draw,
                         const void* text,
                         size_t len,

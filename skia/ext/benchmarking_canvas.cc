@@ -122,9 +122,10 @@ public:
 
   virtual void drawBitmapRectToRect(const SkBitmap& bitmap, const SkRect* src,
                                     const SkRect& dst,
-                                    const SkPaint* paint = NULL) OVERRIDE {
+                                    const SkPaint* paint,
+                                    DrawBitmapRectFlags flags) OVERRIDE {
     AutoStamper stamper(this);
-    SkProxyCanvas::drawBitmapRectToRect(bitmap, src, dst, paint);
+    SkProxyCanvas::drawBitmapRectToRect(bitmap, src, dst, paint, flags);
   }
 
   virtual void drawBitmapMatrix(const SkBitmap& bitmap, const SkMatrix& m,

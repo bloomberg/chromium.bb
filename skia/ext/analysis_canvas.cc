@@ -212,7 +212,8 @@ void AnalysisDevice::drawBitmapRect(const SkDraw& draw,
                                     const SkBitmap& bitmap,
                                     const SkRect* src_or_null,
                                     const SkRect& dst,
-                                    const SkPaint& paint) {
+                                    const SkPaint& paint,
+                                    SkCanvas::DrawBitmapRectFlags flags) {
   // Call drawRect to determine transparency,
   // but reset solid color to false.
   drawRect(draw, dst, paint);
