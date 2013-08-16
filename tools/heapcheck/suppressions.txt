@@ -852,3 +852,27 @@
    fun:net::NSSCertDatabase::ListCerts
    fun:LoadNSSCertificates
 }
+{
+   bug_274114
+   Heapcheck:Leak
+   ...
+   fun:gfx::RenderTextLinux::GetBaseline
+   fun:views::NativeTextfieldViews::GetTextfieldBaseline
+   fun:_init
+   fun:LocationBarView::Init
+   fun:ToolbarView::Init
+   fun:BrowserView::InitViews
+   fun:BrowserView::ViewHierarchyChanged
+   fun:views::View::ViewHierarchyChangedImpl
+   fun:views::View::PropagateAddNotifications
+   fun:views::View::AddChildViewAt
+   fun:views::NonClientView::ViewHierarchyChanged
+   fun:views::View::ViewHierarchyChangedImpl
+   fun:views::View::PropagateAddNotifications
+   fun:views::View::AddChildViewAt
+   fun:views::View::AddChildView
+   fun:views::internal::RootView::SetContentsView
+   fun:views::Widget::SetContentsView
+   fun:views::Widget::Init
+   fun:BrowserFrame::InitBrowserFrame
+}
