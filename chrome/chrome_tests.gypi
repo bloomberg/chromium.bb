@@ -1153,7 +1153,10 @@
       'sources': [
         '../apps/app_restore_service_browsertest.cc',
         '../apps/load_and_launch_browsertest.cc',
+        '../remoting/test/auth_browsertest.cc',
+        '../remoting/test/launch_browsertest.cc',
         '../remoting/test/remote_desktop_browsertest.cc',
+        '../remoting/test/remote_desktop_browsertest.h',
         'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',
