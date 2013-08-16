@@ -126,6 +126,10 @@ bool ShouldHideTopVerbatimMatch();
 // to always show the remote NTP on browser startup.
 bool ShouldPreferRemoteNTPOnStartup();
 
+// Returns true if the cacheable NTP should be shown and false if not.
+// Exposed for testing.
+bool ShouldUseCacheableNTP();
+
 // Returns true if the Instant NTP should be shown and false if not.
 bool ShouldShowInstantNTP();
 

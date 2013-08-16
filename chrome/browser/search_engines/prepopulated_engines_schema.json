@@ -28,6 +28,8 @@
     { "field": "instant_url", "type": "string", "optional": true },
     // If omitted, this engine does not support image search.
     { "field": "image_url", "type": "string", "optional": true },
+    // If omitted, this engine does not support rendering a new tab page.
+    { "field": "new_tab_url", "type": "string", "optional": true },
     // The followings are post parameters for the corresponding search URL.
     // If omitted, a GET request will be sent when using the corresponding
     // search URL. Otherwise, a POST request will be sent.

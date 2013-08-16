@@ -233,6 +233,7 @@ TEST(TemplateURLPrepopulateDataTest, ClearProvidersFromPrefs) {
   EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
   EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
   EXPECT_FALSE(t_urls[default_index]->image_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->new_tab_url().empty());
   EXPECT_FALSE(t_urls[default_index]->image_url_post_params().empty());
   EXPECT_EQ(SEARCH_ENGINE_GOOGLE,
             TemplateURLPrepopulateData::GetEngineType(*t_urls[default_index]));
@@ -265,6 +266,7 @@ TEST(TemplateURLPrepopulateDataTest, ProvidersFromPrepopulated) {
   EXPECT_FALSE(t_urls[default_index]->suggestions_url().empty());
   EXPECT_FALSE(t_urls[default_index]->instant_url().empty());
   EXPECT_FALSE(t_urls[default_index]->image_url().empty());
+  EXPECT_FALSE(t_urls[default_index]->new_tab_url().empty());
   EXPECT_FALSE(t_urls[default_index]->image_url_post_params().empty());
   // Expect at least 2 alternate_urls.
   // This caught a bug with static initialization of arrays, so leave this in.

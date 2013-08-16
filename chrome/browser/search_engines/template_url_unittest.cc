@@ -38,7 +38,7 @@ class TestSearchTermsData : public SearchTermsData {
 };
 
 TestSearchTermsData::TestSearchTermsData(const std::string& google_base_url)
-    : google_base_url_(google_base_url)  {
+    : google_base_url_(google_base_url) {
 }
 
 std::string TestSearchTermsData::GoogleBaseURLValue() const {
@@ -1197,6 +1197,7 @@ TEST_F(TemplateURLTest, IsSearchResults) {
   TemplateURLData data;
   data.SetURL("http://bar/search?q={searchTerms}");
   data.instant_url = "http://bar/instant#q={searchTerms}";
+  data.new_tab_url = "http://bar/newtab";
   data.alternate_urls.push_back("http://bar/?q={searchTerms}");
   data.alternate_urls.push_back("http://bar/#q={searchTerms}");
   data.alternate_urls.push_back("http://bar/search#q{searchTerms}");
@@ -1216,6 +1217,7 @@ TEST_F(TemplateURLTest, IsSearchResults) {
     { "http://bar/url?url=http://www.foo.com/&q=foo#ref=bar", false, },
     { "http://bar/", false, },
     { "http://foo/", false, },
+    { "http://bar/newtab", false, },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(url_data); ++i) {

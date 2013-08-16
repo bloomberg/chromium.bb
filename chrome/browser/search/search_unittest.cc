@@ -245,6 +245,7 @@ class SearchTest : public BrowserWithTestWindowTest {
     data.SetURL("http://foo.com/url?bar={searchTerms}");
     data.instant_url = "http://foo.com/instant?"
         "{google:omniboxStartMarginParameter}foo=foo#foo=foo&strk";
+    data.new_tab_url = "http://foo.com/newtab?strk";
     data.alternate_urls.push_back("http://foo.com/alt#quux={searchTerms}");
     data.search_terms_replacement_key = "strk";
 
@@ -666,15 +667,27 @@ TEST_F(SearchTest, ShouldShowInstantNTP_Default) {
 TEST_F(SearchTest, ShouldShowInstantNTP_DisabledViaFinch) {
   EnableInstantExtendedAPIForTesting();
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
-                                                     "Group1 show_ntp:0"));
+      "Group1 show_ntp:0"));
   EXPECT_FALSE(ShouldShowInstantNTP());
 }
 
-TEST_F(SearchTest, ShouldShowInstantNTP_DisabledByInstantNewTabURLSwitch) {
+TEST_F(SearchTest, ShouldShowInstantNTP_DisabledByUseCacheableNTPFinchFlag) {
   EnableInstantExtendedAPIForTesting();
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantNewTabURL, "http://example.com/newtab");
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+      "Group1 use_cacheable_ntp:1"));
   EXPECT_FALSE(ShouldShowInstantNTP());
+}
+
+TEST_F(SearchTest, ShouldUseCacheableNTP_Default) {
+  EnableInstantExtendedAPIForTesting();
+  EXPECT_FALSE(ShouldUseCacheableNTP());
+}
+
+TEST_F(SearchTest, ShouldUseCacheableNTP_EnabledViaFinch) {
+  EnableInstantExtendedAPIForTesting();
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+      "Group1 use_cacheable_ntp:1"));
+  EXPECT_TRUE(ShouldUseCacheableNTP());
 }
 
 TEST_F(SearchTest, IsNTPURL) {

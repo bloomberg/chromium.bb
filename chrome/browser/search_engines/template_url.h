@@ -50,6 +50,7 @@ class TemplateURLRef {
     SUGGEST,
     INSTANT,
     IMAGE,
+    NEW_TAB,
     INDEXED
   };
 
@@ -408,6 +409,7 @@ struct TemplateURLData {
   std::string suggestions_url;
   std::string instant_url;
   std::string image_url;
+  std::string new_tab_url;
 
   // The following post_params are comma-separated lists used to specify the
   // post parameters for the corresponding URL.
@@ -525,6 +527,7 @@ class TemplateURL {
   const std::string& suggestions_url() const { return data_.suggestions_url; }
   const std::string& instant_url() const { return data_.instant_url; }
   const std::string& image_url() const { return data_.image_url; }
+  const std::string& new_tab_url() const { return data_.new_tab_url; }
   const std::string& search_url_post_params() const {
     return data_.search_url_post_params;
   }
@@ -579,6 +582,7 @@ class TemplateURL {
   }
   const TemplateURLRef& instant_url_ref() const { return instant_url_ref_; }
   const TemplateURLRef& image_url_ref() const { return image_url_ref_; }
+  const TemplateURLRef& new_tab_url_ref() const { return new_tab_url_ref_; }
 
   // Returns true if |url| supports replacement.
   bool SupportsReplacement() const;
@@ -700,6 +704,7 @@ class TemplateURL {
   TemplateURLRef suggestions_url_ref_;
   TemplateURLRef instant_url_ref_;
   TemplateURLRef image_url_ref_;
+  TemplateURLRef new_tab_url_ref_;
 
   // TODO(sky): Add date last parsed OSD file.
 

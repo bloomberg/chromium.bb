@@ -901,9 +901,6 @@ const char kIncognito[]                     = "incognito";
 // app/extension ID given, and then prompt the user to download and install it.
 const char kInstallFromWebstore[]           = "install-from-webstore";
 
-// Causes Chrome to load this URL instead of chrome://newtab for New Tab pages.
-const char kInstantNewTabURL[]              = "instant-new-tab-url";
-
 // Marks a renderer as an Instant process.
 const char kInstantProcess[]                = "instant-process";
 

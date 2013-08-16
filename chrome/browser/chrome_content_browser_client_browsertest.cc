@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/metrics/field_trial.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -24,6 +27,20 @@ class ChromeContentBrowserClientBrowserTest : public InProcessBrowserTest {
   NavigationEntry* GetLastCommittedEntry() {
     return browser()->tab_strip_model()->GetWebContentsAt(0)->
         GetController().GetLastCommittedEntry();
+  }
+
+  void InstallTemplateURLWithNewTabPage(GURL new_tab_page_url) {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(browser()->profile());
+    ui_test_utils::WaitForTemplateURLServiceToLoad(template_url_service);
+
+    TemplateURLData data;
+    data.SetURL("http://foo.com/url?bar={searchTerms}");
+    data.new_tab_url = new_tab_page_url.spec();
+    TemplateURL* template_url = new TemplateURL(browser()->profile(), data);
+    // Takes ownership.
+    template_url_service->Add(template_url);
+    template_url_service->SetDefaultSearchProvider(template_url);
   }
 };
 
@@ -81,8 +98,9 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        UberURLHandler_InstantExtendedNewTabPage) {
   const GURL url_original("chrome://newtab");
   const GURL url_rewritten("http://example.com/newtab");
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantNewTabURL, url_rewritten.spec());
+  InstallTemplateURLWithNewTabPage(url_rewritten);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+      "Group1 use_cacheable_ntp:1"));
   chrome::EnableInstantExtendedAPIForTesting();
 
   ui_test_utils::NavigateToURL(browser(), url_original);
@@ -97,8 +115,10 @@ IN_PROC_BROWSER_TEST_F(ChromeContentBrowserClientBrowserTest,
                        UberURLHandler_InstantExtendedNewTabPageDisabled) {
   const GURL url_original("chrome://newtab");
   const GURL url_rewritten("http://example.com/newtab");
-  CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kInstantNewTabURL, url_rewritten.spec());
+  InstallTemplateURLWithNewTabPage(url_rewritten);
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("InstantExtended",
+      "Group1 use_cacheable_ntp:1"));
+  chrome::DisableInstantExtendedAPIForTesting();
 
   ui_test_utils::NavigateToURL(browser(), url_original);
   NavigationEntry* entry = GetLastCommittedEntry();

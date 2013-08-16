@@ -238,6 +238,7 @@ std::string TemplateURLRef::GetURL() const {
     case SUGGEST: return owner_->suggestions_url();
     case INSTANT: return owner_->instant_url();
     case IMAGE:   return owner_->image_url();
+    case NEW_TAB: return owner_->new_tab_url();
     case INDEXED: return owner_->GetURL(index_in_owner_);
     default:      NOTREACHED(); return std::string();  // NOLINT
   }
@@ -249,6 +250,7 @@ std::string TemplateURLRef::GetPostParamsString() const {
     case SEARCH:  return owner_->search_url_post_params();
     case SUGGEST: return owner_->suggestions_url_post_params();
     case INSTANT: return owner_->instant_url_post_params();
+    case NEW_TAB: return std::string();
     case IMAGE:   return owner_->image_url_post_params();
     default:      NOTREACHED(); return std::string();  // NOLINT
   }
@@ -1009,7 +1011,8 @@ TemplateURL::TemplateURL(Profile* profile, const TemplateURLData& data)
                            TemplateURLRef::SUGGEST),
       instant_url_ref_(this,
                        TemplateURLRef::INSTANT),
-      image_url_ref_(this, TemplateURLRef::IMAGE) {
+      image_url_ref_(this, TemplateURLRef::IMAGE),
+      new_tab_url_ref_(this, TemplateURLRef::NEW_TAB) {
   SetPrepopulateId(data_.prepopulate_id);
 
   if (data_.search_terms_replacement_key ==
