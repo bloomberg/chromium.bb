@@ -9,6 +9,7 @@
 
 namespace WebKit {
 class WebDeviceMotionData;
+class WebDeviceOrientationData;
 class WebGamepads;
 struct WebSize;
 }
@@ -43,6 +44,10 @@ void SetMockGamepads(const WebKit::WebGamepads& pads);
 // Sets WebDeviceMotionData that should be used when registering
 // a listener through WebKitPlatformSupport::setDeviceMotionListener().
 void SetMockDeviceMotionData(const WebKit::WebDeviceMotionData& data);
+
+// Sets WebDeviceOrientationData that should be used when registering
+// a listener through WebKitPlatformSupport::setDeviceOrientationListener().
+void SetMockDeviceOrientationData(const WebKit::WebDeviceOrientationData& data);
 
 // Returns the length of the local session history of a render view.
 int GetLocalSessionHistoryLength(RenderView* render_view);

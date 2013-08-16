@@ -128,6 +128,8 @@ base::LazyInstance<WebGamepads>::Leaky g_test_gamepads =
     LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<WebKit::WebDeviceMotionData>::Leaky
     g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<WebKit::WebDeviceOrientationData>::Leaky
+    g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
 
 //------------------------------------------------------------------------------
 
@@ -1019,11 +1021,27 @@ void RendererWebKitPlatformSupportImpl::SetMockDeviceMotionDataForTesting(
 
 void RendererWebKitPlatformSupportImpl::setDeviceOrientationListener(
     WebKit::WebDeviceOrientationListener* listener) {
-  if (!device_orientation_event_pump_) {
-    device_orientation_event_pump_.reset(new DeviceOrientationEventPump);
-    device_orientation_event_pump_->Attach(RenderThreadImpl::current());
+  if (g_test_device_orientation_data == 0) {
+    if (!device_orientation_event_pump_) {
+      device_orientation_event_pump_.reset(new DeviceOrientationEventPump);
+      device_orientation_event_pump_->Attach(RenderThreadImpl::current());
+    }
+    device_orientation_event_pump_->SetListener(listener);
+  } else if (listener) {
+    // Testing mode: just echo the test data to the listener.
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &WebKit::WebDeviceOrientationListener::didChangeDeviceOrientation,
+            base::Unretained(listener),
+            g_test_device_orientation_data.Get()));
   }
-  device_orientation_event_pump_->SetListener(listener);
+}
+
+// static
+void RendererWebKitPlatformSupportImpl::SetMockDeviceOrientationDataForTesting(
+    const WebKit::WebDeviceOrientationData& data) {
+  g_test_device_orientation_data.Get() = data;
 }
 
 //------------------------------------------------------------------------------

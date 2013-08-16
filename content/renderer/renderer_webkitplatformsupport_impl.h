@@ -29,6 +29,7 @@ class SyncMessageFilter;
 
 namespace WebKit {
 class WebDeviceMotionData;
+class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
 }
 
@@ -166,6 +167,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   // Set WebDeviceMotionData to return when setDeviceMotionListener is invoked.
   static void SetMockDeviceMotionDataForTesting(
       const WebKit::WebDeviceMotionData& data);
+  // Set WebDeviceOrientationData to return when setDeviceOrientationListener
+  // is invoked.
+  static void SetMockDeviceOrientationDataForTesting(
+      const WebKit::WebDeviceOrientationData& data);
 
  private:
   bool CheckPreparsedJsCachingEnabled() const;
