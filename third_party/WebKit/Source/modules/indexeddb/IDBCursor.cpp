@@ -81,8 +81,6 @@ IDBCursor::IDBCursor(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::C
     , m_transaction(transaction)
     , m_transactionNotifier(transaction, this)
     , m_gotValue(false)
-    , m_keyDirty(true)
-    , m_primaryKeyDirty(true)
 {
     ASSERT(m_backend);
     ASSERT(m_request);
@@ -129,13 +127,13 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
     const bool usesInLineKeys = !keyPath.isNull();
     if (usesInLineKeys) {
         RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(m_request->requestState(), value, keyPath);
-        if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
+        if (!keyPathKey || !keyPathKey->isEqual(m_currentPrimaryKey.get())) {
             es.throwDOMException(DataError, "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key.");
             return 0;
         }
     }
 
-    return objectStore->put(IDBDatabaseBackendInterface::CursorUpdate, IDBAny::create(this), state, value, m_primaryKey, es);
+    return objectStore->put(IDBDatabaseBackendInterface::CursorUpdate, IDBAny::create(this), state, value, m_currentPrimaryKey, es);
 }
 
 void IDBCursor::advance(unsigned long count, ExceptionState& es)
@@ -204,14 +202,14 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& es)
     }
 
     if (key) {
-        ASSERT(m_key);
+        ASSERT(m_currentKey);
         if (m_direction == IndexedDB::CursorNext || m_direction == IndexedDB::CursorNextNoDuplicate) {
-            if (!m_key->isLessThan(key.get())) {
+            if (!m_currentKey->isLessThan(key.get())) {
                 es.throwDOMException(DataError, "The parameter is less than or equal to this cursor's position.");
                 return;
             }
         } else {
-            if (!key->isLessThan(m_key.get())) {
+            if (!key->isLessThan(m_currentKey.get())) {
                 es.throwDOMException(DataError, "The parameter is greater than or equal to this cursor's position.");
                 return;
             }
@@ -254,7 +252,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
         return 0;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, es);
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_currentPrimaryKey, es);
     ASSERT(!es.hadException());
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -280,25 +278,13 @@ void IDBCursor::close()
     m_backend.clear();
 }
 
-ScriptValue IDBCursor::key()
-{
-    m_keyDirty = false;
-    return idbKeyToScriptValue(m_request->requestState(), m_key);
-}
-
-ScriptValue IDBCursor::primaryKey()
-{
-    m_primaryKeyDirty = false;
-    return idbKeyToScriptValue(m_request->requestState(), m_primaryKey);
-}
-
 void IDBCursor::setValueReady(DOMRequestState* state, PassRefPtr<IDBKey> key, PassRefPtr<IDBKey> primaryKey, ScriptValue& value)
 {
-    m_key = key;
-    m_keyDirty = true;
+    m_currentKey = key;
+    m_currentKeyValue = idbKeyToScriptValue(state, m_currentKey);
 
-    m_primaryKey = primaryKey;
-    m_primaryKeyDirty = true;
+    m_currentPrimaryKey = primaryKey;
+    m_currentPrimaryKeyValue = idbKeyToScriptValue(state, m_currentPrimaryKey);
 
     if (!isKeyCursor()) {
         RefPtr<IDBObjectStore> objectStore = effectiveObjectStore();
@@ -306,14 +292,14 @@ void IDBCursor::setValueReady(DOMRequestState* state, PassRefPtr<IDBKey> key, Pa
         if (metadata.autoIncrement && !metadata.keyPath.isNull()) {
 #ifndef NDEBUG
             RefPtr<IDBKey> expectedKey = createIDBKeyFromScriptValueAndKeyPath(m_request->requestState(), value, metadata.keyPath);
-            ASSERT(!expectedKey || expectedKey->isEqual(m_primaryKey.get()));
+            ASSERT(!expectedKey || expectedKey->isEqual(m_currentPrimaryKey.get()));
 #endif
-            bool injected = injectIDBKeyIntoScriptValue(m_request->requestState(), m_primaryKey, value, metadata.keyPath);
+            bool injected = injectIDBKeyIntoScriptValue(m_request->requestState(), m_currentPrimaryKey, value, metadata.keyPath);
             // FIXME: There is no way to report errors here. Move this into onSuccessWithContinuation so that we can abort the transaction there. See: https://bugs.webkit.org/show_bug.cgi?id=92278
             ASSERT_UNUSED(injected, injected);
         }
     }
-    m_value = value;
+    m_currentValue = value;
 
     m_gotValue = true;
 }

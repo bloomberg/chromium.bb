@@ -24,7 +24,6 @@
 
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
-#include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/SerializedScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8DOMConfiguration.h"
@@ -168,89 +167,6 @@ static void cachedReadonlyValueAttrGetterCallback(v8::Local<v8::String> name, co
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void dirtySerializedValueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("dirtySerializedValue");
-    v8::Handle<v8::Value> value;
-    TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    if (!imp->isValueDirty()) {
-        value = info.Holder()->GetHiddenValue(propertyName);
-        if (!value.IsEmpty()) {
-            v8SetReturnValue(info, value);
-            return;
-        }
-    }
-    RefPtr<SerializedScriptValue> serialized = imp->dirtySerializedValue();
-    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
-    info.Holder()->SetHiddenValue(propertyName, value);
-    v8SetReturnValue(info, value);
-    return;
-}
-
-static void dirtySerializedValueAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestSerializedScriptValueInterfaceV8Internal::dirtySerializedValueAttrGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void dirtySerializedValueAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(RefPtr<SerializedScriptValue>, v, SerializedScriptValue::create(value, info.GetIsolate()));
-    imp->setDirtySerializedValue(WTF::getPtr(v));
-    info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("dirtySerializedValue")); // Invalidate the cached value.
-    return;
-}
-
-static void dirtySerializedValueAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestSerializedScriptValueInterfaceV8Internal::dirtySerializedValueAttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void dirtyScriptValueAttrGetter(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("dirtyScriptValue");
-    v8::Handle<v8::Value> value;
-    TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    if (!imp->isValueDirty()) {
-        value = info.Holder()->GetHiddenValue(propertyName);
-        if (!value.IsEmpty()) {
-            v8SetReturnValue(info, value);
-            return;
-        }
-    }
-    value = imp->dirtyScriptValue().v8Value();
-    info.Holder()->SetHiddenValue(propertyName, value);
-    v8SetReturnValue(info, value);
-    return;
-}
-
-static void dirtyScriptValueAttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestSerializedScriptValueInterfaceV8Internal::dirtyScriptValueAttrGetter(name, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void dirtyScriptValueAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TestSerializedScriptValueInterface* imp = V8TestSerializedScriptValueInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(ScriptValue, v, ScriptValue(value));
-    imp->setDirtyScriptValue(v);
-    info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("dirtyScriptValue")); // Invalidate the cached value.
-    return;
-}
-
-static void dirtyScriptValueAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestSerializedScriptValueInterfaceV8Internal::dirtyScriptValueAttrSetter(name, value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
 } // namespace TestSerializedScriptValueInterfaceV8Internal
 
 static const V8DOMConfiguration::BatchedAttribute V8TestSerializedScriptValueInterfaceAttrs[] = {
@@ -262,10 +178,6 @@ static const V8DOMConfiguration::BatchedAttribute V8TestSerializedScriptValueInt
     {"cachedValue", TestSerializedScriptValueInterfaceV8Internal::cachedValueAttrGetterCallback, TestSerializedScriptValueInterfaceV8Internal::cachedValueAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'cachedReadonlyValue'
     {"cachedReadonlyValue", TestSerializedScriptValueInterfaceV8Internal::cachedReadonlyValueAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'dirtySerializedValue'
-    {"dirtySerializedValue", TestSerializedScriptValueInterfaceV8Internal::dirtySerializedValueAttrGetterCallback, TestSerializedScriptValueInterfaceV8Internal::dirtySerializedValueAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
-    // Attribute 'dirtyScriptValue'
-    {"dirtyScriptValue", TestSerializedScriptValueInterfaceV8Internal::dirtyScriptValueAttrGetterCallback, TestSerializedScriptValueInterfaceV8Internal::dirtyScriptValueAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestSerializedScriptValueInterfaceTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

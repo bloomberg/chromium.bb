@@ -1345,16 +1345,6 @@ sub GenerateNormalAttrGetterCallback
     $implementation{nameSpaceInternal}->add($code);
 }
 
-sub GetCachedAttr
-{
-    my $attribute = shift;
-    my $attrExt = $attribute->extendedAttributes;
-    if (($attribute->type eq "any" || $attribute->type eq "SerializedScriptValue") && $attrExt->{"CachedAttribute"}) {
-        return $attrExt->{"CachedAttribute"};
-    }
-    return "";
-}
-
 sub GenerateNormalAttrGetter
 {
     my $attribute = shift;
@@ -1367,7 +1357,6 @@ sub GenerateNormalAttrGetter
     my $attrExt = $attribute->extendedAttributes;
     my $attrName = $attribute->name;
     my $attrType = $attribute->type;
-    my $attrCached = GetCachedAttr($attribute);
 
     if (HasCustomGetter($attrExt)) {
         return;
@@ -1428,24 +1417,8 @@ END
             return;
             # Skip the rest of the function!
         }
-        my $imp = 0;
-        if ($attrCached) {
-            if ($attrCached ne "VALUE_IS_MISSING") {
-                $imp = 1;
-                $code .= <<END;
-    v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
-    v8::Handle<v8::Value> value;
-    ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
-    if (!imp->$attrCached()) {
-        value = info.Holder()->GetHiddenValue(propertyName);
-        if (!value.IsEmpty()) {
-            v8SetReturnValue(info, value);
-            return;
-        }
-    }
-END
-            } else {
-                $code .= <<END;
+        if ($attribute->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
+            $code .= <<END;
     v8::Handle<v8::String> propertyName = v8::String::NewSymbol("${attrName}");
     v8::Handle<v8::Value> value = info.Holder()->GetHiddenValue(propertyName);
     if (!value.IsEmpty()) {
@@ -1453,9 +1426,8 @@ END
         return;
     }
 END
-            }
         }
-        if (!$attribute->isStatic && !$imp) {
+        if (!$attribute->isStatic) {
             $code .= <<END;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
 END
@@ -1630,15 +1602,11 @@ END
             $code .= "    v8SetReturnValueFast(info, $wrappedValue, imp);\n";
         }
         $code .= "    return;\n";
-    } elsif ($attrCached) {
+    } elsif ($attribute->type eq "SerializedScriptValue" && $attrExt->{"CachedAttribute"}) {
         my $getterFunc = ToMethodName($attribute->name);
-        if ($attribute->type eq "SerializedScriptValue") {
-            $code .= "    RefPtr<SerializedScriptValue> serialized = imp->${getterFunc}();\n";
-            $code .= "    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));\n";
-        } else {
-            $code .= "    value = imp->${getterFunc}().v8Value();\n";
-        }
         $code .= <<END;
+    RefPtr<SerializedScriptValue> serialized = imp->${getterFunc}();
+    value = serialized ? serialized->deserialize() : v8::Handle<v8::Value>(v8::Null(info.GetIsolate()));
     info.Holder()->SetHiddenValue(propertyName, value);
     v8SetReturnValue(info, value);
     return;
@@ -1812,7 +1780,6 @@ sub GenerateNormalAttrSetter
     my $attrName = $attribute->name;
     my $attrExt = $attribute->extendedAttributes;
     my $attrType = $attribute->type;
-    my $attrCached = GetCachedAttr($attribute);
 
     if (HasCustomSetter($attrExt)) {
         return;
@@ -1980,7 +1947,7 @@ END
         }
     }
 
-    if ($attrCached) {
+    if ($attribute->type eq "SerializedScriptValue" && $attribute->extendedAttributes->{"CachedAttribute"}) {
         $code .= <<END;
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("${attrName}")); // Invalidate the cached value.
 END
