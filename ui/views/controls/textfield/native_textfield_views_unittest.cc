@@ -1887,17 +1887,15 @@ TEST_F(NativeTextfieldViewsTest, TestLongPressInitiatesDragDrop) {
       kStringPoint, kStringPoint));
 }
 
+TEST_F(NativeTextfieldViewsTest, GetTextfieldBaseline_FontFallbackTest) {
 #if defined(OS_WIN)
-// This test fails on Windows because two different strings have the same
-// baseline. TODO(yukishiino): address this issue.
-#define MAYBE_GetTextfieldBaseline_FontFallbackTest \
-    DISABLED_GetTextfieldBaseline_FontFallbackTest
-#else
-#define MAYBE_GetTextfieldBaseline_FontFallbackTest \
-    GetTextfieldBaseline_FontFallbackTest
+  // This test fails on some versions of Windows because two different strings
+  // have the same baseline.
+  if (base::win::GetVersion() <= base::win::VERSION_XP ||
+      base::win::VERSION_WIN8 <= base::win::GetVersion())
+    return;
 #endif
 
-TEST_F(NativeTextfieldViewsTest, MAYBE_GetTextfieldBaseline_FontFallbackTest) {
   InitTextfield(Textfield::STYLE_DEFAULT);
   textfield_->SetText(UTF8ToUTF16("abc"));
   const int old_baseline = textfield_->GetBaseline();
