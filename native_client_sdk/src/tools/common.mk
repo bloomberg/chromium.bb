@@ -455,13 +455,13 @@ run: all
 ifndef NACL_ARCH
 	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
 endif
-	$(SEL_LDR_PATH) $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+	$(SEL_LDR_PATH) $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(NEXE_ARGS)
 
 debug: all
 ifndef NACL_ARCH
 	$(error Cannot run in sel_ldr unless $$NACL_ARCH is set)
 endif
-	$(SEL_LDR_PATH) -d $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe
+	$(SEL_LDR_PATH) -d $(SEL_LDR_ARGS) $(OUTDIR)/$(TARGET)_$(NACL_ARCH).nexe -- $(NEXE_ARGS)
 else
 PAGE ?= index.html
 PAGE_TC_CONFIG ?= "$(PAGE)?tc=$(TOOLCHAIN)&config=$(CONFIG)"
