@@ -14,6 +14,7 @@
 #include "base/task_runner_util.h"
 #include "media/base/bind_to_loop.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_log.h"
 #include "media/base/pipeline.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
@@ -52,12 +53,14 @@ GpuVideoDecoder::BufferData::BufferData(
 GpuVideoDecoder::BufferData::~BufferData() {}
 
 GpuVideoDecoder::GpuVideoDecoder(
-    const scoped_refptr<GpuVideoAcceleratorFactories>& factories)
+    const scoped_refptr<GpuVideoAcceleratorFactories>& factories,
+    const scoped_refptr<MediaLog>& media_log)
     : needs_bitstream_conversion_(false),
       gvd_loop_proxy_(factories->GetMessageLoop()),
       weak_factory_(this),
       factories_(factories),
       state_(kNormal),
+      media_log_(media_log),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
@@ -181,6 +184,7 @@ void GpuVideoDecoder::Initialize(const VideoDecoderConfig& config,
   }
 
   DVLOG(3) << "GpuVideoDecoder::Initialize() succeeded.";
+  media_log_->SetStringProperty("video_decoder", "gpu");
   status_cb.Run(PIPELINE_OK);
 }
 

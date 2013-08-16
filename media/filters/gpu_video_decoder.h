@@ -27,6 +27,7 @@ namespace media {
 
 class DecoderBuffer;
 class GpuVideoAcceleratorFactories;
+class MediaLog;
 
 // GPU-accelerated video decoder implementation.  Relies on
 // AcceleratedVideoDecoderMsg_Decode and friends.
@@ -36,7 +37,8 @@ class MEDIA_EXPORT GpuVideoDecoder
  public:
   // The message loop of |factories| will be saved to |gvd_loop_proxy_|.
   explicit GpuVideoDecoder(
-      const scoped_refptr<GpuVideoAcceleratorFactories>& factories);
+      const scoped_refptr<GpuVideoAcceleratorFactories>& factories,
+      const scoped_refptr<MediaLog>& media_log);
 
   // VideoDecoder implementation.
   virtual void Initialize(const VideoDecoderConfig& config,
@@ -136,6 +138,8 @@ class MEDIA_EXPORT GpuVideoDecoder
   // round-trip to the browser process, we keep allocation out of the
   // steady-state of the decoder.
   std::vector<SHMBuffer*> available_shm_segments_;
+
+  scoped_refptr<MediaLog> media_log_;
 
   // Book-keeping variables.
   struct BufferPair {

@@ -1104,8 +1104,10 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
   // Create our video decoders and renderer.
   ScopedVector<media::VideoDecoder> video_decoders;
 
-  if (gpu_factories_.get())
-    video_decoders.push_back(new media::GpuVideoDecoder(gpu_factories_));
+  if (gpu_factories_.get()) {
+    video_decoders.push_back(
+        new media::GpuVideoDecoder(gpu_factories_, media_log_));
+  }
 
   // TODO(phajdan.jr): Remove ifdefs when libvpx with vp9 support is released
   // (http://crbug.com/174287) .
