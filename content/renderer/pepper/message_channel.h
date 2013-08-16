@@ -6,6 +6,7 @@
 #define CONTENT_RENDERER_PEPPER_MESSAGE_CHANNEL_H_
 
 #include <deque>
+#include <list>
 
 #include "base/memory/weak_ptr.h"
 #include "ppapi/shared_impl/resource.h"
@@ -13,6 +14,10 @@
 #include "third_party/npapi/bindings/npruntime.h"
 
 struct PP_Var;
+
+namespace ppapi {
+class ScopedPPVar;
+}
 
 namespace content {
 
@@ -47,6 +52,10 @@ class MessageChannel {
   explicit MessageChannel(PepperPluginInstanceImpl* instance);
   ~MessageChannel();
 
+  // Converts an NPVariant to a PP_Var. This occurs asynchronously and
+  // NPVariantToPPVarComplete will be called upon completion.
+  void NPVariantToPPVar(const NPVariant* variant);
+
   // Post a message to the onmessage handler for this channel's instance
   // asynchronously.
   void PostMessageToJavaScript(PP_Var message_data);
@@ -76,6 +85,17 @@ class MessageChannel {
   void StopQueueingJavaScriptMessages();
 
  private:
+  // Struct for storing the result of a NPVariant being converted to a PP_Var.
+  struct VarConversionResult;
+
+  // This is called when an NPVariant is finished being converted.
+  // |result_iteartor| is an iterator into |converted_var_queue_| where the
+  // result should be stored.
+  void NPVariantToPPVarComplete(
+      const std::list<VarConversionResult>::reverse_iterator& result_iterator,
+      const ppapi::ScopedPPVar& result,
+      bool success);
+
   PepperPluginInstanceImpl* instance_;
 
   // We pass all non-postMessage calls through to the passthrough_object_.
@@ -112,6 +132,12 @@ class MessageChannel {
     DRAIN_CANCELLED       // Preempt drain, go back to QUEUE.
   };
   EarlyMessageQueueState early_message_queue_state_;
+
+  // This queue stores vars that have been converted from NPVariants. Because
+  // conversion can happen asynchronously, the queue stores the var until all
+  // previous vars have been converted before calling PostMessage to ensure that
+  // the order in which messages are processed is preserved.
+  std::list<VarConversionResult> converted_var_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageChannel);
 };

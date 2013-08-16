@@ -16,6 +16,7 @@
 #include "content/renderer/pepper/plugin_module.h"
 #include "content/renderer/pepper/v8_var_converter.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
+#include "ppapi/shared_impl/scoped_pp_var.h"
 #include "ppapi/shared_impl/var.h"
 #include "ppapi/shared_impl/var_tracker.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
@@ -65,42 +66,6 @@ NPObject* ToPassThroughObject(NPObject* object) {
 // Helper function to determine if a given identifier is equal to kPostMessage.
 bool IdentifierIsPostMessage(NPIdentifier identifier) {
   return WebBindings::getStringIdentifier(kPostMessage) == identifier;
-}
-
-bool NPVariantToPPVar(const NPVariant* variant, PP_Var* result) {
-  switch (variant->type) {
-    case NPVariantType_Void:
-      *result = PP_MakeUndefined();
-      return true;
-    case NPVariantType_Null:
-      *result = PP_MakeNull();
-      return true;
-    case NPVariantType_Bool:
-      *result = PP_MakeBool(PP_FromBool(NPVARIANT_TO_BOOLEAN(*variant)));
-      return true;
-    case NPVariantType_Int32:
-      *result = PP_MakeInt32(NPVARIANT_TO_INT32(*variant));
-      return true;
-    case NPVariantType_Double:
-      *result = PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant));
-      return true;
-    case NPVariantType_String:
-      *result = StringVar::StringToPPVar(
-          NPVARIANT_TO_STRING(*variant).UTF8Characters,
-          NPVARIANT_TO_STRING(*variant).UTF8Length);
-      return true;
-    case NPVariantType_Object: {
-      // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
-      // shouldn't result in a deep copy.
-      v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
-      if (!V8VarConverter::FromV8Value(v8_value, v8::Context::GetCurrent(),
-                                       result)) {
-        return false;
-      }
-      return true;
-    }
-  }
-  return false;
 }
 
 // Copy a PP_Var in to a PP_Var that is appropriate for sending via postMessage.
@@ -188,15 +153,7 @@ bool MessageChannelInvoke(NPObject* np_obj, NPIdentifier name,
   if (IdentifierIsPostMessage(name) && (arg_count == 1)) {
     MessageChannel* message_channel = ToMessageChannel(np_obj);
     if (message_channel) {
-      PP_Var argument = PP_MakeUndefined();
-      if (!NPVariantToPPVar(&args[0], &argument)) {
-        PpapiGlobals::Get()->LogWithSource(
-            message_channel->instance()->pp_instance(),
-            PP_LOGLEVEL_ERROR, std::string(), kV8ToVarConversionError);
-        return false;
-      }
-      message_channel->PostMessageToNative(argument);
-      PpapiGlobals::Get()->GetVarTracker()->ReleaseVar(argument);
+      message_channel->NPVariantToPPVar(&args[0]);
       return true;
     } else {
       return false;
@@ -321,6 +278,19 @@ NPClass message_channel_class = {
 }  // namespace
 
 // MessageChannel --------------------------------------------------------------
+struct MessageChannel::VarConversionResult {
+  VarConversionResult(const ppapi::ScopedPPVar& r, bool s)
+      : result(r),
+        success(s),
+        conversion_completed(true) {}
+  VarConversionResult()
+      : success(false),
+        conversion_completed(false) {}
+  ppapi::ScopedPPVar result;
+  bool success;
+  bool conversion_completed;
+};
+
 MessageChannel::MessageChannelNPObject::MessageChannelNPObject() {
 }
 
@@ -339,6 +309,59 @@ MessageChannel::MessageChannel(PepperPluginInstanceImpl* instance)
   DCHECK(obj);
   np_object_ = static_cast<MessageChannel::MessageChannelNPObject*>(obj);
   np_object_->message_channel = weak_ptr_factory_.GetWeakPtr();
+}
+
+void MessageChannel::NPVariantToPPVar(const NPVariant* variant) {
+  converted_var_queue_.push_back(VarConversionResult());
+  std::list<VarConversionResult>::reverse_iterator result_iterator =
+      converted_var_queue_.rbegin();
+  switch (variant->type) {
+    case NPVariantType_Void:
+      NPVariantToPPVarComplete(result_iterator,
+          ppapi::ScopedPPVar(PP_MakeUndefined()), true);
+      return;
+    case NPVariantType_Null:
+      NPVariantToPPVarComplete(result_iterator,
+          ppapi::ScopedPPVar(PP_MakeNull()), true);
+      return;
+    case NPVariantType_Bool:
+      NPVariantToPPVarComplete(result_iterator,
+          ppapi::ScopedPPVar(
+              PP_MakeBool(PP_FromBool(NPVARIANT_TO_BOOLEAN(*variant)))),
+          true);
+      return;
+    case NPVariantType_Int32:
+      NPVariantToPPVarComplete(result_iterator,
+          ppapi::ScopedPPVar(
+              PP_MakeInt32(NPVARIANT_TO_INT32(*variant))),
+          true);
+      return;
+    case NPVariantType_Double:
+      NPVariantToPPVarComplete(result_iterator,
+          ppapi::ScopedPPVar(
+              PP_MakeDouble(NPVARIANT_TO_DOUBLE(*variant))),
+          true);
+      return;
+    case NPVariantType_String:
+      NPVariantToPPVarComplete(result_iterator,
+          ppapi::ScopedPPVar(ppapi::ScopedPPVar::PassRef(),
+                             StringVar::StringToPPVar(
+                                 NPVARIANT_TO_STRING(*variant).UTF8Characters,
+                                 NPVARIANT_TO_STRING(*variant).UTF8Length)),
+          true);
+      return;
+    case NPVariantType_Object: {
+      // Calling WebBindings::toV8Value creates a wrapper around NPVariant so it
+      // shouldn't result in a deep copy.
+      v8::Handle<v8::Value> v8_value = WebBindings::toV8Value(variant);
+      V8VarConverter::FromV8Value(v8_value, v8::Context::GetCurrent(),
+          base::Bind(&MessageChannel::NPVariantToPPVarComplete,
+              weak_ptr_factory_.GetWeakPtr(), result_iterator));
+      return;
+    }
+  }
+  NPVariantToPPVarComplete(result_iterator,
+      ppapi::ScopedPPVar(PP_MakeUndefined()), false);
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
@@ -417,6 +440,24 @@ void MessageChannel::QueueJavaScriptMessages() {
     early_message_queue_state_ = DRAIN_CANCELLED;
   else
     early_message_queue_state_ = QUEUE_MESSAGES;
+}
+
+void MessageChannel::NPVariantToPPVarComplete(
+    const std::list<VarConversionResult>::reverse_iterator& result_iterator,
+    const ppapi::ScopedPPVar& result,
+    bool success) {
+  *result_iterator = VarConversionResult(result, success);
+  std::list<VarConversionResult>::iterator it = converted_var_queue_.begin();
+  while (it != converted_var_queue_.end() && it->conversion_completed) {
+    if (it->success) {
+      PostMessageToNative(it->result.get());
+    } else {
+      PpapiGlobals::Get()->LogWithSource(instance()->pp_instance(),
+          PP_LOGLEVEL_ERROR, std::string(), kV8ToVarConversionError);
+    }
+
+    converted_var_queue_.erase(it++);
+  }
 }
 
 void MessageChannel::DrainEarlyMessageQueue() {

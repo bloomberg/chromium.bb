@@ -8,6 +8,7 @@
 #include <stack>
 #include <string>
 
+#include "base/bind.h"
 #include "base/containers/hash_tables.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -26,6 +27,19 @@ using ppapi::StringVar;
 using std::make_pair;
 
 namespace {
+
+// TODO(raymes): Pull this out into another file.
+class ResourceConverter {
+ public:
+  // ShutDown must be called before any vars created by the ResourceConverter
+  // are valid. It handles creating any resource hosts that need to be created.
+  void ShutDown(
+      const ppapi::ScopedPPVar& var,
+      const base::Callback<void(const ppapi::ScopedPPVar&, bool)>& callback) {
+    // TODO(raymes): Implement the creation of a browser resource host here.
+    callback.Run(var, true);
+  }
+};
 
 template <class T>
 struct StackEntry {
@@ -165,7 +179,8 @@ bool GetOrCreateVar(v8::Handle<v8::Value> val,
                     PP_Var* result,
                     bool* did_create,
                     HandleVarMap* visited_handles,
-                    ParentHandleSet* parent_handles) {
+                    ParentHandleSet* parent_handles,
+                    ResourceConverter* resource_converter) {
   CHECK(!val.IsEmpty());
   *did_create = false;
 
@@ -344,14 +359,17 @@ bool ToV8Value(const PP_Var& var,
   return true;
 }
 
-bool FromV8Value(v8::Handle<v8::Value> val,
-                 v8::Handle<v8::Context> context,
-                 PP_Var* result) {
+void FromV8Value(
+    v8::Handle<v8::Value> val,
+    v8::Handle<v8::Context> context,
+    const base::Callback<void(const ScopedPPVar&, bool)>& callback) {
   v8::Context::Scope context_scope(context);
   v8::HandleScope handle_scope;
 
   HandleVarMap visited_handles;
   ParentHandleSet parent_handles;
+
+  ResourceConverter resource_converter;
 
   std::stack<StackEntry<v8::Handle<v8::Value> > > stack;
   stack.push(StackEntry<v8::Handle<v8::Value> >(val));
@@ -373,8 +391,10 @@ bool FromV8Value(v8::Handle<v8::Value> val,
 
     bool did_create = false;
     if (!GetOrCreateVar(current_v8, &current_var, &did_create,
-                        &visited_handles, &parent_handles)) {
-      return false;
+                        &visited_handles, &parent_handles,
+                        &resource_converter)) {
+      callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+      return;
     }
 
     if (is_root) {
@@ -391,22 +411,27 @@ bool FromV8Value(v8::Handle<v8::Value> val,
       ArrayVar* array_var = ArrayVar::FromPPVar(current_var);
       if (!array_var) {
         NOTREACHED();
-        return false;
+        callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+        return;
       }
 
       for (uint32 i = 0; i < v8_array->Length(); ++i) {
         v8::TryCatch try_catch;
         v8::Handle<v8::Value> child_v8 = v8_array->Get(i);
-        if (try_catch.HasCaught())
-          return false;
+        if (try_catch.HasCaught()) {
+          callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+          return;
+        }
 
         if (!v8_array->HasRealIndexedProperty(i))
           continue;
 
         PP_Var child_var;
         if (!GetOrCreateVar(child_v8, &child_var, &did_create,
-                            &visited_handles, &parent_handles)) {
-          return false;
+                            &visited_handles, &parent_handles,
+                            &resource_converter)) {
+          callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+          return;
         }
         if (did_create && child_v8->IsObject())
           stack.push(child_v8);
@@ -421,7 +446,8 @@ bool FromV8Value(v8::Handle<v8::Value> val,
       DictionaryVar* dict_var = DictionaryVar::FromPPVar(current_var);
       if (!dict_var) {
         NOTREACHED();
-        return false;
+        callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+        return;
       }
 
       v8::Handle<v8::Array> property_names(v8_object->GetOwnPropertyNames());
@@ -432,7 +458,8 @@ bool FromV8Value(v8::Handle<v8::Value> val,
         if (!key->IsString() && !key->IsNumber()) {
           NOTREACHED() << "Key \"" << *v8::String::AsciiValue(key) << "\" "
                           "is neither a string nor a number";
-          return false;
+          callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+          return;
         }
 
         // Skip all callbacks: crbug.com/139933
@@ -443,13 +470,17 @@ bool FromV8Value(v8::Handle<v8::Value> val,
 
         v8::TryCatch try_catch;
         v8::Handle<v8::Value> child_v8 = v8_object->Get(key);
-        if (try_catch.HasCaught())
-          return false;
+        if (try_catch.HasCaught()) {
+          callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+          return;
+        }
 
         PP_Var child_var;
         if (!GetOrCreateVar(child_v8, &child_var, &did_create,
-                            &visited_handles, &parent_handles)) {
-          return false;
+                            &visited_handles, &parent_handles,
+                            &resource_converter)) {
+          callback.Run(ScopedPPVar(PP_MakeUndefined()), false);
+          return;
         }
         if (did_create && child_v8->IsObject())
           stack.push(child_v8);
@@ -460,8 +491,7 @@ bool FromV8Value(v8::Handle<v8::Value> val,
       }
     }
   }
-  *result = root.Release();
-  return true;
+  resource_converter.ShutDown(root, callback);
 }
 
 }  // namespace V8VarConverter

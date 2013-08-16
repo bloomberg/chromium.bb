@@ -7,10 +7,15 @@
 
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "ppapi/c/pp_var.h"
 #include "v8/include/v8.h"
 #include "content/common/content_export.h"
+
+namespace ppapi {
+class ScopedPPVar;
+}
 
 namespace content {
 namespace V8VarConverter {
@@ -19,13 +24,17 @@ namespace V8VarConverter {
 bool CONTENT_EXPORT ToV8Value(const PP_Var& var,
                               v8::Handle<v8::Context> context,
                               v8::Handle<v8::Value>* result);
-// Converts the given v8::Value to a PP_Var. True is returned upon success.
-// Every PP_Var in the reference graph of which |result| is apart will have
-// a refcount equal to the number of references to it in the graph. |result|
-// will have one additional reference.
-bool CONTENT_EXPORT FromV8Value(v8::Handle<v8::Value> val,
-                                v8::Handle<v8::Context> context,
-                                PP_Var* result);
+// Converts the given v8::Value to a PP_Var. Every PP_Var in the reference graph
+// in the result will have a refcount equal to the number of references to it in
+// the graph. The root of the result will have one additional reference. The
+// callback is run when conversion is complete with the resulting var and a bool
+// indicating success or failure. Conversion is asynchronous because converting
+// some resources may result in communication across IPC. |context| is
+// guaranteed to only be used synchronously.
+void CONTENT_EXPORT FromV8Value(
+    v8::Handle<v8::Value> val,
+    v8::Handle<v8::Context> context,
+    const base::Callback<void(const ppapi::ScopedPPVar&, bool)>& callback);
 
 }  // namespace V8VarConverter
 }  // namespace content

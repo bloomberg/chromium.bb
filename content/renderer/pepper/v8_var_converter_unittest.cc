@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/values.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_var.h"
@@ -150,6 +151,24 @@ class V8VarConverterTest : public testing::Test {
   }
 
  protected:
+  bool FromV8ValueSync(v8::Handle<v8::Value> val,
+                       v8::Handle<v8::Context> context,
+                       PP_Var* result) {
+    V8VarConverter::FromV8Value(val, context, base::Bind(
+        &V8VarConverterTest::FromV8ValueComplete, base::Unretained(this)));
+    if (conversion_success_)
+      *result = conversion_result_;
+    return conversion_success_;
+  }
+
+  void FromV8ValueComplete(const ScopedPPVar& scoped_var, bool success) {
+    conversion_success_ = success;
+    if (success) {
+      ScopedPPVar var = scoped_var;
+      conversion_result_ = var.Release();
+    }
+  }
+
   bool RoundTrip(const PP_Var& var, PP_Var* result) {
     v8::HandleScope handle_scope(isolate_);
     v8::Context::Scope context_scope(isolate_, context_);
@@ -160,7 +179,7 @@ class V8VarConverterTest : public testing::Test {
       return false;
     if (!Equals(var, v8_result))
       return false;
-    if (!V8VarConverter::FromV8Value(v8_result, context, result))
+    if (!FromV8ValueSync(v8_result, context, result))
       return false;
     return true;
   }
@@ -179,6 +198,10 @@ class V8VarConverterTest : public testing::Test {
 
   // Context for the JavaScript in the test.
   v8::Persistent<v8::Context> context_;
+
+  PP_Var conversion_result_;
+  bool conversion_success_;
+
 
  private:
   TestGlobals globals_;
@@ -320,11 +343,11 @@ TEST_F(V8VarConverterTest, Cycles) {
     object->Set(v8::String::New(key.c_str(), key.length()), array);
     array->Set(0, object);
 
-    ASSERT_FALSE(V8VarConverter::FromV8Value(object, context, &var_result));
+    ASSERT_FALSE(FromV8ValueSync(object, context, &var_result));
 
     // Array with self reference.
     array->Set(0, array);
-    ASSERT_FALSE(V8VarConverter::FromV8Value(array, context, &var_result));
+    ASSERT_FALSE(FromV8ValueSync(array, context, &var_result));
   }
 }
 
@@ -358,7 +381,7 @@ TEST_F(V8VarConverterTest, StrangeDictionaryKeyTest) {
     ASSERT_FALSE(object.IsEmpty());
 
     PP_Var actual;
-    ASSERT_TRUE(V8VarConverter::FromV8Value(object,
+    ASSERT_TRUE(FromV8ValueSync(object,
         v8::Local<v8::Context>::New(isolate_, context_), &actual));
     ScopedPPVar release_actual(ScopedPPVar::PassRef(), actual);
 
