@@ -50,7 +50,8 @@ namespace debug {
 
 // Controls the number of trace events we will buffer in-memory
 // before throwing them away.
-const size_t kTraceEventBufferSize = 500000;
+const size_t kTraceEventVectorBufferSize = 250000;
+const size_t kTraceEventRingBufferSize = kTraceEventVectorBufferSize / 4;
 const size_t kTraceEventBatchSize = 1000;
 const size_t kTraceEventInitialBufferSize = 1024;
 
@@ -87,13 +88,6 @@ LazyInstance<ThreadLocalPointer<const char> >::Leaky
 const char kRecordUntilFull[] = "record-until-full";
 const char kRecordContinuously[] = "record-continuously";
 const char kEnableSampling[] = "enable-sampling";
-
-size_t NextIndex(size_t index) {
-  index++;
-  if (index >= kTraceEventBufferSize)
-    index = 0;
-  return index;
-}
 
 }  // namespace
 
@@ -160,7 +154,18 @@ class TraceBufferRingBuffer : public TraceBuffer {
     return logged_events_.size();
   }
 
+  virtual size_t Capacity() const OVERRIDE {
+    return kTraceEventRingBufferSize;
+  }
+
  private:
+  static size_t NextIndex(size_t index) {
+    index++;
+    if (index >= kTraceEventRingBufferSize)
+      index = 0;
+    return index;
+  }
+
   size_t unused_event_index_;
   size_t oldest_event_index_;
   std::vector<TraceEvent> logged_events_;
@@ -196,7 +201,7 @@ class TraceBufferVector : public TraceBuffer {
   }
 
   virtual bool IsFull() const OVERRIDE {
-    return Size() >= kTraceEventBufferSize;
+    return Size() >= kTraceEventVectorBufferSize;
   }
 
   virtual size_t CountEnabledByName(
@@ -220,6 +225,10 @@ class TraceBufferVector : public TraceBuffer {
 
   virtual size_t Size() const OVERRIDE {
     return logged_events_.size();
+  }
+
+  virtual size_t Capacity() const OVERRIDE {
+    return kTraceEventVectorBufferSize;
   }
 
  private:
@@ -250,6 +259,9 @@ class TraceBufferDiscardsEvents : public TraceBuffer {
   }
 
   virtual size_t Size() const OVERRIDE { return 0; }
+
+  // As this buffer is never full, we can return any positive number.
+  virtual size_t Capacity() const OVERRIDE { return 1; }
 
   virtual const TraceEvent& GetEventAt(size_t index) const OVERRIDE {
     NOTREACHED();
@@ -1088,7 +1100,8 @@ bool TraceLog::HasEnabledStateObserver(EnabledStateObserver* listener) const {
 }
 
 float TraceLog::GetBufferPercentFull() const {
-  return (float)((double)logged_events_->Size()/(double)kTraceEventBufferSize);
+  return static_cast<float>(static_cast<double>(logged_events_->Size()) /
+                            logged_events_->Capacity());
 }
 
 void TraceLog::SetNotificationCallback(

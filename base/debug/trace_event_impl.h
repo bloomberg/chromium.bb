@@ -150,6 +150,7 @@ class BASE_EXPORT TraceBuffer {
   virtual size_t CountEnabledByName(const unsigned char* category,
                                     const std::string& event_name) const = 0;
   virtual size_t Size() const = 0;
+  virtual size_t Capacity() const = 0;
   virtual const TraceEvent& GetEventAt(size_t index) const = 0;
 };
 
