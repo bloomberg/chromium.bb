@@ -496,20 +496,9 @@ bool DeveloperPrivateGetItemsInfoFunction::RunImpl() {
        iter != items.end(); ++iter) {
     const Extension& item = *iter->get();
 
-    // Don't show component extensions because they are only extensions as an
-    // implementation detail of Chrome.
-    if (item.location() == Manifest::COMPONENT &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowComponentExtensionOptions)) {
+    // Don't show component extensions and invisible apps.
+    if (item.ShouldNotBeVisible())
       continue;
-    }
-
-    // Don't show apps that aren't visible in either launcher or ntp.
-    if (item.is_app() && !item.ShouldDisplayInAppLauncher() &&
-        !item.ShouldDisplayInNewTabPage() &&
-        !Manifest::IsUnpackedLocation(item.location())) {
-      continue;
-    }
 
     item_list.push_back(make_linked_ptr<developer::ItemInfo>(
         CreateItemInfo(

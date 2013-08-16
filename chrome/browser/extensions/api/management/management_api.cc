@@ -209,8 +209,8 @@ void AddExtensionInfo(const ExtensionSet& extensions,
        iter != extensions.end(); ++iter) {
     const Extension& extension = *iter->get();
 
-    if (extension.location() == Manifest::COMPONENT)
-      continue;  // Skip built-in extensions.
+    if (extension.ShouldNotBeVisible())
+      continue;  // Skip built-in extensions/apps.
 
     extension_list->push_back(make_linked_ptr<management::ExtensionInfo>(
         CreateExtensionInfo(extension, system).release()));
@@ -459,7 +459,7 @@ bool ManagementSetEnabledFunction::RunImpl() {
   extension_id_ = params->id;
 
   const Extension* extension = service()->GetInstalledExtension(extension_id_);
-  if (!extension) {
+  if (!extension || extension->ShouldNotBeVisible()) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
@@ -524,7 +524,7 @@ bool ManagementUninstallFunctionBase::Uninstall(
     bool show_confirm_dialog) {
   extension_id_ = extension_id;
   const Extension* extension = service()->GetExtensionById(extension_id_, true);
-  if (!extension) {
+  if (!extension || extension->ShouldNotBeVisible()) {
     error_ = ErrorUtils::FormatErrorMessage(
         keys::kNoExtensionError, extension_id_);
     return false;
@@ -675,6 +675,9 @@ void ManagementEventRouter::Observe(
   }
   DCHECK(event_name);
   DCHECK(extension);
+
+  if (extension->ShouldNotBeVisible())
+    return; // Don't dispatch events for built-in extensions.
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   if (event_name == events::kOnExtensionUninstalled) {

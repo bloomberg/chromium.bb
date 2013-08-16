@@ -390,21 +390,13 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
   if (is_theme())
     return false;
 
-  // Don't show component extensions because they are only extensions as an
-  // implementation detail of Chrome.
-  if (location() == Manifest::COMPONENT &&
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kShowComponentExtensionOptions)) {
+  // Don't show component extensions and invisible apps.
+  if (ShouldNotBeVisible())
     return false;
-  }
 
   // Always show unpacked extensions and apps.
   if (Manifest::IsUnpackedLocation(location()))
     return true;
-
-  // Don't show apps that aren't visible in either launcher or ntp.
-  if (is_app() && !ShouldDisplayInAppLauncher() && !ShouldDisplayInNewTabPage())
-    return false;
 
   // Unless they are unpacked, never show hosted apps. Note: We intentionally
   // show packaged apps and platform apps because there are some pieces of
@@ -415,6 +407,26 @@ bool Extension::ShouldDisplayInExtensionSettings() const {
     return false;
 
   return true;
+}
+
+bool Extension::ShouldNotBeVisible() const {
+  // Don't show component extensions because they are only extensions as an
+  // implementation detail of Chrome.
+  if (location() == Manifest::COMPONENT &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kShowComponentExtensionOptions)) {
+    return true;
+  }
+
+  // Always show unpacked extensions and apps.
+  if (Manifest::IsUnpackedLocation(location()))
+    return false;
+
+  // Don't show apps that aren't visible in either launcher or ntp.
+  if (is_app() && !ShouldDisplayInAppLauncher() && !ShouldDisplayInNewTabPage())
+    return true;
+
+  return false;
 }
 
 Extension::ManifestData* Extension::GetManifestData(const std::string& key)

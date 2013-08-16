@@ -251,6 +251,11 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   // settings page (i.e. chrome://extensions).
   bool ShouldDisplayInExtensionSettings() const;
 
+  // Returns true if the extension should not be shown anywhere. This is
+  // mostly the same as the extension being a component extension, but also
+  // includes non-component apps that are hidden from the app launcher and ntp.
+  bool ShouldNotBeVisible() const;
+
   // Get the manifest data associated with the key, or NULL if there is none.
   // Can only be called after InitValue is finished.
   ManifestData* GetManifestData(const std::string& key) const;
