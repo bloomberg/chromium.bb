@@ -67,14 +67,22 @@ RenderWidgetHost* RenderWidgetHostViewGuest::GetRenderWidgetHost() const {
 }
 
 void RenderWidgetHostViewGuest::WasShown() {
-  if (!is_hidden_)
+  // If the WebContents associated with us showed an interstitial page in the
+  // beginning, the teardown path might call WasShown() while |host_| is in
+  // the process of destruction. Avoid calling WasShown below in this case.
+  // TODO(lazyboy): We shouldn't be showing interstitial pages in guests in the
+  // first place: http://crbug.com/273089.
+  //
+  // |guest_| is NULL during test.
+  if (!is_hidden_ || (guest_ && guest_->is_in_destruction()))
     return;
   is_hidden_ = false;
   host_->WasShown();
 }
 
 void RenderWidgetHostViewGuest::WasHidden() {
-  if (is_hidden_)
+  // |guest_| is NULL during test.
+  if (is_hidden_ || (guest_ && guest_->is_in_destruction()))
     return;
   is_hidden_ = true;
   host_->WasHidden();

@@ -348,7 +348,8 @@ BrowserPluginGuest::BrowserPluginGuest(
       embedder_visible_(true),
       next_permission_request_id_(browser_plugin::kInvalidPermissionRequestID),
       has_render_view_(has_render_view),
-      last_seen_auto_size_enabled_(false) {
+      last_seen_auto_size_enabled_(false),
+      is_in_destruction_(false) {
   DCHECK(web_contents);
   web_contents->SetDelegate(this);
   if (opener)
@@ -422,6 +423,7 @@ int BrowserPluginGuest::RequestPermission(
 }
 
 void BrowserPluginGuest::Destroy() {
+  is_in_destruction_ = true;
   if (!attached() && opener())
     opener()->pending_new_windows_.erase(this);
   DestroyUnattachedWindows();

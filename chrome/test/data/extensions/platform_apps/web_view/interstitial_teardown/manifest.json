@@ -1,0 +1,13 @@
+{
+  "name": "<webview> interstitial page check.",
+  "description": "Check teardown path of guest while interstitial page is shown",
+  "version": "1",
+  "permissions": [
+    "webview"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}

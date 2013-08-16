@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/native_app_window.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
@@ -14,6 +15,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/interstitial_page.h"
+#include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -33,17 +36,83 @@ using prerender::PrerenderLinkManager;
 using prerender::PrerenderLinkManagerFactory;
 
 namespace {
-  const char kEmptyResponsePath[] = "/close-socket";
-  const char kRedirectResponsePath[] = "/server-redirect";
-  const char kRedirectResponseFullPath[] =
-      "/extensions/platform_apps/web_view/shim/guest_redirect.html";
+const char kEmptyResponsePath[] = "/close-socket";
+const char kRedirectResponsePath[] = "/server-redirect";
+const char kRedirectResponseFullPath[] =
+    "/extensions/platform_apps/web_view/shim/guest_redirect.html";
 
-  class EmptyHttpResponse : public net::test_server::HttpResponse {
-  public:
-    virtual std::string ToResponseString() const OVERRIDE {
-      return std::string();
-    }
-  };
+class EmptyHttpResponse : public net::test_server::HttpResponse {
+ public:
+  virtual std::string ToResponseString() const OVERRIDE {
+    return std::string();
+  }
+};
+
+class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
+ public:
+  TestInterstitialPageDelegate() {
+  }
+  virtual ~TestInterstitialPageDelegate() {}
+  virtual std::string GetHTMLContents() OVERRIDE { return std::string(); }
+};
+
+class WebContentsCreatedListener {
+ public:
+  WebContentsCreatedListener() : web_contents_(NULL) {
+    content::WebContents::AddCreatedCallback(
+        base::Bind(&WebContentsCreatedListener::CreatedCallback,
+                   base::Unretained(this)));
+  }
+
+  content::WebContents* WaitForWebContentsCreated() {
+    if (web_contents_)
+      return web_contents_;
+
+    message_loop_runner_ = new content::MessageLoopRunner;
+    message_loop_runner_->Run();
+    return web_contents_;
+  }
+
+ private:
+  void CreatedCallback(content::WebContents* web_contents) {
+    web_contents_ = web_contents;
+
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+ private:
+  content::WebContents* web_contents_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsCreatedListener);
+};
+
+class InterstitialObserver : public content::WebContentsObserver {
+ public:
+  InterstitialObserver(content::WebContents* web_contents,
+                       const base::Closure& attach_callback,
+                       const base::Closure& detach_callback)
+      : WebContentsObserver(web_contents),
+        attach_callback_(attach_callback),
+        detach_callback_(detach_callback) {
+  }
+
+  virtual void DidAttachInterstitialPage() OVERRIDE {
+    attach_callback_.Run();
+  }
+
+  virtual void DidDetachInterstitialPage() OVERRIDE {
+    detach_callback_.Run();
+  }
+
+ private:
+  base::Closure attach_callback_;
+  base::Closure detach_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(InterstitialObserver);
+};
+
 }  // namespace
 
 // This class intercepts media access request from the embedder. The request
@@ -471,6 +540,16 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     ASSERT_TRUE(test_run_listener.WaitUntilSatisfied());
   }
 
+  void WaitForInterstitial(content::WebContents* web_contents) {
+    scoped_refptr<content::MessageLoopRunner> loop_runner(
+        new content::MessageLoopRunner);
+    InterstitialObserver observer(web_contents,
+                                  loop_runner->QuitClosure(),
+                                  base::Closure());
+    if (!content::InterstitialPage::GetInterstitialPage(web_contents))
+      loop_runner->Run();
+  }
+
  private:
   scoped_ptr<content::FakeSpeechRecognitionManager>
       fake_speech_recognition_manager_;
@@ -749,6 +828,47 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
 
   // Wait until the guest WebContents is destroyed.
   observer.Wait();
+}
+
+// This test makes sure we do not crash if app is closed while interstitial
+// page is being shown in guest.
+IN_PROC_BROWSER_TEST_F(WebViewTest, InterstitialTeardown) {
+  // Start a HTTPS server so we can load an interstitial page inside guest.
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.server_certificate =
+      net::SpawnedTestServer::SSLOptions::CERT_MISMATCHED_NAME;
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  net::HostPortPair host_and_port = https_server.host_port_pair();
+
+  ExtensionTestMessageListener embedder_loaded_listener("EmbedderLoaded",
+                                                        false);
+  LoadAndLaunchPlatformApp("web_view/interstitial_teardown");
+  ASSERT_TRUE(embedder_loaded_listener.WaitUntilSatisfied());
+
+  WebContentsCreatedListener web_contents_created_listener;
+
+  // Now load the guest.
+  content::WebContents* embedder_web_contents =
+      GetFirstShellWindowWebContents();
+  ExtensionTestMessageListener second("GuestAddedToDom", false);
+  EXPECT_TRUE(content::ExecuteScript(
+      embedder_web_contents,
+      base::StringPrintf("loadGuest(%d);\n", host_and_port.port())));
+  ASSERT_TRUE(second.WaitUntilSatisfied());
+
+  // Wait for interstitial page to be shown in guest.
+  content::WebContents* guest_web_contents =
+      web_contents_created_listener.WaitForWebContentsCreated();
+  ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsGuest());
+  WaitForInterstitial(guest_web_contents);
+
+  // Now close the app while interstitial page being shown in guest.
+  apps::ShellWindow* window = GetFirstShellWindow();
+  window->GetBaseWindow()->Close();
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, ShimSrcAttribute) {

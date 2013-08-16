@@ -136,6 +136,7 @@ class CONTENT_EXPORT BrowserPluginGuest
   bool focused() const { return focused_; }
   bool visible() const { return guest_visible_; }
   void clear_damage_buffer() { damage_buffer_.reset(); }
+  bool is_in_destruction() { return is_in_destruction_; }
 
   BrowserPluginGuest* opener() const { return opener_.get(); }
 
@@ -519,6 +520,8 @@ class CONTENT_EXPORT BrowserPluginGuest
   gfx::Size last_seen_view_size_;
   // Last seen autosize attribute state (by OnUpdateRect).
   bool last_seen_auto_size_enabled_;
+
+  bool is_in_destruction_;
 
   // This is a queue of messages that are destined to be sent to the embedder
   // once the guest is attached to a particular embedder.
