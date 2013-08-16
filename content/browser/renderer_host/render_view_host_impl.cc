@@ -736,7 +736,8 @@ void RenderViewHostImpl::JavaScriptDialogClosed(IPC::Message* reply_msg,
   // This must be done after sending the reply since RenderView can't close
   // correctly while waiting for a response.
   if (is_waiting && are_javascript_messages_suppressed_)
-    delegate_->RendererUnresponsive(this, is_waiting);
+    delegate_->RendererUnresponsive(
+        this, is_waiting_for_beforeunload_ack_, is_waiting_for_unload_ack_);
 }
 
 void RenderViewHostImpl::DragSourceEndedAt(
@@ -1593,7 +1594,7 @@ void RenderViewHostImpl::OnClosePageACK() {
 
 void RenderViewHostImpl::NotifyRendererUnresponsive() {
   delegate_->RendererUnresponsive(
-      this, is_waiting_for_beforeunload_ack_ || is_waiting_for_unload_ack_);
+      this, is_waiting_for_beforeunload_ack_, is_waiting_for_unload_ack_);
 }
 
 void RenderViewHostImpl::NotifyRendererResponsive() {

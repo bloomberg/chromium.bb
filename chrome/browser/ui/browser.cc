@@ -602,6 +602,22 @@ bool Browser::ShouldCloseWindow() {
   return unload_controller_->ShouldCloseWindow();
 }
 
+bool Browser::CallBeforeUnloadHandlers(
+    const base::Callback<void(bool)>& on_close_confirmed) {
+  if (IsFastTabUnloadEnabled()) {
+    return fast_unload_controller_->CallBeforeUnloadHandlers(
+        on_close_confirmed);
+  }
+  return unload_controller_->CallBeforeUnloadHandlers(on_close_confirmed);
+}
+
+void Browser::ResetBeforeUnloadHandlers() {
+  if (IsFastTabUnloadEnabled())
+    fast_unload_controller_->ResetBeforeUnloadHandlers();
+  else
+    unload_controller_->ResetBeforeUnloadHandlers();
+}
+
 bool Browser::HasCompletedUnloadProcessing() const {
   DCHECK(IsFastTabUnloadEnabled());
   return fast_unload_controller_->HasCompletedUnloadProcessing();

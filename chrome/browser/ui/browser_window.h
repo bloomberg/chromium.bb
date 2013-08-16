@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_WINDOW_H_
 
 #include "base/callback_forward.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/lifetime/browser_close_manager.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_exit_bubble_type.h"
 #include "chrome/browser/ui/host_desktop.h"
@@ -360,7 +360,7 @@ class BrowserWindow : public ui::BaseWindow {
   virtual void OverscrollUpdate(int delta_y) {}
 
  protected:
-  friend void chrome::CloseAllBrowsers();
+  friend class BrowserCloseManager;
   friend class BrowserView;
   virtual void DestroyBrowser() = 0;
 };

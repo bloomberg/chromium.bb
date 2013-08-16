@@ -1438,6 +1438,7 @@
         'browser/importer/importer_unittest_utils.h',
         'browser/infobars/infobar_extension_apitest.cc',
         'browser/infobars/infobars_browsertest.cc',
+        'browser/lifetime/browser_close_manager_browsertest.cc',
         'browser/loadtimes_extension_bindings_browsertest.cc',
         'browser/locale_tests_browsertest.cc',
         'browser/logging_chrome_browsertest.cc',

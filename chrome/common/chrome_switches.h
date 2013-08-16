@@ -158,6 +158,7 @@ extern const char kEnableAppWindowControls[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutologin[];
+extern const char kEnableBatchedShutdown[];
 extern const char kEnableBenchmarking[];
 extern const char kEnableCloudPolicyPush[];
 extern const char kEnableCloudPrintProxy[];

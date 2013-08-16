@@ -65,7 +65,8 @@ FastUnloadController::~FastUnloadController() {
 bool FastUnloadController::CanCloseContents(content::WebContents* contents) {
   // Don't try to close the tab when the whole browser is being closed, since
   // that avoids the fast shutdown path where we just kill all the renderers.
-  return !is_attempting_to_close_browser_;
+  return !is_attempting_to_close_browser_ ||
+      is_calling_before_unload_handlers();
 }
 
 bool FastUnloadController::BeforeUnloadFired(content::WebContents* contents,
@@ -106,13 +107,46 @@ bool FastUnloadController::ShouldCloseWindow() {
   if (HasCompletedUnloadProcessing())
     return true;
 
+  // The behavior followed here varies based on the current phase of the
+  // operation and whether a batched shutdown is in progress.
+  //
+  // If there are tabs with outstanding beforeunload handlers:
+  // 1. If a batched shutdown is in progress: return false.
+  //    This is to prevent interference with batched shutdown already in
+  //    progress.
+  // 2. Otherwise: start sending beforeunload events and return false.
+  //
+  // Otherwise, If there are no tabs with outstanding beforeunload handlers:
+  // 3. If a batched shutdown is in progress: start sending unload events and
+  //    return false.
+  // 4. Otherwise: return true.
   is_attempting_to_close_browser_ = true;
+  // Cases 1 and 4.
+  bool need_beforeunload_fired = TabsNeedBeforeUnloadFired();
+  if (need_beforeunload_fired == is_calling_before_unload_handlers())
+    return !need_beforeunload_fired;
 
-  if (!TabsNeedBeforeUnloadFired())
-    return true;
-
+  // Cases 2 and 3.
+  on_close_confirmed_.Reset();
   ProcessPendingTabs();
   return false;
+}
+
+bool FastUnloadController::CallBeforeUnloadHandlers(
+    const base::Callback<void(bool)>& on_close_confirmed) {
+  if (!TabsNeedBeforeUnloadFired())
+    return false;
+
+  on_close_confirmed_ = on_close_confirmed;
+  is_attempting_to_close_browser_ = true;
+  ProcessPendingTabs();
+  return true;
+}
+
+void FastUnloadController::ResetBeforeUnloadHandlers() {
+  if (!is_calling_before_unload_handlers())
+    return;
+  CancelWindowClose();
 }
 
 bool FastUnloadController::TabsNeedBeforeUnloadFired() {
@@ -120,13 +154,16 @@ bool FastUnloadController::TabsNeedBeforeUnloadFired() {
       tab_needing_before_unload_ack_ != NULL)
     return true;
 
-  if (!tabs_needing_unload_.empty())
+  if (!is_calling_before_unload_handlers() && !tabs_needing_unload_.empty())
     return false;
 
   for (int i = 0; i < browser_->tab_strip_model()->count(); ++i) {
     content::WebContents* contents =
         browser_->tab_strip_model()->GetWebContentsAt(i);
-    if (contents->NeedToFireBeforeUnload())
+    if (!ContainsKey(tabs_needing_unload_, contents) &&
+        !ContainsKey(tabs_needing_unload_ack_, contents) &&
+        tab_needing_before_unload_ack_ != contents &&
+        contents->NeedToFireBeforeUnload())
       tabs_needing_before_unload_.insert(contents);
   }
   return !tabs_needing_before_unload_.empty();
@@ -265,6 +302,11 @@ void FastUnloadController::ProcessPendingTabs() {
     return;
   }
 
+  if (is_calling_before_unload_handlers()) {
+    on_close_confirmed_.Run(true);
+    return;
+  }
+
   // Process all the unload handlers. (The beforeunload handlers have finished.)
   if (!tabs_needing_unload_.empty()) {
     browser_->OnWindowClosing();
@@ -338,6 +380,12 @@ void FastUnloadController::CancelWindowClose() {
   tabs_needing_unload_.clear();
 
   // No need to clear tabs_needing_unload_ack_. Those tabs are already detached.
+
+  if (is_calling_before_unload_handlers()) {
+    base::Callback<void(bool)> on_close_confirmed = on_close_confirmed_;
+    on_close_confirmed_.Reset();
+    on_close_confirmed.Run(false);
+  }
 
   is_attempting_to_close_browser_ = false;
 

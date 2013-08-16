@@ -1628,8 +1628,15 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_ACCESSIBILITY_TAB_SWITCHER_DESCRIPTION,
     kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableAccessibilityTabSwitcher)
-  }
+  },
 #endif
+  {
+    "enable-batched-shutdown",
+    IDS_FLAGS_ENABLE_BATCHED_SHUTDOWN_NAME,
+    IDS_FLAGS_ENABLE_BATCHED_SHUTDOWN_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableBatchedShutdown)
+  },
 };
 
 const Experiment* experiments = kExperiments;

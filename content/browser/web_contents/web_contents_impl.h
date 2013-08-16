@@ -407,6 +407,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual void OnUserGesture() OVERRIDE;
   virtual void OnIgnoredUIEvent() OVERRIDE;
   virtual void RendererUnresponsive(RenderViewHost* render_view_host,
+                                    bool is_during_beforeunload,
                                     bool is_during_unload) OVERRIDE;
   virtual void RendererResponsive(RenderViewHost* render_view_host) OVERRIDE;
   virtual void LoadStateChanged(const GURL& url,

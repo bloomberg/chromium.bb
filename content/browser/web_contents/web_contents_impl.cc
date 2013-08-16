@@ -3450,6 +3450,7 @@ void WebContentsImpl::OnIgnoredUIEvent() {
 }
 
 void WebContentsImpl::RendererUnresponsive(RenderViewHost* rvh,
+                                           bool is_during_beforeunload,
                                            bool is_during_unload) {
   // Don't show hung renderer dialog for a swapped out RVH.
   if (rvh != GetRenderViewHost())
@@ -3463,7 +3464,7 @@ void WebContentsImpl::RendererUnresponsive(RenderViewHost* rvh,
   if (DevToolsAgentHost::IsDebuggerAttached(this))
     return;
 
-  if (is_during_unload) {
+  if (is_during_beforeunload || is_during_unload) {
     // Hang occurred while firing the beforeunload/unload handler.
     // Pretend the handler fired so tab closing continues as if it had.
     rvhi->set_sudden_termination_allowed(true);
@@ -3472,10 +3473,17 @@ void WebContentsImpl::RendererUnresponsive(RenderViewHost* rvh,
       return;
 
     // If the tab hangs in the beforeunload/unload handler there's really
-    // nothing we can do to recover. Pretend the unload listeners have
-    // all fired and close the tab. If the hang is in the beforeunload handler
-    // then the user will not have the option of cancelling the close.
-    Close(rvh);
+    // nothing we can do to recover. If the hang is in the beforeunload handler,
+    // pretend the beforeunload listeners have all fired and allow the delegate
+    // to continue closing; the user will not have the option of cancelling the
+    // close. Otherwise, pretend the unload listeners have all fired and close
+    // the tab.
+    bool close = true;
+    if (is_during_beforeunload) {
+      delegate_->BeforeUnloadFired(this, true, &close);
+    }
+    if (close)
+      Close(rvh);
     return;
   }
 

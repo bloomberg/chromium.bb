@@ -533,6 +533,10 @@ const char kEnablePasswordAutofillPublicSuffixDomainMatching[] =
 // GAIA login page, an info bar can help the user login.
 const char kEnableAutologin[]               = "enable-autologin";
 
+// Enables running all beforeunload handlers before closing any browser windows
+// on shutdown.
+const char kEnableBatchedShutdown[]         = "enable-batched-shutdown";
+
 // Enables the benchmarking extensions.
 const char kEnableBenchmarking[]            = "enable-benchmarking";
 

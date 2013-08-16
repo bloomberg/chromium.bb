@@ -6,6 +6,7 @@
 
 #include <dwmapi.h>
 
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
