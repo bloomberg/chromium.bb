@@ -676,6 +676,7 @@ void FrameView::calculateScrollbarModesForLayout(ScrollbarMode& hMode, Scrollbar
 
 void FrameView::updateCompositingLayersAfterStyleChange()
 {
+    TRACE_EVENT0("webkit", "FrameView::updateCompositingLayersAfterStyleChange");
     RenderView* renderView = this->renderView();
     if (!renderView)
         return;
@@ -698,6 +699,7 @@ void FrameView::updateCompositingLayersAfterStyleChange()
 
 void FrameView::updateCompositingLayersAfterLayout()
 {
+    TRACE_EVENT0("webkit", "FrameView::updateCompositingLayersAfterLayout");
     RenderView* renderView = this->renderView();
     if (!renderView)
         return;
@@ -2148,6 +2150,7 @@ void FrameView::flushAnyPendingPostLayoutTasks()
 
 void FrameView::performPostLayoutTasks()
 {
+    TRACE_EVENT0("webkit", "FrameView::performPostLayoutTasks");
     // updateWidgets() call below can blow us away from underneath.
     RefPtr<FrameView> protect(this);
 
