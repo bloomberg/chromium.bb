@@ -14,22 +14,64 @@ cr.define('local_discovery', function() {
   'use strict';
 
   /**
+   * Add a text TD to a TR.
+   * @param {HTMLTableRowElement} row Row in table to be filled.
+   * @param {string} text Text of TD.
+   */
+  function textTD(row, text) {
+    var td = document.createElement('td');
+    td.textContent = text;
+    row.appendChild(td);
+  }
+
+  /**
+   * Add a button TD to a TR.
+   * @param {HTMLTableRowElement} row Row in table to be filled.
+   * @param {string} text Text of button.
+   * @param {function()} action Action to be taken when button is pressed.
+   */
+  function buttonTD(row, text, action) {
+    var td = document.createElement('td');
+    var button = document.createElement('button');
+    button.textContent = text;
+    button.addEventListener('click', action);
+    td.appendChild(button);
+    row.appendChild(td);
+  }
+
+  /**
+   * Fill a table row from the provided information.
+   * @param {HTMLTableRowElement} row Row in table to be filled.
+   * @param {string} name Name of the device.
+   * @param {Object} info Information about the device.
+   */
+  function fillRow(row, name, info) {
+    textTD(row, name);
+    textTD(row, info.domain);
+    textTD(row, info.port);
+    textTD(row, info.ip);
+    textTD(row, info.lastSeen);
+
+    if (!info.registered) {
+      buttonTD(row, loadTimeData.getString('serviceRegister'),
+               sendRegisterDevice.bind(null, name));
+    } else {
+      textTD(row, loadTimeData.getString('registered'));
+    }
+
+    buttonTD(row, loadTimeData.getString('serviceInfo'),
+             sendInfoRequest.bind(null, name));
+  }
+
+  /**
    * Appends a row to the output table listing the new device.
    * @param {string} name Name of the device.
    * @param {string} info Additional info of the device, if empty device need to
-   *    be deleted.
+   *                      be deleted.
    */
   function onServiceUpdate(name, info) {
     name = name.replace(/[\r\n]/g, '');
     var table = $('devices-table');
-
-    var params = [];
-    if (info) {
-      params[0] = info.domain;
-      params[1] = info.port;
-      params[2] = info.ip;
-      params[3] = info.lastSeen;
-    }
 
     for (var i = 0, row; row = table.rows[i]; i++) {
       if (row.cells[0].textContent == name) {
@@ -38,11 +80,13 @@ cr.define('local_discovery', function() {
           table.removeChild(row);
         } else {
           // Replace existing service.
-          for (var j = 0; j < params.length; j++) {
-            row.cells[j + 1].textContent = params[j];
+          while (row.firstChild) {
+            row.removeChild(row.firstChild);
           }
+
+          fillRow(row, name, info);
+          return;
         }
-        return;
       }
     }
 
@@ -51,38 +95,12 @@ cr.define('local_discovery', function() {
       return;
     }
 
+    // Row does not exist. Create it.
     var tr = document.createElement('tr');
-    var td = document.createElement('td');
-    td.textContent = name;
-    tr.appendChild(td);
 
-    for (var j = 0; j < params.length; j++) {
-      td = document.createElement('td');
-      td.textContent = params[j];
-      tr.appendChild(td);
-    }
-
-    td = document.createElement('td');
-    if (!info.registered) {
-      var button = document.createElement('button');
-      button.textContent = loadTimeData.getString('serviceRegister');
-      button.addEventListener('click', sendRegisterDevice.bind(null, name));
-      td.appendChild(button);
-    } else {
-      td.textContent = loadTimeData.getString('registered');
-    }
-    tr.appendChild(td);
-
-    td = document.createElement('td');
-    button = document.createElement('button');
-    button.textContent = loadTimeData.getString('serviceInfo');
-    button.addEventListener('click', sendInfoRequest.bind(null, name));
-    td.appendChild(button);
-
-    tr.appendChild(td);
+    fillRow(tr, name, info);
     table.appendChild(tr);
   }
-
 
   /**
    * Adds a row to the logging console.
