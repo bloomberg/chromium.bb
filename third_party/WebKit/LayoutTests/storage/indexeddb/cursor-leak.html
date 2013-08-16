@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/shared.js"></script>
+<script>
+
+description("Verify that that cursors weakly hold script value properties");
+
+function countNumberOfLiveNodes() {
+    if (!gc || !window.internals) {
+        testFailed('Needs window.internals to test properly');
+        return 0;
+    }
+    gc();
+    return window.internals.numberOfLiveNodes();
+}
+
+indexedDBTest(prepareDatabase, onOpen);
+function prepareDatabase(evt)
+{
+    db = event.target.result;
+    store = db.createObjectStore('store');
+    store.put({value: 'value'}, ['key']);
+}
+
+function onOpen(evt)
+{
+    // evalAndLog() is not used as that generates new DOM nodes.
+    numberOfNodesBefore = countNumberOfLiveNodes();
+
+    db = evt.target.result;
+    tx = db.transaction('store');
+    store = tx.objectStore('store');
+    cursorRequest = store.openCursor();
+    cursorRequest.onsuccess = function() {
+        cursor = cursorRequest.result;
+        // Try and induce a leak by a reference cycle from DOM to V8 and back.
+        // If the v8 value of cursor.key (etc) is only held by the cursor's
+        // wrapper then there will be no leak.
+        cursor.key.cursor = cursor;
+        cursor.primaryKey.cursor = cursor;
+
+        // FIXME: Make this reference V8-only as well: crbug.com/273211
+        //cursor.value.cursor = cursor;
+
+        // IDB objects are not exposed, so hang a canary node off the cursor.
+        cursor.node = document.createElement('span');
+    };
+    tx.oncomplete = function() {
+        db.close();
+
+        // Null out object references so GC can reclaim IDB objects.
+        db = null;
+        tx = null;
+        store = null;
+        cursorRequest = null;
+        cursor = null;
+
+        // Run the final check with a clean stack.
+        setTimeout(finalCheck, 0);
+    };
+}
+
+function finalCheck() {
+    numberOfNodesAfter = countNumberOfLiveNodes();
+    shouldBe("numberOfNodesAfter", "numberOfNodesBefore");
+    finishJSTest();
+}
+
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
