@@ -32,6 +32,10 @@ LocallyManagedUserCreationFlow::LocallyManagedUserCreationFlow(
 
 LocallyManagedUserCreationFlow::~LocallyManagedUserCreationFlow() {}
 
+bool LocallyManagedUserCreationFlow::ShouldShowSettings() {
+  return false;
+}
+
 bool LocallyManagedUserCreationFlow::ShouldLaunchBrowser() {
   return false;
 }

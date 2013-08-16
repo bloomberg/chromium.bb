@@ -459,6 +459,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     chrome::ShowSettings(GetAppropriateBrowser());
   }
 
+  virtual bool ShouldShowSettings() OVERRIDE {
+    return UserManager::Get()->GetCurrentUserFlow()->ShouldShowSettings();
+  }
+
   virtual void ShowDateSettings() OVERRIDE {
     content::RecordAction(content::UserMetricsAction("ShowDateOptions"));
     std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +

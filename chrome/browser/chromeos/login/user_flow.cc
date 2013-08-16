@@ -24,6 +24,10 @@ UserFlow::~UserFlow() {}
 
 DefaultUserFlow::~DefaultUserFlow() {}
 
+bool DefaultUserFlow::ShouldShowSettings() {
+  return true;
+}
+
 bool DefaultUserFlow::ShouldLaunchBrowser() {
   return true;
 }
@@ -52,6 +56,10 @@ ExtendedUserFlow::ExtendedUserFlow(const std::string& user_id)
 }
 
 ExtendedUserFlow::~ExtendedUserFlow() {
+}
+
+bool ExtendedUserFlow::ShouldShowSettings() {
+  return true;
 }
 
 void ExtendedUserFlow::UnregisterFlowSoon() {

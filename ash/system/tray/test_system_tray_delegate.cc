@@ -114,6 +114,10 @@ base::HourClockType TestSystemTrayDelegate::GetHourClockType() const {
 void TestSystemTrayDelegate::ShowSettings() {
 }
 
+bool TestSystemTrayDelegate::ShouldShowSettings() {
+  return true;
+}
+
 void TestSystemTrayDelegate::ShowDateSettings() {
 }
 

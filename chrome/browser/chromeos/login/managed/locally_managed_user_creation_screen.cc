@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/login/managed/locally_managed_user_creation_screen.h"
 
+#include "ash/desktop_background/desktop_background_controller.h"
+#include "ash/shell.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/camera_detector.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -179,6 +181,11 @@ void LocallyManagedUserCreationScreen::OnManagerLoginFailure() {
 void LocallyManagedUserCreationScreen::OnManagerFullyAuthenticated(
     Profile* manager_profile) {
   DCHECK(controller_.get());
+  // For manager user, move desktop to locked container so that windows created
+  // during the user image picker step are below it.
+  ash::Shell::GetInstance()->
+      desktop_background_controller()->MoveDesktopToLockedContainer();
+
   controller_->SetManagerProfile(manager_profile);
   if (actor_)
     actor_->ShowUsernamePage();

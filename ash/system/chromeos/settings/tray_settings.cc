@@ -142,6 +142,9 @@ views::View* TraySettings::CreateDefaultView(user::LoginStatus status) {
       !PowerStatus::Get()->IsBatteryPresent())
     return NULL;
 
+  if (!ash::Shell::GetInstance()->system_tray_delegate()->ShouldShowSettings())
+    return NULL;
+
   CHECK(default_view_ == NULL);
   default_view_ =  new tray::SettingsDefaultView(status);
   return default_view_;

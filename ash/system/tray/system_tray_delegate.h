@@ -156,6 +156,9 @@ class SystemTrayDelegate {
   // Shows settings.
   virtual void ShowSettings() = 0;
 
+  // Returns true if settings menu item should appear.
+  virtual bool ShouldShowSettings() = 0;
+
   // Shows the settings related to date, timezone etc.
   virtual void ShowDateSettings() = 0;
 

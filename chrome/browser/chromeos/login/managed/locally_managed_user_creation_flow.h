@@ -20,6 +20,7 @@ class LocallyManagedUserCreationFlow : public ExtendedUserFlow {
   explicit LocallyManagedUserCreationFlow(const std::string& manager_id);
   virtual ~LocallyManagedUserCreationFlow();
 
+  virtual bool ShouldShowSettings() OVERRIDE;
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
   virtual bool HandleLoginFailure(const LoginFailure& failure) OVERRIDE;

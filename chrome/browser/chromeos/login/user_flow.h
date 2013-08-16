@@ -19,6 +19,7 @@ class UserFlow {
  public:
   UserFlow();
   virtual ~UserFlow() = 0;
+  virtual bool ShouldShowSettings() = 0;
   virtual bool ShouldLaunchBrowser() = 0;
   virtual bool ShouldSkipPostLoginScreens() = 0;
   virtual bool HandleLoginFailure(const LoginFailure& failure) = 0;
@@ -43,6 +44,7 @@ class DefaultUserFlow : public UserFlow {
  public:
   virtual ~DefaultUserFlow();
 
+  virtual bool ShouldShowSettings() OVERRIDE;
   virtual bool ShouldLaunchBrowser() OVERRIDE;
   virtual bool ShouldSkipPostLoginScreens() OVERRIDE;
   virtual bool HandleLoginFailure(const LoginFailure& failure) OVERRIDE;
@@ -57,6 +59,8 @@ class ExtendedUserFlow : public UserFlow {
  public:
   explicit ExtendedUserFlow(const std::string& user_id);
   virtual ~ExtendedUserFlow();
+
+  virtual bool ShouldShowSettings() OVERRIDE;
 
  protected:
   // Subclasses can call this method to unregister flow in the next event.
