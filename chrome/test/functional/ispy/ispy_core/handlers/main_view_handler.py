@@ -38,7 +38,8 @@ class MainViewHandler(webapp2.RequestHandler):
     batch_name = self.request.get('batch_name')
     # Set up rendering test manager.
     bucket = cloud_bucket_impl.CloudBucketImpl(
-        auth_constants.KEY, auth_constants.SECRET, auth_constants.BUCKET)
+        ispy_auth_constants.KEY, ispy_auth_constants.SECRET,
+        ispy_auth_constants.BUCKET)
     manager = rendering_test_manager.RenderingTestManager(bucket)
     # Load the view.
     if batch_name:
@@ -97,16 +98,14 @@ class MainViewHandler(webapp2.RequestHandler):
         in the main_view html template.
     """
     res = {}
-    pattern = r'^failures/%s/([^/]+)/([^/]+)/.+$' % batch_name
-    res['test_name'], res['run_name'] = re.match(
-        pattern, path).groups()
+    pattern = r'^failures/%s/([^/]+)/.+$' % batch_name
+    res['test_name'] = re.match(
+        pattern, path).groups()[0]
     res['batch_name'] = batch_name
     res['info'] = json.loads(manager.cloud_bucket.DownloadFile(
-        '/failures/%s/%s/%s/info.txt' % (res['batch_name'], res['test_name'],
-                                         res['run_name'])))
+        '/failures/%s/%s/info.txt' % (res['batch_name'], res['test_name'])))
     expected = 'tests/%s/%s/expected.png' % (batch_name, res['test_name'])
-    diff = 'failures/%s/%s/%s/diff.png' % (batch_name, res['test_name'],
-                                           res['run_name'])
+    diff = 'failures/%s/%s/diff.png' % (batch_name, res['test_name'])
     res['expected_path'] = expected
     res['diff_path'] = diff
     res['actual_path'] = path

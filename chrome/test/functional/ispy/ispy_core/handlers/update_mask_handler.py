@@ -30,13 +30,12 @@ class UpdateMaskHandler(webapp2.RequestHandler):
     """
     batch_name = self.request.get('batch_name')
     test_name = self.request.get('test_name')
-    run_name = self.request.get('run_name')
 
     # Short-circuit if a parameter is missing.
-    if not (batch_name and test_name and run_name):
+    if not (batch_name and test_name):
       self.response.header['Content-Type'] = 'json/application'
       self.response.write(json.dumps(
-          {'error': 'batch_name, test_name, and run_name must be '
+          {'error': 'batch_name, and test_name, must be '
                     'supplied to update a mask.'}))
       return
     # Otherwise, set up the rendering_test_manager.
@@ -44,13 +43,13 @@ class UpdateMaskHandler(webapp2.RequestHandler):
         auth_constants.KEY, auth_constants.SECRET, auth_constants.BUCKET)
     self.manager = rendering_test_manager.RenderingTestManager(self.bucket)
     # Short-circuit if the failure does not exist.
-    if not self.manager.FailureExists(batch_name, test_name, run_name):
+    if not self.manager.FailureExists(batch_name, test_name):
       self.response.header['Content-Type'] = 'json/application'
       self.response.write(json.dumps(
         {'error': 'Could not update mask because failure does not exist.'}))
       return
     # Get the failure namedtuple (which also computes the diff).
-    failure = self.manager.GetFailure(batch_name, test_name, run_name)
+    failure = self.manager.GetFailure(batch_name, test_name)
     # Get the mask of the image.
     path = 'tests/%s/%s/mask.png' % (batch_name, test_name)
     mask = self.manager.DownloadImage(path)
@@ -59,6 +58,6 @@ class UpdateMaskHandler(webapp2.RequestHandler):
     # Upload the combined mask in place of the original.
     self.manager.UploadImage(path, combined_mask)
     # Now that there is no div for the two images, remove the failure.
-    self.manager.RemoveFailure(batch_name, test_name, run_name)
+    self.manager.RemoveFailure(batch_name, test_name)
     # Redirect back to the sites list for the device.
     self.redirect('/?batch_name=%s' % batch_name)

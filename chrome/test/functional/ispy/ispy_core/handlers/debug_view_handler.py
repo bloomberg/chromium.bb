@@ -36,7 +36,7 @@ class DebugViewHandler(webapp2.RequestHandler):
     def _Encode(url):
       return '/image?file_path=%s' % url
 
-    data['diff'] = Encode(diff_path)
+    data['diff'] = _Encode(diff_path)
     data['expected'] = _Encode(expected_path)
     data['actual'] = _Encode(actual_path)
     template = JINJA.get_template('debug_view.html')
