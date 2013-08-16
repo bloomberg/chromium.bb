@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "cloud_print/gcp20/prototype/command_line_reader.h"
+#include "cloud_print/gcp20/prototype/local_settings.h"
 #include "cloud_print/gcp20/prototype/service_parameters.h"
 #include "cloud_print/gcp20/prototype/special_io.h"
 #include "net/base/net_util.h"
@@ -28,7 +29,6 @@ namespace {
 
 const uint16 kHttpPortDefault = 10101;
 const uint32 kTtlDefault = 60*60;  // in seconds
-const int kXmppPingIntervalDefault = 5*60;  // in seconds
 
 const char kServiceType[] = "_privet._tcp.local";
 const char kServiceNamePrefixDefault[] = "first_gcp20_device";
@@ -91,7 +91,6 @@ net::IPAddressNumber GetLocalIp(const std::string& interface_name,
        iter != interfaces.end(); ++iter) {
     if (iter->address.size() == expected_address_size &&
         (interface_name.empty() || interface_name == iter->name)) {
-      LOG(INFO) << net::IPAddressToString(iter->address);
       return iter->address;
     }
   }
@@ -120,7 +119,8 @@ Printer::Printer()
       connection_state_(OFFLINE),
       on_idle_posted_(false),
       pending_local_settings_check_(false),
-      pending_print_jobs_check_(false) {
+      pending_print_jobs_check_(false),
+      pending_deletion_(false) {
 }
 
 Printer::~Printer() {
@@ -131,35 +131,17 @@ bool Printer::Start() {
   if (IsRunning())
     return true;
 
-  // TODO(maksymb): Add switch for command line to control interface name.
-  net::IPAddressNumber ip = GetLocalIp("", false);
-  if (ip.empty()) {
-    LOG(ERROR) << "No local IP found. Cannot start printer.";
-    return false;
-  }
-  VLOG(1) << "Local address: " << net::IPAddressToString(ip);
-
-  uint16 port = command_line_reader::ReadHttpPort(kHttpPortDefault);
-
-  // Starting HTTP server.
-  if (!http_server_.Start(port))
-    return false;
-
   if (!LoadFromFile())
     reg_info_ = RegistrationInfo();
 
-  // Starting DNS-SD server.
-  std::string service_name_prefix =
-      command_line_reader::ReadServiceNamePrefix(kServiceNamePrefixDefault);
-  std::string service_domain_name =
-      command_line_reader::ReadDomainName(kServiceDomainNameDefault);
-  if (!dns_server_.Start(
-      ServiceParameters(kServiceType, service_name_prefix, service_domain_name,
-                        ip, port),
-      command_line_reader::ReadTtl(kTtlDefault),
-      CreateTxt())) {
-    http_server_.Shutdown();
-    return false;
+  if (local_settings_.local_discovery) {
+    if (!StartHttpServer())
+      return false;
+
+    if (!StartDnsServer()) {
+      http_server_.Shutdown();
+      return false;
+    }
   }
 
   print_job_handler_.reset(new PrintJobHandler);
@@ -175,6 +157,8 @@ bool Printer::IsRunning() const {
 }
 
 void Printer::Stop() {
+  if (!IsRunning())
+    return;
   dns_server_.Shutdown();
   http_server_.Shutdown();
   requester_.reset();
@@ -228,7 +212,8 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
         base::Bind(&Printer::WaitUserConfirmation, AsWeakPtr(), valid_until));
   }
 
-  requester_->StartRegistration(GenerateProxyId(), kPrinterName, user, kCdd);
+  requester_->StartRegistration(GenerateProxyId(), kPrinterName, user,
+                                local_settings_, kCdd);
 
   return PrivetHttpServer::REG_ERROR_OK;
 }
@@ -446,6 +431,33 @@ void Printer::OnPrintJobDone() {
   PostOnIdle();
 }
 
+void Printer::OnLocalSettingsReceived(LocalSettings::State state,
+                                      const LocalSettings& settings) {
+  pending_local_settings_check_ = false;
+  switch (state) {
+    case LocalSettings::CURRENT:
+      LOG(INFO) << "No new local settings";
+      PostOnIdle();
+      break;
+    case LocalSettings::PENDING:
+      LOG(INFO) << "New local settings were received";
+      ApplyLocalSettings(settings);
+      break;
+    case LocalSettings::PRINTER_DELETED:
+      LOG(WARNING) << "Printer was deleted on server";
+      pending_deletion_ = true;
+      PostOnIdle();
+      break;
+
+    default:
+      NOTREACHED();
+  }
+}
+
+void Printer::OnLocalSettingsUpdated() {
+  PostOnIdle();
+}
+
 void Printer::OnXmppConnected() {
   pending_local_settings_check_ = true;
   pending_print_jobs_check_ = true;
@@ -468,12 +480,12 @@ void Printer::OnXmppNewPrintJob(const std::string& device_id) {
 
 void Printer::OnXmppNewLocalSettings(const std::string& device_id) {
   DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
-  NOTIMPLEMENTED();
+  pending_local_settings_check_ = true;
 }
 
 void Printer::OnXmppDeleteNotification(const std::string& device_id) {
   DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
-  NOTIMPLEMENTED();
+  pending_deletion_ = true;
 }
 
 void Printer::TryConnect() {
@@ -497,7 +509,8 @@ void Printer::TryConnect() {
 
 void Printer::ConnectXmpp() {
   xmpp_listener_.reset(
-      new CloudPrintXmppListener(reg_info_.xmpp_jid, kXmppPingIntervalDefault,
+      new CloudPrintXmppListener(reg_info_.xmpp_jid,
+                                 local_settings_.xmpp_timeout_value,
                                  GetTaskRunner(), this));
   xmpp_listener_->Connect(access_token_);
 }
@@ -510,14 +523,17 @@ void Printer::OnIdle() {
   if (connection_state_ != ONLINE)
     return;
 
+  if (pending_deletion_) {
+    OnPrinterDeleted();
+    return;
+  }
+
   if (access_token_update_ < base::Time::Now()) {
     requester_->UpdateAccesstoken(reg_info_.refresh_token);
     return;
   }
 
   // TODO(maksymb): Check if privet-accesstoken was requested.
-
-  // TODO(maksymb): Check if local-printing was requested.
 
   if (pending_local_settings_check_) {
     GetLocalSettings();
@@ -535,18 +551,46 @@ void Printer::OnIdle() {
         base::TimeDelta::FromMilliseconds(1000));
 }
 
-void Printer::GetLocalSettings() {
-  DCHECK(IsRegistered());
-
-  pending_local_settings_check_ = false;
-  PostOnIdle();
-}
-
 void Printer::FetchPrintJobs() {
   VLOG(3) << "Function: " << __FUNCTION__;
-
   DCHECK(IsRegistered());
   requester_->FetchPrintJobs(reg_info_.device_id);
+}
+
+void Printer::GetLocalSettings() {
+  VLOG(3) << "Function: " << __FUNCTION__;
+  DCHECK(IsRegistered());
+  requester_->RequestLocalSettings(reg_info_.device_id);
+}
+
+void Printer::ApplyLocalSettings(const LocalSettings& settings) {
+  local_settings_ = settings;
+  SaveToFile();
+
+  if (local_settings_.local_discovery) {
+    StartDnsServer();
+    StartHttpServer();
+  } else {
+    dns_server_.Shutdown();
+    http_server_.Shutdown();
+  }
+
+  xmpp_listener_->set_ping_interval(local_settings_.xmpp_timeout_value);
+
+  requester_->SendLocalSettings(reg_info_.device_id, local_settings_);
+}
+
+void Printer::OnPrinterDeleted() {
+  pending_deletion_ = false;
+
+  reg_info_ = RegistrationInfo();
+  access_token_.clear();
+  access_token_update_ = base::Time();
+  local_settings_ = LocalSettings();
+
+  SaveToFile();
+  Stop();
+  Start();
 }
 
 void Printer::RememberAccessToken(const std::string& access_token,
@@ -647,6 +691,17 @@ void Printer::SaveToFile() const {
     json.SetString("access_token", access_token_);
     json.SetInteger("access_token_update",
                     static_cast<int>(access_token_update_.ToTimeT()));
+
+    scoped_ptr<base::DictionaryValue> local_settings(new DictionaryValue);
+    local_settings->SetBoolean("local_discovery",
+                               local_settings_.local_discovery);
+    local_settings->SetBoolean("access_token_enabled",
+                               local_settings_.access_token_enabled);
+    local_settings->SetBoolean("printer/local_printing_enabled",
+                               local_settings_.local_printing_enabled);
+    local_settings->SetInteger("xmpp_timeout_value",
+                               local_settings_.xmpp_timeout_value);
+    json.Set("local_settings", local_settings.release());
   } else {
     json.SetBoolean("registered", false);
   }
@@ -732,15 +787,33 @@ bool Printer::LoadFromFile() {
     return false;
   }
 
+  LocalSettings local_settings;
+  base::DictionaryValue* settings_dict;
+  if (!json->GetDictionary("local_settings", &settings_dict)) {
+    LOG(ERROR) << "Cannot read |local_settings|. Reset to default.";
+  } else {
+    if (!settings_dict->GetBoolean("local_discovery",
+                                   &local_settings.local_discovery) ||
+        !settings_dict->GetBoolean("access_token_enabled",
+                                   &local_settings.access_token_enabled) ||
+        !settings_dict->GetBoolean("printer/local_printing_enabled",
+                                   &local_settings.local_printing_enabled) ||
+        !settings_dict->GetInteger("xmpp_timeout_value",
+                                   &local_settings.xmpp_timeout_value)) {
+      LOG(ERROR) << "Cannot parse |local_settings|. Reset to default.";
+      local_settings = LocalSettings();
+    }
+  }
+
   reg_info_ = RegistrationInfo();
   reg_info_.state = RegistrationInfo::DEV_REG_REGISTERED;
   reg_info_.user = user;
   reg_info_.device_id = device_id;
   reg_info_.refresh_token = refresh_token;
   reg_info_.xmpp_jid = xmpp_jid;
-  using base::Time;
   access_token_ = access_token;
-  access_token_update_ = Time::FromTimeT(access_token_update);
+  access_token_update_ = base::Time::FromTimeT(access_token_update);
+  local_settings_ = local_settings;
 
   return true;
 }
@@ -772,6 +845,38 @@ void Printer::UpdateRegistrationExpiration() {
 
 void Printer::InvalidateRegistrationExpiration() {
   registration_expiration_ = base::Time();
+}
+
+bool Printer::StartHttpServer() {
+  DCHECK(local_settings_.local_discovery);
+  using command_line_reader::ReadHttpPort;
+  return http_server_.Start(ReadHttpPort(kHttpPortDefault));
+}
+
+bool Printer::StartDnsServer() {
+  DCHECK(local_settings_.local_discovery);
+
+  // TODO(maksymb): Add switch for command line to control interface name.
+  net::IPAddressNumber ip = GetLocalIp("", false);
+  if (ip.empty()) {
+    LOG(ERROR) << "No local IP found. Cannot start printer.";
+    return false;
+  }
+  VLOG(1) << "Local address: " << net::IPAddressToString(ip);
+
+  uint16 port = command_line_reader::ReadHttpPort(kHttpPortDefault);
+
+  std::string service_name_prefix =
+      command_line_reader::ReadServiceNamePrefix(kServiceNamePrefixDefault);
+  std::string service_domain_name =
+      command_line_reader::ReadDomainName(kServiceDomainNameDefault);
+
+  ServiceParameters params(kServiceType, service_name_prefix,
+                           service_domain_name, ip, port);
+
+  return dns_server_.Start(params,
+                           command_line_reader::ReadTtl(kTtlDefault),
+                           CreateTxt());
 }
 
 PrivetHttpServer::RegistrationErrorStatus

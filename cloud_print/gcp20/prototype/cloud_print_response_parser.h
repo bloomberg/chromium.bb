@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "cloud_print/gcp20/prototype/local_settings.h"
 
 namespace base {
 
@@ -34,8 +35,7 @@ struct Job {
 };
 
 // Parses CloudPrint register start response to out parameters.
-// Returns |true| on success. Callback is called with description as a parameter
-// when parsing is failed.
+// Returns |true| on success.
 bool ParseRegisterStartResponse(const std::string& response,
                                 std::string* error_description,
                                 std::string* polling_url,
@@ -44,19 +44,24 @@ bool ParseRegisterStartResponse(const std::string& response,
                                 std::string* device_id);
 
 // Parses CloudPrint register complete response to out parameters.
-// Returns |true| on success. Callback is called with description as a parameter
-// when parsing is failed.
+// Returns |true| on success.
 bool ParseRegisterCompleteResponse(const std::string& response,
                                    std::string* error_description,
                                    std::string* authorization_code,
                                    std::string* xmpp_jid);
 
 // Parses CloudPrint fetch response to out parameters.
-// Returns |true| on success. Callback is called with description as a parameter
-// when parsing is failed.
+// Returns |true| on success.
 bool ParseFetchResponse(const std::string& response,
                         std::string* error_description,
                         std::vector<Job>* list);
+
+// Parses CloudPrint printer response to get Local Settings.
+// Returns |true| on success.
+bool ParseLocalSettingsResponse(const std::string& response,
+                                std::string* error_description,
+                                LocalSettings::State* state,
+                                LocalSettings* settings);
 
 }  // namespace cloud_print_response_parser
 

@@ -132,6 +132,10 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   virtual void OnPrintJobDownloaded(
       const cloud_print_response_parser::Job& job) OVERRIDE;
   virtual void OnPrintJobDone() OVERRIDE;
+  virtual void OnLocalSettingsReceived(
+      LocalSettings::State state,
+      const LocalSettings& settings) OVERRIDE;
+  virtual void OnLocalSettingsUpdated() OVERRIDE;
 
   // CloudPrintXmppListener::Delegate methods:
   virtual void OnXmppConnected() OVERRIDE;
@@ -151,15 +155,17 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   // Do *NOT* call this method instantly. Only with |PostOnIdle|.
   void OnIdle();
 
-  // Method for checking printer status.
-  // (e.g. printjobs, local settings, deleted status).
-  void CheckPendingUpdates();
+  // Ask Cloud Print server for printjobs.
+  void FetchPrintJobs();
 
-  // Ask CloudPrint server for new local sendings.
+  // Ask Cloud Print server for new local sendings.
   void GetLocalSettings();
 
-  // Ask CloudPrint server for printjobs.
-  void FetchPrintJobs();
+  // Applies new local settings to printer.
+  void ApplyLocalSettings(const LocalSettings& settings);
+
+  // Used for erasing all printer info.
+  void OnPrinterDeleted();
 
   // Saves |access_token| and calculates time for next update.
   void RememberAccessToken(const std::string& access_token,
@@ -199,6 +205,11 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   // Deletes registration expiration at all.
   void InvalidateRegistrationExpiration();
 
+  // Methods to start HTTP and DNS-SD servers. Return |true| if servers
+  // were started.
+  bool StartHttpServer();
+  bool StartDnsServer();
+
   // Converts errors.
   PrivetHttpServer::RegistrationErrorStatus ConfirmationToRegistrationError(
       RegistrationInfo::ConfirmationState state);
@@ -213,7 +224,12 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   // was changed (otherwise state was the same).
   bool ChangeState(ConnectionState new_state);
 
+  // TODO(maksymb): Encapsulate reg_info, local_settings and other state
+  // member variables to struct.
+
   RegistrationInfo reg_info_;
+
+  LocalSettings local_settings_;
 
   // Contains DNS-SD server.
   DnsSdServer dns_server_;
@@ -252,6 +268,9 @@ class Printer : public base::SupportsWeakPtr<Printer>,
 
   // Contains |true| if Printer has to check available printjobs.
   bool pending_print_jobs_check_;
+
+  // Contains |true| if Printer has to be deleted.
+  bool pending_deletion_;
 
   DISALLOW_COPY_AND_ASSIGN(Printer);
 };

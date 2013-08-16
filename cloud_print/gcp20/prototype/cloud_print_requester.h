@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "cloud_print/gcp20/prototype/cloud_print_request.h"
 #include "cloud_print/gcp20/prototype/cloud_print_response_parser.h"
+#include "cloud_print/gcp20/prototype/local_settings.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 
 class CloudPrintURLRequestContextGetter;
@@ -79,6 +80,14 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
 
     // Invoked when printjob is marked as done on CloudPrint server.
     virtual void OnPrintJobDone() = 0;
+
+    // Invoked when local settings response was received.
+    virtual void OnLocalSettingsReceived(
+        LocalSettings::State state,
+        const LocalSettings& settings) = 0;
+
+    // Invoked when CURRENT local settings was updated on server.
+    virtual void OnLocalSettingsUpdated() = 0;
   };
 
   // Creates and initializes object.
@@ -94,7 +103,9 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
   // Creates query to server for starting registration.
   void StartRegistration(const std::string& proxy_id,
                          const std::string& device_name,
-                         const std::string& user, const std::string& cdd);
+                         const std::string& user,
+                         const LocalSettings& settings,
+                         const std::string& cdd);
 
   // Creates request for completing registration and receiving refresh token.
   void CompleteRegistration();
@@ -111,6 +122,13 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
 
   // Reports server that printjob has been printed.
   void SendPrintJobDone(const std::string& job_id);
+
+  // Requests /printer API to receive local settings.
+  void RequestLocalSettings(const std::string& device_id);
+
+  // Updates local settings on server.
+  void SendLocalSettings(const std::string& device_id,
+                         const LocalSettings& settings);
 
  private:
   typedef base::Callback<void(const std::string&)> ParserCallback;
@@ -165,6 +183,12 @@ class CloudPrintRequester : public base::SupportsWeakPtr<CloudPrintRequester>,
 
   // Invoked after marking printjob as IN_PROGRESS.
   void ParsePrintJobInProgress(const std::string& response);
+
+  // Invoked after receiving local_settings.
+  void ParseLocalSettings(const std::string& response);
+
+  // Invoked after updating current local_settings.
+  void ParseLocalSettingUpdated(const std::string& response);
 
   // |request| contains |NULL| if no server response is awaiting. Otherwise wait
   // until callback will be called will be called and close connection.

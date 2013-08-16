@@ -48,6 +48,7 @@
         'dns_response_builder.h',
         'dns_sd_server.cc',
         'dns_sd_server.h',
+        'local_settings.h',
         'print_job_handler.cc',
         'print_job_handler.h',
         'printer.cc',

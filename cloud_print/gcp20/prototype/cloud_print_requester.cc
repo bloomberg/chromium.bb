@@ -5,12 +5,14 @@
 #include "cloud_print/gcp20/prototype/cloud_print_requester.h"
 
 #include "base/bind.h"
+#include "base/json/json_writer.h"
 #include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "cloud_print/gcp20/prototype/cloud_print_url_request_context_getter.h"
 #include "google_apis/google_api_keys.h"
+#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
@@ -27,6 +29,11 @@ const char kPrinterNameValue[] = "printer";
 const char kPrinterCapsValue[] = "capabilities";
 const char kPrinterCapsHashValue[] = "capsHash";
 const char kPrinterUserValue[] = "user";
+const char kPrinterGcpVersion[] = "gcp_version";
+const char kPrinterLocalSettings[] = "local_settings";
+
+// TODO(maksymb): Replace GCP Version with "2.0" once GCP Server will support it
+const char kGcpVersion[] = "1.5";
 
 const int kGaiaMaxRetries = 3;
 
@@ -45,6 +52,35 @@ GURL CreateControlUrl(const std::string& job_id, const std::string& status) {
   url = net::AppendQueryParameter(url, "jobid", job_id);
   url = net::AppendQueryParameter(url, "status", status);
   return url;
+}
+
+GURL CreatePrinterUrl(const std::string& device_id) {
+  GURL url(std::string(kCloudPrintUrl) + "/printer");
+  url = net::AppendQueryParameter(url, "printerid", device_id);
+  return url;
+}
+
+GURL CreateUpdateUrl(const std::string& device_id) {
+  GURL url(std::string(kCloudPrintUrl) + "/update");
+  url = net::AppendQueryParameter(url, "printerid", device_id);
+  return url;
+}
+
+std::string LocalSettingsToJson(const LocalSettings& settings) {
+  base::DictionaryValue dictionary;
+  scoped_ptr<base::DictionaryValue> current(new DictionaryValue);
+
+  // TODO(maksymb): Formalize text as constants.
+  current->SetBoolean("local_discovery", settings.local_discovery);
+  current->SetBoolean("access_token_enabled", settings.access_token_enabled);
+  current->SetBoolean("printer/local_printing_enabled",
+                         settings.local_printing_enabled);
+  current->SetInteger("xmpp_timeout_value", settings.xmpp_timeout_value);
+  dictionary.Set("current", current.release());
+
+  std::string local_settings;
+  base::JSONWriter::Write(&dictionary, &local_settings);
+  return local_settings;
 }
 
 }  // namespace
@@ -73,6 +109,7 @@ bool CloudPrintRequester::IsBusy() const {
 void CloudPrintRequester::StartRegistration(const std::string& proxy_id,
                                             const std::string& device_name,
                                             const std::string& user,
+                                            const LocalSettings& settings,
                                             const std::string& cdd) {
   std::string mime_boundary;
   int r1 = base::RandInt(0, kint32max);
@@ -97,6 +134,11 @@ void CloudPrintRequester::StartRegistration(const std::string& proxy_id,
   net::AddMultipartValueForUpload(kPrinterCapsHashValue, base::MD5String(cdd),
                                   mime_boundary, std::string(), &data);
   net::AddMultipartValueForUpload(kPrinterUserValue, user,
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterGcpVersion, kGcpVersion,
+                                  mime_boundary, std::string(), &data);
+  net::AddMultipartValueForUpload(kPrinterLocalSettings,
+                                  LocalSettingsToJson(settings),
                                   mime_boundary, std::string(), &data);
   net::AddMultipartFinalDelimiterForUpload(mime_boundary, &data);
 
@@ -154,6 +196,33 @@ void CloudPrintRequester::SendPrintJobDone(const std::string& job_id) {
       base::Bind(&CloudPrintRequester::ParsePrintJobDone, AsWeakPtr()));
   request_->Run(delegate_->GetAccessToken(), context_getter_);
 }
+
+void CloudPrintRequester::RequestLocalSettings(const std::string& device_id) {
+  VLOG(3) << "Function: " << __FUNCTION__;
+  request_ = CreateGet(
+      CreatePrinterUrl(device_id),
+      base::Bind(&CloudPrintRequester::ParseLocalSettings, AsWeakPtr()));
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
+}
+
+void CloudPrintRequester::SendLocalSettings(
+    const std::string& device_id,
+    const LocalSettings& settings) {
+  VLOG(3) << "Function: " << __FUNCTION__;
+
+  std::string data_mimetype = "application/x-www-form-urlencoded";
+  std::string data = base::StringPrintf(
+      "%s=%s",
+      kPrinterLocalSettings,
+      net::EscapeUrlEncodedData(LocalSettingsToJson(settings), false).c_str());
+
+  request_ = CreatePost(
+      CreateUpdateUrl(device_id),
+      data, data_mimetype,
+      base::Bind(&CloudPrintRequester::ParseLocalSettingUpdated, AsWeakPtr()));
+  request_->Run(delegate_->GetAccessToken(), context_getter_);
+}
+
 
 void CloudPrintRequester::OnFetchComplete(const std::string& response) {
   VLOG(3) << "Function: " << __FUNCTION__;
@@ -343,5 +412,30 @@ void CloudPrintRequester::ParsePrintJobInProgress(const std::string& response) {
       GURL(current_print_job_->ticket_url),
       base::Bind(&CloudPrintRequester::ParseGetPrintJobTicket, AsWeakPtr()));
   request_->Run(delegate_->GetAccessToken(), context_getter_);
+}
+
+void CloudPrintRequester::ParseLocalSettings(const std::string& response) {
+  VLOG(3) << "Function: " << __FUNCTION__;
+
+  std::string error_description;
+  LocalSettings settings;
+  LocalSettings::State state;
+
+  bool success = cloud_print_response_parser::ParseLocalSettingsResponse(
+      response,
+      &error_description,
+      &state,
+      &settings);
+
+  if (success) {
+    delegate_->OnLocalSettingsReceived(state, settings);
+  } else {
+    delegate_->OnServerError(error_description);
+  }
+}
+
+void CloudPrintRequester::ParseLocalSettingUpdated(
+    const std::string& response) {
+  delegate_->OnLocalSettingsUpdated();
 }
 

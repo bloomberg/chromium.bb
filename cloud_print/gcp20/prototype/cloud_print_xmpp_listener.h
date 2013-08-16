@@ -71,7 +71,7 @@ class CloudPrintXmppListener
   void Connect(const std::string& access_token);
 
   // Update ping interval when new local_settings was received.
-  void set_standard_ping_interval(int interval);
+  void set_ping_interval(int interval);
 
  private:
   // notifier::PushClientObserver methods:

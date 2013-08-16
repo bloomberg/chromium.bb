@@ -61,7 +61,7 @@ CloudPrintXmppListener::~CloudPrintXmppListener() {
 void CloudPrintXmppListener::Connect(const std::string& access_token) {
   access_token_ = access_token;
   ping_responses_pending_ = 0;
-  ping_scheduled_ = 0;
+  ping_scheduled_ = false;
 
   notifier::NotifierOptions options;
   options.request_context_getter = context_getter_;
@@ -81,7 +81,7 @@ void CloudPrintXmppListener::Connect(const std::string& access_token) {
   push_client_->UpdateCredentials(robot_email_, access_token_);
 }
 
-void CloudPrintXmppListener::set_standard_ping_interval(int interval) {
+void CloudPrintXmppListener::set_ping_interval(int interval) {
   standard_ping_interval_ = interval;
 }
 
