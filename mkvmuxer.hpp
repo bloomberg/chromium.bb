@@ -317,6 +317,7 @@ class Track {
   uint64 number() const { return number_; }
   void set_type(uint64 type) { type_ = type; }
   uint64 type() const { return type_; }
+  void set_uid(uint64 uid) { uid_ = uid; }
   uint64 uid() const { return uid_; }
 
   uint64 codec_private_length() const { return codec_private_length_; }
