@@ -12,6 +12,7 @@
 #include <X11/extensions/Xrandr.h>
 
 #include <cmath>
+#include <set>
 
 #include "base/logging.h"
 #include "base/message_loop/message_pump_aurax11.h"
@@ -510,6 +511,7 @@ void RealOutputConfiguratorDelegate::GetTouchscreens(
   if (valuator_x == None || valuator_y == None)
     return;
 
+  std::set<int> no_match_touchscreen;
   XIDeviceInfo* info = XIQueryDevice(display_, XIAllDevices, &ndevices);
   for (int i = 0; i < ndevices; i++) {
     if (!info[i].enabled || info[i].use != XIFloatingSlave)
@@ -579,11 +581,33 @@ void RealOutputConfiguratorDelegate::GetTouchscreens(
         }
       }
 
-      VLOG_IF(2, k == outputs->size())
-          << "No matching output - ignoring touchscreen"
-          << " id " << info[i].deviceid
-          << " width " << width
-          << " height " << height;
+      if (k == outputs->size()) {
+        no_match_touchscreen.insert(info[i].deviceid);
+        VLOG(2) << "No matching output for touchscreen"
+                << " id " << info[i].deviceid
+                << " width " << width
+                << " height " << height;
+      }
+
+    }
+  }
+
+  // Sometimes we can't find a matching screen for the touchscreen, e.g.
+  // due to the touchscreen's reporting range having no correlation with the
+  // screen's resolution. In this case, we arbitrarily assign unmatched
+  // touchscreens to unmatched screens.
+  for (std::set<int>::iterator it = no_match_touchscreen.begin();
+       it != no_match_touchscreen.end();
+       it++) {
+    for (size_t i = 0; i < outputs->size(); i++) {
+      if ((*outputs)[i].is_internal == false &&
+          (*outputs)[i].native_mode != None &&
+          (*outputs)[i].touch_device_id == None ) {
+        (*outputs)[i].touch_device_id = *it;
+        VLOG(2) << "Arbitrarily matching touchscreen "
+                << (*outputs)[i].touch_device_id << " to output #" << i;
+        break;
+      }
     }
   }
 
