@@ -26,6 +26,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/google/google_util.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
@@ -519,13 +521,17 @@ void CurrentHistoryCleaner::DidCommitProvisionalLoadForFrame(
     return;
 
   content::NavigationController* nc = &web_contents()->GetController();
+  HistoryService* hs = HistoryServiceFactory::GetForProfile(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      Profile::IMPLICIT_ACCESS);
 
   // Have to wait until something else gets added to history before removal.
   if (history_index_to_remove_ < nc->GetLastCommittedEntryIndex()) {
     content::NavigationEntry* entry =
         nc->GetEntryAtIndex(history_index_to_remove_);
-    if (signin::IsContinueUrlForWebBasedSigninFlow(entry->GetURL()) &&
-        nc->RemoveEntryAtIndex(history_index_to_remove_)) {
+    if (signin::IsContinueUrlForWebBasedSigninFlow(entry->GetURL())) {
+      hs->DeleteURL(entry->GetURL());
+      nc->RemoveEntryAtIndex(history_index_to_remove_);
       delete this;  // Success.
     }
   }
