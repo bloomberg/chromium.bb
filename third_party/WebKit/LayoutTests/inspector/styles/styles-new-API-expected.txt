@@ -131,6 +131,9 @@ body:hover: [regular, 13:0-13:10] {
     ['color':'#CDE'] @[14:2-14:14] active
 }
 
+=== Computed style property count for TextNode ===
+OK
+
 === Attributes style for table ===
 ['width':'50%'] @[undefined-undefined] style
 

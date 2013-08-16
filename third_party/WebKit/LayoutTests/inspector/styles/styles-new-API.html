@@ -103,8 +103,36 @@ function test()
         {
             InspectorTest.addResult("=== BODY with forced :hover ===");
             InspectorTest.dumpRuleMatchesArray(matchedRules);
-            CSSAgent.forcePseudoState(bodyId, ["hover"], test_tableStyles);
+            CSSAgent.forcePseudoState(bodyId, ["hover"], test_textNodeComputedStyles);
         }
+    }
+
+    function test_textNodeComputedStyles()
+    {
+        function callback(error, computedStyle)
+        {
+            if (error) {
+                InspectorTest.addResult("error: " + error);
+                return;
+            }
+            InspectorTest.addResult("");
+            InspectorTest.addResult("=== Computed style property count for TextNode ===");
+            var propCount = computedStyle.length;
+            InspectorTest.addResult(propCount > 200 ? "OK" : "FAIL (" + propCount + ")");
+            test_tableStyles();
+        }
+
+        function nodeCallback(node)
+        {
+            var textNode = node.children()[0];
+            if (textNode.nodeType() !== Node.TEXT_NODE) {
+                InspectorTest.addResult("Failed to retrieve TextNode.");
+                InspectorTest.completeTest();
+                return;
+            }
+            CSSAgent.getComputedStyleForNode(textNode.id, callback);
+        }
+        InspectorTest.nodeWithId("toggle", nodeCallback);
     }
 
     function test_tableStyles()

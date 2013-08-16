@@ -1030,11 +1030,11 @@ void InspectorCSSAgent::getInlineStylesForNode(ErrorString* errorString, int nod
 
 void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int nodeId, RefPtr<TypeBuilder::Array<TypeBuilder::CSS::CSSComputedStyleProperty> >& style)
 {
-    Element* element = elementForId(errorString, nodeId);
-    if (!element)
+    Node* node = m_domAgent->assertNode(errorString, nodeId);
+    if (!node)
         return;
 
-    RefPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(element, true);
+    RefPtr<CSSComputedStyleDeclaration> computedStyleInfo = CSSComputedStyleDeclaration::create(node, true);
     RefPtr<InspectorStyle> inspectorStyle = InspectorStyle::create(InspectorCSSId(), computedStyleInfo, 0);
     style = inspectorStyle->buildArrayForComputedStyle();
 }
