@@ -852,6 +852,13 @@ void ShowLoginWizard(const std::string& first_screen_name) {
           manager->GetInputMethodUtil()->GetHardwareInputMethodId();
     }
     manager->EnableLayouts(locale, initial_input_method_id);
+
+    // Apply owner preferences for tap-to-click and mouse buttons swap for
+    // login screen.
+    system::mouse_settings::SetPrimaryButtonRight(
+        prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight));
+    system::touchpad_settings::SetTapToClick(
+      prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
   }
 
   ui::SetNaturalScroll(CommandLine::ForCurrentProcess()->HasSwitch(
