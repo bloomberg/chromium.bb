@@ -74,7 +74,8 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
 
   void SetNextFrame(WindowId window_id,
                     scoped_ptr<webrtc::DesktopFrame> frame) {
-      frames_[window_id] = frame.release();
+    base::AutoLock lock(frames_lock_);
+    frames_[window_id] = frame.release();
   }
 
   // webrtc::WindowCapturer implementation.
@@ -84,6 +85,8 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
 
   virtual void Capture(const webrtc::DesktopRegion& region) OVERRIDE {
     DCHECK(callback_);
+
+    base::AutoLock lock(frames_lock_);
 
     webrtc::DesktopFrame* frame;
     std::map<WindowId, webrtc::DesktopFrame*>::iterator it =
@@ -118,6 +121,7 @@ class FakeWindowCapturer : public webrtc::WindowCapturer {
 
   // Frames to be captured per window.
   std::map<WindowId, webrtc::DesktopFrame*> frames_;
+  base::Lock frames_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeWindowCapturer);
 };
