@@ -483,8 +483,8 @@ class FastTabCloseTabStripModelObserver : public TabStripModelObserver {
 // (http://crbug.com/142458).
 IN_PROC_BROWSER_TEST_F(FastUnloadTest, UnloadHidden) {
 #if defined(OS_WIN)
-  // Flaky on Win7+ bots (http://crbug.com/267597).
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7)
+  // Flaky on Vista and Win7+ bots (http://crbug.com/267597).
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
     return;
 #endif
   NavigateToPage("no_listeners");
