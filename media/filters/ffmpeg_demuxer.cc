@@ -316,12 +316,7 @@ void FFmpegDemuxer::Stop(const base::Closure& callback) {
   data_source_->Stop(BindToCurrentLoop(base::Bind(
       &FFmpegDemuxer::OnDataSourceStopped, weak_this_,
       BindToCurrentLoop(callback))));
-
-  // TODO(scherkus): Reenable after figuring why Stop() gets called multiple
-  // times, see http://crbug.com/235933
-#if 0
   data_source_ = NULL;
-#endif
 }
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
