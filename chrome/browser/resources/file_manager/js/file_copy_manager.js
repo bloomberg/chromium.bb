@@ -56,6 +56,93 @@ fileOperationUtil.setLastModified = function(entry, modificationTime) {
 };
 
 /**
+ * Copies source to parent with the name newName recursively.
+ *
+ * @param {Entry} source The entry to be copied.
+ * @param {DirectoryEntry} parent The entry of the destination directory.
+ * @param {string} newName The name of copied file.
+ * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
+ *     invoked when an entry is changed.
+ * @param {function(Entry, number)} progressCallback Callback invoked
+ *     periodically during the copying. It takes source and the number of
+ *     copied bytes since the last invocation.
+ * @param {function(Entry)} successCallback Callback invoked when the copy
+ *     is successfully done with the entry of the created entry.
+ * @param {function(FileError)} errorCallback Callback invoked when an error
+ *     is found.
+ * @return {function()} Callback to cancel the current file copy operation.
+ *     When the cancel is done, errorCallback will be called. The returned
+ *     callback must not be called more than once.
+ */
+fileOperationUtil.copyRecursively = function(
+    source, parent, newName, entryChangedCallback, progressCallback,
+    successCallback, errorCallback) {
+  // Notify that the copy begins for each entry.
+  progressCallback(source, 0);
+
+  // If the entry is a file, redirect it to copyFile_().
+  if (source.isFile) {
+    return fileOperationUtil.copyFile_(
+        source, parent, newName, progressCallback,
+        function(entry) {
+          entryChangedCallback(util.EntryChangedType.CREATED, entry);
+          successCallback(entry);
+        },
+        errorCallback);
+  }
+
+  // Hereafter, the source is directory.
+  var cancelRequested = false;
+  var cancelCallback = null;
+
+  // First, we create the directory copy.
+  parent.getDirectory(
+      newName, {create: true, exclusive: true},
+      function(dirEntry) {
+        entryChangedCallback(util.EntryChangedType.CREATED, dirEntry);
+        if (cancelRequested) {
+          errorCallback(util.createFileError(FileError.ABORT_ERR));
+          return;
+        }
+
+        // Iterate on children, and copy them recursively.
+        util.forEachDirEntry(
+            source,
+            function(child, callback) {
+              if (cancelRequested) {
+                errorCallback(util.createFileError(FileError.ABORT_ERR));
+                return;
+              }
+
+              cancelCallback = fileOperationUtil.copyRecursively(
+                  child, dirEntry, child.name, entryChangedCallback,
+                  progressCallback,
+                  function() {
+                    cancelCallback = null;
+                    callback();
+                  },
+                  function(error) {
+                    cancelCallback = null;
+                    errorCallback(error);
+                  });
+            },
+            function() {
+              successCallback(dirEntry);
+            },
+            errorCallback);
+      },
+      errorCallback);
+
+  return function() {
+    cancelRequested = true;
+    if (cancelCallback) {
+      cancelCallback();
+      cancelCallback = null;
+    }
+  };
+};
+
+/**
  * Copies a file from source to the parent directory with newName.
  * See also copyFileByStream_ and copyFileOnDrive_ for the implementation
  * details.
@@ -72,11 +159,12 @@ fileOperationUtil.setLastModified = function(entry, modificationTime) {
  *     is successfully done with the entry of the created file.
  * @param {function(FileError)} errorCallback Callback invoked when an error
  *     is found.
- * @return {function()} Callback to cancle the current file copy operation.
+ * @return {function()} Callback to cancel the current file copy operation.
  *     When the cancel is done, errorCallback will be called. The returned
  *     callback must not be called more than once.
+ * @private
  */
-fileOperationUtil.copyFile = function(
+fileOperationUtil.copyFile_ = function(
     source, parent, newName, progressCallback, successCallback, errorCallback) {
   if (!PathUtil.isDriveBasedPath(source.fullPath) &&
       !PathUtil.isDriveBasedPath(parent.fullPath)) {
@@ -469,13 +557,18 @@ FileCopyManager.Task = function(targetDirEntry) {
   this.entries = [];
 
   /**
-   * The index of entries being processed. The entries should be processed
-   * from 0, so this is also the number of completed entries.
+   * The number of entries, whose processing is completed.
    * @type {number}
    */
-  this.entryIndex = 0;
+  this.numCompletedEntries = 0;
   this.totalBytes = 0;
   this.completedBytes = 0;
+
+  /**
+   * The entry currently being processed.
+   * @type {Entry}
+   */
+  this.processingEntry = null;
 
   this.deleteAfterCopy = false;
   this.move = false;
@@ -661,9 +754,8 @@ FileCopyManager.CopyTask.prototype.run = function(
   }.bind(this);
 
   AsyncUtil.forEach(
-      this.entries,
+      this.originalEntries,
       function(callback, entry, index) {
-        this.entryIndex = index;  // Keep the current index for status update.
         if (this.cancelRequested_) {
           errorCallback(new FileCopyManager.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
@@ -671,15 +763,27 @@ FileCopyManager.CopyTask.prototype.run = function(
           return;
         }
         progressCallback();
-        this.processEntry_(entry, entryChangedCallback,
-                           progressCallback, callback, errorCallback);
-
+        this.cancelCallback_ = FileCopyManager.CopyTask.processEntry_(
+            entry, this.targetDirEntry,
+            function(type, entry) {
+              this.numCompletedEntries++;
+              entryChangedCallback(type, entry);
+            }.bind(this),
+            function(entry, size) {
+              this.processingEntry = entry;
+              this.updateFileCopyProgress(size);
+              progressCallback();
+            }.bind(this),
+            function() {
+              this.cancelCallback_ = null;
+              callback();
+            }.bind(this),
+            function(error) {
+              this.cancelCallback_ = null;
+              errorCallback(error);
+            }.bind(this));
       },
       function() {
-        // Hack: Mark all entries are completed.
-        // TODO(hidehiko): remove this.
-        this.entryIndex = this.entries.length;
-
         if (this.deleteAfterCopy) {
           deleteOriginals();
         } else {
@@ -693,82 +797,56 @@ FileCopyManager.CopyTask.prototype.run = function(
  * Copies the source entry to the target directory.
  *
  * @param {Entry} sourceEntry An entry to be copied.
+ * @param {DirectoryEntry} destinationEntry The entry which will contain the
+ *     copied entry.
  * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
  *     invoked when an entry is changed.
- * @param {function()} progressCallback Callback invoked periodically during
- *     the copying.
+ * @param {function(Entry, number)} progressCallback Callback invoked
+ *     periodically during the copying.
  * @param {function()} successCallback On success.
  * @param {function(FileCopyManager.Error)} errorCallback On error.
+ * @return {function()} Callback to cancel the current file copy operation.
+ *     When the cancel is done, errorCallback will be called. The returned
+ *     callback must not be called more than once.
  * @private
  */
-FileCopyManager.CopyTask.prototype.processEntry_ = function(
-    sourceEntry, entryChangedCallback, progressCallback, successCallback,
-    errorCallback) {
-  // |sourceEntry.originalSourcePath| is set in util.recurseAndResolveEntries.
-  var sourcePath = sourceEntry.originalSourcePath;
-  if (sourceEntry.fullPath.substr(0, sourcePath.length) != sourcePath) {
-    // We found an entry in the list that is not relative to the base source
-    // path, something is wrong.
-    errorCallback(new FileCopyManager.Error(
-        util.FileOperationErrorType.UNEXPECTED_SOURCE_FILE,
-        sourceEntry.fullPath));
-    return;
-  }
-
-  var targetDirEntry = this.targetDirEntry;
-  var originalPath = sourceEntry.fullPath.substr(sourcePath.length + 1);
-  originalPath = this.applyRenames(originalPath);
-
-  var onDeduplicated = function(targetRelativePath) {
-    var onCopyComplete = function(entry) {
-      entryChangedCallback(util.EntryChangedType.CREATED, entry);
-      successCallback();
-    };
-
-    var onFilesystemError = function(err) {
-      errorCallback(new FileCopyManager.Error(
-          util.FileOperationErrorType.FILESYSTEM_ERROR, err));
-    };
-
-    if (sourceEntry.isDirectory) {
-      // Copying the directory means just creating a new directory.
-      targetDirEntry.getDirectory(
-          targetRelativePath,
-          {create: true, exclusive: true},
-          function(targetEntry) {
-            if (targetRelativePath != originalPath) {
-              this.registerRename(originalPath, targetRelativePath);
-            }
-            onCopyComplete(targetEntry);
-          }.bind(this),
-          util.flog('Error getting dir: ' + targetRelativePath,
-                    onFilesystemError));
-    } else {
-      // Copy a file.
-      targetDirEntry.getDirectory(
-          PathUtil.dirname(targetRelativePath), {create: false},
-          function(dirEntry) {
-            this.cancelCallback_ = fileOperationUtil.copyFile(
-                sourceEntry, dirEntry, PathUtil.basename(targetRelativePath),
-                function(entry, size) {
-                  this.updateFileCopyProgress(size);
-                  progressCallback();
-                }.bind(this),
-                function(entry) {
-                  this.cancelCallback_ = null;
-                  onCopyComplete(entry);
-                }.bind(this),
-                function(error) {
-                  this.cancelCallback_ = null;
-                  onFilesystemError(error);
-                }.bind(this));
-          }.bind(this),
-          onFilesystemError);
-    }
-  }.bind(this);
-
+FileCopyManager.CopyTask.processEntry_ = function(
+    sourceEntry, destinationEntry, entryChangedCallback, progressCallback,
+    successCallback, errorCallback) {
+  var cancelRequested = false;
+  var cancelCallback = null;
   fileOperationUtil.deduplicatePath(
-      targetDirEntry, originalPath, onDeduplicated, errorCallback);
+      destinationEntry, sourceEntry.name,
+      function(destinationName) {
+        if (cancelRequested) {
+          errorCallback(new FileCopyManager.Error(
+              util.FileOperationErrorType.FILESYSTEM_ERROR,
+              util.createFileError(FileError.ABORT_ERR)));
+          return;
+        }
+
+        cancelCallback = fileOperationUtil.copyRecursively(
+            sourceEntry, destinationEntry, destinationName,
+            entryChangedCallback, progressCallback,
+            function(entry) {
+              cancelCallback = null;
+              successCallback();
+            },
+            function(error) {
+              cancelCallback = null;
+              errorCallback(new FileCopyManager.Error(
+                  util.FileOperationErrorType.FILESYSTEM_ERROR, error));
+            });
+      },
+      errorCallback);
+
+  return function() {
+    cancelRequested = true;
+    if (cancelCallback) {
+      cancelCallback();
+      cancelCallback = null;
+    }
+  };
 };
 
 /**
@@ -810,22 +888,23 @@ FileCopyManager.MoveTask.prototype.run = function(
   AsyncUtil.forEach(
       this.entries,
       function(callback, entry, index) {
-        this.entryIndex = index;  // Keep the index for status update.
         if (this.cancelRequested_) {
           errorCallback(new FileCopyManager.Error(
               util.FileOperationErrorType.FILESYSTEM_ERROR,
               util.createFileError(FileError.ABORT_ERR)));
           return;
         }
+        this.processingEntry = entry;
         progressCallback();
         FileCopyManager.MoveTask.processEntry_(
-            entry, this.targetDirEntry, entryChangedCallback, callback,
+            entry, this.targetDirEntry, entryChangedCallback,
+            function() {
+              this.numCompletedEntries++;
+              callback();
+            },
             errorCallback);
       },
       function() {
-        // Hack: Mark all entries are completed.
-        // TODO(hidehiko): remove this.
-        this.entryIndex = this.entries.length;
         successCallback();
       }.bind(this),
       this);
@@ -982,12 +1061,12 @@ FileCopyManager.prototype.getStatus = function() {
   for (var i = 0; i < this.copyTasks_.length; i++) {
     var task = this.copyTasks_[i];
     rv.totalItems += task.entries.length;
-    rv.completedItems += task.entryIndex;
+    rv.completedItems += task.numCompletedEntries;
 
     rv.totalBytes += task.totalBytes;
     rv.completedBytes += task.completedBytes;
 
-    var numPendingEntries = task.entries.length - task.entryIndex;
+    var numPendingEntries = task.entries.length - task.numCompletedEntries;
     if (task.zip) {
       rv.pendingZips += numPendingEntries;
     } else if (task.move || task.deleteAfterCopy) {
@@ -996,8 +1075,8 @@ FileCopyManager.prototype.getStatus = function() {
       rv.pendingCopies += numPendingEntries;
     }
 
-    if (numPendingEntries == 1)
-      pendingEntry = task.entries[task.entries.length - 1];
+    if (task.processingEntry)
+      pendingEntry = task.processingEntry;
   }
 
   if (rv.totalItems - rv.completedItems == 1 && pendingEntry)
