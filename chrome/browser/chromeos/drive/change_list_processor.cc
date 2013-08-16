@@ -143,6 +143,17 @@ void ChangeListProcessor::ApplyEntryMap(
     ApplyEntry(util::CreateMyDriveRootEntry(about_resource->root_folder_id()));
   }
 
+  // Gather the set of changes in the old path.
+  // Note that we want to notify the change in both old and new paths (suppose
+  // /a/b/c is moved to /x/y/c. We want to notify both "/a/b" and "/x/y".)
+  // The old paths must be calculated before we apply any actual changes.
+  // The new paths are calculated after each change is applied. It correctly
+  // sets the new path because we apply changes in such an order (see below).
+  for (ResourceEntryMap::iterator it = entry_map_.begin();
+       it != entry_map_.end(); ++it) {
+    UpdateChangedDirs(it->second);
+  }
+
   // Apply all entries except deleted ones to the metadata.
   std::vector<ResourceEntry> deleted_entries;
   deleted_entries.reserve(entry_map_.size());
@@ -227,67 +238,19 @@ void ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
 void ChangeListProcessor::AddEntry(const ResourceEntry& entry) {
   FileError error = resource_metadata_->AddEntry(entry);
 
-  if (error == FILE_ERROR_OK) {
-    base::FilePath file_path =
-        resource_metadata_->GetFilePath(entry.resource_id());
-    // Notify if a directory has been created.
-    if (entry.file_info().is_directory())
-      changed_dirs_.insert(file_path);
-
-    // Notify parent.
-    changed_dirs_.insert(file_path.DirName());
-  }
+  if (error == FILE_ERROR_OK)
+    UpdateChangedDirs(entry);
 }
 
 void ChangeListProcessor::RemoveEntry(const ResourceEntry& entry) {
-  std::set<base::FilePath> child_directories;
-  if (entry.file_info().is_directory()) {
-    resource_metadata_->GetChildDirectories(entry.resource_id(),
-                                            &child_directories);
-  }
-
-  base::FilePath file_path =
-      resource_metadata_->GetFilePath(entry.resource_id());
-
-  FileError error = resource_metadata_->RemoveEntry(entry.resource_id());
-
-  if (error == FILE_ERROR_OK) {
-    // Notify parent.
-    changed_dirs_.insert(file_path.DirName());
-
-    // Notify children, if any.
-    changed_dirs_.insert(child_directories.begin(), child_directories.end());
-
-    // If entry is a directory, notify self.
-    if (entry.file_info().is_directory())
-      changed_dirs_.insert(file_path);
-  }
+  resource_metadata_->RemoveEntry(entry.resource_id());
 }
 
 void ChangeListProcessor::RefreshEntry(const ResourceEntry& entry) {
-  base::FilePath old_file_path =
-      resource_metadata_->GetFilePath(entry.resource_id());
-
   FileError error = resource_metadata_->RefreshEntry(entry);
 
-  if (error == FILE_ERROR_OK) {
-    base::FilePath new_file_path =
-        resource_metadata_->GetFilePath(entry.resource_id());
-
-    // Notify old parent.
-    changed_dirs_.insert(old_file_path.DirName());
-
-    // Notify new parent.
-    changed_dirs_.insert(new_file_path.DirName());
-
-    // Notify self if entry is a directory.
-    if (entry.file_info().is_directory()) {
-      // Notify new self.
-      changed_dirs_.insert(new_file_path);
-      // Notify old self.
-      changed_dirs_.insert(old_file_path);
-    }
-  }
+  if (error == FILE_ERROR_OK)
+    UpdateChangedDirs(entry);
 }
 
 // static
@@ -339,6 +302,30 @@ void ChangeListProcessor::UpdateRootEntry(int64 largest_changestamp) {
   error = resource_metadata_->RefreshEntry(root);
 
   LOG_IF(WARNING, error != FILE_ERROR_OK) << "Failed to refresh root directory";
+}
+
+void ChangeListProcessor::UpdateChangedDirs(const ResourceEntry& entry) {
+  base::FilePath file_path =
+      resource_metadata_->GetFilePath(entry.resource_id());
+
+  if (!file_path.empty()) {
+    // Notify parent.
+    changed_dirs_.insert(file_path.DirName());
+
+    if (entry.file_info().is_directory()) {
+      // Notify self if entry is a directory.
+      changed_dirs_.insert(file_path);
+
+      // Notify all descendants if it is a directory deletion.
+      if (entry.deleted()) {
+        std::set<base::FilePath> child_directories;
+        resource_metadata_->GetChildDirectories(entry.resource_id(),
+                                                &child_directories);
+        changed_dirs_.insert(child_directories.begin(),
+                             child_directories.end());
+      }
+    }
+  }
 }
 
 }  // namespace internal

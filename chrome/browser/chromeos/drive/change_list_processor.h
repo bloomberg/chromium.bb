@@ -111,6 +111,9 @@ class ChangeListProcessor {
   // Updates the root directory entry. changestamp will be updated.
   void UpdateRootEntry(int64 largest_changestamp);
 
+  // Adds the directories changed by the update on |entry| to |changed_dirs_|.
+  void UpdateChangedDirs(const ResourceEntry& entry);
+
   ResourceMetadata* resource_metadata_;  // Not owned.
 
   ResourceEntryMap entry_map_;
