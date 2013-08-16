@@ -200,6 +200,12 @@ int ShellBrowserMain(
                                              base::MessageLoop::QuitClosure());
       main_runner->Run();
     }
+
+#if defined(OS_ANDROID)
+    // Android should only execute Shutdown() here when running layout tests.
+    main_runner->Shutdown();
+#endif
+
     exit_code = 0;
   }
 
