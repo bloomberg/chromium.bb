@@ -66,6 +66,16 @@ FileError PrepareTransferFileFromLocalToRemote(
   return metadata->GetResourceEntryByPath(remote_path.DirName(), parent_entry);
 }
 
+FileError AddEntryToLocalMetadata(internal::ResourceMetadata* metadata,
+                                  const ResourceEntry& entry) {
+  FileError error = metadata->AddEntry(entry);
+  // Depending on timing, the metadata may have inserted via change list
+  // already. So, FILE_ERROR_EXISTS is not an error.
+  if (error == FILE_ERROR_EXISTS)
+    error = FILE_ERROR_OK;
+  return error;
+}
+
 }  // namespace
 
 CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
@@ -315,6 +325,11 @@ void CopyOperation::MoveEntryFromRootDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  // Depending on timing, the metadata may have inserted via change list
+  // already. So, FILE_ERROR_EXISTS is not an error.
+  if (error == FILE_ERROR_EXISTS)
+    error = FILE_ERROR_OK;
+
   // Return if there is an error or |dir_path| is the root directory.
   if (error != FILE_ERROR_OK ||
       directory_path == util::GetDriveMyDriveRootPath()) {
@@ -427,9 +442,7 @@ void CopyOperation::OnCopyResourceCompleted(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::AddEntry,
-                 base::Unretained(metadata_),
-                 entry),
+      base::Bind(&AddEntryToLocalMetadata, metadata_, entry),
       callback);
 }
 
