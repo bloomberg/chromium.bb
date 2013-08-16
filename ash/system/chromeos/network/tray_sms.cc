@@ -289,11 +289,15 @@ TraySms::TraySms(SystemTray* system_tray)
   // TODO(armansito): SMS could be a special case for cellular that requires a
   // user (perhaps the owner) to be logged in. If that is the case, then an
   // additional check should be done before subscribing for SMS notifications.
-  chromeos::NetworkHandler::Get()->network_sms_handler()->AddObserver(this);
+  if (chromeos::NetworkHandler::IsInitialized())
+    chromeos::NetworkHandler::Get()->network_sms_handler()->AddObserver(this);
 }
 
 TraySms::~TraySms() {
-  chromeos::NetworkHandler::Get()->network_sms_handler()->RemoveObserver(this);
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    chromeos::NetworkHandler::Get()->network_sms_handler()->RemoveObserver(
+        this);
+  }
 }
 
 views::View* TraySms::CreateDefaultView(user::LoginStatus status) {
