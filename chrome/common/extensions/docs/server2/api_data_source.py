@@ -373,15 +373,14 @@ class _JSCModel(object):
     # We need to create the method description for addListener based on the
     # information stored in |event|.
     if event.supports_listeners:
+      callback_object = model.Function(parent=event,
+                                       name='callback',
+                                       json={},
+                                       namespace=event.parent,
+                                       origin='')
+      callback_object.params = event.params
       if event.callback:
-        callback_object = event.callback
-      else:
-        callback_object = model.Function(parent=event,
-                                         name='callback',
-                                         json={},
-                                         namespace=event.parent,
-                                         origin='')
-        callback_object.params = event.params
+        callback_object.callback = event.callback
       callback_parameters = self._GenerateCallbackProperty(callback_object)
       callback_parameters['last'] = True
       event_dict['addListenerFunction'] = {
