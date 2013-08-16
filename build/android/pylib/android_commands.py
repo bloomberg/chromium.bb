@@ -459,18 +459,41 @@ class AndroidCommands(object):
 
   def RestartAdbServer(self):
     """Restart the adb server."""
-    self.KillAdbServer()
-    self.StartAdbServer()
+    ret = self.KillAdbServer()
+    if ret != 0:
+      raise errors.MsgException('KillAdbServer: %d' % ret)
+
+    ret = self.StartAdbServer()
+    if ret != 0:
+      raise errors.MsgException('StartAdbServer: %d' % ret)
 
   def KillAdbServer(self):
     """Kill adb server."""
     adb_cmd = [constants.ADB_PATH, 'kill-server']
-    return cmd_helper.RunCmd(adb_cmd)
+    ret = cmd_helper.RunCmd(adb_cmd)
+    retry = 0
+    while retry < 3:
+      ret = cmd_helper.RunCmd(['pgrep', 'adb'])
+      if ret != 0:
+        # pgrep didn't find adb, kill-server succeeded.
+        return 0
+      retry += 1
+      time.sleep(retry)
+    return ret
 
   def StartAdbServer(self):
     """Start adb server."""
-    adb_cmd = [constants.ADB_PATH, 'start-server']
-    return cmd_helper.RunCmd(adb_cmd)
+    adb_cmd = ['taskset', '-c', '0', constants.ADB_PATH, 'start-server']
+    ret = cmd_helper.RunCmd(adb_cmd)
+    retry = 0
+    while retry < 3:
+      ret = cmd_helper.RunCmd(['pgrep', 'adb'])
+      if ret == 0:
+        # pgrep fonud adb, start-server succeeded.
+        return 0
+      retry += 1
+      time.sleep(retry)
+    return ret
 
   def WaitForSystemBootCompleted(self, wait_time):
     """Waits for targeted system's boot_completed flag to be set.

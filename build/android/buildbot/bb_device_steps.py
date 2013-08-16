@@ -237,12 +237,14 @@ def SpawnLogcatMonitor():
   RunCmd(['sleep', '5'])
 
 def ProvisionDevices(options):
-  # Restart adb to work around bugs, sleep to wait for usb discovery.
-  RunCmd(['adb', 'kill-server'])
-  RunCmd(['adb', 'start-server'])
-  RunCmd(['sleep', '1'])
-
   bb_annotations.PrintNamedStep('provision_devices')
+
+  if not bb_utils.TESTING:
+    # Restart adb to work around bugs, sleep to wait for usb discovery.
+    adb = android_commands.AndroidCommands()
+    adb.RestartAdbServer()
+    RunCmd(['sleep', '1'])
+
   if options.reboot:
     RebootDevices()
   provision_cmd = ['build/android/provision_devices.py', '-t', options.target]
