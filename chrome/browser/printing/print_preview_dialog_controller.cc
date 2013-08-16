@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/command_line.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -27,7 +26,6 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -396,17 +394,6 @@ WebContents* PrintPreviewDialogController::CreatePrintPreviewDialog(
   base::AutoReset<bool> auto_reset(&is_creating_print_preview_dialog_, true);
   Profile* profile =
       Profile::FromBrowserContext(initiator->GetBrowserContext());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kChromeFrame)) {
-    // Chrome Frame only ever runs on the native desktop, so it is safe to
-    // create the popup on the native desktop.
-    Browser* current_browser = new Browser(
-        Browser::CreateParams(Browser::TYPE_POPUP, profile,
-                              chrome::GetActiveDesktop()));
-    if (!current_browser) {
-      NOTREACHED() << "Failed to create popup browser window";
-      return NULL;
-    }
-  }
 
   // |web_dialog_ui_delegate| deletes itself in
   // PrintPreviewDialogDelegate::OnDialogClosed().

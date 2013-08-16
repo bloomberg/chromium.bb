@@ -40,7 +40,7 @@ void UpdateMargins(int margins_type, int dpi, PrintMsg_Print_Params* params) {
   }
 }
 
-} // end
+}  // namespace
 
 MockPrinterPage::MockPrinterPage(const void* source_data,
                                  uint32 source_size,
@@ -226,11 +226,6 @@ void MockPrinter::PrintPage(const PrintHostMsg_DidPrintPage_Params& params) {
   MockPrinterPage* page_data = new MockPrinterPage(metafile_data.memory(),
                                                    params.data_size,
                                                    image);
-  if (!page_data) {
-    printer_status_ = PRINTER_ERROR;
-    return;
-  }
-
   scoped_refptr<MockPrinterPage> page(page_data);
   pages_.push_back(page);
 #endif
