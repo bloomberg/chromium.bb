@@ -24,6 +24,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
@@ -143,11 +144,11 @@ void ExtensionSettingsHandler::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
-DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
+base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const Extension* extension,
     const std::vector<ExtensionPage>& pages,
     const ExtensionWarningService* warning_service) {
-  DictionaryValue* extension_data = new DictionaryValue();
+  base::DictionaryValue* extension_data = new base::DictionaryValue();
   bool enabled = extension_service_->IsExtensionEnabled(extension->id());
   GetExtensionBasicInfo(extension, enabled, extension_data);
 
@@ -209,10 +210,10 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   }
 
   // Add views
-  ListValue* views = new ListValue;
+  base::ListValue* views = new base::ListValue;
   for (std::vector<ExtensionPage>::const_iterator iter = pages.begin();
        iter != pages.end(); ++iter) {
-    DictionaryValue* view_value = new DictionaryValue;
+    base::DictionaryValue* view_value = new base::DictionaryValue;
     if (iter->url.scheme() == kExtensionScheme) {
       // No leading slash.
       view_value->SetString("path", iter->url.path().substr(1));
@@ -241,10 +242,10 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
         warning_service->GetWarningMessagesForExtension(extension->id());
 
     if (!warnings.empty()) {
-      ListValue* warnings_list = new ListValue;
+      base::ListValue* warnings_list = new base::ListValue;
       for (std::vector<std::string>::const_iterator iter = warnings.begin();
            iter != warnings.end(); ++iter) {
-        warnings_list->Append(Value::CreateStringValue(*iter));
+        warnings_list->Append(base::Value::CreateStringValue(*iter));
       }
       extension_data->Set("warnings", warnings_list);
     }
@@ -255,10 +256,10 @@ DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
     const std::vector<InstallWarning>& install_warnings =
         extension->install_warnings();
     if (!install_warnings.empty()) {
-      scoped_ptr<ListValue> list(new ListValue());
+      scoped_ptr<base::ListValue> list(new base::ListValue());
       for (std::vector<InstallWarning>::const_iterator it =
                install_warnings.begin(); it != install_warnings.end(); ++it) {
-        DictionaryValue* item = new DictionaryValue();
+        base::DictionaryValue* item = new base::DictionaryValue();
         item->SetString("message", it->message);
         list->Append(item);
       }
@@ -572,13 +573,13 @@ void ExtensionSettingsHandler::ReloadUnpackedExtensions() {
 }
 
 void ExtensionSettingsHandler::HandleRequestExtensionsData(
-    const ListValue* args) {
-  DictionaryValue results;
+    const base::ListValue* args) {
+  base::DictionaryValue results;
 
   Profile* profile = Profile::FromWebUI(web_ui());
 
   // Add the extensions to the results structure.
-  ListValue* extensions_list = new ListValue();
+  base::ListValue* extensions_list = new base::ListValue();
 
   ExtensionWarningService* warnings =
       ExtensionSystem::Get(profile)->warning_service();
@@ -637,18 +638,37 @@ void ExtensionSettingsHandler::HandleRequestExtensionsData(
 }
 
 void ExtensionSettingsHandler::HandleToggleDeveloperMode(
-    const ListValue* args) {
+    const base::ListValue* args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   if (profile->IsManaged())
     return;
 
   bool developer_mode =
-      profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
-  profile->GetPrefs()->SetBoolean(
-      prefs::kExtensionsUIDeveloperMode, !developer_mode);
+      !profile->GetPrefs()->GetBoolean(prefs::kExtensionsUIDeveloperMode);
+  profile->GetPrefs()->SetBoolean(prefs::kExtensionsUIDeveloperMode,
+                                  developer_mode);
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsDevtool))
+    return;
+
+  base::FilePath apps_debugger_path(FILE_PATH_LITERAL("apps_debugger"));
+  if (developer_mode) {
+    profile->GetExtensionService()->component_loader()->Add(
+        IDR_APPS_DEBUGGER_MANIFEST,
+        apps_debugger_path);
+  } else {
+    std::string extension_id =
+        profile->GetExtensionService()->component_loader()->GetExtensionID(
+            IDR_APPS_DEBUGGER_MANIFEST,
+            apps_debugger_path);
+    scoped_refptr<const Extension> extension(
+        profile->GetExtensionService()->GetInstalledExtension(extension_id));
+    profile->GetExtensionService()->component_loader()->Remove(extension_id);
+  }
 }
 
-void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleInspectMessage(
+    const base::ListValue* args) {
   std::string extension_id;
   std::string render_process_id_str;
   std::string render_view_id_str;
@@ -688,7 +708,8 @@ void ExtensionSettingsHandler::HandleInspectMessage(const ListValue* args) {
   DevToolsWindow::OpenDevToolsWindow(host);
 }
 
-void ExtensionSettingsHandler::HandleLaunchMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleLaunchMessage(
+    const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
@@ -700,7 +721,8 @@ void ExtensionSettingsHandler::HandleLaunchMessage(const ListValue* args) {
                                                   NEW_WINDOW));
 }
 
-void ExtensionSettingsHandler::HandleRestartMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleRestartMessage(
+    const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
@@ -708,13 +730,15 @@ void ExtensionSettingsHandler::HandleRestartMessage(const ListValue* args) {
       extension_id);
 }
 
-void ExtensionSettingsHandler::HandleReloadMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleReloadMessage(
+    const base::ListValue* args) {
   std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   extension_service_->ReloadExtension(extension_id);
 }
 
-void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleEnableMessage(
+    const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
   std::string extension_id, enable_str;
   CHECK(args->GetString(0, &extension_id));
@@ -760,7 +784,7 @@ void ExtensionSettingsHandler::HandleEnableMessage(const ListValue* args) {
 }
 
 void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
-    const ListValue* args) {
+    const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
   std::string extension_id, enable_str;
   CHECK(args->GetString(0, &extension_id));
@@ -788,7 +812,7 @@ void ExtensionSettingsHandler::HandleEnableIncognitoMessage(
 }
 
 void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
-    const ListValue* args) {
+    const base::ListValue* args) {
   CHECK_EQ(2U, args->GetSize());
   std::string extension_id, allow_str;
   CHECK(args->GetString(0, &extension_id));
@@ -808,7 +832,8 @@ void ExtensionSettingsHandler::HandleAllowFileAccessMessage(
   extension_service_->SetAllowFileAccess(extension, allow_str == "true");
 }
 
-void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleUninstallMessage(
+    const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string extension_id;
   CHECK(args->GetString(0, &extension_id));
@@ -831,7 +856,8 @@ void ExtensionSettingsHandler::HandleUninstallMessage(const ListValue* args) {
   GetExtensionUninstallDialog()->ConfirmUninstall(extension);
 }
 
-void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleOptionsMessage(
+    const base::ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
   if (!extension || ManifestURL::GetOptionsPage(extension).is_empty())
     return;
@@ -839,7 +865,8 @@ void ExtensionSettingsHandler::HandleOptionsMessage(const ListValue* args) {
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 
-void ExtensionSettingsHandler::HandlePermissionsMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandlePermissionsMessage(
+    const base::ListValue* args) {
   std::string extension_id(UTF16ToUTF8(ExtractStringValue(args)));
   CHECK(!extension_id.empty());
   const Extension* extension =
@@ -864,7 +891,8 @@ void ExtensionSettingsHandler::HandlePermissionsMessage(const ListValue* args) {
   prompt_->ReviewPermissions(this, extension, retained_file_paths);
 }
 
-void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleShowButtonMessage(
+    const base::ListValue* args) {
   const Extension* extension = GetActiveExtension(args);
   if (!extension)
     return;
@@ -872,7 +900,8 @@ void ExtensionSettingsHandler::HandleShowButtonMessage(const ListValue* args) {
       extension_service_->extension_prefs(), extension->id(), true);
 }
 
-void ExtensionSettingsHandler::HandleAutoUpdateMessage(const ListValue* args) {
+void ExtensionSettingsHandler::HandleAutoUpdateMessage(
+    const base::ListValue* args) {
   ExtensionUpdater* updater = extension_service_->updater();
   if (updater) {
     ExtensionUpdater::CheckParams params;
@@ -882,7 +911,7 @@ void ExtensionSettingsHandler::HandleAutoUpdateMessage(const ListValue* args) {
 }
 
 void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
-    const ListValue* args) {
+    const base::ListValue* args) {
   DCHECK(args->empty());
 
   string16 select_title =
@@ -907,13 +936,13 @@ void ExtensionSettingsHandler::HandleLoadUnpackedExtensionMessage(
 }
 
 void ExtensionSettingsHandler::ShowAlert(const std::string& message) {
-  ListValue arguments;
-  arguments.Append(Value::CreateStringValue(message));
+  base::ListValue arguments;
+  arguments.Append(base::Value::CreateStringValue(message));
   web_ui()->CallJavascriptFunction("alert", arguments);
 }
 
 const Extension* ExtensionSettingsHandler::GetActiveExtension(
-    const ListValue* args) {
+    const base::ListValue* args) {
   std::string extension_id = UTF16ToUTF8(ExtractStringValue(args));
   CHECK(!extension_id.empty());
   return extension_service_->GetExtensionById(extension_id, false);

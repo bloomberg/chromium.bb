@@ -86,7 +86,7 @@ std::string LookupWebstoreName() {
   return l10n_util::GetStringUTF8(string_id);
 }
 
-std::string GenerateId(const DictionaryValue* manifest,
+std::string GenerateId(const base::DictionaryValue* manifest,
                        const base::FilePath& path) {
   std::string raw_key;
   std::string id_input;
@@ -99,7 +99,7 @@ std::string GenerateId(const DictionaryValue* manifest,
 }  // namespace
 
 ComponentLoader::ComponentExtensionInfo::ComponentExtensionInfo(
-    const DictionaryValue* manifest, const base::FilePath& directory)
+    const base::DictionaryValue* manifest, const base::FilePath& directory)
     : manifest(manifest),
       root_directory(directory) {
   if (!root_directory.IsAbsolute()) {
@@ -128,17 +128,17 @@ void ComponentLoader::LoadAll() {
   }
 }
 
-DictionaryValue* ComponentLoader::ParseManifest(
+base::DictionaryValue* ComponentLoader::ParseManifest(
     const std::string& manifest_contents) const {
   JSONStringValueSerializer serializer(manifest_contents);
-  scoped_ptr<Value> manifest(serializer.Deserialize(NULL, NULL));
+  scoped_ptr<base::Value> manifest(serializer.Deserialize(NULL, NULL));
 
-  if (!manifest.get() || !manifest->IsType(Value::TYPE_DICTIONARY)) {
+  if (!manifest.get() || !manifest->IsType(base::Value::TYPE_DICTIONARY)) {
     LOG(ERROR) << "Failed to parse extension manifest.";
     return NULL;
   }
   // Transfer ownership to the caller.
-  return static_cast<DictionaryValue*>(manifest.release());
+  return static_cast<base::DictionaryValue*>(manifest.release());
 }
 
 void ComponentLoader::ClearAllRegistered() {
@@ -149,6 +149,19 @@ void ComponentLoader::ClearAllRegistered() {
   }
 
   component_extensions_.clear();
+}
+
+std::string ComponentLoader::GetExtensionID(
+    int manifest_resource_id,
+    const base::FilePath& root_directory) {
+  std::string manifest_contents = ResourceBundle::GetSharedInstance().
+      GetRawDataResource(manifest_resource_id).as_string();
+  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
+  if (!manifest)
+    return std::string();
+
+  ComponentExtensionInfo info(manifest, root_directory);
+  return info.extension_id;
 }
 
 std::string ComponentLoader::Add(int manifest_resource_id,
@@ -163,13 +176,13 @@ std::string ComponentLoader::Add(const std::string& manifest_contents,
                                  const base::FilePath& root_directory) {
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
-  DictionaryValue* manifest = ParseManifest(manifest_contents);
+  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
   if (manifest)
     return Add(manifest, root_directory);
   return std::string();
 }
 
-std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,
+std::string ComponentLoader::Add(const base::DictionaryValue* parsed_manifest,
                                  const base::FilePath& root_directory) {
   ComponentExtensionInfo info(parsed_manifest, root_directory);
   component_extensions_.push_back(info);
@@ -181,7 +194,7 @@ std::string ComponentLoader::Add(const DictionaryValue* parsed_manifest,
 std::string ComponentLoader::AddOrReplace(const base::FilePath& path) {
   base::FilePath absolute_path = base::MakeAbsoluteFilePath(path);
   std::string error;
-  scoped_ptr<DictionaryValue> manifest(
+  scoped_ptr<base::DictionaryValue> manifest(
       extension_file_util::LoadManifest(absolute_path, &error));
   if (!manifest) {
     LOG(ERROR) << "Could not load extension from '" <<
@@ -298,7 +311,7 @@ void ComponentLoader::AddWithName(int manifest_resource_id,
 
   // The Value is kept for the lifetime of the ComponentLoader. This is
   // required in case LoadAll() is called again.
-  DictionaryValue* manifest = ParseManifest(manifest_contents);
+  base::DictionaryValue* manifest = ParseManifest(manifest_contents);
 
   if (manifest) {
     // Update manifest to use a proper name.
@@ -391,8 +404,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
   if (!skip_session_components) {
     // Apps Debugger
-    if (CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kAppsDevtool)) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAppsDevtool) &&
+        profile_prefs_->GetBoolean(prefs::kExtensionsUIDeveloperMode)) {
       Add(IDR_APPS_DEBUGGER_MANIFEST,
           base::FilePath(FILE_PATH_LITERAL("apps_debugger")));
     }
@@ -484,7 +497,7 @@ void ComponentLoader::UnloadComponent(ComponentExtensionInfo* component) {
   if (extension_service_->is_ready()) {
     extension_service_->
         UnloadExtension(component->extension_id,
-                        extension_misc::UNLOAD_REASON_DISABLE);
+                        extension_misc::UNLOAD_REASON_UNINSTALL);
   }
 }
 

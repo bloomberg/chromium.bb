@@ -56,6 +56,11 @@ class ComponentLoader {
   // extension with the same ID.
   std::string AddOrReplace(const base::FilePath& path);
 
+  // Returns the extension ID of a component extension specified by resource
+  // id of its manifest file.
+  std::string GetExtensionID(int manifest_resource_id,
+                             const base::FilePath& root_directory);
+
   // Returns true if an extension with the specified id has been added.
   bool Exists(const std::string& id) const;
 
