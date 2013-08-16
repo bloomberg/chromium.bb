@@ -78,6 +78,9 @@ def _InstrumentBinary(syzygy_dir, mode, executable, symbol, dst_dir,
          '--output-pdb=%s' % os.path.abspath(
              os.path.join(dst_dir, os.path.basename(symbol)))]
 
+  if mode == "asan":
+    cmd.append('--no-augment-pdb')
+
   # If a filter was specified then pass it on to the instrumenter.
   if filter_file:
     cmd.append('--filter=%s' % os.path.abspath(filter_file))
