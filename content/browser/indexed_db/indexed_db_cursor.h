@@ -41,14 +41,21 @@ class CONTENT_EXPORT IndexedDBCursor
   }
   void Close();
 
+  void CursorIterationOperation(scoped_ptr<IndexedDBKey> key,
+                                scoped_refptr<IndexedDBCallbacks> callbacks,
+                                IndexedDBTransaction* transaction);
+  void CursorAdvanceOperation(uint32 count,
+                              scoped_refptr<IndexedDBCallbacks> callbacks,
+                              IndexedDBTransaction* transaction);
+  void CursorPrefetchIterationOperation(
+      int number_to_fetch,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      IndexedDBTransaction* transaction);
+
  private:
   friend class base::RefCounted<IndexedDBCursor>;
 
   ~IndexedDBCursor();
-
-  class CursorIterationOperation;
-  class CursorAdvanceOperation;
-  class CursorPrefetchIterationOperation;
 
   IndexedDBDatabase::TaskType task_type_;
   indexed_db::CursorType cursor_type_;

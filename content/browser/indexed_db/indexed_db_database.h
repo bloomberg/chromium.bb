@@ -173,14 +173,72 @@ class CONTENT_EXPORT IndexedDBDatabase
   // Number of pending deletes, blocked on other connections.
   size_t PendingDeleteCount() const;
 
+  // Asynchronous tasks scheduled within transactions:
+  void CreateObjectStoreOperation(
+      const IndexedDBObjectStoreMetadata& object_store_metadata,
+      IndexedDBTransaction* transaction);
+  void CreateObjectStoreAbortOperation(int64 object_store_id,
+                                       IndexedDBTransaction* transaction);
+  void DeleteObjectStoreOperation(
+      const IndexedDBObjectStoreMetadata& object_store_metadata,
+      IndexedDBTransaction* transaction);
+  void DeleteObjectStoreAbortOperation(
+      const IndexedDBObjectStoreMetadata& object_store_metadata,
+      IndexedDBTransaction* transaction);
+  void VersionChangeOperation(int64 version,
+                              scoped_refptr<IndexedDBCallbacks> callbacks,
+                              scoped_ptr<IndexedDBConnection> connection,
+                              WebKit::WebIDBCallbacks::DataLoss data_loss,
+                              IndexedDBTransaction* transaction);
+  void VersionChangeAbortOperation(const string16& previous_version,
+                                   int64 previous_int_version,
+                                   IndexedDBTransaction* transaction);
+  void CreateIndexOperation(int64 object_store_id,
+                            const IndexedDBIndexMetadata& index_metadata,
+                            IndexedDBTransaction* transaction);
+  void DeleteIndexOperation(int64 object_store_id,
+                            const IndexedDBIndexMetadata& index_metadata,
+                            IndexedDBTransaction* transaction);
+  void CreateIndexAbortOperation(int64 object_store_id,
+                                 int64 index_id,
+                                 IndexedDBTransaction* transaction);
+  void DeleteIndexAbortOperation(int64 object_store_id,
+                                 const IndexedDBIndexMetadata& index_metadata,
+                                 IndexedDBTransaction* transaction);
+  void GetOperation(int64 object_store_id,
+                    int64 index_id,
+                    scoped_ptr<IndexedDBKeyRange> key_range,
+                    indexed_db::CursorType cursor_type,
+                    scoped_refptr<IndexedDBCallbacks> callbacks,
+                    IndexedDBTransaction* transaction);
+  struct PutOperationParams;
+  void PutOperation(scoped_ptr<PutOperationParams> params,
+                    IndexedDBTransaction* transaction);
+  void SetIndexesReadyOperation(size_t index_count,
+                                IndexedDBTransaction* transaction);
+  struct OpenCursorOperationParams;
+  void OpenCursorOperation(scoped_ptr<OpenCursorOperationParams> params,
+                           IndexedDBTransaction* transaction);
+  void CountOperation(int64 object_store_id,
+                      int64 index_id,
+                      scoped_ptr<IndexedDBKeyRange> key_range,
+                      scoped_refptr<IndexedDBCallbacks> callbacks,
+                      IndexedDBTransaction* transaction);
+  void DeleteRangeOperation(int64 object_store_id,
+                            scoped_ptr<IndexedDBKeyRange> key_range,
+                            scoped_refptr<IndexedDBCallbacks> callbacks,
+                            IndexedDBTransaction* transaction);
+  void ClearOperation(int64 object_store_id,
+                      scoped_refptr<IndexedDBCallbacks> callbacks,
+                      IndexedDBTransaction* transaction);
+
  private:
   friend class base::RefCounted<IndexedDBDatabase>;
 
-  IndexedDBDatabase(
-      const string16& name,
-      IndexedDBBackingStore* database,
-      IndexedDBFactory* factory,
-      const Identifier& unique_identifier);
+  IndexedDBDatabase(const string16& name,
+                    IndexedDBBackingStore* database,
+                    IndexedDBFactory* factory,
+                    const Identifier& unique_identifier);
   ~IndexedDBDatabase();
 
   bool IsOpenConnectionBlocked() const;
@@ -215,12 +273,6 @@ class CONTENT_EXPORT IndexedDBDatabase
                                                int64 index_id) const;
   bool ValidateObjectStoreIdAndNewIndexId(int64 object_store_id,
                                           int64 index_id) const;
-
-  class VersionChangeOperation;
-
-  // When a "versionchange" transaction aborts, these restore the back-end
-  // object hierarchy.
-  class VersionChangeAbortOperation;
 
   scoped_refptr<IndexedDBBackingStore> backing_store_;
   IndexedDBDatabaseMetadata metadata_;

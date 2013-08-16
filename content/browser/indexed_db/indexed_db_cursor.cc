@@ -4,6 +4,7 @@
 
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
@@ -11,53 +12,6 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
 namespace content {
-
-class IndexedDBCursor::CursorIterationOperation
-    : public IndexedDBTransaction::Operation {
- public:
-  CursorIterationOperation(scoped_refptr<IndexedDBCursor> cursor,
-                           scoped_ptr<IndexedDBKey> key,
-                           scoped_refptr<IndexedDBCallbacks> callbacks)
-      : cursor_(cursor), key_(key.Pass()), callbacks_(callbacks) {}
-  virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
-
- private:
-  scoped_refptr<IndexedDBCursor> cursor_;
-  scoped_ptr<IndexedDBKey> key_;
-  scoped_refptr<IndexedDBCallbacks> callbacks_;
-};
-
-class IndexedDBCursor::CursorAdvanceOperation
-    : public IndexedDBTransaction::Operation {
- public:
-  CursorAdvanceOperation(scoped_refptr<IndexedDBCursor> cursor,
-                         uint32 count,
-                         scoped_refptr<IndexedDBCallbacks> callbacks)
-      : cursor_(cursor), count_(count), callbacks_(callbacks) {}
-  virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
-
- private:
-  scoped_refptr<IndexedDBCursor> cursor_;
-  uint32 count_;
-  scoped_refptr<IndexedDBCallbacks> callbacks_;
-};
-
-class IndexedDBCursor::CursorPrefetchIterationOperation
-    : public IndexedDBTransaction::Operation {
- public:
-  CursorPrefetchIterationOperation(scoped_refptr<IndexedDBCursor> cursor,
-                                   int number_to_fetch,
-                                   scoped_refptr<IndexedDBCallbacks> callbacks)
-      : cursor_(cursor),
-        number_to_fetch_(number_to_fetch),
-        callbacks_(callbacks) {}
-  virtual void Perform(IndexedDBTransaction* transaction) OVERRIDE;
-
- private:
-  scoped_refptr<IndexedDBCursor> cursor_;
-  int number_to_fetch_;
-  scoped_refptr<IndexedDBCallbacks> callbacks_;
-};
 
 IndexedDBCursor::IndexedDBCursor(
     scoped_ptr<IndexedDBBackingStore::Cursor> cursor,
@@ -81,7 +35,11 @@ void IndexedDBCursor::Continue(scoped_ptr<IndexedDBKey> key,
   IDB_TRACE("IndexedDBCursor::Continue");
 
   transaction_->ScheduleTask(
-      task_type_, new CursorIterationOperation(this, key.Pass(), callbacks));
+      task_type_,
+      base::Bind(&IndexedDBCursor::CursorIterationOperation,
+                 this,
+                 base::Passed(&key),
+                 callbacks));
 }
 
 void IndexedDBCursor::Advance(uint32 count,
@@ -89,35 +47,38 @@ void IndexedDBCursor::Advance(uint32 count,
   IDB_TRACE("IndexedDBCursor::Advance");
 
   transaction_->ScheduleTask(
-      new CursorAdvanceOperation(this, count, callbacks));
+      task_type_,
+      base::Bind(
+          &IndexedDBCursor::CursorAdvanceOperation, this, count, callbacks));
 }
 
-void IndexedDBCursor::CursorAdvanceOperation::Perform(
+void IndexedDBCursor::CursorAdvanceOperation(
+    uint32 count,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
-  IDB_TRACE("CursorAdvanceOperation");
-  if (!cursor_->cursor_ || !cursor_->cursor_->Advance(count_)) {
-    cursor_->cursor_.reset();
-    callbacks_->OnSuccess(static_cast<std::string*>(NULL));
+  IDB_TRACE("IndexedDBCursor::CursorAdvanceOperation");
+  if (!cursor_ || !cursor_->Advance(count)) {
+    cursor_.reset();
+    callbacks->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 
-  callbacks_->OnSuccess(
-      cursor_->key(), cursor_->primary_key(), cursor_->Value());
+  callbacks->OnSuccess(key(), primary_key(), Value());
 }
 
-void IndexedDBCursor::CursorIterationOperation::Perform(
+void IndexedDBCursor::CursorIterationOperation(
+    scoped_ptr<IndexedDBKey> key,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
-  IDB_TRACE("CursorIterationOperation");
-  if (!cursor_->cursor_ ||
-      !cursor_->cursor_->Continue(key_.get(),
-                                  IndexedDBBackingStore::Cursor::SEEK)) {
-    cursor_->cursor_.reset();
-    callbacks_->OnSuccess(static_cast<std::string*>(NULL));
+  IDB_TRACE("IndexedDBCursor::CursorIterationOperation");
+  if (!cursor_ ||
+      !cursor_->Continue(key.get(), IndexedDBBackingStore::Cursor::SEEK)) {
+    cursor_.reset();
+    callbacks->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 
-  callbacks_->OnSuccess(
-      cursor_->key(), cursor_->primary_key(), cursor_->Value());
+  callbacks->OnSuccess(this->key(), primary_key(), Value());
 }
 
 void IndexedDBCursor::PrefetchContinue(
@@ -127,38 +88,43 @@ void IndexedDBCursor::PrefetchContinue(
 
   transaction_->ScheduleTask(
       task_type_,
-      new CursorPrefetchIterationOperation(this, number_to_fetch, callbacks));
+      base::Bind(&IndexedDBCursor::CursorPrefetchIterationOperation,
+                 this,
+                 number_to_fetch,
+                 callbacks));
 }
 
-void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
+void IndexedDBCursor::CursorPrefetchIterationOperation(
+    int number_to_fetch,
+    scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
-  IDB_TRACE("CursorPrefetchIterationOperation");
+  IDB_TRACE("IndexedDBCursor::CursorPrefetchIterationOperation");
 
   std::vector<IndexedDBKey> found_keys;
   std::vector<IndexedDBKey> found_primary_keys;
   std::vector<std::string> found_values;
 
-  if (cursor_->cursor_)
-    cursor_->saved_cursor_.reset(cursor_->cursor_->Clone());
+  if (cursor_)
+    saved_cursor_.reset(cursor_->Clone());
   const size_t max_size_estimate = 10 * 1024 * 1024;
   size_t size_estimate = 0;
 
-  for (int i = 0; i < number_to_fetch_; ++i) {
-    if (!cursor_->cursor_ || !cursor_->cursor_->Continue()) {
-      cursor_->cursor_.reset();
+  for (int i = 0; i < number_to_fetch; ++i) {
+    if (!cursor_ || !cursor_->Continue()) {
+      cursor_.reset();
       break;
     }
 
-    found_keys.push_back(cursor_->cursor_->key());
-    found_primary_keys.push_back(cursor_->cursor_->primary_key());
+    found_keys.push_back(cursor_->key());
+    found_primary_keys.push_back(cursor_->primary_key());
 
-    switch (cursor_->cursor_type_) {
+    switch (cursor_type_) {
       case indexed_db::CURSOR_KEY_ONLY:
         found_values.push_back(std::string());
         break;
       case indexed_db::CURSOR_KEY_AND_VALUE: {
         std::string value;
-        value.swap(*cursor_->cursor_->Value());
+        value.swap(*cursor_->Value());
         size_estimate += value.size();
         found_values.push_back(value);
         break;
@@ -166,19 +132,19 @@ void IndexedDBCursor::CursorPrefetchIterationOperation::Perform(
       default:
         NOTREACHED();
     }
-    size_estimate += cursor_->cursor_->key().size_estimate();
-    size_estimate += cursor_->cursor_->primary_key().size_estimate();
+    size_estimate += cursor_->key().size_estimate();
+    size_estimate += cursor_->primary_key().size_estimate();
 
     if (size_estimate > max_size_estimate)
       break;
   }
 
   if (!found_keys.size()) {
-    callbacks_->OnSuccess(static_cast<std::string*>(NULL));
+    callbacks->OnSuccess(static_cast<std::string*>(NULL));
     return;
   }
 
-  callbacks_->OnSuccessWithPrefetch(
+  callbacks->OnSuccessWithPrefetch(
       found_keys, found_primary_keys, found_values);
 }
 
