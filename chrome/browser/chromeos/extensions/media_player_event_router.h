@@ -20,10 +20,7 @@ class MediaPlayerEventRouter {
   // Send notification that next-track shortcut key was pressed.
   void NotifyNextTrack();
 
-  // Send notification that playlist changed.
-  void NotifyPlaylistChanged();
-
-  // Send notification that previous-track shortcut key was pressed.
+ // Send notification that previous-track shortcut key was pressed.
   void NotifyPrevTrack();
 
   // Send notification that play/pause shortcut key was pressed.

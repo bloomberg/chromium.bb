@@ -121,10 +121,6 @@ GURL GetFileManagerMainPageUrlWithParams(
   return GURL(url);
 }
 
-GURL GetMediaPlayerUrl() {
-  return GetFileManagerUrl("/mediaplayer.html");
-}
-
 GURL GetActionChoiceUrl(const base::FilePath& virtual_path,
                         bool advanced_mode) {
   std::string url = GetFileManagerUrl("/action_choice.html").spec();

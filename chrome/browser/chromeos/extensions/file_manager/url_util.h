@@ -37,9 +37,6 @@ GURL GetFileManagerMainPageUrlWithParams(
     int file_type_index,
     const base::FilePath::StringType& default_extension);
 
-// Returns the file managers' media player URL.
-GURL GetMediaPlayerUrl();
-
 // Returns the file manager's action choice URL.
 GURL GetActionChoiceUrl(const base::FilePath& virtual_path,
                         bool advanced_mode);

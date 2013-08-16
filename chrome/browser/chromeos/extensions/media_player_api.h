@@ -18,57 +18,6 @@ class Profile;
 namespace extensions {
 class MediaPlayerEventRouter;
 
-// Implements the chrome.mediaPlayerPrivate.play method.
-class MediaPlayerPrivatePlayFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.play", MEDIAPLAYERPRIVATE_PLAY)
-
- protected:
-  virtual ~MediaPlayerPrivatePlayFunction() {}
-
-  // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
-// Implements the chrome.mediaPlayerPrivate.getPlaylist method.
-class MediaPlayerPrivateGetPlaylistFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.getPlaylist",
-                             MEDIAPLAYERPRIVATE_GETPLAYLIST)
-
- protected:
-  virtual ~MediaPlayerPrivateGetPlaylistFunction() {}
-
-  // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
-// Implements the chrome.mediaPlayerPrivate.setWindowHeight method.
-class MediaPlayerPrivateSetWindowHeightFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.setWindowHeight",
-                             MEDIAPLAYERPRIVATE_SETWINDOWHEIGHT)
-
- protected:
-  virtual ~MediaPlayerPrivateSetWindowHeightFunction() {}
-
-  // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
-// Implements the chrome.mediaPlayerPrivate.closeWindow method.
-class MediaPlayerPrivateCloseWindowFunction : public SyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("mediaPlayerPrivate.closeWindow",
-                             MEDIAPLAYERPRIVATE_CLOSEWINDOW)
-
- protected:
-  virtual ~MediaPlayerPrivateCloseWindowFunction() {}
-
-  // SyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-};
-
 class MediaPlayerAPI : public ProfileKeyedAPI {
  public:
   explicit MediaPlayerAPI(Profile* profile);

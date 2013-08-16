@@ -116,12 +116,6 @@ TEST(FileManagerUrlUtilTest,
             PrettyPrintEscapedJson(url.query()));
 }
 
-TEST(FileManagerUrlUtilTest, GetMediaPlayerUrl) {
-  EXPECT_EQ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/"
-            "mediaplayer.html",
-            GetMediaPlayerUrl().spec());
-}
-
 TEST(FileManagerUrlUtilTest, GetActionChoiceUrl_RegularMode) {
   EXPECT_EQ("chrome-extension://hhaomjibdihmijegdhdafkllkbggdgoj/"
             "action_choice.html#/foo.txt",

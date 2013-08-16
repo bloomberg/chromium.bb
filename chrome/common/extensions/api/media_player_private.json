@@ -10,93 +10,14 @@
     },
     "description": "none",
     "platforms": ["chromeos"],
-    "types": [
-      {
-        "id": "Playlist",
-        "type": "object",
-        "description": "Mediaplayer playlist stored in the browser (it exists even if the mediaplayer is closed).",
-        "properties": {
-          "items": {
-            "name": "items",
-            "type": "array",
-            "description": "Array of URLs for media files (in 'filesystem:' scheme for local files)",
-            "items": { "type": "string" }
-          },
-          "position": {
-            "type": "integer",
-            "description": "A position in the playlist."
-          }
-        }
-      }
-    ],
-    "functions": [
-      {
-        "name": "play",
-        "description": "Plays a new playlist from a given position.",
-        "parameters": [
-          {
-            "name": "items",
-            "type": "array",
-            "description": "Array of URLs for media files (in 'filesystem:' scheme for local files)",
-            "items": { "type": "string" }
-          },
-          {
-            "name": "position",
-            "type": "integer",
-            "description": "A position in the playlist."
-          }
-        ]
-      },
-      {
-        "name": "getPlaylist",
-        "type": "function",
-        "description": "Returns current playlist and position.",
-        "parameters": [
-          {
-            "name": "callback",
-            "type": "function",
-            "description": "Callback to retrieve the playlist.",
-            "parameters": [
-              {
-                "name": "playlist",
-                "$ref": "Playlist",
-                "description": "Mediaplayer playlist stored in the browser (it extsts even if the mediaplayer is closed)."
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "name": "setWindowHeight",
-        "description": "Changes the height of the media player window.",
-        "parameters": [
-          {
-            "name": "height",
-            "type": "integer",
-            "description": "Height of the media player window (not including window title or borders)."
-          }
-        ]
-      },
-      {
-        "name": "closeWindow",
-        "description": "Closes the media player window.",
-        "parameters": []
-      }
-    ],
-    "events": [
+   "events": [
       {
         "name": "onNextTrack",
         "type": "function",
         "description": "Notifies that the next track was requested.",
         "parameters": []
       },
-      {
-        "name": "onPlaylistChanged",
-        "type": "function",
-        "description": "Notifies that playlist content or state has been changed. Data could be retrieved via 'getPlaylist'.",
-        "parameters": []
-      },
-      {
+     {
         "name": "onPrevTrack",
         "type": "function",
         "description": "Notifies that the previous tack was requested.",

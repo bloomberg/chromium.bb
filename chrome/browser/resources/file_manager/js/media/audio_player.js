@@ -53,16 +53,6 @@ function AudioPlayer(container, volumeManager) {
 }
 
 /**
- * Key in the local storage for the list of track urls.
- */
-AudioPlayer.PLAYLIST_KEY = 'audioPlaylist';
-
-/**
- * Key in the local storage for the number of the current track.
- */
-AudioPlayer.TRACK_KEY = 'audioTrack';
-
-/**
  * Initial load method (static).
  */
 AudioPlayer.load = function() {
@@ -71,7 +61,6 @@ AudioPlayer.load = function() {
   VolumeManager.getInstance(function(volumeManager) {
     AudioPlayer.instance =
         new AudioPlayer(document.querySelector('.audio-player'), volumeManager);
-    chrome.mediaPlayerPrivate.onPlaylistChanged.addListener(getPlaylist);
     reload();
   });
 };
@@ -90,27 +79,10 @@ function unload() {
  */
 function reload() {
   if (window.appState) {
-    // Launching/reloading a v2 app.
     util.saveAppState();
     AudioPlayer.instance.load(window.appState);
     return;
   }
-
-  // Lauching/reloading a v1 app.
-  if (document.location.hash) {
-    // The window is reloading, restore the state.
-    AudioPlayer.instance.load(null);
-  } else {
-    getPlaylist();
-  }
-}
-
-/**
- * Get the playlist from Chrome.
- */
-function getPlaylist() {
-  chrome.mediaPlayerPrivate.getPlaylist(
-      AudioPlayer.instance.load.bind(AudioPlayer.instance));
 }
 
 /**
@@ -118,39 +90,9 @@ function getPlaylist() {
  * @param {Playlist} playlist Playlist object passed via mediaPlayerPrivate.
  */
 AudioPlayer.prototype.load = function(playlist) {
-  if (!playlist || !playlist.items.length) {
-    // playlist is null if the window is being reloaded.
-    // playlist is empty if ChromeOS has restarted with the Audio Player open.
-    // Restore the playlist from the local storage.
-    util.platform.getPreferences(function(prefs) {
-      try {
-        var restoredPlaylist = {
-          items: JSON.parse(prefs[AudioPlayer.PLAYLIST_KEY]),
-          position: Number(prefs[AudioPlayer.TRACK_KEY]),
-          time: true // Force restoring time from document.location.
-        };
-        if (restoredPlaylist.items.length)
-          this.load(restoredPlaylist);
-      } catch (ignore) {}
-    }.bind(this));
-    return;
-  }
-
-  if (!window.appState) {
-    // Remember the playlist for the restart.
-    // App v2 handles that in the background page.
-    util.platform.setPreference(
-        AudioPlayer.PLAYLIST_KEY, JSON.stringify(playlist.items));
-    util.platform.setPreference(
-        AudioPlayer.TRACK_KEY, playlist.position);
-  }
-
   this.playlistGeneration_++;
-
   this.audioControls_.pause();
-
   this.currentTrack_ = -1;
-
   this.urls_ = playlist.items;
 
   this.invalidTracks_ = {};
@@ -461,7 +403,6 @@ AudioPlayer.prototype.syncHeight_ = function() {
   appWindow.resizeTo(appWindow.contentWindow.outerWidth,
       oldHeight + targetClientHeight - this.container_.clientHeight);
 };
-
 
 /**
  * Create a TrackInfo object encapsulating the information about one track.

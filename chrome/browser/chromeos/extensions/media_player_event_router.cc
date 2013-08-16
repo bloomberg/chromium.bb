@@ -32,10 +32,6 @@ void MediaPlayerEventRouter::NotifyNextTrack() {
   BroadcastEvent(profile_, "mediaPlayerPrivate.onNextTrack");
 }
 
-void MediaPlayerEventRouter::NotifyPlaylistChanged() {
-  BroadcastEvent(profile_, "mediaPlayerPrivate.onPlaylistChanged");
-}
-
 void MediaPlayerEventRouter::NotifyPrevTrack() {
   BroadcastEvent(profile_, "mediaPlayerPrivate.onPrevTrack");
 }

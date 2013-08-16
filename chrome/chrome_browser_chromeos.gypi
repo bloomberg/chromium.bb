@@ -595,8 +595,6 @@
         'browser/chromeos/login/webui_screen_locker.h',
         'browser/chromeos/login/wizard_controller.cc',
         'browser/chromeos/login/wizard_controller.h',
-        'browser/chromeos/media/media_player.cc',
-        'browser/chromeos/media/media_player.h',
         'browser/chromeos/memory/oom_priority_manager.cc',
         'browser/chromeos/memory/oom_priority_manager.h',
         'browser/chromeos/mobile/mobile_activator.cc',
