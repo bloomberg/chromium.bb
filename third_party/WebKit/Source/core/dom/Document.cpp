@@ -1679,10 +1679,8 @@ void Document::recalcStyle(StyleChange change)
         m_inStyleRecalc = false;
 
         // Pseudo element removal and similar may only work with these flags still set. Reset them after the style recalc.
-        if (m_styleResolver) {
+        if (m_styleResolver)
             m_styleSheetCollection->resetCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
-            m_styleResolver->clearStyleSharingList();
-        }
 
         if (frameView) {
             frameView->resumeScheduledEvents();

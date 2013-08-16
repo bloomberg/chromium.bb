@@ -1514,9 +1514,6 @@ bool Element::recalcStyle(StyleChange change)
             change = Force;
         else if (change != Force)
             change = localChange;
-    } else {
-        // We still want to seed the style sharing list when just walking the tree to maximize sharing.
-        document()->styleResolver()->addToStyleSharingList(this);
     }
     StyleResolverParentPusher parentPusher(this);
 
