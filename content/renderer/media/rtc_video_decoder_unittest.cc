@@ -192,4 +192,28 @@ TEST_F(RTCVideoDecoderTest, IsBufferAfterReset) {
                                                 RTCVideoDecoder::ID_LAST));
 }
 
+TEST_F(RTCVideoDecoderTest, IsFirstBufferAfterReset) {
+  EXPECT_TRUE(
+      rtc_decoder_->IsFirstBufferAfterReset(0, RTCVideoDecoder::ID_INVALID));
+  EXPECT_FALSE(
+      rtc_decoder_->IsFirstBufferAfterReset(1, RTCVideoDecoder::ID_INVALID));
+  EXPECT_FALSE(rtc_decoder_->IsFirstBufferAfterReset(0, 0));
+  EXPECT_TRUE(rtc_decoder_->IsFirstBufferAfterReset(1, 0));
+  EXPECT_FALSE(rtc_decoder_->IsFirstBufferAfterReset(2, 0));
+
+  EXPECT_FALSE(rtc_decoder_->IsFirstBufferAfterReset(RTCVideoDecoder::ID_HALF,
+                                                     RTCVideoDecoder::ID_HALF));
+  EXPECT_TRUE(rtc_decoder_->IsFirstBufferAfterReset(
+      RTCVideoDecoder::ID_HALF + 1, RTCVideoDecoder::ID_HALF));
+  EXPECT_FALSE(rtc_decoder_->IsFirstBufferAfterReset(
+      RTCVideoDecoder::ID_HALF + 2, RTCVideoDecoder::ID_HALF));
+
+  EXPECT_FALSE(rtc_decoder_->IsFirstBufferAfterReset(RTCVideoDecoder::ID_LAST,
+                                                     RTCVideoDecoder::ID_LAST));
+  EXPECT_TRUE(
+      rtc_decoder_->IsFirstBufferAfterReset(0, RTCVideoDecoder::ID_LAST));
+  EXPECT_FALSE(
+      rtc_decoder_->IsFirstBufferAfterReset(1, RTCVideoDecoder::ID_LAST));
+}
+
 }  // content

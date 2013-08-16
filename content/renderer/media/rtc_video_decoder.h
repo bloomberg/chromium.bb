@@ -110,6 +110,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   };
 
   FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsBufferAfterReset);
+  FRIEND_TEST_ALL_PREFIXES(RTCVideoDecoderTest, IsFirstBufferAfterReset);
 
   // The meessage loop of |factories| will be saved to |vda_loop_proxy_|.
   RTCVideoDecoder(
@@ -125,6 +126,10 @@ class CONTENT_EXPORT RTCVideoDecoder
   // Returns true if bitstream buffer id |id_buffer| comes after |id_reset|.
   // This handles the wraparound.
   bool IsBufferAfterReset(int32 id_buffer, int32 id_reset);
+
+  // Returns true if bitstream buffer |id_buffer| is the first buffer after
+  // |id_reset|.
+  bool IsFirstBufferAfterReset(int32 id_buffer, int32 id_reset);
 
   // Saves a WebRTC buffer in |decode_buffers_| for decode.
   void SaveToDecodeBuffers_Locked(const webrtc::EncodedImage& input_image,
