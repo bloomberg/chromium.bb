@@ -65,7 +65,7 @@ CHROMEOS_EXPORT bool ParseOutputOverscanFlag(const unsigned char* prop,
 CHROMEOS_EXPORT bool IsInternalOutputName(const std::string& name);
 
 // Find a XRRModeInfo that matches |mode|.
-CHROMEOS_EXPORT const XRRModeInfo* FindModeInfo(
+CHROMEOS_EXPORT const XRRModeInfo* FindXRRModeInfo(
     const XRRScreenResources* screen_resources,
     XID mode);
 

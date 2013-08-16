@@ -114,11 +114,6 @@ class TestDelegate : public OutputConfigurator::Delegate {
     return actions;
   }
 
-  // Adds a mode to be returned by GetModeDetails().
-  void AddMode(RRMode mode, int width, int height, bool interlaced) {
-    modes_[mode] = ModeDetails(width, height, interlaced);
-  }
-
   // OutputConfigurator::Delegate overrides:
   virtual void SetPanelFittingEnabled(bool enabled) OVERRIDE {}
   virtual void InitXRandRExtension(int* event_base) OVERRIDE {
@@ -137,23 +132,6 @@ class TestDelegate : public OutputConfigurator::Delegate {
   virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs(
       const OutputConfigurator::StateController* controller) OVERRIDE {
     return outputs_;
-  }
-  virtual bool GetModeDetails(
-      RRMode mode,
-      int* width,
-      int* height,
-      bool* interlaced) OVERRIDE {
-    std::map<RRMode, ModeDetails>::const_iterator it = modes_.find(mode);
-    if (it == modes_.end())
-      return false;
-
-    if (width)
-      *width = it->second.width;
-    if (height)
-      *height = it->second.height;
-    if (interlaced)
-      *interlaced = it->second.interlaced;
-    return true;
   }
   virtual bool ConfigureCrtc(RRCrtc crtc,
                              RRMode mode,
@@ -270,6 +248,14 @@ class OutputConfiguratorTest : public testing::Test {
     configurator_.set_state_controller(&state_controller_);
     configurator_.set_mirroring_controller(&mirroring_controller_);
 
+    OutputConfigurator::ModeInfo small_mode_info;
+    small_mode_info.width = kSmallModeWidth;
+    small_mode_info.height = kSmallModeHeight;
+
+    OutputConfigurator::ModeInfo big_mode_info;
+    big_mode_info.width = kBigModeWidth;
+    big_mode_info.height = kBigModeHeight;
+
     OutputConfigurator::OutputSnapshot* o = &outputs_[0];
     o->output = 1;
     o->crtc = 10;
@@ -281,6 +267,7 @@ class OutputConfiguratorTest : public testing::Test {
     o->y = 0;
     o->is_internal = true;
     o->is_aspect_preserving_scaling = true;
+    o->mode_infos[kSmallModeId] = small_mode_info;
     o->touch_device_id = 0;
     o->has_display_id = true;
 
@@ -295,12 +282,12 @@ class OutputConfiguratorTest : public testing::Test {
     o->y = 0;
     o->is_internal = false;
     o->is_aspect_preserving_scaling = true;
+    o->mode_infos[kSmallModeId] = small_mode_info;
+    o->mode_infos[kBigModeId] = big_mode_info;
     o->touch_device_id = 0;
     o->has_display_id = true;
 
     UpdateOutputs(2, false);
-    delegate_->AddMode(kSmallModeId, kSmallModeWidth, kSmallModeHeight, false);
-    delegate_->AddMode(kBigModeId, kBigModeWidth, kBigModeHeight, false);
   }
 
   void DisableNativeMirroring() {
@@ -704,9 +691,7 @@ TEST_F(OutputConfiguratorTest, Headless) {
             delegate_->GetActionsAndClear());
 
   // Connect an external display and check that it's configured correctly.
-  outputs_[0].is_internal = false;
-  outputs_[0].native_mode = kBigModeId;
-  outputs_[0].selected_mode = kBigModeId;
+  outputs_[0] = outputs_[1];
   UpdateOutputs(1, true);
   EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
                         GetFramebufferAction(kBigModeWidth, kBigModeHeight,

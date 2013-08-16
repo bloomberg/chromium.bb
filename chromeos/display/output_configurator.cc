@@ -98,6 +98,11 @@ bool IsProjecting(
 
 }  // namespace
 
+OutputConfigurator::ModeInfo::ModeInfo()
+    : width(0),
+      height(0),
+      interlaced(false) {}
+
 OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
     : x_scale(1.0),
       x_offset(0.0),
@@ -113,11 +118,15 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       selected_mode(None),
       x(0),
       y(0),
+      width_mm(0),
+      height_mm(0),
       is_internal(false),
       is_aspect_preserving_scaling(false),
       touch_device_id(0),
       display_id(0),
       has_display_id(false) {}
+
+OutputConfigurator::OutputSnapshot::~OutputSnapshot() {}
 
 void OutputConfigurator::TestApi::SendScreenChangeEvent() {
   XRRScreenChangeNotifyEvent event = {0};
@@ -148,6 +157,19 @@ bool OutputConfigurator::TestApi::TriggerConfigureTimeout() {
   } else {
     return false;
   }
+}
+
+// static
+const OutputConfigurator::ModeInfo* OutputConfigurator::GetModeInfo(
+    const OutputSnapshot& output,
+    RRMode mode) {
+  std::map<RRMode, ModeInfo>::const_iterator it = output.mode_infos.find(mode);
+  if (it == output.mode_infos.end()) {
+    LOG(WARNING) << "Unable to find info about mode " << mode
+                 << " for output " << output.output;
+    return NULL;
+  }
+  return &it->second;
 }
 
 OutputConfigurator::OutputConfigurator()
@@ -405,7 +427,8 @@ void OutputConfigurator::ConfigureOutputs() {
 }
 
 void OutputConfigurator::NotifyOnDisplayChanged() {
-  FOR_EACH_OBSERVER(Observer, observers_, OnDisplayModeChanged());
+  FOR_EACH_OBSERVER(Observer, observers_,
+                    OnDisplayModeChanged(cached_outputs_));
 }
 
 bool OutputConfigurator::EnterStateOrFallBackToSoftwareMirroring(
@@ -467,9 +490,12 @@ bool OutputConfigurator::EnterState(
         output->current_mode = output_power[i] ? output->selected_mode : None;
 
         if (output_power[i] || outputs.size() == 1) {
-          if (!delegate_->GetModeDetails(
-                  output->selected_mode, &width, &height, NULL))
+          const ModeInfo* mode_info =
+              GetModeInfo(*output, output->selected_mode);
+          if (!mode_info)
             return false;
+          width = mode_info->width;
+          height = mode_info->height;
         }
       }
       break;
@@ -482,9 +508,14 @@ bool OutputConfigurator::EnterState(
         return false;
       }
 
-      if (!delegate_->GetModeDetails(
-              outputs[0].mirror_mode, &width, &height, NULL))
+      if (!outputs[0].mirror_mode)
         return false;
+      const ModeInfo* mode_info =
+          GetModeInfo(outputs[0], outputs[0].mirror_mode);
+      if (!mode_info)
+        return false;
+      width = mode_info->width;
+      height = mode_info->height;
 
       for (size_t i = 0; i < outputs.size(); ++i) {
         OutputSnapshot* output = &updated_outputs[i];
@@ -496,9 +527,9 @@ bool OutputConfigurator::EnterState(
           // Otherwise, assume it is full screen, and use identity CTM.
           if (output->mirror_mode != output->native_mode &&
               output->is_aspect_preserving_scaling) {
-            output->transform = GetMirrorModeCTM(output);
+            output->transform = GetMirrorModeCTM(*output);
             mirrored_display_area_ratio_map_[output->touch_device_id] =
-                GetMirroredDisplayAreaRatio(output);
+                GetMirroredDisplayAreaRatio(*output);
           }
         }
       }
@@ -512,15 +543,7 @@ bool OutputConfigurator::EnterState(
         return false;
       }
 
-      // Pairs are [width, height] corresponding to the given output's mode.
-      std::vector<std::pair<int, int> > mode_sizes(outputs.size());
-
       for (size_t i = 0; i < outputs.size(); ++i) {
-        if (!delegate_->GetModeDetails(outputs[i].selected_mode,
-                &(mode_sizes[i].first), &(mode_sizes[i].second), NULL)) {
-          return false;
-        }
-
         OutputSnapshot* output = &updated_outputs[i];
         output->x = 0;
         output->y = height ? height + kVerticalGap : 0;
@@ -529,17 +552,24 @@ bool OutputConfigurator::EnterState(
         // Retain the full screen size even if all outputs are off so the
         // same desktop configuration can be restored when the outputs are
         // turned back on.
-        width = std::max<int>(width, mode_sizes[i].first);
-        height += (height ? kVerticalGap : 0) + mode_sizes[i].second;
+        const ModeInfo* mode_info =
+            GetModeInfo(outputs[i], outputs[i].selected_mode);
+        if (!mode_info)
+          return false;
+        width = std::max<int>(width, mode_info->width);
+        height += (height ? kVerticalGap : 0) + mode_info->height;
       }
 
       for (size_t i = 0; i < outputs.size(); ++i) {
         OutputSnapshot* output = &updated_outputs[i];
         if (output->touch_device_id) {
+          const ModeInfo* mode_info =
+              GetModeInfo(*output, output->selected_mode);
+          DCHECK(mode_info);
           CoordinateTransformation* ctm = &(output->transform);
-          ctm->x_scale = static_cast<float>(mode_sizes[i].first) / width;
+          ctm->x_scale = static_cast<float>(mode_info->width) / width;
           ctm->x_offset = static_cast<float>(output->x) / width;
-          ctm->y_scale = static_cast<float>(mode_sizes[i].second) / height;
+          ctm->y_scale = static_cast<float>(mode_info->height) / height;
           ctm->y_offset = static_cast<float>(output->y) / height;
         }
       }
@@ -609,24 +639,20 @@ OutputState OutputConfigurator::GetOutputState(
 
 OutputConfigurator::CoordinateTransformation
 OutputConfigurator::GetMirrorModeCTM(
-    const OutputConfigurator::OutputSnapshot* output) {
+    const OutputConfigurator::OutputSnapshot& output) {
   CoordinateTransformation ctm;  // Default to identity
-  int native_mode_width = 0, native_mode_height = 0;
-  int mirror_mode_width = 0, mirror_mode_height = 0;
-  if (!delegate_->GetModeDetails(output->native_mode,
-          &native_mode_width, &native_mode_height, NULL) ||
-      !delegate_->GetModeDetails(output->mirror_mode,
-          &mirror_mode_width, &mirror_mode_height, NULL))
+  const ModeInfo* native_mode_info = GetModeInfo(output, output.native_mode);
+  const ModeInfo* mirror_mode_info = GetModeInfo(output, output.mirror_mode);
+
+  if (!native_mode_info || !mirror_mode_info ||
+      native_mode_info->height == 0 || mirror_mode_info->height == 0 ||
+      native_mode_info->width == 0 || mirror_mode_info->width == 0)
     return ctm;
 
-  if (native_mode_height == 0 || mirror_mode_height == 0 ||
-      native_mode_width == 0 || mirror_mode_width == 0)
-    return ctm;
-
-  float native_mode_ar = static_cast<float>(native_mode_width) /
-      static_cast<float>(native_mode_height);
-  float mirror_mode_ar = static_cast<float>(mirror_mode_width) /
-      static_cast<float>(mirror_mode_height);
+  float native_mode_ar = static_cast<float>(native_mode_info->width) /
+      static_cast<float>(native_mode_info->height);
+  float mirror_mode_ar = static_cast<float>(mirror_mode_info->width) /
+      static_cast<float>(mirror_mode_info->height);
 
   if (mirror_mode_ar > native_mode_ar) {  // Letterboxing
     ctm.x_scale = 1.0;
@@ -647,24 +673,20 @@ OutputConfigurator::GetMirrorModeCTM(
 }
 
 float OutputConfigurator::GetMirroredDisplayAreaRatio(
-    const OutputConfigurator::OutputSnapshot* output) {
+    const OutputConfigurator::OutputSnapshot& output) {
   float area_ratio = 1.0f;
-  int native_mode_width = 0, native_mode_height = 0;
-  int mirror_mode_width = 0, mirror_mode_height = 0;
-  if (!delegate_->GetModeDetails(output->native_mode,
-          &native_mode_width, &native_mode_height, NULL) ||
-      !delegate_->GetModeDetails(output->mirror_mode,
-          &mirror_mode_width, &mirror_mode_height, NULL))
+  const ModeInfo* native_mode_info = GetModeInfo(output, output.native_mode);
+  const ModeInfo* mirror_mode_info = GetModeInfo(output, output.mirror_mode);
+
+  if (!native_mode_info || !mirror_mode_info ||
+      native_mode_info->height == 0 || mirror_mode_info->height == 0 ||
+      native_mode_info->width == 0 || mirror_mode_info->width == 0)
     return area_ratio;
 
-  if (native_mode_height == 0 || mirror_mode_height == 0 ||
-      native_mode_width == 0 || mirror_mode_width == 0)
-    return area_ratio;
-
-  float width_ratio = static_cast<float>(mirror_mode_width) /
-      static_cast<float>(native_mode_width);
-  float height_ratio = static_cast<float>(mirror_mode_height) /
-      static_cast<float>(native_mode_height);
+  float width_ratio = static_cast<float>(mirror_mode_info->width) /
+      static_cast<float>(native_mode_info->width);
+  float height_ratio = static_cast<float>(mirror_mode_info->height) /
+      static_cast<float>(native_mode_info->height);
 
   area_ratio = width_ratio * height_ratio;
   return area_ratio;

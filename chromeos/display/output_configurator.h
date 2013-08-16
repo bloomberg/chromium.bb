@@ -42,6 +42,14 @@ class CHROMEOS_EXPORT OutputConfigurator
     : public base::MessageLoop::Dispatcher,
       public base::MessagePumpObserver {
  public:
+  struct ModeInfo {
+    ModeInfo();
+
+    int width;
+    int height;
+    bool interlaced;
+  };
+
   struct CoordinateTransformation {
     // Initialized to the identity transformation.
     CoordinateTransformation();
@@ -55,6 +63,7 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Information about an output's current state.
   struct OutputSnapshot {
     OutputSnapshot();
+    ~OutputSnapshot();
 
     RROutput output;
 
@@ -78,8 +87,15 @@ class CHROMEOS_EXPORT OutputConfigurator
     int x;
     int y;
 
+    // Output's physical dimensions.
+    uint64 width_mm;
+    uint64 height_mm;
+
     bool is_internal;
     bool is_aspect_preserving_scaling;
+
+    // Map from mode IDs to details about the corresponding modes.
+    std::map<RRMode, ModeInfo> mode_infos;
 
     // XInput device ID or 0 if this output isn't a touchscreen.
     int touch_device_id;
@@ -96,12 +112,15 @@ class CHROMEOS_EXPORT OutputConfigurator
    public:
     virtual ~Observer() {}
 
-    // Called when the change of the display mode finished.  It will usually
-    // start the fading in the displays.
-    virtual void OnDisplayModeChanged() {}
+    // Called after the display mode has been changed. |output| contains the
+    // just-applied configuration. Note that the X server is no longer grabbed
+    // when this method is called, so the actual configuration could've changed
+    // already.
+    virtual void OnDisplayModeChanged(
+        const std::vector<OutputSnapshot>& outputs) {}
 
-    // Called when the change of the display mode is issued but failed.
-    // |failed_new_state| is the new state which the system failed to enter.
+    // Called after a display mode change attempt failed. |failed_new_state| is
+    // the new state which the system failed to enter.
     virtual void OnDisplayModeChangeFailed(OutputState failed_new_state) {}
   };
 
@@ -167,13 +186,6 @@ class CHROMEOS_EXPORT OutputConfigurator
     // This method may block for 60 milliseconds or more.
     virtual std::vector<OutputSnapshot> GetOutputs(
         const StateController* state_controller) = 0;
-
-    // Gets details corresponding to |mode|.  Parameters may be NULL.
-    // Returns true on success.
-    virtual bool GetModeDetails(RRMode mode,
-                                int* width,
-                                int* height,
-                                bool* interlaced) = 0;
 
     // Calls XRRSetCrtcConfig() with the given options but some of our default
     // output count and rotation arguments. Returns true on success.
@@ -248,6 +260,11 @@ class CHROMEOS_EXPORT OutputConfigurator
   // need to use for the DPI calculation.
   // See crbug.com/130188 for initial discussion.
   static const int kVerticalGap = 60;
+
+  // Returns a pointer to the ModeInfo struct in |output| corresponding to
+  // |mode|, or NULL if the struct isn't present.
+  static const ModeInfo* GetModeInfo(const OutputSnapshot& output,
+                                     RRMode mode);
 
   OutputConfigurator();
   virtual ~OutputConfigurator();
@@ -360,12 +377,12 @@ class CHROMEOS_EXPORT OutputConfigurator
   // |output| is the output on which mirror mode is being applied.
   // Returns the transformation or identity if computations fail.
   CoordinateTransformation GetMirrorModeCTM(
-      const OutputConfigurator::OutputSnapshot* output);
+      const OutputConfigurator::OutputSnapshot& output);
 
   // Returns the ratio between mirrored mode area and native mode area:
   // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
   float GetMirroredDisplayAreaRatio(
-      const OutputConfigurator::OutputSnapshot* output);
+      const OutputConfigurator::OutputSnapshot& output);
 
   StateController* state_controller_;
   SoftwareMirroringController* mirroring_controller_;

@@ -331,8 +331,8 @@ bool IsInternalOutputName(const std::string& name) {
       name.find(kInternal_DSI) == 0;
 }
 
-const XRRModeInfo* FindModeInfo(const XRRScreenResources* screen_resources,
-                                XID current_mode) {
+const XRRModeInfo* FindXRRModeInfo(const XRRScreenResources* screen_resources,
+                                   XID current_mode) {
   for (int m = 0; m < screen_resources->nmode; m++) {
     XRRModeInfo *mode = &screen_resources->modes[m];
     if (mode->id == current_mode)
@@ -353,7 +353,7 @@ RRMode FindOutputModeMatchingSize(
   bool non_interlaced_found = false;
   for (int i = 0; i < output_info->nmode; ++i) {
     RRMode mode = output_info->modes[i];
-    const XRRModeInfo* info = FindModeInfo(screen_resources, mode);
+    const XRRModeInfo* info = FindXRRModeInfo(screen_resources, mode);
 
     if (info->width == width && info->height == height) {
       float rate = GetRefreshRate(info);

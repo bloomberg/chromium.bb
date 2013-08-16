@@ -39,11 +39,6 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void ForceDPMSOn() OVERRIDE;
   virtual std::vector<OutputConfigurator::OutputSnapshot> GetOutputs(
       const OutputConfigurator::StateController* state_controller) OVERRIDE;
-  virtual bool GetModeDetails(
-      RRMode mode,
-      int* width,
-      int* height,
-      bool* interlaced) OVERRIDE;
   virtual bool ConfigureCrtc(
       RRCrtc crtc,
       RRMode mode,
@@ -60,6 +55,19 @@ class RealOutputConfiguratorDelegate : public OutputConfigurator::Delegate {
   virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE;
 
  private:
+  // Gets details corresponding to |mode|. Parameters may be NULL. Returns
+  // true on success.
+  bool GetModeDetails(RRMode mode, int* width, int* height, bool* interlaced);
+
+  // Helper method for GetOutputs() that returns an OutputSnapshot struct based
+  // on the passed-in information. Further initialization is required (e.g.
+  // |selected_mode|, |mirror_mode|, and |touch_device_id|).
+  OutputConfigurator::OutputSnapshot InitOutputSnapshot(
+      RROutput id,
+      XRROutputInfo* info,
+      RRCrtc* last_used_crtc,
+      int index);
+
   // Destroys unused CRTCs and parks used CRTCs in a way which allows a
   // framebuffer resize. This is faster than turning them off, resizing,
   // then turning them back on.

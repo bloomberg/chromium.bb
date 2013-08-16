@@ -104,7 +104,8 @@ void TouchObserverHUD::OnDisplayRemoved(const gfx::Display& old_display) {
 }
 
 #if defined(OS_CHROMEOS)
-void TouchObserverHUD::OnDisplayModeChanged() {
+void TouchObserverHUD::OnDisplayModeChanged(
+    const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs) {
   // Clear touch HUD for any change in display mode (single, dual extended, dual
   // mirrored, ...).
   Clear();

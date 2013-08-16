@@ -27,6 +27,9 @@
 
 namespace ash {
 namespace internal {
+
+using chromeos::OutputConfigurator;
+
 namespace {
 
 // The DPI threshold to detect high density screen.
@@ -89,7 +92,9 @@ bool DisplayChangeObserverX11::GetResolutionForDisplayId(int64 display_id,
   return true;
 }
 
-void DisplayChangeObserverX11::OnDisplayModeChanged() {
+void DisplayChangeObserverX11::OnDisplayModeChanged(
+    const std::vector<OutputConfigurator::OutputSnapshot>& outputs) {
+  // TODO(derat): Use |outputs| instead of re-fetching information.
   XRRScreenResources* screen_resources =
       XRRGetScreenResources(xdisplay_, x_root_window_);
   std::map<XID, XRRCrtcInfo*> crtc_info_map;
@@ -131,7 +136,7 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
       continue;
     }
     const XRRModeInfo* mode =
-        chromeos::FindModeInfo(screen_resources, crtc_info->mode);
+        chromeos::FindXRRModeInfo(screen_resources, crtc_info->mode);
     if (!mode) {
       LOG(WARNING) << "Could not find a mode for the output: output_index="
                    << output_index;

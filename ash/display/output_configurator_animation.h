@@ -42,7 +42,9 @@ class ASH_EXPORT OutputConfiguratorAnimation
 
  protected:
   // chromeos::OutputConfigurator::Observer overrides:
-  virtual void OnDisplayModeChanged() OVERRIDE;
+  virtual void OnDisplayModeChanged(
+      const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs)
+      OVERRIDE;
   virtual void OnDisplayModeChangeFailed(
       chromeos::OutputState failed_new_state) OVERRIDE;
 

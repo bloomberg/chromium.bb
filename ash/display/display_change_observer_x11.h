@@ -36,7 +36,9 @@ class DisplayChangeObserverX11
                                          int* height) const OVERRIDE;
 
   // Overriden from chromeos::OutputConfigurator::Observer:
-  virtual void OnDisplayModeChanged() OVERRIDE;
+  virtual void OnDisplayModeChanged(
+      const std::vector<chromeos::OutputConfigurator::OutputSnapshot>& outputs)
+      OVERRIDE;
 
   // Overriden from ShellObserver:
   virtual void OnAppTerminating() OVERRIDE;

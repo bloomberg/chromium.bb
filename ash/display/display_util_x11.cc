@@ -63,7 +63,7 @@ std::vector<Resolution> GetResolutionList(
 
   for (int i = 0; i < output_info->nmode; i++) {
     RRMode mode = output_info->modes[i];
-    const XRRModeInfo* info = chromeos::FindModeInfo(screen_resources, mode);
+    const XRRModeInfo* info = chromeos::FindXRRModeInfo(screen_resources, mode);
     DCHECK(info);
     // Just ignore bad entry on Release build.
     if (!info)
