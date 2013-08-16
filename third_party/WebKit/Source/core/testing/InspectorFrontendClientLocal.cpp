@@ -100,7 +100,7 @@ InspectorFrontendClientLocal::InspectorFrontendClientLocal(InspectorController* 
     : m_inspectorController(inspectorController)
     , m_frontendPage(frontendPage)
 {
-    m_frontendPage->settings()->setAllowFileAccessFromFileURLs(true);
+    m_frontendPage->settings().setAllowFileAccessFromFileURLs(true);
     m_messageQueue = adoptRef(new InspectorBackendMessageQueue(inspectorController));
 }
 

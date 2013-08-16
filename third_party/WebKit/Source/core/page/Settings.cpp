@@ -44,8 +44,8 @@ namespace WebCore {
 static void setImageLoadingSettings(Page* page)
 {
     for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
-        frame->document()->fetcher()->setImagesEnabled(page->settings()->areImagesEnabled());
-        frame->document()->fetcher()->setAutoLoadImages(page->settings()->loadsImagesAutomatically());
+        frame->document()->fetcher()->setImagesEnabled(page->settings().areImagesEnabled());
+        frame->document()->fetcher()->setAutoLoadImages(page->settings().loadsImagesAutomatically());
     }
 }
 

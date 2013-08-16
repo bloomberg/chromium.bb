@@ -684,10 +684,8 @@ void WebGLRenderingContext::initializeNewContext()
 void WebGLRenderingContext::setupFlags()
 {
     ASSERT(m_context);
-
-    Page* p = canvas()->document()->page();
-    if (p) {
-        m_synthesizedErrorsToConsole = p->settings()->webGLErrorsToConsoleEnabled();
+    if (Page* p = canvas()->document()->page()) {
+        m_synthesizedErrorsToConsole = p->settings().webGLErrorsToConsoleEnabled();
 
         if (!m_multisamplingObserverRegistered && m_requestedAttributes.antialias) {
             m_multisamplingAllowed = m_drawingBuffer->multisample();
@@ -702,9 +700,8 @@ void WebGLRenderingContext::setupFlags()
 
 bool WebGLRenderingContext::allowPrivilegedExtensions() const
 {
-    Page* p = canvas()->document()->page();
-    if (p && p->settings())
-        return p->settings()->privilegedWebGLExtensionsEnabled();
+    if (Page* p = canvas()->document()->page())
+        return p->settings().privilegedWebGLExtensionsEnabled();
     return false;
 }
 

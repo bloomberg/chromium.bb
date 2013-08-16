@@ -430,7 +430,7 @@ void FrameView::setFrameRect(const IntRect& newRect)
     // Autosized font sizes depend on the width of the viewing area.
     if (newRect.width() != oldRect.width()) {
         Page* page = m_frame ? m_frame->page() : 0;
-        if (page && page->mainFrame() == m_frame && page->settings()->textAutosizingEnabled()) {
+        if (page && page->mainFrame() == m_frame && page->settings().textAutosizingEnabled()) {
             for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext())
                 m_frame->document()->textAutosizer()->recalculateMultipliers();
         }
@@ -2596,7 +2596,7 @@ void FrameView::notifyPageThatContentAreaWillPaint() const
 bool FrameView::scrollAnimatorEnabled() const
 {
     if (Page* page = m_frame->page())
-        return page->settings()->scrollAnimatorEnabled();
+        return page->settings().scrollAnimatorEnabled();
     return false;
 }
 

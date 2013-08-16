@@ -1141,8 +1141,8 @@ void WebViewImpl::computeScaleAndScrollForBlockRect(const WebRect& blockRect, fl
         // be allowed to manually pinch zoom in further if they desire.
         const float defaultScaleWhenAlreadyLegible = minimumPageScaleFactor() * doubleTapZoomAlreadyLegibleRatio;
         float legibleScale = 1;
-        if (page() && page()->settings())
-            legibleScale *= page()->settings()->textAutosizingFontScaleFactor();
+        if (page())
+            legibleScale *= page()->settings().textAutosizingFontScaleFactor();
         if (legibleScale < defaultScaleWhenAlreadyLegible)
             legibleScale = (scale == minimumPageScaleFactor()) ? defaultScaleWhenAlreadyLegible : minimumPageScaleFactor();
 
@@ -1757,7 +1757,7 @@ void WebViewImpl::layout()
 
 void WebViewImpl::enterForceCompositingMode(bool enter)
 {
-    if (page()->settings()->forceCompositingMode() == enter)
+    if (page()->settings().forceCompositingMode() == enter)
         return;
 
     TRACE_EVENT1("webkit", "WebViewImpl::enterForceCompositingMode", "enter", enter);
@@ -2489,7 +2489,7 @@ void WebViewImpl::didChangeWindowResizerRect()
 WebSettingsImpl* WebViewImpl::settingsImpl()
 {
     if (!m_webSettings)
-        m_webSettings = adoptPtr(new WebSettingsImpl(m_page->settings()));
+        m_webSettings = adoptPtr(new WebSettingsImpl(&m_page->settings()));
     ASSERT(m_webSettings);
     return m_webSettings.get();
 }
@@ -2654,8 +2654,8 @@ void WebViewImpl::computeScaleAndScrollForFocusedNode(Node* focusedNode, float& 
     // the caret height will become minReadableCaretHeight (adjusted for dpi
     // and font scale factor).
     float targetScale = 1;
-    if (page() && page()->settings())
-        targetScale *= page()->settings()->textAutosizingFontScaleFactor();
+    if (page())
+        targetScale *= page()->settings().textAutosizingFontScaleFactor();
 
     newScale = clampPageScaleFactorToLimits(minReadableCaretHeight * targetScale / caret.height);
     const float deltaScale = newScale / pageScaleFactor();
@@ -2959,16 +2959,15 @@ void WebViewImpl::updatePageDefinedPageScaleConstraints(const ViewportArguments&
     if (!settings()->viewportEnabled() || !isFixedLayoutModeEnabled() || !page() || !m_size.width || !m_size.height)
         return;
 
-    m_pageScaleConstraintsSet.updatePageDefinedConstraints(arguments, m_size, page()->settings()->layoutFallbackWidth());
+    m_pageScaleConstraintsSet.updatePageDefinedConstraints(arguments, m_size, page()->settings().layoutFallbackWidth());
 
     if (settingsImpl()->supportDeprecatedTargetDensityDPI())
-        m_pageScaleConstraintsSet.adjustPageDefinedConstraintsForAndroidWebView(arguments, m_size, page()->settings()->layoutFallbackWidth(), deviceScaleFactor(), page()->settings()->useWideViewport(), page()->settings()->loadWithOverviewMode());
+        m_pageScaleConstraintsSet.adjustPageDefinedConstraintsForAndroidWebView(arguments, m_size, page()->settings().layoutFallbackWidth(), deviceScaleFactor(), page()->settings().useWideViewport(), page()->settings().loadWithOverviewMode());
 
     WebSize layoutSize = flooredIntSize(m_pageScaleConstraintsSet.pageDefinedConstraints().layoutSize);
 
-    if (page()->settings() && page()->settings()->textAutosizingEnabled() && page()->mainFrame()
-        && layoutSize.width != fixedLayoutSize().width)
-            page()->mainFrame()->document()->textAutosizer()->recalculateMultipliers();
+    if (page()->settings().textAutosizingEnabled() && page()->mainFrame() && layoutSize.width != fixedLayoutSize().width)
+        page()->mainFrame()->document()->textAutosizer()->recalculateMultipliers();
 
     setFixedLayoutSize(layoutSize);
 }
@@ -3768,7 +3767,7 @@ void WebViewImpl::setRootGraphicsLayer(GraphicsLayer* layer)
 {
     suppressInvalidations(true);
 
-    if (page()->settings()->pinchVirtualViewportEnabled()) {
+    if (page()->settings().pinchVirtualViewportEnabled()) {
         if (!m_pinchViewports)
             m_pinchViewports = PinchViewports::create(this);
 
@@ -3868,7 +3867,7 @@ void WebViewImpl::setIsAcceleratedCompositingActive(bool active)
         // We need to finish all GL rendering before sending didDeactivateCompositor() to prevent
         // flickering when compositing turns off. This is only necessary if we're not in
         // force-compositing-mode.
-        if (m_layerTreeView && !page()->settings()->forceCompositingMode())
+        if (m_layerTreeView && !page()->settings().forceCompositingMode())
             m_layerTreeView->finishAllRendering();
         m_client->didDeactivateCompositor();
         if (!m_layerTreeViewCommitsDeferred

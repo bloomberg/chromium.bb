@@ -88,14 +88,14 @@ EditorClientImpl::~EditorClientImpl()
 bool EditorClientImpl::smartInsertDeleteEnabled()
 {
     if (m_webView->page())
-        return m_webView->page()->settings()->smartInsertDeleteEnabled();
+        return m_webView->page()->settings().smartInsertDeleteEnabled();
     return false;
 }
 
 bool EditorClientImpl::isSelectTrailingWhitespaceEnabled()
 {
     if (m_webView->page())
-        return m_webView->page()->settings()->selectTrailingWhitespaceEnabled();
+        return m_webView->page()->settings().selectTrailingWhitespaceEnabled();
     return false;
 }
 

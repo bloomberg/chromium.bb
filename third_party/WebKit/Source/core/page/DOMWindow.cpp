@@ -704,7 +704,7 @@ Storage* DOMWindow::localStorage(ExceptionState& es) const
     if (!page)
         return 0;
 
-    if (!page->settings()->localStorageEnabled())
+    if (!page->settings().localStorageEnabled())
         return 0;
 
     OwnPtr<StorageArea> storageArea = StorageNamespace::localStorageArea(document->securityOrigin());

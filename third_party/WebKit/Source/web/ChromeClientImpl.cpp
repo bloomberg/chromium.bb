@@ -844,20 +844,20 @@ ChromeClient::CompositingTriggerFlags ChromeClientImpl::allowedCompositingTrigge
         return 0;
 
     CompositingTriggerFlags flags = 0;
-    Settings* settings = m_webView->page()->settings();
-    if (settings->acceleratedCompositingFor3DTransformsEnabled())
+    Settings& settings = m_webView->page()->settings();
+    if (settings.acceleratedCompositingFor3DTransformsEnabled())
         flags |= ThreeDTransformTrigger;
-    if (settings->acceleratedCompositingForVideoEnabled())
+    if (settings.acceleratedCompositingForVideoEnabled())
         flags |= VideoTrigger;
-    if (settings->acceleratedCompositingForPluginsEnabled())
+    if (settings.acceleratedCompositingForPluginsEnabled())
         flags |= PluginTrigger;
-    if (settings->acceleratedCompositingForAnimationEnabled())
+    if (settings.acceleratedCompositingForAnimationEnabled())
         flags |= AnimationTrigger;
-    if (settings->acceleratedCompositingForCanvasEnabled())
+    if (settings.acceleratedCompositingForCanvasEnabled())
         flags |= CanvasTrigger;
-    if (settings->acceleratedCompositingForScrollableFramesEnabled())
+    if (settings.acceleratedCompositingForScrollableFramesEnabled())
         flags |= ScrollableInnerFrameTrigger;
-    if (settings->acceleratedCompositingForFiltersEnabled())
+    if (settings.acceleratedCompositingForFiltersEnabled())
         flags |= FilterTrigger;
 
     return flags;

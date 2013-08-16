@@ -136,7 +136,7 @@ InternalSettings::~InternalSettings()
 InternalSettings::InternalSettings(Page* page)
     : InternalSettingsGenerated(page)
     , m_page(page)
-    , m_backup(page->settings())
+    , m_backup(&page->settings())
 {
 }
 
@@ -154,7 +154,7 @@ Settings* InternalSettings::settings() const
 {
     if (!page())
         return 0;
-    return page()->settings();
+    return &page()->settings();
 }
 
 void InternalSettings::setMockScrollbarsEnabled(bool enabled, ExceptionState& es)

@@ -1378,7 +1378,7 @@ TEST_F(WebFrameTest, DivAutoZoomScaleFontScaleFactorTest)
 
     WebViewImpl* webViewImpl = static_cast<WebViewImpl*>(m_webView);
     webViewImpl->enableFakePageScaleAnimationForTesting(true);
-    webViewImpl->page()->settings()->setTextAutosizingFontScaleFactor(textAutosizingFontScaleFactor);
+    webViewImpl->page()->settings().setTextAutosizingFontScaleFactor(textAutosizingFontScaleFactor);
 
     WebRect div(200, 100, 200, 150);
     WebPoint doubleTapPoint(div.x + 50, div.y + 50);

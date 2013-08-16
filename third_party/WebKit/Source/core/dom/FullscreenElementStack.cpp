@@ -188,7 +188,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
             break;
 
         // There is a previously-established user preference, security risk, or platform limitation.
-        if (!document()->page() || !document()->page()->settings()->fullScreenEnabled())
+        if (!document()->page() || !document()->page()->settings().fullScreenEnabled())
             break;
 
         // 2. Let doc be element's node document. (i.e. "this")
@@ -360,7 +360,7 @@ void FullscreenElementStack::webkitWillEnterFullScreenForElement(Element* elemen
     if (!document()->page())
         return;
 
-    ASSERT(document()->page()->settings()->fullScreenEnabled());
+    ASSERT(document()->page()->settings().fullScreenEnabled());
 
     if (m_fullScreenRenderer)
         m_fullScreenRenderer->unwrapRenderer();

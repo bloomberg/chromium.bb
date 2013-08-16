@@ -231,9 +231,8 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate)
     ASSERT(m_state == Uninitialized);
     m_state = Initialized;
 
-    if (Frame* frame = document->frame())
-        if (Settings* settings = frame->settings())
-            m_isEnabled = settings->xssAuditorEnabled();
+    if (Settings* settings = document->settings())
+        m_isEnabled = settings->xssAuditorEnabled();
 
     if (!m_isEnabled)
         return;

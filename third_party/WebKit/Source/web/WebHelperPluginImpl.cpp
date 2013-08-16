@@ -185,8 +185,8 @@ bool WebHelperPluginImpl::initializePage(const String& pluginType, const WebDocu
     pageClients.chromeClient = m_chromeClient.get();
 
     m_page = adoptPtr(new Page(pageClients));
-    ASSERT(!m_page->settings()->isScriptEnabled());
-    m_page->settings()->setPluginsEnabled(true);
+    ASSERT(!m_page->settings().isScriptEnabled());
+    m_page->settings().setPluginsEnabled(true);
 
     unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
     m_page->addLayoutMilestones(static_cast<LayoutMilestones>(layoutMilestones));

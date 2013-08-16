@@ -219,7 +219,7 @@ void Frame::sendOrientationChangeEvent(int orientation)
 
 Settings* Frame::settings() const
 {
-    return m_page ? m_page->settings() : 0;
+    return m_page ? &m_page->settings() : 0;
 }
 
 void Frame::setPrinting(bool printing, const FloatSize& pageSize, const FloatSize& originalPageSize, float maximumShrinkRatio, AdjustViewSizeOrNot shouldAdjustViewSize)
