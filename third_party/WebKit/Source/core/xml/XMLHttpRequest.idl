@@ -42,17 +42,7 @@ enum XMLHttpRequestResponseType {
     Constructor,
     ConstructorCallWith=ScriptExecutionContext,
     CustomConstructor(optional XMLHttpRequestOptions options)
-] interface XMLHttpRequest : EventTarget {
-    // From XMLHttpRequestEventTarget
-    // event handler attributes
-    attribute EventHandler onabort;
-    attribute EventHandler onerror;
-    attribute EventHandler onload;
-    attribute EventHandler onloadend;
-    attribute EventHandler onloadstart;
-    attribute EventHandler onprogress;
-    attribute EventHandler ontimeout;
-
+] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler attributes
     attribute EventHandler onreadystatechange;
 

@@ -51,16 +51,6 @@ ScriptExecutionContext* XMLHttpRequestUpload::scriptExecutionContext() const
     return m_xmlHttpRequest->scriptExecutionContext();
 }
 
-EventTargetData* XMLHttpRequestUpload::eventTargetData()
-{
-    return &m_eventTargetData;
-}
-
-EventTargetData* XMLHttpRequestUpload::ensureEventTargetData()
-{
-    return &m_eventTargetData;
-}
-
 void XMLHttpRequestUpload::dispatchEventAndLoadEnd(PassRefPtr<Event> event)
 {
     ASSERT(event->type() == eventNames().loadEvent || event->type() == eventNames().abortEvent || event->type() == eventNames().errorEvent || event->type() == eventNames().timeoutEvent);

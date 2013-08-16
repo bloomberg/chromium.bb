@@ -26,14 +26,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface XMLHttpRequestUpload : EventTarget {
-    // From XMLHttpRequestEventTarget
-    // event handler attributes
-    attribute EventHandler onabort;
-    attribute EventHandler onerror;
-    attribute EventHandler onload;
-    attribute EventHandler onloadend;
-    attribute EventHandler onloadstart;
-    attribute EventHandler onprogress;
+interface XMLHttpRequestUpload : XMLHttpRequestEventTarget {
 };
 

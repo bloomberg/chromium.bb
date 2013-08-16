@@ -27,10 +27,10 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
-#include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/xml/XMLHttpRequestEventTarget.h"
 #include "core/xml/XMLHttpRequestProgressEventThrottle.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
@@ -51,7 +51,7 @@ class ThreadableLoader;
 
 typedef int ExceptionCode;
 
-class XMLHttpRequest : public ScriptWrappable, public RefCounted<XMLHttpRequest>, public EventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
+class XMLHttpRequest : public ScriptWrappable, public RefCounted<XMLHttpRequest>, public XMLHttpRequestEventTarget, private ThreadableLoaderClient, public ActiveDOMObject {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static PassRefPtr<XMLHttpRequest> create(ScriptExecutionContext*, PassRefPtr<SecurityOrigin> = 0);
@@ -81,8 +81,8 @@ public:
     virtual void resume();
     virtual void stop();
 
-    virtual const AtomicString& interfaceName() const;
-    virtual ScriptExecutionContext* scriptExecutionContext() const;
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+    virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
 
     const KURL& url() const { return m_url; }
     String statusText(ExceptionState&) const;
@@ -132,13 +132,6 @@ public:
     XMLHttpRequestUpload* upload();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(abort);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(load);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(loadend);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(loadstart);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(timeout);
 
     using RefCounted<XMLHttpRequest>::ref;
     using RefCounted<XMLHttpRequest>::deref;
@@ -146,10 +139,8 @@ public:
 private:
     XMLHttpRequest(ScriptExecutionContext*, PassRefPtr<SecurityOrigin>);
 
-    virtual void refEventTarget() { ref(); }
-    virtual void derefEventTarget() { deref(); }
-    virtual EventTargetData* eventTargetData();
-    virtual EventTargetData* ensureEventTargetData();
+    virtual void refEventTarget() OVERRIDE { ref(); }
+    virtual void derefEventTarget() OVERRIDE { deref(); }
 
     Document* document() const;
     SecurityOrigin* securityOrigin() const;
@@ -228,8 +219,6 @@ private:
     unsigned m_lastSendLineNumber;
     String m_lastSendURL;
     ExceptionCode m_exceptionCode;
-
-    EventTargetData m_eventTargetData;
 
     XMLHttpRequestProgressEventThrottle m_progressEventThrottle;
 
