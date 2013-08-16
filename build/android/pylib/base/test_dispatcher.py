@@ -360,9 +360,8 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
     A tuple of (base_test_result.TestRunResults object, exit code).
   """
   if not tests:
-    logging.error('No tests to run.')
+    logging.critical('No tests to run.')
     return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
-
   if shard:
     # Generate a shared _TestCollection object for all test runners, so they
     # draw from a common pool of tests.
@@ -378,6 +377,9 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
     log_string = 'replicated on each device'
 
   devices = _GetAttachedDevices(wait_for_debugger, test_device)
+  if not devices:
+    logging.critical('No attached devices.')
+    return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
   logging.info('Will run %d tests (%s): %s', len(tests), log_string, str(tests))
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
