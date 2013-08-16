@@ -47,6 +47,7 @@ XSLStyleSheet::XSLStyleSheet(XSLImportRule* parentRule, const String& originalUR
     , m_processed(false) // Child sheets get marked as processed when the libxslt engine has finally seen them.
     , m_stylesheetDoc(0)
     , m_stylesheetDocTaken(false)
+    , m_compilationFailed(false)
     , m_parentStyleSheet(parentRule ? parentRule->parentStyleSheet() : 0)
 {
 }
@@ -60,6 +61,7 @@ XSLStyleSheet::XSLStyleSheet(Node* parentNode, const String& originalURL, const 
     , m_processed(true) // The root sheet starts off processed.
     , m_stylesheetDoc(0)
     , m_stylesheetDocTaken(false)
+    , m_compilationFailed(false)
     , m_parentStyleSheet(0)
 {
 }
@@ -226,12 +228,19 @@ xsltStylesheetPtr XSLStyleSheet::compileStyleSheet()
     if (m_embedded)
         return xsltLoadStylesheetPI(document());
 
+    // Certain libxslt versions are corrupting the xmlDoc on compilation failures -
+    // hence attempting to recompile after a failure is unsafe.
+    if (m_compilationFailed)
+        return 0;
+
     // xsltParseStylesheetDoc makes the document part of the stylesheet
     // so we have to release our pointer to it.
     ASSERT(!m_stylesheetDocTaken);
     xsltStylesheetPtr result = xsltParseStylesheetDoc(m_stylesheetDoc);
     if (result)
         m_stylesheetDocTaken = true;
+    else
+        m_compilationFailed = true;
     return result;
 }
 

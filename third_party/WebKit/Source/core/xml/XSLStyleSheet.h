@@ -111,6 +111,7 @@ private:
 
     xmlDocPtr m_stylesheetDoc;
     bool m_stylesheetDocTaken;
+    bool m_compilationFailed;
 
     XSLStyleSheet* m_parentStyleSheet;
 };
