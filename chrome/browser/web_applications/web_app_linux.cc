@@ -18,16 +18,22 @@ bool CreatePlatformShortcuts(
     const ShellIntegration::ShortcutInfo& shortcut_info,
     const ShellIntegration::ShortcutLocations& creation_locations,
     ShortcutCreationReason /*creation_reason*/) {
+#if !defined(OS_CHROMEOS)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   return ShellIntegrationLinux::CreateDesktopShortcut(
       shortcut_info, creation_locations);
+#else
+  return false;
+#endif
 }
 
 void DeletePlatformShortcuts(
     const base::FilePath& web_app_path,
     const ShellIntegration::ShortcutInfo& shortcut_info) {
+#if !defined(OS_CHROMEOS)
   ShellIntegrationLinux::DeleteDesktopShortcuts(shortcut_info.profile_path,
       shortcut_info.extension_id);
+#endif
 }
 
 void UpdatePlatformShortcuts(
@@ -56,7 +62,9 @@ void UpdatePlatformShortcuts(
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
+#if !defined(OS_CHROMEOS)
   ShellIntegrationLinux::DeleteAllDesktopShortcuts(profile_path);
+#endif
 }
 
 }  // namespace internals
