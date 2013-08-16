@@ -1032,13 +1032,10 @@ TEST_F(TraceEventTestFixture, Categories) {
   included_categories.clear();
   TraceLog::GetInstance()->SetEnabled(CategoryFilter("not_found823564786"),
                                       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("unknown1", "name", TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("unknown2", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat1", "name", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
-  // Two events with unknown categories recorded.
-  EXPECT_FALSE(trace_parsed_.empty());
-  EXPECT_TRUE(FindMatchingValue("cat", "unknown1"));
-  EXPECT_TRUE(FindMatchingValue("cat", "unknown2"));
+  EXPECT_TRUE(trace_parsed_.empty());
 
   // Include existent category -> only events of that category
   Clear();
@@ -1049,7 +1046,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   TRACE_EVENT_INSTANT0("inc2", "name", TRACE_EVENT_SCOPE_THREAD);
   EndTraceAndFlush();
   EXPECT_TRUE(FindMatchingValue("cat", "inc"));
-  EXPECT_TRUE(FindMatchingValue("cat", "inc2"));
+  EXPECT_FALSE(FindNonMatchingValue("cat", "inc"));
 
   // Include existent wildcard -> all categories matching wildcard
   Clear();
@@ -1062,10 +1059,10 @@ TEST_F(TraceEventTestFixture, Categories) {
   TRACE_EVENT_INSTANT0("inc_wildcard_", "included", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildchar_x_end", "included",
       TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "unknown",
+  TRACE_EVENT_INSTANT0("inc_wildchar_bla_end", "not_inc",
       TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("cat1", "unknown", TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_INSTANT0("cat2", "unknown", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat1", "not_inc", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_INSTANT0("cat2", "not_inc", TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildcard_category,other_category", "included",
       TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0(
@@ -1075,7 +1072,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_abc"));
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_"));
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildchar_x_end"));
-  EXPECT_TRUE(FindMatchingValue("name", "unknown"));
+  EXPECT_FALSE(FindMatchingValue("name", "not_inc"));
   EXPECT_TRUE(FindMatchingValue("cat", "inc_wildcard_category,other_category"));
   EXPECT_TRUE(FindMatchingValue("cat",
                                 "non_included_category,inc_wildcard_category"));
@@ -1113,7 +1110,7 @@ TEST_F(TraceEventTestFixture, Categories) {
   TraceLog::GetInstance()->SetEnabled(
       CategoryFilter("-inc_wildcard_*,-inc_wildchar_?_end"),
       TraceLog::RECORD_UNTIL_FULL);
-  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "unknown",
+  TRACE_EVENT_INSTANT0("inc_wildcard_abc", "not_inc",
       TRACE_EVENT_SCOPE_THREAD);
   TRACE_EVENT_INSTANT0("inc_wildcard_", "not_inc",
       TRACE_EVENT_SCOPE_THREAD);
@@ -1621,10 +1618,10 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   trace_log->SetEnabled(CategoryFilter("foo,bar"), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("bar"));
-  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("unknown"));
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
   trace_log->SetEnabled(CategoryFilter("foo2"), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo2"));
-  EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("unknown"));
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("baz"));
   // The "" becomes the default catergory set when applied.
   trace_log->SetEnabled(CategoryFilter(""), TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("foo"));
@@ -1653,6 +1650,7 @@ TEST_F(TraceEventTestFixture, TraceCategoriesAfterNestedEnable) {
   // Make sure disabled categories aren't cleared if we set in the second.
   trace_log->SetEnabled(CategoryFilter("disabled-by-default-cc,foo"),
                         TraceLog::RECORD_UNTIL_FULL);
+  EXPECT_FALSE(*trace_log->GetCategoryGroupEnabled("bar"));
   trace_log->SetEnabled(CategoryFilter("disabled-by-default-gpu"),
                         TraceLog::RECORD_UNTIL_FULL);
   EXPECT_TRUE(*trace_log->GetCategoryGroupEnabled("disabled-by-default-cc"));
@@ -1955,16 +1953,15 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
   EXPECT_TRUE(cf.IsCategoryGroupEnabled("inc_pattern_category"));
   EXPECT_FALSE(cf.IsCategoryGroupEnabled("exc_pattern_category"));
   EXPECT_FALSE(cf.IsCategoryGroupEnabled("excluded"));
-  // This filter allows unknowns.
-  EXPECT_TRUE(cf.IsCategoryGroupEnabled("not-excluded-nor-included"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("not-excluded-nor-included"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
+  EXPECT_FALSE(cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
 
   cf.Merge(default_cf);
   category_filter_str = cf.ToString();
   EXPECT_STREQ("-excluded,-exc_pattern*,-*Debug,-*Test",
                 category_filter_str.c_str());
-  EXPECT_FALSE(cf.IsCategoryGroupEnabled("Category1,CategoryDebug"));
-  EXPECT_FALSE(cf.IsCategoryGroupEnabled("CategoryDebug,Category1"));
-  EXPECT_FALSE(cf.IsCategoryGroupEnabled("CategoryTest,Category2"));
   cf.Clear();
 
   CategoryFilter reconstructed_cf(category_filter_str);
@@ -1999,7 +1996,7 @@ TEST_F(TraceEventTestFixture, CategoryFilter) {
   EXPECT_TRUE(
       disabled_inc_cat.IsCategoryGroupEnabled("disabled-by-default-cc"));
   EXPECT_TRUE(disabled_inc_cat.IsCategoryGroupEnabled("included"));
-  EXPECT_TRUE(disabled_inc_cat.IsCategoryGroupEnabled("other_unknown"));
+  EXPECT_FALSE(disabled_inc_cat.IsCategoryGroupEnabled("other_included"));
 
   // Test that IsEmptyOrContainsLeadingOrTrailingWhitespace actually catches
   // categories that are explicitly forbiden.

@@ -1595,8 +1595,6 @@ bool CategoryFilter::IsCategoryGroupEnabled(
                                        TRACE_DISABLED_BY_DEFAULT("*")))
     return false;
 
-  // Must check included before excluded because there is potential for
-  // category groups with included and excluded categories.
   for (ci = included_.begin(); ci != included_.end(); ++ci) {
     if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
       return true;
@@ -1606,8 +1604,9 @@ bool CategoryFilter::IsCategoryGroupEnabled(
     if (DoesCategoryGroupContainCategory(category_group_name, ci->c_str()))
       return false;
   }
-  // Unknown categories are included.
-  return true;
+  // If the category group is not excluded, and there are no included patterns
+  // we consider this pattern enabled.
+  return included_.empty();
 }
 
 bool CategoryFilter::HasIncludedPatterns() const {
