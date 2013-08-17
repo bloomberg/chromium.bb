@@ -102,7 +102,7 @@ void PopupBlockerTabHelper::AddBlockedPopup(
     bool opener_suppressed) {
   GURL popup_url(target_url);
   content::RenderViewHost::FilterURL(
-      web_contents()->GetRenderProcessHost(), true, &popup_url);
+      web_contents()->GetRenderProcessHost(), false, &popup_url);
   chrome::NavigateParams nav_params(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
       popup_url,
