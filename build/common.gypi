@@ -923,9 +923,6 @@
     # to ~/.gyp/include.gypi, gclient runhooks --force, and do a release build.
     'win_use_allocator_shim%': 1, # 1 = shim allocator via libcmt; 0 = msvcrt
 
-    # Whether usage of OpenMAX is enabled.
-    'enable_openmax%': 0,
-
     # Whether proprietary audio/video codecs are assumed to be included with
     # this build (only meaningful if branding!=Chrome).
     'proprietary_codecs%': 0,
