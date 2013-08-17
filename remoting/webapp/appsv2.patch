@@ -52,7 +52,7 @@ index d1f8d1f..67bf660 100644
 -    { "path": "remoting_host_plugin.plugin", "public": false }
 -  ],
 +  "oauth2": {
-+    "client_id": "45833509441-oqgdhgddn085c7cq9djknefjo0tedtua.apps.googleusercontent.com",
++    "client_id": "REMOTING_IDENTITY_API_CLIENT_ID",
 +    "scopes": [
 +      "https://www.googleapis.com/auth/chromoting https://www.googleapis.com/auth/googletalk https://www.googleapis.com/auth/userinfo#email"
 +    ]

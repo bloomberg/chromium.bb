@@ -279,6 +279,7 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   # For overriding the client ID/secret via env vars, see google_api_keys.py.
   apiClientId = google_api_keys.GetClientID('REMOTING')
   apiClientSecret = google_api_keys.GetClientSecret('REMOTING')
+  apiClientIdV2 = google_api_keys.GetClientID('REMOTING_IDENTITY_API')
 
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_ID'",
@@ -286,6 +287,9 @@ def buildWebApp(buildtype, version, mimetype, destination, zip_path, plugin,
   findAndReplace(os.path.join(destination, 'plugin_settings.js'),
                  "'API_CLIENT_SECRET'",
                  "'" + apiClientSecret + "'")
+  findAndReplace(os.path.join(destination, 'manifest.json'),
+                 '"REMOTING_IDENTITY_API_CLIENT_ID"',
+                 '"' + apiClientIdV2 + '"')
 
   # Use a consistent extension id for unofficial builds.
   if buildtype != 'Official':
