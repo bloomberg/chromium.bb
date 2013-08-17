@@ -203,6 +203,13 @@ const OncFieldSignature wifi_with_state_fields[] = {
   { NULL }
 };
 
+const OncFieldSignature cellular_provider_fields[] = {
+  { cellular_provider::kCode, &kStringSignature },
+  { cellular_provider::kCountry, &kStringSignature },
+  { cellular_provider::kName, &kStringSignature },
+  { NULL }
+};
+
 const OncFieldSignature cellular_with_state_fields[] = {
   { kRecommended, &kRecommendedSignature },
   { cellular::kActivateOverNonCellularNetwork, &kBoolSignature },
@@ -215,7 +222,7 @@ const OncFieldSignature cellular_with_state_fields[] = {
   { cellular::kFirmwareRevision, &kStringSignature },
   { cellular::kFoundNetworks, &kStringSignature },
   { cellular::kHardwareRevision, &kStringSignature },
-  { cellular::kHomeProvider, &kStringSignature },
+  { cellular::kHomeProvider, &kCellularProviderSignature },
   { cellular::kICCID, &kStringSignature },
   { cellular::kIMEI, &kStringSignature },
   { cellular::kIMSI, &kStringSignature },
@@ -225,13 +232,11 @@ const OncFieldSignature cellular_with_state_fields[] = {
   { cellular::kMIN, &kStringSignature },
   { cellular::kModelID, &kStringSignature },
   { cellular::kNetworkTechnology, &kStringSignature },
-  { cellular::kOperatorCode, &kStringSignature },
-  { cellular::kOperatorName, &kStringSignature },
   { cellular::kPRLVersion, &kStringSignature },
   { cellular::kProviderRequiresRoaming, &kStringSignature },
   { cellular::kRoamingState, &kStringSignature },
   { cellular::kSelectedNetwork, &kStringSignature },
-  { cellular::kServingOperator, &kStringSignature },
+  { cellular::kServingOperator, &kCellularProviderSignature },
   { cellular::kSIMLockStatus, &kStringSignature },
   { cellular::kSIMPresent, &kStringSignature },
   { cellular::kSupportedCarriers, &kStringSignature },
@@ -361,6 +366,9 @@ const OncValueSignature kWiFiWithStateSignature = {
 };
 const OncValueSignature kCellularWithStateSignature = {
   Value::TYPE_DICTIONARY, cellular_with_state_fields, NULL
+};
+const OncValueSignature kCellularProviderSignature = {
+  Value::TYPE_DICTIONARY, cellular_provider_fields, NULL
 };
 
 const OncFieldSignature* GetFieldSignature(const OncValueSignature& signature,

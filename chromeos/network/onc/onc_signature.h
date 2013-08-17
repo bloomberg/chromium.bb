@@ -60,6 +60,7 @@ CHROMEOS_EXPORT extern const OncValueSignature kToplevelConfigurationSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kNetworkWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kWiFiWithStateSignature;
 CHROMEOS_EXPORT extern const OncValueSignature kCellularWithStateSignature;
+CHROMEOS_EXPORT extern const OncValueSignature kCellularProviderSignature;
 
 }  // namespace onc
 }  // namespace chromeos

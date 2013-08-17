@@ -94,7 +94,9 @@ INSTANTIATE_TEST_CASE_P(
         std::make_pair("shill_openvpn_with_errors.json",
                        "translation_of_shill_openvpn_with_errors.onc"),
         std::make_pair("shill_wifi_with_state.json",
-                       "translation_of_shill_wifi_with_state.onc")));
+                       "translation_of_shill_wifi_with_state.onc"),
+        std::make_pair("shill_cellular_with_state.json",
+                       "translation_of_shill_cellular_with_state.onc")));
 
 }  // namespace onc
 }  // namespace chromeos

@@ -61,9 +61,16 @@ class ShillToONCTranslator {
   void TranslateOpenVPN();
   void TranslateVPN();
   void TranslateWiFiWithState();
+  void TranslateCellularWithState();
   void TranslateNetworkWithState();
 
-  // Creates an ONC object from |shill_dictionary| according to the signature
+  // Creates an ONC object from |dictionary| according to the signature
+  // associated to |onc_field_name| and adds it to |onc_object_| at
+  // |onc_field_name|.
+  void TranslateAndAddNestedObject(const std::string& onc_field_name,
+                                   const base::DictionaryValue& dictionary);
+
+  // Creates an ONC object from |shill_dictionary_| according to the signature
   // associated to |onc_field_name| and adds it to |onc_object_| at
   // |onc_field_name|.
   void TranslateAndAddNestedObject(const std::string& onc_field_name);
@@ -108,6 +115,8 @@ ShillToONCTranslator::CreateTranslatedONCObject() {
     TranslateOpenVPN();
   } else if (onc_signature_ == &kWiFiWithStateSignature) {
     TranslateWiFiWithState();
+  } else if (onc_signature_ == &kCellularWithStateSignature) {
+    TranslateCellularWithState();
   } else {
     CopyPropertiesAccordingToSignature();
   }
@@ -196,17 +205,13 @@ void ShillToONCTranslator::TranslateWiFiWithState() {
   CopyPropertiesAccordingToSignature();
 }
 
-void ShillToONCTranslator::TranslateAndAddNestedObject(
-    const std::string& onc_field_name) {
-  const OncFieldSignature* field_signature =
-      GetFieldSignature(*onc_signature_, onc_field_name);
-  ShillToONCTranslator nested_translator(*shill_dictionary_,
-                                         *field_signature->value_signature);
-  scoped_ptr<base::DictionaryValue> nested_object =
-      nested_translator.CreateTranslatedONCObject();
-  if (nested_object->empty())
-    return;
-  onc_object_->SetWithoutPathExpansion(onc_field_name, nested_object.release());
+void ShillToONCTranslator::TranslateCellularWithState() {
+  CopyPropertiesAccordingToSignature();
+  const base::DictionaryValue* serving_operator = NULL;
+  if (shill_dictionary_->GetDictionaryWithoutPathExpansion(
+        flimflam::kServingOperatorProperty, &serving_operator)) {
+    TranslateAndAddNestedObject(cellular::kServingOperator, *serving_operator);
+  }
 }
 
 void ShillToONCTranslator::TranslateNetworkWithState() {
@@ -239,6 +244,25 @@ void ShillToONCTranslator::TranslateNetworkWithState() {
     onc_object_->SetStringWithoutPathExpansion(network_config::kConnectionState,
                                                onc_state);
   }
+}
+
+void ShillToONCTranslator::TranslateAndAddNestedObject(
+    const std::string& onc_field_name) {
+  TranslateAndAddNestedObject(onc_field_name, *shill_dictionary_);
+}
+
+void ShillToONCTranslator::TranslateAndAddNestedObject(
+    const std::string& onc_field_name,
+    const base::DictionaryValue& dictionary) {
+  const OncFieldSignature* field_signature =
+      GetFieldSignature(*onc_signature_, onc_field_name);
+  ShillToONCTranslator nested_translator(dictionary,
+                                         *field_signature->value_signature);
+  scoped_ptr<base::DictionaryValue> nested_object =
+      nested_translator.CreateTranslatedONCObject();
+  if (nested_object->empty())
+    return;
+  onc_object_->SetWithoutPathExpansion(onc_field_name, nested_object.release());
 }
 
 void ShillToONCTranslator::CopyPropertiesAccordingToSignature() {

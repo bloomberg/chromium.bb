@@ -1,0 +1,11 @@
+{
+  "Type": "cellular",
+  "Name": "Test Network",
+  "Cellular.ActivateOverNonCellularNetwork": false,
+  "Cellular.ActivationState": "activated",
+  "Cellular.ServingOperator": {
+    "code": "test-code",
+    "country": "test-country",
+    "name" : "test-name"
+  }
+}

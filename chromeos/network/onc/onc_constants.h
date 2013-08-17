@@ -100,8 +100,6 @@ CHROMEOS_EXPORT extern const char kMEID[];
 CHROMEOS_EXPORT extern const char kMIN[];
 CHROMEOS_EXPORT extern const char kModelID[];
 CHROMEOS_EXPORT extern const char kNetworkTechnology[];
-CHROMEOS_EXPORT extern const char kOperatorCode[];
-CHROMEOS_EXPORT extern const char kOperatorName[];
 CHROMEOS_EXPORT extern const char kPRLVersion[];
 CHROMEOS_EXPORT extern const char kProviderRequiresRoaming[];
 CHROMEOS_EXPORT extern const char kRoamingState[];
@@ -112,6 +110,12 @@ CHROMEOS_EXPORT extern const char kSIMPresent[];
 CHROMEOS_EXPORT extern const char kSupportedCarriers[];
 CHROMEOS_EXPORT extern const char kSupportNetworkScan[];
 }  // namespace cellular
+
+namespace cellular_provider {
+CHROMEOS_EXPORT extern const char kCode[];
+CHROMEOS_EXPORT extern const char kCountry[];
+CHROMEOS_EXPORT extern const char kName[];
+}  // namespace cellular_provider
 
 namespace connection_state {
 CHROMEOS_EXPORT extern const char kConnected[];

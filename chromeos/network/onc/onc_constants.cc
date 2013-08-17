@@ -91,6 +91,12 @@ const char kSupportedCarriers[] = "SupportedCarriers";
 const char kSupportNetworkScan[] = "SupportNetworkScan";
 }  // namespace cellular
 
+namespace cellular_provider {
+const char kCode[] = "Code";
+const char kCountry[] = "Country";
+const char kName[] = "Name";
+}  // namespace cellular_provider
+
 namespace connection_state {
 const char kConnected[] = "Connected";
 const char kConnecting[] = "Connecting";

@@ -110,6 +110,13 @@ const FieldTranslationEntry wifi_fields[] = {
   { NULL }
 };
 
+const FieldTranslationEntry cellular_provider_fields[] = {
+  { cellular_provider::kCode, flimflam::kOperatorCodeKey },
+  { cellular_provider::kCountry, flimflam::kOperatorCountryKey },
+  { cellular_provider::kName, flimflam::kOperatorNameKey },
+  { NULL }
+};
+
 const FieldTranslationEntry cellular_with_state_fields[] = {
   { cellular::kActivateOverNonCellularNetwork,
     shill::kActivateOverNonCellularNetworkProperty },
@@ -132,8 +139,6 @@ const FieldTranslationEntry cellular_with_state_fields[] = {
   { cellular::kMIN, flimflam::kMinProperty },
   { cellular::kModelID, flimflam::kModelIDProperty },
   { cellular::kNetworkTechnology, flimflam::kNetworkTechnologyProperty },
-  { cellular::kOperatorCode, flimflam::kOperatorCodeProperty },
-  { cellular::kOperatorName, flimflam::kOperatorNameProperty },
   { cellular::kPRLVersion, flimflam::kPRLVersionProperty },
   { cellular::kProviderRequiresRoaming,
     shill::kProviderRequiresRoamingProperty },
@@ -170,6 +175,7 @@ const OncValueTranslationEntry onc_value_translation_table[] = {
   { &kVPNSignature, vpn_fields },
   { &kWiFiSignature, wifi_fields },
   { &kWiFiWithStateSignature, wifi_fields },
+  { &kCellularProviderSignature, cellular_provider_fields },
   { &kCellularWithStateSignature, cellular_with_state_fields },
   { &kNetworkWithStateSignature, network_fields },
   { &kNetworkConfigurationSignature, network_fields },
