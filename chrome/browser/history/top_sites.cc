@@ -4,10 +4,8 @@
 
 #include "chrome/browser/history/top_sites.h"
 
-#include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/history/top_sites_impl.h"
-#include "chrome/browser/history/top_sites_likely_impl.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -34,12 +32,6 @@ const TopSites::PrepopulatedPage kPrepopulatedPages[] = {
 
 // static
 TopSites* TopSites::Create(Profile* profile, const base::FilePath& db_name) {
-  if (base::FieldTrialList::FindFullName("MostLikely") == "Likely_Client") {
-    // Experimental group. Enabled through a command-line flag.
-    TopSitesLikelyImpl* top_sites_likely_impl = new TopSitesLikelyImpl(profile);
-    top_sites_likely_impl->Init(db_name);
-    return top_sites_likely_impl;
-  }
   TopSitesImpl* top_sites_impl = new TopSitesImpl(profile);
   top_sites_impl->Init(db_name);
   return top_sites_impl;
