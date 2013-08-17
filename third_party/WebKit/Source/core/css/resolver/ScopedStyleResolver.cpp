@@ -35,7 +35,6 @@
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/StyleResolver.h" // For MatchRequest.
 #include "core/dom/Document.h"
-#include "core/dom/shadow/ContentDistributor.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"

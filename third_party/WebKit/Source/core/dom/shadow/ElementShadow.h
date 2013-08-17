@@ -27,27 +27,24 @@
 #ifndef ElementShadow_h
 #define ElementShadow_h
 
-#include "core/dom/shadow/ContentDistributor.h"
+#include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "wtf/DoublyLinkedList.h"
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
+class InsertionPoint;
+
 class ElementShadow {
     WTF_MAKE_NONCOPYABLE(ElementShadow); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ElementShadow> create()
-    {
-        return adoptPtr(new ElementShadow());
-    }
-
-    ~ElementShadow()
-    {
-        removeAllShadowRoots();
-    }
+    static PassOwnPtr<ElementShadow> create();
+    ~ElementShadow();
 
     Element* host() const;
     ShadowRoot* youngestShadowRoot() const { return m_shadowRoots.head(); }
@@ -55,47 +52,47 @@ public:
     ElementShadow* containingShadow() const;
 
     ShadowRoot* addShadowRoot(Element* shadowHost, ShadowRoot::ShadowRootType);
+
     bool applyAuthorStyles() const { return m_applyAuthorStyles; }
+    bool didAffectApplyAuthorStyles();
+    bool containsActiveStyles() const;
 
     void attach(const Node::AttachContext&);
     void detach(const Node::AttachContext&);
 
     void removeAllEventListeners();
 
-    void didAffectSelector(AffectedSelectorMask mask) { m_distributor.didAffectSelector(host(), mask); }
-    void willAffectSelector() { m_distributor.willAffectSelector(host()); }
-    const SelectRuleFeatureSet& ensureSelectFeatureSet() { return m_distributor.ensureSelectFeatureSet(this); }
+    void didAffectSelector(AffectedSelectorMask);
+    void willAffectSelector();
+    const SelectRuleFeatureSet& ensureSelectFeatureSet();
 
-    // FIXME: Move all callers of this to APIs on ElementShadow and remove it.
-    ContentDistributor& distributor() { return m_distributor; }
-    const ContentDistributor& distributor() const { return m_distributor; }
-
-    void distributeIfNeeded()
-    {
-        if (m_needsDistributionRecalc)
-            m_distributor.distribute(host());
-        m_needsDistributionRecalc = false;
-    }
-    void clearDistribution() { m_distributor.clearDistribution(host()); }
-
+    void distributeIfNeeded();
     void setNeedsDistributionRecalc();
 
-    bool didAffectApplyAuthorStyles();
-    bool containsActiveStyles() const;
+    InsertionPoint* findInsertionPointFor(const Node*) const;
 
 private:
-    ElementShadow()
-        : m_needsDistributionRecalc(false)
-        , m_applyAuthorStyles(false)
-    { }
+    ElementShadow();
 
     void removeAllShadowRoots();
     bool resolveApplyAuthorStyles() const;
 
+    void distribute();
+    void clearDistribution();
+    void populate(Node*, Vector<Node*>&);
+    void collectSelectFeatureSetFrom(ShadowRoot*);
+    void distributeSelectionsTo(InsertionPoint*, const Vector<Node*>& pool, Vector<bool>& distributed);
+    void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
+
+    bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
+    void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
+
+    HashMap<const Node*, RefPtr<InsertionPoint> > m_nodeToInsertionPoint;
+    SelectRuleFeatureSet m_selectFeatures;
     DoublyLinkedList<ShadowRoot> m_shadowRoots;
-    ContentDistributor m_distributor;
     bool m_needsDistributionRecalc;
     bool m_applyAuthorStyles;
+    bool m_needsSelectFeatureSet;
 };
 
 inline Element* ElementShadow::host() const
@@ -120,14 +117,12 @@ inline ElementShadow* ElementShadow::containingShadow() const
     return 0;
 }
 
-class ShadowRootVector : public Vector<RefPtr<ShadowRoot> > {
-public:
-    explicit ShadowRootVector(ElementShadow* tree)
-    {
-        for (ShadowRoot* root = tree->youngestShadowRoot(); root; root = root->olderShadowRoot())
-            append(root);
-    }
-};
+inline void ElementShadow::distributeIfNeeded()
+{
+    if (m_needsDistributionRecalc)
+        distribute();
+    m_needsDistributionRecalc = false;
+}
 
 inline ElementShadow* shadowOfParent(const Node* node)
 {
@@ -138,7 +133,6 @@ inline ElementShadow* shadowOfParent(const Node* node)
             return toElement(parent)->shadow();
     return 0;
 }
-
 
 } // namespace
 

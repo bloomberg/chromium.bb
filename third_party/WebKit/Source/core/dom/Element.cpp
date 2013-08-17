@@ -1053,7 +1053,7 @@ void Element::classAttributeChanged(const AtomicString& newClassString)
 bool Element::shouldInvalidateDistributionWhenAttributeChanged(ElementShadow* elementShadow, const QualifiedName& name, const AtomicString& newValue)
 {
     ASSERT(elementShadow);
-    const SelectRuleFeatureSet& featureSet = elementShadow->distributor().ensureSelectFeatureSet(elementShadow);
+    const SelectRuleFeatureSet& featureSet = elementShadow->ensureSelectFeatureSet();
 
     if (isIdAttributeName(name)) {
         AtomicString oldId = elementData()->idForStyleResolution();

@@ -29,7 +29,6 @@
 #include "core/dom/shadow/ComposedShadowTreeWalker.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/shadow/ContentDistributor.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 

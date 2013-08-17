@@ -35,6 +35,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ScopeContentDistribution.h"
 #include "core/dom/shadow/ShadowRoot.h"
 
 namespace WebCore {
@@ -250,7 +251,7 @@ InsertionPoint* resolveReprojection(const Node* projectedNode)
 
     while (current) {
         if (ElementShadow* shadow = shadowOfParentForDistribution(current)) {
-            if (InsertionPoint* insertedTo = shadow->distributor().findInsertionPointFor(projectedNode)) {
+            if (InsertionPoint* insertedTo = shadow->findInsertionPointFor(projectedNode)) {
                 current = insertedTo;
                 insertionPoint = insertedTo;
                 continue;
@@ -276,7 +277,7 @@ void collectInsertionPointsWhereNodeIsDistributed(const Node* node, Vector<Inser
     const Node* current = node;
     while (true) {
         if (ElementShadow* shadow = shadowOfParentForDistribution(current)) {
-            if (InsertionPoint* insertedTo = shadow->distributor().findInsertionPointFor(node)) {
+            if (InsertionPoint* insertedTo = shadow->findInsertionPointFor(node)) {
                 current = insertedTo;
                 results.append(insertedTo);
                 continue;

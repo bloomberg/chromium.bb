@@ -32,8 +32,7 @@
 #define InsertionPoint_h
 
 #include "core/css/CSSSelectorList.h"
-#include "core/dom/shadow/ContentDistributor.h"
-#include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ContentDistribution.h"
 #include "core/html/HTMLElement.h"
 #include "wtf/Forward.h"
 

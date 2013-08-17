@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,47 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ContentDistributor_h
-#define ContentDistributor_h
+#ifndef ScopeContentDistribution_h
+#define ScopeContentDistribution_h
 
-#include "core/dom/shadow/SelectRuleFeatureSet.h"
 #include "wtf/Forward.h"
-#include "wtf/HashMap.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
-class ContainerNode;
-class Element;
 class InsertionPoint;
-class Node;
 class ShadowRoot;
-
-class ContentDistribution {
-public:
-    PassRefPtr<Node> first() const { return m_nodes.first(); }
-    PassRefPtr<Node> last() const { return m_nodes.last(); }
-    PassRefPtr<Node> at(size_t index) const { return m_nodes.at(index); }
-
-    size_t size() const { return m_nodes.size(); }
-    bool isEmpty() const { return m_nodes.isEmpty(); }
-
-    void append(PassRefPtr<Node>);
-    void clear() { m_nodes.clear(); m_indices.clear(); }
-
-    bool contains(const Node* node) const { return m_indices.contains(node); }
-    size_t find(const Node*) const;
-    Node* nextTo(const Node*) const;
-    Node* previousTo(const Node*) const;
-
-    void swap(ContentDistribution& other);
-
-    const Vector<RefPtr<Node> >& nodes() const { return m_nodes; }
-
-private:
-    Vector<RefPtr<Node> > m_nodes;
-    HashMap<const Node*, size_t> m_indices;
-};
 
 class ScopeContentDistribution {
 public:
@@ -99,37 +68,6 @@ private:
     Vector<RefPtr<InsertionPoint> > m_insertionPointList;
 };
 
-class ContentDistributor {
-    WTF_MAKE_NONCOPYABLE(ContentDistributor);
-public:
-    ContentDistributor();
-    ~ContentDistributor();
-
-    InsertionPoint* findInsertionPointFor(const Node* key) const;
-    const SelectRuleFeatureSet& ensureSelectFeatureSet(ElementShadow*);
-
-    void distributeSelectionsTo(InsertionPoint*, const Vector<Node*>& pool, Vector<bool>& distributed);
-    void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
-
-    void didAffectSelector(Element* host, AffectedSelectorMask);
-    void willAffectSelector(Element* host);
-
-    void distribute(Element* host);
-    void clearDistribution(Element* host);
-
-private:
-    void populate(Node*, Vector<Node*>&);
-
-    void collectSelectFeatureSetFrom(ShadowRoot*);
-    bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }
-    void setNeedsSelectFeatureSet() { m_needsSelectFeatureSet = true; }
-
-    typedef HashMap<const Node*, RefPtr<InsertionPoint> > NodeInsertionPointMap;
-    NodeInsertionPointMap m_nodeToInsertionPoint;
-    SelectRuleFeatureSet m_selectFeatures;
-    bool m_needsSelectFeatureSet;
-};
-
-}
+} // namespace WebCore
 
 #endif

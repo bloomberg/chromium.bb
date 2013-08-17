@@ -28,8 +28,32 @@
 #include "core/dom/shadow/ElementShadow.h"
 
 #include "core/dom/ContainerNodeAlgorithms.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/shadow/ContentDistribution.h"
+#include "core/dom/shadow/InsertionPoint.h"
+#include "core/dom/shadow/ScopeContentDistribution.h"
+#include "core/dom/shadow/ShadowRoot.h"
+#include "core/html/shadow/HTMLContentElement.h"
+#include "core/html/shadow/HTMLShadowElement.h"
 
 namespace WebCore {
+
+PassOwnPtr<ElementShadow> ElementShadow::create()
+{
+    return adoptPtr(new ElementShadow());
+}
+
+ElementShadow::ElementShadow()
+    : m_needsDistributionRecalc(false)
+    , m_applyAuthorStyles(false)
+    , m_needsSelectFeatureSet(false)
+{
+}
+
+ElementShadow::~ElementShadow()
+{
+    removeAllShadowRoots();
+}
 
 ShadowRoot* ElementShadow::addShadowRoot(Element* shadowHost, ShadowRoot::ShadowRootType type)
 {
@@ -144,6 +168,193 @@ bool ElementShadow::resolveApplyAuthorStyles() const
             break;
     }
     return false;
+}
+
+InsertionPoint* ElementShadow::findInsertionPointFor(const Node* key) const
+{
+    return m_nodeToInsertionPoint.get(key);
+}
+
+void ElementShadow::populate(Node* node, Vector<Node*>& pool)
+{
+    if (!isActiveInsertionPoint(node)) {
+        pool.append(node);
+        return;
+    }
+
+    InsertionPoint* insertionPoint = toInsertionPoint(node);
+    if (insertionPoint->hasDistribution()) {
+        for (size_t i = 0; i < insertionPoint->size(); ++i)
+            populate(insertionPoint->at(i), pool);
+    } else {
+        for (Node* fallbackNode = insertionPoint->firstChild(); fallbackNode; fallbackNode = fallbackNode->nextSibling())
+            pool.append(fallbackNode);
+    }
+}
+
+void ElementShadow::distribute()
+{
+    Vector<Node*> pool;
+    for (Node* node = host()->firstChild(); node; node = node->nextSibling())
+        populate(node, pool);
+
+    host()->setNeedsStyleRecalc();
+
+    Vector<bool> distributed(pool.size());
+    distributed.fill(false);
+
+    Vector<HTMLShadowElement*, 8> activeShadowInsertionPoints;
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        HTMLShadowElement* firstActiveShadowInsertionPoint = 0;
+
+        if (ScopeContentDistribution* scope = root->scopeDistribution()) {
+            const Vector<RefPtr<InsertionPoint> >& insertionPoints = scope->ensureInsertionPointList(root);
+            for (size_t i = 0; i < insertionPoints.size(); ++i) {
+                InsertionPoint* point = insertionPoints[i].get();
+                if (!point->isActive())
+                    continue;
+
+                if (isHTMLShadowElement(point)) {
+                    if (!firstActiveShadowInsertionPoint)
+                        firstActiveShadowInsertionPoint = toHTMLShadowElement(point);
+                } else {
+                    distributeSelectionsTo(point, pool, distributed);
+                    if (ElementShadow* shadow = shadowOfParentForDistribution(point))
+                        shadow->setNeedsDistributionRecalc();
+                }
+            }
+        }
+
+        if (firstActiveShadowInsertionPoint)
+            activeShadowInsertionPoints.append(firstActiveShadowInsertionPoint);
+    }
+
+    for (size_t i = activeShadowInsertionPoints.size(); i > 0; --i) {
+        HTMLShadowElement* shadowElement = activeShadowInsertionPoints[i - 1];
+        ShadowRoot* root = shadowElement->containingShadowRoot();
+        ASSERT(root);
+        if (!shadowElement->shouldSelect()) {
+            if (root->olderShadowRoot())
+                root->olderShadowRoot()->ensureScopeDistribution()->setInsertionPointAssignedTo(shadowElement);
+        } else if (root->olderShadowRoot()) {
+            distributeNodeChildrenTo(shadowElement, root->olderShadowRoot());
+            root->olderShadowRoot()->ensureScopeDistribution()->setInsertionPointAssignedTo(shadowElement);
+        } else {
+            distributeSelectionsTo(shadowElement, pool, distributed);
+        }
+        if (ElementShadow* shadow = shadowOfParentForDistribution(shadowElement))
+            shadow->setNeedsDistributionRecalc();
+    }
+
+    // Detach all nodes that were not distributed and have a renderer.
+    for (size_t i = 0; i < pool.size(); ++i) {
+        if (distributed[i])
+            continue;
+        if (pool[i]->renderer())
+            pool[i]->lazyReattachIfAttached();
+    }
+}
+
+void ElementShadow::distributeSelectionsTo(InsertionPoint* insertionPoint, const Vector<Node*>& pool, Vector<bool>& distributed)
+{
+    ContentDistribution distribution;
+
+    for (size_t i = 0; i < pool.size(); ++i) {
+        if (distributed[i])
+            continue;
+
+        if (isHTMLContentElement(insertionPoint) && !toHTMLContentElement(insertionPoint)->canSelectNode(pool, i))
+            continue;
+
+        Node* child = pool[i];
+        distribution.append(child);
+        m_nodeToInsertionPoint.add(child, insertionPoint);
+        distributed[i] = true;
+    }
+
+    insertionPoint->setDistribution(distribution);
+}
+
+void ElementShadow::distributeNodeChildrenTo(InsertionPoint* insertionPoint, ContainerNode* containerNode)
+{
+    ContentDistribution distribution;
+    for (Node* node = containerNode->firstChild(); node; node = node->nextSibling()) {
+        if (isActiveInsertionPoint(node)) {
+            InsertionPoint* innerInsertionPoint = toInsertionPoint(node);
+            if (innerInsertionPoint->hasDistribution()) {
+                for (size_t i = 0; i < innerInsertionPoint->size(); ++i) {
+                    distribution.append(innerInsertionPoint->at(i));
+                    m_nodeToInsertionPoint.add(innerInsertionPoint->at(i), insertionPoint);
+                }
+            } else {
+                for (Node* child = innerInsertionPoint->firstChild(); child; child = child->nextSibling()) {
+                    distribution.append(child);
+                    m_nodeToInsertionPoint.add(child, insertionPoint);
+                }
+            }
+        } else {
+            distribution.append(node);
+            m_nodeToInsertionPoint.add(node, insertionPoint);
+        }
+    }
+
+    insertionPoint->setDistribution(distribution);
+}
+
+const SelectRuleFeatureSet& ElementShadow::ensureSelectFeatureSet()
+{
+    if (!m_needsSelectFeatureSet)
+        return m_selectFeatures;
+
+    m_selectFeatures.clear();
+    for (ShadowRoot* root = oldestShadowRoot(); root; root = root->youngerShadowRoot())
+        collectSelectFeatureSetFrom(root);
+    m_needsSelectFeatureSet = false;
+    return m_selectFeatures;
+}
+
+void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot* root)
+{
+    if (!root->containsShadowRoots() && !root->containsContentElements())
+        return;
+
+    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element, root)) {
+        if (ElementShadow* shadow = element->shadow())
+            m_selectFeatures.add(shadow->ensureSelectFeatureSet());
+        if (!isHTMLContentElement(element))
+            continue;
+        const CSSSelectorList& list = toHTMLContentElement(element)->selectorList();
+        for (const CSSSelector* selector = list.first(); selector; selector = CSSSelectorList::next(selector)) {
+            for (const CSSSelector* component = selector; component; component = component->tagHistory())
+                m_selectFeatures.collectFeaturesFromSelector(component);
+        }
+    }
+}
+
+void ElementShadow::didAffectSelector(AffectedSelectorMask mask)
+{
+    if (ensureSelectFeatureSet().hasSelectorFor(mask))
+        setNeedsDistributionRecalc();
+}
+
+void ElementShadow::willAffectSelector()
+{
+    for (ElementShadow* shadow = this; shadow; shadow = shadow->containingShadow()) {
+        if (shadow->needsSelectFeatureSet())
+            break;
+        shadow->setNeedsSelectFeatureSet();
+    }
+    setNeedsDistributionRecalc();
+}
+
+void ElementShadow::clearDistribution()
+{
+    m_nodeToInsertionPoint.clear();
+
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
+        if (ScopeContentDistribution* scope = root->scopeDistribution())
+            scope->setInsertionPointAssignedTo(0);
+    }
 }
 
 } // namespace

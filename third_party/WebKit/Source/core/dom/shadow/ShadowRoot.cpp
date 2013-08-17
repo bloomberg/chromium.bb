@@ -31,9 +31,9 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ContentDistributor.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
+#include "core/dom/shadow/ScopeContentDistribution.h"
 #include "core/editing/markup.h"
 #include "core/platform/HistogramSupport.h"
 

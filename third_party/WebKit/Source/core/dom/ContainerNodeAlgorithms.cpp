@@ -28,9 +28,19 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/shadow/ElementShadow.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 
 namespace WebCore {
+
+class ShadowRootVector : public Vector<RefPtr<ShadowRoot> > {
+public:
+    explicit ShadowRootVector(ElementShadow* tree)
+    {
+        for (ShadowRoot* root = tree->youngestShadowRoot(); root; root = root->olderShadowRoot())
+            append(root);
+    }
+};
 
 void ChildNodeInsertionNotifier::notifyDescendantInsertedIntoDocument(ContainerNode* node)
 {
