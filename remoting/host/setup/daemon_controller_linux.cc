@@ -36,8 +36,10 @@ namespace {
 const char kDaemonScript[] =
     "/opt/google/chrome-remote-desktop/chrome-remote-desktop";
 
-// Timeout for running daemon script.
-const int64 kDaemonTimeoutMs = 5000;
+// Timeout for running daemon script. The script itself sets a timeout when
+// waiting for the host to come online, so the setting here should be at least
+// as long.
+const int64 kDaemonTimeoutMs = 60000;
 
 // Timeout for commands that require password prompt - 5 minutes.
 const int64 kSudoTimeoutSeconds = 5 * 60;
