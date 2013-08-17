@@ -24,10 +24,7 @@ int GetCurrentRlzWeek() {
   return delta.InDays() / 7;
 }
 
-}  // namespace
-
-bool SetReactivationExperimentLabels(const wchar_t* brand_code,
-                                     int shell_mode) {
+bool SetLabel(const wchar_t* brand_code, const wchar_t* label, int shell_mode) {
   if (!brand_code) {
     return false;
   }
@@ -38,7 +35,8 @@ bool SetReactivationExperimentLabels(const wchar_t* brand_code,
 
   string16 experiment_labels;
   base::SStringPrintf(&experiment_labels,
-                      L"reacbrand=%ls_%d|%ls",
+                      L"%ls=%ls_%d|%ls",
+                      label,
                       brand_code,
                       week_number,
                       installer::BuildExperimentDateString().c_str());
@@ -46,4 +44,15 @@ bool SetReactivationExperimentLabels(const wchar_t* brand_code,
   return GoogleUpdateSettings::SetExperimentLabels(
       shell_mode == GCAPI_INVOKED_UAC_ELEVATION,
       experiment_labels);
+}
+
+}  // namespace
+
+bool SetReactivationExperimentLabels(const wchar_t* brand_code,
+                                     int shell_mode) {
+  return SetLabel(brand_code, L"reacbrand", shell_mode);
+}
+
+bool SetRelaunchExperimentLabels(const wchar_t* brand_code, int shell_mode) {
+  return SetLabel(brand_code, L"relaunchbrand", shell_mode);
 }

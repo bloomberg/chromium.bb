@@ -29,6 +29,7 @@
 #define RELAUNCH_ERROR_NOTDORMANT                (1 << 3)
 #define RELAUNCH_ERROR_ALREADY_RELAUNCHED        (1 << 4)
 #define RELAUNCH_ERROR_INVALID_INPUT             (1 << 5)
+#define RELAUNCH_ERROR_RELAUNCH_FAILED           (1 << 6)
 
 // Flags to indicate how GCAPI is invoked
 #define GCAPI_INVOKED_STANDARD_SHELL             (1 << 0)
@@ -117,7 +118,7 @@ BOOL __stdcall ReactivateChrome(wchar_t* brand_code,
                                 DWORD* error_code);
 
 // Returns true if a vendor may offer relaunch at this time. Returns false if
-// the vendor may not offer reactivation at this time, and places one of the
+// the vendor may not offer relaunching at this time, and places one of the
 // RELAUNCH_ERROR_XXX values in |error_code| if |error_code| is non-null. The
 // installed brandcode must be in |partner_brandcode_list|. |shell_mode| should
 // be set to one of GCAPI_INVOKED_STANDARD_SHELL or GCAPI_INVOKED_UAC_ELEVATION
@@ -127,6 +128,21 @@ BOOL __stdcall CanOfferRelaunch(const wchar_t** partner_brandcode_list,
                                 int partner_brandcode_list_length,
                                 int shell_mode,
                                 DWORD* error_code);
+
+// Returns true if a vendor may relaunch at this time (and stores that a
+// relaunch was offered). Returns false if the vendor may not relaunch
+// at this time, and places one of the RELAUNCH_ERROR_XXX values in |error_code|
+// if |error_code| is non-null. As for |CanOfferRelaunch|, the installed
+// brandcode must be in |partner_brandcode_list|. |shell_mode| should be set to
+// one of GCAPI_INVOKED_STANDARD_SHELL or GCAPI_INVOKED_UAC_ELEVATION depending
+// on whether this method is invoked from an elevated or non-elevated process.
+// The |relaunch_brandcode| will be stored as the brandcode that was used for
+// offering this relaunch.
+BOOL __stdcall SetRelaunchOffered(const wchar_t** partner_brandcode_list,
+                                  int partner_brandcode_list_length,
+                                  const wchar_t* relaunch_brandcode,
+                                  int shell_mode,
+                                  DWORD* error_code);
 
 // Function pointer type declarations to use with GetProcAddress.
 typedef BOOL (__stdcall *GCCC_CompatibilityCheck)(BOOL, int, DWORD *);
@@ -144,6 +160,11 @@ typedef BOOL (__stdcall *GCCC_CanOfferRelaunch)(const wchar_t**,
                                                 int,
                                                 int,
                                                 DWORD*);
+typedef BOOL (__stdcall *GCCC_SetRelaunchOffered)(const wchar_t**,
+                                                  int,
+                                                  const wchar_t*,
+                                                  int,
+                                                  DWORD*);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -76,6 +76,9 @@ const wchar_t kC1FSentKey[] =
     L"Software\\Google\\Common\\Rlz\\StatefulEvents\\C";
 const wchar_t kC1FKey[] = L"C1F";
 
+const wchar_t kRelaunchBrandcodeValue[] = L"RelaunchBrandcode";
+const wchar_t kRelaunchAllowedAfterValue[] = L"RelaunchAllowedAfter";
+
 // Prefix used to match the window class for Chrome windows.
 const wchar_t kChromeWindowClassPrefix[] = L"Chrome_WidgetWin_";
 
@@ -130,6 +133,22 @@ bool GetCompanyName(const wchar_t* filename, wchar_t* buffer, DWORD out_len) {
   return true;
 }
 
+// Offsets the current date by |months|. |months| must be between 0 and 12.
+// The returned date is in the YYYYMMDD format.
+DWORD FormatDateOffsetByMonths(int months) {
+  DCHECK(months >= 0 && months <= 12);
+
+  SYSTEMTIME now;
+  GetLocalTime(&now);
+  now.wMonth += months;
+  if (now.wMonth > 12) {
+    now.wMonth -= 12;
+    now.wYear += 1;
+  }
+
+  return now.wYear * 10000 + now.wMonth * 100 + now.wDay;
+}
+
 // Return true if we can re-offer Chrome; false, otherwise.
 // Each partner can only offer Chrome once every six months.
 bool CanReOfferChrome(BOOL set_flag) {
@@ -151,9 +170,7 @@ bool CanReOfferChrome(BOOL set_flag) {
       0, NULL, REG_OPTION_NON_VOLATILE, KEY_READ | KEY_WRITE,
       NULL, &key, &disposition) == ERROR_SUCCESS) {
     // Get today's date, and format it as YYYYMMDD numeric value.
-    SYSTEMTIME now;
-    GetLocalTime(&now);
-    DWORD today = now.wYear * 10000 + now.wMonth * 100 + now.wDay;
+    DWORD today = FormatDateOffsetByMonths(0);
 
     // Cannot re-offer, if the timer already exists and is not expired yet.
     DWORD value_type = REG_DWORD;
@@ -172,13 +189,7 @@ bool CanReOfferChrome(BOOL set_flag) {
       if (set_flag) {
         // Set expiration date for offer as six months from today,
         // represented as a YYYYMMDD numeric value.
-        SYSTEMTIME timer = now;
-        timer.wMonth = timer.wMonth + 6;
-        if (timer.wMonth > 12) {
-          timer.wMonth = timer.wMonth - 12;
-          timer.wYear = timer.wYear + 1;
-        }
-        DWORD value = timer.wYear * 10000 + timer.wMonth * 100 + timer.wDay;
+        DWORD value = FormatDateOffsetByMonths(6);
         ::RegSetValueEx(key, company, 0, REG_DWORD, (LPBYTE)&value,
                         sizeof(DWORD));
       }
@@ -733,9 +744,45 @@ BOOL __stdcall CanOfferRelaunch(const wchar_t** partner_brandcode_list,
   }
 
   // e) a minimum period (6 months) must have passed since the previous
-  // relaunch offer;
-  // TODO(macourteau): add this check once |SetRelaunchOffered| has been
-  // implemented. Return RELAUNCH_ERROR_ALREADY_RELAUNCHED on error.
+  // relaunch offer for the current user;
+  RegKey key;
+  DWORD min_relaunch_date;
+  if (key.Open(HKEY_CURRENT_USER, kChromeRegClientStateKey,
+               KEY_QUERY_VALUE) == ERROR_SUCCESS &&
+      key.ReadValueDW(kRelaunchAllowedAfterValue,
+                      &min_relaunch_date) == ERROR_SUCCESS &&
+      FormatDateOffsetByMonths(0) < min_relaunch_date) {
+    if (error_code)
+      *error_code = RELAUNCH_ERROR_ALREADY_RELAUNCHED;
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+BOOL __stdcall SetRelaunchOffered(const wchar_t** partner_brandcode_list,
+                                  int partner_brandcode_list_length,
+                                  const wchar_t* relaunch_brandcode,
+                                  int shell_mode,
+                                  DWORD* error_code) {
+  if (!CanOfferRelaunch(partner_brandcode_list, partner_brandcode_list_length,
+                        shell_mode, error_code))
+    return FALSE;
+
+  // Store the relaunched brand code and the minimum date for relaunch (6 months
+  // from now), and set the Omaha experiment label.
+  RegKey key;
+  if (key.Create(HKEY_CURRENT_USER, kChromeRegClientStateKey,
+                 KEY_SET_VALUE) != ERROR_SUCCESS ||
+      key.WriteValue(kRelaunchBrandcodeValue,
+                     relaunch_brandcode) != ERROR_SUCCESS ||
+      key.WriteValue(kRelaunchAllowedAfterValue,
+                     FormatDateOffsetByMonths(6)) != ERROR_SUCCESS ||
+      !SetRelaunchExperimentLabels(relaunch_brandcode, shell_mode)) {
+    if (error_code)
+      *error_code = RELAUNCH_ERROR_RELAUNCH_FAILED;
+    return FALSE;
+  }
 
   return TRUE;
 }

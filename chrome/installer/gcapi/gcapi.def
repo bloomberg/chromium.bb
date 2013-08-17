@@ -9,3 +9,4 @@ EXPORTS
   CanOfferReactivation
   ReactivateChrome
   CanOfferRelaunch
+  SetRelaunchOffered
