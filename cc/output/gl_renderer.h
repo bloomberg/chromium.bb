@@ -212,16 +212,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                       scoped_ptr<CopyOutputRequest> request,
                       bool success);
 
-  static void DeleteTextureReleaseCallback(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      base::WeakPtr<GLRenderer> gl_renderer,
-      unsigned texture_id,
-      unsigned sync_point,
-      bool lost_resource);
-  void DeleteTextureReleaseCallbackOnImplThread(unsigned texture_id,
-                                                unsigned sync_point,
-                                                bool lost_resource);
-
   void ReinitializeGrCanvas();
   void ReinitializeGLState();
 
@@ -458,8 +448,6 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   SkBitmap on_demand_tile_raster_bitmap_;
   ResourceProvider::ResourceId on_demand_tile_raster_resource_id_;
-
-  base::WeakPtrFactory<GLRenderer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
 };

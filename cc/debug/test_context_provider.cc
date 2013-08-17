@@ -175,6 +175,21 @@ void TestContextProvider::OnSwapBuffersComplete() {
     swap_buffers_complete_callback_.Run();
 }
 
+TestWebGraphicsContext3D* TestContextProvider::TestContext3d() {
+  DCHECK(context3d_);
+  DCHECK(bound_);
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_.get();
+}
+
+TestWebGraphicsContext3D* TestContextProvider::UnboundTestContext3d() {
+  DCHECK(context3d_);
+  DCHECK(context_thread_checker_.CalledOnValidThread());
+
+  return context3d_.get();
+}
+
 void TestContextProvider::SetMemoryAllocation(
     const ManagedMemoryPolicy& policy,
     bool discard_backbuffer_when_not_visible) {

@@ -40,7 +40,13 @@ class CC_EXPORT TestContextProvider
   virtual void SetMemoryPolicyChangedCallback(
       const MemoryPolicyChangedCallback& cb) OVERRIDE;
 
-  TestWebGraphicsContext3D* TestContext3d() { return context3d_.get(); }
+  TestWebGraphicsContext3D* TestContext3d();
+
+  // This returns the TestWebGraphicsContext3D but is valid to call
+  // before the context is bound to a thread. This is needed to set up
+  // state on the test context before binding. Don't call
+  // makeContextCurrent on the context returned from this method.
+  TestWebGraphicsContext3D* UnboundTestContext3d();
 
   void SetMemoryAllocation(const ManagedMemoryPolicy& policy,
                            bool discard_backbuffer_when_not_visible);

@@ -162,8 +162,7 @@ GLRenderer::GLRenderer(RendererClient* client,
       highp_threshold_min_(highp_threshold_min),
       highp_threshold_cache_(0),
       offscreen_context_labelled_(false),
-      on_demand_tile_raster_resource_id_(0),
-      weak_factory_(this) {
+      on_demand_tile_raster_resource_id_(0) {
   DCHECK(context_);
 }
 
@@ -2178,25 +2177,26 @@ void GLRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
                          AsyncGetFramebufferPixelsCleanupCallback());
 }
 
-void GLRenderer::DeleteTextureReleaseCallbackOnImplThread(unsigned texture_id,
-                                                          unsigned sync_point,
-                                                          bool lost_resource) {
+static void DeleteTextureReleaseCallbackOnImplThread(
+    const scoped_refptr<ContextProvider>& context_provider,
+    unsigned texture_id,
+    unsigned sync_point,
+    bool lost_resource) {
   if (sync_point)
-    context_->waitSyncPoint(sync_point);
-  context_->deleteTexture(texture_id);
+    context_provider->Context3d()->waitSyncPoint(sync_point);
+  context_provider->Context3d()->deleteTexture(texture_id);
 }
 
-// static
-void GLRenderer::DeleteTextureReleaseCallback(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    base::WeakPtr<GLRenderer> gl_renderer,
+static void DeleteTextureReleaseCallback(
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    const scoped_refptr<ContextProvider>& context_provider,
     unsigned texture_id,
     unsigned sync_point,
     bool lost_resource) {
   task_runner->PostTask(
       FROM_HERE,
-      base::Bind(&GLRenderer::DeleteTextureReleaseCallbackOnImplThread,
-                 gl_renderer,
+      base::Bind(&DeleteTextureReleaseCallbackOnImplThread,
+                 context_provider,
                  texture_id,
                  sync_point,
                  lost_resource));
@@ -2245,9 +2245,9 @@ void GLRenderer::GetFramebufferPixelsAsync(
     sync_point = context_->insertSyncPoint();
     scoped_ptr<TextureMailbox> texture_mailbox = make_scoped_ptr(
         new TextureMailbox(mailbox,
-                           base::Bind(&GLRenderer::DeleteTextureReleaseCallback,
+                           base::Bind(&DeleteTextureReleaseCallback,
                                       base::MessageLoopProxy::current(),
-                                      weak_factory_.GetWeakPtr(),
+                                      output_surface_->context_provider(),
                                       texture_id),
                            GL_TEXTURE_2D,
                            sync_point));

@@ -3037,6 +3037,144 @@ class LayerTreeHostTestAsyncTwoReadbacksWithoutDraw : public LayerTreeHostTest {
 SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
     LayerTreeHostTestAsyncTwoReadbacksWithoutDraw);
 
+class LayerTreeHostTestAsyncReadbackLostOutputSurface
+    : public LayerTreeHostTest {
+ protected:
+  virtual scoped_ptr<OutputSurface> CreateOutputSurface(bool fallback)
+      OVERRIDE {
+    if (!first_context_provider_.get()) {
+      first_context_provider_ = TestContextProvider::Create();
+      return FakeOutputSurface::Create3d(first_context_provider_)
+          .PassAs<OutputSurface>();
+    }
+
+    EXPECT_FALSE(second_context_provider_.get());
+    second_context_provider_ = TestContextProvider::Create();
+    return FakeOutputSurface::Create3d(second_context_provider_)
+        .PassAs<OutputSurface>();
+  }
+
+  virtual void SetupTree() OVERRIDE {
+    root_ = FakeContentLayer::Create(&client_);
+    root_->SetBounds(gfx::Size(20, 20));
+
+    copy_layer_ = FakeContentLayer::Create(&client_);
+    copy_layer_->SetBounds(gfx::Size(10, 10));
+    root_->AddChild(copy_layer_);
+
+    layer_tree_host()->SetRootLayer(root_);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  virtual void BeginTest() OVERRIDE { PostSetNeedsCommitToMainThread(); }
+
+  void CopyOutputCallback(scoped_ptr<CopyOutputResult> result) {
+    EXPECT_TRUE(layer_tree_host()->proxy()->IsMainThread());
+    EXPECT_EQ(gfx::Size(10, 10).ToString(), result->size().ToString());
+    EXPECT_TRUE(result->HasTexture());
+
+    // Save the result for later.
+    EXPECT_FALSE(result_);
+    result_ = result.Pass();
+
+    // Post a commit to lose the output surface.
+    layer_tree_host()->SetNeedsCommit();
+  }
+
+  virtual void DidCommitAndDrawFrame() OVERRIDE {
+    switch (layer_tree_host()->source_frame_number()) {
+      case 1:
+        // The layers have been pushed to the impl side. The layer textures have
+        // been allocated.
+
+        // Request a copy of the layer. This will use another texture.
+        copy_layer_->RequestCopyOfOutput(
+            CopyOutputRequest::CreateRequest(base::Bind(
+                &LayerTreeHostTestAsyncReadbackLostOutputSurface::
+                CopyOutputCallback,
+                base::Unretained(this))));
+        break;
+      case 4:
+        // With SingleThreadProxy it takes two commits to finally swap after a
+        // context loss.
+      case 5:
+        // Now destroy the CopyOutputResult, releasing the texture inside back
+        // to the compositor.
+        EXPECT_TRUE(result_);
+        result_.reset();
+
+        // Check that it is released.
+        base::SingleThreadTaskRunner* task_runner =
+            HasImplThread() ? ImplThreadTaskRunner()
+                            : base::MessageLoopProxy::current();
+        task_runner->PostTask(
+            FROM_HERE,
+            base::Bind(&LayerTreeHostTestAsyncReadbackLostOutputSurface::
+                           CheckNumTextures,
+                       base::Unretained(this),
+                       num_textures_after_loss_ - 1));
+        break;
+    }
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl *impl, bool result)
+      OVERRIDE {
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        // The layers have been drawn, so their textures have been allocated.
+        EXPECT_FALSE(result_);
+        num_textures_without_readback_ =
+            first_context_provider_->TestContext3d()->NumTextures();
+        break;
+      case 1:
+        // We did a readback, so there will be a readback texture around now.
+        EXPECT_LT(num_textures_without_readback_,
+                  first_context_provider_->TestContext3d()->NumTextures());
+        break;
+      case 2:
+        // The readback texture is collected.
+        EXPECT_TRUE(result_);
+
+        // Lose the output surface.
+        first_context_provider_->TestContext3d()->loseContextCHROMIUM(
+            GL_GUILTY_CONTEXT_RESET_ARB,
+            GL_INNOCENT_CONTEXT_RESET_ARB);
+        break;
+      case 3:
+        // With SingleThreadProxy it takes two commits to finally swap after a
+        // context loss.
+      case 4:
+        // The output surface has been recreated.
+        EXPECT_TRUE(second_context_provider_.get());
+
+        num_textures_after_loss_ =
+            first_context_provider_->TestContext3d()->NumTextures();
+        break;
+    }
+  }
+
+  void CheckNumTextures(size_t expected_num_textures) {
+    EXPECT_EQ(expected_num_textures,
+              first_context_provider_->TestContext3d()->NumTextures());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  scoped_refptr<TestContextProvider> first_context_provider_;
+  scoped_refptr<TestContextProvider> second_context_provider_;
+  size_t num_textures_without_readback_;
+  size_t num_textures_after_loss_;
+  FakeContentLayerClient client_;
+  scoped_refptr<FakeContentLayer> root_;
+  scoped_refptr<FakeContentLayer> copy_layer_;
+  scoped_ptr<CopyOutputResult> result_;
+};
+
+// No output to copy for delegated renderers.
+SINGLE_AND_MULTI_THREAD_DIRECT_RENDERER_TEST_F(
+    LayerTreeHostTestAsyncReadbackLostOutputSurface);
+
 class LayerTreeHostTestNumFramesPending : public LayerTreeHostTest {
  public:
   virtual void BeginTest() OVERRIDE {
