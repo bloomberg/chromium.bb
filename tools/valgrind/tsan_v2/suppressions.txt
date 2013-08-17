@@ -108,9 +108,6 @@ race:tracked_objects::ThreadData::tls_index_
 # http://crbug.com/268946
 race:CommandLine::HasSwitch
 
-# http://crbug.com/269965
-race:DesktopMediaPickerModelTest_UpdateThumbnail_Test
-
 # http://crbug.com/270037
 race:gLibCleanupFunctions
 

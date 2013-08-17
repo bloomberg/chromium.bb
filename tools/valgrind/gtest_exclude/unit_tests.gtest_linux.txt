@@ -32,6 +32,3 @@ CpuInfoProviderTest.*
 
 # Fails flakily. http://crbug.com/255771
 NetworkStatsTestUDP.UDPEcho*
-
-# Fails flakily. http://crbug.com/269965
-DesktopMediaPickerModelTest.UpdateThumbnail
