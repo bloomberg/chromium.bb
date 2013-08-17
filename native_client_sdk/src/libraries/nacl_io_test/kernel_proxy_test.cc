@@ -52,20 +52,21 @@ class KernelProxyFriend : public KernelProxy {
 
 class KernelProxyTest : public ::testing::Test {
  public:
-  KernelProxyTest() : kp_(new KernelProxyFriend) {
-    ki_init(kp_);
+  KernelProxyTest() {}
+
+  void SetUp() {
+    ki_init(&kp_);
     // Unmount the passthrough FS and mount a memfs.
-    EXPECT_EQ(0, kp_->umount("/"));
-    EXPECT_EQ(0, kp_->mount("", "/", "memfs", 0, NULL));
+    EXPECT_EQ(0, kp_.umount("/"));
+    EXPECT_EQ(0, kp_.mount("", "/", "memfs", 0, NULL));
   }
 
-  ~KernelProxyTest() {
+  void TearDown() {
     ki_uninit();
-    delete kp_;
   }
 
  protected:
-  KernelProxyFriend* kp_;
+  KernelProxyFriend kp_;
 };
 
 }  // namespace
@@ -76,7 +77,7 @@ TEST_F(KernelProxyTest, FileLeak) {
   int file_num;
   int garbage[buffer_size];
 
-  MountMem* mount = (MountMem*)kp_->RootMount();
+  MountMem* mount = (MountMem*)kp_.RootMount();
   ScopedMountNode root;
 
   EXPECT_EQ(0, mount->Open(Path("/"), O_RDONLY, &root));
@@ -290,15 +291,18 @@ class KernelProxyMountMock : public KernelProxy {
 
 class KernelProxyMountTest : public ::testing::Test {
  public:
-  KernelProxyMountTest() : kp_(new KernelProxyMountMock) { ki_init(kp_); }
+  KernelProxyMountTest() {}
 
-  ~KernelProxyMountTest() {
+  void SetUp() {
+    ki_init(&kp_);
+  }
+
+  void TearDown() {
     ki_uninit();
-    delete kp_;
   }
 
  private:
-  KernelProxy* kp_;
+  KernelProxyMountMock kp_;
 };
 
 }  // namespace
@@ -382,15 +386,18 @@ class KernelProxyMockMMap : public KernelProxy {
 
 class KernelProxyMMapTest : public ::testing::Test {
  public:
-  KernelProxyMMapTest() : kp_(new KernelProxyMockMMap) { ki_init(kp_); }
+  KernelProxyMMapTest() {}
 
-  ~KernelProxyMMapTest() {
+  void SetUp() {
+    ki_init(&kp_);
+  }
+
+  void TearDown() {
     ki_uninit();
-    delete kp_;
   }
 
  private:
-  KernelProxy* kp_;
+  KernelProxyMockMMap kp_;
 };
 
 }  // namespace
@@ -458,22 +465,23 @@ class KernelProxyError : public KernelProxy {
 
 class KernelProxyErrorTest : public ::testing::Test {
  public:
-  KernelProxyErrorTest() : kp_(new KernelProxyError) {
-    ki_init(kp_);
+  KernelProxyErrorTest() {}
+
+  void SetUp() {
+    ki_init(&kp_);
     // Unmount the passthrough FS and mount a testfs.
-    EXPECT_EQ(0, kp_->umount("/"));
-    EXPECT_EQ(0, kp_->mount("", "/", "testfs", 0, NULL));
+    EXPECT_EQ(0, kp_.umount("/"));
+    EXPECT_EQ(0, kp_.mount("", "/", "testfs", 0, NULL));
   }
 
-  ~KernelProxyErrorTest() {
+  void TearDown() {
     ki_uninit();
-    delete kp_;
   }
 
-  ScopedRef<MountMock> mnt() { return kp_->mnt(); }
+  ScopedRef<MountMock> mnt() { return kp_.mnt(); }
 
  private:
-  KernelProxyError* kp_;
+  KernelProxyError kp_;
 };
 
 }  // namespace

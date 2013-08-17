@@ -29,7 +29,6 @@ class MountNodeRefMock : public MountNode {
 class MountRefMock : public Mount {
  public:
   MountRefMock() {}
-  ~MountRefMock() {}
 
  public:
   Error Access(const Path& path, int a_mode) { return ENOSYS; }
@@ -47,26 +46,22 @@ class KernelHandleRefMock : public KernelHandle {
  public:
   KernelHandleRefMock(const ScopedMount& mnt, const ScopedMountNode& node)
       : KernelHandle(mnt, node) {}
-
-  ~KernelHandleRefMock() {}
 };
 
 class KernelObjectTest : public ::testing::Test {
  public:
-  KernelObjectTest() {
-    proxy = new KernelObject;
+  void SetUp() {
     mnt.reset(new MountRefMock());
     node.reset(new MountNodeRefMock(mnt.get()));
   }
 
-  ~KernelObjectTest() {
+  void TearDown() {
     // mnt is ref-counted, it doesn't need to be explicitly deleted.
     node.reset(NULL);
     mnt.reset(NULL);
-    delete proxy;
   }
 
-  KernelObject* proxy;
+  KernelObject proxy;
   ScopedMount mnt;
   ScopedMountNode node;
 };
@@ -102,13 +97,13 @@ TEST_F(KernelObjectTest, Referencing) {
 
   // Allocating an FD should cause the KernelProxy to ref the handle and
   // the node and mount should be unchanged.
-  int fd1 = proxy->AllocateFD(handle_a);
+  int fd1 = proxy.AllocateFD(handle_a);
   EXPECT_EQ(3, handle_a->RefCount());
   EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
   // If we "dup" the handle, we should bump the ref count on the handle
-  int fd2 = proxy->AllocateFD(handle_b);
+  int fd2 = proxy.AllocateFD(handle_b);
   EXPECT_EQ(4, handle_a->RefCount());
   EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
@@ -124,8 +119,8 @@ TEST_F(KernelObjectTest, Referencing) {
   EXPECT_EQ(2, node->RefCount());
 
   // We should find the handle by either fd
-  EXPECT_EQ(0, proxy->AcquireHandle(fd1, &handle_a));
-  EXPECT_EQ(0, proxy->AcquireHandle(fd2, &handle_b));
+  EXPECT_EQ(0, proxy.AcquireHandle(fd1, &handle_a));
+  EXPECT_EQ(0, proxy.AcquireHandle(fd2, &handle_b));
   EXPECT_EQ(raw_handle, handle_a.get());
   EXPECT_EQ(raw_handle, handle_b.get());
 
@@ -135,11 +130,11 @@ TEST_F(KernelObjectTest, Referencing) {
 
   // A non existent fd should fail, and handleA should decrement as handleB
   // is released by the call.
-  EXPECT_EQ(EBADF, proxy->AcquireHandle(-1, &handle_b));
+  EXPECT_EQ(EBADF, proxy.AcquireHandle(-1, &handle_b));
   EXPECT_EQ(NULL, handle_b.get());
   EXPECT_EQ(3, handle_a->RefCount());
 
-  EXPECT_EQ(EBADF, proxy->AcquireHandle(100, &handle_b));
+  EXPECT_EQ(EBADF, proxy.AcquireHandle(100, &handle_b));
   EXPECT_EQ(NULL, handle_b.get());
 
   // Now only the KernelProxy should reference the KernelHandle in the
@@ -150,12 +145,12 @@ TEST_F(KernelObjectTest, Referencing) {
   EXPECT_EQ(2, raw_handle->RefCount());
   EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
-  proxy->FreeFD(fd2);
+  proxy.FreeFD(fd2);
   EXPECT_EQ(1, raw_handle->RefCount());
   EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
 
-  proxy->FreeFD(fd1);
+  proxy.FreeFD(fd1);
   EXPECT_EQ(1, mnt->RefCount());
   EXPECT_EQ(1, node->RefCount());
 }
@@ -172,12 +167,12 @@ TEST_F(KernelObjectTest, FreeAndReassignFD) {
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(1, raw_handle->RefCount());
 
-  proxy->AllocateFD(handle);
+  proxy.AllocateFD(handle);
   EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(2, raw_handle->RefCount());
 
-  proxy->FreeAndReassignFD(5, handle);
+  proxy.FreeAndReassignFD(5, handle);
   EXPECT_EQ(2, mnt->RefCount());
   EXPECT_EQ(2, node->RefCount());
   EXPECT_EQ(3, raw_handle->RefCount());
@@ -185,7 +180,7 @@ TEST_F(KernelObjectTest, FreeAndReassignFD) {
   handle.reset();
   EXPECT_EQ(2, raw_handle->RefCount());
 
-  proxy->AcquireHandle(5, &handle);
+  proxy.AcquireHandle(5, &handle);
   EXPECT_EQ(3, raw_handle->RefCount());
   EXPECT_EQ(raw_handle, handle.get());
 }

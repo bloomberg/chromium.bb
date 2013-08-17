@@ -45,34 +45,25 @@ class MountHtml5FsMock : public MountHtml5Fs {
 
 class MountHtml5FsTest : public ::testing::Test {
  public:
-  MountHtml5FsTest();
-  ~MountHtml5FsTest();
+  MountHtml5FsTest() : ppapi_(instance_), core_(*ppapi_.GetCoreInterface()) {}
+
   void SetUpFilesystemExpectations(PP_FileSystemType, int,
                                    bool async_callback=false);
 
  protected:
-  PepperInterfaceMock* ppapi_;
-  CoreInterfaceMock* core_;
+  PepperInterfaceMock ppapi_;
+  CoreInterfaceMock& core_;
   PP_CompletionCallback open_filesystem_callback_;
 
   static const PP_Instance instance_ = 123;
   static const PP_Resource filesystem_resource_ = 234;
 };
 
-MountHtml5FsTest::MountHtml5FsTest()
-    : ppapi_(new PepperInterfaceMock(instance_)),
-      core_(ppapi_->GetCoreInterface()) {
-}
-
-MountHtml5FsTest::~MountHtml5FsTest() {
-  delete ppapi_;
-}
-
 void MountHtml5FsTest::SetUpFilesystemExpectations(
     PP_FileSystemType fstype,
     int expected_size,
     bool async_callback) {
-  FileSystemInterfaceMock* filesystem = ppapi_->GetFileSystemInterface();
+  FileSystemInterfaceMock* filesystem = ppapi_.GetFileSystemInterface();
   EXPECT_CALL(*filesystem, Create(instance_, fstype))
       .Times(1)
       .WillOnce(Return(filesystem_resource_));
@@ -81,15 +72,15 @@ void MountHtml5FsTest::SetUpFilesystemExpectations(
     EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
         .WillOnce(DoAll(SaveArg<2>(&open_filesystem_callback_),
                         Return(int32_t(PP_OK))));
-    EXPECT_CALL(*core_, IsMainThread()).WillOnce(Return(PP_TRUE));
+    EXPECT_CALL(core_, IsMainThread()).WillOnce(Return(PP_TRUE));
   } else {
     EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
         .WillOnce(DoAll(CallCallback<2>(int32_t(PP_OK)),
                         Return(int32_t(PP_OK_COMPLETIONPENDING))));
-    EXPECT_CALL(*core_, IsMainThread()).WillOnce(Return(PP_FALSE));
+    EXPECT_CALL(core_, IsMainThread()).WillOnce(Return(PP_FALSE));
   }
 
-  EXPECT_CALL(*core_, ReleaseResource(filesystem_resource_));
+  EXPECT_CALL(core_, ReleaseResource(filesystem_resource_));
 }
 
 class MountHtml5FsNodeTest : public MountHtml5FsTest {
@@ -123,8 +114,8 @@ MountHtml5FsNodeTest::MountHtml5FsNodeTest()
 }
 
 void MountHtml5FsNodeTest::SetUp() {
-  fileref_ = ppapi_->GetFileRefInterface();
-  fileio_ = ppapi_->GetFileIoInterface();
+  fileref_ = ppapi_.GetFileRefInterface();
+  fileio_ = ppapi_.GetFileIoInterface();
 }
 
 void MountHtml5FsNodeTest::TearDown() {
@@ -152,17 +143,17 @@ void MountHtml5FsNodeTest::SetUpNodeExpectations(PP_FileType file_type) {
 
     // Close.
     EXPECT_CALL(*fileio_, Close(fileio_resource_));
-    EXPECT_CALL(*core_, ReleaseResource(fileio_resource_));
+    EXPECT_CALL(core_, ReleaseResource(fileio_resource_));
     EXPECT_CALL(*fileio_, Flush(fileio_resource_, _));
   }
 
   // Close.
-  EXPECT_CALL(*core_, ReleaseResource(fileref_resource_));
+  EXPECT_CALL(core_, ReleaseResource(fileref_resource_));
 }
 
 void MountHtml5FsNodeTest::InitFilesystem() {
   StringMap_t map;
-  mnt_.reset(new MountHtml5FsMock(map, ppapi_));
+  mnt_.reset(new MountHtml5FsMock(map, &ppapi_));
 }
 
 void MountHtml5FsNodeTest::InitNode() {
@@ -316,7 +307,7 @@ TEST_F(MountHtml5FsTest, FilesystemType) {
   StringMap_t map;
   map["type"] = "PERSISTENT";
   map["expected_size"] = "100";
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
 }
 
 TEST_F(MountHtml5FsTest, Access) {
@@ -327,8 +318,8 @@ TEST_F(MountHtml5FsTest, Access) {
   // These are the default values.
   SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
 
-  FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
-  FileIoInterfaceMock* fileio = ppapi_->GetFileIoInterface();
+  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
+  FileIoInterfaceMock* fileio = ppapi_.GetFileIoInterface();
 
   EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
       .WillOnce(Return(fileref_resource));
@@ -345,11 +336,11 @@ TEST_F(MountHtml5FsTest, Access) {
       .WillOnce(Return(int32_t(PP_OK)));
   EXPECT_CALL(*fileio, Close(fileio_resource));
   EXPECT_CALL(*fileio, Flush(fileio_resource, _));
-  EXPECT_CALL(*core_, ReleaseResource(fileio_resource));
-  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(core_, ReleaseResource(fileio_resource));
+  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
 
   ASSERT_EQ(0, mnt->Access(Path(path), R_OK | W_OK | X_OK));
 }
@@ -362,8 +353,8 @@ TEST_F(MountHtml5FsTest, AccessFileNotFound) {
   // These are the default values.
   SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
 
-  FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
-  FileIoInterfaceMock* fileio = ppapi_->GetFileIoInterface();
+  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
+  FileIoInterfaceMock* fileio = ppapi_.GetFileIoInterface();
 
   // Report the file as missing.
   EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
@@ -381,11 +372,11 @@ TEST_F(MountHtml5FsTest, AccessFileNotFound) {
       .WillOnce(Return(int32_t(PP_ERROR_FILENOTFOUND)));
   EXPECT_CALL(*fileio, Close(fileio_resource));
   EXPECT_CALL(*fileio, Flush(fileio_resource, _));
-  EXPECT_CALL(*core_, ReleaseResource(fileio_resource));
-  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(core_, ReleaseResource(fileio_resource));
+  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
 
   ASSERT_EQ(ENOENT, mnt->Access(Path(path), F_OK));
 }
@@ -397,16 +388,16 @@ TEST_F(MountHtml5FsTest, Mkdir) {
   // These are the default values.
   SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
 
-  FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
+  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
 
   EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
       .WillOnce(Return(fileref_resource));
   EXPECT_CALL(*fileref, MakeDirectory(fileref_resource, _, _))
       .WillOnce(Return(int32_t(PP_OK)));
-  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
 
   const int permissions = 0;  // unused.
   int32_t result = mnt->Mkdir(Path(path), permissions);
@@ -420,16 +411,16 @@ TEST_F(MountHtml5FsTest, Remove) {
   // These are the default values.
   SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
 
-  FileRefInterfaceMock* fileref = ppapi_->GetFileRefInterface();
+  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
 
   EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
       .WillOnce(Return(fileref_resource));
   EXPECT_CALL(*fileref, Delete(fileref_resource, _))
       .WillOnce(Return(int32_t(PP_OK)));
-  EXPECT_CALL(*core_, ReleaseResource(fileref_resource));
+  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
 
   StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, ppapi_));
+  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
 
   int32_t result = mnt->Remove(Path(path));
   ASSERT_EQ(0, result);
@@ -591,7 +582,7 @@ TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
   fileref_name_2.type = PP_VARTYPE_STRING;
   fileref_name_2.value.as_id = fileref_name_id_2;
 
-  VarInterfaceMock* var = ppapi_->GetVarInterface();
+  VarInterfaceMock* var = ppapi_.GetVarInterface();
 
   EXPECT_CALL(*fileref_, ReadDirectoryEntries(fileref_resource_, _, _))
       .WillOnce(DoAll(WithArgs<1>(Invoke(ReadDirectoryEntriesAction)),
@@ -611,8 +602,8 @@ TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
   EXPECT_CALL(*var, Release(IsEqualToVar(fileref_name_1)));
   EXPECT_CALL(*var, Release(IsEqualToVar(fileref_name_2)));
 
-  EXPECT_CALL(*core_, ReleaseResource(fileref_resource_1));
-  EXPECT_CALL(*core_, ReleaseResource(fileref_resource_2));
+  EXPECT_CALL(core_, ReleaseResource(fileref_resource_1));
+  EXPECT_CALL(core_, ReleaseResource(fileref_resource_2));
 
 
   struct dirent dirents[2];

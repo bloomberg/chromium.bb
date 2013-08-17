@@ -30,17 +30,18 @@ using namespace sdk_util;
 namespace {
 class SocketTest : public ::testing::Test {
  public:
-  SocketTest() : kp_(new KernelProxy) {
-    ki_init(kp_);
+  SocketTest() {}
+
+  void SetUp() {
+    ki_init(&kp_);
   }
 
-  ~SocketTest() {
+  void TearDown() {
     ki_uninit();
-    delete kp_;
   }
 
  protected:
-  KernelProxy* kp_;
+  KernelProxy kp_;
 };
 
 }  // namespace

@@ -395,16 +395,16 @@ class KernelProxyPolling : public KernelProxy {
 
 class KernelProxyPollingTest : public ::testing::Test {
  public:
-  KernelProxyPollingTest() : kp_(new KernelProxyPolling) {
-    ki_init(kp_);
+  void SetUp() {
+    ki_init(&kp_);
   }
 
-  ~KernelProxyPollingTest() {
+  void TearDown() {
     ki_uninit();
-    delete kp_;
   }
 
-  KernelProxyPolling* kp_;
+ protected:
+  KernelProxyPolling kp_;
 };
 
 }  // namespace
