@@ -353,9 +353,10 @@ class CC_EXPORT ResourceProvider {
     uint8_t* pixels;
     uint8_t* pixel_buffer;
     int lock_for_read_count;
+    int imported_count;
+    int exported_count;
     bool locked_for_write;
     bool external;
-    bool exported;
     bool marked_for_deletion;
     bool pending_set_pixels;
     bool set_pixels_completion_forced;
@@ -398,7 +399,7 @@ class CC_EXPORT ResourceProvider {
   static void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                            const Resource* resource);
 
-  bool TransferResource(WebKit::WebGraphicsContext3D* context,
+  void TransferResource(WebKit::WebGraphicsContext3D* context,
                         ResourceId id,
                         TransferableResource* resource);
   enum DeleteStyle {

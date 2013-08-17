@@ -594,13 +594,18 @@ TEST_P(ResourceProviderTest, TransferResources) {
   EXPECT_EQ(0, memcmp(data2, result, pixel_size));
   {
     // Check that transfering again the same resource from the child to the
-    // parent is a noop.
+    // parent works.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
     TransferableResourceArray list;
     child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
                                                  &list);
-    EXPECT_EQ(0u, list.size());
+    EXPECT_EQ(1u, list.size());
+    EXPECT_EQ(id1, list[0].id);
+    child_resource_provider->ReceiveFromParent(list);
+    // id1 was exported twice, we returned it only once, it should still be
+    // in-use.
+    EXPECT_TRUE(child_resource_provider->InUseByConsumer(id1));
   }
   {
     // Transfer resources back from the parent to the child.

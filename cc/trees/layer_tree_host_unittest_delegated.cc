@@ -4,6 +4,8 @@
 
 #include "cc/trees/layer_tree_host.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "cc/layers/delegated_renderer_layer.h"
 #include "cc/layers/delegated_renderer_layer_client.h"
@@ -23,6 +25,34 @@
 
 namespace cc {
 namespace {
+
+bool TransferableResourceLower(const TransferableResource& a,
+                               const TransferableResource& b) {
+  return a.id < b.id;
+}
+
+// Tests if the list of resources matches an expectation, modulo the order.
+bool ResourcesMatch(TransferableResourceArray actual,
+                    unsigned* expected,
+                    size_t expected_count) {
+  EXPECT_EQ(expected_count, actual.size());
+  if (expected_count != actual.size())
+    return false;
+
+  std::sort(actual.begin(), actual.end(), TransferableResourceLower);
+  std::sort(expected, expected + expected_count);
+  bool result = true;
+  for (size_t i = 0; i < expected_count; ++i) {
+    EXPECT_EQ(actual[i].id, expected[i]);
+    if (actual[i].id != expected[i])
+      result = false;
+  }
+
+  return result;
+}
+
+#define EXPECT_RESOURCES(expected, actual) \
+    EXPECT_TRUE(ResourcesMatch(actual, expected, arraysize(expected)));
 
 // These tests deal with delegated renderer layers.
 class LayerTreeHostDelegatedTest : public LayerTreeTest {
@@ -494,9 +524,19 @@ class LayerTreeHostDelegatedTestMergeResources
     scoped_ptr<DelegatedFrameData> frame2 =
         CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
     AddTextureQuad(frame2.get(), 999);
+    AddTransferableResource(frame2.get(), 999);
     AddTextureQuad(frame2.get(), 555);
     AddTransferableResource(frame2.get(), 555);
     delegated_->SetFrameData(frame2.Pass());
+
+    // The resource 999 from frame1 is returned since it is still on the main
+    // thread.
+    TransferableResourceArray returned_resources;
+    delegated_->TakeUnusedResourcesForChildCompositor(&returned_resources);
+    {
+      unsigned expected[] = {999};
+      EXPECT_RESOURCES(expected, returned_resources);
+    }
 
     PostSetNeedsCommitToMainThread();
   }
@@ -625,8 +665,10 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
       case 5:
         // 555 is no longer in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(555u, resources[0].id);
+        {
+          unsigned expected[] = {555};
+          EXPECT_RESOURCES(expected, resources);
+        }
 
         // Stop using any resources.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -640,13 +682,9 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
       case 7:
         // 444 and 999 are no longer in use.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(2u, resources.size());
-        if (resources[0].id == 999) {
-          EXPECT_EQ(999u, resources[0].id);
-          EXPECT_EQ(444u, resources[1].id);
-        } else {
-          EXPECT_EQ(444u, resources[0].id);
-          EXPECT_EQ(999u, resources[1].id);
+        {
+          unsigned expected[] = {444, 999};
+          EXPECT_RESOURCES(expected, resources);
         }
         EndTest();
         break;
@@ -726,8 +764,10 @@ class LayerTreeHostDelegatedTestReusedResources
       case 5:
         // The 999 resource is the only unused one.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999u, resources[0].id);
+        {
+          unsigned expected[] = {999};
+          EXPECT_RESOURCES(expected, resources);
+        }
         EndTest();
         break;
     }
@@ -795,13 +835,9 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
         return;
       case 5:
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(2u, resources.size());
-        if (resources[0].id == 555) {
-          EXPECT_EQ(555u, resources[0].id);
-          EXPECT_EQ(444u, resources[1].id);
-        } else {
-          EXPECT_EQ(444u, resources[0].id);
-          EXPECT_EQ(555u, resources[1].id);
+        {
+          unsigned expected[] = {444, 555};
+          EXPECT_RESOURCES(expected, resources);
         }
 
         // The child compositor sends a frame before receiving an for the
@@ -892,6 +928,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         // Keep using 999 but stop using 555 and 444.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
         delegated_->SetFrameData(frame.Pass());
 
         // Resource are not immediately released.
@@ -911,13 +948,20 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
         // and 444, which were just released during commit.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
         AddTextureQuad(frame.get(), 444);
+        AddTransferableResource(frame.get(), 444);
         delegated_->SetFrameData(frame.Pass());
 
-        // The resources are used by the new frame so are not returned.
+        // The resources are used by the new frame but are returned anyway since
+        // we passed them again.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(0u, resources.size());
+        {
+          unsigned expected[] = {444, 555};
+          EXPECT_RESOURCES(expected, resources);
+        }
         break;
       case 6:
         // Retrieve unused resources to the main thread.
@@ -1034,8 +1078,10 @@ class LayerTreeHostDelegatedTestBadFrame
       case 5:
         // The bad frame's resource is given back to the child compositor.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(444u, resources[0].id);
+        {
+          unsigned expected[] = {444};
+          EXPECT_RESOURCES(expected, resources);
+        }
 
         // Now send a good frame with 999 again.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
@@ -1050,8 +1096,10 @@ class LayerTreeHostDelegatedTestBadFrame
       case 7:
         // The unused 555 from the last good frame is now released.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(555u, resources[0].id);
+        {
+          unsigned expected[] = {555};
+          EXPECT_RESOURCES(expected, resources);
+        }
 
         EndTest();
         break;
@@ -1171,8 +1219,10 @@ class LayerTreeHostDelegatedTestUnnamedResource
       case 2:
         // The unused resource should be returned.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999u, resources[0].id);
+        {
+          unsigned expected[] = {999};
+          EXPECT_RESOURCES(expected, resources);
+        }
 
         EndTest();
         break;
@@ -1229,14 +1279,34 @@ class LayerTreeHostDelegatedTestDontLeakResource
         // But then we immediately stop using 999.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
         delegated_->SetFrameData(frame.Pass());
         break;
       case 2:
-        // The unused resource should be returned.
+        // The unused resources should be returned. 555 is still used, but it's
+        // returned once to account for the first frame.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999u, resources[0].id);
-
+        {
+          unsigned expected[] = {555, 999};
+          EXPECT_RESOURCES(expected, resources);
+        }
+        // Send a frame with no resources in it.
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        delegated_->SetFrameData(frame.Pass());
+        break;
+      case 3:
+        // The impl side will get back the resource at some point.
+        // TODO(piman): The test should work without this.
+        layer_tree_host()->SetNeedsCommit();
+        break;
+      case 4:
+        // The now unused resource 555 should be returned.
+        resources.clear();
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        {
+          unsigned expected[] = {555};
+          EXPECT_RESOURCES(expected, resources);
+        }
         EndTest();
         break;
     }
@@ -1260,6 +1330,11 @@ class LayerTreeHostDelegatedTestDontLeakResource
 
     EXPECT_EQ(1u, delegated_impl->Resources().size());
     EXPECT_EQ(1u, delegated_impl->Resources().count(map.find(555)->second));
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ReturnUnusedResourcesFromParent(host_impl);
   }
 
   virtual void AfterTest() OVERRIDE {}
@@ -1307,8 +1382,10 @@ class LayerTreeHostDelegatedTestResourceSentToParent
       case 4:
         // 999 was returned from the grandparent and could be released.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(999u, resources[0].id);
+        {
+          unsigned expected[] = {999};
+          EXPECT_RESOURCES(expected, resources);
+        }
 
         EndTest();
         break;
@@ -1406,20 +1483,40 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
         // Stop using 999 and 444 in this frame and commit.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
         delegated_->SetFrameData(frame.Pass());
+        // 999 and 444 will be returned for frame 1, but not 555 since it's in
+        // the current frame.
         break;
       case 3:
         // Don't take resources here, but set a new frame that uses 999 again.
         frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         AddTextureQuad(frame.get(), 999);
+        AddTransferableResource(frame.get(), 999);
         AddTextureQuad(frame.get(), 555);
+        AddTransferableResource(frame.get(), 555);
         delegated_->SetFrameData(frame.Pass());
         break;
       case 4:
-        // 999 and 555 are in use, but 444 should be returned now.
+        // 555 from frame 1 and 2 isn't returned since it's still in use. 999
+        // from frame 1 is returned though.
         delegated_->TakeUnusedResourcesForChildCompositor(&resources);
-        EXPECT_EQ(1u, resources.size());
-        EXPECT_EQ(444u, resources[0].id);
+        {
+          unsigned expected[] = {444, 999};
+          EXPECT_RESOURCES(expected, resources);
+        }
+
+        frame = CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
+        delegated_->SetFrameData(frame.Pass());
+        // 555 will be returned 3 times for frames 1 2 and 3, and 999 will be
+        // returned once for frame 3.
+        break;
+      case 5:
+        delegated_->TakeUnusedResourcesForChildCompositor(&resources);
+        {
+          unsigned expected[] = {555, 555, 555, 999};
+          EXPECT_RESOURCES(expected, resources);
+        }
 
         EndTest();
         break;

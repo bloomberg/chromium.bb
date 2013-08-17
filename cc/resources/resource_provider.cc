@@ -73,9 +73,10 @@ ResourceProvider::Resource::Resource()
       pixels(NULL),
       pixel_buffer(NULL),
       lock_for_read_count(0),
+      imported_count(0),
+      exported_count(0),
       locked_for_write(false),
       external(false),
-      exported(false),
       marked_for_deletion(false),
       pending_set_pixels(false),
       set_pixels_completion_forced(false),
@@ -105,9 +106,10 @@ ResourceProvider::Resource::Resource(
       pixels(NULL),
       pixel_buffer(NULL),
       lock_for_read_count(0),
+      imported_count(0),
+      exported_count(0),
       locked_for_write(false),
       external(false),
-      exported(false),
       marked_for_deletion(false),
       pending_set_pixels(false),
       set_pixels_completion_forced(false),
@@ -130,9 +132,10 @@ ResourceProvider::Resource::Resource(
       pixels(pixels),
       pixel_buffer(NULL),
       lock_for_read_count(0),
+      imported_count(0),
+      exported_count(0),
       locked_for_write(false),
       external(false),
-      exported(false),
       marked_for_deletion(false),
       pending_set_pixels(false),
       set_pixels_completion_forced(false),
@@ -184,7 +187,7 @@ bool ResourceProvider::InUseByConsumer(ResourceId id) {
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
-  return !!resource->lock_for_read_count || resource->exported;
+  return resource->lock_for_read_count > 0 || resource->exported_count > 0;
 }
 
 ResourceProvider::ResourceId ResourceProvider::CreateResource(
@@ -304,9 +307,10 @@ void ResourceProvider::DeleteResource(ResourceId id) {
   Resource* resource = &it->second;
   DCHECK(!resource->lock_for_read_count);
   DCHECK(!resource->marked_for_deletion);
+  DCHECK_EQ(resource->imported_count, 0);
   DCHECK(resource->pending_set_pixels || !resource->locked_for_write);
 
-  if (resource->exported) {
+  if (resource->exported_count > 0) {
     resource->marked_for_deletion = true;
     return;
   } else {
@@ -319,8 +323,8 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
   Resource* resource = &it->second;
   bool lost_resource = lost_output_surface_;
 
-  DCHECK(!resource->exported || style != Normal);
-  if (style == ForShutdown && resource->exported)
+  DCHECK(resource->exported_count == 0 || style != Normal);
+  if (style == ForShutdown && resource->exported_count > 0)
     lost_resource = true;
 
   if (resource->image_id) {
@@ -391,7 +395,7 @@ void ResourceProvider::SetPixels(ResourceId id,
   DCHECK(!resource->locked_for_write);
   DCHECK(!resource->lock_for_read_count);
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   DCHECK(ReadLockFenceHasPassed(resource));
   LazyAllocate(resource);
 
@@ -498,7 +502,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
          resource->set_pixels_completion_forced) <<
       "locked for write: " << resource->locked_for_write <<
       " pixels completion forced: " << resource->set_pixels_completion_forced;
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   // Uninitialized! Call SetPixels or LockForWrite first.
   DCHECK(resource->allocated);
 
@@ -534,7 +538,7 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK_GT(resource->lock_for_read_count, 0);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   resource->lock_for_read_count--;
 }
 
@@ -546,7 +550,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForWrite(
   Resource* resource = &it->second;
   DCHECK(!resource->locked_for_write);
   DCHECK(!resource->lock_for_read_count);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->external);
   DCHECK(ReadLockFenceHasPassed(resource));
   LazyAllocate(resource);
@@ -562,7 +566,7 @@ bool ResourceProvider::CanLockForWrite(ResourceId id) {
   Resource* resource = &it->second;
   return !resource->locked_for_write &&
       !resource->lock_for_read_count &&
-      !resource->exported &&
+      !resource->exported_count &&
       !resource->external &&
       ReadLockFenceHasPassed(resource);
 }
@@ -573,7 +577,7 @@ void ResourceProvider::UnlockForWrite(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK(resource->locked_for_write);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->external);
   resource->locked_for_write = false;
 }
@@ -766,8 +770,15 @@ void ResourceProvider::DestroyChild(int child_id) {
   Child& child = it->second;
   for (ResourceIdMap::iterator child_it = child.child_to_parent_map.begin();
        child_it != child.child_to_parent_map.end();
-       ++child_it)
-    DeleteResource(child_it->second);
+       ++child_it) {
+    ResourceId id = child_it->second;
+    // We're abandoning this resource, it will not get recycled.
+    // crbug.com/224062
+    ResourceMap::iterator resource_it = resources_.find(id);
+    CHECK(resource_it != resources_.end());
+    resource_it->second.imported_count = 0;
+    DeleteResource(id);
+  }
   children_.erase(it);
 }
 
@@ -792,12 +803,11 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
        it != resources.end();
        ++it) {
     TransferableResource resource;
-    if (TransferResource(context3d, *it, &resource)) {
-      if (!resource.sync_point)
-        need_sync_point = true;
-      resources_.find(*it)->second.exported = true;
-      list->push_back(resource);
-    }
+    TransferResource(context3d, *it, &resource);
+    if (!resource.sync_point)
+      need_sync_point = true;
+    ++resources_.find(*it)->second.exported_count;
+    list->push_back(resource);
   }
   if (need_sync_point) {
     unsigned int sync_point = context3d->insertSyncPoint();
@@ -825,8 +835,7 @@ void ResourceProvider::PrepareSendToChild(int child,
        it != resources.end();
        ++it) {
     TransferableResource resource;
-    if (!TransferResource(context3d, *it, &resource))
-      NOTREACHED();
+    TransferResource(context3d, *it, &resource);
     if (!resource.sync_point)
       need_sync_point = true;
     DCHECK(child_info.parent_to_child_map.find(*it) !=
@@ -834,7 +843,9 @@ void ResourceProvider::PrepareSendToChild(int child,
     resource.id = child_info.parent_to_child_map[*it];
     child_info.parent_to_child_map.erase(*it);
     child_info.child_to_parent_map.erase(resource.id);
-    list->push_back(resource);
+    for (int i = 0; i < resources_[*it].imported_count; ++i)
+      list->push_back(resource);
+    resources_[*it].imported_count = 0;
     DeleteResource(*it);
   }
   if (need_sync_point) {
@@ -860,6 +871,12 @@ void ResourceProvider::ReceiveFromChild(
   for (TransferableResourceArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
+    ResourceIdMap::iterator resource_in_map_it =
+        child_info.child_to_parent_map.find(it->id);
+    if (resource_in_map_it != child_info.child_to_parent_map.end()) {
+      resources_[resource_in_map_it->second].imported_count++;
+      continue;
+    }
     unsigned texture_id;
     // NOTE: If the parent is a browser and the child a renderer, the parent
     // is not supposed to have its context wait, because that could induce
@@ -879,6 +896,7 @@ void ResourceProvider::ReceiveFromChild(
     resource.mailbox.SetName(it->mailbox);
     // Don't allocate a texture for a child.
     resource.allocated = true;
+    resource.imported_count = 1;
     resources_[id] = resource;
     child_info.parent_to_child_map[id] = it->id;
     child_info.child_to_parent_map[it->id] = id;
@@ -899,8 +917,10 @@ void ResourceProvider::ReceiveFromParent(
     ResourceMap::iterator map_iterator = resources_.find(it->id);
     DCHECK(map_iterator != resources_.end());
     Resource* resource = &map_iterator->second;
-    DCHECK(resource->exported);
-    resource->exported = false;
+    DCHECK_GT(resource->exported_count, 0);
+    --resource->exported_count;
+    if (resource->exported_count)
+      continue;
     resource->filter = it->filter;
     DCHECK(resource->mailbox.ContainsMailbox(it->mailbox));
     if (resource->gl_id) {
@@ -916,7 +936,7 @@ void ResourceProvider::ReceiveFromParent(
   }
 }
 
-bool ResourceProvider::TransferResource(WebGraphicsContext3D* context,
+void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
                                         ResourceId id,
                                         TransferableResource* resource) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -927,8 +947,6 @@ bool ResourceProvider::TransferResource(WebGraphicsContext3D* context,
   DCHECK(!source->lock_for_read_count);
   DCHECK(!source->external || (source->external && source->mailbox.IsValid()));
   DCHECK(source->allocated);
-  if (source->exported)
-    return false;
   resource->id = id;
   resource->format = source->format;
   resource->filter = source->filter;
@@ -953,8 +971,6 @@ bool ResourceProvider::TransferResource(WebGraphicsContext3D* context,
     resource->sync_point = source->mailbox.sync_point();
     source->mailbox.ResetSyncPoint();
   }
-
-  return true;
 }
 
 void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
@@ -963,7 +979,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
   if (resource->type == GLTexture) {
@@ -996,7 +1012,7 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
   // The pixel buffer can be released while there is a pending "set pixels"
@@ -1041,7 +1057,7 @@ uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
   if (resource->type == GLTexture) {
@@ -1072,7 +1088,7 @@ void ResourceProvider::UnmapPixelBuffer(ResourceId id) {
   CHECK(it != resources_.end());
   Resource* resource = &it->second;
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
 
   if (resource->type == GLTexture) {
@@ -1339,7 +1355,7 @@ void ResourceProvider::AcquireImage(ResourceId id) {
   Resource* resource = &it->second;
 
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
 
   if (resource->type != GLTexture)
     return;
@@ -1363,7 +1379,7 @@ void ResourceProvider::ReleaseImage(ResourceId id) {
   Resource* resource = &it->second;
 
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
 
   if (!resource->image_id)
     return;
@@ -1383,7 +1399,7 @@ uint8_t* ResourceProvider::MapImage(ResourceId id) {
 
   DCHECK(ReadLockFenceHasPassed(resource));
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
 
   if (resource->image_id) {
     WebGraphicsContext3D* context3d = Context3d();
@@ -1405,7 +1421,7 @@ void ResourceProvider::UnmapImage(ResourceId id) {
   Resource* resource = &it->second;
 
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
 
   if (resource->image_id) {
     WebGraphicsContext3D* context3d = Context3d();
@@ -1421,7 +1437,7 @@ int ResourceProvider::GetImageStride(ResourceId id) {
   Resource* resource = &it->second;
 
   DCHECK(!resource->external);
-  DCHECK(!resource->exported);
+  DCHECK_EQ(resource->exported_count, 0);
 
   int stride = 0;
 

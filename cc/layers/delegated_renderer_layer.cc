@@ -68,27 +68,18 @@ void DelegatedRendererLayer::SetDisplaySize(gfx::Size size) {
 void DelegatedRendererLayer::SetFrameData(
     scoped_ptr<DelegatedFrameData> new_frame_data) {
   if (frame_data_) {
-    // Copy the resources from the last provided frame into the new frame, as
-    // it may use resources that were transferred in the last frame.
-    new_frame_data->resource_list.insert(new_frame_data->resource_list.end(),
-                                         frame_data_->resource_list.begin(),
-                                         frame_data_->resource_list.end());
+    // Copy the resources from the last provided frame into the unused resources
+    // list, as the new frame will provide its own resources.
+    unused_resources_for_child_compositor_.insert(
+        unused_resources_for_child_compositor_.end(),
+        frame_data_->resource_list.begin(),
+        frame_data_->resource_list.end());
   }
   frame_data_ = new_frame_data.Pass();
   if (!frame_data_->render_pass_list.empty()) {
     RenderPass* root_pass = frame_data_->render_pass_list.back();
     damage_in_frame_.Union(root_pass->damage_rect);
     frame_size_ = root_pass->output_rect.size();
-
-    // TODO(danakj): This could be optimized to only add resources to the
-    // frame_data_ if they are actually used in the frame. For now, it will
-    // cause the parent (this layer) to hold onto some resources it doesn't
-    // need to for an extra frame.
-    for (size_t i = 0; i < unused_resources_for_child_compositor_.size(); ++i) {
-      frame_data_->resource_list.push_back(
-          unused_resources_for_child_compositor_[i]);
-    }
-    unused_resources_for_child_compositor_.clear();
   } else {
     frame_size_ = gfx::Size();
   }

@@ -129,11 +129,12 @@ class DelegatingRendererTestResources : public DelegatingRendererTest {
 
     EXPECT_EQ(2u, last_frame.delegated_frame_data->render_pass_list.size());
     // Each render pass has 10 resources in it. And the root render pass has a
-    // mask resource used when drawing the child render pass. The number 10 may
-    // change if AppendOneOfEveryQuadType() is updated, and the value here
-    // should be updated accordingly.
+    // mask resource used when drawing the child render pass, as well as its
+    // replica (it's added twice). The number 10 may change if
+    // AppendOneOfEveryQuadType() is updated, and the value here should be
+    // updated accordingly.
     EXPECT_EQ(
-        21u, last_frame.delegated_frame_data->resource_list.size());
+        22u, last_frame.delegated_frame_data->resource_list.size());
 
     EndTest();
   }
