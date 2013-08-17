@@ -137,12 +137,10 @@ class NaClBrowserTestStatic : public NaClBrowserTestBase {
   virtual bool GetDocumentRoot(base::FilePath* document_root) OVERRIDE;
 };
 
-// PNaCl's cache and PPB_FileIO currently trip up under ASAN:
-// https://code.google.com/p/chromium/issues/detail?id=171810
 // PNaCl tests take a long time on windows debug builds
 // and sometimes time out.  Disable until it is made faster:
 // https://code.google.com/p/chromium/issues/detail?id=177555
-#if defined(ADDRESS_SANITIZER) || (defined(OS_WIN) && !defined(NDEBUG))
+#if (defined(OS_WIN) && !defined(NDEBUG))
 #define MAYBE_PNACL(test_name) DISABLED_##test_name
 #else
 #define MAYBE_PNACL(test_name) test_name
