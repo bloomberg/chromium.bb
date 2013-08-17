@@ -11,7 +11,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/default_user_images.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_image_manager_impl.h"
@@ -19,6 +18,7 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_observer.h"
@@ -34,14 +34,14 @@ namespace chromeos {
 const char kTestUser1[] = "test-user@example.com";
 const char kTestUser2[] = "test-user2@example.com";
 
-class UserImageManagerTest : public CrosInProcessBrowserTest,
+class UserImageManagerTest : public InProcessBrowserTest,
                              public content::NotificationObserver,
                              public UserManager::Observer {
  protected:
   UserImageManagerTest() {
   }
 
-  // CrosInProcessBrowserTest overrides:
+  // InProcessBrowserTest overrides:
   virtual void SetUpOnMainThread() OVERRIDE {
     UserManager::Get()->AddObserver(this);
     user_image_manager_ = UserManager::Get()->GetUserImageManager();

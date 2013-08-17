@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -34,13 +33,13 @@ using ::testing::Return;
 
 namespace {
 
-class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
+class LoginTestBase : public InProcessBrowserTest {
  public:
   LoginTestBase() {}
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
     mock_cryptohome_library_.reset(new chromeos::MockCryptohomeLibrary());
     EXPECT_CALL(*(mock_cryptohome_library_.get()), GetSystemSalt())
@@ -136,7 +135,7 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 };
 
 
-class LoginSigninTest : public chromeos::CrosInProcessBrowserTest {
+class LoginSigninTest : public InProcessBrowserTest {
  protected:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);

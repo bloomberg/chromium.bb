@@ -12,7 +12,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/user_prefs/user_prefs.h"
@@ -107,7 +107,7 @@ void PrepareNonNewProfile(const std::string& name) {
 
 }  // namespace
 
-class MagnificationManagerTest : public CrosInProcessBrowserTest,
+class MagnificationManagerTest : public InProcessBrowserTest,
                                  public content::NotificationObserver {
  protected:
   MagnificationManagerTest() : observed_(false),

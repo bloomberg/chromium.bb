@@ -12,7 +12,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -397,13 +396,12 @@ class TestContentBrowserClient : public chrome::ChromeContentBrowserClient {
 }  // namespace
 
 
-class KioskTest : public chromeos::CrosInProcessBrowserTest,
+class KioskTest : public InProcessBrowserTest,
                   // Param defining is multi-profiles enabled.
                   public testing::WithParamInterface<bool> {
  public:
   KioskTest()
-     : chromeos::CrosInProcessBrowserTest(),
-       original_content_browser_client_(NULL),
+     : original_content_browser_client_(NULL),
        test_server_(NULL) {
     set_exit_when_last_browser_closes(false);
   }

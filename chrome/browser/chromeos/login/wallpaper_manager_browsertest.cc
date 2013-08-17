@@ -16,11 +16,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/aura/env.h"
@@ -44,7 +44,7 @@ const char kTestUser1[] = "test@domain.com";
 
 }  // namespace
 
-class WallpaperManagerBrowserTest : public CrosInProcessBrowserTest,
+class WallpaperManagerBrowserTest : public InProcessBrowserTest,
                                     public DesktopBackgroundControllerObserver {
  public:
   WallpaperManagerBrowserTest () : controller_(NULL),

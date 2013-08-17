@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
 
 class Browser;
 class Profile;
@@ -22,11 +22,11 @@ class WizardController;
 // Instead of creating Chrome browser window it creates login wizard window
 // with specified parameters and allows to customize environment at the
 // right moment in time before wizard is created.
-class WizardInProcessBrowserTest : public CrosInProcessBrowserTest {
+class WizardInProcessBrowserTest : public InProcessBrowserTest {
  public:
   explicit WizardInProcessBrowserTest(const char* screen_name);
 
-  // Overridden from CrosInProcessBrowserTest:
+  // Overridden from InProcessBrowserTest:
   virtual void SetUp() OVERRIDE;
 
  protected:

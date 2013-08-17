@@ -14,7 +14,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
@@ -95,7 +94,6 @@ class WallpaperManagerTest : public test::AshTestBase {
   scoped_ptr<TestingPrefServiceSimple> local_state_;
 
   ScopedTestDeviceSettingsService test_device_settings_service_;
-  ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
   ScopedTestCrosSettings test_cros_settings_;
 
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;

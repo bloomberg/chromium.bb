@@ -27,10 +27,8 @@ class PowerSaveBlockerImpl::Delegate
 
   void ApplyBlock() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!chromeos::DBusThreadManager::IsInitialized()) {
-      LOG(WARNING) << "DBusThreadManager not initialized";
+    if (!chromeos::DBusThreadManager::IsInitialized())
       return;
-    }
 
     chromeos::PowerPolicyController* controller =
         chromeos::DBusThreadManager::Get()->GetPowerPolicyController();
@@ -48,10 +46,9 @@ class PowerSaveBlockerImpl::Delegate
 
   void RemoveBlock() {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-    if (!chromeos::DBusThreadManager::IsInitialized()) {
-      LOG(WARNING) << "DBusThreadManager not initialized";
+    if (!chromeos::DBusThreadManager::IsInitialized())
       return;
-    }
+
     chromeos::DBusThreadManager::Get()->GetPowerPolicyController()->
         RemoveWakeLock(block_id_);
   }

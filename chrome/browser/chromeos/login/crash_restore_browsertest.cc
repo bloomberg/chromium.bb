@@ -8,10 +8,10 @@
 #include "base/command_line.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -31,7 +31,7 @@ const char kUserId3[] = "user3@example.com";
 
 }  // namespace
 
-class CrashRestoreSimpleTest : public CrosInProcessBrowserTest {
+class CrashRestoreSimpleTest : public InProcessBrowserTest {
  protected:
   CrashRestoreSimpleTest() {}
 

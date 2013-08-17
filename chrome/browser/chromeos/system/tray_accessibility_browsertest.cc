@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -29,6 +28,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
@@ -54,7 +54,7 @@ void SetMagnifierEnabled(bool enabled) {
 }
 
 class TrayAccessibilityTest
-    : public CrosInProcessBrowserTest,
+    : public InProcessBrowserTest,
       public WithParamInterface<PrefSettingMechanism> {
  protected:
   TrayAccessibilityTest() {}
@@ -83,7 +83,7 @@ class TrayAccessibilityTest
   virtual void RunTestOnMainThreadLoop() OVERRIDE {
     // Need to mark oobe completed to show detailed views.
     StartupUtils::MarkOobeCompleted();
-    CrosInProcessBrowserTest::RunTestOnMainThreadLoop();
+    InProcessBrowserTest::RunTestOnMainThreadLoop();
   }
 
   void SetShowAccessibilityOptionsInSystemTrayMenu(bool value) {

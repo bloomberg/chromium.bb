@@ -184,7 +184,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest,
     // deletes its OnlineAttemptHost instance.  However, OnlineAttemptHost must
     // be deleted on the UI thread.
     existing_user_controller_.reset();
-    CrosInProcessBrowserTest::CleanUpOnMainThread();
+    DevicePolicyCrosBrowserTest::InProcessBrowserTest::CleanUpOnMainThread();
     testing_profile_.reset(NULL);
     user_manager_enabler_.reset();
   }

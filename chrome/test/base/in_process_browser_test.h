@@ -14,10 +14,6 @@
 #include "content/public/test/browser_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/network_library.h"
-#endif  // defined(OS_CHROMEOS)
-
 namespace base {
 #if defined(OS_MACOSX)
 namespace mac {
@@ -216,10 +212,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // True if this is a multi-desktop test (in which case this browser test will
   // not ensure that Browsers are only created on the tested desktop).
   bool multi_desktop_test_;
-
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedStubNetworkLibraryEnabler stub_network_library_enabler_;
-#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;

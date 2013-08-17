@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/browser/notification_service.h"
@@ -151,7 +151,7 @@ bool GetSpokenFeedbackEnabledFromPref() {
 
 }  // anonymouse namespace
 
-class AccessibilityManagerTest : public CrosInProcessBrowserTest {
+class AccessibilityManagerTest : public InProcessBrowserTest {
  protected:
   AccessibilityManagerTest() {}
   virtual ~AccessibilityManagerTest() {}

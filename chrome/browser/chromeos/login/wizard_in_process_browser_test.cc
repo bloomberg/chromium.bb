@@ -25,7 +25,7 @@ WizardInProcessBrowserTest::WizardInProcessBrowserTest(const char* screen_name)
 
 void WizardInProcessBrowserTest::SetUp() {
   WizardController::SetZeroDelays();
-  CrosInProcessBrowserTest::SetUp();
+  InProcessBrowserTest::SetUp();
 }
 
 void WizardInProcessBrowserTest::SetUpCommandLine(CommandLine* command_line) {

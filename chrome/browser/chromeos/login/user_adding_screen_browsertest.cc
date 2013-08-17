@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/mock_login_utils.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -11,6 +10,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,7 +27,7 @@ const char* kTestUsers[] = {"test-user@gmail.com",
 
 namespace chromeos {
 
-class UserAddingScreenTest : public CrosInProcessBrowserTest,
+class UserAddingScreenTest : public InProcessBrowserTest,
                              public UserAddingScreen::Observer {
  public:
   UserAddingScreenTest() : user_adding_started_(0), user_adding_finished_(0) {

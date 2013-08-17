@@ -61,7 +61,7 @@ DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {
 
 void DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture() {
   chromeos::DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager_);
-  CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }
 
 void DevicePolicyCrosBrowserTest::InstallOwnerKey() {
@@ -88,7 +88,7 @@ void DevicePolicyCrosBrowserTest::RefreshDevicePolicy() {
 }
 
 void DevicePolicyCrosBrowserTest::TearDownInProcessBrowserTestFixture() {
-  CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+  InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   chromeos::DBusThreadManager::Shutdown();
 }
 
