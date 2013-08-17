@@ -1228,4 +1228,23 @@ crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-co
 # New flaky test added in r156227.
 crbug.com/272725 [ Release ] http/tests/inspector/network/network-document-initiator.html [ Failure Pass ]
 
+# Test failing after r156242.
+crbug.com/274667 virtual/web-animations-css/animations/animation-direction-reverse.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/animation-none-keyword.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/change-keyframes-name.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/end-exclusive.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/fill-mode-iteration-count-non-integer.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/fill-mode-missing-from-to-keyframes.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/fill-mode-multiple-keyframes.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/fill-mode-transform.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/fill-mode.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/missing-from-to-transforms.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/missing-from-to.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/play-state-suspend.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/suspend-resume-animation.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/transition-and-animation-1.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/transition-and-animation-2.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/transition-and-animation-3.html [ Failure ]
+crbug.com/274667 virtual/web-animations-css/animations/3d/matrix-transform-type-animation.html [ ImageOnlyFailure ]
+
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
