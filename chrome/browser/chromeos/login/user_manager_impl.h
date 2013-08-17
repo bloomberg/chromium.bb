@@ -368,11 +368,6 @@ class UserManagerImpl
   // policy yet.
   bool ephemeral_users_enabled_;
 
-  // Cached flag indicating whether the locally managed users are enabled by
-  // policy. Defaults to |false| if the value has not been read from trusted
-  // device policy yet.
-  bool locally_managed_users_enabled_by_policy_;
-
   // Merge session state (cookie restore process state).
   MergeSessionState merge_session_state_;
 

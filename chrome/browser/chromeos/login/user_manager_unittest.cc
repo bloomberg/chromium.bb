@@ -76,10 +76,6 @@ class UserManagerTest : public testing::Test {
     return GetUserManagerImpl()->ephemeral_users_enabled_;
   }
 
-  bool GetUserManagerLocallyManagedUsersEnabledByPolicy() const {
-    return GetUserManagerImpl()->locally_managed_users_enabled_by_policy_;
-  }
-
   void SetUserManagerEphemeralUsersEnabled(bool ephemeral_users_enabled) {
     GetUserManagerImpl()->ephemeral_users_enabled_ = ephemeral_users_enabled;
   }
@@ -181,15 +177,6 @@ TEST_F(UserManagerTest, RegularUserLoggedInAsEphemeral) {
   const UserList* users = &UserManager::Get()->GetUsers();
   EXPECT_EQ(1U, users->size());
   EXPECT_EQ((*users)[0]->email(), "owner@invalid.domain");
-}
-
-TEST_F(UserManagerTest, DisablingLMUByDeviceSettings) {
-  SetDeviceSettings(false, "owner@invalid.domain", false);
-  RetrieveTrustedDevicePolicies();
-  EXPECT_EQ(GetUserManagerLocallyManagedUsersEnabledByPolicy(), false);
-  SetDeviceSettings(false, "owner@invalid.domain", true);
-  RetrieveTrustedDevicePolicies();
-  EXPECT_EQ(GetUserManagerLocallyManagedUsersEnabledByPolicy(), true);
 }
 
 }  // namespace chromeos

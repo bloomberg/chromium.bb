@@ -225,7 +225,6 @@ UserManagerImpl::UserManagerImpl()
       is_current_user_new_(false),
       is_current_user_ephemeral_regular_user_(false),
       ephemeral_users_enabled_(false),
-      locally_managed_users_enabled_by_policy_(false),
       merge_session_state_(MERGE_STATUS_NOT_STARTED),
       observed_sync_service_(NULL),
       user_image_manager_(new UserImageManagerImpl),
@@ -1076,7 +1075,6 @@ void UserManagerImpl::EnsureUsersLoaded() {
 
 void UserManagerImpl::RetrieveTrustedDevicePolicies() {
   ephemeral_users_enabled_ = false;
-  locally_managed_users_enabled_by_policy_ = false;
   owner_email_ = "";
 
   // Schedule a callback if device policy has not yet been verified.
@@ -1088,8 +1086,6 @@ void UserManagerImpl::RetrieveTrustedDevicePolicies() {
 
   cros_settings_->GetBoolean(kAccountsPrefEphemeralUsersEnabled,
                              &ephemeral_users_enabled_);
-  cros_settings_->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
-                             &locally_managed_users_enabled_by_policy_);
   cros_settings_->GetString(kDeviceOwner, &owner_email_);
 
   EnsureUsersLoaded();
@@ -1658,8 +1654,11 @@ void UserManagerImpl::SetAppModeChromeClientOAuthInfo(
 }
 
 bool UserManagerImpl::AreLocallyManagedUsersAllowed() const {
+  bool locally_managed_users_allowed = false;
+  cros_settings_->GetBoolean(kAccountsPrefSupervisedUsersEnabled,
+                             &locally_managed_users_allowed);
   return ManagedUserService::AreManagedUsersEnabled() &&
-        (locally_managed_users_enabled_by_policy_ ||
+        (locally_managed_users_allowed ||
          !g_browser_process->browser_policy_connector()->IsEnterpriseManaged());
 }
 

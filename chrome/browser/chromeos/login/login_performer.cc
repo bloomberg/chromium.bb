@@ -201,7 +201,32 @@ void LoginPerformer::LoginAsLocallyManagedUser(
     const UserContext& user_context) {
   DCHECK_EQ(UserManager::kLocallyManagedUserDomain,
             gaia::ExtractDomainName(user_context.username));
-  // TODO(nkostylev): Check that policy allows locally managed user login.
+
+  CrosSettings* cros_settings = CrosSettings::Get();
+  CrosSettingsProvider::TrustedStatus status =
+        cros_settings->PrepareTrustedValues(
+            base::Bind(&LoginPerformer::LoginAsLocallyManagedUser,
+                       weak_factory_.GetWeakPtr(),
+                       user_context_));
+  // Must not proceed without signature verification.
+  if (status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    if (delegate_)
+      delegate_->PolicyLoadFailed();
+    else
+      NOTREACHED();
+    return;
+  } else if (status != CrosSettingsProvider::TRUSTED) {
+    // Value of kAccountsPrefSupervisedUsersEnabled setting is still not
+    // verified. Another attempt will be invoked after verification completion.
+    return;
+  }
+
+  if (!UserManager::Get()->AreLocallyManagedUsersAllowed()) {
+    LOG(ERROR) << "Login attempt of locally managed user detected.";
+    delegate_->WhiteListCheckFailed(user_context.username);
+    return;
+  }
+
   UserFlow* new_flow = new LocallyManagedUserLoginFlow(user_context.username);
   new_flow->set_host(
       UserManager::Get()->GetUserFlow(user_context.username)->host());

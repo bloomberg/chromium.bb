@@ -442,11 +442,6 @@ void ExistingUserController::PerformLogin(
   is_login_in_progress_ = true;
   if (gaia::ExtractDomainName(user_context.username) ==
           UserManager::kLocallyManagedUserDomain) {
-    if (!UserManager::Get()->AreLocallyManagedUsersAllowed()) {
-      LOG(ERROR) << "Login attempt of locally managed user detected.";
-      login_display_->SetUIEnabled(true);
-      return;
-    }
     login_performer_->LoginAsLocallyManagedUser(
         UserContext(user_context.username,
                     user_context.password,

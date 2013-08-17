@@ -1214,6 +1214,7 @@
         'browser/chromeos/login/enrollment/mock_enrollment_screen.h',
         'browser/chromeos/login/existing_user_controller_browsertest.cc',
         'browser/chromeos/login/kiosk_browsertest.cc',
+        'browser/chromeos/login/login_screen_policy_browsertest.cc',
         'browser/chromeos/login/login_utils_browsertest.cc',
         'browser/chromeos/login/mock_authenticator.cc',
         'browser/chromeos/login/mock_authenticator.h',
