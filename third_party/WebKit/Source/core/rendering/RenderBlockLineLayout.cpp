@@ -1309,6 +1309,7 @@ static inline void constructBidiRunsForSegment(InlineBidiResolver& topResolver, 
         if (!isolatedResolver.isolatedRuns().isEmpty()) {
             topResolver.isolatedRuns().append(isolatedResolver.isolatedRuns());
             isolatedResolver.isolatedRuns().clear();
+            currentRoot = isolatedInline;
         }
     }
 }

@@ -417,12 +417,17 @@ static inline bool isIsolatedInline(RenderObject* object)
 static inline RenderObject* containingIsolate(RenderObject* object, RenderObject* root)
 {
     ASSERT(object);
+    RenderObject* containingIsolateObj = 0;
     while (object && object != root) {
+        if (containingIsolateObj && !isIsolatedInline(object))
+            break;
+
         if (isIsolatedInline(object))
-            return object;
+            containingIsolateObj = object;
+
         object = object->parent();
     }
-    return 0;
+    return containingIsolateObj;
 }
 
 static inline unsigned numberOfIsolateAncestors(const InlineIterator& iter)
