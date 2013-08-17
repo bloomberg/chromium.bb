@@ -602,7 +602,7 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitMarginEnd:
     case CSSPropertyWebkitMarginStart:
     case CSSPropertyWebkitMarginTopCollapse:
-    case CSSPropertyWebkitMarqueeDirection:
+    case CSSPropertyInternalMarqueeDirection:
     case CSSPropertyWebkitMarqueeIncrement:
     case CSSPropertyWebkitMarqueeRepetition:
     case CSSPropertyWebkitMarqueeSpeed:

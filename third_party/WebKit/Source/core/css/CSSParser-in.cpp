@@ -823,7 +823,7 @@ static inline bool isValidKeywordPropertyAndValue(CSSPropertyID propertyId, int 
         if (valueID == CSSValueCollapse || valueID == CSSValueSeparate || valueID == CSSValueDiscard)
             return true;
         break;
-    case CSSPropertyWebkitMarqueeDirection:
+    case CSSPropertyInternalMarqueeDirection:
         if (valueID == CSSValueForwards || valueID == CSSValueBackwards || valueID == CSSValueAhead || valueID == CSSValueReverse || valueID == CSSValueLeft || valueID == CSSValueRight || valueID == CSSValueDown
             || valueID == CSSValueUp || valueID == CSSValueAuto)
             return true;
@@ -998,7 +998,7 @@ static inline bool isKeywordPropertyID(CSSPropertyID propertyId)
     case CSSPropertyWebkitMarginBeforeCollapse:
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginTopCollapse:
-    case CSSPropertyWebkitMarqueeDirection:
+    case CSSPropertyInternalMarqueeDirection:
     case CSSPropertyWebkitMarqueeStyle:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:
@@ -1654,6 +1654,9 @@ void CSSParser::setCurrentProperty(CSSPropertyID propId)
 
 bool CSSParser::parseValue(CSSPropertyID propId, bool important)
 {
+    if (m_context.mode != UASheetMode && isInternalProperty(propId))
+        return false;
+
     if (m_useCounter)
         m_useCounter->count(propId);
 
@@ -2813,7 +2816,7 @@ bool CSSParser::parseValue(CSSPropertyID propId, bool important)
     case CSSPropertyWebkitMarginBeforeCollapse:
     case CSSPropertyWebkitMarginBottomCollapse:
     case CSSPropertyWebkitMarginTopCollapse:
-    case CSSPropertyWebkitMarqueeDirection:
+    case CSSPropertyInternalMarqueeDirection:
     case CSSPropertyWebkitMarqueeStyle:
     case CSSPropertyWebkitPrintColorAdjust:
     case CSSPropertyWebkitRegionBreakAfter:

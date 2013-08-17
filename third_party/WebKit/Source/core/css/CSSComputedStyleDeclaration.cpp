@@ -286,7 +286,6 @@ static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyWebkitLocale,
     CSSPropertyWebkitMarginBeforeCollapse,
     CSSPropertyWebkitMarginAfterCollapse,
-    CSSPropertyWebkitMarqueeDirection,
     CSSPropertyWebkitMarqueeIncrement,
     CSSPropertyWebkitMarqueeRepetition,
     CSSPropertyWebkitMarqueeStyle,
@@ -2109,8 +2108,6 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
                 return zoomAdjustedPixelValueForLength(marginLeft, style.get());
             return zoomAdjustedPixelValue(toRenderBox(renderer)->marginLeft(), style.get());
         }
-        case CSSPropertyWebkitMarqueeDirection:
-            return cssValuePool().createValue(style->marqueeDirection());
         case CSSPropertyWebkitMarqueeIncrement:
             return cssValuePool().createValue(style->marqueeIncrement());
         case CSSPropertyWebkitMarqueeRepetition:
@@ -2875,6 +2872,11 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyUserZoom:
             break;
 
+        // Internal properties that shouldn't be exposed throught getComputedStyle.
+        case CSSPropertyInternalMarqueeDirection:
+            ASSERT_NOT_REACHED();
+            return 0;
+
         case CSSPropertyBufferedRendering:
         case CSSPropertyClipPath:
         case CSSPropertyClipRule:
@@ -3048,10 +3050,12 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(const Stri
     return value ? value->cloneForCSSOM() : 0;
 }
 
-String CSSComputedStyleDeclaration::getPropertyValue(const String &propertyName)
+String CSSComputedStyleDeclaration::getPropertyValue(const String& propertyName)
 {
     CSSPropertyID propertyID = cssPropertyID(propertyName);
-    if (!propertyID)
+    // FIXME: This should check RuntimeEnabledFeature::isCSSPropertyEnabled instead of just
+    // isInternalProperty. However we need to test that which requires crbug.com/234853 to be fixed.
+    if (!propertyID || isInternalProperty(propertyID))
         return String();
     return getPropertyValue(propertyID);
 }

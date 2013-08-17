@@ -1,0 +1,13 @@
+This test checks that -internal-* properties are not exposed to JS.
+
+
+Testing -internal-marquee-direction
+PASS window.getComputedStyle(element).getPropertyValue(property) is null
+PASS element.style.getPropertyCSSValue(property) is null
+Value after setting -internal-marquee-direction to alternate
+PASS element.style.getPropertyCSSValue(property) is null
+
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -2005,7 +2005,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
     case CSSPropertyWebkitLineClamp:
     case CSSPropertyWebkitLineGrid:
     case CSSPropertyWebkitLineSnap:
-    case CSSPropertyWebkitMarqueeDirection:
+    case CSSPropertyInternalMarqueeDirection:
     case CSSPropertyWebkitMarqueeIncrement:
     case CSSPropertyWebkitMarqueeRepetition:
     case CSSPropertyWebkitMarqueeSpeed:

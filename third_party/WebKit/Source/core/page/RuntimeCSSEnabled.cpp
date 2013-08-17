@@ -119,6 +119,11 @@ size_t indexForProperty(CSSPropertyID propertyId)
 
 bool RuntimeCSSEnabled::isCSSPropertyEnabled(CSSPropertyID propertyId)
 {
+    // Internal properties shouldn't be exposed to the web
+    // so they are considered to be always disabled.
+    if (isInternalProperty(propertyId))
+        return false;
+
     return propertySwitches()[indexForProperty(propertyId)];
 }
 

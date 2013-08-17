@@ -104,7 +104,7 @@ void HTMLMarqueeElement::collectStyleForPresentationAttribute(const QualifiedNam
             addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitMarqueeStyle, value);
     } else if (name == directionAttr) {
         if (!value.isEmpty())
-            addPropertyToPresentationAttributeStyle(style, CSSPropertyWebkitMarqueeDirection, value);
+            addPropertyToPresentationAttributeStyle(style, CSSPropertyInternalMarqueeDirection, value);
     } else
         HTMLElement::collectStyleForPresentationAttribute(name, value, style);
 }

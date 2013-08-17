@@ -324,7 +324,7 @@ int UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(int id)
     case CSSPropertyWebkitMarginEnd: return 272;
     case CSSPropertyWebkitMarginStart: return 273;
     // CSSPropertyWebkitMarquee was 274.
-    case CSSPropertyWebkitMarqueeDirection: return 275;
+    case CSSPropertyInternalMarqueeDirection: return 275;
     case CSSPropertyWebkitMarqueeIncrement: return 276;
     case CSSPropertyWebkitMarqueeRepetition: return 277;
     case CSSPropertyWebkitMarqueeSpeed: return 278;

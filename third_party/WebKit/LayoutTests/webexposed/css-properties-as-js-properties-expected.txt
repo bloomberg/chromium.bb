@@ -326,7 +326,6 @@ webkitMarginCollapse
 webkitMarginEnd
 webkitMarginStart
 webkitMarginTopCollapse
-webkitMarqueeDirection
 webkitMarqueeIncrement
 webkitMarqueeRepetition
 webkitMarqueeSpeed

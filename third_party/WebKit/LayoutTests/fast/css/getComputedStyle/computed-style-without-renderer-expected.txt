@@ -161,7 +161,6 @@ justify-content: flex-start
 -webkit-locale: auto
 -webkit-margin-before-collapse: collapse
 -webkit-margin-after-collapse: collapse
--webkit-marquee-direction: auto
 -webkit-marquee-increment: 6px
 -webkit-marquee-repetition: infinite
 -webkit-marquee-style: scroll

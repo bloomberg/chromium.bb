@@ -16,9 +16,10 @@ HEADER_TEMPLATE = """
 #ifndef %(class_name)s_h
 #define %(class_name)s_h
 
-#include <string.h>
+#include "core/css/CSSParserMode.h"
 #include "wtf/HashFunctions.h"
 #include "wtf/HashTraits.h"
+#include <string.h>
 
 namespace WTF {
 class AtomicString;
@@ -42,6 +43,7 @@ const char* getPropertyName(CSSPropertyID);
 const WTF::AtomicString& getPropertyNameAtomicString(CSSPropertyID);
 WTF::String getPropertyNameString(CSSPropertyID);
 WTF::String getJSPropertyName(CSSPropertyID);
+bool isInternalProperty(CSSPropertyID id);
 
 inline CSSPropertyID convertToCSSPropertyID(int value)
 {
@@ -163,6 +165,16 @@ String getJSPropertyName(CSSPropertyID id)
     return String(result);
 }
 
+bool isInternalProperty(CSSPropertyID id)
+{
+    switch (id) {
+        %(internal_properties)s
+            return true;
+        default:
+            return false;
+    }
+}
+
 } // namespace WebCore
 """
 
@@ -172,6 +184,7 @@ class CSSPropertiesWriter(in_generator.Writer):
     defaults = {
         'alias_for': None,
         'condition': None,
+        'is_internal': False,
     }
 
     def __init__(self, file_paths, enabled_conditions):
@@ -196,6 +209,8 @@ class CSSPropertiesWriter(in_generator.Writer):
         for offset, property in enumerate(self._properties):
             property['enum_name'] = self._enum_name_from_property_name(property['name'])
             property['enum_value'] = self._first_property_id + offset
+            if property['name'].startswith('-internal-'):
+                property['is_internal'] = True
 
     def _enum_name_from_property_name(self, property_name):
         return "CSSProperty" + re.sub(r'(^[^-])|-(.)', lambda match: (match.group(1) or match.group(2)).upper(), property_name)
@@ -214,6 +229,9 @@ class CSSPropertiesWriter(in_generator.Writer):
             'max_name_length': reduce(max, map(len, map(lambda property: property['name'], self._properties))),
         }
 
+    def _case_properties(self, property):
+        return "case %(enum_name)s:" % property
+
     def generate_implementation(self):
         property_offsets = []
         current_offset = 0
@@ -227,6 +245,7 @@ class CSSPropertiesWriter(in_generator.Writer):
             'property_name_strings': '\n'.join(map(lambda property: '    "%(name)s\\0"' % property, self._properties)),
             'property_name_offsets': '\n'.join(map(lambda offset: '    %d,' % offset, property_offsets)),
             'property_to_enum_map': '\n'.join(map(lambda property: '%(name)s, %(enum_name)s' % property, self._properties + self._aliases)),
+            'internal_properties': '\n'.join(map(self._case_properties, filter(lambda property: property['is_internal'], self._properties))),
         }
         # FIXME: If we could depend on Python 2.7, we would use subprocess.check_output
         gperf_args = ['gperf', '--key-positions=*', '-P', '-D', '-n', '-s', '2']
