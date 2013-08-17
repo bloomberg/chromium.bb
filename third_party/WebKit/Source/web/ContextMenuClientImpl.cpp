@@ -273,8 +273,12 @@ void ContextMenuClientImpl::showContextMenu(const WebCore::ContextMenu* defaultM
         }
     }
 
-    data.isImageBlocked =
-        (data.mediaType == WebContextMenuData::MediaTypeImage) && !r.image();
+    // An image can to be null for many reasons, like being blocked, no image
+    // data received from server yet.
+    data.hasImageContents =
+        (data.mediaType == WebContextMenuData::MediaTypeImage)
+        && r.image() && !(r.image()->isNull());
+    data.isImageBlocked = !data.hasImageContents;
 
     // If it's not a link, an image, a media element, or an image/media link,
     // show a selection menu or a more generic page menu.
