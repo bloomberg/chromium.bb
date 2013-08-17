@@ -1,41 +1,17 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Download utility implementation
 
 #include "chrome/browser/download/download_util.h"
 
-#include <cmath>
 #include <string>
 
-#include "base/file_util.h"
-#include "base/lazy_instance.h"
-#include "base/path_service.h"
-#include "base/strings/string16.h"
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/sys_string_conversions.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/value_conversions.h"
-#include "base/values.h"
-#include "chrome/browser/download/download_extensions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_paths.h"
 #include "content/public/browser/download_item.h"
-#include "content/public/browser/download_manager.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/common/url_constants.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
-#include "skia/ext/image_operations.h"
-#include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkShader.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
-#include "ui/base/text/bytes_formatting.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/rect.h"
+#include "ui/gfx/point.h"
+#include "url/gurl.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -63,58 +39,6 @@
 namespace download_util {
 
 using content::DownloadItem;
-
-// Download temporary file creation --------------------------------------------
-
-class DefaultDownloadDirectory {
- public:
-  const base::FilePath& path() const { return path_; }
- private:
-  DefaultDownloadDirectory() {
-    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
-      NOTREACHED();
-    }
-    if (DownloadPathIsDangerous(path_)) {
-      // This is only useful on platforms that support
-      // DIR_DEFAULT_DOWNLOADS_SAFE.
-      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &path_)) {
-        NOTREACHED();
-      }
-    }
-  }
-  friend struct base::DefaultLazyInstanceTraits<DefaultDownloadDirectory>;
-  base::FilePath path_;
-};
-
-static base::LazyInstance<DefaultDownloadDirectory>
-    g_default_download_directory = LAZY_INSTANCE_INITIALIZER;
-
-const base::FilePath& GetDefaultDownloadDirectory() {
-  return g_default_download_directory.Get().path();
-}
-
-// Consider downloads 'dangerous' if they go to the home directory on Linux and
-// to the desktop on any platform.
-bool DownloadPathIsDangerous(const base::FilePath& download_path) {
-#if defined(OS_LINUX)
-  base::FilePath home_dir = file_util::GetHomeDir();
-  if (download_path == home_dir) {
-    return true;
-  }
-#endif
-
-#if defined(OS_ANDROID)
-  // Android does not have a desktop dir.
-  return false;
-#else
-  base::FilePath desktop_dir;
-  if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_dir)) {
-    NOTREACHED();
-    return false;
-  }
-  return (download_path == desktop_dir);
-#endif
-}
 
 #if defined(TOOLKIT_VIEWS)
 // Download dragging

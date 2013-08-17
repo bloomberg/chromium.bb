@@ -10,7 +10,9 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/download/download_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +41,61 @@ using content::BrowserContext;
 using content::BrowserThread;
 using content::DownloadManager;
 
+namespace {
+
+// Consider downloads 'dangerous' if they go to the home directory on Linux and
+// to the desktop on any platform.
+bool DownloadPathIsDangerous(const base::FilePath& download_path) {
+#if defined(OS_LINUX)
+  base::FilePath home_dir = file_util::GetHomeDir();
+  if (download_path == home_dir) {
+    return true;
+  }
+#endif
+
+#if defined(OS_ANDROID)
+  // Android does not have a desktop dir.
+  return false;
+#else
+  base::FilePath desktop_dir;
+  if (!PathService::Get(base::DIR_USER_DESKTOP, &desktop_dir)) {
+    NOTREACHED();
+    return false;
+  }
+  return (download_path == desktop_dir);
+#endif
+}
+
+class DefaultDownloadDirectory {
+ public:
+  const base::FilePath& path() const { return path_; }
+
+ private:
+  friend struct base::DefaultLazyInstanceTraits<DefaultDownloadDirectory>;
+
+  DefaultDownloadDirectory() {
+    if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &path_)) {
+      NOTREACHED();
+    }
+    if (DownloadPathIsDangerous(path_)) {
+      // This is only useful on platforms that support
+      // DIR_DEFAULT_DOWNLOADS_SAFE.
+      if (!PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS_SAFE, &path_)) {
+        NOTREACHED();
+      }
+    }
+  }
+
+  base::FilePath path_;
+
+  DISALLOW_COPY_AND_ASSIGN(DefaultDownloadDirectory);
+};
+
+static base::LazyInstance<DefaultDownloadDirectory>
+    g_default_download_directory = LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
+
 DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   PrefService* prefs = profile->GetPrefs();
 
@@ -47,9 +105,9 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   if (!prefs->GetBoolean(prefs::kDownloadDirUpgraded)) {
     base::FilePath current_download_dir = prefs->GetFilePath(
         prefs::kDownloadDefaultDirectory);
-    if (download_util::DownloadPathIsDangerous(current_download_dir)) {
+    if (DownloadPathIsDangerous(current_download_dir)) {
       prefs->SetFilePath(prefs::kDownloadDefaultDirectory,
-                         download_util::GetDefaultDownloadDirectory());
+                         GetDefaultDownloadDirectory());
     }
     prefs->SetBoolean(prefs::kDownloadDirUpgraded, true);
   }
@@ -78,8 +136,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   }
 }
 
-DownloadPrefs::~DownloadPrefs() {
-}
+DownloadPrefs::~DownloadPrefs() {}
 
 // static
 void DownloadPrefs::RegisterProfilePrefs(
@@ -102,8 +159,7 @@ void DownloadPrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   // The default download path is userprofile\download.
-  const base::FilePath& default_download_path =
-      download_util::GetDefaultDownloadDirectory();
+  const base::FilePath& default_download_path = GetDefaultDownloadDirectory();
   registry->RegisterFilePathPref(
       prefs::kDownloadDefaultDirectory,
       default_download_path,
@@ -120,6 +176,11 @@ void DownloadPrefs::RegisterProfilePrefs(
       base::Bind(base::IgnoreResult(&file_util::CreateDirectory),
                  default_download_path));
 #endif  // defined(OS_CHROMEOS)
+}
+
+// static
+const base::FilePath& DownloadPrefs::GetDefaultDownloadDirectory() {
+  return g_default_download_directory.Get().path();
 }
 
 // static
@@ -144,7 +205,7 @@ base::FilePath DownloadPrefs::DownloadPath() const {
   // default download directory (/Downloads).
   if (drive::util::IsUnderDriveMountPoint(*download_path_) &&
       !drive::DriveIntegrationServiceFactory::GetForProfile(profile_))
-    return download_util::GetDefaultDownloadDirectory();
+    return GetDefaultDownloadDirectory();
 #endif
   return *download_path_;
 }

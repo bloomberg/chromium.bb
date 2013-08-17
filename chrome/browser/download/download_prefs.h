@@ -30,6 +30,9 @@ class DownloadPrefs {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // Returns the default download directory.
+  static const base::FilePath& GetDefaultDownloadDirectory();
+
   // Returns the DownloadPrefs corresponding to the given DownloadManager
   // or BrowserContext.
   static DownloadPrefs* FromDownloadManager(

@@ -22,9 +22,9 @@
 #include "chrome/browser/chromeos/drive/resource_metadata.h"
 #include "chrome/browser/chromeos/drive/resource_metadata_storage.h"
 #include "chrome/browser/chromeos/profiles/profile_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/drive/drive_api_service.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/drive/drive_notification_manager.h"
@@ -405,7 +405,7 @@ void DriveIntegrationService::DisableDrive() {
   if (util::IsUnderDriveMountPoint(
           pref_service->GetFilePath(prefs::kDownloadDefaultDirectory))) {
     pref_service->SetFilePath(prefs::kDownloadDefaultDirectory,
-                              download_util::GetDefaultDownloadDirectory());
+                              DownloadPrefs::GetDefaultDownloadDirectory());
   }
 }
 

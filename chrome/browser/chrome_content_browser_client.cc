@@ -31,7 +31,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
@@ -2308,7 +2308,7 @@ void ChromeContentBrowserClient::ClearCookies(RenderViewHost* rvh) {
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
-  return download_util::GetDefaultDownloadDirectory();
+  return DownloadPrefs::GetDefaultDownloadDirectory();
 }
 
 std::string ChromeContentBrowserClient::GetDefaultDownloadName() {

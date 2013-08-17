@@ -16,7 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/policy/configuration_policy_pref_store.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
@@ -739,7 +739,7 @@ void DownloadDirPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
   // This is checked after path expansion because a non-empty policy value can
   // lead to an empty path value after expansion (e.g. "\"\"").
   if (expanded_value.empty())
-    expanded_value = download_util::GetDefaultDownloadDirectory().value();
+    expanded_value = DownloadPrefs::GetDefaultDownloadDirectory().value();
   prefs->SetValue(prefs::kDownloadDefaultDirectory,
                   Value::CreateStringValue(expanded_value));
   prefs->SetValue(prefs::kPromptForDownload,

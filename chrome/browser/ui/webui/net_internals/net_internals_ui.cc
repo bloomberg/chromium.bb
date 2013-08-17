@@ -32,7 +32,7 @@
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/io_thread.h"
@@ -378,7 +378,7 @@ void WriteDebugLogToFile(const StoreDebugLogsCallback& callback,
 void StoreDebugLogs(const StoreDebugLogsCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  const base::FilePath fileshelf = download_util::GetDefaultDownloadDirectory();
+  const base::FilePath fileshelf = DownloadPrefs::GetDefaultDownloadDirectory();
   DebugLogFileHelper* helper = new DebugLogFileHelper();
   bool posted = base::WorkerPool::PostTaskAndReply(FROM_HERE,
       base::Bind(&DebugLogFileHelper::DoWork,

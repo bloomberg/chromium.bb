@@ -38,7 +38,7 @@ specific_include_rules = {
 
   r"configuration_policy_handler\.cc": [
     "+chrome/browser/chrome_notification_types.h",
-    "+chrome/browser/download/download_util.h",
+    "+chrome/browser/download/download_prefs.h",
     "+chrome/browser/extensions/external_policy_loader.h",
     "+chrome/browser/prefs/proxy_config_dictionary.h",
     "+chrome/browser/prefs/proxy_prefs.h",

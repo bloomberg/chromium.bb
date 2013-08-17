@@ -24,7 +24,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
-#include "chrome/browser/download/download_util.h"
+#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/feedback/tracing_manager.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
@@ -770,7 +770,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       if (drive::util::IsUnderDriveMountPoint(
           download_default_directory_.GetValue())) {
         prefs_->SetFilePath(prefs::kDownloadDefaultDirectory,
-                            download_util::GetDefaultDownloadDirectory());
+                            DownloadPrefs::GetDefaultDownloadDirectory());
       }
     }
   }

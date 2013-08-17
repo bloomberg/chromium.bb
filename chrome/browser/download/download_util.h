@@ -7,10 +7,6 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace content {
 class DownloadItem;
 }
@@ -20,16 +16,6 @@ class Image;
 }
 
 namespace download_util {
-
-// Download temporary file creation --------------------------------------------
-
-// Return the default download directory.
-const base::FilePath& GetDefaultDownloadDirectory();
-
-// Return true if the |download_path| is dangerous path.
-bool DownloadPathIsDangerous(const base::FilePath& download_path);
-
-// Drag support ----------------------------------------------------------------
 
 // Helper function for download views to use when acting as a drag source for a
 // DownloadItem. If |icon| is NULL, no image will be accompany the drag. |view|

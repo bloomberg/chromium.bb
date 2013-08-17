@@ -18,7 +18,6 @@
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_stats.h"
-#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
@@ -85,7 +84,7 @@ void GetDownloadFilePath(
 #if defined(OS_CHROMEOS)
   // Do not use drive for extension downloads.
   if (drive::util::IsUnderDriveMountPoint(directory))
-    directory = download_util::GetDefaultDownloadDirectory();
+    directory = DownloadPrefs::GetDefaultDownloadDirectory();
 #endif
 
   // Ensure the download directory exists. TODO(asargent) - make this use
