@@ -10255,7 +10255,8 @@ inline void CSSParser::detectAtToken(int length, bool hasEscape)
             m_token = IMPORT_SYM;
         }
         CASE("keyframes") {
-            m_token = WEBKIT_KEYFRAMES_SYM;
+            if (RuntimeEnabledFeatures::cssAnimationUnprefixedEnabled())
+                m_token = WEBKIT_KEYFRAMES_SYM;
         }
         CASE("left-top") {
             if (LIKELY(!hasEscape))
