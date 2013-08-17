@@ -219,8 +219,8 @@ class CaseLineProcessor(LineProcessor):
 
 def process_file(input_name, output_name):
     """Transforms input file into legal C++ source code."""
-    with io.open(input_name) as input_file:
-        with io.open(output_name, 'w') as output_file:
+    with io.open(input_name, 'r', -1, 'utf-8') as input_file:
+        with io.open(output_name, 'w', -1, 'utf-8') as output_file:
             processor = MainLineProcessor(output_file)
             input_lines = input_file.readlines()
             for line in input_lines:
