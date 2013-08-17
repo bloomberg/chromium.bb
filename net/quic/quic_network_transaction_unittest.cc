@@ -749,5 +749,32 @@ TEST_F(QuicNetworkTransactionTest, BrokenAlternateProtocolReadError) {
   ExpectBrokenAlternateProtocolMapping();
 }
 
+TEST_F(QuicNetworkTransactionTest, FailedZeroRttBrokenAlternateProtocol) {
+  HttpStreamFactory::EnableNpnSpdy();  // Enables QUIC too.
+
+  // Alternate-protocol job
+  MockRead quic_reads[] = {
+    MockRead(ASYNC, ERR_SOCKET_NOT_CONNECTED),
+  };
+  StaticSocketDataProvider quic_data(quic_reads, arraysize(quic_reads),
+                                     NULL, 0);
+  socket_factory_.AddSocketDataProvider(&quic_data);
+
+  AddHangingNonAlternateProtocolSocketData();
+
+  CreateSession();
+
+  AddQuicAlternateProtocolMapping(MockCryptoClientStream::ZERO_RTT);
+
+  scoped_ptr<HttpNetworkTransaction> trans(
+      new HttpNetworkTransaction(DEFAULT_PRIORITY, session_.get()));
+  TestCompletionCallback callback;
+  int rv = trans->Start(&request_, callback.callback(), net_log_.bound());
+  EXPECT_EQ(ERR_IO_PENDING, rv);
+  EXPECT_EQ(ERR_CONNECTION_CLOSED, callback.WaitForResult());
+
+  ExpectBrokenAlternateProtocolMapping();
+}
+
 }  // namespace test
 }  // namespace net

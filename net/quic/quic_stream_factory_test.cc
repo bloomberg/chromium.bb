@@ -29,6 +29,7 @@ class QuicStreamFactoryTest : public ::testing::Test {
   QuicStreamFactoryTest()
       : clock_(new MockClock()),
         factory_(&host_resolver_, &socket_factory_,
+                 base::WeakPtr<HttpServerProperties>(),
                  &crypto_client_stream_factory_,
                  &random_generator_, clock_),
         host_port_proxy_pair_(HostPortPair("www.google.com", 443),

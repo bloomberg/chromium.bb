@@ -16,6 +16,7 @@
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/single_request_host_resolver.h"
+#include "net/http/http_server_properties.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_client_session.h"
@@ -244,11 +245,13 @@ int QuicStreamFactory::Job::DoConnectComplete(int rv) {
 QuicStreamFactory::QuicStreamFactory(
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
+    base::WeakPtr<HttpServerProperties> http_server_properties,
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock)
     : host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
+      http_server_properties_(http_server_properties),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
       random_generator_(random_generator),
       clock_(clock),
@@ -351,6 +354,13 @@ void QuicStreamFactory::OnSessionClose(QuicClientSession* session) {
     DCHECK(active_sessions_.count(*it));
     DCHECK_EQ(session, active_sessions_[*it]);
     active_sessions_.erase(*it);
+    if (!session->IsCryptoHandshakeConfirmed() && http_server_properties_) {
+      // TODO(rch):  In the special case where the session has received no
+      // packets from the peer, we should consider blacklisting this
+      // differently so that we still race TCP but we don't consider the
+      // session connected until the handshake has been confirmed.
+      http_server_properties_->SetBrokenAlternateProtocol(it->first);
+    }
   }
   all_sessions_.erase(session);
   session_aliases_.erase(session);
