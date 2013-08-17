@@ -81,6 +81,7 @@ class BASE_EXPORT TraceEvent {
   TraceEvent();
   TraceEvent(int thread_id,
              TimeTicks timestamp,
+             TimeTicks thread_timestamp,
              char phase,
              const unsigned char* category_group_enabled,
              const char* name,
@@ -108,6 +109,7 @@ class BASE_EXPORT TraceEvent {
                                 std::string* out);
 
   TimeTicks timestamp() const { return timestamp_; }
+  TimeTicks thread_timestamp() const { return thread_timestamp_; }
 
   // Exposed for unittesting:
 
@@ -124,6 +126,7 @@ class BASE_EXPORT TraceEvent {
  private:
   // Note: these are ordered by size (largest first) for optimal packing.
   TimeTicks timestamp_;
+  TimeTicks thread_timestamp_;
   // id_ can be used to store phase-specific data.
   unsigned long long id_;
   TraceValue arg_values_[kTraceMaxNumArgs];

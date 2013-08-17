@@ -309,6 +309,7 @@ TraceEvent::TraceEvent()
 TraceEvent::TraceEvent(
     int thread_id,
     TimeTicks timestamp,
+    TimeTicks thread_timestamp,
     char phase,
     const unsigned char* category_group_enabled,
     const char* name,
@@ -320,12 +321,14 @@ TraceEvent::TraceEvent(
     scoped_ptr<ConvertableToTraceFormat> convertable_values[],
     unsigned char flags)
     : timestamp_(timestamp),
+      thread_timestamp_(thread_timestamp),
       id_(id),
       category_group_enabled_(category_group_enabled),
       name_(name),
       thread_id_(thread_id),
       phase_(phase),
       flags_(flags) {
+
   // Clamp num_args since it may have been set by a third_party library.
   num_args = (num_args > kTraceMaxNumArgs) ? kTraceMaxNumArgs : num_args;
   int i = 0;
@@ -391,6 +394,7 @@ TraceEvent::TraceEvent(
 
 TraceEvent::TraceEvent(const TraceEvent& other)
     : timestamp_(other.timestamp_),
+      thread_timestamp_(other.thread_timestamp_),
       id_(other.id_),
       category_group_enabled_(other.category_group_enabled_),
       name_(other.name_),
@@ -418,6 +422,7 @@ TraceEvent& TraceEvent::operator=(const TraceEvent& other) {
     return *this;
 
   timestamp_ = other.timestamp_;
+  thread_timestamp_ = other.thread_timestamp_;
   id_ = other.id_;
   category_group_enabled_ = other.category_group_enabled_;
   name_ = other.name_;
@@ -518,6 +523,12 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
       AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
   }
   *out += "}";
+
+  // Output tts if thread_timestamp is valid.
+  if (!thread_timestamp_.is_null()) {
+    int64 thread_time_int64 = thread_timestamp_.ToInternalValue();
+    StringAppendF(out, ",\"tts\":%" PRId64, thread_time_int64);
+  }
 
   // If id_ is set, print it out as a hex string so we don't loose any
   // bits (it might be a 64-bit pointer).
@@ -1200,6 +1211,9 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     return;
 
   TimeTicks now = timestamp - time_offset_;
+  base::TimeTicks thread_now;
+  if (base::TimeTicks::IsThreadNowSupported())
+    thread_now = base::TimeTicks::ThreadNow();
   EventCallback event_callback_copy;
 
   NotificationHelper notifier(this);
@@ -1240,7 +1254,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
   }
 
   TraceEvent trace_event(thread_id,
-      now, phase, category_group_enabled, name, id,
+      now, thread_now, phase, category_group_enabled, name, id,
       num_args, arg_names, arg_types, arg_values,
       convertable_values, flags);
 
@@ -1370,7 +1384,7 @@ void AddMetadataEventToBuffer(
   trace_event_internal::SetTraceValue(value, &arg_type, &arg_value);
   logged_events->AddEvent(TraceEvent(
       thread_id,
-      TimeTicks(), TRACE_EVENT_PHASE_METADATA,
+      TimeTicks(), TimeTicks(), TRACE_EVENT_PHASE_METADATA,
       &g_category_group_enabled[g_category_metadata],
       metadata_name, trace_event_internal::kNoEventId,
       num_args, &arg_name, &arg_type, &arg_value, NULL,
