@@ -66,7 +66,8 @@ TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
   EXPECT_EQ(1, samples->GetCount(1));
 }
 
-TEST_F(SpellcheckHostMetricsTest, CustomWordStats) {
+// Failing consistently on Win7. See crbug.com/230534.
+TEST_F(SpellcheckHostMetricsTest, DISABLED_CustomWordStats) {
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
 
   HistogramBase* histogram =

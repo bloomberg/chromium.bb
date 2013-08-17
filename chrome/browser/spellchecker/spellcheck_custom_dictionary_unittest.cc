@@ -1068,7 +1068,8 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
             server_custom_dictionary->GetWords().size());
 }
 
-TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
+// Failing consistently on Win7. See crbug.com/230534.
+TEST_F(SpellcheckCustomDictionaryTest, DISABLED_RecordSizeStatsCorrectly) {
   // Record a baseline.
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
 
