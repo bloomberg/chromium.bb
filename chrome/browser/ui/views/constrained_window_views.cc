@@ -6,48 +6,23 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/app/chrome_command_ids.h"
-#include "chrome/browser/platform_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/toolbar/toolbar_model.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/theme_image_mapper.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
-#include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_view.h"
-#include "grit/chromium_strings.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
-#include "net/base/net_util.h"
-#include "ui/aura/client/aura_constants.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
-#include "ui/gfx/path.h"
-#include "ui/gfx/rect.h"
-#include "ui/gfx/screen.h"
 #include "ui/views/border.h"
 #include "ui/views/color_constants.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/focus/focus_manager.h"
-#include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
-#include "ui/views/window/client_view.h"
-#include "ui/views/window/dialog_client_view.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/window/frame_background.h"
-#include "ui/views/window/non_client_view.h"
 #include "ui/views/window/window_resources.h"
 #include "ui/views/window/window_shape.h"
 
@@ -58,24 +33,14 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
-#include "ui/views/corewm/visibility_controller.h"
-#include "ui/views/corewm/window_animations.h"
-#include "ui/views/corewm/window_modality_controller.h"
 #endif
 
 #if defined(USE_ASH)
-#include "ash/ash_constants.h"
-#include "ash/shell.h"
 #include "ash/wm/custom_frame_view_ash.h"
 #endif
 
-using base::TimeDelta;
 using web_modal::WebContentsModalDialogHost;
 using web_modal::WebContentsModalDialogHostObserver;
-
-namespace views {
-class ClientView;
-}
 
 namespace {
 // The name of a key to store on the window handle to associate

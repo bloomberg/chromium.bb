@@ -7,19 +7,19 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace web_modal {
-class WebContentsModalDialogHost;
-}
-
 namespace content {
-class WebContents;
 class BrowserContext;
 }
+
 namespace views {
 class DialogDelegate;
 class NonClientFrameView;
-class WidgetDelegate;
 class Widget;
+class WidgetDelegate;
+}
+
+namespace web_modal {
+class WebContentsModalDialogHost;
 }
 
 views::Widget* CreateWebContentsModalDialogViews(
