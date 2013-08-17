@@ -56,7 +56,6 @@ InputModeAttribute status=test
 InputTypeColor status=stable
 InputTypeWeek status=stable
 LangAttributeAwareFormControlUI
-LazyLayout
 LegacyEncryptedMedia status=stable
 LocalStorage status=stable
 Media status=stable

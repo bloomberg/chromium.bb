@@ -67,7 +67,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalTextAutosizingWindowSizeOverride(settings->textAutosizingWindowSizeOverride())
     , m_originalTextAutosizingFontScaleFactor(settings->textAutosizingFontScaleFactor())
     , m_originalMediaTypeOverride(settings->mediaTypeOverride())
-    , m_originalLazyLayoutEnabled(RuntimeEnabledFeatures::lazyLayoutEnabled())
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->areImagesEnabled())
@@ -90,7 +89,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setTextAutosizingWindowSizeOverride(m_originalTextAutosizingWindowSizeOverride);
     settings->setTextAutosizingFontScaleFactor(m_originalTextAutosizingFontScaleFactor);
     settings->setMediaTypeOverride(m_originalMediaTypeOverride);
-    RuntimeEnabledFeatures::setLazyLayoutEnabled(m_originalLazyLayoutEnabled);
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
@@ -284,11 +282,6 @@ void InternalSettings::setEditingBehavior(const String& editingBehavior, Excepti
         settings()->setEditingBehaviorType(EditingAndroidBehavior);
     else
         es.throwDOMException(SyntaxError);
-}
-
-void InternalSettings::setLazyLayoutEnabled(bool enabled)
-{
-    RuntimeEnabledFeatures::setLazyLayoutEnabled(enabled);
 }
 
 void InternalSettings::setLangAttributeAwareFormControlUIEnabled(bool enabled)

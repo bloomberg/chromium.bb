@@ -59,7 +59,6 @@ public:
         IntSize m_originalTextAutosizingWindowSizeOverride;
         float m_originalTextAutosizingFontScaleFactor;
         String m_originalMediaTypeOverride;
-        bool m_originalLazyLayoutEnabled;
         bool m_originalMockScrollbarsEnabled;
         bool m_originalUsesOverlayScrollbars;
         bool m_langAttributeAwareFormControlUIEnabled;
@@ -110,7 +109,6 @@ public:
     void setCSSExclusionsEnabled(bool);
     void setExperimentalWebSocketEnabled(bool);
     void setLangAttributeAwareFormControlUIEnabled(bool);
-    void setLazyLayoutEnabled(bool);
     void setStyleScopedEnabled(bool);
 
 private:

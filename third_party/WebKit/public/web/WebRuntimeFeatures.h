@@ -79,7 +79,6 @@ public:
     WEBKIT_EXPORT static bool isGeolocationEnabled();
 
     WEBKIT_EXPORT static void enableLazyLayout(bool);
-    WEBKIT_EXPORT static bool isLazyLayoutEnabled();
 
     WEBKIT_EXPORT static void enableLocalStorage(bool);
     WEBKIT_EXPORT static bool isLocalStorageEnabled();

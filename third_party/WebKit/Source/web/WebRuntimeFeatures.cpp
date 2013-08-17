@@ -176,12 +176,7 @@ bool WebRuntimeFeatures::isGeolocationEnabled()
 
 void WebRuntimeFeatures::enableLazyLayout(bool enable)
 {
-    RuntimeEnabledFeatures::setLazyLayoutEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isLazyLayoutEnabled()
-{
-    return RuntimeEnabledFeatures::lazyLayoutEnabled();
+    // FIXME: Remove this once Chromium stops calling this.
 }
 
 void WebRuntimeFeatures::enableLocalStorage(bool enable)
