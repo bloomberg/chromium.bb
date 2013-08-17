@@ -4,43 +4,44 @@
 
 /**
  * This view displays the log messages from various resources in an
- * interactive log analyzer
+ * interactive log visualizer
  *
  *   - Filter checkboxes
  *   - Filter text inputs
  *   - Display the log by different sections: time|level|process|description
  *
  */
-var CrosLogAnalyzerView = (function() {
+var CrosLogVisualizerView = (function() {
   'use strict';
 
   // Inherits from DivView.
   var superClass = DivView;
 
-  // Special classes (defined in log_analyzer_view.css)
-  var LOG_CONTAINER_CLASSNAME = 'cros-log-analyzer-container';
-  var LOG_FILTER_PNAME_BLOCK_CLASSNAME = 'cros-log-analyzer-filter-pname-block';
-  var LOG_CELL_HEADER_CLASSNAME = 'cros-log-analyzer-td-head';
-  var LOG_CELL_TIME_CLASSNAME = 'cros-log-analyzer-td-time';
-  var LOG_CELL_PNAME_CLASSNAME = 'cros-log-analyzer-td-pname';
-  var LOG_CELL_PID_CLASSNAME = 'cros-log-analyzer-td-pid';
-  var LOG_CELL_DESCRIPTION_CLASSNAME = 'cros-log-analyzer-td-description';
-  var LOG_CELL_LEVEL_CLASSNAME = 'cros-log-analyzer-td-level';
+  // Special classes (defined in log_visualizer_view.css)
+  var LOG_CONTAINER_CLASSNAME = 'cros-log-visualizer-container';
+  var LOG_FILTER_PNAME_BLOCK_CLASSNAME =
+      'cros-log-visualizer-filter-pname-block';
+  var LOG_CELL_HEADER_CLASSNAME = 'cros-log-visualizer-td-head';
+  var LOG_CELL_TIME_CLASSNAME = 'cros-log-visualizer-td-time';
+  var LOG_CELL_PNAME_CLASSNAME = 'cros-log-visualizer-td-pname';
+  var LOG_CELL_PID_CLASSNAME = 'cros-log-visualizer-td-pid';
+  var LOG_CELL_DESCRIPTION_CLASSNAME = 'cros-log-visualizer-td-description';
+  var LOG_CELL_LEVEL_CLASSNAME = 'cros-log-visualizer-td-level';
   var LOG_CELL_LEVEL_CLASSNAME_LIST = {
-    'Error': 'cros-log-analyzer-td-level-error',
-    'Warning': 'cros-log-analyzer-td-level-warning',
-    'Info': 'cros-log-analyzer-td-level-info',
-    'Unknown': 'cros-log-analyzer-td-level-unknown'
+    'Error': 'cros-log-visualizer-td-level-error',
+    'Warning': 'cros-log-visualizer-td-level-warning',
+    'Info': 'cros-log-visualizer-td-level-info',
+    'Unknown': 'cros-log-visualizer-td-level-unknown'
   };
 
   /**
    * @constructor
    */
-  function CrosLogAnalyzerView() {
-    assertFirstConstructorCall(CrosLogAnalyzerView);
+  function CrosLogVisualizerView() {
+    assertFirstConstructorCall(CrosLogVisualizerView);
 
     // Call superclass's constructor.
-    superClass.call(this, CrosLogAnalyzerView.MAIN_BOX_ID);
+    superClass.call(this, CrosLogVisualizerView.MAIN_BOX_ID);
 
     // Stores log entry objects
     this.logEntries = [];
@@ -50,7 +51,7 @@ var CrosLogAnalyzerView = (function() {
     this.logData = '';
     // Stores all the unique process names
     this.pNames = [];
-    // References to special HTML elements in log_analyzer_view.html
+    // References to special HTML elements in log_visualizer_view.html
     this.pNameCheckboxes = {};
     this.levelCheckboxes = {};
     this.tableEntries = [];
@@ -58,20 +59,22 @@ var CrosLogAnalyzerView = (function() {
     this.initialize();
   }
 
-  CrosLogAnalyzerView.TAB_ID = 'tab-handle-cros-log-analyzer';
-  CrosLogAnalyzerView.TAB_NAME = 'Log Analyzer';
-  CrosLogAnalyzerView.TAB_HASH = '#analyzer';
+  CrosLogVisualizerView.TAB_ID = 'tab-handle-cros-log-visualizer';
+  CrosLogVisualizerView.TAB_NAME = 'Log Visualizer';
+  CrosLogVisualizerView.TAB_HASH = '#visualizer';
 
-  // IDs for special HTML elements in log_analyzer_view.html
-  CrosLogAnalyzerView.MAIN_BOX_ID = 'cros-log-analyzer-tab-content';
-  CrosLogAnalyzerView.LOG_TABLE_ID = 'cros-log-analyzer-log-table';
-  CrosLogAnalyzerView.LOG_FILTER_PNAME_ID = 'cros-log-analyzer-filter-pname';
-  CrosLogAnalyzerView.LOG_SEARCH_INPUT_ID = 'cros-log-analyzer-search-input';
-  CrosLogAnalyzerView.LOG_SEARCH_SAVE_BTN_ID = 'cros-log-analyzer-save-btn';
-  CrosLogAnalyzerView.LOG_VISUALIZER_CONTAINER_ID =
-      'cros-log-analyzer-visualizer-container';
+  // IDs for special HTML elements in log_visualizer_view.html
+  CrosLogVisualizerView.MAIN_BOX_ID = 'cros-log-visualizer-tab-content';
+  CrosLogVisualizerView.LOG_TABLE_ID = 'cros-log-visualizer-log-table';
+  CrosLogVisualizerView.LOG_FILTER_PNAME_ID =
+      'cros-log-visualizer-filter-pname';
+  CrosLogVisualizerView.LOG_SEARCH_INPUT_ID =
+      'cros-log-visualizer-search-input';
+  CrosLogVisualizerView.LOG_SEARCH_SAVE_BTN_ID = 'cros-log-visualizer-save-btn';
+  CrosLogVisualizerView.LOG_VISUALIZER_CONTAINER_ID =
+      'cros-log-visualizer-visualizer-container';
 
-  cr.addSingletonGetter(CrosLogAnalyzerView);
+  cr.addSingletonGetter(CrosLogVisualizerView);
 
   /**
    * Contains types of logs we are interested in
@@ -86,7 +89,7 @@ var CrosLogAnalyzerView = (function() {
    */
   var TABLE_HEADERS_LIST = ['Level', 'Time', 'Process', 'PID', 'Description'];
 
-  CrosLogAnalyzerView.prototype = {
+  CrosLogVisualizerView.prototype = {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
@@ -96,9 +99,9 @@ var CrosLogAnalyzerView = (function() {
      */
     initialize: function() {
       g_browser.addSystemLogObserver(this);
-      $(CrosLogAnalyzerView.LOG_SEARCH_INPUT_ID).addEventListener('keyup',
+      $(CrosLogVisualizerView.LOG_SEARCH_INPUT_ID).addEventListener('keyup',
           this.onSearchQueryChange_.bind(this));
-      $(CrosLogAnalyzerView.LOG_SEARCH_SAVE_BTN_ID).addEventListener(
+      $(CrosLogVisualizerView.LOG_SEARCH_SAVE_BTN_ID).addEventListener(
           'click', this.onSaveBtnClicked_.bind(this));
     },
 
@@ -109,7 +112,7 @@ var CrosLogAnalyzerView = (function() {
     onSaveBtnClicked_: function() {
       this.marker.addMarkHistory(this.currentQuery);
       // Clears the filter query
-      $(CrosLogAnalyzerView.LOG_SEARCH_INPUT_ID).value = '';
+      $(CrosLogVisualizerView.LOG_SEARCH_INPUT_ID).value = '';
       this.currentQuery = '';
       // Refresh the table
       this.populateTable();
@@ -117,7 +120,7 @@ var CrosLogAnalyzerView = (function() {
     },
 
     onSearchQueryChange_: function() {
-      var inputField = $(CrosLogAnalyzerView.LOG_SEARCH_INPUT_ID);
+      var inputField = $(CrosLogVisualizerView.LOG_SEARCH_INPUT_ID);
       this.currentQuery = inputField.value;
       this.filterLog();
     },
@@ -128,7 +131,7 @@ var CrosLogAnalyzerView = (function() {
      * level.
      */
     populateTable: function() {
-      var logTable = $(CrosLogAnalyzerView.LOG_TABLE_ID);
+      var logTable = $(CrosLogVisualizerView.LOG_TABLE_ID);
       logTable.innerHTML = '';
       this.tableEntries.length = 0;
       // Create entries
@@ -261,7 +264,7 @@ var CrosLogAnalyzerView = (function() {
      * process filters.
      */
     createFilterByPName: function() {
-      var filterContainerDiv = $(CrosLogAnalyzerView.LOG_FILTER_PNAME_ID);
+      var filterContainerDiv = $(CrosLogVisualizerView.LOG_FILTER_PNAME_ID);
       filterContainerDiv.innerHTML = 'Process: ';
       for (var i = 0; i < this.pNames.length; i++) {
         var pNameBlock = this.createPNameBlock(this.pNames[i]);
@@ -310,7 +313,7 @@ var CrosLogAnalyzerView = (function() {
      */
     createVisualizer: function() {
       this.visualizer = new CrosLogVisualizer(this,
-          CrosLogAnalyzerView.LOG_VISUALIZER_CONTAINER_ID);
+          CrosLogVisualizerView.LOG_VISUALIZER_CONTAINER_ID);
       this.visualizer.updateEvents(this.logEntries);
     },
 
@@ -367,5 +370,5 @@ var CrosLogAnalyzerView = (function() {
     }
   };
 
-  return CrosLogAnalyzerView;
+  return CrosLogVisualizerView;
 })();

@@ -41,7 +41,7 @@ TEST_F('NetInternalsTest', 'netInternalsTourTabs', function() {
     prerender: true,
     bandwidth: true,
     chromeos: cr.isChromeOS,
-    analyzer: cr.isChromeOS
+    visualizer: cr.isChromeOS
   };
 
   NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, true);

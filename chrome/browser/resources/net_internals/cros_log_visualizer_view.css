@@ -3,16 +3,16 @@
   * found in the LICENSE file.
   */
 
- #cros-log-analyzer-header {
+ #cros-log-visualizer-header {
   margin-bottom: 20px;
  }
 
-.cros-log-analyzer-container {
+.cros-log-visualizer-container {
   background-color: rgb(242, 242, 242);
   border: 1px solid rgb(220, 220, 220);
 }
 
-#cros-log-analyzer-log-content {
+#cros-log-visualizer-log-content {
   border: 1px solid rgb(220, 220, 220);
   font-size: 11px;
   height: 300px;
@@ -23,33 +23,33 @@
   width: 1000px;
  }
 
-#cros-log-analyzer-filter-container {
+#cros-log-visualizer-filter-container {
   font-size: 12px;
   margin-bottom: 5px;
   padding: 5px 10px;
   width: 1000px;
 }
 
-#cros-log-analyzer-filter-container p {
+#cros-log-visualizer-filter-container p {
   margin: 10px 0;
 }
 
-#cros-log-analyzer-log-table {
+#cros-log-visualizer-log-table {
   table-layout: fixed;
   width: 950px;
 }
 
-#cros-log-analyzer-log-table td {
+#cros-log-visualizer-log-table td {
   overflow: hidden;
   table-layout: fixed;
   word-wrap: break-word;
 }
 
-.cros-log-analyzer-td-time {
+.cros-log-visualizer-td-time {
   width: 100px;
 }
 
-#cros-log-analyzer-log-header-table {
+#cros-log-visualizer-log-header-table {
   font-size: 12px;
   font-weight: bold;
   margin-bottom: -1px;
@@ -57,16 +57,16 @@
   width: 1000px;
 }
 
-.cros-log-analyzer-td-pname {
+.cros-log-visualizer-td-pname {
   text-align: center;
   width: 120px;
 }
 
-.cros-log-analyzer-td-level {
+.cros-log-visualizer-td-level {
   width: 70px;
 }
 
-.cros-log-analyzer-td-level p {
+.cros-log-visualizer-td-level p {
   border: 1px solid;
   border-radius: 5px;
   margin: 0 3px;
@@ -74,40 +74,40 @@
   width: 58px;
 }
 
-.cros-log-analyzer-td-level-error {
+.cros-log-visualizer-td-level-error {
   background-color: rgb(255, 153, 163);
   color: rgb(238, 0, 0);
 }
 
-.cros-log-analyzer-td-level-info {
+.cros-log-visualizer-td-level-info {
   background-color: rgb(195, 227, 250);
   color: rgb(10, 147, 245);
   width: 120px;
 }
 
-.cros-log-analyzer-td-level-warning {
+.cros-log-visualizer-td-level-warning {
   background-color: rgb(250, 229, 195);
   color: darkorange;
 }
 
-.cros-log-analyzer-td-level-unknown {
+.cros-log-visualizer-td-level-unknown {
   color: gray;
 }
 
-.cros-log-analyzer-td-pid {
+.cros-log-visualizer-td-pid {
   width: 60px;
 }
 
-#cros-log-analyzer-filter-pname {
+#cros-log-visualizer-filter-pname {
   border-bottom: 1px solid rgb(209, 209, 209);
   padding: 5px 0 10px 0;
 }
 
-#cros-log-analyzer-filter-level {
+#cros-log-visualizer-filter-level {
   padding: 5px 0 10px 0;
 }
 
-#cros-log-analyzer-search-container {
+#cros-log-visualizer-search-container {
   -webkit-margin-start: 760px;
   border-radius: 5px;
   font-size: 12px;
@@ -118,18 +118,18 @@
   width: 280px;
 }
 
-#cros-log-analyzer-search-container input {
+#cros-log-visualizer-search-container input {
   border: 1px solid rgb(220, 220, 220);
 }
 
-#cros-log-analyzer-visualizer-container {
+#cros-log-visualizer-visualizer-container {
   border: 1px solid rgb(211, 211, 211);
   height: 100px;
   position: relative;
   width: 1002px;
 }
 
-#cros-log-analyzer-visualizer-timeline {
+#cros-log-visualizer-visualizer-timeline {
   background: gray;
   opacity: 0.5;
   position: absolute;
@@ -137,13 +137,13 @@
   width: 2px;
 }
 
-.cros-log-analyzer-visualizer-time-display {
+.cros-log-visualizer-visualizer-time-display {
   font-size: 10px;
   position: absolute;
   width: 50px;
 }
 
-#cros-log-analyzer-visualizer-reset-btn {
+#cros-log-visualizer-visualizer-reset-btn {
   border: 1px solid rgb(211, 211, 211);
   border-radius: 2px;
   position: absolute;
@@ -151,7 +151,7 @@
   top: 5px;
 }
 
-#cros-log-analyzer-visualizer-tracking-layer {
+#cros-log-visualizer-visualizer-tracking-layer {
   background: none;
   height: 100%;
   left: 0;
@@ -160,17 +160,17 @@
   width: 100%;
 }
 
-.cros-log-analyzer-visualizer-canvas {
+.cros-log-visualizer-visualizer-canvas {
   left: 0;
   position: absolute;
   top: 0;
 }
 
-.cros-log-analyzer-flash {
+.cros-log-visualizer-flash {
   -webkit-animation: fade 1s linear 1;
 }
 
-#cros-log-analyzer-marker-container {
+#cros-log-visualizer-marker-container {
   background-color: rgb(242, 242, 242);
   border: 1px solid rgb(211, 211, 211);
   left: 1030px;
@@ -181,40 +181,40 @@
   width: 200px;
 }
 
-.cros-log-analyzer-marker-history-entry {
+.cros-log-visualizer-marker-history-entry {
   display: -webkit-flex;
   height: 20px;
 }
 
 
-.cros-log-analyzer-marker-history-entry * {
+.cros-log-visualizer-marker-history-entry * {
   display: block;
 }
 
-.cros-log-analyzer-marker-history-entry p {
+.cros-log-visualizer-marker-history-entry p {
   font-size: 13px;
   height: 15px;
   margin: 0;
   width: 98px;
 }
 
-.cros-log-analyzer-marker-history-entry a {
+.cros-log-visualizer-marker-history-entry a {
   color: grey;
   font-size: 11px;
 }
 
-.cros-log-analyzer-marker-history-color-tag {
+.cros-log-visualizer-marker-history-color-tag {
   border-radius: 10px;
   height: 10px;
   margin: 4px;
   width: 10px;
 }
 
-.cros-log-analyzer-marker-highlight {
+.cros-log-visualizer-marker-highlight {
   font-weight: bold;
 }
 
-#cros-log-analyzer-save-btn {
+#cros-log-visualizer-save-btn {
   background-color: rgb(211, 211, 211);
 }
 

@@ -14,12 +14,13 @@
 var CrosLogMarker = (function() {
   'use strict';
 
-  // Special classes (defined in log_analyzer_view.css)
-  var LOG_MARKER_HIGHLIGHT_CLASS = 'cros-log-analyzer-marker-highlight';
-  var LOG_MARKER_CONTAINER_ID = 'cros-log-analyzer-marker-container';
-  var LOG_MARKER_HISTORY_ENTRY_CLASS = 'cros-log-analyzer-marker-history-entry';
+  // Special classes (defined in log_visualizer_view.css)
+  var LOG_MARKER_HIGHLIGHT_CLASS = 'cros-log-visualizer-marker-highlight';
+  var LOG_MARKER_CONTAINER_ID = 'cros-log-visualizer-marker-container';
+  var LOG_MARKER_HISTORY_ENTRY_CLASS =
+      'cros-log-visualizer-marker-history-entry';
   var LOG_MARKER_HISTORY_COLOR_TAG_CLASS =
-          'cros-log-analyzer-marker-history-color-tag';
+          'cros-log-visualizer-marker-history-color-tag';
 
   /**
    * Colors used for highlighting. (Current we support 6 colors)
@@ -56,18 +57,18 @@ var CrosLogMarker = (function() {
 
   /**
    * @constructor
-   * @param {CrosLogAnalyzerView} logAnalyzerView A reference to
-   *     CrosLogAnalyzerView.
+   * @param {CrosLogVisualizerView} logVisualizerView A reference to
+   *     CrosLogVisualizerView.
    */
-  function CrosLogMarker(logAnalyzerView) {
+  function CrosLogMarker(logVisualizerView) {
     this.container = $(LOG_MARKER_CONTAINER_ID);
     // Stores highlight objects for each entry.
     this.entryHighlights = [];
     // Stores all the filter queries.
     this.markHistory = {};
-    // Object references from CrosLogAnalyzerView.
-    this.logEntries = logAnalyzerView.logEntries;
-    this.logAnalyzerView = logAnalyzerView;
+    // Object references from CrosLogVisualizerView.
+    this.logEntries = logVisualizerView.logEntries;
+    this.logVisualizerView = logVisualizerView;
     // Counts how many highlights are created.
     this.markCount = 0;
     for (var i = 0; i < this.logEntries.length; i++) {
@@ -324,11 +325,11 @@ var CrosLogMarker = (function() {
     },
 
     /**
-     * Refresh the log table in the CrosLogAnalyzerView.
+     * Refresh the log table in the CrosLogVisualizerView.
      */
     refreshLogTable: function() {
-      this.logAnalyzerView.populateTable();
-      this.logAnalyzerView.filterLog();
+      this.logVisualizerView.populateTable();
+      this.logVisualizerView.filterLog();
     },
 
     /**

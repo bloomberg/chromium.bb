@@ -14,18 +14,18 @@ var CrosLogVisualizer = (function() {
   'use strict';
 
   // HTML attributes of canvas
-  var LOG_VISUALIZER_CANVAS_CLASS = 'cros-log-analyzer-visualizer-canvas';
+  var LOG_VISUALIZER_CANVAS_CLASS = 'cros-log-visualizer-visualizer-canvas';
   var LOG_VISUALIZER_CANVAS_WIDTH = 980;
   var LOG_VISUALIZER_CANVAS_HEIGHT = 100;
 
   // Special HTML classes
-  var LOG_VISUALIZER_TIMELINE_ID = 'cros-log-analyzer-visualizer-timeline';
+  var LOG_VISUALIZER_TIMELINE_ID = 'cros-log-visualizer-visualizer-timeline';
   var LOG_VISUALIZER_TIME_DISPLAY_CLASS =
-      'cros-log-analyzer-visualizer-time-display';
+      'cros-log-visualizer-visualizer-time-display';
   var LOG_VISUALIZER_RESET_BTN_ID =
-      'cros-log-analyzer-visualizer-reset-btn';
+      'cros-log-visualizer-visualizer-reset-btn';
   var LOG_VISUALIZER_TRACKING_LAYER_ID =
-      'cros-log-analyzer-visualizer-tracking-layer';
+      'cros-log-visualizer-visualizer-tracking-layer';
 
   /**
    * Event level list
@@ -51,12 +51,12 @@ var CrosLogVisualizer = (function() {
   /**
    * @constructor
    */
-  function CrosLogVisualizer(logAnalyzer, containerID) {
+  function CrosLogVisualizer(logVisualizer, containerID) {
     /**
-     * Pass the LogAnalyzer in as a reference so the visualizer can
+     * Pass the LogVisualizer in as a reference so the visualizer can
      * synchrous with the log filter.
      */
-    this.logAnalyzer = logAnalyzer;
+    this.logVisualizer = logVisualizer;
 
     // If the data is initialized
     this.dataIntialized = false;
@@ -84,7 +84,7 @@ var CrosLogVisualizer = (function() {
     this.container.appendChild(this.btnReset);
 
     this.container.addEventListener('webkitAnimationEnd', function() {
-      this.container.classList.remove('cros-log-analyzer-flash');
+      this.container.classList.remove('cros-log-visualizer-flash');
     }.bind(this), false);
   }
 
@@ -193,7 +193,7 @@ var CrosLogVisualizer = (function() {
      * CSS3 fadeIn/fadeOut effects
      */
     flashEffect: function() {
-      this.container.classList.add('cros-log-analyzer-flash');
+      this.container.classList.add('cros-log-visualizer-flash');
     },
 
     /**
@@ -205,7 +205,7 @@ var CrosLogVisualizer = (function() {
       // Reset all the parameters as initial
       this.initialize();
       // Reset the visibility of the entries in the log table
-      this.logAnalyzer.filterLog();
+      this.logVisualizer.filterLog();
       this.flashEffect();
      },
 
@@ -368,7 +368,7 @@ var CrosLogVisualizer = (function() {
       // Recalculate the pamameter based on the range user select
       this.reCalculate();
       // Filter the log table and hide the entries that are not in the range
-      this.logAnalyzer.filterLog();
+      this.logVisualizer.filterLog();
     },
   };
 

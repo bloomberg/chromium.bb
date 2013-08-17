@@ -176,7 +176,7 @@ function checkViewsAfterLogLoaded() {
     prerender: true,
     bandwidth: false,
     chromeos: false,
-    analyzer: false
+    visualizer: false
   };
   NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
 }
@@ -208,7 +208,7 @@ function checkViewsAfterNetLogLoggerLogLoaded() {
     prerender: false,
     bandwidth: false,
     chromeos: false,
-    analyzer: false
+    visualizer: false
   };
   NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
 }
