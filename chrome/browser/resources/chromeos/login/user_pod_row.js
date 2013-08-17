@@ -491,11 +491,20 @@ cr.define('login', function() {
       // Locally managed user token has been invalidated.
       // Make sure that pod is focused i.e. "Sign in" button is seen.
       this.parentNode.focusPod(this);
-      $('bubble').showTextForElement(
+
+      var error = document.createElement('div');
+      var messageDiv = document.createElement('div');
+      messageDiv.className = 'error-message-bubble';
+      messageDiv.textContent =
+          loadTimeData.getString('supervisedUserExpiredTokenWarning');
+      error.appendChild(messageDiv);
+
+      $('bubble').showContentForElement(
           this.signinButtonElement,
-          loadTimeData.getString('supervisedUserExpiredTokenWarning'),
           cr.ui.Bubble.Attachment.TOP,
-          24, 4);
+          error,
+          this.signinButtonElement.offsetWidth / 2,
+          4);
     },
 
     /**
@@ -949,8 +958,8 @@ cr.define('login', function() {
       // Event listeners that are installed for the time period during which
       // the element is visible.
       this.listeners_ = {
-        focus: [this.handleFocus_.bind(this), true],
-        click: [this.handleClick_.bind(this), false],
+        focus: [this.handleFocus_.bind(this), true /* useCapture */],
+        click: [this.handleClick_.bind(this), true],
         mousemove: [this.handleMouseMove_.bind(this), false],
         keydown: [this.handleKeyDown.bind(this), false]
       };
@@ -1378,6 +1387,10 @@ cr.define('login', function() {
         if (!pod)
           this.focusedPod_.isActionBoxMenuHovered = false;
       }
+
+      // Also stop event propagation.
+      if (pod && e.target == pod.imageElement)
+        e.stopPropagation();
     },
 
     /**

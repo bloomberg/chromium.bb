@@ -810,8 +810,15 @@ void ExistingUserController::OnProfilePrepared(Profile* profile) {
   // Reenable clicking on other windows and status area.
   login_display_->SetUIEnabled(true);
 
-  if (UserManager::Get()->IsCurrentUserNew() &&
-      !UserManager::Get()->GetCurrentUserFlow()->ShouldSkipPostLoginScreens() &&
+  UserManager* user_manager = UserManager::Get();
+  if (user_manager->IsCurrentUserNew() &&
+      user_manager->IsLoggedInAsLocallyManagedUser()) {
+    // Supervised users should launch into empty desktop on first run.
+    CommandLine::ForCurrentProcess()->AppendSwitch(::switches::kSilentLaunch);
+  }
+
+  if (user_manager->IsCurrentUserNew() &&
+      !user_manager->GetCurrentUserFlow()->ShouldSkipPostLoginScreens() &&
       !WizardController::default_controller()->skip_post_login_screens()) {
     // Don't specify start URLs if the administrator has configured the start
     // URLs via policy.
