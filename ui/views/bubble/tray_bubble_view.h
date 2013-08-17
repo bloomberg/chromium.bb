@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/views/bubble/bubble_delegate.h"
+#include "ui/views/mouse_watcher.h"
 #include "ui/views/views_export.h"
 
 // Specialized bubble view for bubbles associated with a tray icon (e.g. the
@@ -30,7 +31,8 @@ class TrayBubbleBorder;
 class TrayBubbleContentMask;
 }
 
-class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
+class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView,
+                                    public views::MouseWatcherListener {
  public:
   // AnchorType differentiates between bubbles that are anchored on a tray
   // element (ANCHOR_TYPE_TRAY) and display an arrow, or that are floating on
@@ -62,6 +64,8 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
     virtual void BubbleViewDestroyed() = 0;
 
     // Called when the mouse enters/exits the view.
+    // Note: This event will only be called if the mouse gets actively moved by
+    // the user to enter the view.
     virtual void OnMouseEnteredView() = 0;
     virtual void OnMouseExitedView() = 0;
 
@@ -159,6 +163,9 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
 
+  // Overridden from MouseWatcherListener
+  virtual void MouseMovedOutOfHost() OVERRIDE;
+
  protected:
   TrayBubbleView(gfx::NativeView parent_window,
                  views::View* anchor,
@@ -180,6 +187,13 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDelegateView {
   internal::TrayBubbleBorder* bubble_border_;
   scoped_ptr<internal::TrayBubbleContentMask> bubble_content_mask_;
   bool is_gesture_dragging_;
+
+  // True once the mouse cursor was actively moved by the user over the bubble.
+  // Only then the OnMouseExitedView() event will get passed on to listeners.
+  bool mouse_actively_entered_;
+
+  // Used to find any mouse movements.
+  scoped_ptr<MouseWatcher> mouse_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayBubbleView);
 };

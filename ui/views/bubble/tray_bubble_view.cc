@@ -38,11 +38,39 @@ const int kArrowOffsetLeft = 9;
 const int kArrowOffsetRight = -5;
 const int kOffsetLeftRightForTopBottomOrientation = 5;
 
+// The sampling time for mouse position changes in ms - which is roughly a frame
+// time.
+const int kFrameTimeInMS = 30;
 }  // namespace
 
 namespace views {
 
 namespace internal {
+
+// Detects any mouse movement. This is needed to detect mouse movements by the
+// user over the bubble if the bubble got created underneath the cursor.
+class MouseMoveDetectorHost : public MouseWatcherHost {
+ public:
+  MouseMoveDetectorHost();
+  virtual ~MouseMoveDetectorHost();
+
+  virtual bool Contains(const gfx::Point& screen_point,
+                        MouseEventType type) OVERRIDE;
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(MouseMoveDetectorHost);
+};
+
+MouseMoveDetectorHost::MouseMoveDetectorHost() {
+}
+
+MouseMoveDetectorHost::~MouseMoveDetectorHost() {
+}
+
+bool MouseMoveDetectorHost::Contains(const gfx::Point& screen_point,
+                                     MouseEventType type) {
+  return false;
+}
 
 // Custom border for TrayBubbleView. Contains special logic for GetBounds()
 // to stack bubbles with no arrows correctly. Also calculates the arrow offset.
@@ -293,7 +321,8 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
       delegate_(delegate),
       preferred_width_(init_params.min_width),
       bubble_border_(NULL),
-      is_gesture_dragging_(false) {
+      is_gesture_dragging_(false),
+      mouse_actively_entered_(false) {
   set_parent_window(parent_window);
   set_notify_enter_exit_on_child(true);
   set_close_on_deactivate(init_params.close_on_deactivate);
@@ -309,6 +338,7 @@ TrayBubbleView::TrayBubbleView(gfx::NativeView parent_window,
 }
 
 TrayBubbleView::~TrayBubbleView() {
+  mouse_watcher_.reset();
   // Inform host items (models) that their views are being destroyed.
   if (delegate_)
     delegate_->BubbleViewDestroyed();
@@ -414,12 +444,36 @@ int TrayBubbleView::GetHeightForWidth(int width) {
 }
 
 void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
-  if (delegate_)
+  mouse_watcher_.reset();
+  if (delegate_ && !(event.flags() & ui::EF_IS_SYNTHESIZED)) {
+    // Coming here the user was actively moving the mouse over the bubble and
+    // we inform the delegate that we entered. This will prevent the bubble
+    // to auto close.
     delegate_->OnMouseEnteredView();
+    mouse_actively_entered_ = true;
+  } else {
+    // Coming here the bubble got shown and the mouse was 'accidentally' over it
+    // which is not a reason to prevent the bubble to auto close. As such we
+    // do not call the delegate, but wait for the first mouse move within the
+    // bubble. The used MouseWatcher will notify use of a movement and call
+    // |MouseMovedOutOfHost|.
+    mouse_watcher_.reset(new MouseWatcher(
+        new views::internal::MouseMoveDetectorHost(),
+        this));
+    // Set the mouse sampling frequency to roughly a frame time so that the user
+    // cannot see a lag.
+    mouse_watcher_->set_notify_on_exit_time(
+        base::TimeDelta::FromMilliseconds(kFrameTimeInMS));
+    mouse_watcher_->Start();
+  }
 }
 
 void TrayBubbleView::OnMouseExited(const ui::MouseEvent& event) {
-  if (delegate_)
+  // If there was a mouse watcher waiting for mouse movements we disable it
+  // immediately since we now leave the bubble.
+  mouse_watcher_.reset();
+  // Do not notify the delegate of an exit if we never told it that we entered.
+  if (delegate_ && mouse_actively_entered_)
     delegate_->OnMouseExitedView();
 }
 
@@ -428,6 +482,15 @@ void TrayBubbleView::GetAccessibleState(ui::AccessibleViewState* state) {
     state->role = ui::AccessibilityTypes::ROLE_WINDOW;
     state->name = delegate_->GetAccessibleNameForBubble();
   }
+}
+
+void TrayBubbleView::MouseMovedOutOfHost() {
+  // The mouse was accidentally over the bubble when it opened and the AutoClose
+  // logic was not activated. Now that the user did move the mouse we tell the
+  // delegate to disable AutoClose.
+  delegate_->OnMouseEnteredView();
+  mouse_actively_entered_ = true;
+  mouse_watcher_->Stop();
 }
 
 void TrayBubbleView::ChildPreferredSizeChanged(View* child) {
