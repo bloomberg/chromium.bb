@@ -7,19 +7,31 @@
 
 #include <string>
 #include "base/compiler_specific.h"
+#include "ui/base/accessibility/accessibility_types.h"
 
-class AccessibilityEventInfo;
+class AccessibilityControlInfo;
+class AccessibilityMenuInfo;
+class AccessibilityWindowInfo;
 class Profile;
 
 namespace base {
 class DictionaryValue;
 }
 
-// Use the NotificationService to post the given accessibility
-// notification type with AccessibilityEventInfo details to any
-// listeners.  Will not send if the profile's pause level is nonzero
-// (using profile->PauseAccessibilityEvents).
-void SendAccessibilityNotification(int type, AccessibilityEventInfo* info);
+// Notify the ExtensionAccessibilityEventRouter of the given accessibility
+// event and AccessibilityEventInfo details. Will not send if the profile's
+// pause level is nonzero (using profile->PauseAccessibilityEvents).
+void SendControlAccessibilityNotification(
+    ui::AccessibilityTypes::Event event,
+    AccessibilityControlInfo* info);
+
+void SendMenuAccessibilityNotification(
+    ui::AccessibilityTypes::Event event,
+    AccessibilityMenuInfo* info);
+
+void SendWindowAccessibilityNotification(
+    ui::AccessibilityTypes::Event event,
+    AccessibilityWindowInfo* info);
 
 // Abstract parent class for accessibility event information passed to event
 // listeners.

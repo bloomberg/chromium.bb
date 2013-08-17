@@ -670,40 +670,6 @@ enum NotificationType {
   // acknowledged the module incompatibility. No details are expected.
   NOTIFICATION_MODULE_INCOMPATIBILITY_BADGE_CHANGE,
 
-  // Accessibility Notifications ---------------------------------------------
-
-  // Notification that a window in the browser UI (not the web content)
-  // was opened, for propagating to an accessibility extension.
-  // Details will be an AccessibilityWindowInfo.
-  NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED,
-
-  // Notification that a window in the browser UI was closed.
-  // Details will be an AccessibilityWindowInfo.
-  NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED,
-
-  // Notification that a control in the browser UI was focused.
-  // Details will be an AccessibilityControlInfo.
-  NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-
-  // Notification that a control in the browser UI had its action taken,
-  // like pressing a button or toggling a checkbox.
-  // Details will be an AccessibilityControlInfo.
-  NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION,
-
-  // Notification that text box in the browser UI had text change.
-  // Details will be an AccessibilityControlInfo.
-  NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
-
-  // Notification that a pop-down menu was opened, for propagating
-  // to an accessibility extension.
-  // Details will be an AccessibilityMenuInfo.
-  NOTIFICATION_ACCESSIBILITY_MENU_OPENED,
-
-  // Notification that a pop-down menu was closed, for propagating
-  // to an accessibility extension.
-  // Details will be an AccessibilityMenuInfo.
-  NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
-
   // Content Settings --------------------------------------------------------
 
   // Sent when content settings change. The source is a HostContentSettings

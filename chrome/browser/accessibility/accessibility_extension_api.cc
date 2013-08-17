@@ -8,7 +8,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -18,7 +17,6 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_accessibility_state.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/common/error_utils.h"
 
 namespace keys = extension_accessibility_api_constants;
@@ -43,68 +41,10 @@ ExtensionAccessibilityEventRouter*
 
 ExtensionAccessibilityEventRouter::ExtensionAccessibilityEventRouter()
     : enabled_(false) {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED,
-                 content::NotificationService::AllSources());
 }
 
 ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
-}
-
-void ExtensionAccessibilityEventRouter::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  switch (type) {
-    case chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_OPENED:
-      OnWindowOpened(
-          content::Details<const AccessibilityWindowInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_WINDOW_CLOSED:
-      OnWindowClosed(
-          content::Details<const AccessibilityWindowInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED:
-      OnControlFocused(
-          content::Details<const AccessibilityControlInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_ACTION:
-      OnControlAction(
-          content::Details<const AccessibilityControlInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_TEXT_CHANGED:
-      OnTextChanged(
-          content::Details<const AccessibilityControlInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_MENU_OPENED:
-      OnMenuOpened(
-          content::Details<const AccessibilityMenuInfo>(details).ptr());
-      break;
-    case chrome::NOTIFICATION_ACCESSIBILITY_MENU_CLOSED:
-      OnMenuClosed(
-          content::Details<const AccessibilityMenuInfo>(details).ptr());
-      break;
-    default:
-      NOTREACHED();
-  }
+  control_event_callback_.Reset();
 }
 
 void ExtensionAccessibilityEventRouter::SetAccessibilityEnabled(bool enabled) {
@@ -115,16 +55,66 @@ bool ExtensionAccessibilityEventRouter::IsAccessibilityEnabled() const {
   return enabled_;
 }
 
+void ExtensionAccessibilityEventRouter::SetControlEventCallbackForTesting(
+    ControlEventCallback control_event_callback) {
+  DCHECK(control_event_callback_.is_null());
+  control_event_callback_ = control_event_callback;
+}
+
+void ExtensionAccessibilityEventRouter::ClearControlEventCallback() {
+  control_event_callback_.Reset();
+}
+
+void ExtensionAccessibilityEventRouter::HandleWindowEvent(
+    ui::AccessibilityTypes::Event event,
+    const AccessibilityWindowInfo* info) {
+  if (event == ui::AccessibilityTypes::EVENT_ALERT)
+    OnWindowOpened(info);
+}
+
+void ExtensionAccessibilityEventRouter::HandleMenuEvent(
+    ui::AccessibilityTypes::Event event,
+    const AccessibilityMenuInfo* info) {
+  switch (event) {
+    case ui::AccessibilityTypes::EVENT_MENUSTART:
+    case ui::AccessibilityTypes::EVENT_MENUPOPUPSTART:
+      OnMenuOpened(info);
+      break;
+    case ui::AccessibilityTypes::EVENT_MENUEND:
+    case ui::AccessibilityTypes::EVENT_MENUPOPUPEND:
+      OnMenuClosed(info);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+void ExtensionAccessibilityEventRouter::HandleControlEvent(
+    ui::AccessibilityTypes::Event event,
+    const AccessibilityControlInfo* info) {
+  if (!control_event_callback_.is_null())
+    control_event_callback_.Run(event, info);
+
+  switch (event) {
+    case ui::AccessibilityTypes::EVENT_TEXT_CHANGED:
+    case ui::AccessibilityTypes::EVENT_SELECTION_CHANGED:
+      OnTextChanged(info);
+      break;
+    case ui::AccessibilityTypes::EVENT_VALUE_CHANGED:
+      OnControlAction(info);
+      break;
+    case ui::AccessibilityTypes::EVENT_FOCUS:
+      OnControlFocused(info);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 void ExtensionAccessibilityEventRouter::OnWindowOpened(
     const AccessibilityWindowInfo* info) {
   scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
   DispatchEvent(info->profile(), keys::kOnWindowOpened, args.Pass());
-}
-
-void ExtensionAccessibilityEventRouter::OnWindowClosed(
-    const AccessibilityWindowInfo* info) {
-  scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
-  DispatchEvent(info->profile(), keys::kOnWindowClosed, args.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::OnControlFocused(

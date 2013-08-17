@@ -8,11 +8,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/accessibility/accessibility_extension_api.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/accessibility/accessible_view_state.h"
 #include "ui/views/controls/button/label_button.h"
@@ -104,8 +101,7 @@ class ViewWithNameAndRole : public views::View {
 };
 
 class AccessibilityEventRouterViewsTest
-    : public testing::Test,
-      public content::NotificationObserver {
+    : public testing::Test {
  public:
   AccessibilityEventRouterViewsTest() {
   }
@@ -119,9 +115,11 @@ class AccessibilityEventRouterViewsTest
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp();
 #endif  // USE_AURA
+    EnableAccessibilityAndListenToFocusNotifications();
   }
 
   virtual void TearDown() {
+    ClearCallback();
 #if defined(USE_AURA)
     aura_test_helper_->TearDown();
 #endif
@@ -155,25 +153,25 @@ class AccessibilityEventRouterViewsTest
   }
 
   void EnableAccessibilityAndListenToFocusNotifications() {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-                   content::NotificationService::AllSources());
-
     // Switch on accessibility event notifications.
     ExtensionAccessibilityEventRouter* accessibility_event_router =
         ExtensionAccessibilityEventRouter::GetInstance();
     accessibility_event_router->SetAccessibilityEnabled(true);
+    accessibility_event_router->SetControlEventCallbackForTesting(base::Bind(
+        &AccessibilityEventRouterViewsTest::OnFocusEvent,
+        base::Unretained(this)));
+  }
+
+  void ClearCallback() {
+    ExtensionAccessibilityEventRouter* accessibility_event_router =
+        ExtensionAccessibilityEventRouter::GetInstance();
+    accessibility_event_router->ClearControlEventCallback();
   }
 
  protected:
-  // Implement NotificationObserver::Observe and store information about a
-  // ACCESSIBILITY_CONTROL_FOCUSED event.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE {
-    ASSERT_EQ(type, chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED);
-    const AccessibilityControlInfo* info =
-        content::Details<const AccessibilityControlInfo>(details).ptr();
+  // Handle Focus event.
+  virtual void OnFocusEvent(ui::AccessibilityTypes::Event event,
+                            const AccessibilityControlInfo* info) {
     focus_event_count_++;
     last_control_name_ = info->name();
     last_control_context_ = info->context();
@@ -183,7 +181,6 @@ class AccessibilityEventRouterViewsTest
   int focus_event_count_;
   std::string last_control_name_;
   std::string last_control_context_;
-  content::NotificationRegistrar registrar_;
   TestingProfile profile_;
 #if defined(OS_WIN)
   scoped_ptr<ui::ScopedOleInitializer> ole_initializer_;
@@ -219,10 +216,10 @@ TEST_F(AccessibilityEventRouterViewsTest, TestFocusNotification) {
   window->Show();
   window->Activate();
 
-  // Set focus to the first button initially.
+  // Set focus to the first button initially and run message loop to execute
+  // callback.
   button1->RequestFocus();
-
-  EnableAccessibilityAndListenToFocusNotifications();
+  base::MessageLoop::current()->RunUntilIdle();
 
   // Change the accessible name of button3.
   button3->SetAccessibleName(ASCIIToUTF16(kButton3NewASCII));
@@ -267,8 +264,6 @@ TEST_F(AccessibilityEventRouterViewsTest, TestToolbarContext) {
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
 
-  EnableAccessibilityAndListenToFocusNotifications();
-
   // Set focus to the button.
   focus_event_count_ = 0;
   button->RequestFocus();
@@ -301,8 +296,6 @@ TEST_F(AccessibilityEventRouterViewsTest, TestAlertContext) {
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
 
-  EnableAccessibilityAndListenToFocusNotifications();
-
   // Set focus to the button.
   focus_event_count_ = 0;
   button->RequestFocus();
@@ -334,8 +327,6 @@ TEST_F(AccessibilityEventRouterViewsTest, StateChangeAfterNotification) {
 
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
-
-  EnableAccessibilityAndListenToFocusNotifications();
 
   // Set focus to the child view.
   focus_event_count_ = 0;
@@ -372,8 +363,6 @@ TEST_F(AccessibilityEventRouterViewsTest, NotificationOnDeletedObject) {
 
   // Put the view in a window.
   views::Widget* window = CreateWindowWithContents(contents);
-
-  EnableAccessibilityAndListenToFocusNotifications();
 
   // Set focus to the child view.
   focus_event_count_ = 0;

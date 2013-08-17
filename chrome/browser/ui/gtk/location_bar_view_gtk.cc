@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
+#include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -82,6 +83,7 @@
 #include "grit/theme_resources.h"
 #include "net/base/net_util.h"
 #include "ui/base/accelerators/platform_accelerator_gtk.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/gtk_dnd_util.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/base/gtk/gtk_signal_registrar.h"
@@ -807,10 +809,9 @@ void LocationBarViewGtk::OnSetFocus() {
       l10n_util::GetStringUTF8(IDS_ACCNAME_LOCATION),
       std::string(),
       false);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_ACCESSIBILITY_CONTROL_FOCUSED,
-      content::Source<Profile>(profile),
-      content::Details<AccessibilityTextBoxInfo>(&info));
+  ExtensionAccessibilityEventRouter::GetInstance()->HandleControlEvent(
+      ui::AccessibilityTypes::EVENT_FOCUS,
+      &info);
 
   // Update the keyword and search hint states.
   OnChanged();

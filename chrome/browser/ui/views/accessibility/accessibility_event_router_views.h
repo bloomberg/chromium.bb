@@ -11,7 +11,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/accessibility/accessibility_events.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/accessibility/accessibility_types.h"
@@ -70,54 +69,54 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
   AccessibilityEventRouterViews();
   virtual ~AccessibilityEventRouterViews();
 
-  // Call DispatchAccessibilityNotification using a view storage id.
-  static void DispatchNotificationOnViewStorageId(
+  // Call DispatchAccessibilityEvent using a view storage id.
+  static void DispatchEventOnViewStorageId(
       int view_storage_id,
-      chrome::NotificationType type);
+      ui::AccessibilityTypes::Event event);
 
   // Checks the type of the view and calls one of the more specific
   // Send*Notification methods, below.
-  void DispatchAccessibilityNotification(
+  void DispatchAccessibilityEvent(
       views::View* view,
-      chrome::NotificationType type);
+      ui::AccessibilityTypes::Event event);
 
   // Each of these methods constructs an AccessibilityControlInfo object
   // and sends a notification of a specific accessibility event.
   static void SendButtonNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendLinkNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendMenuNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendMenuItemNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendTextfieldNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendComboboxNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendCheckboxNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendWindowNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
   static void SendSliderNotification(
       views::View* view,
-      int type,
+      ui::AccessibilityTypes::Event event,
       Profile* profile);
 
   // Return the name of a view.
@@ -130,10 +129,6 @@ class AccessibilityEventRouterViews : public content::NotificationObserver {
   static views::View* FindDescendantWithAccessibleRole(
       views::View* view,
       ui::AccessibilityTypes::Role role);
-
-  // Return true if it's an event on a menu.
-  static bool IsMenuEvent(views::View* view,
-                          int type);
 
   // Recursively explore all menu items of |menu| and return in |count|
   // the total number of items, and in |index| the 0-based index of

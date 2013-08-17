@@ -5,7 +5,7 @@
 #include "chrome/browser/accessibility/accessibility_events.h"
 
 #include "base/values.h"
-
+#include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/accessibility/accessibility_extension_api_constants.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,15 +15,39 @@
 
 namespace keys = extension_accessibility_api_constants;
 
-void SendAccessibilityNotification(int type, AccessibilityEventInfo* info) {
+void SendControlAccessibilityNotification(
+  ui::AccessibilityTypes::Event event,
+  AccessibilityControlInfo* info) {
   Profile *profile = info->profile();
   if (profile->ShouldSendAccessibilityEvents()) {
-    content::NotificationService::current()->Notify(
-        type,
-        content::Source<Profile>(profile),
-        content::Details<AccessibilityEventInfo>(info));
+    ExtensionAccessibilityEventRouter::GetInstance()->HandleControlEvent(
+        event,
+        info);
   }
 }
+
+void SendMenuAccessibilityNotification(
+  ui::AccessibilityTypes::Event event,
+  AccessibilityMenuInfo* info) {
+  Profile *profile = info->profile();
+  if (profile->ShouldSendAccessibilityEvents()) {
+    ExtensionAccessibilityEventRouter::GetInstance()->HandleMenuEvent(
+        event,
+        info);
+  }
+}
+
+void SendWindowAccessibilityNotification(
+  ui::AccessibilityTypes::Event event,
+  AccessibilityWindowInfo* info) {
+  Profile *profile = info->profile();
+  if (profile->ShouldSendAccessibilityEvents()) {
+    ExtensionAccessibilityEventRouter::GetInstance()->HandleWindowEvent(
+        event,
+        info);
+  }
+}
+
 
 AccessibilityControlInfo::AccessibilityControlInfo(
     Profile* profile, const std::string& name)
