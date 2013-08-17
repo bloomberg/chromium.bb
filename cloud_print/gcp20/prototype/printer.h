@@ -14,6 +14,7 @@
 #include "cloud_print/gcp20/prototype/cloud_print_xmpp_listener.h"
 #include "cloud_print/gcp20/prototype/dns_sd_server.h"
 #include "cloud_print/gcp20/prototype/print_job_handler.h"
+#include "cloud_print/gcp20/prototype/printer_state.h"
 #include "cloud_print/gcp20/prototype/privet_http_server.h"
 #include "cloud_print/gcp20/prototype/x_privet_token.h"
 
@@ -41,51 +42,6 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   void Stop();
 
  private:
-  struct RegistrationInfo {
-    enum RegistrationState {
-      DEV_REG_UNREGISTERED,
-      DEV_REG_REGISTRATION_STARTED,  // |action=start| was called,
-                                     // request to CloudPrint was sent.
-      DEV_REG_REGISTRATION_CLAIM_TOKEN_READY,  // The same as previous,
-                                               // but request reply is already
-                                               // received.
-      DEV_REG_REGISTRATION_COMPLETING,  // |action=complete| was called,
-                                        // |complete| request was sent.
-      DEV_REG_REGISTRATION_ERROR,  // Is set when server error was occurred.
-      DEV_REG_REGISTERED,
-    };
-
-    enum ConfirmationState {
-      CONFIRMATION_PENDING,
-      CONFIRMATION_CONFIRMED,
-      CONFIRMATION_DISCARDED,
-      CONFIRMATION_TIMEOUT,
-    };
-
-    RegistrationInfo();
-    ~RegistrationInfo();
-
-    std::string user;
-    std::string refresh_token;
-    std::string device_id;
-    std::string xmpp_jid;
-    RegistrationState state;
-    ConfirmationState confirmation_state;
-
-    std::string registration_token;
-    std::string complete_invite_url;
-
-    // Contains error response if |DEV_REG_REGISTRATION_ERROR| is set.
-    std::string error_description;
-  };
-
-  enum RegistrationAction {
-    REG_ACTION_START,
-    REG_ACTION_GET_CLAIM_TOKEN,
-    REG_ACTION_COMPLETE,
-    REG_ACTION_CANCEL
-  };
-
   enum ConnectionState {
     NOT_CONFIGURED,
     OFFLINE,
@@ -206,13 +162,17 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   void InvalidateRegistrationExpiration();
 
   // Methods to start HTTP and DNS-SD servers. Return |true| if servers
+  // were started. If failed neither HTTP nor DNS-SD server will be running.
+  bool StartLocalDiscoveryServers();
+
+  // Methods to start HTTP and DNS-SD servers. Return |true| if servers
   // were started.
-  bool StartHttpServer();
   bool StartDnsServer();
+  bool StartHttpServer();
 
   // Converts errors.
   PrivetHttpServer::RegistrationErrorStatus ConfirmationToRegistrationError(
-      RegistrationInfo::ConfirmationState state);
+      PrinterState::ConfirmationState state);
 
   std::string ConnectionStateToString(ConnectionState state) const;
 
@@ -224,21 +184,17 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   // was changed (otherwise state was the same).
   bool ChangeState(ConnectionState new_state);
 
-  // TODO(maksymb): Encapsulate reg_info, local_settings and other state
-  // member variables to struct.
+  // Contains printers workflow info.
+  PrinterState state_;
 
-  RegistrationInfo reg_info_;
-
-  LocalSettings local_settings_;
+  // Connection state of device.
+  ConnectionState connection_state_;
 
   // Contains DNS-SD server.
   DnsSdServer dns_server_;
 
   // Contains Privet HTTP server.
   PrivetHttpServer http_server_;
-
-  // Connection state of device.
-  ConnectionState connection_state_;
 
   // Contains CloudPrint client.
   scoped_ptr<CloudPrintRequester> requester_;
@@ -249,10 +205,6 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   XPrivetToken xtoken_;
 
   scoped_ptr<PrintJobHandler> print_job_handler_;
-
-  // Last valid |access_token|.
-  std::string access_token_;
-  base::Time access_token_update_;
 
   // Uses for calculating uptime.
   base::Time starttime_;

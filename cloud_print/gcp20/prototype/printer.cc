@@ -106,17 +106,9 @@ scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
 
 using cloud_print_response_parser::Job;
 
-Printer::RegistrationInfo::RegistrationInfo()
-    : state(DEV_REG_UNREGISTERED),
-      confirmation_state(CONFIRMATION_PENDING) {
-}
-
-Printer::RegistrationInfo::~RegistrationInfo() {
-}
-
 Printer::Printer()
-    : http_server_(this),
-      connection_state_(OFFLINE),
+    : connection_state_(OFFLINE),
+      http_server_(this),
       on_idle_posted_(false),
       pending_local_settings_check_(false),
       pending_print_jobs_check_(false),
@@ -131,18 +123,10 @@ bool Printer::Start() {
   if (IsRunning())
     return true;
 
-  if (!LoadFromFile())
-    reg_info_ = RegistrationInfo();
+  LoadFromFile();
 
-  if (local_settings_.local_discovery) {
-    if (!StartHttpServer())
-      return false;
-
-    if (!StartDnsServer()) {
-      http_server_.Shutdown();
-      return false;
-    }
-  }
+  if (state_.local_settings.local_discovery && !StartLocalDiscoveryServers())
+    return false;
 
   print_job_handler_.reset(new PrintJobHandler);
   xtoken_ = XPrivetToken();
@@ -168,40 +152,40 @@ void Printer::Stop() {
 
 void Printer::OnAuthError() {
   LOG(ERROR) << "Auth error occurred";
-  access_token_update_ = base::Time();
+  state_.access_token_update = base::Time();
   FallOffline(true);
 }
 
 std::string Printer::GetAccessToken() {
-  return access_token_;
+  return state_.access_token;
 }
 
 PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
     const std::string& user) {
   CheckRegistrationExpiration();
 
-  RegistrationInfo::ConfirmationState conf_state = reg_info_.confirmation_state;
-  if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_ERROR ||
-      conf_state == RegistrationInfo::CONFIRMATION_TIMEOUT ||
-      conf_state == RegistrationInfo::CONFIRMATION_DISCARDED) {
-    reg_info_ = RegistrationInfo();
+  PrinterState::ConfirmationState conf_state = state_.confirmation_state;
+  if (state_.registration_state == PrinterState::REGISTRATION_ERROR ||
+      conf_state == PrinterState::CONFIRMATION_TIMEOUT ||
+      conf_state == PrinterState::CONFIRMATION_DISCARDED) {
+    state_ = PrinterState();
   }
 
   PrivetHttpServer::RegistrationErrorStatus status = CheckCommonRegErrors(user);
   if (status != PrivetHttpServer::REG_ERROR_OK)
     return status;
 
-  if (reg_info_.state != RegistrationInfo::DEV_REG_UNREGISTERED)
+  if (state_.registration_state != PrinterState::UNREGISTERED)
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
 
   UpdateRegistrationExpiration();
 
-  reg_info_ = RegistrationInfo();
-  reg_info_.user = user;
-  reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_STARTED;
+  state_ = PrinterState();
+  state_.user = user;
+  state_.registration_state = PrinterState::REGISTRATION_STARTED;
 
   if (CommandLine::ForCurrentProcess()->HasSwitch("disable-confirmation")) {
-    reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_CONFIRMED;
+    state_.confirmation_state = PrinterState::CONFIRMATION_CONFIRMED;
     LOG(INFO) << "Registration confirmed by default.";
   } else {
     printf("%s", kUserConfirmationTitle);
@@ -213,7 +197,7 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationStart(
   }
 
   requester_->StartRegistration(GenerateProxyId(), kPrinterName, user,
-                                local_settings_, kCdd);
+                                state_.local_settings, kCdd);
 
   return PrivetHttpServer::REG_ERROR_OK;
 }
@@ -227,29 +211,29 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationGetClaimToken(
     return status;
 
   // Check if |action=start| was called, but |action=complete| wasn't.
-  if (reg_info_.state != RegistrationInfo::DEV_REG_REGISTRATION_STARTED &&
-      reg_info_.state !=
-          RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY)
+  if (state_.registration_state != PrinterState::REGISTRATION_STARTED &&
+      state_.registration_state !=
+          PrinterState::REGISTRATION_CLAIM_TOKEN_READY) {
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
+  }
 
   // If |action=getClaimToken| is valid in this state (was checked above) then
   // check confirmation status.
-  if (reg_info_.confirmation_state != RegistrationInfo::CONFIRMATION_CONFIRMED)
-    return ConfirmationToRegistrationError(reg_info_.confirmation_state);
+  if (state_.confirmation_state != PrinterState::CONFIRMATION_CONFIRMED)
+    return ConfirmationToRegistrationError(state_.confirmation_state);
 
   UpdateRegistrationExpiration();
 
   // If reply wasn't received yet, reply with |pending_user_action| error.
-  if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_STARTED)
+  if (state_.registration_state == PrinterState::REGISTRATION_STARTED)
     return PrivetHttpServer::REG_ERROR_PENDING_USER_ACTION;
 
-  DCHECK_EQ(reg_info_.state,
-            RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY);
-  DCHECK_EQ(reg_info_.confirmation_state,
-            RegistrationInfo::CONFIRMATION_CONFIRMED);
+  DCHECK_EQ(state_.confirmation_state, PrinterState::CONFIRMATION_CONFIRMED);
+  DCHECK_EQ(state_.registration_state,
+            PrinterState::REGISTRATION_CLAIM_TOKEN_READY);
 
-  *token = reg_info_.registration_token;
-  *claim_url = reg_info_.complete_invite_url;
+  *token = state_.registration_token;
+  *claim_url = state_.complete_invite_url;
   return PrivetHttpServer::REG_ERROR_OK;
 }
 
@@ -260,19 +244,17 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationComplete(
   if (status != PrivetHttpServer::REG_ERROR_OK)
     return status;
 
-  if (reg_info_.state !=
-      RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY) {
+  if (state_.registration_state != PrinterState::REGISTRATION_CLAIM_TOKEN_READY)
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
-  }
 
   UpdateRegistrationExpiration();
 
-  if (reg_info_.confirmation_state != RegistrationInfo::CONFIRMATION_CONFIRMED)
-    return ConfirmationToRegistrationError(reg_info_.confirmation_state);
+  if (state_.confirmation_state != PrinterState::CONFIRMATION_CONFIRMED)
+    return ConfirmationToRegistrationError(state_.confirmation_state);
 
-  reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_COMPLETING;
+  state_.registration_state = PrinterState::REGISTRATION_COMPLETING;
   requester_->CompleteRegistration();
-  *device_id = reg_info_.device_id;
+  *device_id = state_.device_id;
 
   return PrivetHttpServer::REG_ERROR_OK;
 }
@@ -285,22 +267,23 @@ PrivetHttpServer::RegistrationErrorStatus Printer::RegistrationCancel(
     return status;
   }
 
-  if (reg_info_.state == RegistrationInfo::DEV_REG_UNREGISTERED)
+  if (state_.registration_state == PrinterState::UNREGISTERED)
     return PrivetHttpServer::REG_ERROR_INVALID_ACTION;
 
   InvalidateRegistrationExpiration();
 
-  reg_info_ = RegistrationInfo();
+  state_ = PrinterState();
+
   requester_.reset(new CloudPrintRequester(GetTaskRunner(), this));
 
   return PrivetHttpServer::REG_ERROR_OK;
 }
 
 void Printer::GetRegistrationServerError(std::string* description) {
-  DCHECK_EQ(reg_info_.state, RegistrationInfo::DEV_REG_REGISTRATION_ERROR)
+  DCHECK_EQ(state_.registration_state, PrinterState::REGISTRATION_ERROR)
       << "Method shouldn't be called when not needed.";
 
-  *description = reg_info_.error_description;
+  *description = state_.error_description;
 }
 
 void Printer::CreateInfo(PrivetHttpServer::DeviceInfo* info) {
@@ -313,7 +296,7 @@ void Printer::CreateInfo(PrivetHttpServer::DeviceInfo* info) {
   info->name = kPrinterName;
   info->description = kPrinterDescription;
   info->url = kCloudPrintUrl;
-  info->id = reg_info_.device_id;
+  info->id = state_.device_id;
   info->device_state = "idle";
   info->connection_state = ConnectionStateToString(connection_state_);
   info->manufacturer = "Google";
@@ -324,14 +307,14 @@ void Printer::CreateInfo(PrivetHttpServer::DeviceInfo* info) {
 
   info->x_privet_token = xtoken_.GenerateXToken();
 
-  if (reg_info_.state == RegistrationInfo::DEV_REG_UNREGISTERED)
+  if (state_.registration_state == PrinterState::UNREGISTERED)
     info->api.push_back("/privet/register");
 
   info->type.push_back("printer");
 }
 
 bool Printer::IsRegistered() const {
-  return reg_info_.state == RegistrationInfo::DEV_REG_REGISTERED;
+  return state_.registration_state == PrinterState::REGISTERED;
 }
 
 bool Printer::CheckXPrivetTokenHeader(const std::string& token) const {
@@ -342,10 +325,10 @@ void Printer::OnRegistrationStartResponseParsed(
     const std::string& registration_token,
     const std::string& complete_invite_url,
     const std::string& device_id) {
-  reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_CLAIM_TOKEN_READY;
-  reg_info_.device_id = device_id;
-  reg_info_.registration_token = registration_token;
-  reg_info_.complete_invite_url = complete_invite_url;
+  state_.registration_state = PrinterState::REGISTRATION_CLAIM_TOKEN_READY;
+  state_.device_id = device_id;
+  state_.registration_token = registration_token;
+  state_.complete_invite_url = complete_invite_url;
 }
 
 void Printer::OnRegistrationFinished(const std::string& refresh_token,
@@ -353,8 +336,8 @@ void Printer::OnRegistrationFinished(const std::string& refresh_token,
                                      int access_token_expires_in_seconds) {
   InvalidateRegistrationExpiration();
 
-  reg_info_.state = RegistrationInfo::DEV_REG_REGISTERED;
-  reg_info_.refresh_token = refresh_token;
+  state_.registration_state = PrinterState::REGISTERED;
+  state_.refresh_token = refresh_token;
   RememberAccessToken(access_token, access_token_expires_in_seconds);
   TryConnect();
 }
@@ -378,13 +361,12 @@ void Printer::OnAccesstokenReceviced(const std::string& access_token,
 }
 
 void Printer::OnXmppJidReceived(const std::string& xmpp_jid) {
-  reg_info_.xmpp_jid = xmpp_jid;
+  state_.xmpp_jid = xmpp_jid;
 }
 
 void Printer::OnRegistrationError(const std::string& description) {
   LOG(ERROR) << "server_error: " << description;
 
-  // TODO(maksymb): Implement waiting after error and timeout of registration.
   SetRegistrationError(description);
 }
 
@@ -396,7 +378,6 @@ void Printer::OnNetworkError() {
 void Printer::OnServerError(const std::string& description) {
   VLOG(3) << "Function: " << __FUNCTION__;
   LOG(ERROR) << "Server error: " << description;
-
   FallOffline(false);
 }
 
@@ -404,7 +385,6 @@ void Printer::OnPrintJobsAvailable(const std::vector<Job>& jobs) {
   VLOG(3) << "Function: " << __FUNCTION__;
 
   LOG(INFO) << "Available printjobs: " << jobs.size();
-
   if (jobs.empty()) {
     pending_print_jobs_check_ = false;
     PostOnIdle();
@@ -474,17 +454,17 @@ void Printer::OnXmppNetworkError() {
 }
 
 void Printer::OnXmppNewPrintJob(const std::string& device_id) {
-  DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
+  DCHECK_EQ(state_.device_id, device_id) << "Data should contain printer_id";
   pending_print_jobs_check_ = true;
 }
 
 void Printer::OnXmppNewLocalSettings(const std::string& device_id) {
-  DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
+  DCHECK_EQ(state_.device_id, device_id) << "Data should contain printer_id";
   pending_local_settings_check_ = true;
 }
 
 void Printer::OnXmppDeleteNotification(const std::string& device_id) {
-  DCHECK_EQ(reg_info_.device_id, device_id) << "Data should contain printer_id";
+  DCHECK_EQ(state_.device_id, device_id) << "Data should contain printer_id";
   pending_deletion_ = true;
 }
 
@@ -496,8 +476,8 @@ void Printer::TryConnect() {
     requester_.reset(new CloudPrintRequester(GetTaskRunner(), this));
 
   if (IsRegistered()) {
-    if (access_token_update_ < base::Time::Now()) {
-      requester_->UpdateAccesstoken(reg_info_.refresh_token);
+    if (state_.access_token_update < base::Time::Now()) {
+      requester_->UpdateAccesstoken(state_.refresh_token);
     } else {
       ConnectXmpp();
     }
@@ -509,10 +489,10 @@ void Printer::TryConnect() {
 
 void Printer::ConnectXmpp() {
   xmpp_listener_.reset(
-      new CloudPrintXmppListener(reg_info_.xmpp_jid,
-                                 local_settings_.xmpp_timeout_value,
+      new CloudPrintXmppListener(state_.xmpp_jid,
+                                 state_.local_settings.xmpp_timeout_value,
                                  GetTaskRunner(), this));
-  xmpp_listener_->Connect(access_token_);
+  xmpp_listener_->Connect(state_.access_token);
 }
 
 void Printer::OnIdle() {
@@ -528,8 +508,8 @@ void Printer::OnIdle() {
     return;
   }
 
-  if (access_token_update_ < base::Time::Now()) {
-    requester_->UpdateAccesstoken(reg_info_.refresh_token);
+  if (state_.access_token_update < base::Time::Now()) {
+    requester_->UpdateAccesstoken(state_.refresh_token);
     return;
   }
 
@@ -554,39 +534,37 @@ void Printer::OnIdle() {
 void Printer::FetchPrintJobs() {
   VLOG(3) << "Function: " << __FUNCTION__;
   DCHECK(IsRegistered());
-  requester_->FetchPrintJobs(reg_info_.device_id);
+  requester_->FetchPrintJobs(state_.device_id);
 }
 
 void Printer::GetLocalSettings() {
   VLOG(3) << "Function: " << __FUNCTION__;
   DCHECK(IsRegistered());
-  requester_->RequestLocalSettings(reg_info_.device_id);
+  requester_->RequestLocalSettings(state_.device_id);
 }
 
 void Printer::ApplyLocalSettings(const LocalSettings& settings) {
-  local_settings_ = settings;
+  state_.local_settings = settings;
   SaveToFile();
 
-  if (local_settings_.local_discovery) {
-    StartDnsServer();
-    StartHttpServer();
+  if (state_.local_settings.local_discovery) {
+    bool success = StartLocalDiscoveryServers();
+    if (!success)
+      LOG(ERROR) << "Local discovery servers cannot be started";
+    // TODO(maksymb): If start failed try to start them again after some timeout
   } else {
     dns_server_.Shutdown();
     http_server_.Shutdown();
   }
+  xmpp_listener_->set_ping_interval(state_.local_settings.xmpp_timeout_value);
 
-  xmpp_listener_->set_ping_interval(local_settings_.xmpp_timeout_value);
-
-  requester_->SendLocalSettings(reg_info_.device_id, local_settings_);
+  requester_->SendLocalSettings(state_.device_id, state_.local_settings);
 }
 
 void Printer::OnPrinterDeleted() {
   pending_deletion_ = false;
 
-  reg_info_ = RegistrationInfo();
-  access_token_.clear();
-  access_token_update_ = base::Time();
-  local_settings_ = LocalSettings();
+  state_ = PrinterState();
 
   SaveToFile();
   Stop();
@@ -597,18 +575,19 @@ void Printer::RememberAccessToken(const std::string& access_token,
                                   int expires_in_seconds) {
   using base::Time;
   using base::TimeDelta;
-  access_token_ = access_token;
+  state_.access_token = access_token;
   int64 time_to_update = static_cast<int64>(expires_in_seconds *
                                             kTimeToNextAccessTokenUpdate);
-  access_token_update_ = Time::Now() + TimeDelta::FromSeconds(time_to_update);
+  state_.access_token_update =
+      Time::Now() + TimeDelta::FromSeconds(time_to_update);
   VLOG(1) << "Current access_token: " << access_token;
   SaveToFile();
 }
 
 void Printer::SetRegistrationError(const std::string& description) {
   DCHECK(!IsRegistered());
-  reg_info_.state = RegistrationInfo::DEV_REG_REGISTRATION_ERROR;
-  reg_info_.error_description = description;
+  state_.registration_state = PrinterState::REGISTRATION_ERROR;
+  state_.error_description = description;
 }
 
 PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
@@ -618,15 +597,15 @@ PrivetHttpServer::RegistrationErrorStatus Printer::CheckCommonRegErrors(
   if (connection_state_ != ONLINE)
     return PrivetHttpServer::REG_ERROR_OFFLINE;
 
-  if (reg_info_.state != RegistrationInfo::DEV_REG_UNREGISTERED &&
-      user != reg_info_.user) {
+  if (state_.registration_state != PrinterState::UNREGISTERED &&
+      user != state_.user) {
     return PrivetHttpServer::REG_ERROR_DEVICE_BUSY;
   }
 
-  if (reg_info_.state == RegistrationInfo::DEV_REG_REGISTRATION_ERROR)
+  if (state_.registration_state == PrinterState::REGISTRATION_ERROR)
     return PrivetHttpServer::REG_ERROR_SERVER_ERROR;
 
-  DCHECK(connection_state_ == ONLINE);
+  DCHECK_EQ(connection_state_, ONLINE);
 
   return PrivetHttpServer::REG_ERROR_OK;
 }
@@ -635,7 +614,7 @@ void Printer::WaitUserConfirmation(base::Time valid_until) {
   // TODO(maksymb): Move to separate class.
 
   if (base::Time::Now() > valid_until) {
-    reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_TIMEOUT;
+    state_.confirmation_state = PrinterState::CONFIRMATION_TIMEOUT;
     LOG(INFO) << "Confirmation timeout reached.";
     return;
   }
@@ -643,10 +622,10 @@ void Printer::WaitUserConfirmation(base::Time valid_until) {
   if (_kbhit()) {
     int c = _getche();
     if (c == 'y' || c == 'Y') {
-      reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_CONFIRMED;
+      state_.confirmation_state = PrinterState::CONFIRMATION_CONFIRMED;
       LOG(INFO) << "Registration confirmed by user.";
     } else {
-      reg_info_.confirmation_state = RegistrationInfo::CONFIRMATION_DISCARDED;
+      state_.confirmation_state = PrinterState::CONFIRMATION_DISCARDED;
       LOG(INFO) << "Registration discarded by user.";
     }
     return;
@@ -669,7 +648,7 @@ std::vector<std::string> Printer::CreateTxt() const {
   txt.push_back("note=" + std::string(kPrinterDescription));
   txt.push_back("url=" + std::string(kCloudPrintUrl));
   txt.push_back("type=printer");
-  txt.push_back("id=" + reg_info_.device_id);
+  txt.push_back("id=" + state_.device_id);
   txt.push_back("cs=" + ConnectionStateToString(connection_state_));
 
   return txt;
@@ -680,140 +659,30 @@ void Printer::SaveToFile() const {
   file_path = file_path.AppendASCII(
       command_line_reader::ReadStatePath(kPrinterStatePathDefault));
 
-  base::DictionaryValue json;
-  // TODO(maksymb): Get rid of in-place constants.
-  if (IsRegistered()) {
-    json.SetBoolean("registered", true);
-    json.SetString("user", reg_info_.user);
-    json.SetString("device_id", reg_info_.device_id);
-    json.SetString("refresh_token", reg_info_.refresh_token);
-    json.SetString("xmpp_jid", reg_info_.xmpp_jid);
-    json.SetString("access_token", access_token_);
-    json.SetInteger("access_token_update",
-                    static_cast<int>(access_token_update_.ToTimeT()));
-
-    scoped_ptr<base::DictionaryValue> local_settings(new DictionaryValue);
-    local_settings->SetBoolean("local_discovery",
-                               local_settings_.local_discovery);
-    local_settings->SetBoolean("access_token_enabled",
-                               local_settings_.access_token_enabled);
-    local_settings->SetBoolean("printer/local_printing_enabled",
-                               local_settings_.local_printing_enabled);
-    local_settings->SetInteger("xmpp_timeout_value",
-                               local_settings_.xmpp_timeout_value);
-    json.Set("local_settings", local_settings.release());
+  if (printer_state::SaveToFile(file_path, state_)) {
+    LOG(INFO) << "Printer state written to file";
   } else {
-    json.SetBoolean("registered", false);
+    LOG(INFO) << "Cannot write printer state to file";
   }
-
-  std::string json_str;
-  base::JSONWriter::WriteWithOptions(&json,
-                                     base::JSONWriter::OPTIONS_PRETTY_PRINT,
-                                     &json_str);
-  if (!file_util::WriteFile(file_path, json_str.data(),
-                            static_cast<int>(json_str.size()))) {
-    LOG(ERROR) << "Cannot write state.";
-  }
-  LOG(INFO) << "State written to file.";
 }
 
 bool Printer::LoadFromFile() {
+  state_ = PrinterState();
+
   base::FilePath file_path;
   file_path = file_path.AppendASCII(
       command_line_reader::ReadStatePath(kPrinterStatePathDefault));
+
   if (!base::PathExists(file_path)) {
-    LOG(INFO) << "Registration info is not found. Printer is unregistered.";
+    LOG(INFO) << "Printer state file not found";
     return false;
   }
 
-  LOG(INFO) << "Loading registration info from file.";
-  std::string json_str;
-  if (!file_util::ReadFileToString(file_path, &json_str)) {
-    LOG(ERROR) << "Cannot open file.";
-    return false;
-  }
-
-  scoped_ptr<base::Value> json_val(base::JSONReader::Read(json_str));
-  base::DictionaryValue* json = NULL;
-  if (!json_val || !json_val->GetAsDictionary(&json)) {
-    LOG(ERROR) << "Cannot read JSON dictionary from file.";
-    return false;
-  }
-
-  bool registered = false;
-  if (!json->GetBoolean("registered", &registered)) {
-    LOG(ERROR) << "Cannot parse |registered| state.";
-    return false;
-  }
-
-  if (!registered) {
-    reg_info_ = RegistrationInfo();
-    return true;
-  }
-
-  std::string user;
-  if (!json->GetString("user", &user)) {
-    LOG(ERROR) << "Cannot parse |user|.";
-    return false;
-  }
-
-  std::string device_id;
-  if (!json->GetString("device_id", &device_id)) {
-    LOG(ERROR) << "Cannot parse |device_id|.";
-    return false;
-  }
-
-  std::string refresh_token;
-  if (!json->GetString("refresh_token", &refresh_token)) {
-    LOG(ERROR) << "Cannot parse |refresh_token|.";
-    return false;
-  }
-
-  std::string xmpp_jid;
-  if (!json->GetString("xmpp_jid", &xmpp_jid)) {
-    LOG(ERROR) << "Cannot parse |xmpp_jid|.";
-    return false;
-  }
-
-  std::string access_token;
-  if (!json->GetString("access_token", &access_token)) {
-    LOG(ERROR) << "Cannot parse |access_token|.";
-    return false;
-  }
-
-  int access_token_update;
-  if (!json->GetInteger("access_token_update", &access_token_update)) {
-    LOG(ERROR) << "Cannot parse |access_token_update|.";
-    return false;
-  }
-
-  LocalSettings local_settings;
-  base::DictionaryValue* settings_dict;
-  if (!json->GetDictionary("local_settings", &settings_dict)) {
-    LOG(ERROR) << "Cannot read |local_settings|. Reset to default.";
+  if (printer_state::LoadFromFile(file_path, &state_)) {
+    LOG(INFO) << "Printer state loaded from file";
   } else {
-    if (!settings_dict->GetBoolean("local_discovery",
-                                   &local_settings.local_discovery) ||
-        !settings_dict->GetBoolean("access_token_enabled",
-                                   &local_settings.access_token_enabled) ||
-        !settings_dict->GetBoolean("printer/local_printing_enabled",
-                                   &local_settings.local_printing_enabled) ||
-        !settings_dict->GetInteger("xmpp_timeout_value",
-                                   &local_settings.xmpp_timeout_value)) {
-      LOG(ERROR) << "Cannot parse |local_settings|. Reset to default.";
-      local_settings = LocalSettings();
-    }
+    LOG(INFO) << "Reading/parsing printer state from file failed";
   }
-
-  reg_info_ = RegistrationInfo();
-  reg_info_.state = RegistrationInfo::DEV_REG_REGISTERED;
-  reg_info_.user = user;
-  reg_info_.device_id = device_id;
-  reg_info_.refresh_token = refresh_token;
-  reg_info_.xmpp_jid = xmpp_jid;
-  access_token_ = access_token;
-  access_token_update_ = base::Time::FromTimeT(access_token_update);
-  local_settings_ = local_settings;
 
   return true;
 }
@@ -831,10 +700,8 @@ void Printer::PostOnIdle() {
 void Printer::CheckRegistrationExpiration() {
   if (!registration_expiration_.is_null() &&
       registration_expiration_ < base::Time::Now()) {
-    reg_info_ = RegistrationInfo();
+    state_ = PrinterState();
     InvalidateRegistrationExpiration();
-    if (connection_state_ != ONLINE)
-      TryConnect();
   }
 }
 
@@ -847,14 +714,18 @@ void Printer::InvalidateRegistrationExpiration() {
   registration_expiration_ = base::Time();
 }
 
-bool Printer::StartHttpServer() {
-  DCHECK(local_settings_.local_discovery);
-  using command_line_reader::ReadHttpPort;
-  return http_server_.Start(ReadHttpPort(kHttpPortDefault));
+bool Printer::StartLocalDiscoveryServers() {
+  if (!StartHttpServer())
+    return false;
+  if (!StartDnsServer()) {
+    http_server_.Shutdown();
+    return false;
+  }
+  return true;
 }
 
 bool Printer::StartDnsServer() {
-  DCHECK(local_settings_.local_discovery);
+  DCHECK(state_.local_settings.local_discovery);
 
   // TODO(maksymb): Add switch for command line to control interface name.
   net::IPAddressNumber ip = GetLocalIp("", false);
@@ -879,18 +750,24 @@ bool Printer::StartDnsServer() {
                            CreateTxt());
 }
 
+bool Printer::StartHttpServer() {
+  DCHECK(state_.local_settings.local_discovery);
+  using command_line_reader::ReadHttpPort;
+  return http_server_.Start(ReadHttpPort(kHttpPortDefault));
+}
+
 PrivetHttpServer::RegistrationErrorStatus
 Printer::ConfirmationToRegistrationError(
-    RegistrationInfo::ConfirmationState state) {
+    PrinterState::ConfirmationState state) {
   switch (state) {
-    case RegistrationInfo::CONFIRMATION_PENDING:
+    case PrinterState::CONFIRMATION_PENDING:
       return PrivetHttpServer::REG_ERROR_PENDING_USER_ACTION;
-    case RegistrationInfo::CONFIRMATION_DISCARDED:
+    case PrinterState::CONFIRMATION_DISCARDED:
       return PrivetHttpServer::REG_ERROR_USER_CANCEL;
-    case RegistrationInfo::CONFIRMATION_CONFIRMED:
+    case PrinterState::CONFIRMATION_CONFIRMED:
       NOTREACHED();
       return PrivetHttpServer::REG_ERROR_OK;
-    case RegistrationInfo::CONFIRMATION_TIMEOUT:
+    case PrinterState::CONFIRMATION_TIMEOUT:
       return PrivetHttpServer::REG_ERROR_CONFIRMATION_TIMEOUT;
     default:
       NOTREACHED();

@@ -51,6 +51,8 @@
         'local_settings.h',
         'print_job_handler.cc',
         'print_job_handler.h',
+        'printer_state.cc',
+        'printer_state.h',
         'printer.cc',
         'printer.h',
         'privet_http_server.cc',
