@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/base_paths.h"
+#include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -641,6 +642,7 @@ int ChromeNetworkDelegate::OnBeforeSendHeaders(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
+  TRACE_EVENT_ASYNC_STEP0("net", "URLRequest", request, "SendRequest");
   return ExtensionWebRequestEventRouter::GetInstance()->OnBeforeSendHeaders(
       profile_, extension_info_map_.get(), request, callback, headers);
 }
@@ -670,6 +672,7 @@ void ChromeNetworkDelegate::OnBeforeRedirect(net::URLRequest* request,
 
 
 void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
+  TRACE_EVENT_ASYNC_STEP0("net", "URLRequest", request, "ResponseStarted");
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       profile_, extension_info_map_.get(), request);
   ForwardProxyErrors(request, event_router_.get(), profile_);
@@ -677,6 +680,8 @@ void ChromeNetworkDelegate::OnResponseStarted(net::URLRequest* request) {
 
 void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
                                            int bytes_read) {
+  TRACE_EVENT_ASYNC_STEP1("net", "URLRequest", &request, "DidRead",
+                          "bytes_read", bytes_read);
   performance_monitor::PerformanceMonitor::GetInstance()->BytesReadOnIOThread(
       request, bytes_read);
 
@@ -687,6 +692,7 @@ void ChromeNetworkDelegate::OnRawBytesRead(const net::URLRequest& request,
 
 void ChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
                                         bool started) {
+  TRACE_EVENT_ASYNC_END0("net", "URLRequest", request);
   if (request->status().status() == net::URLRequestStatus::SUCCESS) {
     // For better accuracy, we use the actual bytes read instead of the length
     // specified with the Content-Length header, which may be inaccurate,

@@ -81,6 +81,8 @@ class ResourceScheduler::ScheduledResourceRequest
         ready_(false),
         deferred_(false),
         scheduler_(scheduler) {
+    TRACE_EVENT_ASYNC_BEGIN1("net", "URLRequest", request_,
+                             "url", request->url().spec());
   }
 
   virtual ~ScheduledResourceRequest() {
@@ -88,6 +90,7 @@ class ResourceScheduler::ScheduledResourceRequest
   }
 
   void Start() {
+    TRACE_EVENT_ASYNC_STEP0("net", "URLRequest", request_, "Queued");
     ready_ = true;
     if (deferred_ && request_->status().is_success()) {
       deferred_ = false;
