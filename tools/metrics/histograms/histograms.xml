@@ -8915,10 +8915,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Network.Shill.Wifi.FrequenciesConnectedEver">
+<histogram name="Network.Shill.WiFi.FrequenciesConnectedEver">
   <summary>
-    Chrome OS network diagnostic metric sampling the number of different WiFi
-    frequencies to which the user's machine has ever connected.
+    Chrome OS metric sampling the number of different frequencies (i.e.
+    channels) on which a device has connected to a WiFi network. This value is
+    sampled every time a WiFi connection is established
+    (WPASupplicant::kInterfaceStateCompleted). Note that the word
+    &quot;Ever&quot; in the metric name is misleading. ChromeOS actually ages
+    out historical information, currently after 3 weeks.
   </summary>
 </histogram>
 
