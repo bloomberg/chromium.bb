@@ -193,27 +193,6 @@ IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestAboutPage) {
 }
 
 //==============================
-// chrome://bugreport
-//==============================
-
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestLTR, TestFeedbackPage) {
-  // The bugreport page receives its contents as GET arguments. Here we provide
-  // a custom, Hebrew typed, description message.
-  RunBidiCheckerOnPage(
-      "chrome://feedback?session_id=1&tab_index=0&description=%D7%91%D7%93%D7%99%D7%A7%D7%94");
-}
-
-// Test disabled because it is flaky (http://crbug.com/134434)
-#if defined(OS_CHROMEOS)
-#define MAYBE_TestFeedbackPage DISABLED_TestFeedbackPage
-#else
-#define MAYBE_TestFeedbackPage TestFeedbackPage
-#endif
-IN_PROC_BROWSER_TEST_F(WebUIBidiCheckerBrowserTestRTL, MAYBE_TestFeedbackPage) {
-  RunBidiCheckerOnPage("chrome://feedback?session_id=1&tab_index=0&description=test");
-}
-
-//==============================
 // chrome://crashes
 //==============================
 

@@ -263,8 +263,9 @@ select {
   background-repeat: no-repeat;
   border: 5px solid transparent;
   border-image: -webkit-image-set(
-    url('../images/common/button.png') 1x,
-    url('../images/common/2x/button.png') 2x) 5 / 5px / 2px repeat;
+    url('chrome://resources/images/apps/button.png') 1x,
+    url('chrome://resources/images/2x/apps/button.png')
+        2x) 5 / 5px / 2px repeat;
   box-sizing: content-box;
   color: rgb(34, 34, 34);
   cursor: default;
@@ -288,8 +289,9 @@ input[type='button']:hover,
 input[type='submit']:hover,
 select:hover {
   border-image: -webkit-image-set(
-    url('../images/common/button_hover.png') 1x,
-    url('../images/common/2x/button_hover.png') 2x) 5 / 5px / 2px repeat;
+    url('chrome://resources/images/apps/button_hover.png') 1x,
+    url('chrome://resources/images/2x/apps/button_hover.png')
+        2x) 5 / 5px / 2px repeat;
   color: #222;
 }
 
@@ -297,8 +299,9 @@ button:active,
 input[type='button']:active,
 input[type='submit']:active {
   border-image: -webkit-image-set(
-    url('../images/common/button_pressed.png') 1x,
-    url('../images/common/2x/button_pressed.png') 2x) 5 / 5px / 2px repeat;
+    url('chrome://resources/images/apps/button_pressed.png') 1x,
+    url('chrome://resources/images/2x/apps/button_pressed.png')
+        2x) 5 / 5px / 2px repeat;
   color: #333;
 }
 
@@ -311,8 +314,9 @@ input[type='submit'][disabled]:hover {
   background-color: rgb(250, 250, 250);
   background-image: none;
   border-image: -webkit-image-set(
-    url('../images/common/button.png') 1x,
-    url('../images/common/2x/button.png') 2x) 5 / 5px / 2px repeat;
+    url('chrome://resources/images/apps/button.png') 1x,
+    url('chrome://resources/images/2x/apps/button.png')
+        2x) 5 / 5px / 2px repeat;
   color: rgb(150, 150, 150);
 }
 

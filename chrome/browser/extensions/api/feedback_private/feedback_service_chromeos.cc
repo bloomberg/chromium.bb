@@ -8,7 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system_logs/about_system_logs_fetcher.h"
+#include "chrome/browser/chromeos/system_logs/scrubbed_system_logs_fetcher.h"
 
 using extensions::api::feedback_private::SystemInformation;
 
@@ -55,8 +55,8 @@ void FeedbackServiceImpl::GetSystemInformation(
     const GetSystemInformationCallback& callback) {
   system_information_callback_ = callback;
 
-  chromeos::AboutSystemLogsFetcher* fetcher =
-      new chromeos::AboutSystemLogsFetcher();
+  chromeos::ScrubbedSystemLogsFetcher* fetcher =
+      new chromeos::ScrubbedSystemLogsFetcher();
   fetcher->Fetch(base::Bind(&FeedbackServiceImpl::ProcessSystemLogs,
                             AsWeakPtr()));
 }
@@ -70,16 +70,8 @@ void FeedbackServiceImpl::ProcessSystemLogs(
   }
 
   for (chromeos::SystemLogsResponse::iterator it = sys_info_map->begin();
-       it != sys_info_map->end(); ++it) {
-    base::DictionaryValue sys_info_value;
-    sys_info_value.Set("key", new base::StringValue(it->first));
-    sys_info_value.Set("value", new base::StringValue(it->second));
-
-    linked_ptr<SystemInformation> sys_info(new SystemInformation());
-    SystemInformation::Populate(sys_info_value, sys_info.get());
-
-    sys_info_list.push_back(sys_info);
-  }
+       it != sys_info_map->end(); ++it)
+    FeedbackService::PopulateSystemInfo(&sys_info_list, it->first, it->second);
 
   system_information_callback_.Run(sys_info_list);
 }

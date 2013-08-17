@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/webui/downloads_ui.h"
 #include "chrome/browser/ui/webui/extensions/extension_info_ui.h"
 #include "chrome/browser/ui/webui/extensions/extensions_ui.h"
-#include "chrome/browser/ui/webui/feedback_ui.h"
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/help/help_ui.h"
@@ -304,9 +303,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   // Downloads list on Android uses the built-in download manager.
   if (url.host() == chrome::kChromeUIDownloadsHost)
     return &NewWebUI<DownloadsUI>;
-  // Feedback on Android uses the built-in feedback app.
-  if (url.host() == chrome::kChromeUIFeedbackHost)
-    return &NewWebUI<FeedbackUI>;
   // Flash is not available on android.
   if (url.host() == chrome::kChromeUIFlashHost)
     return &NewWebUI<FlashUI>;

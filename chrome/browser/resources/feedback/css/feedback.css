@@ -1,0 +1,137 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.title-bar {
+  -webkit-align-items: center;
+  background-color: #fff;
+  box-shadow: 0 1px #d0d0d0;
+  color: rgb(80, 80, 82);
+  display: -webkit-flex;
+  font-size: 15px;
+  height: 48px;
+}
+
+.title-bar #page-title {
+  -webkit-app-region: drag;
+  -webkit-flex: 1 1 auto;
+  -webkit-margin-start: 20px;
+}
+
+.title-bar .button-bar {
+  -webkit-flex: 0 1 auto;
+}
+
+.content {
+  background-color: #fbfbfb;
+  color: #646464;
+  font-size: 12px;
+  margin: 20px;
+}
+
+.content #description-text {
+  border-color: #c8c8c8;
+  box-sizing: border-box;
+  height: 120px;
+  line-height: 18px;
+  padding: 10px;
+  resize: none;
+  width: 100%;
+}
+
+.content .text-field-container {
+  -webkit-align-items: center;
+  -webkit-padding-start: 10px;
+  display: -webkit-flex;
+  height: 29px;
+  margin-top: 10px;
+}
+
+.content .text-field-container > label {
+  -webkit-flex: 0 1 auto;
+  width: 100px;
+}
+
+.content .text-field-container > input[type=text] {
+  -webkit-flex: 1 1 auto;
+  -webkit-padding-start: 5px;
+  border: 1px solid;
+  border-color: #c8c8c8;
+  color: #585858;
+  height: 100%;
+}
+
+.content .text-field-container > input[type=checkbox] {
+  margin-right: 9px;
+}
+
+.content .checkbox-field-container {
+  -webkit-align-items: center;
+  display: -webkit-flex;
+  height: 29px;
+}
+
+#screenshot-container {
+  margin-top: 30px;
+}
+
+.content #screenshot-image {
+  -webkit-margin-start: 30px;
+  display: block;
+  height: 60px;
+  margin-top: 40px;
+  transition: all 250ms ease;
+}
+
+.content #screenshot-image:hover {
+  height: 170px;
+  margin-top: 80px;
+  z-index: 1;
+}
+
+.content #privacy-note {
+  color: #969696;
+  font-size: 10px;
+  line-height: 15px;
+  margin-bottom: 20px;
+  margin-top: 40px;
+}
+
+.content .buttons-pane {
+  display: -webkit-flex;
+  justify-content: flex-end
+}
+
+.content #attach-file-note {
+  -webkit-margin-start: 112px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.content .attach-file-notification {
+  -webkit-padding-start: 20px;
+  color: rgb(204, 0, 0);
+  font-weight: bold;
+}
+
+button.white-button {
+  -webkit-margin-end: 10px;
+  color: #000;
+}
+
+button.blue-button {
+  color: #fff;
+  text-shadow: 1px sharp drop shadow rgb(45, 106, 218);
+}

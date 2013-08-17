@@ -1369,12 +1369,12 @@ body {
 
 .gallery > .header > .maximize-button {
   background-image: -webkit-image-set(
-    url('../images/files/ui/topbar_button_maximize.png') 1x,
-    url('../images/files/ui/2x/topbar_button_maximize.png') 2x);
+    url('chrome://resources/images/apps/topbar_button_maximize.png') 1x,
+    url('chrome://resources/images/2x/apps/topbar_button_maximize.png') 2x);
 }
 
 .gallery > .header > .close-button {
   background-image: -webkit-image-set(
-    url('../images/files/ui/topbar_button_close.png') 1x,
-    url('../images/files/ui/2x/topbar_button_close.png') 2x);
+    url('chrome://resources/images/apps/topbar_button_close.png') 1x,
+    url('chrome://resources/images/2x/apps/topbar_button_close.png') 2x);
 }

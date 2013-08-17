@@ -131,24 +131,27 @@ void DebugDaemonLogSource::OnGetUserLogFiles(
     const KeyValueMap& user_log_files) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   if (succeeded) {
+    SystemLogsResponse* response = new SystemLogsResponse;
+    std::vector<Profile*> last_used = ProfileManager::GetLastOpenedProfiles();
     content::BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
-        base::Bind(
-            &DebugDaemonLogSource::ReadUserLogFiles,
-            weak_ptr_factory_.GetWeakPtr(),
-            user_log_files),
-        base::Bind(&DebugDaemonLogSource::RequestCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::Bind(&DebugDaemonLogSource::ReadUserLogFiles,
+                   user_log_files, last_used, response),
+        base::Bind(&DebugDaemonLogSource::MergeResponse,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Owned(response)));
   } else {
     (*response_)[kUserLogFileKeyName] = kNotAvailable;
     RequestCompleted();
   }
 }
 
-void DebugDaemonLogSource::ReadUserLogFiles(const KeyValueMap& user_log_files) {
-  std::vector<Profile*> last_used = ProfileManager::GetLastOpenedProfiles();
-
-  for (size_t i = 0; i < last_used.size(); ++i) {
+// static
+void DebugDaemonLogSource::ReadUserLogFiles(
+    const KeyValueMap& user_log_files,
+    const std::vector<Profile*>& last_used_profiles,
+    SystemLogsResponse* response) {
+  for (size_t i = 0; i < last_used_profiles.size(); ++i) {
     std::string profile_prefix = "Profile[" + base::UintToString(i) + "] ";
     for (KeyValueMap::const_iterator it = user_log_files.begin();
          it != user_log_files.end();
@@ -156,16 +159,23 @@ void DebugDaemonLogSource::ReadUserLogFiles(const KeyValueMap& user_log_files) {
       std::string key = it->first;
       std::string value;
       std::string filename = it->second;
-      base::FilePath profile_dir = last_used[i]->GetPath();
+      base::FilePath profile_dir = last_used_profiles[i]->GetPath();
       bool read_success = file_util::ReadFileToString(
           profile_dir.Append(filename), &value);
 
       if (read_success && !value.empty())
-        (*response_)[profile_prefix + key] = value;
+        (*response)[profile_prefix + key] = value;
       else
-        (*response_)[profile_prefix + filename] = kNotAvailable;
+        (*response)[profile_prefix + filename] = kNotAvailable;
     }
   }
+}
+
+void DebugDaemonLogSource::MergeResponse(SystemLogsResponse* response) {
+  for (SystemLogsResponse::const_iterator it = response->begin();
+       it != response->end(); ++it)
+    response_->insert(*it);
+  RequestCompleted();
 }
 
 void DebugDaemonLogSource::RequestCompleted() {

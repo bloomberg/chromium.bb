@@ -94,7 +94,7 @@ void TracingManager::OnEndTracingComplete() {
     return;
 
   std::string output_val;
-  FeedbackUtil::ZipString(data_, &output_val);
+  feedback_util::ZipString(data_, &output_val);
 
   scoped_refptr<base::RefCountedString> output(
       base::RefCountedString::TakeString(&output_val));

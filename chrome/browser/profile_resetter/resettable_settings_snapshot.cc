@@ -154,11 +154,11 @@ void SendSettingsFeedback(const std::string& report, Profile* profile) {
   feedback_data->set_category_tag(kProfileResetFeedbackBucket);
   feedback_data->set_description(report);
 
-  feedback_data->set_image(ScreenshotDataPtr());
+  feedback_data->set_image(scoped_ptr<std::string>(new std::string));
   feedback_data->set_profile(profile);
 
   feedback_data->set_page_url("");
   feedback_data->set_user_email("");
 
-  FeedbackUtil::SendReport(feedback_data);
+  feedback_util::SendReport(feedback_data);
 }

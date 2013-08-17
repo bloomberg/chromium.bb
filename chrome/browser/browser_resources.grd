@@ -119,6 +119,7 @@
         <include name="IDR_EXTENSION_INFO_JS" file="resources\extensions\extension_info.js" flattenhtml="true" type="BINDATA" />
         <include name="IDR_EXTENSIONS_JS" file="resources\extensions\extensions.js" flattenhtml="true" type="BINDATA" />
       </if>
+      <include name="IDR_FEEDBACK_MANIFEST" file="resources\feedback\manifest.json" type="BINDATA" />
       <include name="IDR_FLAGS_HTML" file="resources\flags.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_FLAGS_JS" file="resources\flags.js" type="BINDATA" />
       <include name="IDR_HELP_JS" file="resources\help\help.js" flattenhtml="true" type="BINDATA" />
@@ -244,9 +245,6 @@
         <include name="IDR_SUGGESTIONS_PAGE_JS" file="resources\ntp4\suggestions_page.js" type="BINDATA" />
       </if>
       <include name="IDR_TRANSLATE_JS" file="resources\translate.js" type="BINDATA" />
-      <include name="IDR_FEEDBACK_HTML" file="resources\feedback.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_FEEDBACK_HTML_INVALID" file="resources\feedback_invalid.html" allowexternalscript="true" flattenhtml="true" type="BINDATA" />
-      <include name="IDR_FEEDBACK_JS" file="resources\feedback.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_HTML" file="resources\uber\uber.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_UBER_JS" file="resources\uber\uber.js" type="BINDATA" />
       <include name="IDR_UBER_FRAME_HTML" file="resources\uber\uber_frame.html" flattenhtml="true" type="BINDATA" />

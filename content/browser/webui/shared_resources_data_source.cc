@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
@@ -14,10 +15,37 @@
 
 namespace {
 
+const char kAppImagesPath[] = "images/apps/";
+const char kAppImagesPath2x[] = "images/2x/apps/";
+
+const char kReplacement[] = "../../resources/default_100_percent/common/";
+const char kReplacement2x[] = "../../resources/default_200_percent/common/";
+
+// This entire method is a hack introduced to be able to handle apps images
+// that exist in the ui/resources directory. From JS/CSS, we still load the
+// image as if it were chrome://resources/images/apps/myappimage.png, if that
+// path doesn't exist, we check to see if it that image exists in the relative
+// path to ui/resources instead.
+// TODO(rkc): Once we have a separate source for apps, remove this code.
+bool AppsRelativePathMatch(const std::string& path,
+                           const std::string& compareto) {
+  if (StartsWithASCII(path, kAppImagesPath, false)) {
+    if (compareto ==
+        (kReplacement + path.substr(arraysize(kAppImagesPath) - 1)))
+      return true;
+  } else if (StartsWithASCII(path, kAppImagesPath2x, false)) {
+    if (compareto ==
+        (kReplacement2x + path.substr(arraysize(kAppImagesPath) - 1)))
+      return true;
+  }
+  return false;
+}
+
 int PathToIDR(const std::string& path) {
   int idr = -1;
   for (size_t i = 0; i < kWebuiResourcesSize; ++i) {
-    if (kWebuiResources[i].name == path) {
+    if ((path == kWebuiResources[i].name) ||
+        AppsRelativePathMatch(path, kWebuiResources[i].name)) {
       idr = kWebuiResources[i].value;
       break;
     }

@@ -419,6 +419,10 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
   }
 
+#if defined(GOOGLE_CHROME_BUILD)
+    Add(IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")));
+#endif  // defined(GOOGLE_CHROME_BUILD)
+
 #if defined(OS_CHROMEOS)
   if (!skip_session_components) {
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
