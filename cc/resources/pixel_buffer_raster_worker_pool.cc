@@ -11,6 +11,10 @@
 #include "cc/resources/resource.h"
 #include "third_party/skia/include/core/SkDevice.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/sys_utils.h"
+#endif
+
 namespace cc {
 
 namespace {
@@ -62,22 +66,6 @@ class PixelBufferWorkerPoolTaskImpl : public internal::WorkerPoolTask {
   DISALLOW_COPY_AND_ASSIGN(PixelBufferWorkerPoolTaskImpl);
 };
 
-// If we raster too fast we become upload bound, and pending
-// uploads consume memory. For maximum upload throughput, we would
-// want to allow for upload_throughput * pipeline_time of pending
-// uploads, after which we are just wasting memory. Since we don't
-// know our upload throughput yet, this just caps our memory usage.
-#if defined(OS_ANDROID)
-// For reference Nexus10 can upload 1MB in about 2.5ms.
-const size_t kMaxBytesUploadedPerMs = (2 * 1024 * 1024) / 5;
-#else
-// For reference Chromebook Pixel can upload 1MB in about 0.5ms.
-const size_t kMaxBytesUploadedPerMs = 1024 * 1024 * 2;
-#endif
-
-// Assuming a two frame deep pipeline.
-const size_t kMaxPendingUploadBytes = 16 * 2 * kMaxBytesUploadedPerMs;
-
 const int kCheckForCompletedRasterTasksDelayMs = 6;
 
 const size_t kMaxScheduledRasterTasks = 48;
@@ -116,6 +104,25 @@ PixelBufferRasterWorkerPool::PixelBufferRasterWorkerPool(
       should_notify_client_if_no_tasks_are_pending_(false),
       should_notify_client_if_no_tasks_required_for_activation_are_pending_(
           false) {
+// If we raster too fast we become upload bound, and pending
+// uploads consume memory. For maximum upload throughput, we would
+// want to allow for upload_throughput * pipeline_time of pending
+// uploads, after which we are just wasting memory. Since we don't
+// know our upload throughput yet, this just caps our memory usage.
+#if defined(OS_ANDROID)
+  size_t divider = 1;
+  if (base::android::SysUtils::IsLowEndDevice())
+    divider = 3;
+
+  // For reference Nexus10 can upload 1MB in about 2.5ms.
+  const size_t kMaxBytesUploadedPerMs = (2 * 1024 * 1024) / (5 * divider);
+#else
+  // For reference Chromebook Pixel can upload 1MB in about 0.5ms.
+  const size_t kMaxBytesUploadedPerMs = 1024 * 1024 * 2;
+#endif
+
+  // Assuming a two frame deep pipeline.
+  max_bytes_pending_upload_ = 16 * 2 * kMaxBytesUploadedPerMs;
 }
 
 PixelBufferRasterWorkerPool::~PixelBufferRasterWorkerPool() {
@@ -474,7 +481,7 @@ void PixelBufferRasterWorkerPool::ScheduleMoreTasks() {
     // All raster tasks need to be throttled by bytes of pending uploads.
     size_t new_bytes_pending_upload = bytes_pending_upload;
     new_bytes_pending_upload += task->resource()->bytes();
-    if (new_bytes_pending_upload > kMaxPendingUploadBytes)
+    if (new_bytes_pending_upload > max_bytes_pending_upload_)
       break;
 
     internal::WorkerPoolTask* pixel_buffer_task = pixel_buffer_it->second.get();
@@ -677,7 +684,7 @@ scoped_ptr<base::Value> PixelBufferRasterWorkerPool::ThrottleStateAsValue()
   scoped_ptr<base::DictionaryValue> throttle_state(new base::DictionaryValue);
 
   throttle_state->SetInteger("bytes_available_for_upload",
-                             kMaxPendingUploadBytes - bytes_pending_upload_);
+                             max_bytes_pending_upload_ - bytes_pending_upload_);
   throttle_state->SetInteger("bytes_pending_upload", bytes_pending_upload_);
   throttle_state->SetInteger("scheduled_raster_task_count",
                              scheduled_raster_task_count_);
