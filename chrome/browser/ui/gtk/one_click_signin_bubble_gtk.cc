@@ -52,9 +52,11 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
 
 void OneClickSigninBubbleGtk::BubbleClosing(
     BubbleGtk* bubble, bool closed_by_escape) {
+  // If we get here and |start_sync_callback_| is not null, act like this is
+  // an undo.  All actions that start sign in are explicitly handled below.
   if (is_sync_dialog_ && !start_sync_callback_.is_null()) {
     base::ResetAndReturn(&start_sync_callback_).Run(
-        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+        OneClickSigninSyncStarter::UNDO_SYNC);
   }
 
   // The bubble needs to close and remove the widgets from the window before
@@ -75,7 +77,7 @@ void OneClickSigninBubbleGtk::OnClickAdvancedLink(GtkWidget* link) {
           one_click_signin::HISTOGRAM_CONFIRM_ADVANCED);
 
     base::ResetAndReturn(&start_sync_callback_).Run(
-      OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
+        OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
   } else {
     Browser* browser = chrome::FindBrowserWithWindow(
       gtk_window_get_transient_for(bubble_->GetNativeWindow()));
@@ -96,7 +98,7 @@ void OneClickSigninBubbleGtk::OnClickOK(GtkWidget* link) {
           one_click_signin::HISTOGRAM_CONFIRM_OK);
 
     base::ResetAndReturn(&start_sync_callback_).Run(
-      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
+        OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
   }
   bubble_->Close();
 }
@@ -135,11 +137,13 @@ void OneClickSigninBubbleGtk::OnClickLearnMoreLink(GtkWidget* link) {
 }
 
 void OneClickSigninBubbleGtk::OnClickCloseButton(GtkWidget* button) {
+  DCHECK(is_sync_dialog_);
   OneClickSigninHelper::LogConfirmHistogramValue(
       clicked_learn_more_ ?
           one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
           one_click_signin::HISTOGRAM_CONFIRM_CLOSE);
-  start_sync_callback_.Reset();
+  base::ResetAndReturn(&start_sync_callback_).Run(
+      OneClickSigninSyncStarter::UNDO_SYNC);
   bubble_->Close();
 }
 

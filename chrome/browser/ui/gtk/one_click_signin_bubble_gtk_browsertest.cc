@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, DialogShowAndClickAdvanced){
 // Callback should be called to setup sync with default settings.
 IN_PROC_BROWSER_TEST_F(OneClickSigninBubbleGtkTest, DialogShowAndClose) {
   EXPECT_CALL(*this, OnStartSync(
-      OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS)).Times(1);
+      OneClickSigninSyncStarter::UNDO_SYNC)).Times(1);
 
   MakeBubble(
     BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_MODAL_DIALOG)->bubble_->Close();
