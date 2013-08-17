@@ -2612,7 +2612,7 @@ void ExtensionService::FinishInstallation(const Extension* extension) {
   // If this is a new external extension that was disabled, alert the user
   // so he can reenable it. We do this last so that it has already been
   // added to our list of extensions.
-  if (unacknowledged_external) {
+  if (unacknowledged_external && !is_update) {
     UpdateExternalExtensionAlert();
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
                               EXTERNAL_EXTENSION_INSTALLED,
