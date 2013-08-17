@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_QUIC_STATS_H_
-#define NET_QUIC_QUIC_STATS_H_
+#ifndef NET_QUIC_QUIC_CONNECTION_STATS_H_
+#define NET_QUIC_QUIC_CONNECTION_STATS_H_
 
 #include "base/basictypes.h"
 #include "net/base/net_export.h"
@@ -47,4 +47,4 @@ struct NET_EXPORT_PRIVATE QuicConnectionStats {
 
 }  // namespace net
 
-#endif  // NET_QUIC_QUIC_STATS_H_
+#endif  // NET_QUIC_QUIC_CONNECTION_STATS_H_

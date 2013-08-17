@@ -29,13 +29,13 @@
 #include "net/quic/congestion_control/quic_congestion_manager.h"
 #include "net/quic/quic_alarm.h"
 #include "net/quic/quic_blocked_writer_interface.h"
+#include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_framer.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_generator.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_received_packet_manager.h"
 #include "net/quic/quic_sent_entropy_manager.h"
-#include "net/quic/quic_stats.h"
 
 namespace net {
 
