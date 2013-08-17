@@ -347,8 +347,8 @@ class CHROMEOS_EXPORT OutputConfigurator
   // Configure outputs.
   void ConfigureOutputs();
 
-  // Fires OnDisplayModeChanged() event to the observers.
-  void NotifyOnDisplayChanged();
+  // Notifies observers about an attempted state change.
+  void NotifyObservers(bool success, OutputState attempted_state);
 
   // Switches to the state specified in |output_state| and |power_state|.
   // If the hardware mirroring failed and |mirroring_controller_| is set,

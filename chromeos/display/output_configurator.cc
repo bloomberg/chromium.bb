@@ -213,15 +213,16 @@ void OutputConfigurator::Start(uint32 background_color_argb) {
       delegate_->GetOutputs(state_controller_);
   if (outputs.size() > 1 && background_color_argb)
     delegate_->SetBackgroundColor(background_color_argb);
-  EnterStateOrFallBackToSoftwareMirroring(
-      GetOutputState(outputs, power_state_), power_state_, outputs);
+  const OutputState new_state = GetOutputState(outputs, power_state_);
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
+      new_state, power_state_, outputs);
 
   // Force the DPMS on chrome startup as the driver doesn't always detect
   // that all displays are on when signing out.
   delegate_->ForceDPMSOn();
   delegate_->UngrabServer();
   delegate_->SendProjectingStateToPowerManager(IsProjecting(outputs));
-  NotifyOnDisplayChanged();
+  NotifyObservers(success, new_state);
 }
 
 void OutputConfigurator::Stop() {
@@ -242,20 +243,27 @@ bool OutputConfigurator::SetDisplayPower(DisplayPowerState power_state,
   std::vector<OutputSnapshot> outputs =
       delegate_->GetOutputs(state_controller_);
 
+  const OutputState new_state = GetOutputState(outputs, power_state);
+  bool attempted_change = false;
+  bool success = false;
+
   bool only_if_single_internal_display =
       flags & kSetDisplayPowerOnlyIfSingleInternalDisplay;
   bool single_internal_display = outputs.size() == 1 && outputs[0].is_internal;
-  if ((single_internal_display || !only_if_single_internal_display) &&
-      EnterStateOrFallBackToSoftwareMirroring(
-          GetOutputState(outputs, power_state), power_state, outputs)) {
-    if (power_state != DISPLAY_POWER_ALL_OFF)  {
-      // Force the DPMS on since the driver doesn't always detect that it
-      // should turn on. This is needed when coming back from idle suspend.
+  if (single_internal_display || !only_if_single_internal_display) {
+    success = EnterStateOrFallBackToSoftwareMirroring(
+        new_state, power_state, outputs);
+    attempted_change = true;
+
+    // Force the DPMS on since the driver doesn't always detect that it
+    // should turn on. This is needed when coming back from idle suspend.
+    if (success && power_state != DISPLAY_POWER_ALL_OFF)
       delegate_->ForceDPMSOn();
-    }
   }
 
   delegate_->UngrabServer();
+  if (attempted_change)
+    NotifyObservers(success, new_state);
   return true;
 }
 
@@ -269,23 +277,18 @@ bool OutputConfigurator::SetDisplayMode(OutputState new_state) {
     // STATE_DUAL_EXTENDED to STATE_DUAL_EXTENDED.
     if (mirroring_controller_ && new_state == STATE_DUAL_EXTENDED)
       mirroring_controller_->SetSoftwareMirroring(false);
-    NotifyOnDisplayChanged();
+    NotifyObservers(true, new_state);
     return true;
   }
 
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs =
       delegate_->GetOutputs(state_controller_);
-  bool success = EnterStateOrFallBackToSoftwareMirroring(
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_, outputs);
   delegate_->UngrabServer();
 
-  if (success) {
-    NotifyOnDisplayChanged();
-  } else {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, OnDisplayModeChangeFailed(new_state));
-  }
+  NotifyObservers(success, new_state);
   return success;
 }
 
@@ -412,23 +415,24 @@ void OutputConfigurator::ConfigureOutputs() {
   delegate_->GrabServer();
   std::vector<OutputSnapshot> outputs =
       delegate_->GetOutputs(state_controller_);
-  OutputState new_state = GetOutputState(outputs, power_state_);
-  bool success = EnterStateOrFallBackToSoftwareMirroring(
+  const OutputState new_state = GetOutputState(outputs, power_state_);
+  const bool success = EnterStateOrFallBackToSoftwareMirroring(
       new_state, power_state_, outputs);
   delegate_->UngrabServer();
 
-  if (success) {
-    NotifyOnDisplayChanged();
-  } else {
-    FOR_EACH_OBSERVER(
-        Observer, observers_, OnDisplayModeChangeFailed(new_state));
-  }
+  NotifyObservers(success, new_state);
   delegate_->SendProjectingStateToPowerManager(IsProjecting(outputs));
 }
 
-void OutputConfigurator::NotifyOnDisplayChanged() {
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    OnDisplayModeChanged(cached_outputs_));
+void OutputConfigurator::NotifyObservers(bool success,
+                                         OutputState attempted_state) {
+  if (success) {
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnDisplayModeChanged(cached_outputs_));
+  } else {
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnDisplayModeChangeFailed(attempted_state));
+  }
 }
 
 bool OutputConfigurator::EnterStateOrFallBackToSoftwareMirroring(

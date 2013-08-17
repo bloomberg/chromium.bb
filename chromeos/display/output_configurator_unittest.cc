@@ -192,6 +192,58 @@ class TestDelegate : public OutputConfigurator::Delegate {
   DISALLOW_COPY_AND_ASSIGN(TestDelegate);
 };
 
+class TestObserver : public OutputConfigurator::Observer {
+ public:
+  explicit TestObserver(OutputConfigurator* configurator)
+      : configurator_(configurator) {
+    Reset();
+    configurator_->AddObserver(this);
+  }
+  virtual ~TestObserver() {
+    configurator_->RemoveObserver(this);
+  }
+
+  int num_changes() const { return num_changes_; }
+  int num_failures() const { return num_failures_; }
+  std::vector<OutputConfigurator::OutputSnapshot> latest_outputs() const {
+    return latest_outputs_;
+  }
+  OutputState latest_failed_state() const { return latest_failed_state_; }
+
+  void Reset() {
+    num_changes_ = 0;
+    num_failures_ = 0;
+    latest_outputs_.clear();
+    latest_failed_state_ = STATE_INVALID;
+  }
+
+  // OutputConfigurator::Observer overrides:
+  virtual void OnDisplayModeChanged(
+      const std::vector<OutputConfigurator::OutputSnapshot>& outputs) OVERRIDE {
+    num_changes_++;
+    latest_outputs_ = outputs;
+  }
+
+  virtual void OnDisplayModeChangeFailed(OutputState failed_new_state)
+      OVERRIDE {
+    num_failures_++;
+    latest_failed_state_ = failed_new_state;
+  }
+
+ private:
+  OutputConfigurator* configurator_;  // Not owned.
+
+  // Number of times that OnDisplayMode*() has been called.
+  int num_changes_;
+  int num_failures_;
+
+  // Parameters most recently passed to OnDisplayMode*().
+  std::vector<OutputConfigurator::OutputSnapshot> latest_outputs_;
+  OutputState latest_failed_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestObserver);
+};
+
 class TestStateController : public OutputConfigurator::StateController {
  public:
   TestStateController() : state_(STATE_DUAL_EXTENDED) {}
@@ -238,7 +290,8 @@ class TestMirroringController
 class OutputConfiguratorTest : public testing::Test {
  public:
   OutputConfiguratorTest()
-      : test_api_(&configurator_, TestDelegate::kXRandREventBase) {}
+      : observer_(&configurator_),
+        test_api_(&configurator_, TestDelegate::kXRandREventBase) {}
   virtual ~OutputConfiguratorTest() {}
 
   virtual void SetUp() OVERRIDE {
@@ -347,6 +400,7 @@ class OutputConfiguratorTest : public testing::Test {
   TestStateController state_controller_;
   TestMirroringController mirroring_controller_;
   OutputConfigurator configurator_;
+  TestObserver observer_;
   TestDelegate* delegate_;  // not owned
   OutputConfigurator::TestApi test_api_;
 
@@ -363,6 +417,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
 
   // Connect a second output and check that the configurator enters
   // extended mode.
+  observer_.Reset();
   state_controller_.set_state(STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
   const int kDualHeight =
@@ -378,7 +433,9 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
                         kUngrab, kProjectingOn, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
+  observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
   EXPECT_EQ(JoinActions(kGrab,
                         GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
@@ -390,8 +447,10 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
                         kUngrab, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Disconnect the second output.
+  observer_.Reset();
   UpdateOutputs(1, true);
   EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
                         GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
@@ -401,6 +460,7 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
                         kUngrab, kProjectingOff, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Software Mirroring
   DisableNativeMirroring();
@@ -418,25 +478,31 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
             delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
 
+  observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
-  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL),
-            delegate_->GetActionsAndClear());
+  EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL), delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
-  // Setting STATE_DUAL_MIRROR should try to reconfigure
+  // Setting STATE_DUAL_MIRROR should try to reconfigure.
+  observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
   EXPECT_EQ(JoinActions(NULL), delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Set back to software mirror mode.
+  observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
   EXPECT_EQ(JoinActions(kGrab, kUngrab, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Disconnect the second output.
+  observer_.Reset();
   UpdateOutputs(1, true);
   EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
                         GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
@@ -446,12 +512,14 @@ TEST_F(OutputConfiguratorTest, ConnectSecondOutput) {
                         kUngrab, kProjectingOff, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 }
 
 TEST_F(OutputConfiguratorTest, SetDisplayPower) {
   InitWithSingleOutput();
 
   state_controller_.set_state(STATE_DUAL_MIRROR);
+  observer_.Reset();
   UpdateOutputs(2, true);
   EXPECT_EQ(JoinActions(kUpdateXRandR, kGrab,
                         GetFramebufferAction(kSmallModeWidth, kSmallModeHeight,
@@ -463,9 +531,11 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
                         kUngrab, kProjectingOn, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Turning off the internal display should switch the external display to
   // its native mode.
+  observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab,
@@ -478,9 +548,11 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
                         kForceDPMS, kUngrab, NULL),
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_SINGLE, configurator_.output_state());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // When all displays are turned off, the framebuffer should switch back
   // to the mirrored size.
+  observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab,
@@ -494,8 +566,10 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Turn all displays on and check that mirroring is still used.
+  observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab,
@@ -509,10 +583,12 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_MIRROR, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Software Mirroring
   DisableNativeMirroring();
   state_controller_.set_state(STATE_DUAL_MIRROR);
+  observer_.Reset();
   UpdateOutputs(2, true);
   const int kDualHeight =
       kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
@@ -528,9 +604,11 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Turning off the internal display should switch the external display to
   // its native mode.
+  observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab,
@@ -544,9 +622,11 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_SINGLE, configurator_.output_state());
   EXPECT_FALSE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // When all displays are turned off, the framebuffer should switch back
   // to the extended + software mirroring.
+  observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_OFF,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab,
@@ -561,8 +641,10 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
+  EXPECT_EQ(1, observer_.num_changes());
 
   // Turn all displays on and check that mirroring is still used.
+  observer_.Reset();
   configurator_.SetDisplayPower(DISPLAY_POWER_ALL_ON,
                                 OutputConfigurator::kSetDisplayPowerNoFlags);
   EXPECT_EQ(JoinActions(kGrab,
@@ -577,7 +659,7 @@ TEST_F(OutputConfiguratorTest, SetDisplayPower) {
             delegate_->GetActionsAndClear());
   EXPECT_EQ(STATE_DUAL_EXTENDED, configurator_.output_state());
   EXPECT_TRUE(mirroring_controller_.software_mirroring_enabled());
-
+  EXPECT_EQ(1, observer_.num_changes());
 }
 
 TEST_F(OutputConfiguratorTest, SuspendAndResume) {
@@ -726,23 +808,32 @@ TEST_F(OutputConfiguratorTest, InvalidOutputStates) {
   EXPECT_EQ(kNoActions, delegate_->GetActionsAndClear());
   configurator_.Init(false);
   configurator_.Start(0);
+  observer_.Reset();
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_HEADLESS));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_SINGLE));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+  EXPECT_EQ(1, observer_.num_changes());
+  EXPECT_EQ(3, observer_.num_failures());
 
   UpdateOutputs(1, true);
+  observer_.Reset();
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_HEADLESS));
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_SINGLE));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+  EXPECT_EQ(1, observer_.num_changes());
+  EXPECT_EQ(3, observer_.num_failures());
 
   state_controller_.set_state(STATE_DUAL_EXTENDED);
   UpdateOutputs(2, true);
+  observer_.Reset();
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_HEADLESS));
   EXPECT_FALSE(configurator_.SetDisplayMode(STATE_SINGLE));
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_MIRROR));
   EXPECT_TRUE(configurator_.SetDisplayMode(STATE_DUAL_EXTENDED));
+  EXPECT_EQ(2, observer_.num_changes());
+  EXPECT_EQ(2, observer_.num_failures());
 }
 
 TEST_F(OutputConfiguratorTest, GetOutputStateForDisplaysWithoutId) {
