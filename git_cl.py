@@ -1077,6 +1077,8 @@ def CMDstatus(parser, args):
   parser.add_option('-f', '--fast', action='store_true',
                     help='Do not retrieve review status')
   (options, args) = parser.parse_args(args)
+  if args:
+    parser.error('Unsupported args: %s' % args)
 
   if options.field:
     cl = Changelist()
@@ -1181,6 +1183,22 @@ def CMDstatus(parser, args):
   print 'Issue description:'
   print cl.GetDescription(pretty=True)
   return 0
+
+
+def colorize_CMDstatus_doc():
+  """To be called once in main() to add colors to git cl status help."""
+  colors = [i for i in dir(Fore) if i[0].isupper()]
+
+  def colorize_line(line):
+    for color in colors:
+      if color in line.upper():
+        # Extract whitespaces first and the leading '-'.
+        indent = len(line) - len(line.lstrip(' ')) + 1
+        return line[:indent] + getattr(Fore, color) + line[indent:] + Fore.RESET
+    return line
+
+  lines = CMDstatus.__doc__.splitlines()
+  CMDstatus.__doc__ = '\n'.join(colorize_line(l) for l in lines)
 
 
 @subcommand.usage('[issue_number]')
@@ -2156,13 +2174,6 @@ class OptionParser(optparse.OptionParser):
     logging.basicConfig(level=levels[min(options.verbose, len(levels) - 1)])
     return options, args
 
-  def format_description(self, _):
-    """Disables automatic reformatting."""
-    lines = self.description.rstrip().splitlines()
-    lines_fixed = [lines[0]] + [l[2:] if len(l) >= 2 else l for l in lines[1:]]
-    description = ''.join(l + '\n' for l in lines_fixed)
-    return description[0].upper() + description[1:]
-
 
 def main(argv):
   if sys.hexversion < 0x02060000:
@@ -2175,6 +2186,7 @@ def main(argv):
   global settings
   settings = Settings()
 
+  colorize_CMDstatus_doc()
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
     return dispatcher.execute(OptionParser(), argv)

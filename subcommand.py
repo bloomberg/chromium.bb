@@ -41,12 +41,24 @@ Explanation:
 
 import difflib
 import sys
+import textwrap
 
 
 def usage(more):
   """Adds a 'usage_more' property to a CMD function."""
   def hook(fn):
     fn.usage_more = more
+    return fn
+  return hook
+
+
+def epilog(text):
+  """Adds an 'epilog' property to a CMD function.
+
+  It will be shown in the epilog. Usually useful for examples.
+  """
+  def hook(fn):
+    fn.epilog = text
     return fn
   return hook
 
@@ -60,6 +72,14 @@ def CMDhelp(parser, args):
   _, args = parser.parse_args(args)
   # Never gets there.
   assert False
+
+
+def _get_color_module():
+  """Returns the colorama module if available.
+
+  If so, assumes colors are supported and return the module handle.
+  """
+  return sys.modules.get('colorama') or sys.modules.get('third_party.colorama')
 
 
 class CommandDispatcher(object):
@@ -126,21 +146,57 @@ class CommandDispatcher(object):
 
     return commands[hamming_commands[0][1]]
 
+  def _gen_commands_list(self):
+    """Generates the short list of supported commands."""
+    commands = self.enumerate_commands()
+    docs = sorted(
+        (name, self._create_command_summary(name, handler))
+        for name, handler in commands.iteritems())
+    # Skip commands without a docstring.
+    docs = [i for i in docs if i[1]]
+    # Then calculate maximum length for alignment:
+    length = max(len(c) for c in commands)
+
+    # Look if color is supported.
+    colors = _get_color_module()
+    green = reset = ''
+    if colors:
+      green = colors.Fore.GREEN
+      reset = colors.Fore.RESET
+    return (
+        'Commands are:\n' +
+        ''.join(
+            '  %s%-*s%s %s\n' % (green, length, name, reset, doc)
+            for name, doc in docs))
+
   def _add_command_usage(self, parser, command):
     """Modifies an OptionParser object with the function's documentation."""
     name = command.__name__[3:]
-    more = getattr(command, 'usage_more', '')
     if name == 'help':
       name = '<command>'
       # Use the module's docstring as the description for the 'help' command if
       # available.
-      parser.description = self.module.__doc__
+      parser.description = (self.module.__doc__ or '').rstrip()
+      if parser.description:
+        parser.description += '\n\n'
+      parser.description += self._gen_commands_list()
+      # Do not touch epilog.
     else:
-      # Use the command's docstring if available.
-      parser.description = command.__doc__
-    parser.description = (parser.description or '').strip()
-    if parser.description:
-      parser.description += '\n'
+      # Use the command's docstring if available. For commands, unlike module
+      # docstring, realign.
+      lines = (command.__doc__ or '').rstrip().splitlines()
+      if lines[:1]:
+        rest = textwrap.dedent('\n'.join(lines[1:]))
+        parser.description = '\n'.join((lines[0], rest))
+      else:
+        parser.description = lines[0]
+      if parser.description:
+        parser.description += '\n'
+      parser.epilog = getattr(command, 'epilog', None)
+      if parser.epilog:
+        parser.epilog = '\n' + parser.epilog.strip() + '\n'
+
+    more = getattr(command, 'usage_more', '')
     parser.set_usage(
         'usage: %%prog %s [options]%s' % (name, '' if not more else ' ' + more))
 
@@ -161,18 +217,11 @@ class CommandDispatcher(object):
 
     Fallbacks to 'help' if not disabled.
     """
-    commands = self.enumerate_commands()
-    length = max(len(c) for c in commands)
-
-    # Lists all the commands in 'help'.
-    if commands['help']:
-      docs = sorted(
-          (name, self._create_command_summary(name, handler))
-          for name, handler in commands.iteritems())
-      # Skip commands without a docstring.
-      commands['help'].usage_more = (
-          '\n\nCommands are:\n' + '\n'.join(
-              '  %-*s %s' % (length, name, doc) for name, doc in docs if doc))
+    # Unconditionally disable format_description() and format_epilog().
+    # Technically, a formatter should be used but it's not worth (yet) the
+    # trouble.
+    parser.format_description = lambda _: parser.description or ''
+    parser.format_epilog = lambda _: parser.epilog or ''
 
     if args:
       if args[0] in ('-h', '--help') and len(args) > 1:
@@ -192,10 +241,11 @@ class CommandDispatcher(object):
         self._add_command_usage(parser, command)
         return command(parser, args[1:])
 
-    if commands['help']:
+    cmdhelp = self.enumerate_commands().get('help')
+    if cmdhelp:
       # Not a known command. Default to help.
-      self._add_command_usage(parser, commands['help'])
-      return commands['help'](parser, args)
+      self._add_command_usage(parser, cmdhelp)
+      return cmdhelp(parser, args)
 
     # Nothing can be done.
     return 2

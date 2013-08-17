@@ -3,74 +3,74 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Meta checkout manager supporting both Subversion and GIT.
+"""Meta checkout manager supporting both Subversion and GIT."""
+# Files
+#   .gclient      : Current client configuration, written by 'config' command.
+#                   Format is a Python script defining 'solutions', a list whose
+#                   entries each are maps binding the strings "name" and "url"
+#                   to strings specifying the name and location of the client
+#                   module, as well as "custom_deps" to a map similar to the
+#                   deps section of the DEPS file below, as well as
+#                   "custom_hooks" to a list similar to the hooks sections of
+#                   the DEPS file below.
+#   .gclient_entries : A cache constructed by 'update' command.  Format is a
+#                   Python script defining 'entries', a list of the names
+#                   of all modules in the client
+#   <module>/DEPS : Python script defining var 'deps' as a map from each
+#                   requisite submodule name to a URL where it can be found (via
+#                   one SCM)
+#
+# Hooks
+#   .gclient and DEPS files may optionally contain a list named "hooks" to
+#   allow custom actions to be performed based on files that have changed in the
+#   working copy as a result of a "sync"/"update" or "revert" operation.  This
+#   can be prevented by using --nohooks (hooks run by default). Hooks can also
+#   be forced to run with the "runhooks" operation.  If "sync" is run with
+#   --force, all known but not suppressed hooks will run regardless of the state
+#   of the working copy.
+#
+#   Each item in a "hooks" list is a dict, containing these two keys:
+#     "pattern"  The associated value is a string containing a regular
+#                expression.  When a file whose pathname matches the expression
+#                is checked out, updated, or reverted, the hook's "action" will
+#                run.
+#     "action"   A list describing a command to run along with its arguments, if
+#                any.  An action command will run at most one time per gclient
+#                invocation, regardless of how many files matched the pattern.
+#                The action is executed in the same directory as the .gclient
+#                file.  If the first item in the list is the string "python",
+#                the current Python interpreter (sys.executable) will be used
+#                to run the command. If the list contains string
+#                "$matching_files" it will be removed from the list and the list
+#                will be extended by the list of matching files.
+#     "name"     An optional string specifying the group to which a hook belongs
+#                for overriding and organizing.
+#
+#   Example:
+#     hooks = [
+#       { "pattern": "\\.(gif|jpe?g|pr0n|png)$",
+#         "action":  ["python", "image_indexer.py", "--all"]},
+#       { "pattern": ".",
+#         "name": "gyp",
+#         "action":  ["python", "src/build/gyp_chromium"]},
+#     ]
+#
+# Specifying a target OS
+#   An optional key named "target_os" may be added to a gclient file to specify
+#   one or more additional operating systems that should be considered when
+#   processing the deps_os dict of a DEPS file.
+#
+#   Example:
+#     target_os = [ "android" ]
+#
+#   If the "target_os_only" key is also present and true, then *only* the
+#   operating systems listed in "target_os" will be used.
+#
+#   Example:
+#     target_os = [ "ios" ]
+#     target_os_only = True
 
-Files
-  .gclient      : Current client configuration, written by 'config' command.
-                  Format is a Python script defining 'solutions', a list whose
-                  entries each are maps binding the strings "name" and "url"
-                  to strings specifying the name and location of the client
-                  module, as well as "custom_deps" to a map similar to the deps
-                  section of the DEPS file below, as well as "custom_hooks" to
-                  a list similar to the hooks sections of the DEPS file below.
-  .gclient_entries : A cache constructed by 'update' command.  Format is a
-                  Python script defining 'entries', a list of the names
-                  of all modules in the client
-  <module>/DEPS : Python script defining var 'deps' as a map from each requisite
-                  submodule name to a URL where it can be found (via one SCM)
-
-Hooks
-  .gclient and DEPS files may optionally contain a list named "hooks" to
-  allow custom actions to be performed based on files that have changed in the
-  working copy as a result of a "sync"/"update" or "revert" operation.  This
-  can be prevented by using --nohooks (hooks run by default). Hooks can also
-  be forced to run with the "runhooks" operation.  If "sync" is run with
-  --force, all known but not suppressed hooks will run regardless of the state
-  of the working copy.
-
-  Each item in a "hooks" list is a dict, containing these two keys:
-    "pattern"  The associated value is a string containing a regular
-               expression.  When a file whose pathname matches the expression
-               is checked out, updated, or reverted, the hook's "action" will
-               run.
-    "action"   A list describing a command to run along with its arguments, if
-               any.  An action command will run at most one time per gclient
-               invocation, regardless of how many files matched the pattern.
-               The action is executed in the same directory as the .gclient
-               file.  If the first item in the list is the string "python",
-               the current Python interpreter (sys.executable) will be used
-               to run the command. If the list contains string "$matching_files"
-               it will be removed from the list and the list will be extended
-               by the list of matching files.
-    "name"     An optional string specifying the group to which a hook belongs
-               for overriding and organizing.
-
-  Example:
-    hooks = [
-      { "pattern": "\\.(gif|jpe?g|pr0n|png)$",
-        "action":  ["python", "image_indexer.py", "--all"]},
-      { "pattern": ".",
-        "name": "gyp",
-        "action":  ["python", "src/build/gyp_chromium"]},
-    ]
-
-Specifying a target OS
-  An optional key named "target_os" may be added to a gclient file to specify
-  one or more additional operating systems that should be considered when
-  processing the deps_os dict of a DEPS file.
-
-  Example:
-    target_os = [ "android" ]
-
-  If the "target_os_only" key is also present and true, then *only* the
-  operating systems listed in "target_os" will be used.
-
-  Example:
-    target_os = [ "ios" ]
-    target_os_only = True
-"""
-
-__version__ = "0.6.4"
+__version__ = '0.7'
 
 import copy
 import logging
@@ -91,21 +91,9 @@ import fix_encoding
 import gclient_scm
 import gclient_utils
 from third_party.repo.progress import Progress
+import subcommand
 import subprocess2
 from third_party import colorama
-# Import shortcut.
-from third_party.colorama import Fore
-
-
-def attr(attribute, data):
-  """Sets an attribute on a function."""
-  def hook(fn):
-    setattr(fn, attribute, data)
-    return fn
-  return hook
-
-
-## GClient implementation.
 
 
 class GClientKeywords(object):
@@ -1314,8 +1302,8 @@ solutions = [
 def CMDcleanup(parser, args):
   """Cleans up all working copies.
 
-Mostly svn-specific. Simply runs 'svn cleanup' for each module.
-"""
+  Mostly svn-specific. Simply runs 'svn cleanup' for each module.
+  """
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
@@ -1331,9 +1319,9 @@ Mostly svn-specific. Simply runs 'svn cleanup' for each module.
   return client.RunOnDeps('cleanup', args)
 
 
-@attr('usage', '[command] [args ...]')
+@subcommand.usage('[command] [args ...]')
 def CMDrecurse(parser, args):
-  """Operates on all the entries.
+  """Operates [command args ...] on all the dependencies.
 
   Runs a shell command on all entries.
   Sets GCLIENT_DEP_PATH enviroment variable as the dep's relative location to
@@ -1372,12 +1360,12 @@ def CMDrecurse(parser, args):
                           progress=not options.no_progress)
 
 
-@attr('usage', '[args ...]')
+@subcommand.usage('[args ...]')
 def CMDfetch(parser, args):
   """Fetches upstream commits for all modules.
 
-Completely git-specific. Simply runs 'git fetch [args ...]' for each module.
-"""
+  Completely git-specific. Simply runs 'git fetch [args ...]' for each module.
+  """
   (options, args) = parser.parse_args(args)
   return CMDrecurse(OptionParser(), [
       '--jobs=%d' % options.jobs, '--scm=git', 'git', 'fetch'] + args)
@@ -1386,9 +1374,8 @@ Completely git-specific. Simply runs 'git fetch [args ...]' for each module.
 def CMDgrep(parser, args):
   """Greps through git repos managed by gclient.
 
-Runs 'git grep [args...]' for each module.
-"""
-
+  Runs 'git grep [args...]' for each module.
+  """
   # We can't use optparse because it will try to parse arguments sent
   # to git grep and throw an error. :-(
   if not args or re.match('(-h|--help)$', args[0]):
@@ -1413,17 +1400,16 @@ Runs 'git grep [args...]' for each module.
                   'git', 'grep', '--null', '--color=Always'] + args)
 
 
-@attr('usage', '[url] [safesync url]')
+@subcommand.usage('[url] [safesync url]')
 def CMDconfig(parser, args):
-  """Create a .gclient file in the current directory.
+  """Creates a .gclient file in the current directory.
 
-This specifies the configuration for further commands. After update/sync,
-top-level DEPS files in each module are read to determine dependent
-modules to operate on as well. If optional [url] parameter is
-provided, then configuration is read from a specified Subversion server
-URL.
-"""
-
+  This specifies the configuration for further commands. After update/sync,
+  top-level DEPS files in each module are read to determine dependent
+  modules to operate on as well. If optional [url] parameter is
+  provided, then configuration is read from a specified Subversion server
+  URL.
+  """
   # We do a little dance with the --gclientfile option.  'gclient config' is the
   # only command where it's acceptable to have both '--gclientfile' and '--spec'
   # arguments.  So, we temporarily stash any --gclientfile parameter into
@@ -1481,18 +1467,18 @@ URL.
   return 0
 
 
-@attr('epilog', """Example:
+@subcommand.epilog("""Example:
   gclient pack > patch.txt
     generate simple patch for configured client and dependences
 """)
 def CMDpack(parser, args):
-  """Generate a patch which can be applied at the root of the tree.
+  """Generates a patch which can be applied at the root of the tree.
 
-Internally, runs 'svn diff'/'git diff' on each checked out module and
-dependencies, and performs minimal postprocessing of the output. The
-resulting patch is printed to stdout and can be applied to a freshly
-checked out tree via 'patch -p0 < patchfile'.
-"""
+  Internally, runs 'svn diff'/'git diff' on each checked out module and
+  dependencies, and performs minimal postprocessing of the output. The
+  resulting patch is printed to stdout and can be applied to a freshly
+  checked out tree via 'patch -p0 < patchfile'.
+  """
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
@@ -1512,7 +1498,7 @@ checked out tree via 'patch -p0 < patchfile'.
 
 
 def CMDstatus(parser, args):
-  """Show modification status for every dependencies."""
+  """Shows modification status for every dependencies."""
   parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
                     help='override deps for the specified (comma-separated) '
                          'platform(s); \'all\' will process all deps_os '
@@ -1528,7 +1514,7 @@ def CMDstatus(parser, args):
   return client.RunOnDeps('status', args)
 
 
-@attr('epilog', """Examples:
+@subcommand.epilog("""Examples:
   gclient sync
       update files from SCM according to current configuration,
       *for modules which have changed since last update or sync*
@@ -1604,9 +1590,8 @@ def CMDsync(parser, args):
   return client.RunOnDeps('update', args)
 
 
-def CMDupdate(parser, args):
-  """Alias for the sync command. Deprecated."""
-  return CMDsync(parser, args)
+CMDupdate = CMDsync
+
 
 def CMDdiff(parser, args):
   """Displays local diff for every dependencies."""
@@ -1626,7 +1611,7 @@ def CMDdiff(parser, args):
 
 
 def CMDrevert(parser, args):
-  """Revert all modifications in every dependencies.
+  """Reverts all modifications in every dependencies.
 
   That's the nuclear option to get back to a 'clean' state. It removes anything
   that shows up in svn status."""
@@ -1671,7 +1656,7 @@ def CMDrunhooks(parser, args):
 
 
 def CMDrevinfo(parser, args):
-  """Output revision info mapping for the client and its dependencies.
+  """Outputs revision info mapping for the client and its dependencies.
 
   This allows the capture of an overall 'revision' for the source tree that
   can be used to reproduce the same tree in the future. It is only useful for
@@ -1699,7 +1684,7 @@ def CMDrevinfo(parser, args):
 
 
 def CMDhookinfo(parser, args):
-  """Output the hooks that would be run by `gclient runhooks`"""
+  """Outputs the hooks that would be run by `gclient runhooks`."""
   (options, args) = parser.parse_args(args)
   options.force = True
   client = GClient.LoadCurrentConfig(options)
@@ -1708,31 +1693,6 @@ def CMDhookinfo(parser, args):
   client.RunOnDeps(None, [])
   print '; '.join(' '.join(hook) for hook in client.GetHooks(options))
   return 0
-
-
-def Command(name):
-  return getattr(sys.modules[__name__], 'CMD' + name, None)
-
-
-def CMDhelp(parser, args):
-  """Prints list of commands or help for a specific command."""
-  (_, args) = parser.parse_args(args)
-  if len(args) == 1:
-    return Main(args + ['--help'])
-  parser.print_help()
-  return 0
-
-
-def GenUsage(parser, command):
-  """Modify an OptParse object with the function's documentation."""
-  obj = Command(command)
-  if command == 'help':
-    command = '<command>'
-  # OptParser.description prefer nicely non-formatted strings.
-  parser.description = re.sub('[\r\n ]{2,}', ' ', obj.__doc__)
-  usage = getattr(obj, 'usage', '')
-  parser.set_usage('%%prog %s [options] %s' % (command, usage))
-  parser.epilog = getattr(obj, 'epilog', None)
 
 
 class OptionParser(optparse.OptionParser):
@@ -1805,9 +1765,13 @@ class OptionParser(optparse.OptionParser):
       gclient_scm.SCMWrapper.nag_max = None
     return (options, args)
 
-  def format_epilog(self, _):
-    """Disables wordwrapping in epilog (usually examples)."""
-    return self.epilog or ''
+
+def disable_buffering():
+  # Make stdout auto-flush so buildbot doesn't kill us during lengthy
+  # operations. Python as a strong tendency to buffer sys.stdout.
+  sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
+  # Make stdout annotated with the thread ids.
+  sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
 
 
 def Main(argv):
@@ -1822,34 +1786,12 @@ def Main(argv):
     print >> sys.stderr, (
         '\nPython cannot find the location of it\'s own executable.\n')
     return 2
+  fix_encoding.fix_encoding()
+  disable_buffering()
   colorama.init()
+  dispatcher = subcommand.CommandDispatcher(__name__)
   try:
-    # Make stdout auto-flush so buildbot doesn't kill us during lengthy
-    # operations. Python as a strong tendency to buffer sys.stdout.
-    sys.stdout = gclient_utils.MakeFileAutoFlush(sys.stdout)
-    # Make stdout annotated with the thread ids.
-    sys.stdout = gclient_utils.MakeFileAnnotated(sys.stdout)
-    # Do it late so all commands are listed.
-    # Unused variable 'usage'
-    # pylint: disable=W0612
-    def to_str(fn):
-      return (
-          '  %s%-10s%s' % (Fore.GREEN, fn[3:], Fore.RESET) +
-          ' %s' % Command(fn[3:]).__doc__.split('\n')[0].strip())
-    cmds = (
-        to_str(fn) for fn in dir(sys.modules[__name__]) if fn.startswith('CMD')
-    )
-    CMDhelp.usage = '\n\nCommands are:\n' + '\n'.join(cmds)
-    parser = OptionParser()
-    if argv:
-      command = Command(argv[0])
-      if command:
-        # 'fix' the usage and the description now that we know the subcommand.
-        GenUsage(parser, argv[0])
-        return command(parser, argv[1:])
-    # Not a known command. Default to help.
-    GenUsage(parser, 'help')
-    return CMDhelp(parser, argv)
+    return dispatcher.execute(OptionParser(), argv)
   except KeyboardInterrupt:
     gclient_utils.GClientChildren.KillAllRemainingChildren()
     raise
@@ -1859,7 +1801,6 @@ def Main(argv):
 
 
 if '__main__' == __name__:
-  fix_encoding.fix_encoding()
   sys.exit(Main(sys.argv[1:]))
 
 # vim: ts=2:sw=2:tw=80:et:

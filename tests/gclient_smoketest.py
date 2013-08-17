@@ -401,13 +401,20 @@ class GClientSmokeSVN(GClientSmokeBase):
     # TODO(maruel): safesync.
     self.gclient(['config', self.svn_base + 'trunk/src/'])
     # Test unversioned checkout.
+    # Use --jobs 1 otherwise the order is not deterministic.
     self.parseGclient(
-        ['sync', '--deps', 'mac', '--jobs', '8'],
-        ['running', 'running',
-        # This is due to the way svn update is called for a
-        # single file when File() is used in a DEPS file.
-        ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
-        'running', 'running', 'running', 'running'],
+        ['sync', '--deps', 'mac', '--jobs', '1'],
+        [
+          'running',
+          'running',
+          # This is due to the way svn update is called for a
+          # single file when File() is used in a DEPS file.
+          ('running', os.path.join(self.root_dir, 'src', 'file', 'other')),
+          'running',
+          'running',
+          'running',
+          'running',
+        ],
         untangle=True)
     tree = self.mangle_svn_tree(
         ('trunk/src@2', 'src'),
@@ -957,12 +964,18 @@ class GClientSmokeGIT(GClientSmokeBase):
     # Test incremental versioned sync: sync backward.
     expect3 = ('running',
                os.path.join(self.root_dir, 'src', 'repo2', 'repo_renamed'))
+    # Use --jobs 1 otherwise the order is not deterministic.
     self.parseGclient(
         ['sync', '--revision', 'src@' + self.githash('repo_1', 1),
-          '--deps', 'mac', '--delete_unversioned_trees', '--jobs', '8'],
-        ['running', ('running', self.root_dir + '/src/repo4'),
-         'running', ('running', self.root_dir + '/src/repo2/repo3'),
-         expect3, 'deleting'],
+          '--deps', 'mac', '--delete_unversioned_trees', '--jobs', '1'],
+        [
+          'running',
+          ('running', self.root_dir + '/src/repo2/repo3'),
+          'running',
+          ('running', self.root_dir + '/src/repo4'),
+          expect3,
+          'deleting',
+        ],
         untangle=True)
     tree = self.mangle_git_tree(('repo_1@1', 'src'),
                                 ('repo_2@2', 'src/repo2'),
