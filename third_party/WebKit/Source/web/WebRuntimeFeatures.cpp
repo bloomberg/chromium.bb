@@ -384,7 +384,7 @@ bool WebRuntimeFeatures::isHTMLImportsEnabled()
 
 void WebRuntimeFeatures::enableCustomElements(bool enable)
 {
-    RuntimeEnabledFeatures::setCustomDOMElementsEnabled(enable);
+    RuntimeEnabledFeatures::setCustomElementsEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableOverlayScrollbars(bool enable)
