@@ -5,6 +5,8 @@
 'use strict';
 
 /**
+ * TODO(mtomasz): Rewrite the entire audio player.
+ *
  * @param {HTMLElement} container Container element.
  * @param {VolumeManager} volumeManager VolumeManager of the system.
  * @constructor
@@ -50,6 +52,8 @@ function AudioPlayer(container, volumeManager) {
 
   this.volumeManager_.addEventListener('externally-unmounted',
       this.onExternallyUnmounted_.bind(this));
+
+  window.addEventListener('resize', this.onResize_.bind(this));
 }
 
 /**
@@ -359,55 +363,113 @@ AudioPlayer.prototype.cancelAutoAdvance_ = function() {
 };
 
 /**
- * Expand/collapse button click handler.
+ * Expand/collapse button click handler. Toggles the mode and updates the
+ * height of the window.
+ *
  * @private
  */
 AudioPlayer.prototype.onExpandCollapse_ = function() {
-  this.container_.classList.toggle('collapsed');
+  if (!this.isCompact_()) {
+    this.setExpanded_(false);
+    this.lastExpandedHeight_ = window.innerHeight;
+  } else {
+    this.setExpanded_(true);
+  }
   this.syncHeight_();
-  if (!this.isCompact_())
+};
+
+/**
+ * Toggles the current expand mode.
+ *
+ * @param {boolean} on True if on, false otherwise.
+ * @private
+ */
+AudioPlayer.prototype.setExpanded_ = function(on) {
+  if (on) {
+    this.container_.classList.remove('collapsed');
     this.scrollToCurrent_(true);
+  } else {
+    this.container_.classList.add('collapsed');
+  }
+};
+
+/**
+ * Toggles the expanded mode when resizing.
+ *
+ * @param {Event} event Resize event.
+ * @private
+ */
+AudioPlayer.prototype.onResize_ = function(event) {
+  if (this.isCompact_() &&
+      window.innerHeight >= AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+    this.setExpanded_(true);
+  } else if (!this.isCompact_() &&
+             window.innerHeight < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
+    this.setExpanded_(false);
+  }
 };
 
 /* Keep the below constants in sync with the CSS. */
 
 /**
- * Player header height.
- * TODO(kaznacheev): Set to 30 when the audio player is title-less.
+ * Window header size in pixels.
+ * @type {number}
+ * @const
  */
-AudioPlayer.HEADER_HEIGHT = 0;
+AudioPlayer.HEADER_HEIGHT = 28;
 
 /**
- * Track height.
+ * Track height in pixels.
+ * @type {number}
+ * @const
  */
 AudioPlayer.TRACK_HEIGHT = 58;
 
 /**
- * Controls bar height.
+ * Controls bar height in pixels.
+ * @type {number}
+ * @const
  */
 AudioPlayer.CONTROLS_HEIGHT = 35;
+
+/**
+ * Default number of items in the expanded mode.
+ * @type {number}
+ * @const
+ */
+AudioPlayer.DEFAULT_EXPANDED_ITEMS = 5;
+
+/**
+ * Minimum size of the window in the expanded mode in pixels.
+ * @type {number}
+ * @const
+ */
+AudioPlayer.EXPANDED_MODE_MIN_HEIGHT = AudioPlayer.CONTROLS_HEIGHT +
+                                       AudioPlayer.TRACK_HEIGHT * 2;
 
 /**
  * Set the correct player window height.
  * @private
  */
 AudioPlayer.prototype.syncHeight_ = function() {
-  var expandedListHeight =
-      Math.min(this.urls_.length, 3) * AudioPlayer.TRACK_HEIGHT;
-  this.trackList_.style.height = expandedListHeight + 'px';
+  var targetHeight;
 
-  var targetClientHeight = AudioPlayer.CONTROLS_HEIGHT +
-      (this.isCompact_() ?
-      AudioPlayer.TRACK_HEIGHT :
-      AudioPlayer.HEADER_HEIGHT + expandedListHeight);
+  if (!this.isCompact_()) {
+    // Expanded.
+    if (this.lastExpandedHeight_) {
+      targetHeight = this.lastExpandedHeight_;
+    } else {
+      var expandedListHeight =
+        Math.min(this.urls_.length, AudioPlayer.DEFAULT_EXPANDED_ITEMS) *
+                                    AudioPlayer.TRACK_HEIGHT;
+      targetHeight = AudioPlayer.CONTROLS_HEIGHT + expandedListHeight;
+    }
+  } else {
+    // Not expaned.
+    targetHeight = AudioPlayer.CONTROLS_HEIGHT + AudioPlayer.TRACK_HEIGHT;
+  }
 
-  var appWindow = chrome.app.window.current();
-  var oldHeight = appWindow.contentWindow.outerHeight;
-  var bottom = appWindow.contentWindow.screenY + oldHeight;
-  var newTop = Math.max(0, bottom - targetClientHeight);
-  appWindow.moveTo(appWindow.contentWindow.screenX, newTop);
-  appWindow.resizeTo(appWindow.contentWindow.outerWidth,
-      oldHeight + targetClientHeight - this.container_.clientHeight);
+  window.resizeTo(window.innerWidth, targetHeight + AudioPlayer.HEADER_HEIGHT);
 };
 
 /**

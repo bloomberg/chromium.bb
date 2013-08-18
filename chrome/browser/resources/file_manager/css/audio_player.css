@@ -92,10 +92,10 @@ body {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-pack: start;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: -webkit-box;
   overflow-x: hidden;
   overflow-y: auto;
+  top: 0;
 }
 
 /* A single track container.
