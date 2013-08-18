@@ -54,6 +54,10 @@ function AudioPlayer(container, volumeManager) {
       this.onExternallyUnmounted_.bind(this));
 
   window.addEventListener('resize', this.onResize_.bind(this));
+
+  // Show the window after DOM is processed.
+  var currentWindow = chrome.app.window.current();
+  setTimeout(currentWindow.show.bind(currentWindow), 0);
 }
 
 /**
@@ -61,12 +65,10 @@ function AudioPlayer(container, volumeManager) {
  */
 AudioPlayer.load = function() {
   document.ondragstart = function(e) { e.preventDefault() };
-  var currentWindow = chrome.app.window.current();
 
   // TODO(mtomasz): Consider providing an exact size icon, instead of relying
   // on downsampling by ash.
-  currentWindow.setIcon('images/media/2x/audio_player.png');
-  currentWindow.show();
+  chrome.app.window.current().setIcon('images/media/2x/audio_player.png');
 
   VolumeManager.getInstance(function(volumeManager) {
     AudioPlayer.instance =
