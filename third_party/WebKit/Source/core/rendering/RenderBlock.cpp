@@ -2462,7 +2462,7 @@ void RenderBlock::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloa
                 while (box != this) {
                     if (box->normalChildNeedsLayout())
                         break;
-                    box->setChildNeedsLayout(MarkOnlyThis);
+                    layoutScope.setChildNeedsLayout(box);
                     box = box->containingBlock();
                     ASSERT(box);
                     if (!box)
@@ -2572,8 +2572,9 @@ void RenderBlock::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo, Lay
             previousFloatLogicalBottom = max(previousFloatLogicalBottom, oldLogicalTop + childRenderBlock->lowestFloatLogicalBottom());
     }
 
+    SubtreeLayoutScope layoutScope(child);
     if (!child->needsLayout())
-        child->markForPaginationRelayoutIfNeeded();
+        child->markForPaginationRelayoutIfNeeded(layoutScope);
 
     bool childHadLayout = child->everHadLayout();
     bool childNeededLayout = child->needsLayout();
@@ -2601,19 +2602,20 @@ void RenderBlock::layoutBlockChild(RenderBox* child, MarginInfo& marginInfo, Lay
     // clearFloatsIfNeeded can also mark the child as needing a layout even though we didn't move. This happens
     // when collapseMargins dynamically adds overhanging floats because of a child with negative margins.
     if (logicalTopAfterClear != logicalTopEstimate || child->needsLayout() || (paginated && childRenderBlock && childRenderBlock->shouldBreakAtLineToAvoidWidow())) {
+        SubtreeLayoutScope layoutScope(child);
         if (child->shrinkToAvoidFloats()) {
             // The child's width depends on the line width.
             // When the child shifts to clear an item, its width can
             // change (because it has more available line width).
             // So go ahead and mark the item as dirty.
-            child->setChildNeedsLayout(MarkOnlyThis);
+            layoutScope.setChildNeedsLayout(child);
         }
 
         if (childRenderBlock) {
             if (!child->avoidsFloats() && childRenderBlock->containsFloats())
                 childRenderBlock->markAllDescendantsWithFloatsForLayout();
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded();
+                child->markForPaginationRelayoutIfNeeded(layoutScope);
         }
 
         // Our guess was wrong. Make the child lay itself out again.
@@ -2744,7 +2746,7 @@ bool RenderBlock::simplifiedLayout()
     return true;
 }
 
-void RenderBlock::markFixedPositionObjectForLayoutIfNeeded(RenderObject* child)
+void RenderBlock::markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, SubtreeLayoutScope& layoutScope)
 {
     if (child->style()->position() != FixedPosition)
         return;
@@ -2765,12 +2767,12 @@ void RenderBlock::markFixedPositionObjectForLayoutIfNeeded(RenderObject* child)
         LayoutUnit oldLeft = box->logicalLeft();
         box->updateLogicalWidth();
         if (box->logicalLeft() != oldLeft)
-            child->setChildNeedsLayout(MarkOnlyThis);
+            layoutScope.setChildNeedsLayout(child);
     } else if (hasStaticBlockPosition) {
         LayoutUnit oldTop = box->logicalTop();
         box->updateLogicalHeight();
         if (box->logicalTop() != oldTop)
-            child->setChildNeedsLayout(MarkOnlyThis);
+            layoutScope.setChildNeedsLayout(child);
     }
 }
 
@@ -2788,10 +2790,11 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPosit
     for (TrackedRendererListHashSet::iterator it = positionedDescendants->begin(); it != end; ++it) {
         r = *it;
 
+        SubtreeLayoutScope layoutScope(r);
         // A fixed position element with an absolute positioned ancestor has no way of knowing if the latter has changed position. So
         // if this is a fixed position element, mark it for layout if it has an abspos ancestor and needs to move with that ancestor, i.e.
         // it has static position.
-        markFixedPositionObjectForLayoutIfNeeded(r);
+        markFixedPositionObjectForLayoutIfNeeded(r, layoutScope);
         if (fixedPositionObjectsOnly) {
             r->layoutIfNeeded();
             continue;
@@ -2802,14 +2805,14 @@ void RenderBlock::layoutPositionedObjects(bool relayoutChildren, bool fixedPosit
         // objects that are positioned implicitly like this.  Such objects are rare, and so in typical DHTML menu usage (where everything is
         // positioned explicitly) this should not incur a performance penalty.
         if (relayoutChildren || (r->style()->hasStaticBlockPosition(isHorizontalWritingMode()) && r->parent() != this))
-            r->setChildNeedsLayout(MarkOnlyThis);
+            layoutScope.setChildNeedsLayout(r);
 
         // If relayoutChildren is set and the child has percentage padding or an embedded content box, we also need to invalidate the childs pref widths.
         if (relayoutChildren && r->needsPreferredWidthsRecalculation())
             r->setPreferredLogicalWidthsDirty(true, MarkOnlyThis);
 
         if (!r->needsLayout())
-            r->markForPaginationRelayoutIfNeeded();
+            r->markForPaginationRelayoutIfNeeded(layoutScope);
 
         // We don't have to do a full layout.  We just have to update our position. Try that first. If we have shrink-to-fit width
         // and we hit the available width constraint, the layoutIfNeeded() will catch it and do a full layout.
@@ -2852,14 +2855,14 @@ void RenderBlock::markPositionedObjectsForLayout()
     }
 }
 
-void RenderBlock::markForPaginationRelayoutIfNeeded()
+void RenderBlock::markForPaginationRelayoutIfNeeded(SubtreeLayoutScope& layoutScope)
 {
     ASSERT(!needsLayout());
     if (needsLayout())
         return;
 
     if (view()->layoutState()->pageLogicalHeightChanged() || (view()->layoutState()->pageLogicalHeight() && view()->layoutState()->pageLogicalOffset(this, logicalTop()) != pageLogicalOffset()) || shouldBreakAtLineToAvoidWidow())
-        setChildNeedsLayout(MarkOnlyThis);
+        layoutScope.setChildNeedsLayout(this);
 }
 
 void RenderBlock::repaintOverhangingFloats(bool paintAllDescendants)
@@ -4103,10 +4106,11 @@ bool RenderBlock::positionNewFloats()
         setLogicalLeftForChild(childBox, floatLogicalLocation.x() + childLogicalLeftMargin);
         setLogicalTopForChild(childBox, floatLogicalLocation.y() + marginBeforeForChild(childBox));
 
+        SubtreeLayoutScope layoutScope(childBox);
         LayoutState* layoutState = view()->layoutState();
         bool isPaginated = layoutState->isPaginated();
         if (isPaginated && !childBox->needsLayout())
-            childBox->markForPaginationRelayoutIfNeeded();
+            childBox->markForPaginationRelayoutIfNeeded(layoutScope);
 
         childBox->layoutIfNeeded();
 
@@ -7497,11 +7501,13 @@ LayoutUnit RenderBlock::adjustBlockChildForPagination(LayoutUnit logicalTopAfter
             child->setChildNeedsLayout(MarkOnlyThis);
         }
 
+        SubtreeLayoutScope layoutScope(child);
+
         if (childRenderBlock) {
             if (!child->avoidsFloats() && childRenderBlock->containsFloats())
                 childRenderBlock->markAllDescendantsWithFloatsForLayout();
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded();
+                child->markForPaginationRelayoutIfNeeded(layoutScope);
         }
 
         // Our guess was wrong. Make the child lay itself out again.

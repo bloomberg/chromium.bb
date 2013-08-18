@@ -516,7 +516,7 @@ public:
     bool shrinkToAvoidFloats() const;
     virtual bool avoidsFloats() const;
 
-    virtual void markForPaginationRelayoutIfNeeded() { }
+    virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&) { }
 
     bool isWritingModeRoot() const { return !parent() || parent()->style()->writingMode() != style()->writingMode(); }
 

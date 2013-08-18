@@ -391,18 +391,18 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
         // our box's intrinsic height.
         LayoutUnit maxAscent = 0, maxDescent = 0;
         for (RenderBox* child = iterator.first(); child; child = iterator.next()) {
-            // make sure we relayout children if we need it.
-            if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent())))
-                child->setChildNeedsLayout(MarkOnlyThis);
-
             if (child->isOutOfFlowPositioned())
                 continue;
+
+            SubtreeLayoutScope layoutScope(child);
+            if (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent())))
+                layoutScope.setChildNeedsLayout(child);
 
             // Compute the child's vertical margins.
             child->computeAndSetBlockDirectionMargins(this);
 
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded();
+                child->markForPaginationRelayoutIfNeeded(layoutScope);
 
             // Now do the layout.
             child->layoutIfNeeded();
@@ -462,6 +462,7 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
                 continue;
             }
 
+            SubtreeLayoutScope layoutScope(child);
 
             // We need to see if this child's height has changed, since we make block elements
             // fill the height of a containing box by default.
@@ -469,10 +470,10 @@ void RenderDeprecatedFlexibleBox::layoutHorizontalBox(bool relayoutChildren)
             LayoutUnit oldChildHeight = child->height();
             child->updateLogicalHeight();
             if (oldChildHeight != child->height())
-                child->setChildNeedsLayout(MarkOnlyThis);
+                layoutScope.setChildNeedsLayout(child);
 
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded();
+                child->markForPaginationRelayoutIfNeeded(layoutScope);
 
             child->layoutIfNeeded();
 
@@ -680,10 +681,6 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
         LayoutUnit minHeight = height() + toAdd;
 
         for (RenderBox* child = iterator.first(); child; child = iterator.next()) {
-            // Make sure we relayout children if we need it.
-            if (!haveLineClamp && (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))))
-                child->setChildNeedsLayout(MarkOnlyThis);
-
             if (child->isOutOfFlowPositioned()) {
                 child->containingBlock()->insertPositionedObject(child);
                 RenderLayer* childLayer = child->layer();
@@ -695,6 +692,10 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
                 }
                 continue;
             }
+
+            SubtreeLayoutScope layoutScope(child);
+            if (!haveLineClamp && (relayoutChildren || (child->isReplaced() && (child->style()->width().isPercent() || child->style()->height().isPercent()))))
+                layoutScope.setChildNeedsLayout(child);
 
             if (child->style()->visibility() == COLLAPSE) {
                 // visibility: collapsed children do not participate in our positioning.
@@ -710,7 +711,7 @@ void RenderDeprecatedFlexibleBox::layoutVerticalBox(bool relayoutChildren)
             setHeight(height() + child->marginTop());
 
             if (!child->needsLayout())
-                child->markForPaginationRelayoutIfNeeded();
+                child->markForPaginationRelayoutIfNeeded(layoutScope);
 
             // Now do a layout.
             child->layoutIfNeeded();

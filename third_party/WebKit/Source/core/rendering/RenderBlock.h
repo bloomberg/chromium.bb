@@ -149,7 +149,9 @@ public:
     void markAllDescendantsWithFloatsForLayout(RenderBox* floatToRemove = 0, bool inLayout = true);
     void markSiblingsWithFloatsForLayout(RenderBox* floatToRemove = 0);
     void markPositionedObjectsForLayout();
-    virtual void markForPaginationRelayoutIfNeeded() OVERRIDE FINAL;
+    // FIXME: Do we really need this to be virtual? It's just so we can call this on
+    // RenderBoxes without needed to check whether they're RenderBlocks first.
+    virtual void markForPaginationRelayoutIfNeeded(SubtreeLayoutScope&) OVERRIDE FINAL;
 
     bool containsFloats() const { return m_floatingObjects && !m_floatingObjects->set().isEmpty(); }
     bool containsFloat(RenderBox*) const;
@@ -490,7 +492,7 @@ protected:
     virtual void layout();
 
     void layoutPositionedObjects(bool relayoutChildren, bool fixedPositionObjectsOnly = false);
-    void markFixedPositionObjectForLayoutIfNeeded(RenderObject* child);
+    void markFixedPositionObjectForLayoutIfNeeded(RenderObject* child, SubtreeLayoutScope&);
 
     virtual void paint(PaintInfo&, const LayoutPoint&);
     virtual void paintObject(PaintInfo&, const LayoutPoint&);
