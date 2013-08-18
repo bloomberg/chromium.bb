@@ -128,7 +128,10 @@ void MediaGalleriesDialogViews::InitChildViews() {
   subtext->SetMultiLine(true);
   subtext->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   layout->StartRow(0, column_set_id);
-  layout->AddView(subtext);
+  layout->AddView(
+      subtext, 1, 1,
+      views::GridLayout::FILL, views::GridLayout::LEADING,
+      dialog_content_width, subtext->GetHeightForWidth(dialog_content_width));
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   // Scrollable area for checkboxes.
