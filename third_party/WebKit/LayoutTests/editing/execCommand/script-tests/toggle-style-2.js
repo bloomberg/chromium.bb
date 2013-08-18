@@ -39,8 +39,8 @@ testDoubleToggle("strikethrough", "test", "test");
 testSingleToggle("strikethrough", "<u>test</u>", "<u><strike>test</strike></u>");
 testSingleToggle("underline", "<strike>test</strike>", "<u><strike>test</strike></u>");
 
-testSingleToggle("strikethrough", '<span style="text-decoration: overline;">test</span>', '<span style="text-decoration: overline;"><strike>test</strike></span>');
-testSingleToggle("underline", '<span style="text-decoration: overline;">test</span>', '<span style="text-decoration: overline;"><u>test</u></span>');
+testSingleToggle("strikethrough", '<span style="text-decoration: overline;">test</span>', '<span style="text-decoration-line: overline;"><strike>test</strike></span>');
+testSingleToggle("underline", '<span style="text-decoration: overline;">test</span>', '<span style="text-decoration-line: overline;"><u>test</u></span>');
 
 document.body.removeChild(testContainer);
 

@@ -166,8 +166,8 @@ rect: style.getPropertyValue(tab-size) : 8
 rect: style.getPropertyCSSValue(tab-size) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(text-align) : start
 rect: style.getPropertyCSSValue(text-align) : [object CSSPrimitiveValue]
-rect: style.getPropertyValue(text-decoration) : none
-rect: style.getPropertyCSSValue(text-decoration) : [object CSSPrimitiveValue]
+rect: style.getPropertyValue(text-decoration) : none solid rgb(0, 0, 0)
+rect: style.getPropertyCSSValue(text-decoration) : [object CSSValueList]
 rect: style.getPropertyValue(text-indent) : 0px
 rect: style.getPropertyCSSValue(text-indent) : [object CSSPrimitiveValue]
 rect: style.getPropertyValue(text-rendering) : auto
@@ -646,8 +646,8 @@ g: style.getPropertyValue(tab-size) : 8
 g: style.getPropertyCSSValue(tab-size) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(text-align) : start
 g: style.getPropertyCSSValue(text-align) : [object CSSPrimitiveValue]
-g: style.getPropertyValue(text-decoration) : none
-g: style.getPropertyCSSValue(text-decoration) : [object CSSPrimitiveValue]
+g: style.getPropertyValue(text-decoration) : none solid rgb(0, 0, 0)
+g: style.getPropertyCSSValue(text-decoration) : [object CSSValueList]
 g: style.getPropertyValue(text-indent) : 0px
 g: style.getPropertyCSSValue(text-indent) : [object CSSPrimitiveValue]
 g: style.getPropertyValue(text-rendering) : auto

@@ -39,7 +39,7 @@
         <!-- Explicit 'initial' value computed style is 'none'. -->
         <p><span id="test-initial-explicit" style="text-decoration: underline;">&gt; &lt;</span></p>
 
-        <!-- Empty value treated as invalid, so fallback to last valid value "underline". -->
+        <!-- Empty value overwrites previous "underline". -->
         <p><span id="test-initial-empty" style="text-decoration: underline;">&gt; &lt;</span></p>
 
         <!-- Ancestor inherits "text-decoration-line" value from parent on repaintTest(). -->

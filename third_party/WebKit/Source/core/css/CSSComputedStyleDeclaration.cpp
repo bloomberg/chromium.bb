@@ -2212,6 +2212,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyTextAlignLast:
             return cssValuePool().createValue(style->textAlignLast());
         case CSSPropertyTextDecoration:
+            return valuesForShorthandProperty(textDecorationShorthand());
         case CSSPropertyTextDecorationLine:
             return renderTextDecorationFlagsToCSSValue(style->textDecoration());
         case CSSPropertyTextDecorationStyle:
