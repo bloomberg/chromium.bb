@@ -78,7 +78,9 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/chromeos/system/syslogs_provider.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon_client.h"
@@ -1544,31 +1546,32 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
     NOTREACHED();
   }
 
-  chromeos::onc::ONCSource onc_source = chromeos::onc::ONC_SOURCE_USER_IMPORT;
-
-  base::ListValue network_configs;
-  base::ListValue certificates;
   std::string error;
-  if (!chromeos::onc::ParseAndValidateOncForImport(
-          onc_blob, onc_source, passcode, &network_configs, &certificates)) {
-    error = "Errors occurred during the ONC parsing. ";
-    LOG(ERROR) << error;
+  const chromeos::User* user = chromeos::UserManager::Get()->GetActiveUser();
+  if (user) {
+    chromeos::onc::ONCSource onc_source = chromeos::onc::ONC_SOURCE_USER_IMPORT;
+
+    base::ListValue network_configs;
+    base::ListValue certificates;
+    if (!chromeos::onc::ParseAndValidateOncForImport(
+            onc_blob, onc_source, passcode, &network_configs, &certificates)) {
+      error = "Errors occurred during the ONC parsing. ";
+    }
+
+    chromeos::onc::CertificateImporterImpl cert_importer;
+    if (!cert_importer.ImportCertificates(certificates, onc_source, NULL))
+      error += "Some certificates couldn't be imported. ";
+
+    std::string network_error;
+    chromeos::onc::ImportNetworksForUser(
+        user->username_hash(), network_configs, &network_error);
+    if (!network_error.empty())
+      error += network_error;
+  } else {
+    error = "No active user.";
   }
 
-  chromeos::onc::CertificateImporterImpl cert_importer;
-  if (!cert_importer.ImportCertificates(certificates, onc_source, NULL)) {
-    error += "Some certificates couldn't be imported. ";
-    LOG(ERROR) << error;
-  }
-
-  chromeos::NetworkLibrary* network_library =
-      chromeos::NetworkLibrary::Get();
-  network_library->LoadOncNetworks(network_configs, onc_source);
-
-  // Now that we've added the networks, we need to rescan them so they'll be
-  // available from the menu more immediately.
-  network_library->RequestNetworkScan();
-
+  LOG_IF(ERROR, !error.empty()) << error;
   SendJavascriptCommand("receivedONCFileParse",
                         Value::CreateStringValue(error));
 }

@@ -35,6 +35,10 @@ void ExpandStringPlaceholdersInNetworksForUser(
     const std::string& hashed_username,
     base::ListValue* network_configs);
 
+void ImportNetworksForUser(const std::string& hashed_username,
+                           const base::ListValue& network_configs,
+                           std::string* error);
+
 }  // namespace onc
 }  // namespace chromeos
 

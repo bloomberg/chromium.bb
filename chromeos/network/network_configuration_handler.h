@@ -82,11 +82,12 @@ class CHROMEOS_EXPORT NetworkConfigurationHandler
                        const base::Closure& callback,
                        const network_handler::ErrorCallback& error_callback);
 
-  // Creates a network with the given properties in the active Shill profile,
-  // and returns the new service_path to |callback| if successful. See note on
-  // |callback| and |error_callback|, in class description above.
-  // This may also be used to update an existing matching configuration, see
-  // Shill documentation for Manager.ConfigureService and Manger.GetService.
+  // Creates a network with the given |properties| in the specified Shill
+  // profile, and returns the new service_path to |callback| if successful.
+  // kProfileProperty must be set in |properties|. See note on |callback| and
+  // |error_callback|, in the class description above. This may also be used to
+  // update an existing matching configuration, see Shill documentation for
+  // Manager.ConfigureServiceForProfile.
   void CreateConfiguration(
       const base::DictionaryValue& properties,
       const network_handler::StringResultCallback& callback,
