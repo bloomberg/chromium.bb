@@ -196,10 +196,16 @@
   <section id="sect-Protocol-Creating-Objects">
     <title>Creating Objects</title>
     <para>
-      Each object has a unique ID. The IDs are allocated by the
-      client, from a range of IDs. The server tracks how many
-      IDs are left in the current range and sends a new range
-      when the client is about to run out.
+      Each object has a unique ID.  The IDs are allocated by the entity
+      creating the object (either client or server).  IDs allocated by the
+      client are in the range [1, 0xfeffffff] while IDs allocated by the
+      server are in the range [0xff000000, 0xffffffff].  The 0 ID is
+      reserved to represent a null or non-existant object.
+
+      For efficiency purposes, the IDs are densely packed in the sense that
+      the ID N will not be used until N-1 has been used.  Any ID allocation
+      algorithm that does not maintain this property is incompatible with
+      the implementation in libwayland.
     </para>
   </section>
   <section id="sect-Protocol-Compositor">
