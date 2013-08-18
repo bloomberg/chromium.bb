@@ -51,7 +51,7 @@ private:
 
     virtual const char* renderName() const;
 
-    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren) OVERRIDE;
+    virtual RenderObject* layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope&) OVERRIDE;
 
     virtual void styleDidChange(StyleDifference, const RenderStyle*) OVERRIDE;
 

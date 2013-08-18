@@ -92,9 +92,9 @@ RenderStyle* RenderTextControlMultiLine::textBaseStyle() const
     return style();
 }
 
-RenderObject* RenderTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren)
+RenderObject* RenderTextControlMultiLine::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
-    RenderObject* placeholderRenderer = RenderTextControl::layoutSpecialExcludedChild(relayoutChildren);
+    RenderObject* placeholderRenderer = RenderTextControl::layoutSpecialExcludedChild(relayoutChildren, layoutScope);
     if (!placeholderRenderer)
         return 0;
     if (!placeholderRenderer->isBox())

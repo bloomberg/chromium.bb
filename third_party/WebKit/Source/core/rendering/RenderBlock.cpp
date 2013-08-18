@@ -1585,6 +1585,8 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
         setPaginationStrut(0);
     }
 
+    SubtreeLayoutScope layoutScope(this);
+
     LayoutUnit repaintLogicalTop = 0;
     LayoutUnit repaintLogicalBottom = 0;
     LayoutUnit maxFloatLogicalBottom = 0;
@@ -1593,7 +1595,7 @@ void RenderBlock::layoutBlock(bool relayoutChildren, LayoutUnit pageLogicalHeigh
     if (childrenInline())
         layoutInlineChildren(relayoutChildren, repaintLogicalTop, repaintLogicalBottom);
     else
-        layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom);
+        layoutBlockChildren(relayoutChildren, maxFloatLogicalBottom, layoutScope);
 
     // Expand our intrinsic height to encompass floats.
     LayoutUnit toAdd = borderAfter() + paddingAfter() + scrollbarLogicalHeight();
@@ -2450,7 +2452,7 @@ void RenderBlock::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildren, R
         child->setPreferredLogicalWidthsDirty(true, MarkOnlyThis);
 }
 
-void RenderBlock::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom)
+void RenderBlock::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloatLogicalBottom, SubtreeLayoutScope& layoutScope)
 {
     if (gPercentHeightDescendantsMap) {
         if (TrackedRendererListHashSet* descendants = gPercentHeightDescendantsMap->get(this)) {
@@ -2485,7 +2487,7 @@ void RenderBlock::layoutBlockChildren(bool relayoutChildren, LayoutUnit& maxFloa
     // Fieldsets need to find their legend and position it inside the border of the object.
     // The legend then gets skipped during normal layout.  The same is true for ruby text.
     // It doesn't get included in the normal layout process but is instead skipped.
-    RenderObject* childToExclude = layoutSpecialExcludedChild(relayoutChildren);
+    RenderObject* childToExclude = layoutSpecialExcludedChild(relayoutChildren, layoutScope);
 
     LayoutUnit previousFloatLogicalBottom = 0;
     maxFloatLogicalBottom = 0;

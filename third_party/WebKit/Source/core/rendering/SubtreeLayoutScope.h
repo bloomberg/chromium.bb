@@ -42,9 +42,6 @@
 // It ensures that you don't accidentally mark part of the tree as
 // needing layout and not actually lay it out.
 
-// FIXME: Assert that this is only used during layout and that
-// MarkOnlyThis is never used outside of layout.
-
 namespace WebCore {
 
 class RenderObject;

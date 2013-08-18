@@ -214,7 +214,7 @@ RenderRubyRun* RenderRubyRun::staticCreateRubyRun(const RenderObject* parentRuby
     return rr;
 }
 
-RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren)
+RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren, SubtreeLayoutScope& layoutScope)
 {
     StackStats::LayoutCheckPoint layoutCheckPoint;
     // Don't bother positioning the RenderRubyRun yet.
@@ -222,7 +222,7 @@ RenderObject* RenderRubyRun::layoutSpecialExcludedChild(bool relayoutChildren)
     if (!rt)
         return 0;
     if (relayoutChildren)
-        rt->setChildNeedsLayout(MarkOnlyThis);
+        layoutScope.setChildNeedsLayout(rt);
     rt->layoutIfNeeded();
     return rt;
 }
