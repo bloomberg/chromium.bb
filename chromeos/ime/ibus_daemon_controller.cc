@@ -291,7 +291,6 @@ class IBusDaemonControllerDaemonlessImpl : public IBusDaemonController {
     // production at this moment, only for Chrome OS on Linux Desktop.
     // TODO(nona): Remove InitIBusBus oncer all legacy ime is migrated to IME
     // extension API.
-    DCHECK(!base::chromeos::IsRunningOnChromeOS());
     DBusThreadManager::Get()->InitIBusBus("dummy address",
                                           base::Bind(&base::DoNothing));
     is_started_ = true;
