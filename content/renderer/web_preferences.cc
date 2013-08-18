@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/renderer/webpreferences_renderer.h"
+#include "content/public/renderer/web_preferences.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebNetworkStateNotifier.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
 #include "third_party/WebKit/public/web/WebSettings.h"
 #include "third_party/WebKit/public/web/WebView.h"
-#include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "webkit/common/webpreferences.h"
@@ -23,10 +23,13 @@ using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebView;
 
+namespace content {
+
 namespace {
 
-typedef void (*SetFontFamilyWrapper)(
-    WebKit::WebSettings*, const base::string16&, UScriptCode);
+typedef void (*SetFontFamilyWrapper)(WebKit::WebSettings*,
+                                     const base::string16&,
+                                     UScriptCode);
 
 void setStandardFontFamilyWrapper(WebSettings* settings,
                                   const base::string16& font,
@@ -65,8 +68,8 @@ void setFantasyFontFamilyWrapper(WebSettings* settings,
 }
 
 void setPictographFontFamilyWrapper(WebSettings* settings,
-                               const base::string16& font,
-                               UScriptCode script) {
+                                    const base::string16& font,
+                                    UScriptCode script) {
   settings->setPictographFontFamily(font, script);
 }
 
@@ -96,7 +99,8 @@ void ApplyFontsFromMap(const webkit_glue::ScriptFontFamilyMap& map,
                        SetFontFamilyWrapper setter,
                        WebSettings* settings) {
   for (webkit_glue::ScriptFontFamilyMap::const_iterator it = map.begin();
-       it != map.end(); ++it) {
+       it != map.end();
+       ++it) {
     int32 script = u_getPropertyValueEnum(UCHAR_SCRIPT, (it->first).c_str());
     if (script >= 0 && script < USCRIPT_CODE_LIMIT) {
       UScriptCode code = static_cast<UScriptCode>(script);
@@ -106,8 +110,6 @@ void ApplyFontsFromMap(const webkit_glue::ScriptFontFamilyMap& map,
 }
 
 }  // namespace
-
-namespace webkit_glue {
 
 void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   WebSettings* settings = web_view->settings();
@@ -266,9 +268,11 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
 
   for (webkit_glue::WebInspectorPreferences::const_iterator it =
            prefs.inspector_settings.begin();
-       it != prefs.inspector_settings.end(); ++it)
+       it != prefs.inspector_settings.end();
+       ++it) {
     web_view->setInspectorSetting(WebString::fromUTF8(it->first),
                                   WebString::fromUTF8(it->second));
+  }
 
   // Tabs to link is not part of the settings. WebCore calls
   // ChromeClient::tabsToLinks which is part of the glue code.
@@ -344,5 +348,4 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
       prefs.pinch_overlay_scrollbar_thickness);
 }
 
-
-}  // namespace webkit_glue
+}  // namespace content

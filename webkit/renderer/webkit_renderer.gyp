@@ -30,8 +30,6 @@
         'clipboard_utils.cc',
         'clipboard_utils.h',
         'webkit_renderer_export.h',
-        'webpreferences_renderer.cc',
-        'webpreferences_renderer.h',
       ],
     },
   ],

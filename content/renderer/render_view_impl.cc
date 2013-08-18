@@ -69,6 +69,7 @@
 #include "content/public/renderer/navigation_state.h"
 #include "content/public/renderer/render_view_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/public/renderer/web_preferences.h"
 #include "content/renderer/accessibility/renderer_accessibility.h"
 #include "content/renderer/accessibility/renderer_accessibility_complete.h"
 #include "content/renderer/accessibility/renderer_accessibility_focus_only.h"
@@ -205,7 +206,6 @@
 #include "ui/shell_dialogs/selected_file_info.h"
 #include "v8/include/v8.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
-#include "webkit/renderer/webpreferences_renderer.h"
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -919,7 +919,7 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webview()->settings()->setAcceleratedCompositingForFixedRootBackgroundEnabled(
       ShouldUseAcceleratedFixedRootBackground(device_scale_factor_));
 
-  webkit_glue::ApplyWebPreferences(webkit_preferences_, webview());
+  ApplyWebPreferences(webkit_preferences_, webview());
   webview()->initializeMainFrame(main_render_frame_.get());
 
   if (switches::IsTouchDragDropEnabled())
@@ -5081,7 +5081,7 @@ void RenderViewImpl::OnDragSourceSystemDragEnded() {
 
 void RenderViewImpl::OnUpdateWebPreferences(const WebPreferences& prefs) {
   webkit_preferences_ = prefs;
-  webkit_glue::ApplyWebPreferences(webkit_preferences_, webview());
+  ApplyWebPreferences(webkit_preferences_, webview());
 }
 
 void RenderViewImpl::OnUpdateTimezone() {

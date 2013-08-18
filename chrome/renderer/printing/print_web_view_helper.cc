@@ -22,6 +22,7 @@
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/web_preferences.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "printing/metafile.h"
@@ -46,7 +47,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/renderer/webpreferences_renderer.h"
 
 namespace printing {
 
@@ -668,7 +668,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
 
   WebKit::WebView* web_view = WebKit::WebView::create(this);
   owns_web_view_ = true;
-  webkit_glue::ApplyWebPreferences(prefs, web_view);
+  content::ApplyWebPreferences(prefs, web_view);
   web_view->initializeMainFrame(this);
   frame_.Reset(web_view->mainFrame());
   node_to_print_.reset();

@@ -6,6 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
+#include "content/public/renderer/web_preferences.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -19,7 +20,6 @@
 #include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/renderer/webpreferences_renderer.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebCursorInfo;
@@ -50,14 +50,13 @@ WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
 }
 
 // static
-WebViewPlugin* WebViewPlugin::Create(
-    WebViewPlugin::Delegate* delegate,
-    const WebPreferences& preferences,
-    const std::string& html_data,
-    const GURL& url) {
+WebViewPlugin* WebViewPlugin::Create(WebViewPlugin::Delegate* delegate,
+                                     const WebPreferences& preferences,
+                                     const std::string& html_data,
+                                     const GURL& url) {
   WebViewPlugin* plugin = new WebViewPlugin(delegate);
   WebView* web_view = plugin->web_view();
-  webkit_glue::ApplyWebPreferences(preferences, web_view);
+  content::ApplyWebPreferences(preferences, web_view);
   web_view->mainFrame()->loadHTMLString(html_data, url);
   return plugin;
 }
