@@ -15,11 +15,10 @@ var WaterfallRow = (function() {
   // TODO(viona):
   // -Support nested events.
   // -Handle updating length when an event is stalled.
-  function WaterfallRow(parentView, sourceEntry, eventList) {
+  function WaterfallRow(parentView, sourceEntry) {
     this.parentView_ = parentView;
     this.sourceEntry_ = sourceEntry;
 
-    this.eventTypes_ = eventList;
     this.description_ = sourceEntry.getDescription();
 
     this.createRow_();
@@ -46,11 +45,12 @@ var WaterfallRow = (function() {
 
       this.rowCell_.innerHTML = '';
 
-      var matchingEventPairs = this.findLogEntryPairs_(this.eventTypes_);
+      var matchingEventPairs =
+          WaterfallRow.findUrlRequestEvents(this.sourceEntry_);
 
       // Creates the spacing in the beginning to show start time.
       var startTime = this.parentView_.getStartTime();
-      var sourceEntryStartTime = this.sourceEntry_.getStartTime();
+      var sourceEntryStartTime = this.getStartTime();
       var delay = sourceEntryStartTime - startTime;
       var frontNode = addNode(this.rowCell_, 'div');
       frontNode.classList.add('waterfall-view-padding');
@@ -64,6 +64,7 @@ var WaterfallRow = (function() {
       }
 
       var currentEnd = sourceEntryStartTime;
+
       for (var i = 0; i < matchingEventPairs.length; ++i) {
         var event = matchingEventPairs[i];
         var startTicks = event.startEntry.time;
@@ -77,13 +78,13 @@ var WaterfallRow = (function() {
         if (currentEnd < event.startTime) {
           var eventDuration = event.startTime - currentEnd;
           var padNode = this.createNode_(
-              barCell, eventDuration, this.type_, 'source');
+              barCell, eventDuration, this.sourceTypeString_, 'source');
         }
 
         // Creates event bars.
-        var eventType = eventTypeToCssClass_(EventTypeNames[event.eventType]);
         var eventNode = this.createNode_(
-            barCell, event.eventDuration, eventType, event);
+            barCell, event.eventDuration, EventTypeNames[event.eventType],
+            event);
         currentEnd = event.startTime + event.eventDuration;
       }
 
@@ -91,7 +92,7 @@ var WaterfallRow = (function() {
       if (this.getEndTime() > currentEnd) {
         var endDuration = (this.getEndTime() - currentEnd);
         var endNode = this.createNode_(
-            barCell, endDuration, this.type_, 'source');
+            barCell, endDuration, this.sourceTypeString_, 'source');
       }
     },
 
@@ -124,16 +125,18 @@ var WaterfallRow = (function() {
 
       this.createPopupItem_(
           popupList, 'Event Type', eventType);
-      this.createPopupItem_(
-          popupList, 'Event Duration', duration.toFixed(0) + 'ms');
 
       if (event != 'source') {
+        this.createPopupItem_(
+          popupList, 'Event Duration', duration.toFixed(0) + 'ms');
         this.createPopupItem_(
             popupList, 'Event Start Time', event.startTime - tableStart + 'ms');
         this.createPopupItem_(
             popupList, 'Event End Time', event.endTime - tableStart + 'ms');
       }
-
+      this.createPopupItem_(
+            popupList, 'Source Duration',
+            this.getEndTime() - this.getStartTime() + 'ms');
       this.createPopupItem_(
           popupList, 'Source Start Time',
           this.getStartTime() - tableStart + 'ms');
@@ -182,8 +185,7 @@ var WaterfallRow = (function() {
       rowCell.classList.add('waterfall-view-row');
       this.rowCell_ = rowCell;
 
-      var sourceTypeString = this.sourceEntry_.getSourceTypeString();
-      this.type_ = eventTypeToCssClass_(sourceTypeString);
+      this.sourceTypeString_ = this.sourceEntry_.getSourceTypeString();
 
       var infoTr = addNode($(WaterfallView.INFO_TBODY_ID), 'tr');
       infoTr.classList.add('waterfall-view-information-row');
@@ -203,59 +205,192 @@ var WaterfallRow = (function() {
     },
 
     // Generates nodes.
-    createNode_: function(parentNode, duration, eventType, event) {
+    createNode_: function(parentNode, duration, eventTypeString, event) {
       var linkNode = addNode(parentNode, 'a');
       linkNode.href = '#events&s=' + this.sourceEntry_.getSourceId();
 
       var scale = this.parentView_.getScaleFactor();
       var newNode = addNode(linkNode, 'div');
       setNodeWidth(newNode, duration * scale);
-      newNode.classList.add(eventType);
+      newNode.classList.add(eventTypeToCssClass_(eventTypeString));
       newNode.classList.add('waterfall-view-bar-component');
       newNode.addEventListener(
           'mouseover',
-          this.createPopup_.bind(this, newNode, event, eventType, duration),
+          this.createPopup_.bind(this, newNode, event, eventTypeString,
+              duration),
           true);
       newNode.addEventListener(
           'mouseout', this.clearPopup_.bind(this, newNode), true);
       return newNode;
     },
-
-    /**
-     * Finds pairs of starting and ending events of all types that are in
-     * typeList. Currently does not handle nested events. Can consider adding
-     * starting events to a stack and popping off as their close events are
-     * found. Returns an array of objects containing start/end entry pairs,
-     * in the format {startEntry, endEntry}.
-     */
-    findLogEntryPairs_: function() {
-      var typeList = this.eventTypes_;
-      var matchingEventPairs = [];
-      var startEntries = {};
-      var entries = this.sourceEntry_.getLogEntries();
-      for (var i = 0; i < entries.length; ++i) {
-        var currentEntry = entries[i];
-        var type = currentEntry.type;
-        if (typeList.indexOf(type) < 0) {
-          continue;
-        }
-        if (currentEntry.phase == EventPhase.PHASE_BEGIN) {
-          startEntries[type] = currentEntry;
-        }
-        if (startEntries[type] && currentEntry.phase == EventPhase.PHASE_END) {
-          var event = {
-            startEntry: startEntries[type],
-            endEntry: currentEntry,
-          };
-          matchingEventPairs.push(event);
-        }
-      }
-      return matchingEventPairs;
-    },
   };
 
-  function eventTypeToCssClass_(rawEventType) {
-    return rawEventType.toLowerCase().replace(/_/g, '-');
+  /**
+   * Identifies source dependencies and extracts events of interest for use in
+   * inlining in URL Request bars.
+   * Created as static function for testing purposes.
+   */
+  WaterfallRow.findUrlRequestEvents = function(sourceEntry) {
+    var eventPairs = [];
+    if (!sourceEntry) {
+      return eventPairs;
+    }
+
+    // One level down from URL Requests.
+
+    var httpStreamJobSources = findDependenciesOfType_(
+        sourceEntry, EventType.HTTP_STREAM_REQUEST_BOUND_TO_JOB);
+
+    var httpTransactionReadHeadersPairs = findEntryPairsFromSourceEntries_(
+        [sourceEntry], EventType.HTTP_TRANSACTION_READ_HEADERS);
+    eventPairs = eventPairs.concat(httpTransactionReadHeadersPairs);
+
+    var proxyServicePairs = findEntryPairsFromSourceEntries_(
+        httpStreamJobSources, EventType.PROXY_SERVICE);
+    eventPairs = eventPairs.concat(proxyServicePairs);
+
+    if (httpStreamJobSources.length > 0) {
+      for (var i = 0; i < httpStreamJobSources.length; ++i) {
+        // Two levels down from URL Requests.
+
+        var hostResolverImplSources = findDependenciesOfType_(
+            httpStreamJobSources[i], EventType.HOST_RESOLVER_IMPL);
+
+        var socketSources = findDependenciesOfType_(
+            httpStreamJobSources[i], EventType.SOCKET_POOL_BOUND_TO_SOCKET);
+
+        // Three levels down from URL Requests.
+
+        var hostResolverImplRequestPairs = findEntryPairsFromSourceEntries_(
+            hostResolverImplSources, EventType.HOST_RESOLVER_IMPL_REQUEST);
+        eventPairs = eventPairs.concat(hostResolverImplRequestPairs);
+
+        var tcpConnectPairs = findEntryPairsFromSourceEntries_(
+            socketSources, EventType.TCP_CONNECT);
+
+        var sslConnectPairs = findEntryPairsFromSourceEntries_(
+            socketSources, EventType.SSL_CONNECT);
+
+        var connectionPairs = tcpConnectPairs.concat(sslConnectPairs);
+
+        // Truncates times of connection events such that they are shown after a
+        // proxy service event.
+        for (var k = 0; k < connectionPairs.length; ++k) {
+          var eventPair = shallowCloneObject(connectionPairs[k]);
+          var eventInRange = false;
+          // Should only have one proxy service event for the streamJob.
+          var proxyEvent = proxyServicePairs[0];
+          if (eventPair.startEntry.time >= proxyEvent.endEntry.time) {
+            eventInRange = true;
+          } else if (eventPair.endEntry.time > proxyEvent.endEntry.time) {
+            eventInRange = true;
+            eventPair.startEntry.time = proxyEvent.endEntry.time;
+          }
+          if (eventInRange) {
+            eventPairs.push(eventPair);
+          }
+        }
+      }
+    }
+    eventPairs.sort(function(a, b) {
+      return a.startEntry.time - b.startEntry.time;
+    });
+    return eventPairs;
+  }
+
+  function eventTypeToCssClass_(eventType) {
+    return eventType.toLowerCase().replace(/_/g, '-');
+  }
+
+  /**
+   * Finds all events of input type from the input list of Source Entries.
+   * Returns an ordered list of start and end log entries.
+   */
+  function findEntryPairsFromSourceEntries_(sourceEntryList, eventType) {
+    var eventPairs = [];
+    for (var i = 0; i < sourceEntryList.length; ++i) {
+      var sourceEntry = sourceEntryList[i];
+      if (sourceEntry) {
+        var entries = sourceEntry.getLogEntries();
+        var matchingEventPairs = findEntryPairsByType_(entries, eventType);
+        eventPairs = eventPairs.concat(matchingEventPairs);
+      }
+    }
+    return eventPairs;
+  }
+
+  /**
+   * Finds all events of input type from the input list of log entries.
+   * Returns an ordered list of start and end log entries.
+   */
+  function findEntryPairsByType_(entries, eventType) {
+    var matchingEventPairs = [];
+    var startEntry = null;
+    for (var i = 0; i < entries.length; ++i) {
+      var currentEntry = entries[i];
+      if (eventType != currentEntry.type) {
+        continue;
+      }
+      if (currentEntry.phase == EventPhase.PHASE_BEGIN) {
+        startEntry = currentEntry;
+      }
+      if (startEntry && currentEntry.phase == EventPhase.PHASE_END) {
+        var event = {
+          startEntry: startEntry,
+          endEntry: currentEntry,
+        };
+        matchingEventPairs.push(event);
+        startEntry = null;
+      }
+    }
+    return matchingEventPairs;
+  }
+
+  /**
+   * Returns an ordered list of SourceEntries that are dependencies for
+   * events of the given type.
+   */
+  function findDependenciesOfType_(sourceEntry, eventType) {
+    var sourceEntryList = [];
+    if (sourceEntry) {
+      var eventList = findEventsInSourceEntry_(sourceEntry, eventType);
+      for (var i = 0; i < eventList.length; ++i) {
+        var foundSourceEntry = findSourceEntryFromEvent_(eventList[i]);
+        if (foundSourceEntry) {
+          sourceEntryList.push(foundSourceEntry);
+        }
+      }
+    }
+    return sourceEntryList;
+  }
+
+  /**
+   * Returns an ordered list of events from the given sourceEntry with the
+   * given type.
+   */
+  function findEventsInSourceEntry_(sourceEntry, eventType) {
+    var entries = sourceEntry.getLogEntries();
+    var events = [];
+    for (var i = 0; i < entries.length; ++i) {
+      var currentEntry = entries[i];
+      if (currentEntry.type == eventType) {
+        events.push(currentEntry);
+      }
+    }
+    return events;
+  }
+
+  /**
+   * Follows the event to obtain the sourceEntry that is the source
+   * dependency.
+   */
+  function findSourceEntryFromEvent_(event) {
+    if (!('params' in event) || !('source_dependency' in event.params)) {
+      return undefined;
+    } else {
+      var id = event.params.source_dependency.id;
+      return SourceTracker.getInstance().getSourceEntry(id);
+    }
   }
 
   return WaterfallRow;

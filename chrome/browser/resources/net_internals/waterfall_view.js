@@ -82,25 +82,17 @@ var WaterfallView = (function() {
         this.startTime_ = timeutil.convertTimeTicksToTime(logEntries[0].time);
         // Initial scale factor.
         this.scaleFactor_ = 0.1;
-        this.eventsList_ = this.createEventsList_();
       }
       for (var i = 0; i < sourceEntries.length; ++i) {
         var sourceEntry = sourceEntries[i];
         var id = sourceEntry.getSourceId();
-        for (var j = 0; j < this.eventsList_.length; ++j) {
-          var eventObject = this.eventsList_[j];
-          if (sourceEntry.getSourceType() == eventObject.mainEvent) {
-            var row = this.sourceIdToRowMap_[id];
-            if (!row) {
-              var newRow = new WaterfallRow(
-                  this, sourceEntry, eventObject.importantEventTypes);
-              if (newRow == undefined) {
-                console.log(sourceEntry);
-              }
-              this.sourceIdToRowMap_[id] = newRow;
-            } else {
-              row.onSourceUpdated();
-            }
+        if (sourceEntry.getSourceType() == EventSourceType.URL_REQUEST) {
+          var row = this.sourceIdToRowMap_[id];
+          if (!row) {
+            var newRow = new WaterfallRow(this, sourceEntry);
+            this.sourceIdToRowMap_[id] = newRow;
+          } else {
+            row.onSourceUpdated();
           }
         }
       }
@@ -295,43 +287,7 @@ var WaterfallView = (function() {
       this.adjustToWindow_(windowStart, windowEnd);
     },
 
-    /**
-     * Provides a structure that can be used to define source entry types and
-     * the log entries that are of interest.
-     */
-    createEventsList_: function() {
-      var eventsList = [];
-      // Creating list of events.
-      // TODO(viona): This is hard-coded. Consider user-input.
-      //              Also, work on getting socket information inlined in the
-      //              relevant URL_REQUEST events.
-      var urlRequestEvents = [
-        EventType.HTTP_STREAM_REQUEST,
-        EventType.HTTP_STREAM_REQUEST_BOUND_TO_JOB,
-        EventType.HTTP_TRANSACTION_READ_HEADERS
-      ];
 
-      eventsList.push(this.createEventTypeObjects_(
-          EventSourceType.URL_REQUEST, urlRequestEvents));
-
-      var httpStreamJobEvents = [EventType.PROXY_SERVICE];
-      eventsList.push(this.createEventTypeObjects_(
-          EventSourceType.HTTP_STREAM_JOB, httpStreamJobEvents));
-
-      return eventsList;
-    },
-
-    /**
-     * Creates objects that can be used to define source entry types and
-     * the log entries that are of interest.
-     */
-    createEventTypeObjects_: function(mainEventType, eventTypesList) {
-      var eventTypeObject = {
-        mainEvent: mainEventType,
-        importantEventTypes: eventTypesList
-      };
-      return eventTypeObject;
-    },
   };
 
   return WaterfallView;
