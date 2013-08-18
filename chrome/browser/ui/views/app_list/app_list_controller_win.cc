@@ -408,27 +408,6 @@ void SetWindowAttributes(HWND hwnd) {
   ui::win::SetAppIconForWindow(icon_path, hwnd);
 }
 
-app_list::AppListView* CreateAppListView(
-    scoped_ptr<AppListControllerDelegate> delegate,
-    Profile* profile,
-    app_list::PaginationModel* pagination_model) {
-  // The controller will be owned by the view delegate, and the delegate is
-  // owned by the app list view. The app list view manages it's own lifetime.
-  // TODO(koz): Make AppListViewDelegate take a scoped_ptr.
-  AppListViewDelegate* view_delegate =
-      new AppListViewDelegate(delegate.release(), profile);
-  app_list::AppListView* view = new app_list::AppListView(view_delegate);
-  gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-  view->InitAsBubble(NULL,
-                     pagination_model,
-                     NULL,
-                     cursor,
-                     views::BubbleBorder::FLOAT,
-                     false /* border_accepts_events */);
-  SetWindowAttributes(view->GetHWND());
-  return view;
-}
-
 class ScopedKeepAlive {
  public:
   ScopedKeepAlive() { chrome::StartKeepAlive(); }
@@ -441,9 +420,9 @@ class ScopedKeepAlive {
 class ActivationTracker {
  public:
   ActivationTracker(app_list::AppListView* view,
-                    const base::Closure& on_active_lost)
+                    const base::Closure& on_should_dismiss)
       : view_(view),
-        on_active_lost_(on_active_lost),
+        on_should_dismiss_(on_should_dismiss),
         regain_next_lost_focus_(false),
         preserving_focus_for_taskbar_menu_(false) {
   }
@@ -501,7 +480,7 @@ class ActivationTracker {
 
       // If the focused window is NULL, and the mouse button is not being
       // pressed, then the launcher no longer has focus.
-      on_active_lost_.Run();
+      on_should_dismiss_.Run();
       return;
     }
 
@@ -541,7 +520,7 @@ class ActivationTracker {
 
     // If we get here, the focused window is not the taskbar, it's context menu,
     // or the app list.
-    on_active_lost_.Run();
+    on_should_dismiss_.Run();
   }
 
  private:
@@ -549,7 +528,7 @@ class ActivationTracker {
   app_list::AppListView* view_;
 
   // Called to request |view_| be closed.
-  base::Closure on_active_lost_;
+  base::Closure on_should_dismiss_;
 
   // True if we are anticipating that the app list will lose focus, and we want
   // to take it back. This is used when switching out of Metro mode, and the
@@ -570,11 +549,117 @@ class ActivationTracker {
   base::RepeatingTimer<ActivationTracker> timer_;
 };
 
+// Responsible for positioning, hiding and showing an AppListView on Windows.
+// This includes watching window activation/deactivation messages to determine
+// if the user has clicked away from it.
+class AppListViewWin {
+ public:
+  AppListViewWin(app_list::AppListView* view,
+                 const base::Closure& on_should_dismiss)
+    : view_(view),
+      activation_tracker_(view, on_should_dismiss),
+      window_icon_updated_(false) {
+  }
+
+  void Show() {
+    view_->GetWidget()->Show();
+    if (!window_icon_updated_) {
+      view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
+      window_icon_updated_ = true;
+    }
+    view_->GetWidget()->Activate();
+  }
+
+  void ShowNearCursor(const gfx::Point& cursor) {
+    UpdateArrowPositionAndAnchorPoint(cursor);
+    Show();
+  }
+
+  void Hide() {
+    view_->GetWidget()->Hide();
+    activation_tracker_.OnViewHidden();
+  }
+
+  bool IsVisible() {
+    return view_->GetWidget()->IsVisible();
+  }
+
+  void Prerender() {
+    view_->Prerender();
+  }
+
+  void RegainNextLostFocus() {
+    activation_tracker_.RegainNextLostFocus();
+  }
+
+  gfx::NativeWindow GetWindow() {
+    return view_->GetWidget()->GetNativeWindow();
+  }
+
+  void OnAppListActivationChanged(bool active) {
+    activation_tracker_.OnActivationChanged(active);
+  }
+
+  void OnSigninStatusChanged() {
+    view_->OnSigninStatusChanged();
+  }
+
+ private:
+  void UpdateArrowPositionAndAnchorPoint(const gfx::Point& cursor) {
+    gfx::Screen* screen =
+        gfx::Screen::GetScreenFor(view_->GetWidget()->GetNativeView());
+    gfx::Display display = screen->GetDisplayNearestPoint(cursor);
+
+    view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
+    view_->SetAnchorPoint(FindAnchorPoint(
+        view_->GetPreferredSize(), display, cursor));
+  }
+
+
+  // Weak pointer. The view manages its own lifetime.
+  app_list::AppListView* view_;
+  ActivationTracker activation_tracker_;
+  bool window_icon_updated_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListViewWin);
+};
+
+// Factory for AppListViews. Used to allow us to create fake views in tests.
+class AppListViewFactory {
+ public:
+  AppListViewFactory() {}
+  virtual ~AppListViewFactory() {}
+
+  AppListViewWin* CreateAppListView(
+      Profile* profile,
+      app_list::PaginationModel* pagination_model,
+      const base::Closure& on_should_dismiss) {
+    // The controller will be owned by the view delegate, and the delegate is
+    // owned by the app list view. The app list view manages it's own lifetime.
+    // TODO(koz): Make AppListViewDelegate take a scoped_ptr.
+    AppListViewDelegate* view_delegate = new AppListViewDelegate(
+        new AppListControllerDelegateWin, profile);
+    app_list::AppListView* view = new app_list::AppListView(view_delegate);
+    gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
+    view->InitAsBubble(NULL,
+                       pagination_model,
+                       NULL,
+                       cursor,
+                       views::BubbleBorder::FLOAT,
+                       false /* border_accepts_events */);
+    SetWindowAttributes(view->GetHWND());
+    return new AppListViewWin(view, on_should_dismiss);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppListViewFactory);
+};
+
 // Creates and shows AppListViews as needed.
 class AppListShower {
  public:
-  AppListShower()
-      : view_(NULL),
+  explicit AppListShower(scoped_ptr<AppListViewFactory> factory)
+      : factory_(factory.Pass()),
         profile_(NULL),
         can_close_app_list_(true) {
   }
@@ -585,38 +670,36 @@ class AppListShower {
 
   void ShowAndReacquireFocus(Profile* requested_profile) {
     ShowForProfile(requested_profile);
-    activation_tracker_->RegainNextLostFocus();
+    view_->RegainNextLostFocus();
   }
 
   void ShowForProfile(Profile* requested_profile) {
-   // If the app list is already displaying |profile| just activate it (in case
+    // If the app list is already displaying |profile| just activate it (in case
     // we have lost focus).
     if (IsAppListVisible() && (requested_profile == profile_)) {
-      view_->GetWidget()->Show();
-      view_->GetWidget()->Activate();
+      view_->Show();
       return;
     }
 
     DismissAppList();
-    CreateForProfile(requested_profile);
+    CreateViewForProfile(requested_profile);
 
     DCHECK(view_);
     EnsureHaveKeepAliveForView();
     gfx::Point cursor = gfx::Screen::GetNativeScreen()->GetCursorScreenPoint();
-    UpdateArrowPositionAndAnchorPoint(cursor);
-    view_->GetWidget()->Show();
-    view_->GetWidget()->GetTopLevelWidget()->UpdateWindowIcon();
-    view_->GetWidget()->Activate();
+    view_->ShowNearCursor(cursor);
   }
 
   gfx::NativeWindow GetWindow() {
-    if (!IsAppListVisible())
+    if (!view_)
       return NULL;
-    return view_ ? view_->GetWidget()->GetNativeWindow() : NULL;
+    return view_->GetWindow();
   }
 
+  // TODO(koz): Make the view listen to activation changes itself, rather than
+  // requiring them to be plumbed through.
   void OnAppListActivationChanged(bool active) {
-    activation_tracker_->OnActivationChanged(active);
+    view_->OnAppListActivationChanged(active);
   }
 
   void OnSigninStatusChanged() {
@@ -625,7 +708,7 @@ class AppListShower {
   }
 
   // Create or recreate, and initialize |view_| from |requested_profile|.
-  void CreateForProfile(Profile* requested_profile) {
+  void CreateViewForProfile(Profile* requested_profile) {
     // Aura has problems with layered windows and bubble delegates. The app
     // launcher has a trick where it only hides the window when it is dismissed,
     // reshowing it again later. This does not work with win aura for some
@@ -637,36 +720,31 @@ class AppListShower {
 #endif
 
     profile_ = requested_profile;
-    view_ = CreateAppListView(
-        make_scoped_ptr(new AppListControllerDelegateWin),
-        profile_,
-        &pagination_model_);
-    activation_tracker_.reset(new ActivationTracker(view_,
+    view_.reset(factory_->CreateAppListView(
+        profile_, &pagination_model_,
         base::Bind(&AppListShower::DismissAppList, base::Unretained(this))));
   }
 
   void DismissAppList() {
-    if (IsAppListVisible() && can_close_app_list_) {
-      view_->GetWidget()->Hide();
-      activation_tracker_->OnViewHidden();
+    if (view_ && can_close_app_list_) {
+      view_->Hide();
       FreeAnyKeepAliveForView();
     }
   }
 
   void CloseAppList() {
-    FreeAnyKeepAliveForView();
-    view_ = NULL;
+    view_.reset();
     profile_ = NULL;
-    activation_tracker_.reset();
+    FreeAnyKeepAliveForView();
   }
 
   bool IsAppListVisible() const {
-    return view_ && view_->GetWidget()->IsVisible();
+    return view_ && view_->IsVisible();
   }
 
   void WarmupForProfile(Profile* profile) {
     DCHECK(!profile_);
-    CreateForProfile(profile);
+    CreateViewForProfile(profile);
     view_->Prerender();
   }
 
@@ -675,17 +753,6 @@ class AppListShower {
   }
 
  private:
-  void UpdateArrowPositionAndAnchorPoint(
-      const gfx::Point& cursor) {
-    gfx::Screen* screen =
-        gfx::Screen::GetScreenFor(view_->GetWidget()->GetNativeView());
-    gfx::Display display = screen->GetDisplayNearestPoint(cursor);
-
-    view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
-    view_->SetAnchorPoint(FindAnchorPoint(
-        view_->GetPreferredSize(), display, cursor));
-  }
-
   void EnsureHaveKeepAliveForView() {
     if (!keep_alive_)
       keep_alive_.reset(new ScopedKeepAlive());
@@ -696,17 +763,18 @@ class AppListShower {
       keep_alive_.reset(NULL);
   }
 
-  // Weak pointer. The view manages its own lifetime.
-  app_list::AppListView* view_;
+  scoped_ptr<AppListViewFactory> factory_;
+  scoped_ptr<AppListViewWin> view_;
   Profile* profile_;
   bool can_close_app_list_;
-  scoped_ptr<ActivationTracker> activation_tracker_;
 
   // PaginationModel that is shared across all views.
   app_list::PaginationModel pagination_model_;
 
   // Used to keep the browser process alive while the app list is visible.
   scoped_ptr<ScopedKeepAlive> keep_alive_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListShower);
 };
 
 // The AppListController class manages global resources needed for the app
@@ -853,7 +921,7 @@ void AppListControllerDelegateWin::LaunchApp(
 
 AppListController::AppListController()
     : enable_app_list_on_next_init_(false),
-      shower_(new AppListShower),
+      shower_(new AppListShower(make_scoped_ptr(new AppListViewFactory))),
       weak_factory_(this) {}
 
 AppListController::~AppListController() {
@@ -984,7 +1052,7 @@ void AppListController::Init(Profile* initial_profile) {
 }
 
 void AppListController::CreateForProfile(Profile* profile) {
-  shower_->CreateForProfile(profile);
+  shower_->CreateViewForProfile(profile);
 }
 
 bool AppListController::IsAppListVisible() const {
