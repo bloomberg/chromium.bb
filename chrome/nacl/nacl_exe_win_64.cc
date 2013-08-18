@@ -40,8 +40,6 @@ base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
 // main() routine for the NaCl broker process.
 // This is necessary for supporting NaCl in Chrome on Win64.
 int NaClBrokerMain(const content::MainFunctionParams& parameters) {
-  const CommandLine& parsed_command_line = parameters.command_line;
-
   base::MessageLoopForIO main_message_loop;
   base::PlatformThread::SetName("CrNaClBrokerMain");
 
