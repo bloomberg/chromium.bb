@@ -1136,13 +1136,30 @@ void SimpleEntryImpl::RecordReadIsParallelizable(
     const SimpleEntryOperation& operation) const {
   if (!executing_operation_)
     return;
-  // TODO(clamy): The values of this histogram should be changed to something
-  // more useful.
-  bool parallelizable_read =
-      !operation.alone_in_queue() &&
-      executing_operation_->type() == SimpleEntryOperation::TYPE_READ;
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.ReadIsParallelizable",
-                        parallelizable_read);
+  // Used in histograms, please only add entries at the end.
+  enum ReadDependencyType {
+    // READ_STANDALONE = 0, Deprecated.
+    READ_FOLLOWS_READ = 1,
+    READ_FOLLOWS_CONFLICTING_WRITE = 2,
+    READ_FOLLOWS_NON_CONFLICTING_WRITE = 3,
+    READ_FOLLOWS_OTHER = 4,
+    READ_ALONE_IN_QUEUE = 5,
+    READ_DEPENDENCY_TYPE_MAX = 6,
+  };
+
+  ReadDependencyType type = READ_FOLLOWS_OTHER;
+  if (operation.alone_in_queue()) {
+    type = READ_ALONE_IN_QUEUE;
+  } else if (executing_operation_->type() == SimpleEntryOperation::TYPE_READ) {
+    type = READ_FOLLOWS_READ;
+  } else if (executing_operation_->type() == SimpleEntryOperation::TYPE_WRITE) {
+    if (executing_operation_->ConflictsWith(operation))
+      type = READ_FOLLOWS_CONFLICTING_WRITE ;
+    else
+      type = READ_FOLLOWS_NON_CONFLICTING_WRITE;
+  }
+  UMA_HISTOGRAM_ENUMERATION(
+      "SimpleCache.ReadIsParallelizable", type, READ_DEPENDENCY_TYPE_MAX);
 }
 
 void SimpleEntryImpl::RecordWriteDependencyType(

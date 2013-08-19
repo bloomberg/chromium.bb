@@ -21628,8 +21628,12 @@ other types of suffix sets.
 </enum>
 
 <enum name="SimpleCacheReadParallelizable" type="int">
-  <int value="0" label="Standalone Read"/>
-  <int value="1" label="Read in a sequence"/>
+  <int value="0" label="Standalone Read (obsolete)"/>
+  <int value="1" label="Follows read"/>
+  <int value="2" label="Follows conflicting write"/>
+  <int value="3" label="Follows non conflicting write"/>
+  <int value="4" label="Follows other operation"/>
+  <int value="5" label="Read alone in queue"/>
 </enum>
 
 <enum name="SimpleCacheReadResult" type="int">
