@@ -71,6 +71,14 @@ class CONTENT_EXPORT RenderFrameImpl
       const WebKit::WebString& suggested_name);
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame* frame,
+      WebKit::WebDataSource::ExtraData* extra_data,
+      const WebKit::WebURLRequest& request,
+      WebKit::WebNavigationType type,
+      WebKit::WebNavigationPolicy default_policy,
+      bool is_redirect);
+  // DEPRECATED
+  virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
+      WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,

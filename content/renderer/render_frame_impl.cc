@@ -274,6 +274,17 @@ void RenderFrameImpl::loadURLExternally(
 
 WebKit::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
     WebKit::WebFrame* frame,
+    WebKit::WebDataSource::ExtraData* extra_data,
+    const WebKit::WebURLRequest& request,
+    WebKit::WebNavigationType type,
+    WebKit::WebNavigationPolicy default_policy,
+    bool is_redirect) {
+  return render_view_->decidePolicyForNavigation(
+      frame, extra_data, request, type, default_policy, is_redirect);
+}
+
+WebKit::WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
+    WebKit::WebFrame* frame,
     const WebKit::WebURLRequest& request,
     WebKit::WebNavigationType type,
     WebKit::WebNavigationPolicy default_policy,
