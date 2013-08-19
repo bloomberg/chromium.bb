@@ -67,6 +67,7 @@ class RenderLayer;
 class RenderObject;
 class RenderWidget;
 class SVGElementInstance;
+class ScrollableArea;
 class Scrollbar;
 class TextEvent;
 class TouchEvent;
@@ -230,6 +231,8 @@ private:
     bool isCursorVisible() const;
 
     bool isInsideScrollbar(const IntPoint&) const;
+
+    ScrollableArea* associatedScrollableArea(const RenderLayer*) const;
 
     bool dispatchSyntheticTouchEventIfEnabled(const PlatformMouseEvent&);
     HitTestResult hitTestResultInFrame(Frame*, const LayoutPoint&, HitTestRequest::HitTestRequestType hitType = HitTestRequest::ReadOnly | HitTestRequest::Active | HitTestRequest::DisallowShadowContent);

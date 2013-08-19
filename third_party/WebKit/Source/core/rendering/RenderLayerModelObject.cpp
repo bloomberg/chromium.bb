@@ -73,6 +73,11 @@ bool RenderLayerModelObject::hasSelfPaintingLayer() const
     return m_layer && m_layer->isSelfPaintingLayer();
 }
 
+ScrollableArea* RenderLayerModelObject::scrollableArea() const
+{
+    return m_layer ? m_layer->scrollableArea() : 0;
+}
+
 void RenderLayerModelObject::willBeDestroyed()
 {
     if (isPositioned()) {

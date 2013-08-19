@@ -306,7 +306,7 @@ ScrollableArea* AccessibilityRenderObject::getScrollableAreaIfScrollable() const
     if (!box->canBeScrolledAndHasScrollableArea())
         return 0;
 
-    return box->layer();
+    return box->scrollableArea();
 }
 
 AccessibilityRole AccessibilityRenderObject::determineAccessibilityRole()
@@ -1327,7 +1327,7 @@ void AccessibilityRenderObject::checkCachedElementRect() const
         dirty = true;
 
     if (box->canBeScrolledAndHasScrollableArea()) {
-        ScrollableArea* scrollableArea = box->layer();
+        ScrollableArea* scrollableArea = box->scrollableArea();
         if (scrollableArea && scrollableArea->scrollPosition() != m_cachedScrollPosition)
             dirty = true;
     }
@@ -1351,7 +1351,7 @@ void AccessibilityRenderObject::updateCachedElementRect() const
     m_cachedFrameRect = box->frameRect();
 
     if (box->canBeScrolledAndHasScrollableArea()) {
-        ScrollableArea* scrollableArea = box->layer();
+        ScrollableArea* scrollableArea = box->scrollableArea();
         if (scrollableArea)
             m_cachedScrollPosition = scrollableArea->scrollPosition();
     }

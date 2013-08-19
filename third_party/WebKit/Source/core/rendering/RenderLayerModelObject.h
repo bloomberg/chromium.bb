@@ -28,6 +28,7 @@
 namespace WebCore {
 
 class RenderLayer;
+class ScrollableArea;
 
 class RenderLayerModelObject : public RenderObject {
 public:
@@ -39,6 +40,7 @@ public:
 
     bool hasSelfPaintingLayer() const;
     RenderLayer* layer() const { return m_layer; }
+    ScrollableArea* scrollableArea() const;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE;
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle) OVERRIDE;

@@ -1385,6 +1385,7 @@
             'rendering/RenderLayerCompositor.h',
             'rendering/RenderLayerFilterInfo.cpp',
             'rendering/RenderLayerFilterInfo.h',
+            'rendering/RenderLayerScrollableArea.cpp',
             'rendering/RenderLayerModelObject.cpp',
             'rendering/RenderLineBoxList.cpp',
             'rendering/RenderListBox.cpp',
