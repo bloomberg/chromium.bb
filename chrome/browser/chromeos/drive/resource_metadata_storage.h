@@ -51,8 +51,11 @@ class ResourceMetadataStorage {
     // to a valid entry. Get() and Advance() should not be called in such cases.
     bool IsAtEnd() const;
 
+    // Returns the ID of the entry currently pointed by this object.
+    std::string GetID() const;
+
     // Returns the entry currently pointed by this object.
-    const ResourceEntry& Get() const;
+    const ResourceEntry& GetValue() const;
 
     // Gets the cache entry which corresponds to |entry_| if available.
     bool GetCacheEntry(FileCacheEntry* cache_entry);
@@ -98,7 +101,7 @@ class ResourceMetadataStorage {
     void AdvanceInternal();
 
     scoped_ptr<leveldb::Iterator> it_;
-    std::string resource_id_;
+    std::string id_;
     FileCacheEntry entry_;
 
     DISALLOW_COPY_AND_ASSIGN(CacheEntryIterator);
@@ -126,34 +129,33 @@ class ResourceMetadataStorage {
   int64 GetLargestChangestamp();
 
   // Puts the entry to this storage.
-  bool PutEntry(const ResourceEntry& entry);
+  bool PutEntry(const std::string& id, const ResourceEntry& entry);
 
   // Gets an entry stored in this storage.
-  bool GetEntry(const std::string& resource_id, ResourceEntry* out_entry);
+  bool GetEntry(const std::string& id, ResourceEntry* out_entry);
 
   // Removes an entry from this storage.
-  bool RemoveEntry(const std::string& resource_id);
+  bool RemoveEntry(const std::string& id);
 
   // Returns an object to iterate over entries stored in this storage.
   scoped_ptr<Iterator> GetIterator();
 
-  // Returns resource ID of the parent's child.
-  std::string GetChild(const std::string& parent_resource_id,
+  // Returns the ID of the parent's child.
+  std::string GetChild(const std::string& parent_id,
                        const std::string& child_name);
 
-  // Returns resource IDs of the parent's children.
-  void GetChildren(const std::string& parent_resource_id,
+  // Returns the IDs of the parent's children.
+  void GetChildren(const std::string& parent_id,
                    std::vector<std::string>* children);
 
   // Puts the cache entry to this storage.
-  bool PutCacheEntry(const std::string& resource_id,
-                     const FileCacheEntry& entry);
+  bool PutCacheEntry(const std::string& id, const FileCacheEntry& entry);
 
   // Gets a cache entry stored in this storage.
-  bool GetCacheEntry(const std::string& resource_id, FileCacheEntry* out_entry);
+  bool GetCacheEntry(const std::string& id, FileCacheEntry* out_entry);
 
   // Removes a cache entry from this storage.
-  bool RemoveCacheEntry(const std::string& resource_id);
+  bool RemoveCacheEntry(const std::string& id);
 
   // Returns an object to iterate over cache entries stored in this storage.
   scoped_ptr<CacheEntryIterator> GetCacheEntryIterator();
@@ -168,7 +170,7 @@ class ResourceMetadataStorage {
   void DestroyOnBlockingPool();
 
   // Returns a string to be used as a key for child entry.
-  static std::string GetChildEntryKey(const std::string& parent_resource_id,
+  static std::string GetChildEntryKey(const std::string& parent_id,
                                       const std::string& child_name);
 
   // Puts header.

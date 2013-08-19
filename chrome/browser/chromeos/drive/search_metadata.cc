@@ -126,7 +126,7 @@ void MaybeAddEntryToResult(
                         MetadataSearchResultComparator>* result_candidates) {
   DCHECK_GE(at_most_num_matches, result_candidates->size());
 
-  const ResourceEntry& entry = it->Get();
+  const ResourceEntry& entry = it->GetValue();
 
   // If the candidate set is already full, and this |entry| is old, do nothing.
   // We perform this check first in order to avoid the costly find-and-highlight

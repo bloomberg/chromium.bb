@@ -1068,7 +1068,7 @@ TEST_F(ResourceMetadataTest, Iterate) {
 
   int file_count = 0, directory_count = 0;
   for (; !it->IsAtEnd(); it->Advance()) {
-    if (!it->Get().file_info().is_directory())
+    if (!it->GetValue().file_info().is_directory())
       ++file_count;
     else
       ++directory_count;

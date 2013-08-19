@@ -40,23 +40,21 @@ class ResourceMetadataStorageTest : public testing::Test {
   }
 
   // Puts a child entry.
-  void PutChild(const std::string& parent_resource_id,
+  void PutChild(const std::string& parent_id,
                 const std::string& child_base_name,
-                const std::string& child_resource_id) {
+                const std::string& child_id) {
     storage_->resource_map_->Put(
         leveldb::WriteOptions(),
-        ResourceMetadataStorage::GetChildEntryKey(parent_resource_id,
-                                                  child_base_name),
-        child_resource_id);
+        ResourceMetadataStorage::GetChildEntryKey(parent_id, child_base_name),
+        child_id);
   }
 
   // Removes a child entry.
-  void RemoveChild(const std::string& parent_resource_id,
+  void RemoveChild(const std::string& parent_id,
                    const std::string& child_base_name) {
     storage_->resource_map_->Delete(
         leveldb::WriteOptions(),
-        ResourceMetadataStorage::GetChildEntryKey(parent_resource_id,
-                                                  child_base_name));
+        ResourceMetadataStorage::GetChildEntryKey(parent_id, child_base_name));
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -79,18 +77,16 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   const std::string name3 = "EFGH";
 
   ResourceEntry entry1;
-  entry1.set_resource_id(key1);
 
   // key1 not found.
   ResourceEntry result;
   EXPECT_FALSE(storage_->GetEntry(key1, &result));
 
   // Put entry1.
-  EXPECT_TRUE(storage_->PutEntry(entry1));
+  EXPECT_TRUE(storage_->PutEntry(key1, entry1));
 
   // key1 found.
-  ASSERT_TRUE(storage_->GetEntry(key1, &result));
-  EXPECT_EQ(key1, result.resource_id());
+  EXPECT_TRUE(storage_->GetEntry(key1, &result));
 
   // key2 not found.
   EXPECT_FALSE(storage_->GetEntry(key2, &result));
@@ -98,9 +94,8 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   // Put entry2 as a child of entry1.
   ResourceEntry entry2;
   entry2.set_parent_resource_id(key1);
-  entry2.set_resource_id(key2);
   entry2.set_base_name(name2);
-  EXPECT_TRUE(storage_->PutEntry(entry2));
+  EXPECT_TRUE(storage_->PutEntry(key2, entry2));
 
   // key2 found.
   EXPECT_TRUE(storage_->GetEntry(key2, &result));
@@ -109,9 +104,8 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
   // Put entry3 as a child of entry2.
   ResourceEntry entry3;
   entry3.set_parent_resource_id(key2);
-  entry3.set_resource_id(key3);
   entry3.set_base_name(name3);
-  EXPECT_TRUE(storage_->PutEntry(entry3));
+  EXPECT_TRUE(storage_->PutEntry(key3, entry3));
 
   // key3 found.
   EXPECT_TRUE(storage_->GetEntry(key3, &result));
@@ -119,7 +113,7 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
   // Change entry3's parent to entry1.
   entry3.set_parent_resource_id(key1);
-  EXPECT_TRUE(storage_->PutEntry(entry3));
+  EXPECT_TRUE(storage_->PutEntry(key3, entry3));
 
   // entry3 is a child of entry1 now.
   EXPECT_TRUE(storage_->GetChild(key2, name3).empty());
@@ -136,25 +130,20 @@ TEST_F(ResourceMetadataStorageTest, PutEntry) {
 
 TEST_F(ResourceMetadataStorageTest, Iterator) {
   // Prepare data.
-  std::vector<ResourceEntry> entries;
-  ResourceEntry entry;
+  std::vector<std::string> keys;
 
-  entry.set_resource_id("entry1");
-  entries.push_back(entry);
-  entry.set_resource_id("entry2");
-  entries.push_back(entry);
-  entry.set_resource_id("entry3");
-  entries.push_back(entry);
-  entry.set_resource_id("entry4");
-  entries.push_back(entry);
+  keys.push_back("entry1");
+  keys.push_back("entry2");
+  keys.push_back("entry3");
+  keys.push_back("entry4");
 
-  for (size_t i = 0; i < entries.size(); ++i)
-    EXPECT_TRUE(storage_->PutEntry(entries[i]));
+  for (size_t i = 0; i < keys.size(); ++i)
+    EXPECT_TRUE(storage_->PutEntry(keys[i], ResourceEntry()));
 
   // Insert some cache entries.
   std::map<std::string, FileCacheEntry> cache_entries;
-  cache_entries[entries[0].resource_id()].set_md5("aaaaaa");
-  cache_entries[entries[1].resource_id()].set_md5("bbbbbb");
+  cache_entries[keys[0]].set_md5("aaaaaa");
+  cache_entries[keys[1]].set_md5("bbbbbb");
   for (std::map<std::string, FileCacheEntry>::iterator it =
            cache_entries.begin(); it != cache_entries.end(); ++it)
     EXPECT_TRUE(storage_->PutCacheEntry(it->first, it->second));
@@ -165,18 +154,18 @@ TEST_F(ResourceMetadataStorageTest, Iterator) {
   scoped_ptr<ResourceMetadataStorage::Iterator> it = storage_->GetIterator();
   ASSERT_TRUE(it);
   for (; !it->IsAtEnd(); it->Advance()) {
-    const ResourceEntry& entry = it->Get();
-    found_entries[entry.resource_id()] = entry;
+    const ResourceEntry& entry = it->GetValue();
+    found_entries[it->GetID()] = entry;
 
     FileCacheEntry cache_entry;
     if (it->GetCacheEntry(&cache_entry))
-      found_cache_entries[entry.resource_id()] = cache_entry;
+      found_cache_entries[it->GetID()] = cache_entry;
   }
   EXPECT_FALSE(it->HasError());
 
-  EXPECT_EQ(entries.size(), found_entries.size());
-  for (size_t i = 0; i < entries.size(); ++i)
-    EXPECT_EQ(1U, found_entries.count(entries[i].resource_id()));
+  EXPECT_EQ(keys.size(), found_entries.size());
+  for (size_t i = 0; i < keys.size(); ++i)
+    EXPECT_EQ(1U, found_entries.count(keys[i]));
 
   EXPECT_EQ(cache_entries.size(), found_cache_entries.size());
   for (std::map<std::string, FileCacheEntry>::iterator it =
@@ -232,11 +221,8 @@ TEST_F(ResourceMetadataStorageTest, CacheEntryIterator) {
     EXPECT_TRUE(storage_->PutCacheEntry(it->first, it->second));
 
   // Insert some dummy entries.
-  ResourceEntry entry;
-  entry.set_resource_id("entry1");
-  EXPECT_TRUE(storage_->PutEntry(entry));
-  entry.set_resource_id("entry2");
-  EXPECT_TRUE(storage_->PutEntry(entry));
+  EXPECT_TRUE(storage_->PutEntry("entry1", ResourceEntry()));
+  EXPECT_TRUE(storage_->PutEntry("entry2", ResourceEntry()));
 
   // Iterate and check the result.
   scoped_ptr<ResourceMetadataStorage::CacheEntryIterator> it =
@@ -273,11 +259,8 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
   children_name_id[4].push_back(std::make_pair("iapetus", "saturn_vii"));
 
   // Put parents.
-  for (size_t i = 0; i < arraysize(parents_id); ++i) {
-    ResourceEntry entry;
-    entry.set_resource_id(parents_id[i]);
-    EXPECT_TRUE(storage_->PutEntry(entry));
-  }
+  for (size_t i = 0; i < arraysize(parents_id); ++i)
+    EXPECT_TRUE(storage_->PutEntry(parents_id[i], ResourceEntry()));
 
   // Put children.
   for (size_t i = 0; i < children_name_id.size(); ++i) {
@@ -285,8 +268,7 @@ TEST_F(ResourceMetadataStorageTest, GetChildren) {
       ResourceEntry entry;
       entry.set_parent_resource_id(parents_id[i]);
       entry.set_base_name(children_name_id[i][j].first);
-      entry.set_resource_id(children_name_id[i][j].second);
-      EXPECT_TRUE(storage_->PutEntry(entry));
+      EXPECT_TRUE(storage_->PutEntry(children_name_id[i][j].second, entry));
     }
   }
 
@@ -315,15 +297,13 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
   const std::string child_id1 = "qwerty";
 
   ResourceEntry entry1;
-  entry1.set_resource_id(parent_id1);
   ResourceEntry entry2;
-  entry2.set_resource_id(child_id1);
   entry2.set_parent_resource_id(parent_id1);
   entry2.set_base_name(child_name1);
 
   // Put some data.
-  EXPECT_TRUE(storage_->PutEntry(entry1));
-  EXPECT_TRUE(storage_->PutEntry(entry2));
+  EXPECT_TRUE(storage_->PutEntry(parent_id1, entry1));
+  EXPECT_TRUE(storage_->PutEntry(child_id1, entry2));
 
   // Close DB and reopen.
   storage_.reset(new ResourceMetadataStorage(
@@ -332,11 +312,9 @@ TEST_F(ResourceMetadataStorageTest, OpenExistingDB) {
 
   // Can read data.
   ResourceEntry result;
-  ASSERT_TRUE(storage_->GetEntry(parent_id1, &result));
-  EXPECT_EQ(parent_id1, result.resource_id());
+  EXPECT_TRUE(storage_->GetEntry(parent_id1, &result));
 
-  ASSERT_TRUE(storage_->GetEntry(child_id1, &result));
-  EXPECT_EQ(child_id1, result.resource_id());
+  EXPECT_TRUE(storage_->GetEntry(child_id1, &result));
   EXPECT_EQ(parent_id1, result.parent_resource_id());
   EXPECT_EQ(child_name1, result.base_name());
 
@@ -347,14 +325,11 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
   const int64 kLargestChangestamp = 1234567890;
   const std::string key1 = "abcd";
 
-  ResourceEntry entry;
-  entry.set_resource_id(key1);
-
   // Put some data.
-  ResourceEntry result;
+  ResourceEntry entry;
   EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
-  EXPECT_TRUE(storage_->PutEntry(entry));
-  EXPECT_TRUE(storage_->GetEntry(key1, &result));
+  EXPECT_TRUE(storage_->PutEntry(key1, ResourceEntry()));
+  EXPECT_TRUE(storage_->GetEntry(key1, &entry));
 
   // Set incompatible version and reopen DB.
   SetDBVersion(ResourceMetadataStorage::kDBVersion - 1);
@@ -364,7 +339,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
 
   // Data is erased because of the incompatible version.
   EXPECT_EQ(0, storage_->GetLargestChangestamp());
-  EXPECT_FALSE(storage_->GetEntry(key1, &result));
+  EXPECT_FALSE(storage_->GetEntry(key1, &entry));
 }
 
 TEST_F(ResourceMetadataStorageTest, WrongPath) {
@@ -391,16 +366,14 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
 
   // Put entry with key1.
   ResourceEntry entry;
-  entry.set_resource_id(key1);
   entry.set_base_name(name1);
-  EXPECT_TRUE(storage_->PutEntry(entry));
+  EXPECT_TRUE(storage_->PutEntry(key1, entry));
   EXPECT_TRUE(CheckValidity());
 
   // Put entry with key2 under key1.
-  entry.set_resource_id(key2);
   entry.set_parent_resource_id(key1);
   entry.set_base_name(name2);
-  EXPECT_TRUE(storage_->PutEntry(entry));
+  EXPECT_TRUE(storage_->PutEntry(key2, entry));
   EXPECT_TRUE(CheckValidity());
 
   RemoveChild(key1, name2);
@@ -415,10 +388,9 @@ TEST_F(ResourceMetadataStorageTest, CheckValidity) {
   EXPECT_FALSE(CheckValidity());  // key3 is not stored in the storage.
 
   // Put entry with key3 under key2.
-  entry.set_resource_id(key3);
   entry.set_parent_resource_id(key2);
   entry.set_base_name(name3);
-  EXPECT_TRUE(storage_->PutEntry(entry));
+  EXPECT_TRUE(storage_->PutEntry(key3, entry));
   EXPECT_TRUE(CheckValidity());
 
   // Parent-child relationship with wrong name.

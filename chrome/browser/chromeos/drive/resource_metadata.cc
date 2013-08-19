@@ -195,7 +195,8 @@ bool ResourceMetadata::SetUpDefaultEntries() {
     root.mutable_file_info()->set_is_directory(true);
     root.set_resource_id(util::kDriveGrandRootSpecialResourceId);
     root.set_title(util::kDriveGrandRootDirName);
-    if (!storage_->PutEntry(CreateEntryWithProperBaseName(root)))
+    if (!storage_->PutEntry(util::kDriveGrandRootSpecialResourceId,
+                            CreateEntryWithProperBaseName(root)))
       return false;
   }
   if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId, &entry)) {
@@ -663,7 +664,7 @@ FileError ResourceMetadata::RefreshDirectory(
 
   directory.mutable_directory_specific_info()->set_changestamp(
       directory_fetch_info.changestamp());
-  if (!storage_->PutEntry(directory))
+  if (!storage_->PutEntry(directory.resource_id(), directory))
     return FILE_ERROR_FAILED;
 
   if (out_file_path)
@@ -753,7 +754,7 @@ bool ResourceMetadata::PutEntryUnderDirectory(
   updated_entry.set_base_name(new_base_name);
 
   // Add the entry to resource map.
-  return storage_->PutEntry(updated_entry);
+  return storage_->PutEntry(updated_entry.resource_id(), updated_entry);
 }
 
 bool ResourceMetadata::RemoveEntryRecursively(
