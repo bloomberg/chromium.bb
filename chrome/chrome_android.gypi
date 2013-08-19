@@ -19,6 +19,7 @@
         'chrome_android_auxiliary',
         'chromium_testshell_jni_headers',
         'chrome.gyp:browser_ui',
+        '../content/content.gyp:content_app_browser',
       ],
       'sources': [
         # This file must always be included in the shared_library step to ensure
