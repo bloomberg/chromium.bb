@@ -472,14 +472,9 @@ bool ResourceFetcher::shouldLoadNewResource() const
 {
     if (!frame())
         return false;
-    if (m_documentLoader) {
-        if (m_documentLoader != frame()->loader()->activeDocumentLoader())
-            return false;
-        if (m_documentLoader->isStopping())
-            return false;
-    }
-
-    return true;
+    if (!m_documentLoader)
+        return true;
+    return m_documentLoader == frame()->loader()->activeDocumentLoader();
 }
 
 ResourcePtr<Resource> ResourceFetcher::requestResource(Resource::Type type, FetchRequest& request)

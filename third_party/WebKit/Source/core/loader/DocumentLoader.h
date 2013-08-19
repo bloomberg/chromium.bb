@@ -108,7 +108,6 @@ namespace WebCore {
         const String& responseMIMEType() const;
 
         void replaceRequestURLForSameDocumentNavigation(const KURL&);
-        bool isStopping() const { return m_isStopping; }
         void stopLoading();
         void setCommitted(bool committed) { m_committed = committed; }
         bool isCommitted() const { return m_committed; }
@@ -245,7 +244,6 @@ namespace WebCore {
         ResourceError m_mainDocumentError;
 
         bool m_committed;
-        bool m_isStopping;
         bool m_isClientRedirect;
         bool m_replacesCurrentHistoryItem;
 

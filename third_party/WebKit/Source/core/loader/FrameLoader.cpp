@@ -1089,7 +1089,7 @@ void FrameLoader::checkLoadCompleteForThisFrame()
     if (m_state != FrameStateCommittedPage)
         return;
 
-    if (!m_documentLoader || (m_documentLoader->isLoadingInAPISense() && !m_documentLoader->isStopping()))
+    if (!m_documentLoader || (m_documentLoader->isLoadingInAPISense() && !m_inStopAllLoaders))
         return;
 
     m_state = FrameStateComplete;

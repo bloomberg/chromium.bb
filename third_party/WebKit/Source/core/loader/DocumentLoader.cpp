@@ -98,7 +98,6 @@ DocumentLoader::DocumentLoader(const ResourceRequest& req, const SubstituteData&
     , m_originalRequestCopy(req)
     , m_request(req)
     , m_committed(false)
-    , m_isStopping(false)
     , m_isClientRedirect(false)
     , m_replacesCurrentHistoryItem(false)
     , m_loadingMainResource(false)
@@ -248,20 +247,8 @@ void DocumentLoader::stopLoading()
 
     clearArchiveResources();
 
-    if (!loading) {
-        // If something above restarted loading we might run into mysterious crashes like
-        // https://bugs.webkit.org/show_bug.cgi?id=62764 and <rdar://problem/9328684>
-        ASSERT(!isLoading());
+    if (!loading)
         return;
-    }
-
-    // We might run in to infinite recursion if we're stopping loading as the result of
-    // detaching from the frame, so break out of that recursion here.
-    // See <rdar://problem/9673866> for more details.
-    if (m_isStopping)
-        return;
-
-    m_isStopping = true;
 
     if (isLoadingMainResource()) {
         // Stop the main resource loader and let it send the cancelled message.
@@ -277,8 +264,6 @@ void DocumentLoader::stopLoading()
     }
 
     stopLoadingSubresources();
-
-    m_isStopping = false;
 }
 
 void DocumentLoader::commitIfReady()
@@ -379,8 +364,6 @@ void DocumentLoader::handleSubstituteDataLoadNow(DocumentLoaderTimer*)
     RefPtr<DocumentLoader> protect(this);
     ResourceResponse response(m_request.url(), m_substituteData.mimeType(), m_substituteData.content()->size(), m_substituteData.textEncoding(), "");
     responseReceived(0, response);
-    if (isStopping())
-        return;
     if (m_substituteData.content()->size())
         dataReceived(0, m_substituteData.content()->data(), m_substituteData.content()->size());
     if (isLoadingMainResource())
