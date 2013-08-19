@@ -110,8 +110,6 @@ net/base/registry_controlled_domains/registry_controlled_domain.cc
 # v2) licenses. This third-party code is taken from Mozilla, the license for
 # which we already pick up from third_party/npapi/.
 net/base/registry_controlled_domains/registry_controlled_domain.h
-# Copyright John LoVerso; no license. Test code only.
-net/data/proxy_resolver_perftest/no-ads.pac
 # Copyright The Chromium Authors and IBM Corporation; BSD and (MPL, GPL v2 or
 # LGPL v2) licenses. This third-party code is taken from Mozilla, the license
 # for which we already pick up from third_party/npapi/.
@@ -177,10 +175,6 @@ ui/gfx/codec/jpeg_codec.cc
 # This third-party code is taken from Mozilla, but is copyright Google and has
 # been re-licensed under the Chromium license.
 ui/gfx/codec/png_codec.cc
-# Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
-# license. This third-party code is taken from Mozilla, the license for which
-# we already pick up from third_party/npapi/.
-url/url_parse.cc
 # Copyright The Chromium Authors and Apple Inc; BSD license. This third-party
 # code is taken from WebKit, the license for which we already pick up from
 # webkit/.
