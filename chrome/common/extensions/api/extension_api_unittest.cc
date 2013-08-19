@@ -848,7 +848,7 @@ TEST(ExtensionAPITest, NoPermissions) {
     { "history",        false },
     // Make sure we find the module name after stripping '.'
     { "runtime.abcd.onStartup",  true },
-    // Test Tabs functions.
+    // Test Tabs/Windows functions.
     { "tabs.create",      true },
     { "tabs.duplicate",   true },
     { "tabs.onRemoved",   true },
@@ -856,6 +856,10 @@ TEST(ExtensionAPITest, NoPermissions) {
     { "tabs.update",      true },
     { "tabs.getSelected", true },
     { "tabs.onUpdated",   true },
+    { "windows.get",      true },
+    { "windows.create",   true },
+    { "windows.remove",   true },
+    { "windows.update",   true },
     // Test some whitelisted functions. These require no permissions.
     { "app.getDetails",           true },
     { "app.getDetailsForFrame",   true },
