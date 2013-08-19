@@ -17,8 +17,9 @@
 #endif
 
 #include "native_client/src/shared/platform/nacl_log.h"
-#include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
+#include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -29,11 +30,12 @@ void NaClInitGlobals(void) {
   ;
 }
 
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          struct NaClApp            *nap,
-                          nacl_reg_t                prog_ctr,
-                          nacl_reg_t                stack_ptr,
-                          uint32_t                  tls_idx) {
+int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
+                                  nacl_reg_t           prog_ctr,
+                                  nacl_reg_t           stack_ptr) {
+  struct NaClThreadContext *ntcp = &natp->user;
+  struct NaClApp *nap = natp->nap;
+
   NaClThreadContextOffsetCheck();
 
   memset(ntcp, 0, sizeof(*ntcp));
@@ -62,7 +64,9 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   ntcp->new_prog_ctr = 0;
   ntcp->sysret = -NACL_ABI_EINVAL;
 
-  ntcp->tls_idx = tls_idx;
+  ntcp->tls_idx = NaClTlsAllocate(natp);
+  if (ntcp->tls_idx == NACL_TLS_INDEX_INVALID)
+    return 0;
 
   ntcp->fcw = NACL_X87_FCW_DEFAULT;
   ntcp->mxcsr = NACL_MXCSR_DEFAULT;

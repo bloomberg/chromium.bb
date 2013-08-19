@@ -9,7 +9,9 @@
  */
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/platform/nacl_global_secure_random.h"
+#include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
@@ -24,12 +26,10 @@ void NaClInitGlobals(void) {
 }
 
 
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          struct NaClApp            *nap,
-                          nacl_reg_t                prog_ctr,
-                          nacl_reg_t                stack_ptr,
-                          nacl_reg_t                tls_idx) {
-  UNREFERENCED_PARAMETER(nap);
+int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
+                                  nacl_reg_t           prog_ctr,
+                                  nacl_reg_t           stack_ptr) {
+  struct NaClThreadContext *ntcp = &natp->user;
 
   /*
    * We call this function so that it does not appear to be dead code,
@@ -40,7 +40,9 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
   memset((void *)ntcp, 0, sizeof(*ntcp));
   ntcp->stack_ptr = stack_ptr;
   ntcp->prog_ctr = prog_ctr;
-  ntcp->tls_idx = tls_idx;
+  ntcp->tls_idx = NaClTlsAllocate(natp);
+  if (ntcp->tls_idx == NACL_TLS_INDEX_INVALID)
+    return 0;
   ntcp->r9 = (uintptr_t) &ntcp->tls_value1;
   ntcp->guard_token = nacl_guard_token;
 
@@ -50,7 +52,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
    */
   __asm__ __volatile__("fmrx %0, fpscr" : "=r" (ntcp->sys_fpscr));
 
-  NaClLog(4, "user.tls_idx: 0x%08"NACL_PRIxNACL_REG"\n", tls_idx);
+  NaClLog(4, "user.tls_idx: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->tls_idx);
   NaClLog(4, "user.stack_ptr: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->stack_ptr);
   NaClLog(4, "user.prog_ctr: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->prog_ctr);
 

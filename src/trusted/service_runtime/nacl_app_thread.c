@@ -160,7 +160,6 @@ struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
                                         uint32_t       user_tls1,
                                         uint32_t       user_tls2) {
   struct NaClAppThread *natp;
-  uint32_t tls_idx;
 
   natp = NaClAlignedMalloc(sizeof *natp, __alignof(struct NaClAppThread));
   if (natp == NULL) {
@@ -179,21 +178,9 @@ struct NaClAppThread *NaClAppThreadMake(struct NaClApp *nap,
   natp->host_thread_is_defined = 0;
   memset(&natp->host_thread, 0, sizeof(natp->host_thread));
 
-  /*
-   * Even though we don't know what segment base/range should gs/r9/nacl_tls_idx
-   * select, we still need one, since it identifies the thread when we context
-   * switch back.  This use of a dummy tls is only needed for the main thread,
-   * which is expected to invoke the tls_init syscall from its crt code (before
-   * main or much of libc can run).  Other threads are spawned with the thread
-   * pointer address as a parameter.
-   */
-  tls_idx = NaClTlsAllocate(natp);
-  if (NACL_TLS_INDEX_INVALID == tls_idx) {
-    NaClLog(LOG_ERROR, "No tls for thread, num_thread %d\n", nap->num_threads);
+  if (!NaClAppThreadInitArchSpecific(natp, usr_entry, usr_stack_ptr)) {
     goto cleanup_free;
   }
-
-  NaClThreadContextCtor(&natp->user, nap, usr_entry, usr_stack_ptr, tls_idx);
 
   NaClTlsSetTlsValue1(natp, user_tls1);
   NaClTlsSetTlsValue2(natp, user_tls2);

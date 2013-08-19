@@ -16,6 +16,7 @@
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
+#include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
@@ -39,11 +40,11 @@ uint16_t NaClGetGlobalCs(void) {
   return nacl_global_cs;
 }
 
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          struct NaClApp            *nap,
-                          nacl_reg_t                prog_ctr,
-                          nacl_reg_t                stack_ptr,
-                          nacl_reg_t                tls_idx) {
+int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
+                                  nacl_reg_t           prog_ctr,
+                                  nacl_reg_t           stack_ptr) {
+  struct NaClThreadContext *ntcp = &natp->user;
+  struct NaClApp *nap = natp->nap;
   /* TODO(mcgrathr): Use a safe cast here. */
   NaClCPUFeaturesX86 *features = (NaClCPUFeaturesX86 *) nap->cpu_features;
 
@@ -75,7 +76,9 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
 
   ntcp->es = nap->data_seg_sel;
   ntcp->fs = 0;  /* windows use this for TLS and SEH; linux does not */
-  ntcp->gs = (uint16_t) tls_idx;
+  ntcp->gs = NaClTlsAllocate(natp);
+  if (ntcp->gs == NACL_TLS_INDEX_INVALID)
+    return 0;
   ntcp->ss = nap->data_seg_sel;
 
   ntcp->fcw = NACL_X87_FCW_DEFAULT;

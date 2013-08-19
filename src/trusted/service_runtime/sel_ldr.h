@@ -767,13 +767,9 @@ struct NaClPatchInfo *NaClPatchInfoCtor(struct NaClPatchInfo *self);
 
 void NaClApplyPatchToMemory(struct NaClPatchInfo *patch);
 
-int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
-                          struct NaClApp            *nap,
-                          nacl_reg_t                prog_ctr,
-                          nacl_reg_t                stack_ptr,
-                          uint32_t                  tls_info);
-
-void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
+int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
+                                  nacl_reg_t           prog_ctr,
+                                  nacl_reg_t           stack_ptr);
 
 void NaClVmHoleWaitToStartThread(struct NaClApp *nap);
 
