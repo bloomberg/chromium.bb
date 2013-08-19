@@ -14,7 +14,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/blocked_content/blocked_content_tab_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -74,51 +73,52 @@ class CountRenderViewHosts : public content::NotificationObserver {
 class PopupBlockerBrowserTest : public InProcessBrowserTest {
  public:
   PopupBlockerBrowserTest() {}
+  virtual ~PopupBlockerBrowserTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kDisableBetterPopupBlocking);
-  }
-
-  // Returns a url that shows one popup.
-  GURL GetTestURL() {
-    return ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html")));
-  }
-
-  std::vector<WebContents*> GetBlockedContents(Browser* browser) {
+  int GetBlockedContentsCount() {
     // Do a round trip to the renderer first to flush any in-flight IPCs to
     // create a to-be-blocked window.
-    WebContents* tab = browser->tab_strip_model()->GetActiveWebContents();
+    WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
     CHECK(content::ExecuteScript(tab, std::string()));
-    BlockedContentTabHelper* blocked_content_tab_helper =
-        BlockedContentTabHelper::FromWebContents(tab);
-    std::vector<WebContents*> blocked_contents;
-    blocked_content_tab_helper->GetBlockedContents(&blocked_contents);
-    return blocked_contents;
+    PopupBlockerTabHelper* popup_blocker_helper =
+        PopupBlockerTabHelper::FromWebContents(tab);
+    return popup_blocker_helper->GetBlockedPopupsCount();
   }
 
-  void NavigateAndCheckPopupShown(Browser* browser, const GURL& url) {
+  void NavigateAndCheckPopupShown(const GURL& url) {
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
-    ui_test_utils::NavigateToURL(browser, url);
+    ui_test_utils::NavigateToURL(browser(), url);
     observer.Wait();
 
-    ASSERT_EQ(2u, chrome::GetBrowserCount(browser->profile(),
-                                          browser->host_desktop_type()));
+    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile(),
+                                          browser()->host_desktop_type()));
 
-    std::vector<WebContents*> blocked_contents = GetBlockedContents(browser);
-    ASSERT_TRUE(blocked_contents.empty());
+    ASSERT_EQ(0, GetBlockedContentsCount());
   }
 
-  void BasicTest(Browser* browser, const GURL& url) {
+  // Navigates to the test indicated by |test_name| using |browser| which is
+  // expected to try to open a popup. Verifies that the popup was blocked and
+  // then opens the blocked popup. Once the popup stopped loading, verifies
+  // that the title of the page is "PASS" if |check_title| is true.
+  //
+  // If |expect_new_browser| is true, the popup is expected to open a new
+  // window, or a background tab if it is false.
+  //
+  // Returns the WebContents of the launched popup.
+  WebContents* RunCheckTest(Browser* browser,
+                            const base::FilePath& test_name,
+                            bool expect_new_browser,
+                            bool check_title) {
+    GURL url(ui_test_utils::GetTestUrl(base::FilePath(kTestDir), test_name));
+
+    CountRenderViewHosts counter;
+
     ui_test_utils::NavigateToURL(browser, url);
 
-    // If the popup blocker blocked the blank post, there should be only one
-    // tab in only one browser window and the URL of current tab must be equal
-    // to the original URL.
+    // Since the popup blocker blocked the window.open, there should be only one
+    // tab.
     EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile(),
                                           browser->host_desktop_type()));
     EXPECT_EQ(1, browser->tab_strip_model()->count());
@@ -126,50 +126,128 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
         browser->tab_strip_model()->GetActiveWebContents();
     EXPECT_EQ(url, web_contents->GetURL());
 
-    std::vector<WebContents*> blocked_contents = GetBlockedContents(browser);
-    ASSERT_EQ(1u, blocked_contents.size());
+    // And no new RVH created.
+    EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
 
     content::WindowedNotificationObserver observer(
         chrome::NOTIFICATION_TAB_ADDED,
         content::NotificationService::AllSources());
+    ui_test_utils::BrowserAddedObserver browser_observer;
 
-    BlockedContentTabHelper* blocked_content_tab_helper =
-        BlockedContentTabHelper::FromWebContents(web_contents);
-    blocked_content_tab_helper->LaunchForContents(blocked_contents[0]);
+    // Launch the blocked popup.
+    PopupBlockerTabHelper* popup_blocker_helper =
+        PopupBlockerTabHelper::FromWebContents(web_contents);
+    if (!popup_blocker_helper->GetBlockedPopupsCount()) {
+      content::WindowedNotificationObserver observer(
+          chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+          content::NotificationService::AllSources());
+      observer.Wait();
+    }
+    EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
+    std::map<int32, GURL> blocked_requests =
+        popup_blocker_helper->GetBlockedPopupRequests();
+    std::map<int32, GURL>::const_iterator iter = blocked_requests.begin();
+    popup_blocker_helper->ShowBlockedPopup(iter->first);
 
     observer.Wait();
+    Browser* new_browser;
+    if (expect_new_browser) {
+      new_browser = browser_observer.WaitForSingleNewBrowser();
+      web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
+    } else {
+      new_browser = browser;
+      EXPECT_EQ(2, browser->tab_strip_model()->count());
+      web_contents = browser->tab_strip_model()->GetWebContentsAt(1);
+    }
+
+    if (check_title) {
+      // Check that the check passed.
+      base::string16 expected_title(base::ASCIIToUTF16("PASS"));
+      content::TitleWatcher title_watcher(web_contents, expected_title);
+      EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+    }
+
+    return web_contents;
   }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PopupBlockerBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupBlockedPostBlank) {
-  BasicTest(browser(), GetTestURL());
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       BlockWebContentsCreation) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  RunCheckTest(
+      browser(),
+      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html")),
+      true,
+      false);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       PopupBlockedPostBlankIncognito) {
-  BasicTest(CreateIncognitoBrowser(), GetTestURL());
+                       BlockWebContentsCreationIncognito) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  RunCheckTest(
+      CreateIncognitoBrowser(),
+      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html")),
+      true,
+      false);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        PopupBlockedFakeClickOnAnchor) {
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor.html"))));
-  BasicTest(browser(), url);
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  RunCheckTest(
+      browser(),
+      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor.html")),
+      false,
+      false);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       PopupBlockedFakeClickOnAnchorNoTarget) {
+#if defined(OS_WIN) && defined(USE_ASH)
+  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
+    return;
+#endif
+
+  RunCheckTest(
+      browser(),
+      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor2.html")),
+      false,
+      false);
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, MultiplePopups) {
-  GURL url(ui_test_utils::GetTestUrl(base::FilePath(
-      kTestDir), base::FilePath(FILE_PATH_LITERAL("popup-many.html"))));
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-many.html"))));
   ui_test_utils::NavigateToURL(browser(), url);
-  std::vector<WebContents*> blocked_contents = GetBlockedContents(browser());
-  ASSERT_EQ(2u, blocked_contents.size());
+  ASSERT_EQ(2, GetBlockedContentsCount());
 }
 
 // Verify that popups are launched on browser back button.
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        AllowPopupThroughContentSetting) {
-  GURL url(GetTestURL());
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html"))));
   browser()->profile()->GetHostContentSettingsMap()
       ->SetContentSetting(ContentSettingsPattern::FromURL(url),
                           ContentSettingsPattern::Wildcard(),
@@ -177,10 +255,11 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                           std::string(),
                           CONTENT_SETTING_ALLOW);
 
-  NavigateAndCheckPopupShown(browser(), url);
+  NavigateAndCheckPopupShown(url);
 }
 
-IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsLaunchWhenTabIsClosed) {
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
+                       PopupsLaunchWhenTabIsClosed) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   GURL url = ui_test_utils::GetTestUrl(
@@ -188,7 +267,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, PopupsLaunchWhenTabIsClosed) {
       base::FilePath(FILE_PATH_LITERAL("popup-on-unload.html")));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  NavigateAndCheckPopupShown(browser(), GURL(content::kAboutBlankURL));
+  NavigateAndCheckPopupShown(GURL(content::kAboutBlankURL));
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
@@ -196,8 +275,10 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
                        UnblockedPopupShowsInHistoryAndOmnibox) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
-  GURL url(GetTestURL());
-  NavigateAndCheckPopupShown(browser(), url);
+  GURL url(ui_test_utils::GetTestUrl(
+      base::FilePath(kTestDir),
+      base::FilePath(FILE_PATH_LITERAL("popup-blocked-to-post-blank.html"))));
+  NavigateAndCheckPopupShown(url);
 
   std::string search_string =
       "data:text/html,<title>Popup Success!</title>you should not see this "
@@ -219,281 +300,71 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   EXPECT_EQ(ASCIIToUTF16(search_string), model->CurrentMatch(NULL).contents);
 }
 
-class BetterPopupBlockerBrowserTest : public PopupBlockerBrowserTest {
- public:
-  BetterPopupBlockerBrowserTest() {}
-  virtual ~BetterPopupBlockerBrowserTest() {}
-
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-  }
-
-  // Navigates to the test indicated by |test_name| which is expected to try to
-  // open a popup. Verifies that the popup was blocked and then opens the
-  // blocked popup. Once the popup stopped loading, verifies that the title of
-  // the page is "PASS".
-  //
-  // If |expect_new_browser| is true, the popup is expected to open a new
-  // window, or a background tab if it is false.
-  void RunCheckTest(const base::FilePath& test_name, bool expect_new_browser) {
-    GURL url(ui_test_utils::GetTestUrl(base::FilePath(kTestDir), test_name));
-
-    CountRenderViewHosts counter;
-
-    ui_test_utils::NavigateToURL(browser(), url);
-
-    // Since the popup blocker blocked the window.open, there should be only one
-    // tab.
-    EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                          browser()->host_desktop_type()));
-    EXPECT_EQ(1, browser()->tab_strip_model()->count());
-    WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    EXPECT_EQ(url, web_contents->GetURL());
-
-    // And no new RVH created.
-    EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
-
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_TAB_ADDED,
-        content::NotificationService::AllSources());
-    ui_test_utils::BrowserAddedObserver browser_observer;
-
-    // Launch the blocked popup.
-    PopupBlockerTabHelper* popup_blocker_helper =
-        PopupBlockerTabHelper::FromWebContents(web_contents);
-    EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
-    std::map<int32, GURL> blocked_requests =
-        popup_blocker_helper->GetBlockedPopupRequests();
-    std::map<int32, GURL>::const_iterator iter = blocked_requests.begin();
-    popup_blocker_helper->ShowBlockedPopup(iter->first);
-
-    observer.Wait();
-    Browser* new_browser;
-    if (expect_new_browser) {
-      new_browser  = browser_observer.WaitForSingleNewBrowser();
-      web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
-    } else {
-      new_browser = browser();
-      EXPECT_EQ(2, browser()->tab_strip_model()->count());
-      web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
-    }
-
-    // Check that the check passed.
-    base::string16 expected_title(base::ASCIIToUTF16("PASS"));
-    content::TitleWatcher title_watcher(web_contents, expected_title);
-    EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BetterPopupBlockerBrowserTest);
-};
-
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
-                       BlockWebContentsCreation) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
-    return;
-#endif
-
-  CountRenderViewHosts counter;
-
-  ui_test_utils::NavigateToURL(browser(), GetTestURL());
-
-  // Wait until the request actually has hit the popup blocker. The
-  // NavigateToURL call above returns as soon as the main tab stopped loading
-  // which can happen before the popup request was processed.
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents);
-  if (!popup_blocker_helper->GetBlockedPopupsCount()) {
-    content::WindowedNotificationObserver observer(
-        chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
-        content::NotificationService::AllSources());
-    observer.Wait();
-  }
-
-  // If the popup blocker blocked the blank post, there should be only one tab.
-  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  EXPECT_EQ(GetTestURL(), web_contents->GetURL());
-
-  // And no new RVH created.
-  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-
-  // Launch the blocked popup.
-  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
-  std::map<int32, GURL> blocked_requests =
-      popup_blocker_helper->GetBlockedPopupRequests();
-  std::map<int32, GURL>::const_iterator iter = blocked_requests.begin();
-  popup_blocker_helper->ShowBlockedPopup(iter->first);
-
-  observer.Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest,
-                       PopupBlockedFakeClickOnAnchorNoTarget) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // Disable this test in Metro+Ash for now (http://crbug.com/262796).
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
-    return;
-#endif
-
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor2.html"))));
-
-  CountRenderViewHosts counter;
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // If the popup blocker blocked the blank post, there should be only one tab.
-  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(url, web_contents->GetURL());
-
-  // And no new RVH created.
-  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-
-  // Launch the blocked popup.
-  PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
-  std::map<int32, GURL> blocked_requests =
-      popup_blocker_helper->GetBlockedPopupRequests();
-  std::map<int32, GURL>::const_iterator iter = blocked_requests.begin();
-  popup_blocker_helper->ShowBlockedPopup(iter->first);
-
-  observer.Wait();
-}
-
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, WindowFeatures) {
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-window-open.html"))));
-
-  CountRenderViewHosts counter;
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // If the popup blocker blocked the blank post, there should be only one tab.
-  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(url, web_contents->GetURL());
-
-  // And no new RVH created.
-  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-  ui_test_utils::BrowserAddedObserver browser_observer;
-
-  // Launch the blocked popup.
-  PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
-  std::map<int32, GURL> blocked_requests =
-      popup_blocker_helper->GetBlockedPopupRequests();
-  std::map<int32, GURL>::const_iterator iter = blocked_requests.begin();
-  popup_blocker_helper->ShowBlockedPopup(iter->first);
-
-  observer.Wait();
-  Browser* new_browser = browser_observer.WaitForSingleNewBrowser();
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WindowFeatures) {
+  WebContents* popup =
+      RunCheckTest(browser(),
+                   base::FilePath(FILE_PATH_LITERAL("popup-window-open.html")),
+                   true,
+                   false);
 
   // Check that the new popup has (roughly) the requested size.
-  web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
-  gfx::Size window_size = web_contents->GetView()->GetContainerSize();
+  gfx::Size window_size = popup->GetView()->GetContainerSize();
   EXPECT_TRUE(349 <= window_size.width() && window_size.width() <= 351);
   EXPECT_TRUE(249 <= window_size.height() && window_size.height() <= 251);
 }
 
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, CorrectReferrer) {
-  RunCheckTest(base::FilePath(FILE_PATH_LITERAL("popup-referrer.html")), true);
-}
-
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, WindowFeaturesBarProps) {
-  RunCheckTest(base::FilePath(FILE_PATH_LITERAL("popup-windowfeatures.html")),
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, CorrectReferrer) {
+  RunCheckTest(browser(),
+               base::FilePath(FILE_PATH_LITERAL("popup-referrer.html")),
+               true,
                true);
 }
 
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, SessionStorage) {
-  RunCheckTest(base::FilePath(FILE_PATH_LITERAL("popup-sessionstorage.html")),
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WindowFeaturesBarProps) {
+  RunCheckTest(browser(),
+               base::FilePath(FILE_PATH_LITERAL("popup-windowfeatures.html")),
+               true,
                true);
 }
 
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, Opener) {
-  RunCheckTest(base::FilePath(FILE_PATH_LITERAL("popup-opener.html")), true);
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, SessionStorage) {
+  RunCheckTest(browser(),
+               base::FilePath(FILE_PATH_LITERAL("popup-sessionstorage.html")),
+               true,
+               true);
 }
 
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, OpenerSuppressed) {
-  RunCheckTest(
-      base::FilePath(FILE_PATH_LITERAL("popup-openersuppressed.html")), false);
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, Opener) {
+  RunCheckTest(browser(),
+               base::FilePath(FILE_PATH_LITERAL("popup-opener.html")),
+               true,
+               true);
 }
 
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, ShiftClick) {
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, OpenerSuppressed) {
+  RunCheckTest(browser(),
+               base::FilePath(FILE_PATH_LITERAL("popup-openersuppressed.html")),
+               false,
+               true);
+}
+
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ShiftClick) {
   RunCheckTest(
+      browser(),
       base::FilePath(FILE_PATH_LITERAL("popup-fake-click-on-anchor3.html")),
+      true,
       true);
 }
 
-IN_PROC_BROWSER_TEST_F(BetterPopupBlockerBrowserTest, WebUI) {
-  GURL url(ui_test_utils::GetTestUrl(
-      base::FilePath(kTestDir),
-      base::FilePath(FILE_PATH_LITERAL("popup-webui.html"))));
-
-  CountRenderViewHosts counter;
-
-  ui_test_utils::NavigateToURL(browser(), url);
-
-  // If the popup blocker blocked the blank post, there should be only one tab.
-  EXPECT_EQ(1u, chrome::GetBrowserCount(browser()->profile(),
-                                        browser()->host_desktop_type()));
-  EXPECT_EQ(1, browser()->tab_strip_model()->count());
-  WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(url, web_contents->GetURL());
-
-  // And no new RVH created.
-  EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
-
-  content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
-  ui_test_utils::BrowserAddedObserver browser_observer;
-
-  // Launch the blocked popup.
-  PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents);
-  EXPECT_EQ(1u, popup_blocker_helper->GetBlockedPopupsCount());
-  std::map<int32, GURL> blocked_requests =
-      popup_blocker_helper->GetBlockedPopupRequests();
-  std::map<int32, GURL>::const_iterator iter = blocked_requests.begin();
-  popup_blocker_helper->ShowBlockedPopup(iter->first);
-
-  observer.Wait();
-  Browser* new_browser = browser_observer.WaitForSingleNewBrowser();
+IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
+  WebContents* popup =
+      RunCheckTest(browser(),
+                   base::FilePath(FILE_PATH_LITERAL("popup-webui.html")),
+                   true,
+                   false);
 
   // Check that the new popup displays about:blank.
-  web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(GURL(content::kAboutBlankURL), web_contents->GetURL());
+  EXPECT_EQ(GURL(content::kAboutBlankURL), popup->GetURL());
 }
 
 }  // namespace

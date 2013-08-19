@@ -546,53 +546,29 @@ ContentSettingPopupBubbleModel::ContentSettingPopupBubbleModel(
 
 
 void ContentSettingPopupBubbleModel::SetPopups() {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBetterPopupBlocking)) {
-    std::map<int32, GURL> blocked_popups =
-        PopupBlockerTabHelper::FromWebContents(web_contents())
-            ->GetBlockedPopupRequests();
-    for (std::map<int32, GURL>::const_iterator iter = blocked_popups.begin();
-         iter != blocked_popups.end();
-         ++iter) {
-      std::string title(iter->second.spec());
-      // The popup may not have a valid URL.
-      if (title.empty())
-        title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
-      PopupItem popup_item(
-          ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-              IDR_DEFAULT_FAVICON),
-          title,
-          iter->first);
-      add_popup(popup_item);
-    }
-    return;
-  }
-  std::vector<WebContents*> blocked_contents;
-  BlockedContentTabHelper::FromWebContents(web_contents())->
-      GetBlockedContents(&blocked_contents);
-  for (std::vector<WebContents*>::const_iterator
-       i = blocked_contents.begin(); i != blocked_contents.end(); ++i) {
-    std::string title(UTF16ToUTF8((*i)->GetTitle()));
-    // The popup may not have committed a load yet, in which case it won't
-    // have a URL or title.
+  std::map<int32, GURL> blocked_popups =
+      PopupBlockerTabHelper::FromWebContents(web_contents())
+          ->GetBlockedPopupRequests();
+  for (std::map<int32, GURL>::const_iterator iter = blocked_popups.begin();
+       iter != blocked_popups.end();
+       ++iter) {
+    std::string title(iter->second.spec());
+    // The popup may not have a valid URL.
     if (title.empty())
       title = l10n_util::GetStringUTF8(IDS_TAB_LOADING_TITLE);
     PopupItem popup_item(
-        FaviconTabHelper::FromWebContents(*i)->GetFavicon(), title, *i);
+        ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+            IDR_DEFAULT_FAVICON),
+        title,
+        iter->first);
     add_popup(popup_item);
   }
 }
 
 void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
   if (web_contents()) {
-    if (!CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableBetterPopupBlocking)) {
-      PopupBlockerTabHelper::FromWebContents(web_contents())->
-          ShowBlockedPopup(bubble_content().popup_items[index].popup_id);
-    } else {
-      BlockedContentTabHelper::FromWebContents(web_contents())->
-          LaunchForContents(bubble_content().popup_items[index].web_contents);
-    }
+    PopupBlockerTabHelper::FromWebContents(web_contents())->
+        ShowBlockedPopup(bubble_content().popup_items[index].popup_id);
   }
 }
 

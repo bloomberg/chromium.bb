@@ -94,8 +94,6 @@ void InstantLoader::SetContents(scoped_ptr<content::WebContents> new_contents) {
   BlockedContentTabHelper::FromWebContents(contents())->
       SetAllContentsBlocked(true);
   TabSpecificContentSettings::CreateForWebContents(contents());
-  TabSpecificContentSettings::FromWebContents(contents())->
-      SetPopupsBlocked(true);
 
   // Bookmarks (Users can bookmark the Instant NTP. This ensures the bookmarked
   // state is correctly set when the contents are swapped into a tab.)
@@ -132,16 +130,6 @@ scoped_ptr<content::WebContents> InstantLoader::ReleaseContents() {
 
   BlockedContentTabHelper::FromWebContents(contents())->
       SetAllContentsBlocked(false);
-  TabSpecificContentSettings::FromWebContents(contents())->
-      SetPopupsBlocked(false);
-#if !defined(OS_ANDROID)
-  PopupBlockerTabHelper* popup_helper =
-      PopupBlockerTabHelper::FromWebContents(contents());
-  if (popup_helper) {
-    TabSpecificContentSettings::FromWebContents(contents())
-        ->SetPopupsBlocked(!!popup_helper->GetBlockedPopupsCount());
-  }
-#endif
 
   CoreTabHelper::FromWebContents(contents())->set_delegate(NULL);
 

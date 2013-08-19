@@ -72,22 +72,6 @@ void AddWebContents(Browser* browser,
       return;
     }
 
-    // Handle blocking of popups.
-    if ((disposition == NEW_POPUP || disposition == NEW_FOREGROUND_TAB ||
-         disposition == NEW_BACKGROUND_TAB) && !user_gesture &&
-        !CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisablePopupBlocking) &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisableBetterPopupBlocking)) {
-      // Unrequested popups from normal pages are constrained unless they're in
-      // the white list.  The popup owner will handle checking this.
-      source_blocked_content->AddPopup(
-          new_contents, disposition, initial_pos, user_gesture);
-      if (was_blocked)
-        *was_blocked = true;
-      return;
-    }
-
     new_contents->GetRenderViewHost()->DisassociateFromPopupCount();
   }
 

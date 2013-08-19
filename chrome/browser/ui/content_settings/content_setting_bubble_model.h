@@ -34,19 +34,11 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   typedef ContentSettingBubbleModelDelegate Delegate;
 
   struct PopupItem {
-    PopupItem(const gfx::Image& image,
-              const std::string& title,
-              content::WebContents* web_contents)
-        : image(image),
-          title(title),
-          web_contents(web_contents),
-          popup_id(-1) {}
     PopupItem(const gfx::Image& image, const std::string& title, int32 popup_id)
-        : image(image), title(title), web_contents(NULL), popup_id(popup_id) {}
+        : image(image), title(title), popup_id(popup_id) {}
 
     gfx::Image image;
     std::string title;
-    content::WebContents* web_contents;
     int32 popup_id;
   };
   typedef std::vector<PopupItem> PopupItems;

@@ -2003,11 +2003,6 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 
 #if !defined(OS_ANDROID)
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableBetterPopupBlocking)) {
-    return true;
-  }
-
   if (is_guest)
     return true;
 

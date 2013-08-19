@@ -15,7 +15,8 @@
 class BlockedContentContainer;
 class BlockedContentTabHelperDelegate;
 
-// Per-tab class to manage blocked popups.
+// Collects WebContents objects spawned from the observed WebContents and
+// optionally adds them to the tab strip later on.
 class BlockedContentTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<BlockedContentTabHelper> {
@@ -39,22 +40,6 @@ class BlockedContentTabHelper
                       const gfx::Rect& initial_pos,
                       bool user_gesture);
 
-  // Adds the incoming |new_contents| to the |blocked_contents_| container.
-  void AddPopup(content::WebContents* new_contents,
-                WindowOpenDisposition disposition,
-                const gfx::Rect& initial_pos,
-                bool user_gesture);
-
-  // Shows the blocked WebContents |web_contents|.
-  void LaunchForContents(content::WebContents* web_contents);
-
-  // Returns the number of blocked contents.
-  size_t GetBlockedContentsCount() const;
-
-  // Returns the blocked WebContentses.  |blocked_contents| must be non-NULL.
-  void GetBlockedContents(
-      std::vector<content::WebContents*>* blocked_contents) const;
-
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -63,9 +48,6 @@ class BlockedContentTabHelper
  private:
   explicit BlockedContentTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<BlockedContentTabHelper>;
-
-  // Called when the blocked popup notification is shown or hidden.
-  void PopupNotificationVisibilityChanged(bool visible);
 
   // Called to notify any observers that |contents| is entering or leaving
   // the blocked state.
