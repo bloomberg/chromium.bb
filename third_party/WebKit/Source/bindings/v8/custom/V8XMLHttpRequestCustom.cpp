@@ -47,6 +47,8 @@
 #include "core/xml/XMLHttpRequest.h"
 #include "wtf/ArrayBuffer.h"
 
+#include <v8.h>
+
 namespace WebCore {
 
 void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -89,6 +91,33 @@ void V8XMLHttpRequest::responseAttrGetterCustom(v8::Local<v8::String> name, cons
     case XMLHttpRequest::ResponseTypeText:
         responseTextAttrGetterCustom(name, info);
         return;
+
+    case XMLHttpRequest::ResponseTypeJSON:
+        {
+            v8::Isolate* isolate = info.GetIsolate();
+
+            ExceptionState es(isolate);
+            ScriptString jsonSource = xmlHttpRequest->responseJSONSource(es);
+            if (es.throwIfNeeded())
+                return;
+
+            if (jsonSource.hasNoValue() || !jsonSource.v8Value()->IsString()) {
+                v8SetReturnValue(info, v8NullWithCheck(isolate));
+                return;
+            }
+
+            // Catch syntax error.
+            v8::TryCatch exceptionCatcher;
+
+            v8::Handle<v8::Value> json = v8::JSON::Parse(jsonSource.v8Value().As<v8::String>());
+
+            if (exceptionCatcher.HasCaught() || json.IsEmpty())
+                v8SetReturnValue(info, v8NullWithCheck(isolate));
+            else
+                v8SetReturnValue(info, json);
+
+            return;
+        }
 
     case XMLHttpRequest::ResponseTypeDocument:
         {

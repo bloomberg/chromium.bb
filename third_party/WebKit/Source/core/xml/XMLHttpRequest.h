@@ -69,6 +69,7 @@ public:
     enum ResponseTypeCode {
         ResponseTypeDefault,
         ResponseTypeText,
+        ResponseTypeJSON,
         ResponseTypeDocument,
         ResponseTypeBlob,
         ResponseTypeArrayBuffer
@@ -107,6 +108,7 @@ public:
     String getAllResponseHeaders(ExceptionState&) const;
     String getResponseHeader(const AtomicString& name, ExceptionState&) const;
     ScriptString responseText(ExceptionState&);
+    ScriptString responseJSONSource(ExceptionState&);
     Document* responseXML(ExceptionState&);
     Blob* responseBlob();
     unsigned long timeout() const { return m_timeoutMilliseconds; }

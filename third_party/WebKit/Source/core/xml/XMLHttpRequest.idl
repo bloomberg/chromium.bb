@@ -31,8 +31,7 @@ enum XMLHttpRequestResponseType {
     "arraybuffer",
     "blob",
     "document",
-//    FIXME: enable once support for json responseText is completed. (bug #73648)
-//    "json",
+    "json",
     "text"
 };
 

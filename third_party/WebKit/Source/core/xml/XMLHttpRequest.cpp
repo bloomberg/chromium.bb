@@ -224,6 +224,17 @@ ScriptString XMLHttpRequest::responseText(ExceptionState& es)
     return m_responseText;
 }
 
+ScriptString XMLHttpRequest::responseJSONSource(ExceptionState& es)
+{
+    if (m_responseTypeCode != ResponseTypeJSON) {
+        es.throwDOMException(InvalidStateError);
+        return ScriptString();
+    }
+    if (m_error || m_state != DONE)
+        return ScriptString();
+    return m_responseText;
+}
+
 Document* XMLHttpRequest::responseXML(ExceptionState& es)
 {
     if (m_responseTypeCode != ResponseTypeDefault && m_responseTypeCode != ResponseTypeDocument) {
@@ -340,6 +351,8 @@ void XMLHttpRequest::setResponseType(const String& responseType, ExceptionState&
         m_responseTypeCode = ResponseTypeDefault;
     else if (responseType == "text")
         m_responseTypeCode = ResponseTypeText;
+    else if (responseType == "json")
+        m_responseTypeCode = ResponseTypeJSON;
     else if (responseType == "document")
         m_responseTypeCode = ResponseTypeDocument;
     else if (responseType == "blob")
@@ -357,6 +370,8 @@ String XMLHttpRequest::responseType()
         return "";
     case ResponseTypeText:
         return "text";
+    case ResponseTypeJSON:
+        return "json";
     case ResponseTypeDocument:
         return "document";
     case ResponseTypeBlob:
@@ -1129,10 +1144,12 @@ void XMLHttpRequest::didReceiveData(const char* data, int len)
     if (m_state < HEADERS_RECEIVED)
         changeState(HEADERS_RECEIVED);
 
-    bool useDecoder = m_responseTypeCode == ResponseTypeDefault || m_responseTypeCode == ResponseTypeText || m_responseTypeCode == ResponseTypeDocument;
+    bool useDecoder = m_responseTypeCode == ResponseTypeDefault || m_responseTypeCode == ResponseTypeText || m_responseTypeCode == ResponseTypeJSON || m_responseTypeCode == ResponseTypeDocument;
 
     if (useDecoder && !m_decoder) {
-        if (!m_responseEncoding.isEmpty())
+        if (m_responseTypeCode == ResponseTypeJSON)
+            m_decoder = TextResourceDecoder::create("application/json", "UTF-8");
+        else if (!m_responseEncoding.isEmpty())
             m_decoder = TextResourceDecoder::create("text/plain", m_responseEncoding);
         // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
         else if (responseIsXML()) {
