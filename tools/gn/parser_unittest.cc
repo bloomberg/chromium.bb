@@ -116,14 +116,12 @@ TEST(Parser, BinaryOp) {
 TEST(Parser, FunctionCall) {
   DoExpressionPrintTest("foo()",
       "FUNCTION(foo)\n"
-      " LIST\n"
-      " BLOCK\n");
+      " LIST\n");
   DoExpressionPrintTest("blah(1, 2)",
       "FUNCTION(blah)\n"
       " LIST\n"
       "  LITERAL(1)\n"
-      "  LITERAL(2)\n"
-      " BLOCK\n");
+      "  LITERAL(2)\n");
   DoExpressionErrorTest("foo(1, 2,)", 1, 10);
 }
 
@@ -134,7 +132,6 @@ TEST(Parser, ParenExpression) {
       " FUNCTION(foo)\n"
       "  LIST\n"
       "   LITERAL(1)\n"
-      "  BLOCK\n"
       " BINARY(+)\n"
       "  BINARY(+)\n"
       "   IDENTIFIER(a)\n"
@@ -173,8 +170,7 @@ TEST(Parser, OrderOfOperationsEqualityBoolean) {
       "  BLOCK\n"
       "   FUNCTION(print)\n"
       "    LIST\n"
-      "     LITERAL(\"hai\")\n"
-      "    BLOCK\n";
+      "     LITERAL(\"hai\")\n";
   DoParserPrintTest(input, expected);
 }
 
