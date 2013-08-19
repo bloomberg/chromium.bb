@@ -9,7 +9,7 @@
 
 namespace ui {
 
-size_t FindAccessibleTextBoundary(const string16& text,
+size_t FindAccessibleTextBoundary(const base::string16& text,
                                   const std::vector<int>& line_breaks,
                                   TextBoundaryType boundary,
                                   size_t start_offset,

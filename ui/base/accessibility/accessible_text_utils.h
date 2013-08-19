@@ -42,7 +42,7 @@ enum TextBoundaryDirection {
 // (depending on |direction|) from the given |start_offset| until the
 // given boundary is found, and return the offset of that boundary,
 // using the vector of line break character offsets in |line_breaks|.
-size_t UI_EXPORT FindAccessibleTextBoundary(const string16& text,
+size_t UI_EXPORT FindAccessibleTextBoundary(const base::string16& text,
                                             const std::vector<int>& line_breaks,
                                             TextBoundaryType boundary,
                                             size_t start_offset,

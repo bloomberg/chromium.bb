@@ -33,16 +33,16 @@ struct UI_EXPORT AccessibleViewState {
   AccessibilityTypes::State state;
 
   // The view's name / label.
-  string16 name;
+  base::string16 name;
 
   // The view's value, for example the text content.
-  string16 value;
+  base::string16 value;
 
   // The name of the default action if the user clicks on this view.
-  string16 default_action;
+  base::string16 default_action;
 
   // The keyboard shortcut to activate this view, if any.
-  string16 keyboard_shortcut;
+  base::string16 keyboard_shortcut;
 
   // The selection start and end. Only applies to views with text content,
   // such as a text box or combo box; start and end should be -1 otherwise.
