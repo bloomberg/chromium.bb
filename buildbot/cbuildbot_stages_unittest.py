@@ -720,8 +720,7 @@ class HWTestStageTest(AbstractStageTest):
 
   def testWithSuiteWithFatalFailure(self):
     """Tests that we fail if we get a returncode of 1."""
-    # TODO(sosa): Undo once GS issues have been resolved.
-    self._RunHWTestSuite(returncode=1, fails=False)
+    self._RunHWTestSuite(returncode=1, fails=True)
 
   def testSendPerfResults(self):
     """Tests that we can send perf results back correctly."""

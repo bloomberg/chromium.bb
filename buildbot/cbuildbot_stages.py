@@ -2296,11 +2296,8 @@ class HWTestStage(ArchivingStage):
 
     if self.suite_config.critical:
       return super(HWTestStage, self)._HandleStageException(exception)
-
-    # TODO(sosa): Undo forgiving stage once GS issues are resolved.
-    is_lab_down = True
-    #is_lab_down = (isinstance(exception, lab_status.LabIsDownException) or
-    #               isinstance(exception, lab_status.BoardIsDisabledException))
+    is_lab_down = (isinstance(exception, lab_status.LabIsDownException) or
+                   isinstance(exception, lab_status.BoardIsDisabledException))
     is_warning_code = (isinstance(exception, cros_build_lib.RunCommandError) and
                        exception.result.returncode in codes_handled_as_warning)
     if is_lab_down or is_warning_code or self._CheckAborted():
