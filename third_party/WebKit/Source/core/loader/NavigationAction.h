@@ -41,11 +41,7 @@ namespace WebCore {
     class NavigationAction {
     public:
         NavigationAction();
-        explicit NavigationAction(const ResourceRequest&);
-        NavigationAction(const ResourceRequest&, NavigationType);
-        NavigationAction(const ResourceRequest&, FrameLoadType, bool isFormSubmission);
-        NavigationAction(const ResourceRequest&, NavigationType, PassRefPtr<Event>);
-        NavigationAction(const ResourceRequest&, FrameLoadType, bool isFormSubmission, PassRefPtr<Event>);
+        NavigationAction(const ResourceRequest&, FrameLoadType = FrameLoadTypeStandard, bool isFormSubmission = false, PassRefPtr<Event> = 0);
 
         const ResourceRequest& resourceRequest() const { return m_resourceRequest; }
         NavigationType type() const { return m_type; }

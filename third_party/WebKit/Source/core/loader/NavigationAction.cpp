@@ -53,32 +53,6 @@ NavigationAction::NavigationAction()
 {
 }
 
-NavigationAction::NavigationAction(const ResourceRequest& resourceRequest)
-    : m_resourceRequest(resourceRequest)
-    , m_type(NavigationTypeOther)
-{
-}
-
-NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, NavigationType type)
-    : m_resourceRequest(resourceRequest)
-    , m_type(type)
-{
-}
-
-NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, FrameLoadType frameLoadType,
-        bool isFormSubmission)
-    : m_resourceRequest(resourceRequest)
-    , m_type(navigationType(frameLoadType, isFormSubmission, 0))
-{
-}
-
-NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, NavigationType type, PassRefPtr<Event> event)
-    : m_resourceRequest(resourceRequest)
-    , m_type(type)
-    , m_event(event)
-{
-}
-
 NavigationAction::NavigationAction(const ResourceRequest& resourceRequest, FrameLoadType frameLoadType,
         bool isFormSubmission, PassRefPtr<Event> event)
     : m_resourceRequest(resourceRequest)
