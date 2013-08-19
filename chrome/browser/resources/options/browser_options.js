@@ -631,19 +631,20 @@ cr.define('options', function() {
       }
 
       var pageContainer = $('page-container');
-      var pageTop = parseFloat(pageContainer.style.top);
-      var topSection = document.querySelector('#page-container section');
-      var pageHeight = document.body.scrollHeight - topSection.offsetTop;
+      // pageContainer.offsetTop is relative to the screen.
+      var pageTop = pageContainer.offsetTop;
+      var sectionBottom = section.offsetTop + section.offsetHeight;
+      // section.offsetTop is relative to the 'page-container'.
       var sectionTop = section.offsetTop;
-      var sectionHeight = section.offsetHeight;
-      var marginBottom = window.getComputedStyle(section).marginBottom;
-      if (marginBottom)
-        sectionHeight += parseFloat(marginBottom);
-      if (pageHeight - pageTop < sectionTop + sectionHeight) {
-        pageContainer.oldScrollTop = sectionTop + sectionHeight - pageHeight;
-        var verticalPosition = pageContainer.getBoundingClientRect().top -
-            pageContainer.oldScrollTop;
-        pageContainer.style.top = verticalPosition + 'px';
+      if (pageTop + sectionBottom > document.body.scrollHeight ||
+          pageTop + sectionTop < 0) {
+        pageContainer.oldScrollTop = -pageTop;
+        // Currently not all layout updates are guaranteed to precede the
+        // initializationComplete event (for example 'set-as-default-browser'
+        // button) leaving some uncertainty in the optimal scroll position.
+        // The section is placed approximately in the middle of the screen.
+        pageContainer.style.top = document.body.scrollHeight / 2 -
+            sectionBottom + 'px';
       }
     },
 
