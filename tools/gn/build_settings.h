@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "tools/gn/args.h"
 #include "tools/gn/item_tree.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/source_dir.h"
@@ -56,6 +57,10 @@ class BuildSettings {
     return build_to_source_dir_string_;
   }
 
+  // The build args are normally specified on the command-line.
+  Args& build_args() { return build_args_; }
+  const Args& build_args() const { return build_args_; }
+
   // These accessors do not return const objects since the resulting objects
   // are threadsafe. In this setting, we use constness primarily to ensure
   // that the Settings object is used in a threadsafe manner. Although this
@@ -96,6 +101,7 @@ class BuildSettings {
   SourceFile build_config_file_;
   SourceDir build_dir_;
   std::string build_to_source_dir_string_;
+  Args build_args_;
 
   TargetResolvedCallback target_resolved_callback_;
 

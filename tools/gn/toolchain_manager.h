@@ -102,20 +102,6 @@ class ToolchainManager {
                                 Err* err);
 
  private:
-  enum SettingsState {
-    // Toolchain settings have not requested to be loaded. This means we
-    // haven't seen any targets that require this toolchain yet. Not loading
-    // the settings automatically allows you to define a bunch of toolchains
-    // and potentially not use them without much overhead.
-    TOOLCHAIN_SETTINGS_NOT_LOADED,
-
-    // The settings have been scheduled to be loaded but have not completed.
-    TOOLCHAIN_SETTINGS_LOADING,
-
-    // The settings are done being loaded.
-    TOOLCHAIN_SETTINGS_LOADED
-  };
-
   struct Info;
 
   static std::string ToolchainToOutputSubdir(const Label& toolchain_name);
@@ -138,17 +124,29 @@ class ToolchainManager {
   // hasn't been set. See the StartLoading() implementation for more.
   void FixupDefaultToolchainLocked();
 
-  // Loads the base config for the given toolchain. Run on a background thread
-  // asynchronously.
-  void BackgroundLoadBuildConfig(Info* info,
-                                 bool is_default,
-                                 const ParseNode* root);
+  // Schedules the buildfile to be invoked for the given toolchain info. The
+  // toolchain must be already loaded. Can be called with the lock held or not
+  // (it does not use any class vars).
+  bool ScheduleBackgroundInvoke(Info* info,
+                                const LocationRange& specified_from,
+                                const SourceFile& build_file,
+                                Err* err);
+
+  // Schedules the build config file for the given info to be loaded and
+  // invoked. The toolchain definition (for non-default toolchains) should
+  // already be loaded.
+  bool ScheduleBuildConfigLoadLocked(Info* info, bool is_default, Err* err);
 
   // Invokes the given file for a toolchain with loaded settings. Run on a
   // background thread asynchronously.
   void BackgroundInvoke(const Info* info,
                         const SourceFile& file_name,
                         const ParseNode* root);
+
+  // Loads the build config file for the given Info.
+  void BackgroundLoadBuildConfig(Info* info,
+                                 bool is_default,
+                                 const ParseNode* root);
 
   // Returns the lock to use.
   base::Lock& GetLock() const;
@@ -161,6 +159,10 @@ class ToolchainManager {
 
   Label default_toolchain_;
   LocationRange default_toolchain_defined_here_;
+
+  typedef std::map<std::pair<SourceFile, const Info*>, Info*>
+      BuildConfigInvokeMap;
+  BuildConfigInvokeMap pending_build_config_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ToolchainManager);
 };

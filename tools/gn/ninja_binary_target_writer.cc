@@ -119,6 +119,7 @@ void NinjaBinaryTargetWriter::WriteSources(
   const Target::FileList& sources = target_->sources();
   object_files->reserve(sources.size());
 
+  const Toolchain* toolchain = GetToolchain();
   for (size_t i = 0; i < sources.size(); i++) {
     const SourceFile& input_file = sources[i];
 
@@ -126,8 +127,9 @@ void NinjaBinaryTargetWriter::WriteSources(
                                                        settings_->target_os());
     if (input_file_type == SOURCE_UNKNOWN)
       continue;  // Skip unknown file types.
-    const char* command = GetCommandForSourceType(input_file_type);
-    if (!command)
+    std::string command =
+        helper_.GetRuleForSourceType(settings_, toolchain, input_file_type);
+    if (command.empty())
       continue;  // Skip files not needing compilation.
 
     OutputFile output_file = helper_.GetOutputFileForSource(
@@ -239,7 +241,8 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
     out_ << " ";
     path_output_.WriteFile(out_, external_output_file);
   }
-  out_ << ": " << GetCommandForTargetType();
+  out_ << ": "
+       << helper_.GetRuleForTargetType(GetToolchain(), target_->output_type());
 
   // Object files.
   for (size_t i = 0; i < object_files.size(); i++) {
@@ -305,42 +308,4 @@ void NinjaBinaryTargetWriter::WriteLinkCommand(
   }
 
   out_ << std::endl;
-}
-
-const char* NinjaBinaryTargetWriter::GetCommandForSourceType(
-    SourceFileType type) const {
-  if (type == SOURCE_C)
-    return "cc";
-  if (type == SOURCE_CC)
-    return "cxx";
-
-  // TODO(brettw) asm files.
-
-  if (settings_->IsMac()) {
-    if (type == SOURCE_M)
-      return "objc";
-    if (type == SOURCE_MM)
-      return "objcxx";
-  }
-
-  if (settings_->IsWin()) {
-    if (type == SOURCE_RC)
-      return "rc";
-  }
-
-  // TODO(brettw) stuff about "S" files on non-Windows.
-  return NULL;
-}
-
-const char* NinjaBinaryTargetWriter::GetCommandForTargetType() const {
-  if (target_->output_type() == Target::STATIC_LIBRARY) {
-    // TODO(brettw) stuff about standalong static libraryes on Unix in
-    // WriteTarget in the Python one, and lots of postbuild steps.
-    return "alink";
-  }
-
-  if (target_->output_type() == Target::SHARED_LIBRARY)
-    return "solink";
-
-  return "link";
 }

@@ -706,8 +706,26 @@ component("base") {
     ]
   }
 
-  # Remove nacl stuff.
-  if (!is_nacl) {
+  if (is_nacl) {
+    # These things would otherwise be built on a Posix build but aren't
+    # supported on NaCl.
+    sources -= [
+      "debug/stack_trace_posix.cc",
+      "files/file_enumerator_posix.cc",
+      "file_util_posix.cc",
+      "message_loop/message_pump_libevent.cc",
+      "process/kill_posix.cc",
+      "process/launch_posix.cc",
+      "process/process_metrics_posix.cc",
+      "process/process_posix.cc",
+      "metrics/field_trial.cc",
+      "native_library_posix.cc",
+      "memory/shared_memory_posix.cc",
+      "sync_socket_posix.cc",
+      "sys_info_posix.cc",
+    ]
+  } else {
+    # Remove nacl stuff.
     sources -= [
       "os_compat_nacl.cc",
       "os_compat_nacl.h",
@@ -717,7 +735,7 @@ component("base") {
   }
 
   # Windows.
-  if (is_win && !is_nacl) {
+  if (is_win) {
     sources -= [
       "strings/string16.cc",
       # Not using sha1_win.cc because it may have caused a
@@ -728,7 +746,7 @@ component("base") {
     if (is_component_build) {
       sources -= "debug/debug_on_start_win.cc"
     }
-  } else {
+  } else if (!is_nacl) {
     # Non-Windows.
     deps += "//third_party/libevent"
   }
@@ -750,9 +768,9 @@ component("base") {
   if (is_linux) {
     # TODO(brettw) these will need to be parameterized at some point.
     linux_configs = [
-      "//build/config/linux/system:glib",
-      "//build/config/linux/system:gtk",
-      "//build/config/linux/system:x11",
+      "//build/config/linux:glib",
+      "//build/config/linux:gtk",
+      "//build/config/linux:x11",
     ]
     configs += linux_configs
     all_dependent_configs += linux_configs

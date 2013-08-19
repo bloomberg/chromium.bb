@@ -8,6 +8,8 @@
 #include "base/compiler_specific.h"
 #include "base/strings/string_piece.h"
 #include "tools/gn/item.h"
+#include "tools/gn/scope.h"
+#include "tools/gn/value.h"
 
 // Holds information on a specific toolchain. This data is filled in when we
 // encounter a toolchain definition.
@@ -87,8 +89,21 @@ class Toolchain : public Item {
   const std::string& environment() const { return environment_; }
   void set_environment(const std::string& env) { environment_ = env; }
 
+  bool is_default() const { return is_default_; }
+  void set_is_default(bool id) { is_default_ = id; }
+
+  // Specifies build argument overrides that will be set on the base scope. It
+  // will be as if these arguments were passed in on the command line. This
+  // allows a toolchain to override the OS type of the default toolchain or
+  // pass in other settings.
+  Scope::KeyValueMap& args() { return args_; }
+  const Scope::KeyValueMap& args() const { return args_; }
+
  private:
   Tool tools_[TYPE_NUMTYPES];
+
+  bool is_default_;
+  Scope::KeyValueMap args_;
 
   std::string environment_;
 };

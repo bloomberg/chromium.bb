@@ -9,6 +9,7 @@
 #include "base/file_util.h"
 #include "base/strings/stringize_macros.h"
 #include "tools/gn/build_settings.h"
+#include "tools/gn/item_node.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 #include "tools/gn/toolchain.h"
@@ -58,13 +59,17 @@ void NinjaToolchainWriter::WriteRules() {
   const Toolchain* tc = settings_->toolchain();
   std::string indent("  ");
 
+  NinjaHelper helper(settings_->build_settings());
+  std::string rule_prefix = helper.GetRulePrefix(tc);
+
   for (int i = Toolchain::TYPE_NONE + 1; i < Toolchain::TYPE_NUMTYPES; i++) {
     Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(i);
     const Toolchain::Tool& tool = tc->GetTool(tool_type);
     if (tool.empty())
       continue;
 
-    out_ << "rule " << Toolchain::ToolTypeToName(tool_type) << std::endl;
+    out_ << "rule " << rule_prefix << Toolchain::ToolTypeToName(tool_type)
+         << std::endl;
 
     #define WRITE_ARG(name) \
       if (!tool.name.empty()) \
@@ -83,7 +88,10 @@ void NinjaToolchainWriter::WriteRules() {
 }
 
 void NinjaToolchainWriter::WriteSubninjas() {
+  // Write subninja commands for each generated target.
   for (size_t i = 0; i < targets_.size(); i++) {
+    if (!targets_[i]->item_node()->should_generate())
+      continue;
     out_ << "subninja ";
     path_output_.WriteFile(out_, helper_.GetNinjaFileForTarget(targets_[i]));
     out_ << std::endl;

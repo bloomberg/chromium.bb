@@ -99,8 +99,7 @@ Target* TargetManager::GetTarget(const Label& label,
   // Keep a record of the guy asking us for this dependency. We know if
   // somebody is adding a dependency, that guy it himself not resolved.
   if (dep_from && target_node->state() != ItemNode::RESOLVED) {
-    ItemNode* from_node =
-        build_settings_->item_tree().GetExistingNodeLocked(dep_from->label());
+    ItemNode* from_node = dep_from->item_node();
     if (!from_node->AddDependency(build_settings_, specified_from_here,
                                   target_node, err))
       return NULL;

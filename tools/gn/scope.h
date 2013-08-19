@@ -34,7 +34,7 @@ class TargetManager;
 // variables. So you should use a non-const containing scope whenever possible.
 class Scope {
  public:
-  typedef std::vector<std::pair<base::StringPiece, Value> > KeyValueVector;
+  typedef base::hash_map<base::StringPiece, Value> KeyValueMap;
 
   // Allows code to provide values for built-in variables. This class will
   // automatically register itself on construction and deregister itself on
@@ -126,7 +126,7 @@ class Scope {
 
   // Returns all values set in the current scope, without going to the parent
   // scopes.
-  void GetCurrentScopeValues(KeyValueVector* output) const;
+  void GetCurrentScopeValues(KeyValueMap* output) const;
 
   // Copies this scope's values into the destination. Values from the
   // containing scope(s) (normally shadowed into the current one) will not be
@@ -248,6 +248,7 @@ class Scope {
   typedef std::map<std::string, const FunctionCallNode*> TemplateMap;
   TemplateMap templates_;
 
+  // Opaque pointers. See SetProperty() above.
   typedef std::map<const void*, void*> PropertyMap;
   PropertyMap properties_;
 

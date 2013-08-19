@@ -65,6 +65,7 @@ class ItemTree {
                              Err* err);
 
   // Fills the given vector with all known items.
+  void GetAllItemNodesLocked(std::vector<const ItemNode*>* dest) const;
   void GetAllItemsLocked(std::vector<const Item*>* dest) const;
 
   // Returns an error if there are unresolved dependencies, or no error if

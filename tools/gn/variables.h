@@ -21,6 +21,22 @@ extern const char kDefaultToolchain[];
 extern const char kDefaultToolchain_HelpShort[];
 extern const char kDefaultToolchain_Help[];
 
+extern const char kIsLinux[];
+extern const char kIsLinux_HelpShort[];
+extern const char kIsLinux_Help[];
+
+extern const char kIsMac[];
+extern const char kIsMac_HelpShort[];
+extern const char kIsMac_Help[];
+
+extern const char kIsPosix[];
+extern const char kIsPosix_HelpShort[];
+extern const char kIsPosix_Help[];
+
+extern const char kIsWin[];
+extern const char kIsWin_HelpShort[];
+extern const char kIsWin_Help[];
+
 extern const char kPythonPath[];
 extern const char kPythonPath_HelpShort[];
 extern const char kPythonPath_Help[];

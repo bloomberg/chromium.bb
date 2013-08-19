@@ -27,11 +27,6 @@ class NinjaBinaryTargetWriter : public NinjaTargetWriter {
                         const OutputFile& internal_output_file,
                         const std::vector<OutputFile>& object_files);
 
-  // Returns NULL if the source type should not be compiled on this target.
-  const char* GetCommandForSourceType(SourceFileType type) const;
-
-  const char* GetCommandForTargetType() const;
-
   DISALLOW_COPY_AND_ASSIGN(NinjaBinaryTargetWriter);
 };
 

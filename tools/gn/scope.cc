@@ -156,7 +156,7 @@ bool Scope::CheckForUnusedVars(Err* err) const {
           "\" here and it was unused before it went\nout of scope.";
 
       const BinaryOpNode* binary = i->second.value.origin()->AsBinaryOp();
-      if (binary) {
+      if (binary && binary->op().type() == Token::EQUAL) {
         // Make a nicer error message for normal var sets.
         *err = Err(binary->left()->GetRange(), "Assignment had no effect.",
                    help);
@@ -170,11 +170,9 @@ bool Scope::CheckForUnusedVars(Err* err) const {
   return true;
 }
 
-void Scope::GetCurrentScopeValues(KeyValueVector* output) const {
-  output->reserve(values_.size());
-  for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i) {
-    output->push_back(std::make_pair(i->first, i->second.value));
-  }
+void Scope::GetCurrentScopeValues(KeyValueMap* output) const {
+  for (RecordMap::const_iterator i = values_.begin(); i != values_.end(); ++i)
+    (*output)[i->first] = i->second.value;
 }
 
 bool Scope::NonRecursiveMergeTo(Scope* dest,

@@ -17,13 +17,29 @@
 # Use "is_*" names for intrinsic platform descriptions and build modes, and
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
+  # Set to build the Android version.
   is_android = 0
+  # Component build.
   is_component_build = 1
+  # ChromeOS build.
   is_chromeos = 0
+  # Debug build.
   is_debug = 1
+  # Hello, world
+  # IOS build.
   is_ios = 0
+
+  # Set when building with the "untrusted" Native Client toolchain.
+  #
+  # Do not set directly, this will be set automatically when compiling targets
+  # with a NaCl toolchain.
+  is_nacl = 0
+
+  # ASH is enabled.
   use_ash = 0
+  # Aura is enabled.
   use_aura = 0
+  # Ozone is enabled.
   use_ozone = 0
 }
 
@@ -128,12 +144,6 @@ if (!is_android) {
 set_sources_assignment_filter(sources_assignment_filter)
 
 # =============================================================================
-# SYSTEM CONFIG
-# =============================================================================
-
-is_nacl = 0
-
-# =============================================================================
 # BUILD OPTIONS
 # =============================================================================
 
@@ -202,9 +212,9 @@ set_defaults("shared_library") {
 # ==============================================================================
 
 if (is_win) {
-  set_default_toolchain("//build/config/win:32")
+  set_default_toolchain("//build/toolchain/win:32")
 } else if (is_linux) {
-  set_default_toolchain("//build/config/linux/toolchain:gcc")
+  set_default_toolchain("//build/toolchain/linux:gcc")
 } else if (is_mac) {
-  set_default_toolchain("//build/config/mac:clang")
+  set_default_toolchain("//build/toolchain/mac:clang")
 }

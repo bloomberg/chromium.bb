@@ -137,7 +137,7 @@ void OutputSourceOfDep(const Target* target,
   ItemTree& item_tree = target->settings()->build_settings()->item_tree();
   base::AutoLock lock(item_tree.lock());
 
-  ItemNode* target_node = item_tree.GetExistingNodeLocked(target->label());
+  const ItemNode* target_node = target->item_node();
   CHECK(target_node);
   ItemNode* dep_node = item_tree.GetExistingNodeLocked(dep_label);
   CHECK(dep_node);

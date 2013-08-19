@@ -34,6 +34,10 @@ class Setup {
   // true. On failure, prints the error and returns false.
   bool DoSetup();
 
+  // When true (the default), Run() will check for unresolved dependencies and
+  // cycles upon completion. When false, such errors will be ignored.
+  void set_check_for_bad_items(bool s) { check_for_bad_items_ = s; }
+
   // Runs the load, returning true on success. On failure, prints the error
   // and returns false.
   bool Run();
@@ -42,6 +46,9 @@ class Setup {
   Scheduler& scheduler() { return scheduler_; }
 
  private:
+  // Fills build arguments. Returns true on success.
+  bool FillArguments(const CommandLine& cmdline);
+
   // Fills the root directory into the settings. Returns true on success.
   bool FillSourceDir(const CommandLine& cmdline);
 
@@ -53,17 +60,27 @@ class Setup {
   BuildSettings build_settings_;
   Scheduler scheduler_;
 
+  bool check_for_bad_items_;
+
+  // These empty settings and toolchain are used to interpret the command line
+  // and dot file.
+  BuildSettings empty_build_settings_;
+  Toolchain empty_toolchain_;
+  Settings empty_settings_;
+  Scope dotfile_scope_;
+
   // State for invoking the dotfile.
-  // TODO(brettw) this seems a bit excessive, maybe we can get this down
-  // somehow?
   base::FilePath dotfile_name_;
   scoped_ptr<InputFile> dotfile_input_file_;
   std::vector<Token> dotfile_tokens_;
   scoped_ptr<ParseNode> dotfile_root_;
-  BuildSettings dotfile_build_settings_;
-  Toolchain dotfile_toolchain_;
-  Settings dotfile_settings_;
-  Scope dotfile_scope_;
+
+  // State for invoking the command line args. We specifically want to keep
+  // this around for the entire run so that Values can blame to the command
+  // line when we issue errors about them.
+  scoped_ptr<InputFile> args_input_file_;
+  std::vector<Token> args_tokens_;
+  scoped_ptr<ParseNode> args_root_;
 
   DISALLOW_COPY_AND_ASSIGN(Setup);
 };

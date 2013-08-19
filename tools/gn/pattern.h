@@ -10,6 +10,8 @@
 
 #include "tools/gn/value.h"
 
+extern const char kPattern_Help[];
+
 class Pattern {
  public:
   struct Subrange {

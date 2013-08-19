@@ -236,45 +236,43 @@ Value RunConfig(const FunctionCallNode* function,
 
 const char kDeclareArgs[] = "declare_args";
 const char kDeclareArgs_Help[] =
-    "TODO(brettw) write this.";
+    "declare_args: Declare build arguments used by this file.\n"
+    "\n"
+    "  Introduces the given arguments into the current scope. If they are\n"
+    "  not specified on the command line or in a toolchain's arguments,\n"
+    "  the default values given in the declare_args block will be used.\n"
+    "  However, these defaults will not override command-line values.\n"
+    "\n"
+    "  See also \"gn help buildargs\" for an overview.\n"
+    "\n"
+    "Example:\n"
+    "  declare_args() {\n"
+    "    enable_teleporter = 1\n"
+    "    enable_doom_melon = 0\n"
+    "  }\n"
+    "\n"
+    "  If you want to override the (default disabled) Doom Melon:\n"
+    "    gn --args=\"enable_doom_melon=1 enable-teleporter=1\"\n"
+    "  This also sets the teleporter, but it's already defaulted to on so\n"
+    "  it will have no effect.\n";
 
-Value RunDeclareArgs(const FunctionCallNode* function,
+Value RunDeclareArgs(Scope* scope,
+                     const FunctionCallNode* function,
                      const std::vector<Value>& args,
-                     Scope* scope,
+                     BlockNode* block,
                      Err* err) {
-  // Only allow this to be called once. We use a variable in the current scope
-  // with a name the parser will reject if the user tried to type it.
-  const char did_declare_args_var[] = "@@declared_args";
-  if (scope->GetValue(did_declare_args_var)) {
-    *err = Err(function->function(), "Duplicate call to declared_args.");
-    err->AppendSubErr(
-        Err(scope->GetValue(did_declare_args_var)->origin()->GetRange(),
-                            "See the original call."));
+  Scope block_scope(scope);
+  block->ExecuteBlockInScope(&block_scope, err);
+  if (err->has_error())
     return Value();
-  }
 
-  // Find the root scope where the values will be set.
-  Scope* root = scope->mutable_containing();
-  if (!root || root->containing() || !scope->IsProcessingBuildConfig()) {
-    *err = Err(function->function(), "declare_args called incorrectly."
-        "It must be called only from the build config script and in the "
-        "root scope.");
-    return Value();
-  }
-
-  // Take all variables set in the current scope as default values and put
-  // them in the parent scope. The values in the current scope are the defaults,
-  // then we apply the external args to this list.
-  Scope::KeyValueVector values;
-  scope->GetCurrentScopeValues(&values);
-  for (size_t i = 0; i < values.size(); i++) {
-    // TODO(brettw) actually import the arguments from the command line rather
-    // than only using the defaults.
-    root->SetValue(values[i].first, values[i].second,
-                   values[i].second.origin());
-  }
-
-  scope->SetValue(did_declare_args_var, Value(function, 1), NULL);
+  // Pass the values from our scope into the Args object for adding to the
+  // scope with the proper values (taking into account the defaults given in
+  // the block_scope, and arguments passed into the build).
+  Scope::KeyValueMap values;
+  block_scope.GetCurrentScopeValues(&values);
+  scope->settings()->build_settings()->build_args().DeclareArgs(
+      values, scope, err);
   return Value();
 }
 
@@ -416,7 +414,7 @@ Value RunPrint(Scope* scope,
   for (size_t i = 0; i < args.size(); i++) {
     if (i != 0)
       std::cout << " ";
-    std::cout << args[i].ToString();
+    std::cout << args[i].ToString(false);
   }
   std::cout << std::endl;
   return Value();
@@ -486,6 +484,7 @@ struct FunctionInfoInitializer {
     INSERT_FUNCTION(Test)
     INSERT_FUNCTION(Tool)
     INSERT_FUNCTION(Toolchain)
+    INSERT_FUNCTION(ToolchainArgs)
     INSERT_FUNCTION(WriteFile)
 
     #undef INSERT_FUNCTION

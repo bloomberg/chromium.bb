@@ -29,7 +29,8 @@ class NinjaBuildWriter {
   NinjaBuildWriter(const BuildSettings* settings,
                    const std::vector<const Settings*>& all_settings,
                    const std::vector<const Target*>& default_toolchain_targets,
-                   std::ostream& out);
+                   std::ostream& out,
+                   std::ostream& dep_out);
   ~NinjaBuildWriter();
 
   void Run();
@@ -42,6 +43,7 @@ class NinjaBuildWriter {
   std::vector<const Settings*> all_settings_;
   std::vector<const Target*> default_toolchain_targets_;
   std::ostream& out_;
+  std::ostream& dep_out_;
   PathOutput path_output_;
 
   NinjaHelper helper_;

@@ -69,8 +69,9 @@ class Value {
   // are all interpreted as 0, otherwise 1.
   int64 InterpretAsInt() const;
 
-  // Converts the given value to a string.
-  std::string ToString() const;
+  // Converts the given value to a string. Returns true if strings should be
+  // quoted or the ToString of a string should be the string itself.
+  std::string ToString(bool quote_strings) const;
 
   // Verifies that the value is of the given type. If it isn't, returns
   // false and sets the error.

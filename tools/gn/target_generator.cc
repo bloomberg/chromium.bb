@@ -164,7 +164,7 @@ void TargetGenerator::SetToolchainDependency() {
   base::AutoLock lock(tree->lock());
   ItemNode* tc_node =
       tree->GetExistingNodeLocked(ToolchainLabelForScope(scope_));
-  tree->GetExistingNodeLocked(target_->label())->AddDependency(
+  target_->item_node()->AddDependency(
       GetBuildSettings(), function_token_.range(), tc_node, err_);
 }
 

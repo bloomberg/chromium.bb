@@ -15,6 +15,7 @@ ItemNode::ItemNode(Item* i)
     : state_(REFERENCED),
       item_(i),
       should_generate_(false) {
+  item_->set_item_node(this);
 }
 
 ItemNode::~ItemNode() {

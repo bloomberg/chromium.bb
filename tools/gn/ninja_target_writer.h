@@ -28,6 +28,9 @@ class NinjaTargetWriter {
  protected:
   void WriteEnvironment();
 
+  // Returns the toolchain associated with the target.
+  const Toolchain* GetToolchain() const;
+
   const Settings* settings_;  // Non-owning.
   const Target* target_;  // Non-owning.
   std::ostream& out_;

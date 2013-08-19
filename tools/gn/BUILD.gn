@@ -1,12 +1,16 @@
 static_library("gn_lib") {
   sources = [
+    "args.cc",
+    "args.h",
     "binary_target_generator.cc",
     "binary_target_generator.h",
     "build_settings.cc",
     "build_settings.h",
+    "command_args.cc",
     "command_desc.cc",
     "command_gen.cc",
     "command_help.cc",
+    "command_refs.cc",
     "commands.cc",
     "commands.h",
     "config.cc",

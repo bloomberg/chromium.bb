@@ -113,7 +113,7 @@ bool AppendIdentifierValue(Scope* scope,
     return false;
   }
 
-  output->append(value->ToString());
+  output->append(value->ToString(false));
   return true;
 }
 

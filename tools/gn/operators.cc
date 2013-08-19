@@ -69,8 +69,8 @@ void RemoveMatchesFromList(const BinaryOpNode* op_node,
       }
       if (!found_match) {
         *err = Err(to_remove.origin()->GetRange(), "Item not found",
-            "You were trying to remove \"" + to_remove.ToString() +
-            "\"\nfrom the list but it wasn't there.");
+            "You were trying to remove " + to_remove.ToString(true) +
+            "\nfrom the list but it wasn't there.");
       }
       break;
     }

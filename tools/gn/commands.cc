@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "tools/gn/commands.h"
-
 #include "tools/gn/item.h"
 #include "tools/gn/item_node.h"
 #include "tools/gn/label.h"
@@ -35,9 +34,11 @@ const CommandInfoMap& GetCommands() {
                                        k##cmd##_Help, \
                                        &Run##cmd);
 
+    INSERT_COMMAND(Args)
     INSERT_COMMAND(Desc)
     INSERT_COMMAND(Gen)
     INSERT_COMMAND(Help)
+    INSERT_COMMAND(Refs)
 
     #undef INSERT_COMMAND
   }

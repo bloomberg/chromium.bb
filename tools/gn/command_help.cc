@@ -5,10 +5,12 @@
 #include <algorithm>
 #include <iostream>
 
+#include "tools/gn/args.h"
 #include "tools/gn/commands.h"
 #include "tools/gn/err.h"
 #include "tools/gn/functions.h"
 #include "tools/gn/input_conversion.h"
+#include "tools/gn/pattern.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/standard_out.h"
 #include "tools/gn/variables.h"
@@ -43,6 +45,7 @@ void PrintToplevelHelp() {
       "  When run with no arguments \"gn gen\" is assumed.\n"
       "\n"
       "Common switches:\n"
+      "  --args: Specifies build args overrides. See \"gn help buildargs\".\n"
       "  -q: Quiet mode, don't print anything on success.\n"
       "  --root: Specifies source root (overrides .gn file).\n"
       "  --secondary: Specifies secondary source root (overrides .gn file).\n"
@@ -79,9 +82,11 @@ void PrintToplevelHelp() {
     PrintShortHelp(i->second.help_short);
 
   OutputString("\nOther help topics:\n");
+  PrintShortHelp("buildargs: How build arguments work.");
   PrintShortHelp("dotfile: Info about the toplevel .gn file.");
   PrintShortHelp(
       "input_conversion: Processing input from exec_script and read_file.");
+  PrintShortHelp("patterns: How to use patterns.");
 }
 
 }  // namespace
@@ -139,11 +144,20 @@ int RunHelp(const std::vector<std::string>& args) {
   }
 
   // Random other topics.
+  if (args[0] == "buildargs") {
+    OutputString(kBuildArgs_Help);
+    return 0;
+  }
+  if (args[0] == "dotfile") {
+    OutputString(kDotfile_Help);
+    return 0;
+  }
   if (args[0] == "input_conversion") {
     OutputString(kInputConversion_Help);
     return 0;
-  } if (args[0] == "dotfile") {
-    OutputString(kDotfile_Help);
+  }
+  if (args[0] == "patterns") {
+    OutputString(kPattern_Help);
     return 0;
   }
 

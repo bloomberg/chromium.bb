@@ -56,7 +56,12 @@ namespace {
 // More logging.
 const char kSwitchVerbose[] = "v";
 
+// Set build args.
+const char kSwitchArgs[] = "args";
+
+// Set root dir.
 const char kSwitchRoot[] = "root";
+
 const char kSecondarySource[] = "secondary";
 
 const base::FilePath::CharType kGnFile[] = FILE_PATH_LITERAL(".gn");
@@ -77,10 +82,10 @@ base::FilePath FindDotFile(const base::FilePath& current_dir) {
 }  // namespace
 
 Setup::Setup()
-    : dotfile_toolchain_(Label()),
-      dotfile_settings_(&dotfile_build_settings_, &dotfile_toolchain_,
-                        std::string()),
-      dotfile_scope_(&dotfile_settings_) {
+    : check_for_bad_items_(true),
+      empty_toolchain_(Label()),
+      empty_settings_(&empty_build_settings_, &empty_toolchain_, std::string()),
+      dotfile_scope_(&empty_settings_) {
 }
 
 Setup::~Setup() {
@@ -91,6 +96,8 @@ bool Setup::DoSetup() {
 
   scheduler_.set_verbose_logging(cmdline->HasSwitch(kSwitchVerbose));
 
+  if (!FillArguments(*cmdline))
+    return false;
   if (!FillSourceDir(*cmdline))
     return false;
   if (!RunConfigFile())
@@ -118,11 +125,55 @@ bool Setup::Run() {
   if (!scheduler_.Run())
     return false;
 
-  Err err = build_settings_.item_tree().CheckForBadItems();
+  Err err;
+  if (check_for_bad_items_) {
+    err = build_settings_.item_tree().CheckForBadItems();
+    if (err.has_error()) {
+      err.PrintToStdout();
+      return false;
+    }
+  }
+
+  if (!build_settings_.build_args().VerifyAllOverridesUsed(&err)) {
+    err.PrintToStdout();
+    return false;
+  }
+  return true;
+}
+
+bool Setup::FillArguments(const CommandLine& cmdline) {
+  std::string args = cmdline.GetSwitchValueASCII(kSwitchArgs);
+  if (args.empty())
+    return true;  // Nothing to set.
+
+  args_input_file_.reset(new InputFile(SourceFile()));
+  args_input_file_->SetContents(args);
+  args_input_file_->set_friendly_name("the command-line \"--args\" settings");
+
+  Err err;
+  args_tokens_ = Tokenizer::Tokenize(args_input_file_.get(), &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return false;
   }
+
+  args_root_ = Parser::Parse(args_tokens_, &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
+  }
+
+  Scope arg_scope(&empty_settings_);
+  args_root_->AsBlock()->ExecuteBlockInScope(&arg_scope, &err);
+  if (err.has_error()) {
+    err.PrintToStdout();
+    return false;
+  }
+
+  // Save the result of the command args.
+  Scope::KeyValueMap overrides;
+  arg_scope.GetCurrentScopeValues(&overrides);
+  build_settings_.build_args().SwapInArgOverrides(&overrides);
   return true;
 }
 

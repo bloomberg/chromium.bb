@@ -81,3 +81,7 @@ void NinjaTargetWriter::WriteEnvironment() {
   if (target_->settings()->IsWin())
     out_ << "arch = environment.x86\n";
 }
+
+const Toolchain* NinjaTargetWriter::GetToolchain() const {
+  return target_->settings()->toolchain();
+}

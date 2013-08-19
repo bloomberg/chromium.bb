@@ -31,6 +31,12 @@ class InputFile {
   // The physical name tells the actual name on disk, if there is one.
   const base::FilePath& physical_name() const { return physical_name_; }
 
+  // The friendly name can be set to override the name() in cases where there
+  // is no name (like SetContents is used instead) or if the name doesn't
+  // make sense. This will be displayed in error messages.
+  const std::string& friendly_name() const { return friendly_name_; }
+  void set_friendly_name(const std::string& f) { friendly_name_ = f; }
+
   const std::string& contents() const {
     DCHECK(contents_loaded_);
     return contents_;
@@ -48,6 +54,7 @@ class InputFile {
   SourceDir dir_;
 
   base::FilePath physical_name_;
+  std::string friendly_name_;
 
   bool contents_loaded_;
   std::string contents_;

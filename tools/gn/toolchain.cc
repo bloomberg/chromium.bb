@@ -5,6 +5,7 @@
 #include "tools/gn/toolchain.h"
 
 #include "base/logging.h"
+#include "tools/gn/value.h"
 
 const char* Toolchain::kToolCc = "cc";
 const char* Toolchain::kToolCxx = "cxx";
@@ -23,7 +24,7 @@ Toolchain::Tool::Tool() {
 Toolchain::Tool::~Tool() {
 }
 
-Toolchain::Toolchain(const Label& label) : Item(label) {
+Toolchain::Toolchain(const Label& label) : Item(label), is_default_(false) {
 }
 
 Toolchain::~Toolchain() {

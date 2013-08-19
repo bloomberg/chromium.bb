@@ -65,24 +65,22 @@ int64 Value::InterpretAsInt() const {
   return 0;
 }
 
-std::string Value::ToString() const {
+std::string Value::ToString(bool quote_string) const {
   switch (type_) {
     case NONE:
       return "<void>";
     case INTEGER:
       return base::Int64ToString(int_value_);
     case STRING:
+      if (quote_string)
+        return "\"" + string_value_ + "\"";
       return string_value_;
     case LIST: {
       std::string result = "[";
       for (size_t i = 0; i < list_value_.size(); i++) {
         if (i > 0)
           result += ", ";
-        // TODO(brettw) maybe also want to escape quotes in the string.
-        if (list_value_[i].type() == STRING)
-          result += std::string("\"") + list_value_[i].ToString() + "\"";
-        else
-          result += list_value_[i].ToString();
+        result += list_value_[i].ToString(true);
       }
       result.push_back(']');
       return result;

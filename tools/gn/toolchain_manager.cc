@@ -17,32 +17,57 @@
 #include "tools/gn/scope.h"
 #include "tools/gn/scope_per_file_provider.h"
 
+// How toolchain loading works
+// ---------------------------
+// When we start loading a build, we'll load the build config file and that
+// will call set_default_toolchain. We'll schedule a load of the file
+// containing the default toolchain definition, and can do this in parallel
+// with all other build files. Targets will have an implicit dependency on the
+// toolchain so we won't write out any files until we've loaded the toolchain
+// definition.
+//
+// When we see a reference to a target using a different toolchain, it gets
+// more complicated. In this case, the toolchain definition contains arguments
+// to pass into the build config file when it is invoked in the context of that
+// toolchain. As a result, we have to actually see the definition of the
+// toolchain before doing anything else.
+//
+// So when we see a reference to a non-default toolchain we do the following:
+//
+//  1. Schedule a load of the file containing the toolchain definition, if it
+//     isn't loaded already.
+//  2. When the toolchain definition is loaded, we schedule a load of the
+//     build config file in the context of that toolchain. We'll use the
+//     arguments from the toolchain definition to execute it.
+//  3. When the build config is set up, then we can load all of the individual
+//     buildfiles in the context of that config that we require.
+
 namespace {
+
+enum ToolchainState {
+  // Toolchain settings have not requested to be loaded. This means we
+  // haven't seen any targets that require this toolchain yet. This means that
+  // we have seen a toolchain definition, but no targets that use it. Not
+  // loading the settings automatically allows you to define a bunch of
+  // toolchains and potentially not use them without much overhead.
+  TOOLCHAIN_NOT_LOADED,
+
+  // The toolchain definition for non-default toolchains has been scheduled
+  // to be loaded but has not completed. When this is done, we can load the
+  // settings file. This is needed to get the arguments out of the toolchain
+  // definition. This is skipped for the default toolchain which has no
+  // arguments (see summary above).
+  TOOLCHAIN_DEFINITION_LOADING,
+
+  // The settings have been scheduled to be loaded but have not completed.
+  TOOLCHAIN_SETTINGS_LOADING,
+
+  // The settings are done being loaded.
+  TOOLCHAIN_SETTINGS_LOADED
+};
 
 SourceFile DirToBuildFile(const SourceDir& dir) {
   return SourceFile(dir.value() + "BUILD.gn");
-}
-
-void SetSystemVars(const Settings& settings, Scope* scope) {
-#if defined(OS_WIN)
-  scope->SetValue("is_win", Value(NULL, 1), NULL);
-  scope->SetValue("is_posix", Value(NULL, 0), NULL);
-#else
-  scope->SetValue("is_win", Value(NULL, 0), NULL);
-  scope->SetValue("is_posix", Value(NULL, 1), NULL);
-#endif
-
-#if defined(OS_MACOSX)
-  scope->SetValue("is_mac", Value(NULL, 1), NULL);
-#else
-  scope->SetValue("is_mac", Value(NULL, 0), NULL);
-#endif
-
-#if defined(OS_LINUX)
-  scope->SetValue("is_linux", Value(NULL, 1), NULL);
-#else
-  scope->SetValue("is_linux", Value(NULL, 0), NULL);
-#endif
 }
 
 }  // namespace
@@ -51,10 +76,11 @@ struct ToolchainManager::Info {
   Info(const BuildSettings* build_settings,
        const Label& toolchain_name,
        const std::string& output_subdir_name)
-      : state(TOOLCHAIN_SETTINGS_NOT_LOADED),
+      : state(TOOLCHAIN_NOT_LOADED),
         toolchain(toolchain_name),
         toolchain_set(false),
         settings(build_settings, &toolchain, output_subdir_name),
+        toolchain_file_loaded(false),
         item_node(NULL) {
   }
 
@@ -73,11 +99,16 @@ struct ToolchainManager::Info {
     }
   }
 
-  SettingsState state;
+  ToolchainState state;
 
   Toolchain toolchain;
   bool toolchain_set;
   LocationRange toolchain_definition_location;
+
+  // The first place in the build that we saw a reference for this toolchain.
+  // This allows us to report errors if it can't be loaded and blame some
+  // reasonable place of the code. This will be empty for the default toolchain.
+  LocationRange specified_from;
 
   // When the state is TOOLCHAIN_SETTINGS_LOADED, the settings should be
   // considered read-only and can be read without locking. Otherwise, they
@@ -86,12 +117,18 @@ struct ToolchainManager::Info {
   // is only ever read or written inside the lock.
   Settings settings;
 
-  // While state == TOOLCHAIN_SETTINGS_LOADING, this will collect all
-  // scheduled invocations using this toolchain. They'll be issued once the
-  // settings file has been interpreted.
+  // Set when the file corresponding to the toolchain definition is loaded.
+  // This will normally be set right after "toolchain_set". However, if the
+  // toolchain definition is missing, the file might be marked loaded but the
+  // toolchain definition could still be unset.
+  bool toolchain_file_loaded;
+
+  // While state == TOOLCHAIN_SETTINGS_LOADING || TOOLCHAIN_DEFINITION_LOADING,
+  // this will collect all scheduled invocations using this toolchain. They'll
+  // be issued once the settings file has been interpreted.
   //
   // The map maps the source file to "some" location it was invoked from (so
-  // we can give good error messages. It does NOT map to the root of the
+  // we can give good error messages). It does NOT map to the root of the
   // file to be invoked (the file still needs loading). This will be NULL
   // for internally invoked files.
   typedef std::map<SourceFile, LocationRange> ScheduledInvocationMap;
@@ -131,16 +168,8 @@ void ToolchainManager::StartLoadingUnlocked(const SourceFile& build_file_name) {
   info->scheduled_invocations[build_file_name] = LocationRange();
   info->all_invocations.insert(build_file_name);
 
-  g_scheduler->IncrementWorkCount();
-  if (!g_scheduler->input_file_manager()->AsyncLoadFile(
-           LocationRange(), build_settings_,
-           build_settings_->build_config_file(),
-           base::Bind(&ToolchainManager::BackgroundLoadBuildConfig,
-                      base::Unretained(this), info, true),
-           &err)) {
+  if (!ScheduleBuildConfigLoadLocked(info, true, &err))
     g_scheduler->FailWithError(err);
-    g_scheduler->DecrementWorkCount();
-  }
 }
 
 const Settings* ToolchainManager::GetSettingsForToolchainLocked(
@@ -233,7 +262,12 @@ bool ToolchainManager::SetToolchainDefinitionLocked(
   // The labels should match or else we're setting the wrong one!
   CHECK(info->toolchain.label() == tc.label());
 
+  // Save the toolchain. We can just overwrite our definition, but we need to
+  // be careful to preserve the is_default flag.
+  bool is_default = info->toolchain.is_default();
   info->toolchain = tc;
+  info->toolchain.set_is_default(is_default);
+
   if (info->toolchain_set) {
     *err = Err(defined_from, "Duplicate toolchain definition.");
     err->AppendSubErr(Err(
@@ -290,54 +324,42 @@ bool ToolchainManager::ScheduleInvocationLocked(
 
   info->all_invocations.insert(build_file);
 
-  // True if the settings load needs to be scheduled.
-  bool info_needs_settings_load = false;
-
-  // True if the settings load has completed.
-  bool info_settings_loaded = false;
-
   switch (info->state) {
-    case TOOLCHAIN_SETTINGS_NOT_LOADED:
-      info_needs_settings_load = true;
+    case TOOLCHAIN_NOT_LOADED:
+      // Toolchain needs to be loaded. Start loading it and push this buildfile
+      // on the wait queue. The actual toolchain build file will have been
+      // scheduled to be loaded by LoadNewToolchainLocked() above, so we just
+      // need to request that the build settings be loaded when that toolchain
+      // file is done executing (recall toolchain files are executed in the
+      // context of the default toolchain, which is why we need to do the extra
+      // Info lookup in the make_pair).
+      DCHECK(!default_toolchain_.is_null());
+      pending_build_config_map_[
+              std::make_pair(DirToBuildFile(toolchain_name.dir()),
+                             toolchains_[default_toolchain_])] =
+          info;
       info->scheduled_invocations[build_file] = specified_from;
-      break;
 
+      // Transition to the loading state.
+      info->specified_from = specified_from;
+      info->state = TOOLCHAIN_DEFINITION_LOADING;
+      return true;
+
+    case TOOLCHAIN_DEFINITION_LOADING:
     case TOOLCHAIN_SETTINGS_LOADING:
+      // Toolchain is in the process of loading, push this buildfile on the
+      // wait queue to run when the config is ready.
       info->scheduled_invocations[build_file] = specified_from;
-      break;
+      return true;
 
     case TOOLCHAIN_SETTINGS_LOADED:
-      info_settings_loaded = true;
-      break;
-  }
+      // Everything is ready, just schedule the build file to load.
+      return ScheduleBackgroundInvoke(info, specified_from, build_file, err);
 
-  if (info_needs_settings_load) {
-    // Load the settings file.
-    g_scheduler->IncrementWorkCount();
-    if (!g_scheduler->input_file_manager()->AsyncLoadFile(
-             specified_from, build_settings_,
-             build_settings_->build_config_file(),
-             base::Bind(&ToolchainManager::BackgroundLoadBuildConfig,
-                        base::Unretained(this), info, false),
-             err)) {
-      g_scheduler->DecrementWorkCount();
+    default:
+      NOTREACHED();
       return false;
-    }
-  } else if (info_settings_loaded) {
-    // Settings are ready to go, load the target file.
-    g_scheduler->IncrementWorkCount();
-    if (!g_scheduler->input_file_manager()->AsyncLoadFile(
-             specified_from, build_settings_, build_file,
-             base::Bind(&ToolchainManager::BackgroundInvoke,
-                        base::Unretained(this), info, build_file),
-             err)) {
-      g_scheduler->DecrementWorkCount();
-      return false;
-    }
   }
-  // Else we should have added the infocations to the scheduled_invocations
-  // from within the lock above.
-  return true;
 }
 
 // static
@@ -401,6 +423,7 @@ void ToolchainManager::FixupDefaultToolchainLocked() {
   // the build config can not change the toolchain, so we won't be overwriting
   // anything useful.
   info->toolchain = Toolchain(default_toolchain_);
+  info->toolchain.set_is_default(true);
   info->EnsureItemNode();
 
   // The default toolchain is loaded in greedy mode so all targets we
@@ -416,6 +439,42 @@ void ToolchainManager::FixupDefaultToolchainLocked() {
     g_scheduler->FailWithError(err);
 }
 
+bool ToolchainManager::ScheduleBackgroundInvoke(
+    Info* info,
+    const LocationRange& specified_from,
+    const SourceFile& build_file,
+    Err* err) {
+  g_scheduler->IncrementWorkCount();
+  if (!g_scheduler->input_file_manager()->AsyncLoadFile(
+           specified_from, build_settings_, build_file,
+           base::Bind(&ToolchainManager::BackgroundInvoke,
+                      base::Unretained(this), info, build_file),
+           err)) {
+    g_scheduler->DecrementWorkCount();
+    return false;
+  }
+  return true;
+}
+
+bool ToolchainManager::ScheduleBuildConfigLoadLocked(Info* info,
+                                                     bool is_default,
+                                                     Err* err) {
+  GetLock().AssertAcquired();
+
+  g_scheduler->IncrementWorkCount();
+  if (!g_scheduler->input_file_manager()->AsyncLoadFile(
+           info->specified_from, build_settings_,
+           build_settings_->build_config_file(),
+           base::Bind(&ToolchainManager::BackgroundLoadBuildConfig,
+                      base::Unretained(this), info, is_default),
+           err)) {
+    g_scheduler->DecrementWorkCount();
+    return false;
+  }
+  info->state = TOOLCHAIN_SETTINGS_LOADING;
+  return true;
+}
+
 void ToolchainManager::BackgroundLoadBuildConfig(Info* info,
                                                  bool is_default,
                                                  const ParseNode* root) {
@@ -424,7 +483,10 @@ void ToolchainManager::BackgroundLoadBuildConfig(Info* info,
     // Nobody should be accessing settings at this point other than us since we
     // haven't marked it loaded, so we can do it outside the lock.
     Scope* base_config = info->settings.base_config();
-    SetSystemVars(info->settings, base_config);
+
+    info->settings.build_settings()->build_args().SetupRootScope(base_config,
+        info->settings.toolchain()->args());
+
     base_config->SetProcessingBuildConfig();
     if (is_default)
       base_config->SetProcessingDefaultBuildConfig();
@@ -454,15 +516,8 @@ void ToolchainManager::BackgroundLoadBuildConfig(Info* info,
       // want to load them in parallel on the pool.
       for (Info::ScheduledInvocationMap::iterator i = schedule_these.begin();
            i != schedule_these.end() && !g_scheduler->is_failed(); ++i) {
-        // Note i->second may be NULL, so don't dereference.
-        g_scheduler->IncrementWorkCount();
-        if (!g_scheduler->input_file_manager()->AsyncLoadFile(
-                 i->second, build_settings_, i->first,
-                 base::Bind(&ToolchainManager::BackgroundInvoke,
-                            base::Unretained(this), info, i->first),
-                 &err)) {
+        if (!ScheduleBackgroundInvoke(info, i->second, i->first, &err)) {
           g_scheduler->FailWithError(err);
-          g_scheduler->DecrementWorkCount();
           break;
         }
       }
@@ -487,6 +542,26 @@ void ToolchainManager::BackgroundInvoke(const Info* info,
     root->Execute(&our_scope, &err);
     if (err.has_error())
       g_scheduler->FailWithError(err);
+
+    {
+      // Check to see if any build config invocations depend on this file and
+      // invoke them.
+      base::AutoLock lock(GetLock());
+      BuildConfigInvokeMap::iterator found_file =
+          pending_build_config_map_.find(std::make_pair(file_name, info));
+      if (found_file != pending_build_config_map_.end()) {
+        // The toolchain state should be waiting on the definition, which
+        // should be the thing we just loaded.
+        Info* info_to_load = found_file->second;
+        DCHECK(info_to_load->state == TOOLCHAIN_DEFINITION_LOADING);
+        DCHECK(!info_to_load->toolchain_file_loaded);
+        info_to_load->toolchain_file_loaded = true;
+
+        if (!ScheduleBuildConfigLoadLocked(info_to_load, false, &err))
+          g_scheduler->FailWithError(err);
+        pending_build_config_map_.erase(found_file);
+      }
+    }
   }
 
   g_scheduler->DecrementWorkCount();

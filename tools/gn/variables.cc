@@ -33,6 +33,42 @@ const char kDefaultToolchain_Help[] =
     "  A fully-qualified label representing the default toolchain, which may\n"
     "  not necessarily be the current one (see \"current_toolchain\").\n";
 
+const char kIsLinux[] = "is_linux";
+const char kIsLinux_HelpShort[] =
+    "is_linux: Indicates the current build is for Linux.";
+const char kIsLinux_Help[] =
+    "is_linux: Indicates the current build is for Linux.\n"
+    "\n"
+    "  Set by default when running on Linux. Can be overridden by command-\n"
+    "  line arguments or by toolchain arguments.\n";
+
+const char kIsMac[] = "is_mac";
+const char kIsMac_HelpShort[] =
+    "is_mac: Indicates the current build is for Mac.";
+const char kIsMac_Help[] =
+    "is_mac: Indicates the current build is for Mac.\n"
+    "\n"
+    "  Set by default when running on Mac. Can be overridden by command-\n"
+    "  line arguments or by toolchain arguments.\n";
+
+const char kIsPosix[] = "is_posix";
+const char kIsPosix_HelpShort[] =
+    "is_posix: Indicates the current build is for Posix.";
+const char kIsPosix_Help[] =
+    "is_posix: Indicates the current build is for Posix.\n"
+    "\n"
+    "  Set by default when running Linux or Mac. Can be overridden by\n"
+    "  command-line arguments or by toolchain arguments.\n";
+
+const char kIsWin[] = "is_win";
+const char kIsWin_HelpShort[] =
+    "is_win: Indicates the current build is for Windows.";
+const char kIsWin_Help[] =
+    "is_win: Indicates the current build is for Windows.\n"
+    "\n"
+    "  Set by default when running on Windows. Can be overridden by command-\n"
+    "  line arguments or by toolchain arguments.\n";
+
 const char kPythonPath[] = "python_path";
 const char kPythonPath_HelpShort[] =
     "python_path: [string] Absolute path of Python.";
@@ -331,7 +367,12 @@ const VariableInfoMap& GetBuiltinVariables() {
   if (info_map.empty()) {
     INSERT_VARIABLE(CurrentToolchain)
     INSERT_VARIABLE(DefaultToolchain)
+    INSERT_VARIABLE(IsLinux)
+    INSERT_VARIABLE(IsMac)
+    INSERT_VARIABLE(IsPosix)
+    INSERT_VARIABLE(IsWin)
     INSERT_VARIABLE(PythonPath)
+    INSERT_VARIABLE(RelativeBuildToSourceRootDir)
     INSERT_VARIABLE(RelativeRootGenDir)
     INSERT_VARIABLE(RelativeRootOutputDir)
     INSERT_VARIABLE(RelativeTargetGenDir)

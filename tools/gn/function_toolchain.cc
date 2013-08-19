@@ -140,4 +140,74 @@ Value RunTool(Scope* scope,
   return Value();
 }
 
+// toolchain_args --------------------------------------------------------------
+
+extern const char kToolchainArgs[] = "toolchain_args";
+extern const char kToolchainArgs_Help[] =
+    "toolchain_args: Set build arguments for toolchain build setup.\n"
+    "\n"
+    "  When you specify a target using an alternate toolchain, the master\n"
+    "  build configuration file is re-interpreted in the context of that\n"
+    "  toolchain. This function allows you to control the arguments passed\n"
+    "  into this alternate invocation of the build.\n"
+    "\n"
+    "  Any default system arguments or arguments passed in on the command-\n"
+    "  line will also be passed to the alternate invocation unless explicitly\n"
+    "  overriddey by toolchain_args.\n"
+    "\n"
+    "  The toolchain_args will be ignored when the toolchain being defined\n"
+    "  is the default. In this case, it's expected you want the default\n"
+    "  argument values.\n"
+    "\n"
+    "  See also \"gn help buildargs\" for an overview of these arguments.\n"
+    "\n"
+    "Example:\n"
+    "  toolchain(\"my_weird_toolchain\") {\n"
+    "    ...\n"
+    "    toolchain_args() {\n"
+    "      # Override the system values for a generic Posix system.\n"
+    "      is_win = 0\n"
+    "      is_posix = 1\n"
+    "\n"
+    "      # Pass this new value for specific setup for my toolchain.\n"
+    "      is_my_weird_system = 1\n"
+    "    }\n"
+    "  }\n";
+
+Value RunToolchainArgs(Scope* scope,
+                       const FunctionCallNode* function,
+                       const std::vector<Value>& args,
+                       BlockNode* block,
+                       Err* err) {
+  // Find the toolchain definition we're executing inside of. The toolchain
+  // function will set a property pointing to it that we'll pick up.
+  Toolchain* toolchain = reinterpret_cast<Toolchain*>(
+      scope->GetProperty(&kToolchainPropertyKey, NULL));
+  if (!toolchain) {
+    *err = Err(function->function(),
+               "toolchain_args() called outside of toolchain().",
+               "The toolchain_args() function can only be used inside a "
+               "toolchain() definition.");
+    return Value();
+  }
+
+  if (!args.empty()) {
+    *err = Err(function->function(), "This function takes no arguments.");
+    return Value();
+  }
+
+  // This function makes a new scope with various variable sets on it, which
+  // we then save on the toolchain to use when re-invoking the build.
+  Scope block_scope(scope);
+  block->ExecuteBlockInScope(&block_scope, err);
+  if (err->has_error())
+    return Value();
+
+  Scope::KeyValueMap values;
+  block_scope.GetCurrentScopeValues(&values);
+  toolchain->args() = values;
+
+  return Value();
+}
+
 }  // namespace functions

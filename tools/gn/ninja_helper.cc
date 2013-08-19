@@ -93,7 +93,10 @@ OutputFile NinjaHelper::GetOutputFileForSource(
 
   // Use the scheme <path>/<target>.<name>.<extension> so that all output
   // names are unique to different targets.
-  OutputFile ret(kObjectDirNoSlash);
+
+  // This will look like "obj" or "toolchain_name/obj".
+  OutputFile ret(target->settings()->toolchain_output_subdir());
+  ret.value().append(kObjectDirNoSlash);
 
   // Find the directory, assume it starts with two slashes, and trim to one.
   base::StringPiece dir = FindDir(&source.value());
@@ -174,4 +177,58 @@ OutputFile NinjaHelper::GetTargetOutputFile(const Target* target) const {
     ret.value().append(extension);
   }
   return ret;
+}
+
+std::string NinjaHelper::GetRulePrefix(const Toolchain* toolchain) const {
+  if (toolchain->is_default())
+    return std::string();  // Default toolchain has no prefix.
+  return toolchain->label().name() + "_";
+}
+
+std::string NinjaHelper::GetRuleForSourceType(const Settings* settings,
+                                              const Toolchain* toolchain,
+                                              SourceFileType type) const {
+  // This function may be hot since it will be called for every source file
+  // in the tree. We could cache the results to avoid making a string for
+  // every invocation.
+  std::string prefix = GetRulePrefix(toolchain);
+
+  if (type == SOURCE_C)
+    return prefix + "cc";
+  if (type == SOURCE_CC)
+    return prefix + "cxx";
+
+  // TODO(brettw) asm files.
+
+  if (settings->IsMac()) {
+    if (type == SOURCE_M)
+      return prefix + "objc";
+    if (type == SOURCE_MM)
+      return prefix + "objcxx";
+  }
+
+  if (settings->IsWin()) {
+    if (type == SOURCE_RC)
+      return prefix + "rc";
+  }
+
+  // TODO(brettw) stuff about "S" files on non-Windows.
+  return std::string();
+}
+
+std::string NinjaHelper::GetRuleForTargetType(
+    const Toolchain* toolchain,
+    Target::OutputType target_type) const {
+  std::string prefix = GetRulePrefix(toolchain);
+
+  if (target_type == Target::STATIC_LIBRARY) {
+    // TODO(brettw) stuff about standalong static libraryes on Unix in
+    // WriteTarget in the Python one, and lots of postbuild steps.
+    return prefix + "alink";
+  }
+
+  if (target_type == Target::SHARED_LIBRARY)
+    return prefix + "solink";
+
+  return prefix + "link";
 }

@@ -87,6 +87,14 @@ bool ItemTree::MarkItemDefinedLocked(const BuildSettings* build_settings,
   return true;
 }
 
+void ItemTree::GetAllItemNodesLocked(std::vector<const ItemNode*>* dest) const {
+  lock_.AssertAcquired();
+  dest->reserve(items_.size());
+  for (StringToNodeHash::const_iterator i = items_.begin();
+       i != items_.end(); ++i)
+    dest->push_back(i->second);
+}
+
 void ItemTree::GetAllItemsLocked(std::vector<const Item*>* dest) const {
   lock_.AssertAcquired();
   dest->reserve(items_.size());

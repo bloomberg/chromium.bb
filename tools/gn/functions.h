@@ -86,9 +86,10 @@ Value RunCustom(Scope* scope,
 
 extern const char kDeclareArgs[];
 extern const char kDeclareArgs_Help[];
-Value RunDeclareArgs(const FunctionCallNode* function,
+Value RunDeclareArgs(Scope* scope,
+                     const FunctionCallNode* function,
                      const std::vector<Value>& args,
-                     Scope* block_scope,
+                     BlockNode* block,
                      Err* err);
 
 extern const char kExecScript[];
@@ -211,6 +212,14 @@ Value RunToolchain(Scope* scope,
                    const std::vector<Value>& args,
                    BlockNode* block,
                    Err* err);
+
+extern const char kToolchainArgs[];
+extern const char kToolchainArgs_Help[];
+Value RunToolchainArgs(Scope* scope,
+                       const FunctionCallNode* function,
+                       const std::vector<Value>& args,
+                       BlockNode* block,
+                       Err* err);
 
 extern const char kWriteFile[];
 extern const char kWriteFile_Help[];

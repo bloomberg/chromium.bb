@@ -6,5 +6,6 @@ group("root") {
   deps = [
     "//tools/gn",
     "//ipc",
+    "//base(//build/toolchain/nacl:x86_newlib)",
   ]
 }
