@@ -134,11 +134,6 @@ using content::RenderViewHost;
 // Interface tests.
 //
 
-// Disable tests under ASAN.  http://crbug.com/104832.
-// This is a bit heavy handed, but the majority of these tests fail under ASAN.
-// See bug for history.
-#if !defined(ADDRESS_SANITIZER)
-
 TEST_PPAPI_IN_PROCESS(Broker)
 // Flaky, http://crbug.com/111355
 TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Broker)
@@ -1521,5 +1516,3 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashDRM) {
 
 TEST_PPAPI_IN_PROCESS(TalkPrivate)
 TEST_PPAPI_OUT_OF_PROCESS(TalkPrivate)
-
-#endif // ADDRESS_SANITIZER
