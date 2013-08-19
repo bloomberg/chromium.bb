@@ -51,7 +51,7 @@ PageScaleConstraints PageScaleConstraintsSet::defaultConstraints() const
 
 void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportArguments& arguments, IntSize viewSize, int layoutFallbackWidth)
 {
-    m_pageDefinedConstraints = arguments.resolve(viewSize, viewSize, layoutFallbackWidth);
+    m_pageDefinedConstraints = arguments.resolve(viewSize, layoutFallbackWidth);
 
     m_constraintsDirty = true;
 }

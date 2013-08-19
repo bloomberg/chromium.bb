@@ -68,7 +68,7 @@ static inline float clampScaleValue(float value)
     return value;
 }
 
-PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewportSize, const FloatSize& deviceSize, int defaultWidth) const
+PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewportSize, int defaultWidth) const
 {
     float resultWidth = width;
     float resultMaxWidth = maxWidth;
@@ -168,19 +168,19 @@ PageScaleConstraints ViewportArguments::resolve(const FloatSize& initialViewport
 
     switch (static_cast<int>(resultWidth)) {
     case ViewportArguments::ValueDeviceWidth:
-        resultWidth = deviceSize.width();
+        resultWidth = initialViewportSize.width();
         break;
     case ViewportArguments::ValueDeviceHeight:
-        resultWidth = deviceSize.height();
+        resultWidth = initialViewportSize.height();
         break;
     }
 
     switch (static_cast<int>(resultHeight)) {
     case ViewportArguments::ValueDeviceWidth:
-        resultHeight = deviceSize.width();
+        resultHeight = initialViewportSize.width();
         break;
     case ViewportArguments::ValueDeviceHeight:
-        resultHeight = deviceSize.height();
+        resultHeight = initialViewportSize.height();
         break;
     }
 

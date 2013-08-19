@@ -1,2 +1,2 @@
-ALERT: viewport size 980x480 scale 0.326531 with limits [0.326531, 5] and userScalable true
+ALERT: viewport size 980x352 scale 0.326531 with limits [0.326531, 5] and userScalable true
 

@@ -939,7 +939,7 @@ void Internals::setPagination(Document* document, const String& mode, int gap, i
     page->setPagination(pagination);
 }
 
-String Internals::configurationForViewport(Document* document, float, int deviceWidth, int deviceHeight, int availableWidth, int availableHeight, ExceptionState& es)
+String Internals::viewportAsText(Document* document, float, int availableWidth, int availableHeight, ExceptionState& es)
 {
     if (!document || !document->page()) {
         es.throwDOMException(InvalidAccessError);
@@ -953,7 +953,7 @@ String Internals::configurationForViewport(Document* document, float, int device
     document->styleResolver()->viewportStyleResolver()->resolve();
 
     ViewportArguments arguments = page->viewportArguments();
-    PageScaleConstraints constraints = arguments.resolve(initialViewportSize, FloatSize(deviceWidth, deviceHeight), 980 /* defaultLayoutWidthForNonMobilePages */);
+    PageScaleConstraints constraints = arguments.resolve(initialViewportSize, 980 /* defaultLayoutWidthForNonMobilePages */);
 
     constraints.fitToContentsWidth(constraints.layoutSize.width(), availableWidth);
 

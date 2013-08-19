@@ -104,12 +104,10 @@
 
     [RaisesException] void setPagination(Document document, DOMString mode, long gap, optional long pageLength);
 
-    [RaisesException] DOMString configurationForViewport(Document document,
-                                       float devicePixelRatio,
-                                       long deviceWidth,
-                                       long deviceHeight,
-                                       long availableWidth,
-                                       long availableHeight);
+    [RaisesException] DOMString viewportAsText(Document document,
+                                               float devicePixelRatio,
+                                               long availableWidth,
+                                               long availableHeight);
 
     [RaisesException] boolean wasLastChangeUserEdit(Element textField);
     [RaisesException] boolean elementShouldAutoComplete(Element inputElement);

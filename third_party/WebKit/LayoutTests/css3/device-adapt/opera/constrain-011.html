@@ -49,16 +49,12 @@
 
     if (window.testRunner) {
         viewport.fontSize = parseInt(getComputedStyle(testElm, "").fontSize);
-        viewport.deviceWidth = 320;
-        viewport.deviceHeight = 480;
         viewport.initialWidth = 320;
         viewport.initialHeight = 352;
 
-        var vpString = internals.configurationForViewport(document, 1,
-                                                          viewport.deviceWidth,
-                                                          viewport.deviceHeight,
-                                                          viewport.initialWidth,
-                                                          viewport.initialHeight);
+        var vpString = internals.viewportAsText(document, 1,
+                                                viewport.initialWidth,
+                                                viewport.initialHeight);
 
         var match = /viewport size (.+)x(.+) scale (.+ )/.exec(vpString);
 

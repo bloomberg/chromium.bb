@@ -16,7 +16,7 @@
       testRunner.dumpAsText();
       document.styleSheets[0].insertRule("@viewport {width: 1000px}", 0);
       document.body.offsetWidth; // Trigger style resolving
-      alert(internals.configurationForViewport(document, 1, 320, 480, 320, 352));
+      alert(internals.viewportAsText(document, 1, 320, 352));
     }
   }
 </script>

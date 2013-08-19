@@ -21,7 +21,7 @@
             testRunner.addUserStyleSheet("@viewport { width: extend-to-zoom 980px; min-zoom: 0.25; max-zoom: 5; height: auto; zoom: auto; user-zoom: zoom; orientation: auto }", true);
             testRunner.dumpAsText();
             document.body.offsetWidth; // Trigger style resolving
-            alert(internals.configurationForViewport(document, 1, 320, 480, 320, 352));
+            alert(internals.viewportAsText(document, 1, 320, 352));
         }
     </script>
 </body>

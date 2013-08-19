@@ -1,5 +1,5 @@
 
 PASS Check that window.testRunner is present. Required to add a user stylesheet. 
-PASS Check that window.internals is present. Required to call configurationForViewport. 
+PASS Check that window.internals is present. Required to call viewportAsText. 
 PASS Check viewport width. 
 

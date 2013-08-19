@@ -23,12 +23,12 @@
     <script>
         test(function(){
             assert_own_property(window, "internals");
-        }, "Check that window.internals is present. Required to call configurationForViewport.");
+        }, "Check that window.internals is present. Required to call viewportAsText.");
 
         var actualWidth;
         var actualHeight;
 
-        var vpString = internals.configurationForViewport(document, 1, 320, 480, 320, 352);
+        var vpString = internals.viewportAsText(document, 1, 320, 352);
         var match = /viewport size (.+)x(.+) scale (.+ )/.exec(vpString);
 
         if (match) {
