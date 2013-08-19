@@ -17,6 +17,7 @@
 namespace WebKit {
 class WebInputElement;
 class WebKeyboardEvent;
+class WebSecurityOrigin;
 class WebView;
 }
 
@@ -48,6 +49,10 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // Shows an Autofill popup with username suggestions for |element|.
   // Returns true if any suggestions were shown, false otherwise.
   bool ShowSuggestions(const WebKit::WebInputElement& element);
+
+ protected:
+  virtual bool OriginCanAccessPasswordManager(
+      const WebKit::WebSecurityOrigin& origin);
 
  private:
   friend class PasswordAutofillAgentTest;

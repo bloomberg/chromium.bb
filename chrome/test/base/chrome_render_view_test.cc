@@ -13,7 +13,9 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
+#include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -64,7 +66,7 @@ void ChromeRenderViewTest::SetUp() {
   // RenderView doesn't expose its PasswordAutofillAgent or AutofillAgent
   // objects, because it has no need to store them directly (they're stored as
   // RenderViewObserver*).  So just create another set.
-  password_autofill_ = new PasswordAutofillAgent(view_);
+  password_autofill_ = new autofill::TestPasswordAutofillAgent(view_);
   autofill_agent_ = new AutofillAgent(view_, password_autofill_);
 }
 

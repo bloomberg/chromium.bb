@@ -14,6 +14,7 @@ class WebDocument;
 class WebFormElement;
 class WebFormControlElement;
 class WebInputElement;
+class WebNode;
 }
 
 namespace autofill {
@@ -60,6 +61,10 @@ bool IsCheckableElement(const WebKit::WebInputElement* element);
 // Returns true if |element| is one of the input element types that can be
 // autofilled. {Text, Radiobutton, Checkbox}.
 bool IsAutofillableInputElement(const WebKit::WebInputElement* element);
+
+// Recursively checks whether |node| or any of its children have a non-empty
+// bounding box.
+bool IsWebNodeVisible(const WebKit::WebNode& node);
 
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.

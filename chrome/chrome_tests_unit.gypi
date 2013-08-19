@@ -506,6 +506,8 @@
         '../apps/saved_files_service_unittest.cc',
         '../apps/app_shim/extension_app_shim_handler_mac_unittest.cc',
         '../apps/shell_window_geometry_cache_unittest.cc',
+        '../components/autofill/content/renderer/test_password_autofill_agent.cc',
+        '../components/autofill/content/renderer/test_password_autofill_agent.h',
         '../extensions/browser/file_reader_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',
         '../extensions/common/extension_resource_unittest.cc',

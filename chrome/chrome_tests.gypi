@@ -1151,6 +1151,8 @@
       'sources': [
         '../apps/app_restore_service_browsertest.cc',
         '../apps/load_and_launch_browsertest.cc',
+        '../components/autofill/content/renderer/test_password_autofill_agent.h',
+        '../components/autofill/content/renderer/test_password_autofill_agent.cc',
         '../remoting/test/auth_browsertest.cc',
         '../remoting/test/launch_browsertest.cc',
         '../remoting/test/remote_desktop_browsertest.cc',
@@ -2136,6 +2138,8 @@
         'HAS_OUT_OF_PROC_TEST_RUNNER',
       ],
       'sources': [
+        '../components/autofill/content/renderer/test_password_autofill_agent.cc',
+        '../components/autofill/content/renderer/test_password_autofill_agent.h',
         'app/breakpad_mac_stubs.mm',
         'app/chrome_command_ids.h',
         'app/chrome_dll.rc',

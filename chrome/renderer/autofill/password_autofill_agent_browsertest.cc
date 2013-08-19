@@ -6,7 +6,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_test.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
+#include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
+#include "components/autofill/content/renderer/test_password_autofill_agent.h"
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -32,24 +34,48 @@ using WebKit::WebView;
 namespace {
 
 // The name of the username/password element in the form.
-const char* const kUsernameName = "username";
-const char* const kPasswordName = "password";
+const char kUsernameName[] = "username";
+const char kPasswordName[] = "password";
 
-const char* const kAliceUsername = "alice";
-const char* const kAlicePassword = "password";
-const char* const kBobUsername = "bob";
-const char* const kBobPassword = "secret";
-const char* const kCarolUsername = "Carol";
-const char* const kCarolPassword = "test";
-const char* const kCarolAlternateUsername = "RealCarolUsername";
+const char kAliceUsername[] = "alice";
+const char kAlicePassword[] = "password";
+const char kBobUsername[] = "bob";
+const char kBobPassword[] = "secret";
+const char kCarolUsername[] = "Carol";
+const char kCarolPassword[] = "test";
+const char kCarolAlternateUsername[] = "RealCarolUsername";
 
 
-const char* const kFormHTML =
+const char kFormHTML[] =
     "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
     "  <INPUT type='text' id='username'/>"
     "  <INPUT type='password' id='password'/>"
     "  <INPUT type='submit' value='Login'/>"
     "</FORM>";
+
+const char kVisibleFormHTML[] =
+    "<head> <style> form {display: inline;} </style> </head>"
+    "<body>"
+    "  <form>"
+    "    <div>"
+    "      <input type='password' id='password'/>"
+    "    </div>"
+    "  </form>"
+    "</body>";
+
+const char kEmptyFormHTML[] =
+    "<head> <style> form {display: inline;} </style> </head>"
+    "<body> <form> </form> </body>";
+
+const char kNonVisibleFormHTML[] =
+    "<head> <style> form {display: none;} </style> </head>"
+    "<body>"
+    "  <form>"
+    "    <div>"
+    "      <input type='password' id='password'/>"
+    "    </div>"
+    "  </form>"
+    "</body>";
 
 }  // namespace
 
@@ -497,6 +523,56 @@ TEST_F(PasswordAutofillAgentTest, SuggestionSelect) {
                                                0);
   // Autocomplete should not have kicked in.
   CheckTextFieldsState(std::string(), false, std::string(), false);
+}
+
+TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
+  WebKit::WebVector<WebKit::WebFormElement> forms1, forms2, forms3;
+  WebKit::WebFrame* frame;
+
+  LoadHTML(kVisibleFormHTML);
+  frame = GetMainFrame();
+  frame->document().forms(forms1);
+  ASSERT_EQ(1u, forms1.size());
+  EXPECT_TRUE(IsWebNodeVisible(forms1[0]));
+
+  LoadHTML(kEmptyFormHTML);
+  frame = GetMainFrame();
+  frame->document().forms(forms2);
+  ASSERT_EQ(1u, forms2.size());
+  EXPECT_FALSE(IsWebNodeVisible(forms2[0]));
+
+  LoadHTML(kNonVisibleFormHTML);
+  frame = GetMainFrame();
+  frame->document().forms(forms3);
+  ASSERT_EQ(1u, forms3.size());
+  EXPECT_FALSE(IsWebNodeVisible(forms3[0]));
+}
+
+TEST_F(PasswordAutofillAgentTest, SendPasswordFormsTest) {
+  render_thread_->sink().ClearMessages();
+  LoadHTML(kVisibleFormHTML);
+  const IPC::Message* message = render_thread_->sink()
+      .GetFirstMessageMatching(AutofillHostMsg_PasswordFormsRendered::ID);
+  EXPECT_TRUE(message);
+  Tuple1<std::vector<content::PasswordForm> > param;
+  AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
+  EXPECT_TRUE(param.a.size());
+
+  render_thread_->sink().ClearMessages();
+  LoadHTML(kEmptyFormHTML);
+  message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID);
+  EXPECT_TRUE(message);
+  AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
+  EXPECT_FALSE(param.a.size());
+
+  render_thread_->sink().ClearMessages();
+  LoadHTML(kNonVisibleFormHTML);
+  message = render_thread_->sink().GetFirstMessageMatching(
+      AutofillHostMsg_PasswordFormsRendered::ID);
+  EXPECT_TRUE(message);
+  AutofillHostMsg_PasswordFormsRendered::Read(message, &param);
+  EXPECT_FALSE(param.a.size());
 }
 
 }  // namespace autofill

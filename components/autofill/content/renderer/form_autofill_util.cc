@@ -599,6 +599,27 @@ std::string RetrievalMethodToString(
   return "UNKNOWN";
 }
 
+// Recursively checks whether |node| or any of its children have a non-empty
+// bounding box. The recursion depth is bounded by |depth|.
+bool IsWebNodeVisibleImpl(const WebKit::WebNode& node, const int depth) {
+  if (depth < 0)
+    return false;
+  if (node.hasNonEmptyBoundingBox())
+    return true;
+
+  // The childNodes method is not a const method. Therefore it cannot be called
+  // on a const reference. Therefore we need a const cast.
+  const WebKit::WebNodeList& children =
+      const_cast<WebKit::WebNode&>(node).childNodes();
+  size_t length = children.length();
+  for (size_t i = 0; i < length; ++i) {
+    const WebKit::WebNode& item = children.item(i);
+    if (IsWebNodeVisibleImpl(item, depth - 1))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 const size_t kMaxParseableFields = 100;
@@ -632,6 +653,14 @@ const base::string16 GetFormIdentifier(const WebFormElement& form) {
     identifier = form.getAttribute(kId);
 
   return identifier;
+}
+
+bool IsWebNodeVisible(const WebKit::WebNode& node) {
+  // In the bug http://crbug.com/237216 the form's bounding box is empty
+  // however the form has non empty children. Thus we need to look at the
+  // form's children.
+  int kNodeSearchDepth = 2;
+  return IsWebNodeVisibleImpl(node, kNodeSearchDepth);
 }
 
 bool ClickElement(const WebDocument& document,

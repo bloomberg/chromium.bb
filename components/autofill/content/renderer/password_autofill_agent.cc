@@ -349,11 +349,16 @@ bool PasswordAutofillAgent::ShowSuggestions(
   return ShowSuggestionPopup(iter->second.fill_data, element);
 }
 
+bool PasswordAutofillAgent::OriginCanAccessPasswordManager(
+    const WebKit::WebSecurityOrigin& origin) {
+  return origin.canAccessPasswordManager();
+}
+
 void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
-                                                bool only_visible) {
+                                              bool only_visible) {
   // Make sure that this security origin is allowed to use password manager.
   WebKit::WebSecurityOrigin origin = frame->document().securityOrigin();
-  if (!origin.canAccessPasswordManager())
+  if (!OriginCanAccessPasswordManager(origin))
     return;
 
   WebKit::WebVector<WebKit::WebFormElement> forms;
@@ -365,7 +370,7 @@ void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
 
     // If requested, ignore non-rendered forms, e.g. those styled with
     // display:none.
-    if (only_visible && !form.hasNonEmptyBoundingBox())
+    if (only_visible && !IsWebNodeVisible(form))
       continue;
 
     scoped_ptr<content::PasswordForm> password_form(
@@ -382,8 +387,8 @@ void PasswordAutofillAgent::SendPasswordForms(WebKit::WebFrame* frame,
   }
 
   if (only_visible) {
-    Send(new AutofillHostMsg_PasswordFormsRendered(
-        routing_id(), password_forms));
+    Send(new AutofillHostMsg_PasswordFormsRendered(routing_id(),
+                                                   password_forms));
   } else {
     Send(new AutofillHostMsg_PasswordFormsParsed(routing_id(), password_forms));
   }
