@@ -247,6 +247,9 @@ const wchar_t kMetroGetCurrentTabInfoMessage[] =
 const wchar_t kMetroRegistryPath[] =
     L"Software\\" PRODUCT_STRING_PATH L"\\Metro";
 const wchar_t kLaunchModeValue[] = L"launch_mode";
+// This is used by breakpad and the metrics reporting.
+const wchar_t kBrowserCrashDumpAttemptsRegistryPath[] =
+    L"Software\\" PRODUCT_STRING_PATH L"\\BrowserCrashDumpAttempts";
 #endif
 
 #if defined(OS_CHROMEOS)

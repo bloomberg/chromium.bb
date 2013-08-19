@@ -1164,6 +1164,12 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Chrome.BrowserCrashDumpAttempts">
+  <summary>
+    Number of time the browser processes attempts to generate a crash dump.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.SearchSelectExempt" enum="SearchEngine">
   <obsolete>
     Deprecated 8/2013. No longer tracked.

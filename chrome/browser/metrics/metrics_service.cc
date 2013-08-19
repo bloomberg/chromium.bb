@@ -192,6 +192,7 @@
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/caching_permuted_entropy_provider.h"
@@ -225,6 +226,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes
+#include "base/win/registry.h"
 #endif
 
 using base::Time;
@@ -793,6 +795,34 @@ void MetricsService::RecordBreakpadHasDebugger(bool has_debugger) {
     IncrementPrefValue(prefs::kStabilityDebuggerPresent);
 }
 
+#if defined(OS_WIN)
+void MetricsService::CountBrowserCrashDumpAttempts() {
+  base::string16 key_str(chrome::kBrowserCrashDumpAttemptsRegistryPath);
+  key_str += L"\\";
+  key_str += UTF8ToWide(chrome::kChromeVersion);
+
+  base::win::RegKey regkey;
+  if (regkey.Open(HKEY_CURRENT_USER,
+                  key_str.c_str(),
+                  KEY_ALL_ACCESS) != ERROR_SUCCESS) {
+    return;
+  }
+
+  base::string16 temp_name;
+  DWORD temp_value = 0;
+  int crash_dump_attempts = 0;
+  for (int i = regkey.GetValueCount() - 1; i >= 0; --i) {
+    if (regkey.GetValueNameAt(i, &temp_name) == ERROR_SUCCESS &&
+        regkey.ReadValueDW(temp_name.c_str(), &temp_value) == ERROR_SUCCESS) {
+      regkey.DeleteValue(temp_name.c_str());
+      if (temp_value != 0)
+        ++crash_dump_attempts;
+    }
+  }
+  UMA_HISTOGRAM_COUNTS("Chrome.BrowserCrashDumpAttempts", crash_dump_attempts);
+}
+#endif  // defined(OS_WIN)
+
 //------------------------------------------------------------------------------
 // private methods
 //------------------------------------------------------------------------------
@@ -841,6 +871,10 @@ void MetricsService::InitializeMetricsState() {
     // monitoring.
     pref->SetBoolean(prefs::kStabilityExitedCleanly, true);
   }
+
+#if defined(OS_WIN)
+  CountBrowserCrashDumpAttempts();
+#endif  // defined(OS_WIN)
 
   if (!pref->GetBoolean(prefs::kStabilitySessionEndCompleted)) {
     IncrementPrefValue(prefs::kStabilityIncompleteSessionEndCount);

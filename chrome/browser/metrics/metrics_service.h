@@ -171,6 +171,12 @@ class MetricsService
   // This count is eventually send via UMA logs.
   void RecordBreakpadHasDebugger(bool has_debugger);
 
+#if defined(OS_WIN)
+  // Counts (and removes) the browser crash dump attempt signals left behind by
+  // any previous browser processes which generated a crash dump.
+  void CountBrowserCrashDumpAttempts();
+#endif  // OS_WIN
+
   // Save any unsent logs into a persistent store in a pref.  We always do this
   // at shutdown, but we can do it as we reduce the list as well.
   void StoreUnsentLogs();
