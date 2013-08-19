@@ -71,7 +71,8 @@ class RequestContext : public URLRequestContext {
     storage_.set_http_transaction_factory(new HttpCache(
         network_session.get(), HttpCache::DefaultBackend::InMemory(0)));
     URLRequestJobFactoryImpl* job_factory = new URLRequestJobFactoryImpl();
-    job_factory->SetProtocolHandler("file", new FileProtocolHandler());
+    job_factory->SetProtocolHandler(
+        "file", new FileProtocolHandler(base::MessageLoopProxy::current()));
     storage_.set_job_factory(job_factory);
   }
 

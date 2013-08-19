@@ -5,6 +5,7 @@
 #include "net/url_request/file_protocol_handler.h"
 
 #include "base/logging.h"
+#include "base/task_runner.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/url_request/url_request.h"
@@ -14,7 +15,11 @@
 
 namespace net {
 
-FileProtocolHandler::FileProtocolHandler() { }
+FileProtocolHandler::FileProtocolHandler(
+    const scoped_refptr<base::TaskRunner>& file_task_runner)
+    : file_task_runner_(file_task_runner) {}
+
+FileProtocolHandler::~FileProtocolHandler() {}
 
 URLRequestJob* FileProtocolHandler::MaybeCreateJob(
     URLRequest* request, NetworkDelegate* network_delegate) const {
@@ -41,7 +46,8 @@ URLRequestJob* FileProtocolHandler::MaybeCreateJob(
 
   // Use a regular file request job for all non-directories (including invalid
   // file names).
-  return new URLRequestFileJob(request, network_delegate, file_path);
+  return new URLRequestFileJob(request, network_delegate, file_path,
+                               file_task_runner_);
 }
 
 bool FileProtocolHandler::IsSafeRedirectTarget(const GURL& location) const {

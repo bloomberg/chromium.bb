@@ -19,8 +19,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/image_loader.h"
@@ -35,6 +35,7 @@
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "chrome/common/extensions/web_accessible_resources_handler.h"
 #include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
@@ -136,7 +137,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
 
     std::string* read_mime_type = new std::string;
     bool* read_result = new bool;
-    bool posted = base::WorkerPool::PostTaskAndReply(
+    bool posted = content::BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&ReadMimeTypeFromFile, filename_,
                    base::Unretained(read_mime_type),
@@ -146,8 +147,7 @@ class URLRequestResourceBundleJob : public net::URLRequestSimpleJob {
                    mime_type, charset, data,
                    base::Owned(read_mime_type),
                    base::Owned(read_result),
-                   callback),
-        true /* task is slow */);
+                   callback));
     DCHECK(posted);
 
     return net::ERR_IO_PENDING;
@@ -251,7 +251,11 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
                          const base::FilePath& relative_path,
                          const std::string& content_security_policy,
                          bool send_cors_header)
-    : net::URLRequestFileJob(request, network_delegate, base::FilePath()),
+    : net::URLRequestFileJob(
+          request, network_delegate, base::FilePath(),
+          content::BrowserThread::GetBlockingPool()->
+              GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
       // TODO(tc): Move all of these files into resources.pak so we don't break
       // when updating on Linux.
       resource_(extension_id, directory_path, relative_path),
@@ -267,7 +271,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
   virtual void Start() OVERRIDE {
     base::FilePath* read_file_path = new base::FilePath;
     base::Time* last_modified_time = new base::Time();
-    bool posted = base::WorkerPool::PostTaskAndReply(
+    bool posted = content::BrowserThread::PostBlockingPoolTaskAndReply(
         FROM_HERE,
         base::Bind(&ReadResourceFilePathAndLastModifiedTime, resource_,
                    base::Unretained(read_file_path),
@@ -275,8 +279,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
         base::Bind(&URLRequestExtensionJob::OnFilePathAndLastModifiedTimeRead,
                    weak_factory_.GetWeakPtr(),
                    base::Owned(read_file_path),
-                   base::Owned(last_modified_time)),
-        true /* task is slow */);
+                   base::Owned(last_modified_time)));
     DCHECK(posted);
   }
 

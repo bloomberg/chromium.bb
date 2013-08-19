@@ -8,7 +8,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
@@ -109,10 +111,13 @@ URLRequestMockHTTPJob::CreateProtocolHandler(const base::FilePath& base_path) {
 }
 
 URLRequestMockHTTPJob::URLRequestMockHTTPJob(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate,
+    net::URLRequest* request, net::NetworkDelegate* network_delegate,
     const base::FilePath& file_path)
-    : net::URLRequestFileJob(request, network_delegate, file_path) { }
+    : net::URLRequestFileJob(
+          request, network_delegate, file_path,
+          content::BrowserThread::GetBlockingPool()->
+              GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {}
 
 URLRequestMockHTTPJob::~URLRequestMockHTTPJob() { }
 

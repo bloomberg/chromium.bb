@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/default_tick_clock.h"
@@ -594,8 +595,12 @@ void IOThread::InitAsync() {
       new net::URLRequestJobFactoryImpl());
   job_factory->SetProtocolHandler(chrome::kDataScheme,
                                   new net::DataProtocolHandler());
-  job_factory->SetProtocolHandler(chrome::kFileScheme,
-                                  new net::FileProtocolHandler());
+  job_factory->SetProtocolHandler(
+      chrome::kFileScheme,
+      new net::FileProtocolHandler(
+          content::BrowserThread::GetBlockingPool()->
+              GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
 #if !defined(DISABLE_FTP_SUPPORT)
   globals_->proxy_script_fetcher_ftp_transaction_factory.reset(
       new net::FtpNetworkLayer(globals_->host_resolver.get()));

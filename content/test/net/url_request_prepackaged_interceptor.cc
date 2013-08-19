@@ -5,6 +5,7 @@
 #include "content/test/net/url_request_prepackaged_interceptor.h"
 
 #include "base/file_util.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request.h"
@@ -23,7 +24,11 @@ class URLRequestPrepackagedJob : public net::URLRequestFileJob {
   URLRequestPrepackagedJob(net::URLRequest* request,
                            net::NetworkDelegate* network_delegate,
                            const base::FilePath& file_path)
-      : net::URLRequestFileJob(request, network_delegate, file_path) {}
+      : net::URLRequestFileJob(
+            request, network_delegate, file_path,
+            content::BrowserThread::GetBlockingPool()->
+                GetTaskRunnerWithShutdownBehavior(
+                    base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)) {}
 
   virtual int GetResponseCode() const OVERRIDE { return 200; }
 

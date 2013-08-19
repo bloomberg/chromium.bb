@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/net_export.h"
 #include "net/http/http_byte_range.h"
@@ -17,6 +18,7 @@
 
 namespace base{
 struct PlatformFileInfo;
+class TaskRunner;
 }
 namespace file_util {
 struct FileInfo;
@@ -31,7 +33,8 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
  public:
   URLRequestFileJob(URLRequest* request,
                     NetworkDelegate* network_delegate,
-                    const base::FilePath& file_path);
+                    const base::FilePath& file_path,
+                    const scoped_refptr<base::TaskRunner>& file_task_runner);
 
   // URLRequestJob:
   virtual void Start() OVERRIDE;
@@ -91,6 +94,7 @@ class NET_EXPORT URLRequestFileJob : public URLRequestJob {
 
   scoped_ptr<FileStream> stream_;
   FileMetaInfo meta_info_;
+  const scoped_refptr<base::TaskRunner> file_task_runner_;
 
   HttpByteRange byte_range_;
   int64 remaining_bytes_;

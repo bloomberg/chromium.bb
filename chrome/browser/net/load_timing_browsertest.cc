@@ -13,6 +13,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
@@ -119,10 +120,13 @@ class MockUrlRequestJobWithTiming : public net::URLRequestFileJob {
                               net::NetworkDelegate* network_delegate,
                               const base::FilePath& path,
                               const TimingDeltas& load_timing_deltas)
-      : net::URLRequestFileJob(request, network_delegate, path),
+      : net::URLRequestFileJob(
+            request, network_delegate, path,
+            content::BrowserThread::GetBlockingPool()->
+                GetTaskRunnerWithShutdownBehavior(
+                    base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)),
         load_timing_deltas_(load_timing_deltas),
-        weak_factory_(this) {
-  }
+        weak_factory_(this) {}
 
   // net::URLRequestFileJob implementation:
   virtual void Start() OVERRIDE {

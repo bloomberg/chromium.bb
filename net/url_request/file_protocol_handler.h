@@ -7,9 +7,14 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/ref_counted.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class GURL;
+
+namespace base {
+class TaskRunner;
+}
 
 namespace net {
 
@@ -21,12 +26,15 @@ class URLRequestJob;
 class NET_EXPORT FileProtocolHandler :
     public URLRequestJobFactory::ProtocolHandler {
  public:
-  FileProtocolHandler();
+  explicit FileProtocolHandler(
+      const scoped_refptr<base::TaskRunner>& file_task_runner);
+  virtual ~FileProtocolHandler();
   virtual URLRequestJob* MaybeCreateJob(
       URLRequest* request, NetworkDelegate* network_delegate) const OVERRIDE;
   virtual bool IsSafeRedirectTarget(const GURL& location) const OVERRIDE;
 
  private:
+  const scoped_refptr<base::TaskRunner> file_task_runner_;
   DISALLOW_COPY_AND_ASSIGN(FileProtocolHandler);
 };
 

@@ -26,8 +26,8 @@
 #include "base/platform_file.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/lock.h"
+#include "base/task_runner.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -53,26 +53,27 @@ URLRequestFileJob::FileMetaInfo::FileMetaInfo()
       is_directory(false) {
 }
 
-URLRequestFileJob::URLRequestFileJob(URLRequest* request,
-                                     NetworkDelegate* network_delegate,
-                                     const base::FilePath& file_path)
+URLRequestFileJob::URLRequestFileJob(
+    URLRequest* request,
+    NetworkDelegate* network_delegate,
+    const base::FilePath& file_path,
+    const scoped_refptr<base::TaskRunner>& file_task_runner)
     : URLRequestJob(request, network_delegate),
       file_path_(file_path),
-      stream_(new FileStream(NULL)),
+      stream_(new FileStream(NULL, file_task_runner)),
+      file_task_runner_(file_task_runner),
       remaining_bytes_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 void URLRequestFileJob::Start() {
   FileMetaInfo* meta_info = new FileMetaInfo();
-  base::WorkerPool::PostTaskAndReply(
+  file_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::Bind(&URLRequestFileJob::FetchMetaInfo, file_path_,
                  base::Unretained(meta_info)),
       base::Bind(&URLRequestFileJob::DidFetchMetaInfo,
                  weak_ptr_factory_.GetWeakPtr(),
-                 base::Owned(meta_info)),
-      true);
+                 base::Owned(meta_info)));
 }
 
 void URLRequestFileJob::Kill() {

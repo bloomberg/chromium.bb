@@ -14,6 +14,7 @@
 #include "android_webview/browser/net/init_native_callback.h"
 #include "android_webview/common/aw_switches.h"
 #include "base/command_line.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -123,7 +124,11 @@ net::URLRequestContext* AwURLRequestContextGetter::GetURLRequestContext() {
   if (!job_factory_) {
     scoped_ptr<AwURLRequestJobFactory> job_factory(new AwURLRequestJobFactory);
     bool set_protocol = job_factory->SetProtocolHandler(
-        chrome::kFileScheme, new net::FileProtocolHandler());
+        chrome::kFileScheme,
+        new net::FileProtocolHandler(
+            content::BrowserThread::GetBlockingPool()->
+                GetTaskRunnerWithShutdownBehavior(
+                    base::SequencedWorkerPool::SKIP_ON_SHUTDOWN)));
     DCHECK(set_protocol);
     set_protocol = job_factory->SetProtocolHandler(
         chrome::kDataScheme, new net::DataProtocolHandler());

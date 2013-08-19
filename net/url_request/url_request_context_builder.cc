@@ -156,6 +156,11 @@ class BasicURLRequestContext : public URLRequestContext {
     return file_thread_.message_loop();
   }
 
+  scoped_refptr<base::MessageLoopProxy> file_message_loop_proxy() {
+    DCHECK(file_thread_.IsRunning());
+    return file_thread_.message_loop_proxy();
+  }
+
  protected:
   virtual ~BasicURLRequestContext() {}
 
@@ -190,7 +195,9 @@ URLRequestContextBuilder::URLRequestContextBuilder()
 #if !defined(DISABLE_FTP_SUPPORT)
       ftp_enabled_(false),
 #endif
-      http_cache_enabled_(true) {}
+      http_cache_enabled_(true) {
+}
+
 URLRequestContextBuilder::~URLRequestContextBuilder() {}
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -301,7 +308,8 @@ URLRequestContext* URLRequestContextBuilder::Build() {
   if (data_enabled_)
     job_factory->SetProtocolHandler("data", new DataProtocolHandler);
   if (file_enabled_)
-    job_factory->SetProtocolHandler("file", new FileProtocolHandler);
+    job_factory->SetProtocolHandler(
+        "file", new FileProtocolHandler(context->file_message_loop_proxy()));
 #if !defined(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {
     ftp_transaction_factory_.reset(
