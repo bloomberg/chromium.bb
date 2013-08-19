@@ -18,7 +18,7 @@ namespace extensions {
 PermissionMessage PermissionMessage::CreateFromHostList(
     const std::set<std::string>& hosts) {
   std::vector<std::string> host_list(hosts.begin(), hosts.end());
-  DCHECK_GT(host_list.size(), 0UL);
+  DCHECK(host_list.size());
   ID message_id;
   string16 message;
   string16 details;

@@ -468,8 +468,6 @@ std::set<PermissionMessage> PermissionSet::GetAPIPermissionMessages() const {
   std::set<PermissionMessage> messages;
   for (APIPermissionSet::const_iterator permission_it = apis_.begin();
        permission_it != apis_.end(); ++permission_it) {
-    DCHECK_GT(PermissionMessage::kNone,
-              PermissionMessage::kUnknown);
     if (permission_it->HasMessages()) {
       PermissionMessages new_messages = permission_it->GetMessages();
       messages.insert(new_messages.begin(), new_messages.end());
