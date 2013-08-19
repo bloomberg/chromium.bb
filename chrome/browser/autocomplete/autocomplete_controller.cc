@@ -346,6 +346,7 @@ void AutocompleteController::OnProviderUpdate(bool updated_matches) {
     result_.Reset();
     result_.AppendMatches(zero_suggest_provider_->matches());
     result_.SortAndCull(input_, profile_);
+    UpdateAssistedQueryStats(&result_);
     NotifyChanged(true);
   } else {
     CheckIfDone();
@@ -545,8 +546,10 @@ GURL AutocompleteController::GetDestinationURL(
     search_terms_args.assisted_query_stats += base::StringPrintf(
         ".%" PRId64 "j%dj%d",
         query_formulation_time.InMilliseconds(),
-        search_provider_ &&
-        search_provider_->field_trial_triggered_in_session(),
+        (search_provider_ &&
+         search_provider_->field_trial_triggered_in_session()) ||
+        (zero_suggest_provider_ &&
+         zero_suggest_provider_->field_trial_triggered_in_session()),
         input_.current_page_classification());
     destination_url = GURL(template_url->url_ref().
                            ReplaceSearchTerms(search_terms_args));

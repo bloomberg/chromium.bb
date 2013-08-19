@@ -78,6 +78,10 @@ class ZeroSuggestProvider : public AutocompleteProvider,
       AutocompleteInput::PageClassification page_classification,
       const string16& permanent_text);
 
+  bool field_trial_triggered_in_session() const {
+    return field_trial_triggered_in_session_;
+  }
+
  private:
   ZeroSuggestProvider(AutocompleteProviderListener* listener,
                       Profile* profile);
