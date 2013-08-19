@@ -367,7 +367,8 @@
             <div class=progress-bar>
               <div class=progress-track></div>
             </div>
-            <div class="right buttonbar" id="open-panel" visibleif="open-file open-multi-file">
+            <div class="right buttonbar" id="open-panel"
+                 visibleif="open-file open-multi-file">
               <select class="file-type"></select>
               <button class=ok disabled tabindex="7"></button>
               <button class=cancel i18n-content=CANCEL_LABEL tabindex="8"></button>
@@ -381,7 +382,8 @@
         </div>
       </div>
     </div>
-    <div class="dialog-footer progressable" visibleif="saveas-file folder">
+    <div class="dialog-footer progressable" tabindex="-1"
+         visibleif="saveas-file folder">
       <div class="left">
         <button id="new-folder" i18n-content=NEW_FOLDER_BUTTON_LABEL
                 visibleif="saveas-file folder" command="#newfolder"

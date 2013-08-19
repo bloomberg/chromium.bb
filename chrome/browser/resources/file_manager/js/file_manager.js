@@ -561,6 +561,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     CommandUtil.registerCommand(this.dialogContainer_, 'newfolder',
         Commands.newFolderCommand, this, this.directoryModel_);
 
+    // Required to handle the command outside of the container, on the footer.
+    // TODO(mtomasz): Remove after fixing crbug.com/275235.
+    CommandUtil.registerCommand(this.dialogDom_.querySelector('.dialog-footer'),
+        'newfolder', Commands.newFolderCommand, this, this.directoryModel_);
+
     CommandUtil.registerCommand(this.dialogContainer_, 'newwindow',
         Commands.newWindowCommand, this, this.directoryModel_);
 

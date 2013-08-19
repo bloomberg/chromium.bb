@@ -467,6 +467,7 @@ div.splitter {
   -webkit-box-orient: horizontal;
   border-top: 1px solid rgb(225, 225, 225);
   display: -webkit-box;
+  outline: none;
   padding: 10px;
 }
 

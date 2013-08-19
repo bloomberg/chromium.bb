@@ -544,6 +544,5 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(IN_GUEST_MODE, "restoreGeometry")));
 
-
 }  // namespace
 }  // namespace file_manager
