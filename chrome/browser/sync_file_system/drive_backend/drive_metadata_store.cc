@@ -582,7 +582,6 @@ void DriveMetadataStore::EnableOrigin(
     // |origin| has not been registered yet.
     return;
   }
-  std::string resource_id = found->second;
   disabled_origins_.erase(found);
 
   // |origin| goes back to DriveFileSyncService::pending_batch_sync_origins_
