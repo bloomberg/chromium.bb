@@ -1562,16 +1562,6 @@ class IsolateLoad(IsolateBase):
 
 
 class IsolateCommand(IsolateBase):
-  def setUp(self):
-    super(IsolateCommand, self).setUp()
-    self._old_get_command_handler = isolate.trace_inputs.get_command_handler
-    isolate.trace_inputs.get_command_handler = (
-        lambda name: getattr(isolate, 'CMD%s' % name, None))
-
-  def tearDown(self):
-    isolate.trace_inputs.get_command_handler = self._old_get_command_handler
-    super(IsolateCommand, self).tearDown()
-
   def test_CMDrewrite(self):
     isolate_file = os.path.join(self.cwd, 'x.isolate')
     data = (
@@ -1582,7 +1572,8 @@ class IsolateCommand(IsolateBase):
     with open(isolate_file, 'wb') as f:
       f.write('\n'.join(data))
 
-    self.assertEqual(0, isolate.CMDrewrite(['-i', isolate_file]))
+    cmd = ['-i', isolate_file]
+    self.assertEqual(0, isolate.CMDrewrite(isolate.OptionParserIsolate(), cmd))
     with open(isolate_file, 'rb') as f:
       actual = f.read()
 
@@ -1602,7 +1593,7 @@ class IsolateCommand(IsolateBase):
         '-V', 'chromeos', '0',
         '-s', isolated_file,
       ]
-      self.assertEqual(0, isolate.CMDcheck(cmd))
+      self.assertEqual(0, isolate.CMDcheck(isolate.OptionParserIsolate(), cmd))
       with open(isolated_file, 'rb') as f:
         actual = json.load(f)
       mapped = [

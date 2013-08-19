@@ -37,6 +37,10 @@ import time
 import unicodedata
 import weakref
 
+from third_party import colorama
+from third_party.depot_tools import fix_encoding
+from third_party.depot_tools import subcommand
+
 ## OS-specific imports
 
 if sys.platform == 'win32':
@@ -3636,18 +3640,16 @@ def trace(logfile, cmd, cwd, api, output):
     return tracer.trace(cmd, cwd, 'default', output)
 
 
-def CMDclean(args):
+def CMDclean(parser, args):
   """Cleans up traces."""
-  parser = OptionParserTraceInputs(command='clean')
   options, args = parser.parse_args(args)
   api = get_api()
   api.clean_trace(options.log)
   return 0
 
 
-def CMDtrace(args):
+def CMDtrace(parser, args):
   """Traces an executable."""
-  parser = OptionParserTraceInputs(command='trace')
   parser.allow_interspersed_args = False
   parser.add_option(
       '-q', '--quiet', action='store_true',
@@ -3672,9 +3674,8 @@ def CMDtrace(args):
   return trace(options.log, args, os.getcwd(), api, options.quiet)[0]
 
 
-def CMDread(args):
+def CMDread(parser, args):
   """Reads the logs and prints the result."""
-  parser = OptionParserTraceInputs(command='read')
   parser.add_option(
       '-V', '--variable',
       nargs=2,
@@ -3772,22 +3773,10 @@ class OptionParserWithLogging(optparse.OptionParser):
     return options, args
 
 
-class OptionParserWithNiceDescription(OptionParserWithLogging):
-  """Generates the description with the command's docstring."""
-  def __init__(self, **kwargs):
-    """Sets 'description' and 'usage' if not already specified."""
-    command = kwargs.pop('command', 'help')
-    kwargs.setdefault(
-        'description',
-        re.sub('[\r\n ]{2,}', ' ', get_command_handler(command).__doc__))
-    kwargs.setdefault('usage', '%%prog %s [options]' % command)
-    OptionParserWithLogging.__init__(self, **kwargs)
-
-
-class OptionParserTraceInputs(OptionParserWithNiceDescription):
+class OptionParserTraceInputs(OptionParserWithLogging):
   """Adds automatic --log handling."""
   def __init__(self, **kwargs):
-    OptionParserWithNiceDescription.__init__(self, **kwargs)
+    OptionParserWithLogging.__init__(self, **kwargs)
     self.add_option(
         '-l', '--log', help='Log file to generate or read, required')
 
@@ -3796,7 +3785,7 @@ class OptionParserTraceInputs(OptionParserWithNiceDescription):
 
     On Windows, / and \ are often mixed together in a path.
     """
-    options, args = OptionParserWithNiceDescription.parse_args(
+    options, args = OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     if not options.log:
       self.error('Must supply a log file with -l')
@@ -3804,59 +3793,10 @@ class OptionParserTraceInputs(OptionParserWithNiceDescription):
     return options, args
 
 
-def extract_documentation():
-  """Returns a dict {command: description} for each of documented command."""
-  commands = (
-      fn[3:]
-      for fn in dir(sys.modules['__main__'])
-      if fn.startswith('CMD') and get_command_handler(fn[3:]).__doc__)
-  return dict((fn, get_command_handler(fn).__doc__) for fn in commands)
-
-
-def CMDhelp(args):
-  """Prints list of commands or help for a specific command."""
-  doc = extract_documentation()
-  # Calculates the optimal offset.
-  offset = max(len(cmd) for cmd in doc)
-  format_str = '  %-' + str(offset + 2) + 's %s'
-  # Generate a one-liner documentation of each commands.
-  commands_description = '\n'.join(
-       format_str % (cmd, doc[cmd].split('\n')[0]) for cmd in sorted(doc))
-
-  parser = OptionParserWithNiceDescription(
-      usage='%prog <command> [options]',
-      description='Commands are:\n%s\n' % commands_description)
-  parser.format_description = lambda _: parser.description
-
-  # Strip out any -h or --help argument.
-  _, args = parser.parse_args([i for i in args if not i in ('-h', '--help')])
-  if len(args) == 1:
-    if not get_command_handler(args[0]):
-      parser.error('Unknown command %s' % args[0])
-    # The command was "%prog help command", replaces ourself with
-    # "%prog command --help" so help is correctly printed out.
-    return main(args + ['--help'])
-  elif args:
-    parser.error('Unknown argument "%s"' % ' '.join(args))
-  parser.print_help()
-  return 0
-
-
-def get_command_handler(name):
-  """Returns the command handler or CMDhelp if it doesn't exist."""
-  return getattr(sys.modules['__main__'], 'CMD%s' % name, None)
-
-
-def main_impl(argv):
-  command = get_command_handler(argv[0] if argv else 'help')
-  if not command:
-    return CMDhelp(argv)
-  return command(argv[1:])
-
 def main(argv):
-  disable_buffering()
+  dispatcher = subcommand.CommandDispatcher(__name__)
   try:
-    main_impl(argv)
+    return dispatcher.execute(OptionParserTraceInputs(), argv)
   except TracingFailure, e:
     sys.stderr.write('\nError: ')
     sys.stderr.write(str(e))
@@ -3865,4 +3805,7 @@ def main(argv):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
+  disable_buffering()
+  colorama.init()
   sys.exit(main(sys.argv[1:]))

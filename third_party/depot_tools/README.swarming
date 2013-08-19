@@ -1,0 +1,11 @@
+Name: Chromium depot_tools
+Short Name: depot_tools
+URL: https://chromium.googlesource.com/chromium/tools/depot_tools.git
+Revision: r218180 - 39c0b22f
+License: BSD
+
+Description:
+N/A
+
+Local Modifications:
+Kept only a small subset of the files.

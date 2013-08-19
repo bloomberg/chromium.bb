@@ -3,14 +3,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Front end tool to manage .isolate files and corresponding tests.
+"""Front end tool to operate on .isolate files.
 
-Run ./isolate.py --help for more detailed information.
+This includes creating, merging or compiling them to generate a .isolated file.
 
 See more information at
-https://code.google.com/p/swarming/wiki/IsolateDesign
-https://code.google.com/p/swarming/wiki/IsolateUserGuide
+  https://code.google.com/p/swarming/wiki/IsolateDesign
+  https://code.google.com/p/swarming/wiki/IsolateUserGuide
 """
+# Run ./isolate.py --help for more detailed information.
 
 import ast
 import copy
@@ -32,6 +33,10 @@ import trace_inputs
 
 # Import here directly so isolate is easier to use as a library.
 from run_isolated import get_flavor
+
+from third_party import colorama
+from third_party.depot_tools import fix_encoding
+from third_party.depot_tools import subcommand
 
 
 PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
@@ -1912,9 +1917,8 @@ def merge(complete_state, trace_blacklist):
         exceptions[0][2]
 
 
-def CMDcheck(args):
+def CMDcheck(parser, args):
   """Checks that all the inputs are present and generates .isolated."""
-  parser = OptionParserIsolate(command='check')
   parser.add_option('--subdir', help='Filters to a subdirectory')
   options, args = parser.parse_args(args)
   if args:
@@ -1927,13 +1931,12 @@ def CMDcheck(args):
   return 0
 
 
-def CMDhashtable(args):
+def CMDhashtable(parser, args):
   """Creates a hash table content addressed object store.
 
   All the files listed in the .isolated file are put in the output directory
   with the file name being the sha-1 of the file's content.
   """
-  parser = OptionParserIsolate(command='hashtable')
   parser.add_option('--subdir', help='Filters to a subdirectory')
   options, args = parser.parse_args(args)
   if args:
@@ -1999,12 +2002,12 @@ def CMDhashtable(args):
   return not success
 
 
-def CMDmerge(args):
+def CMDmerge(parser, args):
   """Reads and merges the data from the trace back into the original .isolate.
 
   Ignores --outdir.
   """
-  parser = OptionParserIsolate(command='merge', require_isolated=False)
+  parser.require_isolated = False
   add_trace_option(parser)
   options, args = parser.parse_args(args)
   if args:
@@ -2015,12 +2018,12 @@ def CMDmerge(args):
   return 0
 
 
-def CMDread(args):
+def CMDread(parser, args):
   """Reads the trace file generated with command 'trace'.
 
   Ignores --outdir.
   """
-  parser = OptionParserIsolate(command='read', require_isolated=False)
+  parser.require_isolated = False
   add_trace_option(parser)
   parser.add_option(
       '--skip-refresh', action='store_true',
@@ -2043,13 +2046,13 @@ def CMDread(args):
   return 0
 
 
-def CMDremap(args):
+def CMDremap(parser, args):
   """Creates a directory with all the dependencies mapped into it.
 
   Useful to test manually why a test is failing. The target executable is not
   run.
   """
-  parser = OptionParserIsolate(command='remap', require_isolated=False)
+  parser.require_isolated = False
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
@@ -2080,9 +2083,9 @@ def CMDremap(args):
   return 0
 
 
-def CMDrewrite(args):
+def CMDrewrite(parser, args):
   """Rewrites a .isolate file into the canonical format."""
-  parser = OptionParserIsolate(command='rewrite', require_isolated=False)
+  parser.require_isolated = False
   options, args = parser.parse_args(args)
   if args:
     parser.error('Unsupported argument: %s' % args)
@@ -2108,7 +2111,7 @@ def CMDrewrite(args):
   return 0
 
 
-def CMDrun(args):
+def CMDrun(parser, args):
   """Runs the test executable in an isolated (temporary) directory.
 
   All the dependencies are mapped into the temporary directory and the
@@ -2119,7 +2122,7 @@ def CMDrun(args):
   arguments are appended to the command line of the target to run. For example,
   use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
-  parser = OptionParserIsolate(command='run', require_isolated=False)
+  parser.require_isolated = False
   parser.add_option(
       '--skip-refresh', action='store_true',
       help='Skip reading .isolate file and do not refresh the sha1 of '
@@ -2170,7 +2173,7 @@ def CMDrun(args):
   return result
 
 
-def CMDtrace(args):
+def CMDtrace(parser, args):
   """Traces the target using trace_inputs.py.
 
   It runs the executable without remapping it, and traces all the files it and
@@ -2182,7 +2185,6 @@ def CMDtrace(args):
   arguments are appended to the command line of the target to run. For example,
   use: isolate.py --isolated foo.isolated -- --gtest_filter=Foo.Bar
   """
-  parser = OptionParserIsolate(command='trace')
   add_trace_option(parser)
   parser.enable_interspersed_args()
   parser.add_option(
@@ -2313,10 +2315,14 @@ def parse_variable_option(options):
   options.variables = dict((k, try_make_int(v)) for k, v in options.variables)
 
 
-class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
+class OptionParserIsolate(trace_inputs.OptionParserWithLogging):
   """Adds automatic --isolate, --isolated, --out and --variable handling."""
-  def __init__(self, require_isolated=True, **kwargs):
-    trace_inputs.OptionParserWithNiceDescription.__init__(
+  # Set it to False if it is not required, e.g. it can be passed on but do not
+  # fail if not given.
+  require_isolated = True
+
+  def __init__(self, **kwargs):
+    trace_inputs.OptionParserWithLogging.__init__(
         self,
         verbose=int(os.environ.get('ISOLATE_DEBUG', 0)),
         **kwargs)
@@ -2338,14 +2344,13 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
              'only be logged and not stop processing. Defaults to True if '
              'env var ISOLATE_IGNORE_BROKEN_ITEMS is set')
     self.add_option_group(group)
-    self.require_isolated = require_isolated
 
   def parse_args(self, *args, **kwargs):
     """Makes sure the paths make sense.
 
     On Windows, / and \ are often mixed together in a path.
     """
-    options, args = trace_inputs.OptionParserWithNiceDescription.parse_args(
+    options, args = trace_inputs.OptionParserWithLogging.parse_args(
         self, *args, **kwargs)
     if not self.allow_interspersed_args and args:
       self.error('Unsupported argument: %s' % args)
@@ -2370,15 +2375,10 @@ class OptionParserIsolate(trace_inputs.OptionParserWithNiceDescription):
     return options, args
 
 
-### Glue code to make all the commands works magically.
-
-
-CMDhelp = trace_inputs.CMDhelp
-
-
 def main(argv):
+  dispatcher = subcommand.CommandDispatcher(__name__)
   try:
-    return trace_inputs.main_impl(argv)
+    return dispatcher.execute(OptionParserIsolate(), argv)
   except (
       ExecutionError,
       run_isolated.MappingError,
@@ -2390,4 +2390,7 @@ def main(argv):
 
 
 if __name__ == '__main__':
+  fix_encoding.fix_encoding()
+  trace_inputs.disable_buffering()
+  colorama.init()
   sys.exit(main(sys.argv[1:]))

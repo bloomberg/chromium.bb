@@ -403,10 +403,11 @@ class Isolate(unittest.TestCase):
         cwd=ROOT_DIR)
     out = p.communicate()[0].splitlines()
     self.assertEqual(0, p.returncode)
-    out = out[out.index('') + 1:]
+    out = out[out.index('Commands are:') + 1:]
     out = out[:out.index('')]
-    modes = [re.match(r'^  (\w+) .+', l) for l in out]
-    modes = tuple(m.group(1) for m in modes if m)
+    regexp = '^  (?:\x1b\\[\\d\\dm)(\\w+)\s*(:?\x1b\\[\\d\\dm) .+'
+    modes = [re.match(regexp, l) for l in out]
+    modes = [m.group(1) for m in modes if m]
     self.assertEqual(sorted(EXPECTED_MODES), sorted(modes))
 
   def test_modes(self):
