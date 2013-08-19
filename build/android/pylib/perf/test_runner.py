@@ -108,6 +108,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     """
     cmd = ('%s --device %s --keep_test_server_ports' %
            (self._tests[test_name], self.device))
+    logging.info('%s : %s', test_name, cmd)
     start_time = datetime.datetime.now()
     output, exit_code = pexpect.run(
         cmd, cwd=os.path.abspath(constants.DIR_SOURCE_ROOT),

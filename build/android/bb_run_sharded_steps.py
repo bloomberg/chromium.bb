@@ -34,7 +34,7 @@ def main(argv):
   flaky_options = []
   if options.flaky_steps:
     flaky_options = ['--flaky-steps', options.flaky_steps]
-  return cmd_helper.RunCmd(['build/android/test_runner.py', 'perf',
+  return cmd_helper.RunCmd(['build/android/test_runner.py', 'perf', '-v',
                             '--steps', options.steps] + flaky_options)
 
 
