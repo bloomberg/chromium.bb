@@ -263,27 +263,27 @@ private:
 
     virtual PassOwnPtr<LifecycleNotifier> createLifecycleNotifier() OVERRIDE;
 
-    OwnPtr<AutoscrollController> m_autoscrollController;
-    OwnPtr<Chrome> m_chrome;
+    const OwnPtr<AutoscrollController> m_autoscrollController;
+    const OwnPtr<Chrome> m_chrome;
     const OwnPtr<DragCaretController> m_dragCaretController;
     const OwnPtr<DragController> m_dragController;
-    OwnPtr<FocusController> m_focusController;
+    const OwnPtr<FocusController> m_focusController;
     const OwnPtr<ContextMenuController> m_contextMenuController;
-    OwnPtr<InspectorController> m_inspectorController;
+    const OwnPtr<InspectorController> m_inspectorController;
     const OwnPtr<PointerLockController> m_pointerLockController;
     RefPtr<ScrollingCoordinator> m_scrollingCoordinator;
 
     const OwnPtr<Settings> m_settings;
-    OwnPtr<ProgressTracker> m_progress;
+    const OwnPtr<ProgressTracker> m_progress;
 
-    OwnPtr<BackForwardController> m_backForwardController;
+    const OwnPtr<BackForwardController> m_backForwardController;
     RefPtr<Frame> m_mainFrame;
 
     mutable RefPtr<PluginData> m_pluginData;
 
-    RefPtr<RenderTheme> m_theme;
+    const RefPtr<RenderTheme> m_theme;
 
-    EditorClient* m_editorClient;
+    EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;
 
     UseCounter m_UseCounter;
