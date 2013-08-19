@@ -290,8 +290,7 @@ class ChromeLauncher(BrowserLauncher):
             # blacklisted port.  To work around this, the tester whitelists
             # whatever port it is using.
             '--explicitly-allowed-ports=%d' % port,
-            '--user-data-dir=%s' % self.profile,
-            '--allow-nacl-socket-api=%s' % host]
+            '--user-data-dir=%s' % self.profile]
     # Log network requests to assist debugging.
     cmd.append('--log-net-log=%s' % self.NetLogName())
     if self.options.ppapi_plugin is None:

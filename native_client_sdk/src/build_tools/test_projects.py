@@ -92,6 +92,7 @@ def GetBrowserTesterCommand(desc, toolchain, config):
     '--timeout', '30.0',  # seconds
     # Prevent the infobar that shows up when requesting filesystem quota.
     '--browser_flag', '--unlimited-storage',
+    '--enable_sockets',
   ]
 
   args.extend(['--serving_dir', GetServingDirForProject(desc)])
