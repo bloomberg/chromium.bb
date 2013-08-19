@@ -13841,6 +13841,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SimpleCache.SyncOpenEntryAge" units="hours">
+  <summary>
+    The age of the entry (time since last modified), when opened at the
+    synchronous layer.
+  </summary>
+</histogram>
+
 <histogram name="SimpleCache.SyncOpenPlatformFileError"
     enum="PlatformFileError">
   <summary>

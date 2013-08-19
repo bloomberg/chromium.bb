@@ -514,6 +514,11 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(
       else
         out_entry_stat->last_modified = file_info.last_modified;
 
+      base::TimeDelta entry_age =
+          base::Time::Now() - out_entry_stat->last_modified;
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "SimpleCache.SyncOpenEntryAge", entry_age.InHours(), 1, 1000, 50);
+
       // Keep the file size in |data size_| briefly until the key is initialized
       // properly.
       out_entry_stat->data_size[i] = file_info.size;
