@@ -81,7 +81,6 @@ bool ValidatePageElement(WebContents* tab,
                          const std::string& javascript,
                          const std::string& expected_value) {
   std::string returned_value;
-  std::string error;
 
   if (!content::ExecuteScriptInFrameAndExtractString(tab, frame_xpath,
                                                      javascript,
