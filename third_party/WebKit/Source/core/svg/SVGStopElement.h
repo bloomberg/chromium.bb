@@ -21,6 +21,7 @@
 #ifndef SVGStopElement_h
 #define SVGStopElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGElement.h"
 
@@ -48,6 +49,12 @@ private:
         DECLARE_ANIMATED_NUMBER(Offset, offset)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGStopElement* toSVGStopElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::stopTag));
+    return static_cast<SVGStopElement*>(node);
+}
 
 inline SVGStopElement* toSVGStopElement(SVGElement* element)
 {
