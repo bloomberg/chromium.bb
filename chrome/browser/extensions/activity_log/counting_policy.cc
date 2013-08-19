@@ -135,7 +135,9 @@ class CountedAction : public Action {
                 const base::Time& time,
                 const ActionType action_type,
                 const std::string& api_name)
-      : Action(extension_id, time, action_type, api_name) {}
+      : Action(extension_id, time, action_type, api_name),
+        count_(0) {
+  }
 
   // Number of merged records for this action.
   int count() const { return count_; }
