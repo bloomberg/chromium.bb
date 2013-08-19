@@ -69,7 +69,7 @@ PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, c
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
     Document* document = toDocument(context);
     if (!document->securityOrigin()->canAccessSharedWorkers()) {
-        es.throwDOMException(SecurityError, "Failed to create 'SharedWorker': access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
+        es.throwSecurityError("Failed to create 'SharedWorker': access to shared workers is denied to origin '" + document->securityOrigin()->toString() + "'.");
         return 0;
     }
 

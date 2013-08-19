@@ -68,13 +68,14 @@ KURL AbstractWorker::resolveURL(const String& url, ExceptionState& es)
         return KURL();
     }
 
+    // We can safely expose the URL in the following exceptions, as these checks happen synchronously before redirection. JavaScript receives no new information.
     if (!scriptExecutionContext()->securityOrigin()->canRequest(scriptURL)) {
-        es.throwDOMException(SecurityError, "Failed to create a worker: script with origin '" + SecurityOrigin::create(scriptURL)->toString() + "' cannot be accessed from origin '" + scriptExecutionContext()->securityOrigin()->toString() + "'.");
+        es.throwSecurityError("Failed to create a worker: script at '" + scriptURL.elidedString() + "' cannot be accessed from origin '" + scriptExecutionContext()->securityOrigin()->toString() + "'.");
         return KURL();
     }
 
     if (scriptExecutionContext()->contentSecurityPolicy() && !scriptExecutionContext()->contentSecurityPolicy()->allowScriptFromSource(scriptURL)) {
-        es.throwDOMException(SecurityError, "Failed to create a worker: access to the script at '" + url + "' is denied by the document's Content Security Policy.");
+        es.throwSecurityError("Failed to create a worker: access to the script at '" + scriptURL.elidedString() + "' is denied by the document's Content Security Policy.");
         return KURL();
     }
 

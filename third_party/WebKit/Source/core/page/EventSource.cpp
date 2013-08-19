@@ -92,7 +92,8 @@ PassRefPtr<EventSource> EventSource::create(ScriptExecutionContext* context, con
         shouldBypassMainWorldContentSecurityPolicy = document->frame()->script()->shouldBypassMainWorldContentSecurityPolicy();
     }
     if (!shouldBypassMainWorldContentSecurityPolicy && !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
-        es.throwDOMException(SecurityError, "Refused to connect to '" + fullURL.elidedString() + "' because it violates the document's Content Security Policy.");
+        // We can safely expose the URL to JavaScript, as this exception is generate synchronously before any redirects take place.
+        es.throwSecurityError("Refused to connect to '" + fullURL.elidedString() + "' because it violates the document's Content Security Policy.");
         return 0;
     }
 

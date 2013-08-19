@@ -25,7 +25,7 @@ function runNextTest()
 function testCrossOriginLoad()
 {
     try {
-        var worker = createWorker('http://localhost:8000/workers/resources/worker-redirect-target.js');
+        var worker = createWorker('http://localhost:8000/workers/resources/worker-target.js');
         worker.onerror = function(evt) {
             log("FAIL: threw error when attempting to cross origin while loading the worker script.");
             runNextTest();
