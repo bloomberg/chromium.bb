@@ -450,7 +450,7 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
         PluginView* pluginView = toPluginView(toRenderWidget(renderer)->widget());
         m_graphicsLayer->setContentsToMedia(pluginView->platformLayer());
     } else if (renderer->isVideo()) {
-        HTMLMediaElement* mediaElement = toMediaElement(renderer->node());
+        HTMLMediaElement* mediaElement = toHTMLMediaElement(renderer->node());
         m_graphicsLayer->setContentsToMedia(mediaElement->platformLayer());
     } else if (isAcceleratedCanvas(renderer)) {
         HTMLCanvasElement* canvas = toHTMLCanvasElement(renderer->node());
