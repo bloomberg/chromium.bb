@@ -700,17 +700,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
   aura::RootWindow* root = popup_parent_host_view_->window_->GetRootWindow();
   window_->SetDefaultParentByRootWindow(root, bounds_in_screen);
 
-  // TODO(erg): While I could make sure details of the StackingClient are
-  // hidden behind aura, hiding the details of the ScreenPositionClient will
-  // take another effort.
-  aura::client::ScreenPositionClient* screen_position_client =
-      aura::client::GetScreenPositionClient(root);
-  gfx::Point origin_in_parent(bounds_in_screen.origin());
-  if (screen_position_client) {
-    screen_position_client->ConvertPointFromScreen(
-        window_->parent(), &origin_in_parent);
-  }
-  SetBounds(gfx::Rect(origin_in_parent, bounds_in_screen.size()));
+  SetBounds(bounds_in_screen);
   Show();
 }
 
@@ -786,56 +776,25 @@ void RenderWidgetHostViewAura::WasHidden() {
 }
 
 void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
-  SetBounds(gfx::Rect(window_->bounds().origin(), size));
+  // For a SetSize operation, we don't care what coordinate system the origin
+  // of the window is in, it's only important to make sure that the origin
+  // remains constant after the operation.
+  InternalSetBounds(gfx::Rect(window_->bounds().origin(), size));
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  if (HasDisplayPropertyChanged(window_))
-    host_->InvalidateScreenInfo();
-
-  window_->SetBounds(rect);
-  host_->WasResized();
-  MaybeCreateResizeLock();
-  if (touch_editing_client_) {
-    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
-        selection_focus_rect_);
+  // RenderWidgetHostViewAura::SetBounds() takes screen coordinates, but
+  // Window::SetBounds() takes parent coordinates, so do the conversion here.
+  aura::RootWindow* root = window_->GetRootWindow();
+  aura::client::ScreenPositionClient* screen_position_client =
+      aura::client::GetScreenPositionClient(root);
+  gfx::Point origin_in_parent(rect.origin());
+  if (screen_position_client) {
+    screen_position_client->ConvertPointFromScreen(
+        window_->parent(), &origin_in_parent);
   }
-}
 
-void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
-  gfx::Size desired_size = window_->bounds().size();
-  if (!host_->should_auto_resize() &&
-      !resize_lock_.get() &&
-      desired_size != current_frame_size_ &&
-      host_->is_accelerated_compositing_active()) {
-    aura::RootWindow* root_window = window_->GetRootWindow();
-    ui::Compositor* compositor = root_window ?
-        root_window->compositor() : NULL;
-    if (root_window && compositor) {
-      // Listen to changes in the compositor lock state.
-      if (!compositor->HasObserver(this))
-        compositor->AddObserver(this);
-
-// On Windows while resizing, the the resize locks makes us mis-paint a white
-// vertical strip (including the non-client area) if the content composition is
-// lagging the UI composition. So here we disable the throttling so that the UI
-// bits can draw ahead of the content thereby reducing the amount of whiteout.
-// Because this causes the content to be drawn at wrong sizes while resizing
-// we compensate by blocking the UI thread in Compositor::Draw() by issuing a
-// FinishAllRendering() if we are resizing.
-#if !defined (OS_WIN)
-      bool defer_compositor_lock =
-         can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
-         can_lock_compositor_ == NO_PENDING_COMMIT;
-
-      if (can_lock_compositor_ == YES)
-        can_lock_compositor_ = YES_DID_LOCK;
-
-      resize_lock_.reset(new ResizeLock(root_window, desired_size,
-                                        defer_compositor_lock));
-#endif
-    }
-  }
+  InternalSetBounds(gfx::Rect(origin_in_parent, rect.size()));
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
@@ -1278,6 +1237,55 @@ bool RenderWidgetHostViewAura::ShouldSkipFrame(gfx::Size size_in_dip) const {
     return false;
 
   return size_in_dip != resize_lock_->expected_size();
+}
+
+void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
+  if (HasDisplayPropertyChanged(window_))
+    host_->InvalidateScreenInfo();
+
+  window_->SetBounds(rect);
+  host_->WasResized();
+  MaybeCreateResizeLock();
+  if (touch_editing_client_) {
+    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
+      selection_focus_rect_);
+  }
+}
+
+void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
+  gfx::Size desired_size = window_->bounds().size();
+  if (!host_->should_auto_resize() &&
+      !resize_lock_.get() &&
+      desired_size != current_frame_size_ &&
+      host_->is_accelerated_compositing_active()) {
+    aura::RootWindow* root_window = window_->GetRootWindow();
+    ui::Compositor* compositor = root_window ?
+        root_window->compositor() : NULL;
+    if (root_window && compositor) {
+      // Listen to changes in the compositor lock state.
+      if (!compositor->HasObserver(this))
+        compositor->AddObserver(this);
+
+// On Windows while resizing, the the resize locks makes us mis-paint a white
+// vertical strip (including the non-client area) if the content composition is
+// lagging the UI composition. So here we disable the throttling so that the UI
+// bits can draw ahead of the content thereby reducing the amount of whiteout.
+// Because this causes the content to be drawn at wrong sizes while resizing
+// we compensate by blocking the UI thread in Compositor::Draw() by issuing a
+// FinishAllRendering() if we are resizing.
+#if !defined (OS_WIN)
+      bool defer_compositor_lock =
+         can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
+         can_lock_compositor_ == NO_PENDING_COMMIT;
+
+      if (can_lock_compositor_ == YES)
+        can_lock_compositor_ = YES_DID_LOCK;
+
+      resize_lock_.reset(new ResizeLock(root_window, desired_size,
+                                        defer_compositor_lock));
+#endif
+    }
+  }
 }
 
 void RenderWidgetHostViewAura::CheckResizeLock() {
