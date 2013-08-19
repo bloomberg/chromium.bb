@@ -821,13 +821,13 @@ cr.define('options.internet', function() {
     if (data.type != Constants.TYPE_ETHERNET)
       $('details-internet-disconnect').hidden = !data.connected;
 
-    if (data.type == Constants.TYPE_WIMAX ||
-        data.type == Constants.TYPE_WIFI ||
-        data.type == Constants.TYPE_VPN)
+    if ((data.type == Constants.TYPE_WIFI && data.encryption) ||
+        data.type == Constants.TYPE_WIMAX ||
+        data.type == Constants.TYPE_VPN) {
       $('details-internet-configure').hidden = false;
-    else
+    } else {
       $('details-internet-configure').hidden = true;
-
+    }
     $('connection-state').data = data;
   }
 
@@ -882,12 +882,13 @@ cr.define('options.internet', function() {
       $('details-internet-disconnect').hidden = true;
     else
       $('details-internet-disconnect').hidden = !data.connected;
-    if (data.type == Constants.TYPE_WIMAX ||
-        data.type == Constants.TYPE_WIFI ||
-        data.type == Constants.TYPE_VPN)
+    if ((data.type == Constants.TYPE_WIFI && data.encryption) ||
+        data.type == Constants.TYPE_WIMAX ||
+        data.type == Constants.TYPE_VPN) {
       $('details-internet-configure').hidden = false;
-    else
+    } else {
       $('details-internet-configure').hidden = true;
+    }
     $('web-proxy-auto-discovery').hidden = true;
 
     detailsPage.deviceConnected = data.deviceConnected;
