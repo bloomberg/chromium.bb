@@ -8,7 +8,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/geolocation_handler.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_cert_migrator.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -35,7 +35,7 @@ NetworkHandler::NetworkHandler()
   network_profile_handler_.reset(new NetworkProfileHandler());
   network_configuration_handler_.reset(new NetworkConfigurationHandler());
   managed_network_configuration_handler_.reset(
-      new ManagedNetworkConfigurationHandler());
+      new ManagedNetworkConfigurationHandlerImpl());
   if (CertLoader::IsInitialized()) {
     network_cert_migrator_.reset(new NetworkCertMigrator());
     client_cert_resolver_.reset(new ClientCertResolver());

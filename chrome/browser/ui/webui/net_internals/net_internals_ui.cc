@@ -1563,8 +1563,7 @@ void NetInternalsMessageHandler::OnImportONCFile(const ListValue* list) {
       error += "Some certificates couldn't be imported. ";
 
     std::string network_error;
-    chromeos::onc::ImportNetworksForUser(
-        user->username_hash(), network_configs, &network_error);
+    chromeos::onc::ImportNetworksForUser(user, network_configs, &network_error);
     if (!network_error.empty())
       error += network_error;
   } else {

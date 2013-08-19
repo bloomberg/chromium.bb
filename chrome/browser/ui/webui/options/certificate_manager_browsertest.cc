@@ -55,7 +55,7 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
     // Enable web trust certs from policy.
     g_browser_process->browser_policy_connector()->
         network_configuration_updater()->SetUserPolicyService(
-            true, "", connector->policy_service());
+            true, NULL /* no user */, connector->policy_service());
 #endif
     content::RunAllPendingInMessageLoop();
   }

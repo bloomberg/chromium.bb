@@ -15,7 +15,7 @@
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
 #include "chromeos/login/login_state.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -124,7 +124,7 @@ class ClientCertResolverTest : public testing::Test {
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
     network_profile_handler_.reset(new NetworkProfileHandler());
     network_config_handler_.reset(new NetworkConfigurationHandler());
-    managed_config_handler_.reset(new ManagedNetworkConfigurationHandler());
+    managed_config_handler_.reset(new ManagedNetworkConfigurationHandlerImpl());
     client_cert_resolver_.reset(new ClientCertResolver());
 
     network_profile_handler_->Init(network_state_handler_.get());
@@ -224,7 +224,7 @@ class ClientCertResolverTest : public testing::Test {
   scoped_ptr<NetworkStateHandler> network_state_handler_;
   scoped_ptr<NetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_config_handler_;
-  scoped_ptr<ManagedNetworkConfigurationHandler> managed_config_handler_;
+  scoped_ptr<ManagedNetworkConfigurationHandlerImpl> managed_config_handler_;
   scoped_ptr<ClientCertResolver> client_cert_resolver_;
   scoped_refptr<net::CryptoModule> slot_;
   crypto::ScopedTestNSSDB test_nssdb_;

@@ -29,8 +29,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/dbus/cryptohome_client.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -63,7 +61,7 @@ void ProfilePolicyConnector::Init(
     providers.push_back(cloud_policy_manager);
 
   bool allow_trusted_certs_from_policy = false;
-  std::string username;
+  chromeos::User* user = NULL;
   if (chromeos::ProfileHelper::IsSigninProfile(profile_)) {
     special_user_policy_provider_.reset(new LoginProfilePolicyProvider(
         connector->GetPolicyService()));
@@ -73,9 +71,9 @@ void ProfilePolicyConnector::Init(
     // TODO(joaodasilva): get the |user| that corresponds to the |profile_|
     // from the ProfileHelper, once that's ready.
     chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-    chromeos::User* user = user_manager->GetActiveUser();
+    user = user_manager->GetActiveUser();
     CHECK(user);
-    username = user->email();
+    std::string username = user->email();
     is_primary_user_ =
         chromeos::UserManager::Get()->GetLoggedInUsers().size() == 1;
     if (user->GetType() == chromeos::User::USER_TYPE_PUBLIC_ACCOUNT)
@@ -112,14 +110,10 @@ void ProfilePolicyConnector::Init(
     else if (special_user_policy_provider_)
       connector->SetUserPolicyDelegate(special_user_policy_provider_.get());
 
-    chromeos::CryptohomeClient* cryptohome_client =
-        chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
-    cryptohome_client->GetSanitizedUsername(
-        username,
-        base::Bind(
-            &ProfilePolicyConnector::InitializeNetworkConfigurationUpdater,
-            weak_ptr_factory_.GetWeakPtr(),
-            allow_trusted_certs_from_policy));
+    // A reference to |user| is stored by the NetworkConfigurationUpdater until
+    // UnsetUserPolicyService during Shutdown is called.
+    connector->network_configuration_updater()->SetUserPolicyService(
+        allow_trusted_certs_from_policy, user, policy_service());
   }
 #endif
 }
@@ -166,18 +160,6 @@ void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
   special_user_policy_provider_.reset(new DeviceLocalAccountPolicyProvider(
       username, device_local_account_policy_service));
   special_user_policy_provider_->Init();
-}
-
-void ProfilePolicyConnector::InitializeNetworkConfigurationUpdater(
-    bool allow_trusted_certs_from_policy,
-    chromeos::DBusMethodCallStatus status,
-    const std::string& hashed_username) {
-  // TODO(joaodasilva): create the NetworkConfigurationUpdater for user ONC
-  // here, after splitting that class into an instance for device policy and
-  // another per profile for user policy.
-  g_browser_process->browser_policy_connector()->
-      network_configuration_updater()->SetUserPolicyService(
-          allow_trusted_certs_from_policy, hashed_username, policy_service());
 }
 #endif
 

@@ -63,13 +63,6 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
 
 #if defined(OS_CHROMEOS)
   void InitializeDeviceLocalAccountPolicyProvider(const std::string& username);
-
-  // Callback for CryptohomeClient::GetSanitizedUsername() that initializes the
-  // NetworkConfigurationUpdater after receiving the hashed username.
-  void InitializeNetworkConfigurationUpdater(
-      bool is_managed,
-      chromeos::DBusMethodCallStatus status,
-      const std::string& hashed_username);
 #endif
 
   Profile* profile_;

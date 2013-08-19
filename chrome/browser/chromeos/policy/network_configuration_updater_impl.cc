@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
@@ -22,12 +23,15 @@ namespace policy {
 
 NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
     PolicyService* device_policy_service,
+    chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
     scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer)
     : device_policy_change_registrar_(device_policy_service,
                                       PolicyNamespace(POLICY_DOMAIN_CHROME,
                                                       std::string())),
       user_policy_service_(NULL),
       device_policy_service_(device_policy_service),
+      user_(NULL),
+      network_config_handler_(network_config_handler),
       certificate_importer_(certificate_importer.Pass()) {
   device_policy_change_registrar_.Observe(
       key::kDeviceOpenNetworkConfiguration,
@@ -52,11 +56,11 @@ NetworkConfigurationUpdaterImpl::~NetworkConfigurationUpdaterImpl() {
 
 void NetworkConfigurationUpdaterImpl::SetUserPolicyService(
     bool allow_trusted_certs_from_policy,
-    const std::string& hashed_username,
+    const chromeos::User* user,
     PolicyService* user_policy_service) {
   VLOG(1) << "Got user policy service.";
   user_policy_service_ = user_policy_service;
-  hashed_username_ = hashed_username;
+  user_ = user;
   if (allow_trusted_certs_from_policy)
     SetAllowTrustedCertsFromPolicy();
 
@@ -160,14 +164,13 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
       certificates, onc_source, web_trust_certs.get());
 
   std::string userhash;
-  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY) {
-    userhash = hashed_username_;
-    chromeos::onc::ExpandStringPlaceholdersInNetworksForUser(hashed_username_,
+  if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY && user_) {
+    userhash = user_->username_hash();
+    chromeos::onc::ExpandStringPlaceholdersInNetworksForUser(user_,
                                                              &network_configs);
   }
 
-  chromeos::NetworkHandler::Get()->managed_network_configuration_handler()->
-      SetPolicy(onc_source, userhash, network_configs);
+  network_config_handler_->SetPolicy(onc_source, userhash, network_configs);
 
   if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY)
     SetTrustAnchors(web_trust_certs.Pass());

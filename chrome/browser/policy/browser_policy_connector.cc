@@ -73,7 +73,7 @@
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #endif
 
@@ -231,9 +231,9 @@ void BrowserPolicyConnector::Init(
   policy_statistics_collector_->Initialize();
 
 #if defined(OS_CHROMEOS)
-
   network_configuration_updater_.reset(new NetworkConfigurationUpdaterImpl(
       GetPolicyService(),
+      chromeos::NetworkHandler::Get()->managed_network_configuration_handler(),
       scoped_ptr<chromeos::onc::CertificateImporter>(
           new chromeos::onc::CertificateImporterImpl)));
 #endif

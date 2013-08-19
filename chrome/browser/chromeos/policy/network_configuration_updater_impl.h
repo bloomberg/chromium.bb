@@ -14,6 +14,8 @@ class Value;
 }
 
 namespace chromeos {
+class ManagedNetworkConfigurationHandler;
+
 namespace onc {
 class CertificateImporter;
 }
@@ -31,13 +33,14 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater,
  public:
   NetworkConfigurationUpdaterImpl(
       PolicyService* device_policy_service,
+      chromeos::ManagedNetworkConfigurationHandler* network_config_handler,
       scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer);
   virtual ~NetworkConfigurationUpdaterImpl();
 
   // NetworkConfigurationUpdater overrides.
   virtual void SetUserPolicyService(
       bool allow_trusted_certs_from_policy,
-      const std::string& hashed_username,
+      const chromeos::User* user,
       PolicyService* user_policy_service) OVERRIDE;
 
   virtual void UnsetUserPolicyService() OVERRIDE;
@@ -68,8 +71,12 @@ class NetworkConfigurationUpdaterImpl : public NetworkConfigurationUpdater,
    // Used to retrieve device policies.
    PolicyService* device_policy_service_;
 
-   // User hash of the user that the user policy applies to.
-   std::string hashed_username_;
+   // The user for whom the user policy will be applied. The User object must be
+   // valid until UnsetUserPolicyService() is called.
+   const chromeos::User* user_;
+
+   // Pointer to the global singleton or a test instance.
+   chromeos::ManagedNetworkConfigurationHandler* network_config_handler_;
 
    scoped_ptr<chromeos::onc::CertificateImporter> certificate_importer_;
 

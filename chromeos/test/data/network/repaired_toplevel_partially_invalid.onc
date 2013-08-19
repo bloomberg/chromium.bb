@@ -14,7 +14,7 @@
           "Type": "OpenVPN",
           "OpenVPN": {
               "Port": 1194,
-              "Username": "abc ${LOGIN_ID} def",
+              "Username": "abc fake email def",
               "Recommended": [ "Username", "Password" ],
               "ClientCertType": "Pattern",
               "ClientCertPattern": {

@@ -271,15 +271,17 @@ class LoginUtilsTest : public testing::Test,
     test_cros_settings_.reset(new ScopedTestCrosSettings);
     test_user_manager_.reset(new ScopedTestUserManager);
 
+    // IOThread creates ProxyConfigServiceImpl and
+    // BrowserPolicyConnector::Init() creates a NetworkConfigurationUpdater,
+    // which both access NetworkHandler. Thus initialize it here before creating
+    // IOThread and before calling BrowserPolicyConnector::Init().
+    NetworkHandler::Initialize();
+
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
     connector_ = browser_process_->browser_policy_connector();
     connector_->Init(local_state_.Get(),
                      browser_process_->system_request_context());
-
-    // IOThread creates ProxyConfigServiceImpl which in turn needs
-    // NetworkHandler. Thus initialize it here before creating IOThread.
-    NetworkHandler::Initialize();
 
     io_thread_state_.reset(new IOThread(local_state_.Get(),
                                         browser_process_->policy_service(),

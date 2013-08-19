@@ -9,6 +9,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/cert/x509_certificate.h"
 
+namespace chromeos {
+class User;
+}
+
 namespace net {
 class CertTrustAnchorProvider;
 }
@@ -30,10 +34,10 @@ class NetworkConfigurationUpdater {
   // not applied. This function may trigger immediate policy applications.  Web
   // trust isn't given to certificates imported from ONC by default. Setting
   // |allow_trust_certs_from_policy| to true allows giving Web trust to the
-  // certificates that request it. The pointer |user_policy_service| is
-  // stored until UnsetUserPolicyService is called.
+  // certificates that request it. References to |user_policy_service| and
+  // |user| are stored until UnsetUserPolicyService() is called.
   virtual void SetUserPolicyService(bool allow_trusted_certs_from_policy,
-                                    const std::string& hashed_username,
+                                    const chromeos::User* user,
                                     PolicyService* user_policy_service) = 0;
 
   // Unregisters from the PolicyService previously provided by

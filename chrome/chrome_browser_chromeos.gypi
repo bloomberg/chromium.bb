@@ -665,8 +665,6 @@
         'browser/chromeos/policy/network_configuration_updater.h',
         'browser/chromeos/policy/network_configuration_updater_impl.cc',
         'browser/chromeos/policy/network_configuration_updater_impl.h',
-        'browser/chromeos/policy/network_configuration_updater_impl_cros.cc',
-        'browser/chromeos/policy/network_configuration_updater_impl_cros.h',
         'browser/chromeos/policy/policy_cert_verifier.cc',
         'browser/chromeos/policy/policy_cert_verifier.h',
         'browser/chromeos/policy/policy_oauth2_token_fetcher.cc',

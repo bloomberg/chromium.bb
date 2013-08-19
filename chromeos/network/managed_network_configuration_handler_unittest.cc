@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/network/managed_network_configuration_handler.h"
-
 #include <iostream>
 #include <sstream>
 
@@ -13,6 +11,7 @@
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
+#include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/onc/onc_test_utils.h"
@@ -182,7 +181,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
         NetworkConfigurationHandler::InitializeForTest(
             NULL /* no NetworkStateHandler */));
     managed_network_configuration_handler_.reset(
-        new ManagedNetworkConfigurationHandler());
+        new ManagedNetworkConfigurationHandlerImpl());
     managed_network_configuration_handler_->Init(
         NULL /* no NetworkStateHandler */,
         network_profile_handler_.get(),
@@ -258,7 +257,7 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   ShillProfileTestClient profiles_stub_;
   scoped_ptr<TestNetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
-  scoped_ptr<ManagedNetworkConfigurationHandler>
+  scoped_ptr<ManagedNetworkConfigurationHandlerImpl>
         managed_network_configuration_handler_;
   base::MessageLoop message_loop_;
 

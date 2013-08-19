@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/ui_proxy_config.h"
 #include "chrome/browser/prefs/proxy_config_dictionary.h"
 #include "chromeos/network/network_configuration_handler.h"
@@ -164,23 +163,11 @@ class UserStringSubstitution : public chromeos::onc::StringSubstitution {
   DISALLOW_COPY_AND_ASSIGN(UserStringSubstitution);
 };
 
-const chromeos::User* GetLoggedInUserByHash(const std::string& userhash) {
-  const chromeos::UserList& users =
-      chromeos::UserManager::Get()->GetLoggedInUsers();
-  for (chromeos::UserList::const_iterator it = users.begin(); it != users.end();
-       ++it) {
-    if ((*it)->username_hash() == userhash)
-      return *it;
-  }
-  return NULL;
-}
-
 }  // namespace
 
 void ExpandStringPlaceholdersInNetworksForUser(
-    const std::string& hashed_username,
+    const chromeos::User* user,
     base::ListValue* network_configs) {
-  const chromeos::User* user = GetLoggedInUserByHash(hashed_username);
   if (!user) {
     // In tests no user may be logged in. It's not harmful if we just don't
     // expand the strings.
@@ -190,18 +177,17 @@ void ExpandStringPlaceholdersInNetworksForUser(
   chromeos::onc::ExpandStringsInNetworks(substitution, network_configs);
 }
 
-void ImportNetworksForUser(const std::string& hashed_username,
+void ImportNetworksForUser(const chromeos::User* user,
                            const base::ListValue& network_configs,
                            std::string* error) {
   error->clear();
 
   scoped_ptr<base::ListValue> expanded_networks(network_configs.DeepCopy());
-  ExpandStringPlaceholdersInNetworksForUser(hashed_username,
-                                            expanded_networks.get());
+  ExpandStringPlaceholdersInNetworksForUser(user, expanded_networks.get());
 
   const NetworkProfile* profile =
       NetworkHandler::Get()->network_profile_handler()->GetProfileForUserhash(
-          hashed_username);
+          user->username_hash());
   if (!profile) {
     *error = "User profile doesn't exist.";
     return;
