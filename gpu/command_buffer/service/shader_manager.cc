@@ -43,10 +43,12 @@ void Shader::SetStatus(
   if (translator && valid) {
     attrib_map_ = translator->attrib_map();
     uniform_map_ = translator->uniform_map();
+    varying_map_ = translator->varying_map();
     name_map_ = translator->name_map();
   } else {
     attrib_map_.clear();
     uniform_map_.clear();
+    varying_map_.clear();
     name_map_.clear();
   }
   if (valid && source_.get()) {

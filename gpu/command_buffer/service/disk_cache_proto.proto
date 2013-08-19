@@ -5,12 +5,14 @@ message ShaderInfoProto {
   optional int32 size = 2;
   optional string name = 3;
   optional string key = 4;
+  optional int32 precision = 5;
 }
 
 message ShaderProto {
   optional bytes sha = 1;
   repeated ShaderInfoProto attribs = 2;
   repeated ShaderInfoProto uniforms = 3;
+  repeated ShaderInfoProto varyings = 4;
 }
 
 message GpuProgramProto {

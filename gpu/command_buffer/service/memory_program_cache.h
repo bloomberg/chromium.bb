@@ -57,9 +57,11 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
                       const char* shader_0_hash,
                       const ShaderTranslator::VariableMap& attrib_map_0,
                       const ShaderTranslator::VariableMap& uniform_map_0,
+                      const ShaderTranslator::VariableMap& varying_map_0,
                       const char* shader_1_hash,
                       const ShaderTranslator::VariableMap& attrib_map_1,
                       const ShaderTranslator::VariableMap& uniform_map_1,
+                      const ShaderTranslator::VariableMap& varying_map_1,
                       MemoryProgramCache* program_cache);
 
     GLsizei length() const {
@@ -86,6 +88,10 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
       return uniform_map_0_;
     }
 
+    const ShaderTranslator::VariableMap& varying_map_0() const {
+      return varying_map_0_;
+    }
+
     const std::string& shader_1_hash() const {
       return shader_1_hash_;
     }
@@ -96,6 +102,10 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
 
     const ShaderTranslator::VariableMap& uniform_map_1() const {
       return uniform_map_1_;
+    }
+
+    const ShaderTranslator::VariableMap& varying_map_1() const {
+      return varying_map_1_;
     }
 
    private:
@@ -110,9 +120,11 @@ class GPU_EXPORT MemoryProgramCache : public ProgramCache {
     const std::string shader_0_hash_;
     const ShaderTranslator::VariableMap attrib_map_0_;
     const ShaderTranslator::VariableMap uniform_map_0_;
+    const ShaderTranslator::VariableMap varying_map_0_;
     const std::string shader_1_hash_;
     const ShaderTranslator::VariableMap attrib_map_1_;
     const ShaderTranslator::VariableMap uniform_map_1_;
+    const ShaderTranslator::VariableMap varying_map_1_;
     MemoryProgramCache* const program_cache_;
 
     DISALLOW_COPY_AND_ASSIGN(ProgramCacheValue);

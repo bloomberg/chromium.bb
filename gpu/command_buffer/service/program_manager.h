@@ -186,6 +186,11 @@ class GPU_EXPORT Program : public base::RefCounted<Program> {
   // We only consider the declared attributes in the program.
   bool DetectAttribLocationBindingConflicts() const;
 
+  // Detects if there are uniforms of the same name but different type
+  // or precision in vertex/fragment shaders.
+  // Return true if such cases are detected.
+  bool DetectUniformsMismatch() const;
+
   // Visible for testing
   const LocationMap& bind_attrib_location_map() const {
     return bind_attrib_location_map_;

@@ -108,19 +108,27 @@ class MemoryProgramCacheTest : public testing::Test {
     typedef ShaderTranslator::VariableMap VariableMap;
     VariableMap vertex_attrib_map;
     VariableMap vertex_uniform_map;
+    VariableMap vertex_varying_map;
     VariableMap fragment_attrib_map;
     VariableMap fragment_uniform_map;
+    VariableMap fragment_varying_map;
 
-    vertex_attrib_map["a"] = VariableInfo(1, 34, "a");
-    vertex_uniform_map["a"] = VariableInfo(0, 10, "a");
-    vertex_uniform_map["b"] = VariableInfo(2, 3114, "b");
-    fragment_attrib_map["jjjbb"] = VariableInfo(463, 1114, "jjjbb");
-    fragment_uniform_map["k"] = VariableInfo(10, 34413, "k");
+    vertex_attrib_map["a"] = VariableInfo(1, 34, SH_PRECISION_LOWP, "a");
+    vertex_uniform_map["a"] = VariableInfo(0, 10, SH_PRECISION_MEDIUMP,  "a");
+    vertex_uniform_map["b"] = VariableInfo(2, 3114, SH_PRECISION_HIGHP, "b");
+    vertex_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, "c");
+    fragment_attrib_map["jjjbb"] =
+        VariableInfo(463, 1114, SH_PRECISION_MEDIUMP, "jjjbb");
+    fragment_uniform_map["k"] =
+        VariableInfo(10, 34413, SH_PRECISION_MEDIUMP, "k");
+    fragment_varying_map["c"] = VariableInfo(3, 2, SH_PRECISION_HIGHP, "c");
 
     vertex_shader_->set_attrib_map(vertex_attrib_map);
     vertex_shader_->set_uniform_map(vertex_uniform_map);
+    vertex_shader_->set_varying_map(vertex_varying_map);
     fragment_shader_->set_attrib_map(vertex_attrib_map);
     fragment_shader_->set_uniform_map(vertex_uniform_map);
+    fragment_shader_->set_varying_map(vertex_varying_map);
 
     vertex_shader_->UpdateSource("bbbalsldkdkdkd");
     fragment_shader_->UpdateSource("bbbal   sldkdkdkas 134 ad");
@@ -262,13 +270,17 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
 
   VariableMap vertex_attrib_map = vertex_shader_->attrib_map();
   VariableMap vertex_uniform_map = vertex_shader_->uniform_map();
+  VariableMap vertex_varying_map = vertex_shader_->varying_map();
   VariableMap fragment_attrib_map = fragment_shader_->attrib_map();
   VariableMap fragment_uniform_map = fragment_shader_->uniform_map();
+  VariableMap fragment_varying_map = fragment_shader_->varying_map();
 
   vertex_shader_->set_attrib_map(VariableMap());
   vertex_shader_->set_uniform_map(VariableMap());
+  vertex_shader_->set_varying_map(VariableMap());
   fragment_shader_->set_attrib_map(VariableMap());
   fragment_shader_->set_uniform_map(VariableMap());
+  fragment_shader_->set_varying_map(VariableMap());
 
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 
@@ -286,9 +298,11 @@ TEST_F(MemoryProgramCacheTest, CacheLoadMatchesSave) {
   // equality operator
 #if !defined(OS_ANDROID)
   EXPECT_EQ(vertex_attrib_map, vertex_shader_->attrib_map());
-  EXPECT_EQ(vertex_attrib_map, vertex_shader_->uniform_map());
-  EXPECT_EQ(vertex_attrib_map, fragment_shader_->attrib_map());
-  EXPECT_EQ(vertex_attrib_map, fragment_shader_->uniform_map());
+  EXPECT_EQ(vertex_uniform_map, vertex_shader_->uniform_map());
+  EXPECT_EQ(vertex_varying_map, vertex_shader_->varying_map());
+  EXPECT_EQ(fragment_attrib_map, fragment_shader_->attrib_map());
+  EXPECT_EQ(fragment_uniform_map, fragment_shader_->uniform_map());
+  EXPECT_EQ(fragment_varying_map, fragment_shader_->varying_map());
 #endif
 }
 
@@ -311,13 +325,17 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
 
   VariableMap vertex_attrib_map = vertex_shader_->attrib_map();
   VariableMap vertex_uniform_map = vertex_shader_->uniform_map();
+  VariableMap vertex_varying_map = vertex_shader_->varying_map();
   VariableMap fragment_attrib_map = fragment_shader_->attrib_map();
   VariableMap fragment_uniform_map = fragment_shader_->uniform_map();
+  VariableMap fragment_varying_map = fragment_shader_->varying_map();
 
   vertex_shader_->set_attrib_map(VariableMap());
   vertex_shader_->set_uniform_map(VariableMap());
+  vertex_shader_->set_varying_map(VariableMap());
   fragment_shader_->set_attrib_map(VariableMap());
   fragment_shader_->set_uniform_map(VariableMap());
+  fragment_shader_->set_varying_map(VariableMap());
 
   SetExpectationsForLoadLinkedProgram(kProgramId, &emulator);
 
@@ -338,9 +356,11 @@ TEST_F(MemoryProgramCacheTest, LoadProgramMatchesSave) {
   // equality operator
 #if !defined(OS_ANDROID)
   EXPECT_EQ(vertex_attrib_map, vertex_shader_->attrib_map());
-  EXPECT_EQ(vertex_attrib_map, vertex_shader_->uniform_map());
-  EXPECT_EQ(vertex_attrib_map, fragment_shader_->attrib_map());
-  EXPECT_EQ(vertex_attrib_map, fragment_shader_->uniform_map());
+  EXPECT_EQ(vertex_uniform_map, vertex_shader_->uniform_map());
+  EXPECT_EQ(vertex_varying_map, vertex_shader_->varying_map());
+  EXPECT_EQ(fragment_attrib_map, fragment_shader_->attrib_map());
+  EXPECT_EQ(fragment_uniform_map, fragment_shader_->uniform_map());
+  EXPECT_EQ(fragment_varying_map, fragment_shader_->varying_map());
 #endif
 }
 

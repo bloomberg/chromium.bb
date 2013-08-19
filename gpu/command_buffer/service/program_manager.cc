@@ -34,6 +34,28 @@ namespace gles2 {
 
 namespace {
 
+struct UniformType {
+  explicit UniformType(const ShaderTranslator::VariableInfo uniform)
+      : type(uniform.type),
+        size(uniform.size),
+        precision(uniform.precision) { }
+
+  UniformType()
+      : type(0),
+        size(0),
+        precision(SH_PRECISION_MEDIUMP) { }
+
+  bool operator==(const UniformType& other) const {
+    return type == other.type &&
+        size == other.size &&
+        precision == other.precision;
+  }
+
+  int type;
+  int size;
+  int precision;
+};
+
 int ShaderTypeToIndex(GLenum shader_type) {
   switch (shader_type) {
     case GL_VERTEX_SHADER:
@@ -512,6 +534,10 @@ bool Program::Link(ShaderManager* manager,
     set_log_info("glBindAttribLocation() conflicts");
     return false;
   }
+  if (DetectUniformsMismatch()) {
+    set_log_info("Uniforms with the same name but different type/precision");
+    return false;
+  }
 
   TimeTicks before_time = TimeTicks::HighResNow();
   bool link = true;
@@ -958,6 +984,34 @@ bool Program::DetectAttribLocationBindingConflicts() const {
           location_binding_used.insert(it->second);
       if (!result.second)
         return true;
+    }
+  }
+  return false;
+}
+
+bool Program::DetectUniformsMismatch() const {
+  typedef std::map<std::string, UniformType> UniformMap;
+  UniformMap uniform_map;
+  for (int ii = 0; ii < kMaxAttachedShaders; ++ii) {
+    const ShaderTranslator::VariableMap& shader_uniforms =
+        attached_shaders_[ii]->uniform_map();
+    for (ShaderTranslator::VariableMap::const_iterator iter =
+             shader_uniforms.begin();
+         iter != shader_uniforms.end(); ++iter) {
+      const std::string& name = iter->first;
+      UniformType type(iter->second);
+      UniformMap::iterator map_entry = uniform_map.find(name);
+      if (map_entry == uniform_map.end()) {
+        uniform_map[name] = type;
+      } else {
+        // If a uniform is already in the map, i.e., it has already been
+        // declared by other shader, then the type and precision must match.
+        if (map_entry->second == type)
+          continue;
+        // TODO(zmo): uncomment the next line once we fix the incorrect
+        // shaders for Aura.
+        // return true;
+      }
     }
   }
   return false;

@@ -98,6 +98,11 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   }
 
   // Used by program cache.
+  const ShaderTranslator::VariableMap& varying_map() const {
+    return varying_map_;
+  }
+
+  // Used by program cache.
   void set_attrib_map(const ShaderTranslator::VariableMap& attrib_map) {
     // copied because cache might be cleared
     attrib_map_ = ShaderTranslator::VariableMap(attrib_map);
@@ -107,6 +112,12 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   void set_uniform_map(const ShaderTranslator::VariableMap& uniform_map) {
     // copied because cache might be cleared
     uniform_map_ = ShaderTranslator::VariableMap(uniform_map);
+  }
+
+  // Used by program cache.
+  void set_varying_map(const ShaderTranslator::VariableMap& varying_map) {
+    // copied because cache might be cleared
+    varying_map_ = ShaderTranslator::VariableMap(varying_map);
   }
 
  private:
@@ -148,6 +159,7 @@ class GPU_EXPORT Shader : public base::RefCounted<Shader> {
   // The type info when the shader was last compiled.
   VariableMap attrib_map_;
   VariableMap uniform_map_;
+  VariableMap varying_map_;
 
   // The name hashing info when the shader was last compiled.
   NameMap name_map_;

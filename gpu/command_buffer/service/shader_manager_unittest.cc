@@ -134,31 +134,39 @@ TEST_F(ShaderManagerTest, GetInfo) {
   const GLenum kShader1Type = GL_VERTEX_SHADER;
   const GLenum kAttrib1Type = GL_FLOAT_VEC2;
   const GLsizei kAttrib1Size = 2;
+  const int kAttrib1Precision = SH_PRECISION_MEDIUMP;
   const char* kAttrib1Name = "attr1";
   const GLenum kAttrib2Type = GL_FLOAT_VEC3;
   const GLsizei kAttrib2Size = 4;
+  const int kAttrib2Precision = SH_PRECISION_HIGHP;
   const char* kAttrib2Name = "attr2";
   const GLenum kUniform1Type = GL_FLOAT_MAT2;
   const GLsizei kUniform1Size = 3;
+  const int kUniform1Precision = SH_PRECISION_LOWP;
   const char* kUniform1Name = "uni1";
   const GLenum kUniform2Type = GL_FLOAT_MAT3;
   const GLsizei kUniform2Size = 5;
+  const int kUniform2Precision = SH_PRECISION_MEDIUMP;
   const char* kUniform2Name = "uni2";
+
   MockShaderTranslator shader_translator;
   ShaderTranslator::VariableMap attrib_map;
   attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib1Type, kAttrib1Size, kAttrib1Name);
+      kAttrib1Type, kAttrib1Size, kAttrib1Precision, kAttrib1Name);
   attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib2Type, kAttrib2Size, kAttrib2Name);
+      kAttrib2Type, kAttrib2Size, kAttrib2Precision, kAttrib2Name);
   ShaderTranslator::VariableMap uniform_map;
   uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform1Type, kUniform1Size, kUniform1Name);
+      kUniform1Type, kUniform1Size, kUniform1Precision, kUniform1Name);
   uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform2Type, kUniform2Size, kUniform2Name);
+      kUniform2Type, kUniform2Size, kUniform2Precision, kUniform2Name);
   EXPECT_CALL(shader_translator, attrib_map())
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
       .WillRepeatedly(ReturnRef(uniform_map));
+  ShaderTranslator::VariableMap varying_map;
+  EXPECT_CALL(shader_translator, varying_map())
+      .WillRepeatedly(ReturnRef(varying_map));
   ShaderTranslator::NameMap name_map;
   EXPECT_CALL(shader_translator, name_map())
       .WillRepeatedly(ReturnRef(name_map));
@@ -177,6 +185,7 @@ TEST_F(ShaderManagerTest, GetInfo) {
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
     EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.name, variable_info->name);
   }
   for (ShaderTranslator::VariableMap::const_iterator it = uniform_map.begin();
@@ -186,6 +195,7 @@ TEST_F(ShaderManagerTest, GetInfo) {
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
     EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.name, variable_info->name);
   }
   // Check attrib and uniform get cleared.

@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/shader_manager.h"
+#include "gpu/command_buffer/service/shader_translator.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace {
@@ -40,31 +41,40 @@ namespace {
 
 enum ShaderMapType {
   ATTRIB_MAP = 0,
-  UNIFORM_MAP
+  UNIFORM_MAP,
+  VARYING_MAP
 };
 
 void StoreShaderInfo(ShaderMapType type, ShaderProto *proto,
                      const ShaderTranslator::VariableMap& map) {
   ShaderTranslator::VariableMap::const_iterator iter;
-  for (iter = map.begin(); iter != map.end(); iter++) {
-    ShaderInfoProto* info;
-    if (type == UNIFORM_MAP) {
-      info = proto->add_uniforms();
-    } else {
-      info = proto->add_attribs();
+  for (iter = map.begin(); iter != map.end(); ++iter) {
+    ShaderInfoProto* info = NULL;
+    switch (type) {
+      case UNIFORM_MAP:
+        info = proto->add_uniforms();
+        break;
+      case ATTRIB_MAP:
+        info = proto->add_attribs();
+        break;
+      case VARYING_MAP:
+        info = proto->add_varyings();
+        break;
+      default: NOTREACHED();
     }
 
     info->set_key(iter->first);
     info->set_type(iter->second.type);
     info->set_size(iter->second.size);
+    info->set_precision(iter->second.precision);
     info->set_name(iter->second.name);
   }
 }
 
 void RetrieveShaderInfo(const ShaderInfoProto& proto,
                         ShaderTranslator::VariableMap* map) {
-  ShaderTranslator::VariableInfo info(proto.type(), proto.size(),
-                                      proto.name());
+  ShaderTranslator::VariableInfo info(
+      proto.type(), proto.size(), proto.precision(), proto.name());
   (*map)[proto.key()] = info;
 }
 
@@ -73,6 +83,7 @@ void FillShaderProto(ShaderProto* proto, const char* sha,
   proto->set_sha(sha, gpu::gles2::ProgramCache::kHashLength);
   StoreShaderInfo(ATTRIB_MAP, proto, shader->attrib_map());
   StoreShaderInfo(UNIFORM_MAP, proto, shader->uniform_map());
+  StoreShaderInfo(VARYING_MAP, proto, shader->varying_map());
 }
 
 void RunShaderCallback(const ShaderCacheCallback& callback,
@@ -147,8 +158,10 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
   }
   shader_a->set_attrib_map(value->attrib_map_0());
   shader_a->set_uniform_map(value->uniform_map_0());
+  shader_a->set_varying_map(value->varying_map_0());
   shader_b->set_attrib_map(value->attrib_map_1());
   shader_b->set_uniform_map(value->uniform_map_1());
+  shader_b->set_varying_map(value->varying_map_1());
 
   if (!shader_callback.is_null() &&
       !CommandLine::ForCurrentProcess()->HasSwitch(
@@ -241,9 +254,11 @@ void MemoryProgramCache::SaveLinkedProgram(
                                    a_sha,
                                    shader_a->attrib_map(),
                                    shader_a->uniform_map(),
+                                   shader_a->varying_map(),
                                    b_sha,
                                    shader_b->attrib_map(),
                                    shader_b->uniform_map(),
+                                   shader_b->varying_map(),
                                    this));
 
   UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
@@ -255,6 +270,7 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
   if (proto->ParseFromString(program)) {
     ShaderTranslator::VariableMap vertex_attribs;
     ShaderTranslator::VariableMap vertex_uniforms;
+    ShaderTranslator::VariableMap vertex_varyings;
 
     for (int i = 0; i < proto->vertex_shader().attribs_size(); i++) {
       RetrieveShaderInfo(proto->vertex_shader().attribs(i), &vertex_attribs);
@@ -264,8 +280,13 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
       RetrieveShaderInfo(proto->vertex_shader().uniforms(i), &vertex_uniforms);
     }
 
+    for (int i = 0; i < proto->vertex_shader().varyings_size(); i++) {
+      RetrieveShaderInfo(proto->vertex_shader().varyings(i), &vertex_varyings);
+    }
+
     ShaderTranslator::VariableMap fragment_attribs;
     ShaderTranslator::VariableMap fragment_uniforms;
+    ShaderTranslator::VariableMap fragment_varyings;
 
     for (int i = 0; i < proto->fragment_shader().attribs_size(); i++) {
       RetrieveShaderInfo(proto->fragment_shader().attribs(i),
@@ -275,6 +296,11 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
     for (int i = 0; i < proto->fragment_shader().uniforms_size(); i++) {
       RetrieveShaderInfo(proto->fragment_shader().uniforms(i),
                          &fragment_uniforms);
+    }
+
+    for (int i = 0; i < proto->fragment_shader().varyings_size(); i++) {
+      RetrieveShaderInfo(proto->fragment_shader().varyings(i),
+                         &fragment_varyings);
     }
 
     scoped_ptr<char[]> binary(new char[proto->program().length()]);
@@ -288,9 +314,11 @@ void MemoryProgramCache::LoadProgram(const std::string& program) {
                                      proto->vertex_shader().sha().c_str(),
                                      vertex_attribs,
                                      vertex_uniforms,
+                                     vertex_varyings,
                                      proto->fragment_shader().sha().c_str(),
                                      fragment_attribs,
                                      fragment_uniforms,
+                                     fragment_varyings,
                                      this));
 
     UMA_HISTOGRAM_COUNTS("GPU.ProgramCache.MemorySizeAfterKb",
@@ -308,9 +336,11 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
     const char* shader_0_hash,
     const ShaderTranslator::VariableMap& attrib_map_0,
     const ShaderTranslator::VariableMap& uniform_map_0,
+    const ShaderTranslator::VariableMap& varying_map_0,
     const char* shader_1_hash,
     const ShaderTranslator::VariableMap& attrib_map_1,
     const ShaderTranslator::VariableMap& uniform_map_1,
+    const ShaderTranslator::VariableMap& varying_map_1,
     MemoryProgramCache* program_cache)
     : length_(length),
       format_(format),
@@ -319,9 +349,11 @@ MemoryProgramCache::ProgramCacheValue::ProgramCacheValue(
       shader_0_hash_(shader_0_hash, kHashLength),
       attrib_map_0_(attrib_map_0),
       uniform_map_0_(uniform_map_0),
+      varying_map_0_(varying_map_0),
       shader_1_hash_(shader_1_hash, kHashLength),
       attrib_map_1_(attrib_map_1),
       uniform_map_1_(uniform_map_1),
+      varying_map_1_(varying_map_1),
       program_cache_(program_cache) {
   program_cache_->curr_size_bytes_ += length_;
   program_cache_->LinkedProgramCacheSuccess(program_hash);

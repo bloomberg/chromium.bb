@@ -162,6 +162,9 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const GLint kAttrib1Size = 1;
   static const GLint kAttrib2Size = 1;
   static const GLint kAttrib3Size = 1;
+  static const int kAttrib1Precision = SH_PRECISION_MEDIUMP;
+  static const int kAttrib2Precision = SH_PRECISION_HIGHP;
+  static const int kAttrib3Precision = SH_PRECISION_LOWP;
   static const GLint kAttrib1Location = 0;
   static const GLint kAttrib2Location = 1;
   static const GLint kAttrib3Location = 2;
@@ -178,6 +181,9 @@ class ProgramManagerWithShaderTest : public testing::Test {
   static const GLint kUniform1Size = 1;
   static const GLint kUniform2Size = 3;
   static const GLint kUniform3Size = 2;
+  static const int kUniform1Precision = SH_PRECISION_LOWP;
+  static const int kUniform2Precision = SH_PRECISION_MEDIUMP;
+  static const int kUniform3Precision = SH_PRECISION_HIGHP;
   static const GLint kUniform1FakeLocation = 0;  // These are hard coded
   static const GLint kUniform2FakeLocation = 1;  // to match
   static const GLint kUniform3FakeLocation = 2;  // ProgramManager.
@@ -670,22 +676,25 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
   MockShaderTranslator shader_translator;
   ShaderTranslator::VariableMap attrib_map;
   ShaderTranslator::VariableMap uniform_map;
+  ShaderTranslator::VariableMap varying_map;
   attrib_map[kAttrib1Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib1Type, kAttrib1Size, kAttrib1Name);
+      kAttrib1Type, kAttrib1Size, kAttrib1Precision, kAttrib1Name);
   attrib_map[kAttrib2Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib2GoodType, kAttrib2Size, kAttrib2Name);
+      kAttrib2GoodType, kAttrib2Size, kAttrib2Precision, kAttrib2Name);
   attrib_map[kAttrib3Name] = ShaderTranslatorInterface::VariableInfo(
-      kAttrib3Type, kAttrib3Size, kAttrib3Name);
+      kAttrib3Type, kAttrib3Size, kAttrib3Precision, kAttrib3Name);
   uniform_map[kUniform1Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform1Type, kUniform1Size, kUniform1Name);
+      kUniform1Type, kUniform1Size, kUniform1Precision, kUniform1Name);
   uniform_map[kUniform2Name] = ShaderTranslatorInterface::VariableInfo(
-      kUniform2GoodType, kUniform2Size, kUniform2Name);
+      kUniform2GoodType, kUniform2Size, kUniform2Precision, kUniform2Name);
   uniform_map[kUniform3GoodName] = ShaderTranslatorInterface::VariableInfo(
-      kUniform3Type, kUniform3Size, kUniform3GoodName);
+      kUniform3Type, kUniform3Size, kUniform3Precision, kUniform3GoodName);
   EXPECT_CALL(shader_translator, attrib_map())
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
       .WillRepeatedly(ReturnRef(uniform_map));
+  EXPECT_CALL(shader_translator, varying_map())
+      .WillRepeatedly(ReturnRef(varying_map));
   ShaderTranslator::NameMap name_map;
   EXPECT_CALL(shader_translator, name_map())
       .WillRepeatedly(ReturnRef(name_map));
@@ -937,13 +946,19 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   ShaderTranslator::VariableMap attrib_map;
   for (uint32 ii = 0; ii < kNumAttribs; ++ii) {
     attrib_map[kAttribs[ii].name] = ShaderTranslatorInterface::VariableInfo(
-        kAttribs[ii].type, kAttribs[ii].size, kAttribs[ii].name);
+        kAttribs[ii].type,
+        kAttribs[ii].size,
+        SH_PRECISION_MEDIUMP,
+        kAttribs[ii].name);
   }
   ShaderTranslator::VariableMap uniform_map;
+  ShaderTranslator::VariableMap varying_map;
   EXPECT_CALL(shader_translator, attrib_map())
       .WillRepeatedly(ReturnRef(attrib_map));
   EXPECT_CALL(shader_translator, uniform_map())
       .WillRepeatedly(ReturnRef(uniform_map));
+  EXPECT_CALL(shader_translator, varying_map())
+      .WillRepeatedly(ReturnRef(varying_map));
   ShaderTranslator::NameMap name_map;
   EXPECT_CALL(shader_translator, name_map())
       .WillRepeatedly(ReturnRef(name_map));
@@ -964,6 +979,7 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
     EXPECT_EQ(it->second.size, variable_info->size);
+    EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.name, variable_info->name);
   }
   fshader->SetStatus(true, "", NULL);
@@ -995,6 +1011,73 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
   program->SetAttribLocationBinding(kAttrib2Name, 0);
   EXPECT_TRUE(program->DetectAttribLocationBindingConflicts());
   EXPECT_TRUE(LinkAsExpected(program, false));
+}
+
+TEST_F(ProgramManagerWithShaderTest, UniformsPrecisionMismatch) {
+  // Set up shader
+  const GLuint kVShaderClientId = 1;
+  const GLuint kVShaderServiceId = 11;
+  const GLuint kFShaderClientId = 2;
+  const GLuint kFShaderServiceId = 12;
+
+  MockShaderTranslator vertex_shader_translator;
+  ShaderTranslator::VariableMap vertex_attrib_map;
+  ShaderTranslator::VariableMap vertex_uniform_map;
+  vertex_uniform_map["a"] = ShaderTranslator::VariableInfo(
+      1, 3, SH_PRECISION_MEDIUMP, "a");
+  ShaderTranslator::VariableMap vertex_varying_map;
+  ShaderTranslator::NameMap vertex_name_map;
+  EXPECT_CALL(vertex_shader_translator, attrib_map())
+      .WillRepeatedly(ReturnRef(vertex_attrib_map));
+  EXPECT_CALL(vertex_shader_translator, uniform_map())
+      .WillRepeatedly(ReturnRef(vertex_uniform_map));
+  EXPECT_CALL(vertex_shader_translator, varying_map())
+      .WillRepeatedly(ReturnRef(vertex_varying_map));
+  EXPECT_CALL(vertex_shader_translator, name_map())
+    .WillRepeatedly(ReturnRef(vertex_name_map));
+
+  MockShaderTranslator frag_shader_translator;
+  ShaderTranslator::VariableMap frag_attrib_map;
+  ShaderTranslator::VariableMap frag_uniform_map;
+  frag_uniform_map["a"] = ShaderTranslator::VariableInfo(
+      1, 3, SH_PRECISION_LOWP, "a");
+  ShaderTranslator::VariableMap frag_varying_map;
+  ShaderTranslator::NameMap frag_name_map;
+  EXPECT_CALL(frag_shader_translator, attrib_map())
+      .WillRepeatedly(ReturnRef(frag_attrib_map));
+  EXPECT_CALL(frag_shader_translator, uniform_map())
+      .WillRepeatedly(ReturnRef(frag_uniform_map));
+  EXPECT_CALL(frag_shader_translator, varying_map())
+      .WillRepeatedly(ReturnRef(frag_varying_map));
+  EXPECT_CALL(frag_shader_translator, name_map())
+    .WillRepeatedly(ReturnRef(frag_name_map));
+
+  // Check we can create shader.
+  Shader* vshader = shader_manager_.CreateShader(
+      kVShaderClientId, kVShaderServiceId, GL_VERTEX_SHADER);
+  Shader* fshader = shader_manager_.CreateShader(
+      kFShaderClientId, kFShaderServiceId, GL_FRAGMENT_SHADER);
+  // Check shader got created.
+  ASSERT_TRUE(vshader != NULL && fshader != NULL);
+  // Set Status
+  vshader->SetStatus(true, "", &vertex_shader_translator);
+  fshader->SetStatus(true, "", &frag_shader_translator);
+
+  // Set up program
+  const GLuint kClientProgramId = 6666;
+  const GLuint kServiceProgramId = 8888;
+  Program* program =
+      manager_.CreateProgram(kClientProgramId, kServiceProgramId);
+  ASSERT_TRUE(program != NULL);
+  EXPECT_TRUE(program->AttachShader(&shader_manager_, vshader));
+  EXPECT_TRUE(program->AttachShader(&shader_manager_, fshader));
+
+  // TODO(zmo): change the expectation from FALSE to TRUE once we turn
+  // on DetectUniformsMismatch().
+  EXPECT_FALSE(program->DetectUniformsMismatch());
+  // TODO(zmo): change the link expectation from true to false once we
+  // turn on DetectUniformsMismatch().
+  EXPECT_TRUE(LinkAsExpected(program, true));
 }
 
 TEST_F(ProgramManagerWithShaderTest, ClearWithSamplerTypes) {
