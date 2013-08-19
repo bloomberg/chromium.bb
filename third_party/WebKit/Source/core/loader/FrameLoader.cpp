@@ -1539,8 +1539,8 @@ void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formStat
 
     if (!m_frame->settings() || m_frame->settings()->supportsMultipleWindows()) {
         struct WindowFeatures features;
-        Page* newPage = m_frame->page()->chrome().client()->createWindow(m_frame, FrameLoadRequest(m_frame->document()->securityOrigin()),
-            features, action, navigationPolicy);
+        Page* newPage = m_frame->page()->chrome().client()->createWindow(m_frame, FrameLoadRequest(m_frame->document()->securityOrigin(), action.resourceRequest()),
+            features, navigationPolicy);
 
         // createWindow can return null (e.g., popup blocker denies the window).
         if (!newPage)

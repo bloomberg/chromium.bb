@@ -75,7 +75,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/loader/NavigationAction.h"
 #include "core/page/Console.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
@@ -230,7 +229,7 @@ void ChromeClientImpl::focusedNodeChanged(Node* node)
 }
 
 Page* ChromeClientImpl::createWindow(
-    Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features, const NavigationAction& action, NavigationPolicy navigationPolicy)
+    Frame* frame, const FrameLoadRequest& r, const WindowFeatures& features, NavigationPolicy navigationPolicy)
 {
     if (!m_webView->client())
         return 0;
@@ -239,13 +238,8 @@ Page* ChromeClientImpl::createWindow(
     if (policy == WebNavigationPolicyIgnore)
         policy = getNavigationPolicy();
 
-    WrappedResourceRequest request;
-    if (!r.resourceRequest().isEmpty())
-        request.bind(r.resourceRequest());
-    else if (!action.resourceRequest().isEmpty())
-        request.bind(action.resourceRequest());
     WebViewImpl* newView = static_cast<WebViewImpl*>(
-        m_webView->client()->createView(WebFrameImpl::fromFrame(frame), request, features, r.frameName(), policy));
+        m_webView->client()->createView(WebFrameImpl::fromFrame(frame), WrappedResourceRequest(r.resourceRequest()), features, r.frameName(), policy));
     if (!newView)
         return 0;
     return newView->page();

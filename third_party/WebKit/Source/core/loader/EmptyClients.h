@@ -84,7 +84,7 @@ public:
     virtual void takeFocus(FocusDirection) OVERRIDE { }
 
     virtual void focusedNodeChanged(Node*) OVERRIDE { }
-    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, const NavigationAction&, NavigationPolicy) OVERRIDE { return 0; }
+    virtual Page* createWindow(Frame*, const FrameLoadRequest&, const WindowFeatures&, NavigationPolicy) OVERRIDE { return 0; }
     virtual void show(NavigationPolicy) OVERRIDE { }
 
     virtual bool canRunModal() OVERRIDE { return false; }

@@ -29,7 +29,6 @@
 
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/loader/NavigationAction.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"
@@ -65,13 +64,6 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
         return 0;
     }
 
-    // FIXME: Setting the referrer should be the caller's responsibility.
-    FrameLoadRequest requestWithReferrer = request;
-    String referrer = SecurityPolicy::generateReferrerHeader(openerFrame->document()->referrerPolicy(), request.resourceRequest().url(), openerFrame->loader()->outgoingReferrer());
-    if (!referrer.isEmpty())
-        requestWithReferrer.resourceRequest().setHTTPReferrer(referrer);
-    FrameLoader::addHTTPOriginIfNeeded(requestWithReferrer.resourceRequest(), openerFrame->loader()->outgoingOrigin());
-
     if (openerFrame->settings() && !openerFrame->settings()->supportsMultipleWindows()) {
         created = false;
         return openerFrame;
@@ -81,8 +73,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
     if (!oldPage)
         return 0;
 
-    NavigationAction action(requestWithReferrer.resourceRequest());
-    Page* page = oldPage->chrome().client()->createWindow(openerFrame, requestWithReferrer, features, action);
+    Page* page = oldPage->chrome().client()->createWindow(openerFrame, request, features);
     if (!page)
         return 0;
 
