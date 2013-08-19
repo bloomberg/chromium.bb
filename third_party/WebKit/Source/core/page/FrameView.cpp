@@ -444,6 +444,8 @@ void FrameView::setFrameRect(const IntRect& newRect)
         if (renderView->usesCompositing())
             renderView->compositor()->frameViewDidChangeSize();
     }
+
+    sendResizeEventIfNeeded();
 }
 
 bool FrameView::scheduleAnimation()
@@ -2210,20 +2212,33 @@ void FrameView::performPostLayoutTasks()
 
     m_actionScheduler->resume();
 
-    // Refetch render view since it can be destroyed by updateWidget() call above.
-    renderView = this->renderView();
-    if (renderView && !renderView->printing()) {
-        IntSize currentSize = layoutSize(IncludeScrollbars);
-        float currentZoomFactor = renderView->style()->zoom();
-        bool resized = !m_firstLayout && (currentSize != m_lastViewportSize || currentZoomFactor != m_lastZoomFactor);
-        m_lastViewportSize = currentSize;
-        m_lastZoomFactor = currentZoomFactor;
-        if (resized) {
-            m_frame->eventHandler()->sendResizeEvent();
-            if (page && page->mainFrame() == m_frame)
-                InspectorInstrumentation::didResizeMainFrame(page);
-        }
-    }
+    sendResizeEventIfNeeded();
+}
+
+void FrameView::sendResizeEventIfNeeded()
+{
+    ASSERT(m_frame);
+
+    RenderView* renderView = this->renderView();
+    if (!renderView || renderView->printing())
+        return;
+
+    IntSize currentSize = layoutSize(IncludeScrollbars);
+    float currentZoomFactor = renderView->style()->zoom();
+
+    bool shouldSendResizeEvent = currentSize != m_lastViewportSize || currentZoomFactor != m_lastZoomFactor;
+
+    m_lastViewportSize = currentSize;
+    m_lastZoomFactor = currentZoomFactor;
+
+    if (!shouldSendResizeEvent)
+        return;
+
+    m_frame->eventHandler()->sendResizeEvent();
+
+    Page* page = m_frame->page();
+    if (page && page->mainFrame() == m_frame)
+        InspectorInstrumentation::didResizeMainFrame(page);
 }
 
 void FrameView::postLayoutTimerFired(Timer<FrameView>*)

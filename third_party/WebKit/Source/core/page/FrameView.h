@@ -394,6 +394,8 @@ private:
     virtual GraphicsLayer* layerForOverhangAreas() const OVERRIDE;
 #endif
 
+    void sendResizeEventIfNeeded();
+
     void updateScrollableAreaSet();
 
     virtual void notifyPageThatContentAreaWillPaint() const;
