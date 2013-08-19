@@ -566,8 +566,6 @@ void URLFetcherCore::StartURLRequest() {
       request_->set_method(
           request_type_ == URLFetcher::POST ? "POST" :
           request_type_ == URLFetcher::PUT ? "PUT" : "PATCH");
-      extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
-                                       upload_content_type_);
       if (!upload_content_type_.empty()) {
         extra_request_headers_.SetHeader(HttpRequestHeaders::kContentType,
                                          upload_content_type_);
