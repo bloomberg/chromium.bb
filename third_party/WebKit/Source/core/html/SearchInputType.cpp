@@ -151,14 +151,30 @@ bool SearchInputType::searchEventsShouldBeDispatched() const
 
 void SearchInputType::didSetValueByUserEdit(ValueChangeState state)
 {
-    if (element()->userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton()))
-        toRenderSearchField(element()->renderer())->updateCancelButtonVisibility();
+    updateCancelButtonVisibility();
 
     // If the incremental attribute is set, then dispatch the search event
     if (searchEventsShouldBeDispatched())
         startSearchEventTimer();
 
     TextFieldInputType::didSetValueByUserEdit(state);
+}
+
+void SearchInputType::updateInnerTextValue()
+{
+    BaseTextInputType::updateInnerTextValue();
+    updateCancelButtonVisibility();
+}
+
+void SearchInputType::updateCancelButtonVisibility()
+{
+    Element* button = element()->userAgentShadowRoot()->getElementById(ShadowElementNames::clearButton());
+    if (!button)
+        return;
+    if (element()->value().isEmpty())
+        button->setInlineStyleProperty(CSSPropertyVisibility, CSSValueHidden);
+    else
+        button->removeInlineStyleProperty(CSSPropertyVisibility);
 }
 
 bool SearchInputType::supportsInputModeAttribute() const

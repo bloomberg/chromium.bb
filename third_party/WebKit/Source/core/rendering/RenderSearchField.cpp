@@ -74,35 +74,6 @@ LayoutUnit RenderSearchField::computeControlLogicalHeight(LayoutUnit lineHeight,
     return lineHeight + nonContentHeight;
 }
 
-void RenderSearchField::updateFromElement()
-{
-    RenderTextControlSingleLine::updateFromElement();
-
-    if (cancelButtonElement())
-        updateCancelButtonVisibility();
-}
-
-void RenderSearchField::updateCancelButtonVisibility() const
-{
-    RenderObject* cancelButtonRenderer = cancelButtonElement()->renderer();
-    if (!cancelButtonRenderer)
-        return;
-
-    const RenderStyle* curStyle = cancelButtonRenderer->style();
-    EVisibility buttonVisibility = visibilityForCancelButton();
-    if (curStyle->visibility() == buttonVisibility)
-        return;
-
-    RefPtr<RenderStyle> cancelButtonStyle = RenderStyle::clone(curStyle);
-    cancelButtonStyle->setVisibility(buttonVisibility);
-    cancelButtonRenderer->setStyle(cancelButtonStyle);
-}
-
-EVisibility RenderSearchField::visibilityForCancelButton() const
-{
-    return (style()->visibility() == HIDDEN || inputElement()->value().isEmpty()) ? HIDDEN : VISIBLE;
-}
-
 LayoutUnit RenderSearchField::computeLogicalHeightLimit() const
 {
     return logicalHeight();
