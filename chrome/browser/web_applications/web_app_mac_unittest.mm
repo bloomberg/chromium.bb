@@ -5,7 +5,6 @@
 #import "chrome/browser/web_applications/web_app_mac.h"
 
 #import <Cocoa/Cocoa.h>
-
 #include <errno.h>
 #include <sys/xattr.h>
 
@@ -17,7 +16,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/mac/app_mode_common.h"
+#import "chrome/common/mac/app_mode_common.h"
 #include "grit/theme_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,17 +36,19 @@ const char kFakeChromeBundleId[] = "fake.cfbundleidentifier";
 class WebAppShortcutCreatorMock : public web_app::WebAppShortcutCreator {
  public:
   explicit WebAppShortcutCreatorMock(
-      const base::FilePath& app_data_path,
+      const base::FilePath& app_data_dir,
       const ShellIntegration::ShortcutInfo& shortcut_info)
-      : WebAppShortcutCreator(app_data_path,
-                              shortcut_info,
-                              kFakeChromeBundleId) {
+      : WebAppShortcutCreator(app_data_dir,
+                              shortcut_info) {
   }
 
-  MOCK_CONST_METHOD0(GetDestinationPath, base::FilePath());
+  MOCK_CONST_METHOD0(GetApplicationsDirname, base::FilePath());
   MOCK_CONST_METHOD1(GetAppBundleById,
                      base::FilePath(const std::string& bundle_id));
   MOCK_CONST_METHOD0(RevealAppShimInFinder, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorMock);
 };
 
 ShellIntegration::ShortcutInfo GetShortcutInfo() {
@@ -66,28 +67,31 @@ class WebAppShortcutCreatorTest : public testing::Test {
   WebAppShortcutCreatorTest() {}
 
   virtual void SetUp() {
-    EXPECT_TRUE(app_data_path_temp_dir_.CreateUniqueTempDir());
-    EXPECT_TRUE(destination_path_temp_dir_.CreateUniqueTempDir());
-    app_data_path_ = app_data_path_temp_dir_.path();
-    destination_path_ = destination_path_temp_dir_.path();
+    base::mac::SetBaseBundleID(kFakeChromeBundleId);
+
+    EXPECT_TRUE(temp_app_data_dir_.CreateUniqueTempDir());
+    EXPECT_TRUE(temp_destination_dir_.CreateUniqueTempDir());
+    app_data_dir_ = temp_app_data_dir_.path();
+    destination_dir_ = temp_destination_dir_.path();
 
     info_ = GetShortcutInfo();
     shim_base_name_ = base::FilePath(
         info_.profile_path.BaseName().value() +
         " " + info_.extension_id + ".app");
-    internal_shim_path_ = app_data_path_.Append(shim_base_name_);
-    shim_path_ = destination_path_.Append(shim_base_name_);
+    internal_shim_path_ = app_data_dir_.Append(shim_base_name_);
+    shim_path_ = destination_dir_.Append(shim_base_name_);
   }
 
-  base::ScopedTempDir app_data_path_temp_dir_;
-  base::ScopedTempDir destination_path_temp_dir_;
-  base::FilePath app_data_path_;
-  base::FilePath destination_path_;
+  base::ScopedTempDir temp_app_data_dir_;
+  base::ScopedTempDir temp_destination_dir_;
+  base::FilePath app_data_dir_;
+  base::FilePath destination_dir_;
 
   ShellIntegration::ShortcutInfo info_;
   base::FilePath shim_base_name_;
   base::FilePath internal_shim_path_;
   base::FilePath shim_path_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppShortcutCreatorTest);
 };
@@ -98,15 +102,15 @@ class WebAppShortcutCreatorTest : public testing::Test {
 namespace web_app {
 
 TEST_F(WebAppShortcutCreatorTest, CreateShortcuts) {
-  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
-      .WillRepeatedly(Return(destination_path_));
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_, info_);
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
       SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
   EXPECT_TRUE(base::PathExists(shim_path_));
-  EXPECT_TRUE(base::PathExists(destination_path_));
-  EXPECT_EQ(shim_base_name_, shortcut_creator.GetShortcutName());
+  EXPECT_TRUE(base::PathExists(destination_dir_));
+  EXPECT_EQ(shim_base_name_, shortcut_creator.GetShortcutBasename());
 
   base::FilePath plist_path =
       shim_path_.Append("Contents").Append("Info.plist");
@@ -136,9 +140,9 @@ TEST_F(WebAppShortcutCreatorTest, UpdateShortcuts) {
   base::FilePath other_folder = other_folder_temp_dir.path();
   base::FilePath other_shim_path = other_folder.Append(shim_base_name_);
 
-  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
-      .WillRepeatedly(Return(destination_path_));
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_, info_);
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
 
   std::string expected_bundle_id = kFakeChromeBundleId;
   expected_bundle_id += ".app.Profile-1-" + info_.extension_id;
@@ -170,16 +174,16 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   // When using PathService::Override, it calls base::MakeAbsoluteFilePath.
   // On Mac this prepends "/private" to the path, but points to the same
   // directory in the file system.
-  app_data_path_ = base::MakeAbsoluteFilePath(app_data_path_);
+  app_data_dir_ = base::MakeAbsoluteFilePath(app_data_dir_);
 
   base::ScopedTempDir other_folder_temp_dir;
   EXPECT_TRUE(other_folder_temp_dir.CreateUniqueTempDir());
   base::FilePath other_folder = other_folder_temp_dir.path();
   base::FilePath other_shim_path = other_folder.Append(shim_base_name_);
 
-  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
-      .WillRepeatedly(Return(destination_path_));
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_, info_);
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
 
   std::string expected_bundle_id = kFakeChromeBundleId;
   expected_bundle_id += ".app.Profile-1-" + info_.extension_id;
@@ -207,7 +211,7 @@ TEST_F(WebAppShortcutCreatorTest, DeleteShortcuts) {
   [plist writeToFile:plist_path
           atomically:YES];
 
-  EXPECT_TRUE(PathService::Override(chrome::DIR_USER_DATA, app_data_path_));
+  EXPECT_TRUE(PathService::Override(chrome::DIR_USER_DATA, app_data_dir_));
   shortcut_creator.DeleteShortcuts();
   EXPECT_FALSE(base::PathExists(internal_shim_path_));
   EXPECT_TRUE(base::PathExists(shim_path_));
@@ -219,18 +223,18 @@ TEST_F(WebAppShortcutCreatorTest, CreateAppListShortcut) {
   // directory prepended to the extension id on the app bundle name.
   info_.profile_name.clear();
   base::FilePath dst_path =
-      destination_path_.Append(info_.extension_id + ".app");
+      destination_dir_.Append(info_.extension_id + ".app");
 
   NiceMock<WebAppShortcutCreatorMock> shortcut_creator(base::FilePath(), info_);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
-      .WillRepeatedly(Return(destination_path_));
-  EXPECT_EQ(dst_path.BaseName(), shortcut_creator.GetShortcutName());
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
+  EXPECT_EQ(dst_path.BaseName(), shortcut_creator.GetShortcutBasename());
 }
 
 TEST_F(WebAppShortcutCreatorTest, RunShortcut) {
-  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
-      .WillRepeatedly(Return(destination_path_));
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_, info_);
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
 
   EXPECT_TRUE(shortcut_creator.CreateShortcuts(
       SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
@@ -244,10 +248,10 @@ TEST_F(WebAppShortcutCreatorTest, RunShortcut) {
 
 TEST_F(WebAppShortcutCreatorTest, CreateFailure) {
   base::FilePath non_existent_path =
-      destination_path_.Append("not-existent").Append("name.app");
+      destination_dir_.Append("not-existent").Append("name.app");
 
-  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_path_, info_);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
+  NiceMock<WebAppShortcutCreatorMock> shortcut_creator(app_data_dir_, info_);
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
       .WillRepeatedly(Return(non_existent_path));
   EXPECT_FALSE(shortcut_creator.CreateShortcuts(
       SHORTCUT_CREATION_AUTOMATED, ShellIntegration::ShortcutLocations()));
@@ -258,7 +262,7 @@ TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_PRODUCT_LOGO_32);
   info_.favicon.Add(product_logo);
-  WebAppShortcutCreatorMock shortcut_creator(app_data_path_, info_);
+  WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_);
 
   ASSERT_TRUE(shortcut_creator.UpdateIcon(shim_path_));
   base::FilePath icon_path =
@@ -272,9 +276,9 @@ TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, RevealAppShimInFinder) {
-  WebAppShortcutCreatorMock shortcut_creator(app_data_path_, info_);
-  EXPECT_CALL(shortcut_creator, GetDestinationPath())
-      .WillRepeatedly(Return(destination_path_));
+  WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_);
+  EXPECT_CALL(shortcut_creator, GetApplicationsDirname())
+      .WillRepeatedly(Return(destination_dir_));
 
   EXPECT_CALL(shortcut_creator, RevealAppShimInFinder())
       .Times(0);
