@@ -58,8 +58,9 @@ function openSystemTab() {
  */
 function sendReport() {
   if ($('description-text').value.length == 0) {
-    $('description-text').placeholder =
-        loadTimeData.getString('no-description');
+    var description = $('description-text');
+    description.placeholder = loadTimeData.getString('no-description');
+    description.focus();
     return false;
   }
 

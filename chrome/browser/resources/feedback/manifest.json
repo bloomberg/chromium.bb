@@ -14,5 +14,7 @@
       "scripts": ["js/event_handler.js"]
     },
     "content_security_policy": "default-src 'none'; script-src 'self' chrome://resources; style-src 'unsafe-inline' *; img-src *; media-src 'self'"
-  }
+  },
+  "display_in_launcher": false,
+  "display_in_new_tab_page": false
 }
