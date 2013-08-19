@@ -498,8 +498,8 @@ webkit.org/b/58193 [ Win7 ] http/tests/local/fileapi/send-sliced-dragged-file.ht
 
 webkit.org/b/56702 [ Win ] http/tests/navigation/ping-cross-origin-from-https.html [ Failure Pass Timeout ]
 
-crbug.com/86340 [ Release ] fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
-crbug.com/86340 [ Debug ] fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass Crash ]
+# It doesn't crash on Release bots, but crashes on try bots (Release + Assserts).
+crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass Crash ]
 
 # Flaky since added by r86478
 crbug.com/82881 http/tests/appcache/interrupted-update.html [ Failure Pass ]
