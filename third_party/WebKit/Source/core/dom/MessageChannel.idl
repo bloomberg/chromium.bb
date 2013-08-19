@@ -26,13 +26,9 @@
 
 [
     GlobalContext=Window&WorkerGlobalScope,
-    Constructor,
-    ConstructorCallWith=ScriptExecutionContext,
     CustomConstructor
 ] interface MessageChannel {
-
     readonly attribute MessagePort port1;
     readonly attribute MessagePort port2;
-
 };
 
