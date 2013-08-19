@@ -156,7 +156,7 @@ allTests = [
     function()
     {
         keyFormat = "spki";
-        data = asciiToArrayBuffer("reject");
+        data = asciiToArrayBuffer("error");
         algorithm = aesCbc;
         extractable = false;
         keyUsages = [];
@@ -167,18 +167,6 @@ allTests = [
                 debug("rejected with " + value);
                 startNextTest();
             });
-    },
-
-    function()
-    {
-        keyFormat = "spki";
-        data = asciiToArrayBuffer("throw");
-        algorithm = aesCbc;
-        extractable = false;
-        keyUsages = [];
-
-        shouldThrow("crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages)");
-        startNextTest();
     },
 
     function()

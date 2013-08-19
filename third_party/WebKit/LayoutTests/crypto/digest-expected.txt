@@ -3,40 +3,17 @@ Tests cypto.subtle.digest.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-SHA1 of [] -- with empty process()
-    = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
-SHA1 of [] -- without calling process()
+SHA1 of []
     = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
 SHA1 of [0x0]
     = [5b a9 3c 9d b0 cf f9 3f 52 b5 21 d7 42 0e 43 f6 ed a2 78 4f]
-SHA1 of [0x0] -- as an ArrayBuffer
-    = [5b a9 3c 9d b0 cf f9 3f 52 b5 21 d7 42 0e 43 f6 ed a2 78 4f]
-SHA1 of [0, 1, 2, 3, 4, 5] -- multipart
-    = [86 84 60 d9 8d 09 d8 bb b9 3d 7b 6c dd 15 cc 7f be c6 76 b9]
-Call process() after finish()
-    = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
-abort()
-    rejected with value of null
-abort() and then abort()
-    rejected with value of null
-    rejected with value of null
-process() and then abort()
-    rejected with value of null
-finish() and then abort()
-    = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
-    = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
-finish() and then process()
-    = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
-finish() and then finish()
-    = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
-    = [da 39 a3 ee 5e 6b 4b 0d 32 55 bf ef 95 60 18 90 af d8 07 09]
 SHA-256 rejects (dummy implementation)
     rejected with value of null
-Error during process() (dummy implementation rejects inputs over 6 bytes)
+Error (dummy implementation rejects this input)
     rejected with value of null
-PASS op.process(null) threw exception TypeError: Type error.
-PASS op.process() threw exception TypeError: Not enough arguments.
-PASS op.process(-1) threw exception TypeError: Type error.
+PASS crypto.subtle.digest({name: 'sha-1'}) threw exception TypeError: Not enough arguments.
+PASS crypto.subtle.digest({name: 'sha-1'}, null) threw exception TypeError: Type error.
+PASS crypto.subtle.digest({name: 'sha-1'}, 10) threw exception TypeError: Type error.
 PASS successfullyParsed is true
 
 TEST COMPLETE

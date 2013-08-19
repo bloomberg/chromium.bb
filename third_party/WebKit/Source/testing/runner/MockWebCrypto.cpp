@@ -30,10 +30,8 @@
 
 #include "MockWebCrypto.h"
 
-#include "public/platform/WebArrayBuffer.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include <string>
-#include <string.h>
 
 using namespace WebKit;
 
@@ -41,85 +39,10 @@ namespace WebTestRunner {
 
 namespace {
 
-enum Operation {
-    Encrypt,
-    Decrypt,
-    Sign,
-    Verify,
-    Digest,
-};
-
-class MockCryptoOperation : public WebKit::WebCryptoOperation {
-public:
-    MockCryptoOperation(const WebKit::WebCryptoAlgorithm& algorithm, Operation op, const WebKit::WebCryptoOperationResult& result)
-        : m_algorithm(algorithm)
-        , m_operation(op)
-        , m_result(result) { }
-
-    virtual void process(const unsigned char* bytes, size_t size) OVERRIDE
-    {
-        // Don't buffer too much data.
-        if (m_data.size() + size > 6) {
-            m_result.completeWithError();
-            delete this;
-            return;
-        }
-
-        if (size)
-            m_data.append(reinterpret_cast<const char*>(bytes), size);
-    }
-
-    virtual void abort() OVERRIDE
-    {
-        delete this;
-    }
-
-    virtual void finish() OVERRIDE
-    {
-        if (m_algorithm.id() == WebKit::WebCryptoAlgorithmIdSha1 && m_operation == Digest) {
-            if (m_data.empty()) {
-                const unsigned char result[] = {0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55, 0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09};
-                completeWithArrayBuffer(result, sizeof(result));
-            } else if (m_data == std::string("\x00", 1)) {
-                const unsigned char result[] = {0x5b, 0xa9, 0x3c, 0x9d, 0xb0, 0xcf, 0xf9, 0x3f, 0x52, 0xb5, 0x21, 0xd7, 0x42, 0x0e, 0x43, 0xf6, 0xed, 0xa2, 0x78, 0x4f};
-                completeWithArrayBuffer(result, sizeof(result));
-            } else if (m_data == std::string("\x00\x01\x02\x03\x04\x05", 6)) {
-                const unsigned char result[] = {0x86, 0x84, 0x60, 0xd9, 0x8d, 0x09, 0xd8, 0xbb, 0xb9, 0x3d, 0x7b, 0x6c, 0xdd, 0x15, 0xcc, 0x7f, 0xbe, 0xc6, 0x76, 0xb9};
-                completeWithArrayBuffer(result, sizeof(result));
-            } else {
-                m_result.completeWithError();
-            }
-        } else if (m_algorithm.id() == WebKit::WebCryptoAlgorithmIdHmac && m_operation == Sign) {
-            std::string result = "signed HMAC:" + m_data;
-            completeWithArrayBuffer(result.data(), result.size());
-        } else if (m_algorithm.id() == WebKit::WebCryptoAlgorithmIdHmac && m_operation == Verify) {
-            std::string expectedSignature = "signed HMAC:" + m_data;
-            m_result.completeWithBoolean(expectedSignature == m_signature);
-        } else {
-            m_result.completeWithError();
-        }
-        delete this;
-    }
-
-    void setSignature(const unsigned char* signatureBytes, size_t signatureLength)
-    {
-        m_signature.assign(reinterpret_cast<const char*>(signatureBytes), signatureLength);
-    }
-
-private:
-    void completeWithArrayBuffer(const void* data, size_t bytes)
-    {
-        WebKit::WebArrayBuffer buffer = WebKit::WebArrayBuffer::create(bytes, 1);
-        memcpy(buffer.data(), data, bytes);
-        m_result.completeWithArrayBuffer(buffer);
-    }
-
-    WebKit::WebCryptoAlgorithm m_algorithm;
-    Operation m_operation;
-    WebKit::WebCryptoOperationResult m_result;
-    std::string m_data;
-    std::string m_signature;
-};
+std::string mockSign(const unsigned char* bytes, size_t size)
+{
+    return "signed HMAC:" + std::string(reinterpret_cast<const char*>(bytes), size);
+}
 
 } // namespace
 
@@ -129,52 +52,73 @@ MockWebCrypto* MockWebCrypto::get()
     return &crypto;
 }
 
-void MockWebCrypto::encrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, WebKit::WebCryptoOperationResult& result)
+void MockWebCrypto::encrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
 {
-    result.initializationSucceeded(new MockCryptoOperation(algorithm, Encrypt, result));
+    result.completeWithError();
 }
 
-void MockWebCrypto::decrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, WebKit::WebCryptoOperationResult& result)
+void MockWebCrypto::decrypt(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
 {
-    result.initializationSucceeded(new MockCryptoOperation(algorithm, Decrypt, result));
+    result.completeWithError();
 }
 
-void MockWebCrypto::sign(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, WebKit::WebCryptoOperationResult& result)
+void MockWebCrypto::sign(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
 {
-    result.initializationSucceeded(new MockCryptoOperation(algorithm, Sign, result));
+    if (algorithm.id() != WebKit::WebCryptoAlgorithmIdHmac)
+        return result.completeWithError();
+
+    std::string signedData = mockSign(data, dataSize);
+    result.completeWithBuffer(signedData.data(), signedData.size());
 }
 
-void MockWebCrypto::verifySignature(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* signature, size_t signatureLength, WebKit::WebCryptoOperationResult& result)
+void MockWebCrypto::verifySignature(const WebKit::WebCryptoAlgorithm& algorithm, const WebKit::WebCryptoKey& key, const unsigned char* signatureBytes, size_t signatureSize, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
 {
-    MockCryptoOperation* op = new MockCryptoOperation(algorithm, Verify, result);
-    op->setSignature(signature, signatureLength);
-    result.initializationSucceeded(op);
+    if (algorithm.id() != WebKit::WebCryptoAlgorithmIdHmac)
+        return result.completeWithError();
+
+    std::string signature = std::string(reinterpret_cast<const char*>(signatureBytes), signatureSize);
+    std::string expectedSignature = mockSign(data, dataSize);
+    result.completeWithBoolean(expectedSignature == signature);
 }
 
-void MockWebCrypto::digest(const WebKit::WebCryptoAlgorithm& algorithm, WebKit::WebCryptoOperationResult& result)
+void MockWebCrypto::digest(const WebKit::WebCryptoAlgorithm& algorithm, const unsigned char* data, size_t dataSize, WebKit::WebCryptoResult result)
 {
-    result.initializationSucceeded(new MockCryptoOperation(algorithm, Digest, result));
+    if (algorithm.id() != WebKit::WebCryptoAlgorithmIdSha1)
+        return result.completeWithError();
+
+    std::string input = std::string(reinterpret_cast<const char*>(data), dataSize);
+
+    if (input.empty()) {
+        const unsigned char resultBytes[] = {0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55, 0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09};
+        result.completeWithBuffer(resultBytes, sizeof(resultBytes));
+    } else if (input == std::string("\x00", 1)) {
+        const unsigned char resultBytes[] = {0x5b, 0xa9, 0x3c, 0x9d, 0xb0, 0xcf, 0xf9, 0x3f, 0x52, 0xb5, 0x21, 0xd7, 0x42, 0x0e, 0x43, 0xf6, 0xed, 0xa2, 0x78, 0x4f};
+        result.completeWithBuffer(resultBytes, sizeof(resultBytes));
+    } else if (input == std::string("\x00\x01\x02\x03\x04\x05", 6)) {
+        const unsigned char resultBytes[] = {0x86, 0x84, 0x60, 0xd9, 0x8d, 0x09, 0xd8, 0xbb, 0xb9, 0x3d, 0x7b, 0x6c, 0xdd, 0x15, 0xcc, 0x7f, 0xbe, 0xc6, 0x76, 0xb9};
+        result.completeWithBuffer(resultBytes, sizeof(resultBytes));
+    } else {
+        result.completeWithError();
+    }
 }
 
-void MockWebCrypto::generateKey(const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoKeyOperationResult& result)
+void MockWebCrypto::generateKey(const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoResult result)
 {
     result.completeWithKey(WebKit::WebCryptoKey::create(0, WebKit::WebCryptoKeyTypePrivate, extractable, algorithm, usages));
 }
 
-void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoKeyOperationResult& result)
+void MockWebCrypto::importKey(WebKit::WebCryptoKeyFormat, const unsigned char* keyData, size_t keyDataSize, const WebKit::WebCryptoAlgorithm& algorithm, bool extractable, WebKit::WebCryptoKeyUsageMask usages, WebKit::WebCryptoResult result)
 {
     std::string keyDataString(reinterpret_cast<const char*>(keyData), keyDataSize);
 
-    if (keyDataString == "reject") {
-        result.completeWithError();
-    } else if (keyDataString == "throw") {
-        result.initializationFailed();
-    } else {
-        WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePrivate;
-        if (keyDataString == "public")
-            type = WebKit::WebCryptoKeyTypePublic;
-        result.completeWithKey(WebKit::WebCryptoKey::create(0, type, extractable, algorithm, usages));
-    }
+    if (keyDataString == "error")
+        return result.completeWithError();
+
+    WebKit::WebCryptoKeyType type = WebKit::WebCryptoKeyTypePrivate;
+    if (keyDataString == "public")
+        type = WebKit::WebCryptoKeyTypePublic;
+
+    result.completeWithKey(WebKit::WebCryptoKey::create(0, type, extractable, algorithm, usages));
 }
 
 } // namespace WebTestRunner

@@ -17,17 +17,17 @@ importHmacSha1Key().then(function(key) {
     hmacSha1Key = key;
     hmacSha1 = {name: 'hmac', hash: {name: 'Sha-1'}};
 
-    // Pass invalid signature parameters to verify()
-    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, null)");
-    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, 'a')");
-    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, [])");
-
-    var data = asciiToArrayBuffer("hello");
+    data = asciiToArrayBuffer("hello");
     var expectedSignature = asciiToArrayBuffer("signed HMAC:hello");
 
-    var signPromise = crypto.subtle.sign(hmacSha1, hmacSha1Key).process(data).finish();
-    var verifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, expectedSignature).process(data).finish();
-    var badVerifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, asciiToArrayBuffer("badsignature")).process(data).finish();
+    // Pass invalid signature parameters to verify()
+    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, null, data)");
+    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, 'a', data)");
+    shouldThrow("crypto.subtle.verify(hmacSha1, hmacSha1Key, [], data)");
+
+    var signPromise = crypto.subtle.sign(hmacSha1, hmacSha1Key, data);
+    var verifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, expectedSignature, data);
+    var badVerifyPromise = crypto.subtle.verify(hmacSha1, hmacSha1Key, asciiToArrayBuffer("badsignature"), data);
 
     Promise.every(signPromise, verifyPromise, badVerifyPromise).then(function(results)
     {

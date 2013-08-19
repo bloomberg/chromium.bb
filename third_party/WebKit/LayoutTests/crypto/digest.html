@@ -55,134 +55,34 @@ function failHandler(value)
 allTests = [
     function()
     {
-        debug("SHA1 of [] -- with empty process()")
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.process(new Uint8Array([]));
-        op.finish().then(resultHandler, rejectHandler);
-    },
-
-    function()
-    {
-        debug("SHA1 of [] -- without calling process()")
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.finish().then(resultHandler, rejectHandler);
+        debug("SHA1 of []")
+        crypto.subtle.digest({name: 'sha-1'}, new Uint8Array([])).then(resultHandler, rejectHandler);
     },
 
     function()
     {
         debug("SHA1 of [0x0]")
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.process(new Uint8Array([0]));
-        op.finish().then(resultHandler, rejectHandler);
-    },
-
-    function()
-    {
-        debug("SHA1 of [0x0] -- as an ArrayBuffer")
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.process(new Uint8Array([0]).buffer);
-        op.finish().then(resultHandler, rejectHandler);
-    },
-
-    function()
-    {
-        debug("SHA1 of [0, 1, 2, 3, 4, 5] -- multipart")
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.process(new Uint8Array([0]));
-        op.process(new Uint8Array([1]));
-        op.process(new Uint8Array([2]));
-        op.process(new Uint8Array([3]));
-        op.process(new Uint8Array([4]));
-        op.process(new Uint8Array([5]));
-        op.finish().then(resultHandler, rejectHandler);
-    },
-
-    function()
-    {
-        debug("Call process() after finish()");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.finish().then(resultHandler, rejectHandler);
-        // These should all be no-ops, since has already finished.
-        op.process(new Uint8Array([0]));
-        op.process(new Uint8Array([1]));
-        op.process(new Uint8Array([2]));
-        op.process(new Uint8Array([3]));
-    },
-
-    function()
-    {
-        debug("abort()");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.abort().then(resultHandler, rejectHandler);
-    },
-
-    function()
-    {
-        debug("abort() and then abort()");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.abort().then(failHandler, function(value) {
-            rejectHandler(value, true);
-            op.abort().then(resultHandler, rejectHandler);
-        });
-    },
-
-    function()
-    {
-        debug("process() and then abort()");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.process(new Uint8Array([0]));
-        op.abort().then(resultHandler, rejectHandler);
-    },
-
-    function()
-    {
-        debug("finish() and then abort()");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.finish().then(function(value) {
-            resultHandler(value, true);
-            op.abort().then(resultHandler, rejectHandler);
-        }, failHandler);
-    },
-
-    function()
-    {
-        debug("finish() and then process()");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.finish().then(resultHandler, rejectHandler);
-        op.process(new Uint8Array([0]));
-    },
-
-    function()
-    {
-        debug("finish() and then finish()");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.finish().then(function(value) {
-            resultHandler(value, true);
-            op.finish().then(resultHandler, rejectHandler);
-        }, failHandler);
+        crypto.subtle.digest({name: 'sha-1'}, new Uint8Array([0])).then(resultHandler, rejectHandler);
     },
 
     function()
     {
         debug("SHA-256 rejects (dummy implementation)");
-        op = crypto.subtle.digest({name: 'sha-256'});
-        op.finish().then(resultHandler, rejectHandler);
+        crypto.subtle.digest({name: 'sha-256'}, new Uint8Array([])).then(resultHandler, rejectHandler);
     },
 
     function()
     {
-        debug("Error during process() (dummy implementation rejects inputs over 6 bytes)");
-        op = crypto.subtle.digest({name: 'sha-1'});
-        op.process(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]));
-        op.finish().then(resultHandler, rejectHandler);
+        debug("Error (dummy implementation rejects this input)");
+        var data = new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+        crypto.subtle.digest({name: 'sha-1'}, data).then(resultHandler, rejectHandler);
     },
 
     function()
     {
-        op = crypto.subtle.digest({name: 'sha-1'});
-        shouldThrow("op.process(null)");
-        shouldThrow("op.process()");
-        shouldThrow("op.process(-1)");
+        shouldThrow("crypto.subtle.digest({name: 'sha-1'})");
+        shouldThrow("crypto.subtle.digest({name: 'sha-1'}, null)");
+        shouldThrow("crypto.subtle.digest({name: 'sha-1'}, 10)");
         startNextTest();
     },
 ];

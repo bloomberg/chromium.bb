@@ -39,7 +39,6 @@
 
 namespace WebCore {
 
-class CryptoOperation;
 class Dictionary;
 class ExceptionState;
 class Key;
@@ -48,12 +47,12 @@ class SubtleCrypto : public ScriptWrappable, public RefCounted<SubtleCrypto> {
 public:
     static PassRefPtr<SubtleCrypto> create() { return adoptRef(new SubtleCrypto()); }
 
-    PassRefPtr<CryptoOperation> encrypt(const Dictionary&, Key*, ExceptionState&);
-    PassRefPtr<CryptoOperation> decrypt(const Dictionary&, Key*, ExceptionState&);
-    PassRefPtr<CryptoOperation> sign(const Dictionary&, Key*, ExceptionState&);
+    ScriptObject encrypt(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
+    ScriptObject decrypt(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
+    ScriptObject sign(const Dictionary&, Key*, ArrayBufferView* data, ExceptionState&);
     // Note that this is not named "verify" because when compiling on Mac that expands to a macro and breaks.
-    PassRefPtr<CryptoOperation> verifySignature(const Dictionary&, Key*, ArrayBufferView* signature, ExceptionState&);
-    PassRefPtr<CryptoOperation> digest(const Dictionary&, ExceptionState&);
+    ScriptObject verifySignature(const Dictionary&, Key*, ArrayBufferView* signature, ArrayBufferView* data, ExceptionState&);
+    ScriptObject digest(const Dictionary&, ArrayBufferView* data, ExceptionState&);
 
     ScriptObject generateKey(const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);
     ScriptObject importKey(const String&, ArrayBufferView*, const Dictionary&, bool extractable, const Vector<String>& keyUsages, ExceptionState&);

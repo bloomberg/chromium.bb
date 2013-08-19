@@ -3,9 +3,9 @@ Tests cypto.subtle.sign and crypto.subtle.verify
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS crypto.subtle.verify(hmacSha1, hmacSha1Key, null) threw exception TypeError: Type error.
-PASS crypto.subtle.verify(hmacSha1, hmacSha1Key, 'a') threw exception TypeError: Type error.
-PASS crypto.subtle.verify(hmacSha1, hmacSha1Key, []) threw exception TypeError: Type error.
+PASS crypto.subtle.verify(hmacSha1, hmacSha1Key, null, data) threw exception TypeError: Type error.
+PASS crypto.subtle.verify(hmacSha1, hmacSha1Key, 'a', data) threw exception TypeError: Type error.
+PASS crypto.subtle.verify(hmacSha1, hmacSha1Key, [], data) threw exception TypeError: Type error.
 PASS signResult.byteLength is 17
 PASS verifyResult1 is true
 PASS verifyResult2 is false

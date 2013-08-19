@@ -25,7 +25,6 @@ PASS key.extractable is false
 PASS key.algorithm.name is 'AES-CBC'
 PASS key.usages.join(',') is ''
 rejected with null
-PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, keyUsages) threw exception NotSupportedError: The implementation did not support the requested type of object or operation..
 PASS crypto.subtle.importKey('invalid format', data, algorithm, extractable, keyUsages) threw exception TypeError: Type error.
 PASS crypto.subtle.importKey(keyFormat, data, algorithm, extractable, ['SIGN']) threw exception TypeError: Type error.
 PASS crypto.subtle.importKey(keyFormat, [], algorithm, extractable, keyUsages) threw exception TypeError: Type error.
