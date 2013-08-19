@@ -49,6 +49,7 @@ XSLStyleSheetResource::XSLStyleSheetResource(const ResourceRequest& resourceRequ
 void XSLStyleSheetResource::didAddClient(ResourceClient* c)
 {
     ASSERT(c->resourceClientType() == StyleSheetResourceClient::expectedType());
+    Resource::didAddClient(c);
     if (!isLoading())
         static_cast<StyleSheetResourceClient*>(c)->setXSLStyleSheet(m_resourceRequest.url(), m_response.url(), m_sheet);
 }

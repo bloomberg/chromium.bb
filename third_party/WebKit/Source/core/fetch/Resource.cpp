@@ -367,10 +367,6 @@ void Resource::addClient(ResourceClient* client)
 
 void Resource::didAddClient(ResourceClient* c)
 {
-    if (m_clientsAwaitingCallback.contains(c)) {
-        m_clients.add(c);
-        m_clientsAwaitingCallback.remove(c);
-    }
     if (!isLoading() && !stillNeedsLoad())
         c->notifyFinished(this);
 }
@@ -390,13 +386,10 @@ bool Resource::addClientToSet(ResourceClient* client)
     if (!hasClients() && inCache())
         memoryCache()->addToLiveResourcesSize(this);
 
-    if ((m_type == Raw || m_type == MainResource) && !m_response.isNull() && !m_proxyResource) {
-        // Certain resources (especially XHRs and main resources) do crazy things if an asynchronous load returns
-        // synchronously (e.g., scripts may not have set all the state they need to handle the load).
-        // Therefore, rather than immediately sending callbacks on a cache hit like other Resources,
-        // we schedule the callbacks and ensure we never finish synchronously.
-        ASSERT(!m_clientsAwaitingCallback.contains(client));
-        m_clientsAwaitingCallback.add(client, ResourceCallback::schedule(this, client));
+    // If we have existing data to send to the new client, send it asynchronously.
+    if (m_type != Image && m_type != CSSStyleSheet && m_type != Script && !m_response.isNull() && !m_proxyResource) {
+        m_clientsAwaitingCallback.add(client);
+        ResourceCallback::callbackHandler()->schedule(this);
         return false;
     }
 
@@ -406,11 +399,11 @@ bool Resource::addClientToSet(ResourceClient* client)
 
 void Resource::removeClient(ResourceClient* client)
 {
-    OwnPtr<ResourceCallback> callback = m_clientsAwaitingCallback.take(client);
-    if (callback) {
+    if (m_clientsAwaitingCallback.contains(client)) {
         ASSERT(!m_clients.contains(client));
-        callback->cancel();
-        callback.clear();
+        m_clientsAwaitingCallback.remove(client);
+        if (m_clientsAwaitingCallback.isEmpty())
+            ResourceCallback::callbackHandler()->cancel(this);
     } else {
         ASSERT(m_clients.contains(client));
         m_clients.remove(client);
@@ -539,6 +532,16 @@ void Resource::didAccessDecodedData(double timeStamp)
             memoryCache()->insertInLiveDecodedResourcesList(this);
         }
         memoryCache()->prune();
+    }
+}
+
+void Resource::finishPendingClients()
+{
+    while (!m_clientsAwaitingCallback.isEmpty()) {
+        ResourceClient* client = m_clientsAwaitingCallback.begin()->key;
+        m_clientsAwaitingCallback.remove(client);
+        m_clients.add(client);
+        didAddClient(client);
     }
 }
 
@@ -816,23 +819,40 @@ void Resource::didChangePriority(ResourceLoadPriority loadPriority)
         m_loader->didChangePriority(loadPriority);
 }
 
-Resource::ResourceCallback::ResourceCallback(Resource* resource, ResourceClient* client)
-    : m_resource(resource)
-    , m_client(client)
-    , m_callbackTimer(this, &ResourceCallback::timerFired)
+Resource::ResourceCallback* Resource::ResourceCallback::callbackHandler()
 {
-    m_callbackTimer.startOneShot(0);
+    DEFINE_STATIC_LOCAL(ResourceCallback, callbackHandler, ());
+    return &callbackHandler;
 }
 
-void Resource::ResourceCallback::cancel()
+Resource::ResourceCallback::ResourceCallback()
+    : m_callbackTimer(this, &ResourceCallback::timerFired)
 {
-    if (m_callbackTimer.isActive())
+}
+
+void Resource::ResourceCallback::schedule(Resource* resource)
+{
+    if (!m_callbackTimer.isActive())
+        m_callbackTimer.startOneShot(0);
+    m_resourcesWithPendingClients.add(resource);
+}
+
+void Resource::ResourceCallback::cancel(Resource* resource)
+{
+    m_resourcesWithPendingClients.remove(resource);
+    if (m_callbackTimer.isActive() && m_resourcesWithPendingClients.isEmpty())
         m_callbackTimer.stop();
 }
 
 void Resource::ResourceCallback::timerFired(Timer<ResourceCallback>*)
 {
-    m_resource->didAddClient(m_client);
+    HashSet<Resource*>::iterator end = m_resourcesWithPendingClients.end();
+    Vector<ResourcePtr<Resource> > resources;
+    for (HashSet<Resource*>::iterator it = m_resourcesWithPendingClients.begin(); it != end; ++it)
+        resources.append(*it);
+    m_resourcesWithPendingClients.clear();
+    for (size_t i = 0; i < resources.size(); i++)
+        resources[i]->finishPendingClients();
 }
 
 }

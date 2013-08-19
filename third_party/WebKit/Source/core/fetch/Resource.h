@@ -260,21 +260,22 @@ protected:
     void clearResourceToRevalidate();
     void updateResponseAfterRevalidation(const ResourceResponse& validatingResponse);
 
+    void finishPendingClients();
+
     HashCountedSet<ResourceClient*> m_clients;
+    HashCountedSet<ResourceClient*> m_clientsAwaitingCallback;
 
     class ResourceCallback {
     public:
-        static PassOwnPtr<ResourceCallback> schedule(Resource* resource, ResourceClient* client) { return adoptPtr(new ResourceCallback(resource, client)); }
-        void cancel();
+        static ResourceCallback* callbackHandler();
+        void schedule(Resource*);
+        void cancel(Resource*);
     private:
-        ResourceCallback(Resource*, ResourceClient*);
+        ResourceCallback();
         void timerFired(Timer<ResourceCallback>*);
-
-        Resource* m_resource;
-        ResourceClient* m_client;
         Timer<ResourceCallback> m_callbackTimer;
+        HashSet<Resource*> m_resourcesWithPendingClients;
     };
-    HashMap<ResourceClient*, OwnPtr<ResourceCallback> > m_clientsAwaitingCallback;
 
     bool hasClient(ResourceClient* client) { return m_clients.contains(client) || m_clientsAwaitingCallback.contains(client); }
 

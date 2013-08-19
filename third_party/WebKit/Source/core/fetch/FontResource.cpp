@@ -63,6 +63,7 @@ void FontResource::load(ResourceFetcher*, const ResourceLoaderOptions& options)
 void FontResource::didAddClient(ResourceClient* c)
 {
     ASSERT(c->resourceClientType() == FontResourceClient::expectedType());
+    Resource::didAddClient(c);
     if (!isLoading())
         static_cast<FontResourceClient*>(c)->fontLoaded(this);
 }
