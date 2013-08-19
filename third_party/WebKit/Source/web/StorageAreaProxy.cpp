@@ -28,6 +28,7 @@
 #include "StorageAreaProxy.h"
 
 #include "StorageNamespaceProxy.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
@@ -65,7 +66,7 @@ StorageAreaProxy::~StorageAreaProxy()
 unsigned StorageAreaProxy::length(ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToGet("length", "Storage", "access is denied for this document."));
         return 0;
     }
     return m_storageArea->length();
@@ -74,7 +75,7 @@ unsigned StorageAreaProxy::length(ExceptionState& es, Frame* frame)
 String StorageAreaProxy::key(unsigned index, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("length", "Storage", "access is denied for this document."));
         return String();
     }
     return m_storageArea->key(index);
@@ -83,7 +84,7 @@ String StorageAreaProxy::key(unsigned index, ExceptionState& es, Frame* frame)
 String StorageAreaProxy::getItem(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("getItem", "Storage", "access is denied for this document."));
         return String();
     }
     return m_storageArea->getItem(key);
@@ -92,7 +93,7 @@ String StorageAreaProxy::getItem(const String& key, ExceptionState& es, Frame* f
 void StorageAreaProxy::setItem(const String& key, const String& value, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("setItem", "Storage", "access is denied for this document."));
         return;
     }
     WebKit::WebStorageArea::Result result = WebKit::WebStorageArea::ResultOK;
@@ -104,7 +105,7 @@ void StorageAreaProxy::setItem(const String& key, const String& value, Exception
 void StorageAreaProxy::removeItem(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("removeItem", "Storage", "access is denied for this document."));
         return;
     }
     m_storageArea->removeItem(key, frame->document()->url());
@@ -113,7 +114,7 @@ void StorageAreaProxy::removeItem(const String& key, ExceptionState& es, Frame* 
 void StorageAreaProxy::clear(ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("clear", "Storage", "access is denied for this document."));
         return;
     }
     m_storageArea->clear(frame->document()->url());
@@ -122,7 +123,7 @@ void StorageAreaProxy::clear(ExceptionState& es, Frame* frame)
 bool StorageAreaProxy::contains(const String& key, ExceptionState& es, Frame* frame)
 {
     if (!canAccessStorage(frame)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("contains", "Storage", "access is denied for this document."));
         return false;
     }
     return !getItem(key, es, frame).isNull();
