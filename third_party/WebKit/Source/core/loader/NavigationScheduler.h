@@ -71,7 +71,6 @@ public:
     explicit NavigationScheduler(Frame*);
     ~NavigationScheduler();
 
-    bool redirectScheduledDuringLoad();
     bool locationChangePending();
 
     void scheduleRedirect(double delay, const String& url);

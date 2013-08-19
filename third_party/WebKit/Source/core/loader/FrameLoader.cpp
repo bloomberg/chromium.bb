@@ -993,10 +993,6 @@ void FrameLoader::commitProvisionalLoad()
     if (!m_stateMachine.creatingInitialEmptyDocument() && !m_stateMachine.committedFirstRealDocumentLoad())
         m_stateMachine.advanceTo(FrameLoaderStateMachine::DisplayingInitialEmptyDocumentPostCommit);
 
-    // A redirect was scheduled before the first real document was committed.
-    // This can happen when one frame changes another frame's location.
-    if (m_frame->navigationScheduler()->redirectScheduledDuringLoad())
-        return;
     m_frame->navigationScheduler()->cancel();
     m_frame->editor()->clearLastEditCommand();
 

@@ -55,10 +55,9 @@ unsigned NavigationDisablerForBeforeUnload::s_navigationDisableCount = 0;
 class ScheduledNavigation {
     WTF_MAKE_NONCOPYABLE(ScheduledNavigation); WTF_MAKE_FAST_ALLOCATED;
 public:
-    ScheduledNavigation(double delay, bool lockBackForwardList, bool wasDuringLoad, bool isLocationChange)
+    ScheduledNavigation(double delay, bool lockBackForwardList, bool isLocationChange)
         : m_delay(delay)
         , m_lockBackForwardList(lockBackForwardList)
-        , m_wasDuringLoad(wasDuringLoad)
         , m_isLocationChange(isLocationChange)
         , m_wasUserGesture(ScriptController::processingUserGesture())
     {
@@ -75,7 +74,6 @@ public:
     double delay() const { return m_delay; }
     bool lockBackForwardList() const { return m_lockBackForwardList; }
     void setLockBackForwardList(bool lockBackForwardList) { m_lockBackForwardList = lockBackForwardList; }
-    bool wasDuringLoad() const { return m_wasDuringLoad; }
     bool isLocationChange() const { return m_isLocationChange; }
     PassOwnPtr<UserGestureIndicator> createUserGestureIndicator()
     {
@@ -90,7 +88,6 @@ protected:
 private:
     double m_delay;
     bool m_lockBackForwardList;
-    bool m_wasDuringLoad;
     bool m_isLocationChange;
     bool m_wasUserGesture;
     RefPtr<UserGestureToken> m_userGestureToken;
@@ -98,8 +95,8 @@ private:
 
 class ScheduledURLNavigation : public ScheduledNavigation {
 protected:
-    ScheduledURLNavigation(double delay, SecurityOrigin* securityOrigin, const String& url, const String& referrer, bool lockBackForwardList, bool duringLoad, bool isLocationChange)
-        : ScheduledNavigation(delay, lockBackForwardList, duringLoad, isLocationChange)
+    ScheduledURLNavigation(double delay, SecurityOrigin* securityOrigin, const String& url, const String& referrer, bool lockBackForwardList, bool isLocationChange)
+        : ScheduledNavigation(delay, lockBackForwardList, isLocationChange)
         , m_securityOrigin(securityOrigin)
         , m_url(url)
         , m_referrer(referrer)
@@ -141,7 +138,7 @@ private:
 class ScheduledRedirect : public ScheduledURLNavigation {
 public:
     ScheduledRedirect(double delay, SecurityOrigin* securityOrigin, const String& url, bool lockBackForwardList)
-        : ScheduledURLNavigation(delay, securityOrigin, url, String(), lockBackForwardList, false, false)
+        : ScheduledURLNavigation(delay, securityOrigin, url, String(), lockBackForwardList, false)
     {
         clearUserGesture();
     }
@@ -162,14 +159,14 @@ public:
 
 class ScheduledLocationChange : public ScheduledURLNavigation {
 public:
-    ScheduledLocationChange(SecurityOrigin* securityOrigin, const String& url, const String& referrer, bool lockBackForwardList, bool duringLoad)
-        : ScheduledURLNavigation(0.0, securityOrigin, url, referrer, lockBackForwardList, duringLoad, true) { }
+    ScheduledLocationChange(SecurityOrigin* securityOrigin, const String& url, const String& referrer, bool lockBackForwardList)
+        : ScheduledURLNavigation(0.0, securityOrigin, url, referrer, lockBackForwardList, true) { }
 };
 
 class ScheduledRefresh : public ScheduledURLNavigation {
 public:
     ScheduledRefresh(SecurityOrigin* securityOrigin, const String& url, const String& referrer)
-        : ScheduledURLNavigation(0.0, securityOrigin, url, referrer, true, false, true)
+        : ScheduledURLNavigation(0.0, securityOrigin, url, referrer, true, true)
     {
     }
 
@@ -186,7 +183,7 @@ public:
 class ScheduledHistoryNavigation : public ScheduledNavigation {
 public:
     explicit ScheduledHistoryNavigation(int historySteps)
-        : ScheduledNavigation(0, false, false, true)
+        : ScheduledNavigation(0, false, true)
         , m_historySteps(historySteps)
     {
     }
@@ -214,8 +211,8 @@ private:
 
 class ScheduledFormSubmission : public ScheduledNavigation {
 public:
-    ScheduledFormSubmission(PassRefPtr<FormSubmission> submission, bool lockBackForwardList, bool duringLoad)
-        : ScheduledNavigation(0, lockBackForwardList, duringLoad, true)
+    ScheduledFormSubmission(PassRefPtr<FormSubmission> submission, bool lockBackForwardList)
+        : ScheduledNavigation(0, lockBackForwardList, true)
         , m_submission(submission)
         , m_haveToldClient(false)
     {
@@ -265,11 +262,6 @@ NavigationScheduler::NavigationScheduler(Frame* frame)
 
 NavigationScheduler::~NavigationScheduler()
 {
-}
-
-bool NavigationScheduler::redirectScheduledDuringLoad()
-{
-    return m_redirect && m_redirect->wasDuringLoad();
 }
 
 bool NavigationScheduler::locationChangePending()
@@ -348,11 +340,7 @@ void NavigationScheduler::scheduleLocationChange(SecurityOrigin* securityOrigin,
         }
     }
 
-    // Handle a location change of a page with no document as a special case.
-    // This may happen when a frame changes the location of another frame.
-    bool duringLoad = !loader->stateMachine()->committedFirstRealDocumentLoad();
-
-    schedule(adoptPtr(new ScheduledLocationChange(securityOrigin, url, referrer, lockBackForwardList, duringLoad)));
+    schedule(adoptPtr(new ScheduledLocationChange(securityOrigin, url, referrer, lockBackForwardList)));
 }
 
 void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> submission)
@@ -362,10 +350,6 @@ void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> subm
     // FIXME: Do we need special handling for form submissions where the URL is the same
     // as the current one except for the fragment part? See scheduleLocationChange above.
 
-    // Handle a location change of a page with no document as a special case.
-    // This may happen when a frame changes the location of another frame.
-    bool duringLoad = !m_frame->loader()->stateMachine()->committedFirstRealDocumentLoad();
-
     // If this is a child frame and the form submission was triggered by a script, lock the back/forward list
     // to match IE and Opera.
     // See https://bugs.webkit.org/show_bug.cgi?id=32383 for the original motivation for this.
@@ -373,7 +357,7 @@ void NavigationScheduler::scheduleFormSubmission(PassRefPtr<FormSubmission> subm
         || (submission->state()->formSubmissionTrigger() == SubmittedByJavaScript
             && m_frame->tree()->parent() && !ScriptController::processingUserGesture());
 
-    schedule(adoptPtr(new ScheduledFormSubmission(submission, lockBackForwardList, duringLoad)));
+    schedule(adoptPtr(new ScheduledFormSubmission(submission, lockBackForwardList)));
 }
 
 void NavigationScheduler::scheduleRefresh()
@@ -423,25 +407,8 @@ void NavigationScheduler::timerFired(Timer<NavigationScheduler>*)
 void NavigationScheduler::schedule(PassOwnPtr<ScheduledNavigation> redirect)
 {
     ASSERT(m_frame->page());
-
-    RefPtr<Frame> protect(m_frame);
-
-    // If a redirect was scheduled during a load, then stop the current load.
-    // Otherwise when the current load transitions from a provisional to a
-    // committed state, pending redirects may be cancelled.
-    if (redirect->wasDuringLoad()) {
-        if (DocumentLoader* provisionalDocumentLoader = m_frame->loader()->provisionalDocumentLoader())
-            provisionalDocumentLoader->stopLoading();
-        m_frame->document()->dispatchUnloadEvents();
-        m_frame->loader()->stopLoading();
-    }
-
     cancel();
     m_redirect = redirect;
-
-    if (!m_frame->page())
-        return;
-
     startTimer();
 }
 
