@@ -1,25 +1,18 @@
-CONSOLE MESSAGE: Wrong url scheme for WebSocket http://127.0.0.1:8000/websocket/tests/hybi/null
-CONSOLE MESSAGE: Invalid url for WebSocket ws://javascript:a/
-CONSOLE MESSAGE: Wrong url scheme for WebSocket http://127.0.0.1:8000/applet
-CONSOLE MESSAGE: Wrong url scheme for WebSocket javascript:a
-CONSOLE MESSAGE: WebSocket port 25 blocked
-CONSOLE MESSAGE: URL has fragment component ws://127.0.0.1/path#
-CONSOLE MESSAGE: URL has fragment component ws://127.0.0.1/path#fragment
 Test WebSocket URL parsing.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 PASS new WebSocket() threw exception TypeError: Not enough arguments.
-PASS new WebSocket(null) threw exception SyntaxError: An invalid or illegal string was specified..
-PASS new WebSocket("ws://javascript:a") threw exception SyntaxError: An invalid or illegal string was specified..
-PASS new WebSocket("/applet") threw exception SyntaxError: An invalid or illegal string was specified..
-PASS new WebSocket("javascript:a") threw exception SyntaxError: An invalid or illegal string was specified..
-PASS new WebSocket("ws://127.0.0.1:25/") threw exception SecurityError: An attempt was made to break through the security policy of the user agent..
+PASS new WebSocket(null) threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed..
+PASS new WebSocket("ws://javascript:a") threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': the URL 'ws://javascript:a/' is invalid..
+PASS new WebSocket("/applet") threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'http' is not allowed..
+PASS new WebSocket("javascript:a") threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': The URL's scheme must be either 'ws' or 'wss'. 'javascript' is not allowed..
+PASS new WebSocket("ws://127.0.0.1:25/") threw exception SecurityError: Failed to execute 'connect' on 'WebSocket': The port 25 is not allowed..
 PASS (new WebSocket("ws://127.0.0.1:8880/a/../websocket/tests/hybi/simple")).URL is "ws://127.0.0.1:8880/websocket/tests/hybi/simple"
 PASS (new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/simple?")).URL is "ws://127.0.0.1:8880/websocket/tests/hybi/simple?"
 PASS (new WebSocket("ws://127.0.0.1:8880/websocket/tests/hybi/simple?k=v")).URL is "ws://127.0.0.1:8880/websocket/tests/hybi/simple?k=v"
-PASS new WebSocket("ws://127.0.0.1/path#") threw exception SyntaxError: An invalid or illegal string was specified..
-PASS new WebSocket("ws://127.0.0.1/path#fragment") threw exception SyntaxError: An invalid or illegal string was specified..
+PASS new WebSocket("ws://127.0.0.1/path#") threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': The URL contains a fragment identifier (''). Fragment identifiers are not allowed in WebSocket URLs..
+PASS new WebSocket("ws://127.0.0.1/path#fragment") threw exception SyntaxError: Failed to execute 'connect' on 'WebSocket': The URL contains a fragment identifier ('fragment'). Fragment identifiers are not allowed in WebSocket URLs..
 PASS successfullyParsed is true
 
 TEST COMPLETE

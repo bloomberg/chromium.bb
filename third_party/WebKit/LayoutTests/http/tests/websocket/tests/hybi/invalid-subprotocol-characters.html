@@ -42,7 +42,7 @@ function runTest(codePoint)
             setTimeout("runTest(" + (codePoint + 1) + ")", 0);
         };
     } else {
-        shouldThrow("new WebSocket(url, \"" + escapeUnicodeCharacter(codePoint) + "\")", "'SyntaxError: An invalid or illegal string was specified.'");
+        shouldThrow("new WebSocket(url, \"" + escapeUnicodeCharacter(codePoint) + "\")");
         setTimeout("runTest(" + (codePoint + 1) + ")", 0);
     }
 }

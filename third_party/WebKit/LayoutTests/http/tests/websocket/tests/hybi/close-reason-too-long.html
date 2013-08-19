@@ -25,7 +25,7 @@ ws.onopen = function()
         testFailed('SyntaxError should be thrown.');
     } catch (e) {
         if (e.name == 'SyntaxError')
-            testPassed('SyntaxError was thrown.');
+            testPassed('SyntaxError was thrown: ' + e);
         else
             testFailed('Unexpected exception: ' + e);
     }

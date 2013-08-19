@@ -12,6 +12,7 @@ description("Verify WebSocket::close behaviors.");
 window.jsTestIsAsync = true;
 
 var exceptionName;
+var exceptionMessage;
 var exceptionProto;
 var closeEvent;
 var code;
@@ -97,9 +98,19 @@ function runCodeTest()
         } catch (e) {
             debug("Code " + codeTestCodes[id] + " must cause " + invalidAccessErr + '.');
             exceptionName = e.name;
+            exceptionMessage = e.message;
             exceptionProto = Object.getPrototypeOf(e);
             shouldBeTrue("exceptionProto === DOMException.prototype");
             shouldBe("exceptionName", "invalidAccessErr");
+            var expectedCode = codeTestCodes[id];
+            if (!expectedCode)
+                expectedCode = 0;
+            else if (expectedCode > 65535)
+                expectedCode = 65535;
+            else if (expectedCode < 0)
+                expectedCode = 0;
+            expectedCode = Math.floor(expectedCode);
+            shouldBe("exceptionMessage", '"Failed to execute \'close\' on \'WebSocket\': the code must be either 1000, or between 3000 and 4999. ' + expectedCode + ' is neither."');
         }
     }
 }
