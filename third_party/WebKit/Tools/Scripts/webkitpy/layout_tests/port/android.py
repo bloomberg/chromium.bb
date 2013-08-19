@@ -400,9 +400,6 @@ class AndroidPort(chromium.ChromiumPort):
         return self._build_path(MD5SUM_HOST_FILE_NAME)
 
     # Overridden public methods.
-    def buildbot_archives_baselines(self):
-        return False
-
     def additional_drt_flag(self):
         return self._driver_details.additional_command_line_flags()
 
@@ -517,6 +514,16 @@ class AndroidPort(chromium.ChromiumPort):
 
     def _driver_class(self):
         return ChromiumAndroidDriver
+
+    # Android maintains a temporary expectations file for the purpose of ramping
+    # up the set of layout tests being ran. Lines in this file will be removed
+    # as the bot starts running them. Remove this method when the file is empty.
+    def _port_specific_expectations_files(self):
+        paths = super(AndroidPort, self)._port_specific_expectations_files()
+        paths.append(self._filesystem.join(self.layout_tests_dir(), 'platform',
+                                           AndroidPort.port_name, 'TestExpectations'))
+
+        return paths
 
     # Local private methods.
 
