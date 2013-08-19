@@ -208,6 +208,7 @@ void CopyOperation::ScheduleTransferRegularFile(
   create_file_operation_->CreateFile(
       remote_dest_file_path,
       fail_if_file_already_exists,
+      std::string(),  // no specific mime type; CreateFile should guess it.
       base::Bind(&CopyOperation::ScheduleTransferRegularFileAfterCreate,
                  weak_ptr_factory_.GetWeakPtr(),
                  local_file_path,

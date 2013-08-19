@@ -50,6 +50,7 @@ void GetFileForSavingOperation::GetFileForSaving(
   create_file_operation_->CreateFile(
       file_path,
       false,  // error_if_already_exists
+      std::string(),  // no specific mime type
       base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterCreate,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,

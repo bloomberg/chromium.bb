@@ -60,14 +60,16 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
     case CREATE_FILE:
       create_file_operation_->CreateFile(
           file_path,
-          true /* exclusive */,
+          true,  // exclusive: fail if already exists
+          std::string(),  // no mime type; guess from the file name
           base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
                      weak_ptr_factory_.GetWeakPtr(), file_path, callback));
       break;
     case OPEN_OR_CREATE_FILE:
       create_file_operation_->CreateFile(
           file_path,
-          false /* not-exclusive */,
+          false,  // not-exclusive
+          std::string(),  // no mime type; guess from the file name
           base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
                      weak_ptr_factory_.GetWeakPtr(), file_path, callback));
       break;

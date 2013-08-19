@@ -370,7 +370,9 @@ void FileSystem::CreateFile(const base::FilePath& file_path,
                             const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  create_file_operation_->CreateFile(file_path, is_exclusive, callback);
+  std::string mime_type; // TODO(kinaba): crbug.com/164346 take as a parameter.
+  create_file_operation_->CreateFile(
+      file_path, is_exclusive, mime_type, callback);
 }
 
 void FileSystem::TouchFile(const base::FilePath& file_path,

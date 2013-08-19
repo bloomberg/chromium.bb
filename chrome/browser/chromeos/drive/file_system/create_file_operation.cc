@@ -61,9 +61,12 @@ FileError CheckPreConditionForCreateFile(internal::ResourceMetadata* metadata,
     // Here, populate them.
     *parent_resource_id = parent.resource_id();
 
-    // If mime type is unsure, use octet stream by default.
-    if (!net::GetMimeTypeFromFile(file_path, mime_type))
+    // If mime_type is not set or "application/octet-stream", guess from the
+    // |file_path|. If it is still unsure, use octet-stream by default.
+    if ((mime_type->empty() || *mime_type == kMimeTypeOctetStream) &&
+        !net::GetMimeTypeFromFile(file_path, mime_type)) {
       *mime_type = kMimeTypeOctetStream;
+    }
   }
 
   return error;
@@ -140,12 +143,13 @@ CreateFileOperation::~CreateFileOperation() {
 
 void CreateFileOperation::CreateFile(const base::FilePath& file_path,
                                      bool is_exclusive,
+                                     const std::string& mime_type,
                                      const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   std::string* parent_resource_id = new std::string;
-  std::string* mime_type = new std::string;
+  std::string* determined_mime_type = new std::string(mime_type);
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
       FROM_HERE,
@@ -154,13 +158,13 @@ void CreateFileOperation::CreateFile(const base::FilePath& file_path,
                  file_path,
                  is_exclusive,
                  parent_resource_id,
-                 mime_type),
+                 determined_mime_type),
       base::Bind(&CreateFileOperation::CreateFileAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  callback,
                  base::Owned(parent_resource_id),
-                 base::Owned(mime_type)));
+                 base::Owned(determined_mime_type)));
 }
 
 void CreateFileOperation::CreateFileAfterCheckPreCondition(
