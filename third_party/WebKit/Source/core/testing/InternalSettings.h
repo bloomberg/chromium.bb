@@ -97,6 +97,7 @@ public:
     void setTextAutosizingWindowSizeOverride(int width, int height, ExceptionState&);
     void setTouchEventEmulationEnabled(bool, ExceptionState&);
     void setUsesOverlayScrollbars(bool, ExceptionState&);
+    void setViewportEnabled(bool, ExceptionState&);
 
     // FIXME: This is a temporary flag and should be removed once accelerated
     // overflow scroll is ready (crbug.com/254111).

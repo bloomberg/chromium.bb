@@ -137,6 +137,7 @@ Settings::Settings(Page* page)
     , m_cssStickyPositionEnabled(true)
     , m_dnsPrefetchingEnabled(false)
     , m_touchEventEmulationEnabled(false)
+    , m_viewportEnabled(false)
     , m_setImageLoadingSettingsTimer(this, &Settings::imageLoadingSettingsTimerFired)
 {
     m_page = page; // Page is not yet fully initialized wen constructing Settings, so keeping m_page null over initializeDefaultFontFamilies() call.
@@ -378,6 +379,16 @@ void Settings::setOpenGLMultisamplingEnabled(bool flag)
 bool Settings::openGLMultisamplingEnabled()
 {
     return m_openGLMultisamplingEnabled;
+}
+
+void Settings::setViewportEnabled(bool enabled)
+{
+    if (m_viewportEnabled == enabled)
+        return;
+
+    m_viewportEnabled = enabled;
+    if (m_page->mainFrame())
+        m_page->mainFrame()->document()->updateViewportArguments();
 }
 
 } // namespace WebCore

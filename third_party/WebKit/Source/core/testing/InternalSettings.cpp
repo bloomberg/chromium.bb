@@ -182,6 +182,12 @@ void InternalSettings::setTouchEventEmulationEnabled(bool enabled, ExceptionStat
     settings()->setTouchEventEmulationEnabled(enabled);
 }
 
+void InternalSettings::setViewportEnabled(bool enabled, ExceptionState& es)
+{
+    InternalSettingsGuardForSettings();
+    settings()->setViewportEnabled(enabled);
+}
+
 // FIXME: This is a temporary flag and should be removed once accelerated
 // overflow scroll is ready (crbug.com/254111).
 void InternalSettings::setCompositorDrivenAcceleratedScrollingEnabled(bool enabled, ExceptionState& es)

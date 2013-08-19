@@ -51,7 +51,6 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings)
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
     , m_renderVSyncNotificationEnabled(false)
-    , m_viewportEnabled(false)
     , m_gestureTapHighlightEnabled(true)
     , m_autoZoomFocusedNodeToLegibleScale(false)
     , m_deferredImageDecodingEnabled(false)
@@ -591,6 +590,11 @@ bool WebSettingsImpl::touchEditingEnabled() const
     return m_settings->touchEditingEnabled();
 }
 
+bool WebSettingsImpl::viewportEnabled() const
+{
+    return m_settings->viewportEnabled();
+}
+
 void WebSettingsImpl::setVisualWordMovementEnabled(bool enabled)
 {
     m_settings->setVisualWordMovementEnabled(enabled);
@@ -628,7 +632,7 @@ void WebSettingsImpl::setFixedPositionCreatesStackingContext(bool creates)
 
 void WebSettingsImpl::setViewportEnabled(bool enabled)
 {
-    m_viewportEnabled = enabled;
+    m_settings->setViewportEnabled(enabled);
 }
 
 void WebSettingsImpl::setSyncXHRInDocumentsEnabled(bool enabled)

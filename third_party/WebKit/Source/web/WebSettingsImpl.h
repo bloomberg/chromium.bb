@@ -47,7 +47,7 @@ public:
     virtual bool deviceSupportsTouch();
     virtual bool scrollAnimatorEnabled() const;
     virtual bool touchEditingEnabled() const;
-    virtual bool viewportEnabled() const { return m_viewportEnabled; }
+    virtual bool viewportEnabled() const;
     virtual void setAccelerated2dCanvasEnabled(bool);
     virtual void setAcceleratedCompositingEnabled(bool);
     virtual void setAcceleratedCompositingFor3DTransformsEnabled(bool);
@@ -183,7 +183,6 @@ private:
     bool m_showFPSCounter;
     bool m_showPaintRects;
     bool m_renderVSyncNotificationEnabled;
-    bool m_viewportEnabled;
     bool m_gestureTapHighlightEnabled;
     bool m_autoZoomFocusedNodeToLegibleScale;
     bool m_deferredImageDecodingEnabled;

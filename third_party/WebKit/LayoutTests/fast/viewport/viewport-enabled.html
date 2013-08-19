@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<title>Check that internal.settings.setViewportEnabled works</title>
+<meta name="viewport" content="width=320">
+<script>
+    if (window.testRunner && window.internals) {
+        testRunner.dumpAsText();
+
+        document.write("Width with viewport disabled. (should be 800): " + document.documentElement.offsetWidth + "<br>");
+
+        testRunner.enableFixedLayoutMode(true);
+        internals.settings.setViewportEnabled(true);
+
+        document.write("Width from meta viewport (should be 320): " + document.documentElement.offsetWidth);
+    } else {
+        document.write("This test must be run within the Blink testing framework as it tests a feature only enabled for test runs.");
+    }
+</script>
