@@ -10,7 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/values.h"
-#include "net/http/http_status_code.h"
+#include "cloud_print/gcp20/prototype/local_print_job.h"
 #include "net/server/http_server.h"
 #include "net/server/http_server_request_info.h"
 
@@ -58,8 +58,6 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
 
   class Delegate {
    public:
-    Delegate() {}
-
     virtual ~Delegate() {}
 
     // Invoked when registration is starting.
@@ -87,11 +85,30 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
     // Invoked when /privet/info is called.
     virtual void CreateInfo(DeviceInfo* info) = 0;
 
-    // Invoked for checking should /privet/register be exposed.
+    // Invoked for checking wether /privet/register should be exposed.
     virtual bool IsRegistered() const = 0;
+
+    // Invoked for checking wether /privet/printer/* should be exposed.
+    virtual bool IsLocalPrintingAllowed() const = 0;
 
     // Invoked when XPrivetToken has to be checked.
     virtual bool CheckXPrivetTokenHeader(const std::string& token) const = 0;
+
+    // Invoked for getting capabilities.
+    virtual scoped_ptr<base::DictionaryValue> GetCapabilities() = 0;
+
+    // Invoked for creating a job.
+    virtual void CreateJob(const std::string& ticket) = 0;
+
+    // Invoked for simple local printing.
+    virtual LocalPrintJob::SaveResult SubmitDoc(
+        const LocalPrintJob& job,
+        std::string* job_id,
+        std::string* error_description,
+        int* timeout) = 0;
+
+    // Invoked for getting job status.
+    virtual void GetJobStatus(int job_id) = 0;
   };
 
   // Constructor doesn't start server.
@@ -130,20 +147,25 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
 
   // Processes http request after all preparations (XPrivetHeader check,
   // data handling etc.)
-  net::HttpStatusCode ProcessHttpRequest(const GURL& url,
-                                         const std::string& data,
-                                         std::string* response);
+  net::HttpStatusCode ProcessHttpRequest(
+      const GURL& url,
+      const net::HttpServerRequestInfo& info,
+      std::string* response);
 
   // Pivet API methods. Return reference to NULL if output should be empty.
   scoped_ptr<base::DictionaryValue> ProcessInfo(
       net::HttpStatusCode* status_code) const;
-  scoped_ptr<base::DictionaryValue> ProcessReset(
-      net::HttpStatusCode* status_code);
+  scoped_ptr<base::DictionaryValue> ProcessCapabilities(
+      net::HttpStatusCode* status_code) const;
+  scoped_ptr<base::DictionaryValue> ProcessSubmitDoc(
+      const GURL& url,
+      const net::HttpServerRequestInfo& info,
+      net::HttpStatusCode* status_code) const;
   scoped_ptr<base::DictionaryValue> ProcessRegister(
       const GURL& url,
-      net::HttpStatusCode* status_code);
+      net::HttpStatusCode* status_code) const;
 
-  // Proccesses current status and depending on it replaces (or not)
+  // Processes current status and depending on it replaces (or not)
   // |current_response| with error or empty response.
   void ProcessRegistrationStatus(
       RegistrationErrorStatus status,

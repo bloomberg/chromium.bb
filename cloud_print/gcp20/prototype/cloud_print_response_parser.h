@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/time/time.h"
 #include "cloud_print/gcp20/prototype/local_settings.h"
 
 namespace base {
@@ -24,7 +25,7 @@ struct Job {
   ~Job();
 
   std::string job_id;
-  std::string create_time;
+  base::Time create_time;
   std::string file_url;
   std::string ticket_url;
   std::string title;

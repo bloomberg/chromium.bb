@@ -7,6 +7,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 
 namespace cloud_print_response_parser {
@@ -183,17 +184,26 @@ bool ParseFetchResponse(const std::string& response,
   }
 
   std::vector<Job> job_list(jobs->GetSize());
+  std::string create_time_str;
   for (size_t idx = 0; idx < job_list.size(); ++idx) {
     base::DictionaryValue* job = NULL;
     jobs->GetDictionary(idx, &job);
     if (!job->GetString("id", &job_list[idx].job_id) ||
-        !job->GetString("createTime", &job_list[idx].create_time) ||
+        !job->GetString("createTime", &create_time_str) ||
         !job->GetString("fileUrl", &job_list[idx].file_url) ||
         !job->GetString("ticketUrl", &job_list[idx].ticket_url) ||
         !job->GetString("title", &job_list[idx].title)) {
       *error_description = "Cannot parse job info.";
       return false;
     }
+    int64 create_time_ms = 0;
+    if (!base::StringToInt64(create_time_str, &create_time_ms)) {
+      *error_description = "Cannot convert time.";
+      return false;
+    }
+    job_list[idx].create_time =
+        base::Time::UnixEpoch() +
+        base::TimeDelta::FromMilliseconds(create_time_ms);
   }
 
   *list = job_list;

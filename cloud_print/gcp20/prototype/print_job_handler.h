@@ -8,16 +8,34 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "cloud_print/gcp20/prototype/local_print_job.h"
+
+namespace base {
+
+class DictionaryValue;
+class Time;
+
+}  // namespace base
 
 class PrintJobHandler {
  public:
   PrintJobHandler();
   ~PrintJobHandler();
 
-  bool SavePrintJob(const std::string& data,
+  LocalPrintJob::CreateResult CreatePrintJob(std::string* job_id,
+                                             int* expires_in);
+  LocalPrintJob::SaveResult SaveLocalPrintJob(const LocalPrintJob& job,
+                                              std::string* job_id,
+                                              std::string* error_description,
+                                              int* timeout);
+
+  bool SavePrintJob(const std::string& content,
                     const std::string& ticket,
-                    const std::string& job_name,
-                    const std::string& title);
+                    const base::Time& create_time,
+                    const std::string& id,
+                    const std::string& job_name_suffix,
+                    const std::string& title,
+                    const std::string& file_extension);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PrintJobHandler);

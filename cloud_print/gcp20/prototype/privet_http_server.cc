@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
@@ -16,6 +17,14 @@ namespace {
 
 const int kDeviceBusyTimeout = 30;  // in seconds
 const int kPendingUserActionTimeout = 5;  // in seconds
+
+const char kPrivetInfo[] = "/privet/info";
+const char kPrivetRegister[] = "/privet/register";
+const char kPrivetAccessToken[] = "/privet/accesstoken";
+const char kPrivetCapabilities[] = "/privet/capabilities";
+const char kPrivetPrinterCreateJob[] = "/privet/printer/createjob";
+const char kPrivetPrinterSubmitDoc[] = "/privet/printer/submitdoc";
+const char kPrivetPrinterJobState[] = "/privet/printer/jobstate";
 
 // {"error":|error_type|}
 scoped_ptr<base::DictionaryValue> CreateError(const std::string& error_type) {
@@ -34,7 +43,7 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithDescription(
   return error.Pass();
 }
 
-// {"error":|error_type|, "timeout":|timout|}
+// {"error":|error_type|, "timeout":|timeout|}
 scoped_ptr<base::DictionaryValue> CreateErrorWithTimeout(
     const std::string& error_type,
     int timeout) {
@@ -45,17 +54,14 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithTimeout(
 
 // Returns |true| if |request| should be GET method.
 bool IsGetMethod(const std::string& request) {
-  return request == "/privet/info"/* ||
-         request == "/privet/accesstoken" ||
-         request == "/privet/capabilities" ||
-         request == "/privet/printer/jobstate"*/;
+  return request == kPrivetInfo ||
+         request == kPrivetCapabilities;
 }
 
 // Returns |true| if |request| should be POST method.
 bool IsPostMethod(const std::string& request) {
-  return request == "/privet/register"/* ||
-         request == "/privet/printer/createjob" ||
-         request == "/privet/printer/submitdoc"*/;
+  return request == kPrivetRegister ||
+         request == kPrivetPrinterSubmitDoc;
 }
 
 }  // namespace
@@ -118,7 +124,7 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
       return;
     }
 
-    if (url.path() != "/privet/info" &&
+    if (url.path() != kPrivetInfo &&
         !delegate_->CheckXPrivetTokenHeader(iter->second)) {
       server_->Send(connection_id, net::HTTP_OK,
                     "{\"error\":\"invalid_x_privet_token\"}",
@@ -128,8 +134,7 @@ void PrivetHttpServer::OnHttpRequest(int connection_id,
   }
 
   std::string response;
-  net::HttpStatusCode status_code =
-      ProcessHttpRequest(url, info.data, &response);
+  net::HttpStatusCode status_code = ProcessHttpRequest(url, info, &response);
 
   server_->Send(connection_id, status_code, response, "application/json");
 }
@@ -175,15 +180,19 @@ bool PrivetHttpServer::ValidateRequestMethod(int connection_id,
 
 net::HttpStatusCode PrivetHttpServer::ProcessHttpRequest(
     const GURL& url,
-    const std::string& data,
+    const net::HttpServerRequestInfo& info,
     std::string* response) {
   net::HttpStatusCode status_code = net::HTTP_OK;
   scoped_ptr<base::DictionaryValue> json_response;
 
-  if (url.path() == "/privet/info") {
+  if (url.path() == kPrivetInfo) {
     json_response = ProcessInfo(&status_code);
-  } else if (url.path() == "/privet/register") {
+  } else if (url.path() == kPrivetRegister) {
     json_response = ProcessRegister(url, &status_code);
+  } else if (url.path() == kPrivetCapabilities) {
+    json_response = ProcessCapabilities(&status_code);
+  } else if (url.path() == kPrivetPrinterSubmitDoc) {
+    json_response = ProcessSubmitDoc(url, info, &status_code);
   } else {
     NOTREACHED();
   }
@@ -236,9 +245,80 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessInfo(
   return response.Pass();
 }
 
+scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCapabilities(
+    net::HttpStatusCode* status_code) const {
+  if (!delegate_->IsRegistered()) {
+    *status_code = net::HTTP_NOT_FOUND;
+    return scoped_ptr<base::DictionaryValue>();
+  }
+
+  return delegate_->GetCapabilities();
+}
+
+scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
+    const GURL& url,
+    const net::HttpServerRequestInfo& info,
+    net::HttpStatusCode* status_code) const {
+  if (!delegate_->IsRegistered() || !delegate_->IsLocalPrintingAllowed()) {
+    *status_code = net::HTTP_NOT_FOUND;
+    return scoped_ptr<base::DictionaryValue>();
+  }
+
+  // Parse query
+  LocalPrintJob job;
+  std::string offline;
+  net::GetValueForKeyInQuery(url, "client_name", &job.client_name);
+  bool job_name_present =
+      net::GetValueForKeyInQuery(url, "job_name", &job.job_name);
+  net::GetValueForKeyInQuery(url, "user_name", &job.user_name);
+  net::GetValueForKeyInQuery(url, "offline", &offline);
+  job.offline = (offline == "1");
+  job.content_type = info.GetHeaderValue("content-type");
+  job.content = info.data;
+
+  // Call delegate
+  std::string job_id;
+  std::string error_description;
+  int timeout;
+  LocalPrintJob::SaveResult status =
+      delegate_->SubmitDoc(job, &job_id, &error_description, &timeout);
+
+  // Create response
+  *status_code = net::HTTP_OK;
+  scoped_ptr<base::DictionaryValue> response(new DictionaryValue);
+  switch (status) {
+    case LocalPrintJob::SAVE_SUCCESS:
+      response->SetString("job_id", job_id);
+      response->SetInteger("expires_in", -1);
+      response->SetString("job_type", job.content_type);
+      response->SetString(
+          "job_size",
+          base::StringPrintf("%u", static_cast<uint32>(job.content.size())));
+      if (job_name_present)
+        response->SetString("job_name", job.job_name);
+      return response.Pass();
+
+    case LocalPrintJob::SAVE_INVALID_PRINT_JOB:
+      return CreateError("invalid_print_job");
+    case LocalPrintJob::SAVE_INVALID_DOCUMENT_TYPE:
+      return CreateError("invalid_document_type");
+    case LocalPrintJob::SAVE_INVALID_DOCUMENT:
+      return CreateError("invalid_document");
+    case LocalPrintJob::SAVE_DOCUMENT_TOO_LARGE:
+      return CreateError("document_too_large");
+    case LocalPrintJob::SAVE_PRINTER_BUSY:
+      return CreateErrorWithTimeout("printer_busy", -2);
+    case LocalPrintJob::SAVE_PRINTER_ERROR:
+      return CreateErrorWithDescription("printer_error", error_description);
+    default:
+      NOTREACHED();
+      return scoped_ptr<base::DictionaryValue>();
+  }
+}
+
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessRegister(
     const GURL& url,
-    net::HttpStatusCode* status_code) {
+    net::HttpStatusCode* status_code) const {
   if (delegate_->IsRegistered()) {
     *status_code = net::HTTP_NOT_FOUND;
     return scoped_ptr<base::DictionaryValue>();
@@ -331,5 +411,4 @@ void PrivetHttpServer::ProcessRegistrationStatus(
       NOTREACHED();
   };
 }
-
 

@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
+#include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -47,30 +48,57 @@ const double kTimeToNextAccessTokenUpdate = 0.8;  // relatively to living time.
 
 const char kCdd[] =
 "{\n"
-" 'version': '1.0',\n"
-"  'printer': {\n"
-"    'vendor_capability': [\n"
+"  \"version\": \"1.0\",\n"
+"  \"printer\": {\n"
+"    \"supported_content_type\": [\n"
 "      {\n"
-"        'id': 'psk:MediaType',\n"
-"        'display_name': 'Media Type',\n"
-"        'type': 'SELECT',\n"
-"        'select_cap': {\n"
-"          'option': [\n"
+"        \"content_type\": \"application/pdf\"\n"
+"      },\n"
+"      {\n"
+"        \"content_type\": \"image/pwg-raster\"\n"
+"      },\n"
+"      {\n"
+"        \"content_type\": \"image/jpeg\"\n"
+"      }\n"
+"    ],\n"
+"    \"color\": {\n"
+"     \"option\": [\n"
+"        {\n"
+"          \"is_default\": true,\n"
+"          \"type\": \"STANDARD_COLOR\",\n"
+"          \"vendor_id\": \"CMYK\"\n"
+"        },\n"
+"        {\n"
+"          \"is_default\": false,\n"
+"          \"type\": \"STANDARD_MONOCHROME\",\n"
+"          \"vendor_id\": \"Gray\"\n"
+"        }\n"
+"      ]\n"
+"    },\n"
+"    \"vendor_capability\": [\n"
+"      {\n"
+"        \"id\": \"psk:MediaType\",\n"
+"        \"display_name\": \"Media Type\",\n"
+"        \"type\": \"SELECT\",\n"
+"        \"select_cap\": {\n"
+"          \"option\": [\n"
 "            {\n"
-"              'value': 'psk:Plain',\n"
-"              'display_name': 'Plain Paper',\n"
-"              'is_default': true\n"
+"              \"value\": \"psk:Plain\",\n"
+"              \"display_name\": \"Plain Paper\",\n"
+"              \"is_default\": true\n"
 "            },\n"
 "            {\n"
-"              'value': 'ns0000:Glossy',\n"
-"              'display_name': 'Glossy Photo',\n"
-"              'is_default': false\n"
+"              \"value\": \"ns0000:Glossy\",\n"
+"              \"display_name\": \"Glossy Photo\",\n"
+"              \"is_default\": false\n"
 "            }\n"
 "          ]\n"
 "        }\n"
 "      }\n"
 "    ],\n"
-"    'reverse_order': { 'default': false }\n"
+"    \"reverse_order\": {\n"
+"      \"default\": false\n"
+"    }\n"
 "  }\n"
 "}\n";
 
@@ -148,6 +176,10 @@ void Printer::Stop() {
   requester_.reset();
   print_job_handler_.reset();
   xmpp_listener_.reset();
+}
+
+std::string Printer::GetRawCdd() {
+  return kCdd;
 }
 
 void Printer::OnAuthError() {
@@ -307,8 +339,16 @@ void Printer::CreateInfo(PrivetHttpServer::DeviceInfo* info) {
 
   info->x_privet_token = xtoken_.GenerateXToken();
 
-  if (state_.registration_state == PrinterState::UNREGISTERED)
+  // TODO(maksymb): Create enum for available APIs and replace
+  // this API text names with constants from enum. API text names should be only
+  // known in PrivetHttpServer.
+  if (state_.registration_state == PrinterState::UNREGISTERED) {
     info->api.push_back("/privet/register");
+  } else {
+    if (IsLocalPrintingAllowed())
+      info->api.push_back("/privet/printer/submitdoc");
+    info->api.push_back("/privet/capabilities");
+  }
 
   info->type.push_back("printer");
 }
@@ -317,8 +357,37 @@ bool Printer::IsRegistered() const {
   return state_.registration_state == PrinterState::REGISTERED;
 }
 
+bool Printer::IsLocalPrintingAllowed() const {
+  return state_.local_settings.local_printing_enabled;
+}
+
 bool Printer::CheckXPrivetTokenHeader(const std::string& token) const {
   return xtoken_.CheckValidXToken(token);
+}
+
+scoped_ptr<base::DictionaryValue> Printer::GetCapabilities() {
+  scoped_ptr<base::Value> value(base::JSONReader::Read(kCdd));
+  base::DictionaryValue* dictionary_value = NULL;
+  value->GetAsDictionary(&dictionary_value);
+  return scoped_ptr<base::DictionaryValue>(dictionary_value->DeepCopy());
+}
+
+void Printer::CreateJob(const std::string& ticket) {
+  // TODO(maksymb): Implement advanced printing
+  NOTIMPLEMENTED();
+}
+
+LocalPrintJob::SaveResult Printer::SubmitDoc(const LocalPrintJob& job,
+                                             std::string* job_id,
+                                             std::string* error_description,
+                                             int* timeout) {
+  return print_job_handler_->SaveLocalPrintJob(job, job_id, error_description,
+                                               timeout);
+}
+
+void Printer::GetJobStatus(int job_id) {
+  // TODO(maksymb): Implement advanced printing
+  NOTIMPLEMENTED();
 }
 
 void Printer::OnRegistrationStartResponseParsed(
@@ -398,11 +467,8 @@ void Printer::OnPrintJobsAvailable(const std::vector<Job>& jobs) {
 
 void Printer::OnPrintJobDownloaded(const Job& job) {
   VLOG(3) << "Function: " << __FUNCTION__;
-  print_job_handler_->SavePrintJob(
-      job.file,
-      job.ticket,
-      base::StringPrintf("%s.%s", job.create_time.c_str(), job.job_id.c_str()),
-      job.title);
+  print_job_handler_->SavePrintJob(job.file, job.ticket, job.create_time,
+                                   job.job_id, "remote", job.title, "pdf");
   requester_->SendPrintJobDone(job.job_id);
 }
 
