@@ -334,7 +334,7 @@ class Track {
   char* name_;
   uint64 number_;
   uint64 type_;
-  const uint64 uid_;
+  uint64 uid_;
 
   // Size of the CodecPrivate data in bytes.
   uint64 codec_private_length_;
