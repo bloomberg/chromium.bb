@@ -24,13 +24,62 @@
   ],
   'variables': {
     'dex_path': '<(PRODUCT_DIR)/lib.java/<(_target_name).dex.jar',
+    'intermediate_dir': '<(SHARED_INTERMEDIATE_DIR)/<(_target_name)',
+    'android_jar': '<(android_sdk)/android.jar',
+    'input_jars_paths': [ '<(android_jar)' ],
+    'proguard_config%': '',
+    'proguard_preprocess%': '0',
+    'variables': {
+      'variables': {
+        'proguard_preprocess%': 0,
+      },
+      'conditions': [
+        ['proguard_preprocess == 1', {
+          'dex_input_jar_path': '<(intermediate_dir)/<(_target_name).pre.jar'
+        }, {
+          'dex_input_jar_path': '<(jar_path)'
+        }],
+      ],
+    },
+    'dex_input_jar_path': '<(dex_input_jar_path)',
   },
   'all_dependent_settings': {
     'variables': {
-      'input_jars_paths': ['<(jar_path)'],
+      'input_jars_paths': ['<(dex_input_jar_path)'],
       'library_dexed_jars_paths': ['<(dex_path)'],
     },
   },
+  'conditions' : [
+    ['proguard_preprocess == 1', {
+      'actions': [
+        {
+          'action_name': 'proguard_<(_target_name)',
+          'message': 'Proguard preprocessing <(_target_name) jar',
+          'inputs': [
+            '<(android_sdk_root)/tools/proguard/bin/proguard.sh',
+            '<(DEPTH)/build/android/gyp/util/build_utils.py',
+            '<(DEPTH)/build/android/gyp/proguard.py',
+            '<(jar_path)',
+            '<(proguard_config)',
+          ],
+          'outputs': [
+            '<(dex_input_jar_path)',
+          ],
+          'action': [
+            'python', '<(DEPTH)/build/android/gyp/proguard.py',
+            '--proguard-path=<(android_sdk_root)/tools/proguard/bin/proguard.sh',
+            '--input-path=<(jar_path)',
+            '--output-path=<(dex_input_jar_path)',
+            '--proguard-config=<(proguard_config)',
+            '--classpath=>(input_jars_paths)',
+
+            # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
+            '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
+          ]
+        },
+      ],
+    }],
+  ],
   'actions': [
     {
       'action_name': 'dex_<(_target_name)',
@@ -38,7 +87,7 @@
       'inputs': [
         '<(DEPTH)/build/android/gyp/util/build_utils.py',
         '<(DEPTH)/build/android/gyp/dex.py',
-        '<(jar_path)',
+        '<(dex_input_jar_path)',
       ],
       'outputs': [
         '<(dex_path)',
@@ -51,7 +100,7 @@
         # TODO(newt): remove this once http://crbug.com/177552 is fixed in ninja.
         '--ignore=>!(echo \'>(_inputs)\' | md5sum)',
 
-        '<(jar_path)',
+        '<(dex_input_jar_path)',
       ]
     },
 
