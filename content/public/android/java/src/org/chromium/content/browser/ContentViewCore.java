@@ -2865,6 +2865,7 @@ import java.util.Map;
      * Enable or disable native accessibility features.
      */
     public void setNativeAccessibilityState(boolean enabled) {
+        if (mNativeContentViewCore == 0) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             nativeSetAccessibilityEnabled(mNativeContentViewCore, enabled);
         }
