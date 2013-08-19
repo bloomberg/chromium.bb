@@ -134,7 +134,7 @@ void AppListMainView::Prerender() {
 }
 
 void AppListMainView::SetDragAndDropHostOfCurrentAppList(
-    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
+    ApplicationDragAndDropHost* drag_and_drop_host) {
   contents_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 

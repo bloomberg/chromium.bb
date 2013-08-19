@@ -20,8 +20,7 @@ void SigninDelegate::RemoveObserver(SigninDelegateObserver* observer) {
 }
 
 void SigninDelegate::NotifySigninSuccess() {
-  FOR_EACH_OBSERVER(app_list::SigninDelegateObserver, observers_,
-                    OnSigninSuccess());
+  FOR_EACH_OBSERVER(SigninDelegateObserver, observers_, OnSigninSuccess());
 }
 
 }  // namespace app_list

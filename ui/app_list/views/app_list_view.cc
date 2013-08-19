@@ -142,7 +142,7 @@ void AppListView::SetAnchorPoint(const gfx::Point& anchor_point) {
 }
 
 void AppListView::SetDragAndDropHostOfCurrentAppList(
-    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
+    ApplicationDragAndDropHost* drag_and_drop_host) {
   app_list_main_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 

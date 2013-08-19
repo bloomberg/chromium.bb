@@ -20,6 +20,8 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_runner.h"
 
+namespace app_list {
+
 namespace {
 
 const int kPreferredWidth = 300;
@@ -36,32 +38,30 @@ const int kActionButtonRightMargin = 8;
 // Creates a RenderText of given |text| and |styles|. Caller takes ownership
 // of returned RenderText.
 gfx::RenderText* CreateRenderText(const base::string16& text,
-                                  const app_list::SearchResult::Tags& tags) {
+                                  const SearchResult::Tags& tags) {
   gfx::RenderText* render_text = gfx::RenderText::CreateInstance();
   render_text->SetText(text);
-  render_text->SetColor(app_list::kResultDefaultTextColor);
+  render_text->SetColor(kResultDefaultTextColor);
 
-  for (app_list::SearchResult::Tags::const_iterator it = tags.begin();
+  for (SearchResult::Tags::const_iterator it = tags.begin();
        it != tags.end();
        ++it) {
     // NONE means default style so do nothing.
-    if (it->styles == app_list::SearchResult::Tag::NONE)
+    if (it->styles == SearchResult::Tag::NONE)
       continue;
 
-    if (it->styles & app_list::SearchResult::Tag::MATCH)
+    if (it->styles & SearchResult::Tag::MATCH)
       render_text->ApplyStyle(gfx::BOLD, true, it->range);
-    if (it->styles & app_list::SearchResult::Tag::DIM)
-      render_text->ApplyColor(app_list::kResultDimmedTextColor, it->range);
-    else if (it->styles & app_list::SearchResult::Tag::URL)
-      render_text->ApplyColor(app_list::kResultURLTextColor, it->range);
+    if (it->styles & SearchResult::Tag::DIM)
+      render_text->ApplyColor(kResultDimmedTextColor, it->range);
+    else if (it->styles & SearchResult::Tag::URL)
+      render_text->ApplyColor(kResultURLTextColor, it->range);
   }
 
   return render_text;
 }
 
 }  // namespace
-
-namespace app_list {
 
 // static
 const char SearchResultView::kViewClassName[] = "ui/app_list/SearchResultView";

@@ -135,7 +135,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   }
 
  private:
-  friend class app_list::test::AppsGridViewTestApi;
+  friend class test::AppsGridViewTestApi;
 
   // Represents the index to an item view in the grid.
   struct Index {

@@ -49,7 +49,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // InitAsBubble was called since the app list object needs to exist so that
   // it can set the host.
   void SetDragAndDropHostOfCurrentAppList(
-      app_list::ApplicationDragAndDropHost* drag_and_drop_host);
+      ApplicationDragAndDropHost* drag_and_drop_host);
 
   // Shows the UI when there are no pending icon loads. Otherwise, starts a
   // timer to show the UI when a maximum allowed wait time has expired.

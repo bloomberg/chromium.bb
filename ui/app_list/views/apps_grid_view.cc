@@ -34,6 +34,8 @@
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 #endif
 
+namespace app_list {
+
 namespace {
 
 // Distance a drag needs to be from the app grid to be considered 'outside', at
@@ -66,7 +68,7 @@ const int kPrerenderPages = 1;
 const float kDragAndDropProxyScale = 1.5f;
 
 // For testing we remember the last created grid view.
-app_list::AppsGridView* last_created_grid_view_for_test = NULL;
+AppsGridView* last_created_grid_view_for_test = NULL;
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
 // Before running the animation, the item's layer is re-created and kept in
@@ -120,8 +122,6 @@ class RowMoveAnimationDelegate
 
 }  // namespace
 
-namespace app_list {
-
 #if defined(OS_WIN) && !defined(USE_AURA)
 // Interprets drag events sent from Windows via the drag/drop API and forwards
 // them to AppsGridView.
@@ -134,16 +134,15 @@ namespace app_list {
 // Windows drag that never enters the synchronous drag phase.
 class SynchronousDrag : public ui::DragSourceWin {
  public:
-  SynchronousDrag(app_list::AppsGridView* grid_view,
-              app_list::AppListItemView* drag_view,
-              const gfx::Point& drag_view_offset)
+  SynchronousDrag(AppsGridView* grid_view,
+                  AppListItemView* drag_view,
+                  const gfx::Point& drag_view_offset)
       : grid_view_(grid_view),
         drag_view_(drag_view),
         drag_view_offset_(drag_view_offset),
         has_shortcut_path_(false),
         running_(false),
-        canceled_(false) {
-  }
+        canceled_(false) {}
 
   void set_shortcut_path(const base::FilePath& shortcut_path) {
     has_shortcut_path_ = true;
@@ -187,8 +186,7 @@ class SynchronousDrag : public ui::DragSourceWin {
   }
 
   virtual void OnDragSourceMove() OVERRIDE {
-    grid_view_->UpdateDrag(app_list::AppsGridView::MOUSE,
-                           GetCursorInGridViewCoords());
+    grid_view_->UpdateDrag(AppsGridView::MOUSE, GetCursorInGridViewCoords());
   }
 
   void SetupExchangeData(ui::OSExchangeData* data) {
@@ -221,8 +219,8 @@ class SynchronousDrag : public ui::DragSourceWin {
     return grid_view_pt;
   }
 
-  app_list::AppsGridView* grid_view_;
-  app_list::AppListItemView* drag_view_;
+  AppsGridView* grid_view_;
+  AppListItemView* drag_view_;
   gfx::Point drag_view_offset_;
   bool has_shortcut_path_;
   base::FilePath shortcut_path_;

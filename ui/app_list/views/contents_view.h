@@ -37,7 +37,7 @@ class ContentsView : public views::View {
   // If |drag_and_drop| is not NULL it will be called upon drag and drop
   // operations outside the application list.
   void SetDragAndDropHostOfCurrentAppList(
-      app_list::ApplicationDragAndDropHost* drag_and_drop_host);
+      ApplicationDragAndDropHost* drag_and_drop_host);
 
   void ShowSearchResults(bool show);
 

@@ -77,7 +77,7 @@ ContentsView::~ContentsView() {
 }
 
 void ContentsView::SetDragAndDropHostOfCurrentAppList(
-    app_list::ApplicationDragAndDropHost* drag_and_drop_host) {
+    ApplicationDragAndDropHost* drag_and_drop_host) {
   apps_grid_view_->SetDragAndDropHostOfCurrentAppList(drag_and_drop_host);
 }
 

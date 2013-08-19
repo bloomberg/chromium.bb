@@ -22,7 +22,7 @@ namespace app_list {
 
 // Views implementation of the app list menu.
 // TODO(benwells): We should consider moving this into Chrome.
-class AppListMenuViews : public app_list::AppListMenu {
+class AppListMenuViews : public AppListMenu {
  public:
   explicit AppListMenuViews(AppListViewDelegate* delegate);
   virtual ~AppListMenuViews();
