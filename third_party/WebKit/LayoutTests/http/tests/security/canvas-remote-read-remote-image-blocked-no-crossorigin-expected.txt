@@ -1,19 +1,15 @@
-CONSOLE MESSAGE: Unable to get image data from canvas because the canvas has been tainted by cross-origin data.
-CONSOLE MESSAGE: Unable to get image data from canvas because the canvas has been tainted by cross-origin data.
-CONSOLE MESSAGE: Unable to get image data from canvas because the canvas has been tainted by cross-origin data.
-CONSOLE MESSAGE: Unable to get image data from canvas because the canvas has been tainted by cross-origin data.
 Untainted canvas:
 PASS: Calling getImageData() from an untainted canvas was allowed.
 PASS: Calling toDataURL() on an untainted canvas was allowed.
 
 
 Tainted canvas:
-PASS: Calling getImageData() from a canvas tainted by a remote image was not allowed - Threw error: SecurityError: An attempt was made to break through the security policy of the user agent..
+PASS: Calling getImageData() from a canvas tainted by a remote image was not allowed - Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': the canvas has been tainted by cross-origin data..
 PASS: Calling toDataURL() on a canvas tainted by a remote image was not allowed - Threw error: SecurityError: Failed to execute 'toDataURL' on 'HTMLCanvasElement': tainted canvases may not be exported..
-PASS: Calling getImageData() from a canvas tainted by a tained canvas was not allowed - Threw error: SecurityError: An attempt was made to break through the security policy of the user agent..
+PASS: Calling getImageData() from a canvas tainted by a tained canvas was not allowed - Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': the canvas has been tainted by cross-origin data..
 PASS: Calling toDataURL() on a canvas tainted by a tained canvas was not allowed - Threw error: SecurityError: Failed to execute 'toDataURL' on 'HTMLCanvasElement': tainted canvases may not be exported..
-PASS: Calling getImageData() from a canvas tainted by a remote image tainted pattern was not allowed - Threw error: SecurityError: An attempt was made to break through the security policy of the user agent..
+PASS: Calling getImageData() from a canvas tainted by a remote image tainted pattern was not allowed - Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': the canvas has been tainted by cross-origin data..
 PASS: Calling toDataURL() on a canvas tainted by a remote image tainted pattern was not allowed - Threw error: SecurityError: Failed to execute 'toDataURL' on 'HTMLCanvasElement': tainted canvases may not be exported..
-PASS: Calling getImageData() from a canvas tainted by a tainted canvas pattern was not allowed - Threw error: SecurityError: An attempt was made to break through the security policy of the user agent..
+PASS: Calling getImageData() from a canvas tainted by a tainted canvas pattern was not allowed - Threw error: SecurityError: Failed to execute 'getImageData' on 'CanvasRenderingContext2D': the canvas has been tainted by cross-origin data..
 PASS: Calling toDataURL() on a canvas tainted by a tainted canvas pattern was not allowed - Threw error: SecurityError: Failed to execute 'toDataURL' on 'HTMLCanvasElement': tainted canvases may not be exported..
 

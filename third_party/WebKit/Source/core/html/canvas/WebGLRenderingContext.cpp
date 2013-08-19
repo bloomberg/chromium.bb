@@ -27,6 +27,7 @@
 #include "core/html/canvas/WebGLRenderingContext.h"
 
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fetch/ImageResource.h"
@@ -5106,7 +5107,7 @@ bool WebGLRenderingContext::validateHTMLImageElement(const char* functionName, H
         return false;
     }
     if (wouldTaintOrigin(image)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "the cross-origin image at " + url.elidedString() + " may not be loaded."));
         return false;
     }
     return true;
@@ -5119,7 +5120,7 @@ bool WebGLRenderingContext::validateHTMLCanvasElement(const char* functionName, 
         return false;
     }
     if (wouldTaintOrigin(canvas)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "tainted canvases may not be loded."));
         return false;
     }
     return true;
@@ -5132,7 +5133,7 @@ bool WebGLRenderingContext::validateHTMLVideoElement(const char* functionName, H
         return false;
     }
     if (wouldTaintOrigin(video)) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute(functionName, "WebGLRenderingContext", "the video element contains cross-origin data, and may not be loaded."));
         return false;
     }
     return true;
