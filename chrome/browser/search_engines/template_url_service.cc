@@ -1889,9 +1889,6 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
   if (!urls_for_host)
     return;
 
-  QueryTerms query_terms;
-  const std::string path = row.url().path();
-
   for (TemplateURLSet::const_iterator i = urls_for_host->begin();
        i != urls_for_host->end(); ++i) {
     string16 search_terms;
@@ -2452,7 +2449,6 @@ void TemplateURLService::MergeInSyncTemplateURL(
   }
 
   if (should_add_sync_turl) {
-    const std::string guid = sync_turl->sync_guid();
     // Force the local ID to kInvalidTemplateURLID so we can add it.
     TemplateURLData data(sync_turl->data());
     data.id = kInvalidTemplateURLID;
