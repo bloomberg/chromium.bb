@@ -1443,9 +1443,6 @@ class DependencyGraphNode(object):
     self.dependencies = []
     self.dependents = []
 
-  def __repr__(self):
-    return '<DependencyGraphNode: %r>' % self.ref
-
   def FlattenToList(self):
     # flat_list is the sorted list of dependencies - actually, the list items
     # are the "ref" attributes of DependencyGraphNodes.  Every target will
@@ -1487,27 +1484,6 @@ class DependencyGraphNode(object):
           in_degree_zeros.add(node_dependent)
 
     return flat_list
-
-  def FindCycles(self, path=None):
-    """
-    Returns a list of cycles in the graph, where each cycle is its own list.
-    """
-    if path is None:
-      path = [self]
-
-    results = []
-    for node in self.dependents:
-      if node in path:
-        cycle = [node]
-        for part in path:
-          cycle.append(part)
-          if part == node:
-            break
-        results.append(tuple(cycle))
-      else:
-        results.extend(node.FindCycles([node] + path))
-
-    return list(set(results))
 
   def DirectDependencies(self, dependencies=None):
     """Returns a list of just direct dependencies."""
@@ -1741,16 +1717,10 @@ def VerifyNoGYPFileCircularDependencies(targets):
     for file in dependency_nodes.iterkeys():
       if not file in flat_list:
         bad_files.append(file)
-    common_path_prefix = os.path.commonprefix(dependency_nodes)
-    cycles = []
-    for cycle in root_node.FindCycles():
-      simplified_paths = []
-      for node in cycle:
-        assert(node.ref.startswith(common_path_prefix))
-        simplified_paths.append(node.ref[len(common_path_prefix):])
-      cycles.append('Cycle: %s' % ' -> '.join(simplified_paths))
     raise DependencyGraphNode.CircularException, \
-        'Cycles in .gyp file dependency graph detected:\n' + '\n'.join(cycles)
+        'Some files not reachable, cycle in .gyp file dependency graph ' + \
+        'detected involving some or all of: ' + \
+        ' '.join(bad_files)
 
 
 def DoDependentSettings(key, flat_list, targets, dependency_nodes):
