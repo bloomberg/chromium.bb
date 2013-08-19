@@ -1292,6 +1292,9 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_ADVANCED_BUTTON" desc="In settings Internet options, Join other network, the text on the button to show advanced settings.">
     Advanced
   </message>
+  <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_EAP_SUBJECT_MATCH" desc="In settings Internet options, the label for the EAP Subject Match field.">
+    Subject Match:
+  </message>
   <message name="IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_BAD_PASSPHRASE" desc="In settings Internet options, the label for the bad passphrase.">
     Incorrect password.
   </message>

@@ -113,6 +113,7 @@ class WifiConfigView : public ChildNetworkConfigView,
   std::string GetEapPhase2Auth() const;
   std::string GetEapServerCaCertPEM() const;
   bool GetEapUseSystemCas() const;
+  std::string GetEapSubjectMatch() const;
   std::string GetEapClientCertPkcs11Id() const;
   std::string GetEapIdentity() const;
   std::string GetEapAnonymousIdentity() const;
@@ -175,6 +176,8 @@ class WifiConfigView : public ChildNetworkConfigView,
   scoped_ptr<internal::ServerCACertComboboxModel>
       server_ca_cert_combobox_model_;
   views::Combobox* server_ca_cert_combobox_;
+  views::Label* subject_match_label_;
+  views::Textfield* subject_match_textfield_;
   views::Label* identity_label_;
   views::Textfield* identity_textfield_;
   views::Label* identity_anonymous_label_;
