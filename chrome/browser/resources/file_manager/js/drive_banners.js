@@ -254,8 +254,8 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
 
   if (this.warningDismissedCounter_) {
     if (this.warningDismissedCounter_ ==
-            sizeStats.totalSizeKB && // Quota had not changed
-        sizeStats.remainingSizeKB / sizeStats.totalSizeKB < 0.15) {
+            sizeStats.totalSize && // Quota had not changed
+        sizeStats.remainingSize / sizeStats.totalSize < 0.15) {
       // Since the last dismissal decision the quota has not changed AND
       // the user did not free up significant space. Obey the dismissal.
       show = false;
@@ -274,7 +274,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
     var text = this.document_.createElement('div');
     text.className = 'drive-text';
     text.textContent = strf('DRIVE_SPACE_AVAILABLE_LONG',
-        util.bytesToString(sizeStats.remainingSizeKB * 1024));
+        util.bytesToString(sizeStats.remainingSize));
     box.appendChild(text);
 
     var link = this.document_.createElement('a');
@@ -291,7 +291,7 @@ FileListBannerController.prototype.showLowDriveSpaceWarning_ =
       window.localStorage[WARNING_DISMISSED_KEY] = total;
       box.hidden = true;
       this.requestRelayout_(100);
-    }.bind(this, sizeStats.totalSizeKB));
+    }.bind(this, sizeStats.totalSize));
   }
 
   if (box.hidden != !show) {
@@ -348,12 +348,10 @@ FileListBannerController.prototype.checkSpaceAndMaybeShowWelcomeBanner_ =
     chrome.fileBrowserPrivate.getSizeStats(
         util.makeFilesystemUrl(self.directoryModel_.getCurrentRootPath()),
         function(result) {
-          var offerSpaceKb = util.boardIs('link') ?
-              1024 * 1024 * 1024 :  // 1TB.
-              100 * 1024 * 1024;  // 100GB.
-          if (result && result.totalSizeKB >= offerSpaceKb) {
+          var offerSpaceGB =
+              util.boardIs('link') ? 1024 /* 1TB */ : 100 /* 100GB */;
+          if (result && result.totalSize >= offerSpaceGB * 1024 * 1024 * 1024)
             self.useNewWelcomeBanner_ = false;
-          }
           self.maybeShowWelcomeBanner_();
         });
   } else {
@@ -508,10 +506,11 @@ FileListBannerController.prototype.maybeShowLowSpaceWarning_ = function(root) {
           // the file system size. Just ignore it.
           return;
         }
-
         // sizeStats is undefined, if some error occurs.
-        var remainingRatio = (sizeStats && sizeStats.totalSizeKB > 0) ?
-            (sizeStats.remainingSizeKB / sizeStats.totalSizeKB) : 1;
+        if (!sizeStats || sizeStats.totalSize == 0)
+          return;
+
+        var remainingRatio = sizeStats.remainingSize / sizeStats.totalSize;
         var isLowDiskSpace = remainingRatio < threshold;
         if (root == RootDirectory.DOWNLOADS)
           self.showLowDownloadsSpaceWarning_(isLowDiskSpace);
