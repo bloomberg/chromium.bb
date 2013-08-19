@@ -55,8 +55,8 @@ function shouldThrow(_a, _e)
 
 window.onload = function() {
     shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)");
-    shouldThrow("window.localStorage");
-    shouldThrow("window.sessionStorage");
+    shouldThrow("window.localStorage", '"SecurityError: Access to \'localStorage\' is denied for this document. The document is sandboxed and lacks the \'allow-same-origin\' flag."');
+    shouldThrow("window.sessionStorage", '"SecurityError: Access to \'sessionStorage\' is denied for this document. The document is sandboxed and lacks the \'allow-same-origin\' flag."');
 }
 
 </script>
