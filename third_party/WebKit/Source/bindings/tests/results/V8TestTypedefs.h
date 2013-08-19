@@ -67,7 +67,7 @@ public:
 inline v8::Handle<v8::Object> wrap(TestTypedefs* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8TestTypedefs>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestTypedefs>(impl, isolate));
     return V8TestTypedefs::createWrapper(impl, creationContext, isolate);
 }
 

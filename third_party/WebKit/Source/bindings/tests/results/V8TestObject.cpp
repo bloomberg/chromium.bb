@@ -5782,7 +5782,7 @@ EventTarget* V8TestObject::toEventTarget(v8::Handle<v8::Object> object)
 v8::Handle<v8::Object> V8TestObject::createWrapper(PassRefPtr<TestObj> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper<V8TestObject>(impl.get(), isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestObject>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have

@@ -73,7 +73,7 @@ public:
 inline v8::Handle<v8::Object> wrap(TestNamedConstructor* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8TestNamedConstructor>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestNamedConstructor>(impl, isolate));
     return V8TestNamedConstructor::createWrapper(impl, creationContext, isolate);
 }
 

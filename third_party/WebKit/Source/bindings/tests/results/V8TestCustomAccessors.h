@@ -74,7 +74,7 @@ public:
 inline v8::Handle<v8::Object> wrap(TestCustomAccessors* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8TestCustomAccessors>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestCustomAccessors>(impl, isolate));
     return V8TestCustomAccessors::createWrapper(impl, creationContext, isolate);
 }
 

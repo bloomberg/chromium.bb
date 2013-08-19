@@ -81,7 +81,7 @@ public:
 inline v8::Handle<v8::Object> wrap(ArrayBuffer* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8ArrayBuffer>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8ArrayBuffer>(impl, isolate));
     return V8ArrayBuffer::createWrapper(impl, creationContext, isolate);
 }
 

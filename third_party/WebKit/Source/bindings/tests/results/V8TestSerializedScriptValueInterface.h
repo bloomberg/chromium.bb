@@ -67,7 +67,7 @@ public:
 inline v8::Handle<v8::Object> wrap(TestSerializedScriptValueInterface* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8TestSerializedScriptValueInterface>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestSerializedScriptValueInterface>(impl, isolate));
     return V8TestSerializedScriptValueInterface::createWrapper(impl, creationContext, isolate);
 }
 

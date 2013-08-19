@@ -429,9 +429,9 @@ v8::Local<v8::Object> createV8ObjectForNPObject(NPObject* object, NPObject* root
         return v8::Local<v8::Object>::New(isolate, v8NPObject->v8Object);
 
     // If we've already wrapped this object, just return it.
-    v8::Handle<v8::Object> wrapper = staticNPObjectMap().get(object);
+    v8::Handle<v8::Object> wrapper = staticNPObjectMap().newLocal(object, isolate);
     if (!wrapper.IsEmpty())
-        return v8::Local<v8::Object>::New(isolate, wrapper);
+        return wrapper;
 
     // FIXME: we should create a Wrapper type as a subclass of JSObject. It has two internal fields, field 0 is the wrapped
     // pointer, and field 1 is the type. There should be an api function that returns unused type id. The same Wrapper type
@@ -470,7 +470,7 @@ void forgetV8ObjectForNPObject(NPObject* object)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     v8::HandleScope scope(isolate);
-    v8::Handle<v8::Object> wrapper = staticNPObjectMap().getNewLocal(isolate, object);
+    v8::Handle<v8::Object> wrapper = staticNPObjectMap().newLocal(object, isolate);
     if (!wrapper.IsEmpty()) {
         V8DOMWrapper::clearNativeInfo(wrapper, npObjectTypeInfo());
         staticNPObjectMap().removeAndDispose(object);

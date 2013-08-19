@@ -226,7 +226,7 @@ bool V8TestSerializedScriptValueInterface::HasInstanceInAnyWorld(v8::Handle<v8::
 v8::Handle<v8::Object> V8TestSerializedScriptValueInterface::createWrapper(PassRefPtr<TestSerializedScriptValueInterface> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper<V8TestSerializedScriptValueInterface>(impl.get(), isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestSerializedScriptValueInterface>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have

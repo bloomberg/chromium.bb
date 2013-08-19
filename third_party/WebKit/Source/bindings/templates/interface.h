@@ -71,7 +71,7 @@ public:
 inline v8::Handle<v8::Object> wrap({{cpp_class_name}}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<{{v8_class_name}}>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<{{v8_class_name}}>(impl, isolate));
     return {{v8_class_name}}::createWrapper(impl, creationContext, isolate);
 }
 

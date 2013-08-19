@@ -68,7 +68,7 @@ void V8ArrayBuffer::derefObject(void* object)
 v8::Handle<v8::Object> V8ArrayBuffer::createWrapper(PassRefPtr<ArrayBuffer> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper<V8ArrayBuffer>(impl.get(), isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8ArrayBuffer>(impl.get(), isolate));
 
     v8::Handle<v8::Object> wrapper = v8::ArrayBuffer::New(impl->data(), impl->byteLength());
     v8::V8::AdjustAmountOfExternalAllocatedMemory(impl->byteLength());

@@ -41,7 +41,7 @@ namespace WebCore {
 v8::Handle<v8::Object> wrap(TreeWalker* treeWalker, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(treeWalker);
-    ASSERT(DOMDataStore::getWrapper<V8TreeWalker>(treeWalker, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TreeWalker>(treeWalker, isolate));
 
     v8::Handle<v8::Object> wrapper = V8TreeWalker::createWrapper(treeWalker, creationContext, isolate);
 

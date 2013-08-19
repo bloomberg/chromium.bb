@@ -41,7 +41,7 @@ namespace WebCore {
 v8::Handle<v8::Object> wrap(NodeIterator* nodeIterator, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(nodeIterator);
-    ASSERT(DOMDataStore::getWrapper<V8NodeIterator>(nodeIterator, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8NodeIterator>(nodeIterator, isolate));
 
     v8::Handle<v8::Object> wrapper = V8NodeIterator::createWrapper(nodeIterator, creationContext, isolate);
 

@@ -856,7 +856,7 @@ END
 inline v8::Handle<v8::Object> wrap(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<${v8ClassName}>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl, isolate));
     return $createWrapperCall(impl, creationContext, isolate);
 }
 END
@@ -4730,7 +4730,7 @@ sub GenerateToV8Converters
 v8::Handle<v8::Object> ${v8ClassName}::createWrapper(${createWrapperArgumentType} impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper<${v8ClassName}>(impl.get(), isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have

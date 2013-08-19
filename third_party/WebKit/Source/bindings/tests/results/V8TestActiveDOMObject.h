@@ -66,7 +66,7 @@ public:
 inline v8::Handle<v8::Object> wrap(TestActiveDOMObject* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8TestActiveDOMObject>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestActiveDOMObject>(impl, isolate));
     return V8TestActiveDOMObject::createWrapper(impl, creationContext, isolate);
 }
 

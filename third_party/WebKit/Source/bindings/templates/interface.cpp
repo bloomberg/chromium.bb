@@ -61,7 +61,7 @@ static void {{attribute.name}}AttrGetter(v8::Local<v8::String> name, const v8::P
 {
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {{attribute.cpp_type}} result = imp->{{attribute.cpp_method_name}}();
-    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<{{attribute.v8_type}}>(result.get(), info.GetIsolate())) : v8Undefined();
+    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getUnsafeWrapper<{{attribute.v8_type}}>(result.get(), info.GetIsolate())) : v8Undefined();
     if (wrapper.IsEmpty()) {
         wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
         if (!wrapper.IsEmpty())
@@ -136,7 +136,7 @@ bool {{v8_class_name}}::HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::I
 v8::Handle<v8::Object> {{v8_class_name}}::createWrapper(PassRefPtr<{{cpp_class_name}}> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper<{{v8_class_name}}>(impl.get(), isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<{{v8_class_name}}>(impl.get(), isolate));
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl.get())) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl.get());
         // Might be a XXXConstructor::info instead of an XXX::info. These will both have
@@ -163,4 +163,3 @@ void {{v8_class_name}}::derefObject(void* object)
 {% if conditional_string %}
 #endif // {{conditional_string}}
 {% endif %}
-

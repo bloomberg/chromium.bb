@@ -66,7 +66,7 @@ public:
 inline v8::Handle<v8::Object> wrap(RealClass* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8TestInterfaceImplementedAs>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestInterfaceImplementedAs>(impl, isolate));
     return V8TestInterfaceImplementedAs::createWrapper(impl, creationContext, isolate);
 }
 

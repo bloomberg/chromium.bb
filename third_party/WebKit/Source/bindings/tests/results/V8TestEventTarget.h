@@ -69,7 +69,7 @@ public:
 inline v8::Handle<v8::Object> wrap(TestEventTarget* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl);
-    ASSERT(DOMDataStore::getWrapper<V8TestEventTarget>(impl, isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<V8TestEventTarget>(impl, isolate));
     return V8TestEventTarget::createWrapper(impl, creationContext, isolate);
 }
 

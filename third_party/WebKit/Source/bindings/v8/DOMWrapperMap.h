@@ -54,7 +54,7 @@ public:
         return m_map.get(key).deprecatedHandle();
     }
 
-    v8::Handle<v8::Object> getNewLocal(v8::Isolate* isolate, KeyType* key)
+    v8::Handle<v8::Object> newLocal(KeyType* key, v8::Isolate* isolate)
     {
         return m_map.get(key).newLocal(isolate);
     }
@@ -66,6 +66,11 @@ public:
             return false;
         returnValue.Set(*(it->value.persistent()));
         return true;
+    }
+
+    bool containsKey(KeyType* key)
+    {
+        return m_map.find(key) != m_map.end();
     }
 
     void set(KeyType* key, v8::Handle<v8::Object> wrapper, const WrapperConfiguration& configuration)

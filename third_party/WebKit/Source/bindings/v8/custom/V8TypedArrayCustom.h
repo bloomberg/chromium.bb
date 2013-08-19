@@ -67,7 +67,7 @@ public:
     static v8::Handle<v8::Object> wrap(TypedArray* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
     {
         ASSERT(impl);
-        ASSERT((DOMDataStore::template getWrapper<Binding>(impl, isolate).IsEmpty()));
+        ASSERT(!DOMDataStore::containsWrapper<Binding>(impl, isolate));
         return V8TypedArray<TypedArray>::createWrapper(impl, creationContext, isolate);
     }
 
@@ -144,7 +144,7 @@ template <typename TypedArray>
 v8::Handle<v8::Object> V8TypedArray<TypedArray>::createWrapper(PassRefPtr<TypedArray> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
 {
     ASSERT(impl.get());
-    ASSERT(DOMDataStore::getWrapper<Binding>(impl.get(), isolate).IsEmpty());
+    ASSERT(!DOMDataStore::containsWrapper<Binding>(impl.get(), isolate));
 
     RefPtr<ArrayBuffer> buffer = impl->buffer();
     v8::Local<v8::Value> v8Buffer = v8::Local<v8::Value>::New(WebCore::toV8(buffer.get(), creationContext, isolate));
