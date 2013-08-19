@@ -93,6 +93,22 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
     self.assertRaises(cros_build_lib.RunCommandError,
                       osutils.RmDir, subpath, sudo=True)
 
+  def testTouchFile(self):
+    """Test that we can touch files."""
+    path = os.path.join(self.tempdir, 'touchit')
+    self.assertFalse(os.path.exists(path))
+    osutils.Touch(path)
+    self.assertTrue(os.path.exists(path))
+    self.assertEqual(os.path.getsize(path), 0)
+
+  def testTouchFileSubDir(self):
+    """Test that we can touch files in non-existent subdirs."""
+    path = os.path.join(self.tempdir, 'a', 'b', 'c', 'touchit')
+    self.assertFalse(os.path.exists(os.path.dirname(path)))
+    osutils.Touch(path, makedirs=True)
+    self.assertTrue(os.path.exists(path))
+    self.assertEqual(os.path.getsize(path), 0)
+
 
 class IteratePathParentsTest(cros_test_lib.TestCase):
   """Test parent directory iteration functionality."""
