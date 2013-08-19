@@ -34,6 +34,11 @@ Function parameters:
 
 */
 
+// Set to true to log debug information in failing tests. Note that these logs
+// contain timestamps, so are non-deterministic and will introduce flakiness if
+// any expected results include failures.
+var ENABLE_ERROR_LOGGING = false;
+
 function isCloseEnough(actual, desired, tolerance)
 {
     var diff = Math.abs(actual - desired);
@@ -528,7 +533,7 @@ function endTest()
 {
     log('Ending test');
     var resultElement = useResultElement ? document.getElementById('result') : document.documentElement;
-    if (result.indexOf('FAIL') >= 0 && log.length > 0)
+    if (ENABLE_ERROR_LOGGING && result.indexOf('FAIL') >= 0)
         result += '<br>Log:<br>' + logMessages.join('<br>');
     resultElement.innerHTML = result;
 
