@@ -160,7 +160,7 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
             DocumentMarker marker = list->at(i);
             if (marker.startOffset() > toInsert.startOffset())
                 break;
-            if (marker.type() == toInsert.type() && marker.endOffset() >= toInsert.startOffset()) {
+            if (marker.type() == toInsert.type() && marker.type() != DocumentMarker::TextMatch && marker.endOffset() >= toInsert.startOffset()) {
                 toInsert.setStartOffset(marker.startOffset());
                 list->remove(i);
                 numMarkers--;
@@ -175,7 +175,7 @@ void DocumentMarkerController::addMarker(Node* node, const DocumentMarker& newMa
             DocumentMarker marker = list->at(j);
             if (marker.startOffset() > toInsert.endOffset())
                 break;
-            if (marker.type() == toInsert.type()) {
+            if (marker.type() == toInsert.type() && marker.type() != DocumentMarker::TextMatch) {
                 list->remove(j);
                 if (toInsert.endOffset() <= marker.endOffset()) {
                     toInsert.setEndOffset(marker.endOffset());
