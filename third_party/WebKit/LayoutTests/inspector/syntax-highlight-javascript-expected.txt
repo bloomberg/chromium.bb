@@ -1,23 +1,23 @@
 Tests that JavaScriptSourceSyntaxHighlighter detects the tokens.
 
-return'foo';: cm-js-keyword,cm-js-string,*
-/\//g: *,cm-js-variable,cm-js-comment
-//ig';: cm-js-comment
-1 / 2 + /a/.test('a');: cm-js-number,*,cm-js-number,*,cm-js-string-2,*,cm-js-property,*,cm-js-string,*
-"\"/".length / 2: cm-js-string,*,cm-js-property,*,cm-js-number
-var foo = 1/*/***//2: cm-js-keyword,*,cm-js-variable,*,cm-js-number,cm-js-comment,*,cm-js-number
-/*comment*//.*/.test('a'): cm-js-comment,*,cm-js-string-2
+return'foo';: webkit-javascript-keyword,webkit-javascript-string,*
+/\//g: webkit-javascript-regexp
+//ig';: webkit-javascript-comment
+1 / 2 + /a/.test('a');: webkit-javascript-number,webkit-whitespace,*,webkit-whitespace,webkit-javascript-number,webkit-whitespace,*,webkit-whitespace,webkit-javascript-regexp,*,webkit-javascript-ident,webkit-brace-start,webkit-javascript-string,webkit-brace-end,*
+"\"/".length / 2: webkit-javascript-string,*,webkit-javascript-ident,webkit-whitespace,*,webkit-whitespace,webkit-javascript-number
+var foo = 1/*/***//2: webkit-javascript-keyword,webkit-whitespace,webkit-javascript-ident,webkit-whitespace,*,webkit-whitespace,webkit-javascript-number,webkit-javascript-comment,*,webkit-javascript-number
+/*comment*//.*/.test('a'): webkit-javascript-comment,webkit-javascript-regexp,*,webkit-javascript-ident,webkit-brace-start,webkit-javascript-string,webkit-brace-end
 'f\
-oo';: cm-js-string,,cm-js-string,*
-'\f\b\t';: cm-js-string,*
+oo';: webkit-javascript-string,,webkit-javascript-string,*
+'\f\b\t';: webkit-javascript-string,*
 '/\
-/';: cm-js-string,,cm-js-string,*
+/';: webkit-javascript-string,,webkit-javascript-string,*
 foo/**
 /
-*/foo: cm-js-variable,cm-js-comment,,cm-js-comment,,cm-js-comment,cm-js-variable
-{0: true}: *,cm-js-number,*,cm-js-atom,*
-var toString;: cm-js-keyword,*,cm-js-variable,*
-var foo = undefined;: cm-js-keyword,*,cm-js-variable,*,cm-js-atom,*
-var foo = Infinity;: cm-js-keyword,*,cm-js-variable,*,cm-js-atom,*
-var foo = NaN;: cm-js-keyword,*,cm-js-variable,*,cm-js-atom,*
+*/foo: webkit-javascript-ident,webkit-javascript-comment,,webkit-javascript-comment,,webkit-javascript-comment,webkit-javascript-ident
+{0: true}: webkit-block-start,webkit-javascript-number,*,webkit-whitespace,webkit-javascript-keyword,webkit-block-end
+var toString;: webkit-javascript-keyword,webkit-whitespace,webkit-javascript-ident,*
+var foo = undefined;: webkit-javascript-keyword,webkit-whitespace,webkit-javascript-ident,webkit-whitespace,*,webkit-whitespace,webkit-javascript-undef,*
+var foo = Infinity;: webkit-javascript-keyword,webkit-whitespace,webkit-javascript-ident,webkit-whitespace,*,webkit-whitespace,webkit-javascript-inf,*
+var foo = NaN;: webkit-javascript-keyword,webkit-whitespace,webkit-javascript-ident,webkit-whitespace,*,webkit-whitespace,webkit-javascript-nan,*
 

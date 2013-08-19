@@ -1,11 +1,11 @@
 Tests that SourceHTMLTokenizer detects the tokens.
 
-<html>: cm-xml-tag,cm-xml-tag
-<table cellspacing=0>: cm-xml-tag,*,cm-xml-attribute,*,cm-xml-string,cm-xml-tag
-<input checked value="foo">: cm-xml-tag,*,cm-xml-attribute,*,cm-xml-attribute,*,cm-xml-string,cm-xml-tag
-<table cellspacing="0" cellpadding='0'>: cm-xml-tag,*,cm-xml-attribute,*,cm-xml-string,*,cm-xml-attribute,*,cm-xml-string,cm-xml-tag
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">: cm-xml-meta
-<!--div><div foobar-->: cm-xml-comment
-<script></script><!--div-->: cm-xml-tag,cm-xml-tag,cm-xml-tag,cm-xml-tag,cm-xml-comment
-<script type="text/javascript">document.write('<script type="text/javascript"></' + 'script>');</script>: cm-xml-tag,*,cm-xml-attribute,*,cm-xml-string,cm-xml-tag,cm-js-variable,*,cm-js-property,*,cm-js-string,*,cm-js-string,*,cm-xml-tag,cm-xml-tag
+<html>: webkit-html-tag,webkit-html-tag,webkit-html-tag
+<table cellspacing=0>: webkit-html-tag,webkit-html-tag,*,webkit-html-attribute-name,*,webkit-html-attribute-value,webkit-html-tag
+<input checked value="foo">: webkit-html-tag,webkit-html-tag,*,webkit-html-attribute-name,*,webkit-html-attribute-name,*,webkit-html-attribute-value,webkit-html-tag
+<table cellspacing="0" cellpadding='0'>: webkit-html-tag,webkit-html-tag,*,webkit-html-attribute-name,*,webkit-html-attribute-value,*,webkit-html-attribute-name,*,webkit-html-attribute-value,webkit-html-tag
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">: webkit-html-doctype,webkit-html-doctype,webkit-html-doctype
+<!--div><div foobar-->: webkit-html-comment
+<script></script><!--div-->: webkit-html-tag,webkit-html-tag,webkit-html-tag,webkit-html-tag,webkit-html-comment
+<script type="text/javascript">document.write('<script type="text/javascript"></' + 'script>');</script>: webkit-html-tag,*,webkit-html-attribute-name,*,webkit-html-attribute-value,webkit-html-tag,webkit-javascript-ident,*,webkit-javascript-ident,webkit-brace-start,webkit-javascript-string,webkit-whitespace,*,webkit-whitespace,webkit-javascript-string,webkit-brace-end,*,webkit-html-tag,webkit-html-tag
 
