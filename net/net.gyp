@@ -1873,9 +1873,13 @@
           'sources': [
             'tools/flip_server/balsa_frame_test.cc',
             'tools/flip_server/balsa_headers_test.cc',
+            'tools/flip_server/flip_test_utils.cc',
+            'tools/flip_server/flip_test_utils.h',
+            'tools/flip_server/http_interface_test.cc',
             'tools/flip_server/mem_cache_test.cc',
             'tools/flip_server/simple_buffer.cc',
             'tools/flip_server/simple_buffer.h',
+            'tools/flip_server/spdy_interface_test.cc',
             'tools/quic/end_to_end_test.cc',
             'tools/quic/quic_client_session_test.cc',
             'tools/quic/quic_dispatcher_test.cc',

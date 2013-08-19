@@ -48,8 +48,10 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
  private:
   virtual void set_is_request() OVERRIDE {}
   SMInterface* NewConnectionInterface();
-  SMInterface* FindOrMakeNewSMConnectionInterface(std::string server_ip,
-                                                  std::string server_port);
+  // virtual for tests
+  virtual SMInterface* FindOrMakeNewSMConnectionInterface(
+      const std::string& server_ip,
+      const std::string& server_port);
   int SpdyHandleNewStream(SpdyStreamId stream_id,
                           SpdyPriority priority,
                           const SpdyHeaderBlock& headers,
@@ -143,26 +145,26 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
   void AddToOutputOrder(const MemCacheIter& mci);
   virtual void SendEOF(uint32 stream_id) OVERRIDE;
   virtual void SendErrorNotFound(uint32 stream_id) OVERRIDE;
-  void SendOKResponse(uint32 stream_id, std::string* output);
   virtual size_t SendSynStream(uint32 stream_id,
                                const BalsaHeaders& headers) OVERRIDE;
   virtual size_t SendSynReply(uint32 stream_id,
                               const BalsaHeaders& headers) OVERRIDE;
   virtual void SendDataFrame(uint32 stream_id, const char* data, int64 len,
                              uint32 flags, bool compress) OVERRIDE;
-  BufferedSpdyFramer* spdy_framer() {
-      return buffered_spdy_framer_;
+  BufferedSpdyFramer* spdy_framer() { return buffered_spdy_framer_; }
+
+  const OutputOrdering& output_ordering() const {
+    return client_output_ordering_;
   }
 
   static std::string forward_ip_header() { return forward_ip_header_; }
-  static void set_forward_ip_header(std::string value) {
+  static void set_forward_ip_header(const std::string& value) {
     forward_ip_header_ = value;
   }
 
  private:
   void SendEOFImpl(uint32 stream_id);
   void SendErrorNotFoundImpl(uint32 stream_id);
-  void SendOKResponseImpl(uint32 stream_id, std::string* output);
   void KillStream(uint32 stream_id);
   void CopyHeaders(SpdyHeaderBlock& dest, const BalsaHeaders& headers);
   size_t SendSynStreamImpl(uint32 stream_id, const BalsaHeaders& headers);
@@ -171,6 +173,7 @@ class SpdySM : public BufferedSpdyFramerVisitorInterface,
                          SpdyDataFlags flags, bool compress);
   void EnqueueDataFrame(DataFrame* df);
   virtual void GetOutput() OVERRIDE;
+
  private:
   BufferedSpdyFramer* buffered_spdy_framer_;
   bool valid_spdy_session_;  // True if we have seen valid data on this session.

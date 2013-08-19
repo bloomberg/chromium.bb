@@ -14,11 +14,9 @@ namespace net {
 
 HttpSM::HttpSM(SMConnection* connection,
                SMInterface* sm_spdy_interface,
-               EpollServer* epoll_server,
                MemoryCache* memory_cache,
                FlipAcceptor* acceptor)
-    : seq_num_(0),
-      http_framer_(new BalsaFrame),
+    : http_framer_(new BalsaFrame),
       stream_id_(0),
       server_idx_(-1),
       connection_(connection),
@@ -37,7 +35,7 @@ HttpSM::~HttpSM() {
   delete http_framer_;
 }
 
-void HttpSM::ProcessBodyData(const char *input, size_t size) {
+void HttpSM::ProcessBodyData(const char* input, size_t size) {
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_PROXY) {
     VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Process Body Data: stream "
             << stream_id_ << ": size " << size;
@@ -94,10 +92,6 @@ void HttpSM::AddToOutputOrder(const MemCacheIter& mci) {
   output_ordering_.AddToOutputOrder(mci);
 }
 
-void HttpSM::SendOKResponse(uint32 stream_id, std::string* output) {
-  SendOKResponseImpl(stream_id, output);
-}
-
 void HttpSM::InitSMInterface(SMInterface* sm_spdy_interface,
                              int32 server_idx) {
   sm_spdy_interface_ = sm_spdy_interface;
@@ -133,10 +127,10 @@ size_t HttpSM::ProcessReadInput(const char* data, size_t len) {
 size_t HttpSM::ProcessWriteInput(const char* data, size_t len) {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "HttpSM: Process write input: size "
           << len << ": stream " << stream_id_;
-  char * dataPtr = new char[len];
+  char* dataPtr = new char[len];
   memcpy(dataPtr, data, len);
   DataFrame* data_frame = new DataFrame;
-  data_frame->data = (const char *)dataPtr;
+  data_frame->data = dataPtr;
   data_frame->size = len;
   data_frame->delete_when_done = true;
   connection_->EnqueueDataFrame(data_frame);
@@ -178,7 +172,6 @@ void HttpSM::ResetForNewConnection() {
             << "Sending EOF to spdy.";
     sm_spdy_interface_->SendEOF(stream_id_);
   }
-  seq_num_ = 0;
   output_ordering_.Reset();
   http_framer_->Reset();
   if (sm_spdy_interface_) {
@@ -253,17 +246,6 @@ void HttpSM::SendErrorNotFoundImpl(uint32 stream_id) {
   my_headers.AppendHeader("transfer-encoding", "chunked");
   SendSynReplyImpl(stream_id, my_headers);
   SendDataFrame(stream_id, "page not found", 14, 0, false);
-  SendEOFImpl(stream_id);
-  output_ordering_.RemoveStreamId(stream_id);
-}
-
-void HttpSM::SendOKResponseImpl(uint32 stream_id, std::string* output) {
-  BalsaHeaders my_headers;
-  my_headers.SetFirstlineFromStringPieces("HTTP/1.1", "200", "OK");
-  my_headers.RemoveAllOfHeader("content-length");
-  my_headers.AppendHeader("transfer-encoding", "chunked");
-  SendSynReplyImpl(stream_id, my_headers);
-  SendDataFrame(stream_id, output->c_str(), output->size(), 0, false);
   SendEOFImpl(stream_id);
   output_ordering_.RemoveStreamId(stream_id);
 }

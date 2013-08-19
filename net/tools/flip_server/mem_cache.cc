@@ -202,17 +202,9 @@ void MemoryCache::ReadAndStoreFileContents(const char* filename) {
   if (slash_pos == std::string::npos) {
     slash_pos = filename_stripped.size();
   }
-  FileData* data =
-      new FileData(&visitor.headers,
-                   filename_stripped.substr(0, slash_pos),
-                   visitor.body);
-  Files::iterator it = files_.find(filename_stripped);
-  if (it != files_.end()) {
-    delete it->second;
-    it->second = data;
-  } else {
-    files_.insert(std::make_pair(filename_stripped, data));
-  }
+  InsertFile(&visitor.headers,
+             filename_stripped.substr(0, slash_pos),
+             visitor.body);
 }
 
 FileData* MemoryCache::GetFileData(const std::string& filename) {
@@ -237,6 +229,22 @@ bool MemoryCache::AssignFileData(const std::string& filename,
     return false;
   }
   return true;
+}
+
+void MemoryCache::InsertFile(const BalsaHeaders* headers,
+                             const std::string& filename,
+                             const std::string& body) {
+  InsertFile(new FileData(headers, filename, body));
+}
+
+void MemoryCache::InsertFile(FileData* file_data) {
+  Files::iterator it = files_.find(file_data->filename());
+  if (it != files_.end()) {
+    delete it->second;
+    it->second = file_data;
+  } else {
+    files_.insert(std::make_pair(file_data->filename(), file_data));
+  }
 }
 
 void MemoryCache::ClearFiles() {

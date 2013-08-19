@@ -45,7 +45,7 @@ class OutputOrdering {
   explicit OutputOrdering(SMConnectionInterface* connection);
   ~OutputOrdering();
   void Reset();
-  bool ExistsInPriorityMaps(uint32 stream_id);
+  bool ExistsInPriorityMaps(uint32 stream_id) const;
 
   struct BeginOutputtingAlarm : public EpollAlarmCallbackInterface {
    public:

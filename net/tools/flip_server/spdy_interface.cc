@@ -22,7 +22,7 @@ std::string SpdySM::forward_ip_header_;
 
 class SpdyFrameDataFrame : public DataFrame {
  public:
-  SpdyFrameDataFrame(SpdyFrame* spdy_frame)
+  explicit SpdyFrameDataFrame(SpdyFrame* spdy_frame)
     : frame(spdy_frame) {
     data = spdy_frame->data();
     size = spdy_frame->size();
@@ -86,14 +86,14 @@ SMInterface* SpdySM::NewConnectionInterface() {
   VLOG(2) << ACCEPTOR_CLIENT_IDENT << "SpdySM: Creating new HTTP interface";
   SMInterface *sm_http_interface = new HttpSM(server_connection,
                                               this,
-                                              epoll_server_,
                                               memory_cache_,
                                               acceptor_);
   return sm_http_interface;
 }
 
 SMInterface* SpdySM::FindOrMakeNewSMConnectionInterface(
-    std::string server_ip, std::string server_port) {
+    const std::string& server_ip,
+    const std::string& server_port) {
   SMInterface *sm_http_interface;
   int32 server_idx;
   if (unused_server_interface_list.empty()) {
@@ -154,7 +154,7 @@ int SpdySM::SpdyHandleNewStream(
   // UrlUtilities::GetUrlPath will fail and always return a / breaking
   // the request. GetUrlPath assumes the absolute URL is being passed in.
   std::string uri;
-  if (url->second.compare(0,4,"http") == 0)
+  if (url->second.compare(0, 4, "http") == 0)
     uri = UrlUtilities::GetUrlPath(url->second);
   else
     uri = std::string(url->second);
@@ -323,6 +323,9 @@ void SpdySM::NewStream(uint32 stream_id,
   MemCacheIter mci;
   mci.stream_id = stream_id;
   mci.priority = priority;
+  // TODO(yhirano): The program will crash when
+  // acceptor_->flip_handler_type_ != FLIP_HANDLER_SPDY_SERVER.
+  // It should be fixed or an assertion should be placed.
   if (acceptor_->flip_handler_type_ == FLIP_HANDLER_SPDY_SERVER) {
     if (!memory_cache_->AssignFileData(filename, &mci)) {
       // error creating new stream.
@@ -346,10 +349,6 @@ void SpdySM::SendEOF(uint32 stream_id) {
 
 void SpdySM::SendErrorNotFound(uint32 stream_id) {
   SendErrorNotFoundImpl(stream_id);
-}
-
-void SpdySM::SendOKResponse(uint32 stream_id, std::string* output) {
-  SendOKResponseImpl(stream_id, output);
 }
 
 size_t SpdySM::SendSynStream(uint32 stream_id, const BalsaHeaders& headers) {
@@ -378,15 +377,6 @@ void SpdySM::SendErrorNotFoundImpl(uint32 stream_id) {
   my_headers.SetFirstlineFromStringPieces("HTTP/1.1", "404", "Not Found");
   SendSynReplyImpl(stream_id, my_headers);
   SendDataFrame(stream_id, "wtf?", 4, DATA_FLAG_FIN, false);
-  client_output_ordering_.RemoveStreamId(stream_id);
-}
-
-void SpdySM::SendOKResponseImpl(uint32 stream_id, std::string* output) {
-  BalsaHeaders my_headers;
-  my_headers.SetFirstlineFromStringPieces("HTTP/1.1", "200", "OK");
-  SendSynReplyImpl(stream_id, my_headers);
-  SendDataFrame(
-      stream_id, output->c_str(), output->size(), DATA_FLAG_FIN, false);
   client_output_ordering_.RemoveStreamId(stream_id);
 }
 
@@ -426,15 +416,13 @@ size_t SpdySM::SendSynStreamImpl(uint32 stream_id,
                                  const BalsaHeaders& headers) {
   SpdyHeaderBlock block;
   block["method"] = headers.request_method().as_string();
-  if (!headers.HasHeader("status"))
-    block["status"] = headers.response_code().as_string();
   if (!headers.HasHeader("version"))
-    block["version"] =headers.response_version().as_string();
+    block["version"] =headers.request_version().as_string();
   if (headers.HasHeader("X-Original-Url")) {
     std::string original_url = headers.GetHeader("X-Original-Url").as_string();
-    block["path"] = UrlUtilities::GetUrlPath(original_url);
+    block["url"] = UrlUtilities::GetUrlPath(original_url);
   } else {
-    block["path"] = headers.request_uri().as_string();
+    block["url"] = headers.request_uri().as_string();
   }
   CopyHeaders(block, headers);
 

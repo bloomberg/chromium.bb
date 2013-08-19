@@ -135,7 +135,13 @@ class MemoryCache {
 
   bool AssignFileData(const std::string& filename, MemCacheIter* mci);
 
+  // For unittests
+  void InsertFile(const BalsaHeaders* headers,
+                  const std::string& filename,
+                  const std::string& body);
+
  private:
+  void InsertFile(FileData* file_data);
   void ClearFiles();
 
   Files files_;

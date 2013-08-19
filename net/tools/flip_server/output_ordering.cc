@@ -4,6 +4,8 @@
 
 #include "net/tools/flip_server/output_ordering.h"
 
+#include <utility>
+
 #include "net/tools/flip_server/flip_config.h"
 #include "net/tools/flip_server/sm_connection.h"
 
@@ -25,7 +27,9 @@ OutputOrdering::OutputOrdering(SMConnectionInterface* connection)
     epoll_server_ = connection->epoll_server();
 }
 
-OutputOrdering::~OutputOrdering() {}
+OutputOrdering::~OutputOrdering() {
+  Reset();
+}
 
 void OutputOrdering::Reset() {
   while (!stream_ids_.empty()) {
@@ -40,8 +44,8 @@ void OutputOrdering::Reset() {
   first_data_senders_.clear();
 }
 
-bool OutputOrdering::ExistsInPriorityMaps(uint32 stream_id) {
-  StreamIdToPriorityMap::iterator sitpmi = stream_ids_.find(stream_id);
+bool OutputOrdering::ExistsInPriorityMaps(uint32 stream_id) const {
+  StreamIdToPriorityMap::const_iterator sitpmi = stream_ids_.find(stream_id);
   return sitpmi != stream_ids_.end();
 }
 
@@ -78,6 +82,7 @@ void OutputOrdering::BeginOutputtingAlarm::OnRegistration(
 
 void OutputOrdering::BeginOutputtingAlarm::OnUnregistration() {
   pmp_->alarm_enabled = false;
+  delete this;
 }
 
 void OutputOrdering::BeginOutputtingAlarm::OnShutdown(EpollServer* eps) {

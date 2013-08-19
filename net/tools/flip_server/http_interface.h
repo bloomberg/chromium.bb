@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_
-#define NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_
+#ifndef NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_H_
+#define NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_H_
 
 #include <string>
 
@@ -27,7 +27,6 @@ class HttpSM : public BalsaVisitorInterface,
  public:
   HttpSM(SMConnection* connection,
          SMInterface* sm_spdy_interface,
-         EpollServer* epoll_server,
          MemoryCache* memory_cache,
          FlipAcceptor* acceptor);
   virtual ~HttpSM();
@@ -69,9 +68,9 @@ class HttpSM : public BalsaVisitorInterface,
 
  public:
   void AddToOutputOrder(const MemCacheIter& mci);
-  void SendOKResponse(uint32 stream_id, std::string* output);
   BalsaFrame* spdy_framer() { return http_framer_; }
   virtual void set_is_request() OVERRIDE {}
+  const OutputOrdering& output_ordering() const { return output_ordering_; }
 
   // SMInterface:
   virtual void InitSMInterface(SMInterface* sm_spdy_interface,
@@ -110,7 +109,7 @@ class HttpSM : public BalsaVisitorInterface,
  private:
   void SendEOFImpl(uint32 stream_id);
   void SendErrorNotFoundImpl(uint32 stream_id);
-  void SendOKResponseImpl(uint32 stream_id, std::string* output);
+  void SendOKResponseImpl(uint32 stream_id, const std::string& output);
   size_t SendSynReplyImpl(uint32 stream_id, const BalsaHeaders& headers);
   size_t SendSynStreamImpl(uint32 stream_id, const BalsaHeaders& headers);
   void SendDataFrameImpl(uint32 stream_id, const char* data, int64 len,
@@ -119,7 +118,6 @@ class HttpSM : public BalsaVisitorInterface,
   virtual void GetOutput() OVERRIDE;
 
  private:
-  uint64 seq_num_;
   BalsaFrame* http_framer_;
   BalsaHeaders headers_;
   uint32 stream_id_;
@@ -133,7 +131,6 @@ class HttpSM : public BalsaVisitorInterface,
   FlipAcceptor* acceptor_;
 };
 
-}  // namespace
+}  // namespace net
 
-#endif  // NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_
-
+#endif  // NET_TOOLS_FLIP_SERVER_HTTP_INTERFACE_H_

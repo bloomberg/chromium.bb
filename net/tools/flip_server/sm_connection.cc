@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include <algorithm>
 #include <list>
 #include <string>
 
@@ -357,7 +358,6 @@ bool SMConnection::SetupProtocolInterfaces() {
         if (!sm_http_interface_)
           sm_http_interface_ = new HttpSM(this,
                                           NULL,
-                                          epoll_server_,
                                           memory_cache_,
                                           acceptor_);
         sm_interface_ = sm_http_interface_;

@@ -72,7 +72,7 @@ FlipAcceptor::FlipAcceptor(enum FlipHandlerType flip_handler_type,
     }
   }
 
-  SetNonBlocking(listen_fd_);
+  FlipSetNonBlocking(listen_fd_);
   VLOG(1) << "Listening on socket: ";
   if (flip_handler_type == FLIP_HANDLER_PROXY)
     VLOG(1) << "\tType         : Proxy";

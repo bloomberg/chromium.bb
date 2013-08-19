@@ -65,14 +65,14 @@ class SMConnection : public SMConnectionInterface,
   bool initialized() const { return initialized_; }
   std::string client_ip() const { return client_ip_; }
 
-  void InitSMConnection(SMConnectionPoolInterface* connection_pool,
-                        SMInterface* sm_interface,
-                        EpollServer* epoll_server,
-                        int fd,
-                        std::string server_ip,
-                        std::string server_port,
-                        std::string remote_ip,
-                        bool use_ssl);
+  virtual void InitSMConnection(SMConnectionPoolInterface* connection_pool,
+                                SMInterface* sm_interface,
+                                EpollServer* epoll_server,
+                                int fd,
+                                std::string server_ip,
+                                std::string server_port,
+                                std::string remote_ip,
+                                bool use_ssl);
 
   void CorkSocket();
   void UncorkSocket();
@@ -119,12 +119,12 @@ class SMConnection : public SMConnectionInterface,
     return os;
   }
 
- private:
   SMConnection(EpollServer* epoll_server,
                SSLState* ssl_state,
                MemoryCache* memory_cache,
                FlipAcceptor* acceptor,
                std::string log_prefix);
+ private:
   int fd_;
   int events_;
 

@@ -4,11 +4,10 @@
 
 #include "net/tools/flip_server/epoll_server.h"
 
+#include <unistd.h>  // For read, pipe, close and write.
 #include <stdlib.h>  // for abort
 #include <errno.h>    // for errno and strerror_r
 #include <algorithm>
-#include <ostream>
-#include <unistd.h>  // For read, pipe, close and write.
 #include <utility>
 #include <vector>
 
@@ -482,7 +481,7 @@ void EpollServer::UnregisterAlarm(const AlarmRegToken& iterator_token) {
 }
 
 int EpollServer::NumFDsRegistered() const {
-  DCHECK(cb_map_.size() >= 1);
+  DCHECK_GE(cb_map_.size(), 1u);
   // Omit the internal FD (read_fd_)
   return cb_map_.size() - 1;
 }
@@ -490,7 +489,7 @@ int EpollServer::NumFDsRegistered() const {
 void EpollServer::Wake() {
   char data = 'd';  // 'd' is for data.  It's good enough for me.
   int rv = write(write_fd_, &data, 1);
-  DCHECK(rv == 1);
+  DCHECK_EQ(rv, 1);
 }
 
 int64 EpollServer::NowInUsec() const {
@@ -819,4 +818,3 @@ void EpollAlarm::UnregisterIfRegistered() {
 }
 
 }  // namespace net
-

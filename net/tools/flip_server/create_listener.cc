@@ -67,7 +67,7 @@ bool CloseSocket(int *fd, int tries) {
 ////////////////////////////////////////////////////////////////////////////////
 
 // Sets an FD to be nonblocking.
-void SetNonBlocking(int fd) {
+void FlipSetNonBlocking(int fd) {
   DCHECK_GE(fd, 0);
 
   int fcntl_return = fcntl(fd, F_GETFL, 0);
@@ -270,7 +270,7 @@ int CreateConnectedSocket( int *connect_fd,
     return -1;
   }
 
-  SetNonBlocking( sock );
+  FlipSetNonBlocking( sock );
 
   if (disable_nagle) {
     if (!SetDisableNagle(sock)) {
@@ -297,4 +297,3 @@ int CreateConnectedSocket( int *connect_fd,
 }
 
 }  // namespace net
-
