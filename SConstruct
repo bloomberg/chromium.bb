@@ -2169,20 +2169,13 @@ Automagically generated help:
 
 
 def SetupClang(env):
+  env['CLANG_DIR'] = '${SOURCE_ROOT}/third_party/llvm-build/Release+Asserts/bin'
+  env['CLANG_OPTS'] = []
   if env.Bit('asan'):
-    if env.Bit('host_linux'):
-      asan_dir = 'asan_clang_Linux'
-    elif env.Bit('host_mac'):
-      asan_dir = 'asan_clang_Darwin'
-    else:
+    if not (env.Bit('host_linux') or env.Bit('host_mac')):
       print "ERROR: ASan is only available for Linux and Mac"
       sys.exit(-1)
-    env['ASAN'] = '${SOURCE_ROOT}/third_party/asan'
-    env['CLANG_DIR'] = os.path.join('${ASAN}', asan_dir, 'bin')
-    env['CLANG_OPTS'] = '-faddress-sanitizer'
-  else:
-    env['CLANG_DIR'] = '${SOURCE_ROOT}/third_party/llvm-build/Release+Asserts/bin'
-    env['CLANG_OPTS'] = ''
+    env['CLANG_OPTS'].append('-fsanitize=address')
 
   env['CC'] = '${CLANG_DIR}/clang ${CLANG_OPTS}'
   env['CXX'] = '${CLANG_DIR}/clang++ ${CLANG_OPTS}'

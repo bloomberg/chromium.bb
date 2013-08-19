@@ -31,8 +31,6 @@ deps = {
     Var("native_client_trunk") + "/src/third_party@" + Var("tools_rev"),
   "validator_snapshots":
     Var("native_client_trunk") + "/src/validator_snapshots@" + Var("tools_rev"),
-  "third_party/asan":
-    Var("chromium_trunk") + "/deps/third_party/asan@" + Var("chrome_rev"),
   "third_party/lcov":
     Var("chromium_trunk") + "/src/third_party/lcov@" + Var("lcov_rev"),
   "third_party/lss":
