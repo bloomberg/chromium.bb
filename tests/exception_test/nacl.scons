@@ -52,7 +52,7 @@ for subtest in ('test_bad_handler',
 exceptions_disabled_test = env.ComponentProgram(
     'exceptions_disabled_test',
     ['exceptions_disabled_test.c'],
-    EXTRA_LIBS=['${NONIRT_LIBS}'])
+    EXTRA_LIBS=['${NONIRT_LIBS}', '${EXCEPTION_LIBS}'])
 node = env.CommandSelLdrTestNacl(
     'exceptions_disabled_test.out',
     exceptions_disabled_test, [],

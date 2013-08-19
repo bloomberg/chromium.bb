@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <stdio.h>
 
+#include "native_client/src/include/nacl/nacl_exception.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
@@ -19,6 +20,8 @@
 int main(void) {
   int rc;
 
+  /* Test the syscalls directly. */
+
   rc = NACL_SYSCALL(exception_handler)(NULL, NULL);
   assert(rc == -ENOSYS);
 
@@ -27,6 +30,17 @@ int main(void) {
 
   rc = NACL_SYSCALL(exception_clear_flag)();
   assert(rc == -ENOSYS);
+
+  /* Test the wrapper functions, which test the IRT in some builds. */
+
+  rc = nacl_exception_set_handler(NULL);
+  assert(rc == ENOSYS);
+
+  rc = nacl_exception_set_stack(NULL, 1024);
+  assert(rc == ENOSYS);
+
+  rc = nacl_exception_clear_flag();
+  assert(rc == ENOSYS);
 
   fprintf(stderr, "** intended_exit_status=0\n");
   return 0;
