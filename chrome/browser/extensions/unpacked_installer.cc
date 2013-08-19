@@ -214,6 +214,15 @@ void UnpackedInstaller::GetAbsolutePath() {
 
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
+  std::string error;
+  if (!extension_file_util::CheckForIllegalFilenames(extension_path_,
+                                                     &error)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&UnpackedInstaller::ReportExtensionLoadError, this, error));
+    return;
+  }
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&UnpackedInstaller::CheckExtensionFileAccess, this));

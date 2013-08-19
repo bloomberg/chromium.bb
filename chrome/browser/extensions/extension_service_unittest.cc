@@ -2490,6 +2490,16 @@ TEST_F(ExtensionServiceTest, UnpackedExtensionMayContainSymlinkedFiles) {
 }
 #endif
 
+TEST_F(ExtensionServiceTest, UnpackedExtensionMayNotHaveUnderscore) {
+  InitializeEmptyExtensionService();
+  base::FilePath extension_path = data_dir_
+      .AppendASCII("underscore_name");
+  extensions::UnpackedInstaller::Create(service_)->Load(extension_path);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, GetErrors().size());
+  EXPECT_EQ(0u, service_->extensions()->size());
+}
+
 TEST_F(ExtensionServiceTest, InstallLocalizedTheme) {
   InitializeEmptyExtensionService();
   service_->Init();
