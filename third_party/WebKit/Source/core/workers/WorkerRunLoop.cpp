@@ -32,6 +32,7 @@
 #include "core/workers/WorkerRunLoop.h"
 
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/InspectorInstrumentation.h"
 #include "core/platform/SharedTimer.h"
 #include "core/platform/ThreadGlobalData.h"
 #include "core/platform/ThreadTimers.h"
@@ -106,12 +107,14 @@ String WorkerRunLoop::defaultMode()
 class RunLoopSetup {
     WTF_MAKE_NONCOPYABLE(RunLoopSetup);
 public:
-    RunLoopSetup(WorkerRunLoop& runLoop)
+    RunLoopSetup(WorkerRunLoop& runLoop, WorkerGlobalScope* context)
         : m_runLoop(runLoop)
+        , m_context(context)
     {
         if (!m_runLoop.m_nestedCount)
             threadGlobalData().threadTimers().setSharedTimer(m_runLoop.m_sharedTimer.get());
         m_runLoop.m_nestedCount++;
+        InspectorInstrumentation::willEnterNestedRunLoop(m_context);
     }
 
     ~RunLoopSetup()
@@ -119,14 +122,16 @@ public:
         m_runLoop.m_nestedCount--;
         if (!m_runLoop.m_nestedCount)
             threadGlobalData().threadTimers().setSharedTimer(0);
+        InspectorInstrumentation::didLeaveNestedRunLoop(m_context);
     }
 private:
     WorkerRunLoop& m_runLoop;
+    WorkerGlobalScope* m_context;
 };
 
 void WorkerRunLoop::run(WorkerGlobalScope* context)
 {
-    RunLoopSetup setup(*this);
+    RunLoopSetup setup(*this, context);
     ModePredicate modePredicate(defaultMode());
     MessageQueueWaitResult result;
     do {
@@ -137,7 +142,7 @@ void WorkerRunLoop::run(WorkerGlobalScope* context)
 
 MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, const String& mode, WaitMode waitMode)
 {
-    RunLoopSetup setup(*this);
+    RunLoopSetup setup(*this, context);
     ModePredicate modePredicate(mode);
     MessageQueueWaitResult result = runInMode(context, modePredicate, waitMode);
     return result;
@@ -185,7 +190,9 @@ MessageQueueWaitResult WorkerRunLoop::runInMode(WorkerGlobalScope* context, cons
         break;
 
     case MessageQueueMessageReceived:
+        InspectorInstrumentation::willProcessTask(context);
         task->performTask(*this, context);
+        InspectorInstrumentation::didProcessTask(context);
         break;
 
     case MessageQueueTimeout:

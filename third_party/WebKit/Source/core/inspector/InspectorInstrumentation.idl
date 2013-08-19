@@ -381,6 +381,18 @@ interface InspectorInstrumentation {
     [Worker]
     void workerGlobalScopeTerminated(ScriptExecutionContext*, WorkerGlobalScopeProxy* proxy);
 
+    [Profiler, Timeline]
+    void willProcessTask(WorkerGlobalScope* context);
+
+    [Profiler, Timeline]
+    void didProcessTask(WorkerGlobalScope* context);
+
+    [Profiler]
+    void willEnterNestedRunLoop(WorkerGlobalScope* context);
+
+    [Profiler]
+    void didLeaveNestedRunLoop(WorkerGlobalScope* context);
+
     [Resource, Timeline]
     void didCreateWebSocket([Keep] Document*, unsigned long identifier, const KURL& requestURL, const String& protocol);
 

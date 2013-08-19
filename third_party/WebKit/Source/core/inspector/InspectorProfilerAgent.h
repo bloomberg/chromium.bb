@@ -79,6 +79,8 @@ public:
 
     void willProcessTask();
     void didProcessTask();
+    void willEnterNestedRunLoop();
+    void didLeaveNestedRunLoop();
 
 private:
     InspectorProfilerAgent(InstrumentingAgents*, InspectorConsoleAgent*, InspectorCompositeState*, InjectedScriptManager*);
@@ -101,7 +103,10 @@ private:
 
     typedef HashMap<String, double> ProfileNameIdleTimeMap;
     ProfileNameIdleTimeMap* m_profileNameIdleTimeMap;
-    double m_previousTaskEndTime;
+    double m_idleStartTime;
+
+    void idleStarted();
+    void idleFinished();
 };
 
 } // namespace WebCore

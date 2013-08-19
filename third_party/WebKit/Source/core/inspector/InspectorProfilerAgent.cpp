@@ -69,7 +69,7 @@ InspectorProfilerAgent::InspectorProfilerAgent(InstrumentingAgents* instrumentin
     , m_currentUserInitiatedProfileNumber(-1)
     , m_nextUserInitiatedProfileNumber(1)
     , m_profileNameIdleTimeMap(ScriptProfiler::currentProfileNameIdleTimeMap())
-    , m_previousTaskEndTime(0.0)
+    , m_idleStartTime(0.0)
 {
 }
 
@@ -264,27 +264,47 @@ void InspectorProfilerAgent::toggleRecordButton(bool isProfiling)
         m_frontend->setRecordingProfile(isProfiling);
 }
 
-void InspectorProfilerAgent::willProcessTask()
+void InspectorProfilerAgent::idleFinished()
 {
     if (!m_profileNameIdleTimeMap || !m_profileNameIdleTimeMap->size())
         return;
     ScriptProfiler::setIdle(false);
-    if (!m_previousTaskEndTime)
+    if (!m_idleStartTime)
         return;
 
-    double idleTime = WTF::monotonicallyIncreasingTime() - m_previousTaskEndTime;
-    m_previousTaskEndTime = 0.0;
+    double idleTime = WTF::monotonicallyIncreasingTime() - m_idleStartTime;
+    m_idleStartTime = 0.0;
     ProfileNameIdleTimeMap::iterator end = m_profileNameIdleTimeMap->end();
     for (ProfileNameIdleTimeMap::iterator it = m_profileNameIdleTimeMap->begin(); it != end; ++it)
         it->value += idleTime;
 }
 
-void InspectorProfilerAgent::didProcessTask()
+void InspectorProfilerAgent::idleStarted()
 {
     if (!m_profileNameIdleTimeMap || !m_profileNameIdleTimeMap->size())
         return;
-    m_previousTaskEndTime = WTF::monotonicallyIncreasingTime();
+    m_idleStartTime = WTF::monotonicallyIncreasingTime();
     ScriptProfiler::setIdle(true);
+}
+
+void InspectorProfilerAgent::willProcessTask()
+{
+    idleFinished();
+}
+
+void InspectorProfilerAgent::didProcessTask()
+{
+    idleStarted();
+}
+
+void InspectorProfilerAgent::willEnterNestedRunLoop()
+{
+    idleStarted();
+}
+
+void InspectorProfilerAgent::didLeaveNestedRunLoop()
+{
+    idleFinished();
 }
 
 } // namespace WebCore
