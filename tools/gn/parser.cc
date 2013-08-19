@@ -254,7 +254,9 @@ scoped_ptr<ParseNode> Parser::BinaryOperator(scoped_ptr<ParseNode> left,
 scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
                                                Token token) {
   scoped_ptr<ListNode> list(new ListNode);
-  scoped_ptr<BlockNode> block(new BlockNode(false));
+  list->set_begin_token(token);
+  list->set_end_token(token);
+  scoped_ptr<BlockNode> block;
   bool has_arg = false;
   if (Match(Token::LEFT_PAREN)) {
     // Parsing a function call.
@@ -282,7 +284,8 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
   scoped_ptr<FunctionCallNode> func_call(new FunctionCallNode);
   func_call->set_function(token);
   func_call->set_args(list.Pass());
-  func_call->set_block(block.Pass());
+  if (block)
+    func_call->set_block(block.Pass());
   return func_call.Pass();
 }
 
@@ -320,6 +323,7 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
 scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
                                        bool allow_trailing_comma) {
   scoped_ptr<ListNode> list(new ListNode);
+  list->set_begin_token(cur_token());
   bool just_got_comma = false;
   while (!LookAhead(stop_before)) {
     just_got_comma = false;
@@ -340,6 +344,7 @@ scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
     *err_ = Err(cur_token(), "Trailing comma");
     return scoped_ptr<ListNode>();
   }
+  list->set_end_token(cur_token());
   return list.Pass();
 }
 
