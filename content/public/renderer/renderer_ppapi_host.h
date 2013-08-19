@@ -5,8 +5,6 @@
 #ifndef CONTENT_PUBLIC_RENDERER_RENDERER_PPAPI_HOST_H_
 #define CONTENT_PUBLIC_RENDERER_RENDERER_PPAPI_HOST_H_
 
-#include <vector>
-
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
 #include "base/platform_file.h"
@@ -112,16 +110,16 @@ class RendererPpapiHost {
   virtual bool IsRunningInProcess() const = 0;
 
   // There are times when the renderer needs to create a ResourceHost in the
-  // browser. This function does so asynchronously. |nested_msgs| is a list of
-  // resource host creation messages and |instance| is the PP_Instance which
+  // browser. This function does so asynchronously. |nested_msg| is the
+  // resource host creation message and |instance| is the PP_Instance which
   // the resource will belong to. |callback| will be called with the pending
-  // host IDs when the ResourceHosts have been created. This can be passed back
-  // to the plugin to attach to the ResourceHosts. Pending IDs of 0 will be
-  // passed to the callback if a ResourceHost fails to be created.
-  virtual void CreateBrowserResourceHosts(
+  // host ID when the ResourceHost has been created. This can be passed back
+  // to the plugin to attach to the ResourceHost. A pending ID of 0 will be
+  // passed to the callback upon error.
+  virtual void CreateBrowserResourceHost(
       PP_Instance instance,
-      const std::vector<IPC::Message>& nested_msgs,
-      const base::Callback<void(const std::vector<int>&)>& callback) const = 0;
+      const IPC::Message& nested_msg,
+      const base::Callback<void(int)>& callback) const = 0;
 
  protected:
   virtual ~RendererPpapiHost() {}

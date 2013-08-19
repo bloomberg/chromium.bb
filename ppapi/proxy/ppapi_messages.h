@@ -1275,27 +1275,27 @@ IPC_SYNC_MESSAGE_CONTROL2_2(PpapiHostMsg_ResourceSyncCall,
     IPC::Message /* reply_msg */)
 
 // This message is sent from the renderer to the browser when it wants to create
-// ResourceHosts in the browser. It contains the process ID of the plugin and
+// a ResourceHost in the browser. It contains the process ID of the plugin and
 // the instance of the plugin for which to create the resource for. params
 // contains the sequence number for the message to track the response.
-// The nested messages are ResourceHost creation messages.
+// The nested message is a ResourceHost creation message.
 IPC_MESSAGE_CONTROL5(
-    PpapiHostMsg_CreateResourceHostsFromHost,
+    PpapiHostMsg_CreateResourceHostFromHost,
     int /* routing_id */,
     int /* child_process_id */,
     ppapi::proxy::ResourceMessageCallParams /* params */,
     PP_Instance /* instance */,
-    std::vector<IPC::Message> /* nested_msgs */)
+    IPC::Message /* nested_msg */)
 
-// This message is sent from the browser to the renderer when it has created
-// ResourceHosts for the renderer. It contains the sequence number that was sent
-// in the request and the IDs of the pending ResourceHosts which was created in
-// the browser. These IDs are only useful for the plugin which can attach to the
-// ResourceHosts in the browser.
+// This message is sent from the browser to the renderer when it has created a
+// ResourceHost for the renderer. It contains the sequence number that was sent
+// in the request and the ID of the pending ResourceHost which was created in
+// the browser. This ID is only useful for the plugin which can attach to the
+// ResourceHost in the browser.
 IPC_MESSAGE_ROUTED2(
-    PpapiHostMsg_CreateResourceHostsFromHostReply,
+    PpapiHostMsg_CreateResourceHostFromHostReply,
     int32_t /* sequence */,
-    std::vector<int> /* pending_host_ids */)
+    int /* pending_host_id */)
 
 //-----------------------------------------------------------------------------
 // Messages for resources using call/reply above.

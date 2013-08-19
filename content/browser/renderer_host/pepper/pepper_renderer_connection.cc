@@ -72,8 +72,8 @@ bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_EX(PepperRendererConnection, msg, *message_was_ok)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostsFromHost,
-                        OnMsgCreateResourceHostsFromHost)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostFromHost,
+                        OnMsgCreateResourceHostFromHost)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_FileRef_GetInfoForRenderer,
                         OnMsgFileRefGetInfoForRenderer)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidCreateInProcessInstance,
@@ -86,45 +86,45 @@ bool PepperRendererConnection::OnMessageReceived(const IPC::Message& msg,
   return handled;
 }
 
-void PepperRendererConnection::OnMsgCreateResourceHostsFromHost(
+void PepperRendererConnection::OnMsgCreateResourceHostFromHost(
     int routing_id,
     int child_process_id,
     const ppapi::proxy::ResourceMessageCallParams& params,
     PP_Instance instance,
-    const std::vector<IPC::Message>& nested_msgs) {
+    const IPC::Message& nested_msg) {
   BrowserPpapiHostImpl* host = GetHostForChildProcess(child_process_id);
 
-  std::vector<int> pending_resource_host_ids(nested_msgs.size(), 0);
+  int pending_resource_host_id;
   if (!host) {
     DLOG(ERROR) << "Invalid plugin process ID.";
+    pending_resource_host_id = 0;
   } else {
-    for (size_t i = 0; i < nested_msgs[i].size(); ++i) {
-      // FileRef_CreateExternal is only permitted from the renderer. Because of
-      // this, we handle this message here and not in
-      // content_browser_pepper_host_factory.cc.
-      scoped_ptr<ppapi::host::ResourceHost> resource_host;
-      if (host->IsValidInstance(instance)) {
-        if (nested_msgs[i].type() == PpapiHostMsg_FileRef_CreateExternal::ID) {
-          base::FilePath external_path;
-          if (ppapi::UnpackMessage<PpapiHostMsg_FileRef_CreateExternal>(
-              nested_msgs[i], &external_path)) {
-            resource_host.reset(new PepperFileRefHost(
-                host, instance, params.pp_resource(), external_path));
-          }
+    // FileRef_CreateExternal is only permitted from the renderer. Because of
+    // this, we handle this message here and not in
+    // content_browser_pepper_host_factory.cc.
+    scoped_ptr<ppapi::host::ResourceHost> resource_host;
+    if (host->IsValidInstance(instance)) {
+      if (nested_msg.type() == PpapiHostMsg_FileRef_CreateExternal::ID) {
+        base::FilePath external_path;
+        if (ppapi::UnpackMessage<PpapiHostMsg_FileRef_CreateExternal>(
+            nested_msg, &external_path)) {
+          resource_host.reset(new PepperFileRefHost(
+              host, instance, params.pp_resource(), external_path));
         }
       }
-
-      if (!resource_host.get()) {
-        resource_host = host->GetPpapiHost()->CreateResourceHost(
-            params, instance, nested_msgs[i]);
-      }
-      pending_resource_host_ids[i] =
-          host->GetPpapiHost()->AddPendingResourceHost(resource_host.Pass());
     }
+
+    if (!resource_host.get()) {
+      resource_host = host->GetPpapiHost()->CreateResourceHost(params,
+                                                               instance,
+                                                               nested_msg);
+    }
+    pending_resource_host_id =
+        host->GetPpapiHost()->AddPendingResourceHost(resource_host.Pass());
   }
 
-  Send(new PpapiHostMsg_CreateResourceHostsFromHostReply(
-       routing_id, params.sequence(), pending_resource_host_ids));
+  Send(new PpapiHostMsg_CreateResourceHostFromHostReply(
+       routing_id, params.sequence(), pending_resource_host_id));
 }
 
 void PepperRendererConnection::OnMsgFileRefGetInfoForRenderer(
