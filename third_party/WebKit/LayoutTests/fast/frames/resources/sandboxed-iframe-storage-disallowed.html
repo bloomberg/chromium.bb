@@ -57,6 +57,7 @@ window.onload = function() {
     shouldThrow("window.openDatabase('SandboxedIframeStorageDisallowed', '1.0', '', 1)");
     shouldThrow("window.localStorage", '"SecurityError: Access to \'localStorage\' is denied for this document. The document is sandboxed and lacks the \'allow-same-origin\' flag."');
     shouldThrow("window.sessionStorage", '"SecurityError: Access to \'sessionStorage\' is denied for this document. The document is sandboxed and lacks the \'allow-same-origin\' flag."');
+    shouldThrow("document.cookie",'"SecurityError: Access to \'cookie\' is denied for this document. The document is sandboxed and lacks the \'allow-same-origin\' flag."') ;
 }
 
 </script>

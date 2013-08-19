@@ -3644,7 +3644,13 @@ String Document::cookie(ExceptionState& es) const
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        es.throwDOMException(SecurityError);
+        String accessDeniedMessage = "Access to 'cookie' is denied for this document.";
+        if (isSandboxed(SandboxOrigin))
+            es.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+        else if (url().protocolIs("data"))
+            es.throwSecurityError(accessDeniedMessage + " Cookies are disabled inside 'data:' URLs.");
+        else
+            es.throwSecurityError(accessDeniedMessage);
         return String();
     }
 
@@ -3665,7 +3671,13 @@ void Document::setCookie(const String& value, ExceptionState& es)
     // browsing context.
 
     if (!securityOrigin()->canAccessCookies()) {
-        es.throwDOMException(SecurityError);
+        String accessDeniedMessage = "Access to 'cookie' is denied for this document.";
+        if (isSandboxed(SandboxOrigin))
+            es.throwSecurityError(accessDeniedMessage + " The document is sandboxed and lacks the 'allow-same-origin' flag.");
+        else if (url().protocolIs("data"))
+            es.throwSecurityError(accessDeniedMessage + " Cookies are disabled inside 'data:' URLs.");
+        else
+            es.throwSecurityError(accessDeniedMessage);
         return;
     }
 
