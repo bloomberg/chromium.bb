@@ -387,12 +387,16 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
         driveConnectionChangedHandler);
     driveConnectionChangedHandler();
 
-    // Set the initial focus and set it as a fallback.
-    this.document_.addEventListener('focusout', function(e) {
-      if (!e.relatedTarget)
-        setTimeout(this.refocus.bind(this), 0);
-    }.bind(this));
+    // Set the initial focus.
     this.refocus();
+    // Set it as a fallback when there is no focus.
+    this.document_.addEventListener('focusout', function(e) {
+      setTimeout(function() {
+        // When there is no focus, the active element is the <body>.
+        if (this.document_.activeElement == this.document_.body)
+          this.refocus();
+      }.bind(this), 0);
+    }.bind(this));
 
     this.initDataTransferOperations_();
 
