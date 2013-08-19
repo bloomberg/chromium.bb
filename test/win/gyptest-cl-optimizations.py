@@ -37,8 +37,9 @@ if sys.platform == 'win32':
   ninja_file = test.built_file_path('obj/test_opt_unset.ninja', chdir=CHDIR)
   test.must_not_contain(ninja_file, '/Od')
   test.must_not_contain(ninja_file, '/O1')
-  test.must_not_contain(ninja_file, '/O2')
   test.must_not_contain(ninja_file, '/Ox')
+  # Set by default if none specified.
+  test.must_contain(ninja_file, '/O2')
 
   ninja_file = test.built_file_path('obj/test_opt_fpo.ninja', chdir=CHDIR)
   test.must_contain(ninja_file, '/Oy')

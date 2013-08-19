@@ -334,7 +334,7 @@ class MsvsSettings(object):
     cl = self._GetWrapper(self, self.msvs_settings[config],
                           'VCCLCompilerTool', append=cflags)
     cl('Optimization',
-       map={'0': 'd', '1': '1', '2': '2', '3': 'x'}, prefix='/O')
+       map={'0': 'd', '1': '1', '2': '2', '3': 'x'}, prefix='/O', default='2')
     cl('InlineFunctionExpansion', prefix='/Ob')
     cl('StringPooling', map={'true': '/GF'})
     cl('EnableFiberSafeOptimizations', map={'true': '/GT'})
