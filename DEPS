@@ -1,12 +1,12 @@
 # DEPS files look like -*- Python -*-
 
 vars = {
-  "chrome_rev": "191009",
+  "chrome_rev": "218289",
   # NOTE!  These three should match their counterparts in chromium/src/DEPS.
   # Be sure to update them when updating chrome_rev, above.
   "gtest_rev": "629",
-  "gyp_rev": "1603",
-  "lss_rev": "18",
+  "gyp_rev": "1694",
+  "lss_rev": "20",
 
   "breakpad_rev": "1172",
   "lcov_rev": "149720",
