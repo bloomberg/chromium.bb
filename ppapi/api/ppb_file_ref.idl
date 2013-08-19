@@ -25,7 +25,7 @@ interface PPB_FileRef {
    *
    * @param[in] resource A <code>PP_Resource</code> corresponding to a file
    * system.
-   * @param[in] path A path to the file.
+   * @param[in] path A path to the file. Must begin with a '/' character.
    *
    * @return A <code>PP_Resource</code> corresponding to a file reference if
    * successful or 0 if the path is malformed.

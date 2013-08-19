@@ -48,7 +48,7 @@ class FileRef : public Resource {
   ///
   /// @param[in] file_system A <code>FileSystem</code> corresponding to a file
   /// system type.
-  /// @param[in] path A path to the file.
+  /// @param[in] path A path to the file. Must begin with a '/' character.
   FileRef(const FileSystem& file_system, const char* path);
 
   /// The copy constructor for <code>FileRef</code>.
