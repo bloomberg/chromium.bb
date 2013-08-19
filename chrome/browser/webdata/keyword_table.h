@@ -67,7 +67,8 @@ class Statement;
 //                          was added in version 52.
 //   image_url_post_params  See TemplateURLData::image_url_post_params. This
 //                          was added in version 52.
-//
+//   new_tab_url            See TemplateURLData::new_tab_url. This was added in
+//                          version 53.
 //
 // This class also manages some fields in the |meta| table:
 //
@@ -137,6 +138,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion48RemoveKeywordsBackup();
   bool MigrateToVersion49AddSearchTermsReplacementKeyColumn();
   bool MigrateToVersion52AddImageSearchAndPOSTSupport();
+  bool MigrateToVersion53AddNewTabURLColumn();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(KeywordTableTest, GetTableContents);

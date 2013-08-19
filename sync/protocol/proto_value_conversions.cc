@@ -550,6 +550,7 @@ base::DictionaryValue* SearchEngineSpecificsToValue(
   SET_STR(suggestions_url_post_params);
   SET_STR(instant_url_post_params);
   SET_STR(image_url_post_params);
+  SET_STR(new_tab_url);
   return value;
 }
 

@@ -169,6 +169,7 @@ extern const char kDefaultSearchProviderSearchURL[];
 extern const char kDefaultSearchProviderSuggestURL[];
 extern const char kDefaultSearchProviderInstantURL[];
 extern const char kDefaultSearchProviderImageURL[];
+extern const char kDefaultSearchProviderNewTabURL[];
 extern const char kDefaultSearchProviderSearchURLPostParams[];
 extern const char kDefaultSearchProviderSuggestURLPostParams[];
 extern const char kDefaultSearchProviderInstantURLPostParams[];

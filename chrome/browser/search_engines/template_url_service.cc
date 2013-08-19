@@ -68,12 +68,12 @@ bool TemplateURLsHaveSamePrefs(const TemplateURL* url1,
       (url1->suggestions_url() == url2->suggestions_url()) &&
       (url1->instant_url() == url2->instant_url()) &&
       (url1->image_url() == url2->image_url()) &&
+      (url1->new_tab_url() == url2->new_tab_url()) &&
       (url1->search_url_post_params() == url2->search_url_post_params()) &&
       (url1->suggestions_url_post_params() ==
           url2->suggestions_url_post_params()) &&
       (url1->instant_url_post_params() == url2->instant_url_post_params()) &&
       (url1->image_url_post_params() == url2->image_url_post_params()) &&
-      (url1->image_url() == url2->image_url()) &&
       (url1->favicon_url() == url2->favicon_url()) &&
       (url1->safe_for_autoreplace() == url2->safe_for_autoreplace()) &&
       (url1->show_in_default_list() == url2->show_in_default_list()) &&
@@ -1253,6 +1253,7 @@ syncer::SyncData TemplateURLService::CreateSyncDataFromTemplateURL(
   se_specifics->set_instant_url(turl.instant_url());
   if (!turl.image_url().empty())
     se_specifics->set_image_url(turl.image_url());
+  se_specifics->set_new_tab_url(turl.new_tab_url());
   if (!turl.search_url_post_params().empty())
     se_specifics->set_search_url_post_params(turl.search_url_post_params());
   if (!turl.suggestions_url_post_params().empty()) {
@@ -1317,6 +1318,7 @@ TemplateURL* TemplateURLService::CreateTemplateURLFromTemplateURLAndSyncData(
   data.suggestions_url = specifics.suggestions_url();
   data.instant_url = specifics.instant_url();
   data.image_url = specifics.image_url();
+  data.new_tab_url = specifics.new_tab_url();
   data.search_url_post_params = specifics.search_url_post_params();
   data.suggestions_url_post_params = specifics.suggestions_url_post_params();
   data.instant_url_post_params = specifics.instant_url_post_params();
@@ -1580,6 +1582,7 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   std::string suggest_url;
   std::string instant_url;
   std::string image_url;
+  std::string new_tab_url;
   std::string search_url_post_params;
   std::string suggest_url_post_params;
   std::string instant_url_post_params;
@@ -1599,6 +1602,7 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
     suggest_url = t_url->suggestions_url();
     instant_url = t_url->instant_url();
     image_url = t_url->image_url();
+    new_tab_url = t_url->new_tab_url();
     search_url_post_params = t_url->search_url_post_params();
     suggest_url_post_params = t_url->suggestions_url_post_params();
     instant_url_post_params = t_url->instant_url_post_params();
@@ -1620,6 +1624,7 @@ void TemplateURLService::SaveDefaultSearchProviderToPrefs(
   prefs->SetString(prefs::kDefaultSearchProviderSuggestURL, suggest_url);
   prefs->SetString(prefs::kDefaultSearchProviderInstantURL, instant_url);
   prefs->SetString(prefs::kDefaultSearchProviderImageURL, image_url);
+  prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, new_tab_url);
   prefs->SetString(prefs::kDefaultSearchProviderSearchURLPostParams,
                    search_url_post_params);
   prefs->SetString(prefs::kDefaultSearchProviderSuggestURLPostParams,
@@ -1680,6 +1685,8 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
       prefs->GetString(prefs::kDefaultSearchProviderInstantURL);
   std::string image_url =
       prefs->GetString(prefs::kDefaultSearchProviderImageURL);
+  std::string new_tab_url =
+      prefs->GetString(prefs::kDefaultSearchProviderNewTabURL);
   std::string search_url_post_params =
       prefs->GetString(prefs::kDefaultSearchProviderSearchURLPostParams);
   std::string suggest_url_post_params =
@@ -1707,6 +1714,7 @@ bool TemplateURLService::LoadDefaultSearchProviderFromPrefs(
   data.suggestions_url = suggest_url;
   data.instant_url = instant_url;
   data.image_url = image_url;
+  data.new_tab_url = new_tab_url;
   data.search_url_post_params = search_url_post_params;
   data.suggestions_url_post_params = suggest_url_post_params;
   data.instant_url_post_params = instant_url_post_params;

@@ -87,6 +87,10 @@ void TemplateURLServiceFactory::RegisterProfilePrefs(
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterStringPref(
+      prefs::kDefaultSearchProviderNewTabURL,
+      std::string(),
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+  registry->RegisterStringPref(
       prefs::kDefaultSearchProviderSearchURLPostParams,
       std::string(),
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);

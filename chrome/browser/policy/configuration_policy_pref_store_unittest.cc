@@ -641,6 +641,7 @@ class ConfigurationPolicyPrefStoreDefaultSearchTest
   static const char* const kReplacementKey;
   static const char* const kImageURL;
   static const char* const kImageParams;
+  static const char* const kNewTabURL;
 
   // Build a default search policy by setting search-related keys in |policy| to
   // reasonable values. You can update any of the keys after calling this
@@ -666,6 +667,8 @@ const char* const ConfigurationPolicyPrefStoreDefaultSearchTest::kImageURL =
     "http://test.com/searchbyimage/upload";
 const char* const ConfigurationPolicyPrefStoreDefaultSearchTest::kImageParams =
     "image_content=content,image_url=http://test.com/test.png";
+const char* const ConfigurationPolicyPrefStoreDefaultSearchTest::kNewTabURL =
+    "http://test.com/newtab";
 
 void ConfigurationPolicyPrefStoreDefaultSearchTest::
     BuildDefaultSearchPolicy(PolicyMap* policy) {
@@ -701,6 +704,9 @@ void ConfigurationPolicyPrefStoreDefaultSearchTest::
   policy->Set(key::kDefaultSearchProviderImageURLPostParams,
               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
               base::Value::CreateStringValue(kImageParams), NULL);
+  policy->Set(key::kDefaultSearchProviderNewTabURL,
+              POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+              base::Value::CreateStringValue(kNewTabURL), NULL);
 }
 
 // Checks that if the policy for default search is valid, i.e. there's a
@@ -764,6 +770,10 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MinimallyDefined) {
 
   EXPECT_TRUE(store_->GetValue(
       prefs::kDefaultSearchProviderImageURLPostParams, &value));
+  EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
+
+  EXPECT_TRUE(store_->GetValue(
+      prefs::kDefaultSearchProviderNewTabURL, &value));
   EXPECT_TRUE(base::StringValue(std::string()).Equals(value));
 }
 
@@ -844,6 +854,8 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, MissingUrl) {
   EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderImageURL, NULL));
   EXPECT_FALSE(store_->GetValue(
       prefs::kDefaultSearchProviderImageURLPostParams, NULL));
+  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderInstantURL, NULL));
+  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderNewTabURL, NULL));
 }
 
 // Checks that if the default search policy is invalid, that no elements of the
@@ -870,6 +882,8 @@ TEST_F(ConfigurationPolicyPrefStoreDefaultSearchTest, Invalid) {
   EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderImageURL, NULL));
   EXPECT_FALSE(store_->GetValue(
       prefs::kDefaultSearchProviderImageURLPostParams, NULL));
+  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderInstantURL, NULL));
+  EXPECT_FALSE(store_->GetValue(prefs::kDefaultSearchProviderNewTabURL, NULL));
 }
 
 // Checks that if the default search policy is invalid, that no elements of the

@@ -411,6 +411,11 @@ const char kDefaultSearchProviderInstantURL[] =
 const char kDefaultSearchProviderImageURL[] =
     "default_search_provider.image_url";
 
+// The URL (as understood by TemplateURLRef) the default search provider uses
+// for the new tab page.
+const char kDefaultSearchProviderNewTabURL[] =
+    "default_search_provider.new_tab_url";
+
 // The string of post parameters (as understood by TemplateURLRef) the default
 // search provider uses for searches by using POST.
 const char kDefaultSearchProviderSearchURLPostParams[] =

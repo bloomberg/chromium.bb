@@ -75,5 +75,8 @@ message SearchEngineSpecifics {
   optional string suggestions_url_post_params = 23;
   optional string instant_url_post_params = 24;
   optional string image_url_post_params = 25;
+
+  // The parameterized URL for a search provider specified new tab page.
+  optional string new_tab_url = 26;
 }
 

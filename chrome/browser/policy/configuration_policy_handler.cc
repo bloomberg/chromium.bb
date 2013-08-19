@@ -103,6 +103,9 @@ const DefaultSearchSimplePolicyHandlerEntry kDefaultSearchPolicyMap[] = {
   { key::kDefaultSearchProviderImageURL,
     prefs::kDefaultSearchProviderImageURL,
     Value::TYPE_STRING },
+  { key::kDefaultSearchProviderNewTabURL,
+    prefs::kDefaultSearchProviderNewTabURL,
+    Value::TYPE_STRING },
   { key::kDefaultSearchProviderSearchURLPostParams,
     prefs::kDefaultSearchProviderSearchURLPostParams,
     Value::TYPE_STRING },
@@ -967,6 +970,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
     prefs->SetString(prefs::kDefaultSearchProviderEncodings, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderKeyword, std::string());
     prefs->SetString(prefs::kDefaultSearchProviderInstantURL, std::string());
+    prefs->SetString(prefs::kDefaultSearchProviderNewTabURL, std::string());
     prefs->SetValue(prefs::kDefaultSearchProviderAlternateURLs,
                     new ListValue());
     prefs->SetString(prefs::kDefaultSearchProviderSearchTermsReplacementKey,
@@ -996,6 +1000,7 @@ void DefaultSearchPolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderEncodings);
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderKeyword);
       EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderInstantURL);
+      EnsureStringPrefExists(prefs, prefs::kDefaultSearchProviderNewTabURL);
       EnsureListPrefExists(prefs, prefs::kDefaultSearchProviderAlternateURLs);
       EnsureStringPrefExists(prefs,
           prefs::kDefaultSearchProviderSearchTermsReplacementKey);

@@ -117,7 +117,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 236
+#   For your editing convenience: highest ID currently used: 237
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -1884,6 +1884,24 @@
           'desc': '''Specifies the URL of the search engine used to provide image search. Search requests will be sent using the GET method. If the DefaultSearchProviderImageURLPostParams policy is set then image search requests will use the POST method instead.
 
           This policy is optional. If not set, no image search will be used.
+
+          This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
+        },
+        {
+          'name': 'DefaultSearchProviderNewTabURL',
+          'type': 'string',
+          'schema': { 'type': 'string' },
+          'supported_on': ['chrome.*:30-', 'chrome_os:0.30-', 'android:30-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 'http://search.my.company/newtab',
+          'id': 237,
+          'caption': '''Default search provider new tab page URL''',
+          'desc': '''Specifies the URL that a search engine uses to provide a new tab page.
+
+          This policy is optional. If not set, no new tab page will be provided.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.''',
         },

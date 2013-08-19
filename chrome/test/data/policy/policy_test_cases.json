@@ -769,6 +769,14 @@
     ]
   },
 
+  "DefaultSearchProviderNewTabURL": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderNewTabURL": "http://www.google.com/newtab" },
+    "pref_mappings": [
+      { "pref": "default_search_provider.new_tab_url" }
+    ]
+  },
+
   "DefaultSearchProviderIconURL": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultSearchProviderSearchURL": "http://www.google.com/?q={searchTerms}", "DefaultSearchProviderIconURL": "http://www.google.com/favicon.ico" },

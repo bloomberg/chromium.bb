@@ -247,7 +247,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 52;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 53;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -2029,8 +2029,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion49ToCurrent) {
 }
 
 // Tests that the columns |image_url|, |search_url_post_params|,
-// |suggest_url_post_params|, |instant_url_post_params|, |image_url_post_params|
-// are added to the keyword table schema for a version 52 database.
+// |suggest_url_post_params|, |instant_url_post_params|, and
+// |image_url_post_params| are added to the keyword table schema for a version
+// 50 database.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion50ToCurrent) {
   ASSERT_NO_FATAL_FAILURE(
       LoadDatabase(FILE_PATH_LITERAL("version_50.sql")));
@@ -2078,5 +2079,41 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion50ToCurrent) {
                                            "instant_url_post_params"));
     EXPECT_TRUE(connection.DoesColumnExist("keywords",
                                            "image_url_post_params"));
+  }
+}
+
+// Tests that the column |new_tab_url| is added to the keyword table schema for
+// a version 52 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion52ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(
+      LoadDatabase(FILE_PATH_LITERAL("version_52.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 52 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 52, 52));
+
+    ASSERT_FALSE(connection.DoesColumnExist("keywords", "new_tab_url"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // New columns should have been created.
+    EXPECT_TRUE(connection.DoesColumnExist("keywords", "new_tab_url"));
   }
 }

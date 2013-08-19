@@ -707,6 +707,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
   const std::string kImageURL("http://test.com/searchbyimage/upload");
   const std::string kImageURLPostParams(
       "image_content=content,image_url=http://test.com/test.png");
+  const std::string kNewTabURL("http://search.example/newtab");
 
   TemplateURLService* service = TemplateURLServiceFactory::GetForProfile(
       browser()->profile());
@@ -722,7 +723,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
     default_search->search_terms_replacement_key() ==
         kSearchTermsReplacementKey &&
     default_search->image_url() == kImageURL &&
-    default_search->image_url_post_params() == kImageURLPostParams);
+    default_search->image_url_post_params() == kImageURLPostParams &&
+    default_search->new_tab_url() == kNewTabURL);
 
   // Override the default search provider using policies.
   PolicyMap policies;
@@ -751,6 +753,10 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
                POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                base::Value::CreateStringValue(kImageURLPostParams),
                NULL);
+  policies.Set(key::kDefaultSearchProviderNewTabURL,
+               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               base::Value::CreateStringValue(kNewTabURL),
+               NULL);
   UpdateProviderPolicy(policies);
   default_search = service->GetDefaultSearchProvider();
   ASSERT_TRUE(default_search);
@@ -763,6 +769,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DefaultSearchProvider) {
             default_search->search_terms_replacement_key());
   EXPECT_EQ(kImageURL, default_search->image_url());
   EXPECT_EQ(kImageURLPostParams, default_search->image_url_post_params());
+  EXPECT_EQ(kNewTabURL, default_search->new_tab_url());
 
   // Verify that searching from the omnibox uses kSearchURL.
   chrome::FocusLocationBar(browser());

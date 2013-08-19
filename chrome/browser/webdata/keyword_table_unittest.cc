@@ -137,6 +137,7 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.SetURL("http://url/");
   keyword.suggestions_url = "url2";
   keyword.image_url = "http://image-search-url/";
+  keyword.new_tab_url = "http://new-tab-url/";
   keyword.favicon_url = GURL("http://favicon.url/");
   keyword.show_in_default_list = true;
   keyword.safe_for_autoreplace = true;
@@ -152,6 +153,7 @@ TEST_F(KeywordTableTest, GetTableContents) {
   keyword.SetKeyword(ASCIIToUTF16("url"));
   keyword.instant_url = "http://instant2/";
   keyword.image_url.clear();
+  keyword.new_tab_url.clear();
   keyword.originating_url = GURL("http://originating.url/");
   keyword.input_encodings.push_back("Shift_JIS");
   keyword.id = 2;
@@ -163,9 +165,9 @@ TEST_F(KeywordTableTest, GetTableContents) {
 
   const char kTestContents[] = "1short_namekeywordhttp://favicon.url/"
       "http://url/1001url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]espv"
-      "http://image-search-url/2short_nameurlhttp://favicon.url/http://url/1"
-      "http://originating.url/00Shift_JIS1url250http://instant2/0"
-      "FEDC-BA09-8765-4321[]";
+      "http://image-search-url/http://new-tab-url/2short_nameurl"
+      "http://favicon.url/http://url/1http://originating.url/00Shift_JIS1url250"
+      "http://instant2/0FEDC-BA09-8765-4321[]";
 
   std::string contents;
   EXPECT_TRUE(table_->GetTableContents("keywords",
@@ -192,6 +194,7 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.image_url = "http://image-search-url/";
   keyword.search_url_post_params = "ie=utf-8,oe=utf-8";
   keyword.image_url_post_params = "name=1,value=2";
+  keyword.new_tab_url = "http://new-tab-url";
   EXPECT_TRUE(table_->AddKeyword(keyword));
 
   keyword.SetKeyword(ASCIIToUTF16("url"));
@@ -206,13 +209,15 @@ TEST_F(KeywordTableTest, GetTableContentsOrdering) {
   keyword.image_url.clear();
   keyword.search_url_post_params.clear();
   keyword.image_url_post_params.clear();
+  keyword.new_tab_url.clear();
   EXPECT_TRUE(table_->AddKeyword(keyword));
 
-  const char kTestContents[] = "1short_nameurlhttp://favicon.url/http://url/1"
-      "http://originating.url/00Shift_JIS1url250http://instant2/0"
-      "FEDC-BA09-8765-4321[]2short_namekeywordhttp://favicon.url/"
-      "http://url/1001url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]espv"
-      "http://image-search-url/ie=utf-8,oe=utf-8name=1,value=2";
+  const char kTestContents[] = "1short_nameurlhttp://favicon.url/"
+      "http://url/1http://originating.url/00Shift_JIS1url250http://instant2/"
+      "0FEDC-BA09-8765-4321[]2short_namekeywordhttp://favicon.url/http://url/"
+      "1001url20001234-5678-90AB-CDEF[\"a_url1\",\"a_url2\"]espv"
+      "http://image-search-url/ie=utf-8,oe=utf-8name=1,value=2"
+      "http://new-tab-url";
 
   std::string contents;
   EXPECT_TRUE(table_->GetTableContents("keywords",
