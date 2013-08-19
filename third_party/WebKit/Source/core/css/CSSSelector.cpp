@@ -431,7 +431,7 @@ static HashMap<StringImpl*, CSSSelector::PseudoType>* nameToPseudoTypeMap()
             nameToPseudoType->set(hostWithParams.impl(), CSSSelector::PseudoHost);
             nameToPseudoType->set(content.impl(), CSSSelector::PseudoContent);
         }
-        if (RuntimeEnabledFeatures::customElementsEnabled())
+        if (RuntimeEnabledFeatures::customElementsEnabled() || RuntimeEnabledFeatures::embedderCustomElementsEnabled())
             nameToPseudoType->set(unresolved.impl(), CSSSelector::PseudoUnresolved);
     }
     return nameToPseudoType;

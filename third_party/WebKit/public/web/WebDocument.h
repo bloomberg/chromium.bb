@@ -34,8 +34,10 @@
 #include "../platform/WebReferrerPolicy.h"
 #include "../platform/WebVector.h"
 #include "WebDraggableRegion.h"
+#include "WebExceptionCode.h"
 #include "WebNode.h"
 #include "WebSecurityOrigin.h"
+#include <v8.h>
 
 #if WEBKIT_IMPLEMENTATION
 namespace WebCore {
@@ -129,6 +131,8 @@ public:
     WEBKIT_EXPORT void insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel);
 
     WEBKIT_EXPORT WebVector<WebDraggableRegion> draggableRegions() const;
+
+    WEBKIT_EXPORT v8::Handle<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode&);
 
 #if WEBKIT_IMPLEMENTATION
     WebDocument(const WTF::PassRefPtr<WebCore::Document>&);

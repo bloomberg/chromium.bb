@@ -31,6 +31,7 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
+#include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementDefinition.h"
 #include "core/dom/CustomElementDescriptor.h"
 #include "core/dom/CustomElementDescriptorHash.h"
@@ -54,7 +55,7 @@ protected:
     CustomElementRegistry() { }
     virtual ~CustomElementRegistry() { }
 
-    CustomElementDefinition* registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, ExceptionState&);
+    CustomElementDefinition* registerElement(Document*, CustomElementConstructorBuilder*, const AtomicString& name, CustomElement::NameSet validNames, ExceptionState&);
     CustomElementDefinition* find(const CustomElementDescriptor&) const;
 
 private:

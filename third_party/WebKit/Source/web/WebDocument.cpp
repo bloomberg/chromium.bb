@@ -41,7 +41,10 @@
 #include "WebFrameImpl.h"
 #include "WebNodeCollection.h"
 #include "WebNodeList.h"
+#include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/ScriptValue.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/CSSParserMode.h"
 #include "core/css/StyleSheetContents.h"
@@ -274,6 +277,18 @@ WebVector<WebDraggableRegion> WebDocument::draggableRegions() const
         }
     }
     return draggableRegions;
+}
+
+v8::Handle<v8::Value> WebDocument::registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode& ec)
+{
+    Document* document = unwrap<Document>();
+    Dictionary dictionary(options, v8::Isolate::GetCurrent());
+    TrackExceptionState es;
+    ScriptValue constructor = document->registerElement(ScriptState::current(), name, dictionary, es, CustomElement::EmbedderNames);
+    ec = es.code();
+    if (es.hadException())
+        return v8::Handle<v8::Value>();
+    return constructor.v8Value();
 }
 
 WebDocument::WebDocument(const PassRefPtr<Document>& elem)
