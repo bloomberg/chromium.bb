@@ -546,15 +546,15 @@ public:
 
     bool needsLayout() const
     {
-        return m_bitfields.needsLayout() || m_bitfields.normalChildNeedsLayout() || m_bitfields.posChildNeedsLayout()
+        return m_bitfields.selfNeedsLayout() || m_bitfields.normalChildNeedsLayout() || m_bitfields.posChildNeedsLayout()
             || m_bitfields.needsSimplifiedNormalFlowLayout() || m_bitfields.needsPositionedMovementLayout();
     }
 
-    bool selfNeedsLayout() const { return m_bitfields.needsLayout(); }
+    bool selfNeedsLayout() const { return m_bitfields.selfNeedsLayout(); }
     bool needsPositionedMovementLayout() const { return m_bitfields.needsPositionedMovementLayout(); }
     bool needsPositionedMovementLayoutOnly() const
     {
-        return m_bitfields.needsPositionedMovementLayout() && !m_bitfields.needsLayout() && !m_bitfields.normalChildNeedsLayout()
+        return m_bitfields.needsPositionedMovementLayout() && !m_bitfields.selfNeedsLayout() && !m_bitfields.normalChildNeedsLayout()
             && !m_bitfields.posChildNeedsLayout() && !m_bitfields.needsSimplifiedNormalFlowLayout();
     }
 
@@ -1107,7 +1107,7 @@ private:
 
     public:
         RenderObjectBitfields(Node* node)
-            : m_needsLayout(false)
+            : m_selfNeedsLayout(false)
             , m_needsPositionedMovementLayout(false)
             , m_normalChildNeedsLayout(false)
             , m_posChildNeedsLayout(false)
@@ -1137,7 +1137,7 @@ private:
         }
 
         // 31 bits have been used here. There is one bit available.
-        ADD_BOOLEAN_BITFIELD(needsLayout, NeedsLayout);
+        ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
         ADD_BOOLEAN_BITFIELD(posChildNeedsLayout, PosChildNeedsLayout);
@@ -1198,7 +1198,7 @@ private:
 
     RenderObjectBitfields m_bitfields;
 
-    // FIXME: These private methods are silly. We should just call m_bitfields.setXXX(b) directly.
+    void setSelfNeedsLayout(bool b) { m_bitfields.setSelfNeedsLayout(b); }
     void setNeedsPositionedMovementLayout(bool b) { m_bitfields.setNeedsPositionedMovementLayout(b); }
     void setNormalChildNeedsLayout(bool b) { m_bitfields.setNormalChildNeedsLayout(b); }
     void setPosChildNeedsLayout(bool b) { m_bitfields.setPosChildNeedsLayout(b); }
@@ -1244,8 +1244,8 @@ inline bool RenderObject::isBeforeOrAfterContent() const
 inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLayoutScope* layouter)
 {
     ASSERT(!isSetNeedsLayoutForbidden());
-    bool alreadyNeededLayout = m_bitfields.needsLayout();
-    m_bitfields.setNeedsLayout(true);
+    bool alreadyNeededLayout = m_bitfields.selfNeedsLayout();
+    setSelfNeedsLayout(true);
     if (!alreadyNeededLayout) {
         if (markParents == MarkContainingBlockChain && (!layouter || layouter->root() != this))
             markContainingBlocksForLayout(true, 0, layouter);
@@ -1256,7 +1256,7 @@ inline void RenderObject::setNeedsLayout(MarkingBehavior markParents, SubtreeLay
 
 inline void RenderObject::clearNeedsLayout()
 {
-    m_bitfields.setNeedsLayout(false);
+    setSelfNeedsLayout(false);
     setEverHadLayout(true);
     setPosChildNeedsLayout(false);
     setNeedsSimplifiedNormalFlowLayout(false);

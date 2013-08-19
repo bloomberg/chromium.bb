@@ -2807,21 +2807,17 @@ void RenderObject::layout()
     clearNeedsLayout();
 }
 
-// FIXME: Do we need this method at all? If setNeedsLayout early returns in all the right places,
-// then MarkOnlyThis is not needed for performance or correctness.
 void RenderObject::forceLayout()
 {
-    // This is the only way it's safe to use MarkOnlyThis (i.e. if we're immediately going to call layout).
-    // FIXME: Add asserts that we only ever do the MarkOnlyThis behavior from here.
-    setNeedsLayout(MarkOnlyThis);
+    setSelfNeedsLayout(true);
     layout();
 }
 
-// FIXME: Does this do anything different than forceLayout given that we're passing MarkOnlyThis.
-// I don't think it does and we should change all callers to use forceLayout.
+// FIXME: Does this do anything different than forceLayout given that we don't walk
+// the containing block chain. If not, we should change all callers to use forceLayout.
 void RenderObject::forceChildLayout()
 {
-    setChildNeedsLayout(MarkOnlyThis);
+    setNormalChildNeedsLayout(true);
     layout();
 }
 
