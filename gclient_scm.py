@@ -1230,8 +1230,13 @@ class SVNWrapper(SCMWrapper):
         for d in dir_info:
           if d[0][2] == 'L':
             if d[0][0] == '!' and options.force:
-              print 'Removing troublesome path %s' % d[1]
-              gclient_utils.rmtree(d[1])
+              # We don't pass any files/directories to CaptureStatus and set
+              # cwd=self.checkout_path, so we should get relative paths here.
+              assert not os.path.isabs(d[1])
+              path_to_remove = os.path.normpath(
+                  os.path.join(self.checkout_path, d[1]))
+              print 'Removing troublesome path %s' % path_to_remove
+              gclient_utils.rmtree(path_to_remove)
             else:
               print 'Not removing troublesome path %s automatically.' % d[1]
               if d[0][0] == '!':
