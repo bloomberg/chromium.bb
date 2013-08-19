@@ -73,11 +73,6 @@ inline v8::Handle<v8::Value> toV8(Int32Array* impl, v8::Handle<v8::Object> creat
     return V8TypedArray<Int32Array>::toV8(impl, creationContext, isolate);
 }
 
-inline v8::Handle<v8::Value> toV8ForMainWorld(Int32Array* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return V8TypedArray<Int32Array>::toV8ForMainWorld(impl, creationContext, isolate);
-}
-
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, Int32Array* impl, v8::Handle<v8::Object> creationContext)
 {

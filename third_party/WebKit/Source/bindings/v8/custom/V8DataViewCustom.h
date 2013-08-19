@@ -73,11 +73,6 @@ inline v8::Handle<v8::Value> toV8(DataView* impl, v8::Handle<v8::Object> creatio
     return V8TypedArray<DataView>::toV8(impl, creationContext, isolate);
 }
 
-inline v8::Handle<v8::Value> toV8ForMainWorld(DataView* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return V8TypedArray<DataView>::toV8ForMainWorld(impl, creationContext, isolate);
-}
-
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, DataView* impl, v8::Handle<v8::Object> creationContext)
 {

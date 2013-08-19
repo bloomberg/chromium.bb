@@ -81,29 +81,6 @@ public:
         return wrap(impl, creationContext, isolate);
     }
 
-    static v8::Handle<v8::Value> toV8ForMainWorld(TypedArray* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-    {
-        ASSERT(worldType(isolate) == MainWorld);
-        if (UNLIKELY(!impl))
-            return v8NullWithCheck(isolate);
-        v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<Binding>(impl);
-        if (!wrapper.IsEmpty())
-            return wrapper;
-        return wrap(impl, creationContext, isolate);
-    }
-
-    template<class HolderContainer, class Wrappable>
-    static v8::Handle<v8::Value> toV8FastForMainWorld(TypedArray* impl, const HolderContainer& container, Wrappable* wrappable)
-    {
-        ASSERT(worldType(container.GetIsolate()) == MainWorld);
-        if (UNLIKELY(!impl))
-            return v8::Null(container.GetIsolate());
-        v8::Handle<v8::Object> wrapper = DOMDataStore::getWrapperForMainWorld<Binding>(impl);
-        if (!wrapper.IsEmpty())
-            return wrapper;
-        return wrap(impl, container.Holder(), container.GetIsolate());
-    }
-
     template<typename CallbackInfo>
     static void v8SetReturnValue(const CallbackInfo& callbackInfo, TypedArray* impl, v8::Handle<v8::Object> creationContext)
     {

@@ -120,9 +120,4 @@ v8::Handle<v8::Value> toV8(WorkerGlobalScope* impl, v8::Handle<v8::Object> creat
     return global;
 }
 
-v8::Handle<v8::Value> toV8ForMainWorld(WorkerGlobalScope* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8(impl, creationContext, isolate);
-}
-
 } // namespace WebCore

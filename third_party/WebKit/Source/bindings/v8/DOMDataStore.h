@@ -51,27 +51,6 @@ public:
 
     static DOMDataStore* current(v8::Isolate*);
 
-    template<typename V8T, typename T, typename CallbackInfo, typename Wrappable>
-    static v8::Handle<v8::Object> getWrapperFast(T* object, const CallbackInfo& callbackInfo, Wrappable* holder)
-    {
-        // What we'd really like to check here is whether we're in the
-        // main world or in an isolated world. The fastest way to do that
-        // is to check that there is no isolated world and the 'object'
-        // is an object that can exist in the main world. The second fastest
-        // way is to check whether the wrappable's wrapper is the same as
-        // the holder.
-        if ((!DOMWrapperWorld::isolatedWorldsExist() && !canExistInWorker(object)) || holderContainsWrapper(callbackInfo.Holder(), holder)) {
-            if (ScriptWrappable::wrapperCanBeStoredInObject(object)) {
-                v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
-                // Security: always guard against malicious tampering.
-                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
-                return result;
-            }
-            return mainWorldStore()->m_wrapperMap.get(V8T::toInternalPointer(object));
-        }
-        return current(callbackInfo.GetIsolate())->template get<V8T>(object);
-    }
-
     template<typename V8T, typename T, typename Wrappable>
     static bool setReturnValueFromWrapperFast(v8::ReturnValue<v8::Value> returnValue, T* object, v8::Local<v8::Object> holder, Wrappable* wrappable)
     {
@@ -121,14 +100,6 @@ public:
             }
         }
         return current(returnValue.GetIsolate())->template setReturnValueFrom<V8T>(returnValue, object);
-    }
-
-    template<typename V8T, typename T>
-    static v8::Handle<v8::Object> getWrapperForMainWorld(T* object)
-    {
-        if (ScriptWrappable::wrapperCanBeStoredInObject(object))
-            return ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
-        return mainWorldStore()->template get<V8T>(object);
     }
 
     template<typename V8T, typename T>

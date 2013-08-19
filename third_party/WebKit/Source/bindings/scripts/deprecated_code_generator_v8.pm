@@ -821,7 +821,6 @@ END
         $header{nameSpaceWebCore}->add(<<END);
 class ${nativeType};
 v8::Handle<v8::Value> toV8(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
-v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
 
 template<class CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
@@ -832,7 +831,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, ${nativeType}* im
 template<class CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, ${nativeType}* impl, v8::Handle<v8::Object> creationContext)
 {
-     v8SetReturnValue(callbackInfo, toV8ForMainWorld(impl, creationContext, callbackInfo.GetIsolate()));
+     v8SetReturnValue(callbackInfo, toV8(impl, creationContext, callbackInfo.GetIsolate()));
 }
 
 template<class CallbackInfo, class Wrappable>
@@ -873,22 +872,6 @@ inline v8::Handle<v8::Value> toV8(${nativeType}* impl, v8::Handle<v8::Object> cr
     if (!wrapper.IsEmpty())
         return wrapper;
     return wrap(impl, creationContext, isolate);
-}
-
-inline v8::Handle<v8::Value> toV8ForMainWorld(${nativeType}* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(worldType(isolate) == MainWorld);
-    if (UNLIKELY(!impl))
-        return v8::Null(isolate);
-    v8::Handle<v8::Value> wrapper = DOMDataStore::getWrapperForMainWorld<${v8ClassName}>(impl);
-    if (!wrapper.IsEmpty())
-        return wrapper;
-    return wrap(impl, creationContext, isolate);
-}
-
-inline v8::Handle<v8::Value> toV8ForMainWorld(PassRefPtr< ${nativeType} > impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    return toV8ForMainWorld(impl.get(), creationContext, isolate);
 }
 
 template<typename CallbackInfo>
@@ -1537,11 +1520,7 @@ END
         my $nativeReturnType = GetNativeType($returnType);
         my $v8ReturnType = "V8" . $returnType;
         $code .= "    $nativeReturnType result = ${getterString};\n";
-        if ($forMainWorldSuffix) {
-          $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper${forMainWorldSuffix}<${v8ReturnType}>(result.get())) : v8Undefined();\n";
-        } else {
-          $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<${v8ReturnType}>(result.get(), info.GetIsolate())) : v8Undefined();\n";
-        }
+        $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<${v8ReturnType}>(result.get(), info.GetIsolate())) : v8Undefined();\n";
         $code .= "    if (wrapper.IsEmpty()) {\n";
         $code .= "        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());\n"; # FIXME: Could use wrap here since the wrapper is empty.
         $code .= "        if (!wrapper.IsEmpty())\n";
@@ -5496,9 +5475,6 @@ sub NativeToJSValue
                 return "${indent}v8SetReturnValueForMainWorld(${getCallbackInfo}, $nativeValue, $getCallbackInfo.Holder());";
             }
             return "${indent}v8SetReturnValueFast(${getCallbackInfo}, $nativeValue$getScriptWrappableArg);";
-        }
-        if ($forMainWorldSuffix eq "ForMainWorld") {
-            return "$indent$receiver toV8ForMainWorld($nativeValue, $getCallbackInfo.Holder(), $getCallbackInfo.GetIsolate());";
         }
     }
     # FIXME: Use safe handles
