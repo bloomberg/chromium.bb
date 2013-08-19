@@ -531,13 +531,6 @@ WebKit::WGC3Dboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
   return true;
 }
 
-void TestWebGraphicsContext3D::bindTexImage2DCHROMIUM(
-    WebKit::WGC3Denum target,
-    WebKit::WGC3Dint image_id) {
-  base::AutoLock lock(namespace_->lock);
-  DCHECK_GT(namespace_->images.count(image_id), 0u);
-}
-
 WebKit::WGC3Duint TestWebGraphicsContext3D::createImageCHROMIUM(
       WebKit::WGC3Dsizei width, WebKit::WGC3Dsizei height,
       WebKit::WGC3Denum internalformat) {

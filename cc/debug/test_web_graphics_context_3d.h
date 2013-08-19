@@ -127,8 +127,6 @@ class CC_EXPORT TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
                                   WebKit::WGC3Denum access);
   virtual WebKit::WGC3Dboolean unmapBufferCHROMIUM(WebKit::WGC3Denum target);
 
-  virtual void bindTexImage2DCHROMIUM(WebKit::WGC3Denum target,
-                                      WebKit::WGC3Dint image_id);
   virtual WebKit::WGC3Duint createImageCHROMIUM(
       WebKit::WGC3Dsizei width,
       WebKit::WGC3Dsizei height,
