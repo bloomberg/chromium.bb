@@ -31,7 +31,8 @@ BOT_ASSIGNMENT = {
 
     # Clang.
     'lucid_64-newlib-dbg-clang':
-      python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+        'echo "TODO(mcgrathr): linux clang disabled pending bot upgrades"',
+      #python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'precise_64-newlib-dbg-clang':
       python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
     'mac10.6-newlib-dbg-clang':
@@ -39,7 +40,8 @@ BOT_ASSIGNMENT = {
 
     # ASan.
     'lucid_64-newlib-dbg-asan':
-      python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
+        'echo "TODO(mcgrathr): linux asan disabled pending bot upgrades"',
+      #python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'precise_64-newlib-dbg-asan':
       python + ' buildbot/buildbot_standard.py opt 64 newlib --asan',
     'mac10.6-newlib-dbg-asan':
@@ -143,7 +145,8 @@ BOT_ASSIGNMENT = {
                    'coverage 32 newlib --coverage'),
     # Clang trybots.
     'nacl-lucid_64-newlib-dbg-clang':
-        python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+        #python + ' buildbot/buildbot_standard.py dbg 64 newlib --clang',
+        'echo "TODO(mcgrathr): linux clang disabled pending bot upgrades"',
     'nacl-mac10.6-newlib-dbg-clang':
         python + ' buildbot/buildbot_standard.py dbg 32 newlib --clang',
     # Pnacl main trybots
