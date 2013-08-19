@@ -365,7 +365,8 @@ TEST_F(DesktopMediaPickerModelTest, UpdateTitle) {
   EXPECT_EQ(model_.source(1).name, base::UTF8ToUTF16(kTestTitle));
 }
 
-TEST_F(DesktopMediaPickerModelTest, UpdateThumbnail) {
+// Disabled due to flakiness on all platforms, see http://crbug.com/275260.
+TEST_F(DesktopMediaPickerModelTest, DISABLED_UpdateThumbnail) {
   SetDefaultCapturers();
 
   webrtc::WindowCapturer::WindowList list;
