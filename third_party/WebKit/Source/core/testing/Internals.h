@@ -143,9 +143,11 @@ public:
     PassRefPtr<ClientRectList> inspectorHighlightRects(Document*, ExceptionState&);
 
     unsigned markerCountForNode(Node*, const String&, ExceptionState&);
+    unsigned activeMarkerCountForNode(Node*, ExceptionState&);
     PassRefPtr<Range> markerRangeForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     String markerDescriptionForNode(Node*, const String& markerType, unsigned index, ExceptionState&);
     void addTextMatchMarker(const Range*, bool isActive);
+    void setMarkersActive(Node*, unsigned startOffset, unsigned endOffset, bool, ExceptionState&);
 
     void setScrollViewPosition(Document*, long x, long y, ExceptionState&);
     void setPagination(Document* document, const String& mode, int gap, ExceptionState& ec) { setPagination(document, mode, gap, 0, ec); }

@@ -851,6 +851,26 @@ unsigned Internals::markerCountForNode(Node* node, const String& markerType, Exc
     return node->document()->markers()->markersFor(node, markerTypes).size();
 }
 
+unsigned Internals::activeMarkerCountForNode(Node* node, ExceptionState& es)
+{
+    if (!node) {
+        es.throwDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    // Only TextMatch markers can be active.
+    DocumentMarker::MarkerType markerType = DocumentMarker::TextMatch;
+    Vector<DocumentMarker*> markers = node->document()->markers()->markersFor(node, markerType);
+
+    unsigned activeMarkerCount = 0;
+    for (Vector<DocumentMarker*>::iterator iter = markers.begin(); iter != markers.end(); ++iter) {
+        if ((*iter)->activeMatch())
+            activeMarkerCount++;
+    }
+
+    return activeMarkerCount;
+}
+
 DocumentMarker* Internals::markerAt(Node* node, const String& markerType, unsigned index, ExceptionState& es)
 {
     if (!node) {
@@ -890,6 +910,16 @@ void Internals::addTextMatchMarker(const Range* range, bool isActive)
 {
     range->ownerDocument()->updateLayoutIgnorePendingStylesheets();
     range->ownerDocument()->markers()->addTextMatchMarker(range, isActive);
+}
+
+void Internals::setMarkersActive(Node* node, unsigned startOffset, unsigned endOffset, bool active, ExceptionState& es)
+{
+    if (!node) {
+        es.throwDOMException(InvalidAccessError);
+        return;
+    }
+
+    node->document()->markers()->setMarkersActive(node, startOffset, endOffset, active);
 }
 
 void Internals::setScrollViewPosition(Document* document, long x, long y, ExceptionState& es)

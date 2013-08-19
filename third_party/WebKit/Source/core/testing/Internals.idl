@@ -96,9 +96,11 @@
     [RaisesException] ClientRectList inspectorHighlightRects(Document document);
 
     [RaisesException] unsigned long markerCountForNode(Node node, DOMString markerType);
+    [RaisesException] unsigned long activeMarkerCountForNode(Node node);
     [RaisesException] Range markerRangeForNode(Node node, DOMString markerType, unsigned long index);
     [RaisesException] DOMString markerDescriptionForNode(Node node, DOMString markerType, unsigned long index);
     void addTextMatchMarker(Range range, boolean isActive);
+    [RaisesException] void setMarkersActive(Node node, unsigned long startOffset, unsigned long endOffset, boolean active);
 
     [RaisesException] void setScrollViewPosition(Document document, long x, long y);
 

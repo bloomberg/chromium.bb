@@ -608,7 +608,7 @@ void DocumentMarkerController::setMarkersActive(Node* node, unsigned startOffset
             break;
 
         // Skip marker that is wrong type or before target.
-        if (marker.endOffset() < startOffset || marker.type() != DocumentMarker::TextMatch)
+        if (marker.endOffset() <= startOffset || marker.type() != DocumentMarker::TextMatch)
             continue;
 
         marker.setActiveMatch(active);
