@@ -145,7 +145,7 @@ void GetSizeStatsOnBlockingPool(const std::string& mount_path,
 // Returns 0 if it could not be queried.
 size_t GetFileNameMaxLengthOnBlockingPool(const std::string& path) {
   struct statvfs stat = {};
-  if (statvfs(path.c_str(), &stat) != 0) {
+  if (HANDLE_EINTR(statvfs(path.c_str(), &stat)) != 0) {
     // The filesystem seems not supporting statvfs(). Assume it to be a commonly
     // used bound 255, and log the failure.
     LOG(ERROR) << "Cannot statvfs() the name length limit for: " << path;
