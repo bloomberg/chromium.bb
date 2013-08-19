@@ -523,7 +523,6 @@
           'enable_automation%': 0,
           'enable_extensions%': 0,
           'enable_google_now%': 0,
-          'enable_printing%': 0,
           'enable_spellcheck%': 0,
           'enable_themes%': 0,
           'proprietary_codecs%': 1,
@@ -532,6 +531,15 @@
           'arm_neon_optional%': 1,
           'native_discardable_memory%': 1,
           'native_memory_pressure_signals%': 1,
+        }],
+
+	# Enable basic printing for Chrome for Android but disable printing
+	# completely for WebView.
+        ['OS=="android" and android_webview_build==0', {
+          'enable_printing%': 2,
+        }],
+        ['OS=="android" and android_webview_build==1', {
+          'enable_printing%': 0,
         }],
 
         # Enable autofill dialog for Android, Mac and Views-enabled platforms.

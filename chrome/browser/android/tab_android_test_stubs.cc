@@ -10,6 +10,8 @@
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate.h"
 #include "chrome/browser/ui/auto_login_infobar_delegate_android.h"
+#include "printing/printing_context.h"
+#include "printing/printing_context_android.h"
 
 // static
 TabAndroid* TabAndroid::FromWebContents(content::WebContents* web_contents) {
@@ -57,3 +59,14 @@ InfoBar* ConfirmInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   return NULL;
 }
+
+// static
+printing::PrintingContext* printing::PrintingContext::Create(
+    const std::string& app_locale) {
+  return NULL;
+}
+
+// static
+void printing::PrintingContextAndroid::PdfWritingDone(int fd, bool success) {
+}
+

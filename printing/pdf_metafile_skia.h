@@ -63,9 +63,9 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
                           const MacRenderPageParams& params) const OVERRIDE;
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   virtual bool SaveToFD(const base::FileDescriptor& fd) const OVERRIDE;
-#endif  // if defined(OS_CHROMEOS)
+#endif  // if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
   // Return a new metafile containing just the current page in draft mode.
   PdfMetafileSkia* GetMetafileForCurrentPage();

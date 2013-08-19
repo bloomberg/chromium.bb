@@ -54,13 +54,23 @@ class PrintingMessageFilter : public content::BrowserMessageFilter {
                           base::SharedMemoryHandle* browser_handle);
 #endif
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // Used to ask the browser allocate a temporary file for the renderer
   // to fill in resulting PDF in renderer.
-  void OnAllocateTempFileForPrinting(base::FileDescriptor* temp_file_fd,
+  void OnAllocateTempFileForPrinting(int render_view_id,
+                                     base::FileDescriptor* temp_file_fd,
                                      int* sequence_number);
   void OnTempFileForPrintingWritten(int render_view_id, int sequence_number);
+#endif
+
+#if defined(OS_CHROMEOS)
   void CreatePrintDialogForFile(int render_view_id, const base::FilePath& path);
+#endif
+
+#if defined(OS_ANDROID)
+  // Updates the file descriptor for the PrintViewManagerBasic of a given
+  // render_view_id.
+  void UpdateFileDescriptor(int render_view_id, int fd);
 #endif
 
   // Given a render_view_id get the corresponding WebContents.

@@ -37,6 +37,7 @@
         'emf_win.cc',
         'emf_win.h',
         'image.cc',
+        'image_android.cc',
         'image_linux.cc',
         'image_mac.cc',
         'image_win.cc',
@@ -226,6 +227,11 @@
           'sources': [
             'printing_context_gtk.cc',
             'printing_context_gtk.h',
+          ],
+        }],
+        ['OS=="android"', {
+          'sources': [
+            'printing_context_android.h',
           ],
         }],
       ],

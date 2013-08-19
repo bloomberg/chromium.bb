@@ -276,6 +276,7 @@
         'renderer/prerender/prerenderer_client.h',
         'renderer/printing/print_web_view_helper.cc',
         'renderer/printing/print_web_view_helper.h',
+        'renderer/printing/print_web_view_helper_android.cc',
         'renderer/printing/print_web_view_helper_linux.cc',
         'renderer/printing/print_web_view_helper_mac.mm',
         'renderer/printing/print_web_view_helper_win.cc',

@@ -85,6 +85,7 @@ void ChromeMockRenderThread::OnOpenChannelToExtension(
 #if defined(ENABLE_PRINTING)
 #if defined(OS_CHROMEOS)
 void ChromeMockRenderThread::OnAllocateTempFileForPrinting(
+    int render_view_id,
     base::FileDescriptor* renderer_fd,
     int* browser_fd) {
   renderer_fd->fd = *browser_fd = -1;

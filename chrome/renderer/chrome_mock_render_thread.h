@@ -60,8 +60,9 @@ class ChromeMockRenderThread : public content::MockRenderThread {
                                 int* port_id);
 
 #if defined(ENABLE_PRINTING)
-#if defined(OS_CHROMEOS)
-  void OnAllocateTempFileForPrinting(base::FileDescriptor* renderer_fd,
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  void OnAllocateTempFileForPrinting(int render_view_id,
+                                     base::FileDescriptor* renderer_fd,
                                      int* browser_fd);
   void OnTempFileForPrintingWritten(int render_view_id, int browser_fd);
 #endif

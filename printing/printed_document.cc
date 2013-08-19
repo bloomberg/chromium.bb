@@ -225,8 +225,8 @@ PrintedDocument::Immutable::Immutable(const PrintSettings& settings,
 PrintedDocument::Immutable::~Immutable() {
 }
 
-#if defined(OS_POSIX) && defined(USE_AURA)
-// This function is not used on aura linux/chromeos.
+#if (defined(OS_POSIX) && defined(USE_AURA)) || defined(OS_ANDROID)
+// This function is not used on aura linux/chromeos or android.
 void PrintedDocument::RenderPrintedPage(const PrintedPage& page,
                                         PrintingContext* context) const {
 }

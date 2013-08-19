@@ -231,7 +231,7 @@ class PrintWebViewHelper
   void FinishFramePrinting();
 
   // Prints the page listed in |params|.
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          const gfx::Size& canvas_size,
                          WebKit::WebFrame* frame,

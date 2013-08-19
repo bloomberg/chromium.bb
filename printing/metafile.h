@@ -29,7 +29,7 @@ class Size;
 
 class SkDevice;
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 namespace base {
 struct FileDescriptor;
 }
@@ -155,12 +155,12 @@ class PRINTING_EXPORT Metafile {
                           gfx::NativeDrawingContext context,
                           const CGRect rect,
                           const MacRenderPageParams& params) const = 0;
-#elif defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // Saves the underlying data to the file associated with fd. This function
   // should ONLY be called after the metafile is closed.
   // Returns true if writing succeeded.
   virtual bool SaveToFD(const base::FileDescriptor& fd) const = 0;
-#endif  // if defined(OS_CHROMEOS)
+#endif  // if defined(OS_CHROMEOS) || defined(OS_ANDROID)
 };
 
 }  // namespace printing

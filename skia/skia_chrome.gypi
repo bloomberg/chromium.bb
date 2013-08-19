@@ -88,7 +88,7 @@
         'ext/SkThread_chrome.cc',
       ],
     }],
-    [ 'OS == "android"', {
+    [ 'OS == "android" and enable_printing == 0', {
       'sources!': [
         'ext/vector_platform_device_skia.cc',
       ],
