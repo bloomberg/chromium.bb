@@ -14,14 +14,22 @@ var CommandUtil = {};
  * @return {?string} Path of the found node.
  */
 CommandUtil.getCommandPath = function(element) {
+  // TODO(yoshiki): Change this method to getCommandEntries which returns
+  // target entries.
   if (element instanceof NavigationList) {
     // element is a NavigationList.
-    return element.selectedItem;
+
+    /** @type {NavigationModelItem} */
+    var selectedItem = element.selectedItem;
+    return selectedItem && selectedItem.path;
   } else if (element instanceof NavigationListItem) {
     // element is a subitem of NavigationList.
+    /** @type {NavigationList} */
     var navigationList = element.parentElement;
     var index = navigationList.getIndexOfListItem(element);
-    return (index != -1) ? navigationList.dataModel.item(index) : null;
+    /** @type {NavigationModelItem} */
+    var item = (index != -1) ? navigationList.dataModel.item(index) : null;
+    return item && item.path;
   } else if (element instanceof DirectoryTree) {
     // element is a DirectoryTree.
     var item = element.selectedItem;

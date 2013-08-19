@@ -1204,7 +1204,8 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
                             this.directoryModel_);
     this.navigationList_.fileManager = this;
     this.navigationList_.dataModel =
-        new NavigationListModel(this.directoryModel_.getRootsList(),
+        new NavigationListModel(this.filesystem_,
+                                this.directoryModel_.getRootsList(),
                                 this.folderShortcutsModel_);
 
     this.navigationList_.addEventListener(

@@ -411,7 +411,7 @@ FileTransferController.prototype = {
     if (item == this.dropTarget_)
       return;
 
-    var path = item && list.dataModel.item(item.listIndex);
+    var path = item && list.dataModel.item(item.listIndex).path;
     if (path)
       this.setDropTarget_(item, true /* directory */, event.dataTransfer, path);
     else

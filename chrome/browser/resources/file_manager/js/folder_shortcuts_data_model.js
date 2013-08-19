@@ -94,6 +94,18 @@ FolderShortcutsDataModel.prototype = {
   },
 
   /**
+   * Returns the paths in the given range as a new array instance. The
+   * arguments and return value are compatible with Array.slice().
+   *
+   * @param {number} start Where to start the selection.
+   * @param {number=} opt_end Where to end the selection.
+   * @return {Array.<string>} Paths in the selected range.
+   */
+  slice: function(begin, opt_end) {
+    return this.array_.slice(begin, opt_end);
+  },
+
+  /**
    * @param {number} index Index of the element to be retrieved.
    * @return {string} The value of the |index|-th element.
    */
