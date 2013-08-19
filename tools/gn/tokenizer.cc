@@ -291,6 +291,7 @@ void Tokenizer::AdvanceToEndOfToken(const Location& location,
       break;
 
     case Token::INVALID:
+    default:
       *err_ = Err(location, "Everything is all messed up",
                   "Please insert system disk in drive A: and press any key.");
       NOTREACHED();

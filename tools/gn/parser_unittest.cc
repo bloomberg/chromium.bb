@@ -475,3 +475,7 @@ TEST(Parser, LongExpression) {
     "   IDENTIFIER(e)\n";
   DoParserPrintTest(input, expected);
 }
+
+TEST(Parser, HangingIf) {
+  DoParserErrorTest("if", 1, 1);
+}

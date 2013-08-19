@@ -120,8 +120,9 @@ bool Parser::IsStatementBreak(Token::Type token_type) const {
     case Token::IF:
     case Token::ELSE:
       return true;
+    default:
+      return false;
   }
-  return false;
 }
 
 bool Parser::LookAhead(Token::Type type) {
@@ -151,6 +152,15 @@ Token Parser::Consume(Token::Type* types,
     cur_++;
     return Token(Location(), Token::INVALID, base::StringPiece());
   }
+  if (at_end()) {
+    const char kEOFMsg[] = "I hit EOF instead.";
+    if (tokens_.empty())
+      *err_ = Err(Location(), error_message, kEOFMsg);
+    else
+      *err_ = Err(tokens_[tokens_.size() - 1], error_message, kEOFMsg);
+    return Token(Location(), Token::INVALID, base::StringPiece());
+  }
+
   for (size_t i = 0; i < num_types; ++i) {
     if (cur_token().type() == types[i])
       return tokens_[cur_++];
@@ -202,7 +212,7 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
 }
 
 scoped_ptr<ParseNode> Parser::Literal(Token token) {
-  return scoped_ptr<LiteralNode>(new LiteralNode(token)).Pass();
+  return scoped_ptr<ParseNode>(new LiteralNode(token)).Pass();
 }
 
 scoped_ptr<ParseNode> Parser::Name(Token token) {
@@ -224,7 +234,7 @@ scoped_ptr<ParseNode> Parser::Not(Token token) {
   scoped_ptr<UnaryOpNode> unary_op(new UnaryOpNode);
   unary_op->set_op(token);
   unary_op->set_operand(expr.Pass());
-  return unary_op.Pass();
+  return unary_op.PassAs<ParseNode>();
 }
 
 scoped_ptr<ParseNode> Parser::List(Token node) {
@@ -248,7 +258,7 @@ scoped_ptr<ParseNode> Parser::BinaryOperator(scoped_ptr<ParseNode> left,
   binary_op->set_op(token);
   binary_op->set_left(left.Pass());
   binary_op->set_right(right.Pass());
-  return binary_op.Pass();
+  return binary_op.PassAs<ParseNode>();
 }
 
 scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
@@ -266,14 +276,14 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
     } else {
       list = ParseList(Token::RIGHT_PAREN, false);
       if (has_error())
-        return scoped_ptr<FunctionCallNode>();
+        return scoped_ptr<ParseNode>();
       Consume(Token::RIGHT_PAREN, "Expected ')' after call");
     }
     // Optionally with a scope.
     if (LookAhead(Token::LEFT_BRACE)) {
       block = ParseBlock();
       if (has_error())
-        return scoped_ptr<FunctionCallNode>();
+        return scoped_ptr<ParseNode>();
     }
   }
 
@@ -286,7 +296,7 @@ scoped_ptr<ParseNode> Parser::IdentifierOrCall(scoped_ptr<ParseNode> left,
   func_call->set_args(list.Pass());
   if (block)
     func_call->set_block(block.Pass());
-  return func_call.Pass();
+  return func_call.PassAs<ParseNode>();
 }
 
 scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
@@ -300,7 +310,7 @@ scoped_ptr<ParseNode> Parser::Assignment(scoped_ptr<ParseNode> left,
   assign->set_op(token);
   assign->set_left(left.Pass());
   assign->set_right(value.Pass());
-  return assign.Pass();
+  return assign.PassAs<ParseNode>();
 }
 
 scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
@@ -316,7 +326,7 @@ scoped_ptr<ParseNode> Parser::Subscript(scoped_ptr<ParseNode> left,
   scoped_ptr<AccessorNode> accessor(new AccessorNode);
   accessor->set_base(left->AsIdentifier()->value());
   accessor->set_index(value.Pass());
-  return accessor.Pass();
+  return accessor.PassAs<ParseNode>();
 }
 
 // Does not Consume the start or end token.
@@ -362,12 +372,12 @@ scoped_ptr<ParseNode> Parser::ParseFile() {
     *err_ = Err(cur_token(), "Unexpected here, should be newline.");
   if (has_error())
     return scoped_ptr<ParseNode>();
-  return file.Pass();
+  return file.PassAs<ParseNode>();
 }
 
 scoped_ptr<ParseNode> Parser::ParseStatement() {
   if (LookAhead(Token::LEFT_BRACE)) {
-    return ParseBlock();
+    return ParseBlock().PassAs<ParseNode>();
   } else if (LookAhead(Token::IF)) {
     return ParseCondition();
   } else {
@@ -412,6 +422,6 @@ scoped_ptr<ParseNode> Parser::ParseCondition() {
   if (Match(Token::ELSE))
     condition->set_if_false(ParseStatement().Pass());
   if (has_error())
-    return scoped_ptr<BlockNode>();
-  return condition.Pass();
+    return scoped_ptr<ParseNode>();
+  return condition.PassAs<ParseNode>();
 }
