@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FIXME: |PromiseValue| should be changed to |Promise|. http://crbug.com/266700
+// IDLs using |Promise| should be written with "typedef any PromiseValue;" and |PromiseValue|.
+
 callback PromiseInit = void (PromiseResolver resolver);
 callback AnyCallback = any (optional any value);
 [

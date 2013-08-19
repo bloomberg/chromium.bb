@@ -28,15 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FIXME: |PromiseValue| should be replaced with |Promise|. http://crbug.com/266700
+typedef any PromiseValue;
+
 [
     NoInterfaceObject,
     EnabledAtRuntime=experimentalCanvasFeatures
 ] interface ImageBitmapFactories {
-    // FIXME: these methods should return |Promise|. http://crbug.com/266700
-    [RaisesException] any createImageBitmap(Blob blob);
-    [RaisesException] any createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);
-    [RaisesException] any createImageBitmap(ImageData data);
-    [RaisesException] any createImageBitmap(ImageData data, long sx, long sy, long sw, long sh);
-    [RaisesException] any createImageBitmap(ImageBitmap bitmap);
-    [RaisesException] any createImageBitmap(ImageBitmap bitmap, long sx, long sy, long sw, long sh);
+    [RaisesException] PromiseValue createImageBitmap(Blob blob);
+    [RaisesException] PromiseValue createImageBitmap(Blob blob, long sx, long sy, long sw, long sh);
+    [RaisesException] PromiseValue createImageBitmap(ImageData data);
+    [RaisesException] PromiseValue createImageBitmap(ImageData data, long sx, long sy, long sw, long sh);
+    [RaisesException] PromiseValue createImageBitmap(ImageBitmap bitmap);
+    [RaisesException] PromiseValue createImageBitmap(ImageBitmap bitmap, long sx, long sy, long sw, long sh);
 };

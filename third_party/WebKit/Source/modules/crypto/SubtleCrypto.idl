@@ -28,6 +28,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// FIXME: |PromiseValue| should be replaced with |Promise|. http://crbug.com/266700
+typedef any PromiseValue;
+
 [
     NoInterfaceObject,
 ] interface SubtleCrypto {
@@ -37,7 +40,7 @@
     [RaisesException, ImplementedAs=verifySignature] CryptoOperation verify(Dictionary algorithm, Key key, ArrayBufferView signature);
     [RaisesException] CryptoOperation digest(Dictionary algorithm);
 
-    [RaisesException] any generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
-    [RaisesException] any importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [RaisesException] PromiseValue generateKey(Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
+    [RaisesException] PromiseValue importKey(DOMString format, ArrayBufferView keyData, Dictionary algorithm, boolean extractable, DOMString[] keyUsages);
 };
 
