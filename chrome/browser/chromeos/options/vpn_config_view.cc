@@ -275,21 +275,26 @@ string16 VPNConfigView::GetTitle() const {
 }
 
 views::View* VPNConfigView::GetInitiallyFocusedView() {
-  // Put focus in the first editable field.
-  if (server_textfield_)
-    return server_textfield_;
-  else if (service_textfield_)
-    return service_textfield_;
-  else if (provider_type_combobox_)
-    return provider_type_combobox_;
-  else if (psk_passphrase_textfield_ && psk_passphrase_textfield_->enabled())
-    return psk_passphrase_textfield_;
-  else if (user_cert_combobox_ && user_cert_combobox_->enabled())
-    return user_cert_combobox_;
-  else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->enabled())
-    return server_ca_cert_combobox_;
-  else
-    return NULL;
+  if (service_path_.empty()) {
+    // Put focus in the first editable field.
+    if (server_textfield_)
+      return server_textfield_;
+    else if (service_textfield_)
+      return service_textfield_;
+    else if (provider_type_combobox_)
+      return provider_type_combobox_;
+    else if (psk_passphrase_textfield_ && psk_passphrase_textfield_->enabled())
+      return psk_passphrase_textfield_;
+    else if (user_cert_combobox_ && user_cert_combobox_->enabled())
+      return user_cert_combobox_;
+    else if (server_ca_cert_combobox_ && server_ca_cert_combobox_->enabled())
+      return server_ca_cert_combobox_;
+  }
+  if (user_passphrase_textfield_)
+    return user_passphrase_textfield_;
+  else if (otp_textfield_)
+    return otp_textfield_;
+  return NULL;
 }
 
 bool VPNConfigView::CanLogin() {
@@ -518,17 +523,18 @@ void VPNConfigView::Init() {
   enable_group_name_ = true;
 
   // Server label and input.
-  // Only provide Server name when configuring a new VPN.
-  if (service_path_.empty()) {
-    layout_->StartRow(0, 0);
-    layout_->AddView(new views::Label(l10n_util::GetStringUTF16(
-      IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME)));
-    server_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
-    server_textfield_->SetController(this);
-    layout_->AddView(server_textfield_);
-    layout_->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-  } else {
-    server_textfield_ = NULL;
+  layout_->StartRow(0, 0);
+  views::View* server_label =
+      new views::Label(l10n_util::GetStringUTF16(
+          IDS_OPTIONS_SETTINGS_INTERNET_OPTIONS_VPN_SERVER_HOSTNAME));
+  layout_->AddView(server_label);
+  server_textfield_ = new views::Textfield(views::Textfield::STYLE_DEFAULT);
+  server_textfield_->SetController(this);
+  layout_->AddView(server_textfield_);
+  layout_->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  if (!service_path_.empty()) {
+    server_label->SetEnabled(false);
+    server_textfield_->SetEnabled(false);
   }
 
   // Service label and name or input.
