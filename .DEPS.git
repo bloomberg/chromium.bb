@@ -45,6 +45,8 @@ deps = {
         Var('git_url') + '/external/bidichecker/lib.git@97f2aa645b74c28c57eca56992235c79850fa9e0',
     'src/third_party/cacheinvalidation/src':
         Var('git_url') + '/external/google-cache-invalidation-api/src.git@b4602c6a124e702a1a753f2a16c8531459a6ff32',
+    'src/third_party/cld2':
+        Var('git_url') + '/external/cld2.git@3a527fe115d7c67ac4bf294a523a7e5c6eecef37',
     'src/third_party/ffmpeg':
         Var('git_url') + '/chromium/third_party/ffmpeg.git' + Var('ffmpeg_hash'),
     'src/third_party/flac':
@@ -148,6 +150,8 @@ deps_os = {
             Var('git_url') + '/chromium/deps/aosp.git@bbafe5155dff86bbba1e92b42a073ffcfcfbf28c',
         'src/third_party/apache-mime4j':
             Var('git_url') + '/chromium/deps/apache-mime4j.git@28cb1108bff4b6cf0a2e86ff58b3d025934ebe3a',
+        'src/third_party/cld2':
+            None,
         'src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille':
             Var('git_url') + '/external/eyes-free/braille/client/src/com/googlecode/eyesfree/braille.git@77bf6edb0138e3a38a2772248696f130dab45e34',
         'src/third_party/findbugs':
@@ -192,6 +196,8 @@ deps_os = {
         'src/third_party/angle_dx11':
             None,
         'src/third_party/bidichecker':
+            None,
+        'src/third_party/cld2':
             None,
         'src/third_party/ffmpeg':
             None,
