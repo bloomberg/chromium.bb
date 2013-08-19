@@ -274,7 +274,7 @@ class Driver(object):
         self._crashed_process_name = None
         self._crashed_pid = None
         cmd_line = self.cmd_line(pixel_tests, per_test_args)
-        self._server_process = self._port._server_process_constructor(self._port, server_name, cmd_line, environment)
+        self._server_process = self._port._server_process_constructor(self._port, server_name, cmd_line, environment, logging=self._port.get_option("driver_logging"))
         self._server_process.start()
         self._current_cmd_line = cmd_line
 

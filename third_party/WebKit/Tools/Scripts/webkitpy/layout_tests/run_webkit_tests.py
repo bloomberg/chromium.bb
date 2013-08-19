@@ -244,6 +244,8 @@ def parse_args(args):
             help="Output per-test profile information."),
         optparse.make_option("--profiler", action="store",
             help="Output per-test profile information, using the specified profiler."),
+        optparse.make_option("--driver-logging", action="store_true",
+            help="Print detailed logging of the driver/content_shell"),
     ]))
 
     option_group_definitions.append(("Miscellaneous Options", [

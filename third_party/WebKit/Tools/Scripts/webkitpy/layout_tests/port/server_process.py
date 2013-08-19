@@ -37,14 +37,20 @@ import time
 # Note that although win32 python does provide an implementation of
 # the win32 select API, it only works on sockets, and not on the named pipes
 # used by subprocess, so we have to use the native APIs directly.
+_quote_cmd = None
+
 if sys.platform == 'win32':
     import msvcrt
     import win32pipe
     import win32file
+    import subprocess
+    _quote_cmd = subprocess.list2cmdline
 else:
     import fcntl
     import os
+    import pipes
     import select
+    _quote_cmd = lambda cmdline: ' '.join(pipes.quote(arg) for arg in cmdline)
 
 from webkitpy.common.system.executive import ScriptError
 
@@ -59,7 +65,8 @@ class ServerProcess(object):
     indefinitely. The class also handles transparently restarting processes
     as necessary to keep issuing commands."""
 
-    def __init__(self, port_obj, name, cmd, env=None, universal_newlines=False, treat_no_data_as_crash=False):
+    def __init__(self, port_obj, name, cmd, env=None, universal_newlines=False, treat_no_data_as_crash=False,
+                 logging=False):
         self._port = port_obj
         self._name = name  # Should be the command name (e.g. content_shell, image_diff)
         self._cmd = cmd
@@ -68,6 +75,7 @@ class ServerProcess(object):
         # Don't set if there will be binary data or the data must be ASCII encoded.
         self._universal_newlines = universal_newlines
         self._treat_no_data_as_crash = treat_no_data_as_crash
+        self._logging = logging
         self._host = self._port.host
         self._pid = None
         self._reset()
@@ -109,6 +117,11 @@ class ServerProcess(object):
         self._reset()
         # close_fds is a workaround for http://bugs.python.org/issue2320
         close_fds = not self._host.platform.is_win()
+        if self._logging:
+            env_str = ''
+            if self._env:
+                env_str += '\n'.join("%s=%s" % (k, v) for k, v in self._env.items()) + '\n'
+            _log.info('CMD: """\n%s%s\n"""', env_str, _quote_cmd(self._cmd))
         self._proc = self._host.executive.popen(self._cmd, stdin=self._host.executive.PIPE,
             stdout=self._host.executive.PIPE,
             stderr=self._host.executive.PIPE,
@@ -149,6 +162,8 @@ class ServerProcess(object):
         if not self._proc:
             self._start()
         try:
+            if self._logging:
+                _log.info(' IN: """%s"""', bytes)
             self._proc.stdin.write(bytes)
         except IOError, e:
             self.stop(0.0)
@@ -252,12 +267,16 @@ class ServerProcess(object):
                 data = self._proc.stdout.read()
                 if not data and not stopping and (self._treat_no_data_as_crash or self._proc.poll()):
                     self._crashed = True
+                if self._logging and len(data):
+                    _log.info('OUT: """%s"""', data)
                 self._output += data
 
             if err_fd in read_fds:
                 data = self._proc.stderr.read()
                 if not data and not stopping and (self._treat_no_data_as_crash or self._proc.poll()):
                     self._crashed = True
+                if self._logging and len(data):
+                    _log.info('ERR: """%s"""', data)
                 self._error += data
         except IOError, e:
             # We can ignore the IOErrors because we will detect if the subporcess crashed
@@ -332,6 +351,8 @@ class ServerProcess(object):
 
         now = time.time()
         if self._proc.stdin:
+            if self._logging:
+                _log.info(' IN: """^D"""')
             self._proc.stdin.close()
             self._proc.stdin = None
         killed = False
