@@ -28,50 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "modules/crypto/Algorithm.h"
+#ifndef HmacKeyParams_h
+#define HmacKeyParams_h
 
-#include "modules/crypto/AesCbcParams.h"
-#include "modules/crypto/AesKeyGenParams.h"
-#include "modules/crypto/HmacKeyParams.h"
-#include "modules/crypto/HmacParams.h"
-#include "modules/crypto/RsaKeyGenParams.h"
-#include "modules/crypto/RsaSsaParams.h"
-#include "wtf/text/WTFString.h"
+#include "modules/crypto/Algorithm.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 
-PassRefPtr<Algorithm> Algorithm::create(const WebKit::WebCryptoAlgorithm& algorithm)
-{
-    switch (algorithm.paramsType()) {
-    case WebKit::WebCryptoAlgorithmParamsTypeNone:
-        return adoptRef(new Algorithm(algorithm));
-    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
-        return AesCbcParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
-        return AesKeyGenParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
-        return HmacParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams:
-        return HmacKeyParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
-        return RsaSsaParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
-        return RsaKeyGenParams::create(algorithm);
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
-}
+class HmacKeyParams : public Algorithm {
+public:
+    static PassRefPtr<HmacKeyParams> create(const WebKit::WebCryptoAlgorithm& algorithm) { return adoptRef(new HmacKeyParams(algorithm)); }
 
-Algorithm::Algorithm(const WebKit::WebCryptoAlgorithm& algorithm)
-    : m_algorithm(algorithm)
-{
-    ScriptWrappable::init(this);
-}
+    Algorithm* hash();
 
-String Algorithm::name()
-{
-    return m_algorithm.name();
-}
+    unsigned length(bool& isNull);
+
+private:
+    explicit HmacKeyParams(const WebKit::WebCryptoAlgorithm&);
+
+    RefPtr<Algorithm> m_hash;
+};
 
 } // namespace WebCore
+
+#endif

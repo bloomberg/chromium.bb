@@ -33,6 +33,7 @@
 
 #include "V8AesCbcParams.h"
 #include "V8AesKeyGenParams.h"
+#include "V8HmacKeyParams.h"
 #include "V8HmacParams.h"
 #include "V8RsaKeyGenParams.h"
 #include "V8RsaSsaParams.h"
@@ -54,6 +55,8 @@ v8::Handle<v8::Object> wrap(Algorithm* impl, v8::Handle<v8::Object> creationCont
         return wrap(static_cast<AesKeyGenParams*>(impl), creationContext, isolate);
     case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
         return wrap(static_cast<HmacParams*>(impl), creationContext, isolate);
+    case WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams:
+        return wrap(static_cast<HmacKeyParams*>(impl), creationContext, isolate);
     case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
         return wrap(static_cast<RsaSsaParams*>(impl), creationContext, isolate);
     case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:

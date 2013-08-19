@@ -59,6 +59,7 @@ enum WebCryptoAlgorithmParamsType {
     WebCryptoAlgorithmParamsTypeAesCbcParams,
     WebCryptoAlgorithmParamsTypeAesKeyGenParams,
     WebCryptoAlgorithmParamsTypeHmacParams,
+    WebCryptoAlgorithmParamsTypeHmacKeyParams,
     WebCryptoAlgorithmParamsTypeRsaSsaParams,
     WebCryptoAlgorithmParamsTypeRsaKeyGenParams,
 };
@@ -66,6 +67,7 @@ enum WebCryptoAlgorithmParamsType {
 class WebCryptoAesCbcParams;
 class WebCryptoAesKeyGenParams;
 class WebCryptoHmacParams;
+class WebCryptoHmacKeyParams;
 class WebCryptoRsaSsaParams;
 class WebCryptoRsaKeyGenParams;
 
@@ -104,6 +106,7 @@ public:
     WEBKIT_EXPORT WebCryptoAesCbcParams* aesCbcParams() const;
     WEBKIT_EXPORT WebCryptoAesKeyGenParams* aesKeyGenParams() const;
     WEBKIT_EXPORT WebCryptoHmacParams* hmacParams() const;
+    WEBKIT_EXPORT WebCryptoHmacKeyParams* hmacKeyParams() const;
     WEBKIT_EXPORT WebCryptoRsaSsaParams* rsaSsaParams() const;
     WEBKIT_EXPORT WebCryptoRsaKeyGenParams* rsaKeyGenParams() const;
 

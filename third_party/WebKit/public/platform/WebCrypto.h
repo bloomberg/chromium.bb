@@ -56,7 +56,7 @@ protected:
 
 class WebCryptoResult {
 public:
-    WebCryptoResult(WebCryptoResultPrivate* impl)
+    explicit WebCryptoResult(WebCryptoResultPrivate* impl)
     {
         assign(impl);
     }

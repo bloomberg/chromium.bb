@@ -86,7 +86,7 @@ const OperationParamsMapping operationParamsMappings[] = {
     // HMAC
     {WebKit::WebCryptoAlgorithmIdHmac, Sign, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
     {WebKit::WebCryptoAlgorithmIdHmac, Verify, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
-    {WebKit::WebCryptoAlgorithmIdHmac, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
+    {WebKit::WebCryptoAlgorithmIdHmac, GenerateKey, WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams},
     {WebKit::WebCryptoAlgorithmIdHmac, ImportKey, WebKit::WebCryptoAlgorithmParamsTypeHmacParams},
 
     // RSASSA-PKCS1-v1_5
@@ -200,6 +200,24 @@ PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseHmacParams(const Dictionary& r
     return adoptPtr(new WebKit::WebCryptoHmacParams(hash));
 }
 
+PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseHmacKeyParams(const Dictionary& raw)
+{
+    WebKit::WebCryptoAlgorithm hash;
+    if (!parseHash(raw, hash))
+        return nullptr;
+
+    // FIXME: Should fail if length was specified but of the wrong type.
+    bool hasLength = false;
+    int32_t length = 0;
+    if (raw.get("length", length)) {
+        hasLength = true;
+        if (length < 0)
+            return nullptr;
+    }
+
+    return adoptPtr(new WebKit::WebCryptoHmacKeyParams(hash, hasLength, length));
+}
+
 PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseRsaSsaParams(const Dictionary& raw)
 {
     WebKit::WebCryptoAlgorithm hash;
@@ -234,6 +252,8 @@ PassOwnPtr<WebKit::WebCryptoAlgorithmParams> parseAlgorithmParams(const Dictiona
         return parseAesKeyGenParams(raw);
     case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
         return parseHmacParams(raw);
+    case WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams:
+        return parseHmacKeyParams(raw);
     case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
         return parseRsaSsaParams(raw);
     case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:

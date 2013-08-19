@@ -33,14 +33,41 @@ shouldThrow("crypto.subtle.generateKey(invalidAesKeyGen, extractable, keyUsages)
 // keyUsages is invalid.
 shouldThrow("crypto.subtle.generateKey(aesCbc, extractable, -1)");
 
-crypto.subtle.generateKey(aesCbc, extractable, keyUsages).then(function(newKey)
+// Invalid length
+invalidHmac256 = { name: 'hmac', hash: {name: 'sha-256' }, length:-3 };
+shouldThrow("crypto.subtle.generateKey(invalidHmac256, false, ['sign'])");
+
+hmacSha256 = { name: 'hmac', hash: {name: 'sha-256' } };
+hmacSha256b = { name: 'hmac', hash: {name: 'sha-256' }, length:48 };
+
+var promise0 = crypto.subtle.generateKey(aesCbc, extractable, keyUsages);
+var promise1 = crypto.subtle.generateKey(hmacSha256, false, ['sign']);
+var promise2 = crypto.subtle.generateKey(hmacSha256b, false, ['sign']);
+
+Promise.every(promise0, promise1, promise2).then(function(results)
 {
-    key = newKey;
+    key = results[0];
     shouldBe("key.type", "'private'")
     shouldBe("key.extractable", "true")
     shouldBe("key.algorithm.name", "'AES-CBC'")
     shouldBe("key.algorithm.length", "1024")
     shouldBe("key.usages.join(',')", "'encrypt,decrypt'")
+
+    key = results[1];
+    shouldBe("key.type", "'private'")
+    shouldBe("key.extractable", "false")
+    shouldBe("key.algorithm.name", "'HMAC'")
+    shouldBe("key.algorithm.hash.name", "'SHA-256'")
+    shouldBe("key.algorithm.length", "null")
+    shouldBe("key.usages.join(',')", "'sign'")
+
+    key = results[2];
+    shouldBe("key.type", "'private'")
+    shouldBe("key.extractable", "false")
+    shouldBe("key.algorithm.name", "'HMAC'")
+    shouldBe("key.algorithm.hash.name", "'SHA-256'")
+    shouldBe("key.algorithm.length", "48")
+    shouldBe("key.usages.join(',')", "'sign'")
 
     finishJSTest();
 });

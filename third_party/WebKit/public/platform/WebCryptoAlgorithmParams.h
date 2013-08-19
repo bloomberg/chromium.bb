@@ -101,6 +101,32 @@ private:
     WebCryptoAlgorithm m_hash;
 };
 
+class WebCryptoHmacKeyParams : public WebCryptoAlgorithmParams {
+public:
+    WebCryptoHmacKeyParams(const WebCryptoAlgorithm& hash, bool hasLength, unsigned length)
+        : WebCryptoAlgorithmParams(WebCryptoAlgorithmParamsTypeHmacKeyParams)
+        , m_hash(hash)
+        , m_hasLength(hasLength)
+        , m_length(length)
+    {
+    }
+
+    const WebCryptoAlgorithm& hash() const { return m_hash; }
+
+    bool hasLength() const { return m_hasLength; }
+
+    unsigned length() const
+    {
+        WEBKIT_ASSERT(m_length);
+        return m_length;
+    }
+
+private:
+    WebCryptoAlgorithm m_hash;
+    bool m_hasLength;
+    int m_length;
+};
+
 class WebCryptoRsaSsaParams : public WebCryptoAlgorithmParams {
 public:
     explicit WebCryptoRsaSsaParams(const WebCryptoAlgorithm& hash)

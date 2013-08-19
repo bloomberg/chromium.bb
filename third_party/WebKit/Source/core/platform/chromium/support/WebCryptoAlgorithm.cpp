@@ -99,6 +99,13 @@ WebCryptoHmacParams* WebCryptoAlgorithm::hmacParams() const
     return 0;
 }
 
+WebCryptoHmacKeyParams* WebCryptoAlgorithm::hmacKeyParams() const
+{
+    if (paramsType() == WebCryptoAlgorithmParamsTypeHmacKeyParams)
+        return static_cast<WebCryptoHmacKeyParams*>(m_private->params.get());
+    return 0;
+}
+
 WebCryptoRsaSsaParams* WebCryptoAlgorithm::rsaSsaParams() const
 {
     if (paramsType() == WebCryptoAlgorithmParamsTypeRsaSsaParams)

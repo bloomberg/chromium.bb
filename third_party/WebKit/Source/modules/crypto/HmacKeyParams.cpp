@@ -29,49 +29,30 @@
  */
 
 #include "config.h"
-#include "modules/crypto/Algorithm.h"
-
-#include "modules/crypto/AesCbcParams.h"
-#include "modules/crypto/AesKeyGenParams.h"
 #include "modules/crypto/HmacKeyParams.h"
-#include "modules/crypto/HmacParams.h"
-#include "modules/crypto/RsaKeyGenParams.h"
-#include "modules/crypto/RsaSsaParams.h"
-#include "wtf/text/WTFString.h"
+
+#include "public/platform/WebCryptoAlgorithmParams.h"
 
 namespace WebCore {
 
-PassRefPtr<Algorithm> Algorithm::create(const WebKit::WebCryptoAlgorithm& algorithm)
+Algorithm* HmacKeyParams::hash()
 {
-    switch (algorithm.paramsType()) {
-    case WebKit::WebCryptoAlgorithmParamsTypeNone:
-        return adoptRef(new Algorithm(algorithm));
-    case WebKit::WebCryptoAlgorithmParamsTypeAesCbcParams:
-        return AesCbcParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeAesKeyGenParams:
-        return AesKeyGenParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacParams:
-        return HmacParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeHmacKeyParams:
-        return HmacKeyParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaSsaParams:
-        return RsaSsaParams::create(algorithm);
-    case WebKit::WebCryptoAlgorithmParamsTypeRsaKeyGenParams:
-        return RsaKeyGenParams::create(algorithm);
-    }
-    ASSERT_NOT_REACHED();
-    return 0;
+    if (!m_hash)
+        m_hash = Algorithm::create(m_algorithm.hmacKeyParams()->hash());
+    return m_hash.get();
 }
 
-Algorithm::Algorithm(const WebKit::WebCryptoAlgorithm& algorithm)
-    : m_algorithm(algorithm)
+unsigned HmacKeyParams::length(bool& isNull)
 {
+    isNull = !m_algorithm.hmacKeyParams()->hasLength();
+    return isNull ? 0 : m_algorithm.hmacKeyParams()->length();
+}
+
+HmacKeyParams::HmacKeyParams(const WebKit::WebCryptoAlgorithm& algorithm)
+    : Algorithm(algorithm)
+{
+    ASSERT(algorithm.hmacKeyParams());
     ScriptWrappable::init(this);
-}
-
-String Algorithm::name()
-{
-    return m_algorithm.name();
 }
 
 } // namespace WebCore
