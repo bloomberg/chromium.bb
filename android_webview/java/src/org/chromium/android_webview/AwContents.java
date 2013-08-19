@@ -985,6 +985,15 @@ public class AwContents {
     }
 
     /**
+     * @see WebView#requestChildRectangleOnScreen(View, Rect, boolean)
+     */
+    public boolean requestChildRectangleOnScreen(View child, Rect rect, boolean immediate) {
+        return mScrollOffsetManager.requestChildRectangleOnScreen(
+                child.getLeft() - child.getScrollX(), child.getTop() - child.getScrollY(),
+                rect, immediate);
+    }
+
+    /**
      * @see View.computeScroll()
      */
     public void computeScroll() {
