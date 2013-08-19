@@ -217,7 +217,7 @@ static bool expandSelectionToGranularity(Frame* frame, TextGranularity granulari
         return false;
     RefPtr<Range> oldRange = frame->selection()->selection().toNormalizedRange();
     EAffinity affinity = frame->selection()->affinity();
-    if (!frame->editor()->client()->shouldChangeSelectedRange(oldRange.get(), newRange.get(), affinity, false))
+    if (!frame->editor()->client().shouldChangeSelectedRange(oldRange.get(), newRange.get(), affinity, false))
         return false;
     frame->selection()->setSelectedRange(newRange.get(), affinity, true);
     return true;
@@ -931,7 +931,7 @@ static bool executePaste(Frame* frame, Event*, EditorCommandSource source, const
 
 static bool executePasteGlobalSelection(Frame* frame, Event*, EditorCommandSource source, const String&)
 {
-    if (!frame->editor()->client()->supportsGlobalSelection())
+    if (!frame->editor()->client().supportsGlobalSelection())
         return false;
     ASSERT_UNUSED(source, source == CommandFromMenuOrKeyBinding);
     UserTypingGestureIndicator typingGestureIndicator(frame);
@@ -1177,9 +1177,7 @@ static bool supportedCopyCut(Frame* frame)
 
     Settings* settings = frame->settings();
     bool defaultValue = settings && settings->javaScriptCanAccessClipboard();
-
-    EditorClient* client = frame->editor()->client();
-    return client ? client->canCopyCut(frame, defaultValue) : defaultValue;
+    return frame->editor()->client().canCopyCut(frame, defaultValue);
 }
 
 static bool supportedPaste(Frame* frame)
@@ -1189,9 +1187,7 @@ static bool supportedPaste(Frame* frame)
 
     Settings* settings = frame->settings();
     bool defaultValue = settings && settings->javaScriptCanAccessClipboard() && settings->DOMPasteAllowed();
-
-    EditorClient* client = frame->editor()->client();
-    return client ? client->canPaste(frame, defaultValue) : defaultValue;
+    return frame->editor()->client().canPaste(frame, defaultValue);
 }
 
 // Enabled functions

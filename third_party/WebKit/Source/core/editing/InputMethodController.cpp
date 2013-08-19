@@ -63,7 +63,7 @@ inline Editor& InputMethodController::editor() const
     return *m_frame->editor();
 }
 
-inline EditorClient* InputMethodController::editorClient() const
+inline EditorClient& InputMethodController::editorClient() const
 {
     return editor().client();
 }
@@ -121,8 +121,7 @@ void InputMethodController::confirmCompositionAndResetState()
     }
 
     // EditorClient::willSetInputMethodState() resets input method and the composition string is committed.
-    if (EditorClient* client = editorClient())
-        client->willSetInputMethodState();
+    editorClient().willSetInputMethodState();
 }
 
 void InputMethodController::cancelComposition()
@@ -147,8 +146,7 @@ void InputMethodController::cancelCompositionIfSelectionIsInvalid()
         return;
 
     cancelComposition();
-    if (editorClient())
-        editorClient()->didCancelCompositionOnSelectionChange();
+    editorClient().didCancelCompositionOnSelectionChange();
 }
 
 void InputMethodController::finishComposition(const String& text, FinishCompositionMode mode)

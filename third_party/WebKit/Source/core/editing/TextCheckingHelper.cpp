@@ -218,11 +218,10 @@ int TextCheckingParagraph::checkingLength() const
     return m_checkingLength;
 }
 
-TextCheckingHelper::TextCheckingHelper(EditorClient* client, PassRefPtr<Range> range)
-    : m_client(client)
+TextCheckingHelper::TextCheckingHelper(EditorClient& client, PassRefPtr<Range> range)
+    : m_client(&client)
     , m_range(range)
 {
-    ASSERT_ARG(m_client, m_client);
     ASSERT_ARG(m_range, m_range);
 }
 

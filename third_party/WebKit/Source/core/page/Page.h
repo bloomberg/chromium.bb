@@ -113,7 +113,7 @@ public:
     static void refreshPlugins(bool reload);
     PluginData* pluginData() const;
 
-    EditorClient* editorClient() const { return m_editorClient; }
+    EditorClient& editorClient() const { return *m_editorClient; }
 
     void setMainFrame(PassRefPtr<Frame>);
     Frame* mainFrame() const { return m_mainFrame.get(); }

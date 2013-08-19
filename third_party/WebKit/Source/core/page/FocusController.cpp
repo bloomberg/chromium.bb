@@ -603,7 +603,7 @@ bool FocusController::setFocusedElement(Element* element, PassRefPtr<Frame> newF
     if (oldFocusedElement && oldFocusedElement->isRootEditableElement() && !relinquishesEditingFocus(oldFocusedElement))
         return false;
 
-    m_page->editorClient()->willSetInputMethodState();
+    m_page->editorClient().willSetInputMethodState();
 
     clearSelectionIfNeeded(oldFocusedFrame.get(), newFocusedFrame.get(), element);
 

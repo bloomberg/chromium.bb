@@ -77,7 +77,7 @@ private:
 class TextCheckingHelper {
     WTF_MAKE_NONCOPYABLE(TextCheckingHelper);
 public:
-    TextCheckingHelper(EditorClient*, PassRefPtr<Range>);
+    TextCheckingHelper(EditorClient&, PassRefPtr<Range>);
     ~TextCheckingHelper();
 
     String findFirstMisspelling(int& firstMisspellingOffset, bool markAll, RefPtr<Range>& firstMisspellingRange);

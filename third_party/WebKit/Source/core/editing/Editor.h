@@ -70,7 +70,7 @@ public:
     explicit Editor(Frame*);
     ~Editor();
 
-    EditorClient* client() const;
+    EditorClient& client() const;
     TextCheckerClient* textChecker() const;
 
     Frame* frame() const { return m_frame; }

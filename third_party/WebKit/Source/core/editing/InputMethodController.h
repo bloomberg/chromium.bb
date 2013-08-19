@@ -75,7 +75,7 @@ private:
 
     explicit InputMethodController(Frame*);
     Editor& editor() const;
-    EditorClient* editorClient() const;
+    EditorClient& editorClient() const;
     bool insertTextForConfirmedComposition(const String& text);
     void selectComposition() const;
     enum FinishCompositionMode { ConfirmComposition, CancelComposition };

@@ -1761,7 +1761,7 @@ String FrameSelection::selectedTextForClipboard() const
 
 bool FrameSelection::shouldDeleteSelection(const VisibleSelection& selection) const
 {
-    return m_frame->editor()->client()->shouldDeleteRange(selection.toNormalizedRange().get());
+    return m_frame->editor()->client().shouldDeleteRange(selection.toNormalizedRange().get());
 }
 
 FloatRect FrameSelection::bounds(bool clipToVisibleContent) const

@@ -134,10 +134,8 @@ SpellCheckRequester::~SpellCheckRequester()
 
 TextCheckerClient* SpellCheckRequester::client() const
 {
-    Page* page = m_frame->page();
-    if (!page)
-        return 0;
-    return page->editorClient()->textChecker();
+    // FIXME: The return type should be a reference.
+    return m_frame->editor()->client().textChecker();
 }
 
 void SpellCheckRequester::timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*)
