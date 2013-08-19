@@ -590,12 +590,7 @@ Status ExecuteGetActiveElement(
     WebView* web_view,
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value) {
-  base::ListValue args;
-  return web_view->CallFunction(
-      session->GetCurrentFrameId(),
-      "function() { return document.activeElement || document.body }",
-      args,
-      value);
+  return GetActiveElement(session, web_view, value);
 }
 
 Status ExecuteSendKeysToActiveElement(

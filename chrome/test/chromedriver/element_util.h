@@ -34,6 +34,17 @@ Status FindElement(
     const base::DictionaryValue& params,
     scoped_ptr<base::Value>* value);
 
+Status GetActiveElement(
+    Session* session,
+    WebView* web_view,
+    scoped_ptr<base::Value>* value);
+
+Status IsElementFocused(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    bool* is_focused);
+
 Status GetElementAttribute(
     Session* session,
     WebView* web_view,

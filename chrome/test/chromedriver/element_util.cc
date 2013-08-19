@@ -286,6 +286,32 @@ Status FindElement(
   return Status(kUnknownError);
 }
 
+Status GetActiveElement(
+    Session* session,
+    WebView* web_view,
+    scoped_ptr<base::Value>* value) {
+  base::ListValue args;
+  return web_view->CallFunction(
+      session->GetCurrentFrameId(),
+      "function() { return document.activeElement || document.body }",
+      args,
+      value);
+}
+
+Status IsElementFocused(
+    Session* session,
+    WebView* web_view,
+    const std::string& element_id,
+    bool* is_focused) {
+  scoped_ptr<base::Value> result;
+  Status status = GetActiveElement(session, web_view, &result);
+  if (status.IsError())
+    return status;
+  scoped_ptr<base::Value> element_dict(CreateElement(element_id));
+  *is_focused = result->Equals(element_dict.get());
+  return Status(kOk);
+}
+
 Status GetElementAttribute(
     Session* session,
     WebView* web_view,
