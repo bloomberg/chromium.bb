@@ -46,6 +46,7 @@ void FontCache::platformInit()
 {
 }
 
+#if !OS(WINDOWS)
 PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, UChar32 c)
 {
     icu::Locale locale = icu::Locale::getDefault();
@@ -83,6 +84,8 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     return getFontResourceData(&platformData, DoNotRetain);
 }
 
+#endif // !OS(WINDOWNS)
+
 PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& font)
 {
     return 0;
@@ -107,11 +110,9 @@ void FontCache::getTraitsInFamily(const AtomicString& familyName,
     notImplemented();
 }
 
-FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription,
-                                                    const AtomicString& family)
+SkTypeface* FontCache::createTypeface(const FontDescription& fontDescription, const AtomicString& family, CString& name)
 {
-    const char* name = 0;
-    CString s;
+    name = "";
 
     // If we're creating a fallback font (e.g. "-webkit-monospace"), convert the name into
     // the fallback name (like "monospace") that fontconfig understands.
@@ -134,12 +135,9 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
                 break;
             }
         }
-        if (!name)
-            name = "";
     } else {
         // convert the name to utf8
-        s = family.string().utf8();
-        name = s.data();
+        name = family.string().utf8();
     }
 
     int style = SkTypeface::kNormal;
@@ -148,19 +146,26 @@ FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontD
     if (fontDescription.italic())
         style |= SkTypeface::kItalic;
 
-    SkTypeface* tf = SkTypeface::CreateFromName(name, static_cast<SkTypeface::Style>(style));
+    return SkTypeface::CreateFromName(name.data(), static_cast<SkTypeface::Style>(style));
+}
+
+#if !OS(WINDOWS)
+FontPlatformData* FontCache::createFontPlatformData(const FontDescription& fontDescription, const AtomicString& family)
+{
+    CString name;
+    SkTypeface* tf = createTypeface(fontDescription, family, name);
     if (!tf)
         return 0;
 
-    FontPlatformData* result =
-        new FontPlatformData(tf,
-                             name,
-                             fontDescription.computedSize(),
-                             (style & SkTypeface::kBold) && !tf->isBold(),
-                             (style & SkTypeface::kItalic) && !tf->isItalic(),
-                             fontDescription.orientation());
+    FontPlatformData* result = new FontPlatformData(tf,
+        name.data(),
+        fontDescription.computedSize(),
+        fontDescription.weight() >= FontWeightBold && !tf->isBold(),
+        fontDescription.italic() && !tf->isItalic(),
+        fontDescription.orientation());
     tf->unref();
     return result;
 }
+#endif // !OS(WINDOWNS)
 
 } // namespace WebCore

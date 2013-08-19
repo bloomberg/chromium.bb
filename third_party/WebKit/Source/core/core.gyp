@@ -761,8 +761,6 @@
             ['include', 'platform/graphics/opentype/'],
             ['include', 'platform/graphics/skia/SkiaFontWin\\.(cpp|h)$'],
 
-            ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
-
             # Windows currently uses FontCustomPlatformDataWin.cpp instead.
             ['exclude', 'platform/graphics/skia/FontCustomPlatformDataSkia\\.cpp$'],
             ['include', 'platform/graphics/win/FontCustomPlatformDataWin\\.cpp$'],
@@ -780,13 +778,17 @@
               'sources/': [
                 ['exclude', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
                 ['exclude', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
+                ['exclude', 'platform/graphics/skia/FontCacheSkia\\.cpp$'],
+                ['exclude', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
               ],
             },{ # ENABLE_GDI_FONTS_ON_WINDOWS!=1
               'sources/': [
-                ['exclude', 'platform/graphics/chromium/SimpleFontDataChromiumWin\\.cpp$'],
                 ['include', 'platform/graphics/skia/SimpleFontDataSkia\\.cpp$'],
                 ['include', 'platform/graphics/skia/GlyphPageTreeNodeSkia\\.cpp$'],
+                ['include', 'platform/graphics/skia/FontCacheSkiaWin\\.cpp$'],
+                ['exclude', 'platform/graphics/chromium/SimpleFontDataChromiumWin\\.cpp$'],
                 ['exclude', 'platform/graphics/chromium/GlyphPageTreeNodeChromiumWin\\.cpp$'],
+                ['exclude', 'platform/graphics/chromium/FontCacheChromiumWin\\.cpp$'],
               ],
             }],
           ],

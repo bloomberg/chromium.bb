@@ -34,6 +34,7 @@
 
 #include "config.h"
 
+#include "../ports/SkTypeface_win.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "core/platform/SharedBuffer.h"
@@ -73,6 +74,7 @@ public:
     FontPlatformData(float size, bool bold, bool oblique);
     FontPlatformData(const FontPlatformData&);
     FontPlatformData(const FontPlatformData&, float textSize);
+    FontPlatformData(SkTypeface*, const char* name, float textSize, bool fakeBold, bool fakeItalic, FontOrientation = Horizontal);
 
 #if !ENABLE(GDI_FONTS_ON_WINDOWS)
     void setupPaint(SkPaint*) const;

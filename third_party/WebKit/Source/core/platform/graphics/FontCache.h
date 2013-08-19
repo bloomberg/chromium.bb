@@ -35,6 +35,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
+#include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 #include "wtf/unicode/Unicode.h"
 
@@ -43,6 +44,8 @@
 #include <objidl.h>
 #include <mlang.h>
 #endif
+
+class SkTypeface;
 
 namespace WebCore {
 
@@ -126,6 +129,9 @@ private:
     // These methods are implemented by each platform.
     PassRefPtr<SimpleFontData> getSimilarFontPlatformData(const Font&);
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family);
+
+    // Implemented on skia platforms.
+    SkTypeface* createTypeface(const FontDescription&, const AtomicString& family, CString& name);
 
     PassRefPtr<SimpleFontData> getFontResourceData(const FontPlatformData*, ShouldRetain = Retain);
     const FontPlatformData* getFallbackFontData(const FontDescription&);

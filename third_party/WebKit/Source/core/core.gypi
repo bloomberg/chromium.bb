@@ -3024,6 +3024,7 @@
             'platform/graphics/opentype/OpenTypeVerticalData.cpp',
             'platform/graphics/opentype/OpenTypeVerticalData.h',
             'platform/graphics/skia/FontCacheSkia.cpp',
+            'platform/graphics/skia/FontCacheSkiaWin.cpp',
             'platform/graphics/skia/FontCustomPlatformDataSkia.cpp',
             'platform/graphics/skia/FontPlatformDataSkia.cpp',
             'platform/graphics/skia/GlyphPageTreeNodeSkia.cpp',
