@@ -67,8 +67,13 @@ TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
 }
 
 // Failing consistently on Win7. See crbug.com/230534.
-TEST_F(SpellcheckHostMetricsTest, DISABLED_CustomWordStats) {
+// Re-enabling for testing to fix aforementioned bug.
+TEST_F(SpellcheckHostMetricsTest, CustomWordStats) {
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
+
+  // Determine if test failures are due the statistics recorder not being
+  // available or because the histogram just isn't there: crbug.com/230534.
+  EXPECT_TRUE(StatisticsRecorder::IsActive());
 
   HistogramBase* histogram =
       StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");

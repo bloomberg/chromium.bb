@@ -1069,9 +1069,14 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
 }
 
 // Failing consistently on Win7. See crbug.com/230534.
-TEST_F(SpellcheckCustomDictionaryTest, DISABLED_RecordSizeStatsCorrectly) {
+// Re-enabling for testing to fix aforementioned bug.
+TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
   // Record a baseline.
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
+
+  // Determine if test failures are due the statistics recorder not being
+  // available or because the histogram just isn't there: crbug.com/230534.
+  EXPECT_TRUE(StatisticsRecorder::IsActive());
 
   HistogramBase* histogram =
       StatisticsRecorder::FindHistogram("SpellCheck.CustomWords");
