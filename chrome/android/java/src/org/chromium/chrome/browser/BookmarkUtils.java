@@ -44,6 +44,27 @@ public class BookmarkUtils {
     /**
      * Creates an intent that will add a shortcut to the home screen.
      * @param context Context used to create the intent.
+     * @param shortcutIntent Intent to fire when the shortcut is activated.
+     * @param title Title of the bookmark.
+     * @param favicon Bookmark favicon.
+     * @param rValue Red component of the dominant favicon color.
+     * @param gValue Green component of the dominant favicon color.
+     * @param bValue Blue component of the dominant favicon color.
+     * @return Intent for the shortcut.
+     */
+    public static Intent createAddToHomeIntent(Context context, Intent shortcutIntent, String title,
+            Bitmap favicon, int rValue, int gValue, int bValue) {
+        Intent i = new Intent(INSTALL_SHORTCUT);
+        i.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
+        i.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
+        i.putExtra(Intent.EXTRA_SHORTCUT_ICON, createIcon(context, favicon, rValue,
+                gValue, bValue));
+        return i;
+    }
+
+    /**
+     * Creates an intent that will add a shortcut to the home screen.
+     * @param context Context used to create the intent.
      * @param url Url of the bookmark.
      * @param title Title of the bookmark.
      * @param favicon Bookmark favicon.
@@ -54,13 +75,9 @@ public class BookmarkUtils {
      */
     public static Intent createAddToHomeIntent(Context context, String url, String title,
             Bitmap favicon, int rValue, int gValue, int bValue) {
-        Intent i = new Intent(INSTALL_SHORTCUT);
         Intent shortcutIntent = createShortcutIntent(context, url);
-        i.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);
-        i.putExtra(Intent.EXTRA_SHORTCUT_NAME, title);
-        i.putExtra(Intent.EXTRA_SHORTCUT_ICON, createIcon(context, favicon, rValue,
-                gValue, bValue));
-        return i;
+        return createAddToHomeIntent(
+                context, shortcutIntent, title, favicon, rValue, gValue, bValue);
     }
 
     /**

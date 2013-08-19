@@ -395,6 +395,12 @@ IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
                     SkBitmap /* thumbnail */)
 
+#if defined(OS_ANDROID)
+// Asks the renderer to return information about whether the current page can
+// be treated as a webapp.
+IPC_MESSAGE_ROUTED1(ChromeViewMsg_RetrieveWebappInformation,
+                    GURL /* expected_url */)
+#endif  // defined(OS_ANDROID)
 
 // JavaScript related messages -----------------------------------------------
 
@@ -620,6 +626,13 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockDisplayingInsecureContent)
 // Sent when the renderer was prevented from running insecure content in
 // a secure origin by a security policy.  The page may appear incomplete.
 IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DidBlockRunningInsecureContent)
+
+#if defined(OS_ANDROID)
+// Contains info about whether the current page can be treated as a webapp.
+IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_DidRetrieveWebappInformation,
+                    bool /* success */,
+                    bool /* is_webapp_capable */)
+#endif  // defined(OS_ANDROID)
 
 // Message sent from renderer to the browser when the element that is focused
 // has been touched. A bool is passed in this message which indicates if the

@@ -141,6 +141,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   void OnUpdateTopControlsState(content::TopControlsState constraints,
                                 content::TopControlsState current,
                                 bool animate);
+  void OnRetrieveWebappInformation(const GURL& expected_url);
 #endif
   void OnSetWindowFeatures(const WebKit::WebWindowFeatures& window_features);
 

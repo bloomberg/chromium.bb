@@ -41,6 +41,10 @@ public abstract class TabBase {
         mNativeTabAndroid = nativePtr;
     }
 
+    int getNativePtr() {
+        return mNativeTabAndroid;
+    }
+
     protected WindowAndroid getWindowAndroid() {
         return mWindowAndroid;
     }
