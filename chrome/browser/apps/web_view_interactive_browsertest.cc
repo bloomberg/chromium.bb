@@ -669,3 +669,10 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
              "web_view/pointerlock");
 }
 
+// Currently re-adding a webview doesn't work. See http://crbug.com/260622
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest,
+                       AddRemoveWebView_AddRemoveWebView) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/addremove"))
+      << message_;
+}
