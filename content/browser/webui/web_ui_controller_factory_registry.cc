@@ -82,7 +82,7 @@ bool WebUIControllerFactoryRegistry::IsURLAcceptableForWebUI(
     bool data_urls_allowed) const {
   return UseWebUIForURL(browser_context, url) ||
       // javascript: URLs are allowed to run in Web UI pages.
-      url.SchemeIs(chrome::kJavaScriptScheme) ||
+      url.SchemeIs(kJavaScriptScheme) ||
       // It's possible to load about:blank in a Web UI renderer.
       // See http://crbug.com/42547
       url.spec() == kAboutBlankURL ||

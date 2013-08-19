@@ -1804,7 +1804,7 @@ bool WebContentsImpl::NavigateToEntry(
     // do not generate content.  What we really need is a message from the
     // renderer telling us that a new page was not created.  The same message
     // could be used for mailto: URLs and the like.
-    if (entry.GetURL().SchemeIs(chrome::kJavaScriptScheme))
+    if (entry.GetURL().SchemeIs(kJavaScriptScheme))
       return false;
   }
 

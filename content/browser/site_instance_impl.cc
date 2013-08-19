@@ -26,7 +26,7 @@ static bool IsURLSameAsAnySiteInstance(const GURL& url) {
 
   // We treat javascript: as the same site as any URL since it is actually
   // a modifier on existing pages.
-  if (url.SchemeIs(chrome::kJavaScriptScheme))
+  if (url.SchemeIs(kJavaScriptScheme))
     return true;
 
   return url == GURL(kChromeUICrashURL) ||

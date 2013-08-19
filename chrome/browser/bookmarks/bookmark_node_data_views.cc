@@ -27,7 +27,7 @@ void BookmarkNodeData::Write(Profile* profile, ui::OSExchangeData* data) const {
   // If there is only one element and it is a URL, write the URL to the
   // clipboard.
   if (elements.size() == 1 && elements[0].is_url) {
-    if (elements[0].url.SchemeIs(chrome::kJavaScriptScheme)) {
+    if (elements[0].url.SchemeIs(content::kJavaScriptScheme)) {
       data->SetString(UTF8ToUTF16(elements[0].url.spec()));
     } else {
       data->SetURL(elements[0].url, elements[0].title);

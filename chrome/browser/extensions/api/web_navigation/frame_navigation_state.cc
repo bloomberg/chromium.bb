@@ -19,7 +19,7 @@ const char* kValidSchemes[] = {
   chrome::kHttpsScheme,
   chrome::kFileScheme,
   chrome::kFtpScheme,
-  chrome::kJavaScriptScheme,
+  content::kJavaScriptScheme,
   chrome::kDataScheme,
   chrome::kFileSystemScheme,
 };

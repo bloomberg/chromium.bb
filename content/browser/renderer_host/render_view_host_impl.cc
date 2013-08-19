@@ -338,7 +338,7 @@ void RenderViewHostImpl::Navigate(const ViewMsg_Navigate_Params& params) {
   //
   // WebKit doesn't send throb notifications for JavaScript URLs, so we
   // don't want to either.
-  if (!params.url.SchemeIs(chrome::kJavaScriptScheme))
+  if (!params.url.SchemeIs(kJavaScriptScheme))
     delegate_->DidStartLoading(this);
 
   FOR_EACH_OBSERVER(RenderViewHostObserver, observers_, Navigate(params.url));
@@ -1463,7 +1463,7 @@ void RenderViewHostImpl::OnStartDragging(
       ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Allow drag of Javascript URLs to enable bookmarklet drag to bookmark bar.
-  if (!filtered_data.url.SchemeIs(chrome::kJavaScriptScheme))
+  if (!filtered_data.url.SchemeIs(kJavaScriptScheme))
     FilterURL(policy, process, true, &filtered_data.url);
   FilterURL(policy, process, false, &filtered_data.html_base_url);
   // Filter out any paths that the renderer didn't have access to. This prevents
@@ -1952,7 +1952,7 @@ void RenderViewHostImpl::OnShowDesktopNotification(
   // allows unwanted cross-domain access.
   GURL url = params.contents_url;
   if (params.is_html &&
-      (url.SchemeIs(chrome::kJavaScriptScheme) ||
+      (url.SchemeIs(kJavaScriptScheme) ||
        url.SchemeIs(chrome::kFileScheme))) {
     return;
   }

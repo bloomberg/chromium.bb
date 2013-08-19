@@ -122,7 +122,7 @@ void PopulateHitTestData(const GURL& absolute_link_url,
     data->img_src = absolute_image_url;
 
   const bool is_javascript_scheme =
-      absolute_link_url.SchemeIs(chrome::kJavaScriptScheme);
+      absolute_link_url.SchemeIs(content::kJavaScriptScheme);
   const bool has_link_url = !absolute_link_url.is_empty();
   const bool has_image_url = !absolute_image_url.is_empty();
 

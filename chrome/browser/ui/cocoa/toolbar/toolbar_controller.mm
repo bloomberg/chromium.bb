@@ -781,7 +781,7 @@ class NotificationBridge
   GURL url(URLFixerUpper::FixupURL(
       base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
 
-  if (url.SchemeIs(chrome::kJavaScriptScheme)) {
+  if (url.SchemeIs(content::kJavaScriptScheme)) {
     browser_->window()->GetLocationBar()->GetLocationEntry()->SetUserText(
           OmniboxView::StripJavascriptSchemas(UTF8ToUTF16(url.spec())));
   }

@@ -1002,7 +1002,7 @@ bool HistoryService::CanAddURL(const GURL& url) {
   // TODO: We should allow kChromeUIScheme URLs if they have been explicitly
   // typed.  Right now, however, these are marked as typed even when triggered
   // by a shortcut or menu action.
-  if (url.SchemeIs(chrome::kJavaScriptScheme) ||
+  if (url.SchemeIs(content::kJavaScriptScheme) ||
       url.SchemeIs(chrome::kChromeDevToolsScheme) ||
       url.SchemeIs(chrome::kChromeUIScheme) ||
       url.SchemeIs(content::kViewSourceScheme) ||

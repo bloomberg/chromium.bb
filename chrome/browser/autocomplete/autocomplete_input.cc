@@ -183,7 +183,7 @@ AutocompleteInput::Type AutocompleteInput::Parse(
     // reaching the net::URLRequest logic.  We thus won't catch these above, but
     // we should still claim to handle them.
     if (LowerCaseEqualsASCII(parsed_scheme, content::kViewSourceScheme) ||
-        LowerCaseEqualsASCII(parsed_scheme, chrome::kJavaScriptScheme) ||
+        LowerCaseEqualsASCII(parsed_scheme, content::kJavaScriptScheme) ||
         LowerCaseEqualsASCII(parsed_scheme, chrome::kDataScheme))
       return URL;
 

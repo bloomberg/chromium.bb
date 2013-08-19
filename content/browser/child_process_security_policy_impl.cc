@@ -289,7 +289,7 @@ ChildProcessSecurityPolicyImpl::ChildProcessSecurityPolicyImpl() {
 
   // We know about the following pseudo schemes and treat them specially.
   RegisterPseudoScheme(chrome::kAboutScheme);
-  RegisterPseudoScheme(chrome::kJavaScriptScheme);
+  RegisterPseudoScheme(kJavaScriptScheme);
   RegisterPseudoScheme(kViewSourceScheme);
 }
 

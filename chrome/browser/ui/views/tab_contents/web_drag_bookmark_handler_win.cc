@@ -10,9 +10,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/url_constants.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_win.h"
 
@@ -94,7 +94,7 @@ void WebDragBookmarkHandlerWin::OnDragLeave(IDataObject* data_object) {
 
 bool WebDragBookmarkHandlerWin::AddDragData(const content::DropData& drop_data,
                                             ui::OSExchangeData* data) {
-  if (!drop_data.url.SchemeIs(chrome::kJavaScriptScheme))
+  if (!drop_data.url.SchemeIs(content::kJavaScriptScheme))
     return false;
 
   // We don't want to allow javascript URLs to be dragged to the desktop,

@@ -15,7 +15,7 @@
 
 // static
 string16 OmniboxView::StripJavascriptSchemas(const string16& text) {
-  const string16 kJsPrefix(ASCIIToUTF16(chrome::kJavaScriptScheme) +
+  const string16 kJsPrefix(ASCIIToUTF16(content::kJavaScriptScheme) +
                            ASCIIToUTF16(":"));
   string16 out(text);
   while (StartsWith(out, kJsPrefix, false))

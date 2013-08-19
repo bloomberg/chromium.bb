@@ -200,7 +200,7 @@ NSString* GetDropLocation(NSPasteboard* pboard) {
     NSURL* url = [NSURL URLWithString:SysUTF8ToNSString(dropData_->url.spec())];
     // If NSURL creation failed, check for a badly-escaped JavaScript URL.
     // Strip out any existing escapes and then re-escape uniformly.
-    if (!url && dropData_->url.SchemeIs(chrome::kJavaScriptScheme)) {
+    if (!url && dropData_->url.SchemeIs(content::kJavaScriptScheme)) {
       net::UnescapeRule::Type unescapeRules =
           net::UnescapeRule::SPACES |
           net::UnescapeRule::URL_SPECIAL_CHARS |

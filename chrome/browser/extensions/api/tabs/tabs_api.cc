@@ -1400,7 +1400,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
 
   // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
   // we need to check host permissions before allowing them.
-  if (url.SchemeIs(chrome::kJavaScriptScheme)) {
+  if (url.SchemeIs(content::kJavaScriptScheme)) {
     content::RenderProcessHost* process = web_contents_->GetRenderProcessHost();
     if (!PermissionsData::CanExecuteScriptOnPage(
             GetExtension(),
@@ -1433,7 +1433,7 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
 
   // The URL of a tab contents never actually changes to a JavaScript URL, so
   // this check only makes sense in other cases.
-  if (!url.SchemeIs(chrome::kJavaScriptScheme))
+  if (!url.SchemeIs(content::kJavaScriptScheme))
     DCHECK_EQ(url.spec(), web_contents_->GetURL().spec());
 
   return true;
