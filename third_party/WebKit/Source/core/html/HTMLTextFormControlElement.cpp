@@ -40,8 +40,7 @@
 #include "core/html/HTMLBRElement.h"
 #include "core/page/Frame.h"
 #include "core/page/UseCounter.h"
-#include "core/rendering/RenderBox.h"
-#include "core/rendering/RenderTextControl.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderTheme.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -211,10 +210,10 @@ void HTMLTextFormControlElement::dispatchFormControlChangeEvent()
     setChangedSinceLastFormControlChangeEvent(false);
 }
 
-static inline bool hasVisibleTextArea(RenderTextControl* textControl, HTMLElement* innerText)
+static inline bool hasVisibleTextArea(RenderObject* renderer, HTMLElement* innerText)
 {
-    ASSERT(textControl);
-    return textControl->style()->visibility() != HIDDEN && innerText && innerText->renderer() && innerText->renderBox()->height();
+    ASSERT(renderer);
+    return renderer->style()->visibility() != HIDDEN && innerText && innerText->renderer() && innerText->renderBox()->height();
 }
 
 
@@ -298,7 +297,7 @@ void HTMLTextFormControlElement::setSelectionRange(int start, int end, TextField
     end = max(end, 0);
     start = min(max(start, 0), end);
 
-    if (!hasVisibleTextArea(toRenderTextControl(renderer()), innerTextElement())) {
+    if (!hasVisibleTextArea(renderer(), innerTextElement())) {
         cacheSelection(start, end, direction);
         return;
     }
