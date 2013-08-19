@@ -9992,6 +9992,18 @@ other types of suffix sets.
   <summary>Chrome OS stateful partition usage level.</summary>
 </histogram>
 
+<histogram name="Platform.SwapInLong" units="pages/second">
+  <summary>
+    Average pages/second swapped IN over a 30s interval, sampled every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapInShort" units="pages/second">
+  <summary>
+    Average pages/second swapped IN over a 1s interval, sampled every 30s.
+  </summary>
+</histogram>
+
 <histogram name="Platform.SwapJank.Scroll.Cpu.Swap0.Time1" units="%">
   <summary>
     CPU utilization for the specified swap group and time interval after a
@@ -10469,6 +10481,18 @@ other types of suffix sets.
   <summary>
     Page faults/second for the specified swap group and time interval after a
     tab switch event.  See src/chrome/browser/chromeos/swap_metrics.cc.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapOutLong" units="pages/second">
+  <summary>
+    Average pages/second swapped OUT over a 30s interval, sampled every 30s.
+  </summary>
+</histogram>
+
+<histogram name="Platform.SwapOutShort" units="pages/second">
+  <summary>
+    Average pages/second swapped OUT over a 1s interval, sampled every 30s.
   </summary>
 </histogram>
 
