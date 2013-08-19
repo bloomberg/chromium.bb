@@ -96,18 +96,6 @@ bool WebDataSourceImpl::replacesCurrentHistoryItem() const
     return DocumentLoader::replacesCurrentHistoryItem();
 }
 
-WebString WebDataSourceImpl::pageTitle() const
-{
-    ASSERT(frame()->loader()->documentLoader() == this);
-    return frame()->document()->title();
-}
-
-WebTextDirection WebDataSourceImpl::pageTitleDirection() const
-{
-    ASSERT(frame()->loader()->documentLoader() == this);
-    return frame()->document()->titleWithDirection().direction() == LTR ? WebTextDirectionLeftToRight : WebTextDirectionRightToLeft;
-}
-
 WebNavigationType WebDataSourceImpl::navigationType() const
 {
     return toWebNavigationType(triggeringAction().type());
