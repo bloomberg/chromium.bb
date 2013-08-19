@@ -41,7 +41,7 @@ from webkitpy.common.memoized import memoized
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.layout_tests.controllers.test_result_writer import TestResultWriter
 from webkitpy.layout_tests.models import test_failures
-from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST
+from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST, SKIP
 from webkitpy.layout_tests.port import builders
 from webkitpy.layout_tests.port import factory
 from webkitpy.tool.multicommandtool import AbstractDeclarativeCommand
@@ -150,6 +150,11 @@ class CopyExistingBaselinesInternal(BaseInternalRebaselineCommand):
             new_baseline = self._tool.filesystem.join(port.baseline_path(), self._file_name_for_expected_result(test_name, suffix))
             if self._tool.filesystem.exists(new_baseline):
                 _log.debug("Existing baseline at %s, not copying over it." % new_baseline)
+                continue
+
+            expectations = TestExpectations(port, [test_name])
+            if SKIP in expectations.get_expectations(test_name):
+                _log.debug("%s is skipped on %s." % (test_name, port.name()))
                 continue
 
             old_baselines.append(old_baseline)
