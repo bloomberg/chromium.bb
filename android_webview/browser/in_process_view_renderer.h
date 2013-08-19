@@ -126,13 +126,6 @@ class InProcessViewRenderer : public BrowserViewRenderer,
   // states.
   bool compositor_needs_continuous_invalidate_;
 
-  // If this is true, then the fallback tick is posted with zero delay. This
-  // is to reduce the time in cases when blink main thread is blocked waiting.
-  // This is set when |compositor_needs_continuous_invalidate_| is set.
-  // Eventually, this should correspond to BeginFrame when BeginFrame and
-  // BeginFrameDeadline are separate functions.
-  bool need_fast_invalidate_;
-
   // Used to block additional invalidates while one is already pending or before
   // compositor draw which may switch continuous_invalidate on and off in the
   // process.

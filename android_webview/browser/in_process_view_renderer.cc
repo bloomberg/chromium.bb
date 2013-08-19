@@ -212,7 +212,6 @@ InProcessViewRenderer::InProcessViewRenderer(
       page_scale_factor_(1.0),
       on_new_picture_enable_(false),
       compositor_needs_continuous_invalidate_(false),
-      need_fast_invalidate_(false),
       block_invalidates_(false),
       width_(0),
       height_(0),
@@ -640,7 +639,6 @@ void InProcessViewRenderer::SetContinuousInvalidate(bool invalidate) {
                        "invalidate",
                        invalidate);
   compositor_needs_continuous_invalidate_ = invalidate;
-  need_fast_invalidate_ = compositor_needs_continuous_invalidate_;
   EnsureContinuousInvalidation(NULL, false);
 }
 
@@ -747,17 +745,11 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
     // ticked. This can happen if this is reached because
     // invalidate_ignore_compositor is true.
     if (compositor_needs_continuous_invalidate_) {
-      int64 delay_in_ms = kFallbackTickTimeoutInMilliseconds;
-      if (need_fast_invalidate_) {
-        TRACE_EVENT_INSTANT0(
-            "android_webview", "FastFallbackTick", TRACE_EVENT_SCOPE_THREAD);
-        delay_in_ms = 0;
-        need_fast_invalidate_ = false;
-      }
       base::MessageLoop::current()->PostDelayedTask(
           FROM_HERE,
           fallback_tick_.callback(),
-          base::TimeDelta::FromMilliseconds(delay_in_ms));
+          base::TimeDelta::FromMilliseconds(
+              kFallbackTickTimeoutInMilliseconds));
     }
   }
 }
