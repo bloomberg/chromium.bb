@@ -4,8 +4,7 @@
 
 #include "ui/base/ime/win/tsf_input_scope.h"
 
-#include <InputScope.h>
-#include <vector>
+#include <algorithm>
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -15,6 +14,20 @@
 namespace ui {
 namespace tsf_inputscope {
 namespace {
+
+void AppendNonTrivialInputScope(std::vector<InputScope>* input_scopes,
+                                InputScope input_scope) {
+  DCHECK(input_scopes);
+
+  if (input_scope == IS_DEFAULT)
+    return;
+
+  if (std::find(input_scopes->begin(), input_scopes->end(), input_scope) !=
+      input_scopes->end())
+    return;
+
+  input_scopes->push_back(input_scope);
+}
 
 class TSFInputScope : public ITfInputScope {
  public:
@@ -145,11 +158,6 @@ InputScope ConvertTextInputTypeToInputScope(TextInputType text_input_type) {
 
 InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
   switch (text_input_mode) {
-    case TEXT_INPUT_MODE_VERBATIM:
-    case TEXT_INPUT_MODE_LATIN:
-    case TEXT_INPUT_MODE_LATIN_NAME:
-    case TEXT_INPUT_MODE_LATIN_PROSE:
-      return IS_ALPHANUMERIC_HALFWIDTH;
     case TEXT_INPUT_MODE_FULL_WIDTH_LATIN:
       return IS_ALPHANUMERIC_FULLWIDTH;
     case TEXT_INPUT_MODE_KANA:
@@ -171,10 +179,24 @@ InputScope ConvertTextInputModeToInputScope(TextInputMode text_input_mode) {
 
 }  // namespace
 
-ITfInputScope* CreateInputScope(TextInputType text_input_type) {
-  std::vector<InputScope> input_scopes(1);
-  input_scopes.push_back(ConvertTextInputTypeToInputScope(text_input_type));
-  return new TSFInputScope(input_scopes);
+std::vector<InputScope> GetInputScopes(TextInputType text_input_type,
+                                       TextInputMode text_input_mode) {
+  std::vector<InputScope> input_scopes;
+
+  AppendNonTrivialInputScope(&input_scopes,
+                             ConvertTextInputTypeToInputScope(text_input_type));
+  AppendNonTrivialInputScope(&input_scopes,
+                             ConvertTextInputModeToInputScope(text_input_mode));
+
+  if (input_scopes.empty())
+    input_scopes.push_back(IS_DEFAULT);
+
+  return input_scopes;
+}
+
+ITfInputScope* CreateInputScope(TextInputType text_input_type,
+                                TextInputMode text_input_mode) {
+  return new TSFInputScope(GetInputScopes(text_input_type, text_input_mode));
 }
 
 void SetInputScopeForTsfUnawareWindow(
@@ -185,14 +207,10 @@ void SetInputScopeForTsfUnawareWindow(
   if (!set_input_scopes)
     return;
 
-  InputScope input_scopes[] = {
-      ConvertTextInputTypeToInputScope(text_input_type),
-      ConvertTextInputModeToInputScope(text_input_mode),
-  };
-
-  set_input_scopes(window_handle, input_scopes,
-                   (input_scopes[0] == input_scopes[1] ? 1 : 2), NULL, 0, NULL,
-                   NULL);
+  std::vector<InputScope> input_scopes = GetInputScopes(text_input_type,
+                                                        text_input_mode);
+  set_input_scopes(window_handle, &input_scopes[0], input_scopes.size(), NULL,
+                   0, NULL, NULL);
 }
 
 }  // namespace tsf_inputscope
