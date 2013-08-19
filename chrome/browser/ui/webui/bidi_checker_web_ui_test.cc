@@ -156,8 +156,8 @@ void WebUIBidiCheckerBrowserTestRTL::CleanUpOnMainThread() {
 //==============================
 
 static void SetupHistoryPageTest(Browser* browser,
-                                 const std::string page_url,
-                                 const std::string page_title) {
+                                 const std::string& page_url,
+                                 const std::string& page_title) {
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       browser->profile(), Profile::IMPLICIT_ACCESS);
   const GURL history_url = GURL(page_url);
