@@ -131,8 +131,7 @@ public class SyncStatusHelper {
             SyncContentResolverDelegate syncContentResolverWrapper) {
         mApplicationContext = context.getApplicationContext();
         mSyncContentResolverWrapper = syncContentResolverWrapper;
-        mContractAuthority =
-                InvalidationController.get(mApplicationContext).getContractAuthority();
+        mContractAuthority = getContractAuthority();
 
         updateMasterSyncAutomaticallySetting();
 
@@ -186,6 +185,13 @@ public class SyncStatusHelper {
             }
             sSyncStatusHelper = new SyncStatusHelper(context, syncContentResolverWrapper);
         }
+    }
+
+    /**
+     * Returns the contract authority to use when requesting sync.
+     */
+    public String getContractAuthority() {
+        return mApplicationContext.getPackageName();
     }
 
     /**

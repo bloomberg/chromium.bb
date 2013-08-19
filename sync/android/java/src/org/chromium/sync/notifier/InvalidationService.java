@@ -379,7 +379,7 @@ public class InvalidationService extends AndroidListener {
             bundle.putString("payload", (payload == null) ? "" : payload);
         }
         Account account = ChromeSigninController.get(this).getSignedInUser();
-        String contractAuthority = InvalidationController.get(this).getContractAuthority();
+        String contractAuthority = SyncStatusHelper.get(this).getContractAuthority();
         requestSyncFromContentResolver(bundle, account, contractAuthority);
     }
 

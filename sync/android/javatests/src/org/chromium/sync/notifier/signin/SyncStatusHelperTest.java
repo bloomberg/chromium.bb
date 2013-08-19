@@ -63,8 +63,8 @@ public class SyncStatusHelperTest extends InstrumentationTestCase {
         ChromeSigninController.get(
                 getInstrumentation().getTargetContext()).setSignedInAccountName(
                         "account@example.com");
-        mAuthority = InvalidationController.get(
-                getInstrumentation().getTargetContext()).getContractAuthority();
+        mAuthority = SyncStatusHelper.get(getInstrumentation().getTargetContext())
+                .getContractAuthority();
         mTestAccount = new Account("account@example.com", "com.google");
         mAlternateTestAccount = new Account("alternateAccount@example.com", "com.google");
         super.setUp();
@@ -233,5 +233,13 @@ public class SyncStatusHelperTest extends InstrumentationTestCase {
         assertEquals(isSyncableCalls + 1, mSyncContentResolverDelegate.mGetIsSyncableCalls);
         assertEquals(getSyncAutomaticallyAcalls + 1,
                 mSyncContentResolverDelegate.mGetSyncAutomaticallyCalls);
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testGetContractAuthority() throws Exception {
+        assertEquals("The contract authority should be the package name.",
+                getInstrumentation().getTargetContext().getPackageName(),
+                mHelper.getContractAuthority());
     }
 }

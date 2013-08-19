@@ -140,9 +140,13 @@ public class InvalidationController implements ActivityStatus.StateListener {
 
     /**
      * Returns the contract authority to use when requesting sync.
+     *
+     * This method is deprecated. Use {@link SyncStatusHelper#getContractAuthority()} instead.
+     * TODO(nyquist) Remove this method once downstream uses the new method.
      */
+    @Deprecated
     public String getContractAuthority() {
-        return mContext.getPackageName();
+        return SyncStatusHelper.get(mContext).getContractAuthority();
     }
 
     /**
