@@ -7,21 +7,19 @@
 var CommandUtil = {};
 
 /**
- * Extracts path on which command event was dispatched.
+ * Extracts entry on which command event was dispatched.
  *
  * @param {DirectoryTree|DirectoryItem|NavigationList|HTMLLIElement|cr.ui.List}
  *     element Directory to extract a path from.
- * @return {?string} Path of the found node.
+ * @return {Entry} Entry of the found node.
  */
-CommandUtil.getCommandPath = function(element) {
-  // TODO(yoshiki): Change this method to getCommandEntries which returns
-  // target entries.
+CommandUtil.getCommandEntry = function(element) {
   if (element instanceof NavigationList) {
     // element is a NavigationList.
 
     /** @type {NavigationModelItem} */
     var selectedItem = element.selectedItem;
-    return selectedItem && selectedItem.path;
+    return selectedItem && selectedItem.getCachedEntry();
   } else if (element instanceof NavigationListItem) {
     // element is a subitem of NavigationList.
     /** @type {NavigationList} */
@@ -29,22 +27,20 @@ CommandUtil.getCommandPath = function(element) {
     var index = navigationList.getIndexOfListItem(element);
     /** @type {NavigationModelItem} */
     var item = (index != -1) ? navigationList.dataModel.item(index) : null;
-    return item && item.path;
+    return item && item.getCachedEntry();
   } else if (element instanceof DirectoryTree) {
     // element is a DirectoryTree.
-    var item = element.selectedItem;
-    return item && item.fullPath;
+    return element.selectedItem;
   } else if (element instanceof DirectoryItem) {
     // element is a sub item in DirectoryTree.
 
     // DirectoryItem.fullPath is set on initialization, but entry is lazily.
     // We may use fullPath just in case that the entry has not been set yet.
-    return element.entry && element.entry.fullPath ||
-           element.fullPath;
+    return element.entry;
   } else if (cr.ui.List) {
     // element is a normal List (eg. the file list on the right panel).
     var entry = element.selectedItem;
-    return entry && entry.fullPath;
+    return entry;
   } else {
     console.warn('Unsupported element');
     return null;
@@ -56,8 +52,10 @@ CommandUtil.getCommandPath = function(element) {
  * @return {?RootType} Type of the found root.
  */
 CommandUtil.getCommandRootType = function(navigationList) {
-  var root = CommandUtil.getCommandPath(navigationList);
-  return root && PathUtil.isRootPath(root) && PathUtil.getRootType(root);
+  var root = CommandUtil.getCommandEntry(navigationList);
+  return root &&
+         PathUtil.isRootPath(root.fullPath) &&
+         PathUtil.getRootType(root.fullPath);
 };
 
 /**
@@ -182,9 +180,9 @@ Commands.unmountCommand = {
    * @param {FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var root = CommandUtil.getCommandPath(event.target);
+    var root = CommandUtil.getCommandEntry(event.target);
     if (root)
-      fileManager.unmountVolume(PathUtil.getRootPath(root));
+      fileManager.unmountVolume(PathUtil.getRootPath(root.fullPath));
   },
   /**
    * @param {Event} event Command event.
@@ -210,10 +208,10 @@ Commands.formatCommand = {
    * @param {FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var root = CommandUtil.getCommandPath(event.target);
+    var root = CommandUtil.getCommandEntry(event.target);
 
     if (root) {
-      var url = util.makeFilesystemUrl(PathUtil.getRootPath(root));
+      var url = util.makeFilesystemUrl(PathUtil.getRootPath(root.fullPath));
       fileManager.confirm.show(
           loadTimeData.getString('FORMATTING_WARNING'),
           chrome.fileBrowserPrivate.formatDevice.bind(null, url));
@@ -225,10 +223,10 @@ Commands.formatCommand = {
    * @param {DirectoryModel} directoryModel The directory model instance.
    */
   canExecute: function(event, fileManager, directoryModel) {
-    var root = CommandUtil.getCommandPath(event.target);
+    var root = CommandUtil.getCommandEntry(event.target);
     var removable = root &&
-                    PathUtil.getRootType(root) == RootType.REMOVABLE;
-    var isReadOnly = root && directoryModel.isPathReadOnly(root);
+                    PathUtil.getRootType(root.fullPath) == RootType.REMOVABLE;
+    var isReadOnly = root && directoryModel.isPathReadOnly(root.fullPath);
     event.canExecute = removable && !isReadOnly;
     event.command.setHidden(!removable);
   }
@@ -243,7 +241,7 @@ Commands.importCommand = {
    * @param {NavigationList} navigationList Target navigation list.
    */
   execute: function(event, navigationList) {
-    var root = CommandUtil.getCommandPath(navigationList);
+    var root = CommandUtil.getCommandEntry(navigationList);
     if (!root)
       return;
 
@@ -571,9 +569,9 @@ Commands.createFolderShortcutCommand = {
    * @param {FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var path = CommandUtil.getCommandPath(event.target);
-    if (path)
-      fileManager.createFolderShortcut(path);
+    var entry = CommandUtil.getCommandEntry(event.target);
+    if (entry)
+      fileManager.createFolderShortcut(entry.fullPath);
   },
 
   /**
@@ -590,8 +588,9 @@ Commands.createFolderShortcutCommand = {
       return;
     }
 
-    var path = CommandUtil.getCommandPath(event.target);
-    var folderShortcutExists = path && fileManager.folderShortcutExists(path);
+    var entry = CommandUtil.getCommandEntry(event.target);
+    var folderShortcutExists = entry &&
+                               fileManager.folderShortcutExists(entry.fullPath);
 
     var onlyOneFolderSelected = true;
     // Only on list, user can select multiple files. The command is enabled only
@@ -601,7 +600,8 @@ Commands.createFolderShortcutCommand = {
       onlyOneFolderSelected = (items.length == 1 && items[0].isDirectory);
     }
 
-    var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
+    var eligible = entry &&
+                   PathUtil.isEligibleForFolderShortcut(entry.fullPath);
     event.canExecute =
         eligible && onlyOneFolderSelected && !folderShortcutExists;
     event.command.setHidden(!eligible || !onlyOneFolderSelected);
@@ -617,9 +617,9 @@ Commands.removeFolderShortcutCommand = {
    * @param {FileManager} fileManager The file manager instance.
    */
   execute: function(event, fileManager) {
-    var path = CommandUtil.getCommandPath(event.target);
-    if (path)
-      fileManager.removeFolderShortcut(path);
+    var entry = CommandUtil.getCommandEntry(event.target);
+    if (entry)
+      fileManager.removeFolderShortcut(entry.fullPath);
   },
 
   /**
@@ -636,9 +636,10 @@ Commands.removeFolderShortcutCommand = {
       return;
     }
 
-    var path = CommandUtil.getCommandPath(target);
-    var eligible = path && PathUtil.isEligibleForFolderShortcut(path);
-    var isShortcut = path && fileManager.folderShortcutExists(path);
+    var entry = CommandUtil.getCommandEntry(target);
+    var eligible = entry &&
+                   PathUtil.isEligibleForFolderShortcut(entry.fullPath);
+    var isShortcut = entry && fileManager.folderShortcutExists(entry.fullPath);
     event.canExecute = isShortcut && eligible;
     event.command.setHidden(!event.canExecute);
   }
