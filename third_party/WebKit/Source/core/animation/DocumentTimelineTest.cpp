@@ -52,6 +52,7 @@ protected:
         element = Element::create(nullQName() , document.get());
         timeline = DocumentTimeline::create(document.get());
         timeline->setZeroTimeAsPerfTime(0);
+        ASSERT_EQ(0, timeline->currentTime());
     }
 
     RefPtr<Document> document;
@@ -65,10 +66,7 @@ TEST_F(DocumentTimelineTest, EmptyKeyframeAnimation)
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector());
     RefPtr<Animation> anim = Animation::create(element.get(), effect, timing);
 
-    EXPECT_TRUE(isNull(timeline->currentTime()));
-
     timeline->play(anim.get());
-    EXPECT_TRUE(isNull(timeline->currentTime()));
 
     timeline->serviceAnimations(0);
     EXPECT_FLOAT_EQ(0, timeline->currentTime());

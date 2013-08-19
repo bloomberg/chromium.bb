@@ -98,6 +98,8 @@ void TimedItem::updateInheritedTime(double inheritedTime) const
     m_calculated.isInPlay = phase == PhaseActive && (!m_parent || m_parent->isInPlay());
     m_calculated.isCurrent = phase == PhaseBefore || isInPlay() || (m_parent && m_parent->isCurrent());
 
+    // This logic is specific to CSS events and assumes that all animations
+    // start after the DocumentTimeline has started.
     if (m_eventDelegate && (isInPlay() != wasInPlay || (isInPlay() && lastIteration != currentIteration)))
         m_eventDelegate->onEventCondition(wasInPlay, isInPlay(), lastIteration, currentIteration);
 

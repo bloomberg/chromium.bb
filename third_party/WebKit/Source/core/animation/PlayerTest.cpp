@@ -65,7 +65,7 @@ protected:
 
 TEST_F(PlayerTest, InitialState)
 {
-    EXPECT_TRUE(isNull(timeline->currentTime()));
+    EXPECT_EQ(0, timeline->currentTime());
     EXPECT_EQ(0, player->currentTime());
     EXPECT_FALSE(player->paused());
     EXPECT_EQ(1, player->playbackRate());

@@ -306,7 +306,6 @@ crbug.com/258896 virtual/web-animations-css/animations/opacity-transform-animati
 # These can't be rebaselined because they're crashes.
 crbug.com/258896 virtual/web-animations-css/animations/negative-delay.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/animation-border-overflow.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/animation-end-event-short-iterations.html [ Timeout ]
 crbug.com/258896 virtual/web-animations-css/animations/animations-parsing.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-background-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-border-image-source.html [ Crash ]
