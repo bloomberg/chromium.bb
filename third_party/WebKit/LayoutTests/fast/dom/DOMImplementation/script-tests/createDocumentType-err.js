@@ -1,98 +1,24 @@
 description("createDocument tests modeled after mozilla's testing");
 
-function stringForExceptionCode(c)
-{
-    var exceptionName;
-    switch(c) {
-        case DOMException.INVALID_CHARACTER_ERR:
-            exceptionName = "INVALID_CHARACTER_ERR";
-            break;
-        case DOMException.NAMESPACE_ERR:
-            exceptionName = "NAMESPACE_ERR";
-    }
-    if (exceptionName)
-        return exceptionName; // + "(" + c + ")";
-    return c;
-}
+shouldThrow("document.implementation.createDocumentType('foo')", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType('foo', null)", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType(undefined, undefined)", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType(null, undefined)", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType(undefined, null)", "'TypeError: Not enough arguments'");
+shouldNotThrow("document.implementation.createDocumentType(undefined, undefined, null)");
+shouldThrow("document.implementation.createDocumentType(null, null)", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType(null, '')", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType('', null)", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType('', '')", "'TypeError: Not enough arguments'");
+shouldThrow("document.implementation.createDocumentType('a:', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
+shouldThrow("document.implementation.createDocumentType(':foo', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
+shouldThrow("document.implementation.createDocumentType(':', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
+shouldNotThrow("document.implementation.createDocumentType('foo', null, null)");
+shouldNotThrow("document.implementation.createDocumentType('foo:bar', null, null)");
+shouldThrow("document.implementation.createDocumentType('foo::bar', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
+shouldThrow("document.implementation.createDocumentType('\t:bar', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
+shouldThrow("document.implementation.createDocumentType('foo:\t', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
+shouldThrow("document.implementation.createDocumentType('foo :bar', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
+shouldThrow("document.implementation.createDocumentType('foo: bar', null, null)", "'InvalidCharacterError: The string contains invalid characters.'");
+shouldThrow("document.implementation.createDocumentType('a:b:c', null, null)", "'NamespaceError: An attempt was made to create or change an object in a way which is incorrect with regard to namespaces.'");
 
-function assertEquals(actual, expect, m)
-{
-    if (actual !== expect) {
-        m += "; expected " + stringForExceptionCode(expect) + ", threw " + stringForExceptionCode(actual);
-        testFailed(m);
-    } else {
-        m += "; threw " + stringForExceptionCode(actual);;
-        testPassed(m);
-    }
-}
-
-var allTests = [
-   { args: [undefined, undefined], code: 5  },
-   { args: [null, undefined], code: 5  },
-   { args: [undefined, null], code: 5 },
-   { args: [undefined, undefined, null], code: 5 },
-   { args: [null, null], code: 5 },
-   { args: [null, null, null], code: 5 },
-   { args: [null, ""], code: 5 },
-   { args: ["", null], code: 5 },
-   { args: ["", ""], code: 5 },
-   { args: ["a:", null, null], code: 14 },
-   { args: [":foo", null, null], code: 14 },
-   { args: [":", null, null], code: 14 },
-   { args: ["foo", null, null] },
-   { args: ["foo:bar", null, null] },
-   { args: ["foo::bar", null, null], code: 14 },
-   { args: ["\t:bar", null, null], code: 5 },
-   { args: ["foo:\t", null, null], code: 5 },
-   { args: ["foo :bar", null, null], code: 5 },
-   { args: ["foo: bar", null, null], code: 5 },
-   { args: ["a:b:c", null, null], code: 14, message: "valid XML name, invalid QName" },
-];
-
-function sourceify(v)
-{
-    switch (typeof v) {
-        case "undefined":
-            return v;
-        case "string":
-            return '"' + v.replace('"', '\\"') + '"';
-        default:
-            return String(v);
-    }
-}
-
-function sourceifyArgs(args)
-{
-    var copy = new Array(args.length);
-    for (var i = 0, sz = args.length; i < sz; i++)
-        copy[i] = sourceify(args[i]);
-
-    return copy.join(", ");
-}
-
-function runTests(tests, createFunctionName)
-{
-    for (var i = 0, sz = tests.length; i < sz; i++) {
-        var test = tests[i];
-
-        var code = -1;
-        var argStr = sourceifyArgs(test.args);
-        var msg = createFunctionName + "(" + argStr + ")";
-        if ("message" in test)
-            msg += "; " + test.message;
-        try {
-            document.implementation[createFunctionName].apply(document.implementation, test.args);
-            if ('code' in test)
-                testFailed(msg + " expected exception: " + test.code);
-            else
-                testPassed(msg);
-        } catch (e) {
-            assertEquals(e.code, test.code || "expected no exception", msg);
-        }
-    }
-}
-
-// Moz throws a "Not enough arguments" exception in these, we don't:
-shouldBeEqualToString("document.implementation.createDocumentType('foo').toString()", "[object DocumentType]");
-shouldBeEqualToString("document.implementation.createDocumentType('foo', null).toString()", "[object DocumentType]");
-runTests(allTests, "createDocumentType");

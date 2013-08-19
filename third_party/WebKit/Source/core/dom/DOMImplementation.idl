@@ -29,12 +29,12 @@
 
     // DOM Level 2
 
-     [RaisesException] DocumentType createDocumentType([TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString qualifiedName,
-                                                   [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString publicId,
-                                                   [TreatNullAs=NullString, TreatUndefinedAs=NullString,Default=Undefined] optional DOMString systemId);
-     [RaisesException] Document createDocument([TreatNullAs=NullString,Default=Undefined] optional DOMString namespaceURI,
-                                           [TreatNullAs=NullString,Default=Undefined] optional DOMString qualifiedName,
-                                           [TreatNullAs=NullString,Default=Undefined] optional DocumentType doctype);
+     [RaisesException] DocumentType createDocumentType([TreatNullAs=NullString] DOMString qualifiedName,
+                                                       [TreatNullAs=NullString] DOMString publicId,
+                                                       [TreatNullAs=NullString] DOMString systemId);
+     [RaisesException] Document createDocument([TreatNullAs=NullString] DOMString namespaceURI,
+                                               [TreatNullAs=NullString] DOMString qualifiedName,
+                                               [Default=Undefined] optional DocumentType doctype);
 
     // DOMImplementationCSS interface from DOM Level 2 CSS
 

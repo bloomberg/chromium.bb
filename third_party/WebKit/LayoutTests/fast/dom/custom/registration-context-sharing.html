@@ -98,7 +98,7 @@ withFrame(t.step_func(function (frame) {
 withFrame(t.step_func(function (frame) {
     var documentA = frame.contentDocument;
     var documentB = documentA.implementation.createDocument(
-        'http://www.w3.org/1999/xhtml');
+        'http://www.w3.org/1999/xhtml', 'html');
     var tester = new TestRegistrationContextSharing(
         frame.contentWindow, documentA, documentB);
     tester.testRegistrationContextIsShared();
@@ -112,16 +112,16 @@ withFrame(t.step_func(function (frame) {
     var documentA = frame.contentDocument;
 
     // This document is not HTML, XHTML; it will not process custom elements.
-    var documentB = documentA.implementation.createDocument();
+    var documentB = documentA.implementation.createDocument(null, '');
 
     // This document *will* process custom elements, in a new context.
     var documentC = documentB.implementation.createHTMLDocument();
 
     var documentD = documentC.implementation.createDocument(
-        'http://www.w3.org/1999/xhtml');
+        'http://www.w3.org/1999/xhtml', 'html');
 
     var documentE = documentD.implementation.createDocument(
-        'http://www.w3.org/1999/xhtml');
+        'http://www.w3.org/1999/xhtml', 'html');
 
     var tester = new TestRegistrationContextSharing(
         frame.contentWindow, documentC, documentE);
