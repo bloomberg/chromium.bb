@@ -32,9 +32,6 @@ class AppListControllerDelegate {
   // Handle the view being closed.
   virtual void ViewClosing();
 
-  // Handle the view being activated or deactivated.
-  virtual void ViewActivationChanged(bool active);
-
   // Get app list window.
   virtual gfx::NativeWindow GetAppListWindow() = 0;
 

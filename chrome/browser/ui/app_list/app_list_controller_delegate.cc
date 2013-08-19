@@ -13,8 +13,6 @@ AppListControllerDelegate::~AppListControllerDelegate() {}
 
 void AppListControllerDelegate::ViewClosing() {}
 
-void AppListControllerDelegate::ViewActivationChanged(bool active) {}
-
 gfx::ImageSkia AppListControllerDelegate::GetWindowIcon() {
   return gfx::ImageSkia();
 }

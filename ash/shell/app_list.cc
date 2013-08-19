@@ -294,10 +294,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
-  virtual void ViewActivationChanged(bool active) OVERRIDE {
-    // Nothing needs to be done.
-  }
-
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE {
     return gfx::ImageSkia();
   }

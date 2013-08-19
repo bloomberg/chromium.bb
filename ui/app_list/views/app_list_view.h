@@ -6,6 +6,7 @@
 #define UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/app_list/signin_delegate_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
@@ -28,6 +29,11 @@ class SigninView;
 class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                                     public SigninDelegateObserver {
  public:
+  class Observer {
+  public:
+    virtual void OnActivationChanged(views::Widget* widget, bool active) = 0;
+  };
+
   // Takes ownership of |delegate|.
   explicit AppListView(AppListViewDelegate* delegate);
   virtual ~AppListView();
@@ -70,6 +76,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   // Invoked when the sign-in status is changed to switch on/off sign-in view.
   void OnSigninStatusChanged();
 
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
 #if defined(OS_WIN)
   HWND GetHWND() const;
 #endif
@@ -102,6 +111,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   AppListMainView*  app_list_main_view_;
   SigninView* signin_view_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListView);
 };

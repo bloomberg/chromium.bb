@@ -355,7 +355,6 @@ class AppListControllerDelegateWin : public AppListControllerDelegate {
   // AppListController overrides:
   virtual void DismissView() OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
-  virtual void ViewActivationChanged(bool active) OVERRIDE;
   virtual gfx::NativeWindow GetAppListWindow() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual bool CanPin() OVERRIDE;
@@ -417,7 +416,7 @@ class ScopedKeepAlive {
   DISALLOW_COPY_AND_ASSIGN(ScopedKeepAlive);
 };
 
-class ActivationTracker {
+class ActivationTracker : public app_list::AppListView::Observer {
  public:
   ActivationTracker(app_list::AppListView* view,
                     const base::Closure& on_should_dismiss)
@@ -425,13 +424,19 @@ class ActivationTracker {
         on_should_dismiss_(on_should_dismiss),
         regain_next_lost_focus_(false),
         preserving_focus_for_taskbar_menu_(false) {
+    view_->AddObserver(this);
+  }
+
+  ~ActivationTracker() {
+    view_->RemoveObserver(this);
   }
 
   void RegainNextLostFocus() {
     regain_next_lost_focus_ = true;
   }
 
-  void OnActivationChanged(bool active) {
+  virtual void OnActivationChanged(
+      views::Widget* widget, bool active) OVERRIDE {
     const int kFocusCheckIntervalMS = 250;
     if (active) {
       timer_.Stop();
@@ -596,10 +601,6 @@ class AppListViewWin {
     return view_->GetWidget()->GetNativeWindow();
   }
 
-  void OnAppListActivationChanged(bool active) {
-    activation_tracker_.OnActivationChanged(active);
-  }
-
   void OnSigninStatusChanged() {
     view_->OnSigninStatusChanged();
   }
@@ -696,12 +697,6 @@ class AppListShower {
     return view_->GetWindow();
   }
 
-  // TODO(koz): Make the view listen to activation changes itself, rather than
-  // requiring them to be plumbed through.
-  void OnAppListActivationChanged(bool active) {
-    view_->OnAppListActivationChanged(active);
-  }
-
   void OnSigninStatusChanged() {
     if (view_)
       view_->OnSigninStatusChanged();
@@ -796,7 +791,6 @@ class AppListController : public AppListServiceImpl {
   }
 
   void OnAppListClosing();
-  void OnAppListActivationChanged(bool active);
 
   // AppListService overrides:
   virtual void HandleFirstRun() OVERRIDE;
@@ -843,10 +837,6 @@ AppListControllerDelegateWin::~AppListControllerDelegateWin() {}
 
 void AppListControllerDelegateWin::DismissView() {
   AppListController::GetInstance()->DismissAppList();
-}
-
-void AppListControllerDelegateWin::ViewActivationChanged(bool active) {
-  AppListController::GetInstance()->OnAppListActivationChanged(active);
 }
 
 void AppListControllerDelegateWin::ViewClosing() {
@@ -974,10 +964,6 @@ void AppListController::DismissAppList() {
 void AppListController::OnAppListClosing() {
   shower_->CloseAppList();
   SetProfile(NULL);
-}
-
-void AppListController::OnAppListActivationChanged(bool active) {
-  shower_->OnAppListActivationChanged(active);
 }
 
 void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {

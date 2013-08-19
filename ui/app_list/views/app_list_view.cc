@@ -183,6 +183,14 @@ void AppListView::OnSigninStatusChanged() {
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
+void AppListView::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AppListView::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 #if defined(OS_WIN)
 HWND AppListView::GetHWND() const {
 #if defined(USE_AURA)
@@ -247,8 +255,9 @@ void AppListView::OnWidgetActivationChanged(views::Widget* widget,
                                             bool active) {
   // Do not called inherited function as the bubble delegate auto close
   // functionality is not used.
-  if (delegate_ && widget == GetWidget())
-    delegate_->ViewActivationChanged(active);
+  if (widget == GetWidget())
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      OnActivationChanged(widget, active));
 }
 
 void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,

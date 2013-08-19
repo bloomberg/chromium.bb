@@ -42,7 +42,6 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
                                         int event_flags) OVERRIDE {}
   virtual void Dismiss() OVERRIDE;
   virtual void ViewClosing() OVERRIDE {}
-  virtual void ViewActivationChanged(bool active) OVERRIDE {}
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual base::string16 GetCurrentUserName() OVERRIDE;
   virtual base::string16 GetCurrentUserEmail() OVERRIDE;
