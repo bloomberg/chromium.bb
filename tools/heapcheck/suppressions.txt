@@ -614,15 +614,6 @@
    fun:gfx::PlatformFontPango::*
 }
 {
-   bug_189194_a
-   Heapcheck:Leak
-   ...
-   fun:extensions::SettingsFrontend::Create
-   fun:ExtensionService::ExtensionService
-   fun:extensions::TestExtensionSystem::CreateExtensionService
-   fun:ProfileSigninConfirmationHelperTest::SetUp
-}
-{
   bug_225596
   Heapcheck:Leak
   fun:chromeos::input_method::InputMethodManagerImpl::Init

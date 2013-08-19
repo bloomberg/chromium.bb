@@ -6268,12 +6268,6 @@
    fun:_ZN7WebCore12EventHandler10mouseMovedERKNS_18PlatformMouseEventE
 }
 {
-   bug_189194
-   Memcheck:Leak
-   ...
-   fun:*ProfileSigninConfirmationDialogTest_*
-}
-{
    bug_195160_a
    Memcheck:Leak
    fun:_Znw*
