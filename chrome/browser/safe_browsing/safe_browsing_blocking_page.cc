@@ -1036,10 +1036,6 @@ void SafeBrowsingBlockingPageV2::PopulateMultipleThreatStringDictionary(
 
 void SafeBrowsingBlockingPageV2::PopulateMalwareStringDictionary(
     DictionaryValue* strings) {
-  std::string diagnostic_link = base::StringPrintf(kSbDiagnosticHtml,
-      l10n_util::GetStringUTF8(
-        IDS_SAFE_BROWSING_MALWARE_DIAGNOSTIC_PAGE).c_str());
-
   // Check to see if we're blocking the main page, or a sub-resource on the
   // main page.
   string16 headline, description1, description2, description3;

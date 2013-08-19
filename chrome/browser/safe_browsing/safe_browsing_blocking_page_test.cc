@@ -154,7 +154,9 @@ class FakeSafeBrowsingUIManager :  public SafeBrowsingUIManager {
 
 class FakeSafeBrowsingService : public SafeBrowsingService {
  public:
-  FakeSafeBrowsingService() { }
+  FakeSafeBrowsingService()
+      : fake_database_manager_(),
+        fake_ui_manager_() { }
 
   // Returned pointer has the same lifespan as the database_manager_ refcounted
   // object.
@@ -261,7 +263,7 @@ class FakeMalwareDetails : public MalwareDetails {
 
 class TestMalwareDetailsFactory : public MalwareDetailsFactory {
  public:
-  TestMalwareDetailsFactory() { }
+  TestMalwareDetailsFactory() : details_() { }
   virtual ~TestMalwareDetailsFactory() { }
 
   virtual MalwareDetails* CreateMalwareDetails(
@@ -477,7 +479,7 @@ class SafeBrowsingBlockingPageTest : public InProcessBrowserTest {
     EXPECT_TRUE(report.complete());
   }
 
-  void MalwareRedirectCancelAndProceed(const std::string open_function) {
+  void MalwareRedirectCancelAndProceed(const std::string& open_function) {
     GURL load_url = test_server()->GetURL(
         "files/safe_browsing/interstitial_cancel.html");
     GURL malware_url("http://localhost/files/safe_browsing/malware.html");
