@@ -67,9 +67,4 @@ crbug.com/266315 fast/repaint/shadow-multiple-strict-horizontal.html [ ImageOnly
 crbug.com/266315 fast/repaint/shadow-multiple-strict-vertical.html [ ImageOnlyFailure ]
 crbug.com/266315 fast/repaint/shadow-multiple-vertical.html [ ImageOnlyFailure ]
 
-# With Skia r10769 the rendering of lines was slightly changed resulting in two
-# image layout differences
-crbug.com/275475 virtual/gpu/fast/canvas/canvas-transforms-during-path.html [ ImageOnlyFailure ]
-crbug.com/275475 virtual/gpu/fast/canvas/quadraticCurveTo.xml [ ImageOnlyFailure ]
-
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
