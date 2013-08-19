@@ -1317,10 +1317,15 @@ void LauncherView::LauncherItemChanged(int model_index,
     model_index = CancelDrag(model_index);
     scoped_ptr<views::View> old_view(view_model_->view_at(model_index));
     bounds_animator_->StopAnimatingView(old_view.get());
+    // Removing and re-inserting a view in our view model will strip the ideal
+    // bounds from the item. To avoid recalculation of everything the bounds
+    // get remembered and restored after the insertion to the previous value.
+    gfx::Rect old_ideal_bounds = view_model_->ideal_bounds(model_index);
     view_model_->Remove(model_index);
     views::View* new_view = CreateViewForItem(item);
     AddChildView(new_view);
     view_model_->Add(new_view, model_index);
+    view_model_->set_ideal_bounds(model_index, old_ideal_bounds);
     new_view->SetBoundsRect(old_view->bounds());
     return;
   }
