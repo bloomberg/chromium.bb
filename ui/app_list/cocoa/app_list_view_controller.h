@@ -17,7 +17,7 @@
 namespace app_list {
 class AppListViewDelegate;
 class AppListModel;
-class SigninDelegateObserverBridge;
+class AppListModelObserverBridge;
 }
 
 @class AppListPagerView;
@@ -46,7 +46,8 @@ APP_LIST_EXPORT
   base::scoped_nsobject<NSView> contentsView_;
 
   scoped_ptr<app_list::AppListViewDelegate> delegate_;
-  scoped_ptr<app_list::SigninDelegateObserverBridge> signin_observer_bridge_;
+  scoped_ptr<app_list::AppListModelObserverBridge>
+      app_list_model_observer_bridge_;
   BOOL showingSearchResults_;
 }
 

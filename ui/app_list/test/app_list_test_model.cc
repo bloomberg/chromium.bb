@@ -10,6 +10,10 @@
 namespace app_list {
 namespace test {
 
+AppListTestModel::AppListTestModel() {
+  SetSignedIn(true);
+}
+
 void AppListTestModel::PopulateApps(int n) {
   for (int i = 0; i < n; ++i)
     AddItem(base::StringPrintf("Item %d", i));

@@ -298,14 +298,6 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     return gfx::ImageSkia();
   }
 
-  virtual base::string16 GetCurrentUserName() OVERRIDE {
-    return base::string16();
-  }
-
-  virtual base::string16 GetCurrentUserEmail() OVERRIDE {
-    return base::string16();
-  }
-
   virtual void OpenSettings() OVERRIDE {
     // Nothing needs to be done.
   }

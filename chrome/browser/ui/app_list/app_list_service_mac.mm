@@ -76,7 +76,6 @@ class AppListServiceMac : public AppListServiceImpl,
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
-  virtual void OnSigninStatusChanged() OVERRIDE;
 
   // AppShimHandler overrides:
   virtual void OnShimLaunch(apps::AppShimHandler::Host* host,
@@ -403,10 +402,6 @@ void AppListServiceMac::CreateShortcut() {
 
 NSWindow* AppListServiceMac::GetAppListWindow() {
   return [window_controller_ window];
-}
-
-void AppListServiceMac::OnSigninStatusChanged() {
-  [[window_controller_ appListViewController] onSigninStatusChanged];
 }
 
 void AppListServiceMac::OnShimLaunch(apps::AppShimHandler::Host* host,

@@ -52,14 +52,11 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       signin_view_(NULL) {
   if (delegate_)
     delegate_->SetModel(model_.get());
-  if (GetSigninDelegate())
-    GetSigninDelegate()->AddObserver(this);
+  model_->AddObserver(this);
 }
 
 AppListView::~AppListView() {
-  if (GetSigninDelegate())
-    GetSigninDelegate()->RemoveObserver(this);
-
+  model_->RemoveObserver(this);
   // Models are going away, ensure their references are cleared.
   RemoveAllChildViews(true);
 }
@@ -175,11 +172,8 @@ void AppListView::Prerender() {
 }
 
 void AppListView::OnSigninStatusChanged() {
-  const bool needs_signin =
-      GetSigninDelegate() && GetSigninDelegate()->NeedSignin();
-
-  signin_view_->SetVisible(needs_signin);
-  app_list_main_view_->SetVisible(!needs_signin);
+  signin_view_->SetVisible(!model_->signed_in());
+  app_list_main_view_->SetVisible(model_->signed_in());
   app_list_main_view_->search_box_view()->InvalidateMenu();
 }
 
@@ -277,12 +271,16 @@ void AppListView::OnWidgetVisibilityChanged(views::Widget* widget,
   Layout();
 }
 
-void AppListView::OnSigninSuccess() {
+SigninDelegate* AppListView::GetSigninDelegate() {
+  return delegate_ ? delegate_->GetSigninDelegate() : NULL;
+}
+
+void AppListView::OnAppListModelSigninStatusChanged() {
   OnSigninStatusChanged();
 }
 
-SigninDelegate* AppListView::GetSigninDelegate() {
-  return delegate_ ? delegate_->GetSigninDelegate() : NULL;
+void AppListView::OnAppListModelCurrentUserChanged() {
+  OnSigninStatusChanged();
 }
 
 }  // namespace app_list

@@ -67,22 +67,6 @@ class AppListViewControllerTest : public AppsGridControllerTestHelper,
   DISALLOW_COPY_AND_ASSIGN(AppListViewControllerTest);
 };
 
-// Helper class allowing NeedSignin() to return true during SetUp(), to test an
-// initial state where signin is required, and the regular view starts hidden.
-class AppListViewControllerSigninTest : public AppListViewControllerTest {
- public:
-  AppListViewControllerSigninTest() : needs_signin_(true) {}
-
-  // SigninDelegate override:
-  virtual bool NeedSignin() OVERRIDE { return needs_signin_; }
-
- protected:
-  bool needs_signin_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AppListViewControllerSigninTest);
-};
-
 TEST_VIEW(AppListViewControllerTest, [app_list_view_controller_ view]);
 
 // Test that adding and removing pages updates the pager.
@@ -136,13 +120,16 @@ TEST_F(AppListViewControllerTest, SignedIn) {
 }
 
 // Test the view when signin is required.
-TEST_F(AppListViewControllerSigninTest, NeedsSignin) {
+TEST_F(AppListViewControllerTest, NeedsSignin) {
+  // Begin the test with a signed out app list.
+  scoped_ptr<AppListModel> new_model(new AppListModel);
+  new_model->SetSignedIn(false);
+  ResetModel(new_model.Pass());
   EXPECT_EQ(2u, [[[app_list_view_controller_ view] subviews] count]);
   EXPECT_TRUE([[app_list_view_controller_ backgroundView] isHidden]);
 
   // Simulate signing in, should enter the SignedIn state.
-  needs_signin_ = false;
-  NotifySigninSuccess();
+  model()->SetSignedIn(true);
   EXPECT_EQ(1u, [[[app_list_view_controller_ view] subviews] count]);
   EXPECT_FALSE([[app_list_view_controller_ backgroundView] isHidden]);
 }

@@ -5,6 +5,7 @@
 #include "ui/app_list/views/app_list_menu_views.h"
 
 #include "grit/ui_resources.h"
+#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -88,9 +89,11 @@ class CurrentUserMenuItem : public MenuItemView {
 class AppListMenuModelAdapter : public views::MenuModelAdapter {
  public:
   AppListMenuModelAdapter(ui::MenuModel* menu_model,
-                          AppListViewDelegate* delegate)
+                          AppListViewDelegate* delegate,
+                          AppListModel* app_list_model)
       : views::MenuModelAdapter(menu_model),
-        delegate_(delegate) {}
+        delegate_(delegate),
+        app_list_model_(app_list_model) {}
   virtual ~AppListMenuModelAdapter() {}
 
   // Overridden from views::MenuModelAdapter:
@@ -108,8 +111,8 @@ class AppListMenuModelAdapter : public views::MenuModelAdapter {
     MenuItemView* item = new CurrentUserMenuItem(
         menu,
         id,
-        delegate_->GetCurrentUserName(),
-        delegate_->GetCurrentUserEmail(),
+        app_list_model_->current_user_name(),
+        app_list_model_->current_user_email(),
         *rb.GetImageSkiaNamed(IDR_APP_LIST_USER_INDICATOR));
     menu->CreateSubmenu();
     menu->GetSubmenu()->AddChildViewAt(item, index);
@@ -118,15 +121,19 @@ class AppListMenuModelAdapter : public views::MenuModelAdapter {
 
  private:
   AppListViewDelegate* delegate_;
+  AppListModel* app_list_model_;  // Weak. Owned by AppListView.
 
   DISALLOW_COPY_AND_ASSIGN(AppListMenuModelAdapter);
 };
 
 }  // namespace
 
-AppListMenuViews::AppListMenuViews(AppListViewDelegate* delegate)
+AppListMenuViews::AppListMenuViews(AppListViewDelegate* delegate,
+                                   AppListModel* app_list_model)
     : AppListMenu(delegate) {
-  menu_delegate_.reset(new AppListMenuModelAdapter(menu_model(), delegate));
+  menu_delegate_.reset(new AppListMenuModelAdapter(menu_model(),
+                                                   delegate,
+                                                   app_list_model));
   menu_ = new MenuItemView(menu_delegate_.get());
   menu_runner_.reset(new views::MenuRunner(menu_));
   menu_delegate_->BuildMenu(menu_);

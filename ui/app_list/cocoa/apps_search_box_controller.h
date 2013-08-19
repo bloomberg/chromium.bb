@@ -27,6 +27,8 @@ class SearchBoxModelObserverBridge;
 - (app_list::AppListViewDelegate*)appListDelegate;
 - (app_list::SearchBoxModel*)searchBoxModel;
 - (void)modelTextDidChange;
+- (NSString*)currentUserName;
+- (NSString*)currentUserEmail;
 
 @end
 

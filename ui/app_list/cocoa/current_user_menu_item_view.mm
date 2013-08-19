@@ -4,11 +4,8 @@
 
 #import "ui/app_list/cocoa/current_user_menu_item_view.h"
 
-#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/strings/sys_string_conversions.h"
 #include "grit/ui_resources.h"
-#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -25,14 +22,14 @@ const CGFloat kMenuTopBottomPadding = 2;
 
 // Adds a text label in the custom view in the menu showing the current user.
 - (NSTextField*)addLabelWithFrame:(NSPoint)origin
-                        labelText:(const string16&)labelText;
+                        labelText:(NSString*)labelText;
 
 @end
 
 @implementation CurrentUserMenuItemView
 
-- (id)initWithDelegate:(app_list::AppListViewDelegate*)delegate {
-  DCHECK(delegate);
+- (id)initWithCurrentUser:(NSString*)userName
+                userEmail:(NSString*)userEmail {
   if ((self = [super initWithFrame:NSZeroRect])) {
     NSImage* userImage = ui::ResourceBundle::GetSharedInstance().
         GetNativeImageNamed(IDR_APP_LIST_USER_INDICATOR).AsNSImage();
@@ -46,12 +43,12 @@ const CGFloat kMenuTopBottomPadding = 2;
     NSPoint labelOrigin = NSMakePoint(NSMaxX(imageRect), kMenuTopBottomPadding);
     NSTextField* userField =
         [self addLabelWithFrame:labelOrigin
-                      labelText:delegate->GetCurrentUserName()];
+                      labelText:userName];
 
     labelOrigin.y = NSMaxY([userField frame]);
     NSTextField* emailField =
         [self addLabelWithFrame:labelOrigin
-                      labelText:delegate->GetCurrentUserEmail()];
+                      labelText:userEmail];
     [emailField setTextColor:[NSColor disabledControlTextColor]];
 
     // Size the container view to fit the longest label.
@@ -66,12 +63,12 @@ const CGFloat kMenuTopBottomPadding = 2;
 }
 
 - (NSTextField*)addLabelWithFrame:(NSPoint)origin
-                        labelText:(const string16&)labelText {
+                        labelText:(NSString*)labelText {
   NSRect labelFrame = NSZeroRect;
   labelFrame.origin = origin;
   base::scoped_nsobject<NSTextField> label(
       [[NSTextField alloc] initWithFrame:labelFrame]);
-  [label setStringValue:base::SysUTF16ToNSString(labelText)];
+  [label setStringValue:labelText];
   [label setEditable:NO];
   [label setBordered:NO];
   [label setDrawsBackground:NO];

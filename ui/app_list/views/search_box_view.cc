@@ -40,7 +40,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              AppListModel* model)
     : delegate_(delegate),
       view_delegate_(view_delegate),
-      model_(model->search_box()),
+      model_(model),
       icon_view_(new views::ImageView),
       search_box_(new views::Textfield),
       contents_view_(NULL) {
@@ -65,13 +65,13 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   search_box_->SetController(this);
   AddChildView(search_box_);
 
-  model_->AddObserver(this);
+  model_->search_box()->AddObserver(this);
   IconChanged();
   HintTextChanged();
 }
 
 SearchBoxView::~SearchBoxView() {
-  model_->RemoveObserver(this);
+  model_->search_box()->RemoveObserver(this);
 }
 
 bool SearchBoxView::HasSearch() const {
@@ -132,10 +132,10 @@ bool SearchBoxView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
 void SearchBoxView::UpdateModel() {
   // Temporarily remove from observer to ignore notifications caused by us.
-  model_->RemoveObserver(this);
-  model_->SetText(search_box_->text());
-  model_->SetSelectionModel(search_box_->GetSelectionModel());
-  model_->AddObserver(this);
+  model_->search_box()->RemoveObserver(this);
+  model_->search_box()->SetText(search_box_->text());
+  model_->search_box()->SetSelectionModel(search_box_->GetSelectionModel());
+  model_->search_box()->AddObserver(this);
 }
 
 void SearchBoxView::NotifyQueryChanged() {
@@ -160,7 +160,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 
 void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {
   if (!menu_)
-    menu_.reset(new AppListMenuViews(view_delegate_));
+    menu_.reset(new AppListMenuViews(view_delegate_, model_));
 
   const gfx::Point menu_location =
       menu_button_->GetBoundsInScreen().bottom_right() +
@@ -169,19 +169,19 @@ void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {
 }
 
 void SearchBoxView::IconChanged() {
-  icon_view_->SetImage(model_->icon());
+  icon_view_->SetImage(model_->search_box()->icon());
 }
 
 void SearchBoxView::HintTextChanged() {
-  search_box_->set_placeholder_text(model_->hint_text());
+  search_box_->set_placeholder_text(model_->search_box()->hint_text());
 }
 
 void SearchBoxView::SelectionModelChanged() {
-  search_box_->SelectSelectionModel(model_->selection_model());
+  search_box_->SelectSelectionModel(model_->search_box()->selection_model());
 }
 
 void SearchBoxView::TextChanged() {
-  search_box_->SetText(model_->text());
+  search_box_->SetText(model_->search_box()->text());
 }
 
 }  // namespace app_list

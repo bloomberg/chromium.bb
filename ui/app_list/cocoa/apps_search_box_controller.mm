@@ -381,7 +381,8 @@ void SearchBoxModelObserverBridge::TextChanged() {
     return;
 
   base::scoped_nsobject<NSView> customItemView([[CurrentUserMenuItemView alloc]
-      initWithDelegate:[[searchBoxController_ delegate] appListDelegate]]);
+      initWithCurrentUser:[[searchBoxController_ delegate] currentUserName]
+                userEmail:[[searchBoxController_ delegate] currentUserEmail]]);
   [[menu itemAtIndex:index] setView:customItemView];
 }
 

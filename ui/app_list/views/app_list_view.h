@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
-#include "ui/app_list/signin_delegate_observer.h"
+#include "ui/app_list/app_list_model_observer.h"
 #include "ui/views/bubble/bubble_delegate.h"
 
 namespace views {
@@ -27,7 +27,7 @@ class SigninView;
 // AppListView is the top-level view and controller of app list UI. It creates
 // and hosts a AppsGridView and passes AppListModel to it for display.
 class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
-                                    public SigninDelegateObserver {
+                                    public AppListModelObserver {
  public:
   class Observer {
   public:
@@ -101,8 +101,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
   virtual void OnWidgetActivationChanged(
       views::Widget* widget, bool active) OVERRIDE;
 
-  // Overridden from SigninDelegateObserver:
-  virtual void OnSigninSuccess() OVERRIDE;
+  // Overridden from AppListModelObserver:
+  virtual void OnAppListModelSigninStatusChanged() OVERRIDE;
+  virtual void OnAppListModelCurrentUserChanged() OVERRIDE;
 
   SigninDelegate* GetSigninDelegate();
 

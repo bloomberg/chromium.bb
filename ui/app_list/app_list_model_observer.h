@@ -12,7 +12,13 @@ namespace app_list {
 class APP_LIST_EXPORT AppListModelObserver {
  public:
   // Invoked when AppListModel's status has changed.
-  virtual void OnAppListModelStatusChanged() = 0;
+  virtual void OnAppListModelStatusChanged() {}
+
+  // Invoked when AppListModel's current user details have changed.
+  virtual void OnAppListModelCurrentUserChanged() {}
+
+  // Invoked when AppListModel's current user's signin status has changed.
+  virtual void OnAppListModelSigninStatusChanged() {}
 
  protected:
   virtual ~AppListModelObserver() {}

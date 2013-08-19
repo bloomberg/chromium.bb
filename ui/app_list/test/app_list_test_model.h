@@ -18,7 +18,7 @@ namespace test {
 // Extends AppListModel with helper functions for use in tests.
 class AppListTestModel : public AppListModel {
  public:
-  AppListTestModel() {}
+  AppListTestModel();
 
   // Populate the model with |n| items titled "Item #".
   void PopulateApps(int n);

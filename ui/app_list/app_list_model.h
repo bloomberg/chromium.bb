@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/base/models/list_model.h"
 
@@ -39,17 +40,29 @@ class APP_LIST_EXPORT AppListModel {
   void RemoveObserver(AppListModelObserver* observer);
 
   void SetStatus(Status status);
+  void SetCurrentUser(const base::string16& current_user_name,
+                      const base::string16& current_user_email);
+  void SetSignedIn(bool signed_in);
 
   Apps* apps() { return apps_.get(); }
   SearchBoxModel* search_box() { return search_box_.get(); }
   SearchResults* results() { return results_.get(); }
   Status status() const { return status_; }
+  bool signed_in() const { return signed_in_; }
+  const base::string16& current_user_name() const { return current_user_name_; }
+  const base::string16& current_user_email() const {
+    return current_user_email_;
+  }
 
  private:
   scoped_ptr<Apps> apps_;
 
   scoped_ptr<SearchBoxModel> search_box_;
   scoped_ptr<SearchResults> results_;
+
+  base::string16 current_user_name_;
+  base::string16 current_user_email_;
+  bool signed_in_;
 
   Status status_;
   ObserverList<AppListModelObserver> observers_;

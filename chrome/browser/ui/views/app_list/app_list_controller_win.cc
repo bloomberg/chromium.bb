@@ -804,7 +804,6 @@ class AppListController : public AppListServiceImpl {
 
   // AppListServiceImpl overrides:
   virtual void CreateShortcut() OVERRIDE;
-  virtual void OnSigninStatusChanged() OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListController>;
@@ -923,10 +922,6 @@ gfx::NativeWindow AppListController::GetAppListWindow() {
 
 AppListControllerDelegate* AppListController::CreateControllerDelegate() {
   return new AppListControllerDelegateWin();
-}
-
-void AppListController::OnSigninStatusChanged() {
-  shower_->OnSigninStatusChanged();
 }
 
 void AppListController::ShowForProfile(Profile* requested_profile) {

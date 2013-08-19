@@ -9,15 +9,12 @@
 
 #include "ui/app_list/app_list_export.h"
 
-namespace app_list {
-class AppListViewDelegate;
-}
-
 // The custom in-menu view representing the currently signed-in user.
 APP_LIST_EXPORT
 @interface CurrentUserMenuItemView : NSView
 
-- (id)initWithDelegate:(app_list::AppListViewDelegate*)delegate;
+- (id)initWithCurrentUser:(NSString*)userName
+                userEmail:(NSString*)userEmail;
 
 @end
 

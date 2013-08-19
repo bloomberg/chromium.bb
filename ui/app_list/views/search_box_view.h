@@ -21,8 +21,8 @@ class Textfield;
 namespace app_list {
 
 class AppListMenuViews;
-class AppListViewDelegate;
 class AppListModel;
+class AppListViewDelegate;
 class SearchBoxModel;
 class SearchBoxViewDelegate;
 
@@ -80,7 +80,7 @@ class SearchBoxView : public views::View,
 
   SearchBoxViewDelegate* delegate_;  // Not owned.
   AppListViewDelegate* view_delegate_;  // Not owned.
-  SearchBoxModel* model_;  // Owned by AppListModel.
+  AppListModel* model_;  // Owned by AppListView.
 
   scoped_ptr<AppListMenuViews> menu_;
 

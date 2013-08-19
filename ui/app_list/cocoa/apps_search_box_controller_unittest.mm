@@ -52,6 +52,14 @@
   return 3;
 }
 
+- (NSString*)currentUserName {
+  return @"";
+}
+
+- (NSString*)currentUserEmail {
+  return @"";
+}
+
 @end
 
 namespace app_list {
@@ -168,9 +176,9 @@ class AppsSearchBoxCustomMenuItemTest : public ui::CocoaTest {
   }
 
   virtual void SetUp() OVERRIDE {
-    scoped_ptr<AppListViewDelegate> delegate(new AppListTestViewDelegate);
     current_user_menu_item_.reset([[[CurrentUserMenuItemView alloc]
-        initWithDelegate:delegate.get()] retain]);
+        initWithCurrentUser:@"testUser"
+                  userEmail:@"testUser@chromium.org"] retain]);
     ui::CocoaTest::SetUp();
     [[test_window() contentView] addSubview:current_user_menu_item_];
   }

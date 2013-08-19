@@ -15,22 +15,14 @@
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/profiles/profile_loader.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace base {
 class FilePath;
 }
 
-namespace content {
-class NotificationSource;
-class NotificationDetails;
-}
-
 // Parts of the AppListService implementation shared between platforms.
 class AppListServiceImpl : public AppListService,
-                           public ProfileInfoCacheObserver,
-                           public content::NotificationObserver {
+                           public ProfileInfoCacheObserver {
  public:
   static void RecordAppListLaunch();
   static void RecordAppListAppLaunch();
@@ -52,9 +44,6 @@ class AppListServiceImpl : public AppListService,
 
   // Create a platform-specific shortcut for the app list.
   virtual void CreateShortcut();
-
-  // Called in response to observed successful and unsuccessful signin changes.
-  virtual void OnSigninStatusChanged();
 
   // AppListService overrides:
   virtual void HandleFirstRun() OVERRIDE;
@@ -83,11 +72,6 @@ class AppListServiceImpl : public AppListService,
   virtual void OnProfileWillBeRemoved(
       const base::FilePath& profile_path) OVERRIDE;
 
-  // content::NotificationObserver
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   // The profile the AppList is currently displaying.
   Profile* profile_;
 
@@ -98,7 +82,6 @@ class AppListServiceImpl : public AppListService,
   int pending_profile_loads_;
 
   base::WeakPtrFactory<AppListServiceImpl> weak_factory_;
-  content::NotificationRegistrar registrar_;
 
   ProfileLoader profile_loader_;
 
