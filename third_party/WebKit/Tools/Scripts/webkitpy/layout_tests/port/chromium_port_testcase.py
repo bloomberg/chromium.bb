@@ -86,6 +86,8 @@ class ChromiumPortTestCase(port_testcase.PortTestCase):
             TestConfiguration('lucid', 'x86', 'release'),
             TestConfiguration('lucid', 'x86_64', 'debug'),
             TestConfiguration('lucid', 'x86_64', 'release'),
+            TestConfiguration('icecreamsandwich', 'x86', 'debug'),
+            TestConfiguration('icecreamsandwich', 'x86', 'release'),
         ]))
 
     class TestMacPort(mac.MacPort):
