@@ -33,7 +33,7 @@ test = TestGyp.TestGyp(formats=formats)
 
 try:
   PushEnv()
-  os.environ['CFLAGS'] = '-O0'
+  os.environ['CFLAGS'] = ''
   os.environ['GYP_CROSSCOMPILE'] = '1'
   test.run_gyp('cflags.gyp')
   test.build('cflags.gyp')
@@ -44,9 +44,7 @@ finally:
   PopEnv()
 
 
-expect = """\
-Using no optimization flag
-"""
+expect = """FOO not defined\n"""
 test.run_built_executable('cflags', stdout=expect)
 test.run_built_executable('cflags_host', stdout=expect)
 
@@ -54,7 +52,7 @@ test.sleep()
 
 try:
   PushEnv()
-  os.environ['CFLAGS'] = '-O2'
+  os.environ['CFLAGS'] = '-DFOO=1'
   os.environ['GYP_CROSSCOMPILE'] = '1'
   test.run_gyp('cflags.gyp')
   test.build('cflags.gyp')
@@ -65,22 +63,18 @@ finally:
   PopEnv()
 
 
-expect = """\
-Using an optimization flag
-"""
+expect = """FOO defined\n"""
 test.run_built_executable('cflags', stdout=expect)
 
 # Environment variables shouldn't influence the flags for the host.
-expect = """\
-Using no optimization flag
-"""
+expect = """FOO not defined\n"""
 test.run_built_executable('cflags_host', stdout=expect)
 
 test.sleep()
 
 try:
   PushEnv()
-  os.environ['CFLAGS'] = '-O0'
+  os.environ['CFLAGS'] = ''
   test.run_gyp('cflags.gyp')
   test.build('cflags.gyp')
 finally:
@@ -90,16 +84,14 @@ finally:
   PopEnv()
 
 
-expect = """\
-Using no optimization flag
-"""
+expect = """FOO not defined\n"""
 test.run_built_executable('cflags', stdout=expect)
 
 test.sleep()
 
 try:
   PushEnv()
-  os.environ['CFLAGS'] = '-O2'
+  os.environ['CFLAGS'] = '-DFOO=1'
   test.run_gyp('cflags.gyp')
   test.build('cflags.gyp')
 finally:
@@ -109,9 +101,7 @@ finally:
   PopEnv()
 
 
-expect = """\
-Using an optimization flag
-"""
+expect = """FOO defined\n"""
 test.run_built_executable('cflags', stdout=expect)
 
 test.pass_test()
