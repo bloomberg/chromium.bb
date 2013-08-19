@@ -46,6 +46,7 @@
           'target_name': 'content',
           'type': 'none',
           'dependencies': [
+            'content_app_browser',
             'content_browser',
             'content_child',
             'content_common',
