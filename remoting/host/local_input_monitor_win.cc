@@ -148,7 +148,7 @@ void LocalInputMonitorWin::Core::StopOnUiThread() {
     device.dwFlags = RIDEV_REMOVE;
     device.usUsagePage = kGenericDesktopPage;
     device.usUsage = kMouseUsage;
-    device.hwndTarget = window_->hwnd();
+    device.hwndTarget = NULL;
 
     // The error is harmless, ignore it.
     RegisterRawInputDevices(&device, 1, sizeof(device));
