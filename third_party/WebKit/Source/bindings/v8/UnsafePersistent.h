@@ -33,7 +33,11 @@
 
 #include <v8.h>
 
+struct NPObject;
+
 namespace WebCore {
+
+template<class KeyType> class DOMWrapperMap;
 
 // An unsafe way to pass Persistent handles around. Do not use unless you know
 // what you're doing. UnsafePersistent is only safe to use when we know that the
@@ -68,14 +72,6 @@ public:
         return handle;
     }
 
-    // FIXME: Remove this function, replace the usages with newLocal(). Do not
-    // add code which calls this function.
-    v8::Handle<T> deprecatedHandle()
-    {
-        v8::Handle<T>* handle = reinterpret_cast<v8::Handle<T>*>(&m_value);
-        return *handle;
-    }
-
     void dispose()
     {
         persistent()->Dispose();
@@ -98,6 +94,19 @@ public:
     }
 
 private:
+    // For calling deprecatedHandle. FIXME: The operations should really be done
+    // inside UnsafePersistent, but it's not possible atm.
+    friend class ScriptWrappable;
+    friend class DOMDataStore;
+    friend class DOMWrapperMap<void>;
+    friend class DOMWrapperMap<NPObject>;
+
+    v8::Handle<T> deprecatedHandle()
+    {
+        v8::Handle<T>* handle = reinterpret_cast<v8::Handle<T>*>(&m_value);
+        return *handle;
+    }
+
     T* m_value;
 };
 
