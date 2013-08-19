@@ -9,8 +9,8 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_url_loader.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
+#include "ppapi/proxy/file_ref_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/proxy/url_request_info_resource.h"
 #include "ppapi/proxy/url_response_info_resource.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
@@ -158,9 +158,14 @@ int32_t URLLoaderResource::ReadResponseBody(
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
-  if (!response_info_.get() ||
-      !response_info_->data().body_as_file_ref.resource.is_null())
+  if (!response_info_.get())
     return PP_ERROR_FAILED;
+
+  // Fail if we have a valid file ref.
+  // ReadResponseBody() is for reading to a user-provided buffer.
+  if (response_info_->data().body_as_file_ref.IsValid())
+    return PP_ERROR_FAILED;
+
   if (bytes_to_read <= 0 || !buffer)
     return PP_ERROR_BADARGUMENT;
 
@@ -186,8 +191,11 @@ int32_t URLLoaderResource::FinishStreamingToFile(
   int32_t rv = ValidateCallback(callback);
   if (rv != PP_OK)
     return rv;
-  if (!response_info_.get() ||
-      response_info_->data().body_as_file_ref.resource.is_null())
+  if (!response_info_.get())
+    return PP_ERROR_FAILED;
+
+  // Fail if we do not have a valid file ref.
+  if (!response_info_->data().body_as_file_ref.IsValid())
     return PP_ERROR_FAILED;
 
   // We may have already reached EOF.
@@ -357,10 +365,10 @@ void URLLoaderResource::RunCallback(int32_t result) {
 void URLLoaderResource::SaveResponseInfo(const URLResponseInfoData& data) {
   // Create a proxy resource for the the file ref host resource if needed.
   PP_Resource body_as_file_ref = 0;
-  if (!data.body_as_file_ref.resource.is_null()) {
-    thunk::EnterResourceCreationNoLock enter(pp_instance());
-    body_as_file_ref =
-        enter.functions()->CreateFileRef(data.body_as_file_ref);
+  if (data.body_as_file_ref.IsValid()) {
+    body_as_file_ref = FileRefResource::CreateFileRef(connection(),
+                                                      pp_instance(),
+                                                      data.body_as_file_ref);
   }
   response_info_ = new URLResponseInfoResource(
       connection(), pp_instance(), data, body_as_file_ref);

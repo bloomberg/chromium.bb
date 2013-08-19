@@ -221,7 +221,7 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
 
   context.params.set_result(ppapi::PlatformFileErrorToPepperError(error));
 
-  std::vector<ppapi::FileRef_CreateInfo> infos;
+  std::vector<ppapi::FileRefCreateInfo> infos;
   std::vector<PP_FileType> file_types;
   if (error == base::PLATFORM_FILE_OK && fs_host_.get()) {
     std::string dir_path = path_;
@@ -235,7 +235,7 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
       else
         file_types.push_back(PP_FILETYPE_REGULAR);
 
-      ppapi::FileRef_CreateInfo info;
+      ppapi::FileRefCreateInfo info;
       info.file_system_type = fs_type_;
       info.file_system_plugin_resource = fs_host_->pp_resource();
       std::string path =

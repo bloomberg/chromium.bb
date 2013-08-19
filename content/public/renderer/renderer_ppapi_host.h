@@ -47,6 +47,11 @@ class RendererPpapiHost {
  public:
   // Returns the RendererPpapiHost associated with the given PP_Instance,
   // or NULL if the instance is invalid.
+  //
+  // Do NOT use this when dealing with the "NaCl trusted plugin". That plugin
+  // and the "untrusted plugin" (the NaCl application) that will be loaded
+  // share a PP_Instance, and the RendererPpapiHost* for the "untrusted plugin"
+  // will be returned after we switch the proxy on.
   CONTENT_EXPORT static RendererPpapiHost* GetForPPInstance(
       PP_Instance instance);
 

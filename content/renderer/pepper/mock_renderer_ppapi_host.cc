@@ -82,7 +82,6 @@ void MockRendererPpapiHost::CreateBrowserResourceHost(
     PP_Instance instance,
     const IPC::Message& nested_msg,
     const base::Callback<void(int)>& callback) const {
-  NOTIMPLEMENTED();
   callback.Run(0);
   return;
 }

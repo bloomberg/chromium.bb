@@ -355,8 +355,6 @@
     'renderer/pepper/ppb_broker_impl.h',
     'renderer/pepper/ppb_buffer_impl.cc',
     'renderer/pepper/ppb_buffer_impl.h',
-    'renderer/pepper/ppb_file_ref_impl.cc',
-    'renderer/pepper/ppb_file_ref_impl.h',
     'renderer/pepper/ppb_flash_message_loop_impl.cc',
     'renderer/pepper/ppb_flash_message_loop_impl.h',
     'renderer/pepper/ppb_gpu_blacklist_private_impl.cc',

@@ -9,8 +9,8 @@
 #include "ipc/ipc_message.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
+#include "ppapi/proxy/file_ref_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
-#include "ppapi/proxy/ppb_file_ref_proxy.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -100,19 +100,25 @@ void FileChooserResource::PopulateAcceptTypes(
 
 void FileChooserResource::OnPluginMsgShowReply(
     const ResourceMessageReplyParams& params,
-    const std::vector<PPB_FileRef_CreateInfo>& chosen_files) {
+    const std::vector<FileRefCreateInfo>& chosen_files) {
   if (output_.is_valid()) {
     // Using v0.6 of the API with the output array.
     std::vector<PP_Resource> files;
-    for (size_t i = 0; i < chosen_files.size(); i++)
-      files.push_back(PPB_FileRef_Proxy::DeserializeFileRef(chosen_files[i]));
+    for (size_t i = 0; i < chosen_files.size(); i++) {
+      files.push_back(FileRefResource::CreateFileRef(
+          connection(),
+          pp_instance(),
+          chosen_files[i]));
+    }
     output_.StoreResourceVector(files);
   } else {
     // Convert each of the passed in file infos to resources. These will be
     // owned by the FileChooser object until they're passed to the plugin.
     DCHECK(file_queue_.empty());
     for (size_t i = 0; i < chosen_files.size(); i++) {
-      file_queue_.push(PPB_FileRef_Proxy::DeserializeFileRef(
+      file_queue_.push(FileRefResource::CreateFileRef(
+          connection(),
+          pp_instance(),
           chosen_files[i]));
     }
   }
