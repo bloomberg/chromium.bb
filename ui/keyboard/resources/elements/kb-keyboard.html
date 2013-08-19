@@ -112,7 +112,6 @@
 
     /**
      * The boolean to decide if it is swipe in process or finished.
-     * @const
      * @type {boolean}
      */
     var swipeInProgress = false;
@@ -347,7 +346,6 @@
           swipeInProgress = false;
           swipeStatus.resetAll();
         }
-        // Remove the pointermove event hander here.
         this.removeEventListener('pointermove', this.swipeHandler, false);
       },
 
@@ -411,6 +409,8 @@
        * @param {Object} detail The detail of pressed key.
        */
       keyLongpress: function(event, detail) {
+        // If the gesture is long press, remove the pointermove listener.
+        this.removeEventListener('pointermove', this.swipeHandler, false);
         var toKeyset = detail.toKeyset;
         // Keyset transtion key.
         if (toKeyset) {
