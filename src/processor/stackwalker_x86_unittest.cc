@@ -53,6 +53,7 @@ using google_breakpad::CodeModule;
 using google_breakpad::StackFrameSymbolizer;
 using google_breakpad::StackFrame;
 using google_breakpad::StackFrameX86;
+using google_breakpad::Stackwalker;
 using google_breakpad::StackwalkerX86;
 using google_breakpad::SystemInfo;
 using google_breakpad::WindowsFrameInfo;
@@ -104,6 +105,9 @@ class StackwalkerX86Fixture {
     // Avoid GMOCK WARNING "Uninteresting mock function call - returning
     // directly" for FreeSymbolData().
     EXPECT_CALL(supplier, FreeSymbolData(_)).Times(AnyNumber());
+
+    // Reset max_frames_scanned since it's static.
+    Stackwalker::set_max_frames_scanned(1024);
   }
 
   // Set the Breakpad symbol information that supplier should return for
@@ -416,6 +420,58 @@ TEST_F(GetCallerFrame, TraditionalScanLongWay) {
     EXPECT_EQ(frame1_esp.Value(), frame1->context.esp);
     EXPECT_EQ(frame1_ebp.Value(), frame1->context.ebp);
     EXPECT_EQ(NULL, frame1->windows_frame_info);
+  }
+}
+
+// Test that set_max_frames_scanned prevents using stack scanning
+// to find caller frames.
+TEST_F(GetCallerFrame, ScanningNotAllowed) {
+  stack_section.start() = 0x80000000;
+  Label frame1_ebp;
+  stack_section
+    // frame 0
+    .D32(0xf065dc76)    // locals area:
+    .D32(0x46ee2167)    // garbage that doesn't look like
+    .D32(0xbab023ec)    // a return address
+    .D32(frame1_ebp)    // saved %ebp (%ebp fails to point here, forcing scan)
+    .D32(0x4000129d)    // return address
+    // frame 1
+    .Append(8, 0)       // space
+    .Mark(&frame1_ebp)  // %ebp points here
+    .D32(0)             // saved %ebp (stack end)
+    .D32(0);            // return address (stack end)
+
+  RegionFromSection();
+  raw_context.eip = 0x4000f49d;
+  raw_context.esp = stack_section.start().Value();
+  // Make the frame pointer bogus, to make the stackwalker scan the stack
+  // for something that looks like a return address.
+  raw_context.ebp = 0xd43eed6e;
+
+  StackFrameSymbolizer frame_symbolizer(&supplier, &resolver);
+  StackwalkerX86 walker(&system_info, &raw_context, &stack_region, &modules,
+                        &frame_symbolizer);
+  Stackwalker::set_max_frames_scanned(0);
+
+  vector<const CodeModule*> modules_without_symbols;
+  vector<const CodeModule*> modules_with_corrupt_symbols;
+  ASSERT_TRUE(walker.Walk(&call_stack, &modules_without_symbols,
+                          &modules_with_corrupt_symbols));
+  ASSERT_EQ(1U, modules_without_symbols.size());
+  ASSERT_EQ("module1", modules_without_symbols[0]->debug_file());
+  ASSERT_EQ(0U, modules_with_corrupt_symbols.size());
+  frames = call_stack.frames();
+  ASSERT_EQ(1U, frames->size());
+
+  {  // To avoid reusing locals by mistake
+    StackFrameX86 *frame0 = static_cast<StackFrameX86 *>(frames->at(0));
+    EXPECT_EQ(StackFrame::FRAME_TRUST_CONTEXT, frame0->trust);
+    ASSERT_EQ(StackFrameX86::CONTEXT_VALID_ALL, frame0->context_validity);
+    EXPECT_EQ(0x4000f49dU, frame0->instruction);
+    EXPECT_EQ(0x4000f49dU, frame0->context.eip);
+    EXPECT_EQ(stack_section.start().Value(), frame0->context.esp);
+    EXPECT_EQ(0xd43eed6eU, frame0->context.ebp);
+    EXPECT_EQ(NULL, frame0->windows_frame_info);
   }
 }
 

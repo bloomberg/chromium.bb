@@ -57,8 +57,11 @@
 namespace google_breakpad {
 
 const int Stackwalker::kRASearchWords = 30;
+
 uint32_t Stackwalker::max_frames_ = 1024;
 bool Stackwalker::max_frames_set_ = false;
+
+uint32_t Stackwalker::max_frames_scanned_ = 1024;
 
 Stackwalker::Stackwalker(const SystemInfo* system_info,
                          MemoryRegion* memory,
@@ -115,6 +118,10 @@ bool Stackwalker::Walk(
   // Begin with the context frame, and keep getting callers until there are
   // no more.
 
+  // Keep track of the number of scanned or otherwise dubious frames seen
+  // so far, as the caller may have set a limit.
+  uint32_t scanned_frames = 0;
+
   // Take ownership of the pointer returned by GetContextFrame.
   scoped_ptr<StackFrame> frame(GetContextFrame());
 
@@ -147,6 +154,17 @@ bool Stackwalker::Walk(
         break;
     }
 
+    // Keep track of the number of dubious frames so far.
+    switch (frame.get()->trust) {
+       case StackFrame::FRAME_TRUST_NONE:
+       case StackFrame::FRAME_TRUST_SCAN:
+       case StackFrame::FRAME_TRUST_CFI_SCAN:
+         scanned_frames++;
+         break;
+      default:
+        break;
+    }
+
     // Add the frame to the call stack.  Relinquish the ownership claim
     // over the frame, because the stack now owns it.
     stack->frames_.push_back(frame.release());
@@ -159,7 +177,8 @@ bool Stackwalker::Walk(
     }
 
     // Get the next frame and take ownership.
-    frame.reset(GetCallerFrame(stack));
+    bool stack_scan_allowed = scanned_frames < max_frames_scanned_;
+    frame.reset(GetCallerFrame(stack, stack_scan_allowed));
   }
 
   return true;
