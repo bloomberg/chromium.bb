@@ -31,18 +31,13 @@ HEADER_TEMPLATE = """// This is generated file. Do not modify directly.
 
 #include <string>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
-#if defined(%(unique_prefix)s_DLOPEN)
-#include "base/native_library.h"
-#endif
-
 class %(class_name)s {
  public:
   %(class_name)s();
   ~%(class_name)s();
 
-  bool Load(const std::string& library_name) WARN_UNUSED_RESULT;
+  bool Load(const std::string& library_name)
+      __attribute__((warn_unused_result));
 
   bool loaded() const { return loaded_; }
 
@@ -52,12 +47,14 @@ class %(class_name)s {
   void CleanUp(bool unload);
 
 #if defined(%(unique_prefix)s_DLOPEN)
-  base::NativeLibrary library_;
+  void* library_;
 #endif
 
   bool loaded_;
 
-  DISALLOW_COPY_AND_ASSIGN(%(class_name)s);
+  // Disallow copy constructor and assignment operator.
+  %(class_name)s(const %(class_name)s&);
+  void operator=(const %(class_name)s&);
 };
 
 #endif  // %(unique_prefix)s
@@ -73,6 +70,8 @@ IMPL_TEMPLATE = """// This is generated file. Do not modify directly.
 
 #include "%(generated_header_name)s"
 
+#include <dlfcn.h>
+
 // Put these sanity checks here so that they fire at most once
 // (to avoid cluttering the build output).
 #if !defined(%(unique_prefix)s_DLOPEN) && !defined(%(unique_prefix)s_DT_NEEDED)
@@ -82,9 +81,6 @@ IMPL_TEMPLATE = """// This is generated file. Do not modify directly.
 #error both %(unique_prefix)s_DLOPEN and %(unique_prefix)s_DT_NEEDED defined
 #endif
 
-#include "base/files/file_path.h"
-#include "base/logging.h"
-
 %(class_name)s::%(class_name)s() : loaded_(false) {
 }
 
@@ -93,13 +89,11 @@ IMPL_TEMPLATE = """// This is generated file. Do not modify directly.
 }
 
 bool %(class_name)s::Load(const std::string& library_name) {
-  if (loaded_) {
-    NOTREACHED();
+  if (loaded_)
     return false;
-  }
 
 #if defined(%(unique_prefix)s_DLOPEN)
-  library_ = base::LoadNativeLibrary(base::FilePath(library_name), NULL);
+  library_ = dlopen(library_name.c_str(), RTLD_LAZY);
   if (!library_)
     return false;
 #endif
@@ -113,7 +107,7 @@ bool %(class_name)s::Load(const std::string& library_name) {
 void %(class_name)s::CleanUp(bool unload) {
 #if defined(%(unique_prefix)s_DLOPEN)
   if (unload) {
-    base::UnloadNativeLibrary(library_);
+    dlclose(library_);
     library_ = NULL;
   }
 #endif
@@ -126,8 +120,7 @@ IMPL_MEMBER_INIT_TEMPLATE = """
 #if defined(%(unique_prefix)s_DLOPEN)
   %(function_name)s =
       reinterpret_cast<typeof(this->%(function_name)s)>(
-          base::GetFunctionPointerFromNativeLibrary(
-              library_, "%(function_name)s"));
+          dlsym(library_, "%(function_name)s"));
 #endif
 #if defined(%(unique_prefix)s_DT_NEEDED)
   %(function_name)s = &::%(function_name)s;

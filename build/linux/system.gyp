@@ -122,9 +122,6 @@
         {
           'target_name': 'libgps',
           'type': 'static_library',
-          'dependencies': [
-            '../../base/base.gyp:base',
-          ],
           'all_dependent_settings': {
             'defines': [
               'USE_LIBGPS',
@@ -148,6 +145,9 @@
               }],
             ],
           },
+          'include_dirs': [
+            '../..',
+          ],
           'hard_dependency': 1,
           'actions': [
             {
@@ -202,7 +202,6 @@
             ['use_openssl==0 and use_system_ssl==0', {
               'dependencies': [
                 '../../net/third_party/nss/ssl.gyp:libssl',
-                '../../third_party/zlib/zlib.gyp:zlib',
               ],
               'direct_dependent_settings': {
                 'include_dirs+': [
@@ -325,9 +324,6 @@
       'type': 'static_library',
       'conditions': [
         ['use_gio==1 and _toolset=="target"', {
-          'dependencies': [
-            '../../base/base.gyp:base',
-          ],
           'cflags': [
             '<!@(<(pkg-config) --cflags gio-2.0)',
           ],
@@ -342,6 +338,9 @@
               '<(SHARED_INTERMEDIATE_DIR)',
             ],
           },
+          'include_dirs': [
+            '../..',
+          ],
           'link_settings': {
             'ldflags': [
               '<!@(<(pkg-config) --libs-only-L --libs-only-other gio-2.0)',
@@ -401,9 +400,6 @@
       'cflags': [
         '<!@(<(pkg-config) --cflags libpci)',
       ],
-      'dependencies': [
-        '../../base/base.gyp:base',
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)',
@@ -421,6 +417,9 @@
           }],
         ],
       },
+      'include_dirs': [
+        '../..',
+      ],
       'hard_dependency': 1,
       'actions': [
         {
@@ -462,9 +461,6 @@
     {
       'target_name': 'libspeechd',
       'type': 'static_library',
-      'dependencies': [
-        '../../base/base.gyp:base',
-      ],
       'direct_dependent_settings': {
         'include_dirs': [
           '<(SHARED_INTERMEDIATE_DIR)',
@@ -479,6 +475,9 @@
           }],
         ],
       },
+      'include_dirs': [
+        '../..',
+      ],
       'hard_dependency': 1,
       'actions': [
         {
