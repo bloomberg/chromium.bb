@@ -82,10 +82,9 @@
       'filepath': 'Source/core/rendering'
     },
     'layers': {
-      'filepath': 'Source/WebCore/page/scrolling/ScrollingCoordinator.*' \
-                  '|Source/WebCore/platform/graphics/GraphicsLayer.*' \
-                  '|Source/WebCore/rendering/RenderLayer.*' \
-                  '|Source/WebKit/chromium/src/NonCompositedContentHost.*'
+      'filepath': 'Source/core/page/scrolling/ScrollingCoordinator.*' \
+                  '|Source/core/platform/graphics/GraphicsLayer.*' \
+                  '|Source/core/rendering/RenderLayer.*'
     },
     "content_security_policy": {
       'filepath': 'Source/core/page/.*SecurityPolicy' \
@@ -203,7 +202,7 @@
                   'nbarth@chromium.org' ],
     'canvas': [ 'cabanier@adobe.com', 'aandrey+blink@chromium.org' ],
     'custom_elements': [ 'dominicc+watchlist@chromium.org', 'dglazkov+blink@chromium.org' ],
-    'layers': [ 'blink-layers@chromium.org' ],
+    'layers': [ 'blink-layers+watch@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'owners': [ 'abarth@chromium.org'],
     'test_runner': [ 'jochen+watch@chromium.org' ],
