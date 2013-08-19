@@ -17,6 +17,10 @@ chrome.test.runTests([
     chrome.autotestPrivate.shutdown(true);
     chrome.test.succeed();
   },
+  function simulateAsanMemoryBug() {
+    chrome.autotestPrivate.simulateAsanMemoryBug();
+    chrome.test.succeed();
+  },
   function loginStatus() {
     chrome.autotestPrivate.loginStatus(
         chrome.test.callbackPass(function(status) {

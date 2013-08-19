@@ -17734,6 +17734,7 @@ other types of suffix sets.
   <int value="515" label="SYSTEM_STORAGE_REMOVEALLAVAILABLECAPACITYWATCHES"/>
   <int value="516" label="INFOBARS_SHOW"/>
   <int value="517" label="EXPERIMENTAL_INPUT_VIRTUALKEYBOARD_MOVECURSOR"/>
+  <int value="518" label="AUTOTESTPRIVATE_SIMULATEASANMEMORYBUG"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

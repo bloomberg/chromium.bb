@@ -41,5 +41,8 @@
 
     // Get login status.
     static void loginStatus(LoginStatusCallback callback);
+
+    // Simulates a memory access bug for asan testing.
+    static void simulateAsanMemoryBug();
   };
 };

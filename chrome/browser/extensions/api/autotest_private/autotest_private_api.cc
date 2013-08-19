@@ -96,6 +96,24 @@ bool AutotestPrivateLoginStatusFunction::RunImpl() {
   return true;
 }
 
+static int AccessArray(const volatile int arr[], const volatile int *index) {
+  return arr[*index];
+}
+
+bool AutotestPrivateSimulateAsanMemoryBugFunction::RunImpl() {
+  DVLOG(1) << "AutotestPrivateSimulateAsanMemoryBugFunction";
+  if (!AutotestPrivateAPIFactory::GetForProfile(profile())->test_mode()) {
+    // This array is volatile not to let compiler optimize us out.
+    volatile int testarray[3] = {0, 0, 0};
+
+    // Cause Address Sanitizer to abort this process.
+    volatile int index = 5;
+    AccessArray(testarray, &index);
+  }
+  return true;
+}
+
+
 AutotestPrivateAPI::AutotestPrivateAPI() : test_mode_(false) {
 }
 
