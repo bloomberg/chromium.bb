@@ -88,7 +88,7 @@ DocumentInit& DocumentInit::withRegistrationContext(CustomElementRegistrationCon
 
 PassRefPtr<CustomElementRegistrationContext> DocumentInit::registrationContext(Document* document) const
 {
-    if (!RuntimeEnabledFeatures::customElementsEnabled() && !RuntimeEnabledFeatures::embedderCustomElementsEnabled())
+    if (!RuntimeEnabledFeatures::customElementsEnabled())
         return 0;
 
     if (!document->isHTMLDocument() && !document->isXHTMLDocument())

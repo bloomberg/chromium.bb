@@ -31,25 +31,15 @@
 #include "config.h"
 #include "WebCustomElement.h"
 
-#include "../platform/WebString.h"
-#include "RuntimeEnabledFeatures.h"
 #include "core/dom/CustomElement.h"
 
 using namespace WebCore;
 
 namespace WebKit {
 
-// FIXME: Remove this when all embedders switch to
-// addEmbedderCustomElementName.
 void WebCustomElement::allowTagName(const WebString& localName)
 {
-    addEmbedderCustomElementName(localName);
-}
-
-void WebCustomElement::addEmbedderCustomElementName(const WebString& name)
-{
-    ASSERT(RuntimeEnabledFeatures::embedderCustomElementsEnabled());
-    CustomElement::addEmbedderCustomElementName(name);
+    CustomElement::allowTagName(localName);
 }
 
 } // namespace WebKit

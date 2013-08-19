@@ -46,13 +46,8 @@ class Element;
 
 class CustomElement {
 public:
-    enum NameSet {
-        EmbedderNames = 1 << 0,
-        StandardNames = 1 << 1,
-        AllNames = EmbedderNames | StandardNames
-    };
-    static bool isValidName(const AtomicString& name, NameSet validNames = AllNames);
-    static void addEmbedderCustomElementName(const AtomicString& name);
+    static bool isValidName(const AtomicString& name);
+    static void allowTagName(const AtomicString& localName);
 
     // API for registration contexts
     static void define(Element*, PassRefPtr<CustomElementDefinition>);
@@ -71,7 +66,7 @@ public:
 private:
     CustomElement();
 
-    static Vector<AtomicString>& embedderCustomElementNames();
+    static Vector<AtomicString>& allowedCustomTagNames();
 
     // Maps resolved elements to their definitions
 

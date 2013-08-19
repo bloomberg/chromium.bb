@@ -33,7 +33,6 @@
 
 #include "HTMLNames.h"
 #include "MathMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "SVGNames.h"
 #include "core/dom/CustomElementCallbackScheduler.h"
 #include "core/dom/CustomElementObserver.h"
@@ -41,50 +40,47 @@
 
 namespace WebCore {
 
-Vector<AtomicString>& CustomElement::embedderCustomElementNames()
+Vector<AtomicString>& CustomElement::allowedCustomTagNames()
 {
-    DEFINE_STATIC_LOCAL(Vector<AtomicString>, names, ());
-    return names;
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, tagNames, ());
+    return tagNames;
 }
 
-void CustomElement::addEmbedderCustomElementName(const AtomicString& name)
+void CustomElement::allowTagName(const AtomicString& localName)
 {
-    AtomicString lower = name.lower();
-    if (isValidName(lower, EmbedderNames))
+    AtomicString lower = localName.lower();
+    if (isValidName(lower))
         return;
-    embedderCustomElementNames().append(lower);
+    allowedCustomTagNames().append(lower);
 }
 
-static CustomElement::NameSet enabledNameSet()
+bool CustomElement::isValidName(const AtomicString& name)
 {
-    return CustomElement::NameSet((RuntimeEnabledFeatures::customElementsEnabled() ? CustomElement::StandardNames : 0) | (RuntimeEnabledFeatures::embedderCustomElementsEnabled() ? CustomElement::EmbedderNames : 0));
-}
+    if (notFound != allowedCustomTagNames().find(name))
+        return true;
 
-bool CustomElement::isValidName(const AtomicString& name, NameSet validNames)
-{
-    validNames = NameSet(validNames & enabledNameSet());
+    if (allowedCustomTagNames().size() > 0)
+        return false;
 
-    if ((validNames & EmbedderNames) && notFound != embedderCustomElementNames().find(name))
-        return Document::isValidName(name);
+    if (notFound == name.find('-'))
+        return false;
 
-    if ((validNames & StandardNames) && notFound != name.find('-')) {
-        DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
-        if (reservedNames.isEmpty()) {
-            reservedNames.append(MathMLNames::annotation_xmlTag.localName());
-            reservedNames.append(SVGNames::color_profileTag.localName());
-            reservedNames.append(SVGNames::font_faceTag.localName());
-            reservedNames.append(SVGNames::font_face_srcTag.localName());
-            reservedNames.append(SVGNames::font_face_uriTag.localName());
-            reservedNames.append(SVGNames::font_face_formatTag.localName());
-            reservedNames.append(SVGNames::font_face_nameTag.localName());
-            reservedNames.append(SVGNames::missing_glyphTag.localName());
-        }
-
-        if (notFound == reservedNames.find(name))
-            return Document::isValidName(name.string());
+    DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
+    if (reservedNames.isEmpty()) {
+        reservedNames.append(MathMLNames::annotation_xmlTag.localName());
+        reservedNames.append(SVGNames::color_profileTag.localName());
+        reservedNames.append(SVGNames::font_faceTag.localName());
+        reservedNames.append(SVGNames::font_face_srcTag.localName());
+        reservedNames.append(SVGNames::font_face_uriTag.localName());
+        reservedNames.append(SVGNames::font_face_formatTag.localName());
+        reservedNames.append(SVGNames::font_face_nameTag.localName());
+        reservedNames.append(SVGNames::missing_glyphTag.localName());
     }
 
-    return false;
+    if (notFound != reservedNames.find(name))
+        return false;
+
+    return Document::isValidName(name.string());
 }
 
 void CustomElement::define(Element* element, PassRefPtr<CustomElementDefinition> passDefinition)

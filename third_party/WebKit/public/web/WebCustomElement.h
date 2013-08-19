@@ -31,11 +31,9 @@
 #ifndef WebCustomElement_h
 #define WebCustomElement_h
 
-#include "../platform/WebCommon.h"
+#include "../platform/WebString.h"
 
 namespace WebKit {
-
-class WebString;
 
 class WebCustomElement {
 public:
@@ -44,16 +42,7 @@ public:
     // Element processing requires the set of valid names to be known
     // ahead of time, this method should be called before any elements
     // with the given tag name are created.
-    // FIXME: Remove this when embedders switch to
-    // addEmbedderCustomElementName.
     WEBKIT_EXPORT static void allowTagName(const WebString& localName);
-
-    // Adds a name to the set of names embedders can use
-    // WebDocument::registerEmbedderCustomElement to register their
-    // own types for. Because Custom Element processing requires the
-    // set of valid names to be known ahead of time, this method
-    // should be called before an element with this name is created.
-    WEBKIT_EXPORT static void addEmbedderCustomElementName(const WebString& name);
 
 private:
     WebCustomElement();
