@@ -27,6 +27,8 @@ from chromite.lib import gs
 from chromite.lib import locking
 from chromite.lib import osutils
 from chromite.lib import parallel
+from chromite.scripts import upload_symbols
+
 
 _PACKAGE_FILE = '%(buildroot)s/src/scripts/cbuildbot_package.list'
 CHROME_KEYWORDS_FILE = ('/build/%(board)s/etc/portage/package.keywords/chrome')
@@ -1187,25 +1189,10 @@ def UploadArchivedFile(archive_path, upload_url, filename, debug,
 
 def UploadSymbols(buildroot, board, official, cnt):
   """Upload debug symbols for this build."""
-  # TODO(build): Convert this to an import.  This is troublesome though
-  # because uploading symbols requires `sym_upload` which is a compiled
-  # binary inside the chroot from breakpad.
-  cmd = [
-      'upload_symbols',
-      '--board', board,
-      '--yes',
-      '--debug',
-  ]
-
-  if not cnt is None:
-    cmd += ['--upload-count', str(cnt)]
-  if official:
-    cmd += ['--official_build']
-
-  try:
-    _RunBuildScript(buildroot, cmd, chromite_cmd=True, capture_output=False,
-                    enter_chroot=True)
-  except results_lib.BuildScriptFailure:
+  ret = upload_symbols.UploadSymbols(
+      board=board, official=official, upload_count=cnt,
+      root=os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR))
+  if ret:
     # TODO(davidjames): Convert this to a fatal error.
     # See http://crbug.com/212437
     cros_build_lib.PrintBuildbotStepWarnings()

@@ -188,7 +188,7 @@ def UploadSymbol(sym_file, upload_url, file_limit=DEFAULT_FILE_LIMIT,
 
 def UploadSymbols(board=None, official=False, breakpad_dir=None,
                   file_limit=DEFAULT_FILE_LIMIT, sleep=DEFAULT_SLEEP_DELAY,
-                  upload_count=None, sym_files=None):
+                  upload_count=None, sym_files=None, root=None):
   """Upload all the generated symbols for |board| to the crash server
 
   You can use in a few ways:
@@ -204,6 +204,7 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     sleep: How long to sleep in between uploads
     upload_count: If set, only upload this many symbols (meant for testing)
     sym_files: Specific symbol files to upload, otherwise search |breakpad_dir|
+    root: The tree to prefix to |breakpad_dir| (if |breakpad_dir| is not set)
   Returns:
     The number of errors that were encountered.
   """
@@ -221,7 +222,9 @@ def UploadSymbols(board=None, official=False, breakpad_dir=None,
     all_files = True
   else:
     if breakpad_dir is None:
-      breakpad_dir = cros_generate_breakpad_symbols.FindBreakpadDir(board)
+      breakpad_dir = os.path.join(
+          root,
+          cros_generate_breakpad_symbols.FindBreakpadDir(board).lstrip('/'))
     cros_build_lib.Info('uploading all symbols to %s from %s', upload_url,
                         breakpad_dir)
     sym_file_sets = os.walk(breakpad_dir)

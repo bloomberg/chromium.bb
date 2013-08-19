@@ -292,18 +292,26 @@ ca-t3/pk-g4-4.0.1-r333
     commands.GenerateBreakpadSymbols(self.tempdir, self._board, False)
     self.assertCommandContains(['--board=%s' % self._board])
 
-  def testUploadSymbols(self, official=False, cnt=None):
+  @mock.patch('chromite.scripts.upload_symbols.UploadSymbols')
+  def testUploadSymbols(self, sym_mock, official=False, cnt=None):
     """Test UploadSymbols Command."""
+    sym_mock.side_effect = [0]
     commands.UploadSymbols(self.tempdir, self._board, official, cnt)
-    self.assertCommandContains(['--official_build'], expected=official)
-    self.assertCommandContains(['--upload-count'], expected=bool(cnt))
+    self.assertEquals(sym_mock.call_count, 1)
+    _, kwargs = sym_mock.call_args
+    self.assertEquals(kwargs['official'], official)
+    self.assertEquals(kwargs['upload_count'], cnt)
 
   def testOfficialUploadSymbols(self):
     """Test uploading symbols for official builds"""
+    # Seems pylint can't grasp the @mock.patch decorator.
+    # pylint: disable=E1120
     self.testUploadSymbols(official=True)
 
   def testLimitUploadSymbols(self):
     """Test uploading a limited number of symbols"""
+    # Seems pylint can't grasp the @mock.patch decorator.
+    # pylint: disable=E1120
     self.testUploadSymbols(cnt=10)
 
   def testPushImages(self, profile=None):
