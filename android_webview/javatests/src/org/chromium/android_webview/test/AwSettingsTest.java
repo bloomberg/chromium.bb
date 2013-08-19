@@ -2436,22 +2436,14 @@ public class AwSettingsTest extends AwTestBase {
         }
     }
 
-    /*
     @LargeTest
     @Feature({"AndroidWebView", "Preferences"})
-    Disabled until video is working. crbug.com/239760
-    */
-    @DisabledTest
     public void testMediaPlaybackWithoutUserGesture() throws Throwable {
         assertTrue(runVideoTest(false, -1));
     }
 
-    /*
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
-    Disabled until video is working. crbug.com/239760
-    */
-    @DisabledTest
     public void testMediaPlaybackWithUserGesture() throws Throwable {
         // Wait for 5 second to see if video played.
         assertFalse(runVideoTest(true, 5000));
