@@ -246,10 +246,6 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       }.bind(this));
     }.bind(this));
 
-    // Removes the user data which is no longer used.
-    // TODO(yoshiki): Remove this in M31 http://crbug.com/268784/
-    chrome.storage.local.remove('folder-shortcuts-list');
-
     group.run(callback);
   };
 
