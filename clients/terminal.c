@@ -20,6 +20,8 @@
  * OF THIS SOFTWARE.
  */
 
+#define _XOPEN_SOURCE 700 /* for strnlen, snprintf and wcwidth */
+
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -33,6 +35,8 @@
 #include <ctype.h>
 #include <cairo.h>
 #include <sys/epoll.h>
+#include <wchar.h>
+#include <locale.h>
 
 #include <wayland-client.h>
 
@@ -216,6 +220,13 @@ get_unicode(union utf8_char utf8)
 		return 0xfffd;
 
 	return machine.unicode;
+}
+
+static bool
+is_wide(union utf8_char utf8)
+{
+	uint32_t unichar = get_unicode(utf8);
+	return wcwidth(unichar) > 1;
 }
 
 struct char_sub {
@@ -876,6 +887,8 @@ terminal_send_selection(struct terminal *terminal, int fd)
 	for (row = 0; row < terminal->height; row++) {
 		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
+			if (p_row[col].ch == 0x200B) /* space glyph */
+				continue;
 			/* get the attributes for this character cell */
 			terminal_decode_attr(terminal, row, col, &attr);
 			if (!attr.attr.s)
@@ -972,6 +985,7 @@ redraw_handler(struct widget *widget, void *data)
 	struct glyph_run run;
 	cairo_font_extents_t extents;
 	double average_width;
+	double unichar_width;
 
 	surface = window_get_surface(terminal->window);
 	widget_get_allocation(terminal->widget, &allocation);
@@ -997,6 +1011,7 @@ redraw_handler(struct widget *widget, void *data)
 			allocation.y + top_margin);
 	/* paint the background */
 	for (row = 0; row < terminal->height; row++) {
+		p_row = terminal_get_row(terminal, row);
 		for (col = 0; col < terminal->width; col++) {
 			/* get the attributes for this character cell */
 			terminal_decode_attr(terminal, row, col, &attr);
@@ -1004,12 +1019,17 @@ redraw_handler(struct widget *widget, void *data)
 			if (attr.attr.bg == terminal->color_scheme->border)
 				continue;
 
+			if (is_wide(p_row[col]))
+				unichar_width = 2 * average_width;
+			else
+				unichar_width = average_width;
+
 			terminal_set_color(terminal, cr, attr.attr.bg);
 			cairo_move_to(cr, col * average_width,
 				      row * extents.height);
-			cairo_rel_line_to(cr, average_width, 0);
+			cairo_rel_line_to(cr, unichar_width, 0);
 			cairo_rel_line_to(cr, 0, extents.height);
-			cairo_rel_line_to(cr, -average_width, 0);
+			cairo_rel_line_to(cr, -unichar_width, 0);
 			cairo_close_path(cr);
 			cairo_fill(cr);
 		}
@@ -1901,6 +1921,10 @@ handle_char(struct terminal *terminal, union utf8_char utf8)
 	row[terminal->column] = utf8;
 	attr_row[terminal->column++] = terminal->curr_attr;
 
+	/* cursor jump for wide character. */
+	if (is_wide(utf8))
+		row[terminal->column++].ch = 0x200B; /* space glyph */
+
 	if (utf8.ch != terminal->last_char.ch)
 		terminal->last_char = utf8;
 }
@@ -2736,6 +2760,10 @@ int main(int argc, char *argv[])
 	struct display *d;
 	struct terminal *terminal;
 	int config_fd;
+
+	/* as wcwidth is locale-dependent,
+	   wcwidth needs setlocale call to function properly. */
+	setlocale(LC_ALL, "");
 
 	option_shell = getenv("SHELL");
 	if (!option_shell)
