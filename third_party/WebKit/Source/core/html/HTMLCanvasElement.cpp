@@ -31,6 +31,7 @@
 #include <math.h>
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptController.h"
 #include "core/dom/Document.h"
@@ -385,7 +386,7 @@ String HTMLCanvasElement::toEncodingMimeType(const String& mimeType)
 String HTMLCanvasElement::toDataURL(const String& mimeType, const double* quality, ExceptionState& es)
 {
     if (!m_originClean) {
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("toDataURL", "HTMLCanvasElement", "tainted canvases may not be exported."));
         return String();
     }
 
