@@ -73,6 +73,7 @@ class Parser {
   scoped_ptr<ParseNode> ParseCondition();
 
   bool IsAssignment(const ParseNode* node) const;
+  bool IsStatementBreak(Token::Type token_type) const;
 
   bool LookAhead(Token::Type type);
   bool Match(Token::Type type);

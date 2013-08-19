@@ -43,7 +43,6 @@ class Token {
     IDENTIFIER, // foo
     COMMA,  // ,
     COMMENT,    // #...\n
-    NEWLINE,
 
     UNCLASSIFIED_OPERATOR,  // TODO(scottmg): This shouldn't be necessary.
 

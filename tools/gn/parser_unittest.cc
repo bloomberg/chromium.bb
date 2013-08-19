@@ -363,7 +363,8 @@ TEST(Parser, NestedBlocks) {
       "      LITERAL(1)\n"
       "    BLOCK\n";
   DoParserPrintTest(input, expected);
-  DoParserErrorTest("{cc_test(\"foo\") {{foo=1}{}}}", 1, 25);
+  const char* input_with_newline = "{cc_test(\"foo\") {{foo=1}\n{}}}";
+  DoParserPrintTest(input_with_newline, expected);
 }
 
 TEST(Parser, UnterminatedBlock) {
@@ -372,4 +373,105 @@ TEST(Parser, UnterminatedBlock) {
 
 TEST(Parser, BadlyTerminatedNumber) {
   DoParserErrorTest("1234z", 1, 5);
+}
+
+TEST(Parser, NewlinesInUnusualPlaces) {
+  DoParserPrintTest(
+      "if\n"
+      "(\n"
+      "a\n"
+      ")\n"
+      "{\n"
+      "}\n",
+      "BLOCK\n"
+      " CONDITION\n"
+      "  IDENTIFIER(a)\n"
+      "  BLOCK\n");
+}
+
+TEST(Parser, NewlinesInUnusualPlaces2) {
+  DoParserPrintTest(
+      "a\n=\n2\n",
+      "BLOCK\n"
+      " BINARY(=)\n"
+      "  IDENTIFIER(a)\n"
+      "  LITERAL(2)\n");
+  DoParserPrintTest(
+      "x =\ny if\n(1\n) {}",
+      "BLOCK\n"
+      " BINARY(=)\n"
+      "  IDENTIFIER(x)\n"
+      "  IDENTIFIER(y)\n"
+      " CONDITION\n"
+      "  LITERAL(1)\n"
+      "  BLOCK\n");
+  DoParserPrintTest(
+      "x = 3\n+2",
+      "BLOCK\n"
+      " BINARY(=)\n"
+      "  IDENTIFIER(x)\n"
+      "  BINARY(+)\n"
+      "   LITERAL(3)\n"
+      "   LITERAL(2)\n"
+      );
+}
+
+TEST(Parser, NewlineBeforeSubscript) {
+  const char* input = "a = b[1]";
+  const char* input_with_newline = "a = b\n[1]";
+  const char* expected =
+    "BLOCK\n"
+    " BINARY(=)\n"
+    "  IDENTIFIER(a)\n"
+    "  ACCESSOR\n"
+    "   b\n"
+    "   LITERAL(1)\n";
+  DoParserPrintTest(
+      input,
+      expected);
+  DoParserPrintTest(
+      input_with_newline,
+      expected);
+}
+
+TEST(Parser, SequenceOfExpressions) {
+  DoParserPrintTest(
+      "a = 1 b = 2",
+      "BLOCK\n"
+      " BINARY(=)\n"
+      "  IDENTIFIER(a)\n"
+      "  LITERAL(1)\n"
+      " BINARY(=)\n"
+      "  IDENTIFIER(b)\n"
+      "  LITERAL(2)\n");
+}
+
+TEST(Parser, BlockAfterFunction) {
+  const char* input = "func(\"stuff\") {\n}";
+  // TODO(scottmg): Do we really want these to mean different things?
+  const char* input_with_newline = "func(\"stuff\")\n{\n}";
+  const char* expected =
+    "BLOCK\n"
+    " FUNCTION(func)\n"
+    "  LIST\n"
+    "   LITERAL(\"stuff\")\n"
+    "  BLOCK\n";
+  DoParserPrintTest(input, expected);
+  DoParserPrintTest(input_with_newline, expected);
+}
+
+TEST(Parser, LongExpression) {
+  const char* input = "a = b + c && d || e";
+  const char* expected =
+    "BLOCK\n"
+    " BINARY(=)\n"
+    "  IDENTIFIER(a)\n"
+    "  BINARY(||)\n"
+    "   BINARY(&&)\n"
+    "    BINARY(+)\n"
+    "     IDENTIFIER(b)\n"
+    "     IDENTIFIER(c)\n"
+    "    IDENTIFIER(d)\n"
+    "   IDENTIFIER(e)\n";
+  DoParserPrintTest(input, expected);
 }

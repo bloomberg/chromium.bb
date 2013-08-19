@@ -44,25 +44,10 @@ TEST(Tokenizer, Empty) {
   EXPECT_TRUE(results.empty());
 
   InputFile whitespace_input(SourceFile("/test"));
-  whitespace_input.SetContents("  \r");
+  whitespace_input.SetContents("  \r \n \r\n");
 
   results = Tokenizer::Tokenize(&whitespace_input, &err);
   EXPECT_TRUE(results.empty());
-}
-
-TEST(Tokenizer, Newlines) {
-  InputFile empty_string_input(SourceFile("/test"));
-  empty_string_input.SetContents("");
-
-  Err err;
-  std::vector<Token> results = Tokenizer::Tokenize(&empty_string_input, &err);
-  EXPECT_TRUE(results.empty());
-
-  InputFile whitespace_input(SourceFile("/test"));
-  whitespace_input.SetContents(" \r\n \n \r");
-
-  results = Tokenizer::Tokenize(&whitespace_input, &err);
-  EXPECT_EQ(2u, results.size());
 }
 
 TEST(Tokenizer, Identifier) {
@@ -138,7 +123,6 @@ TEST(Tokenizer, FunctionCall) {
     { Token::STRING, "\"foo\"" },
     { Token::RIGHT_PAREN, ")" },
     { Token::LEFT_BRACE, "{" },
-    { Token::NEWLINE, "\n" },
     { Token::IDENTIFIER, "foo" },
     { Token::EQUAL, "=" },
     { Token::INTEGER, "12" },
@@ -164,12 +148,11 @@ TEST(Tokenizer, Locations) {
   Err err;
   std::vector<Token> results = Tokenizer::Tokenize(&input, &err);
 
-  ASSERT_EQ(5u, results.size());
+  ASSERT_EQ(4u, results.size());
   ASSERT_TRUE(results[0].location() == Location(&input, 1, 1));
   ASSERT_TRUE(results[1].location() == Location(&input, 1, 3));
   ASSERT_TRUE(results[2].location() == Location(&input, 1, 5));
-  ASSERT_TRUE(results[3].location() == Location(&input, 1, 12));
-  ASSERT_TRUE(results[4].location() == Location(&input, 2, 3));
+  ASSERT_TRUE(results[3].location() == Location(&input, 2, 3));
 }
 
 TEST(Tokenizer, ByteOffsetOfNthLine) {

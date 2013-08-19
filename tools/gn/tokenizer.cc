@@ -328,7 +328,6 @@ bool Tokenizer::IsCurrentNewline() const {
 void Tokenizer::Advance() {
   DCHECK(cur_ < input_.size());
   if (IsCurrentNewline()) {
-    tokens_.push_back(Token(GetCurrentLocation(), Token::NEWLINE, "\n"));
     line_number_++;
     char_in_line_ = 1;
   } else {

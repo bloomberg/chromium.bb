@@ -82,7 +82,6 @@ ParserHelper Parser::expressions_[] = {
   {&Parser::Name, &Parser::IdentifierOrCall, PRECEDENCE_CALL},  // IDENTIFIER
   {NULL, NULL, -1},                                             // COMMA
   {NULL, NULL, -1},                                             // COMMENT
-  {NULL, NULL, -1},                                             // NEWLINE
 };
 
 Parser::Parser(const std::vector<Token>& tokens, Err* err)
@@ -111,6 +110,18 @@ bool Parser::IsAssignment(const ParseNode* node) const {
          (node->AsBinaryOp()->op().type() == Token::EQUAL ||
           node->AsBinaryOp()->op().type() == Token::PLUS_EQUALS ||
           node->AsBinaryOp()->op().type() == Token::MINUS_EQUALS);
+}
+
+bool Parser::IsStatementBreak(Token::Type token_type) const {
+  switch (token_type) {
+    case Token::IDENTIFIER:
+    case Token::LEFT_BRACE:
+    case Token::RIGHT_BRACE:
+    case Token::IF:
+    case Token::ELSE:
+      return true;
+  }
+  return false;
 }
 
 bool Parser::LookAhead(Token::Type type) {
@@ -159,8 +170,6 @@ scoped_ptr<ParseNode> Parser::ParseExpression() {
 scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
   if (at_end())
     return scoped_ptr<ParseNode>();
-  while (Match(Token::NEWLINE))
-    ;  // Skip.
 
   Token token = Consume();
   PrefixFunc prefix = expressions_[token.type()].prefix;
@@ -174,7 +183,7 @@ scoped_ptr<ParseNode> Parser::ParseExpression(int precedence) {
 
   scoped_ptr<ParseNode> left = (this->*prefix)(token);
 
-  while (!at_end() &&
+  while (!at_end() && !IsStatementBreak(cur_token().type()) &&
          precedence <= expressions_[cur_token().type()].precedence) {
     token = Consume();
     InfixFunc infix = expressions_[token.type()].infix;
@@ -312,7 +321,6 @@ scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
                                        bool allow_trailing_comma) {
   scoped_ptr<ListNode> list(new ListNode);
   bool just_got_comma = false;
-  Match(Token::NEWLINE);
   while (!LookAhead(stop_before)) {
     just_got_comma = false;
     // Why _OR? We're parsing things that are higher precedence than the ,
@@ -327,7 +335,6 @@ scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
       return scoped_ptr<ListNode>();
     }
     just_got_comma = Match(Token::COMMA);
-    Match(Token::NEWLINE);
   }
   if (just_got_comma && !allow_trailing_comma) {
     *err_ = Err(cur_token(), "Trailing comma");
@@ -338,14 +345,14 @@ scoped_ptr<ListNode> Parser::ParseList(Token::Type stop_before,
 
 scoped_ptr<ParseNode> Parser::ParseFile() {
   scoped_ptr<BlockNode> file(new BlockNode(false));
-  do {
+  for (;;) {
     if (at_end())
       break;
     scoped_ptr<ParseNode> statement = ParseStatement();
     if (!statement)
       break;
     file->append_statement(statement.Pass());
-  } while (Match(Token::NEWLINE));
+  }
   if (!at_end() && !has_error())
     *err_ = Err(cur_token(), "Unexpected here, should be newline.");
   if (has_error())
@@ -377,16 +384,14 @@ scoped_ptr<ParseNode> Parser::ParseStatement() {
 scoped_ptr<BlockNode> Parser::ParseBlock() {
   Consume(Token::LEFT_BRACE, "Expected '{' to start a block.");
   scoped_ptr<BlockNode> block(new BlockNode(true));
-  Match(Token::NEWLINE);  // Optional newline to start after the brace.
-  do {
+  for (;;) {
     if (Match(Token::RIGHT_BRACE))
       break;
     scoped_ptr<ParseNode> statement = ParseStatement();
     if (!statement)
       break;
     block->append_statement(statement.Pass());
-  } while (Match(Token::NEWLINE));
-  Match(Token::RIGHT_BRACE);
+  }
   return block.Pass();
 }
 
