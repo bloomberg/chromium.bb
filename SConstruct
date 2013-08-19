@@ -2176,6 +2176,21 @@ def SetupClang(env):
       print "ERROR: ASan is only available for Linux and Mac"
       sys.exit(-1)
     env['CLANG_OPTS'].append('-fsanitize=address')
+    if env.Bit('host_mac'):
+      # The built executables will try to find this library at runtime
+      # in the directory containing the executable itself.  In the
+      # Chromium build, the library just gets copied into that
+      # directory.  Here, there isn't a single directory from which
+      # all the test binaries are run (sel_ldr is run from staging/
+      # but other trusted test binaries are run from their respective
+      # obj/.../ directories).  So instead just point the dynamic linker
+      # at the right directory using an environment variable.
+      clang_lib_dir = '${CLANG_DIR}/../lib/clang/*/lib/darwin'
+      env['ENV']['DYLD_LIBRARY_PATH'] = ':'.join([dir.abspath for dir in
+                                                  env.Glob(clang_lib_dir)])
+      if 'PROPAGATE_ENV' not in env:
+        env['PROPAGATE_ENV'] = []
+      env['PROPAGATE_ENV'].append('DYLD_LIBRARY_PATH')
 
   env['CC'] = '${CLANG_DIR}/clang ${CLANG_OPTS}'
   env['CXX'] = '${CLANG_DIR}/clang++ ${CLANG_OPTS}'
@@ -3591,6 +3606,11 @@ def LinkTrustedEnv(selected_envs):
   if 'TRUSTED' in family_map:
     for env in selected_envs:
       env['TRUSTED_ENV'] = family_map['TRUSTED']
+      # Propagate some environment variables from the trusted environment,
+      # in case some (e.g. Mac's DYLD_LIBRARY_PATH) are necessary for
+      # running sel_ldr et al in untrusted environments' tests.
+      for var in env['TRUSTED_ENV'].get('PROPAGATE_ENV', []):
+        env['ENV'][var] = env['TRUSTED_ENV']['ENV'][var]
   if 'TRUSTED' not in family_map or 'UNTRUSTED' not in family_map:
     Banner('Warning: "--mode" did not specify both trusted and untrusted '
            'build environments.  As a result, many tests will not be run.')
