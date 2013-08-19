@@ -12,6 +12,7 @@
 #include "base/pickle.h"
 #include "base/rand_util.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -111,6 +112,10 @@ void LogCacheSet(ValidationCacheStatus status) {
   // Bucket zero is reserved for future use.
   UMA_HISTOGRAM_ENUMERATION("NaCl.ValidationCache.Set", status, CACHE_MAX);
 }
+
+// Crash throttling parameters.
+const size_t kMaxCrashesPerInterval = 3;
+const int64 kCrashesIntervalInSeconds = 120;
 
 }  // namespace
 
@@ -575,4 +580,22 @@ void NaClBrowser::PersistValidationCache() {
                    base::Owned(pickle)));
   }
   validation_cache_is_modified_ = false;
+}
+
+void NaClBrowser::OnProcessCrashed() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (crash_times_.size() == kMaxCrashesPerInterval) {
+    crash_times_.pop_front();
+  }
+  base::Time time = base::Time::Now();
+  crash_times_.push_back(time);
+}
+
+bool NaClBrowser::IsThrottled() {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  if (crash_times_.size() != kMaxCrashesPerInterval) {
+    return false;
+  }
+  base::TimeDelta delta = base::Time::Now() - crash_times_.front();
+  return delta.InSeconds() <= kCrashesIntervalInSeconds;
 }

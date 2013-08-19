@@ -20,6 +20,7 @@ class SelLdrLauncherChrome : public nacl::SelLdrLauncherBase {
                      bool enable_ppapi_dev,
                      bool enable_dyncode_syscalls,
                      bool enable_exception_handling,
+                     bool enable_crash_throttling,
                      nacl::string* error_message);
 };
 

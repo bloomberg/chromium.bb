@@ -658,6 +658,9 @@ const char kEnablePasswordGeneration[]      = "enable-password-generation";
 // Enables the usage of Portable Native Client.
 const char kEnablePnacl[]                   = "enable-pnacl";
 
+// Disables crash throttling for Portable Native Client.
+const char kDisablePnaclCrashThrottling[]   = "disable-pnacl-crash-throttling";
+
 // Disables the installation of Portable Native Client.
 const char kDisablePnaclInstall[]           = "disable-pnacl-install";
 

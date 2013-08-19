@@ -24,6 +24,7 @@ typedef PP_ExternalPluginResult (*LaunchNaClProcessFunc)(
     PP_Bool enable_ppapi_dev,
     PP_Bool enable_dyncode_syscalls,
     PP_Bool enable_exception_handling,
+    PP_Bool enable_crash_throttling,
     NaClHandle* result_socket,
     struct PP_Var* error_message);
 

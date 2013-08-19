@@ -70,7 +70,8 @@ struct NaClLaunchParams {
   NaClLaunchParams();
   NaClLaunchParams(const std::string& u, int r, uint32 p, bool uses_irt,
                    bool enable_dyncode_syscalls,
-                   bool enable_exception_handling);
+                   bool enable_exception_handling,
+                   bool enable_crash_throttling);
   NaClLaunchParams(const NaClLaunchParams& l);
   ~NaClLaunchParams();
 
@@ -80,6 +81,7 @@ struct NaClLaunchParams {
   bool uses_irt;
   bool enable_dyncode_syscalls;
   bool enable_exception_handling;
+  bool enable_crash_throttling;
 };
 
 struct NaClLaunchResult {

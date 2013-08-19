@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Tue Aug  6 11:51:26 2013. */
+/* From private/ppb_nacl_private.idl modified Mon Aug 19 14:06:38 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -63,6 +63,9 @@ struct PPB_NaCl_Private_1_0 {
    * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
    * The |enable_exception_handling| flag indicates whether or not the nexe
    * will be able to use hardware exception handling.
+   * The |enable_crash_throttling| flag indicates whether or not crashes of
+   * the nexe contribute to crash throttling statisics and whether nexe starts
+   * are throttled by crash throttling.
    */
   PP_ExternalPluginResult (*LaunchSelLdr)(PP_Instance instance,
                                           const char* alleged_url,
@@ -71,6 +74,7 @@ struct PPB_NaCl_Private_1_0 {
                                           PP_Bool enable_ppapi_dev,
                                           PP_Bool enable_dyncode_syscalls,
                                           PP_Bool enable_exception_handling,
+                                          PP_Bool enable_crash_throttling,
                                           void* imc_handle,
                                           struct PP_Var* error_message);
   /* This function starts the IPC proxy so the nexe can communicate with the

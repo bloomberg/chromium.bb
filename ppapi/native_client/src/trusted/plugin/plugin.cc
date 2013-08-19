@@ -55,7 +55,6 @@
 
 #include "ppapi/native_client/src/trusted/plugin/file_utils.h"
 #include "ppapi/native_client/src/trusted/plugin/json_manifest.h"
-#include "ppapi/native_client/src/trusted/plugin/module_ppapi.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_entry_points.h"
 #include "ppapi/native_client/src/trusted/plugin/nacl_subprocess.h"
 #include "ppapi/native_client/src/trusted/plugin/nexe_arch.h"
@@ -447,6 +446,7 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                             ErrorInfo* error_info,
                             bool enable_dyncode_syscalls,
                             bool enable_exception_handling,
+                            bool enable_crash_throttling,
                             const pp::CompletionCallback& init_done_cb,
                             const pp::CompletionCallback& crash_cb) {
   // Before forking a new sel_ldr process, ensure that we do not leak
@@ -460,7 +460,8 @@ bool Plugin::LoadNaClModule(nacl::DescWrapper* wrapper,
                            true /* uses_ppapi */,
                            enable_dev_interfaces_,
                            enable_dyncode_syscalls,
-                           enable_exception_handling);
+                           enable_exception_handling,
+                           enable_crash_throttling);
   if (!LoadNaClModuleCommon(wrapper, &main_subprocess_, manifest_.get(),
                             true /* should_report_uma */,
                             params, init_done_cb, crash_cb)) {
@@ -532,7 +533,8 @@ NaClSubprocess* Plugin::LoadHelperNaClModule(nacl::DescWrapper* wrapper,
                            false /* uses_ppapi */,
                            enable_dev_interfaces_,
                            false /* enable_dyncode_syscalls */,
-                           false /* enable_exception_handling */);
+                           false /* enable_exception_handling */,
+                           true /* enable_crash_throttling */);
   if (!LoadNaClModuleCommon(wrapper, nacl_subprocess.get(), manifest,
                             false /* should_report_uma */,
                             params,
@@ -907,6 +909,7 @@ void Plugin::NexeFileDidOpen(int32_t pp_error) {
       wrapper.get(), &error_info,
       true, /* enable_dyncode_syscalls */
       true, /* enable_exception_handling */
+      false, /* enable_crash_throttling */
       callback_factory_.NewCallback(&Plugin::NexeFileDidOpenContinuation),
       callback_factory_.NewCallback(&Plugin::NexeDidCrash));
 
@@ -1010,10 +1013,6 @@ void Plugin::NexeDidCrash(int32_t pp_error) {
   // invocation will just be a no-op, since all the crash log will
   // have been received and we'll just get an EOF indication.
   CopyCrashLogToJsConsole();
-
-  // Remember the nexe crash time, which helps determine the need to throttle.
-  ModulePpapi* module_ppapi = static_cast<ModulePpapi*>(pp::Module::Get());
-  module_ppapi->RegisterPluginCrash();
 }
 
 void Plugin::BitcodeDidTranslate(int32_t pp_error) {
@@ -1033,6 +1032,7 @@ void Plugin::BitcodeDidTranslate(int32_t pp_error) {
       wrapper.get(), &error_info,
       false, /* enable_dyncode_syscalls */
       false, /* enable_exception_handling */
+      true, /* enable_crash_throttling */
       callback_factory_.NewCallback(&Plugin::BitcodeDidTranslateContinuation),
       callback_factory_.NewCallback(&Plugin::NexeDidCrash));
 
@@ -1211,23 +1211,15 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
       if (this->nacl_interface()->IsPnaclEnabled()) {
         // Check whether PNaCl has been crashing "frequently".  If so, report
         // a load error.
-        ModulePpapi* module_ppapi =
-            static_cast<ModulePpapi*>(pp::Module::Get());
-        if (module_ppapi->IsPluginUnstable()) {
-          error_info.SetReport(ERROR_PNACL_CRASH_THROTTLED,
-                               "PNaCl has been temporarily disabled because too"
-                               " many crashes have been observed.");
-        } else {
-          pp::CompletionCallback translate_callback =
-              callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
-          // Will always call the callback on success or failure.
-          pnacl_coordinator_.reset(
-              PnaclCoordinator::BitcodeToNative(this,
-                                                program_url,
-                                                pnacl_options,
-                                                translate_callback));
-          return;
-        }
+        pp::CompletionCallback translate_callback =
+            callback_factory_.NewCallback(&Plugin::BitcodeDidTranslate);
+        // Will always call the callback on success or failure.
+        pnacl_coordinator_.reset(
+            PnaclCoordinator::BitcodeToNative(this,
+                                              program_url,
+                                              pnacl_options,
+                                              translate_callback));
+        return;
       } else {
         error_info.SetReport(ERROR_PNACL_NOT_ENABLED,
                              "PNaCl has not been enabled (e.g., by setting "

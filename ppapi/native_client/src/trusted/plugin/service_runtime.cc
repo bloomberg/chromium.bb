@@ -736,6 +736,7 @@ bool ServiceRuntime::StartSelLdr(const SelLdrStartParams& params) {
                                        params.enable_dev_interfaces,
                                        params.enable_dyncode_syscalls,
                                        params.enable_exception_handling,
+                                       params.enable_crash_throttling,
                                        &error_message);
   if (!started) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (start failed)\n");

@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/nacl_host/nacl_host_message_filter.h"
+#include "chrome/common/chrome_switches.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
 #include "components/nacl/common/nacl_cmd_line.h"
 #include "components/nacl/common/nacl_host_messages.h"
@@ -181,6 +182,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  bool uses_irt,
                                  bool enable_dyncode_syscalls,
                                  bool enable_exception_handling,
+                                 bool enable_crash_throttling,
                                  bool off_the_record,
                                  const base::FilePath& profile_directory)
     : manifest_url_(manifest_url),
@@ -198,6 +200,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       enable_debug_stub_(false),
       enable_dyncode_syscalls_(enable_dyncode_syscalls),
       enable_exception_handling_(enable_exception_handling),
+      enable_crash_throttling_(enable_crash_throttling),
       off_the_record_(off_the_record),
       profile_directory_(profile_directory),
       ipc_plugin_listener_(this),
@@ -252,6 +255,14 @@ NaClProcessHost::~NaClProcessHost() {
 #endif
 }
 
+void NaClProcessHost::OnProcessCrashed(int exit_status) {
+  if (enable_crash_throttling_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePnaclCrashThrottling)) {
+    NaClBrowser::GetInstance()->OnProcessCrashed();
+  }
+}
+
 // This is called at browser startup.
 // static
 void NaClProcessHost::EarlyStartup(NaClBrowserDelegate* delegate) {
@@ -283,6 +294,18 @@ void NaClProcessHost::Launch(
   nacl_host_message_filter_ = nacl_host_message_filter;
   reply_msg_ = reply_msg;
   manifest_path_ = manifest_path;
+
+  // Do not launch the requested NaCl module if NaCl is marked "unstable" due
+  // to too many crashes within a given time period.
+  if (enable_crash_throttling_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePnaclCrashThrottling) &&
+      NaClBrowser::GetInstance()->IsThrottled()) {
+    SendErrorToRenderer("Process creation was throttled due to excessive"
+                        " crashes");
+    delete this;
+    return;
+  }
 
   const CommandLine* cmd = CommandLine::ForCurrentProcess();
 #if defined(OS_WIN)

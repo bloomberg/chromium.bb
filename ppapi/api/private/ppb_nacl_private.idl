@@ -35,6 +35,9 @@ interface PPB_NaCl_Private {
    * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
    * The |enable_exception_handling| flag indicates whether or not the nexe
    * will be able to use hardware exception handling.
+   * The |enable_crash_throttling| flag indicates whether or not crashes of
+   * the nexe contribute to crash throttling statisics and whether nexe starts
+   * are throttled by crash throttling.
    */
   PP_ExternalPluginResult LaunchSelLdr([in] PP_Instance instance,
                                        [in] str_t alleged_url,
@@ -43,6 +46,7 @@ interface PPB_NaCl_Private {
                                        [in] PP_Bool enable_ppapi_dev,
                                        [in] PP_Bool enable_dyncode_syscalls,
                                        [in] PP_Bool enable_exception_handling,
+                                       [in] PP_Bool enable_crash_throttling,
                                        [out] mem_t imc_handle,
                                        [out] PP_Var error_message);
 

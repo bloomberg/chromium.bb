@@ -85,6 +85,7 @@ PP_ExternalPluginResult LaunchSelLdr(PP_Instance instance,
                            PP_Bool enable_ppapi_dev,
                            PP_Bool enable_dyncode_syscalls,
                            PP_Bool enable_exception_handling,
+                           PP_Bool enable_crash_throttling,
                            void* imc_handle,
                            struct PP_Var* error_message) {
   nacl::FileDescriptor result_socket;
@@ -122,7 +123,8 @@ PP_ExternalPluginResult LaunchSelLdr(PP_Instance instance,
                                  perm_bits,
                                  PP_ToBool(uses_irt),
                                  PP_ToBool(enable_dyncode_syscalls),
-                                 PP_ToBool(enable_exception_handling)),
+                                 PP_ToBool(enable_exception_handling),
+                                 PP_ToBool(enable_crash_throttling)),
           &launch_result,
           &error_message_string))) {
     return PP_EXTERNAL_PLUGIN_FAILED;

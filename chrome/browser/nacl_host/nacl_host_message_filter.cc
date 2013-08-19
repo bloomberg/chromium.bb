@@ -92,6 +92,7 @@ void NaClHostMessageFilter::OnLaunchNaCl(
       launch_params.uses_irt,
       launch_params.enable_dyncode_syscalls,
       launch_params.enable_exception_handling,
+      launch_params.enable_crash_throttling,
       off_the_record_,
       profile_directory_);
   base::FilePath manifest_url =

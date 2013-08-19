@@ -24,6 +24,7 @@ bool SelLdrLauncherChrome::Start(PP_Instance instance,
                                  bool enable_ppapi_dev,
                                  bool enable_dyncode_syscalls,
                                  bool enable_exception_handling,
+                                 bool enable_crash_throttling,
                                  nacl::string* error_message) {
   *error_message = "";
   if (!launch_nacl_process)
@@ -37,6 +38,7 @@ bool SelLdrLauncherChrome::Start(PP_Instance instance,
                           PP_FromBool(enable_ppapi_dev),
                           PP_FromBool(enable_dyncode_syscalls),
                           PP_FromBool(enable_exception_handling),
+                          PP_FromBool(enable_crash_throttling),
                           &channel_,
                           &var_error_message) != PP_EXTERNAL_PLUGIN_OK) {
     pp::Var var_error_message_cpp(pp::PASS_REF, var_error_message);

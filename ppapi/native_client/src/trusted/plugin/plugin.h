@@ -106,6 +106,7 @@ class Plugin : public pp::InstancePrivate {
   bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info,
                       bool enable_dyncode_syscalls,
                       bool enable_exception_handling,
+                      bool enable_crash_throttling,
                       const pp::CompletionCallback& init_done_cb,
                       const pp::CompletionCallback& crash_cb);
 
