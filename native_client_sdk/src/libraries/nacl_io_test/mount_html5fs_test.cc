@@ -4,7 +4,6 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
 #include <gmock/gmock.h>
 #include <ppapi/c/ppb_file_io.h>
 #include <ppapi/c/pp_directory_entry.h>
@@ -14,10 +13,13 @@
 #include <windows.h>  // For Sleep()
 #endif
 
-#include "mock_util.h"
 #include "nacl_io/mount_html5fs.h"
 #include "nacl_io/osdirent.h"
 #include "nacl_io/osunistd.h"
+#include "nacl_io/pepper_interface_delegate.h"
+#include "sdk_util/scoped_ref.h"
+#include "fake_pepper_interface_html5fs.h"
+#include "mock_util.h"
 #include "pepper_interface_mock.h"
 
 using namespace nacl_io;
@@ -26,603 +28,403 @@ using namespace sdk_util;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
+using ::testing::Mock;
 using ::testing::Return;
-using ::testing::SaveArg;
-using ::testing::SetArgPointee;
-using ::testing::StrEq;
-using ::testing::WithArgs;
 
 namespace {
 
-class MountHtml5FsMock : public MountHtml5Fs {
+class MountHtml5FsForTesting : public MountHtml5Fs {
  public:
-  MountHtml5FsMock(StringMap_t map, PepperInterfaceMock* ppapi) {
-    Init(1, map, ppapi);
+  MountHtml5FsForTesting(StringMap_t& args, PepperInterface* ppapi) {
+    Error error = Init(1, args, ppapi);
+    EXPECT_EQ(0, error);
   }
-
-  ~MountHtml5FsMock() {}
 };
 
 class MountHtml5FsTest : public ::testing::Test {
  public:
-  MountHtml5FsTest() : ppapi_(instance_), core_(*ppapi_.GetCoreInterface()) {}
-
-  void SetUpFilesystemExpectations(PP_FileSystemType, int,
-                                   bool async_callback=false);
+  MountHtml5FsTest();
 
  protected:
-  PepperInterfaceMock ppapi_;
-  CoreInterfaceMock& core_;
-  PP_CompletionCallback open_filesystem_callback_;
-
-  static const PP_Instance instance_ = 123;
-  static const PP_Resource filesystem_resource_ = 234;
+  FakePepperInterfaceHtml5Fs ppapi_html5_;
+  PepperInterfaceMock ppapi_mock_;
+  PepperInterfaceDelegate ppapi_;
 };
 
-void MountHtml5FsTest::SetUpFilesystemExpectations(
-    PP_FileSystemType fstype,
-    int expected_size,
-    bool async_callback) {
-  FileSystemInterfaceMock* filesystem = ppapi_.GetFileSystemInterface();
-  EXPECT_CALL(*filesystem, Create(instance_, fstype))
-      .Times(1)
-      .WillOnce(Return(filesystem_resource_));
-
-  if (async_callback) {
-    EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
-        .WillOnce(DoAll(SaveArg<2>(&open_filesystem_callback_),
-                        Return(int32_t(PP_OK))));
-    EXPECT_CALL(core_, IsMainThread()).WillOnce(Return(PP_TRUE));
-  } else {
-    EXPECT_CALL(*filesystem, Open(filesystem_resource_, expected_size, _))
-        .WillOnce(DoAll(CallCallback<2>(int32_t(PP_OK)),
-                        Return(int32_t(PP_OK_COMPLETIONPENDING))));
-    EXPECT_CALL(core_, IsMainThread()).WillOnce(Return(PP_FALSE));
-  }
-
-  EXPECT_CALL(core_, ReleaseResource(filesystem_resource_));
-}
-
-class MountHtml5FsNodeTest : public MountHtml5FsTest {
- public:
-  MountHtml5FsNodeTest();
-  virtual void SetUp();
-  virtual void TearDown();
-
-  void SetUpNodeExpectations(PP_FileType file_type);
-  void InitFilesystem();
-  void InitNode();
-
- protected:
-  ScopedRef<MountHtml5FsMock> mnt_;
-  ScopedMountNode node_;
-
-  FileRefInterfaceMock* fileref_;
-  FileIoInterfaceMock* fileio_;
-
-  static const char path_[];
-  static const PP_Resource fileref_resource_ = 235;
-  static const PP_Resource fileio_resource_ = 236;
-};
-
-// static
-const char MountHtml5FsNodeTest::path_[] = "/foo";
-
-MountHtml5FsNodeTest::MountHtml5FsNodeTest()
-    : fileref_(NULL),
-      fileio_(NULL) {
-}
-
-void MountHtml5FsNodeTest::SetUp() {
-  fileref_ = ppapi_.GetFileRefInterface();
-  fileio_ = ppapi_.GetFileIoInterface();
-}
-
-void MountHtml5FsNodeTest::TearDown() {
-  node_.reset();
-  mnt_.reset();
-}
-
-void MountHtml5FsNodeTest::SetUpNodeExpectations(PP_FileType file_type) {
-  // Open.
-  EXPECT_CALL(*fileref_, Create(filesystem_resource_, StrEq(&path_[0])))
-      .WillOnce(Return(fileref_resource_));
-  PP_FileInfo info;
-  memset(&info, 0, sizeof(PP_FileInfo));
-  info.type = file_type;
-  EXPECT_CALL(*fileref_, Query(fileref_resource_, _, _))
-      .WillOnce(DoAll(SetArgPointee<1>(info),
-                      Return(int32_t(PP_OK))));
-  if (file_type != PP_FILETYPE_DIRECTORY) {
-    EXPECT_CALL(*fileio_, Create(instance_)).WillOnce(Return(fileio_resource_));
-    int32_t open_flags = PP_FILEOPENFLAG_READ | PP_FILEOPENFLAG_WRITE |
-        PP_FILEOPENFLAG_CREATE;
-    EXPECT_CALL(*fileio_,
-                Open(fileio_resource_, fileref_resource_, open_flags, _))
-        .WillOnce(Return(int32_t(PP_OK)));
-
-    // Close.
-    EXPECT_CALL(*fileio_, Close(fileio_resource_));
-    EXPECT_CALL(core_, ReleaseResource(fileio_resource_));
-    EXPECT_CALL(*fileio_, Flush(fileio_resource_, _));
-  }
-
-  // Close.
-  EXPECT_CALL(core_, ReleaseResource(fileref_resource_));
-}
-
-void MountHtml5FsNodeTest::InitFilesystem() {
-  StringMap_t map;
-  mnt_.reset(new MountHtml5FsMock(map, &ppapi_));
-}
-
-void MountHtml5FsNodeTest::InitNode() {
-  ASSERT_EQ(0, mnt_->Open(Path(path_), O_CREAT | O_RDWR, &node_));
-  ASSERT_NE((MountNode*)NULL, node_.get());
-}
-
-// Node test where the filesystem is opened synchronously; that is, the
-// creation of the mount blocks until the filesystem is ready.
-class MountHtml5FsNodeSyncTest : public MountHtml5FsNodeTest {
- public:
-  void SetUpForFileType(PP_FileType file_type);
-
-  virtual void SetUp();
-};
-
-void MountHtml5FsNodeSyncTest::SetUpForFileType(PP_FileType file_type) {
-  MountHtml5FsNodeTest::SetUp();
-  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
-  InitFilesystem();
-  SetUpNodeExpectations(file_type);
-  InitNode();
-}
-
-void MountHtml5FsNodeSyncTest::SetUp() {
-  SetUpForFileType(PP_FILETYPE_REGULAR);
-}
-
-// Node test where the filesystem is opened synchronously, and the node is a
-// directory.
-class MountHtml5FsNodeSyncDirTest : public MountHtml5FsNodeSyncTest {
- public:
-  virtual void SetUp();
-};
-
-void MountHtml5FsNodeSyncDirTest::SetUp() {
-  SetUpForFileType(PP_FILETYPE_DIRECTORY);
-}
-
-void ReadDirectoryEntriesAction(const PP_ArrayOutput& output) {
-  const int fileref_resource_1 = 238;
-  const int fileref_resource_2 = 239;
-
-  std::vector<PP_DirectoryEntry> entries;
-  PP_DirectoryEntry entry1 = { fileref_resource_1, PP_FILETYPE_REGULAR };
-  PP_DirectoryEntry entry2 = { fileref_resource_2, PP_FILETYPE_REGULAR };
-  entries.push_back(entry1);
-  entries.push_back(entry2);
-
-  void* dest = output.GetDataBuffer(
-      output.user_data, 2, sizeof(PP_DirectoryEntry));
-  memcpy(dest, &entries[0], sizeof(PP_DirectoryEntry) * 2);
-}
-
-class MountHtml5FsNodeAsyncTest : public MountHtml5FsNodeTest {
- public:
-  virtual void SetUp();
-  virtual void TearDown();
-
- private:
-  static void* ThreadThunk(void* param);
-  void Thread();
-
-  enum {
-    STATE_INIT,
-    STATE_INIT_NODE,
-    STATE_INIT_NODE_FINISHED,
-  } state_;
-
-  pthread_t thread_;
-  pthread_cond_t cond_;
-  pthread_mutex_t mutex_;
-};
-
-void MountHtml5FsNodeAsyncTest::SetUp() {
-  MountHtml5FsNodeTest::SetUp();
-
-  state_ = STATE_INIT;
-
-  pthread_create(&thread_, NULL, &MountHtml5FsNodeAsyncTest::ThreadThunk, this);
-  pthread_mutex_init(&mutex_, NULL);
-  pthread_cond_init(&cond_, NULL);
-
-  // This test shows that even if the filesystem open callback happens after an
-  // attempt to open a node, it still works (opening the node blocks until the
-  // filesystem is ready).
-  // true => asynchronous filesystem open.
-  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0, true);
-  InitFilesystem();
-  SetUpNodeExpectations(PP_FILETYPE_REGULAR);
-
-  // Signal the other thread to try opening a Node.
-  pthread_mutex_lock(&mutex_);
-  state_ = STATE_INIT_NODE;
-  pthread_cond_signal(&cond_);
-  pthread_mutex_unlock(&mutex_);
-
-  // Wait for a bit...
-  // TODO(binji): this will be flaky. How to test this better?
-#if defined(WIN32)
-  Sleep(500);  // milliseconds
-#else
-  usleep(500*1000);  // microseconds
-#endif
-
-  // Call the filesystem open callback.
-  (*open_filesystem_callback_.func)(open_filesystem_callback_.user_data, PP_OK);
-
-  // Wait for the other thread to unblock and signal us.
-  pthread_mutex_lock(&mutex_);
-  while (state_ != STATE_INIT_NODE_FINISHED)
-    pthread_cond_wait(&cond_, &mutex_);
-  pthread_mutex_unlock(&mutex_);
-}
-
-void MountHtml5FsNodeAsyncTest::TearDown() {
-  pthread_cond_destroy(&cond_);
-  pthread_mutex_destroy(&mutex_);
-
-  MountHtml5FsNodeTest::TearDown();
-}
-
-void* MountHtml5FsNodeAsyncTest::ThreadThunk(void* param) {
-  static_cast<MountHtml5FsNodeAsyncTest*>(param)->Thread();
-  return NULL;
-}
-
-void MountHtml5FsNodeAsyncTest::Thread() {
-  // Wait for the "main" thread to tell us to open the Node.
-  pthread_mutex_lock(&mutex_);
-  while (state_ != STATE_INIT_NODE)
-    pthread_cond_wait(&cond_, &mutex_);
-  pthread_mutex_unlock(&mutex_);
-
-  // Opening the node blocks until the filesystem is open...
-  InitNode();
-
-  // Signal the "main" thread to tell it we're unblocked.
-  pthread_mutex_lock(&mutex_);
-  state_ = STATE_INIT_NODE_FINISHED;
-  pthread_cond_signal(&cond_);
-  pthread_mutex_unlock(&mutex_);
+MountHtml5FsTest::MountHtml5FsTest()
+    : ppapi_mock_(ppapi_html5_.GetInstance()),
+      ppapi_(ppapi_html5_.GetInstance()) {
+  // Default delegation to the html5 pepper interface.
+  ppapi_.SetCoreInterfaceDelegate(ppapi_html5_.GetCoreInterface());
+  ppapi_.SetFileSystemInterfaceDelegate(ppapi_html5_.GetFileSystemInterface());
+  ppapi_.SetFileRefInterfaceDelegate(ppapi_html5_.GetFileRefInterface());
+  ppapi_.SetFileIoInterfaceDelegate(ppapi_html5_.GetFileIoInterface());
+  ppapi_.SetVarInterfaceDelegate(ppapi_html5_.GetVarInterface());
 }
 
 }  // namespace
 
-
 TEST_F(MountHtml5FsTest, FilesystemType) {
-  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 100);
+  const char* filesystem_type_strings[] = {"", "PERSISTENT", "TEMPORARY", NULL};
+  PP_FileSystemType filesystem_type_values[] = {
+      PP_FILESYSTEMTYPE_LOCALPERSISTENT,  // Default to persistent.
+      PP_FILESYSTEMTYPE_LOCALPERSISTENT, PP_FILESYSTEMTYPE_LOCALTEMPORARY};
 
-  StringMap_t map;
-  map["type"] = "PERSISTENT";
-  map["expected_size"] = "100";
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
+  const char* expected_size_strings[] = {"100", "12345", NULL};
+  const int expected_size_values[] = {100, 12345};
+
+  FileSystemInterfaceMock* filesystem_mock =
+      ppapi_mock_.GetFileSystemInterface();
+
+  FakeFileSystemInterface* filesystem_fake =
+      static_cast<FakeFileSystemInterface*>(
+          ppapi_html5_.GetFileSystemInterface());
+
+  for (int i = 0; filesystem_type_strings[i] != NULL; ++i) {
+    const char* filesystem_type_string = filesystem_type_strings[i];
+    PP_FileSystemType expected_filesystem_type = filesystem_type_values[i];
+
+    for (int j = 0; expected_size_strings[j] != NULL; ++j) {
+      const char* expected_size_string = expected_size_strings[j];
+      int64_t expected_expected_size = expected_size_values[j];
+
+      ppapi_.SetFileSystemInterfaceDelegate(filesystem_mock);
+
+      ON_CALL(*filesystem_mock, Create(_, _)).WillByDefault(
+          Invoke(filesystem_fake, &FakeFileSystemInterface::Create));
+
+      EXPECT_CALL(*filesystem_mock,
+                  Create(ppapi_.GetInstance(), expected_filesystem_type));
+
+      EXPECT_CALL(*filesystem_mock, Open(_, expected_expected_size, _))
+          .WillOnce(DoAll(CallCallback<2>(int32_t(PP_OK)),
+                          Return(int32_t(PP_OK_COMPLETIONPENDING))));
+
+      StringMap_t map;
+      map["type"] = filesystem_type_string;
+      map["expected_size"] = expected_size_string;
+      ScopedRef<MountHtml5FsForTesting> mnt(
+          new MountHtml5FsForTesting(map, &ppapi_));
+
+      Mock::VerifyAndClearExpectations(&filesystem_mock);
+    }
+  }
 }
 
 TEST_F(MountHtml5FsTest, Access) {
-  const char path[] = "/foo";
-  const PP_Resource fileref_resource = 235;
-  const PP_Resource fileio_resource = 236;
-
-  // These are the default values.
-  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
-
-  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
-  FileIoInterfaceMock* fileio = ppapi_.GetFileIoInterface();
-
-  EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
-      .WillOnce(Return(fileref_resource));
-  PP_FileInfo info;
-  memset(&info, 0, sizeof(PP_FileInfo));
-  info.type = PP_FILETYPE_REGULAR;
-  EXPECT_CALL(*fileref, Query(fileref_resource, _, _))
-      .WillOnce(DoAll(SetArgPointee<1>(info),
-                      Return(int32_t(PP_OK))));
-  EXPECT_CALL(*fileio, Create(instance_)).WillOnce(Return(fileio_resource));
-  int32_t open_flags = PP_FILEOPENFLAG_READ;
-  EXPECT_CALL(*fileio,
-              Open(fileio_resource, fileref_resource, open_flags, _))
-      .WillOnce(Return(int32_t(PP_OK)));
-  EXPECT_CALL(*fileio, Close(fileio_resource));
-  EXPECT_CALL(*fileio, Flush(fileio_resource, _));
-  EXPECT_CALL(core_, ReleaseResource(fileio_resource));
-  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/foo", NULL));
 
   StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
 
-  ASSERT_EQ(0, mnt->Access(Path(path), R_OK | W_OK | X_OK));
-}
-
-TEST_F(MountHtml5FsTest, AccessFileNotFound) {
-  const char path[] = "/foo";
-  const PP_Resource fileref_resource = 235;
-  const PP_Resource fileio_resource = 236;
-
-  // These are the default values.
-  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
-
-  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
-  FileIoInterfaceMock* fileio = ppapi_.GetFileIoInterface();
-
-  // Report the file as missing.
-  EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
-      .WillOnce(Return(fileref_resource));
-  PP_FileInfo info;
-  memset(&info, 0, sizeof(PP_FileInfo));
-  info.type = PP_FILETYPE_REGULAR;
-  EXPECT_CALL(*fileref, Query(fileref_resource, _, _))
-      .WillOnce(DoAll(SetArgPointee<1>(info),
-                      Return(int32_t(PP_ERROR_FILENOTFOUND))));
-  EXPECT_CALL(*fileio, Create(instance_)).WillOnce(Return(fileio_resource));
-  int32_t open_flags = PP_FILEOPENFLAG_READ;
-  EXPECT_CALL(*fileio,
-              Open(fileio_resource, fileref_resource, open_flags, _))
-      .WillOnce(Return(int32_t(PP_ERROR_FILENOTFOUND)));
-  EXPECT_CALL(*fileio, Close(fileio_resource));
-  EXPECT_CALL(*fileio, Flush(fileio_resource, _));
-  EXPECT_CALL(core_, ReleaseResource(fileio_resource));
-  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
-
-  StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
-
-  ASSERT_EQ(ENOENT, mnt->Access(Path(path), F_OK));
+  ASSERT_EQ(0, mnt->Access(Path("/foo"), R_OK | W_OK | X_OK));
+  ASSERT_EQ(ENOENT, mnt->Access(Path("/bar"), F_OK));
 }
 
 TEST_F(MountHtml5FsTest, Mkdir) {
-  const char path[] = "/foo";
-  const PP_Resource fileref_resource = 235;
-
-  // These are the default values.
-  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
-
-  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
-
-  EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
-      .WillOnce(Return(fileref_resource));
-  EXPECT_CALL(*fileref, MakeDirectory(fileref_resource, _, _))
-      .WillOnce(Return(int32_t(PP_OK)));
-  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
-
   StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
 
-  const int permissions = 0;  // unused.
-  int32_t result = mnt->Mkdir(Path(path), permissions);
-  ASSERT_EQ(0, result);
+  Path path("/foo");
+  ASSERT_EQ(ENOENT, mnt->Access(path, F_OK));
+  ASSERT_EQ(0, mnt->Mkdir(path, 0644));
+
+  struct stat stat;
+  ScopedMountNode node;
+  ASSERT_EQ(0, mnt->Open(path, O_RDONLY, &node));
+  EXPECT_EQ(0, node->GetStat(&stat));
+  EXPECT_EQ(S_IFDIR, stat.st_mode & S_IFDIR);
 }
 
 TEST_F(MountHtml5FsTest, Remove) {
-  const char path[] = "/foo";
-  const PP_Resource fileref_resource = 235;
-
-  // These are the default values.
-  SetUpFilesystemExpectations(PP_FILESYSTEMTYPE_LOCALPERSISTENT, 0);
-
-  FileRefInterfaceMock* fileref = ppapi_.GetFileRefInterface();
-
-  EXPECT_CALL(*fileref, Create(filesystem_resource_, StrEq(&path[0])))
-      .WillOnce(Return(fileref_resource));
-  EXPECT_CALL(*fileref, Delete(fileref_resource, _))
-      .WillOnce(Return(int32_t(PP_OK)));
-  EXPECT_CALL(core_, ReleaseResource(fileref_resource));
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/foo", NULL));
 
   StringMap_t map;
-  ScopedRef<MountHtml5FsMock> mnt(new MountHtml5FsMock(map, &ppapi_));
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
 
-  int32_t result = mnt->Remove(Path(path));
-  ASSERT_EQ(0, result);
+  Path path("/foo");
+  ASSERT_EQ(0, mnt->Access(path, F_OK));
+  ASSERT_EQ(0, mnt->Remove(path));
+  EXPECT_EQ(ENOENT, mnt->Access(path, F_OK));
 }
 
-TEST_F(MountHtml5FsNodeAsyncTest, AsyncFilesystemOpen) {
+// Unlink + Rmdir forward to Remove unconditionally, which will not fail if the
+// file type is wrong.
+TEST_F(MountHtml5FsTest, DISABLED_Unlink) {
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/file", NULL));
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
+
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
+
+  ASSERT_EQ(EISDIR, mnt->Unlink(Path("/dir")));
+  EXPECT_EQ(0, mnt->Unlink(Path("/file")));
+  EXPECT_EQ(ENOENT, mnt->Access(Path("/file"), F_OK));
+  EXPECT_EQ(0, mnt->Access(Path("/dir"), F_OK));
 }
 
-TEST_F(MountHtml5FsNodeSyncTest, OpenAndClose) {
+// Unlink + Rmdir forward to Remove unconditionally, which will not fail if the
+// file type is wrong.
+TEST_F(MountHtml5FsTest, DISABLED_Rmdir) {
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddEmptyFile("/file", NULL));
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
+
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
+
+  ASSERT_EQ(ENOTDIR, mnt->Rmdir(Path("/file")));
+  EXPECT_EQ(0, mnt->Rmdir(Path("/dir")));
+  EXPECT_EQ(ENOENT, mnt->Access(Path("/dir"), F_OK));
+  EXPECT_EQ(0, mnt->Access(Path("/file"), F_OK));
 }
 
-TEST_F(MountHtml5FsNodeSyncTest, Write) {
-  const int offset = 10;
-  const int count = 20;
-  const char buffer[30] = {0};
+TEST_F(MountHtml5FsTest, OpenForCreate) {
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
 
-  EXPECT_CALL(*fileio_, Write(fileio_resource_, offset, &buffer[0], count, _))
-      .WillOnce(Return(count));
+  Path path("/foo");
+  EXPECT_EQ(ENOENT, mnt->Access(path, F_OK));
 
-  int result = 0;
-  EXPECT_EQ(0, node_->Write(offset, &buffer, count, &result));
-  EXPECT_EQ(count, result);
+  ScopedMountNode node;
+  EXPECT_EQ(0, mnt->Open(path, O_CREAT | O_RDWR, &node));
+
+  // Write some data.
+  char contents[] = "contents";
+  int bytes_written = 0;
+  EXPECT_EQ(0, node->Write(0, &contents[0], strlen(contents), &bytes_written));
+  EXPECT_EQ(strlen(contents), bytes_written);
+
+  // Create again.
+  ASSERT_EQ(0, mnt->Open(path, O_CREAT, &node));
+
+  // Check that the file still has data.
+  size_t size;
+  EXPECT_EQ(0, node->GetSize(&size));
+  EXPECT_EQ(strlen(contents), size);
+
+  // Open exclusively.
+  EXPECT_EQ(EEXIST, mnt->Open(path, O_CREAT | O_EXCL, &node));
+
+  // Try to truncate without write access.
+  EXPECT_EQ(EINVAL, mnt->Open(path, O_CREAT | O_TRUNC, &node));
+
+  // Open and truncate.
+  ASSERT_EQ(0, mnt->Open(path, O_CREAT | O_TRUNC | O_WRONLY, &node));
+
+  // File should be empty.
+  EXPECT_EQ(0, node->GetSize(&size));
+  EXPECT_EQ(0, size);
 }
 
-TEST_F(MountHtml5FsNodeSyncTest, Read) {
-  const int offset = 10;
-  const int count = 20;
-  char buffer[30] = {0};
+TEST_F(MountHtml5FsTest, Read) {
+  const char contents[] = "contents";
+  EXPECT_TRUE(
+      ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
 
-  EXPECT_CALL(*fileio_, Read(fileio_resource_, offset, &buffer[0], count, _))
-      .WillOnce(Return(count));
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
 
-  int result = 0;
-  EXPECT_EQ(0, node_->Read(offset, &buffer, count, &result));
-  EXPECT_EQ(count, result);
+  ScopedMountNode node;
+  EXPECT_EQ(0, mnt->Open(Path("/file"), O_RDONLY, &node));
+
+  char buffer[10] = {0};
+  int bytes_read = 0;
+  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(strlen(contents), bytes_read);
+  EXPECT_STREQ(contents, buffer);
+
+  // Read nothing past the end of the file.
+  EXPECT_EQ(0, node->Read(100, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+
+  // Read part of the data.
+  EXPECT_EQ(0, node->Read(4, &buffer[0], sizeof(buffer), &bytes_read));
+  ASSERT_EQ(strlen(contents) - 4, bytes_read);
+  buffer[bytes_read] = 0;
+  EXPECT_STREQ("ents", buffer);
+
+  // Writing should fail.
+  int bytes_written = 1;  // Set to a non-zero value.
+  EXPECT_EQ(EACCES, node->Write(0, &buffer[0], sizeof(buffer), &bytes_written));
+  EXPECT_EQ(0, bytes_written);
+
+  // Reading from a directory should fail.
+  EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
+  EXPECT_EQ(EISDIR, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
 }
 
-TEST_F(MountHtml5FsNodeSyncTest, GetStat) {
-  const int size = 123;
+TEST_F(MountHtml5FsTest, Write) {
+  const char contents[] = "contents";
+  EXPECT_TRUE(
+      ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
+
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
+
+  ScopedMountNode node;
+  ASSERT_EQ(0, mnt->Open(Path("/file"), O_WRONLY, &node));
+
+  // Reading should fail.
+  char buffer[10];
+  int bytes_read = 1;  // Set to a non-zero value.
+  EXPECT_EQ(EACCES, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+
+  // Reopen as read-write.
+  ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDWR, &node));
+
+  int bytes_written = 1;  // Set to a non-zero value.
+  EXPECT_EQ(0, node->Write(3, "struct", 6, &bytes_written));
+  EXPECT_EQ(6, bytes_written);
+
+  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(9, bytes_read);
+  buffer[bytes_read] = 0;
+  EXPECT_STREQ("construct", buffer);
+
+  // Writing to a directory should fail.
+  EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDWR, &node));
+  EXPECT_EQ(EISDIR, node->Write(0, &buffer[0], sizeof(buffer), &bytes_read));
+}
+
+TEST_F(MountHtml5FsTest, GetStat) {
   const int creation_time = 1000;
   const int access_time = 2000;
   const int modified_time = 3000;
+  const char contents[] = "contents";
 
-  PP_FileInfo info;
-  info.size = size;
-  info.type = PP_FILETYPE_REGULAR;
-  info.system_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
-  info.creation_time = creation_time;
-  info.last_access_time = access_time;
-  info.last_modified_time = modified_time;
+  // Create fake file.
+  FakeHtml5FsNode* fake_node;
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddFile(
+      "/file", contents, &fake_node));
+  fake_node->set_creation_time(creation_time);
+  fake_node->set_last_access_time(access_time);
+  fake_node->set_last_modified_time(modified_time);
 
-  EXPECT_CALL(*fileref_, Query(fileref_resource_, _, _))
-      .WillOnce(DoAll(SetArgPointee<1>(info),
-                      Return(int32_t(PP_OK))));
+  // Create fake directory.
+  EXPECT_TRUE(
+      ppapi_html5_.filesystem_template()->AddDirectory("/dir", &fake_node));
+  fake_node->set_creation_time(creation_time);
+  fake_node->set_last_access_time(access_time);
+  fake_node->set_last_modified_time(modified_time);
+
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
+
+  ScopedMountNode node;
+  ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDONLY, &node));
 
   struct stat statbuf;
-  int result = node_->GetStat(&statbuf);
-
-  EXPECT_EQ(0, result);
+  EXPECT_EQ(0, node->GetStat(&statbuf));
   EXPECT_EQ(S_IFREG | S_IWRITE | S_IREAD, statbuf.st_mode);
-  EXPECT_EQ(size, statbuf.st_size);
+  EXPECT_EQ(strlen(contents), statbuf.st_size);
   EXPECT_EQ(access_time, statbuf.st_atime);
-  EXPECT_EQ(modified_time, statbuf.st_mtime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);
-}
+  EXPECT_EQ(modified_time, statbuf.st_mtime);
 
-TEST_F(MountHtml5FsNodeSyncTest, FTruncate) {
-  const int size = 123;
-  EXPECT_CALL(*fileio_, SetLength(fileio_resource_, size, _))
-      .WillOnce(Return(int32_t(PP_OK)));
-
-  int result = node_->FTruncate(size);
-  EXPECT_EQ(0, result);
-}
-
-TEST_F(MountHtml5FsNodeSyncTest, GetDents) {
-  struct dirent dirents[2];
-  memset(&dirents[0], 0, sizeof(dirents));
-
-  // Should fail for regular files.
-  int result_bytes = 0;
-  EXPECT_EQ(ENOTDIR, node_->GetDents(0, &dirents[0], sizeof(dirent) * 2,
-        &result_bytes));
-  ASSERT_EQ(0, result_bytes);
-}
-
-TEST_F(MountHtml5FsNodeSyncDirTest, OpenAndClose) {
-}
-
-TEST_F(MountHtml5FsNodeSyncDirTest, Write) {
-  const int offset = 10;
-  const int count = 20;
-  const char buffer[30] = {0};
-
-  // Should fail for directories.
-  int result_bytes = 0;
-  EXPECT_EQ(EISDIR, node_->Write(offset, &buffer, count, &result_bytes));
-  ASSERT_EQ(0, result_bytes);
-}
-
-TEST_F(MountHtml5FsNodeSyncDirTest, Read) {
-  const int offset = 10;
-  const int count = 20;
-  char buffer[30] = {0};
-
-  // Should fail for directories.
-  int result_bytes = 0;
-  EXPECT_EQ(EISDIR, node_->Read(offset, &buffer, count, &result_bytes));
-  ASSERT_EQ(0, result_bytes);
-}
-
-TEST_F(MountHtml5FsNodeSyncDirTest, GetStat) {
-  const int creation_time = 1000;
-  const int access_time = 2000;
-  const int modified_time = 3000;
-
-  PP_FileInfo info;
-  info.size = 0;
-  info.type = PP_FILETYPE_DIRECTORY;
-  info.system_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
-  info.creation_time = creation_time;
-  info.last_access_time = access_time;
-  info.last_modified_time = modified_time;
-
-  EXPECT_CALL(*fileref_, Query(fileref_resource_, _, _))
-      .WillOnce(DoAll(SetArgPointee<1>(info),
-                      Return(int32_t(PP_OK))));
-
-  struct stat statbuf;
-  int result = node_->GetStat(&statbuf);
-
-  EXPECT_EQ(0, result);
+  // GetStat on a directory...
+  EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
+  EXPECT_EQ(0, node->GetStat(&statbuf));
   EXPECT_EQ(S_IFDIR | S_IWRITE | S_IREAD, statbuf.st_mode);
   EXPECT_EQ(0, statbuf.st_size);
   EXPECT_EQ(access_time, statbuf.st_atime);
-  EXPECT_EQ(modified_time, statbuf.st_mtime);
   EXPECT_EQ(creation_time, statbuf.st_ctime);
+  EXPECT_EQ(modified_time, statbuf.st_mtime);
 }
 
-TEST_F(MountHtml5FsNodeSyncDirTest, FTruncate) {
-  const int size = 123;
-  // Should fail for directories.
-  EXPECT_EQ(EISDIR, node_->FTruncate(size));
+TEST_F(MountHtml5FsTest, FTruncate) {
+  const char contents[] = "contents";
+  EXPECT_TRUE(
+      ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
+  EXPECT_TRUE(ppapi_html5_.filesystem_template()->AddDirectory("/dir", NULL));
+
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
+
+  ScopedMountNode node;
+  ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDWR, &node));
+
+  char buffer[10] = {0};
+  int bytes_read = 0;
+
+  // First make the file shorter...
+  EXPECT_EQ(0, node->FTruncate(4));
+  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(4, bytes_read);
+  buffer[bytes_read] = 0;
+  EXPECT_STREQ("cont", buffer);
+
+  // Now make the file longer...
+  EXPECT_EQ(0, node->FTruncate(8));
+  EXPECT_EQ(0, node->Read(0, &buffer[0], sizeof(buffer), &bytes_read));
+  EXPECT_EQ(8, bytes_read);
+  buffer[bytes_read] = 0;
+  EXPECT_STREQ("cont\0\0\0\0", buffer);
+
+  // Ftruncate should fail for a directory.
+  EXPECT_EQ(0, mnt->Open(Path("/dir"), O_RDONLY, &node));
+  EXPECT_EQ(EISDIR, node->FTruncate(4));
 }
 
-TEST_F(MountHtml5FsNodeSyncDirTest, GetDents) {
-  const int fileref_resource_1 = 238;
-  const int fileref_resource_2 = 239;
+TEST_F(MountHtml5FsTest, GetDents) {
+  const char contents[] = "contents";
+  EXPECT_TRUE(
+      ppapi_html5_.filesystem_template()->AddFile("/file", contents, NULL));
 
-  const int fileref_name_id_1 = 240;
-  const char fileref_name_cstr_1[] = "bar";
-  PP_Var fileref_name_1;
-  fileref_name_1.type = PP_VARTYPE_STRING;
-  fileref_name_1.value.as_id = fileref_name_id_1;
+  StringMap_t map;
+  ScopedRef<MountHtml5FsForTesting> mnt(
+      new MountHtml5FsForTesting(map, &ppapi_));
 
-  const int fileref_name_id_2 = 241;
-  const char fileref_name_cstr_2[] = "quux";
-  PP_Var fileref_name_2;
-  fileref_name_2.type = PP_VARTYPE_STRING;
-  fileref_name_2.value.as_id = fileref_name_id_2;
+  ScopedMountNode root;
+  ASSERT_EQ(0, mnt->Open(Path("/"), O_RDONLY, &root));
 
-  VarInterfaceMock* var = ppapi_.GetVarInterface();
+  ScopedMountNode node;
+  ASSERT_EQ(0, mnt->Open(Path("/file"), O_RDWR, &node));
 
-  EXPECT_CALL(*fileref_, ReadDirectoryEntries(fileref_resource_, _, _))
-      .WillOnce(DoAll(WithArgs<1>(Invoke(ReadDirectoryEntriesAction)),
-                      Return(int32_t(PP_OK))));
+  // Should fail for regular files.
+  struct dirent dirents[3];
+  int bytes_read = 1;  // Set to a non-zero value.
 
-  EXPECT_CALL(*fileref_, GetName(fileref_resource_1))
-      .WillOnce(Return(fileref_name_1));
-  EXPECT_CALL(*fileref_, GetName(fileref_resource_2))
-      .WillOnce(Return(fileref_name_2));
-
-  EXPECT_CALL(*var, VarToUtf8(IsEqualToVar(fileref_name_1), _))
-      .WillOnce(DoAll(SetArgPointee<1>(strlen(fileref_name_cstr_1)),
-                      Return(fileref_name_cstr_1)));
-  EXPECT_CALL(*var, VarToUtf8(IsEqualToVar(fileref_name_2), _))
-      .WillOnce(DoAll(SetArgPointee<1>(strlen(fileref_name_cstr_2)),
-                      Return(fileref_name_cstr_2)));
-  EXPECT_CALL(*var, Release(IsEqualToVar(fileref_name_1)));
-  EXPECT_CALL(*var, Release(IsEqualToVar(fileref_name_2)));
-
-  EXPECT_CALL(core_, ReleaseResource(fileref_resource_1));
-  EXPECT_CALL(core_, ReleaseResource(fileref_resource_2));
-
-
-  struct dirent dirents[2];
   memset(&dirents[0], 0, sizeof(dirents));
+  EXPECT_EQ(ENOTDIR,
+            node->GetDents(0, &dirents[0], sizeof(dirents), &bytes_read));
+  EXPECT_EQ(0, bytes_read);
+
+  // Should work with root directory.
   // +2 to test a size that is not a multiple of sizeof(dirent).
   // Expect it to round down.
-  int result_bytes = 0;
-  EXPECT_EQ(
-      0,
-      node_->GetDents(0, &dirents[0], sizeof(dirent) * 2 + 2, &result_bytes));
-
-  ASSERT_EQ(sizeof(dirent) * 2, result_bytes);
-  EXPECT_LT(0, dirents[0].d_ino);  // 0 is an invalid inode number.
+  memset(&dirents[0], 0, sizeof(dirents));
+  EXPECT_EQ(0, root->GetDents(0, &dirents[0], sizeof(dirent) + 2, &bytes_read));
+  EXPECT_EQ(sizeof(dirent), bytes_read);
   EXPECT_EQ(sizeof(dirent), dirents[0].d_off);
   EXPECT_EQ(sizeof(dirent), dirents[0].d_reclen);
-  EXPECT_STREQ(fileref_name_cstr_1, dirents[0].d_name);
-  EXPECT_LT(0, dirents[1].d_ino);  // 0 is an invalid inode number.
-  EXPECT_EQ(sizeof(dirent), dirents[1].d_off);
-  EXPECT_EQ(sizeof(dirent), dirents[1].d_reclen);
-  EXPECT_STREQ(fileref_name_cstr_2, dirents[1].d_name);
-}
+  EXPECT_STREQ("file", dirents[0].d_name);
 
+  // Add another file...
+  ASSERT_EQ(0, mnt->Open(Path("/file2"), O_CREAT, &node));
+
+  // Read the root directory again.
+  memset(&dirents[0], 0, sizeof(dirents));
+  EXPECT_EQ(0, root->GetDents(0, &dirents[0], sizeof(dirents), &bytes_read));
+  EXPECT_EQ(sizeof(dirent) * 2, bytes_read);
+
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_LT(0, dirents[i].d_ino);  // 0 is an invalid ino.
+    EXPECT_EQ(sizeof(dirent), dirents[i].d_off);
+    EXPECT_EQ(sizeof(dirent), dirents[i].d_reclen);
+    // Could be "file" or "file2".
+    EXPECT_TRUE(strncmp("file", dirents[i].d_name, 4) == 0);
+  }
+}

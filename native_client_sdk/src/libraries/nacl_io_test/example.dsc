@@ -10,6 +10,14 @@
       'TYPE' : 'main',
       'SOURCES' : [
         'event_test.cc',
+        'fake_core_interface.cc',
+        'fake_core_interface.h',
+        'fake_pepper_interface_html5fs.cc',
+        'fake_pepper_interface_html5fs.h',
+        'fake_resource_manager.cc',
+        'fake_resource_manager.h',
+        'fake_var_interface.cc',
+        'fake_var_interface.h',
         'kernel_object_test.cc',
         'kernel_proxy_mock.cc',
         'kernel_proxy_mock.h',
@@ -28,7 +36,7 @@
         'path_test.cc',
         'pepper_interface_mock.cc',
         'pepper_interface_mock.h',
-	'socket_test.cc',
+        'socket_test.cc',
       ],
       'DEPS': ['ppapi_simple', 'nacl_io'],
       # Order matters here: gtest has a "main" function that will be used if
