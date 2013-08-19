@@ -152,9 +152,9 @@ class CC_EXPORT ResourceProvider {
   // Resources are removed from the ResourceProvider. Note: the resource IDs
   // passed are in the parent namespace and will be translated to the child
   // namespace when returned.
-  void PrepareSendToChild(int child,
-                          const ResourceIdArray& resources,
-                          TransferableResourceArray* transferable_resources);
+  void PrepareSendReturnsToChild(int child,
+                                 const ResourceIdArray& resources,
+                                 ReturnedResourceArray* returned_resources);
 
   // Receives resources from a child, moving them from mailboxes. Resource IDs
   // passed are in the child namespace, and will be translated to the parent
@@ -168,8 +168,8 @@ class CC_EXPORT ResourceProvider {
   // IDs passed are in the child namespace.
   // NOTE: if the sync_point is set on any TransferableResource, this will
   // wait on it.
-  void ReceiveFromParent(
-      const TransferableResourceArray& transferable_resources);
+  void ReceiveReturnsFromParent(
+      const ReturnedResourceArray& transferable_resources);
 
   // The following lock classes are part of the ResourceProvider API and are
   // needed to read and write the resource contents. The user must ensure
@@ -392,6 +392,7 @@ class CC_EXPORT ResourceProvider {
 
   void CleanUpGLIfNeeded();
 
+  Resource* GetResource(ResourceId id);
   const Resource* LockForRead(ResourceId id);
   void UnlockForRead(ResourceId id);
   const Resource* LockForWrite(ResourceId id);

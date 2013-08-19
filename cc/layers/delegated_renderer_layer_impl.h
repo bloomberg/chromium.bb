@@ -43,7 +43,7 @@ class CC_EXPORT DelegatedRendererLayerImpl : public LayerImpl {
   void SetFrameData(scoped_ptr<DelegatedFrameData> frame_data,
                     gfx::RectF damage_in_frame);
 
-  void CollectUnusedResources(TransferableResourceArray* resources_for_ack);
+  void CollectUnusedResources(ReturnedResourceArray* resources_for_ack);
 
   void SetDisplaySize(gfx::Size size);
 

@@ -10,6 +10,7 @@
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
+#include "cc/resources/returned_resource.h"
 #include "cc/test/fake_impl_proxy.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -785,7 +786,9 @@ TEST_F(TextureLayerImplWithMailboxTest, TestCallbackOnInUseResource) {
   EXPECT_CALL(test_data_.mock_callback_,
               Release(test_data_.mailbox_name1_, _, false))
       .Times(1);
-  provider->ReceiveFromParent(list);
+  ReturnedResourceArray returned;
+  TransferableResource::ReturnResources(list, &returned);
+  provider->ReceiveReturnsFromParent(returned);
 }
 
 // Check that ClearClient correctly clears the state so that the impl side

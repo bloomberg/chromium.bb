@@ -1482,7 +1482,9 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
       ack.gl_frame_data = frame->gl_frame_data.Pass();
       ack.gl_frame_data->sync_point = 0;
     } else if (frame->delegated_frame_data) {
-      ack.resources.swap(frame->delegated_frame_data->resource_list);
+      cc::TransferableResource::ReturnResources(
+          frame->delegated_frame_data->resource_list,
+          &ack.resources);
     } else if (frame->software_frame_data) {
       ack.last_software_frame_id = frame->software_frame_data->id;
     }

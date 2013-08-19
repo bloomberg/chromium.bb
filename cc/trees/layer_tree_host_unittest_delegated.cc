@@ -15,6 +15,7 @@
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/texture_draw_quad.h"
+#include "cc/resources/returned_resource.h"
 #include "cc/test/fake_delegated_renderer_layer.h"
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
 #include "cc/test/fake_output_surface.h"
@@ -26,29 +27,40 @@
 namespace cc {
 namespace {
 
-bool TransferableResourceLower(const TransferableResource& a,
-                               const TransferableResource& b) {
+bool ReturnedResourceLower(const ReturnedResource& a,
+                           const ReturnedResource& b) {
   return a.id < b.id;
 }
 
 // Tests if the list of resources matches an expectation, modulo the order.
-bool ResourcesMatch(TransferableResourceArray actual,
+bool ResourcesMatch(ReturnedResourceArray actual,
                     unsigned* expected,
                     size_t expected_count) {
-  EXPECT_EQ(expected_count, actual.size());
-  if (expected_count != actual.size())
-    return false;
-
-  std::sort(actual.begin(), actual.end(), TransferableResourceLower);
+  std::sort(actual.begin(), actual.end(), ReturnedResourceLower);
   std::sort(expected, expected + expected_count);
-  bool result = true;
-  for (size_t i = 0; i < expected_count; ++i) {
-    EXPECT_EQ(actual[i].id, expected[i]);
-    if (actual[i].id != expected[i])
-      result = false;
-  }
+  size_t actual_index = 0;
 
-  return result;
+  // for each element of the expected array, count off one of the actual array
+  // (after checking it matches).
+  for (size_t expected_index = 0; expected_index < expected_count;
+       ++expected_index) {
+    EXPECT_LT(actual_index, actual.size());
+    if (actual_index >= actual.size())
+      return false;
+    EXPECT_EQ(actual[actual_index].id, expected[expected_index]);
+    if (actual[actual_index].id != expected[expected_index])
+      return false;
+    EXPECT_GT(actual[actual_index].count, 0);
+    if (actual[actual_index].count <= 0) {
+      return false;
+    } else {
+      --actual[actual_index].count;
+      if (actual[actual_index].count == 0)
+        ++actual_index;
+    }
+  }
+  EXPECT_EQ(actual_index, actual.size());
+  return actual_index == actual.size();
 }
 
 #define EXPECT_RESOURCES(expected, actual) \
@@ -531,7 +543,7 @@ class LayerTreeHostDelegatedTestMergeResources
 
     // The resource 999 from frame1 is returned since it is still on the main
     // thread.
-    TransferableResourceArray returned_resources;
+    ReturnedResourceArray returned_resources;
     delegated_->TakeUnusedResourcesForChildCompositor(&returned_resources);
     {
       unsigned expected[] = {999};
@@ -627,7 +639,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -691,7 +703,7 @@ class LayerTreeHostDelegatedTestReturnUnusedResources
     }
 
     // Resource are never immediately released.
-    TransferableResourceArray empty_resources;
+    ReturnedResourceArray empty_resources;
     delegated_->TakeUnusedResourcesForChildCompositor(&empty_resources);
     EXPECT_TRUE(empty_resources.empty());
   }
@@ -716,7 +728,7 @@ class LayerTreeHostDelegatedTestReusedResources
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -792,7 +804,7 @@ class LayerTreeHostDelegatedTestFrameBeforeAck
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -900,7 +912,7 @@ class LayerTreeHostDelegatedTestFrameBeforeTakeResources
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -1033,7 +1045,7 @@ class LayerTreeHostDelegatedTestBadFrame
 
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -1204,7 +1216,7 @@ class LayerTreeHostDelegatedTestUnnamedResource
 
   virtual void DidCommit() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -1263,7 +1275,7 @@ class LayerTreeHostDelegatedTestDontLeakResource
 
   virtual void DidCommit() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -1347,7 +1359,7 @@ class LayerTreeHostDelegatedTestResourceSentToParent
  public:
   virtual void DidCommitAndDrawFrame() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {
@@ -1462,7 +1474,7 @@ class LayerTreeHostDelegatedTestCommitWithoutTake
 
   virtual void DidCommit() OVERRIDE {
     scoped_ptr<DelegatedFrameData> frame;
-    TransferableResourceArray resources;
+    ReturnedResourceArray resources;
 
     int next_source_frame_number = layer_tree_host()->source_frame_number();
     switch (next_source_frame_number) {

@@ -168,7 +168,7 @@ void DelegatingRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
 
 void DelegatingRenderer::ReceiveSwapBuffersAck(
     const CompositorFrameAck& ack) {
-  resource_provider_->ReceiveFromParent(ack.resources);
+  resource_provider_->ReceiveReturnsFromParent(ack.resources);
 }
 
 bool DelegatingRenderer::IsContextLost() {

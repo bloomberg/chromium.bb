@@ -317,6 +317,7 @@
         'resources/resource_update_controller.h',
         'resources/resource_update_queue.cc',
         'resources/resource_update_queue.h',
+        'resources/returned_resource.h',
         'resources/scoped_resource.cc',
         'resources/scoped_resource.h',
         'resources/scoped_ui_resource.cc',

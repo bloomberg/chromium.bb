@@ -7,7 +7,7 @@
 
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
-#include "cc/resources/transferable_resource.h"
+#include "cc/resources/returned_resource.h"
 
 namespace cc {
 
@@ -34,7 +34,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
 
   // Passes ownership of any unused resources that had been given by the child
   // compositor to the given array, so they can be given back to the child.
-  void TakeUnusedResourcesForChildCompositor(TransferableResourceArray* array);
+  void TakeUnusedResourcesForChildCompositor(ReturnedResourceArray* array);
 
   virtual bool BlocksPendingCommit() const OVERRIDE;
 
@@ -47,7 +47,7 @@ class CC_EXPORT DelegatedRendererLayer : public Layer {
   gfx::RectF damage_in_frame_;
   gfx::Size frame_size_;
   gfx::Size display_size_;
-  TransferableResourceArray unused_resources_for_child_compositor_;
+  ReturnedResourceArray unused_resources_for_child_compositor_;
 
   DelegatedRendererLayerClient* client_;
 

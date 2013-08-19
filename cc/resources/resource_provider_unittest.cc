@@ -13,6 +13,7 @@
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/debug/test_web_graphics_context_3d.h"
 #include "cc/output/output_surface.h"
+#include "cc/resources/returned_resource.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -602,7 +603,9 @@ TEST_P(ResourceProviderTest, TransferResources) {
                                                  &list);
     EXPECT_EQ(1u, list.size());
     EXPECT_EQ(id1, list[0].id);
-    child_resource_provider->ReceiveFromParent(list);
+    ReturnedResourceArray returned;
+    TransferableResource::ReturnResources(list, &returned);
+    child_resource_provider->ReceiveReturnsFromParent(returned);
     // id1 was exported twice, we returned it only once, it should still be
     // in-use.
     EXPECT_TRUE(child_resource_provider->InUseByConsumer(id1));
@@ -612,13 +615,13 @@ TEST_P(ResourceProviderTest, TransferResources) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(mapped_id1);
     resource_ids_to_transfer.push_back(mapped_id2);
-    TransferableResourceArray list;
-    resource_provider_->PrepareSendToChild(
+    ReturnedResourceArray list;
+    resource_provider_->PrepareSendReturnsToChild(
         child_id, resource_ids_to_transfer, &list);
     ASSERT_EQ(2u, list.size());
     EXPECT_NE(0u, list[0].sync_point);
     EXPECT_NE(0u, list[1].sync_point);
-    child_resource_provider->ReceiveFromParent(list);
+    child_resource_provider->ReceiveReturnsFromParent(list);
   }
   EXPECT_FALSE(child_resource_provider->InUseByConsumer(id1));
   EXPECT_FALSE(child_resource_provider->InUseByConsumer(id2));
@@ -711,12 +714,12 @@ TEST_P(ResourceProviderTest, DeleteTransferredResources) {
     EXPECT_NE(0u, mapped_id);
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(mapped_id);
-    TransferableResourceArray list;
-    resource_provider_->PrepareSendToChild(
+    ReturnedResourceArray list;
+    resource_provider_->PrepareSendReturnsToChild(
         child_id, resource_ids_to_transfer, &list);
     ASSERT_EQ(1u, list.size());
     EXPECT_NE(0u, list[0].sync_point);
-    child_resource_provider->ReceiveFromParent(list);
+    child_resource_provider->ReceiveReturnsFromParent(list);
   }
   EXPECT_EQ(0u, child_resource_provider->num_resources());
 }
@@ -783,12 +786,12 @@ TEST_P(ResourceProviderTest, TextureFilters) {
     // Transfer resources back from the parent to the child.
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(mapped_id);
-    TransferableResourceArray list;
-    resource_provider_->PrepareSendToChild(
+    ReturnedResourceArray list;
+    resource_provider_->PrepareSendReturnsToChild(
         child_id, resource_ids_to_transfer, &list);
     ASSERT_EQ(1u, list.size());
     EXPECT_EQ(static_cast<unsigned>(GL_LINEAR), list[0].filter);
-    child_resource_provider->ReceiveFromParent(list);
+    child_resource_provider->ReceiveReturnsFromParent(list);
   }
   EXPECT_EQ(static_cast<unsigned>(GL_LINEAR),
             GetResourceFilter(child_resource_provider.get(),
@@ -861,7 +864,9 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
     // Receive the resource, then delete it, expect the sync points to be
     // consistent.
-    resource_provider_->ReceiveFromParent(list);
+    ReturnedResourceArray returned;
+    TransferableResource::ReturnResources(list, &returned);
+    resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_EQ(1, context()->texture_count());
     EXPECT_EQ(0u, release_sync_point);
 
@@ -910,7 +915,9 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
 
     // Then receive the resource which should release the mailbox, expect the
     // sync points to be consistent.
-    resource_provider_->ReceiveFromParent(list);
+    ReturnedResourceArray returned;
+    TransferableResource::ReturnResources(list, &returned);
+    resource_provider_->ReceiveReturnsFromParent(returned);
     EXPECT_LE(list[0].sync_point, release_sync_point);
     EXPECT_FALSE(lost_resource);
   }

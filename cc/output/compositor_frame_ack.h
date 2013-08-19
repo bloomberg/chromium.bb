@@ -8,7 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/gl_frame_data.h"
-#include "cc/resources/transferable_resource.h"
+#include "cc/resources/returned_resource.h"
 
 namespace cc {
 
@@ -17,7 +17,7 @@ class CC_EXPORT CompositorFrameAck {
   CompositorFrameAck();
   ~CompositorFrameAck();
 
-  TransferableResourceArray resources;
+  ReturnedResourceArray resources;
   scoped_ptr<GLFrameData> gl_frame_data;
   unsigned last_software_frame_id;
 

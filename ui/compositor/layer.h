@@ -38,8 +38,8 @@ class Layer;
 class ResourceUpdateQueue;
 class SolidColorLayer;
 class TextureLayer;
-struct TransferableResource;
-typedef std::vector<TransferableResource> TransferableResourceArray;
+struct ReturnedResource;
+typedef std::vector<ReturnedResource> ReturnedResourceArray;
 }
 
 namespace ui {
@@ -267,7 +267,7 @@ class COMPOSITOR_EXPORT Layer
 
   // Gets unused resources to recycle to the child compositor.
   void TakeUnusedResourcesForChildCompositor(
-      cc::TransferableResourceArray* array);
+      cc::ReturnedResourceArray* array);
 
   // Sets the layer's fill color.  May only be called for LAYER_SOLID_COLOR.
   void SetColor(SkColor color);

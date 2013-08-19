@@ -14,9 +14,18 @@
 
 namespace cc {
 
+struct ReturnedResource;
+typedef std::vector<ReturnedResource> ReturnedResourceArray;
+struct TransferableResource;
+typedef std::vector<TransferableResource> TransferableResourceArray;
+
 struct CC_EXPORT TransferableResource {
   TransferableResource();
   ~TransferableResource();
+
+  ReturnedResource ToReturnedResource() const;
+  static void ReturnResources(const TransferableResourceArray& input,
+                              ReturnedResourceArray* output);
 
   unsigned id;
   unsigned sync_point;
@@ -25,8 +34,6 @@ struct CC_EXPORT TransferableResource {
   gfx::Size size;
   gpu::Mailbox mailbox;
 };
-
-typedef std::vector<TransferableResource> TransferableResourceArray;
 
 }  // namespace cc
 

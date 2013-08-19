@@ -552,7 +552,7 @@ void Layer::SetDelegatedFrame(scoped_ptr<cc::DelegatedFrameData> frame,
 }
 
 void Layer::TakeUnusedResourcesForChildCompositor(
-    cc::TransferableResourceArray* list) {
+    cc::ReturnedResourceArray* list) {
   if (delegated_renderer_layer_.get())
     delegated_renderer_layer_->TakeUnusedResourcesForChildCompositor(list);
 }

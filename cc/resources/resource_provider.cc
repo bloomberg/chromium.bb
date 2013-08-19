@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "cc/resources/platform_color.h"
+#include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "cc/scheduler/texture_uploader.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -183,10 +184,7 @@ ResourceProvider::~ResourceProvider() {
 }
 
 bool ResourceProvider::InUseByConsumer(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   return resource->lock_for_read_count > 0 || resource->exported_count > 0;
 }
 
@@ -377,10 +375,7 @@ void ResourceProvider::DeleteResourceInternal(ResourceMap::iterator it,
 
 ResourceProvider::ResourceType ResourceProvider::GetResourceType(
     ResourceId id) {
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-  return resource->type;
+  return GetResource(id)->type;
 }
 
 void ResourceProvider::SetPixels(ResourceId id,
@@ -388,10 +383,7 @@ void ResourceProvider::SetPixels(ResourceId id,
                                  gfx::Rect image_rect,
                                  gfx::Rect source_rect,
                                  gfx::Vector2d dest_offset) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write);
   DCHECK(!resource->lock_for_read_count);
   DCHECK(!resource->external);
@@ -493,11 +485,15 @@ bool ResourceProvider::ShallowFlushIfSupported() {
   return true;
 }
 
-const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
+ResourceProvider::Resource* ResourceProvider::GetResource(ResourceId id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ResourceMap::iterator it = resources_.find(id);
   CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  return &it->second;
+}
+
+const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
+  Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write ||
          resource->set_pixels_completion_forced) <<
       "locked for write: " << resource->locked_for_write <<
@@ -533,10 +529,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForRead(ResourceId id) {
 }
 
 void ResourceProvider::UnlockForRead(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK_GT(resource->lock_for_read_count, 0);
   DCHECK_EQ(resource->exported_count, 0);
   resource->lock_for_read_count--;
@@ -544,10 +537,7 @@ void ResourceProvider::UnlockForRead(ResourceId id) {
 
 const ResourceProvider::Resource* ResourceProvider::LockForWrite(
     ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(!resource->locked_for_write);
   DCHECK(!resource->lock_for_read_count);
   DCHECK_EQ(resource->exported_count, 0);
@@ -560,10 +550,7 @@ const ResourceProvider::Resource* ResourceProvider::LockForWrite(
 }
 
 bool ResourceProvider::CanLockForWrite(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   return !resource->locked_for_write &&
       !resource->lock_for_read_count &&
       !resource->exported_count &&
@@ -572,10 +559,7 @@ bool ResourceProvider::CanLockForWrite(ResourceId id) {
 }
 
 void ResourceProvider::UnlockForWrite(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(resource->locked_for_write);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->external);
@@ -820,9 +804,10 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
   }
 }
 
-void ResourceProvider::PrepareSendToChild(int child,
-                                          const ResourceIdArray& resources,
-                                          TransferableResourceArray* list) {
+void ResourceProvider::PrepareSendReturnsToChild(
+    int child,
+    const ResourceIdArray& resources,
+    ReturnedResourceArray* list) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
@@ -832,27 +817,31 @@ void ResourceProvider::PrepareSendToChild(int child,
   Child& child_info = children_.find(child)->second;
   bool need_sync_point = false;
   for (ResourceIdArray::const_iterator it = resources.begin();
-       it != resources.end();
-       ++it) {
-    TransferableResource resource;
-    TransferResource(context3d, *it, &resource);
-    if (!resource.sync_point)
-      need_sync_point = true;
+       it != resources.end(); ++it) {
+    Resource* resource = GetResource(*it);
+    DCHECK(!resource->locked_for_write);
+    DCHECK(!resource->lock_for_read_count);
     DCHECK(child_info.parent_to_child_map.find(*it) !=
            child_info.parent_to_child_map.end());
-    resource.id = child_info.parent_to_child_map[*it];
+
+    ReturnedResource returned;
+    returned.id = child_info.parent_to_child_map[*it];
+    returned.filter = resource->filter;
+    returned.sync_point = resource->mailbox.sync_point();
+    if (!returned.sync_point)
+      need_sync_point = true;
+    returned.count = resource->imported_count;
+    list->push_back(returned);
+
     child_info.parent_to_child_map.erase(*it);
-    child_info.child_to_parent_map.erase(resource.id);
-    for (int i = 0; i < resources_[*it].imported_count; ++i)
-      list->push_back(resource);
+    child_info.child_to_parent_map.erase(returned.id);
     resources_[*it].imported_count = 0;
     DeleteResource(*it);
   }
   if (need_sync_point) {
     unsigned int sync_point = context3d->insertSyncPoint();
-    for (TransferableResourceArray::iterator it = list->begin();
-         it != list->end();
-         ++it) {
+    for (ReturnedResourceArray::iterator it = list->begin();
+         it != list->end(); ++it) {
       if (!it->sync_point)
         it->sync_point = sync_point;
     }
@@ -903,26 +892,25 @@ void ResourceProvider::ReceiveFromChild(
   }
 }
 
-void ResourceProvider::ReceiveFromParent(
-    const TransferableResourceArray& resources) {
+void ResourceProvider::ReceiveReturnsFromParent(
+    const ReturnedResourceArray& resources) {
   DCHECK(thread_checker_.CalledOnValidThread());
   WebGraphicsContext3D* context3d = Context3d();
   if (!context3d || !context3d->makeContextCurrent()) {
     // TODO(skaslev): Implement this path for software compositing.
     return;
   }
-  for (TransferableResourceArray::const_iterator it = resources.begin();
+  for (ReturnedResourceArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
     ResourceMap::iterator map_iterator = resources_.find(it->id);
     DCHECK(map_iterator != resources_.end());
     Resource* resource = &map_iterator->second;
-    DCHECK_GT(resource->exported_count, 0);
-    --resource->exported_count;
+    CHECK_GE(resource->exported_count, it->count);
+    resource->exported_count -= it->count;
     if (resource->exported_count)
       continue;
     resource->filter = it->filter;
-    DCHECK(resource->mailbox.ContainsMailbox(it->mailbox));
     if (resource->gl_id) {
       if (it->sync_point)
         GLC(context3d, context3d->waitSyncPoint(it->sync_point));
@@ -939,10 +927,7 @@ void ResourceProvider::ReceiveFromParent(
 void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
                                         ResourceId id,
                                         TransferableResource* resource) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* source = &it->second;
+  Resource* source = GetResource(id);
   DCHECK(!source->locked_for_write);
   DCHECK(!source->lock_for_read_count);
   DCHECK(!source->external || (source->external && source->mailbox.IsValid()));
@@ -974,10 +959,7 @@ void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
 }
 
 void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1007,10 +989,7 @@ void ResourceProvider::AcquirePixelBuffer(ResourceId id) {
 }
 
 void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1052,10 +1031,7 @@ void ResourceProvider::ReleasePixelBuffer(ResourceId id) {
 }
 
 uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1083,10 +1059,7 @@ uint8_t* ResourceProvider::MapPixelBuffer(ResourceId id) {
 }
 
 void ResourceProvider::UnmapPixelBuffer(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
   DCHECK(!resource->image_id);
@@ -1158,10 +1131,7 @@ void ResourceProvider::UnbindForSampling(
 }
 
 void ResourceProvider::BeginSetPixels(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(!resource->pending_set_pixels);
 
   LazyCreate(resource);
@@ -1226,10 +1196,7 @@ void ResourceProvider::BeginSetPixels(ResourceId id) {
 }
 
 void ResourceProvider::ForceSetPixelsToComplete(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(resource->locked_for_write);
   DCHECK(resource->pending_set_pixels);
   DCHECK(!resource->set_pixels_completion_forced);
@@ -1245,10 +1212,7 @@ void ResourceProvider::ForceSetPixelsToComplete(ResourceId id) {
 }
 
 bool ResourceProvider::DidSetPixelsComplete(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   DCHECK(resource->locked_for_write);
   DCHECK(resource->pending_set_pixels);
 
@@ -1272,10 +1236,7 @@ bool ResourceProvider::DidSetPixelsComplete(ResourceId id) {
 }
 
 void ResourceProvider::CreateForTesting(ResourceId id) {
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-  LazyCreate(resource);
+  LazyCreate(GetResource(id));
 }
 
 void ResourceProvider::LazyCreate(Resource* resource) {
@@ -1301,10 +1262,7 @@ void ResourceProvider::LazyCreate(Resource* resource) {
 }
 
 void ResourceProvider::AllocateForTesting(ResourceId id) {
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-  LazyAllocate(resource);
+  LazyAllocate(GetResource(id));
 }
 
 void ResourceProvider::LazyAllocate(Resource* resource) {
@@ -1341,19 +1299,12 @@ void ResourceProvider::LazyAllocate(Resource* resource) {
 
 void ResourceProvider::EnableReadLockFences(ResourceProvider::ResourceId id,
                                             bool enable) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
+  Resource* resource = GetResource(id);
   resource->enable_read_lock_fences = enable;
 }
 
 void ResourceProvider::AcquireImage(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
 
@@ -1373,11 +1324,7 @@ void ResourceProvider::AcquireImage(ResourceId id) {
 }
 
 void ResourceProvider::ReleaseImage(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
 
@@ -1392,11 +1339,7 @@ void ResourceProvider::ReleaseImage(ResourceId id) {
 }
 
 uint8_t* ResourceProvider::MapImage(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-
+  Resource* resource = GetResource(id);
   DCHECK(ReadLockFenceHasPassed(resource));
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
@@ -1415,11 +1358,7 @@ uint8_t* ResourceProvider::MapImage(ResourceId id) {
 }
 
 void ResourceProvider::UnmapImage(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
 
@@ -1431,11 +1370,7 @@ void ResourceProvider::UnmapImage(ResourceId id) {
 }
 
 int ResourceProvider::GetImageStride(ResourceId id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
-  Resource* resource = &it->second;
-
+  Resource* resource = GetResource(id);
   DCHECK(!resource->external);
   DCHECK_EQ(resource->exported_count, 0);
 

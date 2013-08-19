@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "cc/output/delegated_frame_data.h"
 #include "cc/quads/draw_quad.h"
+#include "cc/resources/returned_resource.h"
 
 namespace cc {
 
@@ -45,7 +46,7 @@ void FakeDelegatedRendererLayerImpl::SetFrameDataForRenderPasses(
       pass->quad_list[j]->IterateResources(add_resource_to_frame_callback);
   }
 
-  TransferableResourceArray resources_for_ack;
+  ReturnedResourceArray resources_for_ack;
   SetFrameData(delegated_frame.Pass(), gfx::RectF());
   CollectUnusedResources(&resources_for_ack);
 }

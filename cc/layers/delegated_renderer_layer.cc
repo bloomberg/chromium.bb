@@ -70,10 +70,9 @@ void DelegatedRendererLayer::SetFrameData(
   if (frame_data_) {
     // Copy the resources from the last provided frame into the unused resources
     // list, as the new frame will provide its own resources.
-    unused_resources_for_child_compositor_.insert(
-        unused_resources_for_child_compositor_.end(),
-        frame_data_->resource_list.begin(),
-        frame_data_->resource_list.end());
+    TransferableResource::ReturnResources(
+        frame_data_->resource_list,
+        &unused_resources_for_child_compositor_);
   }
   frame_data_ = new_frame_data.Pass();
   if (!frame_data_->render_pass_list.empty()) {
@@ -87,7 +86,7 @@ void DelegatedRendererLayer::SetFrameData(
 }
 
 void DelegatedRendererLayer::TakeUnusedResourcesForChildCompositor(
-    TransferableResourceArray* array) {
+    ReturnedResourceArray* array) {
   DCHECK(array->empty());
   array->clear();
 

@@ -145,7 +145,7 @@ void DelegatedRendererLayerImpl::SetFrameData(
 }
 
 void DelegatedRendererLayerImpl::CollectUnusedResources(
-    TransferableResourceArray* resources_for_ack) {
+    ReturnedResourceArray* resources_for_ack) {
   CreateChildIdIfNeeded();
   DCHECK(child_id_);
 
@@ -163,7 +163,7 @@ void DelegatedRendererLayerImpl::CollectUnusedResources(
     if (!resource_is_in_current_frame && !resource_is_in_use)
       unused_resources.push_back(it->second);
   }
-  resource_provider->PrepareSendToChild(
+  resource_provider->PrepareSendReturnsToChild(
       child_id_, unused_resources, resources_for_ack);
 }
 

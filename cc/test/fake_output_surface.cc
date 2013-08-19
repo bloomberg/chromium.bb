@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/output/compositor_frame_ack.h"
 #include "cc/output/output_surface_client.h"
+#include "cc/resources/returned_resource.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -126,7 +127,7 @@ void FakeOutputSurface::ReturnResource(unsigned id, CompositorFrameAck* ack) {
       break;
   }
   DCHECK(it != resources_held_by_parent_.end());
-  ack->resources.push_back(*it);
+  ack->resources.push_back(it->ToReturnedResource());
   resources_held_by_parent_.erase(it);
 }
 

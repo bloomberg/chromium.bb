@@ -21,6 +21,7 @@
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "cc/resources/returned_resource.h"
 #include "cc/resources/transferable_resource.h"
 #include "content/common/content_export.h"
 #include "gpu/ipc/gpu_command_buffer_traits.h"
@@ -219,6 +220,13 @@ IPC_STRUCT_TRAITS_BEGIN(cc::TransferableResource)
   IPC_STRUCT_TRAITS_MEMBER(filter)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(mailbox)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(cc::ReturnedResource)
+  IPC_STRUCT_TRAITS_MEMBER(id)
+  IPC_STRUCT_TRAITS_MEMBER(sync_point)
+  IPC_STRUCT_TRAITS_MEMBER(filter)
+  IPC_STRUCT_TRAITS_MEMBER(count)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(cc::BeginFrameArgs)
