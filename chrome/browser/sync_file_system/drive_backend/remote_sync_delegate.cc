@@ -232,10 +232,10 @@ void RemoteSyncDelegate::HandleConflict(
     const SyncStatusCallback& callback,
     SyncFileType remote_file_type) {
   ConflictResolution resolution = conflict_resolution_resolver()->Resolve(
-      remote_file_type,
-      remote_change_.updated_time,
       local_metadata_.file_type,
-      local_metadata_.last_modified);
+      local_metadata_.last_modified,
+      remote_file_type,
+      remote_change_.updated_time);
 
   switch (resolution) {
     case CONFLICT_RESOLUTION_LOCAL_WIN:
