@@ -34,6 +34,7 @@
 #include "../platform/WebReferrerPolicy.h"
 #include "../platform/WebVector.h"
 #include "WebDraggableRegion.h"
+#include "WebExceptionCode.h"
 #include "WebNode.h"
 #include "WebSecurityOrigin.h"
 
@@ -44,6 +45,11 @@ class DocumentType;
 }
 namespace WTF { template <typename T> class PassRefPtr; }
 #endif
+
+namespace v8 {
+class Value;
+template <class T> class Handle;
+}
 
 namespace WebKit {
 class WebAccessibilityObject;
@@ -129,6 +135,8 @@ public:
     WEBKIT_EXPORT void insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel);
 
     WEBKIT_EXPORT WebVector<WebDraggableRegion> draggableRegions() const;
+
+    WEBKIT_EXPORT v8::Handle<v8::Value> registerEmbedderCustomElement(const WebString& name, v8::Handle<v8::Value> options, WebExceptionCode&);
 
 #if WEBKIT_IMPLEMENTATION
     WebDocument(const WTF::PassRefPtr<WebCore::Document>&);

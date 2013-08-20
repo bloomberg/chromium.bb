@@ -30,6 +30,7 @@
 
 #include "bindings/v8/ScriptValue.h"
 #include "core/dom/ContainerNode.h"
+#include "core/dom/CustomElement.h"
 #include "core/dom/DOMTimeStamp.h"
 #include "core/dom/DocumentEventQueue.h"
 #include "core/dom/DocumentInit.h"
@@ -1008,7 +1009,8 @@ public:
     PassRefPtr<Element> createElement(const AtomicString& localName, const AtomicString& typeExtension, ExceptionState&);
     PassRefPtr<Element> createElementNS(const AtomicString& namespaceURI, const String& qualifiedName, const AtomicString& typeExtension, ExceptionState&);
     ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, ExceptionState&);
-    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&);
+    // FIXME: When embedders switch to using WebDocument::registerEmbedderCustomElement, make the default name set StandardNames.
+    ScriptValue registerElement(WebCore::ScriptState*, const AtomicString& name, const Dictionary& options, ExceptionState&, CustomElement::NameSet validNames = CustomElement::AllNames);
     CustomElementRegistrationContext* registrationContext() { return m_registrationContext.get(); }
 
     void setImport(HTMLImport*);

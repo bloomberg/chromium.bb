@@ -56,7 +56,6 @@
 #include "core/dom/CDATASection.h"
 #include "core/dom/Comment.h"
 #include "core/dom/ContextFeatures.h"
-#include "core/dom/CustomElement.h"
 #include "core/dom/CustomElementRegistrationContext.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DOMNamedFlowCollection.h"
@@ -758,7 +757,7 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
     return registerElement(state, name, Dictionary(), es);
 }
 
-ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionState& es)
+ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicString& name, const Dictionary& options, ExceptionState& es, CustomElement::NameSet validNames)
 {
     if (!registrationContext()) {
         es.throwDOMException(NotSupportedError);
@@ -766,7 +765,7 @@ ScriptValue Document::registerElement(WebCore::ScriptState* state, const AtomicS
     }
 
     CustomElementConstructorBuilder constructorBuilder(state, &options);
-    registrationContext()->registerElement(this, &constructorBuilder, name, es);
+    registrationContext()->registerElement(this, &constructorBuilder, name, validNames, es);
     return constructorBuilder.bindingsReturnValue();
 }
 
