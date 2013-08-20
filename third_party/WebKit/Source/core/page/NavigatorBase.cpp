@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/page/NavigatorBase.h"
 
-#include "core/platform/network/NetworkStateNotifier.h"
 #include "wtf/CPU.h"
 #include "wtf/text/WTFString.h"
 
@@ -119,11 +118,6 @@ String NavigatorBase::vendor() const
 String NavigatorBase::vendorSub() const
 {
     return WEBCORE_NAVIGATOR_VENDOR_SUB;
-}
-
-bool NavigatorBase::onLine() const
-{
-    return networkStateNotifier().onLine();
 }
 
 } // namespace WebCore

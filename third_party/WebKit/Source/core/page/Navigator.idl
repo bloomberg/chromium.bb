@@ -33,8 +33,7 @@ interface Navigator {
     readonly attribute boolean cookieEnabled;
     boolean javaEnabled();
 
-    readonly attribute boolean onLine;
-
     void getStorageUpdates(); // FIXME: Remove this method or rename to yieldForStorageUpdates.
 };
 
+Navigator implements NavigatorOnLine;

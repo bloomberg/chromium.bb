@@ -43,8 +43,6 @@ namespace WebCore {
         String vendor() const;
         String vendorSub() const;
 
-        bool onLine() const;
-
     protected:
         virtual ~NavigatorBase();
     };

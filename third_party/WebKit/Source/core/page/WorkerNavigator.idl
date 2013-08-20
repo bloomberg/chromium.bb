@@ -33,7 +33,6 @@
     readonly attribute DOMString appVersion;
     readonly attribute DOMString platform;
     readonly attribute DOMString userAgent;
-
-    readonly attribute boolean onLine;
 };
 
+WorkerNavigator implements NavigatorOnLine;
