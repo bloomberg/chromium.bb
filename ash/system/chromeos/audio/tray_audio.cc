@@ -78,6 +78,32 @@ int GetAudioDeviceIconId(chromeos::AudioDeviceType type) {
     return kNoAudioDeviceIcon;
 }
 
+base::string16 GetAudioDeviceName(const chromeos::AudioDevice& device) {
+  switch(device.type) {
+    case chromeos::AUDIO_TYPE_HEADPHONE:
+      return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_HEADPHONE);
+    case chromeos::AUDIO_TYPE_INTERNAL_SPEAKER:
+      return l10n_util::GetStringUTF16(
+          IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_SPEAKER);
+    case chromeos::AUDIO_TYPE_INTERNAL_MIC:
+      return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO_INTERNAL_MIC);
+    case chromeos::AUDIO_TYPE_USB:
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_AUDIO_USB_DEVICE,
+          UTF8ToUTF16(device.display_name));
+    case chromeos::AUDIO_TYPE_BLUETOOTH:
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_AUDIO_BLUETOOTH_DEVICE,
+          UTF8ToUTF16(device.display_name));
+    case chromeos::AUDIO_TYPE_HDMI:
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_STATUS_TRAY_AUDIO_HDMI_DEVICE,
+          UTF8ToUTF16(device.display_name));
+    default:
+      return UTF8ToUTF16(device.display_name);
+  }
+}
+
 }  // namespace
 
 namespace tray {
@@ -434,7 +460,7 @@ class AudioDetailedView : public TrayDetailsView,
         false);  /* no checkmark */
     for (size_t i = 0; i < output_devices_.size(); ++i) {
       HoverHighlightView* container = AddScrollListItem(
-          UTF8ToUTF16(output_devices_[i].display_name),
+          GetAudioDeviceName(output_devices_[i]),
           gfx::Font::NORMAL,
           output_devices_[i].active);  /* checkmark if active */
       device_map_[container] = output_devices_[i];
@@ -449,7 +475,7 @@ class AudioDetailedView : public TrayDetailsView,
         false);  /* no checkmark */
     for (size_t i = 0; i < input_devices_.size(); ++i) {
       HoverHighlightView* container = AddScrollListItem(
-          UTF8ToUTF16(input_devices_[i].display_name),
+          GetAudioDeviceName(input_devices_[i]),
           gfx::Font::NORMAL,
           input_devices_[i].active);  /* checkmark if active */
       device_map_[container] = input_devices_[i];

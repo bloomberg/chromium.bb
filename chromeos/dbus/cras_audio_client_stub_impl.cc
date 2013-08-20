@@ -34,7 +34,7 @@ CrasAudioClientStubImpl::CrasAudioClientStubImpl() {
   node_3.id = 10003;
   node_3.device_name = "Fake Bluetooth Headphone";
   node_3.type = "BLUETOOTH";
-  node_3.name = "Bluetooth Headphone";
+  node_3.name = "Headphone";
   node_3.active = false;
   node_list_.push_back(node_3);
 
@@ -53,7 +53,7 @@ CrasAudioClientStubImpl::CrasAudioClientStubImpl() {
   node_5.id = 10005;
   node_5.device_name = "Fake USB Mic";
   node_5.type = "USB";
-  node_5.name = "USB Mic";
+  node_5.name = "Mic";
   node_5.active = true;
   node_list_.push_back(node_5);
 
