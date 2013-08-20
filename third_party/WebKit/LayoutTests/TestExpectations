@@ -1242,4 +1242,7 @@ crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-co
 # New flaky test added in r156227.
 crbug.com/272725 [ Release ] http/tests/inspector/network/network-document-initiator.html [ Failure Pass ]
 
+crbug.com/276031 [ Debug ] virtual/gpu/fast/canvas/webgl/gl-object-get-calls.html [ Crash Failure ]
+crbug.com/276031 [ Debug ] fast/canvas/webgl/gl-object-get-calls.html [ Crash Failure ]
+
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
