@@ -41,6 +41,10 @@ cr.define('mobile', function() {
     initialized_: false,
     mode_: SimUnlock.SIM_DIALOG_UNLOCK,
     pukValue_: '',
+    defaultDialogSize_: {
+      'width': window.innerWidth,
+      'height': window.innerHeight
+    },
     state_: SimUnlock.SIM_UNLOCK_LOADING,
 
     changeState_: function(simInfo) {
@@ -117,6 +121,9 @@ cr.define('mobile', function() {
           $('enter-puk-confirm').disabled = true;
           $('locked-puk-overlay').hidden = false;
           $('puk-input').focus();
+
+          // Resize the dialog to accomodate the PUK contents.
+          this.updateDialogSize_(0, 45);
           break;
         case SimUnlock.SIM_LOCKED_NO_PUK_TRIES_LEFT:
           $('locked-puk-no-tries-overlay').hidden = false;
@@ -134,6 +141,11 @@ cr.define('mobile', function() {
      */
     get state() {
       return this.state_;
+    },
+
+    updateDialogSize_: function(deltaX, deltaY) {
+      window.resizeTo(this.defaultDialogSize_.width + deltaX,
+                      this.defaultDialogSize_.height + deltaY);
     },
 
     hideAll_: function() {
@@ -186,6 +198,7 @@ cr.define('mobile', function() {
       $('retype-new-pin-input').value = '';
       $('choose-pin-overlay').hidden = false;
       $('new-pin-input').focus();
+      this.updateDialogSize_(0, 18);
     },
 
     updateSimStatus_: function(simInfo) {

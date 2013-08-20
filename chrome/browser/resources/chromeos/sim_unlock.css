@@ -45,6 +45,10 @@
   margin-bottom: 0;
 }
 
+#puk-content-area {
+  max-height: 163px;
+}
+
 .code-input {
   -webkit-border-radius: 2px;
   border: 1px solid #aaa;
