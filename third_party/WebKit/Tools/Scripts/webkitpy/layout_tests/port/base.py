@@ -869,43 +869,45 @@ class Port(object):
     def setup_environ_for_server(self, server_name=None):
         # We intentionally copy only a subset of os.environ when
         # launching subprocesses to ensure consistent test results.
-        clean_env = {}
+        clean_env = {
+            'LOCAL_RESOURCE_ROOT': self.layout_tests_dir(),  # FIXME: Is this used?
+        }
         variables_to_copy = [
-            # For Linux:
-            'XAUTHORITY',
-            'HOME',
-            'LANG',
-            'LD_LIBRARY_PATH',
-            'DBUS_SESSION_BUS_ADDRESS',
-            'XDG_DATA_DIRS',
-
-            # Darwin:
-            'DYLD_LIBRARY_PATH',
-            'HOME',
-
-            # CYGWIN:
-            'HOMEDRIVE',
-            'HOMEPATH',
-            '_NT_SYMBOL_PATH',
-
-            # Windows:
-            'PATH',
-
-            # Most ports (?):
-            'WEBKIT_TESTFONTS',
-            'WEBKITOUTPUTDIR',
-
-            # Chromium:
+            'WEBKIT_TESTFONTS',  # FIXME: Is this still used?
+            'WEBKITOUTPUTDIR',   # FIXME: Is this still used?
             'CHROME_DEVEL_SANDBOX',
             'CHROME_IPC_LOGGING',
             'ASAN_OPTIONS',
-
         ]
+        if self.host.platform.is_linux() or self.host.platform.is_freebsd():
+            variables_to_copy += [
+                'XAUTHORITY',
+                'HOME',
+                'LANG',
+                'LD_LIBRARY_PATH',
+                'DBUS_SESSION_BUS_ADDRESS',
+                'XDG_DATA_DIRS',
+            ]
+            clean_env['DISPLAY'] = self._value_or_default_from_environ('DISPLAY', ':1')
+        if self.host.platform.is_mac():
+            clean_env['DYLD_LIBRARY_PATH'] = self._build_path()
+            clean_env['DYLD_FRAMEWORK_PATH'] = self._build_path()
+            variables_to_copy += [
+                'HOME',
+            ]
+        if self.host.platform.is_win():
+            variables_to_copy += [
+                'PATH',
+            ]
+        if self.host.platform.is_cygwin():
+            variables_to_copy += [
+                'HOMEDRIVE',
+                'HOMEPATH',
+                '_NT_SYMBOL_PATH',
+            ]
+
         for variable in variables_to_copy:
             self._copy_value_from_environ_if_set(clean_env, variable)
-
-        # For Linux:
-        clean_env['DISPLAY'] = self._value_or_default_from_environ('DISPLAY', ':1')
 
         for string_variable in self.get_option('additional_env_var', []):
             [name, value] = string_variable.split('=', 1)

@@ -256,11 +256,6 @@ class Driver(object):
             self._run_post_start_tasks()
 
     def _setup_environ_for_driver(self, environment):
-        environment['DYLD_LIBRARY_PATH'] = self._port._build_path()
-        environment['DYLD_FRAMEWORK_PATH'] = self._port._build_path()
-        environment['LOCAL_RESOURCE_ROOT'] = self._port.layout_tests_dir()
-        if 'WEBKITOUTPUTDIR' in os.environ:
-            environment['WEBKITOUTPUTDIR'] = os.environ['WEBKITOUTPUTDIR']
         if self._profiler:
             environment = self._profiler.adjusted_environment(environment)
         return environment
