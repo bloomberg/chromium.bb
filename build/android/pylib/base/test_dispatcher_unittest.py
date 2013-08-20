@@ -167,7 +167,7 @@ class TestShard(unittest.TestCase):
   @staticmethod
   def _RunShard(runner_factory):
     return test_dispatcher.RunTests(
-        ['a', 'b', 'c'], runner_factory, False, None, shard=True)
+        ['a', 'b', 'c'], runner_factory, ['0', '1'], shard=True)
 
   def testShard(self):
     results, exit_code = TestShard._RunShard(MockRunner)
@@ -182,7 +182,7 @@ class TestShard(unittest.TestCase):
 
   def testNoTests(self):
     results, exit_code = test_dispatcher.RunTests(
-        [], MockRunner, False, None, shard=True)
+        [], MockRunner, ['0', '1'], shard=True)
     self.assertEqual(len(results.GetAll()), 0)
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 
@@ -192,7 +192,7 @@ class TestReplicate(unittest.TestCase):
   @staticmethod
   def _RunReplicate(runner_factory):
     return test_dispatcher.RunTests(
-        ['a', 'b', 'c'], runner_factory, False, None, shard=False)
+        ['a', 'b', 'c'], runner_factory, ['0', '1'], shard=False)
 
   def testReplicate(self):
     results, exit_code = TestReplicate._RunReplicate(MockRunner)
@@ -208,7 +208,7 @@ class TestReplicate(unittest.TestCase):
 
   def testNoTests(self):
     results, exit_code = test_dispatcher.RunTests(
-        [], MockRunner, False, None, shard=False)
+        [], MockRunner, ['0', '1'], shard=False)
     self.assertEqual(len(results.GetAll()), 0)
     self.assertEqual(exit_code, constants.ERROR_EXIT_CODE)
 

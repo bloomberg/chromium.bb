@@ -11,11 +11,13 @@ TODO(gkanwar):
 """
 
 import collections
+import logging
 import optparse
 import os
 import shutil
 import sys
 
+from pylib import android_commands
 from pylib import constants
 from pylib import ports
 from pylib.base import base_test_result
@@ -454,8 +456,7 @@ def ProcessPerfTestOptions(options, error_func):
       options.steps, options.flaky_steps, options.print_step)
 
 
-
-def _RunGTests(options, error_func):
+def _RunGTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs gtests."""
   ProcessGTestOptions(options)
 
@@ -471,12 +472,10 @@ def _RunGTests(options, error_func):
         options.test_arguments,
         options.timeout,
         suite_name)
-    runner_factory, tests = gtest_setup.Setup(gtest_options)
+    runner_factory, tests = gtest_setup.Setup(gtest_options, devices)
 
     results, test_exit_code = test_dispatcher.RunTests(
-        tests, runner_factory, False, options.test_device,
-        shard=True,
-        test_timeout=None,
+        tests, runner_factory, devices, shard=True, test_timeout=None,
         num_retries=options.num_retries)
 
     if test_exit_code and exit_code != constants.ERROR_EXIT_CODE:
@@ -494,9 +493,13 @@ def _RunGTests(options, error_func):
   return exit_code
 
 
-def _RunInstrumentationTests(options, error_func):
+def _RunInstrumentationTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs instrumentation tests."""
   instrumentation_options = ProcessInstrumentationOptions(options, error_func)
+
+  if len(devices) > 1 and options.wait_for_debugger:
+    logging.warning('Debugger can not be sharded, using first available device')
+    devices = devices[:1]
 
   results = base_test_result.TestRunResults()
   exit_code = 0
@@ -505,10 +508,7 @@ def _RunInstrumentationTests(options, error_func):
     runner_factory, tests = instrumentation_setup.Setup(instrumentation_options)
 
     test_results, exit_code = test_dispatcher.RunTests(
-        tests, runner_factory, options.wait_for_debugger,
-        options.test_device,
-        shard=True,
-        test_timeout=None,
+        tests, runner_factory, devices, shard=True, test_timeout=None,
         num_retries=options.num_retries)
 
     results.AddTestRunResults(test_results)
@@ -520,10 +520,7 @@ def _RunInstrumentationTests(options, error_func):
 
     if tests:
       test_results, test_exit_code = test_dispatcher.RunTests(
-          tests, runner_factory, False,
-          options.test_device,
-          shard=True,
-          test_timeout=None,
+          tests, runner_factory, devices, shard=True, test_timeout=None,
           num_retries=options.num_retries)
 
       results.AddTestRunResults(test_results)
@@ -542,16 +539,14 @@ def _RunInstrumentationTests(options, error_func):
   return exit_code
 
 
-def _RunUIAutomatorTests(options, error_func):
+def _RunUIAutomatorTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs uiautomator tests."""
   uiautomator_options = ProcessUIAutomatorOptions(options, error_func)
 
   runner_factory, tests = uiautomator_setup.Setup(uiautomator_options)
 
   results, exit_code = test_dispatcher.RunTests(
-      tests, runner_factory, False, options.test_device,
-      shard=True,
-      test_timeout=None,
+      tests, runner_factory, devices, shard=True, test_timeout=None,
       num_retries=options.num_retries)
 
   report_results.LogFull(
@@ -564,14 +559,14 @@ def _RunUIAutomatorTests(options, error_func):
   return exit_code
 
 
-def _RunMonkeyTests(options, error_func):
+def _RunMonkeyTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs monkey tests."""
   monkey_options = ProcessMonkeyTestOptions(options, error_func)
 
   runner_factory, tests = monkey_setup.Setup(monkey_options)
 
   results, exit_code = test_dispatcher.RunTests(
-      tests, runner_factory, False, None, shard=False, test_timeout=None)
+      tests, runner_factory, devices, shard=False, test_timeout=None)
 
   report_results.LogFull(
       results=results,
@@ -581,7 +576,7 @@ def _RunMonkeyTests(options, error_func):
   return exit_code
 
 
-def _RunPerfTests(options, error_func):
+def _RunPerfTests(options, error_func, devices):
   """Subcommand of RunTestsCommands which runs perf tests."""
   perf_options = ProcessPerfTestOptions(options, error_func)
     # Just print the results from a single previously executed step.
@@ -591,7 +586,7 @@ def _RunPerfTests(options, error_func):
   runner_factory, tests = perf_setup.Setup(perf_options)
 
   results, _ = test_dispatcher.RunTests(
-      tests, runner_factory, False, None, shard=True, test_timeout=None)
+      tests, runner_factory, devices, shard=True, test_timeout=None)
 
   report_results.LogFull(
       results=results,
@@ -600,6 +595,29 @@ def _RunPerfTests(options, error_func):
   # Always return 0 on the sharding stage. Individual tests exit_code
   # will be returned on the print_step stage.
   return 0
+
+
+def _GetAttachedDevices(test_device=None):
+  """Get all attached devices.
+
+  Args:
+    test_device: Name of a specific device to use.
+
+  Returns:
+    A list of attached devices.
+  """
+  attached_devices = []
+
+  attached_devices = android_commands.GetAttachedDevices()
+  if test_device:
+    assert test_device in attached_devices, (
+        'Did not find device %s among attached device. Attached devices: %s'
+        % (test_device, ', '.join(attached_devices)))
+    attached_devices = [test_device]
+
+  assert attached_devices, 'No devices attached.'
+
+  return sorted(attached_devices)
 
 
 def RunTestsCommand(command, options, args, option_parser):
@@ -627,16 +645,18 @@ def RunTestsCommand(command, options, args, option_parser):
 
   ProcessCommonOptions(options)
 
+  devices = _GetAttachedDevices(options.test_device)
+
   if command == 'gtest':
-    return _RunGTests(options, option_parser.error)
+    return _RunGTests(options, option_parser.error, devices)
   elif command == 'instrumentation':
-    return _RunInstrumentationTests(options, option_parser.error)
+    return _RunInstrumentationTests(options, option_parser.error, devices)
   elif command == 'uiautomator':
-    return _RunUIAutomatorTests(options, option_parser.error)
+    return _RunUIAutomatorTests(options, option_parser.error, devices)
   elif command == 'monkey':
-    return _RunMonkeyTests(options, option_parser.error)
+    return _RunMonkeyTests(options, option_parser.error, devices)
   elif command == 'perf':
-    return _RunPerfTests(options, option_parser.error)
+    return _RunPerfTests(options, option_parser.error, devices)
   else:
     raise Exception('Unknown test type.')
 

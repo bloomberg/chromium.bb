@@ -15,9 +15,7 @@ from pylib import android_commands
 from pylib import cmd_helper
 from pylib import constants
 from pylib import ports
-from pylib.base import base_test_result
 
-import gtest_config
 import test_package_apk
 import test_package_exe
 import test_runner
@@ -258,11 +256,12 @@ def _GetTestsFiltered(suite_name, gtest_filter, runner_factory, devices):
   return tests
 
 
-def Setup(test_options):
+def Setup(test_options, devices):
   """Create the test runner factory and tests.
 
   Args:
     test_options: A GTestOptions object.
+    devices: A list of attached devices.
 
   Returns:
     A tuple of (TestRunnerFactory, tests).
@@ -290,12 +289,11 @@ def Setup(test_options):
         device,
         test_package)
 
-  attached_devices = android_commands.GetAttachedDevices()
   tests = _GetTestsFiltered(test_options.suite_name, test_options.gtest_filter,
-                            TestRunnerFactory, attached_devices)
+                            TestRunnerFactory, devices)
   # Coalesce unit tests into a single test per device
   if test_options.suite_name != 'content_browsertests':
-    num_devices = len(attached_devices)
+    num_devices = len(devices)
     tests = [':'.join(tests[i::num_devices]) for i in xrange(num_devices)]
     tests = [t for t in tests if t]
 

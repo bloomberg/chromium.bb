@@ -4,16 +4,15 @@
 
 """Dispatches tests, either sharding or replicating them.
 
-To dispatch, performs the following steps:
+Performs the following steps:
 * Create a test collection factory, using the given tests
   - If sharding: test collection factory returns the same shared test collection
     to all test runners
   - If replciating: test collection factory returns a unique test collection to
     each test runner, with the same set of tests in each.
-* Get the list of devices to run on
-* Create test runners
-* Run each test runner in its own thread, pulling tests from the test collection
-  generated from the test collection factory until there are no tests left.
+* Create a test runner for each device.
+* Run each test runner in its own thread, grabbing tests from the test
+  collection until there are no tests left.
 """
 
 import logging
@@ -304,39 +303,8 @@ def _TearDownRunners(runners, timeout=None):
   threads.JoinAll(watchdog_timer.WatchdogTimer(timeout))
 
 
-
-def _GetAttachedDevices(wait_for_debugger=False, test_device=None):
-  """Get all attached devices.
-
-  If we are using a debugger, limit to only one device.
-
-  Args:
-    wait_for_debugger: True if this run will use a debugger.
-    test_device: Name of a specific device to use.
-
-  Returns:
-    A list of attached devices.
-  """
-  attached_devices = []
-
-  attached_devices = android_commands.GetAttachedDevices()
-  if test_device:
-    assert test_device in attached_devices, (
-        'Did not find device %s among attached device. Attached devices: %s'
-        % (test_device, ', '.join(attached_devices)))
-    attached_devices = [test_device]
-
-  if len(attached_devices) > 1 and wait_for_debugger:
-    logging.warning('Debugger can not be sharded, using first available device')
-    attached_devices = attached_devices[:1]
-
-  return sorted(attached_devices)
-
-
-def RunTests(tests, runner_factory, wait_for_debugger, test_device,
-             shard=True,
-             test_timeout=DEFAULT_TIMEOUT,
-             setup_timeout=DEFAULT_TIMEOUT,
+def RunTests(tests, runner_factory, devices, shard=True,
+             test_timeout=DEFAULT_TIMEOUT, setup_timeout=DEFAULT_TIMEOUT,
              num_retries=2):
   """Run all tests on attached devices, retrying tests that don't pass.
 
@@ -344,8 +312,7 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
     tests: List of tests to run.
     runner_factory: Callable that takes a device and index and returns a
         TestRunner object.
-    wait_for_debugger: True if this test is using a debugger.
-    test_device: A specific device to run tests on, or None.
+    devices: List of attached devices.
     shard: True if we should shard, False if we should replicate tests.
       - Sharding tests will distribute tests across all test runners through a
         shared test collection.
@@ -362,6 +329,7 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
   if not tests:
     logging.critical('No tests to run.')
     return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
+
   if shard:
     # Generate a shared _TestCollection object for all test runners, so they
     # draw from a common pool of tests.
@@ -375,11 +343,6 @@ def RunTests(tests, runner_factory, wait_for_debugger, test_device,
     test_collection_factory = lambda: _TestCollection([_Test(t) for t in tests])
     tag_results_with_device = True
     log_string = 'replicated on each device'
-
-  devices = _GetAttachedDevices(wait_for_debugger, test_device)
-  if not devices:
-    logging.critical('No attached devices.')
-    return (base_test_result.TestRunResults(), constants.ERROR_EXIT_CODE)
 
   logging.info('Will run %d tests (%s): %s', len(tests), log_string, str(tests))
   runners = _CreateRunners(runner_factory, devices, setup_timeout)
