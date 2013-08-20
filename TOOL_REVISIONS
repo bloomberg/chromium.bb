@@ -6,7 +6,7 @@
 # with each other.
 NEWLIB_VERSION=11986
 GLIBC_VERSION=11986
-PNACL_VERSION=12004
+PNACL_VERSION=12022
 
 # ARM trusted toolchain version cannot be changed for now.
 ARM_TRUSTED_VERSION=7005
