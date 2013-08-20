@@ -51,19 +51,15 @@ namespace WebCore {
 // CSSPropertyBorderBottomColor
 // CSSPropertyBorderBottomLeftRadius
 // CSSPropertyBorderBottomRightRadius
-// CSSPropertyBorderBottomWidth
 // CSSPropertyBorderImageOutset
 // CSSPropertyBorderImageSlice
 // CSSPropertyBorderImageSource
 // CSSPropertyBorderImageWidth
 // CSSPropertyBorderLeftColor
-// CSSPropertyBorderLeftWidth
 // CSSPropertyBorderRightColor
-// CSSPropertyBorderRightWidth
 // CSSPropertyBorderTopColor
 // CSSPropertyBorderTopLeftRadius
 // CSSPropertyBorderTopRightRadius
-// CSSPropertyBorderTopWidth
 // CSSPropertyBoxShadow
 // CSSPropertyClip
 // CSSPropertyColor
@@ -167,6 +163,14 @@ inline static PassRefPtr<AnimatableValue> createFromDouble(double value)
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const RenderStyle* style)
 {
     switch (property) {
+    case CSSPropertyBorderBottomWidth:
+        return createFromDouble(style->borderBottomWidth());
+    case CSSPropertyBorderLeftWidth:
+        return createFromDouble(style->borderLeftWidth());
+    case CSSPropertyBorderRightWidth:
+        return createFromDouble(style->borderRightWidth());
+    case CSSPropertyBorderTopWidth:
+        return createFromDouble(style->borderTopWidth());
     case CSSPropertyBottom:
         return createFromLength(style->bottom(), style);
     case CSSPropertyHeight:
