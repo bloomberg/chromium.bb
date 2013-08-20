@@ -62,6 +62,9 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Not yet secure in single-process mode.
   cl->AppendSwitch(switches::kDisableExperimentalWebGL);
 
+  // Ganesh backed 2D-Canvas is not yet working and causes crashes.
+  cl->AppendSwitch(switches::kDisableAccelerated2dCanvas);
+
   return false;
 }
 
