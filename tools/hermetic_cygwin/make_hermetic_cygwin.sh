@@ -85,7 +85,7 @@ declare -A description packages
 . "${0/.sh/.conf}"
 . "`dirname \"$0\"`"/make_installer.inc
 
-CYGWIN_VERSION=1.7.15-0.1-with-20120827-cygwin
+CYGWIN_VERSION=1.7.24-1.0
 
 mkdir -p packages{,.src,.unpacked} setup
 
@@ -198,14 +198,11 @@ END
 if ! patch --no-backup-if-mismatch <<END
 --- make_hermetic_cygwin.nsi
 +++ make_hermetic_cygwin.nsi
-@@ -2069,4 +2069,4 @@
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.0.1.exe"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.0.1.exe"
-   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pgawk-4.0.1.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pgawk.exe"
--  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.0.1.exe"
-   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}usr\\share\\man\\man1\\pgawk.1.gz" "\$INSTDIR\\${CYGWIN_PREFIX}usr\\share\\man\\man1\\gawk.1.gz"
+@@ -2295,2 +2295,2 @@
+   MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.1.0.exe"
 -  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "gawk.exe"
-@@ -4775,6 +4775,7 @@
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\awk.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\gawk-4.1.0.exe"
+@@ -5370,6 +5370,7 @@
    CreateDirectory "\$INSTDIR\\usr"
    CreateDirectory "\$INSTDIR\\bin"
    CreateDirectory "\$INSTDIR\\bin-unrebased"
@@ -213,27 +210,31 @@ if ! patch --no-backup-if-mismatch <<END
    CreateDirectory "\$INSTDIR\\usr\\share"
    CreateDirectory "\$INSTDIR\\usr\\share\\doc"
    CreateDirectory "\$INSTDIR\\usr\\share\\doc\\bash"
-@@ -24887,3 +24887,4 @@
--  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "python2.6.exe"
--  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python-config" "python2.6-config"
--  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython2.6.dll.a" "python2.6\\config\\libpython2.6.dll.a"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.6.exe"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.6.exe"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python-config" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.6-config"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python2.6.dll.a" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python2.6\\config\\libpython2.6.dll.a"
-@@ -27321,4 +27321,8 @@
--  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.exe" "python3.1.exe"
--  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3-config" "python3.1-config"
--  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython3.1.dll.a" "python3.1\\config\\libpython3.1.dll.a"
--  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python3.pc" "python-3.1.pc"
+@@ -21338,3 +21338,4 @@
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "python2.7.exe"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python-config" "python2.7-config"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython2.7.dll.a" "python2.7\\config\\libpython2.7.dll.a"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.7.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.7.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python-config" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python2.7-config"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython2.7.dll.a" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python2.7\\config\\libpython2.7.dll.a"
+@@ -34953,6 +34953,10 @@
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pydoc3" "pydoc3.2"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.exe" "python3.2m.exe"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3-config" "python3.2m-config"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.2.exe" "python3.2m.exe"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython3.2m.dll.a" "python3.2\\config-3.2m\\libpython3.2m.dll.a"
+-  MkLink::SoftF "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python3.pc" "python-3.2.pc"
 +  IntCmp \$PKV_python 1 L1_NoInstallPythonHardlink +1 L1_NoInstallPythonHardlink
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.1.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.2m.exe"
 +L1_NoInstallPythonHardlink:
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.1.exe"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3-config" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.1-config"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython3.1.dll.a" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python3.1\\config\\libpython3.1.dll.a"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python.pc" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python-3.1.pc"
-+  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python3.pc" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python-3.1.pc"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pydoc3" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\pydoc3.2"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.2m.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3-config" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.2m-config"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.2.exe" "\$INSTDIR\\${CYGWIN_PREFIX}bin\\python3.2m.exe"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\libpython3.2m.dll.a" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\python3.2\\config-3.2m\\libpython3.2m.dll.a"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python.pc" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python-3.2.pc"
++  MkLink::Hard "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python3.pc" "\$INSTDIR\\${CYGWIN_PREFIX}lib\\pkgconfig\\python-3.2.pc"
 END
   then
     exit 1
