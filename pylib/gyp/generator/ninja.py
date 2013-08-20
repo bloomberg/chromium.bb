@@ -806,20 +806,16 @@ class NinjaWriter:
       self.WriteVariableList(ninja_file, 'pchprefix', [self.name])
     else:
       cflags = config.get('cflags', [])
+      cflags_c = config.get('cflags_c', [])
+      cflags_cc = config.get('cflags_cc', [])
 
-      cflags_c = []
-      cflags_cc = []
-
-      # Respect environment variables related to build, but target-specific
-      # flags can still override them.
-      if self.toolset == 'target':
-        cflags_c = (os.environ.get('CPPFLAGS', '').split() +
-                    os.environ.get('CFLAGS', '').split())
-        cflags_cc = (os.environ.get('CPPFLAGS', '').split() +
-                     os.environ.get('CXXFLAGS', '').split())
-
-      cflags_c.extend(config.get('cflags_c', []))
-      cflags_cc.extend(config.get('cflags_cc', []))
+    # Respect environment variables related to build, but target-specific
+    # flags can still override them.
+    if self.toolset == 'target':
+      cflags_c = (os.environ.get('CPPFLAGS', '').split() +
+                  os.environ.get('CFLAGS', '').split() + cflags_c)
+      cflags_cc = (os.environ.get('CPPFLAGS', '').split() +
+                   os.environ.get('CXXFLAGS', '').split() + cflags_cc)
 
     defines = config.get('defines', []) + extra_defines
     self.WriteVariableList(ninja_file, 'defines',

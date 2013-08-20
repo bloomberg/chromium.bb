@@ -24,10 +24,7 @@ def PopEnv():
   os.environ.clear()
   os.environ.update(env_stack.pop())
 
-formats = ['make']
-if sys.platform.startswith('linux'):
-  # Only Linux ninja generator supports CFLAGS.
-  formats.append('ninja')
+formats = ['make', 'ninja']
 
 test = TestGyp.TestGyp(formats=formats)
 
