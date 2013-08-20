@@ -226,7 +226,17 @@ class AvailabilityFinder(object):
 
     # Check for the API in the development channels.
     availability = None
+
     for channel_info in self._branch_utility.GetAllChannelInfo():
+      if channel_info.channel == 'trunk':
+        # Don't check trunk, since (a) there's no point, we know it's going to
+        # be available there, and (b) there is a bug with the current
+        # architecture and design of HostFileSystemCreator, where creating
+        # 'trunk' ignores the pinned revision (in fact, it bypasses every
+        # difference including whether the file system is patched).
+        # TODO(kalman): Fix HostFileSystemCreator and update this comment.
+        break
+
       available_channel = self._GetAvailableChannelForVersion(
           api_name,
           channel_info.version)
@@ -239,8 +249,9 @@ class AvailabilityFinder(object):
                                         channel_info.version)
         break
 
-    # The API should at least be available on trunk. It's a bug otherwise.
-    assert availability, 'No availability found for %s' % api_name
+    if availability is None:
+      trunk_info = self._branch_utility.GetChannelInfo('trunk')
+      availability = AvailabilityInfo(trunk_info.channel, trunk_info.version)
 
     # If the API is in stable, find the chrome version in which it became
     # stable.
