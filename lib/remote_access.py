@@ -209,7 +209,7 @@ class RemoteAccess(object):
     if inplace:
       rsync_cmd.append('--inplace')
     rsync_cmd += ['--rsh', ssh_cmd, src,
-                  '%s:%s' % (self.target_ssh_url, dest)]
+                  '[%s]:%s' % (self.target_ssh_url, dest)]
     rc_func = cros_build_lib.RunCommand
     if sudo:
       rc_func = cros_build_lib.SudoRunCommand
