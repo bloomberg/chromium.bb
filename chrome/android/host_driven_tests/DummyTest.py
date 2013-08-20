@@ -13,5 +13,4 @@ class DummyTest(test_case.HostDrivenTestCase):
 
   @tests_annotations.Smoke
   def testPass(self):
-    return self._RunJavaTests(
-        'org.chromium.chrome.browser.test', ['DummyTest.testPass'])
+    return self._RunJavaTestFilters(['DummyTest.testPass'])
