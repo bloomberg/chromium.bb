@@ -1,4 +1,4 @@
-.TH lcovrc 5 "LCOV 1.7" 2008\-11\-17 "User Manuals"
+.TH lcovrc 5 "LCOV 1.10" 2012\-10\-10 "User Manuals"
 
 .SH NAME
 lcovrc \- lcov configuration file
@@ -47,18 +47,21 @@ section 'OPTIONS' below.
 #genhtml_css_file = gcov.css
 .br
 
-# Coverage rate limits for line coverage
+# Coverage rate limits
 .br
-genhtml_hi_limit = 50
+genhtml_hi_limit = 90
 .br
-genhtml_med_limit = 15
+genhtml_med_limit = 75
 .br
 
-# Coverage rate limits for function coverage
+# Width of line coverage field in source code view
 .br
-genhtml_function_hi_limit = 90
+genhtml_line_field_width = 12
 .br
-genhtml_function_med_limit = 75
+
+# Width of branch coverage field in source code view
+.br
+genhtml_branch_field_width = 16
 .br
 
 # Width of overview image
@@ -133,7 +136,17 @@ genhtml_sort = 1
 
 # Include function coverage data display
 .br
-genhtml_function_coverage = 1
+#genhtml_function_coverage = 1
+.br
+
+# Include branch coverage data display
+.br
+#genhtml_branch_coverage = 1
+.br
+
+# Specify the character set of all generated HTML pages
+.br
+genhtml_charset=UTF\-8
 .br
 
 # Location of the gcov tool
@@ -156,29 +169,82 @@ geninfo_checksum = 0
 geninfo_compat_libtool = 0
 .br
 
+# Specify whether to capture coverage data for external source
+.br
+# files
+.br
+#geninfo_external = 1
+.br
+
+# Use gcov's --all-blocks option if non-zero
+.br
+#geninfo_gcov_all_blocks = 1
+.br
+
+# Specify compatiblity modes (same as \-\-compat option
+.br
+# of geninfo)
+.br
+#geninfo_compat = libtool=on, hammer=auto, split_crc=auto
+.br
+
+# Adjust path to source files by removing or changing path
+.br
+# components that match the specified pattern (Perl regular
+.br
+# expression format)
+.br
+#geninfo_adjust_src_path = /tmp/build => /usr/src
+
+# Specify if geninfo should try to automatically determine
+.br
+# the base-directory when collecting coverage data.
+.br
+geninfo_auto_base = 1
+.br
+
 # Directory containing gcov kernel files
 .br
 lcov_gcov_dir = /proc/gcov
 .br
 
-# Location of the insmod tool
-.br
-lcov_insmod_tool = /sbin/insmod
-.br
-
-# Location of the modprobe tool
-.br
-lcov_modprobe_tool = /sbin/modprobe
-.br
-
-# Location of the rmmod tool
-.br
-lcov_rmmod_tool = /sbin/rmmod
-.br
-
 # Location for temporary directories
 .br
 lcov_tmp_dir = /tmp
+.br
+
+# Show full paths during list operation if non\-zero
+.br
+lcov_list_full_path = 0
+.br
+
+# Specify the maximum width for list output. This value is
+.br
+# ignored when lcov_list_full_path is non\-zero.
+.br
+lcov_list_width = 80
+.br
+
+# Specify the maximum percentage of file names which may be
+.br
+# truncated when choosing a directory prefix in list output.
+.br
+# This value is ignored when lcov_list_full_path is non\-zero.
+.br
+lcov_list_truncate_max = 20
+
+# Specify if function coverage data should be collected and
+.br
+# processed.
+.br
+lcov_function_coverage = 1
+.br
+
+# Specify if branch coverage data should be collected and
+.br
+# processed.
+.br
+lcov_branch_coverage = 0
 .br
 .PP
 
@@ -206,17 +272,12 @@ By default, a standard CSS file is generated.
 .BR genhtml_med_limit " ="
 .I med_limit
 .br
-.BR genhtml_function_med_limit " ="
-.I hi_limit
-.br
-.BR genhtml_function_med_limit " ="
-.I med_limit
 .IP
 Specify coverage rate limits for classifying file entries. Use this option to
-modify the coverage rates (in percent) for line or function coverage at which
-a result is classified as high, medium or low coverage. This classification
-affects the color of the corresponding entries on the overview pages of the
-HTML output:
+modify the coverage rates (in percent) for line, function and branch coverage at
+which a result is classified as high, medium or low coverage. This
+classification affects the color of the corresponding entries on the overview
+pages of the HTML output:
 .br
 
 High:   hi_limit  <= rate <= 100        default color: green
@@ -226,8 +287,27 @@ Medium: med_limit <= rate < hi_limit    default color: orange
 Low:    0         <= rate < med_limit   default color: red
 .br
 
-Defaults are 50 and 15 percent for line coverage and 90 and 75 percent for
-function coverage.
+Defaults are 90 and 75 percent.
+.PP
+
+.BR genhtml_line_field_width " ="
+.I number_of_characters
+.IP
+Specify the width (in characters) of the source code view column containing
+line coverage information.
+.br
+
+Default is 12.
+.PP
+
+.BR genhtml_branch_field_width " ="
+.I number_of_characters
+.IP
+Specify the width (in characters) of the source code view column containing
+branch coverage information.
+.br
+
+Default is 16.
 .PP
 
 .BR genhtml_overview_width " ="
@@ -438,6 +518,34 @@ This option can be set to 0 by using the \-\-no\-function\-coverage option of
 Default is 1.
 .PP
 
+.BR genhtml_branch_coverage " ="
+.IR 0 | 1
+.IP
+If non\-zero, include branch coverage data when generating HTML output using
+.BR genhtml .
+.br
+
+This option can be set to 0 by using the \-\-no\-branch\-coverage option of
+.BR genhtml .
+.br
+
+Default is 1.
+.PP
+
+.BR genhtml_charset " ="
+.I charset
+.IP
+Specify the character set of all generated HTML pages.
+.br
+
+Use this option if the source code contains characters which are not
+part of the default character set. Note that this option is ignored
+when a custom HTML prolog is specified (see also
+.BR genhtml_html_prolog ).
+.br
+
+Default is UTF-8.
+.PP
 .BR geninfo_gcov_tool " ="
 .I path_to_gcov
 .IP
@@ -492,40 +600,129 @@ command line option of
 Default is 1.
 .PP
 
+.BR geninfo_external " ="
+.IR 0 | 1
+.IP
+If non\-zero, capture coverage data for external source files.
+
+External source files are files which are not located in one of the directories
+(including sub-directories)
+specified by the \-\-directory or \-\-base\-directory options of
+.BR lcov / geninfo .
+
+Default is 1.
+.PP
+
+.BR geninfo_gcov_all_blocks " ="
+.IR 0 | 1
+.IP
+If non\-zero, call the gcov tool with option --all-blocks.
+
+Using --all-blocks will produce more detailed branch coverage information for
+each line. Set this option to zero if you do not need detailed branch coverage
+information to speed up the process of capturing code coverage or to work
+around a bug in some versions of gcov which will cause it to endlessly loop
+when analysing some files.
+
+Default is 1.
+.PP
+
+.BR geninfo_compat " ="
+.IR mode = value [, mode = value ,...]
+.IP
+Specify that geninfo should enable one or more compatibility modes
+when capturing coverage data.
+
+This option corresponds to the \-\-compat command line option of
+.BR geninfo .
+
+Default is 'libtool=on, hammer=auto, split_crc=auto'.
+.PP
+
+.BR geninfo_adjust_src_path " ="
+.IR pattern " => " replacement
+.br
+.BR geninfo_adjust_src_path " ="
+.I pattern
+.IP
+Adjust source paths when capturing coverage data.
+
+Use this option in situations where geninfo cannot find the correct
+path to source code files of a project. By providing a
+.I pattern
+in Perl regular expression format (see
+.BR perlre (1))
+and an optional replacement string, you can instruct geninfo to
+remove or change parts of the incorrect source path.
+
+.B Example:
+.br
+
+1. When geninfo reports that it cannot find source file
+.br
+
+    /path/to/src/.libs/file.c
+.br
+
+while the file is actually located in
+.br
+
+    /path/to/src/file.c
+.br
+
+use the following parameter:
+.br
+
+    geninfo_adjust_src_path = /.libs
+
+This will remove all "/.libs" strings from the path.
+
+2. When geninfo reports that it cannot find source file
+.br
+
+    /tmp/build/file.c
+.br
+
+while the file is actually located in
+.br
+
+    /usr/src/file.c
+.br
+
+use the following parameter:
+.br
+
+    geninfo_adjust_src_path = /tmp/build => /usr/src
+.br
+
+This will change all "/tmp/build" strings in the path to "/usr/src".
+.PP
+
+.BR geninfo_auto_base " ="
+.IR 0 | 1
+.IP
+If non\-zero, apply a heuristic to determine the base directory when
+collecting coverage data.
+.br
+
+Use this option when using geninfo on projects built with libtool or
+similar build environments that work with multiple base directories,
+i.e. environments, where the current working directory when invoking the
+compiler ist not the same directory in which the source code file is
+located, and in addition, is different between files of the same project.
+.br
+
+Default is 1.
+.PP
+
 .BR lcov_gcov_dir " ="
 .I path_to_kernel_coverage_data
 .IP
-Specify the path to the directory where kernel coverage data can be found.
+Specify the path to the directory where kernel coverage data can be found
+or leave undefined for auto-detection.
 .br
 
-Default is '/proc/gcov'.
-.PP
-
-.BR lcov_insmod_tool " ="
-.I path_to_insmod
-.IP
-Specify the location of the insmod tool used to load kernel modules.
-.br
-
-Default is '/sbin/insmod'.
-.PP
-
-.BR lcov_modprobe_tool " ="
-.I path_to_modprobe
-.IP
-Specify the location of the modprobe tool used to load kernel modules.
-.br
-
-Default is '/sbin/modprobe'.
-.PP
-
-.BR lcov_rmmod_tool " ="
-.I path_to_rmmod
-.IP
-Specify the location of the rmmod tool used to unload kernel modules.
-.br
-
-Default is '/sbin/rmmod'.
+Default is auto-detection.
 .PP
 
 .BR lcov_tmp_dir " ="
@@ -535,6 +732,73 @@ Specify the location of a directory used for temporary files.
 .br
 
 Default is '/tmp'.
+.PP
+
+.BR lcov_list_full_path " ="
+.IR 0 | 1
+.IP
+If non-zero, print the full path to source code files during a list operation.
+.br
+
+This option corresponds to the \-\-list\-full\-path option of
+.BR lcov .
+.br
+
+Default is 0.
+.PP
+
+.BR lcov_list_max_width " ="
+.IR width
+.IP
+Specify the maximum width for list output. This value is ignored when
+lcov_list_full_path is non\-zero.
+.br
+
+Default is 80.
+.PP
+
+.BR lcov_list_truncate_max
+.B " ="
+.IR percentage
+.IP
+Specify the maximum percentage of file names which may be truncated when
+choosing a directory prefix in list output. This value is ignored when
+lcov_list_full_path is non\-zero.
+.br
+
+Default is 20.
+.PP
+
+.BR lcov_function_coverage " ="
+.IR 0 | 1
+.IP
+Specify whether lcov should handle function coverage data.
+.br
+
+Setting this option to 0 can reduce memory and CPU time consumption
+when lcov is collecting and processing coverage data, as well as
+reduce the size of the resulting data files. Note that setting
+.B genhtml_function_coverage
+will override this option for HTML generation.
+.br
+
+Default is 1.
+.PP
+
+.BR lcov_branch_coverage " ="
+.IR 0 | 1
+.IP
+Specify whether lcov should handle branch coverage data.
+.br
+
+Setting this option to 0 can reduce memory and CPU time consumption
+when lcov is collecting and processing coverage data, as well as
+reduce the size of the resulting data files. Note that setting
+.B genhtml_branch_coverage
+will override this option for HTML generation.
+.br
+
+Default is 0.
 .PP
 
 .SH FILES

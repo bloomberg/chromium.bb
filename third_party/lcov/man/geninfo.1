@@ -1,4 +1,4 @@
-.TH geninfo 1 "LCOV 1.7" 2008\-11\-17 "User Manuals"
+.TH geninfo 1 "LCOV 1.10" 2012\-10\-10 "User Manuals"
 .SH NAME
 geninfo \- Generate tracefiles from .da files
 .SH SYNOPSIS
@@ -32,6 +32,19 @@ geninfo \- Generate tracefiles from .da files
 .br
 .RB [ \-\-no\-recursion ]
 .I directory
+.RB [ \-\-external ]
+.RB [ \-\-no\-external ]
+.br
+.RB [ \-\-config\-file
+.IR config\-file ]
+.RB [ \-\-no\-markers ]
+.br
+.RB [ \-\-derive\-func\-data ]
+.RB [ \-\-compat
+.IR  mode =on|off|auto]
+.br
+.RB [ \-\-rc
+.IR keyword = value ]
 .RE
 .SH DESCRIPTION
 .B geninfo 
@@ -57,6 +70,33 @@ Note also that
 is called from within
 .BR lcov ,
 so that there is usually no need to call it directly.
+
+.B Exclusion markers
+
+To exclude specific lines of code from a tracefile, you can add exclusion
+markers to the source code. Exclusion markers are keywords which can for
+example be added in the form of a comment.
+
+The following markers are recognized by geninfo:
+
+LCOV_EXCL_LINE
+.RS
+Lines containing this marker will be excluded.
+.br
+.RE
+LCOV_EXCL_START
+.RS
+Marks the beginning of an excluded section. The current line is part of this
+section.
+.br
+.RE
+LCOV_EXCL_STOP
+.RS
+Marks the end of an excluded section. The current line not part of this
+section.
+.RE
+.br
+
 .SH OPTIONS
 
 .B \-b
@@ -84,11 +124,10 @@ where the current working directory when invoking the compiler is not the same
 directory in which the source code file is located.
 
 Note that this option will not work in environments where multiple base
-directories are used. In that case repeat the geninfo call for each base
-directory while using the \-\-ignore\-errors option to prevent geninfo from
-exiting when the first source code file could not be found. This way you can
-get partial coverage information for each base directory which can then be
-combined using the \-a option.
+directories are used. In that case use configuration file setting
+.B geninfo_auto_base=1
+(see
+.BR lcovrc (5)).
 .RE
 
 .B \-\-checksum
@@ -112,6 +151,73 @@ If you don't work with different source code versions, disable this option
 to speed up coverage data processing and to reduce the size of tracefiles.
 .RE
 
+.B \-\-compat
+.IR mode = value [, mode = value ,...]
+.br
+.RS
+Set compatibility mode.
+
+Use \-\-compat to specify that geninfo should enable one or more compatibility
+modes when capturing coverage data. You can provide a comma-separated list
+of mode=value pairs to specify the values for multiple modes.
+
+Valid
+.I values
+are:
+
+.B on
+.RS
+Enable compatibility mode.
+.RE
+.B off
+.RS
+Disable compatibility mode.
+.RE
+.B auto
+.RS
+Apply auto-detection to determine if compatibility mode is required. Note that
+auto-detection is not available for all compatibility modes.
+.RE
+
+If no value is specified, 'on' is assumed as default value.
+
+Valid
+.I modes
+are:
+
+.B libtool
+.RS
+Enable this mode if you are capturing coverage data for a project that
+was built using the libtool mechanism. See also
+\-\-compat\-libtool.
+
+The default value for this setting is 'on'.
+
+.RE
+.B hammer
+.RS
+Enable this mode if you are capturing coverage data for a project that
+was built using a version of GCC 3.3 that contains a modification
+(hammer patch) of later GCC versions. You can identify a modified GCC 3.3
+by checking the build directory of your project for files ending in the
+extension '.bbg'. Unmodified versions of GCC 3.3 name these files '.bb'.
+
+The default value for this setting is 'auto'.
+
+.RE
+.B split_crc
+.RS
+Enable this mode if you are capturing coverage data for a project that
+was built using a version of GCC 4.6 that contains a modification
+(split function checksums) of later GCC versions. Typical error messages
+when running geninfo on coverage data produced by such GCC versions are
+\'out of memory' and 'reached unexpected end of file'.
+
+The default value for this setting is 'auto'
+.RE
+
+.RE
+
 .B \-\-compat\-libtool
 .br
 .B \-\-no\-compat\-libtool
@@ -130,6 +236,49 @@ found in its parent directory.
 
 If you have directories named ".libs" in your build environment but don't use
 libtool, disable this option to prevent problems when capturing coverage data.
+.RE
+
+.B \-\-config\-file
+.I config\-file
+.br
+.RS
+Specify a configuration file to use.
+
+When this option is specified, neither the system\-wide configuration file
+/etc/lcovrc, nor the per\-user configuration file ~/.lcovrc is read.
+
+This option may be useful when there is a need to run several
+instances of
+.B geninfo
+with different configuration file options in parallel.
+.RE
+
+.B \-\-derive\-func\-data
+.br
+.RS
+Calculate function coverage data from line coverage data.
+
+Use this option to collect function coverage data, even if the version of the
+gcov tool installed on the test system does not provide this data. lcov will
+instead derive function coverage data from line coverage data and
+information about which lines belong to a function.
+.RE
+
+.B \-\-external
+.br
+.B \-\-no\-external
+.br
+.RS
+Specify whether to capture coverage data for external source files.
+
+External source files are files which are not located in one of the directories
+specified by \-\-directory or \-\-base\-directory. Use \-\-external to include
+external source files while capturing coverage data or \-\-no\-external to
+ignore this data.
+
+Data for external source files is
+.B included
+by default.
 .RE
 
 .B \-f
@@ -180,10 +329,20 @@ Capture initial zero coverage data.
 
 Run geninfo with this option on the directories containing .bb, .bbg or .gcno
 files before running any test case. The result is a "baseline" coverage data
-file that contains zero coverage for every instrumented line. Combine this
-data file (using lcov \-a) with coverage data files captured after a test
-run to ensure that the percentage of total lines covered is correct even
-when not all source code files were loaded during the test.
+file that contains zero coverage for every instrumented line and function.
+Combine this data file (using lcov \-a) with coverage data files captured
+after a test run to ensure that the percentage of total lines covered is
+correct even when not all object code files were loaded during the test.
+
+Note: currently, the \-\-initial option does not generate branch coverage
+information.
+.RE
+
+.B \-\-no\-markers
+.br
+.RS
+Use this option if you want to get coverage data without regard to exclusion
+markers in the source code file.
 .RE
 
 .B \-\-no\-recursion
@@ -213,6 +372,22 @@ Do not print progress messages.
 
 Suppresses all informational progress output. When this switch is enabled,
 only error or warning messages are printed.
+.RE
+
+.B \-\-rc
+.IR keyword = value
+.br
+.RS
+Override a configuration directive.
+
+Use this option to specify a
+.IR keyword = value
+statement which overrides the corresponding configuration statement in
+the lcovrc configuration file. You can specify this option more than once
+to override multiple configuration statements.
+See
+.BR lcovrc (5)
+for a list of available keywords and their meaning.
 .RE
 
 .BI "\-t " testname
@@ -279,6 +454,19 @@ and hit:
   FNF:<number of functions found>
   FNH:<number of function hit>
 
+Branch coverage information is stored which one line per branch:
+
+  BRDA:<line number>,<block number>,<branch number>,<taken>
+
+Block number and branch number are gcc internal IDs for the branch. Taken is
+either '-' if the basic block containing the branch was never executed or
+a number indicating how often that branch was taken.
+
+Branch coverage summaries are stored in two lines:
+
+  BRF:<number of branches found>
+  BRH:<number of branches hit>
+
 Then there is a list of execution counts for each instrumented line
 (i.e. a line which resulted in executable code):
 
@@ -317,6 +505,7 @@ Peter Oberparleiter <Peter.Oberparleiter@de.ibm.com>
 
 .SH SEE ALSO
 .BR lcov (1),
+.BR lcovrc (5),
 .BR genhtml (1),
 .BR genpng (1),
 .BR gendesc (1),

@@ -22,7 +22,7 @@
 #   This script creates an overview PNG image of a source code file by
 #   representing each source code character by a single pixel.
 #
-#   Note that the PERL module GD.pm is required for this script to work.
+#   Note that the Perl module GD.pm is required for this script to work.
 #   It may be obtained from http://www.cpan.org
 #
 # History:
@@ -35,7 +35,7 @@ use Getopt::Long;
 
 
 # Constants
-our $lcov_version	= "LCOV version 1.7";
+our $lcov_version	= 'LCOV version 1.10';
 our $lcov_url		= "http://ltp.sourceforge.net/coverage/lcov.php";
 our $tool_name		= basename($0);
 
@@ -45,13 +45,16 @@ sub gen_png($$$@);
 sub check_and_load_module($);
 sub genpng_print_usage(*);
 sub genpng_process_file($$$$);
-sub warn_handler($);
-sub die_handler($);
+sub genpng_warn_handler($);
+sub genpng_die_handler($);
 
 
 #
 # Code entry point
 #
+
+# Prettify version string
+$lcov_version =~ s/\$\s*Revision\s*:?\s*(\S+)\s*\$/$1/;
 
 # Check whether required module GD.pm is installed
 if (check_and_load_module("GD"))
@@ -75,8 +78,8 @@ if (!caller)
 	my $help;
 	my $version;
 
-	$SIG{__WARN__} = \&warn_handler;
-	$SIG{__DIE__} = \&die_handler;
+	$SIG{__WARN__} = \&genpng_warn_handler;
+	$SIG{__DIE__} = \&genpng_die_handler;
 
 	# Parse command line options
 	if (!GetOptions("tab-size=i" => \$tab_size,
@@ -179,7 +182,7 @@ sub genpng_process_file($$$$)
 	local *HANDLE;
 	my @source;
 
-	open(HANDLE, "<$filename")
+	open(HANDLE, "<", $filename)
 		or die("ERROR: cannot open $filename!\n");
 
 	# Check for .gcov filename extension
@@ -235,7 +238,7 @@ sub gen_png($$$@)
 	my $overview_width = shift(@_);	# Imagewidth for image
 	my $tab_size = shift(@_);	# Replacement string for tab signs
 	my @source = @_;	# Source code as passed via argument 2
-	my $height = scalar(@source);	# Height as define by source size
+	my $height;		# Height as define by source size
 	my $overview;		# Source code overview image data
 	my $col_plain_back;	# Color for overview background
 	my $col_plain_text;	# Color for uninstrumented text
@@ -258,6 +261,11 @@ sub gen_png($$$@)
 	my $replacement;	# Replacement string for tabulator chars
 	local *PNG_HANDLE;	# Handle for output PNG file
 
+	# Handle empty source files
+	if (!@source) {
+		@source = ( "" );
+	}
+	$height = scalar(@source);
 	# Create image
 	$overview = new GD::Image($overview_width, $height)
 		or die("ERROR: cannot allocate overview image!\n");
@@ -359,21 +367,21 @@ sub gen_png($$$@)
 	}
 
 	# Write PNG file
-	open (PNG_HANDLE, ">$filename")
+	open (PNG_HANDLE, ">", $filename)
 		or die("ERROR: cannot write png file $filename!\n");
 	binmode(*PNG_HANDLE);
 	print(PNG_HANDLE $overview->png());
 	close(PNG_HANDLE);
 }
 
-sub warn_handler($)
+sub genpng_warn_handler($)
 {
 	my ($msg) = @_;
 
 	warn("$tool_name: $msg");
 }
 
-sub die_handler($)
+sub genpng_die_handler($)
 {
 	my ($msg) = @_;
 

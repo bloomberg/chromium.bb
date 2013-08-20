@@ -1,13 +1,13 @@
 -------------------------------------------------
 - README file for the LTP GCOV extension (LCOV) -
-- Last changes: 2008-11-17                      -
+- Last changes: 2012-10-10                      -
 -------------------------------------------------
 
 Description
 -----------
   LCOV is an extension of GCOV, a GNU tool which provides information about
   what parts of a program are actually executed (i.e. "covered") while running
-  a particular test case. The extension consists of a set of PERL scripts
+  a particular test case. The extension consists of a set of Perl scripts
   which build on the textual GCOV output to implement the following enhanced
   functionality:
 
@@ -80,7 +80,7 @@ Requirements: get and install the gcov-kernel package from
   http://sourceforge.net/projects/ltp
 
 Copy the resulting gcov kernel module file to either the system wide modules
-directory or the same directory as the PERL scripts. As root, do the following:
+directory or the same directory as the Perl scripts. As root, do the following:
 
   a) Resetting counters
 
@@ -100,8 +100,10 @@ Point the web browser of your choice to the resulting index.html file.
 4. An example of how to access coverage data for a user space program
 ---------------------------------------------------------------------
 Requirements: compile the program in question using GCC with the options
--fprofile-arcs and -ftest-coverage. Assuming the compile directory is called
-"appdir", do the following:
+-fprofile-arcs and -ftest-coverage. During linking, make sure to specify
+-lgcov or -coverage.
+
+Assuming the compile directory is called "appdir", do the following:
 
   a) Resetting counters
 
@@ -117,6 +119,13 @@ Requirements: compile the program in question using GCC with the options
      genhtml app.info
 
 Point the web browser of your choice to the resulting index.html file.
+
+Please note that independently of where the application is installed or
+from which directory it is run, the --directory statement needs to
+point to the directory in which the application was compiled.
+
+For further information on the gcc profiling mechanism, please also
+consult the gcov man page.
 
 
 5. Questions and comments

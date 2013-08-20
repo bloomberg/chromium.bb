@@ -1,4 +1,4 @@
-.TH genhtml 1 "LCOV 1.7" 2008\-11\-17 "User Manuals"
+.TH genhtml 1 "LCOV 1.10" 2012\-10\-10 "User Manuals"
 .SH NAME
 genhtml \- Generate HTML view from LCOV coverage data files
 .SH SYNOPSIS
@@ -52,6 +52,18 @@ genhtml \- Generate HTML view from LCOV coverage data files
 .RB [ \-\-function\-coverage ]
 .RB [ \-\-no\-function\-coverage ]
 .br
+.RB [ \-\-branch\-coverage ]
+.RB [ \-\-no\-branch\-coverage ]
+.br
+.RB [ \-\-demangle\-cpp ]
+.RB [ \-\-ignore\-errors
+.IR errors  ]
+.br
+.RB [ \-\-config\-file
+.IR config\-file ]
+.RB [ \-\-rc
+.IR keyword = value ]
+.br
 .IR tracefile(s)
 .RE
 .SH DESCRIPTION
@@ -75,9 +87,16 @@ Use option
 to modify layout and colors of the generated HTML output. Files are
 marked in different colors depending on the associated coverage rate. By
 default, the coverage limits for low, medium and high coverage are set to
-0\-15%, 15\-50% and 50\-100% percent respectively. To change these
+0\-75%, 75\-90% and 90\-100% percent respectively. To change these
 values, use configuration file options
 .IR genhtml_hi_limit " and " genhtml_med_limit .
+
+Also note that when displaying percentages, 0% and 100% are only printed when
+the values are exactly 0% and 100% respectively. Other values which would
+conventionally be rounded to 0% or 100% are instead printed as nearest
+non-boundary value. This behavior is in accordance with that of the
+.BR gcov (1)
+tool.
 
 .SH OPTIONS
 .B \-h
@@ -113,7 +132,7 @@ Use HTML frames for source code view.
 If enabled, a frameset is created for each source code file, providing
 an overview of the source code as a "clickable" image. Note that this
 option will slow down output creation noticeably because each source
-code character has to be inspected once. Note also that the GD.pm PERL
+code character has to be inspected once. Note also that the GD.pm Perl
 module has to be installed for this option to work (it may be obtained
 from http://www.cpan.org).
 
@@ -369,7 +388,6 @@ option
 .RE
 .BI "\-\-html\-extension " extension
 .RS
-
 Use customized filename extension for generated HTML pages.
 
 This option is useful in situations where different filename extensions
@@ -384,7 +402,6 @@ option
 
 .B \-\-html\-gzip
 .RS
-
 Compress all generated html files with gzip and add a .htaccess file specifying
 gzip\-encoding in the root output directory.
 
@@ -438,6 +455,96 @@ option
 .IR genhtml_function_coverage .
 
 .RE
+.B \-\-branch\-coverage
+.br
+.B \-\-no\-branch\-coverage
+.RS
+Specify whether to display branch coverage data in HTML output.
+
+Use \-\-branch\-coverage to enable branch coverage display or
+\-\-no\-branch\-coverage to disable it. Branch coverage data display is
+.B enabled
+by default
+
+When branch coverage display is enabled, each overview page will contain
+the number of branches found and hit per file or directory, together with
+the resulting coverage rate. In addition, each source code view will contain
+an extra column which lists all branches of a line with indications of
+whether the branch was taken or not. Branches are shown in the following format:
+
+ ' + ': Branch was taken at least once
+.br
+ ' - ': Branch was not taken
+.br
+ ' # ': The basic block containing the branch was never executed
+.br
+
+Note that it might not always be possible to relate branches to the
+corresponding source code statements: during compilation, GCC might shuffle
+branches around or eliminate some of them to generate better code.
+
+This option can also be configured permanently using the configuration file
+option
+.IR genhtml_branch_coverage .
+
+.RE
+.B \-\-demangle\-cpp
+.RS
+Specify whether to demangle C++ function names.
+
+Use this option if you want to convert C++ internal function names to
+human readable format for display on the HTML function overview page.
+This option requires that the c++filt tool is installed (see
+.BR c++filt (1)).
+
+.RE
+.B \-\-ignore\-errors
+.I errors
+.br
+.RS
+Specify a list of errors after which to continue processing.
+
+Use this option to specify a list of one or more classes of errors after which
+geninfo should continue processing instead of aborting.
+
+.I errors
+can be a comma\-separated list of the following keywords:
+
+.B source:
+the source code file for a data set could not be found.
+.RE
+
+.B \-\-config\-file
+.I config\-file
+.br
+.RS
+Specify a configuration file to use.
+
+When this option is specified, neither the system\-wide configuration file
+/etc/lcovrc, nor the per\-user configuration file ~/.lcovrc is read.
+
+This option may be useful when there is a need to run several
+instances of
+.B genhtml
+with different configuration file options in parallel.
+.RE
+
+.B \-\-rc
+.IR keyword = value
+.br
+.RS
+Override a configuration directive.
+
+Use this option to specify a
+.IR keyword = value
+statement which overrides the corresponding configuration statement in
+the lcovrc configuration file. You can specify this option more than once
+to override multiple configuration statements.
+See
+.BR lcovrc (5)
+for a list of available keywords and their meaning.
+.RE
+
 .SH FILES
 
 .I /etc/lcovrc
@@ -455,6 +562,7 @@ Peter Oberparleiter <Peter.Oberparleiter@de.ibm.com>
 
 .SH SEE ALSO
 .BR lcov (1),
+.BR lcovrc (5),
 .BR geninfo (1),
 .BR genpng (1),
 .BR gendesc (1),

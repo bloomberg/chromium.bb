@@ -1,3 +1,183 @@
+Version 1.10
+============
+
+All:
+- Disabled branch coverage processing per default to improve processing
+  performance (can be re-enabled using a config file setting)
+- Added option --rc to override config file settings from the command line
+- Added option --config-file to override the config file location
+- Fixed handling of '<' in filenames
+
+genhtml:
+- Added option --ignore-errors to continue after errors
+- Added man page note to further explain branch coverage output
+- Fixed man page description of default coverage rates
+- Fixed HTML page title for directory pages
+- Fixed handling of special characters in file and directory names
+- Fixed directory prefix calculation
+- Fixed warning when source files are found in root directory
+
+geninfo:
+- Added options --external and --no-external to include/exclude external
+  source files such as standard libary headers
+- Added option --compat to specify compatibility modes
+- Added missing man page sections for --derive-func-data and --no-markers
+- Added support for MinGW output on MSYS. From martin.hopfeld@sse-erfurt.de
+- Added support for gcc 4.7 .gcno file format.  Based on patch by
+  berrange@redhat.com
+- Added auto-detection of gcc-4.7 function record format. Includes
+  suggestions by garnold@google.com
+- Fixed exclusion markers for --derive-func-data.  Reported by bettse@gmail.com
+- Fixed processing of pre-3.3 gcov files. Reported by georgysebastian@gmail.com
+- Fixed handling of '<built-in>.gcov' files
+- Fixed warning about unhandled .gcov files
+- Improved --debug output
+- Removed help text for obsolete parameter --function-coverage
+
+genpng:
+- Fixed handling of empty source files. Reported by: sylvestre@debian.org
+
+lcov:
+- Added options --external and --no-external to include/exclude external source
+  files such as standard libary headers
+- Added option --summary to show summary coverage information
+- Added option --compat to specify compatibility modes
+- Fixed missing Perl version dependency in RPM spec file. Reported by
+  Martin Hopfeld <martin.hopfeld@sse-erfurt.de>
+- Fixed geninfo not recognizing Objective-C functions. Based on patch
+  by abrahamh@web.de
+- Fixed option --no-recursion not being passed to geninfo
+- Fixed capitalization of the term 'Perl'
+- Improved coverage rate calculation to only show 0%/100% when no/full coverage
+  is achieved.  Based on suggestions by Paul.Zimmermann@loria.fr and
+  vincent@vinc17.net
+
+lcovrc:
+- Added description for geninfo_compat setting
+- Added config file setting 'genhtml_charset' to specify HTML charset
+- Added config file setting 'geninfo_external' to include/exclude external
+  source files such as standard libary headers
+- Added config file setting 'geninfo_gcov_all_blocks' to modify lcov's use
+  of gcov's -a option
+- Added config file setting 'geninfo_compat' to specify compatibility modes
+- Added config file setting 'geninfo_adjust_src_path' to enabled source path
+  adjustments.  Inspired by patch by ammon.riley@gmail.com
+- Added config file setting 'geninfo_auto_base' to automatically determine
+  the base directory when collecting coverage data
+- Added config file setting 'lcov_function_coverage' to enable/disable
+  function coverage processing
+- Added config file setting 'lcov_branch_coverage' to enable/disable
+  branch coverage processing
+
+
+Version 1.9
+===========
+
+genhtml:
+- Improved wording for branch representation tooltip text
+- Fixed vertical alignment of HTML branch representation
+
+geninfo:
+- Improved warning message about --initial not generating branch coverage data
+- Debugging messages are now printed to STDERR instead of STDOUT
+- Fixed problem with some .gcno files. Reported by gui@futarque.com.
+  (file.gcno: reached unexpected end of file)
+- Fixed problem with relative build paths. Reported by zhanbiao2000@gmail.com.
+  (cannot find an entry for ^#src#test.c.gcov in .gcno file, skipping file!)
+- Fixed problem where coverage data is missing for some files. Reported by
+  weston_schmidt@open-roadster.com
+- Fixed problem where exclusion markers are ignored when gathering
+  initial coverage data. Reported by ahmed_osman@mentor.com.
+- Fixed large execution counts showing as negative numbers in HTML output.
+  Reported by kkyriako@yahoo.com.
+- Fixed problem that incorrectly associated branches outside of a block with
+  branches inside the first block
+
+lcov:
+- Fixed problem that made lcov ignore --kernel-directory parameters when
+  specifying --initial. Reported by hjia@redhat.com.
+- Added --list-full-path option to prevent lcov from truncating paths in list
+  output
+- Added lcov_list_width and lcov_list_truncate_max directives to the
+  lcov configuration file to allow for list output customization
+- Improved list output
+
+COPYING:
+- Added license text to better comply with GPL recommendations
+
+
+Version 1.8
+===========
+
+gendesc:
+- Fixed problem with single word descriptions
+
+genhtml:
+- Added support for branch coverage measurements
+- Added --demangle-cpp option to convert C++ function names to human readable
+  format. Based on a patch by slava.semushin@gmail.com.
+- Improved color legend: legend display takes up less space in HTML output
+- Improved coverage rate limits: all coverage types use the same limits
+  unless specified otherwise
+- Fixed CRLF line breaks in source code when generating html output. Based
+  on patch by michael.knigge@set-software.de.
+- Fixed warning when $HOME is not set
+- Fixed problem with --baseline-file option. Reported by sixarm@gmail.com.
+  (Undefined subroutine &main::add_fnccounts called at genhtml line 4560.)
+- Fixed problem with --baseline-file option and files without function
+  coverage data (Can't use an undefined value as a HASH reference at genhtml
+  line 4441.)
+- Fixed short-name option ambiguities
+- Fixed --highlight option not showing line data from converted test data
+- Fixed warnings about undefined value used. Reported by nikita@zhuk.fi.
+- Fixed error when processing tracefiles without function data. Reported
+  by richard.corden@gmail.com (Can't use an undefined value as a HASH
+  reference at genhtml line 1506.)
+
+geninfo:
+- Added support for branch coverage measurements
+- Added support for exclusion markers: Users can exclude lines of code from
+  coverage reports by adding keywords to the source code.
+- Added --derive-func-data option
+- Added --debug option to better debug problems with graph files
+- Fixed CRLF line breaks in source code when generating tracefiles. Based on
+  patch by michael.knigge@set-software.de.
+- Fixed problems with unnamed source files
+- Fixed warning when $HOME is not set. Reported by acalando@free.fr.
+- Fixed errors when processing unnamed source files
+- Fixed help text typo
+- Fixed errors when processing incomplete function names in .bb files
+- Fixed filename prefix detection
+- Fixed problem with matching filename
+- Fixed problem when LANG is set to non-english locale. Reported by
+  benoit_belbezet@yahoo.fr.
+- Fixed short-name option ambiguities
+
+genpng:
+- Fixed runtime-warning
+
+lcov:
+- Added support for branch coverage measurements
+- Added support for the linux-2.6.31 upstream gcov kernel support
+- Added --from-package and --to-package options
+- Added --derive-func-data option
+- Added overall coverage result output for more operations
+- Improved output of lcov --list
+- Improved gcov-kernel handling
+- Fixed minor problem with --diff
+- Fixed double-counting of function data
+- Fixed warning when $HOME is not set. Reported by acalando@free.fr.
+- Fixed error when combining tracefiles without function data. Reported by
+  richard.corden@gmail.com. (Can't use an undefined value as a HASH reference
+  at lcov line 1341.)
+- Fixed help text typo
+- Fixed filename prefix detection
+- Fixed lcov ignoring information about converted test data
+
+README: 
+- Added note to mention required -lgcov switch during linking
+
+ 
 Version 1.7:
 ============
 
@@ -85,7 +265,7 @@ lcov:
 - Updated help text
 - Updated man page
 - Fixed lcov not working when -k is specified more than once
-- Fixed lcov not deleting .gcda files when specifiying -z and -d
+- Fixed lcov not deleting .gcda files when specifying -z and -d
 
 lcovrc:
 - Added geninfo_compat_libtool option

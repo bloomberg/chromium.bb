@@ -244,9 +244,6 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
     'third_party/lcov/contrib/galaxy/genflat.pl': [
         'GPL (v2 or later)',
     ],
-    'third_party/lcov-1.9/contrib/galaxy/genflat.pl': [
-        'GPL (v2 or later)',
-    ],
     'third_party/libevent': [  # http://crbug.com/98309
         'UNKNOWN',
     ],
