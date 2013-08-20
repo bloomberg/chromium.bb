@@ -164,7 +164,8 @@
     [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseout;
     [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseover;
     [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseup;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel;
+    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
+    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onwheel;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onscroll;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onselect;
     [NotEnumerable, PerWorldBindings] attribute EventHandler onsubmit;

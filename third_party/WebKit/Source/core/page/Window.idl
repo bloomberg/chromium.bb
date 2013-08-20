@@ -208,7 +208,8 @@
     [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseout;
     [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseover;
     [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseup;
-    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel;
+    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
+    [PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onwheel;
     attribute EventHandler onoffline;
     attribute EventHandler ononline;
     attribute EventHandler onpagehide;

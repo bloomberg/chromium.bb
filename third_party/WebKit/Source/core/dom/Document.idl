@@ -199,7 +199,8 @@ callback CustomElementConstructor = Element ();
     [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseout;
     [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseover;
     [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmouseup;
-    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel;
+    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
+    [NotEnumerable, PerWorldBindings, ActivityLog=SetterForIsolatedWorlds] attribute EventHandler onwheel;
     [NotEnumerable] attribute EventHandler onreadystatechange;
     [NotEnumerable] attribute EventHandler onscroll;
     [NotEnumerable] attribute EventHandler onselect;

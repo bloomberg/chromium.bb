@@ -3,6 +3,7 @@
  * Copyright (C) 2001 Tobias Anton (anton@stud.fbi.fh-darmstadt.de)
  * Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
  * Copyright (C) 2003, 2005, 2006, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -30,7 +31,10 @@
 namespace WebCore {
 
 WheelEventInit::WheelEventInit()
-    : wheelDeltaX(0)
+    : deltaX(0)
+    , deltaY(0)
+    , deltaZ(0)
+    , wheelDeltaX(0)
     , wheelDeltaY(0)
     , deltaMode(WheelEvent::DOM_DELTA_PIXEL)
 {
@@ -45,7 +49,9 @@ WheelEvent::WheelEvent()
 
 WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializer)
     : MouseEvent(type, initializer)
-    , m_wheelDelta(IntPoint(initializer.wheelDeltaX, initializer.wheelDeltaY))
+    , m_deltaX(initializer.deltaX ? initializer.deltaX : initializer.wheelDeltaX)
+    , m_deltaY(initializer.deltaY ? initializer.deltaY : initializer.wheelDeltaY)
+    , m_deltaZ(initializer.deltaZ)
     , m_deltaMode(initializer.deltaMode)
 {
     ScriptWrappable::init(this);
@@ -54,12 +60,14 @@ WheelEvent::WheelEvent(const AtomicString& type, const WheelEventInit& initializ
 WheelEvent::WheelEvent(const FloatPoint& wheelTicks, const FloatPoint& rawDelta, unsigned deltaMode,
     PassRefPtr<AbstractView> view, const IntPoint& screenLocation, const IntPoint& pageLocation,
     bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice)
-    : MouseEvent(eventNames().mousewheelEvent,
+    : MouseEvent(eventNames().wheelEvent,
                  true, true, view, 0, screenLocation.x(), screenLocation.y(),
                  pageLocation.x(), pageLocation.y(),
                  0, 0,
                  ctrlKey, altKey, shiftKey, metaKey, 0, 0, 0, false)
-    , m_wheelDelta(IntPoint(static_cast<int>(wheelTicks.x() * TickMultiplier), static_cast<int>(wheelTicks.y() * TickMultiplier)))
+    , m_deltaX(wheelTicks.x() * TickMultiplier)
+    , m_deltaY(wheelTicks.y() * TickMultiplier)
+    , m_deltaZ(0) // FIXME: Not supported.
     , m_rawDelta(roundedIntPoint(rawDelta))
     , m_deltaMode(deltaMode)
     , m_directionInvertedFromDevice(directionInvertedFromDevice)
@@ -74,7 +82,7 @@ void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<Abstrac
     if (dispatched())
         return;
 
-    initUIEvent(eventNames().mousewheelEvent, true, true, view, 0);
+    initUIEvent(eventNames().wheelEvent, true, true, view, 0);
 
     m_screenLocation = IntPoint(screenX, screenY);
     m_ctrlKey = ctrlKey;
@@ -82,9 +90,8 @@ void WheelEvent::initWheelEvent(int rawDeltaX, int rawDeltaY, PassRefPtr<Abstrac
     m_shiftKey = shiftKey;
     m_metaKey = metaKey;
 
-    // Normalize to the Windows 120 multiple
-    m_wheelDelta = IntPoint(rawDeltaX * TickMultiplier, rawDeltaY * TickMultiplier);
-
+    m_deltaX = rawDeltaX * TickMultiplier;
+    m_deltaY = rawDeltaY * TickMultiplier;
     m_rawDelta = IntPoint(rawDeltaX, rawDeltaY);
     m_deltaMode = DOM_DELTA_PIXEL;
     m_directionInvertedFromDevice = false;

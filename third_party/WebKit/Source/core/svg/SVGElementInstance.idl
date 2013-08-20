@@ -56,7 +56,7 @@ interface SVGElementInstance : EventTarget
     [NotEnumerable] attribute EventHandler onmouseout;
     [NotEnumerable] attribute EventHandler onmouseover;
     [NotEnumerable] attribute EventHandler onmouseup;
-    [NotEnumerable] attribute EventHandler onmousewheel;
+    [NotEnumerable] attribute EventHandler onmousewheel; // Deprecated in favor of onwheel.
     [NotEnumerable] attribute EventHandler onbeforecut;
     [NotEnumerable] attribute EventHandler oncut;
     [NotEnumerable] attribute EventHandler onbeforecopy;
@@ -78,4 +78,5 @@ interface SVGElementInstance : EventTarget
     [NotEnumerable] attribute EventHandler onselectstart;
     [NotEnumerable] attribute EventHandler onsubmit;
     [NotEnumerable] attribute EventHandler onunload;
+    [NotEnumerable] attribute EventHandler onwheel;
 };

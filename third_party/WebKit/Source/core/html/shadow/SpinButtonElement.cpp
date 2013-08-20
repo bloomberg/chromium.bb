@@ -157,7 +157,7 @@ void SpinButtonElement::forwardEvent(Event* event)
     if (!m_spinButtonOwner->shouldSpinButtonRespondToWheelEvents())
         return;
 
-    doStepAction(static_cast<WheelEvent*>(event)->wheelDeltaY());
+    doStepAction(static_cast<WheelEvent*>(event)->deltaY());
     event->setDefaultHandled();
 }
 

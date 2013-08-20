@@ -181,10 +181,13 @@ void EventTarget::uncaughtExceptionInEventHandler()
 {
 }
 
-static AtomicString prefixedType(const Event* event)
+static AtomicString legacyType(const Event* event)
 {
     if (event->type() == eventNames().transitionendEvent)
         return eventNames().webkitTransitionEndEvent;
+
+    if (event->type() == eventNames().wheelEvent)
+        return eventNames().mousewheelEvent;
 
     return emptyString();
 }
@@ -199,7 +202,7 @@ bool EventTarget::fireEventListeners(Event* event)
         return true;
 
     EventListenerVector* listenerPrefixedVector = 0;
-    AtomicString prefixedTypeName = prefixedType(event);
+    AtomicString prefixedTypeName = legacyType(event);
     if (!prefixedTypeName.isEmpty())
         listenerPrefixedVector = d->eventListenerMap.find(prefixedTypeName);
 
@@ -214,7 +217,7 @@ bool EventTarget::fireEventListeners(Event* event)
         event->setType(unprefixedTypeName);
     }
 
-    if (!prefixedTypeName.isEmpty()) {
+    if (prefixedTypeName == eventNames().webkitTransitionEndEvent) {
         if (DOMWindow* executingWindow = this->executingWindow()) {
             if (listenerPrefixedVector) {
                 if (listenerUnprefixedVector)

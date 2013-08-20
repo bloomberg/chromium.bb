@@ -3,6 +3,7 @@
  * Copyright (C) 2001 Tobias Anton (anton@stud.fbi.fh-darmstadt.de)
  * Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
  * Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Samsung Electronics. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -35,8 +36,11 @@ class PlatformWheelEvent;
 struct WheelEventInit : public MouseEventInit {
     WheelEventInit();
 
-    int wheelDeltaX;
-    int wheelDeltaY;
+    double deltaX;
+    double deltaY;
+    double deltaZ;
+    int wheelDeltaX; // Deprecated.
+    int wheelDeltaY; // Deprecated.
     unsigned deltaMode;
 };
 
@@ -77,9 +81,12 @@ public:
         int screenX, int screenY, int pageX, int pageY,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey);
 
-    int wheelDelta() const { return m_wheelDelta.y() ? m_wheelDelta.y() : m_wheelDelta.x(); }
-    int wheelDeltaX() const { return m_wheelDelta.x(); }
-    int wheelDeltaY() const { return m_wheelDelta.y(); }
+    double deltaX() const { return m_deltaX; }
+    double deltaY() const { return m_deltaY; }
+    double deltaZ() const { return m_deltaZ; }
+    int wheelDelta() const { return m_deltaY ? m_deltaY : m_deltaX; } // Deprecated.
+    int wheelDeltaX() const { return m_deltaX; } // Deprecated.
+    int wheelDeltaY() const { return m_deltaY; } // Deprecated.
     int rawDeltaX() const { return m_rawDelta.x(); }
     int rawDeltaY() const { return m_rawDelta.y(); }
     unsigned deltaMode() const { return m_deltaMode; }
@@ -96,7 +103,9 @@ private:
         unsigned, PassRefPtr<AbstractView>, const IntPoint& screenLocation, const IntPoint& pageLocation,
         bool ctrlKey, bool altKey, bool shiftKey, bool metaKey, bool directionInvertedFromDevice);
 
-    IntPoint m_wheelDelta;
+    double m_deltaX;
+    double m_deltaY;
+    double m_deltaZ;
     IntPoint m_rawDelta;
     unsigned m_deltaMode;
     bool m_directionInvertedFromDevice;
