@@ -1242,3 +1242,5 @@ crbug.com/268832 [ SnowLeopard Debug ] fast/multicol/newmulticol/direct-child-co
 crbug.com/272725 [ Release ] http/tests/inspector/network/network-document-initiator.html [ Failure Pass ]
 
 crbug.com/271243 [ Win ] http/tests/misc/acid3.html [ Failure ]
+
+crbug.com/276262 [ Mac ] inspector-protocol/runtime-getProperties.html [ Failure ]
