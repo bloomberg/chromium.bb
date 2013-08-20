@@ -66,6 +66,8 @@ protected:
     }
     void didModifyData(const String& oldValue);
 
+    String m_data;
+
 private:
     virtual String nodeValue() const OVERRIDE FINAL;
     virtual void setNodeValue(const String&) OVERRIDE FINAL;
@@ -73,8 +75,6 @@ private:
     virtual int maxCharacterOffset() const OVERRIDE FINAL;
     virtual bool offsetInCharacters() const OVERRIDE FINAL;
     void setDataAndUpdate(const String&, unsigned offsetOfReplacedData, unsigned oldLength, unsigned newLength);
-
-    String m_data;
 };
 
 } // namespace WebCore

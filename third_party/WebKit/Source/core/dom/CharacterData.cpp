@@ -29,6 +29,7 @@
 #include "core/dom/MutationEvent.h"
 #include "core/dom/MutationObserverInterestGroup.h"
 #include "core/dom/MutationRecord.h"
+#include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -199,6 +200,9 @@ void CharacterData::setDataAndUpdate(const String& newData, unsigned offsetOfRep
     ASSERT(!renderer() || isTextNode());
     if (isTextNode())
         toText(this)->updateTextRenderer(offsetOfReplacedData, oldLength);
+
+    if (nodeType() == PROCESSING_INSTRUCTION_NODE)
+        toProcessingInstruction(this)->checkStyleSheet();
 
     if (document()->frame())
         document()->frame()->selection()->textWasReplaced(this, offsetOfReplacedData, oldLength, newLength);

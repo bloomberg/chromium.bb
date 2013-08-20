@@ -18,12 +18,11 @@
  * Boston, MA 02110-1301, USA.
  */
 
-interface ProcessingInstruction : Node {
+interface ProcessingInstruction : CharacterData {
 
     // DOM Level 1
 
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString target;
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString] attribute DOMString data;
 
     // interface LinkStyle from DOM Level 2 Style Sheets
     readonly attribute StyleSheet sheet;

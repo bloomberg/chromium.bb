@@ -37,9 +37,8 @@
 namespace WebCore {
 
 inline ProcessingInstruction::ProcessingInstruction(Document* document, const String& target, const String& data)
-    : Node(document, CreateOther)
+    : CharacterData(document, data, CreateOther)
     , m_target(target)
-    , m_data(data)
     , m_resource(0)
     , m_loading(false)
     , m_alternate(false)
@@ -67,14 +66,6 @@ ProcessingInstruction::~ProcessingInstruction()
         document()->styleSheetCollection()->removeStyleSheetCandidateNode(this);
 }
 
-void ProcessingInstruction::setData(const String& data)
-{
-    int oldLength = m_data.length();
-    m_data = data;
-    document()->textRemoved(this, 0, oldLength);
-    checkStyleSheet();
-}
-
 String ProcessingInstruction::nodeName() const
 {
     return m_target;
@@ -83,16 +74,6 @@ String ProcessingInstruction::nodeName() const
 Node::NodeType ProcessingInstruction::nodeType() const
 {
     return PROCESSING_INSTRUCTION_NODE;
-}
-
-String ProcessingInstruction::nodeValue() const
-{
-    return m_data;
-}
-
-void ProcessingInstruction::setNodeValue(const String& nodeValue)
-{
-    setData(nodeValue);
 }
 
 PassRefPtr<Node> ProcessingInstruction::cloneNode(bool /*deep*/)
@@ -254,16 +235,6 @@ void ProcessingInstruction::setCSSStyleSheet(PassRefPtr<CSSStyleSheet> sheet)
     sheet->setDisabled(m_alternate);
 }
 
-bool ProcessingInstruction::offsetInCharacters() const
-{
-    return true;
-}
-
-int ProcessingInstruction::maxCharacterOffset() const
-{
-    return static_cast<int>(m_data.length());
-}
-
 void ProcessingInstruction::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
 {
     if (!sheet())
@@ -274,7 +245,7 @@ void ProcessingInstruction::addSubresourceAttributeURLs(ListHashSet<KURL>& urls)
 
 Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(ContainerNode* insertionPoint)
 {
-    Node::insertedInto(insertionPoint);
+    CharacterData::insertedInto(insertionPoint);
     if (!insertionPoint->inDocument())
         return InsertionDone;
     document()->styleSheetCollection()->addStyleSheetCandidateNode(this, m_createdByParser);
@@ -284,7 +255,7 @@ Node::InsertionNotificationRequest ProcessingInstruction::insertedInto(Container
 
 void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 {
-    Node::removedFrom(insertionPoint);
+    CharacterData::removedFrom(insertionPoint);
     if (!insertionPoint->inDocument())
         return;
 
@@ -306,7 +277,7 @@ void ProcessingInstruction::removedFrom(ContainerNode* insertionPoint)
 void ProcessingInstruction::finishParsingChildren()
 {
     m_createdByParser = false;
-    Node::finishParsingChildren();
+    CharacterData::finishParsingChildren();
 }
 
 } // namespace
