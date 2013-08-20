@@ -79,7 +79,8 @@ class TemplateDataSourceTest(unittest.TestCase):
         self._manifest_data_source,
         '.',
         '.',
-        ''))
+        '',
+        {}))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')

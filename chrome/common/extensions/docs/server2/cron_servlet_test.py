@@ -97,7 +97,10 @@ class CronServletTest(unittest.TestCase):
             'extensions': {
               'storage.html': 'storage.html contents'
             },
-          }
+          },
+          'json': {
+            'strings.json': '{}'
+          },
         }
       }
     }

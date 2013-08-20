@@ -11,6 +11,7 @@ from appengine_wrappers import (
     GetAppVersion, IsDeadlineExceededError, IsDevServer, logservice)
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem
+from data_source_registry import DataSourceRegistry
 from empty_dir_file_system import EmptyDirFileSystem
 from file_system_util import CreateURLsFromPaths
 from github_file_system import GithubFileSystem
@@ -178,16 +179,25 @@ class CronServlet(Servlet):
             example_zips,
             lambda path: render('extensions/examples/' + path)))
 
-      _cronlog.info('Redirector: starting')
-      start_time = time.time()
-      try:
-        server_instance.redirector.Cron()
-      except Exception as e:
-        _cronlog.error('Redirector: error %s', traceback.format_exc())
-        results.append(False)
-        if IsDeadlineExceededError(e): raise
-      finally:
-        _cronlog.info('Redirector: took %s seconds', time.time() - start_time)
+      def run_cron(data_source):
+        title = data_source.__class__.__name__
+        _cronlog.info('%s: starting' % title)
+        start_time = time.time()
+        try:
+          data_source.Cron()
+        except Exception as e:
+          _cronlog.error('%s: error %s' % (title, traceback.format_exc()))
+          results.append(False)
+          if IsDeadlineExceededError(e): raise
+        finally:
+          _cronlog.info(
+              '%s: took %s seconds' % (title, time.time() - start_time))
+
+      for data_source in DataSourceRegistry.AsTemplateData(
+          server_instance).values():
+        run_cron(data_source)
+
+      run_cron(server_instance.redirector)
 
     except Exception:
       results.append(False)

@@ -7,6 +7,7 @@ from api_list_data_source import APIListDataSource
 from appengine_wrappers import IsDevServer
 from availability_finder import AvailabilityFinder
 from compiled_file_system import CompiledFileSystem
+from data_source_registry import DataSourceRegistry
 from empty_dir_file_system import EmptyDirFileSystem
 from example_zipper import ExampleZipper
 from manifest_data_source import ManifestDataSource
@@ -101,22 +102,6 @@ class ServerInstance(object):
         '/'.join((svn_constants.JSON_PATH, 'manifest.json')),
         '/'.join((svn_constants.API_PATH, '_manifest_features.json')))
 
-    self.template_data_source_factory = TemplateDataSource.Factory(
-        self.api_data_source_factory,
-        self.api_list_data_source_factory,
-        self.intro_data_source_factory,
-        self.samples_data_source_factory,
-        self.sidenav_data_source_factory,
-        self.compiled_host_fs_factory,
-        self.ref_resolver_factory,
-        self.manifest_data_source,
-        svn_constants.PUBLIC_TEMPLATE_PATH,
-        svn_constants.PRIVATE_TEMPLATE_PATH,
-        base_path)
-
-    self.api_data_source_factory.SetTemplateDataSource(
-        self.template_data_source_factory)
-
     self.example_zipper = ExampleZipper(
         self.compiled_host_fs_factory,
         self.host_file_system,
@@ -128,6 +113,28 @@ class ServerInstance(object):
         self.compiled_host_fs_factory,
         self.host_file_system,
         svn_constants.PUBLIC_TEMPLATE_PATH)
+
+    self.strings_json_path = '/'.join((svn_constants.JSON_PATH, 'strings.json'))
+
+
+    self.template_data_source_factory = TemplateDataSource.Factory(
+        self.api_data_source_factory,
+        self.api_list_data_source_factory,
+        self.intro_data_source_factory,
+        self.samples_data_source_factory,
+        self.sidenav_data_source_factory,
+        self.compiled_host_fs_factory,
+        self.ref_resolver_factory,
+        self.manifest_data_source,
+        svn_constants.PUBLIC_TEMPLATE_PATH,
+        svn_constants.PRIVATE_TEMPLATE_PATH,
+        base_path,
+        # TODO(jshumway): Remove this hack after data source registry
+        # transition, ServerInstance should not know about DataSourceRegistry.
+        DataSourceRegistry.AsTemplateData(self))
+
+    self.api_data_source_factory.SetTemplateDataSource(
+        self.template_data_source_factory)
 
   @staticmethod
   def ForTest(file_system):
