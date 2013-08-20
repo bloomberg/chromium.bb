@@ -4,26 +4,13 @@
 
 package org.chromium.content.browser;
 
-import org.chromium.base.ActivityStatus;
-import org.chromium.base.test.util.Feature;
-import org.chromium.content.app.LibraryLoader;
-import org.chromium.content.common.CommandLine;
-import org.chromium.content.common.ProcessInitException;
-import org.chromium.content_shell_apk.ContentShellApplication;
-
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
+import android.os.Handler;
 import android.test.AndroidTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
-import android.test.UiThreadTest;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
-import android.os.Handler;
 
-import com.google.common.collect.Sets;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -95,7 +82,8 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
                 mDeviceMotionAndOrientation.mActiveSensors.containsAll(
                         DeviceMotionAndOrientation.DEVICE_ORIENTATION_SENSORS));
 
-        Set<Integer> union = Sets.newHashSet(DeviceMotionAndOrientation.DEVICE_ORIENTATION_SENSORS);
+        Set<Integer> union = new HashSet<Integer>(
+            DeviceMotionAndOrientation.DEVICE_ORIENTATION_SENSORS);
         union.addAll(DeviceMotionAndOrientation.DEVICE_MOTION_SENSORS);
 
         assertEquals(union.size(), mDeviceMotionAndOrientation.mActiveSensors.size());
@@ -144,7 +132,7 @@ public class DeviceMotionAndOrientationTest extends AndroidTestCase {
                 mDeviceMotionAndOrientation.mActiveSensors.containsAll(
                         DeviceMotionAndOrientation.DEVICE_ORIENTATION_SENSORS));
 
-        Set<Integer> diff = Sets.newHashSet(DeviceMotionAndOrientation.DEVICE_MOTION_SENSORS);
+        Set<Integer> diff = new HashSet<Integer>(DeviceMotionAndOrientation.DEVICE_MOTION_SENSORS);
         diff.removeAll(DeviceMotionAndOrientation.DEVICE_ORIENTATION_SENSORS);
 
         assertEquals(diff.size(), mMockSensorManager.numUnRegistered);

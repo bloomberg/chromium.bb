@@ -7,11 +7,12 @@ package org.chromium.sync.internal_api.pub.base;
 import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Sets;
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types;
 
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -122,9 +123,9 @@ public enum ModelType {
      */
     public static Set<ModelType> syncTypesToModelTypes(Collection<String> syncTypes) {
         if (syncTypes.contains(ALL_TYPES_TYPE)) {
-            return Sets.newHashSet(ModelType.values());
+            return EnumSet.allOf(ModelType.class);
         } else {
-            Set<ModelType> modelTypes = Sets.newHashSetWithExpectedSize(syncTypes.size());
+            Set<ModelType> modelTypes = new HashSet<ModelType>(syncTypes.size());
             for (String syncType : syncTypes) {
                 try {
                     modelTypes.add(valueOf(syncType));
@@ -152,7 +153,7 @@ public enum ModelType {
      * This strips out any {@link ModelType} that is not an invalidation type.
      */
     public static Set<ObjectId> modelTypesToObjectIds(Set<ModelType> modelTypes) {
-        Set<ObjectId> objectIds = Sets.newHashSetWithExpectedSize(modelTypes.size());
+        Set<ObjectId> objectIds = new HashSet<ObjectId>(modelTypes.size());
         for (ModelType modelType : modelTypes) {
             if (!modelType.mNonInvalidationType) {
                 objectIds.add(modelType.toObjectId());
@@ -163,7 +164,7 @@ public enum ModelType {
 
     /** Converts a set of {@link ModelType} to a set of string names. */
     public static Set<String> modelTypesToSyncTypes(Set<ModelType> modelTypes) {
-        Set<String> objectIds = Sets.newHashSetWithExpectedSize(modelTypes.size());
+        Set<String> objectIds = new HashSet<String>(modelTypes.size());
         for (ModelType modelType : modelTypes) {
             objectIds.add(modelType.toString());
         }

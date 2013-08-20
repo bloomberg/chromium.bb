@@ -4,8 +4,6 @@
 
 package org.chromium.sync.test.util;
 
-import com.google.common.collect.ImmutableMap;
-
 import android.accounts.Account;
 
 import java.util.HashMap;
@@ -54,10 +52,6 @@ public class AccountHolder {
 
     public String getAuthToken(String authTokenType) {
         return mAuthTokens.get(authTokenType);
-    }
-
-    public ImmutableMap<String, String> getAuthTokens() {
-        return ImmutableMap.copyOf(mAuthTokens);
     }
 
     public boolean hasBeenAccepted(String authTokenType) {

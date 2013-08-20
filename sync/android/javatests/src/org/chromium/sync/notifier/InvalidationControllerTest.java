@@ -13,10 +13,8 @@ import android.content.pm.PackageManager;
 import android.test.InstrumentationTestCase;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-
 import org.chromium.base.ActivityStatus;
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.sync.internal_api.pub.base.ModelType;
@@ -155,7 +153,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         InvalidationController controller = new InvalidationController(mContext);
         Account account = new Account("test@example.com", "bogus");
         controller.setRegisteredTypes(account, false,
-                Sets.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
+                CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
         assertEquals(1, mContext.getNumStartedIntents());
 
         // Validate destination.
@@ -168,9 +166,9 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(account, intentAccount);
 
         // Validate registered types.
-        Set<String> expectedTypes =
-                Sets.newHashSet(ModelType.BOOKMARK.name(), ModelType.SESSION.name());
-        Set<String> actualTypes = Sets.newHashSet();
+        Set<String> expectedTypes = CollectionUtil.newHashSet(ModelType.BOOKMARK.name(),
+                ModelType.SESSION.name());
+        Set<String> actualTypes = new HashSet<String>();
         actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
     }
@@ -180,7 +178,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
     public void testRegisterForAllTypes() {
         Account account = new Account("test@example.com", "bogus");
         mController.setRegisteredTypes(account, true,
-                Sets.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
+                CollectionUtil.newHashSet(ModelType.BOOKMARK, ModelType.SESSION));
         assertEquals(1, mContext.getNumStartedIntents());
 
         // Validate destination.
@@ -193,8 +191,8 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(account, intentAccount);
 
         // Validate registered types.
-        Set<String> expectedTypes = Sets.newHashSet(ModelType.ALL_TYPES_TYPE);
-        Set<String> actualTypes = Sets.newHashSet();
+        Set<String> expectedTypes = CollectionUtil.newHashSet(ModelType.ALL_TYPES_TYPE);
+        Set<String> actualTypes = new HashSet<String>();
         actualTypes.addAll(intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES));
         assertEquals(expectedTypes, actualTypes);
     }
@@ -298,7 +296,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
      * Mock context that saves all intents given to {@code startService}.
      */
     private static class IntentSavingContext extends AdvancedMockContext {
-        private final List<Intent> startedIntents = Lists.newArrayList();
+        private final List<Intent> startedIntents = new ArrayList<Intent>();
 
         IntentSavingContext(Context targetContext) {
             super(targetContext);

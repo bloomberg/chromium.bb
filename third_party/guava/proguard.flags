@@ -10,10 +10,6 @@
   *;
 }
 
--keep class com.google.common.collect.** {
-  *;
-}
-
 -keepattributes Signature
 
 # Don't complain about usage of sun.misc.Unsafe. Guava imports this,

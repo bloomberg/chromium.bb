@@ -4,15 +4,16 @@
 
 package org.chromium.sync.notifier;
 
-import com.google.common.collect.Lists;
-import com.google.ipc.invalidation.external.client.types.AckHandle;
-import com.google.ipc.invalidation.external.client.types.ObjectId;
-
 import android.accounts.Account;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.google.ipc.invalidation.external.client.types.ObjectId;
+
+import org.chromium.base.CollectionUtil;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,18 +24,18 @@ import java.util.List;
  */
 public class TestableInvalidationService extends InvalidationService {
     /** Object ids given to {@link #register}, one list element per call. */
-    final List<List<ObjectId>> mRegistrations = Lists.newArrayList();
+    final List<List<ObjectId>> mRegistrations = new ArrayList<List<ObjectId>>();
 
     /** Object ids given to {@link #unregister}, one list element per call. */
-    final List<List<ObjectId>> mUnregistrations = Lists.newArrayList();
+    final List<List<ObjectId>> mUnregistrations = new ArrayList<List<ObjectId>>();
 
     /** Intents given to {@link #startService}. */
-    final List<Intent> mStartedServices = Lists.newArrayList();
+    final List<Intent> mStartedServices = new ArrayList<Intent>();
 
     /** Bundles given to {@link #requestSyncFromContentResolver}. */
-    final List<Bundle> mRequestedSyncs = Lists.newArrayList();
+    final List<Bundle> mRequestedSyncs = new ArrayList<Bundle>();
 
-    final List<byte[]> mAcknowledgements = Lists.newArrayList();
+    final List<byte[]> mAcknowledgements = new ArrayList<byte[]>();
 
     /** Whether Chrome is in the foreground. */
     private boolean mIsChromeInForeground = false;
@@ -52,13 +53,13 @@ public class TestableInvalidationService extends InvalidationService {
 
     @Override
     public void register(byte[] clientId, Iterable<ObjectId> objectIds) {
-        mRegistrations.add(Lists.newArrayList(objectIds));
+        mRegistrations.add(CollectionUtil.newArrayList(objectIds));
         super.register(clientId, objectIds);
     }
 
     @Override
     public void unregister(byte[] clientId, Iterable<ObjectId> objectIds) {
-        mUnregistrations.add(Lists.newArrayList(objectIds));
+        mUnregistrations.add(CollectionUtil.newArrayList(objectIds));
         super.unregister(clientId, objectIds);
     }
 

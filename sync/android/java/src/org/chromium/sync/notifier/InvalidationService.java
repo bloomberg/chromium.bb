@@ -12,8 +12,6 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.ipc.invalidation.external.client.InvalidationListener.RegistrationState;
 import com.google.ipc.invalidation.external.client.contrib.AndroidListener;
 import com.google.ipc.invalidation.external.client.types.ErrorInfo;
@@ -22,14 +20,15 @@ import com.google.ipc.invalidation.external.client.types.ObjectId;
 import com.google.protos.ipc.invalidation.Types.ClientType;
 
 import org.chromium.base.ActivityStatus;
+import org.chromium.base.CollectionUtil;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationController.IntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences.EditContext;
 import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -96,7 +95,7 @@ public class InvalidationService extends AndroidListener {
             // If the intent requests a change in registrations, change them.
             List<String> regTypes =
                     intent.getStringArrayListExtra(IntentProtocol.EXTRA_REGISTERED_TYPES);
-            setRegisteredTypes(Sets.newHashSet(regTypes));
+            setRegisteredTypes(new HashSet<String>(regTypes));
         } else {
             // Otherwise, we don't recognize the intent. Pass it to the notification client service.
             super.onHandleIntent(intent);
@@ -131,7 +130,7 @@ public class InvalidationService extends AndroidListener {
         if (isTransient) {
           // Retry immediately on transient failures. The base AndroidListener will handle
           // exponential backoff if there are repeated failures.
-          List<ObjectId> objectIdAsList = Lists.newArrayList(objectId);
+          List<ObjectId> objectIdAsList = CollectionUtil.newArrayList(objectId);
           if (readRegistrationsFromPrefs().contains(objectId)) {
               register(clientId, objectIdAsList);
           } else {
@@ -144,7 +143,7 @@ public class InvalidationService extends AndroidListener {
     public void informRegistrationStatus(
             byte[] clientId, ObjectId objectId, RegistrationState regState) {
         Log.d(TAG, "Registration status for " + objectId + ": " + regState);
-        List<ObjectId> objectIdAsList = Lists.newArrayList(objectId);
+        List<ObjectId> objectIdAsList = CollectionUtil.newArrayList(objectId);
         boolean registrationisDesired = readRegistrationsFromPrefs().contains(objectId);
         if (regState == RegistrationState.REGISTERED) {
           if (!registrationisDesired) {
@@ -329,8 +328,8 @@ public class InvalidationService extends AndroidListener {
         // expansion of the ALL_TYPES_TYPE wildcard.
         // NOTE: syncTypes MUST NOT be used below this line, since it contains an unexpanded
         // wildcard.
-        List<ObjectId> unregistrations = Lists.newArrayList();
-        List<ObjectId> registrations = Lists.newArrayList();
+        Set<ObjectId> unregistrations = new HashSet<ObjectId>();
+        Set<ObjectId> registrations = new HashSet<ObjectId>();
         computeRegistrationOps(existingRegistrations,
                 ModelType.syncTypesToObjectIds(syncTypes),
                 registrations, unregistrations);
@@ -347,12 +346,15 @@ public class InvalidationService extends AndroidListener {
      */
     @VisibleForTesting
     static void computeRegistrationOps(Set<ObjectId> existingRegs, Set<ObjectId> desiredRegs,
-            Collection<ObjectId> regAccumulator, Collection<ObjectId> unregAccumulator) {
+            Set<ObjectId> regAccumulator, Set<ObjectId> unregAccumulator) {
+
         // Registrations to do are elements in the new set but not the old set.
-        regAccumulator.addAll(Sets.difference(desiredRegs, existingRegs));
+        regAccumulator.addAll(desiredRegs);
+        regAccumulator.removeAll(existingRegs);
 
         // Unregistrations to do are elements in the old set but not the new set.
-        unregAccumulator.addAll(Sets.difference(existingRegs, desiredRegs));
+        unregAccumulator.addAll(existingRegs);
+        unregAccumulator.removeAll(desiredRegs);
     }
 
     /**
