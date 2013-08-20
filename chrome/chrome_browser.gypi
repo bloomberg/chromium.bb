@@ -2177,6 +2177,8 @@
         'browser/sync/profile_sync_service_observer.h',
         'browser/sync/retry_verifier.cc',
         'browser/sync/retry_verifier.h',
+        'browser/sync/sessions2/tab_node_pool2.cc',
+        'browser/sync/sessions2/tab_node_pool2.h',
         'browser/sync/sync_startup_tracker.cc',
         'browser/sync/sync_startup_tracker.h',
         'browser/sync/sync_global_error.cc',

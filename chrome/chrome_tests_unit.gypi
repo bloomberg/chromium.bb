@@ -1285,6 +1285,7 @@
         'browser/sync/profile_sync_service_unittest.cc',
         'browser/sync/profile_sync_test_util.cc',
         'browser/sync/profile_sync_test_util.h',
+        'browser/sync/sessions2/tab_node_pool2_unittest.cc',
         'browser/sync/sync_global_error_unittest.cc',
         'browser/sync/sync_prefs_unittest.cc',
         'browser/sync/sync_startup_tracker_unittest.cc',
