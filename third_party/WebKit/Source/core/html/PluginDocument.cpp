@@ -28,6 +28,7 @@
 #include "HTMLNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/RawDataDocumentParser.h"
+#include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLEmbedElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/loader/DocumentLoader.h"
@@ -65,57 +66,48 @@ private:
 
     PluginView* pluginView() const;
 
-    HTMLEmbedElement* m_embedElement;
+    RefPtr<HTMLEmbedElement> m_embedElement;
 };
 
 void PluginDocumentParser::createDocumentStructure()
 {
-    RefPtr<Element> rootElement = document()->createElement(htmlTag, false);
-    document()->appendChild(rootElement, IGNORE_EXCEPTION);
-    toHTMLHtmlElement(rootElement.get())->insertedByParser();
-
-    if (document()->frame() && document()->frame()->loader())
-        document()->frame()->loader()->dispatchDocumentElementAvailable();
-
-    RefPtr<Element> body = document()->createElement(bodyTag, false);
-    body->setAttribute(marginwidthAttr, "0");
-    body->setAttribute(marginheightAttr, "0");
-    body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
-
-    rootElement->appendChild(body, IGNORE_EXCEPTION);
-
-    RefPtr<Element> embedElement = document()->createElement(embedTag, false);
-
-    m_embedElement = static_cast<HTMLEmbedElement*>(embedElement.get());
-    m_embedElement->setAttribute(widthAttr, "100%");
-    m_embedElement->setAttribute(heightAttr, "100%");
-
-    m_embedElement->setAttribute(nameAttr, "plugin");
-    m_embedElement->setAttribute(srcAttr, document()->url().string());
-
-    DocumentLoader* loader = document()->loader();
-    ASSERT(loader);
-    if (loader)
-        m_embedElement->setAttribute(typeAttr, loader->mimeType());
-
-    toPluginDocument(document())->setPluginNode(m_embedElement);
-
-    body->appendChild(embedElement, IGNORE_EXCEPTION);
+    // FIXME: Assert we have a loader to figure out why the original null checks
+    // and assert were added for the security bug in http://trac.webkit.org/changeset/87566
+    RELEASE_ASSERT(document()->loader());
 
     Frame* frame = document()->frame();
     if (!frame)
         return;
-    Settings* settings = frame->settings();
-    if (!settings || !frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
+
+    // FIXME: Why does this check settings?
+    if (!frame->settings() || !frame->loader()->allowPlugins(NotAboutToInstantiatePlugin))
         return;
+
+    RefPtr<HTMLHtmlElement> rootElement = HTMLHtmlElement::create(document());
+    rootElement->insertedByParser();
+    document()->appendChild(rootElement, ASSERT_NO_EXCEPTION, AttachLazily);
+    frame->loader()->dispatchDocumentElementAvailable();
+
+    RefPtr<HTMLBodyElement> body = HTMLBodyElement::create(document());
+    body->setAttribute(marginwidthAttr, "0");
+    body->setAttribute(marginheightAttr, "0");
+    body->setAttribute(styleAttr, "background-color: rgb(38,38,38)");
+    rootElement->appendChild(body, ASSERT_NO_EXCEPTION, AttachLazily);
+
+    m_embedElement = HTMLEmbedElement::create(document());
+    m_embedElement->setAttribute(widthAttr, "100%");
+    m_embedElement->setAttribute(heightAttr, "100%");
+    m_embedElement->setAttribute(nameAttr, "plugin");
+    m_embedElement->setAttribute(srcAttr, document()->url().string());
+    m_embedElement->setAttribute(typeAttr, document()->loader()->mimeType());
+    body->appendChild(m_embedElement, ASSERT_NO_EXCEPTION, AttachLazily);
+
+    toPluginDocument(document())->setPluginNode(m_embedElement.get());
 
     document()->updateLayout();
 
-    // Below we assume that renderer->widget() to have been created by
-    // document()->updateLayout(). However, in some cases, updateLayout() will
-    // recurse too many times and delay its post-layout tasks (such as creating
-    // the widget). Here we kick off the pending post-layout tasks so that we
-    // can synchronously redirect data to the plugin.
+    // We need the plugin to load synchronously so we can get the PluginView
+    // below so flush the layout tasks now instead of waiting on the timer.
     frame->view()->flushAnyPendingPostLayoutTasks();
 
     if (PluginView* view = pluginView())
@@ -143,6 +135,7 @@ void PluginDocumentParser::finish()
             view->didFinishLoading();
         else
             view->didFailLoading(error);
+        m_embedElement = 0;
     }
     RawDataDocumentParser::finish();
 }
