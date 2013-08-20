@@ -171,7 +171,7 @@ public:
 
     Settings& settings() const { return *m_settings; }
     ProgressTracker* progress() const { return m_progress.get(); }
-    BackForwardController* backForward() const { return m_backForwardController.get(); }
+    BackForwardController& backForward() const { return *m_backForwardController; }
 
     UseCounter* useCounter() { return &m_UseCounter; }
 

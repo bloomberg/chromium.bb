@@ -3391,9 +3391,9 @@ void EventHandler::defaultBackspaceEventHandler(KeyboardEvent* event)
     bool handledEvent = false;
 
     if (event->shiftKey())
-        handledEvent = page->backForward()->goForward();
+        handledEvent = page->backForward().goForward();
     else
-        handledEvent = page->backForward()->goBack();
+        handledEvent = page->backForward().goBack();
 
     if (handledEvent)
         event->setDefaultHandled();

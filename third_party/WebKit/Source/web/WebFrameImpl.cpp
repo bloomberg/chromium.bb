@@ -1030,7 +1030,7 @@ WebHistoryItem WebFrameImpl::currentHistoryItem() const
         || !frame()->loader()->activeDocumentLoader()->isLoadingInAPISense()))
         frame()->loader()->history()->saveDocumentAndScrollState();
 
-    return WebHistoryItem(frame()->page()->backForward()->currentItem());
+    return WebHistoryItem(frame()->page()->backForward().currentItem());
 }
 
 void WebFrameImpl::enableViewSourceMode(bool enable)

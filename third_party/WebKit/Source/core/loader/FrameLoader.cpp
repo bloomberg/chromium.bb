@@ -1350,7 +1350,7 @@ void FrameLoader::receivedMainResourceError(const ResourceError& error)
         // Reset the back forward list to the last committed history item at the top level.
         RefPtr<HistoryItem> item = m_frame->page()->mainFrame()->loader()->history()->currentItem();
         if (isBackForwardLoadType(loadType()) && !history()->provisionalItem() && item)
-            m_frame->page()->backForward()->setCurrentItem(item.get());
+            m_frame->page()->backForward().setCurrentItem(item.get());
     }
 
     checkCompleted();
@@ -1760,7 +1760,7 @@ void FrameLoader::insertDummyHistoryItem()
 {
     RefPtr<HistoryItem> currentItem = HistoryItem::create();
     history()->setCurrentItem(currentItem.get());
-    frame()->page()->backForward()->setCurrentItem(currentItem.get());
+    frame()->page()->backForward().setCurrentItem(currentItem.get());
 }
 
 String FrameLoader::referrer() const

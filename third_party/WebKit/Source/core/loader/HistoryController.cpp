@@ -221,8 +221,8 @@ void HistoryController::goToItem(HistoryItem* targetItem)
     // Set the BF cursor before commit, which lets the user quickly click back/forward again.
     // - plus, it only makes sense for the top level of the operation through the frametree,
     // as opposed to happening for some/one of the page commits that might happen soon
-    RefPtr<HistoryItem> currentItem = page->backForward()->currentItem();
-    page->backForward()->setCurrentItem(targetItem);
+    RefPtr<HistoryItem> currentItem = page->backForward().currentItem();
+    page->backForward().setCurrentItem(targetItem);
 
     // First set the provisional item of any frames that are not actually navigating.
     // This must be done before trying to navigate the desired frame, because some
@@ -651,7 +651,7 @@ void HistoryController::updateBackForwardListClippedAtTarget(bool doClip)
 
     RefPtr<HistoryItem> topItem = mainFrame->loader()->history()->createItemTree(m_frame, doClip);
     LOG(BackForward, "WebCoreBackForward - Adding backforward item %p for frame %s", topItem.get(), m_frame->loader()->documentLoader()->url().string().ascii().data());
-    page->backForward()->addItem(topItem.release());
+    page->backForward().addItem(topItem.release());
 }
 
 void HistoryController::updateCurrentItem()
@@ -695,7 +695,7 @@ void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject,
     m_currentItem->setTitle(title);
     m_currentItem->setStateObject(stateObject);
     m_currentItem->setURLString(urlString);
-    page->backForward()->addItem(topItem.release());
+    page->backForward().addItem(topItem.release());
 }
 
 void HistoryController::replaceState(PassRefPtr<SerializedScriptValue> stateObject, const String& title, const String& urlString)
