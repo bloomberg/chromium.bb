@@ -778,7 +778,7 @@ bool AccessibilityRenderObject::computeAccessibilityIsIgnored() const
                 return true;
         }
 
-        if (isNativeImage()) {
+        if (isNativeImage() && m_renderer->isImage()) {
             // check for one-dimensional image
             RenderImage* image = toRenderImage(m_renderer);
             if (image->height() <= 1 || image->width() <= 1)
@@ -1696,7 +1696,7 @@ PlainTextRange AccessibilityRenderObject::selectedTextRange() const
         return PlainTextRange();
 
     AccessibilityRole ariaRole = ariaRoleAttribute();
-    if (isNativeTextControl() && ariaRole == UnknownRole) {
+    if (isNativeTextControl() && ariaRole == UnknownRole && m_renderer->isTextControl()) {
         HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
         return PlainTextRange(textControl->selectionStart(), textControl->selectionEnd() - textControl->selectionStart());
     }
@@ -1719,7 +1719,7 @@ String AccessibilityRenderObject::selectedText() const
     if (isPasswordField())
         return String(); // need to return something distinct from empty string
 
-    if (isNativeTextControl()) {
+    if (isNativeTextControl() && m_renderer->isTextControl()) {
         HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
         return textControl->selectedText();
     }
@@ -1760,7 +1760,7 @@ void AccessibilityRenderObject::setFocused(bool on)
 
 void AccessibilityRenderObject::setSelectedTextRange(const PlainTextRange& range)
 {
-    if (isNativeTextControl()) {
+    if (isNativeTextControl() && m_renderer->isTextControl()) {
         HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
         textControl->setSelectionRange(range.start, range.start + range.length);
         return;
@@ -1881,7 +1881,7 @@ VisiblePosition AccessibilityRenderObject::visiblePositionForIndex(int index) co
     if (!m_renderer)
         return VisiblePosition();
 
-    if (isNativeTextControl())
+    if (isNativeTextControl() && m_renderer->isTextControl())
         return toRenderTextControl(m_renderer)->textFormControlElement()->visiblePositionForIndex(index);
 
     if (!allowsTextRanges() && !m_renderer->isText())
@@ -1904,7 +1904,7 @@ or), UPSTREAM);
 
 int AccessibilityRenderObject::indexForVisiblePosition(const VisiblePosition& pos) const
 {
-    if (isNativeTextControl()) {
+    if (isNativeTextControl() && m_renderer->isTextControl()) {
         HTMLTextFormControlElement* textControl = toRenderTextControl(m_renderer)->textFormControlElement();
         return textControl->indexForVisiblePosition(pos);
     }
