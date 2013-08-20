@@ -43,6 +43,10 @@
 #include "chromeos/dbus/update_engine_client.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/win_util.h"
+#endif
+
 namespace chrome {
 namespace {
 
@@ -250,6 +254,9 @@ void SessionEnding() {
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
 
+#if defined(OS_WIN)
+  base::win::SetShouldCrashOnProcessDetach(false);
+#endif
   // This will end by terminating the process.
   content::ImmediateShutdownAndExitProcess();
 }
