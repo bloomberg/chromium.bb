@@ -21,6 +21,7 @@
 #ifndef SVGEllipseElement_h
 #define SVGEllipseElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
@@ -55,6 +56,12 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGEllipseElement* toSVGEllipseElement(Node* node)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!node || node->hasTagName(SVGNames::ellipseTag));
+    return static_cast<SVGEllipseElement*>(node);
+}
 
 } // namespace WebCore
 

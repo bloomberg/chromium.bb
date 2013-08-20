@@ -46,8 +46,7 @@ static void updatePathFromCircleElement(SVGElement* element, Path& path)
 
 static void updatePathFromEllipseElement(SVGElement* element, Path& path)
 {
-    ASSERT(element->hasTagName(SVGNames::ellipseTag));
-    SVGEllipseElement* ellipse = static_cast<SVGEllipseElement*>(element);
+    SVGEllipseElement* ellipse = toSVGEllipseElement(element);
 
     SVGLengthContext lengthContext(element);
     float rx = ellipse->rxCurrentValue().value(lengthContext);

@@ -343,7 +343,7 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
         writeNameValuePair(ts, "x2", element->x2CurrentValue().value(lengthContext));
         writeNameValuePair(ts, "y2", element->y2CurrentValue().value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::ellipseTag)) {
-        SVGEllipseElement* element = static_cast<SVGEllipseElement*>(svgElement);
+        SVGEllipseElement* element = toSVGEllipseElement(svgElement);
         writeNameValuePair(ts, "cx", element->cxCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "cy", element->cyCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "rx", element->rxCurrentValue().value(lengthContext));
