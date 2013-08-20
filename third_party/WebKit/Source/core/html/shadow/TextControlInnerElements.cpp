@@ -32,6 +32,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/MouseEvent.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/dom/TextEvent.h"
 #include "core/dom/TextEventInputType.h"
 #include "core/html/HTMLInputElement.h"
@@ -78,7 +79,7 @@ PassRefPtr<RenderStyle> TextControlInnerElement::customStyleForRenderer()
     // FXIME: Move these styles to html.css.
 
     RefPtr<RenderStyle> innerBlockStyle = RenderStyle::create();
-    innerBlockStyle->inheritFrom(shadowHost()->renderer()->style());
+    innerBlockStyle->inheritFrom(shadowHost()->renderStyle());
 
     innerBlockStyle->setFlexGrow(1);
     // min-width: 0; is needed for correct shrinking.
