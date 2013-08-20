@@ -9,6 +9,7 @@
 #include "chromeos/dbus/ibus/ibus_constants.h"
 #include "chromeos/dbus/ibus/ibus_object.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/ime_constants.h"
 #include "dbus/message.h"
 
 namespace chromeos {

@@ -12,6 +12,7 @@
 #include "chromeos/dbus/ibus/ibus_lookup_table.h"
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "dbus/message.h"
 #include "dbus/mock_bus.h"
 #include "dbus/mock_exported_object.h"

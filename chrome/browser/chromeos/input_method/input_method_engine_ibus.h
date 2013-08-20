@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "dbus/object_path.h"
 
 namespace chromeos {

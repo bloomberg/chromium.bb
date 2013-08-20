@@ -23,79 +23,8 @@ namespace chromeos {
 class IBusLookupTable;
 class IBusProperty;
 class IBusText;
+class IBusEngineHandlerInterface;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
-
-// A interface to handle the engine handler method call.
-class CHROMEOS_EXPORT IBusEngineHandlerInterface {
- public:
-  typedef base::Callback<void (bool consumed)> KeyEventDoneCallback;
-
-  // Following capability mask is introduced from
-  // http://ibus.googlecode.com/svn/docs/ibus-1.4/ibus-ibustypes.html#IBusCapabilite
-  // TODO(nona): Move to ibus_contants and merge one in ui/base/ime/*
-  enum IBusCapability {
-    IBUS_CAPABILITY_PREEDIT_TEXT = 1U,
-    IBUS_CAPABILITY_FOCUS = 8U,
-  };
-
-  virtual ~IBusEngineHandlerInterface() {}
-
-  // Called when the Chrome input field get the focus.
-  virtual void FocusIn() = 0;
-
-  // Called when the Chrome input field lose the focus.
-  virtual void FocusOut() = 0;
-
-  // Called when the IME is enabled.
-  virtual void Enable() = 0;
-
-  // Called when the IME is disabled.
-  virtual void Disable() = 0;
-
-  // Called when a property is activated or changed.
-  virtual void PropertyActivate(const std::string& property_name,
-                                ibus::IBusPropertyState property_state) = 0;
-
-  // Called when a property is shown.
-  virtual void PropertyShow(const std::string& property_name) = 0;
-
-  // Called when a property is hidden.
-  virtual void PropertyHide(const std::string& property_name) = 0;
-
-  // Called when the Chrome input field set their capabilities.
-  virtual void SetCapability(IBusCapability capability) = 0;
-
-  // Called when the IME is reset.
-  virtual void Reset() = 0;
-
-  // Called when the key event is received. The |keycode| is raw layout
-  // independent keycode. The |keysym| is result of XLookupString function
-  // which translate |keycode| to keyboard layout dependent symbol value.
-  // Actual implementation must call |callback| after key event handling.
-  // For example: key press event for 'd' key on us layout and dvorak layout.
-  //                  keyval keycode state
-  //      us layout :  0x64   0x20    0x00
-  //  dvorak layout :  0x65   0x20    0x00
-  virtual void ProcessKeyEvent(uint32 keysym, uint32 keycode, uint32 state,
-                               const KeyEventDoneCallback& callback) = 0;
-
-  // Called when the candidate in lookup table is clicked. The |index| is 0
-  // based candidate index in lookup table. The |state| is same value as
-  // GdkModifierType in
-  // http://developer.gnome.org/gdk/stable/gdk-Windows.html#GdkModifierType
-  virtual void CandidateClicked(uint32 index, ibus::IBusMouseButton button,
-                                uint32 state) = 0;
-
-  // Called when a new surrounding text is set. The |text| is surrounding text
-  // and |cursor_pos| is 0 based index of cursor position in |text|. If there is
-  // selection range, |anchor_pos| represents opposite index from |cursor_pos|.
-  // Otherwise |anchor_pos| is equal to |cursor_pos|.
-  virtual void SetSurroundingText(const std::string& text, uint32 cursor_pos,
-                                  uint32 anchor_pos) = 0;
-
- protected:
-  IBusEngineHandlerInterface() {}
-};
 
 // A class to make the actual DBus method call handling for IBusEngine service.
 // The exported method call is used by ibus-demon to process key event, because

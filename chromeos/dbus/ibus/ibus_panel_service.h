@@ -12,6 +12,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/ime/ime_constants.h"
 
 namespace dbus {
 class Bus;
@@ -24,57 +25,9 @@ class IBusInputContextClient;
 class IBusLookupTable;
 class IBusProperty;
 class IBusText;
+class IBusPanelCandidateWindowHandlerInterface;
+class IBusPanelPropertyHandlerInterface;
 typedef ScopedVector<IBusProperty> IBusPropertyList;
-
-// A interface to handle the candidate window related method call.
-class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
- public:
-  virtual ~IBusPanelCandidateWindowHandlerInterface() {}
-
-  // Called when the IME updates the lookup table.
-  virtual void UpdateLookupTable(const IBusLookupTable& table,
-                                 bool visible) = 0;
-
-  // Called when the IME hides the lookup table.
-  virtual void HideLookupTable() = 0;
-
-  // Called when the IME updates the auxiliary text. The |text| is given in
-  // UTF-8 encoding.
-  virtual void UpdateAuxiliaryText(const std::string& text, bool visible) = 0;
-
-  // Called when the IME hides the auxiliary text.
-  virtual void HideAuxiliaryText() = 0;
-
-  // Called when the IME updates the preedit text. The |text| is given in
-  // UTF-8 encoding.
-  virtual void UpdatePreeditText(const std::string& text, uint32 cursor_pos,
-                                 bool visible) = 0;
-
-  // Called when the IME hides the preedit text.
-  virtual void HidePreeditText() = 0;
-
-  // Called when the application changes its caret location.
-  virtual void SetCursorLocation(const ibus::Rect& cursor_location,
-                                 const ibus::Rect& composition_head) = 0;
-
- protected:
-  IBusPanelCandidateWindowHandlerInterface() {}
-};
-
-// A interface to handle the property related method call.
-class CHROMEOS_EXPORT IBusPanelPropertyHandlerInterface {
- public:
-  virtual ~IBusPanelPropertyHandlerInterface() {}
-
-  // Called when a new property is registered.
-  virtual void RegisterProperties(const IBusPropertyList& properties) = 0;
-
-  // Called when current property is updated.
-  virtual void UpdateProperty(const IBusProperty& property) = 0;
-
- protected:
-  IBusPanelPropertyHandlerInterface() {}
-};
 
 // A class to make the actual DBus method call handling for IBusPanel service.
 // The exported method call is used by ibus-daemon to process candidate window

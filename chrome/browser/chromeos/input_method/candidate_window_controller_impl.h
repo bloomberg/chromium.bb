@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/input_method/candidate_window_view.h"
 #include "chrome/browser/chromeos/input_method/infolist_window_view.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
 
 namespace views {

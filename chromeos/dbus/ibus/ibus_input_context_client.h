@@ -12,6 +12,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/ibus/ibus_constants.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "dbus/object_path.h"
 
 namespace dbus {
@@ -21,29 +22,7 @@ class Bus;
 namespace chromeos {
 
 class IBusText;
-
-class CHROMEOS_EXPORT IBusInputContextHandlerInterface {
- public:
-  // Called when the engine commit a text.
-  virtual void CommitText(const IBusText& text) = 0;
-
-  // Called when the engine forward a key event.
-  virtual void ForwardKeyEvent(uint32 keyval, uint32 keycode, uint32 state) = 0;
-
-  // Called when the engine update preedit stroing.
-  virtual void UpdatePreeditText(const IBusText& text,
-                                 uint32 cursor_pos,
-                                 bool visible) = 0;
-
-  // Called when the engine request showing preedit string.
-  virtual void ShowPreeditText() = 0;
-
-  // Called when the engine request hiding preedit string.
-  virtual void HidePreeditText() = 0;
-
-  // Called when the engine request deleting surrounding string.
-  virtual void DeleteSurroundingText(int32 offset, uint32 length) = 0;
-};
+class IBusInputContextHandlerInterface;
 
 // A class to make the actual DBus calls for IBusInputContext service.
 // The ibus-daemon creates object paths on demand, so the target object path is

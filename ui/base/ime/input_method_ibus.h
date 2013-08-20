@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/ibus/ibus_input_context_client.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
 #include "ui/base/ime/character_composer.h"
 #include "ui/base/ime/composition_text.h"

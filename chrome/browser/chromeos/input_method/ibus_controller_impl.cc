@@ -31,6 +31,7 @@
 #include "chromeos/dbus/ibus/ibus_property.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/input_method_config.h"
 #include "chromeos/ime/input_method_property.h"
 #include "ui/aura/client/aura_constants.h"

@@ -11,6 +11,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/input_method/ibus_controller_base.h"
 #include "chromeos/dbus/ibus/ibus_panel_service.h"
+#include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/ibus_daemon_controller.h"
 
 namespace ui {
