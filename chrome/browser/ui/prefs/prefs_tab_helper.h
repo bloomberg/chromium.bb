@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_PREFS_PREFS_TAB_HELPER_H_
 
 #include "base/compiler_specific.h"
+#include "base/memory/weak_ptr.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -55,6 +56,7 @@ class PrefsTabHelper : public content::NotificationObserver,
   content::WebContents* web_contents_;
   content::NotificationRegistrar registrar_;
   PrefChangeRegistrar pref_change_registrar_;
+  base::WeakPtrFactory<PrefsTabHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefsTabHelper);
 };

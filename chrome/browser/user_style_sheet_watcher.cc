@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -57,6 +56,9 @@ class UserStyleSheetLoader
   // base64 URL.  Posts the base64 URL back to the UI thread.
   void LoadStyleSheet(const base::FilePath& style_sheet_file);
 
+  // Register a callback to be called whenever the stylesheet gets updated.
+  void RegisterOnStyleSheetUpdatedCallback(const base::Closure& callback);
+
   // Send out a notification if the stylesheet has already been loaded.
   void NotifyLoaded();
 
@@ -65,7 +67,7 @@ class UserStyleSheetLoader
 
  private:
   friend class base::RefCountedThreadSafe<UserStyleSheetLoader>;
-  ~UserStyleSheetLoader() {}
+  ~UserStyleSheetLoader();
 
   // Called on the UI thread after the stylesheet has loaded.
   void SetStyleSheet(const GURL& url);
@@ -76,6 +78,8 @@ class UserStyleSheetLoader
   // Whether the stylesheet has been loaded.
   bool has_loaded_;
 
+  std::vector<base::Closure> on_loaded_callbacks_;
+
   DISALLOW_COPY_AND_ASSIGN(UserStyleSheetLoader);
 };
 
@@ -83,12 +87,17 @@ UserStyleSheetLoader::UserStyleSheetLoader()
     : has_loaded_(false) {
 }
 
+void UserStyleSheetLoader::RegisterOnStyleSheetUpdatedCallback(
+    const base::Closure& callback) {
+  on_loaded_callbacks_.push_back(callback);
+}
+
 void UserStyleSheetLoader::NotifyLoaded() {
   if (has_loaded_) {
-    content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_USER_STYLE_SHEET_UPDATED,
-        content::Source<UserStyleSheetLoader>(this),
-        content::NotificationService::NoDetails());
+    for (size_t i = 0; i < on_loaded_callbacks_.size(); ++i) {
+      if (!on_loaded_callbacks_[i].is_null())
+        on_loaded_callbacks_[i].Run();
+    }
   }
 }
 
@@ -127,6 +136,10 @@ void UserStyleSheetLoader::LoadStyleSheet(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&UserStyleSheetLoader::SetStyleSheet, this,
                                      style_sheet_url));
+}
+
+UserStyleSheetLoader::~UserStyleSheetLoader() {
+  on_loaded_callbacks_.clear();
 }
 
 void UserStyleSheetLoader::SetStyleSheet(const GURL& url) {
@@ -179,6 +192,11 @@ void UserStyleSheetWatcher::Init() {
 
 GURL UserStyleSheetWatcher::user_style_sheet() const {
   return loader_->user_style_sheet();
+}
+
+void UserStyleSheetWatcher::RegisterOnStyleSheetUpdatedCallback(
+    const base::Closure& callback) {
+  loader_->RegisterOnStyleSheetUpdatedCallback(callback);
 }
 
 void UserStyleSheetWatcher::Observe(int type,
