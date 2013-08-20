@@ -121,8 +121,12 @@ void Metrics::Update(const HardwareState& hwstate) {
   // we consider this to be a new gesture starting
   bool gesture_start = (existing_count != previous_count) || new_count > 0;
   for (FingerMetrics& finger: fingers_) {
-    finger.Update(*hwstate.GetFingerState(finger.tracking_id()),
-                  hwstate.timestamp, gesture_start);
+    const FingerState* fs = hwstate.GetFingerState(finger.tracking_id());
+    if (!fs) {
+      Err("Unexpected missing finger state!");
+      continue;
+    }
+    finger.Update(*fs, hwstate.timestamp, gesture_start);
   }
 }
 
