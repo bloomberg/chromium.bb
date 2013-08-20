@@ -241,6 +241,9 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   }
 
   std::string mode = GetDeviceModeString(device_mode);
+  std::string registration_user;
+  if (!user.empty())
+    registration_user = gaia::CanonicalizeEmail(user);
 
   if (device_mode == DEVICE_MODE_CONSUMER_KIOSK) {
     // Set values in the InstallAttrs and lock it.
@@ -250,10 +253,11 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
       return;
     }
   } else {
-    std::string domain = gaia::ExtractDomainName(user);
+    std::string domain = gaia::ExtractDomainName(registration_user);
     // Set values in the InstallAttrs and lock it.
     if (!cryptohome_->InstallAttributesSet(kAttrEnterpriseOwned, "true") ||
-        !cryptohome_->InstallAttributesSet(kAttrEnterpriseUser, user) ||
+        !cryptohome_->InstallAttributesSet(kAttrEnterpriseUser,
+                                           registration_user) ||
         !cryptohome_->InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
         !cryptohome_->InstallAttributesSet(kAttrEnterpriseMode, mode) ||
         !cryptohome_->InstallAttributesSet(kAttrEnterpriseDeviceId,
@@ -274,15 +278,15 @@ void EnterpriseInstallAttributes::LockDeviceIfAttributesIsReady(
   ReadImmutableAttributes(
       base::Bind(&EnterpriseInstallAttributes::OnReadImmutableAttributes,
                  weak_ptr_factory_.GetWeakPtr(),
-                 user,
+                 registration_user,
                  callback));
 }
 
 void EnterpriseInstallAttributes::OnReadImmutableAttributes(
-    const std::string& user,
+    const std::string& registration_user,
     const LockResultCallback& callback) {
 
-  if (GetRegistrationUser() != user) {
+  if (GetRegistrationUser() != registration_user) {
     LOG(ERROR) << "Locked data doesn't match";
     callback.Run(LOCK_BACKEND_ERROR);
     return;

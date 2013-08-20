@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/proto/chromeos/install_attributes.pb.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -28,6 +29,7 @@ void CopyLockResult(base::RunLoop* loop,
 }  // namespace
 
 static const char kTestUser[] = "test@example.com";
+static const char kTestUserCanonicalize[] = "UPPER.CASE@example.com";
 static const char kTestDomain[] = "example.com";
 static const char kTestDeviceId[] = "133750519";
 
@@ -100,6 +102,16 @@ TEST_F(EnterpriseInstallAttributesTest, Lock) {
                 "test@bluebears.com",
                 DEVICE_MODE_ENTERPRISE,
                 kTestDeviceId));
+}
+
+TEST_F(EnterpriseInstallAttributesTest, LockCanonicalize) {
+  EXPECT_EQ(EnterpriseInstallAttributes::LOCK_SUCCESS,
+            LockDeviceAndWaitForResult(
+                kTestUserCanonicalize,
+                DEVICE_MODE_ENTERPRISE,
+                kTestDeviceId));
+  EXPECT_EQ(gaia::CanonicalizeEmail(kTestUserCanonicalize),
+            install_attributes_.GetRegistrationUser());
 }
 
 TEST_F(EnterpriseInstallAttributesTest, IsEnterpriseDevice) {
