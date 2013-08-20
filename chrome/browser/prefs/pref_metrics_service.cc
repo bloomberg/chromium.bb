@@ -12,6 +12,7 @@
 #include "chrome/browser/prefs/synced_pref_change_registrar.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/common/pref_names.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -49,16 +50,45 @@ void PrefMetricsService::RecordLaunchPrefs() {
   UMA_HISTOGRAM_BOOLEAN("Settings.ShowHomeButton", show_home_button);
   if (show_home_button) {
     UMA_HISTOGRAM_BOOLEAN("Settings.GivenShowHomeButton_HomePageIsNewTabPage",
-        home_page_is_ntp);
+                          home_page_is_ntp);
   }
+
+  // For non-NTP homepages, see if the URL comes from the same TLD+1 as a known
+  // search engine.  Note that this is only an approximation of search engine
+  // use, due to both false negatives (pages that come from unknown TLD+1 X but
+  // consist of a search box that sends to known TLD+1 Y) and false positives
+  // (pages that share a TLD+1 with a known engine but aren't actually search
+  // pages, e.g. plus.google.com).
+  if (!home_page_is_ntp) {
+    GURL homepage_url(prefs->GetString(prefs::kHomePage));
+    if (homepage_url.is_valid()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Settings.HomePageEngineType",
+          TemplateURLPrepopulateData::GetEngineType(homepage_url),
+          SEARCH_ENGINE_MAX);
+    }
+  }
+
   int restore_on_startup = prefs->GetInteger(prefs::kRestoreOnStartup);
   UMA_HISTOGRAM_ENUMERATION("Settings.StartupPageLoadSettings",
-      restore_on_startup, kSessionStartupPrefValueMax);
+                            restore_on_startup, kSessionStartupPrefValueMax);
   if (restore_on_startup == SessionStartupPref::kPrefValueURLs) {
-    const int url_list_size = prefs->GetList(
-        prefs::kURLsToRestoreOnStartup)->GetSize();
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Settings.StartupPageLoadURLs", url_list_size, 1, 50, 20);
+    const ListValue* url_list = prefs->GetList(prefs::kURLsToRestoreOnStartup);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Settings.StartupPageLoadURLs",
+                                url_list->GetSize(), 1, 50, 20);
+    // Similarly, check startup pages for known search engine TLD+1s.
+    std::string url_text;
+    for (size_t i = 0; i < url_list->GetSize(); i++) {
+      if (url_list->GetString(i, &url_text)) {
+        GURL start_url(url_text);
+        if (start_url.is_valid()) {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Settings.StartupPageEngineTypes",
+              TemplateURLPrepopulateData::GetEngineType(start_url),
+              SEARCH_ENGINE_MAX);
+        }
+      }
+    }
   }
 }
 

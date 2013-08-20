@@ -1303,8 +1303,11 @@ SearchEngineType GetEngineType(const TemplateURL& url) {
   // be converted to GURLs we can look at.
   GURL gurl(url.url_ref().ReplaceSearchTerms(TemplateURLRef::SearchTermsArgs(
       ASCIIToUTF16("x"))));
-  if (!gurl.is_valid())
-    return SEARCH_ENGINE_OTHER;
+  return gurl.is_valid() ? GetEngineType(gurl) : SEARCH_ENGINE_OTHER;
+}
+
+SearchEngineType GetEngineType(const GURL& url) {
+  DCHECK(url.is_valid());
 
   // Check using TLD+1s, in order to more aggressively match search engine types
   // for data imported from other browsers.
@@ -1312,19 +1315,19 @@ SearchEngineType GetEngineType(const TemplateURL& url) {
   // First special-case Google, because the prepopulate URL for it will not
   // convert to a GURL and thus won't have an origin.  Instead see if the
   // incoming URL's host is "[*.]google.<TLD>".
-  if (google_util::IsGoogleHostname(gurl.host(),
+  if (google_util::IsGoogleHostname(url.host(),
                                     google_util::DISALLOW_SUBDOMAIN))
     return google.type;
 
   // Now check the rest of the prepopulate data.
   for (size_t i = 0; i < arraysize(kAllEngines); ++i) {
     // First check the main search URL.
-    if (SameDomain(gurl, GURL(kAllEngines[i]->search_url)))
+    if (SameDomain(url, GURL(kAllEngines[i]->search_url)))
       return kAllEngines[i]->type;
 
     // Then check the alternate URLs.
     for (size_t j = 0; j < kAllEngines[i]->alternate_urls_size; ++j) {
-      if (SameDomain(gurl, GURL(kAllEngines[i]->alternate_urls[j])))
+      if (SameDomain(url, GURL(kAllEngines[i]->alternate_urls[j])))
         return kAllEngines[i]->type;
     }
   }

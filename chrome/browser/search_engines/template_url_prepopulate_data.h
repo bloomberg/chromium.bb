@@ -69,6 +69,10 @@ TemplateURL* GetPrepopulatedDefaultSearch(Profile* profile);
 // NOTE: Must be called on the UI thread.
 SearchEngineType GetEngineType(const TemplateURL& template_url);
 
+// Like the above, but takes a GURL which is expected to represent a search URL.
+// This may be called on any thread.
+SearchEngineType GetEngineType(const GURL& url);
+
 // Returns the logo at the specified |size| for |template_url|.  If no logo is
 // known, this will return an empty GURL.
 //
