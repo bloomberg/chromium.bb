@@ -32,7 +32,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
     MockRenderProcessHost* process_host =
         new MockRenderProcessHost(browser_context_.get());
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, MSG_ROUTING_NONE);
+        &delegate_, process_host, MSG_ROUTING_NONE, false);
     view_ = new RenderWidgetHostViewGuest(
         widget_host_, NULL, new TestRenderWidgetHostView(widget_host_));
   }

@@ -97,6 +97,10 @@ class CONTENT_EXPORT RenderViewHostManager
     // Creates a view and sets the size for the specified RVH.
     virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) = 0;
 
+    // Returns true if views created for this delegate should be created in a
+    // hidden state.
+    virtual bool IsHidden() = 0;
+
    protected:
     virtual ~Delegate() {}
   };
@@ -181,7 +185,8 @@ class CONTENT_EXPORT RenderViewHostManager
   // will be used for a pending cross-site navigation.
   int CreateRenderView(SiteInstance* instance,
                        int opener_route_id,
-                       bool swapped_out);
+                       bool swapped_out,
+                       bool hidden);
 
   // Called when a provisional load on the given renderer is aborted.
   void RendererAbortedProvisionalLoad(RenderViewHost* render_view_host);

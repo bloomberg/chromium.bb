@@ -78,7 +78,7 @@ class RenderWidgetHostEditCommandCounter : public RenderWidgetHostImpl {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int routing_id)
-    : RenderWidgetHostImpl(delegate, process, routing_id),
+    : RenderWidgetHostImpl(delegate, process, routing_id, false),
       edit_command_message_count_(0) {
   }
 

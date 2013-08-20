@@ -212,6 +212,7 @@ class CONTENT_EXPORT RenderViewImpl
       const string16& frame_name,
       bool is_renderer_created,
       bool swapped_out,
+      bool hidden,
       int32 next_page_id,
       const WebKit::WebScreenInfo& screen_info,
       AccessibilityMode accessibility_mode,

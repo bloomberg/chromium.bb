@@ -83,7 +83,7 @@ void RenderViewHostManager::Init(BrowserContext* browser_context,
   render_view_host_ = static_cast<RenderViewHostImpl*>(
       RenderViewHostFactory::Create(
           site_instance, render_view_delegate_, render_widget_delegate_,
-          routing_id, main_frame_routing_id, false));
+          routing_id, main_frame_routing_id, false, delegate_->IsHidden()));
 
   // Keep track of renderer processes as they start to shut down or are
   // crashed/killed.
@@ -642,8 +642,10 @@ SiteInstance* RenderViewHostManager::GetSiteInstanceForEntry(
 int RenderViewHostManager::CreateRenderView(
     SiteInstance* instance,
     int opener_route_id,
-    bool swapped_out) {
+    bool swapped_out,
+    bool hidden) {
   CHECK(instance);
+  DCHECK(!swapped_out || hidden); // Swapped out views should always be hidden.
 
   // Check if we've already created an RVH for this SiteInstance.  If so, try
   // to re-use the existing one, which has already been initialized.  We'll
@@ -662,7 +664,8 @@ int RenderViewHostManager::CreateRenderView(
                                       render_widget_delegate_,
                                       MSG_ROUTING_NONE,
                                       MSG_ROUTING_NONE,
-                                      swapped_out));
+                                      swapped_out,
+                                      hidden));
 
     // If the new RVH is swapped out already, store it.  Otherwise prevent the
     // process from exiting while we're trying to navigate in it.
@@ -894,7 +897,8 @@ RenderViewHostImpl* RenderViewHostManager::UpdateRendererStateForNavigate(
 
     // Create a non-swapped-out pending RVH with the given opener and navigate
     // it.
-    int route_id = CreateRenderView(new_instance, opener_route_id, false);
+    int route_id = CreateRenderView(new_instance, opener_route_id, false,
+                                    delegate_->IsHidden());
     if (route_id == MSG_ROUTING_NONE)
       return NULL;
 

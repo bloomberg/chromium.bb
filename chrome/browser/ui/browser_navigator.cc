@@ -332,6 +332,9 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
     if (params.should_set_opener)
       create_params.opener = params.source_contents;
   }
+  if (params.disposition == NEW_BACKGROUND_TAB)
+    create_params.initially_hidden = true;
+
 #if defined(USE_AURA)
   if (params.browser->window() &&
       params.browser->window()->GetNativeWindow()) {
@@ -348,14 +351,6 @@ content::WebContents* CreateTargetContents(const chrome::NavigateParams& params,
   BrowserNavigatorWebContentsAdoption::AttachTabHelpers(target_contents);
   extensions::TabHelper::FromWebContents(target_contents)->
       SetExtensionAppById(params.extension_app_id);
-  // TODO(sky): Figure out why this is needed. Without it we seem to get
-  // failures in startup tests.
-  // By default, content believes it is not hidden.  When adding contents
-  // in the background, tell it that it's hidden.
-  if ((params.tabstrip_add_types & TabStripModel::ADD_ACTIVE) == 0) {
-    // TabStripModel::AddWebContents invokes WasHidden if not foreground.
-    target_contents->WasHidden();
-  }
   return target_contents;
 }
 

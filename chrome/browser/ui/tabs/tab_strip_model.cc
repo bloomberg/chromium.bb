@@ -704,10 +704,6 @@ void TabStripModel::AddWebContents(WebContents* contents,
     if ((add_types & ADD_ACTIVE) == 0) {
       contents->GetView()->SizeContents(
           old_contents->GetView()->GetContainerSize());
-      // We need to hide the contents or else we get and execute paints for
-      // background tabs. With enough background tabs they will steal the
-      // backing store of the visible tab causing flashing. See bug 20831.
-      contents->WasHidden();
     }
   }
 }

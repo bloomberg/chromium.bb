@@ -42,7 +42,7 @@ class TextInputClientMacTest : public testing::Test {
         widget_(&delegate_,
                 process_factory_.CreateRenderProcessHost(
                     &browser_context_, NULL),
-                MSG_ROUTING_NONE),
+                MSG_ROUTING_NONE, false),
         thread_("TextInputClientMacTestThread") {}
 
   // Accessor for the TextInputClientMac instance.

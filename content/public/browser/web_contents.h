@@ -92,6 +92,9 @@ class WebContents : public PageNavigator,
     // Initial size of the new WebContent's view. Can be (0, 0) if not needed.
     gfx::Size initial_size;
 
+    // True if the contents should be initially hidden.
+    bool initially_hidden;
+
     // Used to specify the location context which display the new view should
     // belong. This can be NULL if not needed.
     gfx::NativeView context;

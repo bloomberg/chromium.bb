@@ -437,8 +437,6 @@
     'renderer/render_process.h',
     'renderer/render_process_impl.cc',
     'renderer/render_process_impl.h',
-    'renderer/render_process_visibility_manager.cc',
-    'renderer/render_process_visibility_manager.h',
     'renderer/render_thread_impl.cc',
     'renderer/render_thread_impl.h',
     'renderer/render_view_impl.cc',

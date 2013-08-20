@@ -77,7 +77,6 @@
 #include "content/renderer/memory_benchmarking_extension.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_process_impl.h"
-#include "content/renderer/render_process_visibility_manager.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "content/renderer/skia_benchmarking_extension.h"
@@ -622,28 +621,24 @@ void RenderThreadImpl::SetResourceDispatcherDelegate(
 }
 
 void RenderThreadImpl::WidgetHidden() {
-  DCHECK(hidden_widget_count_ < widget_count_);
+  DCHECK_LT(hidden_widget_count_, widget_count_);
   hidden_widget_count_++;
 
-  RenderProcessVisibilityManager* manager =
-      RenderProcessVisibilityManager::GetInstance();
-  manager->WidgetVisibilityChanged(false);
-
-  if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
-    return;
+  if (widget_count_ && hidden_widget_count_ == widget_count_) {
+#if !defined(SYSTEM_NATIVELY_SIGNALS_MEMORY_PRESSURE)
+    // TODO(vollick): Remove this this heavy-handed approach once we're polling
+    // the real system memory pressure.
+    base::MemoryPressureListener::NotifyMemoryPressure(
+        base::MemoryPressureListener::MEMORY_PRESSURE_MODERATE);
+#endif
+    if (GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
+      ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
   }
-
-  if (widget_count_ && hidden_widget_count_ == widget_count_)
-    ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
 }
 
 void RenderThreadImpl::WidgetRestored() {
   DCHECK_GT(hidden_widget_count_, 0);
   hidden_widget_count_--;
-
-  RenderProcessVisibilityManager* manager =
-      RenderProcessVisibilityManager::GetInstance();
-  manager->WidgetVisibilityChanged(true);
 
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden()) {
     return;
@@ -1142,6 +1137,7 @@ void RenderThreadImpl::OnCreateNewView(const ViewMsg_New_Params& params) {
       params.frame_name,
       false,
       params.swapped_out,
+      params.hidden,
       params.next_page_id,
       params.screen_info,
       params.accessibility_mode,

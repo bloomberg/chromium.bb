@@ -115,7 +115,8 @@ size_t RenderWidgetHost::BackingStoreMemorySize() {
 
 RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                                            RenderProcessHost* process,
-                                           int routing_id)
+                                           int routing_id,
+                                           bool hidden)
     : view_(NULL),
       renderer_initialized_(false),
       hung_renderer_delay_ms_(kHungRendererDelayMs),
@@ -124,7 +125,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       routing_id_(routing_id),
       surface_id_(0),
       is_loading_(false),
-      is_hidden_(false),
+      is_hidden_(hidden),
       is_fullscreen_(false),
       is_accelerated_compositing_active_(false),
       repaint_ack_pending_(false),
@@ -175,9 +176,11 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   g_routing_id_widget_map.Get().insert(std::make_pair(
       RenderWidgetHostID(process->GetID(), routing_id_), this));
   process_->AddRoute(routing_id_, this);
-  // Because the widget initializes as is_hidden_ == false,
-  // tell the process host that we're alive.
-  process_->WidgetRestored();
+
+  // If we're initially visible, tell the process host that we're alive.
+  // Otherwise we'll notify the process host when we are first shown.
+  if (!hidden)
+    process_->WidgetRestored();
 
   accessibility_mode_ =
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
@@ -479,6 +482,9 @@ bool RenderWidgetHostImpl::Send(IPC::Message* msg) {
 }
 
 void RenderWidgetHostImpl::WasHidden() {
+  if (is_hidden_)
+    return;
+
   is_hidden_ = true;
 
   // Don't bother reporting hung state when we aren't active.
@@ -499,7 +505,6 @@ void RenderWidgetHostImpl::WasHidden() {
 }
 
 void RenderWidgetHostImpl::WasShown() {
-  // When we create the widget, it is created as *not* hidden.
   if (!is_hidden_)
     return;
   is_hidden_ = false;

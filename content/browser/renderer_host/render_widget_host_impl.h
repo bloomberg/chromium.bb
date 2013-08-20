@@ -93,7 +93,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // |delegate| goes away.
   RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                        RenderProcessHost* process,
-                       int routing_id);
+                       int routing_id,
+                       bool hidden);
   virtual ~RenderWidgetHostImpl();
 
   // Similar to RenderWidgetHost::FromID, but returning the Impl object.

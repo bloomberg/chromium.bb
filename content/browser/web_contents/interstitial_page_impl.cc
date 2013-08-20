@@ -503,6 +503,7 @@ RenderViewHost* InterstitialPageImpl::CreateRenderViewHost() {
                              this,
                              MSG_ROUTING_NONE,
                              MSG_ROUTING_NONE,
+                             false,
                              false);
   web_contents_->RenderViewForInterstitialPageCreated(render_view_host);
   return render_view_host;

@@ -561,6 +561,8 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       compositing_surface_(gfx::kNullPluginWindow),
       last_mouse_down_(NULL) {
   host_->SetView(this);
+  if (host_->is_hidden())
+    WasHidden();
 }
 
 RenderWidgetHostViewGtk::~RenderWidgetHostViewGtk() {

@@ -779,7 +779,8 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
 RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
     : RenderWidget(WebKit::WebPopupTypeNone,
                    params->screen_info,
-                   params->swapped_out),
+                   params->swapped_out,
+                   params->hidden),
       webkit_preferences_(params->webkit_prefs),
       send_content_state_immediately_(false),
       enabled_bindings_(0),
@@ -899,6 +900,8 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   // Take a reference on behalf of the RenderThread.  This will be balanced
   // when we receive ViewMsg_ClosePage.
   AddRef();
+  if (is_hidden_)
+    RenderThread::Get()->WidgetHidden();
 
   // If this is a popup, we must wait for the CreatingNew_ACK message before
   // completing initialization.  Otherwise, we can finish it now.
@@ -1072,6 +1075,7 @@ RenderViewImpl* RenderViewImpl::Create(
     const string16& frame_name,
     bool is_renderer_created,
     bool swapped_out,
+    bool hidden,
     int32 next_page_id,
     const WebKit::WebScreenInfo& screen_info,
     AccessibilityMode accessibility_mode,
@@ -1089,6 +1093,7 @@ RenderViewImpl* RenderViewImpl::Create(
       frame_name,
       is_renderer_created,
       swapped_out,
+      hidden,
       next_page_id,
       screen_info,
       accessibility_mode,
@@ -2337,9 +2342,10 @@ WebView* RenderViewImpl::createView(
       surface_id,
       cloned_session_storage_namespace_id,
       string16(),  // WebCore will take care of setting the correct name.
-      true,
-      false,
-      1,
+      true,  // is_renderer_created
+      false, // swapped_out
+      false, // hidden
+      1,     // next_page_id
       screen_info_,
       accessibility_mode_,
       allow_partial_swap_);

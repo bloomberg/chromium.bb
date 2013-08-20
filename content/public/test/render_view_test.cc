@@ -175,9 +175,10 @@ void RenderViewTest::SetUp() {
       kSurfaceId,
       kInvalidSessionStorageNamespaceId,
       string16(),
-      false,
-      false,
-      1,
+      false, // is_renderer_created
+      false, // swapped_out
+      false, // hidden
+      1, // next_page_id
       WebKit::WebScreenInfo(),
       AccessibilityModeOff,
       true);

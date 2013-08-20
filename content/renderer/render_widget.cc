@@ -35,7 +35,6 @@
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/render_process.h"
-#include "content/renderer/render_process_visibility_manager.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_webkitplatformsupport_impl.h"
 #include "ipc/ipc_sync_message.h"
@@ -189,7 +188,8 @@ namespace content {
 
 RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
                            const WebKit::WebScreenInfo& screen_info,
-                           bool swapped_out)
+                           bool swapped_out,
+                           bool hidden)
     : routing_id_(MSG_ROUTING_NONE),
       surface_id_(0),
       webwidget_(NULL),
@@ -205,7 +205,7 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
       using_asynchronous_swapbuffers_(false),
       num_swapbuffers_complete_pending_(0),
       did_show_(false),
-      is_hidden_(false),
+      is_hidden_(hidden),
       is_fullscreen_(false),
       needs_repainting_on_restore_(false),
       has_focus_(false),
@@ -239,8 +239,6 @@ RenderWidget::RenderWidget(WebKit::WebPopupType popup_type,
   is_threaded_compositing_enabled_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableThreadedCompositing);
-
-  RenderProcessVisibilityManager::GetInstance()->WidgetVisibilityChanged(true);
 }
 
 RenderWidget::~RenderWidget() {
@@ -265,7 +263,7 @@ RenderWidget* RenderWidget::Create(int32 opener_id,
                                    const WebKit::WebScreenInfo& screen_info) {
   DCHECK(opener_id != MSG_ROUTING_NONE);
   scoped_refptr<RenderWidget> widget(
-      new RenderWidget(popup_type, screen_info, false));
+      new RenderWidget(popup_type, screen_info, false, false));
   if (widget->Init(opener_id)) {  // adds reference on success.
     return widget.get();
   }
@@ -313,6 +311,8 @@ bool RenderWidget::DoInit(int32 opener_id,
     // Take a reference on behalf of the RenderThread.  This will be balanced
     // when we receive ViewMsg_Close.
     AddRef();
+    if (is_hidden_)
+      RenderThread::Get()->WidgetHidden();
     return true;
   } else {
     // The above Send can fail when the tab is closing.

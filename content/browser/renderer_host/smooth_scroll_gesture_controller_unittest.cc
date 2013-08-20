@@ -59,7 +59,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int routing_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id) {
+      : RenderWidgetHostImpl(delegate, process, routing_id, false) {
   }
   virtual ~MockRenderWidgetHost() {}
 };

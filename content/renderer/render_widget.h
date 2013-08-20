@@ -227,7 +227,8 @@ class CONTENT_EXPORT RenderWidget
 
   RenderWidget(WebKit::WebPopupType popup_type,
                const WebKit::WebScreenInfo& screen_info,
-               bool swapped_out);
+               bool swapped_out,
+               bool hidden);
 
   virtual ~RenderWidget();
 

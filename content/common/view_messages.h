@@ -714,6 +714,9 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Whether the RenderView should initially be swapped out.
   IPC_STRUCT_MEMBER(bool, swapped_out)
 
+  // Whether the RenderView should initially be hidden.
+  IPC_STRUCT_MEMBER(bool, hidden)
+
   // The initial page ID to use for this view, which must be larger than any
   // existing navigation that might be loaded in the view.  Page IDs are unique
   // to a view and are only updated by the renderer after this initial value.

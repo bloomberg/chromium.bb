@@ -153,8 +153,12 @@ RenderViewHostImpl::RenderViewHostImpl(
     RenderWidgetHostDelegate* widget_delegate,
     int routing_id,
     int main_frame_routing_id,
-    bool swapped_out)
-    : RenderWidgetHostImpl(widget_delegate, instance->GetProcess(), routing_id),
+    bool swapped_out,
+    bool hidden)
+    : RenderWidgetHostImpl(widget_delegate,
+                           instance->GetProcess(),
+                           routing_id,
+                           hidden),
       delegate_(delegate),
       instance_(static_cast<SiteInstanceImpl*>(instance)),
       waiting_for_drag_context_response_(false),
@@ -259,6 +263,7 @@ bool RenderViewHostImpl::CreateRenderView(
   // Ensure the RenderView sets its opener correctly.
   params.opener_route_id = opener_route_id;
   params.swapped_out = is_swapped_out_;
+  params.hidden = is_hidden();
   params.next_page_id = next_page_id;
   GetWebScreenInfo(&params.screen_info);
   params.accessibility_mode = accessibility_mode();

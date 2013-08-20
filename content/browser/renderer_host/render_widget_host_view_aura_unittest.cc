@@ -84,7 +84,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     sink_ = &process_host->sink();
 
     parent_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, MSG_ROUTING_NONE);
+        &delegate_, process_host, MSG_ROUTING_NONE, false);
     parent_view_ = static_cast<RenderWidgetHostViewAura*>(
         RenderWidgetHostView::CreateViewForWidget(parent_host_));
     parent_view_->InitAsChild(NULL);
@@ -92,7 +92,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
         aura_test_helper_->root_window(), gfx::Rect());
 
     widget_host_ = new RenderWidgetHostImpl(
-        &delegate_, process_host, MSG_ROUTING_NONE);
+        &delegate_, process_host, MSG_ROUTING_NONE, false);
     widget_host_->Init();
     view_ = static_cast<RenderWidgetHostViewAura*>(
         RenderWidgetHostView::CreateViewForWidget(widget_host_));

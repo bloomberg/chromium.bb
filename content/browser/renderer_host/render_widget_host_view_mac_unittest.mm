@@ -101,7 +101,7 @@ class MockRenderWidgetHostImpl : public RenderWidgetHostImpl {
   MockRenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                            RenderProcessHost* process,
                            int routing_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id) {
+      : RenderWidgetHostImpl(delegate, process, routing_id, false) {
   }
 
   MOCK_METHOD0(Focus, void());
@@ -264,7 +264,7 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
       new MockRenderProcessHost(&browser_context);
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
-      &delegate, process_host, MSG_ROUTING_NONE);
+      &delegate, process_host, MSG_ROUTING_NONE, false);
   RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
       RenderWidgetHostView::CreateViewForWidget(rwh));
 
@@ -298,7 +298,7 @@ TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
       new MockRenderProcessHost(&browser_context);
   // Owned by its |cocoa_view()|.
   RenderWidgetHostImpl* rwh = new RenderWidgetHostImpl(
-      &delegate, process_host, MSG_ROUTING_NONE);
+      &delegate, process_host, MSG_ROUTING_NONE, false);
   RenderWidgetHostViewMac* view = static_cast<RenderWidgetHostViewMac*>(
       RenderWidgetHostView::CreateViewForWidget(rwh));
 

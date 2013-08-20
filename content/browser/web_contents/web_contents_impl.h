@@ -493,6 +493,7 @@ class CONTENT_EXPORT WebContentsImpl
   virtual bool FocusLocationBarByDefault() OVERRIDE;
   virtual void SetFocusToLocationBar(bool select_all) OVERRIDE;
   virtual void CreateViewAndSetSizeForRVH(RenderViewHost* rvh) OVERRIDE;
+  virtual bool IsHidden() OVERRIDE;
 
   // NotificationObserver ------------------------------------------------------
 

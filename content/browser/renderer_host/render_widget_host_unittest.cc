@@ -225,7 +225,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
       RenderWidgetHostDelegate* delegate,
       RenderProcessHost* process,
       int routing_id)
-      : RenderWidgetHostImpl(delegate, process, routing_id),
+      : RenderWidgetHostImpl(delegate, process, routing_id, false),
         unresponsive_timer_fired_(false) {
     immediate_input_router_ =
         static_cast<ImmediateInputRouter*>(input_router_.get());

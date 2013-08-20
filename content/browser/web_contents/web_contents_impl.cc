@@ -1049,9 +1049,7 @@ void WebContentsImpl::DecrementCapturerCount() {
   if (is_being_destroyed_)
     return;
 
-  // While capturer_count_ was greater than zero, the WasHidden() calls to RWHV
-  // were being prevented.  If there are no more capturers, make the call now.
-  if (capturer_count_ == 0 && !should_normally_be_visible_) {
+  if (IsHidden()) {
     DVLOG(1) << "Executing delayed WasHidden().";
     WasHidden();
   }
@@ -1486,6 +1484,8 @@ void WebContentsImpl::CreateNewWindow(
     BrowserPluginGuest::CreateWithOpener(instance_id, new_contents_impl,
         GetBrowserPluginGuest(), !!new_contents_impl->opener());
   }
+  if (params.disposition == NEW_BACKGROUND_TAB)
+    create_params.initially_hidden = true;
   new_contents->Init(create_params);
 
   // Save the window for later if we're not suppressing the opener (since it
@@ -1547,7 +1547,7 @@ void WebContentsImpl::CreateNewWidget(int route_id,
                                       WebKit::WebPopupType popup_type) {
   RenderProcessHost* process = GetRenderProcessHost();
   RenderWidgetHostImpl* widget_host =
-      new RenderWidgetHostImpl(this, process, route_id);
+      new RenderWidgetHostImpl(this, process, route_id, IsHidden());
   created_widgets_.insert(widget_host);
 
   RenderWidgetHostViewPort* widget_view = RenderWidgetHostViewPort::FromRWHV(
@@ -3442,7 +3442,8 @@ WebPreferences WebContentsImpl::GetWebkitPrefs() {
 
 int WebContentsImpl::CreateSwappedOutRenderView(
     SiteInstance* instance) {
-  return render_manager_.CreateRenderView(instance, MSG_ROUTING_NONE, true);
+  return render_manager_.CreateRenderView(instance, MSG_ROUTING_NONE,
+                                          true, true);
 }
 
 void WebContentsImpl::OnUserGesture() {
@@ -3620,7 +3621,8 @@ int WebContentsImpl::CreateOpenerRenderViews(SiteInstance* instance) {
 
   // Create a swapped out RenderView in the given SiteInstance if none exists,
   // setting its opener to the given route_id.  Return the new view's route_id.
-  return render_manager_.CreateRenderView(instance, opener_route_id, true);
+  return render_manager_.CreateRenderView(instance, opener_route_id,
+                                          true, true);
 }
 
 NavigationControllerImpl& WebContentsImpl::GetControllerForRenderManager() {
@@ -3698,6 +3700,10 @@ void WebContentsImpl::CreateViewAndSetSizeForRVH(RenderViewHost* rvh) {
   // Can be NULL during tests.
   if (rwh_view)
     rwh_view->SetSize(GetView()->GetContainerSize());
+}
+
+bool WebContentsImpl::IsHidden() {
+  return capturer_count_ == 0 && !should_normally_be_visible_;
 }
 
 RenderViewHostImpl* WebContentsImpl::GetRenderViewHostImpl() {
