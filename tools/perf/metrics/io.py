@@ -7,6 +7,10 @@ from metrics import Metric
 class IOMetric(Metric):
   """IO-related metrics, obtained via telemetry.core.Browser."""
 
+  @classmethod
+  def CustomizeBrowserOptions(cls, options):
+    options.AppendExtraBrowserArg('--no-sandbox')
+
   def Start(self, page, tab):
     raise NotImplementedError()
 

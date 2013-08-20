@@ -29,7 +29,6 @@ class LoadingProfile(page_measurement.PageMeasurement):
     parser.add_option(page_repeat_option)
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--no-sandbox')
     perf_profiler.PerfProfiler.CustomizeBrowserOptions(options)
 
   def WillNavigateToPage(self, page, tab):

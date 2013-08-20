@@ -11,7 +11,8 @@ class Metric(object):
   about one thing.
   """
 
-  def CustomizeBrowserOptions(self, options):
+  @classmethod
+  def CustomizeBrowserOptions(cls, options):
     """Add browser options that are required by this metric.
 
     Some metrics do not have any special browser options that need

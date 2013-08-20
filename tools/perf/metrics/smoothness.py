@@ -14,6 +14,10 @@ class SmoothnessMetrics(object):
       js = f.read()
       tab.ExecuteJavaScript(js)
 
+  @classmethod
+  def CustomizeBrowserOptions(cls, options):
+    options.AppendExtraBrowserArg('--enable-gpu-benchmarking')
+
   def Start(self):
     self._tab.ExecuteJavaScript(
         'window.__renderingStats = new __RenderingStats();'

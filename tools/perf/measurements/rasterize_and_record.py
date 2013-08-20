@@ -113,17 +113,17 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
                       '(must be long enough to render one frame)')
 
   def CustomizeBrowserOptions(self, options):
-    options.extra_browser_args.append('--enable-gpu-benchmarking')
+    smoothness.SmoothnessMetrics.CustomizeBrowserOptions(options)
     # Run each raster task N times. This allows us to report the time for the
     # best run, effectively excluding cache effects and time when the thread is
     # de-scheduled.
-    options.extra_browser_args.append(
+    options.AppendExtraBrowserArg(
         '--slow-down-raster-scale-factor=' + str(options.raster_record_repeat))
     # Enable impl-side-painting. Current version of benchmark only works for
     # this mode.
-    options.extra_browser_args.append('--enable-impl-side-painting')
-    options.extra_browser_args.append('--force-compositing-mode')
-    options.extra_browser_args.append('--enable-threaded-compositing')
+    options.AppendExtraBrowserArg('--enable-impl-side-painting')
+    options.AppendExtraBrowserArg('--force-compositing-mode')
+    options.AppendExtraBrowserArg('--enable-threaded-compositing')
 
   def MeasurePage(self, page, tab, results):
     self._metrics = smoothness.SmoothnessMetrics(tab)

@@ -19,7 +19,6 @@ class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
     super(Smoothness, self).__init__('smoothness')
     self.force_enable_threaded_compositing = False
-    self.use_gpu_benchmarking_extension = True
     self._metrics = None
 
   def AddCommandLineOptions(self, parser):
@@ -28,8 +27,7 @@ class Smoothness(page_measurement.PageMeasurement):
                       help='Reports all data collected, not just FPS')
 
   def CustomizeBrowserOptions(self, options):
-    if self.use_gpu_benchmarking_extension:
-      options.extra_browser_args.append('--enable-gpu-benchmarking')
+    smoothness.SmoothnessMetrics.CustomizeBrowserOptions(options)
     if self.force_enable_threaded_compositing:
       options.extra_browser_args.append('--enable-threaded-compositing')
 

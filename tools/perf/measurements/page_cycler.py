@@ -58,12 +58,9 @@ class PageCycler(page_measurement.PageMeasurement):
     self._memory_metric.Start(page, tab)
 
   def CustomizeBrowserOptions(self, options):
-    options.AppendExtraBrowserArg('--enable-stats-collection-bindings')
+    memory.MemoryMetric.CustomizeBrowserOptions(options)
+    io.IOMetric.CustomizeBrowserOptions(options)
     options.AppendExtraBrowserArg('--js-flags=--expose_gc')
-    options.AppendExtraBrowserArg('--no-sandbox')
-
-    # Old commandline flags used for reference builds.
-    options.AppendExtraBrowserArg('--dom-automation')
 
     # Temporarily disable typical_25 page set on mac.
     if sys.platform == 'darwin' and sys.argv[-1].endswith('/typical_25.json'):
