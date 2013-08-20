@@ -27,6 +27,9 @@ class PolicyCommands(SubCommand):
                             metavar='/path/on/target@/path/on/host[:...]',
                             help='Read files in /path/on/host/ instead of '
                                  'files in /path/on/target/.')
+    self._parser.add_option('--timestamp', dest='timestamp',
+                            action='store_true', help='Use timestamp.')
+    self._timestamp = False
 
   def _set_up(self, sys_argv):
     options, args = self._parse_args(sys_argv, 1)
@@ -40,6 +43,8 @@ class PolicyCommands(SubCommand):
     (bucket_set, dumps) = SubCommand.load_basic_files(
         dump_path, True, alternative_dirs=alternative_dirs_dict)
 
+    self._timestamp = options.timestamp
+
     pfn_counts_dict = {}
     for shared_first_dump_path in shared_first_dump_paths:
       shared_dumps = SubCommand._find_all_dumps(shared_first_dump_path)
@@ -52,8 +57,8 @@ class PolicyCommands(SubCommand):
     policy_set = PolicySet.load(SubCommand._parse_policy_list(options.policy))
     return policy_set, dumps, pfn_counts_dict, bucket_set
 
-  @staticmethod
-  def _apply_policy(dump, pfn_counts_dict, policy, bucket_set, first_dump_time):
+  def _apply_policy(self, dump, pfn_counts_dict, policy, bucket_set,
+                    first_dump_time):
     """Aggregates the total memory size of each component.
 
     Iterate through all stacktraces and attribute them to one of the components
@@ -170,7 +175,10 @@ class PolicyCommands(SubCommand):
     if 'minute' in sizes:
       sizes['minute'] = (dump.time - first_dump_time) / 60.0
     if 'second' in sizes:
-      sizes['second'] = dump.time - first_dump_time
+      if self._timestamp:
+        sizes['second'] = datetime.datetime.fromtimestamp(dump.time).isoformat()
+      else:
+        sizes['second'] = dump.time - first_dump_time
 
     return sizes
 
@@ -275,11 +283,10 @@ class CSVCommand(PolicyCommands):
 
   def do(self, sys_argv):
     policy_set, dumps, pfn_counts_dict, bucket_set = self._set_up(sys_argv)
-    return CSVCommand._output(
+    return self._output(
         policy_set, dumps, pfn_counts_dict, bucket_set, sys.stdout)
 
-  @staticmethod
-  def _output(policy_set, dumps, pfn_counts_dict, bucket_set, out):
+  def _output(self, policy_set, dumps, pfn_counts_dict, bucket_set, out):
     max_components = 0
     for label in policy_set:
       max_components = max(max_components, len(policy_set[label].components))
@@ -293,12 +300,15 @@ class CSVCommand(PolicyCommands):
 
       LOGGER.info('Applying a policy %s to...' % label)
       for dump in dumps:
-        component_sizes = PolicyCommands._apply_policy(
+        component_sizes = self._apply_policy(
             dump, pfn_counts_dict, policy_set[label], bucket_set, dumps[0].time)
         s = []
         for c in components:
           if c in ('hour', 'minute', 'second'):
-            s.append('%05.5f' % (component_sizes[c]))
+            if isinstance(component_sizes[c], str):
+              s.append('%s' % component_sizes[c])
+            else:
+              s.append('%05.5f' % (component_sizes[c]))
           else:
             s.append('%05.5f' % (component_sizes[c] / 1024.0 / 1024.0))
         out.write('%s%s\n' % (
@@ -315,11 +325,10 @@ class JSONCommand(PolicyCommands):
 
   def do(self, sys_argv):
     policy_set, dumps, pfn_counts_dict, bucket_set = self._set_up(sys_argv)
-    return JSONCommand._output(
+    return self._output(
         policy_set, dumps, pfn_counts_dict, bucket_set, sys.stdout)
 
-  @staticmethod
-  def _output(policy_set, dumps, pfn_counts_dict, bucket_set, out):
+  def _output(self, policy_set, dumps, pfn_counts_dict, bucket_set, out):
     json_base = {
       'version': 'JSON_DEEP_2',
       'policies': {},
@@ -333,7 +342,7 @@ class JSONCommand(PolicyCommands):
 
       LOGGER.info('Applying a policy %s to...' % label)
       for dump in dumps:
-        component_sizes = PolicyCommands._apply_policy(
+        component_sizes = self._apply_policy(
             dump, pfn_counts_dict, policy_set[label], bucket_set, dumps[0].time)
         component_sizes['dump_path'] = dump.path
         component_sizes['dump_time'] = datetime.datetime.fromtimestamp(
@@ -353,15 +362,14 @@ class ListCommand(PolicyCommands):
 
   def do(self, sys_argv):
     policy_set, dumps, pfn_counts_dict, bucket_set = self._set_up(sys_argv)
-    return ListCommand._output(
+    return self._output(
         policy_set, dumps, pfn_counts_dict, bucket_set, sys.stdout)
 
-  @staticmethod
-  def _output(policy_set, dumps, pfn_counts_dict, bucket_set, out):
+  def _output(self, policy_set, dumps, pfn_counts_dict, bucket_set, out):
     for label in sorted(policy_set):
       LOGGER.info('Applying a policy %s to...' % label)
       for dump in dumps:
-        component_sizes = PolicyCommands._apply_policy(
+        component_sizes = self._apply_policy(
             dump, pfn_counts_dict, policy_set[label], bucket_set, dump.time)
         out.write('%s for %s:\n' % (label, dump.path))
         for c in policy_set[label].components:
