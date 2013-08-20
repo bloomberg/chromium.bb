@@ -342,15 +342,12 @@ void Printer::CreateInfo(PrivetHttpServer::DeviceInfo* info) {
   // TODO(maksymb): Create enum for available APIs and replace
   // this API text names with constants from enum. API text names should be only
   // known in PrivetHttpServer.
-  if (!IsRegistered()) {
+  if (state_.registration_state == PrinterState::UNREGISTERED) {
     info->api.push_back("/privet/register");
   } else {
-    info->api.push_back("/privet/capabilities");
-    if (IsLocalPrintingAllowed()) {
-      info->api.push_back("/privet/printer/createjob");
+    if (IsLocalPrintingAllowed())
       info->api.push_back("/privet/printer/submitdoc");
-      info->api.push_back("/privet/printer/jobstate");
-    }
+    info->api.push_back("/privet/capabilities");
   }
 
   info->type.push_back("printer");
@@ -375,36 +372,22 @@ scoped_ptr<base::DictionaryValue> Printer::GetCapabilities() {
   return scoped_ptr<base::DictionaryValue>(dictionary_value->DeepCopy());
 }
 
-LocalPrintJob::CreateResult Printer::CreateJob(const std::string& ticket,
-                                               std::string* job_id,
-                                               int* expires_in,
-                                               int* error_timeout,
-                                               std::string* error_description) {
-  return print_job_handler_->CreatePrintJob(ticket, job_id, expires_in,
-                                            error_timeout, error_description);
+void Printer::CreateJob(const std::string& ticket) {
+  // TODO(maksymb): Implement advanced printing
+  NOTIMPLEMENTED();
 }
 
 LocalPrintJob::SaveResult Printer::SubmitDoc(const LocalPrintJob& job,
                                              std::string* job_id,
-                                             int* expires_in,
                                              std::string* error_description,
                                              int* timeout) {
-  return print_job_handler_->SaveLocalPrintJob(job, job_id, expires_in,
-                                               error_description, timeout);
+  return print_job_handler_->SaveLocalPrintJob(job, job_id, error_description,
+                                               timeout);
 }
 
-LocalPrintJob::SaveResult Printer::SubmitDocWithId(
-    const LocalPrintJob& job,
-    const std::string& job_id,
-    int* expires_in,
-    std::string* error_description,
-    int* timeout) {
-  return print_job_handler_->CompleteLocalPrintJob(job, job_id, expires_in,
-                                                   error_description, timeout);
-}
-
-bool Printer::GetJobState(const std::string& id, LocalPrintJob::Info* info) {
-  return print_job_handler_->GetJobState(id, info);
+void Printer::GetJobStatus(int job_id) {
+  // TODO(maksymb): Implement advanced printing
+  NOTIMPLEMENTED();
 }
 
 void Printer::OnRegistrationStartResponseParsed(

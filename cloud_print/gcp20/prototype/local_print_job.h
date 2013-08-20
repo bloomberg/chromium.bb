@@ -25,20 +25,6 @@ struct LocalPrintJob {
     SAVE_PRINTER_ERROR,
   };
 
-  enum State {
-    STATE_DRAFT,
-    STATE_ABORTED,
-    STATE_DONE,
-  };
-
-  struct Info {
-    Info();
-    ~Info();
-
-    State state;
-    int expires_in;
-  };
-
   LocalPrintJob();
   ~LocalPrintJob();
 

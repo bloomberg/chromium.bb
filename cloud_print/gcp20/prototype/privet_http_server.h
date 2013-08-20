@@ -98,33 +98,17 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
     virtual scoped_ptr<base::DictionaryValue> GetCapabilities() = 0;
 
     // Invoked for creating a job.
-    virtual LocalPrintJob::CreateResult CreateJob(
-        const std::string& ticket,
-        std::string* job_id,
-        int* expires_in,
-        // TODO(maksymb): Use base::TimeDelta for timeouts
-        int* error_timeout,
-        std::string* error_description) = 0;
+    virtual void CreateJob(const std::string& ticket) = 0;
 
     // Invoked for simple local printing.
     virtual LocalPrintJob::SaveResult SubmitDoc(
         const LocalPrintJob& job,
         std::string* job_id,
-        int* expires_in,
-        std::string* error_description,
-        int* timeout) = 0;
-
-    // Invoked for advanced local printing.
-    virtual LocalPrintJob::SaveResult SubmitDocWithId(
-        const LocalPrintJob& job,
-        const std::string& job_id,
-        int* expires_in,
         std::string* error_description,
         int* timeout) = 0;
 
     // Invoked for getting job status.
-    virtual bool GetJobState(const std::string& job_id,
-                             LocalPrintJob::Info* info) = 0;
+    virtual void GetJobStatus(int job_id) = 0;
   };
 
   // Constructor doesn't start server.
@@ -171,24 +155,12 @@ class PrivetHttpServer: public net::HttpServer::Delegate {
   // Pivet API methods. Return reference to NULL if output should be empty.
   scoped_ptr<base::DictionaryValue> ProcessInfo(
       net::HttpStatusCode* status_code) const;
-
   scoped_ptr<base::DictionaryValue> ProcessCapabilities(
       net::HttpStatusCode* status_code) const;
-
-  scoped_ptr<base::DictionaryValue> ProcessCreateJob(
-      const GURL& url,
-      const std::string& body,
-      net::HttpStatusCode* status_code) const;
-
   scoped_ptr<base::DictionaryValue> ProcessSubmitDoc(
       const GURL& url,
       const net::HttpServerRequestInfo& info,
       net::HttpStatusCode* status_code) const;
-
-  scoped_ptr<base::DictionaryValue> ProcessJobState(
-      const GURL& url,
-      net::HttpStatusCode* status_code) const;
-
   scoped_ptr<base::DictionaryValue> ProcessRegister(
       const GURL& url,
       net::HttpStatusCode* status_code) const;
