@@ -39,13 +39,6 @@ namespace WebCore {
         String appCodeName() const;
         String product() const;
 
-        // FIXME: The following is not part of the specification and is only
-        // exposed on Navigator. It should be moved to Navigator (or exposed
-        // on WorkerNavigator as well).
-        String productSub() const;
-        String vendor() const;
-        String vendorSub() const;
-
     protected:
         virtual ~NavigatorBase();
     };

@@ -23,13 +23,15 @@ interface Navigator {
     readonly attribute PluginArray plugins;
     readonly attribute MimeTypeArray mimeTypes;
     readonly attribute DOMString product;
-    readonly attribute DOMString productSub;
-    readonly attribute DOMString vendor;
-    readonly attribute DOMString vendorSub;
     readonly attribute boolean cookieEnabled;
     boolean javaEnabled();
 
     void getStorageUpdates(); // FIXME: Remove this method or rename to yieldForStorageUpdates.
+
+    // Non-standard.
+    [MeasureAs=NavigatorProductSub] readonly attribute DOMString productSub;
+    [MeasureAs=NavigatorVendor] readonly attribute DOMString vendor;
+    [MeasureAs=NavigatorVendorSub] readonly attribute DOMString vendorSub;
 };
 
 Navigator implements NavigatorID;

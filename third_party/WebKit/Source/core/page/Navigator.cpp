@@ -35,6 +35,18 @@
 #include "core/plugins/DOMMimeTypeArray.h"
 #include "core/plugins/DOMPluginArray.h"
 
+#ifndef WEBCORE_NAVIGATOR_PRODUCT_SUB
+#define WEBCORE_NAVIGATOR_PRODUCT_SUB "20030107"
+#endif // ifndef WEBCORE_NAVIGATOR_PRODUCT_SUB
+
+#ifndef WEBCORE_NAVIGATOR_VENDOR
+#define WEBCORE_NAVIGATOR_VENDOR "Apple Computer, Inc."
+#endif // ifndef WEBCORE_NAVIGATOR_VENDOR
+
+#ifndef WEBCORE_NAVIGATOR_VENDOR_SUB
+#define WEBCORE_NAVIGATOR_VENDOR_SUB ""
+#endif // ifndef WEBCORE_NAVIGATOR_VENDOR_SUB
+
 namespace WebCore {
 
 Navigator::Navigator(Frame* frame)
@@ -77,6 +89,21 @@ String Navigator::appVersion() const
 String Navigator::language() const
 {
     return defaultLanguage();
+}
+
+String Navigator::productSub() const
+{
+    return WEBCORE_NAVIGATOR_PRODUCT_SUB;
+}
+
+String Navigator::vendor() const
+{
+    return WEBCORE_NAVIGATOR_VENDOR;
+}
+
+String Navigator::vendorSub() const
+{
+    return WEBCORE_NAVIGATOR_VENDOR_SUB;
 }
 
 String Navigator::userAgent() const

@@ -33,19 +33,6 @@
 #define WEBCORE_NAVIGATOR_PRODUCT "Gecko"
 #endif // ifndef WEBCORE_NAVIGATOR_PRODUCT
 
-#ifndef WEBCORE_NAVIGATOR_PRODUCT_SUB
-#define WEBCORE_NAVIGATOR_PRODUCT_SUB "20030107"
-#endif // ifndef WEBCORE_NAVIGATOR_PRODUCT_SUB
-
-#ifndef WEBCORE_NAVIGATOR_VENDOR
-#define WEBCORE_NAVIGATOR_VENDOR "Apple Computer, Inc."
-#endif // ifndef WEBCORE_NAVIGATOR_VENDOR
-
-#ifndef WEBCORE_NAVIGATOR_VENDOR_SUB
-#define WEBCORE_NAVIGATOR_VENDOR_SUB ""
-#endif // ifndef WEBCORE_NAVIGATOR_VENDOR_SUB
-
-
 namespace WebCore {
 
 NavigatorBase::~NavigatorBase()
@@ -60,21 +47,6 @@ String NavigatorBase::appCodeName() const
 String NavigatorBase::product() const
 {
     return WEBCORE_NAVIGATOR_PRODUCT;
-}
-
-String NavigatorBase::productSub() const
-{
-    return WEBCORE_NAVIGATOR_PRODUCT_SUB;
-}
-
-String NavigatorBase::vendor() const
-{
-    return WEBCORE_NAVIGATOR_VENDOR;
-}
-
-String NavigatorBase::vendorSub() const
-{
-    return WEBCORE_NAVIGATOR_VENDOR_SUB;
 }
 
 } // namespace WebCore
