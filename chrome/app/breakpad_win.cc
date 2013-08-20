@@ -728,6 +728,10 @@ extern "C" void __declspec(dllexport) __cdecl SetNumberOfViews(
   SetIntegerValue(g_num_of_views_offset, number_of_views);
 }
 
+// NOTE: This function is used by SyzyASAN to annotate crash reports. If you
+// change the name or signature of this function you will break SyzyASAN
+// instrumented releases of Chrome. Please contact syzygy-team@chromium.org
+// before doing so!
 extern "C" void __declspec(dllexport) __cdecl SetCrashKeyValueImpl(
     const wchar_t* key, const wchar_t* value) {
   // CustomInfoEntry limits the length of key and value. If they exceed
@@ -831,6 +835,9 @@ bool ShowRestartDialogIfCrashed(bool* exit_now) {
 // Crashes the process after generating a dump for the provided exception. Note
 // that the crash reporter should be initialized before calling this function
 // for it to do anything.
+// NOTE: This function is used by SyzyASAN to invoke a crash. If you change the
+// the name or signature of this function you will break SyzyASAN instrumented
+// releases of Chrome. Please contact syzygy-team@chromium.org before doing so!
 extern "C" int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   if (g_breakpad) {
