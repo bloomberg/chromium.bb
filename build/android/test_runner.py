@@ -35,6 +35,7 @@ from pylib.perf import test_options as perf_test_options
 from pylib.perf import test_runner as perf_test_runner
 from pylib.uiautomator import setup as uiautomator_setup
 from pylib.uiautomator import test_options as uiautomator_test_options
+from pylib.utils import command_option_parser
 from pylib.utils import report_results
 from pylib.utils import run_tests_helper
 
@@ -230,6 +231,9 @@ def AddInstrumentationTestOptions(option_parser):
       help=('The name of the apk containing the tests '
             '(without the .apk extension; e.g. "ContentShellTest"). '
             'Alternatively, this can be a full path to the apk.'))
+  option_parser.add_option('--coverage-dir',
+                           help=('Directory in which to place all generated '
+                                 'EMMA coverage files.'))
 
 
 def ProcessInstrumentationOptions(options, error_func):
@@ -287,6 +291,7 @@ def ProcessInstrumentationOptions(options, error_func):
       options.save_perf_json,
       options.screenshot_failures,
       options.wait_for_debugger,
+      options.coverage_dir,
       options.test_apk,
       options.test_apk_path,
       options.test_apk_jar_path)
@@ -721,47 +726,10 @@ VALID_COMMANDS = {
     }
 
 
-class CommandOptionParser(optparse.OptionParser):
-  """Wrapper class for OptionParser to help with listing commands."""
-
-  def __init__(self, *args, **kwargs):
-    self.command_list = kwargs.pop('command_list', [])
-    self.example = kwargs.pop('example', '')
-    optparse.OptionParser.__init__(self, *args, **kwargs)
-
-  #override
-  def get_usage(self):
-    normal_usage = optparse.OptionParser.get_usage(self)
-    command_list = self.get_command_list()
-    example = self.get_example()
-    return self.expand_prog_name(normal_usage + example + command_list)
-
-  #override
-  def get_command_list(self):
-    if self.command_list:
-      return '\nCommands:\n  %s\n' % '\n  '.join(sorted(self.command_list))
-    return ''
-
-  def get_example(self):
-    if self.example:
-      return '\nExample:\n  %s\n' % self.example
-    return ''
-
-
 def main(argv):
-  option_parser = CommandOptionParser(
-      usage='Usage: %prog <command> [options]',
-      command_list=VALID_COMMANDS.keys())
-
-  if len(argv) < 2 or argv[1] not in VALID_COMMANDS:
-    # Parse args first, if this is '--help', optparse will display help and exit
-    option_parser.parse_args(argv)
-    option_parser.error('Invalid command.')
-  command = argv[1]
-  VALID_COMMANDS[command].add_options_func(option_parser)
-  options, args = option_parser.parse_args(argv)
-  return VALID_COMMANDS[command].run_command_func(
-      command, options, args, option_parser)
+  option_parser = command_option_parser.CommandOptionParser(
+      commands_dict=VALID_COMMANDS)
+  return command_option_parser.ParseAndExecute(option_parser)
 
 
 if __name__ == '__main__':

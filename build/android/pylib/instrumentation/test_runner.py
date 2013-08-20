@@ -44,6 +44,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   """Responsible for running a series of tests connected to a single device."""
 
   _DEVICE_DATA_DIR = 'chrome/test/data'
+  _DEVICE_COVERAGE_DIR = 'chrome/test/coverage'
   _HOSTMACHINE_PERF_OUTPUT_FILE = '/tmp/chrome-profile'
   _DEVICE_PERF_OUTPUT_SEARCH_PREFIX = (constants.DEVICE_PERF_OUTPUT_DIR +
                                        '/chrome-profile*')
@@ -69,6 +70,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
     self.options = test_options
     self.test_pkg = test_pkg
     self.ports_to_forward = ports_to_forward
+    self.coverage_dir = test_options.coverage_dir
 
   #override
   def InstallTestPackage(self):
@@ -98,11 +100,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
       dst_src = dest_host_pair.split(':',1)
       dst_layer = dst_src[0]
       host_src = dst_src[1]
-      host_test_files_path = constants.DIR_SOURCE_ROOT + '/' + host_src
+      host_test_files_path = '%s/%s' % (constants.DIR_SOURCE_ROOT, host_src)
       if os.path.exists(host_test_files_path):
-        self.adb.PushIfNeeded(host_test_files_path,
-                              self.adb.GetExternalStorage() + '/' +
-                              TestRunner._DEVICE_DATA_DIR + '/' + dst_layer)
+        self.adb.PushIfNeeded(host_test_files_path, '%s/%s/%s' % (
+            self.adb.GetExternalStorage(), TestRunner._DEVICE_DATA_DIR,
+            dst_layer))
     self.tool.CopyFiles()
     TestRunner._DEVICE_HAS_TEST_FILES[self.device] = True
 
@@ -110,11 +112,15 @@ class TestRunner(base_test_runner.BaseTestRunner):
     ret = {}
     if self.options.wait_for_debugger:
       ret['debug'] = 'true'
+    if self.coverage_dir:
+      ret['coverage'] = 'true'
+      ret['coverageFile'] = self.coverage_device_file
+
     return ret
 
   def _TakeScreenshot(self, test):
     """Takes a screenshot from the device."""
-    screenshot_name = os.path.join(constants.SCREENSHOTS_DIR, test + '.png')
+    screenshot_name = os.path.join(constants.SCREENSHOTS_DIR, '%s.png' % test)
     logging.info('Taking screenshot named %s', screenshot_name)
     self.adb.TakeScreenshot(screenshot_name)
 
@@ -155,6 +161,14 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     # Make sure the forwarder is still running.
     self._RestartHttpServerForwarderIfNecessary()
+
+    if self.coverage_dir:
+      coverage_basename = '%s.ec' % test
+      self.coverage_device_file = '%s/%s/%s' % (self.adb.GetExternalStorage(),
+                                                TestRunner._DEVICE_COVERAGE_DIR,
+                                                coverage_basename)
+      self.coverage_host_file = os.path.join(
+          self.coverage_dir, coverage_basename)
 
   def _IsPerfTest(self, test):
     """Determines whether a test is a performance test.
@@ -197,6 +211,10 @@ class TestRunner(base_test_runner.BaseTestRunner):
       return
 
     self.TearDownPerfMonitoring(test)
+
+    if self.coverage_dir:
+      self.adb.Adb().Pull(self.coverage_device_file, self.coverage_host_file)
+      self.adb.RunShellCommand('rm -f %s' % self.coverage_device_file)
 
   def TearDownPerfMonitoring(self, test):
     """Cleans up performance monitoring if the specified test required it.
