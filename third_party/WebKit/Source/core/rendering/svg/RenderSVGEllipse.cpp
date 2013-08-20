@@ -77,8 +77,7 @@ void RenderSVGEllipse::calculateRadiiAndCenter()
 {
     ASSERT(node());
     if (node()->hasTagName(SVGNames::circleTag)) {
-
-        SVGCircleElement* circle = static_cast<SVGCircleElement*>(node());
+        SVGCircleElement* circle = toSVGCircleElement(node());
 
         SVGLengthContext lengthContext(circle);
         float radius = circle->rCurrentValue().value(lengthContext);

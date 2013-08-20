@@ -349,7 +349,7 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
         writeNameValuePair(ts, "rx", element->rxCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "ry", element->ryCurrentValue().value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::circleTag)) {
-        SVGCircleElement* element = static_cast<SVGCircleElement*>(svgElement);
+        SVGCircleElement* element = toSVGCircleElement(svgElement);
         writeNameValuePair(ts, "cx", element->cxCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "cy", element->cyCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "r", element->rCurrentValue().value(lengthContext));
