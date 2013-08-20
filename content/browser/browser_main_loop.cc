@@ -896,8 +896,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   // When running the GPU thread in-process, avoid optimistically starting it
   // since creating the GPU thread races against creation of the one-and-only
   // ChildProcess instance which is created by the renderer thread.
+  bool always_uses_gpu = IsForceCompositingModeEnabled();
+#if defined(USE_AURA)
+  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
+    always_uses_gpu = false;
+#endif
   if (GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(NULL) &&
-      IsForceCompositingModeEnabled() &&
+      always_uses_gpu &&
       !parsed_command_line_.HasSwitch(switches::kDisableGpuProcessPrelaunch) &&
       !parsed_command_line_.HasSwitch(switches::kSingleProcess) &&
       !parsed_command_line_.HasSwitch(switches::kInProcessGPU)) {
