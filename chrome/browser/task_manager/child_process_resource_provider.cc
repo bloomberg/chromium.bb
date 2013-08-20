@@ -8,14 +8,12 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/task_manager/resource_provider.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "components/nacl/common/nacl_process_type.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
-#include "content/public/browser/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -343,10 +341,7 @@ void ChildProcessResourceProvider::ChildProcessDataRetreived(
   for (size_t i = 0; i < child_processes.size(); ++i)
     AddToTaskManager(child_processes[i]);
 
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
-      content::Source<ChildProcessResourceProvider>(this),
-      content::NotificationService::NoDetails());
+  task_manager_->model()->NotifyDataReady();
 }
 
 }  // namespace task_manager

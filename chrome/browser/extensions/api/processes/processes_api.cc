@@ -554,9 +554,9 @@ bool GetProcessIdForTabFunction::RunImpl() {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessIdForTabFunction::GetProcessIdForTab, this));
   } else {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
-                   content::NotificationService::AllSources());
+    TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
+        base::Bind(&GetProcessIdForTabFunction::GetProcessIdForTab, this));
+
     ProcessesAPI::Get(profile_)->processes_event_router()->
         StartTaskManagerListening();
   }
@@ -566,15 +566,6 @@ bool GetProcessIdForTabFunction::RunImpl() {
   error_ = errors::kExtensionNotSupported;
   return false;
 #endif  // defined(ENABLE_TASK_MANAGER)
-}
-
-void GetProcessIdForTabFunction::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY);
-  registrar_.RemoveAll();
-  GetProcessIdForTab();
 }
 
 void GetProcessIdForTabFunction::GetProcessIdForTab() {
@@ -617,9 +608,9 @@ bool TerminateFunction::RunImpl() {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &TerminateFunction::TerminateProcess, this));
   } else {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
-                   content::NotificationService::AllSources());
+    TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
+        base::Bind(&TerminateFunction::TerminateProcess, this));
+
     ProcessesAPI::Get(profile_)->processes_event_router()->
         StartTaskManagerListening();
   }
@@ -631,14 +622,6 @@ bool TerminateFunction::RunImpl() {
 #endif  // defined(ENABLE_TASK_MANAGER)
 }
 
-void TerminateFunction::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY);
-  registrar_.RemoveAll();
-  TerminateProcess();
-}
 
 void TerminateFunction::TerminateProcess() {
   TaskManagerModel* model = TaskManager::GetInstance()->model();
@@ -705,9 +688,9 @@ bool GetProcessInfoFunction::RunImpl() {
     base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &GetProcessInfoFunction::GatherProcessInfo, this));
   } else {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY,
-                   content::NotificationService::AllSources());
+    TaskManager::GetInstance()->model()->RegisterOnDataReadyCallback(
+        base::Bind(&GetProcessInfoFunction::GatherProcessInfo, this));
+
     ProcessesAPI::Get(profile_)->processes_event_router()->
         StartTaskManagerListening();
   }
@@ -717,15 +700,6 @@ bool GetProcessInfoFunction::RunImpl() {
   error_ = errors::kExtensionNotSupported;
   return false;
 #endif  // defined(ENABLE_TASK_MANAGER)
-}
-
-void GetProcessInfoFunction::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  DCHECK_EQ(type, chrome::NOTIFICATION_TASK_MANAGER_CHILD_PROCESSES_DATA_READY);
-  registrar_.RemoveAll();
-  GatherProcessInfo();
 }
 
 void GetProcessInfoFunction::GatherProcessInfo() {

@@ -131,8 +131,7 @@ class ProcessesAPI : public ProfileKeyedAPI,
 
 // This extension function returns the Process object for the renderer process
 // currently in use by the specified Tab.
-class GetProcessIdForTabFunction : public AsyncExtensionFunction,
-                                   public content::NotificationObserver {
+class GetProcessIdForTabFunction : public AsyncExtensionFunction {
  public:
   GetProcessIdForTabFunction();
 
@@ -140,14 +139,7 @@ class GetProcessIdForTabFunction : public AsyncExtensionFunction,
   virtual ~GetProcessIdForTabFunction() {}
   virtual bool RunImpl() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   void GetProcessIdForTab();
-
-  content::NotificationRegistrar registrar_;
 
   // Storage for the tab ID parameter.
   int tab_id_;
@@ -161,8 +153,7 @@ class GetProcessIdForTabFunction : public AsyncExtensionFunction,
 // Using unique IDs instead of OS process IDs allows two advantages:
 // * guaranteed uniqueness, since OS process IDs can be reused
 // * guards against killing non-Chrome processes
-class TerminateFunction : public AsyncExtensionFunction,
-                          public content::NotificationObserver {
+class TerminateFunction : public AsyncExtensionFunction {
  public:
   TerminateFunction();
 
@@ -170,14 +161,8 @@ class TerminateFunction : public AsyncExtensionFunction,
   virtual ~TerminateFunction() {}
   virtual bool RunImpl() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
 
   void TerminateProcess();
-
-  content::NotificationRegistrar registrar_;
 
   // Storage for the process ID parameter.
   int process_id_;
@@ -188,8 +173,7 @@ class TerminateFunction : public AsyncExtensionFunction,
 
 // Extension function which returns a set of Process objects, containing the
 // details corresponding to the process IDs supplied as input.
-class GetProcessInfoFunction : public AsyncExtensionFunction,
-                               public content::NotificationObserver {
+class GetProcessInfoFunction : public AsyncExtensionFunction {
  public:
   GetProcessInfoFunction();
 
@@ -197,14 +181,7 @@ class GetProcessInfoFunction : public AsyncExtensionFunction,
   virtual ~GetProcessInfoFunction();
   virtual bool RunImpl() OVERRIDE;
 
-  // content::NotificationObserver implementation.
-  virtual void Observe(int type,
-                       const content::NotificationSource& source,
-                       const content::NotificationDetails& details) OVERRIDE;
-
   void GatherProcessInfo();
-
-  content::NotificationRegistrar registrar_;
 
   // Member variables to store the function parameters
   std::vector<int> process_ids_;

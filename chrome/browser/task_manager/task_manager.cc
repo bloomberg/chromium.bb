@@ -1238,7 +1238,24 @@ void TaskManagerModel::NotifyBytesRead(const net::URLRequest& request,
                      routing_id, byte_count));
 }
 
+// This is called on the UI thread.
+void TaskManagerModel::NotifyDataReady() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  for (size_t i = 0; i < on_data_ready_callbacks_.size(); ++i) {
+    if (!on_data_ready_callbacks_[i].is_null())
+        on_data_ready_callbacks_[i].Run();
+  }
+
+  on_data_ready_callbacks_.clear();
+}
+
+void TaskManagerModel::RegisterOnDataReadyCallback(
+    const base::Closure& callback) {
+  on_data_ready_callbacks_.push_back(callback);
+}
+
 TaskManagerModel::~TaskManagerModel() {
+  on_data_ready_callbacks_.clear();
 }
 
 void TaskManagerModel::RefreshCallback() {

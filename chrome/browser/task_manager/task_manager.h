@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
@@ -322,6 +323,10 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   void NotifyBytesRead(const net::URLRequest& request, int bytes_read);
 
+  void RegisterOnDataReadyCallback(const base::Closure& callback);
+
+  void NotifyDataReady();
+
  private:
   friend class base::RefCountedThreadSafe<TaskManagerModel>;
   friend class TaskManagerBrowserTest;
@@ -553,6 +558,8 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Buffer for coalescing BytesReadParam so we don't have to post a task on
   // each NotifyBytesRead() call.
   std::vector<BytesReadParam> bytes_read_buffer_;
+
+  std::vector<base::Closure> on_data_ready_callbacks_;
 
   // All per-Resource values are stored here.
   mutable PerResourceCache per_resource_cache_;
