@@ -171,9 +171,6 @@ class VIEWS_EXPORT Textfield : public View {
   // Sets the text to display when empty.
   void set_placeholder_text(const string16& text) {
     placeholder_text_ = text;
-#if !defined(OS_LINUX)
-    NOTIMPLEMENTED();
-#endif
   }
   const string16& placeholder_text() const {
     return placeholder_text_;
