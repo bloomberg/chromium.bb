@@ -601,7 +601,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         host = MockHost()
         details, err, _ = logging_run(['--debug-rwt-logging', 'failures/unexpected'], tests_included=True, host=host)
-        self.assertEqual(details.exit_code, 16)
+        self.assertEqual(details.exit_code, 17)  # FIXME: This should be a constant in test.py .
         self.assertTrue('Retrying' in err.getvalue())
 
     def test_retrying_default_value_test_list(self):
@@ -616,7 +616,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         filename = '/tmp/foo.txt'
         host.filesystem.write_text_file(filename, 'failures')
         details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename], tests_included=True, host=host)
-        self.assertEqual(details.exit_code, 16)
+        self.assertEqual(details.exit_code, 17)
         self.assertTrue('Retrying' in err.getvalue())
 
     def test_retrying_and_flaky_tests(self):
@@ -710,6 +710,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(results["tests"]["reftests"]["foo"]["unlistedtest.html"]["actual"], "MISSING"),
         self.assertEqual(results["num_regressions"], 5)
         self.assertEqual(results["num_flaky"], 0)
+
+    def test_reftest_crash(self):
+        test_results = get_test_results(['failures/unexpected/crash-reftest.html'])
+        # The list of references should be empty since the test crashed and we didn't run any references.
+        self.assertEqual(test_results[0].references, [])
 
     def test_additional_platform_directory(self):
         self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo']))

@@ -283,6 +283,12 @@ class SingleTestRunner(object):
         reference_output = None
         test_result = None
 
+        # If the test crashed, or timed out, there's no point in running the reference at all.
+        # This can save a lot of execution time if we have a lot of crashes or timeouts.
+        if test_output.crash or test_output.timeout:
+            expected_driver_output = DriverOutput(text=None, image=None, image_hash=None, audio=None)
+            return self._compare_output(expected_driver_output, test_output)
+
         # A reftest can have multiple match references and multiple mismatch references;
         # the test fails if any mismatch matches and all of the matches don't match.
         # To minimize the number of references we have to check, we run all of the mismatches first,
@@ -303,7 +309,10 @@ class SingleTestRunner(object):
 
         assert(reference_output)
         test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory, self._test_name, test_output, reference_output, test_result.failures)
-        reftest_type = set([reference_file[0] for reference_file in self._reference_files])
+
+        # FIXME: We don't really deal with a mix of reftest types properly. We pass in a set() to reftest_type
+        # and only really handle the first of the references in the result.
+        reftest_type = list(set([reference_file[0] for reference_file in self._reference_files]))
         return TestResult(self._test_name, test_result.failures, total_test_time + test_result.test_run_time, test_result.has_stderr, reftest_type=reftest_type, pid=test_result.pid, references=reference_test_names)
 
     def _compare_output_with_reference(self, reference_driver_output, actual_driver_output, reference_filename, mismatch):
