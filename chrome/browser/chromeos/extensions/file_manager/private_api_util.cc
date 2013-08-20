@@ -158,7 +158,7 @@ base::FilePath GetLocalPathFromURL(
   DCHECK(profile);
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      fileapi_util::GetFileSystemContextForRenderViewHost(
+      util::GetFileSystemContextForRenderViewHost(
           profile, render_view_host);
 
   const fileapi::FileSystemURL filesystem_url(

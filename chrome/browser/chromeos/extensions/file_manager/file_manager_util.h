@@ -18,27 +18,6 @@ class Profile;
 namespace file_manager {
 namespace util {
 
-// Converts |relative_path| (e.g., "drive/root" or "Downloads") into external
-// filesystem URL (e.g., filesystem://id/external/drive/root).
-GURL ConvertRelativePathToFileSystemUrl(const base::FilePath& relative_path,
-                                        const std::string& extension_id);
-
-// Converts |full_file_path| (e.g., "/special/drive/root" or
-// "/home/chronos/user/Downloads") into external filesystem URL. Returns false
-// if |full_file_path| is not managed by the external filesystem provider.
-bool ConvertFileToFileSystemUrl(Profile* profile,
-                                const base::FilePath& full_file_path,
-                                const std::string& extension_id,
-                                GURL* url);
-
-// Converts |full_file_path| into |relative_path| within the external provider
-// in File API. Returns false if |full_file_path| is not managed by the
-// external filesystem provider.
-bool ConvertFileToRelativeFileSystemPath(Profile* profile,
-                                         const std::string& extension_id,
-                                         const base::FilePath& full_file_path,
-                                         base::FilePath* relative_path);
-
 // Get file dialog title string from its type.
 string16 GetTitleFromType(ui::SelectFileDialog::Type type);
 

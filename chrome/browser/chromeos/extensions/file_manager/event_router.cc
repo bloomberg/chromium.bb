@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/file_manager/desktop_notifications.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/mounted_disk_monitor.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -168,7 +169,7 @@ scoped_ptr<base::DictionaryValue> JobInfoToDictionaryValue(
   DCHECK(IsActiveFileTransferJobInfo(job_info));
 
   scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
-  GURL url = util::ConvertRelativePathToFileSystemUrl(
+  GURL url = util::ConvertRelativeFilePathToFileSystemUrl(
       job_info.file_path, extension_id);
   result->SetString("fileUrl", url.spec());
   result->SetString("transferState", job_status);
@@ -716,7 +717,7 @@ void EventRouter::DispatchMountEvent(
       mount_info.mount_condition) {
     // Convert mount point path to relative path with the external file system
     // exposed within File API.
-    if (util::ConvertFileToRelativeFileSystemPath(
+    if (util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
             profile_,
             kFileManagerAppId,
             base::FilePath(mount_info.mount_path),

@@ -79,7 +79,7 @@ bool FileBrowserHasAccessPermissionForFiles(
     const std::string& file_browser_id,
     const std::vector<FileSystemURL>& files) {
   fileapi::ExternalFileSystemBackend* backend =
-      fileapi_util::GetFileSystemContextForExtensionId(
+      util::GetFileSystemContextForExtensionId(
           profile, file_browser_id)->external_backend();
   if (!backend)
     return false;

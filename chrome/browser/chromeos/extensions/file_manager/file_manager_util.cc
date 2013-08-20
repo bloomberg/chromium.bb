@@ -62,15 +62,14 @@
 #include "webkit/browser/fileapi/file_system_context.h"
 #include "webkit/browser/fileapi/file_system_operation_runner.h"
 #include "webkit/browser/fileapi/file_system_url.h"
-#include "webkit/common/fileapi/file_system_util.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
 using content::PluginService;
 using content::UserMetricsAction;
+using extensions::Extension;
 using extensions::app_file_handler_util::FindFileHandlersForFiles;
 using extensions::app_file_handler_util::PathAndMimeTypeSet;
-using extensions::Extension;
 using fileapi::FileSystemURL;
 
 namespace file_manager {
@@ -209,7 +208,7 @@ void OpenFileWithTask(Profile* profile,
     return;
 
   fileapi::FileSystemContext* file_system_context =
-      fileapi_util::GetFileSystemContextForExtensionId(
+      GetFileSystemContextForExtensionId(
           profile, kFileManagerAppId);
 
   // We are executing the task on behalf of File Browser extension.
@@ -239,7 +238,8 @@ void OpenFileWithInternalActionId(const base::FilePath& path,
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path, kFileManagerAppId, &url))
+  if (!ConvertAbsoluteFilePathToFileSystemUrl(
+          profile, path, kFileManagerAppId, &url))
     return;
 
   file_tasks::TaskDescriptor task(kFileManagerAppId,
@@ -380,7 +380,8 @@ bool OpenFileWithFileBrowserHandler(Profile* profile,
 bool OpenFileWithHandlerOrBrowser(Profile* profile,
                                   const base::FilePath& path) {
   GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path, kFileManagerAppId, &url))
+  if (!ConvertAbsoluteFilePathToFileSystemUrl(
+          profile, path, kFileManagerAppId, &url))
     return false;
 
   std::string mime_type = GetMimeTypeForPath(path);
@@ -471,57 +472,6 @@ void CheckIfDirectoryExists(
 
 }  // namespace
 
-GURL ConvertRelativePathToFileSystemUrl(const base::FilePath& relative_path,
-                                        const std::string& extension_id) {
-  GURL base_url = fileapi::GetFileSystemRootURI(
-      Extension::GetBaseURLFromExtensionId(extension_id),
-      fileapi::kFileSystemTypeExternal);
-  return GURL(base_url.spec() +
-              net::EscapeUrlEncodedData(relative_path.AsUTF8Unsafe(),
-                                        false));  // Space to %20 instead of +.
-}
-
-bool ConvertFileToFileSystemUrl(Profile* profile,
-                                const base::FilePath& full_file_path,
-                                const std::string& extension_id,
-                                GURL* url) {
-  base::FilePath relative_path;
-  if (!ConvertFileToRelativeFileSystemPath(profile, extension_id,
-           full_file_path, &relative_path)) {
-    return false;
-  }
-  *url = ConvertRelativePathToFileSystemUrl(relative_path, extension_id);
-  return true;
-}
-
-bool ConvertFileToRelativeFileSystemPath(
-    Profile* profile,
-    const std::string& extension_id,
-    const base::FilePath& full_file_path,
-    base::FilePath* virtual_path) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
-  // May be NULL during unit_tests.
-  if (!service)
-    return false;
-
-  // File browser APIs are meant to be used only from extension context, so the
-  // extension's site is the one in whose file system context the virtual path
-  // should be found.
-  GURL site = service->GetSiteForExtensionId(extension_id);
-  fileapi::ExternalFileSystemBackend* backend =
-      BrowserContext::GetStoragePartitionForSite(profile, site)->
-          GetFileSystemContext()->external_backend();
-  if (!backend)
-    return false;
-
-  // Find if this file path is managed by the external backend.
-  if (!backend->GetVirtualPath(full_file_path, virtual_path))
-    return false;
-
-  return true;
-}
-
 string16 GetTitleFromType(ui::SelectFileDialog::Type dialog_type) {
   string16 title;
   switch (dialog_type) {
@@ -574,8 +524,8 @@ void OpenActionChoiceDialog(const base::FilePath& path, bool advanced_mode) {
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
 
   base::FilePath virtual_path;
-  if (!ConvertFileToRelativeFileSystemPath(profile, kFileManagerAppId, path,
-                                           &virtual_path))
+  if (!ConvertAbsoluteFilePathToRelativeFileSystemPath(
+          profile, kFileManagerAppId, path, &virtual_path))
     return;
   GURL dialog_url = GetActionChoiceUrl(virtual_path, advanced_mode);
 
@@ -616,14 +566,15 @@ void ViewItem(const base::FilePath& path) {
 
   Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
   GURL url;
-  if (!ConvertFileToFileSystemUrl(profile, path, kFileManagerAppId, &url) ||
+  if (!ConvertAbsoluteFilePathToFileSystemUrl(
+          profile, path, kFileManagerAppId, &url) ||
       !GrantFileSystemAccessToFileBrowser(profile)) {
     ShowWarningMessageBox(profile, path);
     return;
   }
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      fileapi_util::GetFileSystemContextForExtensionId(
+      GetFileSystemContextForExtensionId(
           profile, kFileManagerAppId);
 
   CheckIfDirectoryExists(file_system_context, url,

@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -41,7 +42,7 @@ base::DictionaryValue* CreateValueFromMountPoint(
   base::FilePath relative_mount_path;
   // Convert mount point path to relative path with the external file system
   // exposed within File API.
-  if (util::ConvertFileToRelativeFileSystemPath(
+  if (util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
           profile,
           extension_id,
           base::FilePath(mount_point_info.mount_path),

@@ -299,7 +299,7 @@ void FileBrowserHandlerExecutor::Execute(
   // Get file system context for the extension to which onExecute event will be
   // sent. The file access permissions will be granted to the extension in the
   // file system context for the files in |file_urls|.
-  fileapi_util::GetFileSystemContextForExtensionId(
+  util::GetFileSystemContextForExtensionId(
       profile_, extension_->id())->OpenFileSystem(
           Extension::GetBaseURLFromExtensionId(extension_->id()).GetOrigin(),
           fileapi::kFileSystemTypeExternal,
@@ -320,7 +320,7 @@ void FileBrowserHandlerExecutor::DidOpenFileSystem(
   }
 
   scoped_refptr<fileapi::FileSystemContext> file_system_context(
-      fileapi_util::GetFileSystemContextForExtensionId(
+      util::GetFileSystemContextForExtensionId(
           profile_, extension_->id()));
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE,

@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/extensions/file_manager/app_id.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_private_api.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
+#include "chrome/browser/chromeos/extensions/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/extensions/file_manager/url_util.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -336,9 +337,9 @@ void SelectFileDialogExtension::SelectFileImpl(
   // directory as a workaround. Real fix is tracked at crbug.com/110119.
   using file_manager::kFileManagerAppId;
   if (default_dialog_path.IsAbsolute() &&
-      (file_manager::util::ConvertFileToRelativeFileSystemPath(
+      (file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
            profile_, kFileManagerAppId, default_dialog_path, &virtual_path) ||
-       file_manager::util::ConvertFileToRelativeFileSystemPath(
+       file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
            profile_, kFileManagerAppId, fallback_path, &virtual_path))) {
     virtual_path = base::FilePath("/").Append(virtual_path);
   } else {
