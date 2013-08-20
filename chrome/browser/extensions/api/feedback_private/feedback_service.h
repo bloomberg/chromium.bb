@@ -70,8 +70,6 @@ class FeedbackService {
   SendFeedbackCallback send_feedback_callback_;
 
   scoped_refptr<FeedbackData> feedback_data_;
-  BlobReader* attached_file_reader_;
-  BlobReader* screenshot_reader_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedbackService);
 };

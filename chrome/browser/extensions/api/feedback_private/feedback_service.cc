@@ -43,19 +43,21 @@ void FeedbackService::SendFeedback(
   feedback_data_ = feedback_data;
 
   if (feedback_data_->attached_file_url().is_valid()) {
-    attached_file_reader_ = new BlobReader(
+    // Self-deleting object.
+    BlobReader* attached_file_reader = new BlobReader(
         profile, feedback_data_->attached_file_url(),
         base::Bind(&FeedbackService::AttachedFileCallback,
                    GetWeakPtr()));
-    attached_file_reader_->Start();
+    attached_file_reader->Start();
   }
 
   if (feedback_data_->screenshot_url().is_valid()) {
-    screenshot_reader_ = new BlobReader(
+    // Self-deleting object.
+    BlobReader* screenshot_reader = new BlobReader(
         profile, feedback_data_->screenshot_url(),
         base::Bind(&FeedbackService::ScreenshotCallback,
                    GetWeakPtr()));
-    screenshot_reader_->Start();
+    screenshot_reader->Start();
   }
 
   CompleteSendFeedback();
