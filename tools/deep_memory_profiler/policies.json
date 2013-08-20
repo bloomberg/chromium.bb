@@ -27,6 +27,10 @@
     "file": "policy.l2.json",
     "format": "json"
   },
+  "linux.browser": {
+    "file": "policy.linux.browser.json",
+    "format": "json"
+  },
   "t0": {
     "file": "policy.t0.json",
     "format": "json"
