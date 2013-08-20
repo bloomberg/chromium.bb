@@ -68,7 +68,7 @@ bool MIDIManagerMac::Initialize() {
     return false;
 
   int destination_count = MIDIGetNumberOfDestinations();
-  destinations_.reserve(destination_count);
+  destinations_.resize(destination_count);
 
   for (int i = 0; i < destination_count ; i++) {
     MIDIEndpointRef destination = MIDIGetDestination(i);
