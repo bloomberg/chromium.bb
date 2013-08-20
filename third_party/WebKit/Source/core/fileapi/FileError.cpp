@@ -62,10 +62,6 @@ void FileError::throwDOMException(ExceptionState& es, ErrorCode code)
         ec = NotFoundError;
         message = FileError::notFoundErrorMessage;
         break;
-    case FileError::SECURITY_ERR:
-        ec = SecurityError;
-        message = FileError::securityErrorMessage;
-        break;
     case FileError::ABORT_ERR:
         ec = AbortError;
         message = FileError::abortErrorMessage;
@@ -104,6 +100,10 @@ void FileError::throwDOMException(ExceptionState& es, ErrorCode code)
         ec = PathExistsError;
         message = FileError::pathExistsErrorMessage;
         break;
+    // SecurityError is special-cased, as we want to route those exceptions through ExceptionState::throwSecurityError.
+    case FileError::SECURITY_ERR:
+        es.throwSecurityError(FileError::securityErrorMessage);
+        return;
     default:
         ASSERT_NOT_REACHED();
         return;
