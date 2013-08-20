@@ -257,7 +257,7 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
   virtual void GetPerfData(uint32_t duration,
                            const GetPerfDataCallback& callback) OVERRIDE {
     dbus::MethodCall method_call(debugd::kDebugdInterface,
-                                 debugd::kGetPerfData);
+                                 debugd::kGetRichPerfData);
     dbus::MessageWriter writer(&method_call);
     writer.AppendUint32(duration);
 
