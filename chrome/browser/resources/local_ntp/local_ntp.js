@@ -1052,6 +1052,9 @@ function init() {
         setFakeboxDragFocus(false);
       };
     }
+
+    // Update the fakebox style to match the current key capturing state.
+    setFakeboxFocus(searchboxApiHandle.isKeyCaptureEnabled);
   }
 
   if (searchboxApiHandle.rtl) {
