@@ -1520,13 +1520,17 @@ END
         my $nativeReturnType = GetNativeType($returnType);
         my $v8ReturnType = "V8" . $returnType;
         $code .= "    $nativeReturnType result = ${getterString};\n";
-        $code .= "    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<${v8ReturnType}>(result.get(), info.GetIsolate())) : v8Undefined();\n";
-        $code .= "    if (wrapper.IsEmpty()) {\n";
-        $code .= "        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());\n"; # FIXME: Could use wrap here since the wrapper is empty.
-        $code .= "        if (!wrapper.IsEmpty())\n";
-        $code .= "            V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), \"${attrName}\", wrapper);\n";
+        if ($forMainWorldSuffix) {
+            $code .= "    if (result.get() && DOMDataStore::setReturnValueFromWrapper${forMainWorldSuffix}<${v8ReturnType}>(info.GetReturnValue(), result.get()))\n";
+        } else {
+            $code .= "    if (result.get() && DOMDataStore::setReturnValueFromWrapper<${v8ReturnType}>(info.GetReturnValue(), result.get()))\n";
+        }
+        $code .= "        return;\n";
+        $code .= "    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());\n";
+        $code .= "    if (!wrapper.IsEmpty()) {\n";
+        $code .= "        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), \"${attrName}\", wrapper);\n";
+        $code .= "        v8SetReturnValue(info, wrapper);\n";
         $code .= "    }\n";
-        $code .= "    v8SetReturnValue(info, wrapper);\n";
         $code .= "    return;\n";
         $code .= "}\n\n";
         $code .= "#endif // ${conditionalString}\n\n" if $conditionalString;

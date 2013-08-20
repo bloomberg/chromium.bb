@@ -127,13 +127,13 @@ static void readOnlyTestObjectAttrAttrGetter(v8::Local<v8::String> name, const v
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     RefPtr<TestObj> result = imp->readOnlyTestObjectAttr();
-    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<V8TestObject>(result.get(), info.GetIsolate())) : v8Undefined();
-    if (wrapper.IsEmpty()) {
-        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
-        if (!wrapper.IsEmpty())
-            V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "readOnlyTestObjectAttr", wrapper);
+    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "readOnlyTestObjectAttr", wrapper);
+        v8SetReturnValue(info, wrapper);
     }
-    v8SetReturnValue(info, wrapper);
     return;
 }
 
@@ -2305,13 +2305,13 @@ static void perWorldReadOnlyAttributeAttrGetter(v8::Local<v8::String> name, cons
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     RefPtr<TestObj> result = imp->perWorldReadOnlyAttribute();
-    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<V8TestObject>(result.get(), info.GetIsolate())) : v8Undefined();
-    if (wrapper.IsEmpty()) {
-        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
-        if (!wrapper.IsEmpty())
-            V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "perWorldReadOnlyAttribute", wrapper);
+    if (result.get() && DOMDataStore::setReturnValueFromWrapper<V8TestObject>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "perWorldReadOnlyAttribute", wrapper);
+        v8SetReturnValue(info, wrapper);
     }
-    v8SetReturnValue(info, wrapper);
     return;
 }
 
@@ -2326,13 +2326,13 @@ static void perWorldReadOnlyAttributeAttrGetterForMainWorld(v8::Local<v8::String
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     RefPtr<TestObj> result = imp->perWorldReadOnlyAttribute();
-    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getWrapper<V8TestObject>(result.get(), info.GetIsolate())) : v8Undefined();
-    if (wrapper.IsEmpty()) {
-        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
-        if (!wrapper.IsEmpty())
-            V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "perWorldReadOnlyAttribute", wrapper);
+    if (result.get() && DOMDataStore::setReturnValueFromWrapperForMainWorld<V8TestObject>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "perWorldReadOnlyAttribute", wrapper);
+        v8SetReturnValue(info, wrapper);
     }
-    v8SetReturnValue(info, wrapper);
     return;
 }
 

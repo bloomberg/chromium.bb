@@ -61,13 +61,13 @@ static void {{attribute.name}}AttrGetter(v8::Local<v8::String> name, const v8::P
 {
     {{cpp_class_name}}* imp = {{v8_class_name}}::toNative(info.Holder());
     {{attribute.cpp_type}} result = imp->{{attribute.cpp_method_name}}();
-    v8::Handle<v8::Value> wrapper = result.get() ? v8::Handle<v8::Value>(DOMDataStore::getUnsafeWrapper<{{attribute.v8_type}}>(result.get(), info.GetIsolate())) : v8Undefined();
-    if (wrapper.IsEmpty()) {
-        wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
-        if (!wrapper.IsEmpty())
-            V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "{{attribute.name}}", wrapper);
+    if (result.get() && DOMDataStore::setReturnValueFromWrapper<{{attribute.v8_type}}>(info.GetReturnValue(), result.get()))
+        return;
+    v8::Handle<v8::Value> wrapper = toV8(result.get(), info.Holder(), info.GetIsolate());
+    if (!wrapper.IsEmpty()) {
+        V8HiddenPropertyName::setNamedHiddenReference(info.Holder(), "{{attribute.name}}", wrapper);
+        v8SetReturnValue(info, wrapper);
     }
-    v8SetReturnValue(info, wrapper);
 }
 
 static void {{attribute.name}}AttrGetterCallback(v8::Local<v8::String> name, const v8::PropertyCallbackInfo<v8::Value>& info)

@@ -73,21 +73,6 @@ public:
         return current(returnValue.GetIsolate())->template setReturnValueFrom<V8T>(returnValue, object);
     }
 
-    // FIXME: remove this
-    template<typename V8T, typename T>
-    static v8::Handle<v8::Object> getUnsafeWrapper(T* object, v8::Isolate* isolate)
-    {
-        if (ScriptWrappable::wrapperCanBeStoredInObject(object) && !canExistInWorker(object)) {
-            if (LIKELY(!DOMWrapperWorld::isolatedWorldsExist())) {
-                v8::Handle<v8::Object> result = ScriptWrappable::getUnsafeWrapperFromObject(object).deprecatedHandle();
-                // Security: always guard against malicious tampering.
-                RELEASE_ASSERT_WITH_SECURITY_IMPLICATION(result.IsEmpty() || result->GetAlignedPointerFromInternalField(v8DOMWrapperObjectIndex) == V8T::toInternalPointer(object));
-                return result;
-            }
-        }
-        return current(isolate)->template get<V8T>(object);
-    }
-
     template<typename V8T, typename T>
     static bool setReturnValueFromWrapper(v8::ReturnValue<v8::Value> returnValue, T* object)
     {
