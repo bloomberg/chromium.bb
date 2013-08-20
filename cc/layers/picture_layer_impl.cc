@@ -45,8 +45,8 @@ PictureLayerImpl::PictureLayerImpl(LayerTreeImpl* tree_impl, int id)
       raster_contents_scale_(0.f),
       low_res_raster_contents_scale_(0.f),
       raster_source_scale_was_animating_(false),
-      is_using_lcd_text_(tree_impl->settings().can_use_lcd_text) {
-}
+      is_using_lcd_text_(tree_impl->settings().can_use_lcd_text),
+      needs_post_commit_initialization_(true) {}
 
 PictureLayerImpl::~PictureLayerImpl() {
 }
@@ -60,13 +60,11 @@ scoped_ptr<LayerImpl> PictureLayerImpl::CreateLayerImpl(
   return PictureLayerImpl::Create(tree_impl, id()).PassAs<LayerImpl>();
 }
 
-void PictureLayerImpl::CreateTilingSetIfNeeded() {
-  DCHECK(layer_tree_impl()->IsPendingTree());
-  if (!tilings_)
-    tilings_.reset(new PictureLayerTilingSet(this, bounds()));
-}
-
 void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
+  // It's possible this layer was never drawn or updated (e.g. because it was
+  // a descendant of an opacity 0 layer).
+  DoPostCommitInitializationIfNeeded();
+
   LayerImpl::PushPropertiesTo(base_layer);
 
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
@@ -78,8 +76,9 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
   layer_impl->SetIsMask(is_mask_);
   layer_impl->pile_ = pile_;
-  pile_ = NULL;
 
+  // Tilings would be expensive to push, so we swap.  This optimization requires
+  // an extra invalidation in SyncFromActiveLayer.
   layer_impl->tilings_.swap(tilings_);
   layer_impl->tilings_->SetClient(layer_impl);
   if (tilings_)
@@ -92,19 +91,19 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
   layer_impl->low_res_raster_contents_scale_ = low_res_raster_contents_scale_;
 
   layer_impl->UpdateLCDTextStatus(is_using_lcd_text_);
+  layer_impl->needs_post_commit_initialization_ = false;
 
-  // As an optimization, don't make a copy of this potentially complex region,
-  // and swap it directly from the pending to the active layer.  In general, any
-  // property pushed to a LayerImpl continues to live on that LayerImpl.
-  // However, invalidation is the difference between two main thread frames, so
-  // it no longer makes sense once the pending tree gets recycled.  It will
-  // always get pushed during PictureLayer::PushPropertiesTo.
+  // The invalidation on this soon-to-be-recycled layer must be cleared to
+  // mirror clearing the invalidation in PictureLayer's version of this function
+  // in case push properties is skipped.
   layer_impl->invalidation_.Swap(&invalidation_);
   invalidation_.Clear();
+  needs_post_commit_initialization_ = true;
 }
 
 void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
+  DCHECK(!needs_post_commit_initialization_);
   gfx::Rect rect(visible_content_rect());
   gfx::Rect content_rect(content_bounds());
 
@@ -296,6 +295,7 @@ void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
 }
 
 void PictureLayerImpl::UpdateTilePriorities() {
+  DCHECK(!needs_post_commit_initialization_);
   if (!tilings_->num_tilings())
     return;
 
@@ -380,6 +380,7 @@ void PictureLayerImpl::CalculateContentsScale(
     float* contents_scale_x,
     float* contents_scale_y,
     gfx::Size* content_bounds) {
+  DoPostCommitInitializationIfNeeded();
   if (!CanHaveTilings()) {
     ideal_page_scale_ = page_scale_factor;
     ideal_device_scale_ = device_scale_factor;
@@ -525,14 +526,10 @@ gfx::Size PictureLayerImpl::CalculateTileSize(
   return default_tile_size;
 }
 
-void PictureLayerImpl::SyncFromActiveLayer() {
-  DCHECK(layer_tree_impl()->IsPendingTree());
-
-  if (twin_layer_)
-    SyncFromActiveLayer(twin_layer_);
-}
-
 void PictureLayerImpl::SyncFromActiveLayer(const PictureLayerImpl* other) {
+  DCHECK(!other->needs_post_commit_initialization_);
+  DCHECK(other->tilings_);
+
   UpdateLCDTextStatus(other->is_using_lcd_text_);
 
   if (!DrawsContent()) {
@@ -595,15 +592,6 @@ void PictureLayerImpl::SyncTiling(
   // we can create tiles for this tiling immediately.
   if (!layer_tree_impl()->needs_update_draw_properties())
     UpdateTilePriorities();
-}
-
-void PictureLayerImpl::UpdateTwinLayer() {
-  DCHECK(layer_tree_impl()->IsPendingTree());
-
-  twin_layer_ = static_cast<PictureLayerImpl*>(
-      layer_tree_impl()->FindActiveTreeLayerById(id()));
-  if (twin_layer_)
-    twin_layer_->twin_layer_ = this;
 }
 
 void PictureLayerImpl::SetIsMask(bool is_mask) {
@@ -721,6 +709,28 @@ void PictureLayerImpl::MarkVisibleResourcesAsRequired() const {
   }
 }
 
+void PictureLayerImpl::DoPostCommitInitialization() {
+  DCHECK(needs_post_commit_initialization_);
+  DCHECK(layer_tree_impl()->IsPendingTree());
+
+  if (!tilings_)
+    tilings_.reset(new PictureLayerTilingSet(this, bounds()));
+
+  DCHECK(!twin_layer_);
+  twin_layer_ = static_cast<PictureLayerImpl*>(
+      layer_tree_impl()->FindActiveTreeLayerById(id()));
+  if (twin_layer_) {
+    DCHECK(!twin_layer_->twin_layer_);
+    twin_layer_->twin_layer_ = this;
+    // If the twin has never been pushed to, do not sync from it.
+    // This can happen if this function is called during activation.
+    if (!twin_layer_->needs_post_commit_initialization_)
+      SyncFromActiveLayer(twin_layer_);
+  }
+
+  needs_post_commit_initialization_ = false;
+}
+
 PictureLayerTiling* PictureLayerImpl::AddTiling(float contents_scale) {
   DCHECK(CanHaveTilingWithScale(contents_scale)) <<
       "contents_scale: " << contents_scale;
@@ -772,6 +782,7 @@ void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {
   DCHECK(ideal_device_scale_);
   DCHECK(ideal_source_scale_);
   DCHECK(CanHaveTilings());
+  DCHECK(!needs_post_commit_initialization_);
 
   bool change_target_tiling =
       raster_page_scale_ == 0.f ||

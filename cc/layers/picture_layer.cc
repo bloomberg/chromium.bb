@@ -36,25 +36,14 @@ scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
-
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
-  // This should be first so others can use it.
-  layer_impl->UpdateTwinLayer();
 
   layer_impl->SetIsMask(is_mask_);
-  layer_impl->CreateTilingSetIfNeeded();
   // Unlike other properties, invalidation must always be set on layer_impl.
   // See PictureLayerImpl::PushPropertiesTo for more details.
   layer_impl->invalidation_.Clear();
   layer_impl->invalidation_.Swap(&pile_invalidation_);
   layer_impl->pile_ = PicturePileImpl::CreateFromOther(pile_.get());
-  layer_impl->SyncFromActiveLayer();
-
-  // PictureLayer must push properties every frame.
-  // TODO(danakj): If we can avoid requiring to do CreateTilingSetIfNeeded() and
-  // SyncFromActiveLayer() on every commit then this could go away, maybe
-  // conditionally. crbug.com/259402
-  needs_push_properties_ = true;
 }
 
 void PictureLayer::SetLayerTreeHost(LayerTreeHost* host) {
@@ -114,11 +103,14 @@ bool PictureLayer::Update(ResourceUpdateQueue* queue,
                            pile_invalidation_,
                            visible_layer_rect,
                            rendering_stats_instrumentation());
-  if (!updated) {
+  if (updated) {
+    SetNeedsPushProperties();
+  } else {
     // If this invalidation did not affect the pile, then it can be cleared as
     // an optimization.
     pile_invalidation_.Clear();
   }
+
   return updated;
 }
 

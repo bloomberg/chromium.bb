@@ -833,6 +833,114 @@ class ImplSidePaintingScrollTestSimple : public ImplSidePaintingScrollTest {
 
 MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestSimple);
 
+// This test makes sure that layers pick up scrolls that occur between
+// beginning a commit and finishing a commit (aka scroll deltas not
+// included in sent scroll delta) still apply to layers that don't
+// push properties.
+class ImplSidePaintingScrollTestImplOnlyScroll
+    : public ImplSidePaintingScrollTest {
+ public:
+  ImplSidePaintingScrollTestImplOnlyScroll()
+      : initial_scroll_(20, 10), impl_thread_scroll_(-2, 3) {}
+
+  virtual void BeginTest() OVERRIDE {
+    layer_tree_host()->root_layer()->SetScrollable(true);
+    layer_tree_host()->root_layer()->SetMaxScrollOffset(
+        gfx::Vector2d(100, 100));
+    layer_tree_host()->root_layer()->SetScrollOffset(initial_scroll_);
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void WillCommit() OVERRIDE {
+    Layer* root = layer_tree_host()->root_layer();
+    switch (layer_tree_host()->source_frame_number()) {
+      case 0:
+        EXPECT_TRUE(root->needs_push_properties());
+        break;
+      case 1:
+        // Even if this layer doesn't need push properties, it should
+        // still pick up scrolls that happen on the active layer during
+        // commit.
+        EXPECT_FALSE(root->needs_push_properties());
+        break;
+    }
+  }
+
+  virtual void BeginCommitOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    // Scroll after the 2nd commit has started.
+    if (impl->active_tree()->source_frame_number() == 0) {
+      LayerImpl* active_root = impl->active_tree()->root_layer();
+      ASSERT_TRUE(active_root);
+      active_root->ScrollBy(impl_thread_scroll_);
+    }
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    // We force a second draw here of the first commit before activating
+    // the second commit.
+    LayerImpl* active_root = impl->active_tree()->root_layer();
+    LayerImpl* pending_root = impl->pending_tree()->root_layer();
+
+    ASSERT_TRUE(pending_root);
+    switch (impl->pending_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_VECTOR_EQ(pending_root->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(pending_root->ScrollDelta(), gfx::Vector2d());
+        EXPECT_VECTOR_EQ(pending_root->sent_scroll_delta(), gfx::Vector2d());
+        EXPECT_FALSE(active_root);
+        break;
+      case 1:
+        // Even though the scroll happened during the commit, both layers
+        // should have the appropriate scroll delta.
+        EXPECT_VECTOR_EQ(pending_root->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(pending_root->ScrollDelta(), impl_thread_scroll_);
+        EXPECT_VECTOR_EQ(pending_root->sent_scroll_delta(), gfx::Vector2d());
+        ASSERT_TRUE(active_root);
+        EXPECT_VECTOR_EQ(active_root->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(active_root->ScrollDelta(), impl_thread_scroll_);
+        EXPECT_VECTOR_EQ(active_root->sent_scroll_delta(), gfx::Vector2d());
+        break;
+      case 2:
+        // On the next commit, this delta should have been sent and applied.
+        EXPECT_VECTOR_EQ(pending_root->scroll_offset(),
+                         initial_scroll_ + impl_thread_scroll_);
+        EXPECT_VECTOR_EQ(pending_root->ScrollDelta(), gfx::Vector2d());
+        EXPECT_VECTOR_EQ(pending_root->sent_scroll_delta(), gfx::Vector2d());
+        EndTest();
+        break;
+    }
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
+    ImplSidePaintingScrollTest::DrawLayersOnThread(impl);
+
+    LayerImpl* root = impl->active_tree()->root_layer();
+
+    switch (impl->active_tree()->source_frame_number()) {
+      case 0:
+        EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(root->ScrollDelta(), gfx::Vector2d());
+        EXPECT_VECTOR_EQ(root->sent_scroll_delta(), gfx::Vector2d());
+        PostSetNeedsCommitToMainThread();
+        break;
+      case 1:
+        EXPECT_VECTOR_EQ(root->scroll_offset(), initial_scroll_);
+        EXPECT_VECTOR_EQ(root->ScrollDelta(), impl_thread_scroll_);
+        EXPECT_VECTOR_EQ(root->sent_scroll_delta(), gfx::Vector2d());
+        PostSetNeedsCommitToMainThread();
+        break;
+    }
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  gfx::Vector2d initial_scroll_;
+  gfx::Vector2d impl_thread_scroll_;
+};
+
+MULTI_THREAD_TEST_F(ImplSidePaintingScrollTestImplOnlyScroll);
+
 class LayerTreeHostScrollTestScrollZeroMaxScrollOffset
     : public LayerTreeHostScrollTest {
  public:
