@@ -1,0 +1,167 @@
+<html>
+<head>
+<style>
+.layer {
+    position: absolute;
+    -webkit-transform: translateZ(10px);
+    opacity: 0.8;
+    left: 20px;
+    top: 20px;
+}
+</style>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="layers-test.js"></script>
+<script>
+function initialize_LayersPanelnMouseEvents()
+{
+
+InspectorTest.findLayerTreeElement = function(layer)
+{
+    var layerTree = WebInspector.panel("layers").sidebarTree;
+    var element = layerTree.getCachedTreeElement(layer);
+    element.reveal();
+    return element.listItemElement;
+}
+
+InspectorTest.find3DViewElement = function(layer)
+{
+    var layers3DView = WebInspector.panel("layers")._layers3DView;
+    return layers3DView._elementForLayer(layer);
+}
+
+InspectorTest.dispatchMouseEvent = function(eventType, button, element, offsetX, offsetY)
+{
+    var totalOffset = element.totalOffset();
+    var scrollOffset = element.scrollOffset();
+    var eventArguments = {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+        screenX: totalOffset.left - scrollOffset.left + offsetX,
+        screenY: totalOffset.top - scrollOffset.top + offsetY,
+        clientX: totalOffset.left + offsetX,
+        clientY: totalOffset.top + offsetY,
+        button: button
+    };
+    if (eventType === "mouseout") {
+        eventArguments.screenX = 0;
+        eventArguments.screenY = 0;
+        eventArguments.clientX = 0;
+        eventArguments.clientY = 0;
+    }
+    element.dispatchEvent(new MouseEvent(eventType, eventArguments));
+}
+
+InspectorTest.dispatchMouseEventToLayerTree = function(eventType, button, layer)
+{
+    var element = InspectorTest.findLayerTreeElement(layer);
+    InspectorTest.assertTrue(!!element);
+    InspectorTest.dispatchMouseEvent(eventType, button, element, element.clientWidth >> 1, element.clientHeight >> 1);
+}
+
+InspectorTest.dispatchMouseEventTo3DView = function(eventType, button, layer)
+{
+    // Caveat: this will blow if layers are transformed. We only take root layer scale into account.
+    var offsetX = 0;
+    var offsetY = 0;
+    for (var currentLayer = layer; currentLayer; currentLayer = currentLayer.parent()) {
+         offsetX += currentLayer.offsetX();
+         offsetY += currentLayer.offsetY();
+    }
+    var layer3DView = WebInspector.panel("layers")._layers3DView;
+    var rootElement = layer3DView._elementForLayer(InspectorTest._layerTreeModel.root());
+    var screenOffsetX = Math.round(layer3DView._lastScale * offsetX) + 2;
+    var screenOffsetY = Math.round(layer3DView._lastScale * offsetY) + 2;
+    InspectorTest.dispatchMouseEvent(eventType, button, rootElement, screenOffsetX, screenOffsetY);
+}
+
+InspectorTest.dumpSelectedStyles = function(message, element)
+{
+    var classes = [];
+    if (element.hasStyleClass("selected"))
+        classes.push("selected");
+    if (element.hasStyleClass("hovered"))
+        classes.push("hovered");
+
+    InspectorTest.addResult(message + ": " + classes.join(", "));
+}
+
+InspectorTest.screenPositionWith
+}
+
+function test()
+{
+    function step1()
+    {
+        var layerB1 = InspectorTest.findLayerByNodeIdAttribute("b1");
+        var treeElementB1 = InspectorTest.findLayerTreeElement(layerB1);
+        var viewElementB1 = InspectorTest.find3DViewElement(layerB1);
+
+        var layerB3 = InspectorTest.findLayerByNodeIdAttribute("b3");
+        var treeElementB3 = InspectorTest.findLayerTreeElement(layerB3);
+        var viewElementB3 = InspectorTest.find3DViewElement(layerB3);
+
+        function dumpElementSelectionState()
+        {
+            InspectorTest.dumpSelectedStyles("Layer b1 in tree", treeElementB1);
+            InspectorTest.dumpSelectedStyles("Layer b3 in tree", treeElementB3);
+            InspectorTest.dumpSelectedStyles("Layer b1 in view", viewElementB1);
+            InspectorTest.dumpSelectedStyles("Layer b3 in view", viewElementB3);
+        }
+        InspectorTest.addResult("Hovering b1 in tree");
+        InspectorTest.dispatchMouseEventToLayerTree("mousemove", -1, layerB1);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Hovering b3 in tree");
+        InspectorTest.dispatchMouseEventToLayerTree("mousemove", -1, layerB3);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Hovering away from tree");
+        InspectorTest.dispatchMouseEventToLayerTree("mouseout", -1, layerB3);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Selecting b1 in tree");
+        InspectorTest.dispatchMouseEventToLayerTree("mousedown", 0, layerB1);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Selecting b3 in tree");
+        InspectorTest.dispatchMouseEventToLayerTree("mousedown", 0, layerB3);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Hovering b1 in view");
+        InspectorTest.dispatchMouseEventTo3DView("mousemove", -1, layerB1);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Hovering b3 in view");
+        InspectorTest.dispatchMouseEventTo3DView("mousemove", -1, layerB3);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Hovering away from view");
+        InspectorTest.dispatchMouseEventTo3DView("mouseout", -1, layerB3);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Selecting b1 in view");
+        InspectorTest.dispatchMouseEventTo3DView("click", 0, layerB1);
+        dumpElementSelectionState();
+
+        InspectorTest.addResult("Selecting b3 in view");
+        InspectorTest.dispatchMouseEventTo3DView("click", 1, layerB3);
+        dumpElementSelectionState();
+
+        InspectorTest.completeTest();
+    }
+    WebInspector.showPanel("layers");
+    InspectorTest._layerTreeModel.requestLayers(step1);
+
+}
+</script>
+
+<body onload="runTest()">
+<div id="a" style="width: 200px; height: 200px" class="layer">
+  <div class="layer" id="b1" style="width: 150px; height: 100px"></div>
+  <div id="b2" class="layer" style="width: 140px; height: 110px">
+    <div id="c" class="layer" style="width: 100px; height: 90px"></div>
+    <div id="b3" class="layer" style="width: 140px; height: 110px;"></div>
+  </div>
+</div>
+</body>
