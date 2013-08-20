@@ -17994,6 +17994,29 @@ other types of suffix sets.
   <int value="97" label="SubFrameBeforeUnloadRegistered"/>
   <int value="98" label="SubFrameBeforeUnloadFired"/>
   <int value="99" label="CSSPseudoElementPrefixedDistributed"/>
+  <int value="100" label="TextReplaceWholeText"/>
+  <int value="101" label="PrefixedShadowRootConstructor"/>
+  <int value="102" label="ConsoleMarkTimeline"/>
+  <int value="103" label="CSSPseudoElementUserAgentCustomPseudo"/>
+  <int value="104" label="DocumentTypeEntities"/>
+  <int value="105" label="DocumentTypeInternalSubset"/>
+  <int value="106" label="DocumentTypeNotations"/>
+  <int value="107" label="ElementGetAttributeNode"/>
+  <int value="108" label="ElementSetAttributeNode"/>
+  <int value="109" label="ElementRemoveAttributeNode"/>
+  <int value="110" label="ElementGetAttributeNodeNS"/>
+  <int value="111" label="DocumentCreateAttribute"/>
+  <int value="112" label="DocumentCreateAttributeNS"/>
+  <int value="113" label="DocumentCreateCDATASection"/>
+  <int value="114" label="DocumentInputEncoding"/>
+  <int value="115" label="DocumentXMLEncoding"/>
+  <int value="116" label="DocumentXMLStandalone"/>
+  <int value="117" label="DocumentXMLVersion"/>
+  <int value="118" label="NodeIsSameNode"/>
+  <int value="119" label="NodeIsSupported"/>
+  <int value="120" label="NodeNamespaceURI"/>
+  <int value="121" label="NodePrefix"/>
+  <int value="122" label="NodeLocalName"/>
 </enum>
 
 <enum name="FFmpegCodecs" type="int">
