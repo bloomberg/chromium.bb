@@ -191,8 +191,6 @@ deps_os = {
             Var('git_url') + '/chromium/deps/class-dump.git@89bd40883c767584240b4dade8b74e6f57b9bdab',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@471407b943b14bcebe017dc6d098b3f54019eaba',
-        'src/third_party/angle':
-            None,
         'src/third_party/angle_dx11':
             None,
         'src/third_party/bidichecker':
