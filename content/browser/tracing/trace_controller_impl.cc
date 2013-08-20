@@ -26,9 +26,11 @@ base::LazyInstance<TraceControllerImpl>::Leaky g_controller =
 class AutoStopTraceSubscriberStdio : public TraceSubscriberStdio {
  public:
   AutoStopTraceSubscriberStdio(const base::FilePath& file_path)
-      : TraceSubscriberStdio(file_path) {}
+      : TraceSubscriberStdio(file_path,
+                             FILE_TYPE_PROPERTY_LIST,
+                             false) {}
 
-  static void EndStartupTrace(TraceSubscriberStdio* subscriber) {
+  static void EndStartupTrace(AutoStopTraceSubscriberStdio* subscriber) {
     if (!TraceControllerImpl::GetInstance()->EndTracingAsync(subscriber))
       delete subscriber;
     // else, the tracing will end asynchronously in OnEndTracingComplete().

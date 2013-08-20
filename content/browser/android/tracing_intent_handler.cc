@@ -16,7 +16,7 @@ namespace content {
 TracingIntentHandler* g_trace_intent_handler = NULL;
 
 TracingIntentHandler::TracingIntentHandler(const base::FilePath& path)
-    : TraceSubscriberStdio(path) {
+    : TraceSubscriberStdio(path, FILE_TYPE_ARRAY, false) {
   TraceController::GetInstance()->BeginTracing(
       this,
       std::string("-test*"),

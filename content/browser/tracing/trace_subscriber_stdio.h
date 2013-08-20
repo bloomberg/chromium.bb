@@ -17,14 +17,24 @@ class FilePath;
 
 namespace content {
 
-class TraceSubscriberStdioImpl;
-
 // Stdio implementation of TraceSubscriber. Use this to write traces to a file.
 class CONTENT_EXPORT TraceSubscriberStdio
     : NON_EXPORTED_BASE(public TraceSubscriber) {
  public:
-  // Creates or overwrites the specified file. Check IsValid() for success.
-  explicit TraceSubscriberStdio(const base::FilePath& path);
+  enum FileType {
+    // Output file as array, representing trace events:
+    // [event1, event2, ...]
+    FILE_TYPE_ARRAY,
+    // Output file as property list with one or two items:
+    // {traceEvents: [event1, event2, ...],
+    //  systemTraceEvents: "event1\nevent2\n..." // optional}
+    FILE_TYPE_PROPERTY_LIST
+  };
+
+  // has_system_trace indicates whether system trace events are expected.
+  TraceSubscriberStdio(const base::FilePath& path,
+                       FileType file_type,
+                       bool has_system_trace);
   virtual ~TraceSubscriberStdio();
 
   // Implementation of TraceSubscriber
@@ -32,8 +42,13 @@ class CONTENT_EXPORT TraceSubscriberStdio
   virtual void OnTraceDataCollected(
       const scoped_refptr<base::RefCountedString>& data_ptr) OVERRIDE;
 
+  // To be used as callback to DebugDaemonClient::RequestStopSystemTracing().
+  virtual void OnEndSystemTracing(
+      const scoped_refptr<base::RefCountedString>& events_str_ptr);
+
  private:
-  scoped_refptr<TraceSubscriberStdioImpl> impl_;
+  class TraceSubscriberStdioWorker;
+  scoped_refptr<TraceSubscriberStdioWorker> worker_;
   DISALLOW_COPY_AND_ASSIGN(TraceSubscriberStdio);
 };
 
