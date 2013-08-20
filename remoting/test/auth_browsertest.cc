@@ -9,31 +9,14 @@ namespace remoting {
 IN_PROC_BROWSER_TEST_F(RemoteDesktopBrowserTest, MANUAL_Auth) {
   VerifyInternetAccess();
 
-  if (!NoInstall()) {
-    VerifyChromotingLoaded(false);
-    InstallChromotingApp();
-  }
-
-  VerifyChromotingLoaded(true);
+  Install();
 
   LaunchChromotingApp();
 
-  Authorize();
+  // Authorize, Authenticate, and Approve.
+  Auth();
 
-  Authenticate();
-
-  Approve();
-
-  // TODO: Remove this hack by blocking on the appropriate notification.
-  // The browser may still be loading images embedded in the webapp. If we
-  // uinstall it now those load will fail. Navigating away to avoid the load
-  // failures.
-  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
-
-  if (!NoCleanup()) {
-    UninstallChromotingApp();
-    VerifyChromotingLoaded(false);
-  }
+  Cleanup();
 }
 
 }  // namespace remoting

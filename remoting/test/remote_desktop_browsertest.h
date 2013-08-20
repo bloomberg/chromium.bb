@@ -37,11 +37,23 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   RemoteDesktopBrowserTest();
   virtual ~RemoteDesktopBrowserTest();
 
+  // InProcessBrowserTest Overrides
   virtual void SetUp() OVERRIDE;
 
  protected:
+  // InProcessBrowserTest Overrides
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE;
+
+  // InProcessBrowserTest Overrides
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE;
+
+
+  /*                                                    */
+  /* The following helpers each perform a simple task.  */
+  /*                                                    */
+
+  // Verify the test has access to the internet (specifically google.com)
+  void VerifyInternetAccess();
 
   // Install the chromoting extension from a crx file.
   void InstallChromotingApp();
@@ -55,9 +67,6 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Launch the chromoting app.
   void LaunchChromotingApp();
 
-  // Verify the test has access to the internet (specifically google.com)
-  void VerifyInternetAccess();
-
   // Authorize: grant extended access permission to the user's computer.
   void Authorize();
 
@@ -67,17 +76,23 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // Approve: grant the chromoting app necessary permissions.
   void Approve();
 
-  // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
-  // This is useful for diagnostic purposes.
-  bool NoCleanup() { return no_cleanup_; }
 
-  // Whether to install the chromoting extension before running the test cases.
-  // This is useful for diagnostic purposes.
-  bool NoInstall() { return no_install_; }
+  /*                                                      */
+  /* The following helpers each perform a composite task. */
+  /*                                                      */
+
+  // Install the chromoting extension
+  void Install();
+
+  // Clean up after the test.
+  void Cleanup();
+
+  // Perform all the auth steps: authorization, authenticattion, etc.
+  // It starts from the chromoting main page unauthenticated and ends up back
+  // on the chromoting main page authenticated and ready to go.
+  void Auth();
 
  private:
-  void ParseCommandLine();
-
   // Change behavior of the default host resolver to allow DNS lookup
   // to proceed instead of being blocked by the test infrastructure.
   void EnableDNSLookupForThisTest(
@@ -86,11 +101,26 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
   // We need to reset the DNS lookup when we finish, or the test will fail.
   void DisableDNSLookupForThisTest();
 
+  void ParseCommandLine();
+
+
+  /*                    */
+  /* Accessor methods.  */
+  /*                    */
+
   // Helper to get the path to the crx file of the webapp to be tested.
   base::FilePath WebAppCrxPath() { return webapp_crx_; }
 
   // Helper to get the extension ID of the installed chromoting webapp.
   std::string ChromotingID() { return chromoting_id_; }
+
+  // Whether to perform the cleanup tasks (uninstalling chromoting, etc).
+  // This is useful for diagnostic purposes.
+  bool NoCleanup() { return no_cleanup_; }
+
+  // Whether to install the chromoting extension before running the test cases.
+  // This is useful for diagnostic purposes.
+  bool NoInstall() { return no_install_; }
 
   // Helper to construct the starting URL of the installed chromoting webapp.
   GURL Chromoting_Main_URL() {
@@ -102,64 +132,29 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
   }
 
+
+  /*                                                    */
+  /* Helpers to execute javascript code on a web page.  */
+  /*                                                    */
+
   // Helper to execute a javascript code snippet on the current page.
-  void ExecuteScript(const std::string& script) {
-    ASSERT_TRUE(content::ExecuteScript(
-        browser()->tab_strip_model()->GetActiveWebContents(), script));
-  }
+  void ExecuteScript(const std::string& script);
 
   // Helper to execute a javascript code snippet on the current page and
   // wait for page load to complete.
-  void ExecuteScriptAndWait(const std::string& script) {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
-            &browser()->tab_strip_model()->GetActiveWebContents()->
-                GetController()));
-
-    ExecuteScript(script);
-
-    observer.Wait();
-  }
+  void ExecuteScriptAndWait(const std::string& script);
 
   // Helper to execute a javascript code snippet on the current page and
   // wait until the target url is loaded. This is used when the target page
   // is loaded after multiple redirections.
-  void ExecuteScriptAndWaitUntil(
-      const std::string& script, const GURL& target) {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
-            &browser()->tab_strip_model()->GetActiveWebContents()->
-                GetController()));
-
-    ExecuteScript(script);
-
-    observer.Wait();
-
-    // TODO: is there a better way to wait for all the redirections to complete?
-    while (GetCurrentURL() != target) {
-      content::WindowedNotificationObserver(
-          content::NOTIFICATION_LOAD_STOP,
-          content::Source<content::NavigationController>(
-              &browser()->tab_strip_model()->GetActiveWebContents()->
-                  GetController())).Wait();
-    }
-  }
+  void ExecuteScriptAndWaitUntil(const std::string& script, const GURL& target);
 
   // Helper to execute a javascript code snippet on the current page and
   // extract the boolean result.
-  bool ExecuteScriptAndExtractBool(const std::string& script) {
-    bool result;
-    // Using a private assert function because ASSERT_TRUE can only be used in
-    // void returning functions.
-    _ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        "window.domAutomationController.send(" + script + ");",
-        &result));
+  bool ExecuteScriptAndExtractBool(const std::string& script);
 
-    return result;
-  }
+  // Helper to navigate to a given url.
+  void NavigateToURLAndWait(const GURL& url);
 
   // Helper to check whether a html element with the given name exists on
   // the current page.
@@ -168,17 +163,10 @@ class RemoteDesktopBrowserTest : public ExtensionBrowserTest {
         "document.getElementById(\"" + name + "\") != null");
   }
 
-  // Helper to navigate to a given url.
-  void NavigateToURLAndWait(const GURL& url) {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::Source<content::NavigationController>(
-            &browser()->tab_strip_model()->GetActiveWebContents()->
-                GetController()));
 
-    ui_test_utils::NavigateToURL(browser(), url);
-    observer.Wait();
-  }
+  /*        */
+  /* Fields */
+  /*        */
 
   // This test needs to make live DNS requests for access to
   // GAIA and sync server URLs under google.com. We use a scoped version
