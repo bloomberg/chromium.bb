@@ -675,13 +675,15 @@ int SocketStream::DoResolveHost() {
     host_port_pair = HostPortPair::FromURL(url_);
   }
 
-  HostResolver::RequestInfo resolve_info(host_port_pair, DEFAULT_PRIORITY);
+  HostResolver::RequestInfo resolve_info(host_port_pair);
 
   DCHECK(context_->host_resolver());
   resolver_.reset(new SingleRequestHostResolver(context_->host_resolver()));
-  return resolver_->Resolve(
-      resolve_info, &addresses_, base::Bind(&SocketStream::OnIOCompleted, this),
-      net_log_);
+  return resolver_->Resolve(resolve_info,
+                            DEFAULT_PRIORITY,
+                            &addresses_,
+                            base::Bind(&SocketStream::OnIOCompleted, this),
+                            net_log_);
 }
 
 int SocketStream::DoResolveHostComplete(int result) {
@@ -960,16 +962,17 @@ int SocketStream::DoSOCKSConnect() {
 
   next_state_ = STATE_SOCKS_CONNECT_COMPLETE;
 
-  HostResolver::RequestInfo req_info(HostPortPair::FromURL(url_),
-                                     DEFAULT_PRIORITY);
+  HostResolver::RequestInfo req_info(HostPortPair::FromURL(url_));
 
   DCHECK(!proxy_info_.is_empty());
   scoped_ptr<StreamSocket> s;
   if (proxy_info_.proxy_server().scheme() == ProxyServer::SCHEME_SOCKS5) {
     s.reset(new SOCKS5ClientSocket(connection_.Pass(), req_info));
   } else {
-    s.reset(new SOCKSClientSocket(
-        connection_.Pass(), req_info, context_->host_resolver()));
+    s.reset(new SOCKSClientSocket(connection_.Pass(),
+                                  req_info,
+                                  DEFAULT_PRIORITY,
+                                  context_->host_resolver()));
   }
   connection_.reset(new ClientSocketHandle);
   connection_->SetSocket(s.Pass());

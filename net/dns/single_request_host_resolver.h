@@ -5,9 +5,17 @@
 #ifndef NET_DNS_SINGLE_REQUEST_HOST_RESOLVER_H_
 #define NET_DNS_SINGLE_REQUEST_HOST_RESOLVER_H_
 
+#include "base/basictypes.h"
+
+#include "net/base/completion_callback.h"
+#include "net/base/net_export.h"
+#include "net/base/request_priority.h"
 #include "net/dns/host_resolver.h"
 
 namespace net {
+
+class AddressList;
+class BoundNetLog;
 
 // This class represents the task of resolving a hostname (or IP address
 // literal) to an AddressList object.  It wraps HostResolver to resolve only a
@@ -25,6 +33,7 @@ class NET_EXPORT SingleRequestHostResolver {
   // Resolves the given hostname (or IP address literal), filling out the
   // |addresses| object upon success. See HostResolver::Resolve() for details.
   int Resolve(const HostResolver::RequestInfo& info,
+              RequestPriority priority,
               AddressList* addresses,
               const CompletionCallback& callback,
               const BoundNetLog& net_log);

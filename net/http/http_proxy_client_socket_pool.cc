@@ -64,6 +64,14 @@ const HostResolver::RequestInfo& HttpProxySocketParams::destination() const {
   }
 }
 
+RequestPriority HttpProxySocketParams::priority() const {
+  if (transport_params_.get() == NULL) {
+    return ssl_params_->GetDirectConnectionParams()->priority();
+  } else {
+    return transport_params_->priority();
+  }
+}
+
 HttpProxySocketParams::~HttpProxySocketParams() {}
 
 // HttpProxyConnectJobs will time out after this many seconds.  Note this is on
@@ -179,10 +187,12 @@ int HttpProxyConnectJob::DoLoop(int result) {
 int HttpProxyConnectJob::DoTransportConnect() {
   next_state_ = STATE_TCP_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
-  return transport_socket_handle_->Init(
-      group_name(), params_->transport_params(),
-      params_->transport_params()->destination().priority(), callback_,
-      transport_pool_, net_log());
+  return transport_socket_handle_->Init(group_name(),
+                                        params_->transport_params(),
+                                        params_->transport_params()->priority(),
+                                        callback_,
+                                        transport_pool_,
+                                        net_log());
 }
 
 int HttpProxyConnectJob::DoTransportConnectComplete(int result) {
@@ -214,7 +224,7 @@ int HttpProxyConnectJob::DoSSLConnect() {
   transport_socket_handle_.reset(new ClientSocketHandle());
   const scoped_refptr<SSLSocketParams>& ssl_params = params_->ssl_params();
   RequestPriority priority =
-      ssl_params->GetDirectConnectionParams()->destination().priority();
+      ssl_params->GetDirectConnectionParams()->priority();
   return transport_socket_handle_->Init(
       group_name(), ssl_params, priority, callback_, ssl_pool_, net_log());
 }
@@ -322,9 +332,12 @@ int HttpProxyConnectJob::DoSpdyProxyCreateStream() {
   }
 
   next_state_ = STATE_SPDY_PROXY_CREATE_STREAM_COMPLETE;
-  return spdy_stream_request_.StartRequest(
-      SPDY_BIDIRECTIONAL_STREAM, spdy_session, params_->request_url(),
-      params_->destination().priority(), spdy_session->net_log(), callback_);
+  return spdy_stream_request_.StartRequest(SPDY_BIDIRECTIONAL_STREAM,
+                                           spdy_session,
+                                           params_->request_url(),
+                                           params_->priority(),
+                                           spdy_session->net_log(),
+                                           callback_);
 }
 
 int HttpProxyConnectJob::DoSpdyProxyCreateStreamComplete(int result) {

@@ -197,10 +197,12 @@ class Request {
   };
 
   Request(const HostResolver::RequestInfo& info,
+          RequestPriority priority,
           size_t index,
           HostResolver* resolver,
           Handler* handler)
       : info_(info),
+        priority_(priority),
         index_(index),
         resolver_(resolver),
         handler_(handler),
@@ -213,8 +215,12 @@ class Request {
     DCHECK(!handle_);
     list_ = AddressList();
     result_ = resolver_->Resolve(
-        info_, &list_, base::Bind(&Request::OnComplete, base::Unretained(this)),
-        &handle_, BoundNetLog());
+        info_,
+        priority_,
+        &list_,
+        base::Bind(&Request::OnComplete, base::Unretained(this)),
+        &handle_,
+        BoundNetLog());
     if (!list_.empty())
       EXPECT_EQ(OK, result_);
     return result_;
@@ -291,6 +297,7 @@ class Request {
   }
 
   HostResolver::RequestInfo info_;
+  RequestPriority priority_;
   size_t index_;
   HostResolver* resolver_;
   Handler* handler_;
@@ -419,8 +426,9 @@ class HostResolverImplTest : public testing::Test {
     virtual ~Handler() {}
 
     // Proxy functions so that classes derived from Handler can access them.
-    Request* CreateRequest(const HostResolver::RequestInfo& info) {
-      return test->CreateRequest(info);
+    Request* CreateRequest(const HostResolver::RequestInfo& info,
+                           RequestPriority priority) {
+      return test->CreateRequest(info, priority);
     }
     Request* CreateRequest(const std::string& hostname, int port) {
       return test->CreateRequest(hostname, port);
@@ -457,9 +465,10 @@ class HostResolverImplTest : public testing::Test {
 
   // The Request will not be made until a call to |Resolve()|, and the Job will
   // not start until released by |proc_->SignalXXX|.
-  Request* CreateRequest(const HostResolver::RequestInfo& info) {
-    Request* req = new Request(info, requests_.size(), resolver_.get(),
-                               handler_.get());
+  Request* CreateRequest(const HostResolver::RequestInfo& info,
+                         RequestPriority priority) {
+    Request* req = new Request(
+        info, priority, requests_.size(), resolver_.get(), handler_.get());
     requests_.push_back(req);
     return req;
   }
@@ -468,9 +477,9 @@ class HostResolverImplTest : public testing::Test {
                          int port,
                          RequestPriority priority,
                          AddressFamily family) {
-    HostResolver::RequestInfo info(HostPortPair(hostname, port), priority);
+    HostResolver::RequestInfo info(HostPortPair(hostname, port));
     info.set_address_family(family);
-    return CreateRequest(info);
+    return CreateRequest(info, priority);
   }
 
   Request* CreateRequest(const std::string& hostname,
@@ -814,10 +823,10 @@ TEST_F(HostResolverImplTest, BypassCache) {
 
         // Ok good. Now make sure that if we ask to bypass the cache, it can no
         // longer service the request synchronously.
-        HostResolver::RequestInfo info(HostPortPair(hostname, 71),
-                                       DEFAULT_PRIORITY);
+        HostResolver::RequestInfo info(HostPortPair(hostname, 71));
         info.set_allow_cached_response(false);
-        EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info)->Resolve());
+        EXPECT_EQ(ERR_IO_PENDING,
+                  CreateRequest(info, DEFAULT_PRIORITY)->Resolve());
       } else if (71 == req->info().port()) {
         // Test is done.
         base::MessageLoop::current()->Quit();
@@ -1186,18 +1195,18 @@ TEST_F(HostResolverImplTest, ResolveFromCache) {
   proc_->AddRuleForAllFamilies("just.testing", "192.168.1.42");
   proc_->SignalMultiple(1u);  // Need only one.
 
-  HostResolver::RequestInfo info(HostPortPair("just.testing", 80),
-                                 DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(HostPortPair("just.testing", 80));
 
   // First hit will miss the cache.
-  EXPECT_EQ(ERR_DNS_CACHE_MISS, CreateRequest(info)->ResolveFromCache());
+  EXPECT_EQ(ERR_DNS_CACHE_MISS,
+            CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
 
   // This time, we fetch normally.
-  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info)->Resolve());
+  EXPECT_EQ(ERR_IO_PENDING, CreateRequest(info, DEFAULT_PRIORITY)->Resolve());
   EXPECT_EQ(OK, requests_[1]->WaitForResult());
 
   // Now we should be able to fetch from the cache.
-  EXPECT_EQ(OK, CreateRequest(info)->ResolveFromCache());
+  EXPECT_EQ(OK, CreateRequest(info, DEFAULT_PRIORITY)->ResolveFromCache());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.1.42", 80));
 }
 
@@ -1228,8 +1237,8 @@ TEST_F(HostResolverImplTest, MultipleAttempts) {
                            NULL));
 
   // Resolve "host1".
-  HostResolver::RequestInfo info(HostPortPair("host1", 70), DEFAULT_PRIORITY);
-  Request* req = CreateRequest(info);
+  HostResolver::RequestInfo info(HostPortPair("host1", 70));
+  Request* req = CreateRequest(info, DEFAULT_PRIORITY);
   EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
 
   // Resolve returns -4 to indicate that 3rd attempt has resolved the host.
@@ -1604,14 +1613,13 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   if (!saw_ipv4 && !saw_ipv6)
     return;
 
-  HostResolver::RequestInfo info(HostPortPair("localhost", 80),
-                                 DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(HostPortPair("localhost", 80));
   info.set_address_family(ADDRESS_FAMILY_UNSPECIFIED);
   info.set_host_resolver_flags(HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6);
 
   // Try without DnsClient.
   ChangeDnsConfig(DnsConfig());
-  Request* req = CreateRequest(info);
+  Request* req = CreateRequest(info, DEFAULT_PRIORITY);
   // It is resolved via getaddrinfo, so expect asynchronous result.
   EXPECT_EQ(ERR_IO_PENDING, req->Resolve());
   EXPECT_EQ(OK, req->WaitForResult());
@@ -1632,7 +1640,7 @@ TEST_F(HostResolverImplDnsTest, DualFamilyLocalhost) {
   config.hosts = hosts;
 
   ChangeDnsConfig(config);
-  req = CreateRequest(info);
+  req = CreateRequest(info, DEFAULT_PRIORITY);
   // Expect synchronous resolution from DnsHosts.
   EXPECT_EQ(OK, req->Resolve());
 

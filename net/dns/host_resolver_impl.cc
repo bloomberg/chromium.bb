@@ -343,7 +343,6 @@ base::Value* NetLogRequestInfoCallback(const NetLog::Source& source,
                    static_cast<int>(info->address_family()));
   dict->SetBoolean("allow_cached_response", info->allow_cached_response());
   dict->SetBoolean("is_speculative", info->is_speculative());
-  dict->SetInteger("priority", info->priority());
   return dict;
 }
 
@@ -465,16 +464,17 @@ class HostResolverImpl::Request {
   Request(const BoundNetLog& source_net_log,
           const BoundNetLog& request_net_log,
           const RequestInfo& info,
+          RequestPriority priority,
           const CompletionCallback& callback,
           AddressList* addresses)
       : source_net_log_(source_net_log),
         request_net_log_(request_net_log),
         info_(info),
+        priority_(priority),
         job_(NULL),
         callback_(callback),
         addresses_(addresses),
-        request_time_(base::TimeTicks::Now()) {
-  }
+        request_time_(base::TimeTicks::Now()) {}
 
   // Mark the request as canceled.
   void MarkAsCanceled() {
@@ -521,16 +521,19 @@ class HostResolverImpl::Request {
     return info_;
   }
 
-  base::TimeTicks request_time() const {
-    return request_time_;
-  }
+  RequestPriority priority() const { return priority_; }
+
+  base::TimeTicks request_time() const { return request_time_; }
 
  private:
   BoundNetLog source_net_log_;
   BoundNetLog request_net_log_;
 
   // The request info that started the request.
-  RequestInfo info_;
+  const RequestInfo info_;
+
+  // TODO(akalin): Support reprioritization.
+  const RequestPriority priority_;
 
   // The resolve job that this request is dependent on.
   Job* job_;
@@ -1210,7 +1213,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
     DCHECK_EQ(key_.hostname, req->info().hostname());
 
     req->set_job(this);
-    priority_tracker_.Add(req->info().priority());
+    priority_tracker_.Add(req->priority());
 
     req->request_net_log().AddEvent(
         NetLog::TYPE_HOST_RESOLVER_IMPL_JOB_ATTACH,
@@ -1245,12 +1248,11 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job {
     LogCancelRequest(req->source_net_log(), req->request_net_log(),
                      req->info());
 
-    priority_tracker_.Remove(req->info().priority());
-    net_log_.AddEvent(
-        NetLog::TYPE_HOST_RESOLVER_IMPL_JOB_REQUEST_DETACH,
-        base::Bind(&NetLogJobAttachCallback,
-                   req->request_net_log().source(),
-                   priority()));
+    priority_tracker_.Remove(req->priority());
+    net_log_.AddEvent(NetLog::TYPE_HOST_RESOLVER_IMPL_JOB_REQUEST_DETACH,
+                      base::Bind(&NetLogJobAttachCallback,
+                                 req->request_net_log().source(),
+                                 priority()));
 
     if (num_active_requests() > 0) {
       UpdatePriority();
@@ -1732,6 +1734,7 @@ void HostResolverImpl::SetMaxQueuedJobs(size_t value) {
 }
 
 int HostResolverImpl::Resolve(const RequestInfo& info,
+                              RequestPriority priority,
                               AddressList* addresses,
                               const CompletionCallback& callback,
                               RequestHandle* out_req,
@@ -1768,8 +1771,8 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   JobMap::iterator jobit = jobs_.find(key);
   Job* job;
   if (jobit == jobs_.end()) {
-    job = new Job(weak_ptr_factory_.GetWeakPtr(), key, info.priority(),
-                  request_net_log);
+    job =
+        new Job(weak_ptr_factory_.GetWeakPtr(), key, priority, request_net_log);
     job->Schedule();
 
     // Check for queue overflow.
@@ -1789,11 +1792,8 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   }
 
   // Can't complete synchronously. Create and attach request.
-  scoped_ptr<Request> req(new Request(source_net_log,
-                                      request_net_log,
-                                      info,
-                                      callback,
-                                      addresses));
+  scoped_ptr<Request> req(new Request(
+      source_net_log, request_net_log, info, priority, callback, addresses));
   if (out_req)
     *out_req = reinterpret_cast<RequestHandle>(req.get());
 

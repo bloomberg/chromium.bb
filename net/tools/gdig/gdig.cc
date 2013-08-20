@@ -449,8 +449,7 @@ void GDig::ReplayNextEntry() {
       return;
     }
 
-    HostResolver::RequestInfo info(HostPortPair(entry.domain_name.c_str(), 80),
-                                   DEFAULT_PRIORITY);
+    HostResolver::RequestInfo info(HostPortPair(entry.domain_name.c_str(), 80));
     AddressList* addrlist = new AddressList();
     unsigned current_index = replay_log_index_;
     CompletionCallback callback = base::Bind(&GDig::OnResolveComplete,
@@ -461,7 +460,11 @@ void GDig::ReplayNextEntry() {
     ++active_resolves_;
     ++replay_log_index_;
     int ret = resolver_->Resolve(
-        info, addrlist, callback, NULL,
+        info,
+        DEFAULT_PRIORITY,
+        addrlist,
+        callback,
+        NULL,
         BoundNetLog::Make(log_.get(), net::NetLog::SOURCE_NONE));
     if (ret != ERR_IO_PENDING)
       callback.Run(ret);

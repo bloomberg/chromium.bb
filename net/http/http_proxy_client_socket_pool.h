@@ -70,6 +70,7 @@ class NET_EXPORT_PRIVATE HttpProxySocketParams
     return spdy_session_pool_;
   }
   const HostResolver::RequestInfo& destination() const;
+  RequestPriority priority() const;
   bool tunnel() const { return tunnel_; }
   bool ignore_limits() const { return ignore_limits_; }
 

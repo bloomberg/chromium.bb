@@ -169,7 +169,7 @@ void PepperHostResolverMessageFilter::DoResolve(
   }
 
   net::HostResolver::RequestInfo request_info(
-      net::HostPortPair(host_port.host, host_port.port), net::DEFAULT_PRIORITY);
+      net::HostPortPair(host_port.host, host_port.port));
   PrepareRequestInfo(hint, &request_info);
 
   scoped_ptr<ReplyMessageContext> bound_info(new ReplyMessageContext(context));
@@ -179,6 +179,7 @@ void PepperHostResolverMessageFilter::DoResolve(
       new PepperLookupRequest<ReplyMessageContext>(
           host_resolver,
           request_info,
+          net::DEFAULT_PRIORITY,
           bound_info.release(),
           base::Bind(&PepperHostResolverMessageFilter::OnLookupFinished, this));
   lookup_request->Start();

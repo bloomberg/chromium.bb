@@ -764,6 +764,7 @@ class BlockableHostResolver : public HostResolver {
       : num_cancelled_requests_(0), waiting_for_resolve_(false) {}
 
   virtual int Resolve(const RequestInfo& info,
+                      RequestPriority priority,
                       AddressList* addresses,
                       const CompletionCallback& callback,
                       RequestHandle* out_req,

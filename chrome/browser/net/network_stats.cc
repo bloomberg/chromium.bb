@@ -147,10 +147,10 @@ bool NetworkStats::Start(net::HostResolver* host_resolver,
 
   scoped_ptr<net::SingleRequestHostResolver> resolver(
       new net::SingleRequestHostResolver(host_resolver));
-  net::HostResolver::RequestInfo request(server_host_port_pair,
-                                         net::DEFAULT_PRIORITY);
+  net::HostResolver::RequestInfo request(server_host_port_pair);
   int rv =
       resolver->Resolve(request,
+                        net::DEFAULT_PRIORITY,
                         &addresses_,
                         base::Bind(base::IgnoreResult(&NetworkStats::DoConnect),
                                    base::Unretained(this)),

@@ -849,6 +849,7 @@ void ProxyResolverV8Tracing::Job::DoDnsOperation() {
   HostResolver::RequestHandle dns_request = NULL;
   int result = host_resolver()->Resolve(
       MakeDnsRequestInfo(pending_dns_host_, pending_dns_op_),
+      DEFAULT_PRIORITY,
       &pending_dns_addresses_,
       base::Bind(&Job::OnDnsOperationComplete, this),
       &dns_request,
@@ -971,7 +972,7 @@ HostResolver::RequestInfo ProxyResolverV8Tracing::Job::MakeDnsRequestInfo(
     host_port.set_host(GetHostName());
   }
 
-  HostResolver::RequestInfo info(host_port, DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(host_port);
 
   // The non-ex flavors are limited to IPv4 results.
   if (op == MY_IP_ADDRESS || op == DNS_RESOLVE) {

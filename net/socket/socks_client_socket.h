@@ -31,6 +31,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
   // communicate to via the socks layer. For testing the referrer is optional.
   SOCKSClientSocket(scoped_ptr<ClientSocketHandle> transport_socket,
                     const HostResolver::RequestInfo& req_info,
+                    RequestPriority priority,
                     HostResolver* host_resolver);
 
   // On destruction Disconnect() is called.
@@ -123,6 +124,7 @@ class NET_EXPORT_PRIVATE SOCKSClientSocket : public StreamSocket {
   SingleRequestHostResolver host_resolver_;
   AddressList addresses_;
   HostResolver::RequestInfo host_request_info_;
+  RequestPriority priority_;
 
   BoundNetLog net_log_;
 

@@ -93,14 +93,12 @@ HostResolver::Options::Options()
       enable_caching(true) {
 }
 
-HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair,
-                                       RequestPriority priority)
+HostResolver::RequestInfo::RequestInfo(const HostPortPair& host_port_pair)
     : host_port_pair_(host_port_pair),
       address_family_(ADDRESS_FAMILY_UNSPECIFIED),
       host_resolver_flags_(0),
       allow_cached_response_(true),
-      is_speculative_(false),
-      priority_(priority) {}
+      is_speculative_(false) {}
 
 HostResolver::~HostResolver() {
 }

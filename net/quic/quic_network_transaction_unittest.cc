@@ -678,10 +678,13 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   // synchronously.
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("www.google.com", "192.168.0.1", "");
-  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80),
-                                 DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80));
   AddressList address;
-  host_resolver_.Resolve(info, &address, CompletionCallback(), NULL,
+  host_resolver_.Resolve(info,
+                         DEFAULT_PRIORITY,
+                         &address,
+                         CompletionCallback(),
+                         NULL,
                          net_log_.bound());
 
   CreateSession();
@@ -728,11 +731,10 @@ TEST_F(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   // before encrypting so the HTTP job will still start.
   host_resolver_.set_synchronous_mode(true);
   host_resolver_.rules()->AddIPLiteralRule("www.google.com", "192.168.0.1", "");
-  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80),
-                                 DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(HostPortPair("www.google.com", 80));
   AddressList address;
-  host_resolver_.Resolve(info, &address, CompletionCallback(), NULL,
-                         net_log_.bound());
+  host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                         CompletionCallback(), NULL, net_log_.bound());
 
   CreateSession();
   session_->quic_stream_factory()->set_require_confirmation(true);

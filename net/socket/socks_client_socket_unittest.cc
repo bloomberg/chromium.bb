@@ -83,7 +83,8 @@ scoped_ptr<SOCKSClientSocket> SOCKSClientSocketTest::BuildMockSocket(
   connection->SetSocket(scoped_ptr<StreamSocket>(tcp_sock_));
   return scoped_ptr<SOCKSClientSocket>(new SOCKSClientSocket(
       connection.Pass(),
-      HostResolver::RequestInfo(HostPortPair(hostname, port), DEFAULT_PRIORITY),
+      HostResolver::RequestInfo(HostPortPair(hostname, port)),
+      DEFAULT_PRIORITY,
       host_resolver));
 }
 
@@ -95,6 +96,7 @@ class HangingHostResolverWithCancel : public HostResolver {
   HangingHostResolverWithCancel() : outstanding_request_(NULL) {}
 
   virtual int Resolve(const RequestInfo& info,
+                      RequestPriority priority,
                       AddressList* addresses,
                       const CompletionCallback& callback,
                       RequestHandle* out_req,

@@ -58,10 +58,10 @@ void DnsResolveFunction::WorkOnIOThread() {
   // determining its answer.
   net::HostPortPair host_port_pair(hostname_, 0);
 
-  net::HostResolver::RequestInfo request_info(host_port_pair,
-                                              net::DEFAULT_PRIORITY);
+  net::HostResolver::RequestInfo request_info(host_port_pair);
   int resolve_result = host_resolver->Resolve(
       request_info,
+      net::DEFAULT_PRIORITY,
       addresses_.get(),
       base::Bind(&DnsResolveFunction::OnLookupFinished, this),
       request_handle_.get(),

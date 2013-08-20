@@ -50,6 +50,11 @@ EVENT_TYPE(HOST_RESOLVER_IMPL)
 //
 //   {
 //     "host": <Hostname associated with the request>,
+//     "address_family": <The address family to restrict results to>
+//     "allow_cached_response": <Whether it is ok to return a result from
+//                               the host cache>
+//     "is_speculative": <Whether this request was started by the DNS
+//                        prefetcher>
 //     "source_dependency": <Source id, if any, of what created the request>,
 //   }
 //

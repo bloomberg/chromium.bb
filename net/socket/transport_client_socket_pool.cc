@@ -52,7 +52,8 @@ TransportSocketParams::TransportSocketParams(
     bool disable_resolver_cache,
     bool ignore_limits,
     const OnHostResolutionCallback& host_resolution_callback)
-    : destination_(host_port_pair, priority),
+    : destination_(host_port_pair),
+      priority_(priority),
       ignore_limits_(ignore_limits),
       host_resolution_callback_(host_resolution_callback) {
   if (disable_resolver_cache)
@@ -160,7 +161,9 @@ int TransportConnectJob::DoResolveHost() {
   connect_timing_.dns_start = base::TimeTicks::Now();
 
   return resolver_.Resolve(
-      params_->destination(), &addresses_,
+      params_->destination(),
+      params_->priority(),
+      &addresses_,
       base::Bind(&TransportConnectJob::OnIOComplete, base::Unretained(this)),
       net_log());
 }

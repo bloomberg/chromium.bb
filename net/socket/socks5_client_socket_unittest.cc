@@ -68,11 +68,14 @@ void SOCKS5ClientSocketTest::SetUp() {
   PlatformTest::SetUp();
 
   // Resolve the "localhost" AddressList used by the TCP connection to connect.
-  HostResolver::RequestInfo info(HostPortPair("www.socks-proxy.com", 1080),
-                                 DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(HostPortPair("www.socks-proxy.com", 1080));
   TestCompletionCallback callback;
-  int rv = host_resolver_->Resolve(info, &address_list_, callback.callback(),
-                                   NULL, BoundNetLog());
+  int rv = host_resolver_->Resolve(info,
+                                   DEFAULT_PRIORITY,
+                                   &address_list_,
+                                   callback.callback(),
+                                   NULL,
+                                   BoundNetLog());
   ASSERT_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   ASSERT_EQ(OK, rv);
@@ -103,8 +106,7 @@ scoped_ptr<SOCKS5ClientSocket> SOCKS5ClientSocketTest::BuildMockSocket(
   connection->SetSocket(scoped_ptr<StreamSocket>(tcp_sock_));
   return scoped_ptr<SOCKS5ClientSocket>(new SOCKS5ClientSocket(
       connection.Pass(),
-      HostResolver::RequestInfo(HostPortPair(hostname, port),
-                                DEFAULT_PRIORITY)));
+      HostResolver::RequestInfo(HostPortPair(hostname, port))));
 }
 
 // Tests a complete SOCKS5 handshake and the disconnection.

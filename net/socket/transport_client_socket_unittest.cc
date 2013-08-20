@@ -123,11 +123,10 @@ void TransportClientSocketTest::SetUp() {
   AddressList addr;
   // MockHostResolver resolves everything to 127.0.0.1.
   scoped_ptr<HostResolver> resolver(new MockHostResolver());
-  HostResolver::RequestInfo info(HostPortPair("localhost", listen_port_),
-                                 DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(HostPortPair("localhost", listen_port_));
   TestCompletionCallback callback;
-  int rv = resolver->Resolve(info, &addr, callback.callback(), NULL,
-                             BoundNetLog());
+  int rv = resolver->Resolve(
+      info, DEFAULT_PRIORITY, &addr, callback.callback(), NULL, BoundNetLog());
   CHECK_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   CHECK_EQ(rv, OK);

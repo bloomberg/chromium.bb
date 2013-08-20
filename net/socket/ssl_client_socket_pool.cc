@@ -221,10 +221,12 @@ int SSLConnectJob::DoTransportConnect() {
   transport_socket_handle_.reset(new ClientSocketHandle());
   scoped_refptr<TransportSocketParams> direct_params =
       params_->GetDirectConnectionParams();
-  return transport_socket_handle_->Init(
-      group_name(), direct_params,
-      direct_params->destination().priority(), callback_, transport_pool_,
-      net_log());
+  return transport_socket_handle_->Init(group_name(),
+                                        direct_params,
+                                        direct_params->priority(),
+                                        callback_,
+                                        transport_pool_,
+                                        net_log());
 }
 
 int SSLConnectJob::DoTransportConnectComplete(int result) {
@@ -240,10 +242,12 @@ int SSLConnectJob::DoSOCKSConnect() {
   transport_socket_handle_.reset(new ClientSocketHandle());
   scoped_refptr<SOCKSSocketParams> socks_proxy_params =
       params_->GetSocksProxyConnectionParams();
-  return transport_socket_handle_->Init(
-      group_name(), socks_proxy_params,
-      socks_proxy_params->destination().priority(),
-      callback_, socks_pool_, net_log());
+  return transport_socket_handle_->Init(group_name(),
+                                        socks_proxy_params,
+                                        socks_proxy_params->priority(),
+                                        callback_,
+                                        socks_pool_,
+                                        net_log());
 }
 
 int SSLConnectJob::DoSOCKSConnectComplete(int result) {
@@ -260,10 +264,12 @@ int SSLConnectJob::DoTunnelConnect() {
   transport_socket_handle_.reset(new ClientSocketHandle());
   scoped_refptr<HttpProxySocketParams> http_proxy_params =
       params_->GetHttpProxyConnectionParams();
-  return transport_socket_handle_->Init(
-      group_name(), http_proxy_params,
-      http_proxy_params->destination().priority(), callback_, http_proxy_pool_,
-      net_log());
+  return transport_socket_handle_->Init(group_name(),
+                                        http_proxy_params,
+                                        http_proxy_params->priority(),
+                                        callback_,
+                                        http_proxy_pool_,
+                                        net_log());
 }
 
 int SSLConnectJob::DoTunnelConnectComplete(int result) {

@@ -101,14 +101,16 @@ class Predictor::LookupRequest {
   // anything else ==> Host was not found synchronously.
   int Start() {
     net::HostResolver::RequestInfo resolve_info(
-        net::HostPortPair::FromURL(url_), net::DEFAULT_PRIORITY);
+        net::HostPortPair::FromURL(url_));
 
     // Make a note that this is a speculative resolve request. This allows us
     // to separate it from real navigations in the observer's callback, and
     // lets the HostResolver know it can de-prioritize it.
     resolve_info.set_is_speculative(true);
     return resolver_.Resolve(
-        resolve_info, &addresses_,
+        resolve_info,
+        net::DEFAULT_PRIORITY,
+        &addresses_,
         base::Bind(&LookupRequest::OnLookupFinished, base::Unretained(this)),
         net::BoundNetLog());
   }

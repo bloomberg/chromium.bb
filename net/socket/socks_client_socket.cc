@@ -58,6 +58,7 @@ COMPILE_ASSERT(sizeof(SOCKS4ServerResponse) == kReadHeaderSize,
 SOCKSClientSocket::SOCKSClientSocket(
     scoped_ptr<ClientSocketHandle> transport_socket,
     const HostResolver::RequestInfo& req_info,
+    RequestPriority priority,
     HostResolver* host_resolver)
     : transport_(transport_socket.Pass()),
       next_state_(STATE_NONE),
@@ -66,8 +67,8 @@ SOCKSClientSocket::SOCKSClientSocket(
       bytes_received_(0),
       host_resolver_(host_resolver),
       host_request_info_(req_info),
-      net_log_(transport_->socket()->NetLog()) {
-}
+      priority_(priority),
+      net_log_(transport_->socket()->NetLog()) {}
 
 SOCKSClientSocket::~SOCKSClientSocket() {
   Disconnect();
@@ -270,7 +271,9 @@ int SOCKSClientSocket::DoResolveHost() {
   // addresses for the target host.
   host_request_info_.set_address_family(ADDRESS_FAMILY_IPV4);
   return host_resolver_.Resolve(
-      host_request_info_, &addresses_,
+      host_request_info_,
+      priority_,
+      &addresses_,
       base::Bind(&SOCKSClientSocket::OnIOComplete, base::Unretained(this)),
       net_log_);
 }

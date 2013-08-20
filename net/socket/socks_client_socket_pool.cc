@@ -24,7 +24,8 @@ SOCKSSocketParams::SOCKSSocketParams(
     const HostPortPair& host_port_pair,
     RequestPriority priority)
     : transport_params_(proxy_server),
-      destination_(host_port_pair, priority),
+      destination_(host_port_pair),
+      priority_(priority),
       socks_v5_(socks_v5) {
   if (transport_params_.get())
     ignore_limits_ = transport_params_->ignore_limits();
@@ -116,10 +117,12 @@ int SOCKSConnectJob::DoLoop(int result) {
 int SOCKSConnectJob::DoTransportConnect() {
   next_state_ = STATE_TRANSPORT_CONNECT_COMPLETE;
   transport_socket_handle_.reset(new ClientSocketHandle());
-  return transport_socket_handle_->Init(
-      group_name(), socks_params_->transport_params(),
-      socks_params_->destination().priority(), callback_, transport_pool_,
-      net_log());
+  return transport_socket_handle_->Init(group_name(),
+                                        socks_params_->transport_params(),
+                                        socks_params_->priority(),
+                                        callback_,
+                                        transport_pool_,
+                                        net_log());
 }
 
 int SOCKSConnectJob::DoTransportConnectComplete(int result) {
@@ -144,6 +147,7 @@ int SOCKSConnectJob::DoSOCKSConnect() {
   } else {
     socket_.reset(new SOCKSClientSocket(transport_socket_handle_.Pass(),
                                         socks_params_->destination(),
+                                        socks_params_->priority(),
                                         resolver_));
   }
   return socket_->Connect(

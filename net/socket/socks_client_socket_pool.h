@@ -35,6 +35,7 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
     return transport_params_;
   }
   const HostResolver::RequestInfo& destination() const { return destination_; }
+  RequestPriority priority() const { return priority_; }
   bool is_socks_v5() const { return socks_v5_; }
   bool ignore_limits() const { return ignore_limits_; }
 
@@ -46,6 +47,7 @@ class NET_EXPORT_PRIVATE SOCKSSocketParams
   const scoped_refptr<TransportSocketParams> transport_params_;
   // This is the HTTP destination.
   HostResolver::RequestInfo destination_;
+  RequestPriority priority_;
   const bool socks_v5_;
   bool ignore_limits_;
 

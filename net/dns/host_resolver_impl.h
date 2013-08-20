@@ -131,6 +131,7 @@ class NET_EXPORT HostResolverImpl
 
   // HostResolver methods:
   virtual int Resolve(const RequestInfo& info,
+                      RequestPriority priority,
                       AddressList* addresses,
                       const CompletionCallback& callback,
                       RequestHandle* out_req,

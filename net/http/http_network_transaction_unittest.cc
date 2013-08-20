@@ -7282,8 +7282,8 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   AddressList addrlist;
   TestCompletionCallback callback;
   int rv = session_deps_.host_resolver->Resolve(
-      HostResolver::RequestInfo(HostPortPair("www.google.com", 80),
-                                DEFAULT_PRIORITY),
+      HostResolver::RequestInfo(HostPortPair("www.google.com", 80)),
+      DEFAULT_PRIORITY,
       &addrlist,
       callback.callback(),
       NULL,
@@ -7295,8 +7295,8 @@ void HttpNetworkTransactionTest::BypassHostCacheOnRefreshHelper(
   // Verify that it was added to host cache, by doing a subsequent async lookup
   // and confirming it completes synchronously.
   rv = session_deps_.host_resolver->Resolve(
-      HostResolver::RequestInfo(HostPortPair("www.google.com", 80),
-                                DEFAULT_PRIORITY),
+      HostResolver::RequestInfo(HostPortPair("www.google.com", 80)),
+      DEFAULT_PRIORITY,
       &addrlist,
       callback.callback(),
       NULL,
@@ -10493,11 +10493,14 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest, MAYBE_UseIPConnectionPooling) {
 
   // Preload www.gmail.com into HostCache.
   HostPortPair host_port("www.gmail.com", 443);
-  HostResolver::RequestInfo resolve_info(host_port, DEFAULT_PRIORITY);
+  HostResolver::RequestInfo resolve_info(host_port);
   AddressList ignored;
-  rv = session_deps_.host_resolver->Resolve(resolve_info, &ignored,
-                                           callback.callback(), NULL,
-                                           BoundNetLog());
+  rv = session_deps_.host_resolver->Resolve(resolve_info,
+                                            DEFAULT_PRIORITY,
+                                            &ignored,
+                                            callback.callback(),
+                                            NULL,
+                                            BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);
@@ -10621,12 +10624,13 @@ class OneTimeCachingHostResolver : public net::HostResolver {
 
   // HostResolver methods:
   virtual int Resolve(const RequestInfo& info,
+                      RequestPriority priority,
                       AddressList* addresses,
                       const CompletionCallback& callback,
                       RequestHandle* out_req,
                       const BoundNetLog& net_log) OVERRIDE {
     return host_resolver_.Resolve(
-        info, addresses, callback, out_req, net_log);
+        info, priority, addresses, callback, out_req, net_log);
   }
 
   virtual int ResolveFromCache(const RequestInfo& info,
@@ -10738,11 +10742,14 @@ WRAPPED_TEST_P(HttpNetworkTransactionTest,
   EXPECT_EQ("hello!", response_data);
 
   // Preload cache entries into HostCache.
-  HostResolver::RequestInfo resolve_info(HostPortPair("www.gmail.com", 443),
-                                         DEFAULT_PRIORITY);
+  HostResolver::RequestInfo resolve_info(HostPortPair("www.gmail.com", 443));
   AddressList ignored;
-  rv = host_resolver.Resolve(resolve_info, &ignored, callback.callback(),
-                             NULL, BoundNetLog());
+  rv = host_resolver.Resolve(resolve_info,
+                             DEFAULT_PRIORITY,
+                             &ignored,
+                             callback.callback(),
+                             NULL,
+                             BoundNetLog());
   EXPECT_EQ(ERR_IO_PENDING, rv);
   rv = callback.WaitForResult();
   EXPECT_EQ(OK, rv);

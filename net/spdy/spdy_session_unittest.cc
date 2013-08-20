@@ -2817,12 +2817,16 @@ TEST_P(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
   // Set up an alias for the idle SPDY session, increasing its ref count to 2.
   SpdySessionKey key2(HostPortPair("2.com", 80), ProxyServer::Direct(),
                       kPrivacyModeDisabled);
-  HostResolver::RequestInfo info(key2.host_port_pair(), DEFAULT_PRIORITY);
+  HostResolver::RequestInfo info(key2.host_port_pair());
   AddressList addresses;
   // Pre-populate the DNS cache, since a synchronous resolution is required in
   // order to create the alias.
-  session_deps_.host_resolver->Resolve(
-      info, &addresses, CompletionCallback(), NULL, BoundNetLog());
+  session_deps_.host_resolver->Resolve(info,
+                                       DEFAULT_PRIORITY,
+                                       &addresses,
+                                       CompletionCallback(),
+                                       NULL,
+                                       BoundNetLog());
   // Get a session for |key2|, which should return the session created earlier.
   base::WeakPtr<SpdySession> session2 =
       spdy_session_pool_->FindAvailableSession(key2, BoundNetLog());

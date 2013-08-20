@@ -25,9 +25,11 @@ SingleRequestHostResolver::~SingleRequestHostResolver() {
   Cancel();
 }
 
-int SingleRequestHostResolver::Resolve(
-    const HostResolver::RequestInfo& info, AddressList* addresses,
-    const CompletionCallback& callback, const BoundNetLog& net_log) {
+int SingleRequestHostResolver::Resolve(const HostResolver::RequestInfo& info,
+                                       RequestPriority priority,
+                                       AddressList* addresses,
+                                       const CompletionCallback& callback,
+                                       const BoundNetLog& net_log) {
   DCHECK(addresses);
   DCHECK_EQ(false, callback.is_null());
   DCHECK(cur_request_callback_.is_null()) << "resolver already in use";
@@ -40,7 +42,7 @@ int SingleRequestHostResolver::Resolve(
       callback.is_null() ? CompletionCallback() : callback_;
 
   int rv = resolver_->Resolve(
-      info, addresses, transient_callback, &request, net_log);
+      info, priority, addresses, transient_callback, &request, net_log);
 
   if (rv == ERR_IO_PENDING) {
     DCHECK_EQ(false, callback.is_null());

@@ -336,9 +336,9 @@ void SpdySessionPoolTest::RunIPPoolingTest(
 
     // This test requires that the HostResolver cache be populated.  Normal
     // code would have done this already, but we do it manually.
-    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort),
-                                   DEFAULT_PRIORITY);
+    HostResolver::RequestInfo info(HostPortPair(test_hosts[i].name, kTestPort));
     session_deps_.host_resolver->Resolve(info,
+                                         DEFAULT_PRIORITY,
                                          &test_hosts[i].addresses,
                                          CompletionCallback(),
                                          NULL,

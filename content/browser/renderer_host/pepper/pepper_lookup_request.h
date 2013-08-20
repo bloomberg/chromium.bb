@@ -24,20 +24,23 @@ class PepperLookupRequest {
   // callback, when lookup will finish.
   PepperLookupRequest(net::HostResolver* resolver,
                       const net::HostResolver::RequestInfo& request_info,
+                      net::RequestPriority priority,
                       T* bound_info,
                       const LookupRequestCallback& callback)
       : resolver_(resolver),
         request_info_(request_info),
+        priority_(priority),
         bound_info_(bound_info),
-        callback_(callback) {
-  }
+        callback_(callback) {}
 
   void Start() {
-    int result = resolver_.Resolve(
-        request_info_, &addresses_,
-        base::Bind(&PepperLookupRequest<T>::OnLookupFinished,
-                   base::Unretained(this)),
-        net::BoundNetLog());
+    int result =
+        resolver_.Resolve(request_info_,
+                          priority_,
+                          &addresses_,
+                          base::Bind(&PepperLookupRequest<T>::OnLookupFinished,
+                                     base::Unretained(this)),
+                          net::BoundNetLog());
     if (result != net::ERR_IO_PENDING)
       OnLookupFinished(result);
   }
@@ -50,6 +53,7 @@ class PepperLookupRequest {
 
   net::SingleRequestHostResolver resolver_;
   net::HostResolver::RequestInfo request_info_;
+  net::RequestPriority priority_;
   scoped_ptr<T> bound_info_;
   LookupRequestCallback callback_;
 

@@ -77,9 +77,10 @@ class SocketTunnel {
 
     host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
     net::HostResolver::RequestInfo request_info(
-        net::HostPortPair(tokens[0], port), net::DEFAULT_PRIORITY);
+        net::HostPortPair(tokens[0], port));
     result = host_resolver_->Resolve(
         request_info,
+        net::DEFAULT_PRIORITY,
         &address_list_,
         base::Bind(&SocketTunnel::OnResolved, base::Unretained(this)),
         NULL,

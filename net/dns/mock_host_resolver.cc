@@ -67,6 +67,7 @@ MockHostResolverBase::~MockHostResolverBase() {
 }
 
 int MockHostResolverBase::Resolve(const RequestInfo& info,
+                                  RequestPriority priority,
                                   AddressList* addresses,
                                   const CompletionCallback& callback,
                                   RequestHandle* handle,
@@ -401,6 +402,7 @@ RuleBasedHostResolverProc* CreateCatchAllHostResolverProc() {
 //-----------------------------------------------------------------------------
 
 int HangingHostResolver::Resolve(const RequestInfo& info,
+                                 RequestPriority priority,
                                  AddressList* addresses,
                                  const CompletionCallback& callback,
                                  RequestHandle* out_req,
