@@ -2,6 +2,9 @@
    "alternate_error_pages": {
       "enabled": false
    },
+   "autofill": {
+      "enabled": false
+   },
    "browser": {
       "check_default_browser": false
    },
@@ -33,7 +36,8 @@
          "notifications": 1,
          "popups": 1,
          "ppapi-broker": 1
-      }
+      },
+      "password_manager_enabled": false
    },
    "safebrowsing": {
       "enabled": false

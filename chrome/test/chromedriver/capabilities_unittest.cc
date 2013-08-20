@@ -317,3 +317,19 @@ TEST(ParseCapabilities, LoggingPrefsNotDict) {
   Status status = capabilities.Parse(caps, &log);
   ASSERT_FALSE(status.IsOk());
 }
+
+TEST(ParseCapabilities, ExcludeSwitches) {
+  Capabilities capabilities;
+  base::ListValue exclude_switches;
+  exclude_switches.AppendString("switch1");
+  exclude_switches.AppendString("switch2");
+  base::DictionaryValue caps;
+  caps.Set("chromeOptions.excludeSwitches", exclude_switches.DeepCopy());
+  Logger log(Log::kError);
+  Status status = capabilities.Parse(caps, &log);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ(2u, capabilities.exclude_switches.size());
+  const std::set<std::string>& switches = capabilities.exclude_switches;
+  ASSERT_TRUE(switches.find("switch1") != switches.end());
+  ASSERT_TRUE(switches.find("switch2") != switches.end());
+}

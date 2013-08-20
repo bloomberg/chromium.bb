@@ -64,6 +64,16 @@ Status UnpackAutomationExtension(const base::FilePath& temp_dir,
   return Status(kOk);
 }
 
+void AddSwitches(CommandLine* command,
+                 const char* switches[],
+                 size_t switch_count,
+                 const std::set<std::string>& exclude_switches) {
+  for (size_t i = 0; i < switch_count; ++i) {
+    if (exclude_switches.find(switches[i]) == exclude_switches.end())
+      command->AppendSwitch(switches[i]);
+  }
+}
+
 Status PrepareCommandLine(int port,
                           const Capabilities& capabilities,
                           CommandLine* prepared_command,
@@ -81,13 +91,35 @@ Status PrepareCommandLine(int port,
                                      program.value().c_str()));
   }
 
-  command.AppendSwitchASCII("remote-debugging-port", base::IntToString(port));
-  command.AppendSwitch("no-first-run");
+  const char* excludable_switches[] = {
+      "disable-hang-monitor",
+      "disable-prompt-on-repost",
+      "full-memory-crash-report",
+      "no-first-run",
+      "disable-background-networking",
+      // TODO(chrisgao): Add "disable-sync" when chrome 30- is not supported.
+      // For chrome 30-, it leads to crash when opening chrome://settings.
+      "disable-web-resources",
+      "safebrowsing-disable-auto-update",
+      "safebrowsing-disable-download-protection",
+      "disable-client-side-phishing-detection",
+      "disable-component-update",
+      "disable-default-apps",
+  };
+
+  AddSwitches(&command, excludable_switches, arraysize(excludable_switches),
+              capabilities.exclude_switches);
+  AddSwitches(&command, kCommonSwitches, arraysize(kCommonSwitches),
+              capabilities.exclude_switches);
+
   command.AppendSwitch("enable-logging");
   command.AppendSwitchASCII("logging-level", "1");
-  command.AppendArg("data:text/html;charset=utf-8,");
+  command.AppendSwitchASCII("password-store", "basic");
+  command.AppendSwitch("use-mock-keychain");
+  command.AppendSwitchASCII("remote-debugging-port", base::IntToString(port));
 
   if (!command.HasSwitch("user-data-dir")) {
+    command.AppendArg("about:blank");
     if (!user_data_dir->CreateUniqueTempDir())
       return Status(kUnknownError, "cannot create temp dir for user data dir");
     command.AppendSwitchPath("user-data-dir", user_data_dir->path());
@@ -156,8 +188,6 @@ Status LaunchDesktopChrome(
   if (status.IsError())
     return status;
 
-  for (size_t i = 0; i < arraysize(kCommonSwitches); i++)
-    command.AppendSwitch(kCommonSwitches[i]);
   base::LaunchOptions options;
 
 #if !defined(OS_WIN)

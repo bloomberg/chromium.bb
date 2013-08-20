@@ -5,6 +5,7 @@
 #ifndef CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
 #define CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -45,6 +46,10 @@ struct Capabilities {
   scoped_ptr<base::DictionaryValue> local_state;
   std::vector<std::string> extensions;
   scoped_ptr<base::DictionaryValue> logging_prefs;
+
+  // Set of switches which should be removed from default list when launching
+  // Chrome.
+  std::set<std::string> exclude_switches;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CAPABILITIES_H_

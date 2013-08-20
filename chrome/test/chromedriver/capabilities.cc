@@ -182,6 +182,22 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   return Status(kOk);
 }
 
+Status ParseExcludeSwitches(const base::Value& option,
+                            Capabilities* capabilities) {
+  const base::ListValue* switches = NULL;
+  if (!option.GetAsList(&switches))
+    return Status(kUnknownError, "'excludeSwitches' must be a list");
+  for (size_t i = 0; i < switches->GetSize(); ++i) {
+    std::string switch_name;
+    if (!switches->GetString(i, &switch_name)) {
+      return Status(kUnknownError,
+                    "each switch to be removed must be a string");
+    }
+    capabilities->exclude_switches.insert(switch_name);
+  }
+  return Status(kOk);
+}
+
 Status ParseDesktopChromeCapabilities(
     Log* log,
     const base::Value& capability,
@@ -201,6 +217,7 @@ Status ParseDesktopChromeCapabilities(
   parser_map["prefs"] = base::Bind(&ParsePrefs);
   parser_map["localState"] = base::Bind(&ParseLocalState);
   parser_map["extensions"] = base::Bind(&ParseExtensions);
+  parser_map["excludeSwitches"] = base::Bind(&ParseExcludeSwitches);
 
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
        it.Advance()) {
