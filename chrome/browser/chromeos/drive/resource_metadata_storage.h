@@ -36,10 +36,7 @@ class ResourceMetadataStorage {
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  //
-  // Note: Skip '7' when incrementing this value next time. '7' has been used
-  // in the period between r208686 and r213797.
-  static const int kDBVersion = 6;
+  static const int kDBVersion = 8;
 
   // Object to iterate over entries stored in this storage.
   class Iterator {

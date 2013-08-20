@@ -26,9 +26,9 @@ namespace util {
 bool IsDriveV2ApiEnabled() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 
-  // Disable Drive API v2 by default.
+  // Enable Drive API v2 by default.
   if (!command_line->HasSwitch(switches::kEnableDriveV2Api))
-    return false;
+    return true;
 
   std::string value =
       command_line->GetSwitchValueASCII(switches::kEnableDriveV2Api);
