@@ -74,7 +74,7 @@ namespace WebCore {
 
 // FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
 // We should refactor this.
-void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot)
+void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool singleShot, ExceptionState& es)
 {
     int argumentCount = args.Length();
 
@@ -85,7 +85,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
     ScriptExecutionContext* scriptContext = static_cast<ScriptExecutionContext*>(imp->document());
 
     if (!scriptContext) {
-        setDOMException(InvalidAccessError, args.GetIsolate());
+        es.throwDOMException(InvalidAccessError);
         return;
     }
 
@@ -110,7 +110,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& args, bool 
             return;
     }
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame()))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es))
         return;
 
     OwnPtr<ScheduledAction> action;
@@ -422,13 +422,17 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 
 void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    WindowSetTimeoutImpl(args, true);
+    ExceptionState es(args.GetIsolate());
+    WindowSetTimeoutImpl(args, true, es);
+    es.throwIfNeeded();
 }
 
 
 void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& args)
 {
-    WindowSetTimeoutImpl(args, false);
+    ExceptionState es(args.GetIsolate());
+    WindowSetTimeoutImpl(args, false, es);
+    es.throwIfNeeded();
 }
 
 bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)
