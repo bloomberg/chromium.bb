@@ -869,7 +869,7 @@ bool GetRateStats(const TraceEventVector& events,
     sum_mean_offsets_squared += offset * offset;
   }
   stats->standard_deviation_us =
-      sum_mean_offsets_squared / static_cast<double>(num_deltas - 1);
+      sqrt(sum_mean_offsets_squared / static_cast<double>(num_deltas - 1));
 
   return true;
 }

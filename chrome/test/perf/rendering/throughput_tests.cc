@@ -382,7 +382,7 @@ class ThroughputTest : public BrowserPerfTest {
 
     // Print perf results.
     double mean_ms = stats.mean_us / 1000.0;
-    double std_dev_ms = stats.standard_deviation_us / 1000.0 / 1000.0;
+    double std_dev_ms = stats.standard_deviation_us / 1000.0;
     std::string trace_name = use_compositor_thread_? "gpu_thread" :
                              ran_on_gpu ? "gpu" : "software";
     std::string mean_and_error = base::StringPrintf("%f,%f", mean_ms,
