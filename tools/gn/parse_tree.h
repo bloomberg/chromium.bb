@@ -148,8 +148,8 @@ class BlockNode : public ParseNode {
       const std::string& help = std::string()) const OVERRIDE;
   virtual void Print(std::ostream& out, int indent) const OVERRIDE;
 
-  void set_begin_token(const Token* t) { begin_token_ = t; }
-  void set_end_token(const Token* t) { end_token_ = t; }
+  void set_begin_token(const Token& t) { begin_token_ = t; }
+  void set_end_token(const Token& t) { end_token_ = t; }
 
   const std::vector<ParseNode*>& statements() const { return statements_; }
   void append_statement(scoped_ptr<ParseNode> s) {
@@ -163,8 +163,8 @@ class BlockNode : public ParseNode {
   bool has_scope_;
 
   // Tokens corresponding to { and }, if any (may be NULL).
-  const Token* begin_token_;
-  const Token* end_token_;
+  Token begin_token_;
+  Token end_token_;
 
   // Owning pointers, use unique_ptr when we can use C++11.
   std::vector<ParseNode*> statements_;

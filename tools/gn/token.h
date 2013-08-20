@@ -58,7 +58,8 @@ class Token {
   LocationRange range() const {
     return LocationRange(location_,
                          Location(location_.file(), location_.line_number(),
-                                  location_.char_offset() + value_.size()));
+                                  location_.char_offset() +
+                                      static_cast<int>(value_.size())));
   }
 
   // Helper functions for comparing this token to something.

@@ -48,6 +48,7 @@
         'function_process_file_template.cc',
         'function_read_file.cc',
         'function_set_default_toolchain.cc',
+        'function_set_defaults.cc',
         'function_template.cc',
         'function_toolchain.cc',
         'function_write_file.cc',

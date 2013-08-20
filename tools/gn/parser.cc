@@ -397,14 +397,22 @@ scoped_ptr<ParseNode> Parser::ParseStatement() {
 }
 
 scoped_ptr<BlockNode> Parser::ParseBlock() {
-  Consume(Token::LEFT_BRACE, "Expected '{' to start a block.");
+  Token begin_token =
+      Consume(Token::LEFT_BRACE, "Expected '{' to start a block.");
+  if (has_error())
+    return scoped_ptr<BlockNode>();
   scoped_ptr<BlockNode> block(new BlockNode(true));
+  block->set_begin_token(begin_token);
+
   for (;;) {
-    if (Match(Token::RIGHT_BRACE))
+    if (LookAhead(Token::RIGHT_BRACE)) {
+      block->set_end_token(Consume());
       break;
+    }
+
     scoped_ptr<ParseNode> statement = ParseStatement();
     if (!statement)
-      break;
+      return scoped_ptr<BlockNode>();
     block->append_statement(statement.Pass());
   }
   return block.Pass();

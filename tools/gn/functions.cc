@@ -22,12 +22,6 @@
 
 namespace {
 
-void FillNeedsBlockError(const FunctionCallNode* function, Err* err) {
-  *err = Err(function->function(), "This function call requires a block.",
-      "The block's \"{\" must be on the same line as the function "
-      "call's \")\".");
-}
-
 // This is called when a template is invoked. When we see a template
 // declaration, that funciton is RunTemplate.
 Value RunTemplateInvocation(Scope* scope,
@@ -38,9 +32,10 @@ Value RunTemplateInvocation(Scope* scope,
                             Err* err) {
   if (!EnsureNotProcessingImport(invocation, scope, err))
     return Value();
+
   Scope block_scope(scope);
   if (!FillTargetBlockScope(scope, invocation,
-                            invocation->function().value().data(),
+                            invocation->function().value().as_string(),
                             block, args, &block_scope, err))
     return Value();
 
@@ -90,7 +85,7 @@ bool EnsureNotProcessingBuildConfig(const ParseNode* node,
 
 bool FillTargetBlockScope(const Scope* scope,
                           const FunctionCallNode* function,
-                          const char* target_type,
+                          const std::string& target_type,
                           const BlockNode* block,
                           const std::vector<Value>& args,
                           Scope* block_scope,
@@ -120,6 +115,12 @@ bool FillTargetBlockScope(const Scope* scope,
                         function);
   block_scope->MarkUsed(target_name);
   return true;
+}
+
+void FillNeedsBlockError(const FunctionCallNode* function, Err* err) {
+  *err = Err(function->function(), "This function call requires a block.",
+      "The block's \"{\" must be on the same line as the function "
+      "call's \")\".");
 }
 
 bool EnsureSingleStringArg(const FunctionCallNode* function,
@@ -322,48 +323,6 @@ Value RunImport(Scope* scope,
       input_dir.ResolveRelativeFile(args[0].string_value());
   scope->settings()->import_manager().DoImport(import_file, function,
                                                scope, err);
-  return Value();
-}
-
-// set_defaults ----------------------------------------------------------------
-
-const char kSetDefaults[] = "set_defaults";
-const char kSetDefaults_Help[] =
-    "TODO(brettw) write this.";
-
-Value RunSetDefaults(Scope* scope,
-                     const FunctionCallNode* function,
-                     const std::vector<Value>& args,
-                     BlockNode* block,
-                     Err* err) {
-  if (!EnsureSingleStringArg(function, args, err))
-    return Value();
-  const std::string& target_type(args[0].string_value());
-
-  // Ensure there aren't defaults already set.
-  if (scope->GetTargetDefaults(target_type)) {
-    *err = Err(function->function(),
-               "This target type defaults were already set.");
-    return Value();
-  }
-
-  // Execute the block in a new scope that has a parent of the containing
-  // scope.
-  Scope block_scope(scope);
-  if (!FillTargetBlockScope(scope, function,
-                            function->function().value().data(),
-                            block, args, &block_scope, err))
-    return Value();
-
-  // Run the block for the rule invocation.
-  block->ExecuteBlockInScope(&block_scope, err);
-  if (err->has_error())
-    return Value();
-
-  // Now copy the values set on the scope we made into the free-floating one
-  // (with no containing scope) used to hold the target defaults.
-  Scope* dest = scope->MakeTargetDefaults(target_type);
-  block_scope.NonRecursiveMergeTo(dest, function, "<SHOULD NOT FAIL>", err);
   return Value();
 }
 

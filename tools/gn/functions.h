@@ -283,11 +283,15 @@ bool EnsureNotProcessingBuildConfig(const ParseNode* node,
 // On success, returns true. On failure, sets the error and returns false.
 bool FillTargetBlockScope(const Scope* scope,
                           const FunctionCallNode* function,
-                          const char* target_type,
+                          const std::string& target_type,
                           const BlockNode* block,
                           const std::vector<Value>& args,
                           Scope* block_scope,
                           Err* err);
+
+// Sets the given error to a message explaining that the function call requires
+// a block.
+void FillNeedsBlockError(const FunctionCallNode* function, Err* err);
 
 // Validates that the given function call has one string argument. This is
 // the most common function signature, so it saves space to have this helper.
