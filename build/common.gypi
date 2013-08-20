@@ -1576,8 +1576,7 @@
       }],
       ['OS == "ios"', {
         'grit_defines': [
-          # define for iOS specific resources.
-          '-D', 'ios',
+          '-t', 'ios',
           # iOS uses a whitelist to filter resources.
           '-w', '<(DEPTH)/build/ios/grit_whitelist.txt'
         ],

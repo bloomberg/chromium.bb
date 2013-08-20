@@ -154,7 +154,7 @@
       <structure type="chrome_scaled_image" name="IDR_RADIO_HOVER" file="common/radio_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_RADIO_PRESSED" file="common/radio_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXT_SELECTION_HANDLE" file="common/text_selection_handle_small.png" />
-      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_CLOSE" file="linux/linux_close.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
@@ -167,7 +167,7 @@
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG" file="close_dialog.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_H" file="close_dialog_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_DIALOG_P" file="close_dialog_pressed.png" />
-      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_CLOSE_H" file="linux/linux_close_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_CLOSE_P" file="linux/linux_close_pressed.png" />
       </if>
@@ -193,7 +193,7 @@
       <structure type="chrome_scaled_image" name="IDR_FRAME" file="frame_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_APP_PANEL" file="frame_app_panel_default.png" />
       <structure type="chrome_scaled_image" name="IDR_FRAME_INACTIVE" file="frame_default_inactive.png" />
-      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE" file="linux/linux_maximize.png" />
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_H" file="linux/linux_maximize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="linux/linux_maximize_pressed.png" />
@@ -204,7 +204,7 @@
         <structure type="chrome_scaled_image" name="IDR_MAXIMIZE_P" file="maximize_pressed.png" />
         <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="common/menu_hierarchy_arrow.png" />
       </if>
-      <if expr="is_macosx">
+      <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_MENU_HIERARCHY_ARROW" file="mac/menu_hierarchy_arrow.png" />
       </if>
       <if expr="pp_ifdef('toolkit_views')">
@@ -226,7 +226,7 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_MENU_DROPARROW" file="cros/menu_droparrow.png" />
       <structure type="chrome_scaled_image" name="IDR_MESSAGE_CLOSE" file="common/message_close.png" />
-      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE" file="linux/linux_minimize.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_H" file="linux/linux_minimize_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_MINIMIZE_P" file="linux/linux_minimize_pressed.png" />
@@ -271,7 +271,7 @@
       <structure type="chrome_scaled_image" name="IDR_PANEL_TOP_RIGHT_CORNER" file="panel_top_right_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_LEFT_CORNER" file="panel_bottom_left_corner.png" />
       <structure type="chrome_scaled_image" name="IDR_PANEL_BOTTOM_RIGHT_CORNER" file="panel_bottom_right_corner.png" />
-      <if expr="is_posix and not is_macosx and not pp_ifdef('use_aura')">
+      <if expr="is_posix and not is_macosx and not is_ios and not pp_ifdef('use_aura')">
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BAR" file="linux/linux-progress-bar.png" />
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_LEFT" file="linux/linux-progress-border-left.png" />
         <structure type="chrome_scaled_image" name="IDR_PROGRESS_BORDER_RIGHT" file="linux/linux-progress-border-right.png" />
@@ -308,7 +308,7 @@
         <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_H" file="cros/aura_scrollbar_thumb_vertical_hover_top.png" />
         <structure type="chrome_scaled_image" name="IDR_SCROLL_THUMB_VERTICAL_TOP_P" file="cros/aura_scrollbar_thumb_vertical_pressed_top.png" />
       </if>
-      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx">
+      <if expr="not pp_ifdef('toolkit_views') and is_posix and not is_macosx and not is_ios">
         <structure type="chrome_scaled_image" name="IDR_RESTORE" file="linux/linux_restore.png" />
         <structure type="chrome_scaled_image" name="IDR_RESTORE_H" file="linux/linux_restore_hover.png" />
         <structure type="chrome_scaled_image" name="IDR_RESTORE_P" file="linux/linux_restore_pressed.png" />
@@ -337,7 +337,7 @@
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_LEFT" file="common/textbutton_pressed_top_left.png" />
       <structure type="chrome_scaled_image" name="IDR_TEXTBUTTON_PRESSED_TOP_RIGHT" file="common/textbutton_pressed_top_right.png" />
       <structure type="chrome_scaled_image" name="IDR_THROBBER" file="throbber.png" />
-      <if expr="is_macosx">
+      <if expr="is_macosx or is_ios">
         <structure type="chrome_scaled_image" name="IDR_TRAY_ATTENTION" file="mac/notification_tray_attention.png"/>
         <structure type="chrome_scaled_image" name="IDR_TRAY_ATTENTION_PRESSED" file="mac/notification_tray_attention_pressed.png"/>
         <structure type="chrome_scaled_image" name="IDR_TRAY_DO_NOT_DISTURB_ATTENTION" file="mac/notification_tray_do_not_disturb_attention.png"/>

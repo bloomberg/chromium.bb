@@ -75,11 +75,11 @@
          be 'nb'. -->
     <output filename="locale_settings_nb.pak" type="data_package" lang="no" />
     <output filename="locale_settings_pl.pak" type="data_package" lang="pl" />
-    <if expr="pp_ifdef('ios')">
+    <if expr="is_ios">
       <!-- iOS uses pt for pt-BR -->
       <output filename="locale_settings_pt.pak" type="data_package" lang="pt-BR" />
     </if>
-    <if expr="not pp_ifdef('ios')">
+    <if expr="not is_ios">
       <output filename="locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
     </if>
     <output filename="locale_settings_pt-PT.pak" type="data_package" lang="pt-PT" />
@@ -350,14 +350,14 @@
       <message name="IDS_CHROME_WELCOME_URL" translateable="false">
         http://www.google.com/chrome/intl/[GRITLANGCODE]/welcome.html
       </message>
-      <if expr="is_android or pp_ifdef('ios')">
+      <if expr="is_android or is_ios">
         <message name="IDS_MOBILE_WELCOME_URL" translateable="false">
           chrome://welcome
         </message>
       </if>
 
       <!-- The URL for Google Chrome privacy policy. -->
-      <if expr="pp_ifdef('ios')">
+      <if expr="is_ios">
         <message name="IDS_PRIVACY_POLICY_URL" translateable="false">
           http://www.google.com/chrome/intl/[GRITLANGCODE]/privacy.html
         </message>
@@ -390,7 +390,7 @@
       </message>
 
       <!-- The width and height for the "create application shortcuts error" dialog. -->
-      <if expr="is_posix and not is_macosx">
+      <if expr="is_posix and not is_macosx and not is_ios">
         <message name="IDS_CREATE_SHORTCUTS_ERROR_DIALOG_WIDTH_CHARS" use_name_for_id="true">
          60
         </message>

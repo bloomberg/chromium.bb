@@ -86,11 +86,11 @@ need to be translated for each locale.-->
          be 'nb'. -->
     <output filename="ui_strings_nb.pak" type="data_package" lang="no" />
     <output filename="ui_strings_pl.pak" type="data_package" lang="pl" />
-    <if expr="pp_ifdef('ios')">
+    <if expr="is_ios">
       <!-- iOS uses pt for pt-BR -->
       <output filename="ui_strings_pt.pak" type="data_package" lang="pt-BR" />
     </if>
-    <if expr="not pp_ifdef('ios')">
+    <if expr="not is_ios">
       <output filename="ui_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
     </if>
     <output filename="ui_strings_pt-PT.pak" type="data_package" lang="pt-PT" />

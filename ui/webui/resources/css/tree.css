@@ -169,7 +169,7 @@ tree[icon-visibility=parent] .tree-row[has-children=false] > .tree-label {
   font-size: inherit;
   font-weight: inherit;
   margin: -2px -8px -2px -3px;
-<if expr="not is_macosx">
+<if expr="not is_macosx and not is_ios">
   outline: none;
 </if>
   padding: 1px 7px 1px 1px;

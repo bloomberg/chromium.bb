@@ -77,11 +77,11 @@
          be 'nb'. -->
     <output filename="component_strings_nb.pak" type="data_package" lang="no" />
     <output filename="component_strings_pl.pak" type="data_package" lang="pl" />
-    <if expr="pp_ifdef('ios')">
+    <if expr="is_ios">
       <!-- iOS uses pt for pt-BR -->
       <output filename="component_strings_pt.pak" type="data_package" lang="pt-BR" />
     </if>
-    <if expr="not pp_ifdef('ios')">
+    <if expr="not is_ios">
       <output filename="component_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
     </if>
     <output filename="component_strings_pt-PT.pak" type="data_package" lang="pt-PT" />

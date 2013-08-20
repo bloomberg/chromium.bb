@@ -98,7 +98,7 @@ textarea {
   /* Use min-height to accommodate addditional padding for touch as needed. */
   min-height: 2em;
   padding: 3px;
-<if expr="is_win or is_macosx">
+<if expr="is_win or is_macosx or is_ios">
   /* For better alignment between adjacent buttons and inputs. */
   padding-bottom: 4px;
 </if>

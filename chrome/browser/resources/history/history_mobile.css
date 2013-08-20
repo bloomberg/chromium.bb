@@ -170,7 +170,7 @@ input {
   margin: 0;
 }
 
-<if expr="pp_ifdef('ios')">
+<if expr="is_ios">
 /* Add extra spacing caused by the missing search bar on iOS. */
 h3:first-of-type {
   margin-top: 16px;
@@ -221,7 +221,7 @@ h3:first-of-type {
   margin-top: 16px;
 }
 
-<if expr="pp_ifdef('ios')">
+<if expr="is_ios">
 /* iOS does not support the latest flexbox syntax, only the 2009 working draft
    syntax (http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/). */
 .entry-box,

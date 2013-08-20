@@ -75,11 +75,11 @@
          be 'nb'. -->
     <output filename="app_locale_settings_nb.pak" type="data_package" lang="no" />
     <output filename="app_locale_settings_pl.pak" type="data_package" lang="pl" />
-    <if expr="pp_ifdef('ios')">
+    <if expr="is_ios">
       <!-- iOS uses pt for pt-BR -->
       <output filename="app_locale_settings_pt.pak" type="data_package" lang="pt-BR" />
     </if>
-    <if expr="not pp_ifdef('ios')">
+    <if expr="not is_ios">
       <output filename="app_locale_settings_pt-BR.pak" type="data_package" lang="pt-BR" />
     </if>
     <output filename="app_locale_settings_pt-PT.pak" type="data_package" lang="pt-PT" />
@@ -212,7 +212,7 @@
           75%
         </message>
       </if>
-      <if expr="is_macosx">
+      <if expr="is_macosx or is_ios">
         <!-- The font used in Web UI (e.g. History). -->
         <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
           'Lucida Grande', sans-serif
