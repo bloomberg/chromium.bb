@@ -21,7 +21,13 @@ class BrowserProcessBase(object):
     return self.handle.poll() is None
 
   def Wait(self, wait_steps, sleep_time):
-    self.term()
+    try:
+      self.term()
+    except Exception:
+      # Terminating the handle can raise an exception. There is likely no point
+      # in waiting if the termination didn't succeed.
+      return
+
     i = 0
     # subprocess.wait() doesn't have a timeout, unfortunately.
     while self.IsRunning() and i < wait_steps:

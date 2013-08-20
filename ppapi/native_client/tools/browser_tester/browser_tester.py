@@ -312,6 +312,13 @@ def RunTestsOnce(url, options):
           DumpNetLog(browser.NetLogName())
     except Exception:
       listener.ever_failed = 1
+    # Try to let the browser clean itself up normally before killing it.
+    sys.stdout.write('##################### Terminating the browser\n')
+    browser.WaitForProcessDeath()
+    if browser.IsRunning():
+      sys.stdout.write('##################### TERM failed, KILLING\n')
+    # Always call Cleanup; it kills the process, but also removes the
+    # user-data-dir.
     browser.Cleanup()
     # We avoid calling server.server_close() here because it causes
     # the HTTP server thread to exit uncleanly with an EBADF error,
