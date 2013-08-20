@@ -113,7 +113,8 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   virtual void ConnectionClose(QuicErrorCode error, bool from_peer) OVERRIDE;
 
   // Performs a crypto handshake with the server.
-  int CryptoConnect(const CompletionCallback& callback);
+  int CryptoConnect(bool require_confirmation,
+                    const CompletionCallback& callback);
 
   // Causes the QuicConnectionHelper to start reading from the socket
   // and passing the data along to the QuicConnection.
@@ -152,7 +153,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   // delete |this|.
   void NotifyFactoryOfSessionClose();
 
-  base::WeakPtrFactory<QuicClientSession> weak_factory_;
+  bool require_confirmation_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
   scoped_ptr<DatagramClientSocket> socket_;
@@ -163,6 +164,7 @@ class NET_EXPORT_PRIVATE QuicClientSession : public QuicSession {
   size_t num_total_streams_;
   BoundNetLog net_log_;
   QuicConnectionLogger logger_;
+  base::WeakPtrFactory<QuicClientSession> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClientSession);
 };

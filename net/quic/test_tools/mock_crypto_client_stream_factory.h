@@ -9,7 +9,6 @@
 
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
-#include "net/quic/quic_session.h"
 #include "net/quic/test_tools/mock_crypto_client_stream.h"
 
 namespace net {
@@ -30,8 +29,13 @@ class MockCryptoClientStreamFactory : public QuicCryptoClientStreamFactory  {
     handshake_mode_ = handshake_mode;
   }
 
+  MockCryptoClientStream* last_stream() const {
+    return last_stream_;
+  }
+
  private:
   MockCryptoClientStream::HandshakeMode handshake_mode_;
+  MockCryptoClientStream* last_stream_;
 };
 
 }  // namespace net

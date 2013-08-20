@@ -89,14 +89,15 @@ QuicClientSession::QuicClientSession(
     QuicCryptoClientConfig* crypto_config,
     NetLog* net_log)
     : QuicSession(connection, config, false),
-      weak_factory_(this),
+      require_confirmation_(false),
       stream_factory_(stream_factory),
       socket_(socket.Pass()),
       read_buffer_(new IOBufferWithSize(kMaxPacketSize)),
       read_pending_(false),
       num_total_streams_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_QUIC_SESSION)),
-      logger_(net_log_) {
+      logger_(net_log_),
+      weak_factory_(this) {
   crypto_stream_.reset(
       crypto_client_stream_factory ?
           crypto_client_stream_factory->CreateQuicCryptoClientStream(
@@ -209,7 +210,9 @@ bool QuicClientSession::GetSSLInfo(SSLInfo* ssl_info) {
   return crypto_stream_->GetSSLInfo(ssl_info);
 }
 
-int QuicClientSession::CryptoConnect(const CompletionCallback& callback) {
+int QuicClientSession::CryptoConnect(bool require_confirmation,
+                                     const CompletionCallback& callback) {
+  require_confirmation_ = require_confirmation;
   RecordHandshakeState(STATE_STARTED);
   if (!crypto_stream_->CryptoConnect()) {
     // TODO(wtc): change crypto_stream_.CryptoConnect() to return a
@@ -217,7 +220,9 @@ int QuicClientSession::CryptoConnect(const CompletionCallback& callback) {
     return ERR_CONNECTION_FAILED;
   }
 
-  if (IsEncryptionEstablished()) {
+  bool can_notify = require_confirmation_ ?
+      IsCryptoHandshakeConfirmed() : IsEncryptionEstablished();
+  if (can_notify) {
     return OK;
   }
 
@@ -250,7 +255,8 @@ void QuicClientSession::CloseStream(QuicStreamId stream_id) {
 }
 
 void QuicClientSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
-  if (!callback_.is_null()) {
+  if (!callback_.is_null() &&
+      (!require_confirmation_ || event == HANDSHAKE_CONFIRMED)) {
     // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
     // could be called because there are no error events in CryptoHandshakeEvent
     // enum. If error events are added to CryptoHandshakeEvent, then the

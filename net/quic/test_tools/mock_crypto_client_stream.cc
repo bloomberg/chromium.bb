@@ -51,6 +51,16 @@ bool MockCryptoClientStream::CryptoConnect() {
   return true;
 }
 
+void MockCryptoClientStream::SendOnCryptoHandshakeEvent(
+    QuicSession::CryptoHandshakeEvent event) {
+  encryption_established_ = true;
+  if (event == QuicSession::HANDSHAKE_CONFIRMED) {
+    handshake_confirmed_ = true;
+    SetConfigNegotiated();
+  }
+  session()->OnCryptoHandshakeEvent(event);
+}
+
 void MockCryptoClientStream::SetConfigNegotiated() {
   ASSERT_FALSE(session()->config()->negotiated());
   QuicTagVector cgst;

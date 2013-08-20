@@ -122,6 +122,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // IP address changes.
   virtual void OnIPAddressChanged() OVERRIDE;
 
+  bool require_confirmation() const { return require_confirmation_; }
+
+  void set_require_confirmation(bool require_confirmation) {
+    require_confirmation_ = require_confirmation;
+  }
+
  private:
   class Job;
 
@@ -150,6 +156,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   QuicCryptoClientConfig* GetOrCreateCryptoConfig(
       const HostPortProxyPair& host_port_proxy_pair);
 
+  bool require_confirmation_;
   HostResolver* host_resolver_;
   ClientSocketFactory* client_socket_factory_;
   base::WeakPtr<HttpServerProperties> http_server_properties_;

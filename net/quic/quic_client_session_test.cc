@@ -39,7 +39,7 @@ class QuicClientSessionTest : public ::testing::Test {
 
   void CompleteCryptoHandshake() {
     ASSERT_EQ(ERR_IO_PENDING,
-              session_.CryptoConnect(callback_.callback()));
+              session_.CryptoConnect(false, callback_.callback()));
     CryptoTestUtils::HandshakeWithFakeServer(
         connection_, session_.GetCryptoStream());
     ASSERT_EQ(OK, callback_.WaitForResult());

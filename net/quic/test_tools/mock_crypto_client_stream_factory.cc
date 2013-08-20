@@ -12,7 +12,8 @@ using std::string;
 namespace net {
 
 MockCryptoClientStreamFactory::MockCryptoClientStreamFactory()
-  : handshake_mode_(MockCryptoClientStream::CONFIRM_HANDSHAKE) {
+    : handshake_mode_(MockCryptoClientStream::CONFIRM_HANDSHAKE),
+      last_stream_(NULL) {
 }
 
 QuicCryptoClientStream*
@@ -20,8 +21,9 @@ MockCryptoClientStreamFactory::CreateQuicCryptoClientStream(
     const string& server_hostname,
     QuicSession* session,
     QuicCryptoClientConfig* crypto_config) {
-  return new MockCryptoClientStream(server_hostname, session, crypto_config,
-                                    handshake_mode_);
+  last_stream_ = new MockCryptoClientStream(server_hostname, session,
+                                            crypto_config, handshake_mode_);
+  return last_stream_;
 }
 
 }  // namespace net

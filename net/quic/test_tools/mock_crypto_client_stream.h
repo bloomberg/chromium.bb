@@ -8,6 +8,7 @@
 #include <string>
 
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/quic_crypto_client_stream.h"
 #include "net/quic/quic_session.h"
 
@@ -45,6 +46,10 @@ class MockCryptoClientStream : public QuicCryptoClientStream {
 
   // QuicCryptoClientStream implementation.
   virtual bool CryptoConnect() OVERRIDE;
+
+  // Invokes the sessions's CryptoHandshakeEvent method with the specified
+  // event.
+  void SendOnCryptoHandshakeEvent(QuicSession::CryptoHandshakeEvent event);
 
   HandshakeMode handshake_mode_;
 

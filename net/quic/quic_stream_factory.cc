@@ -227,6 +227,7 @@ int QuicStreamFactory::Job::DoConnect() {
                                      cert_verifier_, address_list_, net_log_);
   session_->StartReading();
   int rv = session_->CryptoConnect(
+      factory_->require_confirmation(),
       base::Bind(&QuicStreamFactory::Job::OnIOComplete,
                  base::Unretained(this)));
   return rv;
@@ -249,7 +250,8 @@ QuicStreamFactory::QuicStreamFactory(
     QuicCryptoClientStreamFactory* quic_crypto_client_stream_factory,
     QuicRandom* random_generator,
     QuicClock* clock)
-    : host_resolver_(host_resolver),
+    : require_confirmation_(true),
+      host_resolver_(host_resolver),
       client_socket_factory_(client_socket_factory),
       http_server_properties_(http_server_properties),
       quic_crypto_client_stream_factory_(quic_crypto_client_stream_factory),
@@ -304,6 +306,7 @@ int QuicStreamFactory::Create(const HostPortProxyPair& host_port_proxy_pair,
 
 void QuicStreamFactory::OnJobComplete(Job* job, int rv) {
   if (rv == OK) {
+    require_confirmation_ = false;
     // Create all the streams, but do not notify them yet.
     for (RequestSet::iterator it = job_requests_map_[job].begin();
          it != job_requests_map_[job].end() ; ++it) {
@@ -403,6 +406,7 @@ base::Value* QuicStreamFactory::QuicStreamFactoryInfoToValue() const {
 
 void QuicStreamFactory::OnIPAddressChanged() {
   CloseAllSessions(ERR_NETWORK_CHANGED);
+  require_confirmation_ = true;
 }
 
 bool QuicStreamFactory::HasActiveSession(
