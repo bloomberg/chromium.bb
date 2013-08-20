@@ -1475,24 +1475,53 @@ void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textC
         return;
 
     Range* rangeToCheck = shouldMarkGrammar ? grammarRange : spellingRange;
-    TextCheckingParagraph paragraphToCheck(rangeToCheck);
-    if (paragraphToCheck.isRangeEmpty() || paragraphToCheck.isEmpty())
+    TextCheckingParagraph fullParagraphToCheck(rangeToCheck);
+    if (fullParagraphToCheck.isRangeEmpty() || fullParagraphToCheck.isEmpty())
         return;
-    RefPtr<Range> paragraphRange = paragraphToCheck.paragraphRange();
 
+    // Since the text may be quite big chunk it up and adjust to the sentence boundary.
+    const int kChunkSize = 16 * 1024;
+    int start = fullParagraphToCheck.checkingStart();
+    int end = fullParagraphToCheck.checkingEnd();
+    start = std::min(start, end);
+    end = std::max(start, end);
     bool asynchronous = m_frame && m_frame->settings() && m_frame->settings()->asynchronousSpellCheckingEnabled();
-
-    // In asynchronous mode, we intentionally check paragraph-wide sentence.
-    RefPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessIncremental, asynchronous ? paragraphRange : rangeToCheck, paragraphRange);
-
-    if (asynchronous) {
-        m_spellCheckRequester->requestCheckingFor(request);
+    const int kNumChunksToCheck = asynchronous ? (end - start + kChunkSize - 1) / (kChunkSize) : 1;
+    int currentChunkStart = start;
+    RefPtr<Range> checkRange = asynchronous ? fullParagraphToCheck.paragraphRange() : rangeToCheck;
+    RefPtr<Range> paragraphRange = fullParagraphToCheck.paragraphRange();
+    if (kNumChunksToCheck == 1 && asynchronous) {
+        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), paragraphRange.get(), asynchronous, 0);
         return;
     }
 
-    Vector<TextCheckingResult> results;
-    checkTextOfParagraph(textChecker(), paragraphToCheck.text(), resolveTextCheckingTypeMask(textCheckingOptions), results);
-    markAndReplaceFor(request, results);
+    for (int iter = 0; iter < kNumChunksToCheck; ++iter) {
+        checkRange = fullParagraphToCheck.subrange(currentChunkStart, kChunkSize);
+        setStart(checkRange.get(), startOfSentence(checkRange->startPosition()));
+        setEnd(checkRange.get(), endOfSentence(checkRange->endPosition()));
+        paragraphRange = checkRange;
+
+        int checkingLength = 0;
+        markAllMisspellingsAndBadGrammarInRanges(textCheckingOptions, checkRange.get(), paragraphRange.get(), asynchronous, iter, &checkingLength);
+        currentChunkStart += checkingLength;
+    }
+}
+
+void Editor::markAllMisspellingsAndBadGrammarInRanges(TextCheckingTypeMask textCheckingOptions, Range* checkRange, Range* paragraphRange, bool asynchronous, int requestNumber, int* checkingLength)
+{
+    TextCheckingParagraph sentenceToCheck(checkRange, paragraphRange);
+    if (checkingLength)
+        *checkingLength = sentenceToCheck.checkingLength();
+
+    RefPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, checkRange, paragraphRange, requestNumber);
+
+    if (asynchronous) {
+        m_spellCheckRequester->requestCheckingFor(request);
+    } else {
+        Vector<TextCheckingResult> results;
+        checkTextOfParagraph(textChecker(), sentenceToCheck.text(), resolveTextCheckingTypeMask(textCheckingOptions), results);
+        markAndReplaceFor(request, results);
+    }
 }
 
 void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vector<TextCheckingResult>& results)
@@ -1528,7 +1557,7 @@ void Editor::markAndReplaceFor(PassRefPtr<SpellCheckRequest> request, const Vect
     for (unsigned i = 0; i < results.size(); i++) {
         int spellingRangeEndOffset = paragraph.checkingEnd();
         const TextCheckingResult* result = &results[i];
-        int resultLocation = result->location;
+        int resultLocation = result->location + paragraph.checkingStart();
         int resultLength = result->length;
         bool resultEndsAtAmbiguousBoundary = ambiguousBoundaryOffset >= 0 && resultLocation + resultLength == ambiguousBoundaryOffset;
 

@@ -46,9 +46,12 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentMarkerController.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/editing/Editor.h"
+#include "core/editing/SpellCheckRequester.h"
+#include "core/editing/TextCheckingHelper.h"
 #include "core/editing/UndoStep.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/EventHandler.h"
@@ -138,10 +141,26 @@ bool EditorClientImpl::isContinuousSpellCheckingEnabled()
 
 void EditorClientImpl::toggleContinuousSpellChecking()
 {
-    if (isContinuousSpellCheckingEnabled())
+    if (isContinuousSpellCheckingEnabled()) {
         m_spellCheckThisFieldStatus = SpellCheckForcedOff;
-    else
+        if (Page* page = m_webView->page()) {
+            for (Frame* frame = page->mainFrame(); frame && frame->document(); frame = frame->tree()->traverseNext()) {
+                frame->document()->markers()->removeMarkers(DocumentMarker::Spelling | DocumentMarker::Grammar);
+            }
+        }
+    } else {
         m_spellCheckThisFieldStatus = SpellCheckForcedOn;
+        if (Frame* frame = m_webView->focusedWebCoreFrame()) {
+            if (unifiedTextCheckerEnabled(frame)) {
+                VisibleSelection frameSelection = frame->selection()->selection();
+                // If a selection is in an editable element spell check its content.
+                if (Element* rootEditableElement = frameSelection.rootEditableElement()) {
+                    VisibleSelection selection = VisibleSelection::selectionFromContentsOfNode(rootEditableElement);
+                    frame->editor()->markMisspellingsAndBadGrammar(selection);
+                }
+            }
+        }
+    }
 }
 
 bool EditorClientImpl::isGrammarCheckingEnabled()
