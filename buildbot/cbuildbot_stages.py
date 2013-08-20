@@ -13,6 +13,7 @@ import logging
 import math
 import multiprocessing
 import os
+import platform
 import Queue
 import re
 import shutil
@@ -2003,6 +2004,13 @@ class ChromeSDKStage(ArchivingStage):
       self._VerifyChromeDeployed(tempdir)
 
   def PerformStage(self):
+    if platform.dist()[-1] == 'lucid':
+      # Chrome no longer builds on Lucid. See crbug.com/276311
+      print 'Ubuntu lucid is no longer supported.'
+      print 'Please upgrade to Ubuntu Precise.'
+      cros_build_lib.PrintBuildbotStepWarnings()
+      return
+
     upload_metadata = functools.partial(
         self.UploadMetadata, upload_queue=self._upload_queue)
     steps = [self._BuildAndArchiveChromeSysroot, self._ArchiveChromeEbuildEnv,
