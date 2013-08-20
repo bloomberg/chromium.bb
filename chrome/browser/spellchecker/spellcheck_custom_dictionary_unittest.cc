@@ -25,6 +25,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+// For version specific disabled tests below (http://crbug.com/230534).
+#include "base/win/windows_version.h"
+#endif
+
 using base::HistogramBase;
 using base::HistogramSamples;
 using base::StatisticsRecorder;
@@ -1068,9 +1073,12 @@ TEST_F(SpellcheckCustomDictionaryTest, DictionarySyncLimit) {
             server_custom_dictionary->GetWords().size());
 }
 
-// Failing consistently on Win7. See crbug.com/230534.
-// Re-enabling for testing to fix aforementioned bug.
 TEST_F(SpellcheckCustomDictionaryTest, RecordSizeStatsCorrectly) {
+#if defined(OS_WIN)
+// Failing consistently on Win7. See crbug.com/230534.
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    return;
+#endif
   // Record a baseline.
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
 

@@ -13,6 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+// For version specific disabled tests below (http://crbug.com/230534).
+#include "base/win/windows_version.h"
+#endif
+
 using base::HistogramBase;
 using base::HistogramSamples;
 using base::StatisticsRecorder;
@@ -66,9 +71,12 @@ TEST_F(SpellcheckHostMetricsTest, RecordEnabledStats) {
   EXPECT_EQ(1, samples->GetCount(1));
 }
 
-// Failing consistently on Win7. See crbug.com/230534.
-// Re-enabling for testing to fix aforementioned bug.
 TEST_F(SpellcheckHostMetricsTest, CustomWordStats) {
+#if defined(OS_WIN)
+// Failing consistently on Win7. See crbug.com/230534.
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA)
+    return;
+#endif
   SpellCheckHostMetrics::RecordCustomWordCountStats(123);
 
   // Determine if test failures are due the statistics recorder not being
