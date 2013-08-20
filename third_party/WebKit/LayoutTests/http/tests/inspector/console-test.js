@@ -9,11 +9,9 @@ InspectorTest.showConsolePanel = function()
 InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassNames)
 {
     var result = [];
-    for (var i = 0; i < WebInspector.console.messages.length; ++i) {
-        var message = WebInspector.console.messages[i];
-        if (!WebInspector.console.filter.shouldBeVisible(message))
-            continue;
-
+    var visibleMessagesIndices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < visibleMessagesIndices.length; ++i) {
+        var message = WebInspector.console.messages[visibleMessagesIndices[i]];
         var element = message.toMessageElement();
 
         if (dumpClassNames) {
@@ -36,11 +34,9 @@ InspectorTest.dumpConsoleMessages = function(printOriginatingCommand, dumpClassN
 InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 {
     var result = [];
-    for (var i = 0; i < WebInspector.console.messages.length; ++i) {
-        var message = WebInspector.console.messages[i];
-        if (!WebInspector.console.filter.shouldBeVisible(message))
-            continue;
-        var element = message.toMessageElement();
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         InspectorTest.addResult(element.textContent.replace(/\u200b/g, ""));
         var spans = element.querySelectorAll(".console-message-text > span > span");
         for (var j = 0; j < spans.length; j++)
@@ -50,11 +46,9 @@ InspectorTest.dumpConsoleMessagesWithStyles = function(sortMessages)
 
 InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
     var result = [];
-    for (var i = 0; i < WebInspector.console.messages.length; ++i) {
-        var message = WebInspector.console.messages[i];
-        if (!WebInspector.console.filter.shouldBeVisible(message))
-            continue;
-        var element = message.toMessageElement();
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         result.push(element.textContent.replace(/\u200b/g, "") + " " + element.getAttribute("class"));
     }
     if (sortMessages)
@@ -65,11 +59,9 @@ InspectorTest.dumpConsoleMessagesWithClasses = function(sortMessages) {
 
 InspectorTest.expandConsoleMessages = function()
 {
-    for (var i = 0; i < WebInspector.console.messages.length; ++i) {
-        var message = WebInspector.console.messages[i];
-        if (!WebInspector.console.filter.shouldBeVisible(message))
-            continue;
-        var element = message.toMessageElement();
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var element = WebInspector.console.messages[indices[i]].toMessageElement();
         var node = element;
         while (node) {
             if (node.treeElementForTest)
@@ -81,15 +73,14 @@ InspectorTest.expandConsoleMessages = function()
 
 InspectorTest.checkConsoleMessagesDontHaveParameters = function()
 {
-    for (var i = 0; i < WebInspector.console.messages.length; ++i) {
-        var message = WebInspector.console.messages[i];
-        if (!WebInspector.console.filter.shouldBeVisible(message))
-            continue;
+    var indices = WebInspector.consoleView._visibleMessagesIndices;
+    for (var i = 0; i < indices.length; ++i) {
+        var m = WebInspector.console.messages[indices[i]];
         InspectorTest.addResult("Message[" + i + "]:");
-        InspectorTest.addResult("Message: " + WebInspector.displayNameForURL(message.url) + ":" + message.line + " " + message.message);
-        if ("_parameters" in message) {
-            if (message._parameters)
-                InspectorTest.addResult("FAILED: message parameters list is not empty: " + message._parameters);
+        InspectorTest.addResult("Message: " + WebInspector.displayNameForURL(m.url) + ":" + m.line + " " + m.message);
+        if ("_parameters" in m) {
+            if (m._parameters)
+                InspectorTest.addResult("FAILED: message parameters list is not empty: " + m._parameters);
             else
                 InspectorTest.addResult("SUCCESS: message parameters list is empty. ");
         } else {
