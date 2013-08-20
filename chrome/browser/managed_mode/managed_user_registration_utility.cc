@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/sync/glue/device_info.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -139,10 +141,12 @@ void ManagedUserRegistrationUtility::OnReceivedToken(
 }
 
 void ManagedUserRegistrationUtility::CompleteRegistrationIfReady() {
-  if (!pending_managed_user_acknowledged_ ||
-      pending_managed_user_token_.empty()) {
+  bool require_acknowledgment =
+      !pending_managed_user_acknowledged_ &&
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kNoManagedUserAcknowledgmentCheck);
+  if (require_acknowledgment || pending_managed_user_token_.empty())
     return;
-  }
 
   GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
   CompleteRegistration(true, error);

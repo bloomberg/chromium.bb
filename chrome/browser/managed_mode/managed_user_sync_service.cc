@@ -150,7 +150,6 @@ SyncMergeResult ManagedUserSyncService::MergeDataAndStartSyncing(
         it->GetSpecifics().managed_user();
     DictionaryValue* value = new DictionaryValue();
     value->SetString(kName, managed_user.name());
-    DCHECK(managed_user.acknowledged());
     value->SetBoolean(kAcknowledged, managed_user.acknowledged());
     value->SetString(kMasterKey, managed_user.master_key());
     if (dict->HasKey(managed_user.id()))
