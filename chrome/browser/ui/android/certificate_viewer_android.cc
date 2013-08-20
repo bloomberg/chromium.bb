@@ -17,8 +17,8 @@ using base::android::ScopedJavaLocalRef;
 void ShowCertificateViewer(content::WebContents* web_contents,
                            gfx::NativeWindow parent,
                            net::X509Certificate* cert) {
-  // TODO(yfriedman, bulach): Hook this up to Java ui code: crbug.com/114822
-  NOTIMPLEMENTED();
+  // For Android, showing the certificate is always handled in Java.
+  NOTREACHED();
 }
 
 static jstring GetCertIssuedToText(JNIEnv* env, jclass) {
