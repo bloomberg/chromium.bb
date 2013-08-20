@@ -14,6 +14,7 @@ import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.common.ProcessInitException;
 
 @JNINamespace("content")
+// TODO(nyquist) Remove this class, and move the functionality to BrowserStartupController.
 public class AndroidBrowserProcess {
     private static final String TAG = "BrowserProcessMain";
 

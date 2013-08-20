@@ -13,20 +13,19 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.testshell.sync.SyncController;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
-import org.chromium.content.browser.AndroidBrowserProcess;
-import org.chromium.content.browser.BrowserStartupConfig;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
 import org.chromium.content.common.CommandLine;
-import org.chromium.content.common.ProcessInitException;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.ui.WindowAndroid;
 
@@ -64,28 +63,23 @@ public class ChromiumTestShellActivity extends ChromiumActivity implements MenuH
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
 
-        BrowserStartupConfig.setAsync(new BrowserStartupConfig.StartupCallback() {
-            @Override
-            public void run(int startupResult) {
-                if (startupResult > 0) {
-                    // TODO: Show error message.
-                    Log.e(TAG, "Chromium browser process initialization failed");
-                    finish();
-                } else {
-                    finishInitialization(savedInstanceState);
-                }
-            }
-        });
+        BrowserStartupController.StartupCallback callback =
+                new BrowserStartupController.StartupCallback() {
+                    @Override
+                    public void onSuccess(boolean alreadyStarted) {
+                        finishInitialization(savedInstanceState);
+                    }
 
-        try {
-            if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT)) {
-                // Process was already running, finish initialization now.
-                finishInitialization(savedInstanceState);
-            }
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Chromium browser process initialization failed", e);
-            finish();
-        }
+                    @Override
+                    public void onFailure() {
+                        Toast.makeText(ChromiumTestShellActivity.this,
+                                       R.string.browser_process_initialization_failed,
+                                       Toast.LENGTH_SHORT).show();
+                        Log.e(TAG, "Chromium browser process initialization failed");
+                        finish();
+                    }
+                };
+        BrowserStartupController.get(this).startBrowserProcessesAsync(callback);
     }
 
     private void finishInitialization(final Bundle savedInstanceState) {
@@ -110,7 +104,8 @@ public class ChromiumTestShellActivity extends ChromiumActivity implements MenuH
     protected void onDestroy() {
         super.onDestroy();
 
-        mDevToolsServer.destroy();
+        if (mDevToolsServer != null)
+            mDevToolsServer.destroy();
         mDevToolsServer = null;
     }
 

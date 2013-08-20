@@ -12,13 +12,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.Toast;
 
 import org.chromium.base.ChromiumActivity;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.content.app.LibraryLoader;
 import org.chromium.content.browser.ActivityContentVideoViewClient;
 import org.chromium.content.browser.AndroidBrowserProcess;
-import org.chromium.content.browser.BrowserStartupConfig;
+import org.chromium.content.browser.BrowserStartupController;
 import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
@@ -65,7 +66,7 @@ public class ContentShellActivity extends ChromiumActivity {
     private BroadcastReceiver mReceiver;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Initializing the command line must occur before loading the library.
@@ -81,56 +82,68 @@ public class ContentShellActivity extends ChromiumActivity {
         DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
         try {
             LibraryLoader.ensureInitialized();
-
-            setContentView(R.layout.content_shell_activity);
-            mShellManager = (ShellManager) findViewById(R.id.shell_container);
-            mWindowAndroid = new WindowAndroid(this);
-            mWindowAndroid.restoreInstanceState(savedInstanceState);
-            mShellManager.setWindow(mWindowAndroid);
-
-            String startupUrl = getUrlFromIntent(getIntent());
-            if (!TextUtils.isEmpty(startupUrl)) {
-                mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
-            }
-
-            if (!CommandLine.getInstance().hasSwitch(CommandLine.DUMP_RENDER_TREE)) {
-                BrowserStartupConfig.setAsync(new BrowserStartupConfig.StartupCallback() {
-
-                    @Override
-                    public void run(int startupResult) {
-                        if (startupResult > 0) {
-                            // TODO: Show error message.
-                            Log.e(TAG, "ContentView initialization failed.");
-                            finish();
-                        } else {
-                            finishInitialization();
-                        }
-                    }
-                });
-            }
-
-            if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT)) {
-                String shellUrl = ShellManager.DEFAULT_SHELL_URL;
-                if (savedInstanceState != null
-                        && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
-                    shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);
-                }
-                mShellManager.launchShell(shellUrl);
-                finishInitialization();
-            }
         } catch (ProcessInitException e) {
             Log.e(TAG, "ContentView initialization failed.", e);
             finish();
+            return;
+        }
+
+        setContentView(R.layout.content_shell_activity);
+        mShellManager = (ShellManager) findViewById(R.id.shell_container);
+        mWindowAndroid = new WindowAndroid(this);
+        mWindowAndroid.restoreInstanceState(savedInstanceState);
+        mShellManager.setWindow(mWindowAndroid);
+
+        String startupUrl = getUrlFromIntent(getIntent());
+        if (!TextUtils.isEmpty(startupUrl)) {
+            mShellManager.setStartupUrl(Shell.sanitizeUrl(startupUrl));
+        }
+
+        if (CommandLine.getInstance().hasSwitch(CommandLine.DUMP_RENDER_TREE)) {
+            try {
+                if (!AndroidBrowserProcess.init(this, AndroidBrowserProcess.MAX_RENDERERS_LIMIT)) {
+                    finishInitialization(savedInstanceState);
+                }
+            } catch (ProcessInitException e) {
+                initializationFailed();
+            }
+        } else {
+            BrowserStartupController.get(this).startBrowserProcessesAsync(
+                    new BrowserStartupController.StartupCallback() {
+                @Override
+                public void onSuccess(boolean alreadyStarted) {
+                    finishInitialization(savedInstanceState);
+                }
+
+                @Override
+                public void onFailure() {
+                    initializationFailed();
+                }
+            });
         }
     }
 
-    private void finishInitialization() {
+    private void finishInitialization(Bundle savedInstanceState) {
+        String shellUrl = ShellManager.DEFAULT_SHELL_URL;
+        if (savedInstanceState != null
+                && savedInstanceState.containsKey(ACTIVE_SHELL_URL_KEY)) {
+            shellUrl = savedInstanceState.getString(ACTIVE_SHELL_URL_KEY);
+        }
+        mShellManager.launchShell(shellUrl);
         getActiveContentView().setContentViewClient(new ContentViewClient() {
             @Override
             public ContentVideoViewClient getContentVideoViewClient() {
                 return new ActivityContentVideoViewClient(ContentShellActivity.this);
             }
         });
+    }
+
+    private void initializationFailed() {
+        Log.e(TAG, "ContentView initialization failed.");
+        Toast.makeText(ContentShellActivity.this,
+                R.string.browser_process_initialization_failed,
+                Toast.LENGTH_SHORT).show();
+        finish();
     }
 
     @Override

@@ -65,7 +65,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/jni_android.h"
-#include "content/browser/android/browser_startup_config.h"
+#include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #endif
 

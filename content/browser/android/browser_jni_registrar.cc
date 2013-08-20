@@ -9,7 +9,7 @@
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/android_browser_process.h"
-#include "content/browser/android/browser_startup_config.h"
+#include "content/browser/android/browser_startup_controller.h"
 #include "content/browser/android/child_process_launcher_android.h"
 #include "content/browser/android/content_settings.h"
 #include "content/browser/android/content_video_view.h"
@@ -42,7 +42,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"AndroidBrowserProcess", content::RegisterAndroidBrowserProcess},
     {"BrowserAccessibilityManager",
      content::RegisterBrowserAccessibilityManager},
-    {"BrowserStartupConfiguration", content::RegisterBrowserStartupConfig},
+    {"BrowserStartupController", content::RegisterBrowserStartupController},
     {"ChildProcessLauncher", content::RegisterChildProcessLauncher},
     {"ContentSettings", content::ContentSettings::RegisterContentSettings},
     {"ContentViewRenderView",

@@ -13,7 +13,7 @@
     'public/android/java/src/org/chromium/content/app/LibraryLoader.java',
     'public/android/java/src/org/chromium/content/browser/accessibility/BrowserAccessibilityManager.java',
     'public/android/java/src/org/chromium/content/browser/AndroidBrowserProcess.java',
-    'public/android/java/src/org/chromium/content/browser/BrowserStartupConfig.java',
+    'public/android/java/src/org/chromium/content/browser/BrowserStartupController.java',
     'public/android/java/src/org/chromium/content/browser/ChildProcessLauncher.java',
     'public/android/java/src/org/chromium/content/browser/ContentSettings.java',
     'public/android/java/src/org/chromium/content/browser/ContentVideoView.java',
