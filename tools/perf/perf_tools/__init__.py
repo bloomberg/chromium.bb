@@ -1,7 +1,9 @@
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """A library for Chrome GPU test code."""
+
 import os
 import sys
 
@@ -18,13 +20,15 @@ def _RemoveAllStalePycFiles():
       pyc_path = os.path.join(dirname, filename)
       py_path = os.path.join(dirname, root + '.py')
       if not os.path.exists(py_path):
+        print >> sys.stderr, 'Removing stale .pyc file:', pyc_path
         os.remove(pyc_path)
 
-    if not os.listdir(dirname):
+    if os.path.isdir(dirname) and not os.listdir(dirname):
+      print >> sys.stderr, 'Removing empty directory:', dirname
       os.removedirs(dirname)
 
 
-def Init():
+def _Init():
   telemetry_path = os.path.join(os.path.dirname(__file__),
                                 os.pardir, os.pardir, 'telemetry')
   absolute_telemetry_path = os.path.abspath(telemetry_path)
@@ -36,4 +40,4 @@ def Init():
 
 
 _RemoveAllStalePycFiles()
-Init()
+_Init()
