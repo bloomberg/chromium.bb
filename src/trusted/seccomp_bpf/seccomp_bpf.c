@@ -111,6 +111,14 @@ static struct sock_filter filter[] = {
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
 #endif
 
+  /*
+   * Note that gettid is an information leak if not running
+   * under an outer sandbox that uses CLONE_NEWPID.
+   * It's allowed here for the benefit of the ASan runtime.
+   */
+  BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_gettid, 0, 1),
+  BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
+
   BPF_JUMP(BPF_JMP + BPF_JEQ + BPF_K, __NR_exit_group, 0, 1),
   BPF_STMT(BPF_RET + BPF_K, SECCOMP_RET_ALLOW),
 
