@@ -145,9 +145,13 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
         << "Fatal: missing data handler for pywebsocket server.";
 
     AppendToPythonPath(path_pywebsocket_dir);
-    CommandLine pywebsocket_command = MakePythonCommand(pywebsocket_server);
 
-    // Construct the command line manually, the server doesn't support -arg=val.
+    // Note: don't append switches to this command since it will mess up the
+    // -u in the python invocation!
+    CommandLine pywebsocket_command(CommandLine::NO_PROGRAM);
+    EXPECT_TRUE(GetPythonCommand(&pywebsocket_command));
+
+    pywebsocket_command.AppendArgPath(pywebsocket_server);
     pywebsocket_command.AppendArg("-p");
     pywebsocket_command.AppendArg(kPyWebSocketPortNumber);
     pywebsocket_command.AppendArg("-d");
@@ -270,15 +274,24 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
         << "Missing video compare script: should be in "
         << path_to_compare_script.value();
 
-    CommandLine compare_command = MakePythonCommand(path_to_compare_script);
-    compare_command.AppendSwitchPath("--ref_video", reference_video_filename);
-    compare_command.AppendSwitchPath("--test_video", captured_video_filename);
-    compare_command.AppendSwitchPath("--frame_analyzer", path_to_analyzer);
-    compare_command.AppendSwitchASCII("--yuv_frame_width",
-                                      base::StringPrintf("%d", width));
-    compare_command.AppendSwitchASCII("--yuv_frame_height",
-                                      base::StringPrintf("%d", height));
-    compare_command.AppendSwitchPath("--stats_file", stats_file);
+    // Note: don't append switches to this command since it will mess up the
+    // -u in the python invocation!
+    CommandLine compare_command(CommandLine::NO_PROGRAM);
+    EXPECT_TRUE(GetPythonCommand(&compare_command));
+
+    compare_command.AppendArgPath(path_to_compare_script);
+    compare_command.AppendArg("--ref_video");
+    compare_command.AppendArgPath(reference_video_filename);
+    compare_command.AppendArg("--test_video");
+    compare_command.AppendArgPath(captured_video_filename);
+    compare_command.AppendArg("--frame_analyzer");
+    compare_command.AppendArgPath(path_to_analyzer);
+    compare_command.AppendArg("--yuv_frame_width");
+    compare_command.AppendArg(base::StringPrintf("%d", width));
+    compare_command.AppendArg("--yuv_frame_height");
+    compare_command.AppendArg(base::StringPrintf("%d", height));
+    compare_command.AppendArg("--stats_file");
+    compare_command.AppendArgPath(stats_file);
 
     LOG(INFO) << "Running " << compare_command.GetCommandLineString();
     std::string result;
@@ -383,28 +396,13 @@ class WebrtcVideoQualityBrowserTest : public WebRtcTestBase {
     return browser_dir;
   }
 
-  CommandLine MakePythonCommand(base::FilePath python_script) {
-    CommandLine python_command(CommandLine::NO_PROGRAM);
-    EXPECT_TRUE(GetPythonCommand(&python_command));
-    CommandLine complete_command(python_script);
-    complete_command.PrependWrapper(python_command.GetCommandLineString());
-    return complete_command;
-  }
-
   PeerConnectionServerRunner peerconnection_server_;
   base::ProcessHandle pywebsocket_server_;
   scoped_ptr<base::Environment> environment_;
 };
 
-#if defined(OS_WIN)
-// Broken on Win: failing to start pywebsocket_server. http://crbug.com/255499.
-#define MAYBE_MANUAL_TestVGAVideoQuality DISABLED_MANUAL_TestVGAVideoQuality
-#else
-#define MAYBE_MANUAL_TestVGAVideoQuality MANUAL_TestVGAVideoQuality
-#endif
-
 IN_PROC_BROWSER_TEST_F(WebrtcVideoQualityBrowserTest,
-                       MAYBE_MANUAL_TestVGAVideoQuality) {
+                       MANUAL_TestVGAVideoQuality) {
   StartPyWebSocketServer();
 
   EXPECT_TRUE(test_server()->Start());
