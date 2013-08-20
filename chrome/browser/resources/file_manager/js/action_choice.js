@@ -327,8 +327,22 @@ ActionChoice.prototype.loadSource_ = function(source, callback) {
         loadTimeData.getString('ACTION_CHOICE_LOADING_' +
                                deviceType.toUpperCase());
 
-    util.traverseTree(entry, onTraversed, 0 /* infinite depth */,
-        FileType.isVisible);
+    var entryList = [];
+    util.traverseTree(
+        entry,
+        function(traversedEntry) {
+          if (!FileType.isVisible(traversedEntry))
+            return false;
+          entryList.push(traversedEntry);
+          return true;
+        },
+        function() {
+          onTraversed(entryList);
+        },
+        function(error) {
+          console.error(
+              'Failed to traverse [' + entry.fullPath + ']: ' + error.code);
+        });
   }.bind(this);
 
   var onReady = function() {

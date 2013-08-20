@@ -712,88 +712,30 @@ util.extractFilePath = function(url) {
 };
 
 /**
- * Traverses a tree up to a certain depth.
- * @param {FileEntry} root Root entry.
- * @param {function(Array.<Entry>)} callback The callback is called at the very
- *     end with a list of entries found.
- * @param {number?} max_depth Maximum depth. Pass zero to traverse everything.
- * @param {function(entry):boolean=} opt_filter Optional filter to skip some
- *     files/directories.
+ * Traverses a directory tree whose root is the given entry, and invokes
+ * callback for each entry. Upon completion, successCallback will be called.
+ * On error, errorCallback will be called.
+ *
+ * @param {Entry} entry The root entry.
+ * @param {function(Entry):boolean} callback Callback invoked for each entry.
+ *     If this returns false, entries under it won't be traversed. Note that
+ *     its siblings (and their children) will be still traversed.
+ * @param {function()} successCallback Called upon successful completion.
+ * @param {function(error)} errorCallback Called upon error.
  */
-util.traverseTree = function(root, callback, max_depth, opt_filter) {
-  var list = [];
-  util.forEachEntryInTree(root, function(entry) {
-    if (entry) {
-      list.push(entry);
-    } else {
-      callback(list);
-    }
-    return true;
-  }, max_depth, opt_filter);
-};
-
-/**
- * Traverses a tree up to a certain depth, and calls a callback for each entry.
- * callback is called with 'null' after all entries are visited to indicate
- * the end of the traversal.
- * @param {FileEntry} root Root entry.
- * @param {function(Entry):boolean} callback The callback is called for each
- *     entry, and then once with null passed. If callback returns false once,
- *     the whole traversal is stopped.
- * @param {number?} max_depth Maximum depth. Pass zero to traverse everything.
- * @param {function(entry):boolean=} opt_filter Optional filter to skip some
- *     files/directories.
- */
-util.forEachEntryInTree = function(root, callback, max_depth, opt_filter) {
-  if (root.isFile) {
-    if (opt_filter && !opt_filter(root)) {
-      callback(null);
-      return;
-    }
-    if (callback(root))
-      callback(null);
+util.traverseTree = function(entry, callback, successCallback, errorCallback) {
+  if (!callback(entry)) {
+    successCallback();
     return;
   }
 
-  var pending = 0;
-  var cancelled = false;
-
-  var maybeDone = function() {
-    if (pending == 0 && !cancelled)
-      callback(null);
-  };
-
-  var readEntry = function(entry, depth) {
-    if (cancelled) return;
-    if (opt_filter && !opt_filter(entry)) return;
-
-    if (!callback(entry)) {
-      cancelled = true;
-      return;
-    }
-
-    // Do not recurse too deep and into files.
-    if (entry.isFile || (max_depth != 0 && depth >= max_depth))
-      return;
-
-    pending++;
-    util.forEachDirEntry(
-        entry,
-        function(childEntry) {
-          readEntry(childEntry, depth + 1);
-        },
-        function() {
-          pending--;
-          maybeDone();
-        },
-        // TODO(hidehiko): This is actually unsafe error handling, because
-        // caller cannot know the failure so that Files.app may just stuck.
-        function(err) {
-          console.error('Failed to read dir entries at ' + entry.fullPath);
-        });
-  };
-
-  readEntry(root, 0);
+  util.forEachDirEntry(
+      entry,
+      function(child, iterationCallback) {
+        util.traverseTree(child, callback, iterationCallback, errorCallback);
+      },
+      successCallback,
+      errorCallback);
 };
 
 /**
