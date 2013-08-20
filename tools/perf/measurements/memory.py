@@ -47,8 +47,8 @@ class Memory(page_measurement.PageMeasurement):
       # the test completes.
       tab.ExecuteJavaScript("""
         if (chrome && chrome.memoryBenchmarking) {
-          chrome.memoryBenchmarking.heapProfilerDump('final', 'renderer');
-          chrome.memoryBenchmarking.heapProfilerDump('final', 'browser');
+          chrome.memoryBenchmarking.heapProfilerDump('renderer', 'final');
+          chrome.memoryBenchmarking.heapProfilerDump('browser', 'final');
         }
       """)
 
