@@ -52,15 +52,36 @@ scoped_ptr<base::DictionaryValue> CreateErrorWithTimeout(
   return error.Pass();
 }
 
+// Converts state to string.
+std::string LocalPrintJobStateToString(LocalPrintJob::State state) {
+  switch (state) {
+    case LocalPrintJob::STATE_DRAFT:
+      return "draft";
+      break;
+    case LocalPrintJob::STATE_ABORTED:
+      return "done";
+      break;
+    case LocalPrintJob::STATE_DONE:
+      return "done";
+      break;
+    default:
+      NOTREACHED();
+      return std::string();
+  }
+}
+
+
 // Returns |true| if |request| should be GET method.
 bool IsGetMethod(const std::string& request) {
   return request == kPrivetInfo ||
-         request == kPrivetCapabilities;
+         request == kPrivetCapabilities ||
+         request == kPrivetPrinterJobState;
 }
 
 // Returns |true| if |request| should be POST method.
 bool IsPostMethod(const std::string& request) {
   return request == kPrivetRegister ||
+         request == kPrivetPrinterCreateJob ||
          request == kPrivetPrinterSubmitDoc;
 }
 
@@ -191,8 +212,12 @@ net::HttpStatusCode PrivetHttpServer::ProcessHttpRequest(
     json_response = ProcessRegister(url, &status_code);
   } else if (url.path() == kPrivetCapabilities) {
     json_response = ProcessCapabilities(&status_code);
+  } else if (url.path() == kPrivetPrinterCreateJob) {
+    json_response = ProcessCreateJob(url, info.data, &status_code);
   } else if (url.path() == kPrivetPrinterSubmitDoc) {
     json_response = ProcessSubmitDoc(url, info, &status_code);
+  } else if (url.path() == kPrivetPrinterJobState) {
+    json_response = ProcessJobState(url, &status_code);
   } else {
     NOTREACHED();
   }
@@ -255,6 +280,45 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCapabilities(
   return delegate_->GetCapabilities();
 }
 
+scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessCreateJob(
+    const GURL& url,
+    const std::string& body,
+    net::HttpStatusCode* status_code) const {
+  if (!delegate_->IsRegistered() || !delegate_->IsLocalPrintingAllowed()) {
+    *status_code = net::HTTP_NOT_FOUND;
+    return scoped_ptr<base::DictionaryValue>();
+  }
+
+  std::string job_id;
+  // TODO(maksymb): Use base::Time for expiration
+  int expires_in = 0;
+  // TODO(maksymb): Use base::TimeDelta for timeout values
+  int error_timeout = -1;
+  std::string error_description;
+
+  LocalPrintJob::CreateResult result =
+      delegate_->CreateJob(body, &job_id, &expires_in,
+                           &error_timeout, &error_description);
+
+  scoped_ptr<base::DictionaryValue> response;
+  *status_code = net::HTTP_OK;
+  switch (result) {
+    case LocalPrintJob::CREATE_SUCCESS:
+      response.reset(new DictionaryValue);
+      response->SetString("job_id", job_id);
+      response->SetInteger("expires_in", expires_in);
+      return response.Pass();
+
+    case LocalPrintJob::CREATE_INVALID_TICKET:
+      return CreateError("invalid_ticket");
+    case LocalPrintJob::CREATE_PRINTER_BUSY:
+      return CreateErrorWithTimeout("printer_busy", error_timeout);
+    case LocalPrintJob::CREATE_PRINTER_ERROR:
+      return CreateErrorWithDescription("printer_error", error_description);
+  }
+  return scoped_ptr<base::DictionaryValue>();
+}
+
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
     const GURL& url,
     const net::HttpServerRequestInfo& info,
@@ -264,24 +328,31 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
     return scoped_ptr<base::DictionaryValue>();
   }
 
+  using net::GetValueForKeyInQuery;
+
   // Parse query
   LocalPrintJob job;
   std::string offline;
-  net::GetValueForKeyInQuery(url, "client_name", &job.client_name);
-  bool job_name_present =
-      net::GetValueForKeyInQuery(url, "job_name", &job.job_name);
-  net::GetValueForKeyInQuery(url, "user_name", &job.user_name);
-  net::GetValueForKeyInQuery(url, "offline", &offline);
+  std::string job_id;
+  bool job_name_present = GetValueForKeyInQuery(url, "job_name", &job.job_name);
+  bool job_id_present = GetValueForKeyInQuery(url, "job_id", &job_id);
+  GetValueForKeyInQuery(url, "client_name", &job.client_name);
+  GetValueForKeyInQuery(url, "user_name", &job.user_name);
+  GetValueForKeyInQuery(url, "offline", &offline);
   job.offline = (offline == "1");
   job.content_type = info.GetHeaderValue("content-type");
   job.content = info.data;
 
   // Call delegate
-  std::string job_id;
+  // TODO(maksymb): Use base::Time for expiration
+  int expires_in = 0;
   std::string error_description;
   int timeout;
-  LocalPrintJob::SaveResult status =
-      delegate_->SubmitDoc(job, &job_id, &error_description, &timeout);
+  LocalPrintJob::SaveResult status = job_id_present
+      ? delegate_->SubmitDocWithId(job, job_id, &expires_in,
+                                   &error_description, &timeout)
+      : delegate_->SubmitDoc(job, &job_id, &expires_in,
+                             &error_description, &timeout);
 
   // Create response
   *status_code = net::HTTP_OK;
@@ -289,7 +360,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
   switch (status) {
     case LocalPrintJob::SAVE_SUCCESS:
       response->SetString("job_id", job_id);
-      response->SetInteger("expires_in", -1);
+      response->SetInteger("expires_in", expires_in);
       response->SetString("job_type", job.content_type);
       response->SetString(
           "job_size",
@@ -299,7 +370,7 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
       return response.Pass();
 
     case LocalPrintJob::SAVE_INVALID_PRINT_JOB:
-      return CreateError("invalid_print_job");
+      return CreateErrorWithTimeout("invalid_print_job", timeout);
     case LocalPrintJob::SAVE_INVALID_DOCUMENT_TYPE:
       return CreateError("invalid_document_type");
     case LocalPrintJob::SAVE_INVALID_DOCUMENT:
@@ -314,6 +385,27 @@ scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessSubmitDoc(
       NOTREACHED();
       return scoped_ptr<base::DictionaryValue>();
   }
+}
+
+scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessJobState(
+    const GURL& url,
+    net::HttpStatusCode* status_code) const {
+  if (!delegate_->IsRegistered() || !delegate_->IsLocalPrintingAllowed()) {
+    *status_code = net::HTTP_NOT_FOUND;
+    return scoped_ptr<base::DictionaryValue>();
+  }
+
+  std::string job_id;
+  net::GetValueForKeyInQuery(url, "job_id", &job_id);
+  LocalPrintJob::Info info;
+  if (!delegate_->GetJobState(job_id, &info))
+    return CreateError("invalid_print_job");
+
+  scoped_ptr<base::DictionaryValue> response(new base::DictionaryValue);
+  response->SetString("job_id", job_id);
+  response->SetString("state", LocalPrintJobStateToString(info.state));
+  response->SetInteger("expires_in", info.expires_in);
+  return response.Pass();
 }
 
 scoped_ptr<base::DictionaryValue> PrivetHttpServer::ProcessRegister(

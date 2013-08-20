@@ -20,8 +20,6 @@
 
 extern const base::FilePath::CharType kPrinterStatePath[];
 
-struct LocalPrintJob;
-
 // This class maintains work of DNS-SD server, HTTP server and others.
 class Printer : public base::SupportsWeakPtr<Printer>,
                 public PrivetHttpServer::Delegate,
@@ -74,13 +72,26 @@ class Printer : public base::SupportsWeakPtr<Printer>,
   virtual bool IsLocalPrintingAllowed() const OVERRIDE;
   virtual bool CheckXPrivetTokenHeader(const std::string& token) const OVERRIDE;
   virtual scoped_ptr<base::DictionaryValue> GetCapabilities() OVERRIDE;
-  virtual void CreateJob(const std::string& ticket) OVERRIDE;
+  virtual LocalPrintJob::CreateResult CreateJob(
+      const std::string& ticket,
+      std::string* job_id,
+      int* expires_in,
+      int* error_timeout,
+      std::string* error_description) OVERRIDE;
   virtual LocalPrintJob::SaveResult SubmitDoc(
       const LocalPrintJob& job,
       std::string* job_id,
+      int* expires_in,
       std::string* error_description,
       int* timeout) OVERRIDE;
-  virtual void GetJobStatus(int job_id) OVERRIDE;
+  virtual LocalPrintJob::SaveResult SubmitDocWithId(
+      const LocalPrintJob& job,
+      const std::string& job_id,
+      int* expires_in,
+      std::string* error_description,
+      int* timeout) OVERRIDE;
+  virtual bool GetJobState(const std::string& id,
+                           LocalPrintJob::Info* info) OVERRIDE;
 
   // CloudRequester::Delegate methods:
   virtual void OnRegistrationStartResponseParsed(

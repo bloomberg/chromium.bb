@@ -10,3 +10,9 @@ LocalPrintJob::LocalPrintJob() : offline(false) {
 LocalPrintJob::~LocalPrintJob() {
 }
 
+LocalPrintJob::Info::Info() : state(STATE_DRAFT), expires_in(-1) {
+}
+
+LocalPrintJob::Info::~Info() {
+}
+
