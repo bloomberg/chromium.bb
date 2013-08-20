@@ -83,10 +83,6 @@ class FileSystem : public FileSystemInterface,
                               int options,
                               int at_most_num_matches,
                               const SearchMetadataCallback& callback) OVERRIDE;
-  virtual void TransferFileFromRemoteToLocal(
-      const base::FilePath& remote_src_file_path,
-      const base::FilePath& local_dest_file_path,
-      const FileOperationCallback& callback) OVERRIDE;
   virtual void TransferFileFromLocalToRemote(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,

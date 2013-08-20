@@ -144,66 +144,6 @@ TEST_F(CopyOperationTest, TransferFileFromLocalToRemote_HostedDocument) {
       remote_dest_path.DirName()));
 }
 
-TEST_F(CopyOperationTest, TransferFileFromRemoteToLocal_RegularFile) {
-  base::FilePath remote_src_path(FILE_PATH_LITERAL("drive/root/File 1.txt"));
-  base::FilePath local_dest_path = temp_dir().AppendASCII("local_copy.txt");
-
-  ResourceEntry entry;
-  ASSERT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_src_path, &entry));
-
-  FileError error = FILE_ERROR_FAILED;
-  operation_->TransferFileFromRemoteToLocal(
-      remote_src_path,
-      local_dest_path,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  // The content is "x"s of the file size.
-  base::FilePath cache_path;
-  cache()->GetFileOnUIThread(entry.resource_id(),
-                             google_apis::test_util::CreateCopyResultCallback(
-                                 &error, &cache_path));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  const std::string kExpectedContent = "This is some test content.";
-  std::string cache_file_data;
-  EXPECT_TRUE(file_util::ReadFileToString(cache_path, &cache_file_data));
-  EXPECT_EQ(kExpectedContent, cache_file_data);
-
-  std::string local_dest_file_data;
-  EXPECT_TRUE(file_util::ReadFileToString(local_dest_path,
-                                          &local_dest_file_data));
-  EXPECT_EQ(kExpectedContent, local_dest_file_data);
-
-  // The transfered file is cached and the change of "offline available"
-  // attribute is notified.
-  EXPECT_EQ(1U, observer()->get_changed_paths().size());
-  EXPECT_TRUE(observer()->get_changed_paths().count(remote_src_path.DirName()));
-}
-
-TEST_F(CopyOperationTest, TransferFileFromRemoteToLocal_HostedDocument) {
-  base::FilePath local_dest_path = temp_dir().AppendASCII("local_copy.txt");
-  base::FilePath remote_src_path(
-      FILE_PATH_LITERAL("drive/root/Document 1 excludeDir-test.gdoc"));
-
-  FileError error = FILE_ERROR_FAILED;
-  operation_->TransferFileFromRemoteToLocal(
-      remote_src_path,
-      local_dest_path,
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  test_util::RunBlockingPoolTask();
-  EXPECT_EQ(FILE_ERROR_OK, error);
-
-  ResourceEntry entry;
-  EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(remote_src_path, &entry));
-  EXPECT_EQ(GURL(entry.file_specific_info().alternate_url()),
-            util::ReadUrlFromGDocFile(local_dest_path));
-  EXPECT_EQ(entry.resource_id(),
-            util::ReadResourceIdFromGDocFile(local_dest_path));
-  EXPECT_TRUE(observer()->get_changed_paths().empty());
-}
 
 TEST_F(CopyOperationTest, CopyNotExistingFile) {
   base::FilePath src_path(FILE_PATH_LITERAL("drive/root/Dummy file.txt"));

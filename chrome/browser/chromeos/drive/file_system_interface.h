@@ -182,16 +182,6 @@ class FileSystemInterface {
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;
 
-  // Initiates transfer of |remote_src_file_path| to |local_dest_file_path|.
-  // |remote_src_file_path| is the virtual source path on the Drive file system.
-  // |local_dest_file_path| is the destination path on the local file system.
-  //
-  // |callback| must not be null.
-  virtual void TransferFileFromRemoteToLocal(
-      const base::FilePath& remote_src_file_path,
-      const base::FilePath& local_dest_file_path,
-      const FileOperationCallback& callback) = 0;
-
   // Initiates transfer of |local_src_file_path| to |remote_dest_file_path|.
   // |local_src_file_path| must be a file from the local file system.
   // |remote_dest_file_path| is the virtual destination path within Drive file

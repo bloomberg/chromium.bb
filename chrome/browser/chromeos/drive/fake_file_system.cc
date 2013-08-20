@@ -54,13 +54,6 @@ void FakeFileSystem::CheckForUpdates() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeFileSystem::TransferFileFromRemoteToLocal(
-    const base::FilePath& remote_src_file_path,
-    const base::FilePath& local_dest_file_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-}
-
 void FakeFileSystem::TransferFileFromLocalToRemote(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,

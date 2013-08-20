@@ -286,17 +286,6 @@ void FileSystem::RemoveObserver(FileSystemObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void FileSystem::TransferFileFromRemoteToLocal(
-    const base::FilePath& remote_src_file_path,
-    const base::FilePath& local_dest_file_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  copy_operation_->TransferFileFromRemoteToLocal(remote_src_file_path,
-                                                 local_dest_file_path,
-                                                 callback);
-}
-
 void FileSystem::TransferFileFromLocalToRemote(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,

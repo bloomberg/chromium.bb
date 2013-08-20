@@ -27,16 +27,6 @@ namespace file_system {
 
 namespace {
 
-// Copies a file from |src_file_path| to |dest_file_path| on the local
-// file system using base::CopyFile.
-// Returns FILE_ERROR_OK on success or FILE_ERROR_FAILED otherwise.
-FileError CopyLocalFileOnBlockingPool(
-    const base::FilePath& src_file_path,
-    const base::FilePath& dest_file_path) {
-  return base::CopyFile(src_file_path, dest_file_path) ?
-      FILE_ERROR_OK : FILE_ERROR_FAILED;
-}
-
 // Stores a file to the cache and mark it dirty.
 FileError StoreAndMarkDirty(internal::FileCache* cache,
                             const std::string& resource_id,
@@ -124,49 +114,6 @@ void CopyOperation::Copy(const base::FilePath& src_file_path,
                  weak_ptr_factory_.GetWeakPtr(),
                  dest_file_path,
                  callback));
-}
-
-void CopyOperation::TransferFileFromRemoteToLocal(
-    const base::FilePath& remote_src_file_path,
-    const base::FilePath& local_dest_file_path,
-    const FileOperationCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  download_operation_->EnsureFileDownloadedByPath(
-      remote_src_file_path,
-      ClientContext(USER_INITIATED),
-      GetFileContentInitializedCallback(),
-      google_apis::GetContentCallback(),
-      base::Bind(&CopyOperation::OnGetFileCompleteForTransferFile,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 local_dest_file_path,
-                 callback));
-}
-
-void CopyOperation::OnGetFileCompleteForTransferFile(
-    const base::FilePath& local_dest_file_path,
-    const FileOperationCallback& callback,
-    FileError error,
-    const base::FilePath& local_file_path,
-    scoped_ptr<ResourceEntry> entry) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-
-  if (error != FILE_ERROR_OK) {
-    callback.Run(error);
-    return;
-  }
-
-  // GetFileByPath downloads the file from Drive to a local cache, which is then
-  // copied to the actual destination path on the local file system using
-  // CopyLocalFileOnBlockingPool.
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(
-          &CopyLocalFileOnBlockingPool, local_file_path, local_dest_file_path),
-      callback);
 }
 
 void CopyOperation::TransferFileFromLocalToRemote(

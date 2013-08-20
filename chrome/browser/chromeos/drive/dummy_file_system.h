@@ -17,10 +17,6 @@ class DummyFileSystem : public FileSystemInterface {
   virtual void AddObserver(FileSystemObserver* observer) OVERRIDE {}
   virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE {}
   virtual void CheckForUpdates() OVERRIDE {}
-  virtual void TransferFileFromRemoteToLocal(
-      const base::FilePath& remote_src_file_path,
-      const base::FilePath& local_dest_file_path,
-      const FileOperationCallback& callback) OVERRIDE {}
   virtual void TransferFileFromLocalToRemote(
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,
