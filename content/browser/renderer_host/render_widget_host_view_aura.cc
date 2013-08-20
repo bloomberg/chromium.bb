@@ -1308,6 +1308,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     current_frame_size_ = ConvertSizeToDIP(
         current_surface_->device_scale_factor(), current_surface_->size());
     CheckResizeLock();
+    framebuffer_holder_ = NULL;
   } else if (is_compositing_active && framebuffer_holder_) {
     cc::TextureMailbox mailbox = framebuffer_holder_->GetMailbox();
     window_->layer()->SetTextureMailbox(mailbox,
@@ -1319,6 +1320,7 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
     window_->layer()->SetExternalTexture(NULL);
     resize_lock_.reset();
     host_->WasResized();
+    framebuffer_holder_ = NULL;
   }
 }
 
@@ -1446,6 +1448,7 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
         frame_data->render_pass_list.back()->output_rect.size(),
         1.f/frame_device_scale_factor));
   }
+  framebuffer_holder_ = NULL;
   if (ShouldSkipFrame(frame_size_in_dip)) {
     cc::CompositorFrameAck ack;
     cc::TransferableResource::ReturnResources(frame_data->resource_list,
@@ -1527,6 +1530,7 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
                  AsWeakPtr(),
                  output_surface_id,
                  frame_data->id)));
+  bool first_frame = !framebuffer_holder_;
   framebuffer_holder_.swap(holder);
   cc::TextureMailbox mailbox = framebuffer_holder_->GetMailbox();
   DCHECK(mailbox.IsSharedMemory());
@@ -1539,8 +1543,18 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
       ConvertRectToDIP(frame_device_scale_factor, damage_rect));
 
   ui::Compositor* compositor = GetCompositor();
-  if (compositor)
+  if (compositor) {
     compositor->SetLatencyInfo(latency_info);
+    if (first_frame) {
+      // Send swap for first frame, because no frame will be released due to
+      // that.
+      AddOnCommitCallbackAndDisableLocks(
+          base::Bind(&RenderWidgetHostViewAura::SendSoftwareFrameAck,
+                     AsWeakPtr(),
+                     output_surface_id,
+                     0));
+    }
+  }
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
   DidReceiveFrameFromRenderer();
@@ -1621,6 +1635,7 @@ void RenderWidgetHostViewAura::BuffersSwapped(
     const BufferPresentedCallback& ack_callback) {
   scoped_refptr<ui::Texture> previous_texture(current_surface_);
   const gfx::Rect surface_rect = gfx::Rect(surface_size);
+  framebuffer_holder_ = NULL;
 
   if (!SwapBuffersPrepare(surface_rect,
                           surface_scale_factor,
