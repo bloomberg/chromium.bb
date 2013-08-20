@@ -271,7 +271,7 @@ void ExtensionHost::LoadInitialURL() {
     web_modal::WebContentsModalDialogManager::CreateForWebContents(
         host_contents_.get());
     web_modal::WebContentsModalDialogManager::FromWebContents(
-        host_contents_.get())->set_delegate(this);
+        host_contents_.get())->SetDelegate(this);
   }
 #endif
 

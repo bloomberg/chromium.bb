@@ -160,7 +160,7 @@ void SimpleWebViewDialog::StartLoad(const GURL& url) {
   // LoginHandlerViews uses a constrained window for the password manager view.
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
   WebContentsModalDialogManager::FromWebContents(web_contents)->
-      set_delegate(this);
+      SetDelegate(this);
 }
 
 void SimpleWebViewDialog::Init() {

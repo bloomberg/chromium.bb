@@ -29,7 +29,7 @@ class WebContentsModalDialogManager
   virtual ~WebContentsModalDialogManager();
 
   WebContentsModalDialogManagerDelegate* delegate() const { return delegate_; }
-  void set_delegate(WebContentsModalDialogManagerDelegate* d) { delegate_ = d; }
+  void SetDelegate(WebContentsModalDialogManagerDelegate* d);
 
   static NativeWebContentsModalDialogManager* CreateNativeManager(
       NativeWebContentsModalDialogManagerDelegate* native_delegate);

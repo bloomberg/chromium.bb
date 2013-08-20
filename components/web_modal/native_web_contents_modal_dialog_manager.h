@@ -13,6 +13,8 @@ class WebContents;
 
 namespace web_modal {
 
+class WebContentsModalDialogHost;
+
 // Interface from NativeWebContentsModalDialogManager to
 // WebContentsModalDialogManager.
 class NativeWebContentsModalDialogManagerDelegate {
@@ -53,6 +55,9 @@ class NativeWebContentsModalDialogManager {
 
   // Runs a pulse animation for the web contents modal dialog.
   virtual void PulseDialog(NativeWebContentsModalDialog dialog) = 0;
+
+  // Called when the host view for the dialog has changed.
+  virtual void HostChanged(WebContentsModalDialogHost* new_host) = 0;
 
  protected:
   NativeWebContentsModalDialogManager() {}

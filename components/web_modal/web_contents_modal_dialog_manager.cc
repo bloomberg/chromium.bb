@@ -25,6 +25,13 @@ WebContentsModalDialogManager::~WebContentsModalDialogManager() {
   DCHECK(child_dialogs_.empty());
 }
 
+void WebContentsModalDialogManager::SetDelegate(
+    WebContentsModalDialogManagerDelegate* d) {
+  delegate_ = d;
+  // Delegate can be NULL on Views/Win32 during tab drag.
+  native_manager_->HostChanged(d ? d->GetWebContentsModalDialogHost() : NULL);
+}
+
 void WebContentsModalDialogManager::ShowDialog(
     NativeWebContentsModalDialog dialog) {
   child_dialogs_.push_back(dialog);

@@ -43,6 +43,10 @@ class NativeWebContentsModalDialogManagerCocoa
     GetConstrainedWindowMac(dialog)->PulseWebContentsModalDialog();
   }
 
+  virtual void HostChanged(
+      web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {
+  }
+
  private:
   static ConstrainedWindowMac* GetConstrainedWindowMac(
       NativeWebContentsModalDialog dialog) {

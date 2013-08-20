@@ -167,6 +167,10 @@ class NativeWebContentsModalDialogManagerViews
     WidgetClosing(widget);
   }
 
+  virtual void HostChanged(
+      web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {
+  }
+
  private:
 #if defined(USE_AURA)
   // aura::WindowObserver overrides

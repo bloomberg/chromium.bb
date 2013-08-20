@@ -86,6 +86,10 @@ class NativeWebContentsModalDialogManagerGtk
   virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
 
+  virtual void HostChanged(
+      web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {
+  }
+
  private:
   typedef ChromeWebContentsViewDelegateGtk TabContentsViewType;
 

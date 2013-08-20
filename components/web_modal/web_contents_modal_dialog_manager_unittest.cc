@@ -41,6 +41,8 @@ class NativeWebContentsModalDialogManagerCloseTest
   }
   virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
+  virtual void HostChanged(WebContentsModalDialogHost* new_host) OVERRIDE {
+  }
 
   int close_count;
   NativeWebContentsModalDialogManagerDelegate* delegate_;
