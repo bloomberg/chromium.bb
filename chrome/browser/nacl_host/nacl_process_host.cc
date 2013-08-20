@@ -84,7 +84,6 @@ class NaClSandboxedProcessLauncherDelegate
   virtual ~NaClSandboxedProcessLauncherDelegate() {}
 
   virtual void PostSpawnTarget(base::ProcessHandle process) {
-#if !defined(NACL_WIN64)
     // For Native Client sel_ldr processes on 32-bit Windows, reserve 1 GB of
     // address space to prevent later failure due to address space fragmentation
     // from .dll loading. The NaCl process will attempt to locate this space by
@@ -100,7 +99,6 @@ class NaClSandboxedProcessLauncherDelegate
     if (!nacl_mem) {
       DLOG(WARNING) << "Failed to reserve address space for Native Client";
     }
-#endif  // !defined(NACL_WIN64)
   }
 };
 
