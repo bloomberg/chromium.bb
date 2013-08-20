@@ -12,6 +12,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
@@ -89,6 +90,39 @@ DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status status) {
   if (status.IsIOError())
     return DB_INIT_IO_ERROR;
   return DB_INIT_FAILED;
+}
+
+// Returns true when the status indicates an unrecoverable error.
+bool IsUnrecoverableError(const leveldb::Status& status) {
+  leveldb_env::MethodID method;
+  int error = 0;
+  leveldb_env::ErrorParsingResult result = leveldb_env::ParseMethodAndError(
+      status.ToString().c_str(), &method, &error);
+  switch (result) {
+    case leveldb_env::METHOD_ONLY:
+    case leveldb_env::NONE:
+      return false;
+    case leveldb_env::METHOD_AND_PFE:
+      switch (static_cast<base::PlatformFileError>(error)) {
+        case base::PLATFORM_FILE_ERROR_TOO_MANY_OPENED:
+        case base::PLATFORM_FILE_ERROR_NO_MEMORY:
+        case base::PLATFORM_FILE_ERROR_NO_SPACE:
+          return true;
+        default:
+          return false;
+      }
+    case leveldb_env::METHOD_AND_ERRNO:
+      switch (error) {
+        case EMFILE:
+        case ENOMEM:
+        case ENOSPC:
+          return true;
+        default:
+          return false;
+      }
+  }
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace
@@ -257,9 +291,9 @@ bool ResourceMetadataStorage::Initialize() {
   options.create_if_missing = false;
 
   DBInitStatus open_existing_result = DB_INIT_NOT_FOUND;
+  leveldb::Status status;
   if (base::PathExists(resource_map_path)) {
-    leveldb::Status status =
-        leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
+    status = leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
     open_existing_result = LevelDBStatusToDBInitStatus(status);
   }
 
@@ -286,12 +320,13 @@ bool ResourceMetadataStorage::Initialize() {
                             open_existing_result,
                             DB_INIT_MAX_VALUE);
 
+  if (IsUnrecoverableError(status))
+    return false;
+
   DBInitStatus init_result = DB_INIT_SUCCESS;
 
   // Failed to open the existing DB, create new DB.
   if (!resource_map_) {
-    resource_map_.reset();
-
     // Clean up the destination.
     const bool kRecursive = true;
     base::DeleteFile(resource_map_path, kRecursive);
@@ -300,8 +335,7 @@ bool ResourceMetadataStorage::Initialize() {
     options.max_open_files = 0;  // Use minimum.
     options.create_if_missing = true;
 
-    leveldb::Status status =
-        leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
+    status = leveldb::DB::Open(options, resource_map_path.AsUTF8Unsafe(), &db);
     if (status.ok()) {
       resource_map_.reset(db);
 
