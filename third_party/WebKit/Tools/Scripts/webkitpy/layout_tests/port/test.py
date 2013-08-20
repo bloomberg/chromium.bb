@@ -270,9 +270,9 @@ PERF_TEST_DIR = '/test.checkout/PerformanceTests'
 # we don't need a real filesystem to run the tests.
 def add_unit_tests_to_mock_filesystem(filesystem):
     # Add the test_expectations file.
-    filesystem.maybe_make_directory(LAYOUT_TEST_DIR + '/platform/test')
-    if not filesystem.exists(LAYOUT_TEST_DIR + '/platform/test/TestExpectations'):
-        filesystem.write_text_file(LAYOUT_TEST_DIR + '/platform/test/TestExpectations', """
+    filesystem.maybe_make_directory(LAYOUT_TEST_DIR)
+    if not filesystem.exists(LAYOUT_TEST_DIR + '/TestExpectations'):
+        filesystem.write_text_file(LAYOUT_TEST_DIR + '/TestExpectations', """
 Bug(test) failures/expected/crash.html [ Crash ]
 Bug(test) failures/expected/image.html [ ImageOnlyFailure ]
 Bug(test) failures/expected/needsrebaseline.html [ NeedsRebaseline ]

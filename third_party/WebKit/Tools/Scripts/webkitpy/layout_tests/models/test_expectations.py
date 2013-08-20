@@ -922,22 +922,21 @@ class TestExpectations(object):
         if not expectations_dict:
             expectations_dict = port.expectations_dict()
 
-        expectations_dict_index = 0
-        # Populate generic expectations (always enabled).
-        if port.path_to_generic_test_expectations_file() in expectations_dict:
-            expectations = self._parser.parse(expectations_dict.keys()[expectations_dict_index], expectations_dict.values()[expectations_dict_index])
-            self._add_expectations(expectations, self._model)
-            self._expectations += expectations
-            expectations_dict_index += 1
+        # Always parse the generic expectations (the generic file is required
+        # to be the first one in the expectations_dict, which must be an OrderedDict).
+        generic_path, generic_exps = expectations_dict.items()[0]
+        expectations = self._parser.parse(generic_path, generic_exps)
+        self._add_expectations(expectations, self._model)
+        self._expectations += expectations
 
-        # Populate override expectations (if enabled by include_overrides).
-        while len(expectations_dict) > expectations_dict_index and include_overrides:
-            expectations = self._parser.parse(expectations_dict.keys()[expectations_dict_index], expectations_dict.values()[expectations_dict_index])
-            model = TestExpectationsModel(self._shorten_filename)
-            self._add_expectations(expectations, model)
-            self._expectations += expectations
-            expectations_dict_index += 1
-            self._model.merge_model(model)
+        # Now add the overrides if so requested.
+        if include_overrides:
+            for path, contents in expectations_dict.items()[1:]:
+                expectations = self._parser.parse(path, contents)
+                model = TestExpectationsModel(self._shorten_filename)
+                self._add_expectations(expectations, model)
+                self._expectations += expectations
+                self._model.merge_model(model)
 
         # FIXME: move ignore_tests into port.skipped_layout_tests()
         self.add_extra_skipped_tests(port.skipped_layout_tests(tests).union(set(port.get_option('ignore_tests', []))))
