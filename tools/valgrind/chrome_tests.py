@@ -444,8 +444,9 @@ class ChromeTests:
     # the two values "Release" and "Debug".
     # TODO(Hercules): unify how all our scripts pass around build mode
     # (--mode / --target / --build_dir / --debug)
-    if self._options.build_dir.endswith("Debug"):
-      script_cmd.append("--debug");
+    if self._options.build_dir:
+      build_root, mode = os.path.split(self._options.build_dir)
+      script_cmd.extend(["--build-directory", build_root, "--target", mode])
     if (chunk_size > 0):
       script_cmd.append("--run-chunk=%d:%d" % (chunk_num, chunk_size))
     if len(self._args):
