@@ -14,6 +14,7 @@
 #include "extensions/common/error_utils.h"
 
 using extensions::api::tabs::InjectDetails;
+namespace webview = extensions::api::webview;
 
 WebviewExecuteCodeFunction::WebviewExecuteCodeFunction()
     : guest_instance_id_(0) {
@@ -93,18 +94,15 @@ WebviewGoFunction::~WebviewGoFunction() {
 }
 
 bool WebviewGoFunction::RunImpl() {
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
-
-  int relative_index = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &relative_index));
+  scoped_ptr<webview::Go::Params> params(webview::Go::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
+      render_view_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
 
-  guest->Go(relative_index);
+  guest->Go(params->relative_index);
   return true;
 }
 
@@ -115,11 +113,12 @@ WebviewReloadFunction::~WebviewReloadFunction() {
 }
 
 bool WebviewReloadFunction::RunImpl() {
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+  scoped_ptr<webview::Reload::Params> params(
+      webview::Reload::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
+      render_view_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
 
@@ -134,25 +133,19 @@ WebviewSetPermissionFunction::~WebviewSetPermissionFunction() {
 }
 
 bool WebviewSetPermissionFunction::RunImpl() {
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
-
-  int request_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &request_id));
-
-  bool should_allow = false;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(2, &should_allow));
-
-  std::string user_input;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(3, &user_input));
+  scoped_ptr<webview::SetPermission::Params> params(
+      webview::SetPermission::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
+      render_view_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
 
   EXTENSION_FUNCTION_VALIDATE(
-      guest->SetPermission(request_id, should_allow, user_input));
+      guest->SetPermission(params->request_id,
+                           params->should_allow,
+                           params->user_input));
   return true;
 }
 
@@ -163,11 +156,12 @@ WebviewStopFunction::~WebviewStopFunction() {
 }
 
 bool WebviewStopFunction::RunImpl() {
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+  scoped_ptr<webview::Stop::Params> params(
+      webview::Stop::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
+      render_view_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
 
@@ -182,11 +176,12 @@ WebviewTerminateFunction::~WebviewTerminateFunction() {
 }
 
 bool WebviewTerminateFunction::RunImpl() {
-  int instance_id = 0;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &instance_id));
+  scoped_ptr<webview::Terminate::Params> params(
+      webview::Terminate::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
 
   WebViewGuest* guest = WebViewGuest::From(
-      render_view_host()->GetProcess()->GetID(), instance_id);
+      render_view_host()->GetProcess()->GetID(), params->instance_id);
   if (!guest)
     return false;
 
