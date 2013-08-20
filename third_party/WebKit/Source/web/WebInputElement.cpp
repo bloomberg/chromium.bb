@@ -34,7 +34,6 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "WebNodeCollection.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLDataListElement.h"

@@ -28,6 +28,7 @@
 #include "core/dom/shadow/ElementShadow.h"
 
 #include "core/dom/ContainerNodeAlgorithms.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ContentDistribution.h"
 #include "core/dom/shadow/InsertionPoint.h"

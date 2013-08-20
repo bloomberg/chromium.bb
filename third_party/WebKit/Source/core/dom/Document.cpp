@@ -68,6 +68,7 @@
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/Event.h"
 #include "core/dom/EventFactory.h"
 #include "core/dom/EventListener.h"

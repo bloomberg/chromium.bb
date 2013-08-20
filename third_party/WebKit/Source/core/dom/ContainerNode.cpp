@@ -27,6 +27,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ContainerNodeAlgorithms.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FullscreenElementStack.h"

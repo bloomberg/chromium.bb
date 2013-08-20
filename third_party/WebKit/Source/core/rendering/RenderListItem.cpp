@@ -25,7 +25,7 @@
 #include "core/rendering/RenderListItem.h"
 
 #include "HTMLNames.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"

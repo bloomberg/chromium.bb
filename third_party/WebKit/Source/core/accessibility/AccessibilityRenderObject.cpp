@@ -35,7 +35,7 @@
 #include "core/accessibility/AccessibilitySVGRoot.h"
 #include "core/accessibility/AccessibilitySpinButton.h"
 #include "core/accessibility/AccessibilityTable.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"

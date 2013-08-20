@@ -28,6 +28,7 @@
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSHelper.h"
 #include "core/dom/Document.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/EventListener.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/NodeTraversal.h"

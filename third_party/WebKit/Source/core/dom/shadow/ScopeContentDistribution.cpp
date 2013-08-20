@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/shadow/ScopeContentDistribution.h"
 
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/shadow/HTMLContentElement.h"

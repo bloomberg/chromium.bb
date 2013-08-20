@@ -26,7 +26,7 @@
 #include "core/html/HTMLLegendElement.h"
 
 #include "HTMLNames.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormControlElement.h"
 

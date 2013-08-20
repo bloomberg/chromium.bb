@@ -25,7 +25,7 @@
 #include "HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/html/HTMLOListElement.h"
 #include "core/rendering/CounterNode.h"
 #include "core/rendering/RenderListItem.h"

@@ -34,6 +34,7 @@
 #include "core/dom/CharacterData.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"

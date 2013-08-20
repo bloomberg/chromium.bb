@@ -33,7 +33,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/Element.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/TreeScope.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLMapElement.h"

@@ -25,6 +25,7 @@
 
 #include "HTMLNames.h"
 #include "core/dom/ClassNodeList.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"

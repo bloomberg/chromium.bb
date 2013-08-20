@@ -40,6 +40,7 @@
 #include "core/dom/ChildListMutationScope.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Range.h"

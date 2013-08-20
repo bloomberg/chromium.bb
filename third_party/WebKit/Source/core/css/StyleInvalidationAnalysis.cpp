@@ -31,7 +31,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
-#include "core/dom/NodeTraversal.h"
+#include "core/dom/ElementTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 

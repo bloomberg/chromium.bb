@@ -39,7 +39,6 @@
 #include "core/dom/FullscreenElementStack.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/NodeTraversal.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/SpaceSplitString.h"
 #include "core/dom/shadow/ElementShadow.h"
