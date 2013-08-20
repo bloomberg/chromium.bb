@@ -223,20 +223,21 @@ void BubbleDelegateView::OnWidgetDestroying(Widget* widget) {
   }
 }
 
+void BubbleDelegateView::OnWidgetVisibilityChanging(Widget* widget,
+                                                    bool visible) {
+#if defined(OS_WIN)
+  // On Windows we need to handle this before the bubble is visible or hidden.
+  // Please see the comment on the OnWidgetVisibilityChanging function. On
+  // other platforms it is fine to handle it after the bubble is shown/hidden.
+  HandleVisibilityChanged(widget, visible);
+#endif
+}
+
 void BubbleDelegateView::OnWidgetVisibilityChanged(Widget* widget,
                                                    bool visible) {
-  if (widget != GetWidget())
-    return;
-
-  if (visible) {
-    if (border_widget_)
-      border_widget_->ShowInactive();
-    if (anchor_widget() && anchor_widget()->GetTopLevelWidget())
-      anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
-  } else {
-    if (border_widget_)
-      border_widget_->Hide();
-  }
+#if !defined(OS_WIN)
+  HandleVisibilityChanged(widget, visible);
+#endif
 }
 
 void BubbleDelegateView::OnWidgetActivationChanged(Widget* widget,
@@ -404,5 +405,21 @@ gfx::Rect BubbleDelegateView::GetBubbleClientBounds() const {
   return client_bounds;
 }
 #endif
+
+void BubbleDelegateView::HandleVisibilityChanged(Widget* widget,
+                                                 bool visible) {
+  if (widget != GetWidget())
+    return;
+
+  if (visible) {
+    if (border_widget_)
+      border_widget_->ShowInactive();
+    if (anchor_widget() && anchor_widget()->GetTopLevelWidget())
+      anchor_widget()->GetTopLevelWidget()->DisableInactiveRendering();
+  } else {
+    if (border_widget_)
+      border_widget_->Hide();
+  }
+}
 
 }  // namespace views

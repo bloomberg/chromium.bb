@@ -202,6 +202,7 @@ class VIEWS_EXPORT NativeWidgetWin : public internal::NativeWidgetPrivate,
   virtual void HandleEndWMSizeMove() OVERRIDE;
   virtual void HandleMove() OVERRIDE;
   virtual void HandleWorkAreaChanged() OVERRIDE;
+  virtual void HandleVisibilityChanging(bool visible) OVERRIDE;
   virtual void HandleVisibilityChanged(bool visible) OVERRIDE;
   virtual void HandleClientSizeChanged(const gfx::Size& new_size) OVERRIDE;
   virtual void HandleFrameChanged() OVERRIDE;

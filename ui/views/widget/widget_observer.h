@@ -36,6 +36,8 @@ class VIEWS_EXPORT WidgetObserver {
   // widget has been destroyed.
   virtual void OnWidgetDestroyed(Widget* widget) {}
 
+  virtual void OnWidgetVisibilityChanging(Widget* widget, bool visible) {}
+
   virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) {}
 
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) {}

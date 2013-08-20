@@ -539,10 +539,6 @@ void DesktopRootWindowHostX11::OnNativeWidgetBlur() {
     native_widget_delegate_->AsWidget()->GetInputMethod()->OnBlur();
 }
 
-void DesktopRootWindowHostX11::SetInactiveRenderingDisabled(
-    bool disable_inactive) {
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostX11, aura::RootWindowHost implementation:
 

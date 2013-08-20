@@ -987,6 +987,11 @@ void Widget::OnNativeBlur(gfx::NativeView new_focused_view) {
                                                         new_focused_view);
 }
 
+void Widget::OnNativeWidgetVisibilityChanging(bool visible) {
+  FOR_EACH_OBSERVER(WidgetObserver, observers_,
+                    OnWidgetVisibilityChanging(this, visible));
+}
+
 void Widget::OnNativeWidgetVisibilityChanged(bool visible) {
   View* root = GetRootView();
   if (root)

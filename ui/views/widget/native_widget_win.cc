@@ -717,6 +717,10 @@ void NativeWidgetWin::HandleWorkAreaChanged() {
   GetWidget()->widget_delegate()->OnWorkAreaChanged();
 }
 
+void NativeWidgetWin::HandleVisibilityChanging(bool visible) {
+  delegate_->OnNativeWidgetVisibilityChanging(visible);
+}
+
 void NativeWidgetWin::HandleVisibilityChanged(bool visible) {
   delegate_->OnNativeWidgetVisibilityChanged(visible);
 }

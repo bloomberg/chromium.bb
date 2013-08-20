@@ -388,13 +388,6 @@ void DesktopRootWindowHostWin::OnNativeWidgetFocus() {
 void DesktopRootWindowHostWin::OnNativeWidgetBlur() {
 }
 
-void DesktopRootWindowHostWin::SetInactiveRenderingDisabled(
-    bool disable_inactive) {
-  // Force the non-client area (most notably the title bar) to paint as either
-  // active or inactive, depending on the input.
-  SendMessage(message_handler_->hwnd(), WM_NCACTIVATE, !!disable_inactive, 0);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopRootWindowHostWin, RootWindowHost implementation:
 
@@ -741,6 +734,10 @@ void DesktopRootWindowHostWin::HandleMove() {
 
 void DesktopRootWindowHostWin::HandleWorkAreaChanged() {
   GetWidget()->widget_delegate()->OnWorkAreaChanged();
+}
+
+void DesktopRootWindowHostWin::HandleVisibilityChanging(bool visible) {
+  native_widget_delegate_->OnNativeWidgetVisibilityChanging(visible);
 }
 
 void DesktopRootWindowHostWin::HandleVisibilityChanged(bool visible) {

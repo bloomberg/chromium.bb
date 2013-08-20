@@ -113,9 +113,6 @@ class VIEWS_EXPORT DesktopRootWindowHost {
   // blurred.
   virtual void OnNativeWidgetFocus() = 0;
   virtual void OnNativeWidgetBlur() = 0;
-
-  // Paints the host window as activated depending on the bool passed in.
-  virtual void SetInactiveRenderingDisabled(bool disable_inactive) = 0;
 };
 
 }  // namespace views

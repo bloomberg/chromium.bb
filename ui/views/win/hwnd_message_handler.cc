@@ -1592,6 +1592,8 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
   // cleared before it is converted to BOOL.
   BOOL active = static_cast<BOOL>(LOWORD(w_param));
 
+  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
+
   if (delegate_->CanActivate())
     delegate_->HandleActivationChanged(!!active);
 
@@ -1604,7 +1606,6 @@ LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
     return TRUE;
 
   // On activation, lift any prior restriction against rendering as inactive.
-  bool inactive_rendering_disabled = delegate_->IsInactiveRenderingDisabled();
   if (active && inactive_rendering_disabled)
     delegate_->EnableInactiveRendering();
 
@@ -2155,6 +2156,11 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
     // See comment in header as to why we might want this.
     window_pos->flags &= ~SWP_SHOWWINDOW;
   }
+
+  if (window_pos->flags & SWP_SHOWWINDOW)
+    delegate_->HandleVisibilityChanging(true);
+  else if (window_pos->flags & SWP_HIDEWINDOW)
+    delegate_->HandleVisibilityChanging(false);
 
   SetMsgHandled(FALSE);
 }

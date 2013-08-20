@@ -583,7 +583,6 @@ void DesktopNativeWidgetAura::SetInactiveRenderingDisabled(bool value) {
     active_window_observer_.reset(
         new NativeWidgetAuraWindowObserver(window_, native_widget_delegate_));
   }
-  desktop_root_window_host_->SetInactiveRenderingDisabled(value);
 }
 
 Widget::MoveLoopResult DesktopNativeWidgetAura::RunMoveLoop(

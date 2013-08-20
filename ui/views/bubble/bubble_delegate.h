@@ -47,7 +47,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // WidgetObserver overrides:
   virtual void OnWidgetDestroying(Widget* widget) OVERRIDE;
-  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible) OVERRIDE;
+  virtual void OnWidgetVisibilityChanging(Widget* widget, bool visible)
+      OVERRIDE;
+  virtual void OnWidgetVisibilityChanged(Widget* widget, bool visible)
+      OVERRIDE;
   virtual void OnWidgetActivationChanged(Widget* widget, bool active) OVERRIDE;
   virtual void OnWidgetBoundsChanged(Widget* widget,
                                      const gfx::Rect& new_bounds) OVERRIDE;
@@ -160,6 +163,9 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
   // Get bounds for the Windows-only widget that hosts the bubble's contents.
   gfx::Rect GetBubbleClientBounds() const;
 #endif
+
+  // Handles widget visibility changes.
+  void HandleVisibilityChanged(Widget* widget, bool visible);
 
   // Fade animation for bubble.
   scoped_ptr<ui::SlideAnimation> fade_animation_;

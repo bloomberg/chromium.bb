@@ -61,6 +61,9 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual void OnNativeFocus(gfx::NativeView focused_view) = 0;
   virtual void OnNativeBlur(gfx::NativeView focused_view) = 0;
 
+  // Called when the window is about to be shown/hidden.
+  virtual void OnNativeWidgetVisibilityChanging(bool visible) = 0;
+
   // Called when the window is shown/hidden.
   virtual void OnNativeWidgetVisibilityChanged(bool visible) = 0;
 
