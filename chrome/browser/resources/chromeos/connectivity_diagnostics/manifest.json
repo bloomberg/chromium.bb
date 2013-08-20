@@ -21,6 +21,7 @@
    ]},
    "clipboardWrite",
    "experimental",
+   "metricsPrivate",
    "networkingPrivate",
    "http://*.google.com/*",
    "https://*.google.com/*"
