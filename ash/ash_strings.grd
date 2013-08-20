@@ -325,7 +325,10 @@ Press Ctrl+Alt+Z to disable.
         Extending screen
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED" desc="The label used in the tray to show that the current status is docked mode.">
-        Dock mode
+        Docked mode
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION" desc="The label used in the notification body to describe what the docked mode means.">
+        Your Chromebook will stay on while connected to an external display, even with the lid closed.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED" desc="The label used in the tray to notify that the display resolution settings has changed.">
         <ph name="DISPLAY_NAME">$1</ph> resolution was changed to <ph name="RESOLUTION">$2</ph>

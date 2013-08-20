@@ -16,6 +16,9 @@
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/display.h"
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/notification.h"
+#include "ui/message_center/notification_list.h"
 #include "ui/views/controls/label.h"
 
 namespace ash {
@@ -75,12 +78,15 @@ class TrayDisplayTest : public ash::test::AshTestBase {
   TrayDisplay* tray_display() { return tray_display_; }
 
   void CloseNotification();
-  bool IsDisplayVisibleInTray();
-  base::string16 GetTrayDisplayText();
-  base::string16 GetTrayDisplayTooltipText();
-  base::string16 GetDisplayNotificationText();
+  bool IsDisplayVisibleInTray() const;
+  base::string16 GetTrayDisplayText() const;
+  base::string16 GetTrayDisplayTooltipText() const;
+  base::string16 GetDisplayNotificationText() const;
+  base::string16 GetDisplayNotificationAdditionalText() const;
 
  private:
+  const message_center::Notification* GetDisplayNotification() const;
+
   // Weak reference, owned by Shell.
   SystemTray* tray_;
 
@@ -104,20 +110,21 @@ void TrayDisplayTest::SetUp() {
 }
 
 void TrayDisplayTest::CloseNotification() {
-  tray_display_->CloseNotificationForTest();
+  message_center::MessageCenter::Get()->RemoveNotification(
+      TrayDisplay::kNotificationId, false);
   RunAllPendingInMessageLoop();
 }
 
-bool TrayDisplayTest::IsDisplayVisibleInTray() {
+bool TrayDisplayTest::IsDisplayVisibleInTray() const {
   return tray_display_->default_view() &&
       tray_display_->default_view()->visible();
 }
 
-base::string16 TrayDisplayTest::GetTrayDisplayText() {
+base::string16 TrayDisplayTest::GetTrayDisplayText() const {
   return tray_display_->GetDefaultViewMessage();
 }
 
-base::string16 TrayDisplayTest::GetTrayDisplayTooltipText() {
+base::string16 TrayDisplayTest::GetTrayDisplayTooltipText() const {
   if (!tray_display_->default_view())
     return base::string16();
 
@@ -127,8 +134,27 @@ base::string16 TrayDisplayTest::GetTrayDisplayTooltipText() {
   return tooltip;
 }
 
-base::string16 TrayDisplayTest::GetDisplayNotificationText() {
-  return tray_display_->GetNotificationMessage();
+base::string16 TrayDisplayTest::GetDisplayNotificationText() const {
+  const message_center::Notification* notification = GetDisplayNotification();
+  return notification ? notification->title() : base::string16();
+}
+
+base::string16 TrayDisplayTest::GetDisplayNotificationAdditionalText() const {
+  const message_center::Notification* notification = GetDisplayNotification();
+  return notification ? notification->message() : base::string16();
+}
+
+const message_center::Notification* TrayDisplayTest::GetDisplayNotification()
+    const {
+  const message_center::NotificationList::Notifications notifications =
+      message_center::MessageCenter::Get()->GetNotifications();
+  for (message_center::NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end(); ++iter) {
+    if ((*iter)->id() == TrayDisplay::kNotificationId)
+      return *iter;
+  }
+
+  return NULL;
 }
 
 TEST_F(TrayDisplayTest, NoInternalDisplay) {
@@ -189,8 +215,6 @@ TEST_F(TrayDisplayTest, InternalDisplay) {
   EXPECT_EQ(expected, GetTrayDisplayText());
   EXPECT_EQ(GetMirroredTooltipText(expected, GetFirstDisplayName(), "400x400"),
             GetTrayDisplayTooltipText());
-
-  // TODO(mukai): add test case for docked mode here.
 }
 
 TEST_F(TrayDisplayTest, InternalDisplayResized) {
@@ -230,6 +254,20 @@ TEST_F(TrayDisplayTest, InternalDisplayResized) {
   EXPECT_EQ(expected, GetTrayDisplayText());
   EXPECT_EQ(GetMirroredTooltipText(expected, GetFirstDisplayName(), "600x600"),
             GetTrayDisplayTooltipText());
+
+  // Closed lid mode.
+  display_manager->SetSoftwareMirroring(false);
+  UpdateDisplay("400x400@1.5,200x200");
+  gfx::Display::SetInternalDisplayId(ScreenAsh::GetSecondaryDisplay().id());
+  UpdateDisplay("400x400@1.5");
+  tray()->ShowDefaultView(BUBBLE_USE_EXISTING);
+  EXPECT_TRUE(IsDisplayVisibleInTray());
+  expected = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED);
+  EXPECT_EQ(expected, GetTrayDisplayText());
+  EXPECT_EQ(
+      GetTooltipText(
+          expected, GetFirstDisplayName(), "600x600", base::string16(), ""),
+      GetTrayDisplayTooltipText());
 }
 
 TEST_F(TrayDisplayTest, ExternalDisplayResized) {
@@ -332,6 +370,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
           l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90)),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   CloseNotification();
   UpdateDisplay("400x400");
@@ -341,6 +380,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
           l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_DISPLAY_STANDARD_ORIENTATION)),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // UI-scale
   CloseNotification();
@@ -350,6 +390,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
           GetFirstDisplayName(), UTF8ToUTF16("600x600")),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // UI-scale to 1.0
   CloseNotification();
@@ -359,11 +400,13 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
           GetFirstDisplayName(), UTF8ToUTF16("400x400")),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // No-update
   CloseNotification();
   UpdateDisplay("400x400");
   EXPECT_TRUE(GetDisplayNotificationText().empty());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // Extended.
   CloseNotification();
@@ -372,6 +415,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetSecondDisplayName()),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // Mirroring.
   CloseNotification();
@@ -381,6 +425,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING, GetMirroredDisplayName()),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // Back to extended.
   CloseNotification();
@@ -390,6 +435,7 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
       l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_DISPLAY_EXTENDED, GetSecondDisplayName()),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
   // Resize the first display.
   UpdateDisplay("400x400@1.5,200x200");
@@ -398,8 +444,9 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
           IDS_ASH_STATUS_TRAY_DISPLAY_RESOLUTION_CHANGED,
           GetFirstDisplayName(), UTF8ToUTF16("600x600")),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
 
-  // rotate the second.
+  // Rotate the second.
   UpdateDisplay("400x400@1.5,200x200/r");
   EXPECT_EQ(
       l10n_util::GetStringFUTF16(
@@ -408,6 +455,17 @@ TEST_F(TrayDisplayTest, DisplayNotifications) {
           l10n_util::GetStringUTF16(
               IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_90)),
       GetDisplayNotificationText());
+  EXPECT_TRUE(GetDisplayNotificationAdditionalText().empty());
+
+  // Enters closed lid mode.
+  UpdateDisplay("400x400@1.5,200x200");
+  gfx::Display::SetInternalDisplayId(ScreenAsh::GetSecondaryDisplay().id());
+  UpdateDisplay("400x400@1.5");
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED),
+            GetDisplayNotificationText());
+  EXPECT_EQ(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_DISPLAY_DOCKED_DESCRIPTION),
+      GetDisplayNotificationAdditionalText());
 }
 
 TEST_F(TrayDisplayTest, DisplayConfigurationChangedTwice) {
