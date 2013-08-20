@@ -223,8 +223,7 @@ def RunWebkitLayoutTests(options):
     cmd_args.extend(
         ['--additional-expectations=%s' % os.path.join(CHROME_SRC, *f)])
 
-  RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] + cmd_args,
-         flunk_on_failure=False)
+  RunCmd(['webkit/tools/layout_tests/run_webkit_tests.py'] + cmd_args)
 
 
 def SpawnLogcatMonitor():
