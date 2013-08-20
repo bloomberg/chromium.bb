@@ -4,6 +4,7 @@
 
 #include "ash/root_window_controller.h"
 
+#include <queue>
 #include <vector>
 
 #include "ash/ash_constants.h"
@@ -44,11 +45,13 @@
 #include "base/command_line.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/screen.h"
@@ -404,6 +407,8 @@ void RootWindowController::CloseChildWindows() {
     docked_layout_manager_ = NULL;
   }
 
+  aura::client::SetDragDropClient(root_window_.get(), NULL);
+
   // TODO(harrym): Remove when Status Area Widget is a child view.
   shelf_->ShutdownStatusAreaWidget();
 
@@ -417,10 +422,26 @@ void RootWindowController::CloseChildWindows() {
   workspace_controller_.reset();
   aura::client::SetTooltipClient(root_window_.get(), NULL);
 
-  while (!root_window_->children().empty()) {
-    aura::Window* child = root_window_->children()[0];
-    delete child;
+  // Remove all toplevel windows first.
+  std::queue<aura::Window*> non_toplevel_windows;
+  non_toplevel_windows.push(root_window_.get());
+  while (!non_toplevel_windows.empty()) {
+    aura::Window* non_toplevel_window = non_toplevel_windows.front();
+    non_toplevel_windows.pop();
+    aura::WindowTracker toplevel_windows;
+    for (size_t i = 0; i < non_toplevel_window->children().size(); ++i) {
+      aura::Window* child = non_toplevel_window->children()[i];
+      if (child->delegate())
+        toplevel_windows.Add(child);
+      else
+        non_toplevel_windows.push(child);
+    }
+    while (!toplevel_windows.windows().empty())
+      delete *toplevel_windows.windows().begin();
   }
+  // And then remove the containers.
+  while (!root_window_->children().empty())
+    delete root_window_->children()[0];
 
   shelf_.reset(NULL);
 }

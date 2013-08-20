@@ -283,6 +283,9 @@ Shell::~Shell() {
 
   locale_notification_controller_.reset();
 
+  // Drag-and-drop must be canceled prior to close all windows.
+  drag_drop_controller_.reset();
+
   // Destroy all child windows including widgets.
   display_controller_->CloseChildWindows();
 
@@ -293,7 +296,6 @@ Shell::~Shell() {
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
   // Alphabetical. TODO(oshima): sort.
-  drag_drop_controller_.reset();
   magnification_controller_.reset();
   partial_magnification_controller_.reset();
   resize_shadow_controller_.reset();

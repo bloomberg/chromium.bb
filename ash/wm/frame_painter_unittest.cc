@@ -12,6 +12,7 @@
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "grit/ash_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
@@ -25,6 +26,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/non_client_view.h"
 
 using ash::FramePainter;
@@ -147,6 +149,33 @@ FramePainter* CreateTestPainter(Widget* widget) {
                 FramePainter::SIZE_BUTTON_MAXIMIZES);
   return painter;
 }
+
+// Self-owned manager of the frame painter which deletes the painter and itself
+// when its widget is closed.
+class FramePainterOwner : views::WidgetObserver {
+ public:
+  explicit FramePainterOwner(Widget* widget)
+      : frame_painter_(CreateTestPainter(widget)) {
+    widget->AddObserver(this);
+  }
+
+  virtual ~FramePainterOwner() {}
+
+  FramePainter* frame_painter() { return frame_painter_.get(); }
+
+ private:
+  virtual void OnWidgetDestroying(Widget* widget) OVERRIDE {
+    widget->RemoveObserver(this);
+    // Do not delete directly here, since the task of FramePainter causing
+    // the crash of crbug.com/273310 may run after this class handles this
+    // event.
+    base::MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  }
+
+  scoped_ptr<FramePainter> frame_painter_;
+
+  DISALLOW_COPY_AND_ASSIGN(FramePainterOwner);
+};
 
 }  // namespace
 
@@ -688,6 +717,28 @@ TEST_F(FramePainterTest, ChildWindowVisibility) {
             p1->GetHeaderOpacity(FramePainter::ACTIVE,
                                  IDR_AURA_WINDOW_HEADER_BASE_ACTIVE,
                                  0));
+}
+
+TEST_F(FramePainterTest, NoCrashShutdownWithAlwaysOnTopWindow) {
+  // Create normal window and an always-on-top window, and leave it as is
+  // and finish the test, then verify it doesn't cause a crash. See
+  // crbug.com/273310.  Note that those widgets will be deleted at
+  // RootWindowController::CloseChildWindows(), so this code is memory-safe.
+  Widget* w1 = CreateTestWidget();
+  FramePainterOwner* o1 = new FramePainterOwner(w1);
+  FramePainter* p1 = o1->frame_painter();
+  w1->SetBounds(gfx::Rect(0, 0, 100, 100));
+  w1->Show();
+  EXPECT_TRUE(p1->UseSoloWindowHeader());
+
+  Widget* w2 = CreateAlwaysOnTopWidget();
+  FramePainterOwner* o2 = new FramePainterOwner(w2);
+  FramePainter* p2 = o2->frame_painter();
+  w2->Show();
+  EXPECT_FALSE(p1->UseSoloWindowHeader());
+  EXPECT_FALSE(p2->UseSoloWindowHeader());
+
+  // Exit with no resource release. They'll be released at shutdown.
 }
 
 }  // namespace ash
