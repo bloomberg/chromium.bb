@@ -84,17 +84,13 @@ void HTMLScriptElement::setText(const String &value)
 {
     RefPtr<Node> protectFromMutationEvents(this);
 
-    int numChildren = childNodeCount();
-
-    if (numChildren == 1 && firstChild()->isTextNode()) {
+    if (hasOneTextChild()) {
         toText(firstChild())->setData(value);
         return;
     }
 
-    if (numChildren > 0)
-        removeChildren();
-
-    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION);
+    removeChildren();
+    appendChild(document()->createTextNode(value.impl()), IGNORE_EXCEPTION, AttachLazily);
 }
 
 void HTMLScriptElement::setAsync(bool async)

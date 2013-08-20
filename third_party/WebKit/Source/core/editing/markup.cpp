@@ -1039,17 +1039,6 @@ PassRefPtr<DocumentFragment> createContextualFragment(const String& markup, HTML
     return fragment.release();
 }
 
-static inline bool hasOneChild(ContainerNode* node)
-{
-    Node* firstChild = node->firstChild();
-    return firstChild && !firstChild->nextSibling();
-}
-
-static inline bool hasOneTextChild(ContainerNode* node)
-{
-    return hasOneChild(node) && node->firstChild()->isTextNode();
-}
-
 void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFragment> fragment, ExceptionState& es)
 {
     RefPtr<ContainerNode> containerNode(container);
@@ -1061,12 +1050,12 @@ void replaceChildrenWithFragment(ContainerNode* container, PassRefPtr<DocumentFr
         return;
     }
 
-    if (hasOneTextChild(containerNode.get()) && hasOneTextChild(fragment.get())) {
+    if (containerNode->hasOneTextChild() && fragment->hasOneTextChild()) {
         toText(containerNode->firstChild())->setData(toText(fragment->firstChild())->data());
         return;
     }
 
-    if (hasOneChild(containerNode.get())) {
+    if (containerNode->hasOneChild()) {
         containerNode->replaceChild(fragment, containerNode->firstChild(), es, AttachLazily);
         return;
     }
@@ -1081,14 +1070,14 @@ void replaceChildrenWithText(ContainerNode* container, const String& text, Excep
 
     ChildListMutationScope mutation(containerNode.get());
 
-    if (hasOneTextChild(containerNode.get())) {
+    if (containerNode->hasOneTextChild()) {
         toText(containerNode->firstChild())->setData(text);
         return;
     }
 
     RefPtr<Text> textNode = Text::create(containerNode->document(), text);
 
-    if (hasOneChild(containerNode.get())) {
+    if (containerNode->hasOneChild()) {
         containerNode->replaceChild(textNode.release(), containerNode->firstChild(), es, AttachLazily);
         return;
     }

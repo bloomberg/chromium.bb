@@ -87,6 +87,9 @@ public:
     Node* lastChild() const { return m_lastChild; }
     bool hasChildNodes() const { return m_firstChild; }
 
+    bool hasOneChild() const { return m_firstChild && !m_firstChild->nextSibling(); }
+    bool hasOneTextChild() const { return hasOneChild() && m_firstChild->isTextNode(); }
+
     // ParentNode interface API
     PassRefPtr<HTMLCollection> children();
     Element* firstElementChild() const;
