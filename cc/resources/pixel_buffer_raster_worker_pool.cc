@@ -601,6 +601,11 @@ void PixelBufferRasterWorkerPool::OnRasterTaskCompleted(
     scoped_refptr<internal::RasterWorkerPoolTask> task,
     bool was_canceled,
     bool needs_upload) {
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc"),
+               "PixelBufferRasterWorkerPool::OnRasterTaskCompleted",
+               "was_canceled", was_canceled,
+               "needs_upload", needs_upload);
+
   DCHECK(pixel_buffer_tasks_.find(task.get()) != pixel_buffer_tasks_.end());
 
   // Balanced with MapPixelBuffer() call in ScheduleMoreTasks().
