@@ -207,7 +207,10 @@ InProcessViewRenderer::InProcessViewRenderer(
       java_helper_(java_helper),
       web_contents_(web_contents),
       compositor_(NULL),
-      visible_(false),
+      is_paused_(false),
+      view_visible_(false),
+      window_visible_(false),
+      attached_to_window_(false),
       dip_scale_(0.0),
       page_scale_factor_(1.0),
       on_new_picture_enable_(false),
@@ -215,7 +218,6 @@ InProcessViewRenderer::InProcessViewRenderer(
       block_invalidates_(false),
       width_(0),
       height_(0),
-      attached_to_window_(false),
       hardware_initialized_(false),
       hardware_failed_(false),
       last_egl_context_(NULL),
@@ -540,13 +542,33 @@ void InProcessViewRenderer::EnableOnNewPicture(bool enabled) {
   on_new_picture_enable_ = enabled;
 }
 
-void InProcessViewRenderer::OnVisibilityChanged(bool visible) {
+void InProcessViewRenderer::SetIsPaused(bool paused) {
   TRACE_EVENT_INSTANT1("android_webview",
-                       "InProcessViewRenderer::OnVisibilityChanged",
+                       "InProcessViewRenderer::SetIsPaused",
                        TRACE_EVENT_SCOPE_THREAD,
-                       "visible",
-                       visible);
-  visible_ = visible;
+                       "paused",
+                       paused);
+  is_paused_ = paused;
+  EnsureContinuousInvalidation(NULL, false);
+}
+
+void InProcessViewRenderer::SetViewVisibility(bool view_visible) {
+  TRACE_EVENT_INSTANT1("android_webview",
+                       "InProcessViewRenderer::SetViewVisibility",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "view_visible",
+                       view_visible);
+  view_visible_ = view_visible;
+}
+
+void InProcessViewRenderer::SetWindowVisibility(bool window_visible) {
+  TRACE_EVENT_INSTANT1("android_webview",
+                       "InProcessViewRenderer::SetWindowVisibility",
+                       TRACE_EVENT_SCOPE_THREAD,
+                       "window_visible",
+                       window_visible);
+  window_visible_ = window_visible;
+  EnsureContinuousInvalidation(NULL, false);
 }
 
 void InProcessViewRenderer::OnSizeChanged(int width, int height) {
@@ -597,8 +619,9 @@ bool InProcessViewRenderer::IsAttachedToWindow() {
   return attached_to_window_;
 }
 
-bool InProcessViewRenderer::IsViewVisible() {
-  return visible_;
+bool InProcessViewRenderer::IsVisible() {
+  // Ignore |window_visible_| if |attached_to_window_| is false.
+  return view_visible_ && (!attached_to_window_ || window_visible_);
 }
 
 gfx::Rect InProcessViewRenderer::GetScreenRect() {
@@ -721,36 +744,39 @@ void InProcessViewRenderer::DidOverscroll(
 void InProcessViewRenderer::EnsureContinuousInvalidation(
     AwDrawGLInfo* draw_info,
     bool invalidate_ignore_compositor) {
-  if ((compositor_needs_continuous_invalidate_ ||
-       invalidate_ignore_compositor) &&
-      !block_invalidates_) {
-    if (draw_info) {
-      draw_info->dirty_left = cached_global_visible_rect_.x();
-      draw_info->dirty_top = cached_global_visible_rect_.y();
-      draw_info->dirty_right = cached_global_visible_rect_.right();
-      draw_info->dirty_bottom = cached_global_visible_rect_.bottom();
-      draw_info->status_mask |= AwDrawGLInfo::kStatusMaskDraw;
-    } else {
-      client_->PostInvalidate();
-    }
+  // This method should be called again when any of these conditions change.
+  bool need_invalidate =
+      compositor_needs_continuous_invalidate_ || invalidate_ignore_compositor;
+  bool throttle = is_paused_ || (attached_to_window_ && !window_visible_);
+  if (!need_invalidate || block_invalidates_ || throttle)
+    return;
 
-    block_invalidates_ = true;
+  if (draw_info) {
+    draw_info->dirty_left = cached_global_visible_rect_.x();
+    draw_info->dirty_top = cached_global_visible_rect_.y();
+    draw_info->dirty_right = cached_global_visible_rect_.right();
+    draw_info->dirty_bottom = cached_global_visible_rect_.bottom();
+    draw_info->status_mask |= AwDrawGLInfo::kStatusMaskDraw;
+  } else {
+    client_->PostInvalidate();
+  }
 
-    // Unretained here is safe because the callback is cancelled when
-    // |fallback_tick_| is destroyed.
-    fallback_tick_.Reset(base::Bind(&InProcessViewRenderer::FallbackTickFired,
-                                    base::Unretained(this)));
+  block_invalidates_ = true;
 
-    // No need to reschedule fallback tick if compositor does not need to be
-    // ticked. This can happen if this is reached because
-    // invalidate_ignore_compositor is true.
-    if (compositor_needs_continuous_invalidate_) {
-      base::MessageLoop::current()->PostDelayedTask(
-          FROM_HERE,
-          fallback_tick_.callback(),
-          base::TimeDelta::FromMilliseconds(
-              kFallbackTickTimeoutInMilliseconds));
-    }
+  // Unretained here is safe because the callback is cancelled when
+  // |fallback_tick_| is destroyed.
+  fallback_tick_.Reset(base::Bind(&InProcessViewRenderer::FallbackTickFired,
+                                  base::Unretained(this)));
+
+  // No need to reschedule fallback tick if compositor does not need to be
+  // ticked. This can happen if this is reached because
+  // invalidate_ignore_compositor is true.
+  if (compositor_needs_continuous_invalidate_) {
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        fallback_tick_.callback(),
+        base::TimeDelta::FromMilliseconds(
+            kFallbackTickTimeoutInMilliseconds));
   }
 }
 
@@ -780,7 +806,9 @@ bool InProcessViewRenderer::CompositeSW(SkCanvas* canvas) {
 
 std::string InProcessViewRenderer::ToString(AwDrawGLInfo* draw_info) const {
   std::string str;
-  base::StringAppendF(&str, "visible: %d ", visible_);
+  base::StringAppendF(&str, "is_paused: %d ", is_paused_);
+  base::StringAppendF(&str, "view_visible: %d ", view_visible_);
+  base::StringAppendF(&str, "window_visible: %d ", window_visible_);
   base::StringAppendF(&str, "dip_scale: %f ", dip_scale_);
   base::StringAppendF(&str, "page_scale_factor: %f ", page_scale_factor_);
   base::StringAppendF(&str,

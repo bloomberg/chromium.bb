@@ -158,7 +158,9 @@ public class AwContents {
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
 
-    private boolean mIsVisible;  // Equivalent to windowVisible && viewVisible.
+    private boolean mIsPaused;
+    private boolean mIsViewVisible;
+    private boolean mIsWindowVisible;
     private boolean mIsAttachedToWindow;
     private Bitmap mFavicon;
     private boolean mHasRequestedVisitedHistoryFromClient;
@@ -578,14 +580,19 @@ public class AwContents {
     private void receivePopupContents(int popupNativeAwContents) {
         // Save existing view state.
         final boolean wasAttached = mIsAttachedToWindow;
-        final boolean wasVisible = getContainerViewVisible();
-        final boolean wasPaused = mUnimplementedIsPaused;
+        final boolean wasViewVisible = mIsViewVisible;
+        final boolean wasWindowVisible = mIsWindowVisible;
+        final boolean wasPaused = mIsPaused;
         final boolean wasFocused = mWindowFocused;
 
         // Properly clean up existing mContentViewCore and mNativeAwContents.
         if (wasFocused) onWindowFocusChanged(false);
-        if (wasVisible) setVisibilityInternal(false);
+        if (wasViewVisible) setViewVisibilityInternal(false);
+        if (wasWindowVisible) setWindowVisibilityInternal(false);
         if (!wasPaused) onPause();
+        // Not calling onDetachedFromWindow here because native code requires GL context to release
+        // GL resources. This case is properly handled when destroy is called while still attached
+        // to window.
 
         setNewAwContents(popupNativeAwContents);
 
@@ -593,7 +600,8 @@ public class AwContents {
         if (!wasPaused) onResume();
         if (wasAttached) onAttachedToWindow();
         onSizeChanged(mContainerView.getWidth(), mContainerView.getHeight(), 0, 0);
-        if (wasVisible) setVisibilityInternal(true);
+        if (wasWindowVisible) setWindowVisibilityInternal(true);
+        if (wasViewVisible) setViewVisibilityInternal(true);
         if (wasFocused) onWindowFocusChanged(true);
     }
 
@@ -1111,27 +1119,29 @@ public class AwContents {
         ContentViewStatics.setWebKitSharedTimersSuspended(false);
     }
 
-    private boolean mUnimplementedIsPaused;
-
     /**
      * @see android.webkit.WebView#onPause()
      */
     public void onPause() {
-        mUnimplementedIsPaused = true;
+        if (mIsPaused || mNativeAwContents == 0) return;
+        mIsPaused = true;
+        nativeSetIsPaused(mNativeAwContents, mIsPaused);
     }
 
     /**
      * @see android.webkit.WebView#onResume()
      */
     public void onResume() {
-        mUnimplementedIsPaused = false;
+        if (!mIsPaused || mNativeAwContents == 0) return;
+        mIsPaused = false;
+        nativeSetIsPaused(mNativeAwContents, mIsPaused);
     }
 
     /**
      * @see android.webkit.WebView#isPaused()
      */
     public boolean isPaused() {
-        return mUnimplementedIsPaused;
+        return mIsPaused;
     }
 
     /**
@@ -1487,38 +1497,30 @@ public class AwContents {
      * @see android.view.View#onVisibilityChanged()
      */
     public void onVisibilityChanged(View changedView, int visibility) {
-        updateVisibilityState();
+        boolean viewVisible = mContainerView.getVisibility() == View.VISIBLE;
+        if (mIsViewVisible == viewVisible) return;
+        setViewVisibilityInternal(viewVisible);
     }
 
     /**
      * @see android.view.View#onWindowVisibilityChanged()
      */
     public void onWindowVisibilityChanged(int visibility) {
-        updateVisibilityState();
+        boolean windowVisible = visibility == View.VISIBLE;
+        if (mIsWindowVisible == windowVisible) return;
+        setWindowVisibilityInternal(windowVisible);
     }
 
-    private void updateVisibilityState() {
-        boolean visible = getContainerViewVisible();
-        if (mIsVisible == visible) return;
-
-        setVisibilityInternal(visible);
-    }
-
-    private boolean getContainerViewVisible() {
-        boolean windowVisible = mContainerView.getWindowVisibility() == View.VISIBLE;
-        boolean viewVisible = mContainerView.getVisibility() == View.VISIBLE;
-
-        return windowVisible && viewVisible;
-    }
-
-    private void setVisibilityInternal(boolean visible) {
-        // Note that this skips mIsVisible check and unconditionally sets
-        // visibility. In general, callers should use updateVisibilityState
-        // instead.
-        mIsVisible = visible;
-
+    private void setViewVisibilityInternal(boolean visible) {
+        mIsViewVisible = visible;
         if (mNativeAwContents == 0) return;
-        nativeSetVisibility(mNativeAwContents, mIsVisible);
+        nativeSetViewVisibility(mNativeAwContents, mIsViewVisible);
+    }
+
+    private void setWindowVisibilityInternal(boolean visible) {
+        mIsWindowVisible = visible;
+        if (mNativeAwContents == 0) return;
+        nativeSetWindowVisibility(mNativeAwContents, mIsWindowVisible);
     }
 
     /**
@@ -1873,7 +1875,9 @@ public class AwContents {
 
     private native void nativeOnSizeChanged(int nativeAwContents, int w, int h, int ow, int oh);
     private native void nativeScrollTo(int nativeAwContents, int x, int y);
-    private native void nativeSetVisibility(int nativeAwContents, boolean visible);
+    private native void nativeSetViewVisibility(int nativeAwContents, boolean visible);
+    private native void nativeSetWindowVisibility(int nativeAwContents, boolean visible);
+    private native void nativeSetIsPaused(int nativeAwContents, boolean paused);
     private native void nativeOnAttachedToWindow(int nativeAwContents, int w, int h);
     private static native void nativeOnDetachedFromWindow(int nativeAwContents);
     private native void nativeSetDipScale(int nativeAwContents, float dipScale);

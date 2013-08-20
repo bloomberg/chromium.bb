@@ -224,7 +224,7 @@ std::string AwDevToolsDelegate::GetViewDescription(
   if (!bvr) return "";
   base::DictionaryValue description;
   description.SetBoolean("attached", bvr->IsAttachedToWindow());
-  description.SetBoolean("visible", bvr->IsViewVisible());
+  description.SetBoolean("visible", bvr->IsVisible());
   gfx::Rect screen_rect = bvr->GetScreenRect();
   description.SetInteger("screenX", screen_rect.x());
   description.SetInteger("screenY", screen_rect.y());

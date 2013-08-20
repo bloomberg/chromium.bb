@@ -606,8 +606,16 @@ void AwContents::OnSizeChanged(JNIEnv* env, jobject obj,
   browser_view_renderer_->OnSizeChanged(w, h);
 }
 
-void AwContents::SetVisibility(JNIEnv* env, jobject obj, bool visible) {
-  browser_view_renderer_->OnVisibilityChanged(visible);
+void AwContents::SetViewVisibility(JNIEnv* env, jobject obj, bool visible) {
+  browser_view_renderer_->SetViewVisibility(visible);
+}
+
+void AwContents::SetWindowVisibility(JNIEnv* env, jobject obj, bool visible) {
+  browser_view_renderer_->SetWindowVisibility(visible);
+}
+
+void AwContents::SetIsPaused(JNIEnv* env, jobject obj, bool paused) {
+  browser_view_renderer_->SetIsPaused(paused);
 }
 
 void AwContents::OnAttachedToWindow(JNIEnv* env, jobject obj, int w, int h) {

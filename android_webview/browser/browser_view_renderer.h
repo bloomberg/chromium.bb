@@ -113,7 +113,9 @@ class BrowserViewRenderer {
   virtual void EnableOnNewPicture(bool enabled) = 0;
 
   // View update notifications.
-  virtual void OnVisibilityChanged(bool visible) = 0;
+  virtual void SetIsPaused(bool paused) = 0;
+  virtual void SetViewVisibility(bool visible) = 0;
+  virtual void SetWindowVisibility(bool visible) = 0;
   virtual void OnSizeChanged(int width, int height) = 0;
   virtual void OnAttachedToWindow(int width, int height) = 0;
   virtual void OnDetachedFromWindow() = 0;
@@ -127,7 +129,7 @@ class BrowserViewRenderer {
 
   // Android views hierarchy gluing.
   virtual bool IsAttachedToWindow() = 0;
-  virtual bool IsViewVisible() = 0;
+  virtual bool IsVisible() = 0;
   virtual gfx::Rect GetScreenRect() = 0;
 
   virtual ~BrowserViewRenderer() {}
