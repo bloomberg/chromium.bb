@@ -2384,10 +2384,24 @@ void CanvasRenderingContext2D::updateFocusRingAccessibility(const Path& path, El
     // location before it gets focus.
     if (AXObjectCache* axObjectCache = element->document()->existingAXObjectCache()) {
         if (AccessibilityObject* obj = axObjectCache->getOrCreate(element)) {
+            // Get the bounding rect and apply transformations.
+            FloatRect bounds = m_path.boundingRect();
+            AffineTransform ctm = state().m_transform;
+            FloatRect transformedBounds = ctm.mapRect(bounds);
+            LayoutRect elementRect = LayoutRect(transformedBounds);
+
+            // Offset by the canvas rect and set the bounds of the accessible element.
             IntRect canvasRect = canvas()->renderer()->absoluteBoundingBoxRect();
-            LayoutRect rect = LayoutRect(path.boundingRect());
-            rect.moveBy(canvasRect.location());
-            obj->setElementRect(rect);
+            elementRect.moveBy(canvasRect.location());
+            obj->setElementRect(elementRect);
+
+            // Set the bounds of any ancestor accessible elements, up to the canvas element,
+            // otherwise this element will appear to not be within its parent element.
+            obj = obj->parentObject();
+            while (obj && obj->node() != canvas()) {
+                obj->setElementRect(elementRect);
+                obj = obj->parentObject();
+            }
         }
     }
 }
