@@ -3,6 +3,7 @@ include_rules = [
   # See http://crbug.com/266705.
   "+chrome/browser/ui/extensions/application_launch.h",
   "+chrome/browser/ui/web_applications/web_app_ui.h",
+  "+chrome/browser/ui/webui/ntp/core_app_launcher_handler.h",
   "+chrome/browser/web_applications/web_app_mac.h",
   "+chrome/common/chrome_constants.h",
   "+chrome/common/chrome_paths.h",

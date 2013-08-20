@@ -204,7 +204,8 @@ namespace extension_misc {
     // Launch via chrome.management.launchApp.
     APP_LAUNCH_EXTENSION_API,
 
-    // Launch using the --app or --app-id cmd line options.
+    // Launch an app via a shortcut. This includes using the --app or --app-id
+    // command line arguments, or via an app shim process on Mac.
     APP_LAUNCH_CMD_LINE_APP,
 
     // App launch by passing the URL on the cmd line (not using app switches).

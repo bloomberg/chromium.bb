@@ -22,7 +22,9 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
+#include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
 #include "chrome/browser/web_applications/web_app_mac.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
@@ -107,6 +109,8 @@ ExtensionAppShimHandler::Delegate::GetAppExtension(
 void ExtensionAppShimHandler::Delegate::LaunchApp(
     Profile* profile,
     const extensions::Extension* extension) {
+  CoreAppLauncherHandler::RecordAppLaunchType(
+      extension_misc::APP_LAUNCH_CMD_LINE_APP, extension->GetType());
   chrome::OpenApplication(
       chrome::AppLaunchParams(profile, extension, NEW_FOREGROUND_TAB));
 }
