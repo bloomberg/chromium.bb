@@ -5,6 +5,7 @@ Tests that resources panel shows form data parameters.
 {
     cache : {
     }
+    connection : <string>
     request : {
         bodySize : <number>
         cookies : [
