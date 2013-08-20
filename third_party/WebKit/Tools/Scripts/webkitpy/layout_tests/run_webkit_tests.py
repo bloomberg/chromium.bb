@@ -99,14 +99,15 @@ def parse_args(args):
     option_group_definitions.append(("Configuration options", configuration_options()))
     option_group_definitions.append(("Printing Options", printing.print_options()))
 
-    # FIXME: These options should move onto the ChromiumPort.
-    option_group_definitions.append(("Chromium-specific Options", [
-        optparse.make_option("--nocheck-sys-deps", action="store_true",
-            default=False,
-            help="Don't check the system dependencies (themes)"),
+    option_group_definitions.append(("Android-specific Options", [
         optparse.make_option("--adb-device",
             action="append", default=[],
             help="Run Android layout tests on these devices."),
+
+        # FIXME: Flip this to be off by default once we can log the device setup more cleanly.
+        optparse.make_option("--no-android-logging",
+            action="store_false", dest='android_logging', default=True,
+            help="Do not log android-specific debug messages (default is to log as part of --debug-rwt-logging"),
     ]))
 
     option_group_definitions.append(("Results Options", [
@@ -177,6 +178,9 @@ def parse_args(args):
         optparse.make_option("-n", "--dry-run", action="store_true",
             default=False,
             help="Do everything but actually run the tests or upload results."),
+        optparse.make_option("--nocheck-sys-deps", action="store_true",
+            default=False,
+            help="Don't check the system dependencies (themes)"),
         optparse.make_option("--wrapper",
             help="wrapper command to insert before invocations of "
                  "the driver; option is split on whitespace before "

@@ -98,14 +98,14 @@ class AndroidCommandsTest(unittest.TestCase):
         return MockExecutive2(run_command_fn=self._mock_executive.run_command)
 
     def make_android_commands(self, device_count, serial):
-        return android.AndroidCommands(self.make_executive(device_count), serial)
+        return android.AndroidCommands(self.make_executive(device_count), serial, debug_logging=False)
 
     # The "adb" binary with the latest version should be used.
     def serial_test_adb_command_path(self):
         executive = self.make_executive(0)
 
         android.AndroidCommands.set_adb_command_path_options(['path1', 'path2', 'path3'])
-        self.assertEqual('path2', android.AndroidCommands.adb_command_path(executive))
+        self.assertEqual('path2', android.AndroidCommands.adb_command_path(executive, debug_logging=False))
 
     # The used adb command should include the device's serial number, and get_serial() should reflect this.
     def test_adb_command_and_get_serial(self):
@@ -202,7 +202,7 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
         self._mock_adb = MockAndroidDebugBridge(1)
         self._mock_executive = MockExecutive2(run_command_fn=self._mock_adb.run_command)
 
-        android_commands = android.AndroidCommands(self._mock_executive, '123456789ABCDEF0')
+        android_commands = android.AndroidCommands(self._mock_executive, '123456789ABCDEF0', debug_logging=False)
         self._port = android.AndroidPort(MockSystemHost(executive=self._mock_executive), 'android')
         self._driver = android.ChromiumAndroidDriver(self._port, worker_number=0,
             pixel_tests=True, driver_details=android.ContentShellDriverDetails(), android_devices=self._port._devices)

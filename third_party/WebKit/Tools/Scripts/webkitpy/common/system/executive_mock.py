@@ -98,7 +98,8 @@ class MockExecutive(object):
                     return_exit_code=False,
                     return_stderr=True,
                     decode_output=False,
-                    env=None):
+                    env=None,
+                    debug_logging=False):
 
         self.calls.append(args)
 
@@ -177,7 +178,8 @@ class MockExecutive2(MockExecutive):
                     return_exit_code=False,
                     return_stderr=True,
                     decode_output=False,
-                    env=None):
+                    env=None,
+                    debug_logging=False):
         self.calls.append(args)
         assert(isinstance(args, list) or isinstance(args, tuple))
         if self._exception:

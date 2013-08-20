@@ -397,7 +397,7 @@ class Executive(object):
                     error_handler=None,
                     return_exit_code=False,
                     return_stderr=True,
-                    decode_output=True):
+                    decode_output=True, debug_logging=True):
         """Popen wrapper for convenience and to work around python bugs."""
         assert(isinstance(args, list) or isinstance(args, tuple))
         start_time = time.time()
@@ -422,7 +422,8 @@ class Executive(object):
         # http://bugs.python.org/issue1731717
         exit_code = process.wait()
 
-        _log.debug('"%s" took %.2fs' % (self.command_for_printing(args), time.time() - start_time))
+        if debug_logging:
+            _log.debug('"%s" took %.2fs' % (self.command_for_printing(args), time.time() - start_time))
 
         if return_exit_code:
             return exit_code
