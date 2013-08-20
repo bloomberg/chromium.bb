@@ -77,4 +77,7 @@ Parser/query-selector-id-deep.html
 Interactive/window-resize.html
 
 # Microbenchmark that we aren't interested in monitoring.
+Bindings/gc-forest.html
+Bindings/gc-mini-tree.html
+Bindings/gc-tree.html
 Bindings/named-property-enumerator.html
