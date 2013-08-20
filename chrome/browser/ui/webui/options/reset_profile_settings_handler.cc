@@ -40,6 +40,12 @@ void ResetProfileSettingsHandler::InitializeHandler() {
   resetter_.reset(new ProfileResetter(profile));
 }
 
+void ResetProfileSettingsHandler::InitializePage() {
+  web_ui()->CallJavascriptFunction(
+      "ResetProfileSettingsOverlay.setResettingState",
+      base::FundamentalValue(resetter_->IsActive()));
+}
+
 void ResetProfileSettingsHandler::GetLocalizedValues(
     DictionaryValue* localized_strings) {
   DCHECK(localized_strings);
