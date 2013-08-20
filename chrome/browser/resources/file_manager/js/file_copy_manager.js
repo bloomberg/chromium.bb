@@ -901,7 +901,7 @@ FileCopyManager.MoveTask.prototype.run = function(
             function() {
               this.numCompletedEntries++;
               callback();
-            },
+            }.bind(this),
             errorCallback);
       },
       function() {
