@@ -3,7 +3,6 @@ var initialize_ResourceTest = function() {
 InspectorTest.HARPropertyFormatters = {
     bodySize: "formatAsTypeName",
     compression: "formatAsTypeName",
-    connection: "formatAsTypeName",
     headers: "formatAsTypeName",
     headersSize: "formatAsTypeName",
     id: "formatAsTypeName",
