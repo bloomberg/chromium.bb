@@ -39,7 +39,7 @@ TEST(MediaFileCheckerTest, Audio) {
   RunMediaFileChecker("sfx.ogg", true);
 }
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 TEST(MediaFileCheckerTest, MP3) {
   RunMediaFileChecker("sfx.mp3", true);
 }

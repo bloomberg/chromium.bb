@@ -62,7 +62,7 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   // Clear Key.
   { "video/webm", "vorbis,vp8,vp8.0", kClearKeyKeySystem },
   { "audio/webm", "vorbis", kClearKeyKeySystem },
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   { "video/mp4", "avc1,mp4a", kClearKeyKeySystem },
   { "audio/mp4", "mp4a", kClearKeyKeySystem },
 #endif
@@ -70,7 +70,7 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   // External Clear Key (used for testing).
   { "video/webm", "vorbis,vp8,vp8.0", kExternalClearKeyKeySystem },
   { "audio/webm", "vorbis", kExternalClearKeyKeySystem },
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   { "video/mp4", "avc1,mp4a", kExternalClearKeyKeySystem },
   { "audio/mp4", "mp4a", kExternalClearKeyKeySystem },
 #endif
@@ -81,14 +81,14 @@ const MediaFormatAndKeySystem kSupportedFormatKeySystemCombinations[] = {
   { "audio/webm", "vorbis", kWidevineKeySystem },
   { "video/webm", "vorbis,vp8,vp8.0", kWidevineBaseKeySystem },
   { "audio/webm", "vorbis", kWidevineBaseKeySystem },
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 #if defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
   { "video/mp4", kWidevineVideoMp4Codecs, kWidevineKeySystem },
   { "video/mp4", kWidevineVideoMp4Codecs, kWidevineBaseKeySystem },
   { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineKeySystem },
   { "audio/mp4", kWidevineAudioMp4Codecs, kWidevineBaseKeySystem },
 #endif  // defined(WIDEVINE_CDM_CENC_SUPPORT_AVAILABLE)
-#endif  // defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 #endif  // WIDEVINE_CDM_AVAILABLE
 };
 

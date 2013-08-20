@@ -628,7 +628,7 @@ TEST_F(PipelineIntegrationTest,
   source.Abort();
 }
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_MP4) {
   MockMediaSource source("bear-640x360-av_frag.mp4", kMP4, kAppendWholeFile);
   StartPipelineWithMediaSource(&source);
@@ -804,7 +804,7 @@ TEST_F(PipelineIntegrationTest, EncryptedPlayback_NoEncryptedFrames_WebM) {
   Stop();
 }
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 TEST_F(PipelineIntegrationTest, EncryptedPlayback_MP4_CENC_VideoOnly) {
   MockMediaSource source("bear-1280x720-v_frag-cenc.mp4",
                          kMP4Video, kAppendWholeFile);

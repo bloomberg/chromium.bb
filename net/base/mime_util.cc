@@ -447,7 +447,7 @@ void MimeUtil::InitializeMimeTypeMaps() {
     non_image_map_.insert(supported_javascript_types[i]);
   for (size_t i = 0; i < arraysize(common_media_types); ++i)
     non_image_map_.insert(common_media_types[i]);
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
     non_image_map_.insert(proprietary_media_types[i]);
 #endif
@@ -455,7 +455,7 @@ void MimeUtil::InitializeMimeTypeMaps() {
   // Initialize the supported media types.
   for (size_t i = 0; i < arraysize(common_media_types); ++i)
     media_map_.insert(common_media_types[i]);
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   for (size_t i = 0; i < arraysize(proprietary_media_types); ++i)
     media_map_.insert(proprietary_media_types[i]);
 #endif
@@ -465,7 +465,7 @@ void MimeUtil::InitializeMimeTypeMaps() {
 
   for (size_t i = 0; i < arraysize(common_media_codecs); ++i)
     codecs_map_.insert(common_media_codecs[i]);
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   for (size_t i = 0; i < arraysize(proprietary_media_codecs); ++i)
     codecs_map_.insert(proprietary_media_codecs[i]);
 #endif

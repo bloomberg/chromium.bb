@@ -2014,7 +2014,7 @@ TEST_F(ChunkDemuxerTest, ClusterWithNoBuffers) {
 TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   expected = ChunkDemuxer::kOk;
 #endif
 
@@ -2029,7 +2029,7 @@ TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
 TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   expected = ChunkDemuxer::kOk;
 #endif
   const char* codec_ids[] = {

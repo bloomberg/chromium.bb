@@ -110,7 +110,7 @@ TEST_F(AudioFileReaderTest, WaveF32LE) {
           base::TimeDelta::FromMicroseconds(288414), 12719, 12719);
 }
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 TEST_F(AudioFileReaderTest, MP3) {
   RunTest("sfx.mp3", "3.05,2.87,3.00,3.32,3.58,4.08,", 1, 44100,
           base::TimeDelta::FromMicroseconds(313470), 13824, 12719);

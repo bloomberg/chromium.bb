@@ -91,7 +91,7 @@ IconMapper::IconMapper() {
   // 'video': /\.(mov|mp4|m4v|mpe?g4?|ogm|ogv|ogx|webm)$/i
 
   const ExtensionIconMap::value_type kExtensionIdrBySizeData[] = {
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
     std::make_pair(".m4a", kAudioIdrs),
     std::make_pair(".mp3", kAudioIdrs),
     std::make_pair(".pdf", kPdfIdrs),

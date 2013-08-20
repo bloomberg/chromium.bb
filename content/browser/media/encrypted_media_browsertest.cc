@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameChangeVideo) {
   TestFrameSizeChange(GetParam(), kEnded);
 }
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_VideoOnly_MP4) {
   std::tr1::tuple<const char*, SrcType> test_params = GetParam();
   // MP4 without MSE is not support yet, http://crbug.com/170793.
@@ -265,7 +265,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_AudioOnly_MP4) {
   TestMSESimplePlayback("bear-640x360-a_frag-cenc.mp4", kMP4AudioOnly,
                         std::tr1::get<0>(test_params), kEnded);
 }
-#endif
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Run only when WV CDM is available.
 #if defined(WIDEVINE_CDM_AVAILABLE)
@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_VideoClearAudio_WebM) {
                         kWidevineKeySystem);
 }
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_VideoOnly_MP4) {
   TestMSESimplePlayback("bear-640x360-v_frag-cenc.mp4", kMP4VideoOnly,
                         kWidevineKeySystem);
@@ -304,7 +304,7 @@ IN_PROC_BROWSER_TEST_F(WVEncryptedMediaTest, Playback_AudioOnly_MP4) {
   TestMSESimplePlayback("bear-640x360-a_frag-cenc.mp4", kMP4AudioOnly,
                         kWidevineKeySystem);
 }
-#endif  // defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)
 
 }  // namespace content

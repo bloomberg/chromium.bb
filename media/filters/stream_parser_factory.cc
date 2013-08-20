@@ -12,7 +12,7 @@
 #include "media/base/media_switches.h"
 #include "media/webm/webm_stream_parser.h"
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 #include "media/mp4/es_descriptor.h"
 #include "media/mp4/mp4_stream_parser.h"
 #endif
@@ -81,7 +81,7 @@ static media::StreamParser* BuildWebMParser(
   return new media::WebMStreamParser();
 }
 
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 // AAC Object Type IDs that Chrome supports.
 static const int kAACLCObjectType = 2;
 static const int kAACSBRObjectType = 5;
@@ -181,7 +181,7 @@ static media::StreamParser* BuildMP4Parser(
 static const SupportedTypeInfo kSupportedTypeInfo[] = {
   { "video/webm", &BuildWebMParser, kVideoWebMCodecs },
   { "audio/webm", &BuildWebMParser, kAudioWebMCodecs },
-#if defined(GOOGLE_CHROME_BUILD) || defined(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   { "video/mp4", &BuildMP4Parser, kVideoMP4Codecs },
   { "audio/mp4", &BuildMP4Parser, kAudioMP4Codecs },
 #endif
