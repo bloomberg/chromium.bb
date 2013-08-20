@@ -127,8 +127,10 @@ function fillMostVisited(location, fill) {
     // Means that we get suggestion data from the server. Create data object.
     data.url = params.url;
     data.thumbnailUrl = params.tu || '';
+    data.thumbnailUrl2 = params.tu2 || '';
     data.title = params.ti || '';
     data.direction = params.di || '';
+    data.domain = params.dom || '';
   } else {
     var apiHandle = chrome.embeddedSearch.searchBox;
     data = apiHandle.getMostVisitedItemData(params.rid);
@@ -136,7 +138,8 @@ function fillMostVisited(location, fill) {
       return;
   }
   if (/^javascript:/i.test(data.url) ||
-      /^javascript:/i.test(data.thumbnailUrl))
+      /^javascript:/i.test(data.thumbnailUrl) ||
+      /^javascript:/i.test(data.thumbnailUrl2))
     return;
   if (data.direction)
     document.body.dir = data.direction;
