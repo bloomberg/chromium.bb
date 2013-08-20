@@ -12,6 +12,7 @@
 
 namespace chromeos {
 
+class AppLaunchSplashScreenActor;
 class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
@@ -49,6 +50,7 @@ class OobeDisplay {
     SCREEN_CREATE_MANAGED_USER_FLOW,
     SCREEN_TERMS_OF_SERVICE,
     SCREEN_WRONG_HWID,
+    SCREEN_APP_LAUNCH_SPLASH,
     SCREEN_UNKNOWN
   };
 
@@ -75,6 +77,7 @@ class OobeDisplay {
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() = 0;
+  virtual AppLaunchSplashScreenActor* GetAppLaunchSplashScreenActor() = 0;
 
   // Returns if JS side is fully loaded and ready to accept messages.
   // If |false| is returned, then |display_is_ready_callback| is stored

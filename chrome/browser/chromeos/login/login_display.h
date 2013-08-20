@@ -64,6 +64,9 @@ class LoginDisplay : public RemoveUserDelegate {
     // Sign in into the public account identified by |username|.
     virtual void LoginAsPublicAccount(const std::string& username) = 0;
 
+    // Login to kiosk mode for app with |app_id|.
+    virtual void LoginAsKioskApp(const std::string& app_id) = 0;
+
     // Notify the delegate when the sign-in UI is finished loading.
     virtual void OnSigninScreenReady() = 0;
 

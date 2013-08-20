@@ -145,6 +145,7 @@ class WizardController : public ScreenObserver {
   static const char kTermsOfServiceScreenName[];
   static const char kWrongHWIDScreenName[];
   static const char kLocallyManagedUserCreationScreenName[];
+  static const char kAppLaunchSplashScreenName[];
 
  private:
   // Show specific screen.

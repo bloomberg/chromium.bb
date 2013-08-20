@@ -2,19 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_profile_loader.h"
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/chromeos/ui/app_launch_view.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_library.h"
@@ -32,21 +30,18 @@ void IgnoreResult(bool mount_success, cryptohome::MountError mount_error) {}
 
 }  // namespace
 
-// static
-KioskAppLauncher* KioskAppLauncher::running_instance_ = NULL;
-
 ////////////////////////////////////////////////////////////////////////////////
-// KioskAppLauncher::CryptohomedChecker ensures cryptohome daemon is up
+// KioskProfileLoader::CryptohomedChecker ensures cryptohome daemon is up
 // and running by issuing an IsMounted call. If the call does not go through
 // and chromeos::DBUS_METHOD_CALL_SUCCESS is not returned, it will retry after
 // some time out and at the maximum five times before it gives up. Upon
-// success, it resumes the launch by calling KioskAppLauncher::StartMount.
+// success, it resumes the launch by calling KioskProfileLoader::StartMount.
 
-class KioskAppLauncher::CryptohomedChecker
+class KioskProfileLoader::CryptohomedChecker
     : public base::SupportsWeakPtr<CryptohomedChecker> {
  public:
-  explicit CryptohomedChecker(KioskAppLauncher* launcher)
-      : launcher_(launcher),
+  explicit CryptohomedChecker(KioskProfileLoader* loader)
+      : loader_(loader),
         retry_count_(0) {
   }
   ~CryptohomedChecker() {}
@@ -89,26 +84,26 @@ class KioskAppLauncher::CryptohomedChecker
 
   void ReportCheckResult(KioskAppLaunchError::Error error) {
     if (error == KioskAppLaunchError::NONE)
-      launcher_->StartMount();
+      loader_->StartMount();
     else
-      launcher_->ReportLaunchResult(error);
+      loader_->ReportLaunchResult(error);
   }
 
-  KioskAppLauncher* launcher_;
+  KioskProfileLoader* loader_;
   int retry_count_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptohomedChecker);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// KioskAppLauncher::ProfileLoader creates or loads the app profile.
+// KioskProfileLoader::ProfileLoader actually creates or loads the app profile.
 
-class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
+class KioskProfileLoader::ProfileLoader : public LoginUtils::Delegate {
  public:
   ProfileLoader(KioskAppManager* kiosk_app_manager,
-                KioskAppLauncher* kiosk_app_launcher)
-      : kiosk_app_launcher_(kiosk_app_launcher),
-        user_id_(kiosk_app_launcher->user_id_) {
+                KioskProfileLoader* kiosk_profile_loader)
+      : kiosk_profile_loader_(kiosk_profile_loader),
+        user_id_(kiosk_profile_loader->user_id_) {
     CHECK(!user_id_.empty());
   }
 
@@ -129,7 +124,7 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
     if (!success) {
       LOG(ERROR) << "Unable to retrieve username hash for user '" << user_id_
                  << "'.";
-      kiosk_app_launcher_->ReportLaunchResult(
+      kiosk_profile_loader_->ReportLaunchResult(
           KioskAppLaunchError::UNABLE_TO_RETRIEVE_HASH);
       return;
     }
@@ -147,44 +142,34 @@ class KioskAppLauncher::ProfileLoader : public LoginUtils::Delegate {
 
   // LoginUtils::Delegate overrides:
   virtual void OnProfilePrepared(Profile* profile) OVERRIDE {
-    kiosk_app_launcher_->OnProfilePrepared(profile);
+    kiosk_profile_loader_->OnProfilePrepared(profile);
   }
 
-  KioskAppLauncher* kiosk_app_launcher_;
+  KioskProfileLoader* kiosk_profile_loader_;
   std::string user_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileLoader);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// KioskAppLauncher
+// KioskProfileLoader
 
-KioskAppLauncher::KioskAppLauncher(KioskAppManager* kiosk_app_manager,
-                                   const std::string& app_id)
+KioskProfileLoader::KioskProfileLoader(KioskAppManager* kiosk_app_manager,
+                                       const std::string& app_id,
+                                       Delegate* delegate)
     : kiosk_app_manager_(kiosk_app_manager),
       app_id_(app_id),
+      delegate_(delegate),
       remove_attempted_(false) {
   KioskAppManager::App app;
   CHECK(kiosk_app_manager_->GetApp(app_id_, &app));
   user_id_ = app.user_id;
 }
 
-KioskAppLauncher::~KioskAppLauncher() {}
+KioskProfileLoader::~KioskProfileLoader() {}
 
-void KioskAppLauncher::Start() {
+void KioskProfileLoader::Start() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  if (running_instance_) {
-    LOG(WARNING) << "Unable to launch " << app_id_ << "with a pending launch.";
-    ReportLaunchResult(KioskAppLaunchError::HAS_PENDING_LAUNCH);
-    return;
-  }
-
-  running_instance_ = this;  // Reset in ReportLaunchResult.
-
-  // Show app launch splash. The spash is removed either after a successful
-  // launch or chrome exit because of launch failure.
-  chromeos::ShowAppLaunchSplashScreen(app_id_);
 
   // Check cryptohomed. If all goes good, flow goes to StartMount. Otherwise
   // it goes to ReportLaunchResult with failure.
@@ -192,21 +177,15 @@ void KioskAppLauncher::Start() {
   crytohomed_checker->StartCheck();
 }
 
-void KioskAppLauncher::ReportLaunchResult(KioskAppLaunchError::Error error) {
+void KioskProfileLoader::ReportLaunchResult(KioskAppLaunchError::Error error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  running_instance_ = NULL;
-
   if (error != KioskAppLaunchError::NONE) {
-    // Saves the error and ends the session to go back to login screen.
-    KioskAppLaunchError::Save(error);
-    chrome::AttemptUserExit();
+    delegate_->OnProfileLoadFailed(error);
   }
-
-  delete this;
 }
 
-void KioskAppLauncher::StartMount() {
+void KioskProfileLoader::StartMount() {
   // Nuke old home that uses |app_id_| as cryptohome user id.
   // TODO(xiyuan): Remove this after all clients migrated to new home.
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
@@ -216,12 +195,12 @@ void KioskAppLauncher::StartMount() {
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMountPublic(
       user_id_,
       cryptohome::CREATE_IF_MISSING,
-      base::Bind(&KioskAppLauncher::MountCallback,
+      base::Bind(&KioskProfileLoader::MountCallback,
                  base::Unretained(this)));
 }
 
-void KioskAppLauncher::MountCallback(bool mount_success,
-                                     cryptohome::MountError mount_error) {
+void KioskProfileLoader::MountCallback(bool mount_success,
+                                       cryptohome::MountError mount_error) {
   if (mount_success) {
     profile_loader_.reset(new ProfileLoader(kiosk_app_manager_, this));
     profile_loader_->Start();
@@ -241,32 +220,27 @@ void KioskAppLauncher::MountCallback(bool mount_success,
   ReportLaunchResult(KioskAppLaunchError::UNABLE_TO_MOUNT);
 }
 
-void KioskAppLauncher::AttemptRemove() {
+void KioskProfileLoader::AttemptRemove() {
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
       user_id_,
-      base::Bind(&KioskAppLauncher::RemoveCallback,
+      base::Bind(&KioskProfileLoader::RemoveCallback,
                  base::Unretained(this)));
 }
 
-void KioskAppLauncher::RemoveCallback(bool success,
+void KioskProfileLoader::RemoveCallback(bool success,
                                       cryptohome::MountError return_code) {
   if (success) {
     StartMount();
     return;
   }
 
-  LOG(ERROR) << "Failed to remove app cryptohome, erro=" << return_code;
+  LOG(ERROR) << "Failed to remove app cryptohome, error=" << return_code;
   ReportLaunchResult(KioskAppLaunchError::UNABLE_TO_REMOVE);
 }
 
-void KioskAppLauncher::OnProfilePrepared(Profile* profile) {
-  // StartupAppLauncher deletes itself when done.
-  (new chromeos::StartupAppLauncher(profile, app_id_))->Start();
-
-  if (LoginDisplayHostImpl::default_host())
-    LoginDisplayHostImpl::default_host()->Finalize();
+void KioskProfileLoader::OnProfilePrepared(Profile* profile) {
   UserManager::Get()->SessionStarted();
-
+  delegate_->OnProfileLoaded(profile);
   ReportLaunchResult(KioskAppLaunchError::NONE);
 }
 

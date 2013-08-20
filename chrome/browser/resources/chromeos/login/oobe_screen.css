@@ -34,6 +34,14 @@
   -webkit-transform: translateX(-50px)
 }
 
+.step.fullscreen {
+  height: 100%;
+  left: 0;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
 .step-controls {
   -webkit-box-pack: end;
   -webkit-padding-end: 34px;  /* Double the padding of .step */

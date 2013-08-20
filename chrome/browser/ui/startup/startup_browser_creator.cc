@@ -65,7 +65,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
+#include "chrome/browser/chromeos/app_mode/app_launch_utils.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -595,10 +595,9 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 
   if (chrome::IsRunningInAppMode() &&
       command_line.HasSwitch(switches::kAppId)) {
-    // StartupAppLauncher deletes itself when done.
-    (new chromeos::StartupAppLauncher(
+    chromeos::LaunchAppOrDie(
         last_used_profile,
-        command_line.GetSwitchValueASCII(switches::kAppId)))->Start();
+        command_line.GetSwitchValueASCII(switches::kAppId));
 
     // Skip browser launch since app mode launches its app window.
     silent_launch = true;

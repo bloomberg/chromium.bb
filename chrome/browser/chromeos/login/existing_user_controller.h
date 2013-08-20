@@ -67,9 +67,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // Tells the controller to resume a pending login.
   void ResumeLogin();
 
-  // Invoked to prepare for a kiosk app launch attempt.
-  void PrepareKioskAppLaunch();
-
   // Start the public session auto-login timer.
   void StartPublicSessionAutoLoginTimer();
 
@@ -87,6 +84,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   virtual void LoginAsRetailModeUser() OVERRIDE;
   virtual void LoginAsGuest() OVERRIDE;
   virtual void LoginAsPublicAccount(const std::string& username) OVERRIDE;
+  virtual void LoginAsKioskApp(const std::string& app_id) OVERRIDE;
   virtual void OnSigninScreenReady() OVERRIDE;
   virtual void OnUserSelected(const std::string& username) OVERRIDE;
   virtual void OnStartEnterpriseEnrollment() OVERRIDE;

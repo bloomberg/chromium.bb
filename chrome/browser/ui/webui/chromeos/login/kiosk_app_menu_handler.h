@@ -37,7 +37,6 @@ class KioskAppMenuHandler : public content::WebUIMessageHandler,
   // JS callbacks.
   void HandleInitializeKioskApps(const base::ListValue* args);
   void HandleKioskAppsLoaded(const base::ListValue* args);
-  void HandleLaunchKioskApps(const base::ListValue* args);
   void HandleCheckKioskAppLaunchError(const base::ListValue* args);
 
   // KioskAppManagerObserver overrides:

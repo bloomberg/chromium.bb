@@ -84,6 +84,7 @@ class WebUILoginDisplay : public LoginDisplay,
   virtual bool IsUserSigninCompleted() const OVERRIDE;
   virtual void SetDisplayEmail(const std::string& email) OVERRIDE;
   virtual void Signout() OVERRIDE;
+  virtual void LoginAsKioskApp(const std::string& app_id) OVERRIDE;
 
   // UserActivityDetector implementation:
   virtual void OnUserActivity(const ui::Event* event) OVERRIDE;

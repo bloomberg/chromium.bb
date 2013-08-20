@@ -271,6 +271,10 @@ void WebUIScreenLocker::Signout() {
   chromeos::ScreenLocker::default_screen_locker()->Signout();
 }
 
+void WebUIScreenLocker::LoginAsKioskApp(const std::string& app_id) {
+  NOTREACHED();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LockWindow::Observer implementation:
 

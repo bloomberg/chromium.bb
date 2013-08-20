@@ -19,6 +19,7 @@
 <include src="oobe_screen_terms_of_service.js"></include>
 <include src="oobe_screen_user_image.js"></include>
 <include src="screen_account_picker.js"></include>
+<include src="screen_app_launch_splash.js"></include>
 <include src="screen_error_message.js"></include>
 <include src="screen_gaia_signin.js"></include>
 <include src="screen_locally_managed_user_creation.js"></include>

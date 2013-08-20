@@ -1,31 +1,16 @@
-/* Copyright (c) 2013 The Chromium Authors. All rights reserved.
+/* Copyright 2013 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-html,
-body {
-  height: 100%;
-  margin: 0;
-  overflow: hidden;
-  padding: 0;
-  width: 100%;
-}
-
-#page {
+#app-launch-splash {
   -webkit-box-align: center;
   -webkit-box-pack: center;
-  /* Delay the login screen for 2 seconds then fade it in. */
-  -webkit-transition: opacity 1s;
   background: white;
   display: -webkit-box;
-  height: 100%;
-  opacity: 0;
-  position: absolute;
-  width: 100%;
 }
 
-#content {
+#splash-content {
   -webkit-box-align: center;
   -webkit-box-orient: vertical;
   -webkit-box-pack: center;
@@ -33,7 +18,7 @@ body {
   position: relative;
 }
 
-#header {
+#splash-header {
   -webkit-padding-start: 108px;
   background: left center no-repeat;
   background-size: 96px;
@@ -44,19 +29,19 @@ body {
   line-height: 96px;
 }
 
-#launch-text {
+#splash-launch-text {
   color: #666;
   font-size: 18px;
   padding-bottom: 50px;
   padding-top: 50px;
 }
 
-#spinner {
+#splash-spinner {
   height: 32px;
   width: 32px;
 }
 
-#shortcut-info {
+#splash-shortcut-info {
   bottom: 50px;
   color: gray;
   left: 0;

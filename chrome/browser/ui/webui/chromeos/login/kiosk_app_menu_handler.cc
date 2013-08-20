@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chromeos/chromeos_switches.h"
@@ -46,9 +45,6 @@ void KioskAppMenuHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("kioskAppsLoaded",
       base::Bind(&KioskAppMenuHandler::HandleKioskAppsLoaded,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("launchKioskApp",
-      base::Bind(&KioskAppMenuHandler::HandleLaunchKioskApps,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("checkKioskAppLaunchError",
       base::Bind(&KioskAppMenuHandler::HandleCheckKioskAppLaunchError,
@@ -109,19 +105,6 @@ void KioskAppMenuHandler::HandleKioskAppsLoaded(
       chrome::NOTIFICATION_KIOSK_APPS_LOADED,
       content::NotificationService::AllSources(),
       content::NotificationService::NoDetails());
-}
-
-void KioskAppMenuHandler::HandleLaunchKioskApps(const base::ListValue* args) {
-  std::string app_id;
-  CHECK(args->GetString(0, &app_id));
-
-  KioskAppManager::App app_data;
-  CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
-
-  ExistingUserController::current_controller()->PrepareKioskAppLaunch();
-
-  // KioskAppLauncher deletes itself when done.
-  (new KioskAppLauncher(KioskAppManager::Get(), app_id))->Start();
 }
 
 void KioskAppMenuHandler::HandleCheckKioskAppLaunchError(

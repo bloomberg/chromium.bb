@@ -20,6 +20,7 @@ class DictionaryValue;
 }  // namespace base
 
 namespace chromeos {
+class AppLaunchSplashScreenActor;
 class BaseScreenHandler;
 class CoreOobeHandler;
 class ErrorScreenHandler;
@@ -56,6 +57,7 @@ class OobeUI : public OobeDisplay,
   static const char kScreenManagedUserCreationFlow[];
   static const char kScreenTermsOfService[];
   static const char kScreenWrongHWID[];
+  static const char kScreenAppLaunchSplash[];
 
   OobeUI(content::WebUI* web_ui, const GURL& url);
   virtual ~OobeUI();
@@ -77,6 +79,8 @@ class OobeUI : public OobeDisplay,
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() OVERRIDE;
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() OVERRIDE;
+  virtual AppLaunchSplashScreenActor*
+      GetAppLaunchSplashScreenActor() OVERRIDE;
   virtual bool IsJSReady(const base::Closure& display_is_ready_callback)
       OVERRIDE;
 
@@ -97,6 +101,9 @@ class OobeUI : public OobeDisplay,
   // Shows the signin screen.
   void ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
                         NativeWindowDelegate* native_window_delegate);
+
+  // Shows the kiosk splash screen.
+  void ShowAppLaunchSplashScreen();
 
   // Resets the delegate set in ShowSigninScreen.
   void ResetSigninScreenHandlerDelegate();
@@ -139,6 +146,7 @@ class OobeUI : public OobeDisplay,
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;
   LocallyManagedUserCreationScreenHandler*
       locally_managed_user_creation_screen_actor_;
+  AppLaunchSplashScreenActor* app_launch_splash_screen_actor_;
 
   // Reference to ErrorScreenHandler that handles error screen
   // requests and forward calls from native code to JS side.

@@ -20,6 +20,7 @@
 /** @const */ var SCREEN_PASSWORD_CHANGED = 'password-changed';
 /** @const */ var SCREEN_CREATE_MANAGED_USER_FLOW =
     'managed-user-creation';
+/** @const */ var SCREEN_APP_LAUNCH_SPLASH = 'app-launch-splash';
 
 /* Accelerator identifiers. Must be kept in sync with webui_login_view.cc. */
 /** @const */ var ACCELERATOR_CANCEL = 'cancel';
@@ -32,6 +33,7 @@
 /** @const */ var ACCELERATOR_DEVICE_REQUISITION = 'device_requisition';
 /** @const */ var ACCELERATOR_DEVICE_REQUISITION_REMORA =
     'device_requisition_remora';
+/** @const */ var ACCELERATOR_APP_LAUNCH_BAILOUT = 'app_launch_bailout';
 
 /* Help topic identifiers. */
 /** @const */ var HELP_TOPIC_ENTERPRISE_REPORTING = 2535613;
@@ -59,7 +61,8 @@
   OOBE: 'oobe',
   LOGIN: 'login',
   LOCK: 'lock',
-  USER_ADDING: 'user-adding'
+  USER_ADDING: 'user-adding',
+  APP_LAUNCH_SPLASH: 'app-launch-splash'
 };
 
 cr.define('cr.ui.login', function() {
@@ -235,6 +238,10 @@ cr.define('cr.ui.login', function() {
           this.deviceRequisition_ = 'remora';
           this.showDeviceRequisitionPrompt_();
         }
+      } else if (name == ACCELERATOR_APP_LAUNCH_BAILOUT) {
+        var currentStepId = this.screens_[this.currentStep_];
+        if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
+          chrome.send('cancelAppLaunch');
       }
 
       if (!this.forceKeyboardFlow_)
@@ -487,8 +494,13 @@ cr.define('cr.ui.login', function() {
       // Have to reset any previously predefined screen size first
       // so that screen contents would define it instead (offsetHeight/width).
       // http://crbug.com/146539
+      $('inner-container').style.height = '';
+      $('inner-container').style.width = '';
       screen.style.width = '';
       screen.style.height = '';
+
+     $('outer-container').classList.toggle(
+        'fullscreen', screen.classList.contains('fullscreen'));
 
       var height = screen.offsetHeight;
       var width = screen.offsetWidth;

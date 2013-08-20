@@ -21,7 +21,7 @@
 #include "base/values.h"
 #include "chrome/app/breakpad_linux.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -122,6 +122,8 @@ const char WizardController::kTermsOfServiceScreenName[] = "tos";
 const char WizardController::kWrongHWIDScreenName[] = "wrong-hwid";
 const char WizardController::kLocallyManagedUserCreationScreenName[] =
   "locally-managed-user-creation-flow";
+const char WizardController::kAppLaunchSplashScreenName[] =
+  "app-launch-splash";
 
 // Passing this parameter as a "first screen" initiates full OOBE flow.
 const char WizardController::kOutOfBoxScreenName[] = "oobe";
@@ -717,6 +719,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowWrongHWIDScreen();
   } else if (screen_name == kLocallyManagedUserCreationScreenName) {
     ShowLocallyManagedUserCreationScreen();
+  } else if (screen_name == kAppLaunchSplashScreenName) {
+    AutoLaunchKioskApp();
   } else if (screen_name != kTestNoScreenName) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
@@ -825,11 +829,8 @@ void WizardController::AutoLaunchKioskApp() {
   KioskAppManager::App app_data;
   std::string app_id = KioskAppManager::Get()->GetAutoLaunchApp();
   CHECK(KioskAppManager::Get()->GetApp(app_id, &app_data));
-  if (ExistingUserController::current_controller())
-    ExistingUserController::current_controller()->PrepareKioskAppLaunch();
 
-  // KioskAppLauncher deletes itself when done.
-  (new KioskAppLauncher(KioskAppManager::Get(), app_id))->Start();
+  host_->StartAppLaunch(app_id);
 }
 
 // static

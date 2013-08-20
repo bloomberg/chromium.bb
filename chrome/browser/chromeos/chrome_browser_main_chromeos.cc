@@ -27,7 +27,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/contacts/contact_manager.h"
@@ -202,9 +201,20 @@ bool ShouldAutoLaunchKioskApp(const CommandLine& command_line) {
       KioskAppLaunchError::Get() == KioskAppLaunchError::NONE;
 }
 
+void RunAutoLaunchKioskApp() {
+  ShowLoginWizard(chromeos::WizardController::kAppLaunchSplashScreenName);
+
+  // Login screen is skipped but 'login-prompt-visible' signal is still needed.
+  LOG(INFO) << "Kiosk app auto launch >> login-prompt-visible";
+  DBusThreadManager::Get()->GetSessionManagerClient()->
+      EmitLoginPromptVisible();
+}
+
 void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
                                        Profile* profile) {
-  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
+  if (ShouldAutoLaunchKioskApp(parsed_command_line)) {
+    RunAutoLaunchKioskApp();
+  } else if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
     const std::string first_screen =
         parsed_command_line.HasSwitch(switches::kLoginScreen) ?
             WizardController::kLoginScreenName : std::string();
@@ -232,17 +242,6 @@ void OptionallyRunChromeOSLoginManager(const CommandLine& parsed_command_line,
       LoginUtils::Get()->RestoreAuthenticationSession(profile);
     }
   }
-}
-
-void RunAutoLaunchKioskApp() {
-  // KioskAppLauncher deletes itself when done.
-  (new KioskAppLauncher(KioskAppManager::Get(),
-                        KioskAppManager::Get()->GetAutoLaunchApp()))->Start();
-
-  // Login screen is skipped but 'login-prompt-visible' signal is still needed.
-  LOG(INFO) << "Kiosk app auto launch >> login-prompt-visible";
-  DBusThreadManager::Get()->GetSessionManagerClient()->
-      EmitLoginPromptVisible();
 }
 
 }  // namespace
@@ -597,11 +596,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
   // Thus only show login manager in normal (non-testing) mode.
   if (!parameters().ui_task ||
       parsed_command_line().HasSwitch(switches::kForceLoginManagerInTests)) {
-    if (ShouldAutoLaunchKioskApp(parsed_command_line())) {
-      RunAutoLaunchKioskApp();
-    } else {
-      OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
-    }
+    OptionallyRunChromeOSLoginManager(parsed_command_line(), profile());
   }
 
   // These observers must be initialized after the profile because

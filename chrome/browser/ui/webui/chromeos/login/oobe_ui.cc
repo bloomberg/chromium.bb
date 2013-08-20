@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
@@ -58,12 +59,14 @@ const char kOobeDisplay[] = "oobe";
 const char kLoginDisplay[] = "login";
 const char kLockDisplay[] = "lock";
 const char kUserAddingDisplay[] = "user-adding";
+const char kAppLaunchSplashDisplay[] = "app-launch-splash";
 
 const char* kKnownDisplayTypes[] = {
   kOobeDisplay,
   kLoginDisplay,
   kLockDisplay,
-  kUserAddingDisplay
+  kUserAddingDisplay,
+  kAppLaunchSplashDisplay
 };
 
 const char kStringsJSPath[] = "strings.js";
@@ -158,6 +161,7 @@ const char OobeUI::kScreenManagedUserCreationFlow[]
                                             = "managed-user-creation";
 const char OobeUI::kScreenTermsOfService[]  = "terms-of-service";
 const char OobeUI::kScreenWrongHWID[]       = "wrong-hwid";
+const char OobeUI::kScreenAppLaunchSplash[] = "app-launch-splash";
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
     : WebUIController(web_ui),
@@ -255,6 +259,11 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
                                                    core_handler_);
   AddScreenHandler(signin_screen_handler_);
 
+  AppLaunchSplashScreenHandler* app_launch_splash_screen_handler =
+      new AppLaunchSplashScreenHandler();
+  AddScreenHandler(app_launch_splash_screen_handler);
+  app_launch_splash_screen_actor_ = app_launch_splash_screen_handler;
+
   // Initialize KioskAppMenuHandler. Note that it is NOT a screen handler.
   kiosk_app_menu_handler_ = new KioskAppMenuHandler;
   web_ui->AddMessageHandler(kiosk_app_menu_handler_);
@@ -345,6 +354,11 @@ LocallyManagedUserCreationScreenHandler*
   return locally_managed_user_creation_screen_actor_;
 }
 
+AppLaunchSplashScreenActor*
+      OobeUI::GetAppLaunchSplashScreenActor() {
+  return app_launch_splash_screen_actor_;
+}
+
 void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   // Note, handlers_[0] is a GenericHandler used by the WebUI.
   for (size_t i = 0; i < handlers_.size(); ++i)
@@ -397,6 +411,7 @@ void OobeUI::InitializeScreenMaps() {
       kScreenManagedUserCreationFlow;
   screen_names_[SCREEN_TERMS_OF_SERVICE] = kScreenTermsOfService;
   screen_names_[SCREEN_WRONG_HWID] = kScreenWrongHWID;
+  screen_names_[SCREEN_APP_LAUNCH_SPLASH] = kScreenAppLaunchSplash;
 
   screen_ids_.clear();
   for (size_t i = 0; i < screen_names_.size(); ++i)

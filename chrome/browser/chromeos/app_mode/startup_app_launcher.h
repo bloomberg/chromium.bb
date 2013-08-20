@@ -10,11 +10,11 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/signin/oauth2_token_service.h"
 #include "net/base/network_change_notifier.h"
-#include "ui/base/events/event_handler.h"
 
 class Profile;
 
@@ -25,25 +25,42 @@ class WebstoreStandaloneInstaller;
 namespace chromeos {
 
 // Launches the app at startup. The flow roughly looks like this:
-// - Starts the app launch splash screen;
 // - Checks if the app is installed in user profile (aka app profile);
 // - If the app is installed, launch it and finish the flow;
 // - If not installed, prepare to start install by checking network online
 //   state;
 // - If network gets online in time, start to install the app from web store;
 // - If all goes good, launches the app and finish the flow;
-// If anything goes wrong, it exits app mode and goes back to login screen.
 class StartupAppLauncher
     : public base::SupportsWeakPtr<StartupAppLauncher>,
       public OAuth2TokenService::Observer,
-      public net::NetworkChangeNotifier::NetworkChangeObserver,
-      public ui::EventHandler {
+      public net::NetworkChangeNotifier::NetworkChangeObserver {
  public:
+  class Observer {
+   public:
+    virtual void OnLoadingOAuthFile() = 0;
+    virtual void OnInitializingTokenService() = 0;
+    virtual void OnInitializingNetwork() = 0;
+    virtual void OnNetworkWaitTimedout() = 0;
+    virtual void OnInstallingApp() = 0;
+    virtual void OnLaunchSucceeded() = 0;
+    virtual void OnLaunchFailed(KioskAppLaunchError::Error error) = 0;
+
+   protected:
+    virtual ~Observer() {}
+  };
+
   StartupAppLauncher(Profile* profile, const std::string& app_id);
+
+  virtual ~StartupAppLauncher();
 
   // Starts app launcher. If |skip_auth_setup| is set, we will skip
   // TokenService initialization.
   void Start();
+
+  // Add and remove observers for app launch procedure.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
  private:
   // OAuth parameters from /home/chronos/kiosk_auth file.
@@ -53,10 +70,6 @@ class StartupAppLauncher
     std::string client_secret;
   };
 
-  // Private dtor because this class manages its own lifetime.
-  virtual ~StartupAppLauncher();
-
-  void Cleanup();
   void OnLaunchSuccess();
   void OnLaunchFailure(KioskAppLaunchError::Error error);
 
@@ -82,13 +95,9 @@ class StartupAppLauncher
   virtual void OnNetworkChanged(
       net::NetworkChangeNotifier::ConnectionType type) OVERRIDE;
 
-  // ui::EventHandler overrides:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE;
-
   Profile* profile_;
   const std::string app_id_;
-
-  int64 launch_splash_start_time_;
+  ObserverList<Observer> observer_list_;
 
   scoped_refptr<extensions::WebstoreStandaloneInstaller> installer_;
   base::OneShotTimer<StartupAppLauncher> network_wait_timer_;

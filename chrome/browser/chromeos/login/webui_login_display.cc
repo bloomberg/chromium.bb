@@ -364,6 +364,10 @@ void WebUILoginDisplay::Signout() {
   delegate_->Signout();
 }
 
+void WebUILoginDisplay::LoginAsKioskApp(const std::string& app_id) {
+  delegate_->LoginAsKioskApp(app_id);
+}
+
 void WebUILoginDisplay::OnUserActivity(const ui::Event* event) {
   if (!password_clear_timer_.IsRunning())
     StartPasswordClearTimer();

@@ -27,8 +27,6 @@
       <if expr="pp_ifdef('chromeos')">
         <structure name="IDR_DEMO_USER_LOGIN_HTML" file="resources\chromeos\login\demo_user_login.html" flattenhtml="true" type="chrome_html" />
         <structure name="IDR_DEMO_USER_LOGIN_JS" file="resources\chromeos\login\demo_user_login.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_APP_LAUNCH_SPLASH_HTML" file="resources\chromeos\app_launch\app_launch.html" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_APP_LAUNCH_SPLASH_JS" file="resources\chromeos\app_launch\app_launch.js" flattenhtml="true" type="chrome_html" />
       </if>
       <structure name="IDR_DOWNLOADS_CSS" file="resources\downloads\downloads.css" flattenhtml="true" type="chrome_html" />
       <structure name="IDR_DOWNLOADS_HTML" file="resources\downloads\downloads.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />

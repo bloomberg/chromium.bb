@@ -216,14 +216,6 @@ void ExistingUserController::ResumeLogin() {
   resume_login_callback_.Reset();
 }
 
-void ExistingUserController::PrepareKioskAppLaunch() {
-  // Disable login UI while waiting for the kiosk app launch. There is no
-  // balanced UI enable call because this very login screen will not be
-  // accessed again. If app is launched, it will be destroyed. If app fails to
-  // launch, chrome is restarted to go back to a new login screen.
-  login_display_->SetUIEnabled(false);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // ExistingUserController, content::NotificationObserver implementation:
 //
@@ -578,6 +570,10 @@ void ExistingUserController::LoginAsPublicAccount(
   login_performer_->LoginAsPublicAccount(username);
   AccessibilityManager::Get()->MaybeSpeak(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
+}
+
+void ExistingUserController::LoginAsKioskApp(const std::string& app_id) {
+  host_->StartAppLaunch(app_id);
 }
 
 void ExistingUserController::OnSigninScreenReady() {

@@ -48,7 +48,8 @@ using web_modal::WebContentsModalDialogManager;
 
 namespace {
 
-// These strings must be kept in sync with handleAccelerator() in oobe.js.
+// These strings must be kept in sync with handleAccelerator()
+// in display_manager.js.
 const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnrollment[] = "enrollment";
 const char kAccelNameKioskEnable[] = "kiosk_enable";
@@ -58,6 +59,7 @@ const char kAccelNameLeft[] = "left";
 const char kAccelNameRight[] = "right";
 const char kAccelNameDeviceRequisition[] = "device_requisition";
 const char kAccelNameDeviceRequisitionRemora[] = "device_requisition_remora";
+const char kAccelNameAppLaunchBailout[] = "app_launch_bailout";
 
 // Observes IPC messages from the FrameSniffer and notifies JS if error
 // appears.
@@ -182,6 +184,10 @@ WebUILoginView::WebUILoginView()
   accel_map_[
       ui::Accelerator(ui::VKEY_H, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameDeviceRequisitionRemora;
+
+  accel_map_[ui::Accelerator(ui::VKEY_S,
+                             ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
+      kAccelNameAppLaunchBailout;
 
   for (AccelMap::iterator i(accel_map_.begin()); i != accel_map_.end(); ++i)
     AddAccelerator(i->first);

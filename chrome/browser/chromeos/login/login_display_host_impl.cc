@@ -23,6 +23,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
@@ -84,6 +85,9 @@ const char kOobeURL[] = "chrome://oobe/oobe";
 
 // URL which corresponds to the user adding WebUI.
 const char kUserAddingURL[] = "chrome://oobe/user-adding";
+
+// URL which corresponds to the app launch splash WebUI.
+const char kAppLaunchSplashURL[] = "chrome://oobe/app-launch-splash";
 
 // Duration of sign-in transition animation.
 const int kLoginFadeoutTransitionDurationMs = 700;
@@ -509,6 +513,20 @@ void LoginDisplayHostImpl::PrewarmAuthentication() {
                  pointer_factory_.GetWeakPtr()));
 }
 
+void LoginDisplayHostImpl::StartAppLaunch(const std::string& app_id) {
+  LOG(WARNING) << "Login WebUI >> start app launch.";
+  SetStatusAreaVisible(false);
+  if (!login_window_)
+    LoadURL(GURL(kAppLaunchSplashURL));
+
+  login_view_->set_should_emit_login_prompt_visible(false);
+
+  app_launch_controller_.reset(new AppLaunchController(
+      app_id, this, GetOobeUI()));
+
+  app_launch_controller_->StartAppLaunch();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostImpl, public
 
@@ -875,12 +893,22 @@ void ShowLoginWizard(const std::string& first_screen_name) {
     LoginState::Get()->SetLoggedInState(
         LoginState::LOGGED_IN_NONE, LoginState::LOGGED_IN_USER_NONE);
   }
+
+  LoginDisplayHost* display_host = new LoginDisplayHostImpl(screen_bounds);
+
+  bool show_app_launch_splash_screen = (first_screen_name ==
+      chromeos::WizardController::kAppLaunchSplashScreenName);
+
+  if (show_app_launch_splash_screen) {
+    const std::string& auto_launch_app_id =
+        chromeos::KioskAppManager::Get()->GetAutoLaunchApp();
+    display_host->StartAppLaunch(auto_launch_app_id);
+    return;
+  }
+
   bool show_login_screen =
       (first_screen_name.empty() && oobe_complete) ||
       first_screen_name == chromeos::WizardController::kLoginScreenName;
-
-  chromeos::LoginDisplayHost* display_host =
-      new chromeos::LoginDisplayHostImpl(screen_bounds);
 
   if (show_login_screen) {
     // R11 > R12 migration fix. See http://crosbug.com/p/4898.

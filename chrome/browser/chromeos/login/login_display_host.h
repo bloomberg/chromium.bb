@@ -98,6 +98,9 @@ class LoginDisplayHost {
 
   // Initiates authentication network prewarming.
   virtual void PrewarmAuthentication() = 0;
+
+  // Starts app launch splash screen.
+  virtual void StartAppLaunch(const std::string& app_id) = 0;
 };
 
 }  // namespace chromeos

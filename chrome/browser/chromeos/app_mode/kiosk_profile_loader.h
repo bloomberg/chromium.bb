@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_APP_LAUNCHER_H_
-#define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_APP_LAUNCHER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_PROFILE_LOADER_H_
+#define CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_PROFILE_LOADER_H_
 
 #include <string>
 
@@ -19,27 +19,32 @@ namespace chromeos {
 
 class KioskAppManager;
 
-// KioskAppLauncher launches a given app from login screen. It first attempts
+// KioskProfileLoader loads a special profile for a given app. It first attempts
 // to mount a cryptohome for the app. If the mount is successful, it prepares
-// app profile then calls StartupAppLauncher to finish the launch. If mount
-// fails, it sets relevant launch error and restart chrome to gets back to
-// the login screen. Note that there should only be one launch attempt in
-// progress.
-class KioskAppLauncher {
+// app profile then calls the delegate.
+class KioskProfileLoader {
  public:
-  KioskAppLauncher(KioskAppManager* kiosk_app_manager,
-                   const std::string& app_id);
+  class Delegate {
+   public:
+    virtual void OnProfileLoaded(Profile* profile) = 0;
+    virtual void OnProfileLoadFailed(KioskAppLaunchError::Error error) = 0;
 
-  // Starts a launch attempt. Fails immediately if there is already a launch
-  // attempt running.
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  KioskProfileLoader(KioskAppManager* kiosk_app_manager,
+                     const std::string& app_id,
+                     Delegate* delegate);
+
+  ~KioskProfileLoader();
+
+  // Starts profile load. Calls delegate on success or failure.
   void Start();
 
  private:
   class CryptohomedChecker;
   class ProfileLoader;
-
-  // Private dtor because this class manages its own lifetime.
-  ~KioskAppLauncher();
 
   void ReportLaunchResult(KioskAppLaunchError::Error error);
 
@@ -52,12 +57,10 @@ class KioskAppLauncher {
 
   void OnProfilePrepared(Profile* profile);
 
-  // The instance of the current running launch.
-  static KioskAppLauncher* running_instance_;
-
   KioskAppManager* kiosk_app_manager_;
   const std::string app_id_;
   std::string user_id_;
+  Delegate* delegate_;
 
   scoped_ptr<CryptohomedChecker> crytohomed_checker;
   scoped_ptr<ProfileLoader> profile_loader_;
@@ -65,9 +68,9 @@ class KioskAppLauncher {
   // Whether remove existing cryptohome has attempted.
   bool remove_attempted_;
 
-  DISALLOW_COPY_AND_ASSIGN(KioskAppLauncher);
+  DISALLOW_COPY_AND_ASSIGN(KioskProfileLoader);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_APP_LAUNCHER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_APP_MODE_KIOSK_PROFILE_LOADER_H_

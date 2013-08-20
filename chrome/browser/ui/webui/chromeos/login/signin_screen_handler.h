@@ -157,6 +157,9 @@ class SigninScreenHandlerDelegate {
   // Signs out if the screen is currently locked.
   virtual void Signout() = 0;
 
+  // Login to kiosk mode for app with |app_id|.
+  virtual void LoginAsKioskApp(const std::string& app_id) = 0;
+
  protected:
   virtual ~SigninScreenHandlerDelegate() {}
 };
@@ -327,6 +330,7 @@ class SigninScreenHandler
   void HandleUpdateOfflineLogin(bool offline_login_active);
   void HandleShowLocallyManagedUserCreationScreen();
   void HandleFocusPod(const std::string& user_id);
+  void HandleLaunchKioskApp(const std::string& app_id);
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(User* user,

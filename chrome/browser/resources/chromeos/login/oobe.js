@@ -68,6 +68,7 @@ cr.define('cr.ui.Oobe', function() {
       login.PasswordChangedScreen.register();
       login.LocallyManagedUserCreationScreen.register();
       login.TermsOfServiceScreen.register();
+      login.AppLaunchSplashScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));

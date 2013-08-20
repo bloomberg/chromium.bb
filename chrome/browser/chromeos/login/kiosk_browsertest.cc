@@ -12,6 +12,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
@@ -114,8 +115,6 @@ class KioskAppLaunchScenarioHandler : public TestBrowserMainExtraParts {
  private:
   // ChromeBrowserMainExtraParts implementation.
   virtual void PreEarlyInitialization() OVERRIDE {
-    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                   content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_KIOSK_APPS_LOADED,
                    content::NotificationService::AllSources());
     registrar_.Add(this, chrome::NOTIFICATION_KIOSK_APP_LAUNCHED,
@@ -126,10 +125,7 @@ class KioskAppLaunchScenarioHandler : public TestBrowserMainExtraParts {
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
-    if (type == chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE) {
-      LOG(INFO) << "NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE";
-      SetupSigninScreen();
-    } else if (type == chrome::NOTIFICATION_KIOSK_APPS_LOADED) {
+    if (type == chrome::NOTIFICATION_KIOSK_APPS_LOADED) {
       LOG(INFO) << "chrome::NOTIFICATION_KIOSK_APPS_LOADED";
       content::WebUI* web_ui = static_cast<chromeos::LoginDisplayHostImpl*>(
           chromeos::LoginDisplayHostImpl::default_host())->
@@ -544,6 +540,7 @@ class KioskLaunchTest : public KioskTest {
 
 IN_PROC_BROWSER_TEST_P(KioskLaunchTest, InstallAndLaunchApp) {
   EnableConsumerKioskMode();
+  chromeos::AppLaunchController::SkipSplashWaitForTesting();
   // Start UI, find menu entry for this app and launch it.
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =

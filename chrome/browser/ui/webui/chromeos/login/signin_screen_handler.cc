@@ -852,6 +852,10 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("updateOfflineLogin",
               &SigninScreenHandler::HandleUpdateOfflineLogin);
   AddCallback("focusPod", &SigninScreenHandler::HandleFocusPod);
+
+  // This message is sent by the kiosk app menu, but is handled here
+  // so we can tell the delegate to launch the app.
+  AddCallback("launchKioskApp", &SigninScreenHandler::HandleLaunchKioskApp);
 }
 
 void SigninScreenHandler::RegisterPrefs(PrefRegistrySimple* registry) {
@@ -1624,6 +1628,10 @@ void SigninScreenHandler::HandleUpdateOfflineLogin(bool offline_login_active) {
 
 void SigninScreenHandler::HandleFocusPod(const std::string& user_id) {
   SetUserInputMethod(user_id);
+}
+
+void SigninScreenHandler::HandleLaunchKioskApp(const std::string& app_id) {
+  delegate_->LoginAsKioskApp(app_id);
 }
 
 void SigninScreenHandler::StartClearingDnsCache() {

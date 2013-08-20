@@ -134,6 +134,13 @@ body:not(.oobe-display) #progress-dots {
   display: none;
 }
 
+#outer-container.fullscreen,
+#outer-container.fullscreen #oobe,
+#outer-container.fullscreen #oobe #inner-container {
+  height: 100%;
+  width: 100%;
+}
+
 html[build=chrome] #header-sections {
   -webkit-margin-start: -48px;
 }
