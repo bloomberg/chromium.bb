@@ -58,6 +58,8 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         assertEquals(1, sObjectCount.get());
 
         instance = null;
+        // Ensure compiler / instrumentation does not strip out the assignment.
+        assertTrue(instance == null);
         collectGarbage();
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -81,6 +83,8 @@ public class CleanupReferenceTest extends InstrumentationTestCase {
         }
 
         instances = null;
+        // Ensure compiler / instrumentation does not strip out the assignment.
+        assertTrue(instances == null);
         collectGarbage();
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
