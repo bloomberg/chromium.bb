@@ -27,7 +27,7 @@ def _RunBisectionScript(options):
   Returns:
     0 on success, otherwise 1.
   """
-  test_command = 'python %s --browser=%s' %\
+  test_command = 'python %s --browser=%s --chrome-root=.' %\
       (os.path.join(_DIR_TOOLS_ROOT, 'bisect-manual-test.py'),
        options.browser_type)
 

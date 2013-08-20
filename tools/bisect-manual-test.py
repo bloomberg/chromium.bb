@@ -21,6 +21,7 @@ def _StartManualTest(options):
   browser_to_create = browser_finder.FindBrowser(options)
   print 'Starting browser: %s.' % options.browser_type
   with browser_to_create.Create() as browser:
+    browser.Start();
 
     # Loop until we get a response that we can parse.
     while True:
