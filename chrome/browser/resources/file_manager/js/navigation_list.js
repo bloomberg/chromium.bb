@@ -98,7 +98,7 @@ NavigationModelItem.prototype.resolveDirectoryEntry_ = function() {
         }.bind(this),
         function(error) {
           this.entry_ = null;
-          console.error('Error on resolving path: ' + path);
+          console.error('Error on resolving path: ' + this.path_);
           continueCallback();
         }.bind(this));
   }.bind(this));
@@ -109,7 +109,7 @@ NavigationModelItem.prototype.resolveDirectoryEntry_ = function() {
  * @return {boolean} True if a shortcut, false if a volume root.
  */
 NavigationModelItem.prototype.isShortcut = function() {
-  return !PathUtil.isRootPath(this.path);
+  return !PathUtil.isRootPath(this.path_);
 };
 
 /**
