@@ -346,9 +346,10 @@ def AskIsGoodBuild(rev, official_builds, status, stdout, stderr):
   """Ask the user whether build |rev| is good or bad."""
   # Loop until we get a response that we can parse.
   while True:
-    response = raw_input('Revision %s is [(g)ood/(b)ad/(u)nknown/(q)uit]: ' %
+    response = raw_input('Revision %s is ' \
+                         '[(g)ood/(b)ad/(r)etry/(u)nknown/(q)uit]: ' %
                          str(rev))
-    if response and response in ('g', 'b', 'u'):
+    if response and response in ('g', 'b', 'r', 'u'):
       return response
     if response and response == 'q':
       raise SystemExit()
@@ -504,8 +505,6 @@ def Bisect(platform,
                                              try_args)
     except Exception, e:
       print >>sys.stderr, e
-    fetch.Stop()
-    fetch = None
 
     # Call the evaluate function to see if the current revision is good or bad.
     # On that basis, kill one of the background downloads and complete the
@@ -514,24 +513,31 @@ def Bisect(platform,
       answer = evaluate(rev, official_builds, status, stdout, stderr)
       if answer == 'g' and good_rev < bad_rev or \
           answer == 'b' and bad_rev < good_rev:
+        fetch.Stop()
         minrev = pivot
         if down_fetch:
           down_fetch.Stop()  # Kill the download of the older revision.
+          fetch = None
         if up_fetch:
           up_fetch.WaitFor()
           pivot = up_pivot
           fetch = up_fetch
       elif answer == 'b' and good_rev < bad_rev or \
           answer == 'g' and bad_rev < good_rev:
+        fetch.Stop()
         maxrev = pivot
         if up_fetch:
           up_fetch.Stop()  # Kill the download of the newer revision.
+          fetch = None
         if down_fetch:
           down_fetch.WaitFor()
           pivot = down_pivot
           fetch = down_fetch
+      elif answer == 'r':
+        pass  # Retry requires no changes.
       elif answer == 'u':
         # Nuke the revision from the revlist and choose a new pivot.
+        fetch.Stop()
         revlist.pop(pivot)
         maxrev -= 1  # Assumes maxrev >= pivot.
 
