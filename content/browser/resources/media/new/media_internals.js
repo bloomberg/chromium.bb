@@ -4,15 +4,10 @@
 
 var media = {};
 
-var doNothing = function() {};
+<include src="util.js"/>
+<include src="player_info.js"/>
+<include src="player_manager.js"/>
+<include src="client_renderer.js"/>
+<include src="main.js"/>
 
-// Silence the backend calls.
-media.initialize = doNothing;
-media.addAudioStream = doNothing;
-media.cacheEntriesByKey = doNothing;
-media.onReceiveEverything = doNothing;
-media.onItemDeleted = doNothing;
-media.onRendererTerminated = doNothing;
-media.onNetUpdate = doNothing;
-media.onReceiveConstants = doNothing;
-media.onMediaEvent = doNothing;
+media.initialize(new PlayerManager(new ClientRenderer()));

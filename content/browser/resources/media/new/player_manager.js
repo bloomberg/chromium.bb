@@ -4,20 +4,17 @@
 
 /**
  * @fileoverview Keeps track of all the existing
- * PlayerProperty objects and is the entry-point for messages from the backend.
+ * PlayerInfo objects and is the entry-point for messages from the backend.
+ *
+ * The events captured by PlayerManager (add, remove, update) are relayed
+ * to the clientRenderer which it can choose to use to modify the UI.
  */
 var PlayerManager = (function() {
   'use strict';
 
-  function PlayerManager(renderManager) {
+  function PlayerManager(clientRenderer) {
     this.players_ = {};
-    this.renderman_ = renderManager;
-    renderManager.playerManager = this;
-
-    this.shouldRemovePlayer_ = function() {
-      // This is only temporary until we get the UI hooked up.
-      return true;
-    };
+    this.clientRenderer_ = clientRenderer;
   }
 
   PlayerManager.prototype = {
@@ -31,8 +28,7 @@ var PlayerManager = (function() {
       }
       // Make the PlayerProperty and add it to the mapping
       this.players_[id] = new PlayerInfo(id);
-
-      this.renderman_.redrawList();
+      this.clientRenderer_.playerAdded(this.players_, this.players_[id]);
     },
 
     /**
@@ -40,45 +36,21 @@ var PlayerManager = (function() {
      * @param id The ID of the player to remove.
      */
     removePlayer: function(id) {
-      // Look at the check box to see if we should actually
-      // remove it from the UI
-      if (this.shouldRemovePlayer_()) {
-        delete this.players_[id];
-        this.renderman_.redrawList();
-      } else if (this.players_[id]) {
-        // Set a property on it to be removed at a later time
-        this.players_[id].toRemove = true;
-      }
-    },
-
-    /**
-     * Selects a player and displays it on the UI.
-     * This method is called from the UI.
-     * @param id The ID of the player to display.
-     */
-    selectPlayer: function(id) {
-      if (!this.players_[id]) {
-        throw new Error('[selectPlayer] Id ' + id + ' does not exist.');
-      }
-
-      this.renderman_.select(id);
+      delete this.players_[id];
+      this.clientRenderer_.playerRemoved(this.players_, this.players_[id]);
     },
 
     updatePlayerInfoNoRecord: function(id, timestamp, key, value) {
       if (!this.players_[id]) {
-        console.error('[updatePlayerInfo] Id ' + id +
-          ' does not exist');
+        console.error('[updatePlayerInfo] Id ' + id + ' does not exist');
         return;
       }
 
       this.players_[id].addPropertyNoRecord(timestamp, key, value);
-
-      // If we can potentially rename the player, do so.
-      if (key === 'name' || key === 'url') {
-        this.renderman_.redrawList();
-      }
-
-      this.renderman_.update();
+      this.clientRenderer_.playerUpdated(this.players_,
+                                         this.players_[id],
+                                         key,
+                                         value);
     },
 
     /**
@@ -91,19 +63,15 @@ var PlayerManager = (function() {
      */
     updatePlayerInfo: function(id, timestamp, key, value) {
       if (!this.players_[id]) {
-        console.error('[updatePlayerInfo] Id ' + id +
-          ' does not exist');
+        console.error('[updatePlayerInfo] Id ' + id + ' does not exist');
         return;
       }
 
       this.players_[id].addProperty(timestamp, key, value);
-
-      // If we can potentially rename the player, do so.
-      if (key === 'name' || key === 'url') {
-        this.renderman_.redrawList();
-      }
-
-      this.renderman_.update();
+      this.clientRenderer_.playerUpdated(this.players_,
+                                         this.players_[id],
+                                         key,
+                                         value);
     }
   };
 

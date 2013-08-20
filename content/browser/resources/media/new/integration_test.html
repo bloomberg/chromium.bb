@@ -16,13 +16,13 @@ found in the LICENSE file.
     <script>
       window.setUp = function() {
         var doNothing = function() {};
-        var mockRenderer = {
-          redrawList: doNothing,
-          update: doNothing,
-          select: doNothing
+        var mockClientRenderer = {
+          playerUpdated: doNothing,
+          playerRemoved: doNothing,
+          playerAdded: doNothing
         };
 
-        var manager = new PlayerManager(mockRenderer);
+        var manager = new PlayerManager(mockClientRenderer);
         media.initialize(manager);
 
         window.playerManager = manager;
@@ -56,10 +56,6 @@ found in the LICENSE file.
       // Remove a player.
       window.testOnRenderTerminated = function() {
         window.testOnMediaEvent();
-
-        window.playerManager.shouldRemovePlayer_ = function() {
-          return true;
-        };
 
         window.media.onRendererTerminated(TEST_RENDERER);
         assertEquals(undefined, window.playerManager.players_[TEST_NAME]);

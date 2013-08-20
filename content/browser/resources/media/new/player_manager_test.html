@@ -15,14 +15,14 @@ found in the LICENSE file.
       var doNothing = function() {
       };
 
-      var emptyRenderMan = {
-        redrawList: doNothing,
-        update: doNothing,
-        select: doNothing
+      var emptyClientRenderer = {
+        playerAdded: doNothing,
+        playerRemoved: doNothing,
+        playerUpdated: doNothing
       };
 
       window.setUp = function() {
-        window.pm = new PlayerManager(emptyRenderMan);
+        window.pm = new PlayerManager(emptyClientRenderer);
       };
 
       window.tearDown = function() {
@@ -35,21 +35,6 @@ found in the LICENSE file.
         assertTrue(undefined !== window.pm.players_['someid']);
       };
 
-      // Make sure that adding a player forces a redraw
-      // on the renderManager.
-      window.testAddPlayerForceRedraw = function() {
-        var redrew = false;
-        var mockRenderManager = {
-          redrawList: function() {
-            redrew = true;
-          }
-        };
-        var pm = new PlayerManager(mockRenderManager);
-
-        pm.addPlayer('someid');
-        assertTrue(redrew);
-      };
-
       // On occasion, the backend will add an existing ID multiple times.
       // make sure this doesn't break anything.
       window.testAddPlayerAlreadyExisting = function() {
@@ -60,65 +45,9 @@ found in the LICENSE file.
 
       // If the removal is set, make sure that a player
       // gets removed from the PlayerManager.
-      window.testRemovePlayerShouldRemove = function() {
-        // Because we don't have the checkbox.
-        window.pm.shouldRemovePlayer_ = function() {
-          return true;
-        };
+      window.testRemovePlayer = function() {
         window.pm.addPlayer('someid');
         assertTrue(undefined !== window.pm.players_['someid']);
-        window.pm.removePlayer('someid');
-        assertTrue(undefined === window.pm.players_['someid']);
-      };
-
-      // On the removal of a player, the renderer should be forced
-      // to redraw the list.
-      window.testRemovePlayerRedraw = function() {
-        var redrew = false;
-
-        var fakeObj = {
-          redrawList: function() {
-            redrew = true;
-          }
-        };
-
-        var pm = new PlayerManager(fakeObj);
-        // Because we don't have the checkbox;
-        pm.shouldRemovePlayer_ = function() {
-          return true;
-        };
-
-
-        pm.addPlayer('someid');
-        assertTrue(undefined !== pm.players_['someid']);
-        pm.removePlayer('someid');
-        assertTrue(undefined === pm.players_['someid']);
-
-        assertTrue(redrew);
-      };
-
-      // If you shouldn't remove the player, the player shouldn't be
-      // removed.
-      window.testRemovePlayerNoRemove = function() {
-        window.pm = new PlayerManager(emptyRenderMan);
-        // Because we don't have the checkbox;
-        window.pm.shouldRemovePlayer_ = function() {
-          return false;
-        };
-        window.pm.addPlayer('someid');
-        assertTrue(undefined !== window.pm.players_['someid']);
-        window.pm.removePlayer('someid');
-        assertTrue(undefined !== window.pm.players_['someid']);
-      };
-
-
-      // Removing a nonexistant player shouldn't break anything
-      // The backend also occasionally does this.
-      window.testRemovePlayerNonExistant = function() {
-        // Because we don't have the checkbox;
-        window.pm.shouldRemovePlayer_ = function() {
-          return false;
-        };
         window.pm.removePlayer('someid');
         assertTrue(undefined === window.pm.players_['someid']);
       };
@@ -129,25 +58,6 @@ found in the LICENSE file.
         assertThrows(function() {
           window.pm.selectPlayer('someId');
         });
-      };
-
-      // Selecting an existing player should trigger a redraw
-      window.testSelectExistingPlayer = function() {
-        var selected = false;
-        var redrew = false;
-        var pm = new PlayerManager({
-          select: function() {
-            selected = true;
-          },
-          redrawList: function() {
-            redrew = true;
-          }
-        });
-        pm.addPlayer('someId');
-        pm.selectPlayer('someId');
-
-        assertTrue(selected);
-        assertTrue(redrew);
       };
     runTests();
     </script>
