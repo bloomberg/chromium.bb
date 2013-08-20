@@ -174,17 +174,21 @@ BOT_ASSIGNMENT = {
     'nacl-arm_hw_perf_panda':
         'bash buildbot/buildbot_spec2k.sh pnacl-trybot-arm-hw',
     # Toolchain glibc.
-    'lucid64-glibc': 'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
+    'lucid64-glibc': 'bash buildbot/buildbot_linux-glibc-makefile.sh',
+    'precise64-glibc': 'bash buildbot/buildbot_linux-glibc-makefile.sh',
     'mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
     'win7-glibc': 'buildbot\\buildbot_windows-glibc-makefile.bat',
     # Toolchain newlib x86.
     'win7-toolchain_x86': 'buildbot\\buildbot_toolchain_win.bat',
     'mac-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh mac',
     'lucid64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
+    'precise64-toolchain_x86': 'bash buildbot/buildbot_toolchain.sh linux',
     # Toolchain newlib arm.
     'win7-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
     'mac-toolchain_arm':
+        python + ' buildbot/buildbot_toolchain_build.py --buildbot',
+    'precise64-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
     'lucid64-toolchain_arm':
         python + ' buildbot/buildbot_toolchain_build.py --buildbot',
@@ -195,6 +199,10 @@ BOT_ASSIGNMENT = {
     'linux-pnacl-x86_32':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux false',
     'linux-pnacl-x86_64':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux false',
+    'precise-pnacl-x86_32':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux false',
+    'precise-pnacl-x86_64':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux false',
     'mac-pnacl-x86_32':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac false',
@@ -221,16 +229,22 @@ BOT_ASSIGNMENT = {
     # Toolchain trybots.
     'nacl-toolchain-lucid64-newlib':
         'bash buildbot/buildbot_toolchain.sh linux',
+    'nacl-toolchain-precise64-newlib':
+        'bash buildbot/buildbot_toolchain.sh linux',
     'nacl-toolchain-mac-newlib': 'bash buildbot/buildbot_toolchain.sh mac',
     'nacl-toolchain-win7-newlib': 'buildbot\\buildbot_toolchain_win.bat',
     'nacl-toolchain-lucid64-newlib-arm':
+        python + ' buildbot/buildbot_toolchain_build.py --trybot',
+    'nacl-toolchain-precise64-newlib-arm':
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-mac-newlib-arm':
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-win7-newlib-arm':
         python + ' buildbot/buildbot_toolchain_build.py --trybot',
     'nacl-toolchain-lucid64-glibc':
-        'bash buildbot/buildbot_lucid64-glibc-makefile.sh',
+        'bash buildbot/buildbot_linux-glibc-makefile.sh',
+    'nacl-toolchain-precise64-glibc':
+        'bash buildbot/buildbot_linux-glibc-makefile.sh',
     'nacl-toolchain-mac-glibc': 'bash buildbot/buildbot_mac-glibc-makefile.sh',
     'nacl-toolchain-win7-glibc':
         'buildbot\\buildbot_windows-glibc-makefile.bat',
@@ -241,6 +255,11 @@ BOT_ASSIGNMENT = {
     'nacl-toolchain-linux-pnacl-x86_64':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
     'nacl-toolchain-linux-pnacl-mips': 'echo "TODO(mseaborn)"',
+    'nacl-toolchain-precise-pnacl-x86_32':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-linux true',
+    'nacl-toolchain-precise-pnacl-x86_64':
+        'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8664-linux true',
+    'nacl-toolchain-precise-pnacl-mips': 'echo "TODO(mseaborn)"',
     'nacl-toolchain-mac-pnacl-x86_32':
         'bash buildbot/buildbot_pnacl.sh mode-buildbot-tc-x8632-mac true',
     'nacl-toolchain-win7-pnacl-x86_64':
