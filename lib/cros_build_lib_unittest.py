@@ -304,24 +304,6 @@ class TestRunCommand(cros_test_lib.MoxTestCase):
     """Test RunCommand() properly sets/restores sigint.  Exception case."""
     self.testSubprocessCommunicateExceptionRaisesError(ignore_sigint=True)
 
-  @_ForceLoggingLevel
-  def testSubprocessCommunicateExceptionNotRaisesError(self):
-    """Don't re-raise error from communicate() when --error_ok=True."""
-    cmd = ['test', 'cmd']
-    real_cmd = ['cros_sdk', '--'] + cmd
-    expected_result = cros_build_lib.CommandResult()
-    expected_result.cmd = real_cmd
-
-    with self._SetupPopen(real_cmd) as proc:
-      proc.communicate(None).AndRaise(ValueError)
-
-    self.mox.ReplayAll()
-    actual_result = cros_build_lib.RunCommand(cmd, error_ok=True,
-                                              enter_chroot=True)
-    self.mox.VerifyAll()
-
-    self._AssertCrEqual(expected_result, actual_result)
-
   def testEnvWorks(self):
     """Test RunCommand(..., env=xyz) works."""
     # We'll put this bogus environment together, just to make sure

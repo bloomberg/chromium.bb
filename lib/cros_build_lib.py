@@ -252,10 +252,9 @@ class _Popen(subprocess.Popen):
 
 
 #pylint: disable=W0622
-def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
-               redirect_stdout=False, redirect_stderr=False,
-               cwd=None, input=None, enter_chroot=False, shell=False,
-               env=None, extra_env=None, ignore_sigint=False,
+def RunCommand(cmd, print_cmd=True, error_message=None, redirect_stdout=False,
+               redirect_stderr=False, cwd=None, input=None, enter_chroot=False,
+               shell=False, env=None, extra_env=None, ignore_sigint=False,
                combine_stdout_stderr=False, log_stdout_to_file=None,
                chroot_args=None, debug_level=logging.INFO,
                error_code_ok=False, kill_timeout=1, log_output=False,
@@ -267,8 +266,6 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       must be true. Otherwise the command must be an array of arguments, and
       shell must be false.
     print_cmd: prints the command before running it.
-    error_ok: ***DEPRECATED, use error_code_ok instead***
-              Does not raise an exception on any errors.
     error_message: prints out this message when an error occurs.
     redirect_stdout: returns the stdout.
     redirect_stderr: holds stderr output until input is communicated.
@@ -449,32 +446,17 @@ def RunCommand(cmd, print_cmd=True, error_ok=False, error_message=None,
       if cmd_result.error:
         logger.log(debug_level, '(stderr):\n%s' % cmd_result.error)
 
-    if error_ok:
-      logger.warning("error_ok is deprecated; use error_code_ok instead."
-                     "error_ok will be removed in Q1 2013.  Was invoked "
-                     "with args=%r", cmd)
-
-    if not error_ok and not error_code_ok and proc.returncode:
+    if not error_code_ok and proc.returncode:
       msg = ('Failed command "%s", cwd=%s, extra env=%r'
              % (' '.join(map(repr, cmd)), cwd, extra_env))
       if error_message:
         msg += '\n%s' % error_message
       raise RunCommandError(msg, cmd_result)
-  # TODO(sosa): is it possible not to use the catch-all Exception here?
   except OSError, e:
     estr = str(e)
     if e.errno == errno.EACCES:
       estr += '; does the program need `chmod a+x`?'
-    if not error_ok:
-      raise RunCommandError(estr, CommandResult(cmd=cmd),
-                            exception=e)
-    else:
-      Warning(estr)
-  except Exception, e:
-    if not error_ok:
-      raise
-    else:
-      Warning(str(e))
+    raise RunCommandError(estr, CommandResult(cmd=cmd), exception=e)
   finally:
     if proc is not None:
       # Ensure the process is dead.
