@@ -344,7 +344,7 @@ void UserManagerImpl::UserLoggedIn(const std::string& email,
                (AreEphemeralUsersEnabled() || browser_restart)) {
       RegularUserLoggedInAsEphemeral(email);
     } else {
-      RegularUserLoggedIn(email, browser_restart);
+      RegularUserLoggedIn(email);
     }
 
     // Initialize the session length limiter and start it only if
@@ -1167,8 +1167,7 @@ void UserManagerImpl::GuestUserLoggedIn() {
                                                    false);
 }
 
-void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
-                                          bool browser_restart) {
+void UserManagerImpl::RegularUserLoggedIn(const std::string& email) {
   // Remove the user from the user list.
   active_user_ = RemoveRegularOrLocallyManagedUserFromList(email);
 
@@ -1190,10 +1189,7 @@ void UserManagerImpl::RegularUserLoggedIn(const std::string& email,
 
   user_image_manager_->UserLoggedIn(email, is_current_user_new_, false);
 
-  if (!browser_restart) {
-    // For GAIA login flow, logged in user wallpaper may not be loaded.
-    WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
-  }
+  WallpaperManager::Get()->EnsureLoggedInUserWallpaperLoaded();
 
   default_pinned_apps_field_trial::SetupForUser(email, is_current_user_new_);
 

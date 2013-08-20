@@ -441,11 +441,10 @@ size_t ProfileInfoCache::GetAvatarIconIndexOfProfileAtIndex(size_t index)
   std::string icon_url;
   GetInfoForProfileAtIndex(index)->GetString(kAvatarIconKey, &icon_url);
   size_t icon_index = 0;
-  if (IsDefaultAvatarIconUrl(icon_url, &icon_index))
-    return icon_index;
+  if (!IsDefaultAvatarIconUrl(icon_url, &icon_index))
+    DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
 
-  DLOG(WARNING) << "Unknown avatar icon: " << icon_url;
-  return GetDefaultAvatarIconResourceIDAtIndex(0);
+  return icon_index;
 }
 
 void ProfileInfoCache::SetNameOfProfileAtIndex(size_t index,

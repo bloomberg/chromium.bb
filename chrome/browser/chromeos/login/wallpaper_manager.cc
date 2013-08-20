@@ -577,6 +577,7 @@ void WallpaperManager::SetUserWallpaper(const std::string& email) {
 
   if (GetUserWallpaperInfo(email, &info)) {
     gfx::ImageSkia user_wallpaper;
+    current_user_wallpaper_info_ = info;
     if (GetWallpaperFromCache(email, &user_wallpaper)) {
       ash::Shell::GetInstance()->desktop_background_controller()->
           SetCustomWallpaper(user_wallpaper, info.layout);

@@ -23,6 +23,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/cryptohome_client.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -419,6 +420,31 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestNoAnimation,
   WaitAsyncWallpaperLoad();
   // This test should finish normally. If timeout, it is probably because chrome
   // can not handle pre migrated user profile (M21 profile or older).
+}
+
+class WallpaperManagerBrowserTestCrashRestore
+    : public WallpaperManagerBrowserTest {
+ public:
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(chromeos::switches::kDisableLoginAnimations);
+    command_line->AppendSwitch(chromeos::switches::kDisableBootAnimation);
+    command_line->AppendSwitch(::switches::kMultiProfiles);
+    command_line->AppendSwitchASCII(switches::kLoginUser, kTestUser1);
+    command_line->AppendSwitchASCII(switches::kLoginProfile,
+        CryptohomeClient::GetStubSanitizedUsername(kTestUser1));
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
+                       PRE_RestoreWallpaper) {
+  LogIn(kTestUser1);
+}
+
+// Test for crbug.com/270278. It simulates a browser crash and verifies if user
+// wallpaper is loaded.
+IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCrashRestore,
+                       RestoreWallpaper) {
+  EXPECT_EQ(1, LoadedWallpapers());
 }
 
 }  // namespace chromeos

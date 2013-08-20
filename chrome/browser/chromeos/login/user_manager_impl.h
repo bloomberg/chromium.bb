@@ -199,7 +199,7 @@ class UserManagerImpl
   void GuestUserLoggedIn();
 
   // Indicates that a regular user just logged in.
-  void RegularUserLoggedIn(const std::string& email, bool browser_restart);
+  void RegularUserLoggedIn(const std::string& email);
 
   // Indicates that a regular user just logged in as ephemeral.
   void RegularUserLoggedInAsEphemeral(const std::string& email);
