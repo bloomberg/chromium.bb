@@ -112,6 +112,15 @@ class Tester(object):
 
     def run(self):
         self._options, args = self._parse_args()
+
+        # Make sure PYTHONPATH is set up properly.
+        sys.path = self.finder.additional_paths(sys.path) + sys.path
+
+        # FIXME: unittest2 and coverage need to be in sys.path for their internal imports to work.
+        thirdparty_path = self.webkit_finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
+        if not thirdparty_path in sys.path:
+            sys.path.append(thirdparty_path)
+
         self.printer.configure(self._options)
 
         self.finder.clean_trees()
@@ -124,14 +133,6 @@ class Tester(object):
         return self._run_tests(names)
 
     def _run_tests(self, names):
-        # Make sure PYTHONPATH is set up properly.
-        sys.path = self.finder.additional_paths(sys.path) + sys.path
-
-        # FIXME: unittest2 and coverage need to be in sys.path for their internal imports to work.
-        thirdparty_path = self.webkit_finder.path_from_webkit_base('Tools', 'Scripts', 'webkitpy', 'thirdparty')
-        if not thirdparty_path in sys.path:
-            sys.path.append(thirdparty_path)
-
         if self._options.coverage:
             _log.warning("Checking code coverage, so running things serially")
             self._options.child_processes = 1
