@@ -65,11 +65,14 @@ AppListViewDelegate::AppListViewDelegate(AppListControllerDelegate* controller,
                  content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
                  content::Source<Profile>(profile_));
+  g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
   if (signin_delegate_)
     signin_delegate_->RemoveObserver(this);
+  g_browser_process->
+      profile_manager()->GetProfileInfoCache().RemoveObserver(this);
 }
 
 void AppListViewDelegate::OnProfileChanged() {
@@ -230,5 +233,14 @@ void AppListViewDelegate::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
+  OnProfileChanged();
+}
+
+void AppListViewDelegate::OnProfileNameChanged(
+    const base::FilePath& profile_path,
+    const base::string16& old_profile_name) {
+  if (profile_->GetPath() != profile_path)
+    return;
+
   OnProfileChanged();
 }

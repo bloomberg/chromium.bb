@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -43,7 +44,8 @@ class AppSyncUIStateWatcher;
 
 class AppListViewDelegate : public app_list::AppListViewDelegate,
                             public app_list::SigninDelegateObserver,
-                            public content::NotificationObserver {
+                            public content::NotificationObserver,
+                            public ProfileInfoCacheObserver {
  public:
   // The delegate will take ownership of the controller.
   AppListViewDelegate(AppListControllerDelegate* controller, Profile* profile);
@@ -81,6 +83,11 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Overridden from ProfileInfoCacheObserver:
+  virtual void OnProfileNameChanged(
+      const base::FilePath& profile_path,
+      const base::string16& old_profile_name) OVERRIDE;
 
   scoped_ptr<app_list::SigninDelegate> signin_delegate_;
   scoped_ptr<AppsModelBuilder> apps_builder_;
