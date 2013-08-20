@@ -95,7 +95,6 @@
 #include "ppapi/c/private/ppb_flash_menu.h"
 #include "ppapi/c/private/ppb_flash_message_loop.h"
 #include "ppapi/c/private/ppb_flash_print.h"
-#include "ppapi/c/private/ppb_gpu_blacklist_private.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -2752,8 +2751,6 @@ static int32_t Pnacl_M14_PPB_Flash_Menu_Show(PP_Resource menu_id, const struct P
 
 /* Not generating wrapper methods for PPB_Flash_Print_1_0 */
 
-/* Not generating wrapper methods for PPB_GpuBlacklist_Private_0_2 */
-
 /* Begin wrapper methods for PPB_HostResolver_Private_0_1 */
 
 static PP_Resource Pnacl_M19_PPB_HostResolver_Private_Create(PP_Instance instance) {
@@ -4636,8 +4633,6 @@ struct PPB_Flash_Menu_0_2 Pnacl_Wrappers_PPB_Flash_Menu_0_2 = {
 /* Not generating wrapper interface for PPB_Flash_MessageLoop_0_1 */
 
 /* Not generating wrapper interface for PPB_Flash_Print_1_0 */
-
-/* Not generating wrapper interface for PPB_GpuBlacklist_Private_0_2 */
 
 struct PPB_HostResolver_Private_0_1 Pnacl_Wrappers_PPB_HostResolver_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_HostResolver_Private_Create,
