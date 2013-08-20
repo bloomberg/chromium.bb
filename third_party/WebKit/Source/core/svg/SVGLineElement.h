@@ -21,6 +21,7 @@
 #ifndef SVGLineElement_h
 #define SVGLineElement_h
 
+#include "SVGNames.h"
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
@@ -55,6 +56,12 @@ private:
         DECLARE_ANIMATED_BOOLEAN(ExternalResourcesRequired, externalResourcesRequired)
     END_DECLARE_ANIMATED_PROPERTIES
 };
+
+inline SVGLineElement* toSVGLineElement(Element* element)
+{
+    ASSERT_WITH_SECURITY_IMPLICATION(!element || element->hasTagName(SVGNames::lineTag));
+    return static_cast<SVGLineElement*>(element);
+}
 
 } // namespace WebCore
 

@@ -337,7 +337,7 @@ static TextStream& operator<<(TextStream& ts, const RenderSVGShape& shape)
         writeNameValuePair(ts, "width", element->widthCurrentValue().value(lengthContext));
         writeNameValuePair(ts, "height", element->heightCurrentValue().value(lengthContext));
     } else if (svgElement->hasTagName(SVGNames::lineTag)) {
-        SVGLineElement* element = static_cast<SVGLineElement*>(svgElement);
+        SVGLineElement* element = toSVGLineElement(svgElement);
         writeNameValuePair(ts, "x1", element->x1CurrentValue().value(lengthContext));
         writeNameValuePair(ts, "y1", element->y1CurrentValue().value(lengthContext));
         writeNameValuePair(ts, "x2", element->x2CurrentValue().value(lengthContext));
