@@ -75,6 +75,7 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
     virtual ScriptExecutionContext* scriptExecutionContext() const OVERRIDE;
+    MessagePort* toMessagePort() OVERRIDE { return this; }
 
     void dispatchMessages();
 

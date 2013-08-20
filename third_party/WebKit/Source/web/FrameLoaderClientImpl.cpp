@@ -739,8 +739,8 @@ bool FrameLoaderClientImpl::willCheckAndDispatchMessageEvent(
         return false;
 
     WebFrame* source = 0;
-    if (event && event->source() && event->source()->document())
-        source = WebFrameImpl::fromFrame(event->source()->document()->frame());
+    if (event && event->source() && event->source()->toDOMWindow() && event->source()->toDOMWindow()->document())
+        source = WebFrameImpl::fromFrame(event->source()->toDOMWindow()->document()->frame());
     return m_webFrame->client()->willCheckAndDispatchMessageEvent(
         source, m_webFrame, WebSecurityOrigin(target), WebDOMMessageEvent(event));
 }

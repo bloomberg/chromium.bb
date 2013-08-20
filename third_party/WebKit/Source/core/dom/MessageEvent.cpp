@@ -33,6 +33,11 @@
 
 namespace WebCore {
 
+static inline bool isValidSource(EventTarget* source)
+{
+    return !source || source->toDOMWindow() || source->toMessagePort();
+}
+
 MessageEventInit::MessageEventInit()
 {
 }
@@ -52,9 +57,10 @@ MessageEvent::MessageEvent(const AtomicString& type, const MessageEventInit& ini
     , m_ports(adoptPtr(new MessagePortArray(initializer.ports)))
 {
     ScriptWrappable::init(this);
+    ASSERT(isValidSource(m_source.get()));
 }
 
-MessageEvent::MessageEvent(const String& origin, const String& lastEventId, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortArray> ports)
+MessageEvent::MessageEvent(const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray> ports)
     : Event(eventNames().messageEvent, false, false)
     , m_dataType(DataTypeScriptValue)
     , m_origin(origin)
@@ -63,9 +69,10 @@ MessageEvent::MessageEvent(const String& origin, const String& lastEventId, Pass
     , m_ports(ports)
 {
     ScriptWrappable::init(this);
+    ASSERT(isValidSource(m_source.get()));
 }
 
-MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<DOMWindow> source, PassOwnPtr<MessagePortArray> ports)
+MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String& origin, const String& lastEventId, PassRefPtr<EventTarget> source, PassOwnPtr<MessagePortArray> ports)
     : Event(eventNames().messageEvent, false, false)
     , m_dataType(DataTypeSerializedScriptValue)
     , m_dataAsSerializedScriptValue(data)
@@ -77,6 +84,7 @@ MessageEvent::MessageEvent(PassRefPtr<SerializedScriptValue> data, const String&
     ScriptWrappable::init(this);
     if (m_dataAsSerializedScriptValue)
         m_dataAsSerializedScriptValue->registerMemoryAllocatedWithCurrentScriptContext();
+    ASSERT(isValidSource(m_source.get()));
 }
 
 MessageEvent::MessageEvent(const String& data, const String& origin)

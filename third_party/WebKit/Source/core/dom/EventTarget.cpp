@@ -68,6 +68,11 @@ DOMWindow* EventTarget::toDOMWindow()
     return 0;
 }
 
+MessagePort* EventTarget::toMessagePort()
+{
+    return 0;
+}
+
 inline DOMWindow* EventTarget::executingWindow()
 {
     if (ScriptExecutionContext* context = scriptExecutionContext())

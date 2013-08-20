@@ -31,7 +31,7 @@
 ] interface MessageEvent : Event {
     [InitializedByEventConstructor] readonly attribute DOMString origin;
     [InitializedByEventConstructor] readonly attribute DOMString lastEventId;
-    [InitializedByEventConstructor] readonly attribute Window source;
+    [InitializedByEventConstructor] readonly attribute EventTarget source; // May be a Window or a MessagePort
     [InitializedByEventConstructor, CustomGetter] readonly attribute any data;
     [InitializedByEventConstructor] readonly attribute MessagePort[] ports;
 
