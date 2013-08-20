@@ -4,8 +4,16 @@
 
 @echo off
 setlocal
-set HERMETIC_CYGWIN=hermetic_cygwin_1_7_24-1_0
-if exist "%~dp0..\cygwin\%HERMETIC_CYGWIN%.installed" goto :skip_cygwin_install
+set CYGWIN_VERSION=cygwin_1_7_24-1_0
+set HERMETIC_CYGWIN=hermetic_%CYGWIN_VERSION%
+if exist "%~dp0..\cygwin\%CYGWIN_VERSION%.installed" goto :skip_cygwin_install
+if exist "%~dp0..\pnacl\git\binutils" rmdir /s /q "%~dp0..\pnacl\git\binutils"
+if exist "%~dp0..\pnacl\git\clang" rmdir /s /q "%~dp0..\pnacl\git\clang"
+if exist "%~dp0..\pnacl\git\compiler-rt" rmdir /s /q "%~dp0..\pnacl\git\compiler-rt"
+if exist "%~dp0..\pnacl\git\dummydir" rmdir /s /q "%~dp0..\pnacl\git\dummydir"
+if exist "%~dp0..\pnacl\git\gcc" rmdir /s /q "%~dp0..\pnacl\git\gcc"
+if exist "%~dp0..\pnacl\git\llvm" rmdir /s /q "%~dp0..\pnacl\git\llvm"
+if exist "%~dp0..\pnacl\git\llvm-test-suite" rmdir /s /q "%~dp0..\pnacl\git\llvm-test-suite"
 if exist "%~dp0..\tools\BUILD\.gcc-extras-version" del "%~dp0..\tools\BUILD\.gcc-extras-version"
 if exist "%~dp0..\tools\BACKPORTS\binutils" rmdir /s /q "%~dp0..\tools\BACKPORTS\binutils"
 if exist "%~dp0..\tools\BACKPORTS\gcc" rmdir /s /q "%~dp0..\tools\BACKPORTS\gcc"
@@ -24,7 +32,7 @@ if errorlevel 1 goto :download_fail
 start /WAIT %~dp0%HERMETIC_CYGWIN%.exe /DEVEL /S /D=%~dp0..\cygwin
 if errorlevel 1 goto :install_fail
 set CYGWIN=nodosfilewarning
-"%~dp0..\cygwin\bin\touch" "%~dp0..\cygwin\%HERMETIC_CYGWIN%.installed"
+"%~dp0..\cygwin\bin\touch" "%~dp0..\cygwin\%CYGWIN_VERSION%.installed"
 if errorlevel 1 goto :install_fail
 del /f /q "%~dp0%HERMETIC_CYGWIN%.exe"
 :skip_cygwin_install
