@@ -52,11 +52,12 @@ struct WebContextMenuData;
 
 namespace WebTestRunner {
 
+class TestInterfaces;
 class WebTestDelegate;
 
 class EventSender : public CppBoundClass {
 public:
-    EventSender();
+    explicit EventSender(TestInterfaces*);
     ~EventSender();
 
     void setDelegate(WebTestDelegate* delegate) { m_delegate = delegate; }
@@ -182,6 +183,7 @@ private:
 
     WebTaskList m_taskList;
 
+    TestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;
     WebKit::WebView* m_webView;
 

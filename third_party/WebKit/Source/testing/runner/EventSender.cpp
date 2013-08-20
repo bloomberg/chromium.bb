@@ -45,11 +45,13 @@
 #include "KeyCodeMapping.h"
 #include "MockSpellCheck.h"
 #include "TestCommon.h"
+#include "TestInterfaces.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/testing/WebTestDelegate.h"
+#include "public/testing/WebTestProxy.h"
 #include "public/web/WebContextMenuData.h"
 #include "public/web/WebDragOperation.h"
 #include "public/web/WebTouchPoint.h"
@@ -250,8 +252,9 @@ enum KeyLocationCode {
 
 }
 
-EventSender::EventSender()
+EventSender::EventSender(TestInterfaces* interfaces)
     : m_delegate(0)
+    , m_testInterfaces(interfaces)
 {
     // Initialize the map that associates methods of this class with the names
     // they will use when called by JavaScript. The actual binding of those
@@ -767,13 +770,21 @@ void EventSender::textZoomOut(const CppArgumentList&, CppVariant* result)
 
 void EventSender::zoomPageIn(const CppArgumentList&, CppVariant* result)
 {
-    webview()->setZoomLevel(false, webview()->zoomLevel() + 1);
+    const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
+    bool textOnly = false;
+
+    for (size_t i = 0; i < windowList.size(); ++i)
+        windowList.at(i)->webView()->setZoomLevel(textOnly, windowList.at(i)->webView()->zoomLevel() + 1);
     result->setNull();
 }
 
 void EventSender::zoomPageOut(const CppArgumentList&, CppVariant* result)
 {
-    webview()->setZoomLevel(false, webview()->zoomLevel() - 1);
+    const vector<WebTestProxyBase*>& windowList = m_testInterfaces->windowList();
+    bool textOnly = false;
+
+    for (size_t i = 0; i < windowList.size(); ++i)
+        windowList.at(i)->webView()->setZoomLevel(textOnly, windowList.at(i)->webView()->zoomLevel() - 1);
     result->setNull();
 }
 

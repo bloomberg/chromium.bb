@@ -51,7 +51,7 @@ namespace WebTestRunner {
 
 TestInterfaces::TestInterfaces()
     : m_accessibilityController(new AccessibilityController())
-    , m_eventSender(new EventSender())
+    , m_eventSender(new EventSender(this))
     , m_gamepadController(new GamepadController())
     , m_textInputController(new TextInputController())
     , m_testRunner(new TestRunner(this))

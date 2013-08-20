@@ -145,6 +145,8 @@ public:
 
     WebTaskList* taskList() { return &m_taskList; }
 
+    WebKit::WebView* webView();
+
 protected:
     WebTestProxyBase();
     ~WebTestProxyBase();
@@ -228,7 +230,6 @@ private:
     void animateNow();
 
     WebKit::WebWidget* webWidget();
-    WebKit::WebView* webView();
 
     TestInterfaces* m_testInterfaces;
     WebTestDelegate* m_delegate;

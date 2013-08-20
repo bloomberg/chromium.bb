@@ -220,7 +220,7 @@ float ImageDocument::scale() const
 
 void ImageDocument::resizeImageToFit()
 {
-    if (!m_imageElement || m_imageElement->document() != this)
+    if (!m_imageElement || m_imageElement->document() != this || pageZoomFactor(this) > 1)
         return;
 
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), pageZoomFactor(this));
@@ -275,7 +275,7 @@ void ImageDocument::imageUpdated()
 
 void ImageDocument::restoreImageSize()
 {
-    if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this)
+    if (!m_imageElement || !m_imageSizeIsKnown || m_imageElement->document() != this || pageZoomFactor(this) < 1)
         return;
 
     LayoutSize imageSize = m_imageElement->cachedImage()->imageSizeForRenderer(m_imageElement->renderer(), 1.0f);
