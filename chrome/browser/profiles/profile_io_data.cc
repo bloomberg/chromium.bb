@@ -210,7 +210,11 @@ class DebugDevToolsInterceptor
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     base::FilePath path;
     if (IsSupportedDevToolsURL(request->url(), &path))
-      return new net::URLRequestFileJob(request, network_delegate, path);
+      return new net::URLRequestFileJob(
+          request, network_delegate, path,
+          content::BrowserThread::GetBlockingPool()->
+              GetTaskRunnerWithShutdownBehavior(
+                  base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
 
     return NULL;
   }
