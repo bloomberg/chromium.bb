@@ -134,6 +134,7 @@ std::string DeriveCommandLine(const GURL& start_url,
       ::switches::kUseGL,
       ::switches::kUserDataDir,
       ::switches::kV,
+      ::switches::kVModule,
       ::switches::kEnableWebGLDraftExtensions,
 #if defined(ENABLE_WEBRTC)
       ::switches::kEnableWebRtcHWDecoding,
