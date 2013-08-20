@@ -539,7 +539,7 @@ bool MessageLoop::DeletePendingTasks() {
 
 uint64 MessageLoop::GetTaskTraceID(const PendingTask& task) {
   return (static_cast<uint64>(task.sequence_num) << 32) |
-         static_cast<uint64>(reinterpret_cast<intptr_t>(this));
+         ((static_cast<uint64>(reinterpret_cast<intptr_t>(this)) << 32) >> 32);
 }
 
 void MessageLoop::ReloadWorkQueue() {
