@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// ScopedMTPDeviceMapEntry manages the lifetime of a MTPDeviceAsyncDelegate.
-// Each extension that uses a device holds a reference to the device's
-// ScopedMTPDeviceMapEntry.
-
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_SCOPED_MTP_DEVICE_MAP_ENTRY_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_SCOPED_MTP_DEVICE_MAP_ENTRY_H_
 
@@ -19,6 +15,13 @@ namespace chrome {
 
 class MTPDeviceAsyncDelegate;
 
+// ScopedMTPDeviceMapEntry manages the reference count on a particular
+// MTP device location. These objects are held reference counted in
+// the ExtensionGalleriesHost objects. When a particular location is
+// destroyed, the constructor-time callback tells the MediaFileSystemRegistry
+// to erase it from the system-wide map, and it is also removed from
+// the MTPServiceMap at that point.
+// TODO(gbillock): Move this to media_file_system_registry.
 class ScopedMTPDeviceMapEntry
     : public base::RefCountedThreadSafe<
           ScopedMTPDeviceMapEntry, content::BrowserThread::DeleteOnUIThread> {
@@ -28,9 +31,6 @@ class ScopedMTPDeviceMapEntry
   // Created on the UI thread.
   ScopedMTPDeviceMapEntry(const base::FilePath::StringType& device_location,
                           const base::Closure& on_destruction_callback);
-
-  // Most be called after creating the ScopedMTPDeviceMapEntry.
-  void Init();
 
  private:
   // Friend declarations for ref counted implementation.
@@ -45,10 +45,6 @@ class ScopedMTPDeviceMapEntry
   // - the browser shuts down.
   // Destroyed on the UI thread.
   ~ScopedMTPDeviceMapEntry();
-
-  // Callback to add the managed MTPDeviceAsyncDelegate to the
-  // MTPDeviceMapService on the IO thread.
-  void OnMTPDeviceAsyncDelegateCreated(MTPDeviceAsyncDelegate* delegate);
 
   // The MTP or PTP device location.
   const base::FilePath::StringType device_location_;

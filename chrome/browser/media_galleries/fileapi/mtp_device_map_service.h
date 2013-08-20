@@ -16,15 +16,11 @@ namespace chrome {
 class MTPDeviceAsyncDelegate;
 
 // This class provides media transfer protocol (MTP) device delegate to
-// complete media file system operations. ScopedMTPDeviceMapEntry class
-// manages the device map entries.
+// complete media file system operations.
 class MTPDeviceMapService {
  public:
   static MTPDeviceMapService* GetInstance();
 
-  /////////////////////////////////////////////////////////////////////////////
-  //   Following methods are used to manage MTPDeviceAsyncDelegate objects.  //
-  /////////////////////////////////////////////////////////////////////////////
   // Adds the MTP device delegate to the map service. |device_location|
   // specifies the mount location of the MTP device.
   // Called on the IO thread.
