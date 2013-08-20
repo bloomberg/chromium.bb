@@ -75,10 +75,12 @@ void DrawFadeTruncatingTitle(NSAttributedString* title,
 }
 
 - (void)setContentText:(NSAttributedString*)contentText {
+  [[self controlView] setNeedsDisplay:YES];
   contentText_.reset([contentText retain]);
 }
 
 - (void)setDescriptionText:(NSAttributedString*)descriptionText {
+  [[self controlView] setNeedsDisplay:YES];
   if (![descriptionText length]) {
     descriptionText_.reset();
     return;
