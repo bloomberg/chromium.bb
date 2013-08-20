@@ -806,7 +806,7 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     base::PlatformFileError result,
     const base::PlatformFileInfo& info,
     const base::FilePath& platform_path,
-    const scoped_refptr<webkit_blob::ShareableFileReference>& snapshot_file) {
+    const scoped_refptr<webkit_blob::ShareableFileReference>& /* unused */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   operations_.erase(request_id);
 
@@ -815,7 +815,8 @@ void FileAPIMessageFilter::DidCreateSnapshot(
     return;
   }
 
-  scoped_refptr<webkit_blob::ShareableFileReference> file_ref = snapshot_file;
+  scoped_refptr<webkit_blob::ShareableFileReference> file_ref =
+      webkit_blob::ShareableFileReference::Get(platform_path);
   if (!ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
           process_id_, platform_path)) {
     // Give per-file read permission to the snapshot file if it hasn't it yet.
