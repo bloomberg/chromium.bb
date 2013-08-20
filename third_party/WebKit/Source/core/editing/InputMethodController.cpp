@@ -287,7 +287,6 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     if (base.anchorType() != Position::PositionIsOffsetInAnchor)
         return;
     Node* baseNode = base.anchorNode();
-    unsigned baseOffset = base.offsetInContainerNode();
     if (!baseNode || baseNode != m_frame->selection()->extent().anchorNode() || !baseNode->isTextNode())
         return;
 
@@ -297,8 +296,8 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
     m_customCompositionUnderlines = underlines;
     size_t numUnderlines = m_customCompositionUnderlines.size();
     for (size_t i = 0; i < numUnderlines; ++i) {
-        m_customCompositionUnderlines[i].startOffset += baseOffset;
-        m_customCompositionUnderlines[i].endOffset += baseOffset;
+        m_customCompositionUnderlines[i].startOffset += compositionStart;
+        m_customCompositionUnderlines[i].endOffset += compositionStart;
     }
     if (baseNode->renderer())
         baseNode->renderer()->repaint();

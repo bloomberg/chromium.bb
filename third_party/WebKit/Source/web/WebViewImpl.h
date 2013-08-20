@@ -572,6 +572,9 @@ public:
 
     WebCore::IntPoint clampOffsetAtScale(const WebCore::IntPoint& offset, float scale);
 
+    // Exposed for tests.
+    WebVector<WebCompositionUnderline> compositionUnderlines() const;
+
 private:
     void refreshPageScaleFactorAfterLayout();
     void setUserAgentPageScaleConstraints(WebCore::PageScaleConstraints newConstraints);
