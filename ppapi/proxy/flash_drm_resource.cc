@@ -7,8 +7,9 @@
 #include "base/bind.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/dispatch_reply_message.h"
-#include "ppapi/proxy/file_ref_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/proxy/ppb_file_ref_proxy.h"
+#include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
@@ -87,14 +88,10 @@ void FlashDRMResource::OnPluginMsgGetVoucherFileReply(
     PP_Resource* dest,
     scoped_refptr<TrackedCallback> callback,
     const ResourceMessageReplyParams& params,
-    const FileRefCreateInfo& file_info) {
+    const PPB_FileRef_CreateInfo& file_info) {
   if (TrackedCallback::IsPending(callback)) {
-    if (params.result() == PP_OK) {
-      *dest = FileRefResource::CreateFileRef(
-          connection(),
-          pp_instance(),
-          file_info);
-    }
+    if (params.result() == PP_OK)
+      *dest = PPB_FileRef_Proxy::DeserializeFileRef(file_info);
     callback->Run(params.result());
   }
 }

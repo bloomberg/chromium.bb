@@ -57,7 +57,6 @@
 #include "ppapi/shared_impl/dir_contents.h"
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_ref_create_info.h"
-#include "ppapi/shared_impl/file_ref_detailed_info.h"
 #include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -203,19 +202,12 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::DirEntry)
   IPC_STRUCT_TRAITS_MEMBER(is_dir)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(ppapi::FileRefCreateInfo)
+IPC_STRUCT_TRAITS_BEGIN(ppapi::FileRef_CreateInfo)
   IPC_STRUCT_TRAITS_MEMBER(file_system_type)
   IPC_STRUCT_TRAITS_MEMBER(internal_path)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
   IPC_STRUCT_TRAITS_MEMBER(pending_host_resource_id)
   IPC_STRUCT_TRAITS_MEMBER(file_system_plugin_resource)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ppapi::FileRefDetailedInfo)
-  IPC_STRUCT_TRAITS_MEMBER(resource)
-  IPC_STRUCT_TRAITS_MEMBER(file_system_type)
-  IPC_STRUCT_TRAITS_MEMBER(file_system_url_spec)
-  IPC_STRUCT_TRAITS_MEMBER(external_path)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::FlashSiteSetting)
@@ -306,7 +298,8 @@ IPC_STRUCT_TRAITS_END()
 IPC_STRUCT_TRAITS_BEGIN(ppapi::URLRequestInfoData::BodyItem)
   IPC_STRUCT_TRAITS_MEMBER(is_file)
   IPC_STRUCT_TRAITS_MEMBER(data)
-  IPC_STRUCT_TRAITS_MEMBER(file_ref_pp_resource)
+  // Note: we don't serialize file_ref.
+  IPC_STRUCT_TRAITS_MEMBER(file_ref_host_resource)
   IPC_STRUCT_TRAITS_MEMBER(start_offset)
   IPC_STRUCT_TRAITS_MEMBER(number_of_bytes)
   IPC_STRUCT_TRAITS_MEMBER(expected_last_modified_time)
@@ -492,6 +485,30 @@ IPC_MESSAGE_ROUTED4(PpapiMsg_PPBAudio_NotifyAudioStreamCreated,
                     int32_t /* result_code (will be != PP_OK on failure) */,
                     ppapi::proxy::SerializedHandle /* socket_handle */,
                     ppapi::proxy::SerializedHandle /* handle */)
+
+// PPB_FileRef.
+// TODO(teravest): Remove these messages when we've switched over to the "new"
+// proxy.
+IPC_MESSAGE_ROUTED3(
+    PpapiMsg_PPBFileRef_CallbackComplete,
+    ppapi::HostResource /* resource */,
+    uint32_t /* callback_id */,
+    int32_t /* result */)
+
+IPC_MESSAGE_ROUTED4(
+    PpapiMsg_PPBFileRef_QueryCallbackComplete,
+    ppapi::HostResource /* resource */,
+    PP_FileInfo /* file_info */,
+    uint32_t /* callback_id */,
+    int32_t /* result */)
+
+IPC_MESSAGE_ROUTED5(
+    PpapiMsg_PPBFileRef_ReadDirectoryEntriesCallbackComplete,
+    ppapi::HostResource /* resource */,
+    std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */,
+    std::vector<PP_FileType> /* file_types */,
+    uint32_t /* callback_id */,
+    int32_t /* result */)
 
 // PPB_FileSystem.
 IPC_MESSAGE_ROUTED2(
@@ -780,6 +797,43 @@ IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_AddRefResource,
                     ppapi::HostResource)
 IPC_MESSAGE_ROUTED1(PpapiHostMsg_PPBCore_ReleaseResource,
                     ppapi::HostResource)
+
+// PPB_FileRef.
+// TODO(teravest): Remove these messages when we've switched over to the "new"
+// proxy.
+IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBFileRef_Create,
+                           PP_Instance /* instance */,
+                           PP_Resource /* file_system */,
+                           std::string /* path */,
+                           ppapi::PPB_FileRef_CreateInfo /* result */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetParent,
+                           ppapi::HostResource /* file_ref */,
+                           ppapi::PPB_FileRef_CreateInfo /* result */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_MakeDirectory,
+                    ppapi::HostResource /* file_ref */,
+                    PP_Bool /* make_ancestors */,
+                    uint32_t /* callback_id */)
+IPC_MESSAGE_ROUTED4(PpapiHostMsg_PPBFileRef_Touch,
+                    ppapi::HostResource /* file_ref */,
+                    PP_Time /* last_access */,
+                    PP_Time /* last_modified */,
+                    uint32_t /* callback_id */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Delete,
+                    ppapi::HostResource /* file_ref */,
+                    uint32_t /* callback_id */)
+IPC_MESSAGE_ROUTED3(PpapiHostMsg_PPBFileRef_Rename,
+                    ppapi::HostResource /* file_ref */,
+                    ppapi::HostResource /* new_file_ref */,
+                    uint32_t /* callback_id */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_Query,
+                    ppapi::HostResource /* file_ref */,
+                    uint32_t /* callback_id */)
+IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBFileRef_GetAbsolutePath,
+                           ppapi::HostResource /* file_ref */,
+                           ppapi::proxy::SerializedVar /* result */)
+IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBFileRef_ReadDirectoryEntries,
+                    ppapi::HostResource /* file_ref */,
+                    uint32_t /* callback_id */)
 
 // PPB_Graphics3D.
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiHostMsg_PPBGraphics3D_Create,
@@ -1213,6 +1267,7 @@ IPC_MESSAGE_ROUTED2(
     ppapi::proxy::ResourceMessageReplyParams /* reply_params */,
     IPC::Message /* nested_msg */)
 
+
 IPC_SYNC_MESSAGE_CONTROL2_2(PpapiHostMsg_ResourceSyncCall,
     ppapi::proxy::ResourceMessageCallParams /* call_params */,
     IPC::Message /* nested_msg */,
@@ -1286,7 +1341,7 @@ IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,
                      std::string /* suggested_file_name */,
                      std::vector<std::string> /* accept_mime_types */)
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileChooser_ShowReply,
-                     std::vector<ppapi::FileRefCreateInfo> /* files */)
+                     std::vector<ppapi::PPB_FileRef_CreateInfo> /* files */)
 
 // FileIO
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileIO_Create)
@@ -1362,10 +1417,10 @@ IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FileRef_QueryReply,
 // location indicated by the FileRef.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileRef_ReadDirectoryEntries)
 
-// FileRefCreateInfo does not provide file type information, so two
+// FileRef_CreateInfo does not provide file type information, so two
 // corresponding vectors are returned.
 IPC_MESSAGE_CONTROL2(PpapiPluginMsg_FileRef_ReadDirectoryEntriesReply,
-                     std::vector<ppapi::FileRefCreateInfo> /* files */,
+                     std::vector<ppapi::FileRef_CreateInfo> /* files */,
                      std::vector<PP_FileType> /* file_types */)
 
 // Requests that the browser reply with the absolute path to the indicated
@@ -1405,7 +1460,7 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_FlashDRM_GetVoucherFile)
 // Reply message for GetVoucherFile which contains the CreateInfo for a
 // PPB_FileRef which points to the voucher file.
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_FlashDRM_GetVoucherFileReply,
-                     ppapi::FileRefCreateInfo /* file_info */)
+                     ppapi::PPB_FileRef_CreateInfo /* file_info */)
 
 // Gamepad.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_Gamepad_Create)
@@ -1767,18 +1822,12 @@ IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileRef_GetInfoForRenderer,
 // path information in either |file_system_url_spec| (for internal file systems)
 // or |external_path| (for external file systems).
 // Only sent from the browser to the renderer.
-IPC_MESSAGE_ROUTED2(
-    PpapiHostMsg_FileRef_GetInfoForRendererReply,
-    int32_t /* sequence */,
-    std::vector<ppapi::FileRefDetailedInfo> /* detailed_info */)
-
-// A synchronous version of the two above messages. This is required to support
-// some URL loading routes which must be executed synchronously.
-IPC_SYNC_MESSAGE_ROUTED2_1(
-    PpapiHostMsg_FileRef_SyncGetInfoForRenderer,
-    int /* child_process_id */,
-    std::vector<PP_Resource> /* resources */,
-    std::vector<ppapi::FileRefDetailedInfo> /* detailed_info */)
+IPC_MESSAGE_ROUTED5(PpapiHostMsg_FileRef_GetInfoForRendererReply,
+                    int32_t /* sequence */,
+                    std::vector<PP_Resource> /* resources */,
+                    std::vector<PP_FileSystemType> /* fs_type */,
+                    std::vector<std::string> /* file_system_url_spec */,
+                    std::vector<base::FilePath> /* external_path */)
 
 // Flash -----------------------------------------------------------------------
 

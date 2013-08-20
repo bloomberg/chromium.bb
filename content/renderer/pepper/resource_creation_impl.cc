@@ -8,6 +8,7 @@
 #include "content/renderer/pepper/ppb_audio_impl.h"
 #include "content/renderer/pepper/ppb_broker_impl.h"
 #include "content/renderer/pepper/ppb_buffer_impl.h"
+#include "content/renderer/pepper/ppb_file_ref_impl.h"
 #include "content/renderer/pepper/ppb_flash_message_loop_impl.h"
 #include "content/renderer/pepper/ppb_graphics_3d_impl.h"
 #include "content/renderer/pepper/ppb_image_data_impl.h"
@@ -69,6 +70,22 @@ PP_Resource ResourceCreationImpl::CreateBroker(PP_Instance instance) {
 PP_Resource ResourceCreationImpl::CreateBuffer(PP_Instance instance,
                                                uint32_t size) {
   return PPB_Buffer_Impl::Create(instance, size);
+}
+
+PP_Resource ResourceCreationImpl::CreateFileRef(
+    PP_Instance instance,
+    PP_Resource file_system,
+    const char* path) {
+  PPB_FileRef_Impl* res = PPB_FileRef_Impl::CreateInternal(
+      instance, file_system, path);
+  return res ? res->GetReference() : 0;
+}
+
+PP_Resource ResourceCreationImpl::CreateFileRef(
+    const ppapi::PPB_FileRef_CreateInfo& serialized) {
+  // When we're in-process, the host resource in the create info *is* the
+  // resource, so we don't need to do anything.
+  return serialized.resource.host_resource();
 }
 
 PP_Resource ResourceCreationImpl::CreateFlashDRM(PP_Instance instance) {

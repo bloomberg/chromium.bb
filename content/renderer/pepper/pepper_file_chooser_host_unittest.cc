@@ -17,8 +17,8 @@
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/proxy/resource_message_test_sink.h"
-#include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+#include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/resource_tracker.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -121,11 +121,13 @@ TEST_F(PepperFileChooserHostTest, Show) {
   PpapiPluginMsg_FileChooser_ShowReply::Schema::Param reply_msg_param;
   ASSERT_TRUE(PpapiPluginMsg_FileChooser_ShowReply::Read(&reply_msg,
                                                          &reply_msg_param));
-  const std::vector<ppapi::FileRefCreateInfo>& chooser_results =
+  const std::vector<ppapi::PPB_FileRef_CreateInfo>& chooser_results =
       reply_msg_param.a;
   ASSERT_EQ(1u, chooser_results.size());
+  // Note path is empty because this is an external filesystem.
+  EXPECT_EQ(std::string(), chooser_results[0].path);
   EXPECT_EQ(FilePathToUTF8(selected_info.display_name),
-            chooser_results[0].display_name);
+            chooser_results[0].name);
 }
 
 TEST_F(PepperFileChooserHostTest, NoUserGesture) {

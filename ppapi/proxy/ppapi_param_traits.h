@@ -17,6 +17,7 @@
 #include "ppapi/shared_impl/file_path.h"
 #include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
+#include "ppapi/shared_impl/ppb_file_ref_shared.h"
 #include "ppapi/shared_impl/socket_option_data.h"
 
 struct PP_FileInfo;
@@ -71,6 +72,15 @@ template<>
 struct PPAPI_PROXY_EXPORT ParamTraits<
     ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
   typedef ppapi::proxy::PPBFlash_DrawGlyphs_Params param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+// TODO(teravest): Remove this when we've switched over to the new proxy.
+template<>
+struct PPAPI_PROXY_EXPORT ParamTraits<ppapi::PPB_FileRef_CreateInfo> {
+  typedef ppapi::PPB_FileRef_CreateInfo param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);
@@ -138,6 +148,15 @@ template<>
 struct PPAPI_PROXY_EXPORT ParamTraits<
     std::vector<ppapi::proxy::SerializedVar> > {
   typedef std::vector<ppapi::proxy::SerializedVar> param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, PickleIterator* iter, param_type* r);
+  static void Log(const param_type& p, std::string* l);
+};
+
+template<>
+struct PPAPI_PROXY_EXPORT ParamTraits< std::vector<
+    ppapi::PPB_FileRef_CreateInfo> > {
+  typedef std::vector<ppapi::PPB_FileRef_CreateInfo> param_type;
   static void Write(Message* m, const param_type& p);
   static bool Read(const Message* m, PickleIterator* iter, param_type* r);
   static void Log(const param_type& p, std::string* l);

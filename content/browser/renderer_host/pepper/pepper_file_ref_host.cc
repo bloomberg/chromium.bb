@@ -62,9 +62,9 @@ PepperFileRefHost::PepperFileRefHost(BrowserPpapiHost* host,
   }
 
   fs_type_ = fs_host->GetType();
+  // TODO(teravest): Add support for isolated filesystems.
   if ((fs_type_ != PP_FILESYSTEMTYPE_LOCALPERSISTENT) &&
-      (fs_type_ != PP_FILESYSTEMTYPE_LOCALTEMPORARY) &&
-      (fs_type_ != PP_FILESYSTEMTYPE_ISOLATED)) {
+      (fs_type_ != PP_FILESYSTEMTYPE_LOCALTEMPORARY)) {
     DLOG(ERROR) << "Unsupported filesystem type: " << fs_type_;
     return;
   }

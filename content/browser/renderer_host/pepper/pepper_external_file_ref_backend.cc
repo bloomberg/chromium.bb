@@ -90,10 +90,7 @@ int32_t PepperExternalFileRefBackend::GetAbsolutePath(
     ppapi::host::ReplyMessageContext reply_context) {
   host_->SendReply(reply_context,
       PpapiPluginMsg_FileRef_GetAbsolutePathReply(path_.AsUTF8Unsafe()));
-
-  // Use PP_OK_COMPLETIONPENDING instead of PP_OK since we've already sent our
-  // reply above.
-  return PP_OK_COMPLETIONPENDING;
+  return PP_OK;
 }
 
 fileapi::FileSystemURL PepperExternalFileRefBackend::GetFileSystemURL() const {

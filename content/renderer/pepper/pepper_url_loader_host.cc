@@ -250,12 +250,8 @@ int32_t PepperURLLoaderHost::InternalOnHostMsgOpen(
   if (!frame)
     return PP_ERROR_FAILED;
   WebURLRequest web_request;
-  if (!CreateWebURLRequest(pp_instance(),
-                           &filled_in_request_data,
-                           frame,
-                           &web_request)) {
+  if (!CreateWebURLRequest(&filled_in_request_data, frame, &web_request))
     return PP_ERROR_FAILED;
-  }
   web_request.setRequestorProcessID(renderer_ppapi_host_->GetPluginPID());
 
   WebURLLoaderOptions options;
@@ -393,7 +389,6 @@ void PepperURLLoaderHost::SaveResponse(const WebURLResponse& response) {
     pending_response_ = true;
 
     DataFromWebURLResponse(
-        renderer_ppapi_host_,
         pp_instance(),
         response,
         base::Bind(&PepperURLLoaderHost::DidDataFromWebURLResponse,

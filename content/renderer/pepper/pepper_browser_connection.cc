@@ -34,10 +34,9 @@ bool PepperBrowserConnection::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(PepperBrowserConnection, msg)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_CreateResourceHostFromHostReply,
                         OnMsgCreateResourceHostFromHostReply)
-    IPC_MESSAGE_HANDLER(PpapiHostMsg_FileRef_GetInfoForRendererReply,
-                        OnMsgFileRefGetInfoReply)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+
   return handled;
 }
 
@@ -102,7 +101,10 @@ void PepperBrowserConnection::OnMsgCreateResourceHostFromHostReply(
 
 void PepperBrowserConnection::OnMsgFileRefGetInfoReply(
     int32_t sequence_number,
-    const std::vector<ppapi::FileRefDetailedInfo>& infos) {
+    const std::vector<PP_Resource>& resources,
+    const std::vector<PP_FileSystemType>& types,
+    const std::vector<std::string>& file_system_url_specs,
+    const std::vector<base::FilePath>& external_paths) {
   // Check that the message is destined for the plugin this object is associated
   // with.
   std::map<int32_t, FileRefGetInfoCallback>::iterator it =
@@ -110,7 +112,7 @@ void PepperBrowserConnection::OnMsgFileRefGetInfoReply(
   if (it != get_info_map_.end()) {
     FileRefGetInfoCallback callback = it->second;
     get_info_map_.erase(it);
-    callback.Run(infos);
+    callback.Run(resources, types, file_system_url_specs, external_paths);
   } else {
     NOTREACHED();
   }
