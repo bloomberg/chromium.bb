@@ -39,6 +39,9 @@ from third_party.depot_tools import fix_encoding
 from third_party.depot_tools import subcommand
 
 
+__version__ = '0.1'
+
+
 PATH_VARIABLES = ('DEPTH', 'PRODUCT_DIR')
 
 # Files that should be 0-length when mapped.
@@ -2378,7 +2381,7 @@ class OptionParserIsolate(trace_inputs.OptionParserWithLogging):
 def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
-    return dispatcher.execute(OptionParserIsolate(), argv)
+    return dispatcher.execute(OptionParserIsolate(version=__version__), argv)
   except (
       ExecutionError,
       run_isolated.MappingError,

@@ -52,6 +52,9 @@ elif sys.platform == 'darwin':
   import MacOS  # pylint: disable=F0401
 
 
+__version__ = '0.1'
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(os.path.dirname(BASE_DIR))
 
@@ -3796,7 +3799,8 @@ class OptionParserTraceInputs(OptionParserWithLogging):
 def main(argv):
   dispatcher = subcommand.CommandDispatcher(__name__)
   try:
-    return dispatcher.execute(OptionParserTraceInputs(), argv)
+    return dispatcher.execute(
+        OptionParserTraceInputs(version=__version__), argv)
   except TracingFailure, e:
     sys.stderr.write('\nError: ')
     sys.stderr.write(str(e))
