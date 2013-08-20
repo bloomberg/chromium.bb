@@ -68,6 +68,8 @@ class PepperExternalFileRefBackend : public PepperFileRefBackend {
   scoped_refptr<base::TaskRunner> task_runner_;
 
   base::WeakPtrFactory<PepperExternalFileRefBackend> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PepperExternalFileRefBackend);
 };
 
 }  // namespace content

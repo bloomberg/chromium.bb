@@ -144,8 +144,8 @@ PepperFileIOHost::PepperFileIOHost(RendererPpapiHost* host,
       quota_policy_(quota::kQuotaLimitTypeUnknown),
       is_running_in_process_(host->IsRunningInProcess()),
       open_flags_(0),
-      weak_factory_(this),
-      routing_id_(RenderThreadImpl::current()->GenerateRoutingID()) {
+      routing_id_(RenderThreadImpl::current()->GenerateRoutingID()),
+      weak_factory_(this) {
       ChildThread::current()->AddRoute(routing_id_, this);
 }
 

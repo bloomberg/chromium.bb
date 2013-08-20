@@ -71,8 +71,6 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
 
   RendererPpapiHost* renderer_ppapi_host_;
 
-  base::WeakPtrFactory<PepperVideoSourceHost> weak_factory_;
-
   ppapi::host::ReplyMessageContext reply_context_;
 
   scoped_ptr<VideoSourceHandler> source_handler_;
@@ -80,6 +78,8 @@ class CONTENT_EXPORT PepperVideoSourceHost : public ppapi::host::ResourceHost {
   std::string stream_url_;
   scoped_ptr<cricket::VideoFrame> last_frame_;
   bool get_frame_pending_;
+
+  base::WeakPtrFactory<PepperVideoSourceHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoSourceHost);
 };

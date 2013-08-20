@@ -40,9 +40,9 @@ class CONTENT_EXPORT PepperVideoDestinationHost
 
   RendererPpapiHost* renderer_ppapi_host_;
 
-  base::WeakPtrFactory<PepperVideoDestinationHost> weak_factory_;
-
   scoped_ptr<FrameWriterInterface> frame_writer_;
+
+  base::WeakPtrFactory<PepperVideoDestinationHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperVideoDestinationHost);
 };

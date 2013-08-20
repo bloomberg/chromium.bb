@@ -50,12 +50,13 @@ class PepperFileSystemHost :
 
   RendererPpapiHost* renderer_ppapi_host_;
   ppapi::host::ReplyMessageContext reply_context_;
-  base::WeakPtrFactory<PepperFileSystemHost> weak_factory_;
 
   PP_FileSystemType type_;
   bool opened_;  // whether open is successful.
   GURL root_url_;
   bool called_open_;  // whether open has been called.
+
+  base::WeakPtrFactory<PepperFileSystemHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileSystemHost);
 };

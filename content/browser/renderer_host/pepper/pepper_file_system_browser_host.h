@@ -60,13 +60,14 @@ class PepperFileSystemBrowserHost :
       const std::string& fsid);
 
   BrowserPpapiHost* browser_ppapi_host_;
-  base::WeakPtrFactory<PepperFileSystemBrowserHost> weak_factory_;
 
   PP_FileSystemType type_;
   bool opened_;  // whether open is successful.
   GURL root_url_;
   scoped_refptr<fileapi::FileSystemContext> fs_context_;
   bool called_open_;  // whether open has been called.
+
+  base::WeakPtrFactory<PepperFileSystemBrowserHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileSystemBrowserHost);
 };

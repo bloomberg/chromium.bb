@@ -58,11 +58,11 @@ PepperFileSystemBrowserHost::PepperFileSystemBrowserHost(BrowserPpapiHost* host,
                                                          PP_FileSystemType type)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       browser_ppapi_host_(host),
-      weak_factory_(this),
       type_(type),
       opened_(false),
       fs_context_(NULL),
-      called_open_(false) {
+      called_open_(false),
+      weak_factory_(this) {
 }
 
 PepperFileSystemBrowserHost::~PepperFileSystemBrowserHost() {

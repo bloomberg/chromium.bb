@@ -65,10 +65,10 @@ PepperVideoSourceHost::PepperVideoSourceHost(
     PP_Resource resource)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      weak_factory_(this),
       source_handler_(new VideoSourceHandler(NULL)),
-      frame_receiver_(new FrameReceiver(weak_factory_.GetWeakPtr())),
-      get_frame_pending_(false) {
+      get_frame_pending_(false),
+      weak_factory_(this) {
+  frame_receiver_ = new FrameReceiver(weak_factory_.GetWeakPtr());
 }
 
 PepperVideoSourceHost::~PepperVideoSourceHost() {

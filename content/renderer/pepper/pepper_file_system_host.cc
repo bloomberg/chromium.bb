@@ -48,10 +48,10 @@ PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
                                            PP_FileSystemType type)
     : ResourceHost(host->GetPpapiHost(), instance, resource),
       renderer_ppapi_host_(host),
-      weak_factory_(this),
       type_(type),
       opened_(false),
-      called_open_(false) {
+      called_open_(false),
+      weak_factory_(this) {
 }
 
 PepperFileSystemHost::~PepperFileSystemHost() {
