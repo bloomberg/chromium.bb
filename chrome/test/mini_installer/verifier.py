@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import file_verifier
 import registry_verifier
 
 
@@ -16,7 +17,9 @@ def Verify(property):
     property: A property dictionary.
   """
   for verifier_name, value in property.iteritems():
-    if verifier_name == 'RegistryEntries':
+    if verifier_name == 'Files':
+      file_verifier.VerifyFiles(value)
+    elif verifier_name == 'RegistryEntries':
       registry_verifier.VerifyRegistryEntries(value)
     else:
       # TODO(sukolsak): Implement other verifiers

@@ -15,6 +15,7 @@ import os
 import subprocess
 import unittest
 
+import path_resolver
 import verifier
 
 
@@ -102,7 +103,11 @@ class InstallerTest(unittest.TestCase):
       raise AssertionError("In state '%s', %s" % (state, e))
 
   def _RunCommand(self, command):
-    subprocess.call(command, shell=True)
+    exit_status = subprocess.call(path_resolver.ResolvePath(command),
+                                  shell=True)
+    if exit_status != 0:
+      self.fail('Command %s returned non-zero exit status %s' % (command,
+                                                                 exit_status))
 
 
 def MergePropertyDictionaries(current_property, new_property):
