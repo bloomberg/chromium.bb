@@ -8,7 +8,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/translate_accept_languages.h"
@@ -421,20 +420,10 @@ void TranslatePrefs::CreateBlockedLanguages(
     result.insert(*it);
   }
 
-  const std::string& app_locale = g_browser_process->GetApplicationLocale();
-  std::string ui_lang = TranslateManager::GetLanguageCode(app_locale);
-  bool is_ui_english = StartsWithASCII(ui_lang, "en", false);
-
   for (std::vector<std::string>::const_iterator it = accept_languages.begin();
        it != accept_languages.end(); ++it) {
     std::string lang = *it;
     TranslateUtil::ToTranslateLanguageSynonym(&lang);
-
-    // Regarding http://crbug.com/36182, even though English exists in Accept
-    // language list, English could be translated on non-English locale.
-    if (lang == "en" && !is_ui_english)
-      continue;
-
     result.insert(lang);
   }
 

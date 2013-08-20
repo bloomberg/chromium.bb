@@ -8,12 +8,15 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/browser_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-TEST(TranslatePrefsTest, CreateBlockedLanguages) {
-  g_browser_process->SetApplicationLocale("en-US");
+class TranslatePrefsTest : public testing::Test {
+ public:
+  TranslatePrefsTest() {}
+  virtual ~TranslatePrefsTest() {}
+};
 
+TEST_F(TranslatePrefsTest, CreateBlockedLanguages) {
   std::vector<std::string> blacklisted_languages;
   blacklisted_languages.push_back("en");
   blacklisted_languages.push_back("fr");
@@ -45,59 +48,6 @@ TEST(TranslatePrefsTest, CreateBlockedLanguages) {
   expected.push_back("ht");
   expected.push_back("ja");
   expected.push_back("tl");
-  expected.push_back("zh");
-
-  EXPECT_EQ(expected.size(), blocked_languages.size());
-  for (std::vector<std::string>::const_iterator it = expected.begin();
-       it != expected.end(); ++it) {
-    EXPECT_NE(blocked_languages.end(),
-              std::find(blocked_languages.begin(),
-                        blocked_languages.end(),
-                        *it));
-  }
-}
-
-TEST(TranslatePrefsTest, CreateBlockedLanguagesNonEnglishUI) {
-  std::vector<std::string> blacklisted_languages;
-  blacklisted_languages.push_back("fr");
-
-  std::vector<std::string> accept_languages;
-  accept_languages.push_back("en");
-  accept_languages.push_back("ja");
-  accept_languages.push_back("zh");
-
-  // Run in an English locale.
-  g_browser_process->SetApplicationLocale("en");
-  std::vector<std::string> blocked_languages;
-  TranslatePrefs::CreateBlockedLanguages(&blocked_languages,
-                                         blacklisted_languages,
-                                         accept_languages);
-  std::vector<std::string> expected;
-  expected.push_back("en");
-  expected.push_back("fr");
-  expected.push_back("ja");
-  expected.push_back("zh");
-
-  EXPECT_EQ(expected.size(), blocked_languages.size());
-  for (std::vector<std::string>::const_iterator it = expected.begin();
-       it != expected.end(); ++it) {
-    EXPECT_NE(blocked_languages.end(),
-              std::find(blocked_languages.begin(),
-                        blocked_languages.end(),
-                        *it));
-  }
-
-  // Run in a Japanese locale.
-  // English should not be included in the result even though Accept Languages
-  // has English because the UI is not English.
-  g_browser_process->SetApplicationLocale("ja");
-  blocked_languages.clear();
-  TranslatePrefs::CreateBlockedLanguages(&blocked_languages,
-                                         blacklisted_languages,
-                                         accept_languages);
-  expected.clear();
-  expected.push_back("fr");
-  expected.push_back("ja");
   expected.push_back("zh");
 
   EXPECT_EQ(expected.size(), blocked_languages.size());
