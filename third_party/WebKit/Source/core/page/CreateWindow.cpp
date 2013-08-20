@@ -73,7 +73,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
     if (!oldPage)
         return 0;
 
-    Page* page = oldPage->chrome().client()->createWindow(openerFrame, request, features);
+    Page* page = oldPage->chrome().client().createWindow(openerFrame, request, features);
     if (!page)
         return 0;
 

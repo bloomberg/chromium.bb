@@ -1094,7 +1094,7 @@ void FrameView::layout(bool allowSubtree)
     ASSERT(frame());
     // ASSERT(frame()->page());
     if (frame() && frame()->page())
-        frame()->page()->chrome().client()->layoutUpdated(frame());
+        frame()->page()->chrome().client().layoutUpdated(frame());
 }
 
 RenderBox* FrameView::embeddedContentBox() const
@@ -1515,7 +1515,7 @@ void FrameView::setScrollPosition(const IntPoint& scrollPoint)
 
     Page* page = m_frame->page();
     if (page && RuntimeEnabledFeatures::programmaticScrollNotificationsEnabled())
-        page->chrome().client()->didProgrammaticallyScroll(m_frame.get(), newScrollPosition);
+        page->chrome().client().didProgrammaticallyScroll(m_frame.get(), newScrollPosition);
 
     if (requestScrollPositionUpdate(newScrollPosition))
         return;
@@ -1583,7 +1583,7 @@ bool FrameView::shouldRubberBandInDirection(ScrollDirection direction) const
     Page* page = frame() ? frame()->page() : 0;
     if (!page)
         return ScrollView::shouldRubberBandInDirection(direction);
-    return page->chrome().client()->shouldRubberBandInDirection(direction);
+    return page->chrome().client().shouldRubberBandInDirection(direction);
 }
 
 bool FrameView::isRubberBandInProgress() const
@@ -2625,10 +2625,8 @@ void FrameView::updateAnnotatedRegions()
     if (newRegions == document->annotatedRegions())
         return;
     document->setAnnotatedRegions(newRegions);
-    Page* page = m_frame->page();
-    if (!page)
-        return;
-    page->chrome().client()->annotatedRegionsChanged();
+    if (Page* page = m_frame->page())
+        page->chrome().client().annotatedRegionsChanged();
 }
 
 void FrameView::updateScrollCorner()
@@ -2932,7 +2930,7 @@ void FrameView::paintOverhangAreas(GraphicsContext* context, const IntRect& hori
 
     Page* page = m_frame->page();
     if (page->mainFrame() == m_frame) {
-        if (page->chrome().client()->paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
+        if (page->chrome().client().paintCustomOverhangArea(context, horizontalOverhangArea, verticalOverhangArea, dirtyRect))
             return;
     }
 

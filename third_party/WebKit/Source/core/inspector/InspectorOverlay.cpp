@@ -59,19 +59,19 @@ namespace {
 
 class InspectorOverlayChromeClient: public EmptyChromeClient {
 public:
-    InspectorOverlayChromeClient(ChromeClient* client, InspectorOverlay* overlay)
+    InspectorOverlayChromeClient(ChromeClient& client, InspectorOverlay* overlay)
         : m_client(client)
         , m_overlay(overlay)
     { }
 
     virtual void setCursor(const Cursor& cursor)
     {
-        m_client->setCursor(cursor);
+        m_client.setCursor(cursor);
     }
 
     virtual void setToolTip(const String& tooltip, TextDirection direction)
     {
-        m_client->setToolTip(tooltip, direction);
+        m_client.setToolTip(tooltip, direction);
     }
 
     virtual void invalidateRootView(const IntRect& rect)
@@ -88,8 +88,9 @@ public:
     {
         m_overlay->invalidate();
     }
+
 private:
-    ChromeClient* m_client;
+    ChromeClient& m_client;
     InspectorOverlay* m_overlay;
 };
 

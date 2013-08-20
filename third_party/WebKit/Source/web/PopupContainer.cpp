@@ -185,24 +185,22 @@ IntRect PopupContainer::layoutAndCalculateWidgetRect(int targetControlHeight, co
     IntSize targetSize(m_listBox->width() + borderSize * 2, m_listBox->height() + borderSize * 2);
 
     IntRect widgetRectInScreen;
-    if (ChromeClient* client = chromeClient()) {
-        // If the popup would extend past the bottom of the screen, open upwards
-        // instead.
-        FloatRect screen = screenAvailableRect(m_frameView.get());
-        // Use popupInitialCoordinate.x() + rightOffset because RTL position
-        // needs to be considered.
-        widgetRectInScreen = client->rootViewToScreen(IntRect(popupInitialCoordinate.x() + rightOffset, popupInitialCoordinate.y() + verticalForRTLOffset, targetSize.width(), targetSize.height()));
+    // If the popup would extend past the bottom of the screen, open upwards
+    // instead.
+    FloatRect screen = screenAvailableRect(m_frameView.get());
+    // Use popupInitialCoordinate.x() + rightOffset because RTL position
+    // needs to be considered.
+    widgetRectInScreen = chromeClient().rootViewToScreen(IntRect(popupInitialCoordinate.x() + rightOffset, popupInitialCoordinate.y() + verticalForRTLOffset, targetSize.width(), targetSize.height()));
 
-        // If we have multiple screens and the browser rect is in one screen, we
-        // have to clip the window width to the screen width.
-        // When clipping, we also need to set a maximum width for the list box.
-        FloatRect windowRect = client->windowRect();
+    // If we have multiple screens and the browser rect is in one screen, we
+    // have to clip the window width to the screen width.
+    // When clipping, we also need to set a maximum width for the list box.
+    FloatRect windowRect = chromeClient().windowRect();
 
-        bool needToResizeView = false;
-        widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, rtlOffset, verticalOffset, transformOffset, m_listBox.get(), needToResizeView);
-        if (needToResizeView)
-            fitToListBox();
-    }
+    bool needToResizeView = false;
+    widgetRectInScreen = layoutAndCalculateWidgetRectInternal(widgetRectInScreen, targetControlHeight, windowRect, screen, isRTL, rtlOffset, verticalOffset, transformOffset, m_listBox.get(), needToResizeView);
+    if (needToResizeView)
+        fitToListBox();
 
     return widgetRectInScreen;
 }
@@ -212,11 +210,9 @@ void PopupContainer::showPopup(FrameView* view)
     m_frameView = view;
     listBox()->m_focusedElement = m_frameView->frame()->document()->focusedElement();
 
-    if (ChromeClient* client = chromeClient()) {
-        IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());
-        client->popupOpened(this, layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())), false);
-        m_popupOpen = true;
-    }
+    IntSize transformOffset(m_controlPosition.p4().x() - m_controlPosition.p1().x(), m_controlPosition.p4().y() - m_controlPosition.p1().y() - m_controlSize.height());
+    chromeClient().popupOpened(this, layoutAndCalculateWidgetRect(m_controlSize.height(), transformOffset, roundedIntPoint(m_controlPosition.p4())), false);
+    m_popupOpen = true;
 
     if (!m_listBox->parent())
         addChild(m_listBox.get());
@@ -240,7 +236,7 @@ void PopupContainer::notifyPopupHidden()
     if (!m_popupOpen)
         return;
     m_popupOpen = false;
-    chromeClient()->popupClosed(this);
+    chromeClient().popupClosed(this);
 }
 
 void PopupContainer::fitToListBox()
@@ -367,7 +363,7 @@ bool PopupContainer::isInterestedInEventForKey(int keyCode)
     return m_listBox->isInterestedInEventForKey(keyCode);
 }
 
-ChromeClient* PopupContainer::chromeClient()
+ChromeClient& PopupContainer::chromeClient()
 {
     return m_frameView->frame()->page()->chrome().client();
 }

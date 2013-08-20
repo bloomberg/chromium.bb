@@ -200,7 +200,7 @@ void Internals::resetToConsistentState(Page* page)
     WebCore::Settings::setUsesOverlayScrollbars(false);
     delete s_pagePopupDriver;
     s_pagePopupDriver = 0;
-    page->chrome().client()->resetPagePopupDriver();
+    page->chrome().client().resetPagePopupDriver();
     if (!page->mainFrame()->editor()->isContinuousSpellCheckingEnabled())
         page->mainFrame()->editor()->toggleContinuousSpellChecking();
     if (page->mainFrame()->editor()->isOverwriteModeEnabled())
@@ -774,12 +774,12 @@ void Internals::setEnableMockPagePopup(bool enabled, ExceptionState& es)
         return;
     Page* page = document->page();
     if (!enabled) {
-        page->chrome().client()->resetPagePopupDriver();
+        page->chrome().client().resetPagePopupDriver();
         return;
     }
     if (!s_pagePopupDriver)
         s_pagePopupDriver = MockPagePopupDriver::create(page->mainFrame()).leakPtr();
-    page->chrome().client()->setPagePopupDriver(s_pagePopupDriver);
+    page->chrome().client().setPagePopupDriver(s_pagePopupDriver);
 }
 
 PassRefPtr<PagePopupController> Internals::pagePopupController()

@@ -331,15 +331,7 @@ void AutofillPopupMenuClient::setSuggestions(const WebVector<WebString>& names,
 
 WebViewImpl* AutofillPopupMenuClient::getWebView() const
 {
-    Frame* frame = m_textField->document()->frame();
-    if (!frame)
-        return 0;
-
-    Page* page = frame->page();
-    if (!page)
-        return 0;
-
-    return static_cast<WebViewImpl*>(page->chrome().client()->webView());
+    return WebViewImpl::fromPage(m_textField->document()->page());
 }
 
 RenderStyle* AutofillPopupMenuClient::textFieldStyle() const

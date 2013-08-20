@@ -240,7 +240,7 @@ void FullscreenElementStack::requestFullScreenForElement(Element* element, unsig
         // 5. Return, and run the remaining steps asynchronously.
         // 6. Optionally, perform some animation.
         m_areKeysEnabledInFullScreen = flags & Element::ALLOW_KEYBOARD_INPUT;
-        document()->page()->chrome().client()->enterFullScreenForElement(element);
+        document()->page()->chrome().client().enterFullScreenForElement(element);
 
         // 7. Optionally, display a message indicating how the user can exit displaying the context object fullscreen.
         return;
@@ -331,12 +331,12 @@ void FullscreenElementStack::webkitExitFullscreen()
     // Only exit out of full screen window mode if there are no remaining elements in the
     // full screen stack.
     if (!newTop) {
-        document()->page()->chrome().client()->exitFullScreenForElement(m_fullScreenElement.get());
+        document()->page()->chrome().client().exitFullScreenForElement(m_fullScreenElement.get());
         return;
     }
 
     // Otherwise, notify the chrome of the new full screen element.
-    document()->page()->chrome().client()->enterFullScreenForElement(newTop);
+    document()->page()->chrome().client().enterFullScreenForElement(newTop);
 }
 
 bool FullscreenElementStack::webkitFullscreenEnabled(Document* document)

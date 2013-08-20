@@ -184,7 +184,7 @@ PassOwnPtr<GraphicsLayer> RenderLayerBacking::createGraphicsLayer(CompositingRea
 {
     GraphicsLayerFactory* graphicsLayerFactory = 0;
     if (Page* page = renderer()->frame()->page())
-        graphicsLayerFactory = page->chrome().client()->graphicsLayerFactory();
+        graphicsLayerFactory = page->chrome().client().graphicsLayerFactory();
 
     OwnPtr<GraphicsLayer> graphicsLayer = GraphicsLayer::create(graphicsLayerFactory, this);
 

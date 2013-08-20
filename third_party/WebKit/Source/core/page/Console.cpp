@@ -78,7 +78,7 @@ static void internalAddMessage(Page* page, MessageType type, MessageLevel level,
     InspectorInstrumentation::addMessageToConsole(page, ConsoleAPIMessageSource, type, level, message, state, arguments);
 
     if (gotMessage)
-        page->chrome().client()->addMessageToConsole(ConsoleAPIMessageSource, type, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
+        page->chrome().client().addMessageToConsole(ConsoleAPIMessageSource, type, level, message, lastCaller.lineNumber(), lastCaller.sourceURL());
 }
 
 void Console::debug(ScriptState* state, PassRefPtr<ScriptArguments> arguments)

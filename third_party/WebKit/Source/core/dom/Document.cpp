@@ -4831,7 +4831,7 @@ void Document::didAddTouchEventHandler(Node* handler)
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
             scrollingCoordinator->touchEventTargetRectsDidChange(this);
         if (m_touchEventTargets->size() == 1)
-            page->chrome().client()->needTouchEvents(true);
+            page->chrome().client().needTouchEvents(true);
     }
 }
 
@@ -4857,7 +4857,7 @@ void Document::didRemoveTouchEventHandler(Node* handler)
         if (frame->document() && frame->document()->hasTouchEventHandlers())
             return;
     }
-    page->chrome().client()->needTouchEvents(false);
+    page->chrome().client().needTouchEvents(false);
 }
 
 void Document::didRemoveEventTargetNode(Node* handler)
@@ -5197,7 +5197,7 @@ void Document::didAssociateFormControlsTimerFired(Timer<Document>* timer)
     Vector<RefPtr<Element> > associatedFormControls;
     copyToVector(m_associatedFormControls, associatedFormControls);
 
-    frame()->page()->chrome().client()->didAssociateFormControls(associatedFormControls);
+    frame()->page()->chrome().client().didAssociateFormControls(associatedFormControls);
     m_associatedFormControls.clear();
 }
 

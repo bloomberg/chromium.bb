@@ -943,9 +943,7 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
     if (!obj || !obj->document() || !obj->documentFrameView() || !obj->documentFrameView()->frame() || !obj->documentFrameView()->frame()->page())
         return;
 
-    ChromeClient* client = obj->documentFrameView()->frame()->page()->chrome().client();
-    if (!client)
-        return;
+    ChromeClient& client = obj->documentFrameView()->frame()->page()->chrome().client();
 
     switch (notification) {
     case AXActiveDescendantChanged:
@@ -978,7 +976,7 @@ void AXObjectCache::postPlatformNotification(AccessibilityObject* obj, AXNotific
         break;
     }
 
-    client->postAccessibilityNotification(obj, notification);
+    client.postAccessibilityNotification(obj, notification);
 }
 
 void AXObjectCache::nodeTextChangePlatformNotification(AccessibilityObject*, AXTextChange, unsigned, const String&)

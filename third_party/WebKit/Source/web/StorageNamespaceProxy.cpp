@@ -53,7 +53,7 @@ PassOwnPtr<StorageArea> StorageNamespace::localStorageArea(SecurityOrigin* origi
 
 PassOwnPtr<StorageNamespace> StorageNamespace::sessionStorageNamespace(Page* page)
 {
-    WebKit::WebViewClient* webViewClient = static_cast<WebKit::WebViewImpl*>(page->chrome().client()->webView())->client();
+    WebKit::WebViewClient* webViewClient = WebKit::WebViewImpl::fromPage(page)->client();
     return adoptPtr(new StorageNamespaceProxy(adoptPtr(webViewClient->createSessionStorageNamespace())));
 }
 

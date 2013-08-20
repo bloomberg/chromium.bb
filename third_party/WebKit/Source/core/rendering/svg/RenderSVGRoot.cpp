@@ -113,19 +113,10 @@ bool RenderSVGRoot::isEmbeddedThroughSVGImage() const
     if (!node())
         return false;
 
-    Frame* frame = node()->document()->frame();
-    if (!frame)
-        return false;
-
     // Test whether we're embedded through an img.
-    if (!frame->page())
-        return false;
-
-    ChromeClient* chromeClient = frame->page()->chrome().client();
-    if (!chromeClient || !chromeClient->isSVGImageChromeClient())
-        return false;
-
-    return true;
+    if (Page* page = node()->document()->page())
+        return page->chrome().client().isSVGImageChromeClient();
+    return false;
 }
 
 bool RenderSVGRoot::isEmbeddedThroughFrameContainingSVGDocument() const

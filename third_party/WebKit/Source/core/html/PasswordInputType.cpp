@@ -55,9 +55,9 @@ HTMLElement* PasswordInputType::passwordGeneratorButtonElement() const
 
 bool PasswordInputType::isPasswordGenerationEnabled() const
 {
-    Document* document = element()->document();
-    ChromeClient* chromeClient = document->page() ? document->page()->chrome().client() : 0;
-    return chromeClient && chromeClient->isPasswordGenerationEnabled();
+    if (Page* page = element()->document()->page())
+        return page->chrome().client().isPasswordGenerationEnabled();
+    return false;
 }
 
 bool PasswordInputType::needsContainer() const

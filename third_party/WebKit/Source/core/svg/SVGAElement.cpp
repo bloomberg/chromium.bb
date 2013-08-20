@@ -222,11 +222,9 @@ bool SVGAElement::isKeyboardFocusable() const
     if (!isFocusable())
         return false;
 
-    Page* page = document()->page();
-    if (!page)
-        return false;
-
-    return page->chrome().client()->tabsToLinks();
+    if (Page* page = document()->page())
+        return page->chrome().client().tabsToLinks();
+    return false;
 }
 
 bool SVGAElement::childShouldCreateRenderer(const NodeRenderingContext& childContext) const

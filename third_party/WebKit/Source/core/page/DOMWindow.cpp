@@ -265,7 +265,7 @@ FloatRect DOMWindow::adjustWindowRect(Page* page, const FloatRect& pendingChange
     if (!std::isnan(pendingChanges.height()))
         window.setHeight(pendingChanges.height());
 
-    FloatSize minimumSize = page->chrome().client()->minimumWindowSize();
+    FloatSize minimumSize = page->chrome().client().minimumWindowSize();
     // Let size 0 pass through, since that indicates default size, not minimum size.
     if (window.width())
         window.setWidth(min(max(minimumSize.width(), window.width()), screen.width()));
@@ -362,7 +362,7 @@ void DOMWindow::setDocument(PassRefPtr<Document> document)
     if (m_frame->page() && m_frame->page()->mainFrame() == m_frame) {
         m_frame->page()->mainFrame()->notifyChromeClientWheelEventHandlerCountChanged();
         if (m_document->hasTouchEventHandlers())
-            m_frame->page()->chrome().client()->needTouchEvents(true);
+            m_frame->page()->chrome().client().needTouchEvents(true);
     }
 }
 

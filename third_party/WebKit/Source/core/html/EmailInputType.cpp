@@ -80,11 +80,10 @@ String EmailInputType::convertEmailAddressToUnicode(const String& address) const
     if (address.find("xn--", atPosition + 1) == notFound)
         return address;
 
-    ChromeClient* chromeClient = chrome() ? chrome()->client() : 0;
-    if (!chromeClient)
+    if (!chrome())
         return address;
 
-    String languages = chromeClient->acceptLanguages();
+    String languages = chrome()->client().acceptLanguages();
     String unicodeHost = WebKit::Platform::current()->convertIDNToUnicode(address.substring(atPosition + 1), languages);
     StringBuilder builder;
     builder.append(address, 0, atPosition + 1);

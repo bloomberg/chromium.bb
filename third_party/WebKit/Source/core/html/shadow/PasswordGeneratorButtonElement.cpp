@@ -171,8 +171,8 @@ void PasswordGeneratorButtonElement::defaultEventHandler(Event* event)
 
     RefPtr<PasswordGeneratorButtonElement> protector(this);
     if (event->type() == eventNames().clickEvent) {
-        if (ChromeClient* chromeClient = document()->page() ? document()->page()->chrome().client() : 0)
-            chromeClient->openPasswordGenerator(input.get());
+        if (Page* page = document()->page())
+            page->chrome().client().openPasswordGenerator(input.get());
         event->setDefaultHandled();
     }
 

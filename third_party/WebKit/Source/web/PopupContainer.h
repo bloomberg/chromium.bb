@@ -129,7 +129,7 @@ private:
     void fitToListBox();
 
     // Returns the ChromeClient of the page this popup is associated with.
-    ChromeClient* chromeClient();
+    ChromeClient& chromeClient();
 
     RefPtr<PopupListBox> m_listBox;
     RefPtr<FrameView> m_frameView;

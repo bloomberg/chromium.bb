@@ -161,7 +161,7 @@ static bool canRunModalIfDuringPageDismissal(Page* page, ChromeClient::DialogTyp
     for (Frame* frame = page->mainFrame(); frame; frame = frame->tree()->traverseNext()) {
         Document::PageDismissalType dismissal = frame->document()->pageDismissalEventBeingDispatched();
         if (dismissal != Document::NoDismissal)
-            return page->chrome().client()->shouldRunModalDialogDuringPageDismissal(dialog, message, dismissal);
+            return page->chrome().client().shouldRunModalDialogDuringPageDismissal(dialog, message, dismissal);
     }
     return true;
 }

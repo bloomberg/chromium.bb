@@ -270,8 +270,7 @@ void RenderLayerCompositor::cacheAcceleratedCompositingFlags()
         // on a chrome that doesn't allow accelerated compositing.
         if (hasAcceleratedCompositing) {
             if (Page* page = this->page()) {
-                ChromeClient* chromeClient = page->chrome().client();
-                m_compositingTriggers = chromeClient->allowedCompositingTriggers();
+                m_compositingTriggers = page->chrome().client().allowedCompositingTriggers();
                 hasAcceleratedCompositing = m_compositingTriggers;
             }
         }
@@ -315,7 +314,7 @@ void RenderLayerCompositor::didChangeVisibleRect()
     IntRect visibleRect = m_containerLayer ? IntRect(IntPoint(), frameView->contentsSize()) : frameView->visibleContentRect();
     if (rootLayer->visibleRectChangeRequiresFlush(visibleRect)) {
         if (Page* page = this->page())
-            page->chrome().client()->scheduleCompositingLayerFlush();
+            page->chrome().client().scheduleCompositingLayerFlush();
     }
 }
 
@@ -2369,8 +2368,7 @@ void RenderLayerCompositor::attachRootLayer(RootLayerAttachment attachment)
             Page* page = frame ? frame->page() : 0;
             if (!page)
                 return;
-
-            page->chrome().client()->attachRootGraphicsLayer(frame, rootGraphicsLayer());
+            page->chrome().client().attachRootGraphicsLayer(frame, rootGraphicsLayer());
             break;
         }
         case RootLayerAttachedViaEnclosingFrame: {
@@ -2407,8 +2405,7 @@ void RenderLayerCompositor::detachRootLayer()
         Page* page = frame ? frame->page() : 0;
         if (!page)
             return;
-
-        page->chrome().client()->attachRootGraphicsLayer(frame, 0);
+        page->chrome().client().attachRootGraphicsLayer(frame, 0);
     }
     break;
     case RootLayerUnattached:
@@ -2602,8 +2599,7 @@ ScrollingCoordinator* RenderLayerCompositor::scrollingCoordinator() const
 GraphicsLayerFactory* RenderLayerCompositor::graphicsLayerFactory() const
 {
     if (Page* page = this->page())
-        return page->chrome().client()->graphicsLayerFactory();
-
+        return page->chrome().client().graphicsLayerFactory();
     return 0;
 }
 

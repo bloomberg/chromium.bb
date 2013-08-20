@@ -58,7 +58,7 @@ public:
 
     static PassOwnPtr<Chrome> create(Page*, ChromeClient*);
 
-    ChromeClient* client() { return m_client; }
+    ChromeClient& client() { return *m_client; }
 
     // HostWindow methods.
     virtual void invalidateContentsAndRootView(const IntRect&) OVERRIDE;
