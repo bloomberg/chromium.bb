@@ -84,11 +84,6 @@ void CryptoHandshakeMessage::MarkDirty() {
   serialized_.reset();
 }
 
-void CryptoHandshakeMessage::Insert(QuicTagValueMap::const_iterator begin,
-                                    QuicTagValueMap::const_iterator end) {
-  tag_value_map_.insert(begin, end);
-}
-
 void CryptoHandshakeMessage::SetTaglist(QuicTag tag, ...) {
   // Warning, if sizeof(QuicTag) > sizeof(int) then this function will break
   // because the terminating 0 will only be promoted to int.
@@ -326,8 +321,7 @@ string CryptoHandshakeMessage::DebugStringInternal(size_t indent) const {
 }
 
 QuicCryptoNegotiatedParameters::QuicCryptoNegotiatedParameters()
-    : version(0),
-      key_exchange(0),
+    : key_exchange(0),
       aead(0) {
 }
 

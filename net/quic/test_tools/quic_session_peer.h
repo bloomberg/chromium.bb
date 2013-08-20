@@ -5,8 +5,8 @@
 #ifndef NET_QUIC_TEST_TOOLS_QUIC_SESSION_PEER_H_
 #define NET_QUIC_TEST_TOOLS_QUIC_SESSION_PEER_H_
 
-#include "net/quic/blocked_list.h"
 #include "net/quic/quic_protocol.h"
+#include "net/spdy/write_blocked_list.h"
 
 namespace net {
 
@@ -19,9 +19,7 @@ class QuicSessionPeer {
  public:
   static void SetNextStreamId(QuicSession* session, QuicStreamId id);
   static void SetMaxOpenStreams(QuicSession* session, uint32 max_streams);
-  static ReliableQuicStream* CreateIncomingReliableStream(QuicSession* session,
-                                                          QuicStreamId id);
-  static BlockedList<QuicStreamId>* GetWriteblockedStreams(
+  static WriteBlockedList<QuicStreamId>* GetWriteblockedStreams(
       QuicSession* session);
 
  private:

@@ -36,8 +36,6 @@ namespace test {
 const QuicPacketSequenceNumber kEpoch = GG_UINT64_C(1) << 48;
 const QuicPacketSequenceNumber kMask = kEpoch - 1;
 
-// Index into the flags offset in the header.
-const size_t kPublicFlagsOffset = 0;
 // Index into the guid offset in the header.
 const size_t kGuidOffset = kPublicFlagsSize;
 // Index into the version string in the header. (if present).
@@ -388,13 +386,6 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_FALSE(framer_.ProcessPacket(encrypted)) << "len: " << len;
     EXPECT_EQ(expected_error, framer_.detailed_error()) << "len: " << len;
     EXPECT_EQ(error_code, framer_.error()) << "len: " << len;
-  }
-
-  void ValidateTruncatedAck(const QuicAckFrame* ack, size_t keys) {
-    for (size_t i = 1; i < keys; ++i) {
-      EXPECT_TRUE(ContainsKey(ack->received_info.missing_packets, i)) << i;
-    }
-    EXPECT_EQ(keys, ack->received_info.largest_observed);
   }
 
   void CheckCalculatePacketSequenceNumber(

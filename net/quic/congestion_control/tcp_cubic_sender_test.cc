@@ -13,7 +13,6 @@ namespace net {
 namespace test {
 
 const uint32 kDefaultWindowTCP = 10 * kMaxPacketSize;
-const QuicByteCount kNoNBytesInFlight = 0;
 
 class TcpCubicSenderPeer : public TcpCubicSender {
  public:

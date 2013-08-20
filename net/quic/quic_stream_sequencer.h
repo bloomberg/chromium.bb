@@ -29,8 +29,6 @@ class ReliableQuicStream;
 // TOOD(alyssar) add some checks for overflow attempts [1, 256,] [2, 256]
 class NET_EXPORT_PRIVATE QuicStreamSequencer {
  public:
-  static size_t kMaxUdpPacketSize;
-
   explicit QuicStreamSequencer(ReliableQuicStream* quic_stream);
   QuicStreamSequencer(size_t max_frame_memory,
                       ReliableQuicStream* quic_stream);

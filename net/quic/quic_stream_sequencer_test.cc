@@ -58,11 +58,8 @@ class QuicStreamSequencerPeer : public QuicStreamSequencer {
   void SetMemoryLimit(size_t limit) {
     max_frame_memory_ = limit;
   }
-
-  const ReliableQuicStream* stream() const { return stream_; }
   uint64 num_bytes_consumed() const { return num_bytes_consumed_; }
   const FrameMap* frames() const { return &frames_; }
-  int32 max_frame_memory() const { return max_frame_memory_; }
   QuicStreamOffset close_offset() const { return close_offset_; }
 };
 

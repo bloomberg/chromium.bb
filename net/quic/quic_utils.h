@@ -46,9 +46,6 @@ class NET_EXPORT_PRIVATE QuicUtils {
   // SerializeUint128 writes |v| in little-endian form to |out|.
   static void SerializeUint128(uint128 v, uint8* out);
 
-  // ParseUint128 parses a little-endian uint128 from |in| and returns it.
-  static uint128 ParseUint128(const uint8* in);
-
   // Returns the name of the QuicRstStreamErrorCode as a char*
   static const char* StreamErrorToString(QuicRstStreamErrorCode error);
 

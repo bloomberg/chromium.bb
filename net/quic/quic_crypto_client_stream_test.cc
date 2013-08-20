@@ -21,31 +21,6 @@ namespace {
 
 const char kServerHostname[] = "example.com";
 
-class TestQuicVisitor : public NoOpFramerVisitor {
- public:
-  TestQuicVisitor()
-      : frame_valid_(false) {
-  }
-
-  // NoOpFramerVisitor
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
-    frame_ = frame;
-    frame_valid_ = true;
-    return true;
-  }
-
-  bool frame_valid() const {
-    return frame_valid_;
-  }
-  QuicStreamFrame* frame() { return &frame_; }
-
- private:
-  QuicStreamFrame frame_;
-  bool frame_valid_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestQuicVisitor);
-};
-
 class QuicCryptoClientStreamTest : public ::testing::Test {
  public:
   QuicCryptoClientStreamTest()

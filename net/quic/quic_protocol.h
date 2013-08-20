@@ -675,10 +675,6 @@ struct NET_EXPORT_PRIVATE QuicFecData {
   base::StringPiece redundancy;
 };
 
-struct NET_EXPORT_PRIVATE QuicPacketData {
-  std::string data;
-};
-
 class NET_EXPORT_PRIVATE QuicData {
  public:
   QuicData(const char* buffer, size_t length)
@@ -738,8 +734,6 @@ class NET_EXPORT_PRIVATE QuicPacket : public QuicData {
   base::StringPiece Plaintext() const;
 
   bool is_fec_packet() const { return is_fec_packet_; }
-
-  bool includes_version() const { return includes_version_; }
 
   char* mutable_data() { return buffer_; }
 

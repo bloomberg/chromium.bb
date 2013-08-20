@@ -73,9 +73,6 @@ class NET_EXPORT_PRIVATE CryptoHandshakeMessage {
 
   const QuicTagValueMap& tag_value_map() const { return tag_value_map_; }
 
-  void Insert(QuicTagValueMap::const_iterator begin,
-              QuicTagValueMap::const_iterator end);
-
   // SetTaglist sets an element with the given tag to contain a list of tags,
   // passed as varargs. The argument list must be terminated with a 0 element.
   void SetTaglist(QuicTag tag, ...);
@@ -160,7 +157,6 @@ struct NET_EXPORT_PRIVATE QuicCryptoNegotiatedParameters {
   QuicCryptoNegotiatedParameters();
   ~QuicCryptoNegotiatedParameters();
 
-  uint16 version;
   QuicTag key_exchange;
   QuicTag aead;
   std::string initial_premaster_secret;

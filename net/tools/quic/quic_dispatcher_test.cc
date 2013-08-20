@@ -22,6 +22,7 @@ using base::StringPiece;
 using net::EpollServer;
 using net::test::MockSession;
 using net::tools::test::MockConnection;
+using std::make_pair;
 using testing::_;
 using testing::DoAll;
 using testing::Invoke;
@@ -237,7 +238,7 @@ TEST_F(QuicDispatcherTest, TimeWaitListManager) {
   ProcessPacket(addr, guid, "foo");
 }
 
-class WriteBlockedListTest : public QuicDispatcherTest {
+class QuicWriteBlockedListTest : public QuicDispatcherTest {
  public:
   virtual void SetUp() {
     IPEndPoint addr(Loopback4(), 1);
@@ -270,12 +271,12 @@ class WriteBlockedListTest : public QuicDispatcherTest {
   QuicDispatcher::WriteBlockedList* blocked_list_;
 };
 
-TEST_F(WriteBlockedListTest, BasicOnCanWrite) {
+TEST_F(QuicWriteBlockedListTest, BasicOnCanWrite) {
   // No OnCanWrite calls because no connections are blocked.
   dispatcher_.OnCanWrite();
 
   // Register connection 1 for events, and make sure it's nofitied.
-  blocked_list_->AddBlockedObject(connection1());
+  blocked_list_->insert(make_pair(connection1(), true));
   EXPECT_CALL(*connection1(), OnCanWrite());
   dispatcher_.OnCanWrite();
 
@@ -284,67 +285,67 @@ TEST_F(WriteBlockedListTest, BasicOnCanWrite) {
   EXPECT_FALSE(dispatcher_.OnCanWrite());
 }
 
-TEST_F(WriteBlockedListTest, OnCanWriteOrder) {
+TEST_F(QuicWriteBlockedListTest, OnCanWriteOrder) {
   // Make sure we handle events in order.
   InSequence s;
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection2());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->insert(make_pair(connection2(), true));
   EXPECT_CALL(*connection1(), OnCanWrite());
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_.OnCanWrite();
 
   // Check the other ordering.
-  blocked_list_->AddBlockedObject(connection2());
-  blocked_list_->AddBlockedObject(connection1());
+  blocked_list_->insert(make_pair(connection2(), true));
+  blocked_list_->insert(make_pair(connection1(), true));
   EXPECT_CALL(*connection2(), OnCanWrite());
   EXPECT_CALL(*connection1(), OnCanWrite());
   dispatcher_.OnCanWrite();
 }
 
-TEST_F(WriteBlockedListTest, OnCanWriteRemove) {
+TEST_F(QuicWriteBlockedListTest, OnCanWriteRemove) {
   // Add and remove one connction.
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->RemoveBlockedObject(connection1());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->erase(connection1());
   EXPECT_CALL(*connection1(), OnCanWrite()).Times(0);
   dispatcher_.OnCanWrite();
 
   // Add and remove one connction and make sure it doesn't affect others.
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection2());
-  blocked_list_->RemoveBlockedObject(connection1());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->insert(make_pair(connection2(), true));
+  blocked_list_->erase(connection1());
   EXPECT_CALL(*connection2(), OnCanWrite());
   dispatcher_.OnCanWrite();
 
   // Add it, remove it, and add it back and make sure things are OK.
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->RemoveBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection1());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->erase(connection1());
+  blocked_list_->insert(make_pair(connection1(), true));
   EXPECT_CALL(*connection1(), OnCanWrite()).Times(1);
   dispatcher_.OnCanWrite();
 }
 
-TEST_F(WriteBlockedListTest, DoubleAdd) {
+TEST_F(QuicWriteBlockedListTest, DoubleAdd) {
   // Make sure a double add does not necessitate a double remove.
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->RemoveBlockedObject(connection1());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->erase(connection1());
   EXPECT_CALL(*connection1(), OnCanWrite()).Times(0);
   dispatcher_.OnCanWrite();
 
   // Make sure a double add does not result in two OnCanWrite calls.
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection1());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->insert(make_pair(connection1(), true));
   EXPECT_CALL(*connection1(), OnCanWrite()).Times(1);
   dispatcher_.OnCanWrite();
 }
 
-TEST_F(WriteBlockedListTest, OnCanWriteHandleBlock) {
+TEST_F(QuicWriteBlockedListTest, OnCanWriteHandleBlock) {
   // Finally make sure if we write block on a write call, we stop calling.
   InSequence s;
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection2());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->insert(make_pair(connection2(), true));
   EXPECT_CALL(*connection1(), OnCanWrite()).WillOnce(
-      Invoke(this, &WriteBlockedListTest::SetBlocked));
+      Invoke(this, &QuicWriteBlockedListTest::SetBlocked));
   EXPECT_CALL(*connection2(), OnCanWrite()).Times(0);
   dispatcher_.OnCanWrite();
 
@@ -353,12 +354,12 @@ TEST_F(WriteBlockedListTest, OnCanWriteHandleBlock) {
   dispatcher_.OnCanWrite();
 }
 
-TEST_F(WriteBlockedListTest, LimitedWrites) {
+TEST_F(QuicWriteBlockedListTest, LimitedWrites) {
   // Make sure we call both writers.  The first will register for more writing
   // but should not be immediately called due to limits.
   InSequence s;
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection2());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->insert(make_pair(connection2(), true));
   EXPECT_CALL(*connection1(), OnCanWrite()).WillOnce(Return(true));
   EXPECT_CALL(*connection2(), OnCanWrite()).WillOnce(Return(false));
   dispatcher_.OnCanWrite();
@@ -368,13 +369,13 @@ TEST_F(WriteBlockedListTest, LimitedWrites) {
   dispatcher_.OnCanWrite();
 }
 
-TEST_F(WriteBlockedListTest, TestWriteLimits) {
+TEST_F(QuicWriteBlockedListTest, TestWriteLimits) {
   // Finally make sure if we write block on a write call, we stop calling.
   InSequence s;
-  blocked_list_->AddBlockedObject(connection1());
-  blocked_list_->AddBlockedObject(connection2());
+  blocked_list_->insert(make_pair(connection1(), true));
+  blocked_list_->insert(make_pair(connection2(), true));
   EXPECT_CALL(*connection1(), OnCanWrite()).WillOnce(
-      Invoke(this, &WriteBlockedListTest::SetBlocked));
+      Invoke(this, &QuicWriteBlockedListTest::SetBlocked));
   EXPECT_CALL(*connection2(), OnCanWrite()).Times(0);
   dispatcher_.OnCanWrite();
 

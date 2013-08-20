@@ -116,7 +116,7 @@ class ReliableQuicStreamTest : public ::testing::TestWithParam<bool> {
   scoped_ptr<QuicSpdyCompressor> compressor_;
   scoped_ptr<QuicSpdyDecompressor> decompressor_;
   SpdyHeaderBlock headers_;
-  BlockedList<QuicStreamId>* write_blocked_list_;
+  WriteBlockedList<QuicStreamId>* write_blocked_list_;
 };
 
 TEST_F(ReliableQuicStreamTest, WriteAllData) {
@@ -131,7 +131,7 @@ TEST_F(ReliableQuicStreamTest, WriteAllData) {
   EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
       Return(QuicConsumedData(kDataLen, true)));
   EXPECT_EQ(kDataLen, stream_->WriteData(kData1, false).bytes_consumed);
-  EXPECT_TRUE(write_blocked_list_->IsEmpty());
+  EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
 }
 
 // TODO(rtenneti): Death tests crash on OS_ANDROID.
@@ -145,7 +145,7 @@ TEST_F(ReliableQuicStreamTest, NoBlockingIfNoDataOrFin) {
     EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
         Return(QuicConsumedData(0, false)));
     stream_->WriteData(StringPiece(), false);
-  EXPECT_TRUE(write_blocked_list_->IsEmpty());
+    EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
   }, "");
 }
 #endif  // GTEST_HAS_DEATH_TEST && !defined(NDEBUG) && !defined(OS_ANDROID)
@@ -158,7 +158,7 @@ TEST_F(ReliableQuicStreamTest, BlockIfOnlySomeDataConsumed) {
   EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
       Return(QuicConsumedData(1, false)));
   stream_->WriteData(StringPiece(kData1, 2), false);
-  ASSERT_EQ(1, write_blocked_list_->NumObjects());
+  ASSERT_EQ(1, write_blocked_list_->NumBlockedStreams());
 }
 
 
@@ -172,7 +172,7 @@ TEST_F(ReliableQuicStreamTest, BlockIfFinNotConsumedWithData) {
   EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
       Return(QuicConsumedData(2, false)));
   stream_->WriteData(StringPiece(kData1, 2), true);
-  ASSERT_EQ(1, write_blocked_list_->NumObjects());
+  ASSERT_EQ(1, write_blocked_list_->NumBlockedStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, BlockIfSoloFinNotConsumed) {
@@ -183,13 +183,13 @@ TEST_F(ReliableQuicStreamTest, BlockIfSoloFinNotConsumed) {
   EXPECT_CALL(*session_, WriteData(kStreamId, _, _, _)).WillOnce(
       Return(QuicConsumedData(0, false)));
   stream_->WriteData(StringPiece(), true);
-  ASSERT_EQ(1, write_blocked_list_->NumObjects());
+  ASSERT_EQ(1, write_blocked_list_->NumBlockedStreams());
 }
 
 TEST_F(ReliableQuicStreamTest, WriteData) {
   Initialize(kShouldProcessData);
 
-  EXPECT_TRUE(write_blocked_list_->IsEmpty());
+  EXPECT_FALSE(write_blocked_list_->HasWriteBlockedStreams());
   connection_->options()->max_packet_length =
       1 + QuicPacketCreator::StreamFramePacketOverhead(
           connection_->version(), PACKET_8BYTE_GUID, !kIncludeVersion,
@@ -200,7 +200,7 @@ TEST_F(ReliableQuicStreamTest, WriteData) {
       Return(QuicConsumedData(kDataLen - 1, false)));
   // The return will be kDataLen, because the last byte gets buffered.
   EXPECT_EQ(kDataLen, stream_->WriteData(kData1, false).bytes_consumed);
-  EXPECT_FALSE(write_blocked_list_->IsEmpty());
+  EXPECT_TRUE(write_blocked_list_->HasWriteBlockedStreams());
 
   // Queue a bytes_consumed write.
   EXPECT_EQ(kDataLen, stream_->WriteData(kData2, false).bytes_consumed);

@@ -9,23 +9,19 @@
 namespace net {
 namespace test {
 
-class QuicTimeDeltaTest : public ::testing::Test {
- protected:
-};
-
-TEST_F(QuicTimeDeltaTest, Zero) {
+TEST(QuicTimeDeltaTest, Zero) {
   EXPECT_TRUE(QuicTime::Delta::Zero().IsZero());
   EXPECT_FALSE(QuicTime::Delta::Zero().IsInfinite());
   EXPECT_FALSE(QuicTime::Delta::FromMilliseconds(1).IsZero());
 }
 
-TEST_F(QuicTimeDeltaTest, Infinite) {
+TEST(QuicTimeDeltaTest, Infinite) {
   EXPECT_TRUE(QuicTime::Delta::Infinite().IsInfinite());
   EXPECT_FALSE(QuicTime::Delta::Zero().IsInfinite());
   EXPECT_FALSE(QuicTime::Delta::FromMilliseconds(1).IsInfinite());
 }
 
-TEST_F(QuicTimeDeltaTest, FromTo) {
+TEST(QuicTimeDeltaTest, FromTo) {
   EXPECT_EQ(QuicTime::Delta::FromMilliseconds(1),
             QuicTime::Delta::FromMicroseconds(1000));
   EXPECT_EQ(QuicTime::Delta::FromSeconds(1),
@@ -41,15 +37,22 @@ TEST_F(QuicTimeDeltaTest, FromTo) {
             QuicTime::Delta::FromSeconds(2).ToMicroseconds());
 }
 
-TEST_F(QuicTimeDeltaTest, Add) {
+TEST(QuicTimeDeltaTest, Add) {
   EXPECT_EQ(QuicTime::Delta::FromMicroseconds(2000),
             QuicTime::Delta::Zero().Add(QuicTime::Delta::FromMilliseconds(2)));
 }
 
-TEST_F(QuicTimeDeltaTest, Subtract) {
+TEST(QuicTimeDeltaTest, Subtract) {
   EXPECT_EQ(QuicTime::Delta::FromMicroseconds(1000),
             QuicTime::Delta::FromMilliseconds(2).Subtract(
                 QuicTime::Delta::FromMilliseconds(1)));
+}
+
+TEST(QuicTimeDeltaTest, NotEqual) {
+  EXPECT_TRUE(QuicTime::Delta::FromSeconds(0) !=
+              QuicTime::Delta::FromSeconds(1));
+  EXPECT_FALSE(QuicTime::Delta::FromSeconds(0) !=
+               QuicTime::Delta::FromSeconds(0));
 }
 
 class QuicTimeTest : public ::testing::Test {
@@ -107,6 +110,15 @@ TEST_F(QuicTimeTest, MockClock) {
 
   time = time.Add(QuicTime::Delta::FromMilliseconds(1));
   EXPECT_EQ(now, time);
+}
+
+TEST_F(QuicTimeTest, LE) {
+  const QuicTime zero = QuicTime::Zero();
+  const QuicTime one  = zero.Add(QuicTime::Delta::FromSeconds(1));
+  EXPECT_TRUE(zero <= zero);
+  EXPECT_TRUE(zero <= one);
+  EXPECT_TRUE(one <= one);
+  EXPECT_FALSE(one <= zero);
 }
 
 }  // namespace test

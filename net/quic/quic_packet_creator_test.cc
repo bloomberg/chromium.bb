@@ -32,7 +32,6 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
   QuicPacketCreatorTest()
       : server_framer_(QuicVersionMax(), QuicTime::Zero(), true),
         client_framer_(QuicVersionMax(), QuicTime::Zero(), false),
-        id_(1),
         sequence_number_(0),
         guid_(2),
         data_("foo"),
@@ -64,7 +63,6 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
   QuicFramer server_framer_;
   QuicFramer client_framer_;
   testing::StrictMock<MockFramerVisitor> framer_visitor_;
-  QuicStreamId id_;
   QuicPacketSequenceNumber sequence_number_;
   QuicGuid guid_;
   string data_;

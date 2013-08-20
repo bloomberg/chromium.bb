@@ -56,10 +56,6 @@ bool QuicDataWriter::WriteUInt64(uint64 value) {
   return WriteBytes(&value, sizeof(value));
 }
 
-bool QuicDataWriter::WriteUInt128(uint128 value) {
-  return WriteUInt64(Uint128Low64(value)) && WriteUInt64(Uint128High64(value));
-}
-
 bool QuicDataWriter::WriteStringPiece16(StringPiece val) {
   if (val.length() > numeric_limits<uint16>::max()) {
     return false;

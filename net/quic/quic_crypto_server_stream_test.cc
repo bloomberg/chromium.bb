@@ -36,25 +36,6 @@ namespace net {
 namespace test {
 namespace {
 
-// TODO(agl): Use rch's utility class for parsing a message when committed.
-class TestQuicVisitor : public NoOpFramerVisitor {
- public:
-  TestQuicVisitor() {}
-
-  // NoOpFramerVisitor
-  virtual bool OnStreamFrame(const QuicStreamFrame& frame) OVERRIDE {
-    frame_ = frame;
-    return true;
-  }
-
-  QuicStreamFrame* frame() { return &frame_; }
-
- private:
-  QuicStreamFrame frame_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestQuicVisitor);
-};
-
 class QuicCryptoServerStreamTest : public ::testing::Test {
  public:
   QuicCryptoServerStreamTest()

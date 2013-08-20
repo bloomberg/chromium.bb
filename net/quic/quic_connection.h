@@ -204,8 +204,6 @@ class NET_EXPORT_PRIVATE QuicConnection
                  QuicVersion version);
   virtual ~QuicConnection();
 
-  static void DeleteEnclosedFrame(QuicFrame* frame);
-
   // Send the data payload to the peer.
   // Returns a pair with the number of bytes consumed from data, and a boolean
   // indicating if the fin bit was consumed.  This does not indicate the data

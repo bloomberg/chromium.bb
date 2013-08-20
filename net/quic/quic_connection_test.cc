@@ -29,14 +29,14 @@ using std::map;
 using std::vector;
 using testing::_;
 using testing::AnyNumber;
-using testing::Between;
 using testing::ContainerEq;
 using testing::DoAll;
 using testing::InSequence;
 using testing::InvokeWithoutArgs;
+using testing::Ref;
 using testing::Return;
-using testing::StrictMock;
 using testing::SaveArg;
+using testing::StrictMock;
 
 namespace net {
 namespace test {
@@ -49,6 +49,8 @@ const bool kFin = true;
 const bool kEntropyFlag = true;
 
 const QuicPacketEntropyHash kTestEntropyHash = 76;
+
+const int kDefaultRetransmissionTimeMs = 500;
 
 class TestReceiveAlgorithm : public ReceiveAlgorithmInterface {
  public:
@@ -505,18 +507,6 @@ class QuicConnectionTest : public ::testing::Test {
     return serialized_packet.entropy_hash;
   }
 
-  size_t ProcessFecProtectedPacket(QuicPacketSequenceNumber number,
-                                 bool expect_revival) {
-    if (expect_revival) {
-      EXPECT_CALL(visitor_, OnPacket(_, _, _, _)).Times(2).WillRepeatedly(
-          Return(accept_packet_));
-    } else {
-      EXPECT_CALL(visitor_, OnPacket(_, _, _, _)).WillOnce(
-          Return(accept_packet_));
-    }
-    return ProcessDataPacket(number, 1, !kEntropyFlag);
-  }
-
   size_t ProcessDataPacket(QuicPacketSequenceNumber number,
                            QuicFecGroupNumber fec_group,
                            bool entropy_flag) {
@@ -689,6 +679,10 @@ class QuicConnectionTest : public ::testing::Test {
     connection_.SetReceiveAlgorithm(receive_algorithm_);
   }
 
+  QuicTime::Delta DefaultRetransmissionTime() {
+    return QuicTime::Delta::FromMilliseconds(kDefaultRetransmissionTimeMs);
+  }
+
   QuicGuid guid_;
   QuicFramer framer_;
   QuicPacketCreator creator_;
@@ -699,7 +693,7 @@ class QuicConnectionTest : public ::testing::Test {
   MockRandom random_generator_;
   TestConnectionHelper* helper_;
   TestConnection connection_;
-  testing::StrictMock<MockConnectionVisitor> visitor_;
+  StrictMock<MockConnectionVisitor> visitor_;
 
   QuicPacketHeader header_;
   QuicPacketHeader revived_header_;
@@ -1100,9 +1094,7 @@ TEST_F(QuicConnectionTest, DontAbandonAckedFEC) {
 
   ProcessAckPacket(&ack_fec, true);
 
-  const QuicTime::Delta kDefaultRetransmissionTime =
-      QuicTime::Delta::FromMilliseconds(5000);
-  clock_.AdvanceTime(kDefaultRetransmissionTime);
+  clock_.AdvanceTime(DefaultRetransmissionTime());
 
   // Abandon only data packet, FEC has been acked.
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(sequence_number, _)).Times(1);
@@ -1283,16 +1275,14 @@ TEST_F(QuicConnectionTest, RetransmitNackedPacketsOnTruncatedAck) {
   EXPECT_TRUE(QuicConnectionPeer::GetReceivedTruncatedAck(&connection_));
 
   QuicConnectionPeer::SetMaxPacketsPerRetransmissionAlarm(&connection_, 200);
-  const QuicTime::Delta kDefaultRetransmissionTime =
-      QuicTime::Delta::FromMilliseconds(500);
-  clock_.AdvanceTime(kDefaultRetransmissionTime);
+  clock_.AdvanceTime(DefaultRetransmissionTime());
   // Only packets that are less than largest observed should be retransmitted.
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(191);
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(191);
   connection_.OnRetransmissionTimeout();
 
   clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(
-      2 * kDefaultRetransmissionTime.ToMicroseconds()));
+      2 * DefaultRetransmissionTime().ToMicroseconds()));
   // Retransmit already retransmitted packets event though the sequence number
   // greater than the largest observed.
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(191);
@@ -1458,11 +1448,8 @@ TEST_F(QuicConnectionTest, ReviveMissingPacketAfterDataPackets) {
 }
 
 TEST_F(QuicConnectionTest, TestRetransmit) {
-  const QuicTime::Delta kDefaultRetransmissionTime =
-      QuicTime::Delta::FromMilliseconds(500);
-
   QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
-      kDefaultRetransmissionTime);
+      DefaultRetransmissionTime());
   SendStreamDataToPeer(1, "foo", 0, !kFin, NULL);
   EXPECT_EQ(1u, outgoing_ack()->sent_info.least_unacked);
 
@@ -1470,7 +1457,7 @@ TEST_F(QuicConnectionTest, TestRetransmit) {
   EXPECT_EQ(default_retransmission_time,
             connection_.GetRetransmissionAlarm()->deadline());
   // Simulate the retransimission alarm firing
-  clock_.AdvanceTime(kDefaultRetransmissionTime);
+  clock_.AdvanceTime(DefaultRetransmissionTime());
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _));
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(1, _)).Times(1);
   connection_.RetransmitPacket(1);
@@ -1479,11 +1466,8 @@ TEST_F(QuicConnectionTest, TestRetransmit) {
 }
 
 TEST_F(QuicConnectionTest, RetransmitWithSameEncryptionLevel) {
-  const QuicTime::Delta kDefaultRetransmissionTime =
-      QuicTime::Delta::FromMilliseconds(500);
-
   QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
-      kDefaultRetransmissionTime);
+      DefaultRetransmissionTime());
   use_tagging_decrypter();
 
   // A TaggingEncrypter puts kTagSize copies of the given byte (0x01 here) at
@@ -1500,7 +1484,7 @@ TEST_F(QuicConnectionTest, RetransmitWithSameEncryptionLevel) {
   EXPECT_EQ(default_retransmission_time,
             connection_.GetRetransmissionAlarm()->deadline());
   // Simulate the retransimission alarm firing
-  clock_.AdvanceTime(kDefaultRetransmissionTime);
+  clock_.AdvanceTime(DefaultRetransmissionTime());
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(_, _)).Times(2);
 
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _));
@@ -1528,15 +1512,13 @@ TEST_F(QuicConnectionTest,
   EXPECT_CALL(*send_algorithm_, SentPacket(_, _, _, _)).Times(0);
   EXPECT_CALL(*send_algorithm_, AbandoningPacket(sequence_number, _)).Times(1);
 
-  const QuicTime::Delta kDefaultRetransmissionTime =
-      QuicTime::Delta::FromMilliseconds(500);
   QuicTime default_retransmission_time = clock_.ApproximateNow().Add(
-      kDefaultRetransmissionTime);
+      DefaultRetransmissionTime());
 
   EXPECT_EQ(default_retransmission_time,
             connection_.GetRetransmissionAlarm()->deadline());
   // Simulate the retransimission alarm firing
-  clock_.AdvanceTime(kDefaultRetransmissionTime);
+  clock_.AdvanceTime(DefaultRetransmissionTime());
   connection_.OnRetransmissionTimeout();
 }
 
@@ -2065,7 +2047,7 @@ TEST_F(QuicConnectionTest, UpdateEntropyForReceivedPackets) {
   QuicPacketEntropyHash six_packet_entropy_hash = 0;
   if (ProcessAckPacket(&ack, true)) {
     six_packet_entropy_hash = 1 << 6;
-  };
+  }
 
   EXPECT_EQ((kRandomEntropyHash + (1 << 5) + six_packet_entropy_hash),
             outgoing_ack()->received_info.entropy_hash);
@@ -2438,6 +2420,68 @@ TEST_F(QuicConnectionTest, ConnectionCloseWhenNothingPending) {
   EXPECT_CALL(visitor_, ConnectionClose(QUIC_INVALID_PACKET_HEADER, false));
   ProcessDataPacket(6000, 0, !kEntropyFlag);
   EXPECT_EQ(1u, helper_->packets_write_attempts());
+}
+
+class MockQuicConnectionDebugVisitor
+    : public QuicConnectionDebugVisitorInterface {
+ public:
+  MOCK_METHOD1(OnFrameAddedToPacket,
+               void(const QuicFrame&));
+
+  MOCK_METHOD4(OnPacketSent,
+               void(QuicPacketSequenceNumber,
+                    EncryptionLevel,
+                    const QuicEncryptedPacket&,
+                    int));
+
+  MOCK_METHOD2(OnPacketRetransmitted,
+               void(QuicPacketSequenceNumber,
+                    QuicPacketSequenceNumber));
+
+  MOCK_METHOD3(OnPacketReceived,
+               void(const IPEndPoint&,
+                    const IPEndPoint&,
+                    const QuicEncryptedPacket&));
+
+  MOCK_METHOD1(OnProtocolVersionMismatch,
+               void(QuicVersion));
+
+  MOCK_METHOD1(OnPacketHeader,
+               void(const QuicPacketHeader& header));
+
+  MOCK_METHOD1(OnStreamFrame,
+               void(const QuicStreamFrame&));
+
+  MOCK_METHOD1(OnAckFrame,
+               void(const QuicAckFrame& frame));
+
+  MOCK_METHOD1(OnCongestionFeedbackFrame,
+               void(const QuicCongestionFeedbackFrame&));
+
+  MOCK_METHOD1(OnRstStreamFrame,
+               void(const QuicRstStreamFrame&));
+
+  MOCK_METHOD1(OnConnectionCloseFrame,
+               void(const QuicConnectionCloseFrame&));
+
+  MOCK_METHOD1(OnPublicResetPacket,
+               void(const QuicPublicResetPacket&));
+
+  MOCK_METHOD1(OnVersionNegotiationPacket,
+               void(const QuicVersionNegotiationPacket&));
+
+  MOCK_METHOD2(OnRevivedPacket,
+               void(const QuicPacketHeader&, StringPiece payload));
+};
+
+TEST_F(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
+  QuicPacketHeader header;
+
+  scoped_ptr<MockQuicConnectionDebugVisitor>
+      debug_visitor(new StrictMock<MockQuicConnectionDebugVisitor>);
+  connection_.set_debug_visitor(debug_visitor.get());
+  EXPECT_CALL(*debug_visitor, OnPacketHeader(Ref(header))).Times(1);
+  connection_.OnPacketHeader(header);
 }
 
 }  // namespace

@@ -43,7 +43,6 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   bool WriteUInt32(uint32 value);
   bool WriteUInt48(uint64 value);
   bool WriteUInt64(uint64 value);
-  bool WriteUInt128(uint128 value);
   bool WriteStringPiece16(base::StringPiece val);
   bool WriteBytes(const void* data, size_t data_len);
   bool WriteRepeatedByte(uint8 byte, size_t count);
@@ -60,9 +59,6 @@ class NET_EXPORT_PRIVATE QuicDataWriter {
   size_t capacity() const {
     return capacity_;
   }
-
- protected:
-  const char* end_of_payload() const { return buffer_ + length_; }
 
  private:
   // Returns the location that the data should be written at, or NULL if there

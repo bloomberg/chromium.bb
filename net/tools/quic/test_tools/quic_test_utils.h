@@ -22,8 +22,6 @@ class IPEndPoint;
 namespace tools {
 namespace test {
 
-std::string SerializeUncompressedHeaders(const SpdyHeaderBlock& headers);
-
 class MockConnection : public QuicConnection {
  public:
   // Uses a QuicConnectionHelper created with fd and eps.

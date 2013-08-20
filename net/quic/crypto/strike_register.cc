@@ -56,8 +56,8 @@ class StrikeRegister::InternalNode {
 };
 
 // kCreationTimeFromInternalEpoch contains the number of seconds between the
-// start of the internal epoch and |creation_time_external_|. This allows us
-// to consider times that are before |creation_time_external_|.
+// start of the internal epoch and the creation time. This allows us
+// to consider times that are before the creation time.
 static const uint32 kCreationTimeFromInternalEpoch = 63115200.0;  // 2 years.
 
 StrikeRegister::StrikeRegister(unsigned max_entries,
@@ -67,21 +67,16 @@ StrikeRegister::StrikeRegister(unsigned max_entries,
                                StartupType startup)
     : max_entries_(max_entries),
       window_secs_(window_secs),
+      internal_epoch_(current_time > kCreationTimeFromInternalEpoch
+                          ? current_time - kCreationTimeFromInternalEpoch
+                          : 0),
       // The horizon is initially set |window_secs| into the future because, if
       // we just crashed, then we may have accepted nonces in the span
       // [current_time...current_time+window_secs) and so we conservatively
       // reject the whole timespan unless |startup| tells us otherwise.
-      creation_time_external_(current_time),
-      internal_epoch_(current_time > kCreationTimeFromInternalEpoch
-                          ? current_time - kCreationTimeFromInternalEpoch
-                          : 0),
       horizon_(ExternalTimeToInternal(current_time) + window_secs),
       horizon_valid_(startup == DENY_REQUESTS_AT_STARTUP) {
   memcpy(orbit_, orbit, sizeof(orbit_));
-
-  // TODO(rtenneti): Remove the following check, Added the following to silence
-  // "is not used" error.
-  CHECK_GE(creation_time_external_, 0u);
 
   // We only have 23 bits of index available.
   CHECK_LT(max_entries, 1u << 23);

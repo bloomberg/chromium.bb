@@ -356,16 +356,6 @@ void CompareCharArraysWithHexError(
       << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
 }
 
-void CompareQuicDataWithHexError(
-    const string& description,
-    QuicData* actual,
-    QuicData* expected) {
-  CompareCharArraysWithHexError(
-      description,
-      actual->data(), actual->length(),
-      expected->data(), expected->length());
-}
-
 static QuicPacket* ConstructPacketFromHandshakeMessage(
     QuicGuid guid,
     const CryptoHandshakeMessage& message,

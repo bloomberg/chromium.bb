@@ -108,7 +108,6 @@ class NET_EXPORT_PRIVATE ReliableQuicStream : public
 
   const IPEndPoint& GetPeerAddress() const;
 
-  Visitor* visitor() { return visitor_; }
   void set_visitor(Visitor* visitor) { visitor_ = visitor; }
 
   QuicSpdyCompressor* compressor();

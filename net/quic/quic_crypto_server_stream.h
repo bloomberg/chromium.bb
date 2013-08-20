@@ -43,8 +43,6 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream : public QuicCryptoStream {
       CryptoHandshakeMessage* reply,
       std::string* error_details);
 
-  const QuicCryptoServerConfig* crypto_config() { return &crypto_config_; }
-
  private:
   friend class test::CryptoTestUtils;
 

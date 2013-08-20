@@ -46,8 +46,6 @@ class NET_EXPORT_PRIVATE HybridSlowStart {
 
   bool started() { return started_; }
 
-  QuicTime::Delta SmoothedRtt();
-
  private:
   const QuicClock* clock_;
   bool started_;

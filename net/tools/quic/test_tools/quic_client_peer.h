@@ -14,7 +14,6 @@ namespace test {
 
 class QuicClientPeer {
  public:
-  static void Reinitialize(QuicClient* client);
   static int GetFd(QuicClient* client);
 };
 

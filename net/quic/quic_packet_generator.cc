@@ -18,7 +18,7 @@ QuicPacketGenerator::QuicPacketGenerator(DelegateInterface* delegate,
     : delegate_(delegate),
       debug_delegate_(debug_delegate),
       packet_creator_(creator),
-      should_flush_(true),
+      batch_mode_(false),
       should_send_ack_(false),
       should_send_feedback_(false) {
 }
@@ -89,7 +89,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     DCHECK(data.empty() || packet_creator_->BytesFree() == 0u);
 
     // TODO(ianswett): Restore packet reordering.
-    if (should_flush_ || !packet_creator_->HasRoomForStreamFrame(id, offset)) {
+    if (!InBatchMode() || !packet_creator_->HasRoomForStreamFrame(id, offset)) {
       SerializeAndSendPacket();
     }
 
@@ -101,15 +101,15 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     }
   }
 
-  // Ensure the FEC group is closed at the end of this method unless other
-  // writes are pending.
-  if (should_flush_ && packet_creator_->ShouldSendFec(true)) {
+  // Ensure the FEC group is closed at the end of this method if not in batch
+  // mode.
+  if (!InBatchMode() && packet_creator_->ShouldSendFec(true)) {
     SerializedPacket serialized_fec = packet_creator_->SerializeFec();
     DCHECK(serialized_fec.packet);
     delegate_->OnSerializedPacket(serialized_fec);
   }
 
-  DCHECK(!should_flush_ || !packet_creator_->HasPendingFrames());
+  DCHECK(InBatchMode() || !packet_creator_->HasPendingFrames());
   return QuicConsumedData(total_bytes_consumed, fin_consumed);
 }
 
@@ -135,7 +135,7 @@ void QuicPacketGenerator::SendQueuedFrames() {
     }
   }
 
-  if (should_flush_) {
+  if (!InBatchMode()) {
     if (packet_creator_->HasPendingFrames()) {
       SerializeAndSendPacket();
     }
@@ -151,12 +151,16 @@ void QuicPacketGenerator::SendQueuedFrames() {
   }
 }
 
+bool QuicPacketGenerator::InBatchMode() {
+  return batch_mode_;
+}
+
 void QuicPacketGenerator::StartBatchOperations() {
-  should_flush_ = false;
+  batch_mode_ = true;
 }
 
 void QuicPacketGenerator::FinishBatchOperations() {
-  should_flush_ = true;
+  batch_mode_ = false;
   SendQueuedFrames();
 }
 

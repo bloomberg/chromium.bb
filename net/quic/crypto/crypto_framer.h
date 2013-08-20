@@ -84,8 +84,6 @@ class NET_EXPORT_PRIVATE CryptoFramer {
                           size_t pad_length,
                           uint32* end_offset);
 
-  void set_error(QuicErrorCode error) { error_ = error; }
-
   // Represents the current state of the parsing state machine.
   enum CryptoFramerState {
     STATE_READING_TAG,

@@ -11,13 +11,6 @@ namespace tools {
 namespace test {
 
 // static
-void QuicClientPeer::Reinitialize(QuicClient* client) {
-  client->initialized_ = false;
-  client->epoll_server_.UnregisterFD(client->fd_);
-  client->Initialize();
-}
-
-// static
 int QuicClientPeer::GetFd(QuicClient* client) {
   return client->fd_;
 }

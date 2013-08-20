@@ -111,14 +111,6 @@ void QuicUtils::SerializeUint128(uint128 v, uint8* out) {
   memcpy(out + sizeof(lo), &hi, sizeof(hi));
 }
 
-// static
-uint128 QuicUtils::ParseUint128(const uint8* in) {
-  uint64 lo, hi;
-  memcpy(&lo, in, sizeof(lo));
-  memcpy(&hi, in + sizeof(lo), sizeof(hi));
-  return uint128(hi, lo);
-}
-
 #define RETURN_STRING_LITERAL(x) \
 case x: \
 return #x;

@@ -59,7 +59,7 @@ int QuicDispatcher::WritePacket(const char* buffer, size_t buf_len,
                                 QuicBlockedWriterInterface* writer,
                                 int* error) {
   if (write_blocked_) {
-    write_blocked_list_.AddBlockedObject(writer);
+    write_blocked_list_.insert(make_pair(writer, true));
     *error = EAGAIN;
     return -1;
   }
@@ -68,7 +68,7 @@ int QuicDispatcher::WritePacket(const char* buffer, size_t buf_len,
                                         self_address, peer_address,
                                         error);
   if (rc == -1 && (*error == EWOULDBLOCK || *error == EAGAIN)) {
-    write_blocked_list_.AddBlockedObject(writer);
+    write_blocked_list_.insert(make_pair(writer, true));
     write_blocked_ = true;
   }
   return rc;
@@ -114,7 +114,7 @@ void QuicDispatcher::ProcessPacket(const IPEndPoint& server_address,
 
 void QuicDispatcher::CleanUpSession(SessionMap::iterator it) {
   QuicSession* session = it->second;
-  write_blocked_list_.RemoveBlockedObject(session->connection());
+  write_blocked_list_.erase(session->connection());
   time_wait_list_manager_->AddGuidToTimeWait(it->first,
                                              session->connection()->version());
   session_map_.erase(it);
@@ -129,13 +129,13 @@ bool QuicDispatcher::OnCanWrite() {
   write_blocked_ = false;
 
   // Give each writer one attempt to write.
-  int num_writers = write_blocked_list_.NumObjects();
+  int num_writers = write_blocked_list_.size();
   for (int i = 0; i < num_writers; ++i) {
-    if (write_blocked_list_.IsEmpty()) {
+    if (write_blocked_list_.empty()) {
       break;
     }
-    QuicBlockedWriterInterface* writer =
-        write_blocked_list_.GetNextBlockedObject();
+    QuicBlockedWriterInterface* writer = write_blocked_list_.begin()->first;
+    write_blocked_list_.erase(write_blocked_list_.begin());
     bool can_write_more = writer->OnCanWrite();
     if (write_blocked_) {
       // We were unable to write.  Wait for the next EPOLLOUT.
@@ -146,12 +146,12 @@ bool QuicDispatcher::OnCanWrite() {
     // The socket is not blocked but the writer has ceded work.  Add it to the
     // end of the list.
     if (can_write_more) {
-      write_blocked_list_.AddBlockedObject(writer);
+      write_blocked_list_.insert(make_pair(writer, true));
     }
   }
 
   // We're not write blocked.  Return true if there's more work to do.
-  return !write_blocked_list_.IsEmpty();
+  return !write_blocked_list_.empty();
 }
 
 void QuicDispatcher::Shutdown() {

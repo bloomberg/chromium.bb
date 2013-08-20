@@ -31,10 +31,6 @@ void CompareCharArraysWithHexError(const std::string& description,
                                    const char* expected,
                                    const int expected_len);
 
-void CompareQuicDataWithHexError(const std::string& description,
-                                 QuicData* actual,
-                                 QuicData* expected);
-
 // Returns the length of a QuicPacket that is capable of holding either a
 // stream frame or a minimal ack frame.  Sets |*payload_length| to the number
 // of bytes of stream data that will fit in such a packet.
@@ -46,8 +42,6 @@ size_t GetPacketLengthForOneStream(QuicVersion version,
 // Size in bytes of the stream frame fields for an arbitrary StreamID and
 // offset and the last frame in a packet.
 size_t GetMinStreamFrameSize(QuicVersion version);
-
-string SerializeUncompressedHeaders(const SpdyHeaderBlock& headers);
 
 // Returns QuicConfig set to default values.
 QuicConfig DefaultQuicConfig();

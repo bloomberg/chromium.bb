@@ -102,8 +102,6 @@ class QuicClient : public EpollCallbackInterface {
 
   bool connected() const;
 
-  int packets_dropped() { return packets_dropped_; }
-
   void set_bind_to_address(IPAddressNumber address) {
     bind_to_address_ = address;
   }
@@ -111,8 +109,6 @@ class QuicClient : public EpollCallbackInterface {
   IPAddressNumber bind_to_address() const { return bind_to_address_; }
 
   void set_local_port(int local_port) { local_port_ = local_port; }
-
-  int local_port() { return local_port_; }
 
   const IPEndPoint& server_address() const { return server_address_; }
 

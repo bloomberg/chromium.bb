@@ -40,11 +40,6 @@ const int kMaxRetransmissionsPerAck = 10;
 // at least 3 sequence numbers larger arrives.
 const size_t kNumberOfNacksBeforeRetransmission = 3;
 
-// The maxiumum number of packets we'd like to queue.  We may end up queueing
-// more in the case of many control frames.
-// 6 is arbitrary.
-const int kMaxPacketsToSerializeAtOnce = 6;
-
 // Limit the number of packets we send per retransmission-alarm so we
 // eventually cede.  10 is arbitrary.
 const size_t kMaxPacketsPerRetransmissionAlarm = 10;
@@ -516,7 +511,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
       incoming_ack.received_info.largest_observed) {
     DLOG(ERROR) << ENDPOINT << "Peer sent missing packet: "
                 << *incoming_ack.received_info.missing_packets.rbegin()
-                << " greater than largest observed: "
+                << " which is greater than largest observed: "
                 << incoming_ack.received_info.largest_observed;
     return false;
   }
@@ -526,7 +521,7 @@ bool QuicConnection::ValidateAckFrame(const QuicAckFrame& incoming_ack) {
       received_packet_manager_.least_packet_awaited_by_peer()) {
     DLOG(ERROR) << ENDPOINT << "Peer sent missing packet: "
                 << *incoming_ack.received_info.missing_packets.begin()
-                << "smaller than least_packet_awaited_by_peer_: "
+                << " which is smaller than least_packet_awaited_by_peer_: "
                 << received_packet_manager_.least_packet_awaited_by_peer();
     return false;
   }
@@ -750,8 +745,21 @@ bool QuicConnection::ShouldLastPacketInstigateAck() {
 
 void QuicConnection::MaybeSendInResponseToPacket(
     bool last_packet_should_instigate_ack) {
-  // TODO(ianswett): Better merge these two blocks to queue up an ack if
-  // necessary, then either only send the ack or bundle it with other data.
+  packet_generator_.StartBatchOperations();
+
+  if (last_packet_should_instigate_ack) {
+    if (send_ack_in_response_to_packet_) {
+      SendAck();
+    } else if (last_packet_should_instigate_ack) {
+      // Set the ack alarm for when any retransmittable frame is received.
+      if (!ack_alarm_->IsSet()) {
+        ack_alarm_->Set(clock_->ApproximateNow().Add(
+            congestion_manager_.DefaultRetransmissionTime()));
+      }
+    }
+    send_ack_in_response_to_packet_ = !send_ack_in_response_to_packet_;
+  }
+
   if (!last_ack_frames_.empty()) {
     // Now the we have received an ack, we might be able to send packets which
     // are queued locally, or drain streams which are blocked.
@@ -766,22 +774,7 @@ void QuicConnection::MaybeSendInResponseToPacket(
       send_alarm_->Set(time_of_last_received_packet_.Add(delay));
     }
   }
-
-  if (!last_packet_should_instigate_ack) {
-    return;
-  }
-
-  if (send_ack_in_response_to_packet_) {
-    SendAck();
-  } else if (!last_stream_frames_.empty()) {
-    // TODO(alyssar) this case should really be "if the packet contained any
-    // non-ack frame", rather than "if the packet contained a stream frame"
-    if (!ack_alarm_->IsSet()) {
-      ack_alarm_->Set(clock_->ApproximateNow().Add(
-          congestion_manager_.DefaultRetransmissionTime()));
-    }
-  }
-  send_ack_in_response_to_packet_ = !send_ack_in_response_to_packet_;
+  packet_generator_.FinishBatchOperations();
 }
 
 void QuicConnection::SendVersionNegotiationPacket() {
@@ -884,9 +877,14 @@ bool QuicConnection::DoWrite() {
   // write more.
   if (CanWrite(NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA,
                NOT_HANDSHAKE)) {
-    packet_generator_.StartBatchOperations();
+    const bool in_batch_mode = packet_generator_.InBatchMode();
+    if (!in_batch_mode) {
+      packet_generator_.StartBatchOperations();
+    }
     bool all_bytes_written = visitor_->OnCanWrite();
-    packet_generator_.FinishBatchOperations();
+    if (!in_batch_mode) {
+      packet_generator_.FinishBatchOperations();
+    }
 
     // After the visitor writes, it may have caused the socket to become write
     // blocked or the congestion manager to prohibit sending, so check again.

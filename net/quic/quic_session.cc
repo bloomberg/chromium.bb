@@ -190,13 +190,16 @@ void QuicSession::ConnectionClose(QuicErrorCode error, bool from_peer) {
 bool QuicSession::OnCanWrite() {
   // We latch this here rather than doing a traditional loop, because streams
   // may be modifying the list as we loop.
-  int remaining_writes = write_blocked_streams_.NumObjects();
+  int remaining_writes = write_blocked_streams_.NumBlockedStreams();
 
   while (!connection_->HasQueuedData() &&
          remaining_writes > 0) {
-    DCHECK(!write_blocked_streams_.IsEmpty());
-    ReliableQuicStream* stream =
-        GetStream(write_blocked_streams_.GetNextBlockedObject());
+    DCHECK(write_blocked_streams_.HasWriteBlockedStreams());
+    ReliableQuicStream* stream = NULL;
+    int index = write_blocked_streams_.GetHighestPriorityWriteBlockedList();
+    if (index != -1) {
+      stream = GetStream(write_blocked_streams_.PopFront(index));
+    }
     if (stream != NULL) {
       // If the stream can't write all bytes, it'll re-add itself to the blocked
       // list.
@@ -205,7 +208,7 @@ bool QuicSession::OnCanWrite() {
     --remaining_writes;
   }
 
-  return write_blocked_streams_.IsEmpty();
+  return !write_blocked_streams_.HasWriteBlockedStreams();
 }
 
 QuicConsumedData QuicSession::WriteData(QuicStreamId id,
@@ -393,7 +396,7 @@ size_t QuicSession::GetNumOpenStreams() const {
 }
 
 void QuicSession::MarkWriteBlocked(QuicStreamId id) {
-  write_blocked_streams_.AddBlockedObject(id);
+  write_blocked_streams_.PushBack(id, 0);
 }
 
 void QuicSession::MarkDecompressionBlocked(QuicHeaderId header_id,

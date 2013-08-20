@@ -95,6 +95,8 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
                                QuicStreamOffset offset,
                                bool fin);
 
+  // Indicates whether batch mode is currently enabled.
+  bool InBatchMode();
   // Disables flushing.
   void StartBatchOperations();
   // Enables flushing and flushes queued data.
@@ -126,7 +128,10 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
 
   QuicPacketCreator* packet_creator_;
   QuicFrames queued_control_frames_;
-  bool should_flush_;
+
+  // True if batch mode is currently enabled.
+  bool batch_mode_;
+
   // Flags to indicate the need for just-in-time construction of a frame.
   bool should_send_ack_;
   bool should_send_feedback_;

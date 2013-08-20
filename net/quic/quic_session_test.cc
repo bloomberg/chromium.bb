@@ -125,10 +125,12 @@ class QuicSessionTest : public ::testing::Test {
   QuicGuid guid_;
   MockConnection* connection_;
   TestSession session_;
-  QuicConnectionVisitorInterface* visitor_;
-  hash_map<QuicStreamId, ReliableQuicStream*>* streams_;
   set<QuicStreamId> closed_streams_;
 };
+
+TEST_F(QuicSessionTest, PeerAddress) {
+  EXPECT_EQ(IPEndPoint(), session_.peer_address());
+}
 
 TEST_F(QuicSessionTest, IsCryptoHandshakeConfirmed) {
   EXPECT_FALSE(session_.IsCryptoHandshakeConfirmed());

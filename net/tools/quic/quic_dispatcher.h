@@ -12,7 +12,7 @@
 
 #include "base/containers/hash_tables.h"
 #include "net/base/ip_endpoint.h"
-#include "net/quic/blocked_list.h"
+#include "net/base/linked_hash_map.h"
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_protocol.h"
 #include "net/tools/flip_server/epoll_server.h"
@@ -48,7 +48,8 @@ class QuicDispatcherPeer;
 class DeleteSessionsAlarm;
 class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
  public:
-  typedef BlockedList<QuicBlockedWriterInterface*> WriteBlockedList;
+  // Ideally we'd have a linked_hash_set: the  boolean is unused.
+  typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
 
   // Due to the way delete_sessions_closure_ is registered, the Dispatcher
   // must live until epoll_server Shutdown.
@@ -82,7 +83,6 @@ class QuicDispatcher : public QuicPacketWriter, public QuicSessionOwner {
   // Ensure that the closed connection is cleaned up asynchronously.
   virtual void OnConnectionClose(QuicGuid guid, QuicErrorCode error) OVERRIDE;
 
-  int fd() { return fd_; }
   void set_fd(int fd) { fd_ = fd; }
 
   typedef base::hash_map<QuicGuid, QuicSession*> SessionMap;

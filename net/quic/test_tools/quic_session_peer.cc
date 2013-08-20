@@ -22,13 +22,7 @@ void QuicSessionPeer::SetMaxOpenStreams(QuicSession* session,
 }
 
 // static
-ReliableQuicStream* QuicSessionPeer::CreateIncomingReliableStream(
-    QuicSession* session, QuicStreamId id) {
-  return session->CreateIncomingReliableStream(id);
-}
-
-// static
-BlockedList<QuicStreamId>* QuicSessionPeer::GetWriteblockedStreams(
+WriteBlockedList<QuicStreamId>* QuicSessionPeer::GetWriteblockedStreams(
     QuicSession* session) {
   return &session->write_blocked_streams_;
 }
