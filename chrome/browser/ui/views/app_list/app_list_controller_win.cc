@@ -162,7 +162,9 @@ gfx::Point FindReferencePoint(const gfx::Display& display,
   // also move to the left (for horizontal taskbars) or top (for vertical).
   const gfx::Rect& screen_rect = display.bounds();
   // First handle taskbar on bottom.
-  if (taskbar_rect.width() == screen_rect.width()) {
+  // Note on Windows 8 the work area won't include split windows on the left or
+  // right, and neither will |taskbar_rect|.
+  if (taskbar_rect.width() == display.work_area().width()) {
     if (taskbar_rect.bottom() == screen_rect.bottom()) {
       if (taskbar_rect.y() - cursor.y() > kSnapDistance)
         return gfx::Point(screen_rect.x(), taskbar_rect.y());
