@@ -7,7 +7,6 @@
 #include "base/json/json_writer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/networking_private/networking_private_api.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
@@ -22,8 +21,6 @@
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-using extensions::event_names::kOnNetworkListChanged;
-using extensions::event_names::kOnNetworksChanged;
 using extensions::EventRouter;
 using extensions::ExtensionSystem;
 namespace api = extensions::api::networking_private;
@@ -39,9 +36,9 @@ NetworkingPrivateEventRouter::NetworkingPrivateEventRouter(Profile* profile)
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   if (event_router) {
     event_router->RegisterObserver(
-        this, extensions::event_names::kOnNetworksChanged);
+        this, api::OnNetworksChanged::kEventName);
     event_router->RegisterObserver(
-        this, extensions::event_names::kOnNetworkListChanged);
+        this, api::OnNetworkListChanged::kEventName);
     StartOrStopListeningForNetworkChanges();
   }
 }
@@ -80,8 +77,9 @@ void NetworkingPrivateEventRouter::OnListenerRemoved(
 
 void NetworkingPrivateEventRouter::StartOrStopListeningForNetworkChanges() {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
-  bool should_listen = event_router->HasEventListener(kOnNetworksChanged) ||
-      event_router->HasEventListener(kOnNetworkListChanged);
+  bool should_listen =
+      event_router->HasEventListener(api::OnNetworksChanged::kEventName) ||
+      event_router->HasEventListener(api::OnNetworkListChanged::kEventName);
 
   if (should_listen && !listening_) {
     NetworkHandler::Get()->network_state_handler()->AddObserver(
@@ -97,7 +95,7 @@ void NetworkingPrivateEventRouter::NetworkListChanged() {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   NetworkStateHandler::NetworkStateList networks;
   NetworkHandler::Get()->network_state_handler()->GetNetworkList(&networks);
-  if (!event_router->HasEventListener(kOnNetworkListChanged)) {
+  if (!event_router->HasEventListener(api::OnNetworkListChanged::kEventName)) {
     // TODO(stevenjb): Remove logging once crbug.com/256881 is fixed
     // (or at least reduce to LOG_DEBUG). Same with NET_LOG events below.
     NET_LOG_EVENT("NetworkingPrivate.NetworkListChanged: No Listeners", "");
@@ -117,14 +115,14 @@ void NetworkingPrivateEventRouter::NetworkListChanged() {
 
   scoped_ptr<base::ListValue> args(api::OnNetworkListChanged::Create(changes));
   scoped_ptr<extensions::Event> extension_event(new extensions::Event(
-      kOnNetworkListChanged, args.Pass()));
+      api::OnNetworkListChanged::kEventName, args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
 }
 
 void NetworkingPrivateEventRouter::NetworkPropertiesUpdated(
     const NetworkState* network) {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
-  if (!event_router->HasEventListener(kOnNetworksChanged)) {
+  if (!event_router->HasEventListener(api::OnNetworksChanged::kEventName)) {
     NET_LOG_EVENT("NetworkingPrivate.NetworkPropertiesUpdated: No Listeners",
                   network->path());
     return;
@@ -134,7 +132,7 @@ void NetworkingPrivateEventRouter::NetworkPropertiesUpdated(
   scoped_ptr<base::ListValue> args(api::OnNetworksChanged::Create(
       std::vector<std::string>(1, network->path())));
   scoped_ptr<extensions::Event> extension_event(
-      new extensions::Event(kOnNetworksChanged, args.Pass()));
+      new extensions::Event(api::OnNetworksChanged::kEventName, args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
 }
 

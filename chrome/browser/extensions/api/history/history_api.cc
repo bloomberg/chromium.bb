@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/cancelable_task_tracker.h"
 #include "chrome/common/extensions/api/experimental_history.h"
+#include "chrome/common/extensions/api/history.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -51,9 +52,6 @@ namespace OnVisitRemoved = api::history::OnVisitRemoved;
 namespace Search = api::history::Search;
 
 namespace {
-
-const char kOnVisited[] = "history.onVisited";
-const char kOnVisitRemoved[] = "history.onVisitRemoved";
 
 const char kInvalidIdError[] = "History item id is invalid.";
 const char kInvalidUrlError[] = "Url is invalid.";
@@ -170,7 +168,7 @@ void HistoryEventRouter::HistoryUrlVisited(
   scoped_ptr<HistoryItem> history_item = GetHistoryItem(details->row);
   scoped_ptr<base::ListValue> args = OnVisited::Create(*history_item);
 
-  DispatchEvent(profile, kOnVisited, args.Pass());
+  DispatchEvent(profile, api::history::OnVisited::kEventName, args.Pass());
 }
 
 void HistoryEventRouter::HistoryUrlsRemoved(
@@ -187,7 +185,7 @@ void HistoryEventRouter::HistoryUrlsRemoved(
   removed.urls.reset(urls);
 
   scoped_ptr<base::ListValue> args = OnVisitRemoved::Create(removed);
-  DispatchEvent(profile, kOnVisitRemoved, args.Pass());
+  DispatchEvent(profile, api::history::OnVisitRemoved::kEventName, args.Pass());
 }
 
 void HistoryEventRouter::DispatchEvent(
@@ -205,9 +203,9 @@ void HistoryEventRouter::DispatchEvent(
 
 HistoryAPI::HistoryAPI(Profile* profile) : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, kOnVisited);
+      this, api::history::OnVisited::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, kOnVisitRemoved);
+      this, api::history::OnVisitRemoved::kEventName);
 }
 
 HistoryAPI::~HistoryAPI() {

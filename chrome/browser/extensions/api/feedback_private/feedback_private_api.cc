@@ -10,7 +10,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/feedback_private/feedback_service.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "grit/generated_resources.h"
@@ -20,8 +19,10 @@
 
 namespace extensions {
 
-using api::feedback_private::SystemInformation;
-using api::feedback_private::FeedbackInfo;
+namespace feedback_private = api::feedback_private;
+
+using feedback_private::SystemInformation;
+using feedback_private::FeedbackInfo;
 
 static base::LazyInstance<ProfileKeyedAPIFactory<FeedbackPrivateAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -68,8 +69,8 @@ void FeedbackPrivateAPI::RequestFeedback(
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(info.ToValue().release());
 
-    scoped_ptr<Event> event(
-        new Event(event_names::kOnFeedbackRequested, args.Pass()));
+    scoped_ptr<Event> event(new Event(
+        feedback_private::OnFeedbackRequested::kEventName, args.Pass()));
     ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
         event.Pass());
   }
@@ -122,14 +123,14 @@ bool FeedbackPrivateGetSystemInformationFunction::RunImpl() {
 
 void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
     const SystemInformationList& sys_info) {
-  results_ = api::feedback_private::GetSystemInformation::Results::Create(
+  results_ = feedback_private::GetSystemInformation::Results::Create(
       sys_info);
   SendResponse(true);
 }
 
 bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
-  scoped_ptr<api::feedback_private::SendFeedback::Params> params(
-      api::feedback_private::SendFeedback::Params::Create(*args_));
+  scoped_ptr<feedback_private::SendFeedback::Params> params(
+      feedback_private::SendFeedback::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   const FeedbackInfo &feedback_info = params->feedback;
@@ -186,9 +187,9 @@ bool FeedbackPrivateSendFeedbackFunction::RunImpl() {
 
 void FeedbackPrivateSendFeedbackFunction::OnCompleted(
     bool success) {
-  results_ = api::feedback_private::SendFeedback::Results::Create(
-      success ? api::feedback_private::STATUS_SUCCESS :
-                api::feedback_private::STATUS_DELAYED);
+  results_ = feedback_private::SendFeedback::Results::Create(
+      success ? feedback_private::STATUS_SUCCESS :
+                feedback_private::STATUS_DELAYED);
   SendResponse(true);
 }
 

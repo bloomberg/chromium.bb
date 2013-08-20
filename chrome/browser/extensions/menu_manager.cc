@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
@@ -34,6 +35,8 @@ using content::WebContents;
 using extensions::ExtensionSystem;
 
 namespace extensions {
+
+namespace context_menus = api::context_menus;
 
 namespace {
 
@@ -681,7 +684,7 @@ void MenuManager::ExecuteCommand(Profile* profile,
     event_router->DispatchEventToExtension(item->extension_id(), event.Pass());
   }
   {
-    scoped_ptr<Event> event(new Event(event_names::kOnContextMenuClicked,
+    scoped_ptr<Event> event(new Event(context_menus::OnClicked::kEventName,
                                       args.Pass()));
     event->restrict_to_profile = profile;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;

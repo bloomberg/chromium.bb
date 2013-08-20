@@ -30,13 +30,5 @@ const char kInvalidUrlError[] = "Invalid URL.";
 const char kModifySpecialError[] = "Can't modify the root bookmark folders.";
 const char kEditBookmarksDisabled[] = "Bookmark editing is disabled.";
 
-const char kOnBookmarkCreated[] = "bookmarks.onCreated";
-const char kOnBookmarkRemoved[] = "bookmarks.onRemoved";
-const char kOnBookmarkChanged[] = "bookmarks.onChanged";
-const char kOnBookmarkMoved[] = "bookmarks.onMoved";
-const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
-const char kOnBookmarkImportBegan[] = "bookmarks.onImportBegan";
-const char kOnBookmarkImportEnded[] = "bookmarks.onImportEnded";
-
 }  // namespace bookmark_api_constants
 }  // namespace extensions

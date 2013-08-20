@@ -8,7 +8,6 @@
 #include "chrome/browser/extensions/api/recovery_private/recovery_operation_manager.h"
 #include "chrome/browser/extensions/api/recovery_private/write_from_file_operation.h"
 #include "chrome/browser/extensions/api/recovery_private/write_from_url_operation.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -17,6 +16,9 @@
 #include "content/public/browser/notification_service.h"
 
 namespace extensions {
+
+namespace recovery_private = extensions::api::recovery_private;
+
 namespace recovery {
 
 namespace {
@@ -112,8 +114,8 @@ void RecoveryOperationManager::OnProgress(const ExtensionId& extension_id,
   info.percent_complete = progress;
 
   scoped_ptr<base::ListValue> args(recovery_api::OnWriteProgress::Create(info));
-  scoped_ptr<Event> event(new Event(event_names::kRecoveryOnWriteProgress,
-                                    args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      recovery_private::OnWriteProgress::kEventName, args.Pass()));
 
   ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -122,8 +124,8 @@ void RecoveryOperationManager::OnProgress(const ExtensionId& extension_id,
 void RecoveryOperationManager::OnComplete(const ExtensionId& extension_id) {
 
   scoped_ptr<base::ListValue> args(recovery_api::OnWriteComplete::Create());
-  scoped_ptr<Event> event(new Event(event_names::kRecoveryOnWriteComplete,
-                                    args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      recovery_private::OnWriteComplete::kEventName, args.Pass()));
 
   ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -140,7 +142,7 @@ void RecoveryOperationManager::OnError(const ExtensionId& extension_id,
   info.percent_complete = progress;
 
   scoped_ptr<base::ListValue> args(recovery_api::OnWriteError::Create(info));
-  scoped_ptr<Event> event(new Event(event_names::kRecoveryOnWriteError,
+  scoped_ptr<Event> event(new Event(recovery_private::OnWriteError::kEventName,
                                     args.Pass()));
 
   ExtensionSystem::Get(profile_)->event_router()->

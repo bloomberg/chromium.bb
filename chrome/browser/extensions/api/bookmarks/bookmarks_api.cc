@@ -189,7 +189,7 @@ void BookmarkEventRouter::BookmarkNodeMoved(BookmarkModel* model,
   object_args->SetInteger(keys::kOldIndexKey, old_index);
   args->Append(object_args);
 
-  DispatchEvent(keys::kOnBookmarkMoved, args.Pass());
+  DispatchEvent(bookmarks::OnMoved::kEventName, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
@@ -202,7 +202,7 @@ void BookmarkEventRouter::BookmarkNodeAdded(BookmarkModel* model,
       bookmark_api_helpers::GetBookmarkTreeNode(node, false, false));
   args->Append(tree_node->ToValue().release());
 
-  DispatchEvent(keys::kOnBookmarkCreated, args.Pass());
+  DispatchEvent(bookmarks::OnCreated::kEventName, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
@@ -217,7 +217,7 @@ void BookmarkEventRouter::BookmarkNodeRemoved(BookmarkModel* model,
   object_args->SetInteger(keys::kIndexKey, index);
   args->Append(object_args);
 
-  DispatchEvent(keys::kOnBookmarkRemoved, args.Pass());
+  DispatchEvent(bookmarks::OnRemoved::kEventName, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkAllNodesRemoved(BookmarkModel* model) {
@@ -243,7 +243,7 @@ void BookmarkEventRouter::BookmarkNodeChanged(BookmarkModel* model,
     object_args->SetString(keys::kUrlKey, node->url().spec());
   args->Append(object_args);
 
-  DispatchEvent(keys::kOnBookmarkChanged, args.Pass());
+  DispatchEvent(bookmarks::OnChanged::kEventName, args.Pass());
 }
 
 void BookmarkEventRouter::BookmarkNodeFaviconChanged(BookmarkModel* model,
@@ -268,35 +268,35 @@ void BookmarkEventRouter::BookmarkNodeChildrenReordered(
   reorder_info->Set(keys::kChildIdsKey, children);
   args->Append(reorder_info);
 
-  DispatchEvent(keys::kOnBookmarkChildrenReordered, args.Pass());
+  DispatchEvent(bookmarks::OnChildrenReordered::kEventName, args.Pass());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesBeginning(
     BookmarkModel* model) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  DispatchEvent(keys::kOnBookmarkImportBegan, args.Pass());
+  DispatchEvent(bookmarks::OnImportBegan::kEventName, args.Pass());
 }
 
 void BookmarkEventRouter::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
-  DispatchEvent(keys::kOnBookmarkImportEnded, args.Pass());
+  DispatchEvent(bookmarks::OnImportEnded::kEventName, args.Pass());
 }
 
 BookmarksAPI::BookmarksAPI(Profile* profile) : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnBookmarkCreated);
+      this, bookmarks::OnCreated::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnBookmarkRemoved);
+      this, bookmarks::OnRemoved::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnBookmarkChanged);
+      this, bookmarks::OnChanged::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnBookmarkMoved);
+      this, bookmarks::OnMoved::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnBookmarkChildrenReordered);
+      this, bookmarks::OnChildrenReordered::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnBookmarkImportBegan);
+      this, bookmarks::OnImportBegan::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnBookmarkImportEnded);
+      this, bookmarks::OnImportEnded::kEventName);
 }
 
 BookmarksAPI::~BookmarksAPI() {

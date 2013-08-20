@@ -12,12 +12,14 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/idle.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
 
 namespace keys = extensions::idle_api_constants;
+namespace idle = extensions::api::idle;
 
 namespace extensions {
 
@@ -51,7 +53,8 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
                                           IdleState new_state) {
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(IdleManager::CreateIdleValue(new_state));
-  scoped_ptr<Event> event(new Event(keys::kOnStateChanged, args.Pass()));
+  scoped_ptr<Event> event(new Event(idle::OnStateChanged::kEventName,
+                                    args.Pass()));
   event->restrict_to_profile = profile_;
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
       extension_id, event.Pass());
@@ -60,7 +63,7 @@ void DefaultEventDelegate::OnStateChanged(const std::string& extension_id,
 void DefaultEventDelegate::RegisterObserver(
     EventRouter::Observer* observer) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      observer, idle_api_constants::kOnStateChanged);
+      observer, idle::OnStateChanged::kEventName);
 }
 
 void DefaultEventDelegate::UnregisterObserver(EventRouter::Observer* observer) {

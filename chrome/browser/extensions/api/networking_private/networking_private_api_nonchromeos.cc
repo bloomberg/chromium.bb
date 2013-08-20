@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -18,8 +17,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/networking_private.h"
 
-using extensions::event_names::kOnNetworkListChanged;
-using extensions::event_names::kOnNetworksChanged;
 using extensions::EventRouter;
 using extensions::ExtensionSystem;
 namespace api = extensions::api::networking_private;
@@ -289,7 +286,7 @@ bool NetworkingPrivateRequestNetworkScanFunction::RunImpl() {
   EventRouter* event_router = ExtensionSystem::Get(profile_)->event_router();
   scoped_ptr<base::ListValue> args(api::OnNetworkListChanged::Create(changes));
   scoped_ptr<extensions::Event> extension_event(new extensions::Event(
-      kOnNetworkListChanged, args.Pass()));
+      api::OnNetworkListChanged::kEventName, args.Pass()));
   event_router->BroadcastEvent(extension_event.Pass());
 
   return true;
@@ -333,7 +330,7 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
     scoped_ptr<base::ListValue> args(api::OnNetworksChanged::Create(
         std::vector<std::string>(1, params->network_guid)));
     scoped_ptr<extensions::Event> netchanged_event(
-        new extensions::Event(kOnNetworksChanged, args.Pass()));
+        new extensions::Event(api::OnNetworksChanged::kEventName, args.Pass()));
     event_router->BroadcastEvent(netchanged_event.Pass());
 
     // Generate NetworkListChanged event.
@@ -346,7 +343,7 @@ bool NetworkingPrivateStartConnectFunction::RunImpl() {
 
     scoped_ptr<base::ListValue> arg2(api::OnNetworkListChanged::Create(list));
     scoped_ptr<extensions::Event> netlist_event(new extensions::Event(
-        kOnNetworkListChanged, arg2.Pass()));
+        api::OnNetworkListChanged::kEventName, arg2.Pass()));
     event_router->BroadcastEvent(netlist_event.Pass());
   }
   return true;
@@ -374,7 +371,7 @@ bool NetworkingPrivateStartDisconnectFunction::RunImpl() {
     scoped_ptr<base::ListValue> args(api::OnNetworksChanged::Create(
         std::vector<std::string>(1, params->network_guid)));
     scoped_ptr<extensions::Event> extension_event(
-        new extensions::Event(kOnNetworksChanged, args.Pass()));
+        new extensions::Event(api::OnNetworksChanged::kEventName, args.Pass()));
     event_router->BroadcastEvent(extension_event.Pass());
   }
   return true;

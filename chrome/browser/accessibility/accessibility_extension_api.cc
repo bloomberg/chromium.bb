@@ -16,10 +16,13 @@
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/experimental_accessibility.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "extensions/common/error_utils.h"
 
 namespace keys = extension_accessibility_api_constants;
+namespace experimental_accessibility =
+    extensions::api::experimental_accessibility;
 
 // Returns the AccessibilityControlInfo serialized into a JSON string,
 // consisting of an array of a single object of type AccessibilityObject,
@@ -114,7 +117,9 @@ void ExtensionAccessibilityEventRouter::HandleControlEvent(
 void ExtensionAccessibilityEventRouter::OnWindowOpened(
     const AccessibilityWindowInfo* info) {
   scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
-  DispatchEvent(info->profile(), keys::kOnWindowOpened, args.Pass());
+  DispatchEvent(info->profile(),
+                experimental_accessibility::OnWindowOpened::kEventName,
+                args.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::OnControlFocused(
@@ -122,31 +127,41 @@ void ExtensionAccessibilityEventRouter::OnControlFocused(
   last_focused_control_dict_.Clear();
   info->SerializeToDict(&last_focused_control_dict_);
   scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
-  DispatchEvent(info->profile(), keys::kOnControlFocused, args.Pass());
+  DispatchEvent(info->profile(),
+                experimental_accessibility::OnControlFocused::kEventName,
+                args.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::OnControlAction(
     const AccessibilityControlInfo* info) {
   scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
-  DispatchEvent(info->profile(), keys::kOnControlAction, args.Pass());
+  DispatchEvent(info->profile(),
+                experimental_accessibility::OnControlAction::kEventName,
+                args.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::OnTextChanged(
     const AccessibilityControlInfo* info) {
   scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
-  DispatchEvent(info->profile(), keys::kOnTextChanged, args.Pass());
+  DispatchEvent(info->profile(),
+                experimental_accessibility::OnTextChanged::kEventName,
+                args.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::OnMenuOpened(
     const AccessibilityMenuInfo* info) {
   scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
-  DispatchEvent(info->profile(), keys::kOnMenuOpened, args.Pass());
+  DispatchEvent(info->profile(),
+                experimental_accessibility::OnMenuOpened::kEventName,
+                args.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::OnMenuClosed(
     const AccessibilityMenuInfo* info) {
   scoped_ptr<ListValue> args(ControlInfoToEventArguments(info));
-  DispatchEvent(info->profile(), keys::kOnMenuClosed, args.Pass());
+  DispatchEvent(info->profile(),
+                experimental_accessibility::OnMenuClosed::kEventName,
+                args.Pass());
 }
 
 void ExtensionAccessibilityEventRouter::DispatchEvent(

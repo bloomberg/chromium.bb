@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/api/idle/idle_manager_factory.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
+#include "chrome/common/extensions/api/idle.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
@@ -25,6 +26,7 @@
 using ::testing::_;
 
 namespace utils = extension_function_test_utils;
+namespace idle = extensions::api::idle;
 
 namespace extensions {
 
@@ -107,13 +109,13 @@ ScopedListen::ScopedListen(IdleManager* idle_manager,
                            const std::string& extension_id)
     : idle_manager_(idle_manager),
       extension_id_(extension_id) {
-  const EventListenerInfo details(idle_api_constants::kOnStateChanged,
+  const EventListenerInfo details(idle::OnStateChanged::kEventName,
                                   extension_id_);
   idle_manager_->OnListenerAdded(details);
 }
 
 ScopedListen::~ScopedListen() {
-  const EventListenerInfo details(idle_api_constants::kOnStateChanged,
+  const EventListenerInfo details(idle::OnStateChanged::kEventName,
                                   extension_id_);
   idle_manager_->OnListenerRemoved(details);
 }

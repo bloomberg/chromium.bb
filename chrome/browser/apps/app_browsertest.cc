@@ -22,7 +22,6 @@
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/component_loader.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -34,6 +33,7 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/app_runtime.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -53,6 +53,8 @@ using content::WebContents;
 using web_modal::WebContentsModalDialogManager;
 
 namespace extensions {
+
+namespace app_runtime = api::app_runtime;
 
 namespace {
 
@@ -1064,8 +1066,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppIncognitoBrowserTest, IncognitoComponentApp) {
   // for the launch event.
   EventRouter* router = ExtensionSystem::Get(incognito_profile)->event_router();
   ASSERT_TRUE(router != NULL);
-  while (!router->ExtensionHasEventListener(file_manager->id(),
-                                            event_names::kOnLaunched)) {
+  while (!router->ExtensionHasEventListener(
+      file_manager->id(), app_runtime::OnLaunched::kEventName)) {
     content::RunAllPendingInMessageLoop();
   }
 

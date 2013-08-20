@@ -27,12 +27,7 @@ using extensions::permissions_api_helpers::PackPermissionSet;
 
 namespace extensions {
 
-namespace {
-
-const char kOnAdded[] = "permissions.onAdded";
-const char kOnRemoved[] = "permissions.onRemoved";
-
-}  // namespace
+namespace permissions = api::permissions;
 
 PermissionsUpdater::PermissionsUpdater(Profile* profile)
     : profile_(profile) {}
@@ -123,11 +118,11 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
 
   if (event_type == REMOVED) {
     reason = UpdatedExtensionPermissionsInfo::REMOVED;
-    event_name = kOnRemoved;
+    event_name = permissions::OnRemoved::kEventName;
   } else {
     CHECK_EQ(ADDED, event_type);
     reason = UpdatedExtensionPermissionsInfo::ADDED;
-    event_name = kOnAdded;
+    event_name = permissions::OnAdded::kEventName;
   }
 
   // Notify other APIs or interested parties.

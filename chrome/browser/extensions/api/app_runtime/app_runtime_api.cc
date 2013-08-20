@@ -10,27 +10,27 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/app_runtime.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace extensions {
 
-namespace {
+namespace app_runtime = api::app_runtime;
 
-using event_names::kOnLaunched;
-using event_names::kOnRestarted;
+namespace {
 
 void DispatchOnLaunchedEventImpl(const std::string& extension_id,
                                  scoped_ptr<base::ListValue> args,
                                  Profile* profile) {
   extensions::ExtensionSystem* system =
       extensions::ExtensionSystem::Get(profile);
-  scoped_ptr<Event> event(new Event(kOnLaunched, args.Pass()));
+  scoped_ptr<Event> event(new Event(app_runtime::OnLaunched::kEventName,
+                                    args.Pass()));
   event->restrict_to_profile = profile;
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
@@ -49,7 +49,8 @@ void AppEventRouter::DispatchOnLaunchedEvent(
 void AppEventRouter::DispatchOnRestartedEvent(Profile* profile,
                                               const Extension* extension) {
   scoped_ptr<base::ListValue> arguments(new base::ListValue());
-  scoped_ptr<Event> event(new Event(kOnRestarted, arguments.Pass()));
+  scoped_ptr<Event> event(new Event(app_runtime::OnRestarted::kEventName,
+                                    arguments.Pass()));
   event->restrict_to_profile = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), event.Pass());

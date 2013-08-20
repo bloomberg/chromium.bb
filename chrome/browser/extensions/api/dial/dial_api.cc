@@ -8,7 +8,6 @@
 
 #include "base/time/time.h"
 #include "chrome/browser/extensions/api/dial/dial_api_factory.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,11 +34,13 @@ const size_t kDialMaxDevices = 256;
 
 namespace extensions {
 
+namespace dial = api::dial;
+
 DialAPI::DialAPI(Profile* profile)
     : RefcountedBrowserContextKeyedService(BrowserThread::IO),
       profile_(profile) {
   ExtensionSystem::Get(profile)->event_router()->RegisterObserver(
-      this, extensions::event_names::kOnDialDeviceList);
+      this, dial::OnDeviceList::kEventName);
 }
 
 DialAPI::~DialAPI() {}
@@ -106,7 +107,7 @@ void DialAPI::SendEventOnUIThread(const DialRegistry::DeviceList& devices) {
   }
   scoped_ptr<base::ListValue> results = api::dial::OnDeviceList::Create(args);
   scoped_ptr<Event> event(
-      new Event(event_names::kOnDialDeviceList, results.Pass()));
+      new Event(dial::OnDeviceList::kEventName, results.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       BroadcastEvent(event.Pass());
 }
@@ -137,7 +138,7 @@ void DialAPI::SendErrorOnUIThread(const DialRegistry::DialErrorCode code) {
   }
 
   scoped_ptr<base::ListValue> results = api::dial::OnError::Create(dial_error);
-  scoped_ptr<Event> event(new Event(event_names::kOnDialError, results.Pass()));
+  scoped_ptr<Event> event(new Event(dial::OnError::kEventName, results.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       BroadcastEvent(event.Pass());
 }

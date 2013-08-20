@@ -19,13 +19,14 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/alarms.h"
 #include "content/public/browser/notification_service.h"
 
 namespace extensions {
 
-namespace {
+namespace alarms = api::alarms;
 
-const char kOnAlarmEvent[] = "alarms.onAlarm";
+namespace {
 
 // A list of alarms that this extension has set.
 const char kRegisteredAlarms[] = "alarms";
@@ -43,7 +44,8 @@ class DefaultAlarmDelegate : public AlarmManager::Delegate {
                        const Alarm& alarm) OVERRIDE {
     scoped_ptr<base::ListValue> args(new base::ListValue());
     args->Append(alarm.js_alarm->ToValue().release());
-    scoped_ptr<Event> event(new Event(kOnAlarmEvent, args.Pass()));
+    scoped_ptr<Event> event(new Event(alarms::OnAlarm::kEventName,
+                                      args.Pass()));
     ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
         extension_id, event.Pass());
   }

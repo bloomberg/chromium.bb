@@ -18,11 +18,12 @@
 
 namespace extensions {
 
+namespace activity_log_private = api::activity_log_private;
+
 using api::activity_log_private::ExtensionActivity;
 
 const char kActivityLogExtensionId[] = "acldcpdepobcjbdanifkmfndkjoilgba";
 const char kActivityLogTestExtensionId[] = "ajabfgledjhbabeoojlabelaifmakodf";
-const char kNewActivityEventName[] = "activityLogPrivate.onExtensionActivity";
 
 static base::LazyInstance<ProfileKeyedAPIFactory<ActivityLogAPI> >
     g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -48,7 +49,7 @@ ActivityLogAPI::ActivityLogAPI(Profile* profile)
   activity_log_ = extensions::ActivityLog::GetInstance(profile_);
   DCHECK(activity_log_);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, kNewActivityEventName);
+      this, activity_log_private::OnExtensionActivity::kEventName);
   activity_log_->AddObserver(this);
   initialized_ = true;
 }
@@ -84,7 +85,9 @@ void ActivityLogAPI::OnExtensionActivity(scoped_refptr<Action> activity) {
   scoped_ptr<ExtensionActivity> activity_arg =
       activity->ConvertToExtensionActivity();
   value->Append(activity_arg->ToValue().release());
-  scoped_ptr<Event> event(new Event(kNewActivityEventName, value.Pass()));
+  scoped_ptr<Event> event(
+      new Event(activity_log_private::OnExtensionActivity::kEventName,
+          value.Pass()));
   event->restrict_to_profile = profile_;
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }

@@ -65,6 +65,7 @@ const char kStopDiscoveryFailed[] = "Failed to stop discovery";
 }  // namespace
 
 namespace AddProfile = extensions::api::bluetooth::AddProfile;
+namespace bluetooth = extensions::api::bluetooth;
 namespace Connect = extensions::api::bluetooth::Connect;
 namespace Disconnect = extensions::api::bluetooth::Disconnect;
 namespace GetDevices = extensions::api::bluetooth::GetDevices;
@@ -85,7 +86,7 @@ BluetoothAPI* BluetoothAPI::Get(Profile* profile) {
 
 BluetoothAPI::BluetoothAPI(Profile* profile) : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, extensions::event_names::kBluetoothOnAdapterStateChanged);
+      this, bluetooth::OnAdapterStateChanged::kEventName);
 }
 
 BluetoothAPI::~BluetoothAPI() {

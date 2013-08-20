@@ -42,6 +42,7 @@
 namespace extensions {
 
 namespace bookmark_keys = bookmark_api_constants;
+namespace bookmark_manager_private = api::bookmark_manager_private;
 namespace CanPaste = api::bookmark_manager_private::CanPaste;
 namespace Copy = api::bookmark_manager_private::Copy;
 namespace Cut = api::bookmark_manager_private::Cut;
@@ -198,7 +199,7 @@ void BookmarkManagerPrivateEventRouter::DispatchDragEvent(
 
 void BookmarkManagerPrivateEventRouter::OnDragEnter(
     const BookmarkNodeData& data) {
-  DispatchDragEvent(data, manager_keys::kOnBookmarkDragEnter);
+  DispatchDragEvent(data, bookmark_manager_private::OnDragEnter::kEventName);
 }
 
 void BookmarkManagerPrivateEventRouter::OnDragOver(
@@ -209,11 +210,11 @@ void BookmarkManagerPrivateEventRouter::OnDragOver(
 
 void BookmarkManagerPrivateEventRouter::OnDragLeave(
     const BookmarkNodeData& data) {
-  DispatchDragEvent(data, manager_keys::kOnBookmarkDragLeave);
+  DispatchDragEvent(data, bookmark_manager_private::OnDragLeave::kEventName);
 }
 
 void BookmarkManagerPrivateEventRouter::OnDrop(const BookmarkNodeData& data) {
-  DispatchDragEvent(data, manager_keys::kOnBookmarkDrop);
+  DispatchDragEvent(data, bookmark_manager_private::OnDrop::kEventName);
 
   // Make a copy that is owned by this instance.
   ClearBookmarkNodeData();

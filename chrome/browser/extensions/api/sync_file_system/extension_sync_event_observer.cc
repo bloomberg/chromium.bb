@@ -65,9 +65,10 @@ void ExtensionSyncEventObserver::OnSyncStateUpdated(
   scoped_ptr<base::ListValue> params(
       api::sync_file_system::OnServiceStatusChanged::Create(service_info));
 
-  BroadcastOrDispatchEvent(app_origin,
-                           event_names::kOnServiceStatusChanged,
-                           params.Pass());
+  BroadcastOrDispatchEvent(
+      app_origin,
+      api::sync_file_system::OnServiceStatusChanged::kEventName,
+      params.Pass());
 }
 
 void ExtensionSyncEventObserver::OnFileSynced(
@@ -92,9 +93,10 @@ void ExtensionSyncEventObserver::OnFileSynced(
   params->AppendString(api::sync_file_system::ToString(action_enum));
   params->AppendString(api::sync_file_system::ToString(direction_enum));
 
-  BroadcastOrDispatchEvent(url.origin(),
-                           event_names::kOnFileStatusChanged,
-                           params.Pass());
+  BroadcastOrDispatchEvent(
+      url.origin(),
+      api::sync_file_system::OnFileStatusChanged::kEventName,
+      params.Pass());
 }
 
 void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(

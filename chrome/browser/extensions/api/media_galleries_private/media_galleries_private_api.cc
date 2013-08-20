@@ -40,6 +40,8 @@ namespace GetAllGalleryWatch =
     extensions::api::media_galleries_private::GetAllGalleryWatch;
 namespace EjectDevice =
     extensions::api::media_galleries_private::EjectDevice;
+namespace media_galleries_private =
+    api::media_galleries_private;
 
 namespace {
 
@@ -87,11 +89,11 @@ MediaGalleriesPrivateAPI::MediaGalleriesPrivateAPI(Profile* profile)
       weak_ptr_factory_(this) {
   DCHECK(profile_);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnAttachEventName);
+      this, media_galleries_private::OnDeviceAttached::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnDetachEventName);
+      this, media_galleries_private::OnDeviceDetached::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnGalleryChangedEventName);
+      this, media_galleries_private::OnGalleryChanged::kEventName);
 }
 
 MediaGalleriesPrivateAPI::~MediaGalleriesPrivateAPI() {
@@ -217,7 +219,7 @@ void MediaGalleriesPrivateAddGalleryWatchFunction::HandleResponse(
     chrome::MediaGalleryPrefId gallery_id,
     bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  extensions::api::media_galleries_private::AddGalleryWatchResult result;
+  media_galleries_private::AddGalleryWatchResult result;
   result.gallery_id = base::Uint64ToString(gallery_id);
   result.success = success;
   SetResult(result.ToValue().release());
@@ -396,15 +398,11 @@ void MediaGalleriesPrivateEjectDeviceFunction::OnStorageMonitorInit(
 
 void MediaGalleriesPrivateEjectDeviceFunction::HandleResponse(
     chrome::StorageMonitor::EjectStatus status) {
-  using extensions::api::media_galleries_private::
-      EJECT_DEVICE_RESULT_CODE_FAILURE;
-  using extensions::api::media_galleries_private::
-      EJECT_DEVICE_RESULT_CODE_IN_USE;
-  using extensions::api::media_galleries_private::
-      EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
-  using extensions::api::media_galleries_private::
-      EJECT_DEVICE_RESULT_CODE_SUCCESS;
-  using extensions::api::media_galleries_private::EjectDeviceResultCode;
+  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_FAILURE;
+  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_IN_USE;
+  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_NO_SUCH_DEVICE;
+  using media_galleries_private::EJECT_DEVICE_RESULT_CODE_SUCCESS;
+  using media_galleries_private::EjectDeviceResultCode;
 
   EjectDeviceResultCode result = EJECT_DEVICE_RESULT_CODE_FAILURE;
   if (status == chrome::StorageMonitor::EJECT_OK)

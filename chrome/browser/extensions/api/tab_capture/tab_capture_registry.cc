@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +26,8 @@ using extensions::TabCaptureRegistry;
 using extensions::tab_capture::TabCaptureState;
 
 namespace extensions {
+
+namespace tab_capture = api::tab_capture;
 
 class FullscreenObserver : public content::WebContentsObserver {
  public:
@@ -314,8 +315,8 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(info->ToValue().release());
-  scoped_ptr<Event> event(new Event(
-      extensions::event_names::kOnTabCaptureStatusChanged, args.Pass()));
+  scoped_ptr<Event> event(new Event(tab_capture::OnStatusChanged::kEventName,
+      args.Pass()));
   event->restrict_to_profile = profile_;
 
   router->DispatchEventToExtension(request->extension_id, event.Pass());

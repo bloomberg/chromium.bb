@@ -382,12 +382,12 @@ void LocationManager::SendLocationUpdate(
     location.timestamp = position.timestamp.ToJsTime();
 
     args->Append(location.ToValue().release());
-    event_name = "location.onLocationUpdate";
+    event_name = location::OnLocationUpdate::kEventName;
   } else {
     // Set data for onLocationError event.
     // TODO(vadimt): Set name.
     args->AppendString(position.error_message);
-    event_name = "location.onLocationError";
+    event_name = location::OnLocationError::kEventName;
   }
 
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));

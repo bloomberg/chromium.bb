@@ -6,11 +6,13 @@
 
 #include "base/lazy_instance.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/common/extensions/api/audio.h"
 
 namespace extensions {
+
+namespace audio = api::audio;
 
 static base::LazyInstance<ProfileKeyedAPIFactory<AudioAPI> >
 g_factory = LAZY_INSTANCE_INITIALIZER;
@@ -39,7 +41,7 @@ AudioService* AudioAPI::GetService() const {
 void AudioAPI::OnDeviceChanged() {
   if (profile_ && ExtensionSystem::Get(profile_)->event_router()) {
     scoped_ptr<Event> event(new Event(
-        event_names::kOnAudioDeviceChanged,
+        audio::OnDeviceChanged::kEventName,
         scoped_ptr<base::ListValue>(new base::ListValue())));
     ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(
         event.Pass());

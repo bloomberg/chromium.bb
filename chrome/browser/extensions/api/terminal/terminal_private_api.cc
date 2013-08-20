@@ -9,7 +9,6 @@
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -18,6 +17,7 @@
 #include "chromeos/process_proxy/process_proxy_registry.h"
 #include "content/public/browser/browser_thread.h"
 
+namespace terminal_private = extensions::api::terminal_private;
 namespace OnTerminalResize =
     extensions::api::terminal_private::OnTerminalResize;
 namespace OpenTerminalProcess =
@@ -65,7 +65,7 @@ void NotifyProcessOutput(Profile* profile,
   if (profile &&
       extensions::ExtensionSystem::Get(profile)->event_router()) {
     scoped_ptr<extensions::Event> event(new extensions::Event(
-        extensions::event_names::kOnTerminalProcessOutput, args.Pass()));
+        terminal_private::OnProcessOutput::kEventName, args.Pass()));
     extensions::ExtensionSystem::Get(profile)->event_router()->
         DispatchEventToExtension(extension_id, event.Pass());
   }

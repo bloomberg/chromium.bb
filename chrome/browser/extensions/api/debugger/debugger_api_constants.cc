@@ -6,9 +6,6 @@
 
 namespace debugger_api_constants {
 
-const char kOnEvent[] = "debugger.onEvent";
-const char kOnDetach[] = "debugger.onDetach";
-
 const char kAlreadyAttachedError[] =
     "Another debugger is already attached to the * with id: *.";
 const char kAttachToWebUIError[] =

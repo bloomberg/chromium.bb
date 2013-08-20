@@ -32,6 +32,8 @@
 
 namespace extensions {
 
+namespace notifications = api::notifications;
+
 namespace {
 
 const char kResultKey[] = "result";
@@ -150,23 +152,23 @@ class NotificationsApiDelegate : public NotificationDelegate {
   virtual void Close(bool by_user) OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(by_user));
-    SendEvent(event_names::kOnNotificationClosed, args.Pass());
+    SendEvent(notifications::OnClosed::kEventName, args.Pass());
   }
 
   virtual void Click() OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
-    SendEvent(event_names::kOnNotificationClicked, args.Pass());
+    SendEvent(notifications::OnClicked::kEventName, args.Pass());
   }
 
   virtual bool HasClickedListener() OVERRIDE {
     return ExtensionSystem::Get(profile_)->event_router()->HasEventListener(
-        event_names::kOnNotificationClicked);
+        notifications::OnClicked::kEventName);
   }
 
   virtual void ButtonClick(int index) OVERRIDE {
     scoped_ptr<base::ListValue> args(CreateBaseEventArgs());
     args->Append(new base::FundamentalValue(index));
-    SendEvent(event_names::kOnNotificationButtonClicked, args.Pass());
+    SendEvent(notifications::OnButtonClicked::kEventName, args.Pass());
   }
 
   virtual std::string id() const OVERRIDE {

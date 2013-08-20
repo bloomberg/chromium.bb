@@ -49,14 +49,6 @@ const char kScriptKey[] = "script";
 const char kSetFromIncognitoError[] =
     "Can't modify regular settings from an incognito context.";
 
-const char kOnDefaultFixedFontSizeChanged[] =
-    "fontSettings.onDefaultFixedFontSizeChanged";
-const char kOnDefaultFontSizeChanged[] =
-    "fontSettings.onDefaultFontSizeChanged";
-const char kOnFontChanged[] = "fontSettings.onFontChanged";
-const char kOnMinimumFontSizeChanged[] =
-    "fontSettings.onMinimumFontSizeChanged";
-
 // Format for font name preference paths.
 const char kWebKitFontPrefFormat[] = "webkit.webprefs.fonts.%s.%s";
 
@@ -106,13 +98,13 @@ FontSettingsEventRouter::FontSettingsEventRouter(
   registrar_.Init(profile_->GetPrefs());
 
   AddPrefToObserve(prefs::kWebKitDefaultFixedFontSize,
-                   kOnDefaultFixedFontSizeChanged,
+                   fonts::OnDefaultFixedFontSizeChanged::kEventName,
                    kPixelSizeKey);
   AddPrefToObserve(prefs::kWebKitDefaultFontSize,
-                   kOnDefaultFontSizeChanged,
+                   fonts::OnDefaultFontSizeChanged::kEventName,
                    kPixelSizeKey);
   AddPrefToObserve(prefs::kWebKitMinimumFontSize,
-                   kOnMinimumFontSizeChanged,
+                   fonts::OnMinimumFontSizeChanged::kEventName,
                    kPixelSizeKey);
 
   PrefChangeRegistrar::NamedChangeCallback callback =
@@ -183,7 +175,7 @@ void FontSettingsEventRouter::OnFontNamePrefChanged(
 
   extensions::preference_helpers::DispatchEventToExtensions(
       profile_,
-      kOnFontChanged,
+      fonts::OnFontChanged::kEventName,
       &args,
       APIPermission::kFontSettings,
       false,

@@ -14,7 +14,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/storage/policy_value_store.h"
 #include "chrome/browser/extensions/api/storage/settings_storage_factory.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/value_store/value_store_change.h"
+#include "chrome/common/extensions/api/storage.h"
 #include "chrome/common/extensions/api/storage/storage_schema_manifest_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -38,6 +38,8 @@
 using content::BrowserThread;
 
 namespace extensions {
+
+namespace storage = api::storage;
 
 namespace {
 
@@ -180,7 +182,7 @@ ManagedValueStoreCache::ManagedValueStoreCache(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // |event_router_| can be NULL on unit_tests.
   if (event_router_)
-    event_router_->RegisterObserver(this, event_names::kOnSettingsChanged);
+    event_router_->RegisterObserver(this, storage::OnChanged::kEventName);
 
   GetPolicyService()->AddObserver(policy::POLICY_DOMAIN_EXTENSIONS, this);
 
@@ -278,7 +280,7 @@ void ManagedValueStoreCache::UpdatePolicyOnFILE(
 void ManagedValueStoreCache::OnListenerAdded(
     const EventListenerInfo& details) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK_EQ(std::string(event_names::kOnSettingsChanged), details.event_name);
+  DCHECK_EQ(std::string(storage::OnChanged::kEventName), details.event_name);
   // This is invoked on several occasions:
   //
   // 1. when an extension first registers to observe storage.onChanged; in this

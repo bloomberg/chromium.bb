@@ -6,20 +6,22 @@
 
 #include "base/lazy_instance.h"
 #include "chrome/browser/extensions/api/tabs/windows_event_router.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/common/extensions/api/windows.h"
 
 namespace extensions {
+
+namespace windows = api::windows;
 
 TabsWindowsAPI::TabsWindowsAPI(Profile* profile)
     : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnWindowCreated);
+      this, windows::OnCreated::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnWindowRemoved);
+      this, windows::OnRemoved::kEventName);
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, event_names::kOnWindowFocusedChanged);
+      this, windows::OnFocusChanged::kEventName);
 }
 
 TabsWindowsAPI::~TabsWindowsAPI() {

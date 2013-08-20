@@ -398,7 +398,7 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
   scoped_ptr<base::ListValue> args(OnDetach::Create(debuggee_,
                                                     detach_reason_));
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      keys::kOnDetach, args.Pass()));
+      OnDetach::kEventName, args.Pass()));
   event->restrict_to_profile = profile_;
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id_, event.Pass());
@@ -448,7 +448,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
 
     scoped_ptr<ListValue> args(OnEvent::Create(debuggee_, method_name, params));
     scoped_ptr<extensions::Event> event(new extensions::Event(
-        keys::kOnEvent, args.Pass()));
+        OnEvent::kEventName, args.Pass()));
     event->restrict_to_profile = profile_;
     extensions::ExtensionSystem::Get(profile_)->event_router()->
         DispatchEventToExtension(extension_id_, event.Pass());

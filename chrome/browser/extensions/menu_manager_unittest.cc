@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/testing_profile.h"
@@ -39,6 +40,8 @@ using testing::Return;
 using testing::SaveArg;
 
 namespace extensions {
+
+namespace context_menus = api::context_menus;
 
 // Base class for tests.
 class MenuManagerTest : public testing::Test {
@@ -588,7 +591,7 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
     EXPECT_CALL(*mock_event_router,
               DispatchEventToExtensionMock(
                   item->extension_id(),
-                  extensions::event_names::kOnContextMenuClicked,
+                  context_menus::OnClicked::kEventName,
                   _,
                   &profile,
                   GURL(),

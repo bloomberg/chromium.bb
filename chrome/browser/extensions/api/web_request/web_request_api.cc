@@ -93,10 +93,10 @@ const char kWebView[] = "webview";
 // List of all the webRequest events.
 const char* const kWebRequestEvents[] = {
   keys::kOnBeforeRedirectEvent,
-  keys::kOnBeforeRequestEvent,
+  web_request::OnBeforeRequest::kEventName,
   keys::kOnBeforeSendHeadersEvent,
   keys::kOnCompletedEvent,
-  keys::kOnErrorOccurredEvent,
+  web_request::OnErrorOccurred::kEventName,
   keys::kOnSendHeadersEvent,
   keys::kOnAuthRequiredEvent,
   keys::kOnResponseStartedEvent,
@@ -631,13 +631,13 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
   initialize_blocked_requests |=
       ProcessDeclarativeRules(profile, extension_info_map,
-                              keys::kOnBeforeRequestEvent, request,
+                              web_request::OnBeforeRequest::kEventName, request,
                               extensions::ON_BEFORE_REQUEST, NULL);
 
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
-                           keys::kOnBeforeRequestEvent, request,
+                           web_request::OnBeforeRequest::kEventName, request,
                            &extra_info_spec);
   if (!listeners.empty() &&
       !GetAndSetSignaled(request->identifier(), kOnBeforeRequest)) {
@@ -1057,7 +1057,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   int extra_info_spec = 0;
   std::vector<const EventListener*> listeners =
       GetMatchingListeners(profile, extension_info_map,
-                           keys::kOnErrorOccurredEvent, request,
+                           web_request::OnErrorOccurred::kEventName, request,
                            &extra_info_spec);
   if (listeners.empty())
     return;

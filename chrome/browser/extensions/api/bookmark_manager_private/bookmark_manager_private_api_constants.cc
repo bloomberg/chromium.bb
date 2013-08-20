@@ -11,10 +11,5 @@ namespace bookmark_manager_api_constants {
 const char kSameProfileKey[] = "sameProfile";
 const char kElementsKey[] = "elements";
 
-// Events.
-const char kOnBookmarkDragEnter[] = "bookmarkManagerPrivate.onDragEnter";
-const char kOnBookmarkDragLeave[] = "bookmarkManagerPrivate.onDragLeave";
-const char kOnBookmarkDrop[] = "bookmarkManagerPrivate.onDrop";
-
 }  // namespace bookmark_manager_api_constants
 }  // namespace extensions

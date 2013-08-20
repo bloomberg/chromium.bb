@@ -29,6 +29,8 @@ using content::BrowserThread;
 
 namespace extensions {
 
+namespace storage = api::storage;
+
 namespace {
 
 // Settings change Observer which forwards changes on to the extension
@@ -49,7 +51,7 @@ class DefaultObserver : public SettingsObserver {
     args->Append(new base::StringValue(settings_namespace::ToString(
         settings_namespace)));
     scoped_ptr<Event> event(new Event(
-        event_names::kOnSettingsChanged, args.Pass()));
+        storage::OnChanged::kEventName, args.Pass()));
     ExtensionSystem::Get(profile_)->event_router()->
         DispatchEventToExtension(extension_id, event.Pass());
   }

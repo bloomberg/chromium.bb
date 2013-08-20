@@ -22,7 +22,6 @@
 #include "chrome/browser/extensions/api/developer_private/developer_private_api_factory.h"
 #include "chrome/browser/extensions/api/developer_private/entry_picker.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_disabled_ui.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -72,7 +71,7 @@ using content::RenderViewHost;
 
 namespace extensions {
 
-namespace events = event_names;
+namespace developer_private = api::developer_private;
 
 namespace {
 
@@ -212,7 +211,7 @@ void DeveloperPrivateEventRouter::Observe(
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(event_data.ToValue().release());
 
-  event_name = events::kDeveloperPrivateOnItemStateChanged;
+  event_name = developer_private::OnItemStateChanged::kEventName;
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
   ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
@@ -223,7 +222,7 @@ void DeveloperPrivateAPI::SetLastUnpackedDirectory(const base::FilePath& path) {
 
 void DeveloperPrivateAPI::RegisterNotifications() {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, events::kDeveloperPrivateOnItemStateChanged);
+      this, developer_private::OnItemStateChanged::kEventName);
 }
 
 DeveloperPrivateAPI::~DeveloperPrivateAPI() {}
@@ -240,7 +239,7 @@ void DeveloperPrivateAPI::OnListenerAdded(
 void DeveloperPrivateAPI::OnListenerRemoved(
     const EventListenerInfo& details) {
   if (!ExtensionSystem::Get(profile_)->event_router()->HasEventListener(
-          event_names::kDeveloperPrivateOnItemStateChanged))
+          developer_private::OnItemStateChanged::kEventName))
     developer_private_event_router_.reset(NULL);
 }
 

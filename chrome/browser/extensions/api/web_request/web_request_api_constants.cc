@@ -44,10 +44,8 @@ const char kUsernameKey[] = "username";
 const char kPasswordKey[] = "password";
 
 const char kOnBeforeRedirectEvent[] = "webRequest.onBeforeRedirect";
-const char kOnBeforeRequestEvent[] = "webRequest.onBeforeRequest";
 const char kOnBeforeSendHeadersEvent[] = "webRequest.onBeforeSendHeaders";
 const char kOnCompletedEvent[] = "webRequest.onCompleted";
-const char kOnErrorOccurredEvent[] = "webRequest.onErrorOccurred";
 const char kOnHeadersReceivedEvent[] = "webRequest.onHeadersReceived";
 const char kOnResponseStartedEvent[] = "webRequest.onResponseStarted";
 const char kOnSendHeadersEvent[] = "webRequest.onSendHeaders";

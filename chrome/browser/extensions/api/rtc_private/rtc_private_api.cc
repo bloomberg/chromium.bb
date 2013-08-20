@@ -30,10 +30,10 @@ using contacts::Contact_PhoneNumber;
 
 namespace extensions {
 
+namespace rtc_private = api::rtc_private;
+
 namespace {
 
-// Launch event name.
-const char kOnLaunchEvent[] = "rtcPrivate.onLaunch";
 // Web intent data payload mimetype.
 const char kMimeTypeJson[] = "application/vnd.chromium.contact";
 // Web intent data structure fields.
@@ -92,7 +92,7 @@ void RtcPrivateEventRouter::DispatchLaunchEvent(
     Profile* profile, LaunchAction action, const Contact* contact) {
   if (action == RtcPrivateEventRouter::LAUNCH_ACTIVATE) {
     scoped_ptr<Event> event(new Event(
-        kOnLaunchEvent, make_scoped_ptr(new ListValue())));
+        rtc_private::OnLaunch::kEventName, make_scoped_ptr(new ListValue())));
     event->restrict_to_profile = profile;
     ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
   } else {
@@ -103,7 +103,8 @@ void RtcPrivateEventRouter::DispatchLaunchEvent(
                          &launch_data.intent.data.additional_properties);
     launch_data.intent.type = kMimeTypeJson;
     scoped_ptr<Event> event(new Event(
-        kOnLaunchEvent, api::rtc_private::OnLaunch::Create(launch_data)));
+        rtc_private::OnLaunch::kEventName,
+        api::rtc_private::OnLaunch::Create(launch_data)));
     event->restrict_to_profile = profile;
     ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
   }

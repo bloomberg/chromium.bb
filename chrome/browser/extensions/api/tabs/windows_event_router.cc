@@ -6,13 +6,13 @@
 
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/window_controller.h"
 #include "chrome/browser/extensions/window_controller_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/windows.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/notification_service.h"
 
@@ -20,9 +20,9 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #endif
 
-namespace event_names = extensions::event_names;
-
 namespace extensions {
+
+namespace windows = extensions::api::windows;
 
 WindowsEventRouter::WindowsEventRouter(Profile* profile)
     : profile_(profile),
@@ -61,7 +61,7 @@ void WindowsEventRouter::OnWindowControllerAdded(
   base::DictionaryValue* window_dictionary =
       window_controller->CreateWindowValue();
   args->Append(window_dictionary);
-  DispatchEvent(event_names::kOnWindowCreated, window_controller->profile(),
+  DispatchEvent(windows::OnCreated::kEventName, window_controller->profile(),
                 args.Pass());
 }
 
@@ -73,7 +73,8 @@ void WindowsEventRouter::OnWindowControllerRemoved(
   int window_id = window_controller->GetWindowId();
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::FundamentalValue(window_id));
-  DispatchEvent(event_names::kOnWindowRemoved, window_controller->profile(),
+  DispatchEvent(windows::OnRemoved::kEventName,
+                window_controller->profile(),
                 args.Pass());
 }
 
@@ -143,7 +144,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
   focused_profile_ = window_profile;
   focused_window_id_ = window_id;
 
-  scoped_ptr<Event> event(new Event(event_names::kOnWindowFocusedChanged,
+  scoped_ptr<Event> event(new Event(windows::OnFocusChanged::kEventName,
                                     make_scoped_ptr(new base::ListValue())));
   event->will_dispatch_callback =
       base::Bind(&WillDispatchWindowFocusedEvent, window_profile, window_id);

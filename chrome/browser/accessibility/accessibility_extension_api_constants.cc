@@ -22,15 +22,6 @@ const char kHasSubmenuKey[] = "details.hasSubmenu";
 const char kMessageKey[] = "message";
 const char kStringValueKey[] = "details.stringValue";
 
-// Events.
-const char kOnWindowOpened[] = "experimental.accessibility.onWindowOpened";
-const char kOnWindowClosed[] = "experimental.accessibility.onWindowClosed";
-const char kOnControlFocused[] = "experimental.accessibility.onControlFocused";
-const char kOnControlAction[] = "experimental.accessibility.onControlAction";
-const char kOnTextChanged[] = "experimental.accessibility.onTextChanged";
-const char kOnMenuOpened[] = "experimental.accessibility.onMenuOpened";
-const char kOnMenuClosed[] = "experimental.accessibility.onMenuClosed";
-
 // Types of controls that can receive accessibility events.
 const char kTypeButton[] = "button";
 const char kTypeCheckbox[] = "checkbox";

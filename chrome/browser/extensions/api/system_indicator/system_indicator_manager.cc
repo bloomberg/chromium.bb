@@ -7,7 +7,6 @@
 #include "base/memory/linked_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -23,6 +22,8 @@
 #include "ui/gfx/image/image.h"
 
 namespace extensions {
+
+namespace system_indicator = api::system_indicator;
 
 // Observes clicks on a given status icon and forwards the event to the
 // appropriate extension.  Handles icon updates, and responsible for creating
@@ -86,7 +87,7 @@ void ExtensionIndicatorIcon::OnStatusIconClicked() {
   EventRouter* event_router =
       ExtensionSystem::Get(profile_)->event_router();
   scoped_ptr<Event> event(new Event(
-      event_names::kOnSystemIndicatorClicked,
+      system_indicator::OnClicked::kEventName,
       params.Pass(),
       profile_));
   event_router->DispatchEventToExtension(

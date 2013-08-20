@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/web_navigation.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -24,6 +25,7 @@
 namespace extensions {
 
 namespace keys = web_navigation_api_constants;
+namespace web_navigation = api::web_navigation;
 
 namespace web_navigation_api_helpers {
 
@@ -77,7 +79,7 @@ void DispatchOnBeforeNavigate(content::WebContents* web_contents,
   args->Append(dict);
 
   DispatchEvent(web_contents->GetBrowserContext(),
-                keys::kOnBeforeNavigate,
+                web_navigation::OnBeforeNavigate::kEventName,
                 args.Pass(),
                 validated_url);
 }
@@ -134,7 +136,7 @@ void DispatchOnDOMContentLoaded(content::WebContents* web_contents,
   args->Append(dict);
 
   DispatchEvent(web_contents->GetBrowserContext(),
-                keys::kOnDOMContentLoaded,
+                web_navigation::OnDOMContentLoaded::kEventName,
                 args.Pass(),
                 url);
 }
@@ -155,7 +157,8 @@ void DispatchOnCompleted(content::WebContents* web_contents,
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
-  DispatchEvent(web_contents->GetBrowserContext(), keys::kOnCompleted,
+  DispatchEvent(web_contents->GetBrowserContext(),
+                web_navigation::OnCompleted::kEventName,
                 args.Pass(), url);
 }
 
@@ -188,7 +191,9 @@ void DispatchOnCreatedNavigationTarget(
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
-  DispatchEvent(browser_context, keys::kOnCreatedNavigationTarget, args.Pass(),
+  DispatchEvent(browser_context,
+                web_navigation::OnCreatedNavigationTarget::kEventName,
+                args.Pass(),
                 target_url);
 }
 
@@ -206,10 +211,12 @@ void DispatchOnErrorOccurred(content::WebContents* web_contents,
   dict->SetInteger(keys::kProcessIdKey, render_process_id);
   dict->SetInteger(keys::kFrameIdKey, GetFrameId(is_main_frame, frame_id));
   dict->SetString(keys::kErrorKey, net::ErrorToString(error_code));
-  dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
+  dict->SetDouble(keys::kTimeStampKey,
+      MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
-  DispatchEvent(web_contents->GetBrowserContext(), keys::kOnErrorOccurred,
+  DispatchEvent(web_contents->GetBrowserContext(),
+                web_navigation::OnErrorOccurred::kEventName,
                 args.Pass(), url);
 }
 
@@ -222,12 +229,16 @@ void DispatchOnTabReplaced(
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetInteger(keys::kReplacedTabIdKey,
                    ExtensionTabUtil::GetTabId(old_web_contents));
-  dict->SetInteger(keys::kTabIdKey,
-                   ExtensionTabUtil::GetTabId(new_web_contents));
+  dict->SetInteger(
+      keys::kTabIdKey,
+      ExtensionTabUtil::GetTabId(new_web_contents));
   dict->SetDouble(keys::kTimeStampKey, MilliSecondsFromTime(base::Time::Now()));
   args->Append(dict);
 
-  DispatchEvent(browser_context, keys::kOnTabReplaced, args.Pass(), GURL());
+  DispatchEvent(browser_context,
+                web_navigation::OnTabReplaced::kEventName,
+                args.Pass(),
+                GURL());
 }
 
 }  // namespace web_navigation_api_helpers

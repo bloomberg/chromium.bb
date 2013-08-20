@@ -22,9 +22,6 @@ extern const char kExpiredOverwriteChangeCause[] = "expired_overwrite";
 extern const char kExplicitChangeCause[] = "explicit";
 extern const char kOverwriteChangeCause[] = "overwrite";
 
-// Events
-const char kOnChanged[] = "cookies.onChanged";
-
 // Errors
 const char kCookieSetFailedError[] =
     "Failed to parse or set cookie named \"*\".";

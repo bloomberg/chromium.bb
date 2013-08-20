@@ -27,13 +27,6 @@
 #include "content/public/browser/notification_service.h"
 #include "ui/gfx/image/image.h"
 
-namespace events {
-const char kOnInputStarted[] = "omnibox.onInputStarted";
-const char kOnInputChanged[] = "omnibox.onInputChanged";
-const char kOnInputEntered[] = "omnibox.onInputEntered";
-const char kOnInputCancelled[] = "omnibox.onInputCancelled";
-}  // namespace events
-
 namespace extensions {
 
 namespace omnibox = api::omnibox;
@@ -112,7 +105,8 @@ bool SetOmniboxDefaultSuggestion(
 void ExtensionOmniboxEventRouter::OnInputStarted(
     Profile* profile, const std::string& extension_id) {
   scoped_ptr<Event> event(new Event(
-      events::kOnInputStarted, make_scoped_ptr(new base::ListValue())));
+      omnibox::OnInputStarted::kEventName,
+      make_scoped_ptr(new base::ListValue())));
   event->restrict_to_profile = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -123,14 +117,16 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
     Profile* profile, const std::string& extension_id,
     const std::string& input, int suggest_id) {
   if (!extensions::ExtensionSystem::Get(profile)->event_router()->
-          ExtensionHasEventListener(extension_id, events::kOnInputChanged))
+          ExtensionHasEventListener(extension_id,
+                                    omnibox::OnInputChanged::kEventName))
     return false;
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Set(0, new base::StringValue(input));
   args->Set(1, new base::FundamentalValue(suggest_id));
 
-  scoped_ptr<Event> event(new Event(events::kOnInputChanged, args.Pass()));
+  scoped_ptr<Event> event(new Event(omnibox::OnInputChanged::kEventName,
+                                    args.Pass()));
   event->restrict_to_profile = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -162,7 +158,8 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
   else
     args->Set(1, new base::StringValue(kCurrentTabDisposition));
 
-  scoped_ptr<Event> event(new Event(events::kOnInputEntered, args.Pass()));
+  scoped_ptr<Event> event(new Event(omnibox::OnInputEntered::kEventName,
+                                    args.Pass()));
   event->restrict_to_profile = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
@@ -177,7 +174,8 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 void ExtensionOmniboxEventRouter::OnInputCancelled(
     Profile* profile, const std::string& extension_id) {
   scoped_ptr<Event> event(new Event(
-      events::kOnInputCancelled, make_scoped_ptr(new base::ListValue())));
+      omnibox::OnInputCancelled::kEventName,
+      make_scoped_ptr(new base::ListValue())));
   event->restrict_to_profile = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());

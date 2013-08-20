@@ -13,7 +13,6 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/push_messaging/push_messaging_invalidation_handler.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -78,7 +77,7 @@ void PushMessagingEventRouter::OnMessage(const std::string& extension_id,
 
   scoped_ptr<base::ListValue> args(glue::OnMessage::Create(message));
   scoped_ptr<extensions::Event> event(new extensions::Event(
-      event_names::kOnPushMessage, args.Pass()));
+      glue::OnMessage::kEventName, args.Pass()));
   event->restrict_to_profile = profile_;
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
       extension_id, event.Pass());

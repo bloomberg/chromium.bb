@@ -46,6 +46,7 @@ namespace Remove = extensions::api::cookies::Remove;
 namespace Set = extensions::api::cookies::Set;
 
 namespace extensions {
+namespace cookies = api::cookies;
 namespace keys = cookies_api_constants;
 
 CookiesEventRouter::CookiesEventRouter(Profile* profile)
@@ -123,7 +124,10 @@ void CookiesEventRouter::CookieChanged(
 
   GURL cookie_domain =
       cookies_helpers::GetURLFromCanonicalCookie(*details->cookie);
-  DispatchEvent(profile, keys::kOnChanged, args.Pass(), cookie_domain);
+  DispatchEvent(profile,
+                cookies::OnChanged::kEventName,
+                args.Pass(),
+                cookie_domain);
 }
 
 void CookiesEventRouter::DispatchEvent(
@@ -557,7 +561,7 @@ void CookiesGetAllCookieStoresFunction::Run() {
 CookiesAPI::CookiesAPI(Profile* profile)
     : profile_(profile) {
   ExtensionSystem::Get(profile_)->event_router()->RegisterObserver(
-      this, keys::kOnChanged);
+      this, cookies::OnChanged::kEventName);
 }
 
 CookiesAPI::~CookiesAPI() {

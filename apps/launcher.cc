@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/api/app_runtime/app_runtime_api.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
 #include "chrome/browser/extensions/api/file_system/file_system_api.h"
-#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -24,6 +23,7 @@
 #include "chrome/browser/extensions/lazy_background_task_queue.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/apps/app_metro_infobar_delegate_win.h"
+#include "chrome/common/extensions/api/app_runtime.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,6 +42,8 @@
 #if defined(OS_WIN)
 #include "win8/util/win8_util.h"
 #endif
+
+namespace app_runtime = extensions::api::app_runtime;
 
 using content::BrowserThread;
 using extensions::app_file_handler_util::FileHandlerForId;
@@ -342,7 +344,7 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
       ExtensionSystem::Get(profile)->event_router();
   bool listening_to_restart = event_router->
       ExtensionHasEventListener(extension->id(),
-                                extensions::event_names::kOnRestarted);
+                                app_runtime::OnRestarted::kEventName);
 
   if (listening_to_restart) {
     extensions::AppEventRouter::DispatchOnRestartedEvent(profile, extension);
@@ -355,7 +357,7 @@ void RestartPlatformApp(Profile* profile, const Extension* extension) {
   extension_prefs->SetIsActive(extension->id(), false);
   bool listening_to_launch = event_router->
       ExtensionHasEventListener(extension->id(),
-                                extensions::event_names::kOnLaunched);
+                                app_runtime::OnLaunched::kEventName);
 
   if (listening_to_launch && had_windows)
     LaunchPlatformAppWithNoData(profile, extension);

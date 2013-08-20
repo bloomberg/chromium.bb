@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/common/extensions/api/runtime.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
@@ -38,14 +39,10 @@ namespace GetPlatformInfo = extensions::api::runtime::GetPlatformInfo;
 
 namespace extensions {
 
+namespace runtime = api::runtime;
+
 namespace {
 
-const char kOnStartupEvent[] = "runtime.onStartup";
-const char kOnInstalledEvent[] = "runtime.onInstalled";
-const char kOnUpdateAvailableEvent[] = "runtime.onUpdateAvailable";
-const char kOnBrowserUpdateAvailableEvent[] =
-    "runtime.onBrowserUpdateAvailable";
-const char kOnRestartRequiredEvent[] = "runtime.onRestartRequired";
 const char kNoBackgroundPageError[] = "You do not have a background page.";
 const char kPageLoadError[] = "Background page failed to load.";
 const char kInstallReason[] = "reason";
@@ -105,7 +102,8 @@ static void DispatchOnStartupEventImpl(
   }
 
   scoped_ptr<base::ListValue> event_args(new base::ListValue());
-  scoped_ptr<Event> event(new Event(kOnStartupEvent, event_args.Pass()));
+  scoped_ptr<Event> event(new Event(runtime::OnStartup::kEventName,
+                                    event_args.Pass()));
   system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -154,7 +152,8 @@ void RuntimeEventRouter::DispatchOnInstalledEvent(
     info->SetString(kInstallReason, kInstallReasonInstall);
   }
   DCHECK(system->event_router());
-  scoped_ptr<Event> event(new Event(kOnInstalledEvent, event_args.Pass()));
+  scoped_ptr<Event> event(new Event(runtime::OnInstalled::kEventName,
+                                    event_args.Pass()));
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
 }
@@ -171,7 +170,8 @@ void RuntimeEventRouter::DispatchOnUpdateAvailableEvent(
   scoped_ptr<base::ListValue> args(new base::ListValue);
   args->Append(manifest->DeepCopy());
   DCHECK(system->event_router());
-  scoped_ptr<Event> event(new Event(kOnUpdateAvailableEvent, args.Pass()));
+  scoped_ptr<Event> event(new Event(runtime::OnUpdateAvailable::kEventName,
+                                    args.Pass()));
   system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
 }
 
@@ -184,8 +184,8 @@ void RuntimeEventRouter::DispatchOnBrowserUpdateAvailableEvent(
 
   scoped_ptr<base::ListValue> args(new base::ListValue);
   DCHECK(system->event_router());
-  scoped_ptr<Event> event(new Event(kOnBrowserUpdateAvailableEvent,
-                                    args.Pass()));
+  scoped_ptr<Event> event(new Event(
+      runtime::OnBrowserUpdateAvailable::kEventName, args.Pass()));
   system->event_router()->BroadcastEvent(event.Pass());
 }
 
@@ -199,7 +199,7 @@ void RuntimeEventRouter::DispatchOnRestartRequiredEvent(
     return;
 
   scoped_ptr<Event> event(
-      new Event(kOnRestartRequiredEvent,
+      new Event(runtime::OnRestartRequired::kEventName,
                 api::runtime::OnRestartRequired::Create(reason)));
 
   DCHECK(system->event_router());
