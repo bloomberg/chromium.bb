@@ -57,6 +57,8 @@ ParserHelper Parser::expressions_[] = {
   {NULL, NULL, -1},                                             // INVALID
   {&Parser::Literal, NULL, -1},                                 // INTEGER
   {&Parser::Literal, NULL, -1},                                 // STRING
+  {&Parser::Literal, NULL, -1},                                 // TRUE_TOKEN
+  {&Parser::Literal, NULL, -1},                                 // FALSE_TOKEN
   {NULL, &Parser::Assignment, PRECEDENCE_ASSIGNMENT},           // EQUAL
   {NULL, &Parser::BinaryOperator, PRECEDENCE_SUM},              // PLUS
   {NULL, &Parser::BinaryOperator, PRECEDENCE_SUM},              // MINUS

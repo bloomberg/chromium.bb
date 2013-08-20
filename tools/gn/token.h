@@ -14,6 +14,8 @@ class Token {
     INVALID,
     INTEGER,    // 123
     STRING,     // "blah"
+    TRUE_TOKEN,  // Not "TRUE" to avoid collisions with #define in windows.h.
+    FALSE_TOKEN,
 
     // Various operators.
     EQUAL,

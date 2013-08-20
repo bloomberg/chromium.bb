@@ -218,15 +218,17 @@ Value ConditionNode::Execute(Scope* scope, Err* err) const {
   Value condition_result = condition_->Execute(scope, err);
   if (err->has_error())
     return Value();
-  if (condition_result.type() == Value::NONE) {
+  if (condition_result.type() != Value::BOOLEAN) {
     *err = condition_->MakeErrorDescribing(
-        "This does not evaluate to a value.",
-        "Please give me something to work with for the if statement.");
+        "Condition does not evaluate to a boolean value.",
+        std::string("This is a value of type \"") +
+            Value::DescribeType(condition_result.type()) +
+            "\" instead.");
     err->AppendRange(if_token_.range());
     return Value();
   }
 
-  if (condition_result.InterpretAsInt()) {
+  if (condition_result.boolean_value()) {
     if_true_->ExecuteBlockInScope(scope, err);
   } else if (if_false_) {
     // The else block is optional. It's either another condition (for an
@@ -402,6 +404,10 @@ const LiteralNode* LiteralNode::AsLiteral() const {
 
 Value LiteralNode::Execute(Scope* scope, Err* err) const {
   switch (value_.type()) {
+    case Token::TRUE_TOKEN:
+      return Value(this, true);
+    case Token::FALSE_TOKEN:
+      return Value(this, false);
     case Token::INTEGER: {
       int64 result_int;
       if (!base::StringToInt64(value_.value(), &result_int)) {

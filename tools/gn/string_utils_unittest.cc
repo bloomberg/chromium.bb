@@ -14,7 +14,8 @@ namespace {
 
 bool CheckExpansionCase(const char* input, const char* expected, bool success) {
   Scope scope(static_cast<const Settings*>(NULL));
-  scope.SetValue("one", Value(NULL, 1), NULL);
+  int64 one = 1;
+  scope.SetValue("one", Value(NULL, one), NULL);
   scope.SetValue("onestring", Value(NULL, "one"), NULL);
 
   // Construct the string token, which includes the quotes.

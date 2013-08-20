@@ -17,6 +17,7 @@ class Value {
  public:
   enum Type {
     NONE = 0,
+    BOOLEAN,
     INTEGER,
     STRING,
     LIST
@@ -24,8 +25,10 @@ class Value {
 
   Value();
   Value(const ParseNode* origin, Type t);
+  Value(const ParseNode* origin, bool bool_val);
   Value(const ParseNode* origin, int64 int_val);
-  Value(const ParseNode* origin, const base::StringPiece& str_val);
+  Value(const ParseNode* origin, std::string str_val);
+  Value(const ParseNode* origin, const char* str_val);
   ~Value();
 
   Type type() const { return type_; }
@@ -36,6 +39,15 @@ class Value {
   // Returns the node that made this. May be NULL.
   const ParseNode* origin() const { return origin_; }
   void set_origin(const ParseNode* o) { origin_ = o; }
+
+  bool& boolean_value() {
+    DCHECK(type_ == BOOLEAN);
+    return boolean_value_;
+  }
+  const bool& boolean_value() const {
+    DCHECK(type_ == BOOLEAN);
+    return boolean_value_;
+  }
 
   int64& int_value() {
     DCHECK(type_ == INTEGER);
@@ -64,11 +76,6 @@ class Value {
     return list_value_;
   }
 
-  // Returns the current value converted to an int, normally used for
-  // boolean operations. Undefined variables, empty lists, and empty strings
-  // are all interpreted as 0, otherwise 1.
-  int64 InterpretAsInt() const;
-
   // Converts the given value to a string. Returns true if strings should be
   // quoted or the ToString of a string should be the string itself.
   std::string ToString(bool quote_strings) const;
@@ -84,6 +91,7 @@ class Value {
  private:
   Type type_;
   std::string string_value_;
+  bool boolean_value_;
   int64 int_value_;
   std::vector<Value> list_value_;
   const ParseNode* origin_;

@@ -18,29 +18,29 @@
 # "use_*" names for optional features libraries, and configurations.
 declare_args() {
   # Set to build the Android version.
-  is_android = 0
+  is_android = false
   # Component build.
-  is_component_build = 1
+  is_component_build = true
   # ChromeOS build.
-  is_chromeos = 0
+  is_chromeos = false
   # Debug build.
-  is_debug = 1
+  is_debug = true
   # Hello, world
   # IOS build.
-  is_ios = 0
+  is_ios = false
 
   # Set when building with the "untrusted" Native Client toolchain.
   #
   # Do not set directly, this will be set automatically when compiling targets
   # with a NaCl toolchain.
-  is_nacl = 0
+  is_nacl = false
 
   # ASH is enabled.
-  use_ash = 0
+  use_ash = false
   # Aura is enabled.
-  use_aura = 0
+  use_aura = false
   # Ozone is enabled.
-  use_ozone = 0
+  use_ozone = false
 }
 
 # =============================================================================

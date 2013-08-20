@@ -115,8 +115,12 @@ std::vector<Token> Tokenizer::Run() {
     if (type == Token::IDENTIFIER) {
       if (token_value == "if")
         type = Token::IF;
-      if (token_value == "else")
+      else if (token_value == "else")
         type = Token::ELSE;
+      else if (token_value == "true")
+        type = Token::TRUE_TOKEN;
+      else if (token_value == "false")
+        type = Token::FALSE_TOKEN;
     }
 
     // TODO(brettw) This just strips comments from the token stream. This

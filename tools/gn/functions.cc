@@ -166,7 +166,9 @@ Value RunAssert(Scope* scope,
     *err = Err(function->function(), "Wrong number of arguments.",
                "assert() takes one argument, "
                "were you expecting somethig else?");
-  } else if (args[0].InterpretAsInt() == 0) {
+  } else if (args[0].type() != Value::BOOLEAN) {
+    *err = Err(function->function(), "Assertion value not a bool.");
+  } else if (!args[0].boolean_value()) {
     *err = Err(function->function(), "Assertion failed.");
     if (args[0].origin()) {
       // If you do "assert(foo)" we'd ideally like to show you where foo was
@@ -248,12 +250,12 @@ const char kDeclareArgs_Help[] =
     "\n"
     "Example:\n"
     "  declare_args() {\n"
-    "    enable_teleporter = 1\n"
-    "    enable_doom_melon = 0\n"
+    "    enable_teleporter = true\n"
+    "    enable_doom_melon = false\n"
     "  }\n"
     "\n"
     "  If you want to override the (default disabled) Doom Melon:\n"
-    "    gn --args=\"enable_doom_melon=1 enable-teleporter=1\"\n"
+    "    gn --args=\"enable_doom_melon=true enable_teleporter=false\"\n"
     "  This also sets the teleporter, but it's already defaulted to on so\n"
     "  it will have no effect.\n";
 

@@ -25,7 +25,7 @@ const char kBuildArgs_Help[] =
     "  applied. These can override the system default ones, and add new ones.\n"
     "  These are whitespace-separated. For example:\n"
     "\n"
-    "    gn --args=\"teleportation_level=3 is_win=1 is_evil=0\"\n"
+    "    gn --args=\"is_win=true enable_doom_melon=false\"\n"
     "\n"
     "  Third, toolchain overrides are applied. These are specified in the\n"
     "  toolchain_args section of a toolchain definition. The use-case for\n"
@@ -145,11 +145,11 @@ bool Args::VerifyAllOverridesUsed(Err* err) const {
 
 void Args::SetSystemVars(Scope* dest) const {
 #if defined(OS_WIN)
-  Value is_win(NULL, 1);
-  Value is_posix(NULL, 0);
+  Value is_win(NULL, true);
+  Value is_posix(NULL, false);
 #else
-  Value is_win(NULL, 0);
-  Value is_posix(NULL, 1);
+  Value is_win(NULL, false);
+  Value is_posix(NULL, true);
 #endif
   dest->SetValue(variables::kIsWin, is_win, NULL);
   dest->SetValue(variables::kIsPosix, is_posix, NULL);
@@ -157,17 +157,17 @@ void Args::SetSystemVars(Scope* dest) const {
   declared_arguments_[variables::kIsPosix] = is_posix;
 
 #if defined(OS_MACOSX)
-  Value is_mac(NULL, 1);
+  Value is_mac(NULL, true);
 #else
-  Value is_mac(NULL, 0);
+  Value is_mac(NULL, false);
 #endif
   dest->SetValue(variables::kIsMac, is_mac, NULL);
   declared_arguments_[variables::kIsMac] = is_mac;
 
 #if defined(OS_LINUX)
-  Value is_linux(NULL, 1);
+  Value is_linux(NULL, true);
 #else
-  Value is_linux(NULL, 0);
+  Value is_linux(NULL, false);
 #endif
   dest->SetValue(variables::kIsLinux, is_linux, NULL);
   declared_arguments_[variables::kIsLinux] = is_linux;

@@ -166,11 +166,11 @@ extern const char kToolchainArgs_Help[] =
     "    ...\n"
     "    toolchain_args() {\n"
     "      # Override the system values for a generic Posix system.\n"
-    "      is_win = 0\n"
-    "      is_posix = 1\n"
+    "      is_win = false\n"
+    "      is_posix = true\n"
     "\n"
     "      # Pass this new value for specific setup for my toolchain.\n"
-    "      is_my_weird_system = 1\n"
+    "      is_my_weird_system = true\n"
     "    }\n"
     "  }\n";
 

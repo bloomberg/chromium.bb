@@ -39,17 +39,17 @@ toolchain("x86_newlib") {
   }
 
   toolchain_args() {
-    is_nacl = 1
+    is_nacl = true
 
     # Component build not supported in NaCl, since it does not support shared
     # libraries.
-    is_component_build = 0
+    is_component_build = false
 
     # Override the default OS detection.
-    is_android = 0
-    is_mac = 0
-    is_posix = 1
-    is_linux = 0
-    is_win = 0
+    is_android = false
+    is_mac = false
+    is_posix = true
+    is_linux = false
+    is_win = false
   }
 }
