@@ -55,7 +55,7 @@ public:
     bool hasImage() const { return m_image.get(); }
     bool currentFrameKnownToBeOpaque(const RenderObject*); // Side effect: ensures decoded image is in cache, therefore should only be called when about to draw the image.
 
-    std::pair<WebCore::Image*, float> brokenImage(float deviceScaleFactor) const; // Returns an image and the image's resolution scale factor.
+    static std::pair<WebCore::Image*, float> brokenImage(float deviceScaleFactor); // Returns an image and the image's resolution scale factor.
     bool willPaintBrokenImage() const;
 
     bool canRender(const RenderObject* renderer, float multiplier) { return !errorOccurred() && !imageSizeForRenderer(renderer, multiplier).isEmpty(); }

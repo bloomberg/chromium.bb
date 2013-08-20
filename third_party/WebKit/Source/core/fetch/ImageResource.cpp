@@ -127,15 +127,15 @@ void ImageResource::allClientsRemoved()
     Resource::allClientsRemoved();
 }
 
-pair<WebCore::Image*, float> ImageResource::brokenImage(float deviceScaleFactor) const
+pair<WebCore::Image*, float> ImageResource::brokenImage(float deviceScaleFactor)
 {
     if (deviceScaleFactor >= 2) {
-        DEFINE_STATIC_LOCAL(WebCore::Image*, brokenImageHiRes, (WebCore::Image::loadPlatformResource("missingImage@2x").leakRef()));
-        return std::make_pair(brokenImageHiRes, 2);
+        DEFINE_STATIC_LOCAL(RefPtr<WebCore::Image>, brokenImageHiRes, (WebCore::Image::loadPlatformResource("missingImage@2x")));
+        return std::make_pair(brokenImageHiRes.get(), 2);
     }
 
-    DEFINE_STATIC_LOCAL(WebCore::Image*, brokenImageLoRes, (WebCore::Image::loadPlatformResource("missingImage").leakRef()));
-    return std::make_pair(brokenImageLoRes, 1);
+    DEFINE_STATIC_LOCAL(RefPtr<WebCore::Image>, brokenImageLoRes, (WebCore::Image::loadPlatformResource("missingImage")));
+    return std::make_pair(brokenImageLoRes.get(), 1);
 }
 
 bool ImageResource::willPaintBrokenImage() const
