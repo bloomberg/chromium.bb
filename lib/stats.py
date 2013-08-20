@@ -109,6 +109,7 @@ class StatsUploader(object):
 
   TIMEOUT_ERROR = 'Timed out during command stat upload - waited %s seconds'
   ENVIRONMENT_ERROR = 'Exception during command stat upload.'
+  HTTPURL_ERROR = 'Exception during command stat upload to %s.'
 
   @classmethod
   def _UploadConditionsMet(cls, stats):
@@ -163,6 +164,10 @@ class StatsUploader(object):
       # Stats upload errors are silenced, for the sake of user experience.
       except cros_build_lib.TimeoutError:
         logging.debug(cls.TIMEOUT_ERROR, timeout)
+      except urllib2.HTTPError as e:
+        # HTTPError has a geturl() method, but it relies on self.url, which
+        # is not always set.  In looking at source, self.filename equals url.
+        logging.debug(cls.HTTPURL_ERROR, e.filename, exc_info=True)
       except EnvironmentError:
         logging.debug(cls.ENVIRONMENT_ERROR, exc_info=True)
 
