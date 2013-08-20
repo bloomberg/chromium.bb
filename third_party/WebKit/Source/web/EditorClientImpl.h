@@ -95,7 +95,7 @@ public:
     virtual void requestCheckingOfString(WTF::PassRefPtr<WebCore::TextCheckingRequest>) OVERRIDE;
     virtual bool supportsGlobalSelection() OVERRIDE;
 
-    virtual WebCore::TextCheckerClient* textChecker() { return this; }
+    virtual WebCore::TextCheckerClient& textChecker() { return *this; }
 
     const char* interpretKeyEvent(const WebCore::KeyboardEvent*);
 

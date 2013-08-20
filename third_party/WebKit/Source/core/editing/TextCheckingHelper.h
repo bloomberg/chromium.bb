@@ -94,7 +94,7 @@ private:
     bool unifiedTextCheckerEnabled() const;
 };
 
-void checkTextOfParagraph(TextCheckerClient*, const String&, TextCheckingTypeMask, Vector<TextCheckingResult>&);
+void checkTextOfParagraph(TextCheckerClient&, const String&, TextCheckingTypeMask, Vector<TextCheckingResult>&);
 
 bool unifiedTextCheckerEnabled(const Frame*);
 

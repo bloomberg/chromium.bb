@@ -132,9 +132,8 @@ SpellCheckRequester::~SpellCheckRequester()
         (*i)->requesterDestroyed();
 }
 
-TextCheckerClient* SpellCheckRequester::client() const
+TextCheckerClient& SpellCheckRequester::client() const
 {
-    // FIXME: The return type should be a reference.
     return m_frame->editor()->client().textChecker();
 }
 
@@ -154,7 +153,7 @@ bool SpellCheckRequester::isAsynchronousEnabled() const
 
 bool SpellCheckRequester::canCheckAsynchronously(Range* range) const
 {
-    return client() && isCheckable(range) && isAsynchronousEnabled();
+    return isCheckable(range) && isAsynchronousEnabled();
 }
 
 bool SpellCheckRequester::isCheckable(Range* range) const
@@ -196,10 +195,8 @@ void SpellCheckRequester::cancelCheck()
 void SpellCheckRequester::invokeRequest(PassRefPtr<SpellCheckRequest> request)
 {
     ASSERT(!m_processingRequest);
-    if (!client())
-        return;
     m_processingRequest = request;
-    client()->requestCheckingOfString(m_processingRequest);
+    client().requestCheckingOfString(m_processingRequest);
 }
 
 void SpellCheckRequester::enqueueRequest(PassRefPtr<SpellCheckRequest> request)

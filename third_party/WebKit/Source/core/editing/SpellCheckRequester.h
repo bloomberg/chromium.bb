@@ -98,7 +98,7 @@ private:
     typedef Deque<RefPtr<SpellCheckRequest> > RequestQueue;
 
     bool canCheckAsynchronously(Range*) const;
-    TextCheckerClient* client() const;
+    TextCheckerClient& client() const;
     void timerFiredToProcessQueuedRequest(Timer<SpellCheckRequester>*);
     void invokeRequest(PassRefPtr<SpellCheckRequest>);
     void enqueueRequest(PassRefPtr<SpellCheckRequest>);

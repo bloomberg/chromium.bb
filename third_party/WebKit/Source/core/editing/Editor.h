@@ -71,7 +71,7 @@ public:
     ~Editor();
 
     EditorClient& client() const;
-    TextCheckerClient* textChecker() const;
+    TextCheckerClient& textChecker() const;
 
     Frame* frame() const { return m_frame; }
 

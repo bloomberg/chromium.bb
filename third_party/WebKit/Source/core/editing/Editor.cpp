@@ -152,7 +152,7 @@ EditorClient& Editor::client() const
     return emptyEditorClient();
 }
 
-TextCheckerClient* Editor::textChecker() const
+TextCheckerClient& Editor::textChecker() const
 {
     return client().textChecker();
 }
@@ -1307,7 +1307,7 @@ String Editor::misspelledWordAtCaretOrRange(Node* clickedNode) const
     int wordLength = word.length();
     int misspellingLocation = -1;
     int misspellingLength = 0;
-    textChecker()->checkSpellingOfString(word, &misspellingLocation, &misspellingLength);
+    textChecker().checkSpellingOfString(word, &misspellingLocation, &misspellingLength);
 
     return misspellingLength == wordLength ? word : String();
 }
@@ -1373,7 +1373,7 @@ void Editor::markMisspellingsAfterTypingToWord(const VisiblePosition &wordStart,
 
     // Get the misspelled word.
     const String misspelledWord = plainText(misspellingRange.get());
-    String autocorrectedString = textChecker()->getAutoCorrectSuggestionForMisspelledWord(misspelledWord);
+    String autocorrectedString = textChecker().getAutoCorrectSuggestionForMisspelledWord(misspelledWord);
 
     // If autocorrected word is non empty, replace the misspelled word by this word.
     if (!autocorrectedString.isEmpty()) {
@@ -1593,7 +1593,7 @@ void Editor::markMisspellingsAndBadGrammar(const VisibleSelection& spellingSelec
 
 void Editor::updateMarkersForWordsAffectedByEditing(bool doNotRemoveIfSelectionAtWordBoundary)
 {
-    if (!textChecker() || textChecker()->shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling))
+    if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling))
         return;
 
     // We want to remove the markers from a word if an editing command will change the word. This can happen in one of
@@ -2041,11 +2041,11 @@ void Editor::respondToChangedSelection(const VisibleSelection& oldSelection, Fra
             spellCheckOldSelection(oldSelection, newAdjacentWords, newSelectedSentence);
         }
 
-        if (!textChecker() || textChecker()->shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
+        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeSpelling)) {
             if (RefPtr<Range> wordRange = newAdjacentWords.toNormalizedRange())
                 m_frame->document()->markers()->removeMarkers(wordRange.get(), DocumentMarker::Spelling);
         }
-        if (!textChecker() || textChecker()->shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar)) {
+        if (textChecker().shouldEraseMarkersAfterChangeSelection(TextCheckingTypeGrammar)) {
             if (RefPtr<Range> sentenceRange = newSelectedSentence.toNormalizedRange())
                 m_frame->document()->markers()->removeMarkers(sentenceRange.get(), DocumentMarker::Grammar);
         }

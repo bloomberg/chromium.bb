@@ -305,7 +305,7 @@ public:
     virtual void textDidChangeInTextField(Element*) OVERRIDE { }
     virtual bool doTextFieldCommandFromEvent(Element*, KeyboardEvent*) OVERRIDE { return false; }
 
-    TextCheckerClient* textChecker() { return &m_textCheckerClient; }
+    TextCheckerClient& textChecker() { return m_textCheckerClient; }
 
     virtual void updateSpellingUIWithMisspelledWord(const String&) OVERRIDE { }
     virtual void showSpellingUI(bool) OVERRIDE { }
