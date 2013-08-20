@@ -8,10 +8,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/bookmarks/bookmark_model_factory.h"
-#include "chrome/browser/bookmarks/bookmark_node_data.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_menu_delegate.h"
 #include "chrome/common/pref_names.h"
@@ -60,8 +57,7 @@ void BookmarkMenuController::RunMenuAt(BookmarkBarView* bookmark_bar,
   gfx::Rect bounds(screen_loc.x(), screen_loc.y(), menu_button->width(),
                    menu_button->height() - 1);
   for_drop_ = for_drop;
-  BookmarkModelFactory::GetForProfile(
-      menu_delegate_->profile())->AddObserver(this);
+  menu_delegate_->GetBookmarkModel()->AddObserver(this);
   // We only delete ourself after the menu completes, so we can safely ignore
   // the return value.
   ignore_result(menu_runner_->RunMenuAt(menu_delegate_->parent(), menu_button,
@@ -195,8 +191,7 @@ void BookmarkMenuController::BookmarkModelChanged() {
 }
 
 BookmarkMenuController::~BookmarkMenuController() {
-  BookmarkModelFactory::GetForProfile(
-      menu_delegate_->profile())->RemoveObserver(this);
+  menu_delegate_->GetBookmarkModel()->RemoveObserver(this);
   if (observer_)
     observer_->BookmarkMenuDeleted(this);
 }

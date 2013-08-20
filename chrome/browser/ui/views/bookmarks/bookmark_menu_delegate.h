@@ -74,19 +74,18 @@ class BookmarkMenuDelegate : public BaseBookmarkModelObserver,
   // the first child of |node| to show in the menu.
   void SetActiveMenu(const BookmarkNode* node, int start_index);
 
+  BookmarkModel* GetBookmarkModel();
+
   // Returns the menu.
-  views::MenuItemView* menu() const { return menu_; }
+  views::MenuItemView* menu() { return menu_; }
 
   // Returns the context menu, or NULL if the context menu isn't showing.
-  views::MenuItemView* context_menu() const {
+  views::MenuItemView* context_menu() {
     return context_menu_.get() ? context_menu_->menu() : NULL;
   }
 
-  Profile* profile() { return profile_; }
-
   views::Widget* parent() { return parent_; }
   const views::Widget* parent() const { return parent_; }
-
 
   // Returns true if we're in the process of mutating the model. This happens
   // when the user deletes menu items using the context menu.
