@@ -16,6 +16,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
@@ -25,7 +26,10 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/models/simple_menu_model.h"
 #include "ui/gfx/size.h"
+#include "ui/views/controls/menu/menu_controller.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -104,6 +108,32 @@ class ModalWindow : public views::WidgetDelegateView {
   DISALLOW_COPY_AND_ASSIGN(ModalWindow);
 };
 
+class SimpleMenuDelegate : public ui::SimpleMenuModel::Delegate {
+ public:
+  SimpleMenuDelegate() {}
+  virtual ~SimpleMenuDelegate() {}
+
+  virtual bool IsCommandIdChecked(int command_id) const OVERRIDE {
+    return false;
+  }
+
+  virtual bool IsCommandIdEnabled(int command_id) const OVERRIDE {
+    return true;
+  }
+
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      ui::Accelerator* accelerator) OVERRIDE {
+    return false;
+  }
+
+  virtual void ExecuteCommand(int command_id, int event_flags) OVERRIDE {
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SimpleMenuDelegate);
+};
+
 }  // namespace
 
 class ShellTest : public test::AshTestBase {
@@ -130,8 +160,39 @@ class ShellTest : public test::AshTestBase {
         always_on_top;
 
     widget->Close();
-}
+  }
 
+  void LockScreenAndVerifyMenuClosed() {
+    // Verify a menu is open before locking.
+    views::MenuController* menu_controller =
+        views::MenuController::GetActiveInstance();
+    DCHECK(menu_controller);
+    EXPECT_EQ(views::MenuController::EXIT_NONE, menu_controller->exit_type());
+
+    // Create a LockScreen window.
+    views::Widget::InitParams widget_params(
+        views::Widget::InitParams::TYPE_WINDOW);
+    SessionStateDelegate* delegate =
+        Shell::GetInstance()->session_state_delegate();
+    delegate->LockScreen();
+    views::Widget* lock_widget = CreateTestWindow(widget_params);
+    ash::Shell::GetContainer(
+        Shell::GetPrimaryRootWindow(),
+        ash::internal::kShellWindowId_LockScreenContainer)->
+        AddChild(lock_widget->GetNativeView());
+    lock_widget->Show();
+    EXPECT_TRUE(delegate->IsScreenLocked());
+    EXPECT_TRUE(lock_widget->GetNativeView()->HasFocus());
+
+    // Verify menu is closed.
+    EXPECT_NE(views::MenuController::EXIT_NONE, menu_controller->exit_type());
+    lock_widget->Close();
+    delegate->UnlockScreen();
+
+    // In case the menu wasn't closed, cancel the menu to exit the nested menu
+    // run loop so that the test will not time out.
+    menu_controller->CancelAll();
+  }
 };
 
 TEST_F(ShellTest, CreateWindow) {
@@ -300,6 +361,29 @@ TEST_F(ShellTest, IsScreenLocked) {
   EXPECT_TRUE(delegate->IsScreenLocked());
   delegate->UnlockScreen();
   EXPECT_FALSE(delegate->IsScreenLocked());
+}
+
+TEST_F(ShellTest, LockScreenClosesActiveMenu) {
+  SimpleMenuDelegate menu_delegate;
+  scoped_ptr<ui::SimpleMenuModel> menu_model(
+      new ui::SimpleMenuModel(&menu_delegate));
+  menu_model->AddItem(0, ASCIIToUTF16("Menu item"));
+  views::Widget* widget = ash::Shell::GetPrimaryRootWindowController()->
+      wallpaper_controller()->widget();
+  scoped_ptr<views::MenuRunner> menu_runner(
+      new views::MenuRunner(menu_model.get()));
+
+  // When MenuRunner runs a nested loop the LockScreenAndVerifyMenuClosed
+  // command will fire, check the menu state and ensure the nested menu loop
+  // is exited so that the test will terminate.
+  base::MessageLoopForUI::current()->PostTask(FROM_HERE,
+      base::Bind(&ShellTest::LockScreenAndVerifyMenuClosed,
+                 base::Unretained(this)));
+
+  EXPECT_EQ(views::MenuRunner::NORMAL_EXIT,
+      menu_runner->RunMenuAt(widget, NULL, gfx::Rect(),
+        views::MenuItemView::TOPLEFT, ui::MENU_SOURCE_MOUSE,
+        views::MenuRunner::CONTEXT_MENU));
 }
 
 // Fails on Mac, see http://crbug.com/115662
