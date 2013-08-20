@@ -1622,7 +1622,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     if (PathUtil.getRootType(path) === RootType.DRIVE) {
       if (!this.isDriveEnabled()) {
         var leafName = path.substr(path.indexOf('/') + 1);
-        path = this.directoryModel_.getDefaultDirectory() + '/' + leafName;
+        path = PathUtil.DEFAULT_DIRECTORY + '/' + leafName;
         this.finishSetupCurrentDirectory_(path);
         return;
       }
