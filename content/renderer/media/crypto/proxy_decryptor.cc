@@ -14,7 +14,7 @@ namespace content {
 #if defined(ENABLE_PEPPER_CDMS)
 void ProxyDecryptor::DestroyHelperPlugin() {
   ContentDecryptionModuleFactory::DestroyHelperPlugin(
-      web_media_player_client_);
+      web_media_player_client_, web_frame_);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 

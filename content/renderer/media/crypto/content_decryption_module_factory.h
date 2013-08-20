@@ -40,7 +40,8 @@ class ContentDecryptionModuleFactory {
 
 #if defined(ENABLE_PEPPER_CDMS)
   static void DestroyHelperPlugin(
-      WebKit::WebMediaPlayerClient* web_media_player_client);
+      WebKit::WebMediaPlayerClient* web_media_player_client,
+      WebKit::WebFrame* web_frame);
 #endif  // defined(ENABLE_PEPPER_CDMS)
 };
 

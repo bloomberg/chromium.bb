@@ -24,8 +24,8 @@ namespace content {
 
 #if defined(ENABLE_PEPPER_CDMS)
 // Returns the PepperPluginInstanceImpl associated with the Helper Plugin.
-// If a non-NULL pointer is returned, the caller must call closeHelperPlugin()
-// when the Helper Plugin is no longer needed.
+// If a non-NULL pointer is returned, the caller must call
+// closeHelperPluginSoon() when the Helper Plugin is no longer needed.
 static scoped_refptr<PepperPluginInstanceImpl> CreateHelperPlugin(
     const std::string& plugin_type,
     WebKit::WebMediaPlayerClient* web_media_player_client,
@@ -73,18 +73,17 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
                              key_message_cb,
                              destroy_plugin_cb);
 
-  if (!decryptor) {
-    ContentDecryptionModuleFactory::DestroyHelperPlugin(
-        web_media_player_client);
-  }
+  if (!decryptor)
+    destroy_plugin_cb.Run();
   // Else the new object will call destroy_plugin_cb to destroy Helper Plugin.
 
   return scoped_ptr<media::MediaKeys>(decryptor.Pass());
 }
 
 void ContentDecryptionModuleFactory::DestroyHelperPlugin(
-    WebKit::WebMediaPlayerClient* web_media_player_client) {
-  web_media_player_client->closeHelperPlugin();
+    WebKit::WebMediaPlayerClient* web_media_player_client,
+    WebKit::WebFrame* web_frame) {
+  web_media_player_client->closeHelperPluginSoon(web_frame);
 }
 #endif  // defined(ENABLE_PEPPER_CDMS)
 
