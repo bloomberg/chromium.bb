@@ -113,7 +113,9 @@ class PasswordManagerBrowserTest : public InProcessBrowserTest {
 };
 
 // Actual tests ---------------------------------------------------------------
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForNormalSubmit) {
+// This test was a bit flaky <http://crbug.com/276597>.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       DISABLED_PromptForNormalSubmit) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL("files/password/password_form.html");
@@ -131,8 +133,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForNormalSubmit) {
   EXPECT_TRUE(observer.infobar_shown());
 }
 
+// This test was a bit flaky <http://crbug.com/276597>.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       PromptForSubmitUsingJavaScript) {
+                       DISABLED_PromptForSubmitUsingJavaScript) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL("files/password/password_form.html");
@@ -190,8 +193,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_FALSE(observer.infobar_shown());
 }
 
+// This test was a bit flaky <http://crbug.com/276597>.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       PromptAfterSubmitWithSubFrameNavigation) {
+                       DISABLED_PromptAfterSubmitWithSubFrameNavigation) {
   ASSERT_TRUE(test_server()->Start());
 
   GURL url = test_server()->GetURL("files/password/multi_frames.html");
@@ -216,7 +220,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(observer.infobar_shown());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForXHRSubmit) {
+// This test was a bit flaky <http://crbug.com/276597>.
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       DISABLED_PromptForXHRSubmit) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
