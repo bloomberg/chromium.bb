@@ -246,10 +246,11 @@ void LayerTreeHostImpl::BeginCommit() {}
 void LayerTreeHostImpl::CommitComplete() {
   TRACE_EVENT0("cc", "LayerTreeHostImpl::CommitComplete");
 
-  // Impl-side painting needs an update immediately post-commit to have the
-  // opportunity to create tilings.  Other paths can call UpdateDrawProperties
-  // more lazily when needed prior to drawing.
   if (settings_.impl_side_painting) {
+    // Impl-side painting needs an update immediately post-commit to have the
+    // opportunity to create tilings.  Other paths can call UpdateDrawProperties
+    // more lazily when needed prior to drawing.
+    pending_tree()->ApplyScrollDeltasSinceBeginFrame();
     pending_tree_->set_needs_update_draw_properties();
     pending_tree_->UpdateDrawProperties();
     // Start working on newly created tiles immediately if needed.

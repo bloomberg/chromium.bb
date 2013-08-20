@@ -502,7 +502,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsNoDelegate) {
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
   EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
 
-  layer()->ApplySentScrollDeltas();
+  layer()->ApplySentScrollDeltasFromAbortedCommit();
 
   EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_delta - sent_scroll_delta, layer()->ScrollDelta());
@@ -527,7 +527,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithIgnoringDelegate) {
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
   EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
 
-  layer()->ApplySentScrollDeltas();
+  layer()->ApplySentScrollDeltasFromAbortedCommit();
 
   EXPECT_VECTOR_EQ(fixed_offset, layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());
@@ -551,7 +551,7 @@ TEST_F(LayerImplScrollTest, ApplySentScrollsWithAcceptingDelegate) {
   EXPECT_VECTOR_EQ(scroll_offset, layer()->scroll_offset());
   EXPECT_VECTOR_EQ(sent_scroll_delta, layer()->sent_scroll_delta());
 
-  layer()->ApplySentScrollDeltas();
+  layer()->ApplySentScrollDeltasFromAbortedCommit();
 
   EXPECT_VECTOR_EQ(scroll_offset + scroll_delta, layer()->TotalScrollOffset());
   EXPECT_VECTOR_EQ(scroll_offset + sent_scroll_delta, layer()->scroll_offset());

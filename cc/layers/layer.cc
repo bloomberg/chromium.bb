@@ -817,19 +817,10 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   update_rect_.Union(layer->update_rect());
   layer->set_update_rect(update_rect_);
 
-  if (layer->layer_tree_impl()->settings().impl_side_painting) {
-    DCHECK(layer->layer_tree_impl()->IsPendingTree());
-    LayerImpl* active_twin =
-        layer->layer_tree_impl()->FindActiveTreeLayerById(id());
-    // Update the scroll delta from the active layer, which may have
-    // adjusted its scroll delta prior to this pending layer being created.
-    // This code is identical to that in LayerImpl::SetScrollDelta.
-    if (active_twin) {
-      DCHECK(layer->sent_scroll_delta().IsZero());
-      layer->SetScrollDelta(active_twin->ScrollDelta() -
-                            active_twin->sent_scroll_delta());
-    }
-  } else {
+  // Adjust the scroll delta to be just the scrolls that have happened since
+  // the begin frame was sent.  This happens for impl-side painting
+  // in LayerImpl::ApplyScrollDeltasSinceBeginFrame in a separate tree walk.
+  if (!layer->layer_tree_impl()->settings().impl_side_painting) {
     layer->SetScrollDelta(layer->ScrollDelta() - layer->sent_scroll_delta());
     layer->SetSentScrollDelta(gfx::Vector2d());
   }

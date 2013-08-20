@@ -330,7 +330,8 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
   void SetScrollable(bool scrollable) { scrollable_ = scrollable; }
   bool scrollable() const { return scrollable_; }
 
-  void ApplySentScrollDeltas();
+  void ApplySentScrollDeltasFromAbortedCommit();
+  void ApplyScrollDeltasSinceBeginFrame();
 
   void SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
     should_scroll_on_main_thread_ = should_scroll_on_main_thread;

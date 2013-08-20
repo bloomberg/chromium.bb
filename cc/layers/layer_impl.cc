@@ -272,7 +272,7 @@ gfx::Vector2dF LayerImpl::ScrollBy(gfx::Vector2dF scroll) {
   return unscrolled;
 }
 
-void LayerImpl::ApplySentScrollDeltas() {
+void LayerImpl::ApplySentScrollDeltasFromAbortedCommit() {
   // Pending tree never has sent scroll deltas
   DCHECK(layer_tree_impl()->IsActiveTree());
 
@@ -290,6 +290,25 @@ void LayerImpl::ApplySentScrollDeltas() {
   scroll_offset_ += sent_scroll_delta_;
   scroll_delta_ -= sent_scroll_delta_;
   sent_scroll_delta_ = gfx::Vector2d();
+}
+
+void LayerImpl::ApplyScrollDeltasSinceBeginFrame() {
+  // Only the pending tree can have missing scrolls.
+  DCHECK(layer_tree_impl()->IsPendingTree());
+  if (!scrollable())
+    return;
+
+  // Pending tree should never have sent scroll deltas.
+  DCHECK(sent_scroll_delta().IsZero());
+
+  LayerImpl* active_twin = layer_tree_impl()->FindActiveTreeLayerById(id());
+  if (active_twin) {
+    // Scrolls that happens after begin frame (where the sent scroll delta
+    // comes from) and commit need to be applied to the pending tree
+    // so that it is up to date with the total scroll.
+    SetScrollDelta(active_twin->ScrollDelta() -
+                   active_twin->sent_scroll_delta());
+  }
 }
 
 InputHandler::ScrollStatus LayerImpl::TryScroll(

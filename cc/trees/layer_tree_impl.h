@@ -116,7 +116,8 @@ class CC_EXPORT LayerTreeImpl {
 
   void FindRootScrollLayer();
   void UpdateMaxScrollOffset();
-  void ApplySentScrollAndScaleDeltas();
+  void ApplySentScrollAndScaleDeltasFromAbortedCommit();
+  void ApplyScrollDeltasSinceBeginFrame();
 
   SkColor background_color() const { return background_color_; }
   void set_background_color(SkColor color) { background_color_ = color; }

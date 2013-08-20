@@ -226,11 +226,11 @@ void LayerTreeImpl::UpdateMaxScrollOffset() {
   root_scroll_layer_->SetMaxScrollOffset(gfx::ToFlooredVector2d(max_scroll));
 }
 
-static void ApplySentScrollDeltasOn(LayerImpl* layer) {
-  layer->ApplySentScrollDeltas();
+static void ApplySentScrollDeltasFromAbortedCommitTo(LayerImpl* layer) {
+  layer->ApplySentScrollDeltasFromAbortedCommit();
 }
 
-void LayerTreeImpl::ApplySentScrollAndScaleDeltas() {
+void LayerTreeImpl::ApplySentScrollAndScaleDeltasFromAbortedCommit() {
   DCHECK(IsActiveTree());
 
   page_scale_factor_ *= sent_page_scale_delta_;
@@ -241,7 +241,20 @@ void LayerTreeImpl::ApplySentScrollAndScaleDeltas() {
     return;
 
   LayerTreeHostCommon::CallFunctionForSubtree(
-      root_layer(), base::Bind(&ApplySentScrollDeltasOn));
+      root_layer(), base::Bind(&ApplySentScrollDeltasFromAbortedCommitTo));
+}
+
+static void ApplyScrollDeltasSinceBeginFrameTo(LayerImpl* layer) {
+  layer->ApplyScrollDeltasSinceBeginFrame();
+}
+
+void LayerTreeImpl::ApplyScrollDeltasSinceBeginFrame() {
+  DCHECK(IsPendingTree());
+  if (!root_layer())
+    return;
+
+  LayerTreeHostCommon::CallFunctionForSubtree(
+      root_layer(), base::Bind(&ApplyScrollDeltasSinceBeginFrameTo));
 }
 
 void LayerTreeImpl::UpdateSolidColorScrollbars() {
