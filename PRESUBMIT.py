@@ -25,6 +25,7 @@ _EXCLUDED_PATHS = (
     r".*MakeFile$",
     r".+_autogen\.h$",
     r".+[\\\/]pnacl_shim\.c$",
+    r"^gpu[\\\/]config[\\\/].*_list_json\.cc$",
 )
 
 # Fragment of a regular expression that matches C++ and Objective-C++
