@@ -24,9 +24,8 @@
  */
 
 [
-    NoInterfaceObject,
     DoNotCheckConstants
-] interface DOMApplicationCache : EventTarget {
+] interface ApplicationCache : EventTarget {
     // update status
     const unsigned short UNCACHED = 0;
     const unsigned short IDLE = 1;

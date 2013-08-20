@@ -23,8 +23,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DOMApplicationCache_h
-#define DOMApplicationCache_h
+#ifndef ApplicationCache_h
+#define ApplicationCache_h
 
 #include "bindings/v8/ScriptWrappable.h"
 #include "core/dom/EventNames.h"
@@ -41,10 +41,10 @@ class ExceptionState;
 class Frame;
 class KURL;
 
-class DOMApplicationCache : public ScriptWrappable, public RefCounted<DOMApplicationCache>, public EventTarget, public DOMWindowProperty {
+class ApplicationCache : public ScriptWrappable, public RefCounted<ApplicationCache>, public EventTarget, public DOMWindowProperty {
 public:
-    static PassRefPtr<DOMApplicationCache> create(Frame* frame) { return adoptRef(new DOMApplicationCache(frame)); }
-    ~DOMApplicationCache() { ASSERT(!m_frame); }
+    static PassRefPtr<ApplicationCache> create(Frame* frame) { return adoptRef(new ApplicationCache(frame)); }
+    ~ApplicationCache() { ASSERT(!m_frame); }
 
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
 
@@ -55,8 +55,8 @@ public:
 
     // EventTarget impl
 
-    using RefCounted<DOMApplicationCache>::ref;
-    using RefCounted<DOMApplicationCache>::deref;
+    using RefCounted<ApplicationCache>::ref;
+    using RefCounted<ApplicationCache>::deref;
 
     // Explicitly named attribute event listener helpers
 
@@ -72,10 +72,10 @@ public:
     virtual const AtomicString& interfaceName() const;
     virtual ScriptExecutionContext* scriptExecutionContext() const;
 
-    static const AtomicString& toEventType(ApplicationCacheHost::EventID id);
+    static const AtomicString& toEventType(ApplicationCacheHost::EventID);
 
 private:
-    explicit DOMApplicationCache(Frame*);
+    explicit ApplicationCache(Frame*);
 
     virtual void refEventTarget() { ref(); }
     virtual void derefEventTarget() { deref(); }
@@ -89,4 +89,4 @@ private:
 
 } // namespace WebCore
 
-#endif // DOMApplicationCache_h
+#endif // ApplicationCache_h

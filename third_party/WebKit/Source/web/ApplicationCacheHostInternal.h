@@ -56,12 +56,12 @@ public:
 
     virtual void notifyEventListener(WebKit::WebApplicationCacheHost::EventID eventID)
     {
-        m_innerHost->notifyDOMApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0);
+        m_innerHost->notifyApplicationCache(static_cast<ApplicationCacheHost::EventID>(eventID), 0, 0);
     }
 
     virtual void notifyProgressEventListener(const WebKit::WebURL&, int progressTotal, int progressDone)
     {
-        m_innerHost->notifyDOMApplicationCache(ApplicationCacheHost::PROGRESS_EVENT, progressTotal, progressDone);
+        m_innerHost->notifyApplicationCache(ApplicationCacheHost::PROGRESS_EVENT, progressTotal, progressDone);
     }
 
     static WebKit::WebApplicationCacheHost* toWebApplicationCacheHost(ApplicationCacheHost* innerHost)

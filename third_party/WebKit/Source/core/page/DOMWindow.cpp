@@ -63,7 +63,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
-#include "core/loader/appcache/DOMApplicationCache.h"
+#include "core/loader/appcache/ApplicationCache.h"
 #include "core/page/BarProp.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -594,12 +594,12 @@ PageConsole* DOMWindow::pageConsole() const
     return m_frame->page() ? m_frame->page()->console() : 0;
 }
 
-DOMApplicationCache* DOMWindow::applicationCache() const
+ApplicationCache* DOMWindow::applicationCache() const
 {
     if (!isCurrentlyDisplayedInFrame())
         return 0;
     if (!m_applicationCache)
-        m_applicationCache = DOMApplicationCache::create(m_frame);
+        m_applicationCache = ApplicationCache::create(m_frame);
     return m_applicationCache.get();
 }
 

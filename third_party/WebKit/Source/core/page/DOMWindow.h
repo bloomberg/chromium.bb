@@ -36,11 +36,11 @@
 #include "wtf/Forward.h"
 
 namespace WebCore {
+    class ApplicationCache;
     class BarProp;
     class CSSRuleList;
     class CSSStyleDeclaration;
     class Console;
-    class DOMApplicationCache;
     class DOMPoint;
     class DOMSelection;
     class DOMURL;
@@ -345,8 +345,8 @@ namespace WebCore {
         Storage* optionalSessionStorage() const { return m_sessionStorage.get(); }
         Storage* optionalLocalStorage() const { return m_localStorage.get(); }
 
-        DOMApplicationCache* applicationCache() const;
-        DOMApplicationCache* optionalApplicationCache() const { return m_applicationCache.get(); }
+        ApplicationCache* applicationCache() const;
+        ApplicationCache* optionalApplicationCache() const { return m_applicationCache.get(); }
 
 #if ENABLE(ORIENTATION_EVENTS)
         // This is the interface orientation in degrees. Some examples are:
@@ -422,7 +422,7 @@ namespace WebCore {
 
         mutable RefPtr<Storage> m_sessionStorage;
         mutable RefPtr<Storage> m_localStorage;
-        mutable RefPtr<DOMApplicationCache> m_applicationCache;
+        mutable RefPtr<ApplicationCache> m_applicationCache;
 
         mutable RefPtr<Performance> m_performance;
 

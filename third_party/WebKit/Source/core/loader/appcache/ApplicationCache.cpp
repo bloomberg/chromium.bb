@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "core/loader/appcache/DOMApplicationCache.h"
+#include "core/loader/appcache/ApplicationCache.h"
 
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
@@ -39,30 +39,30 @@
 
 namespace WebCore {
 
-DOMApplicationCache::DOMApplicationCache(Frame* frame)
+ApplicationCache::ApplicationCache(Frame* frame)
     : DOMWindowProperty(frame)
 {
     ScriptWrappable::init(this);
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (cacheHost)
-        cacheHost->setDOMApplicationCache(this);
+        cacheHost->setApplicationCache(this);
 }
 
-void DOMApplicationCache::willDestroyGlobalObjectInFrame()
+void ApplicationCache::willDestroyGlobalObjectInFrame()
 {
     if (ApplicationCacheHost* cacheHost = applicationCacheHost())
-        cacheHost->setDOMApplicationCache(0);
+        cacheHost->setApplicationCache(0);
     DOMWindowProperty::willDestroyGlobalObjectInFrame();
 }
 
-ApplicationCacheHost* DOMApplicationCache::applicationCacheHost() const
+ApplicationCacheHost* ApplicationCache::applicationCacheHost() const
 {
     if (!m_frame || !m_frame->loader()->documentLoader())
         return 0;
     return m_frame->loader()->documentLoader()->applicationCacheHost();
 }
 
-unsigned short DOMApplicationCache::status() const
+unsigned short ApplicationCache::status() const
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost)
@@ -70,40 +70,40 @@ unsigned short DOMApplicationCache::status() const
     return cacheHost->status();
 }
 
-void DOMApplicationCache::update(ExceptionState& es)
+void ApplicationCache::update(ExceptionState& es)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->update())
         es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "ApplicationCache", "there is no application cache to update."));
 }
 
-void DOMApplicationCache::swapCache(ExceptionState& es)
+void ApplicationCache::swapCache(ExceptionState& es)
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (!cacheHost || !cacheHost->swapCache())
         es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("swapCache", "ApplicationCache", "there is no newer application cache to swap to."));
 }
 
-void DOMApplicationCache::abort()
+void ApplicationCache::abort()
 {
     ApplicationCacheHost* cacheHost = applicationCacheHost();
     if (cacheHost)
         cacheHost->abort();
 }
 
-const AtomicString& DOMApplicationCache::interfaceName() const
+const AtomicString& ApplicationCache::interfaceName() const
 {
-    return eventNames().interfaceForDOMApplicationCache;
+    return eventNames().interfaceForApplicationCache;
 }
 
-ScriptExecutionContext* DOMApplicationCache::scriptExecutionContext() const
+ScriptExecutionContext* ApplicationCache::scriptExecutionContext() const
 {
     if (m_frame)
         return m_frame->document();
     return 0;
 }
 
-const AtomicString& DOMApplicationCache::toEventType(ApplicationCacheHost::EventID id)
+const AtomicString& ApplicationCache::toEventType(ApplicationCacheHost::EventID id)
 {
     switch (id) {
     case ApplicationCacheHost::CHECKING_EVENT:
@@ -127,12 +127,12 @@ const AtomicString& DOMApplicationCache::toEventType(ApplicationCacheHost::Event
     return eventNames().errorEvent;
 }
 
-EventTargetData* DOMApplicationCache::eventTargetData()
+EventTargetData* ApplicationCache::eventTargetData()
 {
     return &m_eventTargetData;
 }
 
-EventTargetData* DOMApplicationCache::ensureEventTargetData()
+EventTargetData* ApplicationCache::ensureEventTargetData()
 {
     return &m_eventTargetData;
 }

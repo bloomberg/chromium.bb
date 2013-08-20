@@ -38,8 +38,8 @@
 
 namespace WebCore {
 
+    class ApplicationCache;
     class AudioContext;
-    class DOMApplicationCache;
     class DOMWindow;
     class DedicatedWorkerGlobalScope;
     class Event;

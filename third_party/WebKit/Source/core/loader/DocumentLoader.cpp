@@ -684,7 +684,7 @@ void DocumentLoader::detachFromFrame()
     // frame have any loads active, so go ahead and kill all the loads.
     stopLoading();
 
-    m_applicationCacheHost->setDOMApplicationCache(0);
+    m_applicationCacheHost->setApplicationCache(0);
     InspectorInstrumentation::loaderDetachedFromFrame(m_frame, this);
     m_frame = 0;
 }
