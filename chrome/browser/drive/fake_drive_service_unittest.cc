@@ -1114,6 +1114,105 @@ TEST_F(FakeDriveServiceTest, CopyHostedDocument_Offline) {
   EXPECT_FALSE(resource_entry);
 }
 
+TEST_F(FakeDriveServiceTest, MoveResource) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  const std::string kParentResourceId = "folder:2_folder_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.MoveResource(
+      kResourceId,
+      kParentResourceId,
+      "new title",
+      test_util::CreateCopyResultCallback(&error, &resource_entry));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+  // The copied entry should have the new resource ID and the title.
+  EXPECT_EQ(kResourceId, resource_entry->resource_id());
+  EXPECT_EQ("new title", resource_entry->title());
+  EXPECT_TRUE(HasParent(kResourceId, kParentResourceId));
+  // Should be incremented as a new hosted document was created.
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+}
+
+TEST_F(FakeDriveServiceTest, MoveResource_NonExisting) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "gdata/root_feed.json"));
+
+  const std::string kResourceId = "document:nonexisting_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.MoveResource(
+      kResourceId,
+      "folder:1_folder_resource_id",
+      "new title",
+      test_util::CreateCopyResultCallback(&error, &resource_entry));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_NOT_FOUND, error);
+}
+
+TEST_F(FakeDriveServiceTest, MoveResource_EmptyParentResourceId) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "gdata/root_feed.json"));
+  ASSERT_TRUE(fake_service_.LoadAccountMetadataForWapi(
+      "gdata/account_metadata.json"));
+
+  int64 old_largest_change_id = GetLargestChangeByAboutResource();
+
+  const std::string kResourceId = "file:2_file_resource_id";
+
+  // Just make sure that the resource is under root.
+  ASSERT_TRUE(HasParent(kResourceId, "fake_root"));
+
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.MoveResource(
+      kResourceId,
+      std::string(),
+      "new title",
+      test_util::CreateCopyResultCallback(&error, &resource_entry));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+  // The copied entry should have the new resource ID and the title.
+  EXPECT_EQ(kResourceId, resource_entry->resource_id());
+  EXPECT_EQ("new title", resource_entry->title());
+  EXPECT_TRUE(HasParent(kResourceId, "fake_root"));
+  // Should be incremented as a new hosted document was created.
+  EXPECT_EQ(old_largest_change_id + 1, fake_service_.largest_changestamp());
+  EXPECT_EQ(old_largest_change_id + 1, GetLargestChangeByAboutResource());
+}
+
+TEST_F(FakeDriveServiceTest, MoveResource_Offline) {
+  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
+      "gdata/root_feed.json"));
+  fake_service_.set_offline(true);
+
+  const std::string kResourceId = "file:2_file_resource_id";
+  GDataErrorCode error = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceEntry> resource_entry;
+  fake_service_.CopyResource(
+      kResourceId,
+      "folder:1_folder_resource_id",
+      "new title",
+      test_util::CreateCopyResultCallback(&error, &resource_entry));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(GDATA_NO_CONNECTION, error);
+  EXPECT_FALSE(resource_entry);
+}
+
 TEST_F(FakeDriveServiceTest, RenameResource_ExistingFile) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "gdata/root_feed.json"));

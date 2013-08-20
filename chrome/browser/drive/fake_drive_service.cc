@@ -126,6 +126,12 @@ void ScheduleUploadRangeCallback(const UploadRangeCallback& callback,
                  base::Passed(&entry)));
 }
 
+void EntryActionCallbackAdapter(
+    const EntryActionCallback& callback,
+    GDataErrorCode error, scoped_ptr<ResourceEntry> resource_entry) {
+  callback.Run(error);
+}
+
 }  // namespace
 
 struct FakeDriveService::UploadSession {
@@ -797,8 +803,62 @@ CancelCallback FakeDriveService::MoveResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  // TODO(hidehiko): Implement this.
-  NOTIMPLEMENTED();
+  if (offline_) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::Bind(callback, GDATA_NO_CONNECTION,
+                              base::Passed(scoped_ptr<ResourceEntry>())));
+    return CancelCallback();
+  }
+
+  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
+  if (entry) {
+    entry->SetString("title.$t", new_title);
+
+    // Set parent if necessary.
+    if (!parent_resource_id.empty()) {
+      base::ListValue* links = NULL;
+      if (!entry->GetList("link", &links)) {
+        links = new base::ListValue;
+        entry->Set("link", links);
+      }
+
+      // Remove old parent(s).
+      for (size_t i = 0; i < links->GetSize(); ) {
+        base::DictionaryValue* link = NULL;
+        std::string rel;
+        std::string href;
+        if (links->GetDictionary(i, &link) &&
+            link->GetString("rel", &rel) &&
+            link->GetString("href", &href) &&
+            rel == "http://schemas.google.com/docs/2007#parent") {
+          links->Remove(i, NULL);
+        } else {
+          ++i;
+        }
+      }
+
+      base::DictionaryValue* link = new base::DictionaryValue;
+      link->SetString("rel", "http://schemas.google.com/docs/2007#parent");
+      link->SetString(
+          "href", GetFakeLinkUrl(parent_resource_id).spec());
+      links->Append(link);
+    }
+
+    AddNewChangestampAndETag(entry);
+
+    // Parse the new entry.
+    scoped_ptr<ResourceEntry> resource_entry =
+        ResourceEntry::CreateFrom(*entry);
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, HTTP_SUCCESS, base::Passed(&resource_entry)));
+    return CancelCallback();
+  }
+
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, HTTP_NOT_FOUND,
+                 base::Passed(scoped_ptr<ResourceEntry>())));
   return CancelCallback();
 }
 
@@ -809,24 +869,9 @@ CancelCallback FakeDriveService::RenameResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (offline_) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, GDATA_NO_CONNECTION));
-    return CancelCallback();
-  }
-
-  base::DictionaryValue* entry = FindEntryByResourceId(resource_id);
-  if (entry) {
-    entry->SetString("title.$t", new_title);
-    AddNewChangestampAndETag(entry);
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE, base::Bind(callback, HTTP_SUCCESS));
-    return CancelCallback();
-  }
-
-  base::MessageLoop::current()->PostTask(
-      FROM_HERE, base::Bind(callback, HTTP_NOT_FOUND));
-  return CancelCallback();
+  return MoveResource(
+      resource_id, std::string(), new_title,
+      base::Bind(&EntryActionCallbackAdapter, callback));
 }
 
 CancelCallback FakeDriveService::TouchResource(
