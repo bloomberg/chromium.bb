@@ -10,15 +10,10 @@
 
 namespace chrome {
 
-MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
-                                const string16& title,
-                                const string16& message,
-                                MessageBoxType type) {
-  startup_metric_utils::SetNonBrowserUIDisplayed();
-
-  if (!parent)
-    parent = ui::GetWindowToParentTo(true);
-
+MessageBoxResult NativeShowMessageBox(HWND parent,
+                                      const string16& title,
+                                      const string16& message,
+                                      MessageBoxType type) {
   UINT flags = MB_SETFOREGROUND;
   if (type == MESSAGE_BOX_TYPE_QUESTION) {
     flags |= MB_YESNO;
@@ -33,5 +28,19 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
   return (result == IDYES || result == IDOK) ?
       MESSAGE_BOX_RESULT_YES : MESSAGE_BOX_RESULT_NO;
 }
+
+#if !defined(USE_AURA)
+MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
+                                const string16& title,
+                                const string16& message,
+                                MessageBoxType type) {
+  startup_metric_utils::SetNonBrowserUIDisplayed();
+
+  if (!parent)
+    parent = ui::GetWindowToParentTo(true);
+
+  return NativeShowMessageBox(parent, title, message, type);
+}
+#endif
 
 }  // namespace chrome

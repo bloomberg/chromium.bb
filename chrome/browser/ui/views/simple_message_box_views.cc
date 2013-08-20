@@ -22,6 +22,9 @@
 #include "ui/aura/client/dispatcher_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
+#if defined(OS_WIN)
+#include "chrome/browser/ui/views/simple_message_box_win.h"
+#endif
 #endif
 
 namespace chrome {
@@ -174,6 +177,13 @@ MessageBoxResult ShowMessageBox(gfx::NativeWindow parent,
                                 const string16& title,
                                 const string16& message,
                                 MessageBoxType type) {
+#if defined(USE_AURA) && defined(OS_WIN)
+  // If we're very early, we can't show a GPU-based dialog, so fallback to
+  // plain Windows MessageBox.
+  if (!ui::ContextFactory::GetInstance())
+    return NativeShowMessageBox(NULL, title, message, type);
+#endif
+
   scoped_refptr<SimpleMessageBoxViews> dialog(
       new SimpleMessageBoxViews(title, message, type));
   CreateBrowserModalDialogViews(dialog.get(), parent)->Show();
