@@ -528,9 +528,9 @@ class AndroidPort(chromium.ChromiumPort):
     # Local private methods.
 
     @staticmethod
-    def _android_server_process_constructor(port, server_name, cmd_line, env=None):
+    def _android_server_process_constructor(port, server_name, cmd_line, env=None, logging=False):
         return server_process.ServerProcess(port, server_name, cmd_line, env,
-                                            universal_newlines=True, treat_no_data_as_crash=True)
+                                            universal_newlines=True, treat_no_data_as_crash=True, logging=logging)
 
 
 class AndroidPerf(SingleFileOutputProfiler):
