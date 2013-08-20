@@ -94,6 +94,9 @@ void MIDIHost::OnSendData(int port,
   if (!midi_manager_)
     return;
 
+  if (data.empty())
+    return;
+
   base::AutoLock auto_lock(in_flight_lock_);
 
   // Sanity check that we won't send too much.
@@ -107,20 +110,15 @@ void MIDIHost::OnSendData(int port,
   // TODO(toyoshim): allow System Exclusive if browser has granted
   // this client access.  We'll likely need to pass a GURL
   // here to compare against our permissions.
-  if (data.size() > 0 && data[0] >= kSysExMessage)
+  if (data[0] >= kSysExMessage)
       return;
 
-#if defined(OS_ANDROID)
-  // TODO(toyoshim): figure out why data() method does not compile on Android.
-  NOTIMPLEMENTED();
-#else
   midi_manager_->DispatchSendMIDIData(
       this,
       port,
-      data.data(),
+      &data[0],
       data.size(),
       timestamp);
-#endif
 
   sent_bytes_in_flight_ += data.size();
 }
