@@ -304,6 +304,15 @@ TEST_F(WorkspaceLayoutManagerTest, WindowShouldBeOnScreenWhenAdded) {
   EXPECT_GT(bounds.width(), out_window->bounds().width() * 0.29);
   EXPECT_GT(bounds.height(), out_window->bounds().height() * 0.29);
 
+  aura::Window* parent = out_window->parent();
+  parent->RemoveChild(out_window.get());
+  out_window->SetBounds(gfx::Rect(-200, -200, 200, 200));
+  // UserHasChangedWindowPositionOrSize flag shouldn't turn off this behavior.
+  wm::SetUserHasChangedWindowPositionOrSize(window.get(), true);
+  parent->AddChild(out_window.get());
+  EXPECT_GT(bounds.width(), out_window->bounds().width() * 0.29);
+  EXPECT_GT(bounds.height(), out_window->bounds().height() * 0.29);
+
   // Make sure we always make more than 1/3 of the window edge visible even
   // if the initial bounds intersects with display.
   window_bounds.SetRect(-150, -150, 200, 200);

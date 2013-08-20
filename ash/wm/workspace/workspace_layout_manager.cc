@@ -48,13 +48,15 @@ void MoveToDisplayForRestore(aura::Window* window) {
     return;
 
   // Move only if the restore bounds is outside of
-  // the root window. There is no information about in which
+  // the display. There is no information about in which
   // display it should be restored, so this is best guess.
   // TODO(oshima): Restore information should contain the
   // work area information like WindowResizer does for the
   // last window location.
-  if (!window->GetRootWindow()->GetBoundsInScreen().Intersects(
-          *restore_bounds)) {
+  gfx::Rect display_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(window).bounds();
+
+  if (!display_area.Intersects(*restore_bounds)) {
     DisplayController* display_controller =
         Shell::GetInstance()->display_controller();
     const gfx::Display& display =
@@ -87,14 +89,7 @@ void WorkspaceLayoutManager::SetShelf(internal::ShelfLayoutManager* shelf) {
 }
 
 void WorkspaceLayoutManager::OnWindowAddedToLayout(Window* child) {
-  // Adjust window bounds in case that the new child is given the bounds that
-  // is out of the workspace. Exclude the case where bounds is empty
-  // (this happens when a views::Widget is created), or the window
-  // is added with the bounds because a user explicitly moved to
-  // this position (drag and drop for example).
-  if (!child->bounds().IsEmpty() &&
-      !wm::HasUserChangedWindowPositionOrSize(child))
-    AdjustWindowBoundsWhenAdded(child);
+  AdjustWindowBoundsWhenAdded(child);
   BaseLayoutManager::OnWindowAddedToLayout(child);
   UpdateDesktopVisibility();
   RearrangeVisibleWindowOnShow(child);
@@ -252,6 +247,14 @@ void WorkspaceLayoutManager::AdjustWindowBoundsForWorkAreaChange(
 
 void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
     Window* window) {
+  // Don't adjust window bounds if the bounds are empty as this
+  // happens when a new views::Widget is created.
+  // When a window is dragged and dropped onto a different
+  // root window, the bounds will be updated after they are added
+  // to the root window.
+  if (window->bounds().IsEmpty())
+    return;
+
   if (!GetTrackedByWorkspace(window))
     return;
 
@@ -261,9 +264,14 @@ void WorkspaceLayoutManager::AdjustWindowBoundsWhenAdded(
   gfx::Rect bounds = window->bounds();
   int min_width = bounds.width() * kMinimumPercentOnScreenArea;
   int min_height = bounds.height() * kMinimumPercentOnScreenArea;
+  // Use entire display instead of workarea because the workarea can
+  // be further shrunk by the docked area. The logic ensures 30%
+  // visibility which should be enough to see where the window gets
+  // moved.
+  gfx::Rect display_area =
+      Shell::GetScreen()->GetDisplayNearestWindow(window).bounds();
   ash::wm::AdjustBoundsToEnsureWindowVisibility(
-      work_area_, min_width, min_height, &bounds);
-
+      display_area, min_width, min_height, &bounds);
   if (window->bounds() != bounds)
     window->SetBounds(bounds);
 }

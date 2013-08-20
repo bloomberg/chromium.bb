@@ -161,29 +161,29 @@ void SetPreAutoManageWindowBounds(aura::Window* window,
                       new gfx::Rect(bounds));
 }
 
-void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& work_area,
+void AdjustBoundsToEnsureMinimumWindowVisibility(const gfx::Rect& visible_area,
                                                  gfx::Rect* bounds) {
   AdjustBoundsToEnsureWindowVisibility(
-      work_area, kMinimumOnScreenArea, kMinimumOnScreenArea, bounds);
+      visible_area, kMinimumOnScreenArea, kMinimumOnScreenArea, bounds);
 }
 
-void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& work_area,
+void AdjustBoundsToEnsureWindowVisibility(const gfx::Rect& visible_area,
                                           int min_width,
                                           int min_height,
                                           gfx::Rect* bounds) {
-  bounds->set_width(std::min(bounds->width(), work_area.width()));
-  bounds->set_height(std::min(bounds->height(), work_area.height()));
+  bounds->set_width(std::min(bounds->width(), visible_area.width()));
+  bounds->set_height(std::min(bounds->height(), visible_area.height()));
 
-  min_width = std::min(min_width, work_area.width());
-  min_height = std::min(min_height, work_area.height());
+  min_width = std::min(min_width, visible_area.width());
+  min_height = std::min(min_height, visible_area.height());
 
-  if (bounds->x() + min_width > work_area.right()) {
-    bounds->set_x(work_area.right() - min_width);
+  if (bounds->x() + min_width > visible_area.right()) {
+    bounds->set_x(visible_area.right() - min_width);
   } else if (bounds->right() - min_width < 0) {
     bounds->set_x(min_width - bounds->width());
   }
-  if (bounds->y() + min_height > work_area.bottom()) {
-    bounds->set_y(work_area.bottom() - min_height);
+  if (bounds->y() + min_height > visible_area.bottom()) {
+    bounds->set_y(visible_area.bottom() - min_height);
   } else if (bounds->bottom() - min_height < 0) {
     bounds->set_y(min_height - bounds->height());
   }
