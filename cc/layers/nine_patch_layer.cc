@@ -72,6 +72,7 @@ bool NinePatchLayer::Update(ResourceUpdateQueue* queue,
     bitmap_dirty_ = false;
     updated = true;
   }
+
   return updated;
 }
 
@@ -111,6 +112,11 @@ void NinePatchLayer::PushPropertiesTo(LayerImpl* layer) {
     layer_impl->SetLayout(
         gfx::Size(bitmap_.width(), bitmap_.height()), image_aperture_);
   }
+
+  // NinePatchLayer must push properties every commit to make sure
+  // NinePatchLayerImpl::resource_id_ is valid.
+  // http://crbug.com/276482
+  needs_push_properties_ = true;
 }
 
 }  // namespace cc

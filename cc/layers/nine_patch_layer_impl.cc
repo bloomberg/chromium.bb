@@ -64,11 +64,12 @@ bool NinePatchLayerImpl::WillDraw(DrawMode draw_mode,
 
 void NinePatchLayerImpl::AppendQuads(QuadSink* quad_sink,
                                      AppendQuadsData* append_quads_data) {
-  DCHECK(resource_id_);
-
   SharedQuadState* shared_quad_state =
       quad_sink->UseSharedQuadState(CreateSharedQuadState());
   AppendDebugBorderQuad(quad_sink, shared_quad_state, append_quads_data);
+
+  if (!resource_id_)
+    return;
 
   static const bool flipped = false;
   static const bool premultiplied_alpha = true;
