@@ -674,6 +674,10 @@ private:
 
     virtual LayoutRect frameRectForStickyPositioning() const OVERRIDE FINAL { return frameRect(); }
 
+    // This method performs the actual scroll. Override if scrolling without a RenderLayer. The scroll() and logicalScroll()
+    // are responsible for scroll propagation/bubbling and call this method to do the actual scrolling
+    virtual bool scrollImpl(ScrollDirection, ScrollGranularity, float);
+
 private:
     // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
     LayoutRect m_frameRect;

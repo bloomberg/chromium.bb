@@ -2502,11 +2502,17 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
     m_scrollGestureHandlingNode = result.innerNode();
     m_previousGestureScrolledNode = 0;
 
-    Node* node = m_scrollGestureHandlingNode.get();
-    if (node)
-        passGestureEventToWidgetIfPossible(gestureEvent, node->renderer());
+    // If there's no renderer on the node, send the event to the nearest ancestor with a renderer.
+    // Needed for <option> and <optgroup> elements so we can touch scroll <select>s
+    while (m_scrollGestureHandlingNode && !m_scrollGestureHandlingNode->renderer())
+        m_scrollGestureHandlingNode = m_scrollGestureHandlingNode->parentOrShadowHostNode();
 
-    return node && node->renderer();
+    if (!m_scrollGestureHandlingNode)
+        return false;
+
+    passGestureEventToWidgetIfPossible(gestureEvent, m_scrollGestureHandlingNode->renderer());
+
+    return true;
 }
 
 bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gestureEvent)

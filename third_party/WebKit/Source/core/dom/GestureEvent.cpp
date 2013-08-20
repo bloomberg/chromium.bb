@@ -115,9 +115,6 @@ GestureEvent* GestureEventDispatchMediator::event() const
 
 bool GestureEventDispatchMediator::dispatchEvent(EventDispatcher* dispatcher) const
 {
-    if (isDisabledFormControl(dispatcher->node()))
-        return true;
-
     dispatcher->dispatch();
     ASSERT(!event()->defaultPrevented());
     return event()->defaultHandled() || event()->defaultPrevented();

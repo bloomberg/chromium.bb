@@ -708,10 +708,15 @@ int RenderBox::instrinsicScrollbarLogicalWidth() const
     return 0;
 }
 
-bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
+bool RenderBox::scrollImpl(ScrollDirection direction, ScrollGranularity granularity, float multiplier)
 {
     RenderLayer* l = layer();
-    if (l && l->scroll(direction, granularity, multiplier)) {
+    return l && l->scroll(direction, granularity, multiplier);
+}
+
+bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
+{
+    if (scrollImpl(direction, granularity, multiplier)) {
         if (stopNode)
             *stopNode = node();
         return true;
@@ -728,18 +733,11 @@ bool RenderBox::scroll(ScrollDirection direction, ScrollGranularity granularity,
 
 bool RenderBox::logicalScroll(ScrollLogicalDirection direction, ScrollGranularity granularity, float multiplier, Node** stopNode)
 {
-    bool scrolled = false;
-
-    RenderLayer* l = layer();
-    if (l) {
-        if (l->scroll(logicalToPhysical(direction, isHorizontalWritingMode(), style()->isFlippedBlocksWritingMode()), granularity, multiplier))
-            scrolled = true;
-
-        if (scrolled) {
-            if (stopNode)
-                *stopNode = node();
-            return true;
-        }
+    if (scrollImpl(logicalToPhysical(direction, isHorizontalWritingMode(), style()->isFlippedBlocksWritingMode()),
+        granularity, multiplier)) {
+        if (stopNode)
+            *stopNode = node();
+        return true;
     }
 
     if (stopNode && *stopNode && *stopNode == node())
