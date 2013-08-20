@@ -42,10 +42,11 @@ test('loading steps', 4, function() {
     equal(master.name, name);
 });
 
-test('builders._builderFilter', 5, function() {
+test('builders._builderFilter', 6, function() {
     var filter = builders._builderFilter('@ToT Blink', 'DummyMaster', 'layout-tests');
-    equal(filter('WebKit Android (Nexus4)'), true, 'show android webkit builder');
-    equal(filter('WebKit Linux'), true, 'show linux webkit builder');
+    equal(filter('WebKit (Content Shell) Linux'), true, 'show content shell builder');
+    equal(filter('WebKit Linux'), true, 'show generic webkit builder');
+    equal(filter('Android Tests (dbg) '), false, 'don\'t show android tests');
 
     var filter = builders._builderFilter('@ToT Chromium', 'DummyMaster', 'webkit_unit_tests');
     equal(filter('WebKit Win7 (deps)'), true, 'show DEPS builder');

@@ -47,7 +47,6 @@ config.kPlatforms = {
             'WebKit Mac10.7': {version: 'lion'},
             'WebKit Mac10.7 (dbg)': {version: 'lion', debug: true},
             'WebKit Mac10.8': {version: 'mountainlion'},
-            'WebKit Android (Nexus4)': {version: 'android'},
         },
         resultsDirectoryNameFromBuilderName: function(builderName) {
             return base.underscoredBuilderName(builderName);
@@ -57,7 +56,9 @@ config.kPlatforms = {
             // WebKit Android and ASAN are red all the time.
             // Remove this function entirely once they are better supported.
             return builderName.indexOf('GPU') == -1 &&
-                   builderName.indexOf('ASAN') == -1;
+                   builderName.indexOf('ASAN') == -1 &&
+                   builderName.indexOf('WebKit (Content Shell) Android') == -1 &&
+                   builderName.indexOf('WebKit Android') == -1;
         },
     },
 };

@@ -73,7 +73,9 @@ builders.getBuilderGroup = function(groupName, testType)
 
 function isChromiumWebkitTipOfTreeTestRunner(builder)
 {
+    // FIXME: Remove the Android check once the android tests bot is actually uploading results.
     return builder.indexOf('ASAN') == -1 &&
+        builder.indexOf('Android') == -1 &&
         !isChromiumWebkitDepsTestRunner(builder);
 }
 
