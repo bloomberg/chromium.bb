@@ -21,8 +21,10 @@ namespace gfx {
 // Test that PlatformFontPango is able to cope with PangoFontDescriptions
 // containing multiple font families.  The first family should be preferred.
 TEST(PlatformFontPangoTest, FamilyList) {
-  // Needed for GLib versions prior to 2.36.
+  // Needed for GLib versions prior to 2.36, but deprecated starting 2.35.
+#if !GLIB_CHECK_VERSION(2, 35, 0)
   g_type_init();
+#endif
 
   ScopedPangoFontDescription desc(
       pango_font_description_from_string("Arial,Times New Roman, 13px"));
