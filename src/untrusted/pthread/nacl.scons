@@ -30,11 +30,7 @@ nc_objs = [env.ComponentObject(module, module + '.c')
            ] + [valgrind]
 
 # The public library relies on the IRT for crucial system services.
-libpthread = env.NaClSdkLibrary(
-  'libpthread',
-  nc_objs + ['nc_init_irt.c'],
-  # only enable shared versions of this library in the shared newlib case
-  no_shared_lib=not env.Bit('pnacl_shared_newlib'))
+libpthread = env.ComponentLibrary('libpthread', nc_objs + ['nc_init_irt.c'])
 env.AddLibraryToSdk(libpthread)
 
 # The private library rolls in those IRT components.

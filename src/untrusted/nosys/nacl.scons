@@ -79,9 +79,5 @@ sources = ['access.c',
            'waitpid.c',
            ]
 
-libnosys = env.NaClSdkLibrary(
-    'libnosys',
-    sources,
-    # only enable shared versions of this library in the shared newlib case
-    no_shared_lib=not env.Bit('pnacl_shared_newlib'))
+libnosys = env.ComponentLibrary('libnosys', sources)
 env.AddLibraryToSdk(libnosys)

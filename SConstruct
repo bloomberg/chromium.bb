@@ -304,9 +304,6 @@ def SetUpArgumentBits(env):
   BitFromArgument(env, 'pnacl_generate_pexe', default=env.Bit('bitcode'),
     desc='use pnacl to generate pexes and translate in a separate step')
 
-  BitFromArgument(env, 'pnacl_shared_newlib', default=False,
-    desc='build newlib (and other libs) shared in PNaCl')
-
   BitFromArgument(env, 'translate_in_build_step', default=True,
     desc='Run translation during build phase (e.g. if do_not_run_tests=1)')
 
@@ -2924,14 +2921,10 @@ nacl_env.PrependUnique(
     )
 
 if nacl_env.Bit('bitcode'):
-  # This helps with NaClSdkLibrary() where some libraries share object files
-  # between static and shared libs. Without it scons will complain.
-  # NOTE: this is a standard scons mechanism
-  nacl_env['STATIC_AND_SHARED_OBJECTS_ARE_THE_SAME'] = 1
   # passing -O when linking requests LTO, which does additional global
   # optimizations at link time
   nacl_env.Append(LINKFLAGS=['-O3'])
-  if not nacl_env.Bit('nacl_glibc') and not nacl_env.Bit('pnacl_shared_newlib'):
+  if not nacl_env.Bit('nacl_glibc'):
     nacl_env.Append(LINKFLAGS=['-static'])
 
   if nacl_env.Bit('translate_fast'):
@@ -2974,7 +2967,6 @@ target_variant_map = [
     ('use_sandboxed_translator', 'sbtc'),
     ('nacl_glibc', 'glibc'),
     ('pnacl_generate_pexe', 'pexe'),
-    ('pnacl_shared_newlib', 'shared'),
     ]
 for variant_bit, variant_suffix in target_variant_map:
   if nacl_env.Bit(variant_bit):
@@ -3224,14 +3216,8 @@ def NaClSharedLibrary(env, lib_name, *args, **kwargs):
 nacl_env.AddMethod(NaClSharedLibrary)
 
 def NaClSdkLibrary(env, lib_name, *args, **kwargs):
-  gen_shared = (not env.Bit('nacl_disable_shared') or
-                env.Bit('pnacl_shared_newlib'))
-  if 'no_shared_lib' in kwargs:
-    if kwargs['no_shared_lib']:
-      gen_shared = False
-    del kwargs['no_shared_lib']
   n = [env.ComponentLibrary(lib_name, *args, **kwargs)]
-  if gen_shared:
+  if not env.Bit('nacl_disable_shared'):
     n.append(env.NaClSharedLibrary(lib_name, *args, **kwargs))
   return n
 
@@ -3268,7 +3254,6 @@ nacl_env.AddMethod(RawSyscallObjects)
 # TODO(mcgrathr,bradnelson): could get cleaner if naclsdk.py got folded back in.
 nacl_irt_env.ClearBits('nacl_glibc')
 nacl_irt_env.ClearBits('nacl_pic')
-nacl_irt_env.ClearBits('pnacl_shared_newlib')
 # We build the IRT using the nnacl TC even when the pnacl TC is used otherwise.
 if nacl_irt_env.Bit('target_mips32') or nacl_irt_env.Bit('target_x86_64'):
   nacl_irt_env.SetBits('bitcode')

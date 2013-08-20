@@ -63,18 +63,11 @@ SRCS_NEWLIB_MISC = [
     'start.c',         # contains _start, preventing us from making this a .so
     'nacl_add_tp.c',
     'nacl_read_tp.c',
-    'pthread_stubs.c', # weak version of __pthread_initialize
-]
-
-SRCS_NEWLIB_STATIC = [
     'pthread_initialize_minimal.c',
+    'pthread_stubs.c', # weak version of __pthread_initialize
     'tls.c',
 ]
 
-SRCS_NEWLIB_SHARED = [
-    'pthread_initialize_minimal_using_ldso.c',
-    'tls_using_ldso.c',
-]
 
 # used by both glibc and newlib
 SRCS_NACL_EXTENSIONS = [
@@ -90,12 +83,8 @@ if env.Bit('nacl_glibc'):
   sources = SRCS_NACL_EXTENSIONS
 else:
   sources = SRCS_NACL_EXTENSIONS + SRCS_NEWLIB_SYSCALL + SRCS_NEWLIB_MISC
-  if env.Bit('pnacl_shared_newlib'):
-    sources += SRCS_NEWLIB_SHARED
-  else:
-    sources += SRCS_NEWLIB_STATIC
-    if env.Bit('target_arm') and not env.Bit('bitcode'):
-      sources.append('aeabi_read_tp.S')
+  if env.Bit('target_arm') and not env.Bit('bitcode'):
+    sources.append('aeabi_read_tp.S')
 
 # Do not make a shared version of libnacl.
 libnacl = env.ComponentLibrary('libnacl', sources)

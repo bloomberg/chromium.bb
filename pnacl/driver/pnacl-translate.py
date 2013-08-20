@@ -31,8 +31,6 @@ EXTRA_ENV = {
   # Use the IRT shim by default. This can be disabled with an explicit
   # flag (--noirtshim) or via -nostdlib.
   'USE_IRT_SHIM'  : '${!SHARED ? 1 : 0}',
-  # Experimental mode exploring newlib as a shared library
-  'NEWLIB_SHARED_EXPERIMENT': '0',
 
   # To simulate the sandboxed translator better and avoid user surprises,
   # reject LLVM bitcode (non-finalized) by default, accepting only PNaCl
@@ -72,12 +70,7 @@ EXTRA_ENV = {
                       '-l:crtbegin_for_eh.o : -l:crtbegin.o}',
   'CRTBEGIN' : '${SHARED ? -l:crtbeginS.o : ${STATIC_CRTBEGIN}}',
   'CRTEND'   : '${SHARED ? -l:crtendS.o : -l:crtend.o}',
-  # static and dynamic newlib images link against the static libgcc_eh
-  'LIBGCC_EH': '${STATIC || NEWLIB_SHARED_EXPERIMENT && !SHARED ? ' +
-               '-l:libgcc_eh.a : ' +
-               # NOTE: libgcc_s.so drags in "glibc.so"
-               # TODO(robertm): provide a "better" libgcc_s.so
-               ' ${NEWLIB_SHARED_EXPERIMENT ? : -l:libgcc_s.so.1}}',
+  'LIBGCC_EH': '${STATIC ? -l:libgcc_eh.a : -l:libgcc_s.so.1}',
 
   'LD_ARGS_nostdlib': '-nostdlib ${ld_inputs}',
 
@@ -215,7 +208,6 @@ TranslatorPatterns = [
   ( '--noirt',         "env.set('USE_IRT', '0')\n"
                        "env.append('LD_FLAGS', '--noirt')"),
   ( '--noirtshim',     "env.set('USE_IRT_SHIM', '0')"),
-  ( '--newlib-shared-experiment',  "env.set('NEWLIB_SHARED_EXPERIMENT', '1')"),
   ( '(--pnacl-nativeld=.+)', "env.append('LD_FLAGS', $0)"),
 
   # Allowing C++ exception handling causes a specific set of native objects to
