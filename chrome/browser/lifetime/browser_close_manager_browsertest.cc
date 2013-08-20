@@ -336,8 +336,16 @@ IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest, TestMultipleWindows) {
 // Test that tabs in the same window with a beforeunload event that hangs are
 // treated the same as the user accepting the close, but do not close the tab
 // early.
+// Test is flaky on windows, disabled. See http://crbug.com/276366
+#if defined(OS_WIN)
+#define MAYBE_TestHangInBeforeUnloadMultipleTabs \
+    DISABLED_TestHangInBeforeUnloadMultipleTabs
+#else
+#define MAYBE_TestHangInBeforeUnloadMultipleTabs \
+    TestHangInBeforeUnloadMultipleTabs
+#endif
 IN_PROC_BROWSER_TEST_P(BrowserCloseManagerBrowserTest,
-                       TestHangInBeforeUnloadMultipleTabs) {
+                       MAYBE_TestHangInBeforeUnloadMultipleTabs) {
   ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(
       browsers_[0], embedded_test_server()->GetURL("/beforeunload_hang.html")));
