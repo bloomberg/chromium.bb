@@ -827,19 +827,22 @@ if not env.Bit('validator_ragel') and env.Bit('target_x86'):
                          'run_dfa_validator_hello_world_test')
 
 if env.Bit('target_mips32'):
-  rodata_region_start = 0x10020000
   text_region_start = 0x00020000
+  # Use arbitrary non-page-aligned addresses for data and rodata.
+  rodata_region_start = 0x10020094
+  data_region_start = 0x10030098
   untrusted_env = env.MakeUntrustedNativeEnv()
-  unaligned_data_objs = env.ComponentObject('arch/mips/unaligned_data_test.S')
+  untrusted_env.Append(CPPFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
+  unaligned_data_objs = untrusted_env.ComponentObject(
+      'arch/mips/unaligned_data_test.S')
   unaligned_data_nexe = untrusted_env.ComponentProgram(
       'unaligned_data.nexe',
       unaligned_data_objs,
       LINKFLAGS=['-nostdlib',
                  '--pnacl-allow-native', '-arch', 'mips32',
-                 untrusted_env.TextSwitch('0x%x' % text_region_start),
-                 # Use arbitrary non-page-aligned address.
-                 untrusted_env.RodataSwitch(
-                     '0x%x' % (rodata_region_start + 0x94))],
+                 '-Wn,--section-start,.text=0x%x' % (text_region_start),
+                 '-Wn,--section-start,.rodata=0x%x' % (rodata_region_start),
+                 '-Wn,--section-start,.data=0x%x' % (data_region_start)],
       ASFLAGS=['--pnacl-allow-native', '-arch', 'mips32'])
 
   rodata_region_start_irt = 0x3eef0000
