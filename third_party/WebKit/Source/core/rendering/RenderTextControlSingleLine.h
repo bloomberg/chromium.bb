@@ -34,9 +34,8 @@ class RenderTextControlSingleLine : public RenderTextControl {
 public:
     RenderTextControlSingleLine(HTMLInputElement*);
     virtual ~RenderTextControlSingleLine();
-    // FIXME: Move create*Style() to their classes.
+    // FIXME: Move createInnerTextStyle() to TextControlInnerTextElement.
     virtual PassRefPtr<RenderStyle> createInnerTextStyle(const RenderStyle* startStyle) const;
-    PassRefPtr<RenderStyle> createInnerBlockStyle(const RenderStyle* startStyle) const;
 
     void capsLockStateMayHaveChanged();
 

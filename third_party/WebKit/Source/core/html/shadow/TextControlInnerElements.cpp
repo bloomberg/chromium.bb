@@ -40,8 +40,7 @@
 #include "core/page/Frame.h"
 #include "core/page/SpeechInput.h"
 #include "core/page/SpeechInputEvent.h"
-#include "core/rendering/RenderSearchField.h"
-#include "core/rendering/RenderTextControl.h"
+#include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {
@@ -76,8 +75,23 @@ PassRefPtr<TextControlInnerElement> TextControlInnerElement::create(Document* do
 
 PassRefPtr<RenderStyle> TextControlInnerElement::customStyleForRenderer()
 {
-    RenderTextControlSingleLine* parentRenderer = toRenderTextControlSingleLine(shadowHost()->renderer());
-    return parentRenderer->createInnerBlockStyle(parentRenderer->style());
+    // FXIME: Move these styles to html.css.
+
+    RefPtr<RenderStyle> innerBlockStyle = RenderStyle::create();
+    innerBlockStyle->inheritFrom(shadowHost()->renderer()->style());
+
+    innerBlockStyle->setFlexGrow(1);
+    // min-width: 0; is needed for correct shrinking.
+    // FIXME: Remove this line when https://bugs.webkit.org/show_bug.cgi?id=111790 is fixed.
+    innerBlockStyle->setMinWidth(Length(0, Fixed));
+    innerBlockStyle->setDisplay(BLOCK);
+    innerBlockStyle->setDirection(LTR);
+
+    // We don't want the shadow dom to be editable, so we set this block to
+    // read-only in case the input itself is editable.
+    innerBlockStyle->setUserModify(READ_ONLY);
+
+    return innerBlockStyle.release();
 }
 
 // ---------------------------
@@ -119,8 +133,11 @@ RenderObject* TextControlInnerTextElement::createRenderer(RenderStyle*)
 
 PassRefPtr<RenderStyle> TextControlInnerTextElement::customStyleForRenderer()
 {
-    RenderTextControl* parentRenderer = toRenderTextControl(shadowHost()->renderer());
-    return parentRenderer->createInnerTextStyle(parentRenderer->style());
+    RenderObject* parentRenderer = shadowHost()->renderer();
+    if (!parentRenderer || !parentRenderer->isTextControl())
+        return originalStyleForRenderer();
+    RenderTextControl* textControlRenderer = toRenderTextControl(parentRenderer);
+    return textControlRenderer->createInnerTextStyle(textControlRenderer->style());
 }
 
 // ----------------------------
@@ -159,7 +176,6 @@ void SearchFieldDecorationElement::defaultEventHandler(Event* event)
     if (input && event->type() == eventNames().mousedownEvent && event->isMouseEvent() && toMouseEvent(event)->button() == LeftButton) {
         input->focus();
         input->select();
-        RenderSearchField* renderer = toRenderSearchField(input->renderer());
         event->setDefaultHandled();
     }
 

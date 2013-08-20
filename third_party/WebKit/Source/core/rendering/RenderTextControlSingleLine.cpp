@@ -371,24 +371,6 @@ PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerTextStyle(const 
     return textBlockStyle.release();
 }
 
-PassRefPtr<RenderStyle> RenderTextControlSingleLine::createInnerBlockStyle(const RenderStyle* startStyle) const
-{
-    RefPtr<RenderStyle> innerBlockStyle = RenderStyle::create();
-    innerBlockStyle->inheritFrom(startStyle);
-
-    innerBlockStyle->setFlexGrow(1);
-    // min-width: 0; is needed for correct shrinking.
-    // FIXME: Remove this line when https://bugs.webkit.org/show_bug.cgi?id=111790 is fixed.
-    innerBlockStyle->setMinWidth(Length(0, Fixed));
-    innerBlockStyle->setDisplay(BLOCK);
-    innerBlockStyle->setDirection(LTR);
-
-    // We don't want the shadow dom to be editable, so we set this block to read-only in case the input itself is editable.
-    innerBlockStyle->setUserModify(READ_ONLY);
-
-    return innerBlockStyle.release();
-}
-
 bool RenderTextControlSingleLine::textShouldBeTruncated() const
 {
     return document()->focusedElement() != node() && style()->textOverflow() == TextOverflowEllipsis;
