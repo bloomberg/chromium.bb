@@ -43,9 +43,8 @@ PassOwnPtr<InputType> URLInputType::create(HTMLInputElement* element)
     return adoptPtr(new URLInputType(element));
 }
 
-void URLInputType::attach()
+void URLInputType::countUsage()
 {
-    TextFieldInputType::attach();
     observeFeatureIfVisible(UseCounter::InputTypeURL);
 }
 

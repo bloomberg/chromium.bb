@@ -44,9 +44,8 @@ PassOwnPtr<InputType> TextInputType::create(HTMLInputElement* element)
     return adoptPtr(new TextInputType(element));
 }
 
-void TextInputType::attach()
+void TextInputType::countUsage()
 {
-    TextFieldInputType::attach();
     const AtomicString& type = element()->fastGetAttribute(typeAttr);
     if (equalIgnoringCase(type, InputTypeNames::datetime()))
         observeFeatureIfVisible(UseCounter::InputTypeDateTimeFallback);

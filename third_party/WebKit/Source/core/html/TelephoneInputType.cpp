@@ -41,9 +41,8 @@ PassOwnPtr<InputType> TelephoneInputType::create(HTMLInputElement* element)
     return adoptPtr(new TelephoneInputType(element));
 }
 
-void TelephoneInputType::attach()
+void TelephoneInputType::countUsage()
 {
-    TextFieldInputType::attach();
     observeFeatureIfVisible(UseCounter::InputTypeTel);
 }
 

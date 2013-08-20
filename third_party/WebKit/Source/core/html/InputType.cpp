@@ -557,6 +557,10 @@ void InputType::detach()
 {
 }
 
+void InputType::countUsage()
+{
+}
+
 void InputType::altAttributeChanged()
 {
 }

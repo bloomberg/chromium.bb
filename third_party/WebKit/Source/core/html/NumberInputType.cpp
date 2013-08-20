@@ -100,9 +100,8 @@ PassOwnPtr<InputType> NumberInputType::create(HTMLInputElement* element)
     return adoptPtr(new NumberInputType(element));
 }
 
-void NumberInputType::attach()
+void NumberInputType::countUsage()
 {
-    TextFieldInputType::attach();
     observeFeatureIfVisible(UseCounter::InputTypeNumber);
 }
 

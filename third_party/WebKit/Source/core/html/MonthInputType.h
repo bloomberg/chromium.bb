@@ -48,7 +48,7 @@ public:
 
 private:
     MonthInputType(HTMLInputElement* element) : BaseMonthInputType(element) { }
-    virtual void attach() OVERRIDE;
+    virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual DateComponents::Type dateType() const OVERRIDE;
     virtual double valueAsDate() const OVERRIDE;

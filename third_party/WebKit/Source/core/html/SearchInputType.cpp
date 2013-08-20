@@ -57,9 +57,8 @@ PassOwnPtr<InputType> SearchInputType::create(HTMLInputElement* element)
     return adoptPtr(new SearchInputType(element));
 }
 
-void SearchInputType::attach()
+void SearchInputType::countUsage()
 {
-    TextFieldInputType::attach();
     observeFeatureIfVisible(UseCounter::InputTypeSearch);
 }
 

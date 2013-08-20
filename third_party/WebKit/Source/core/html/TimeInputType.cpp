@@ -64,7 +64,7 @@ PassOwnPtr<InputType> TimeInputType::create(HTMLInputElement* element)
     return adoptPtr(new TimeInputType(element));
 }
 
-void TimeInputType::attach()
+void TimeInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeTime);
 }

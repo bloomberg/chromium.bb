@@ -222,6 +222,7 @@ public:
     virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
     virtual void attach();
     virtual void detach();
+    virtual void countUsage();
     virtual void minOrMaxAttributeChanged();
     virtual void stepAttributeChanged();
     virtual void altAttributeChanged();

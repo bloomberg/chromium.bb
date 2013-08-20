@@ -43,7 +43,7 @@ public:
 
 private:
     NumberInputType(HTMLInputElement* element) : TextFieldInputType(element) { }
-    virtual void attach() OVERRIDE;
+    virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
     virtual double valueAsDouble() const OVERRIDE;

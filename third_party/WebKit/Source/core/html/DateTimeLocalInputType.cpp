@@ -58,7 +58,7 @@ PassOwnPtr<InputType> DateTimeLocalInputType::create(HTMLInputElement* element)
     return adoptPtr(new DateTimeLocalInputType(element));
 }
 
-void DateTimeLocalInputType::attach()
+void DateTimeLocalInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeDateTimeLocal);
 }

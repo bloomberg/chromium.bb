@@ -85,7 +85,7 @@ RangeInputType::RangeInputType(HTMLInputElement* element)
 {
 }
 
-void RangeInputType::attach()
+void RangeInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeRange);
 }

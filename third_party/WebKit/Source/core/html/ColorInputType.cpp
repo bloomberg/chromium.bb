@@ -76,7 +76,7 @@ ColorInputType::~ColorInputType()
     endColorChooser();
 }
 
-void ColorInputType::attach()
+void ColorInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeColor);
 }

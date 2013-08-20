@@ -48,7 +48,7 @@ public:
 
 private:
     WeekInputType(HTMLInputElement* element) : BaseWeekInputType(element) { }
-    virtual void attach() OVERRIDE;
+    virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual DateComponents::Type dateType() const OVERRIDE;
     virtual StepRange createStepRange(AnyStepHandling) const OVERRIDE;

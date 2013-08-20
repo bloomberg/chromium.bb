@@ -58,7 +58,7 @@ PassOwnPtr<InputType> DateInputType::create(HTMLInputElement* element)
     return adoptPtr(new DateInputType(element));
 }
 
-void DateInputType::attach()
+void DateInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeDate);
 }

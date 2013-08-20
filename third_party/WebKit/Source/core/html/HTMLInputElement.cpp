@@ -790,6 +790,7 @@ void HTMLInputElement::attach(const AttachContext& context)
     HTMLTextFormControlElement::attach(context);
 
     m_inputType->attach();
+    m_inputType->countUsage();
 
     if (document()->focusedElement() == this)
         document()->updateFocusAppearanceSoon(true /* restore selection */);

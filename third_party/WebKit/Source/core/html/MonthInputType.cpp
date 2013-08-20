@@ -59,7 +59,7 @@ PassOwnPtr<InputType> MonthInputType::create(HTMLInputElement* element)
     return adoptPtr(new MonthInputType(element));
 }
 
-void MonthInputType::attach()
+void MonthInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeMonth);
 }

@@ -56,7 +56,7 @@ PassOwnPtr<InputType> WeekInputType::create(HTMLInputElement* element)
     return adoptPtr(new WeekInputType(element));
 }
 
-void WeekInputType::attach()
+void WeekInputType::countUsage()
 {
     observeFeatureIfVisible(UseCounter::InputTypeWeek);
 }

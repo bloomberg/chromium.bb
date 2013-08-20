@@ -44,7 +44,7 @@ public:
 
 private:
     RangeInputType(HTMLInputElement*);
-    virtual void attach() OVERRIDE;
+    virtual void countUsage() OVERRIDE;
     virtual bool isRangeControl() const OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual double valueAsDouble() const OVERRIDE;

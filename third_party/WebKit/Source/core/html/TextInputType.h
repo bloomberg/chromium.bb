@@ -41,7 +41,7 @@ public:
 
 private:
     TextInputType(HTMLInputElement* element) : BaseTextInputType(element) { }
-    virtual void attach() OVERRIDE;
+    virtual void countUsage() OVERRIDE;
     virtual const AtomicString& formControlType() const OVERRIDE;
     virtual bool shouldRespectSpeechAttribute() OVERRIDE;
     virtual bool supportsInputModeAttribute() const OVERRIDE;

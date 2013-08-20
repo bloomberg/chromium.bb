@@ -110,9 +110,8 @@ PassOwnPtr<InputType> EmailInputType::create(HTMLInputElement* element)
     return adoptPtr(new EmailInputType(element));
 }
 
-void EmailInputType::attach()
+void EmailInputType::countUsage()
 {
-    TextFieldInputType::attach();
     observeFeatureIfVisible(UseCounter::InputTypeEmail);
 }
 
