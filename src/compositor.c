@@ -1442,11 +1442,12 @@ surface_attach(struct wl_client *client,
 	struct weston_surface *surface = wl_resource_get_user_data(resource);
 	struct weston_buffer *buffer = NULL;
 
-	if (buffer_resource)
+	if (buffer_resource) {
 		buffer = weston_buffer_from_resource(buffer_resource);
-	if (buffer == NULL) {
-		wl_client_post_no_memory(client);
-		return;
+		if (buffer == NULL) {
+			wl_client_post_no_memory(client);
+			return;
+		}
 	}
 
 	/* Attach, attach, without commit in between does not send
