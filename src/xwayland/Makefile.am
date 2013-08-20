@@ -35,4 +35,5 @@ BUILT_SOURCES =					\
 
 CLEANFILES = $(BUILT_SOURCES)
 
-@wayland_scanner_rules@
+wayland_protocoldir = $(top_srcdir)/protocol
+include $(top_srcdir)/wayland-scanner.mk

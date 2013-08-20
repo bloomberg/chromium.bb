@@ -423,9 +423,8 @@ if test "x$have_lcms" = xyes; then
 fi
 AM_CONDITIONAL(HAVE_LCMS, [test "x$have_lcms" = xyes])
 
-m4_ifndef([WAYLAND_SCANNER_RULES],
-	  [m4_fatal([WAYLAND_SCANNER_RULES not found. Point ACLOCAL to wayland-scanner.m4 before running autoconf/autogen])])
-WAYLAND_SCANNER_RULES(['$(top_srcdir)/protocol'])
+AC_PATH_PROG([wayland_scanner], [wayland-scanner],
+	     [AC_MSG_ERROR("wayland-scanner is needed to compile weston")])
 
 AC_CONFIG_FILES([Makefile
 		 shared/Makefile

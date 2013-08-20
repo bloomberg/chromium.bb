@@ -254,7 +254,8 @@ endif
 
 endif
 
-@wayland_scanner_rules@
+wayland_protocoldir = $(top_srcdir)/protocol
+include $(top_srcdir)/wayland-scanner.mk
 
 if HAVE_POPPLER
 poppler_programs = weston-view
