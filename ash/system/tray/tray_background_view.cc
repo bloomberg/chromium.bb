@@ -600,8 +600,9 @@ void TrayBackgroundView::UpdateBubbleViewArrow(
   ash::internal::ShelfLayoutManager* shelf =
       ShelfLayoutManager::ForLauncher(root_window);
   bubble_view->SetArrowPaintType(
-      shelf->IsVisible() ? views::BubbleBorder::PAINT_NORMAL :
-                           views::BubbleBorder::PAINT_TRANSPARENT);
+      (shelf && shelf->IsVisible()) ?
+      views::BubbleBorder::PAINT_NORMAL :
+      views::BubbleBorder::PAINT_TRANSPARENT);
 }
 
 }  // namespace internal
