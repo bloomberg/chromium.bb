@@ -1136,10 +1136,10 @@ util.FileOperationErrorType = {
 };
 
 /**
- * The type of an entry changed event.
+ * The kind of an entry changed event.
  * @enum {number}
  */
-util.EntryChangedType = {
+util.EntryChangedKind = {
   CREATED: 0,
   DELETED: 1,
 };

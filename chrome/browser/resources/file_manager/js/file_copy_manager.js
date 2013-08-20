@@ -61,8 +61,8 @@ fileOperationUtil.setLastModified = function(entry, modificationTime) {
  * @param {Entry} source The entry to be copied.
  * @param {DirectoryEntry} parent The entry of the destination directory.
  * @param {string} newName The name of copied file.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
  * @param {function(Entry, number)} progressCallback Callback invoked
  *     periodically during the copying. It takes source and the number of
  *     copied bytes since the last invocation.
@@ -85,7 +85,7 @@ fileOperationUtil.copyRecursively = function(
     return fileOperationUtil.copyFile_(
         source, parent, newName, progressCallback,
         function(entry) {
-          entryChangedCallback(util.EntryChangedType.CREATED, entry);
+          entryChangedCallback(util.EntryChangedKind.CREATED, entry);
           successCallback(entry);
         },
         errorCallback);
@@ -99,7 +99,7 @@ fileOperationUtil.copyRecursively = function(
   parent.getDirectory(
       newName, {create: true, exclusive: true},
       function(dirEntry) {
-        entryChangedCallback(util.EntryChangedType.CREATED, dirEntry);
+        entryChangedCallback(util.EntryChangedKind.CREATED, dirEntry);
         if (cancelRequested) {
           errorCallback(util.createFileError(FileError.ABORT_ERR));
           return;
@@ -510,14 +510,14 @@ FileCopyManager.EventRouter.prototype.sendProgressEvent = function(
 
 /**
  * Dispatches an event to notify that an entry is changed (created or deleted).
- * @param {util.EntryChangedType} type The enum to represent if the entry
- *     is created or deleted.
+ * @param {util.EntryChangedKind} kind The enum to represent if the entry is
+ *     created or deleted.
  * @param {Entry} entry The changed entry.
  */
 FileCopyManager.EventRouter.prototype.sendEntryChangedEvent = function(
-    type, entry) {
+    kind, entry) {
   var event = new cr.Event('entry-changed');
-  event.type = type;
+  event.kind = kind;
   event.entry = entry;
   this.dispatchEvent(event);
 };
@@ -680,8 +680,8 @@ FileCopyManager.Task.prototype.requestCancel = function() {
 /**
  * Runs the task. Sub classes must implement this method.
  *
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
  * @param {function()} progressCallback Callback invoked periodically during
  *     the operation.
  * @param {function()} successCallback Callback run on success.
@@ -712,8 +712,8 @@ FileCopyManager.CopyTask.prototype.__proto__ = FileCopyManager.Task.prototype;
  * Note: this method contains also the operation of "Move" due to historical
  * reason.
  *
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
  * @param {function()} progressCallback Callback invoked periodically during
  *     the copying.
  * @param {function()} successCallback On success.
@@ -735,7 +735,7 @@ FileCopyManager.CopyTask.prototype.run = function(
     var count = this.originalEntries.length;
 
     var onEntryDeleted = function(entry) {
-      entryChangedCallback(util.EntryChangedType.DELETED, entry);
+      entryChangedCallback(util.EntryChangedKind.DELETED, entry);
       count--;
       if (!count)
         successCallback();
@@ -799,8 +799,8 @@ FileCopyManager.CopyTask.prototype.run = function(
  * @param {Entry} sourceEntry An entry to be copied.
  * @param {DirectoryEntry} destinationEntry The entry which will contain the
  *     copied entry.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
  * @param {function(Entry, number)} progressCallback Callback invoked
  *     periodically during the copying.
  * @param {function()} successCallback On success.
@@ -870,8 +870,8 @@ FileCopyManager.MoveTask.prototype.__proto__ = FileCopyManager.Task.prototype;
 /**
  * Moves all entries in the task.
  *
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
  * @param {function()} progressCallback Callback invoked periodically during
  *     the moving.
  * @param {function()} successCallback On success.
@@ -916,8 +916,8 @@ FileCopyManager.MoveTask.prototype.run = function(
  * @param {Entry} sourceEntry An entry to be moved.
  * @param {DirectoryEntry} destinationEntry The entry of the destination
  *     directory.
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback Callback
- *     invoked when an entry is changed.
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
+ *     Callback invoked when an entry is changed.
  * @param {function()} successCallback On success.
  * @param {function(FileCopyManager.Error)} errorCallback On error.
  * @private
@@ -932,8 +932,8 @@ FileCopyManager.MoveTask.processEntry_ = function(
         sourceEntry.moveTo(
             destinationEntry, destinationName,
             function(movedEntry) {
-              entryChangedCallback(util.EntryChangedType.CREATED, movedEntry);
-              entryChangedCallback(util.EntryChangedType.DELETED, sourceEntry);
+              entryChangedCallback(util.EntryChangedKind.CREATED, movedEntry);
+              entryChangedCallback(util.EntryChangedKind.DELETED, sourceEntry);
               successCallback();
             },
             function(error) {
@@ -967,7 +967,7 @@ FileCopyManager.ZipTask.prototype.__proto__ = FileCopyManager.Task.prototype;
 /**
  * Runs a zip file creation task.
  *
- * @param {function(util.EntryChangedType, Entry)} entryChangedCallback
+ * @param {function(util.EntryChangedKind, Entry)} entryChangedCallback
  *     Callback invoked when an entry is changed.
  * @param {function()} progressCallback Callback invoked periodically during
  *     the moving.
@@ -997,7 +997,7 @@ FileCopyManager.ZipTask.prototype.run = function(
             this.zipBaseDirEntry,
             destPath,
             function(entry) {
-              entryChangedCallback(util.EntryChangedType.CREATE, entry);
+              entryChangedCallback(util.EntryChangedKind.CREATE, entry);
               successCallback();
             },
             function(error) {
@@ -1331,8 +1331,8 @@ FileCopyManager.prototype.serviceAllTasks_ = function() {
     self.eventRouter_.sendProgressEvent('PROGRESS', self.getStatus());
   };
 
-  var onEntryChanged = function(type, entry) {
-    self.eventRouter_.sendEntryChangedEvent(type, entry);
+  var onEntryChanged = function(kind, entry) {
+    self.eventRouter_.sendEntryChangedEvent(kind, entry);
   };
 
   var onTaskError = function(err) {
@@ -1482,7 +1482,7 @@ FileCopyManager.prototype.serviceDeleteTask_ = function(
         entry,
         function(currentEntry) {
           this.eventRouter_.sendEntryChangedEvent(
-              util.EntryChangedType.DELETED, currentEntry);
+              util.EntryChangedKind.DELETED, currentEntry);
           onComplete();
         }.bind(this, entry),
         function(error) {

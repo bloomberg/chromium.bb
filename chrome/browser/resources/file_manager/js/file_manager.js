@@ -1424,11 +1424,11 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
    * @private
    */
   FileManager.prototype.onCopyManagerEntryChanged_ = function(event) {
-    var type = event.type;
+    var kind = event.kind;
     var entry = event.entry;
-    this.directoryModel_.onEntryChanged(type, entry);
+    this.directoryModel_.onEntryChanged(kind, entry);
 
-    if (type == util.EntryChangedType.CREATE && FileType.isImage(entry)) {
+    if (kind == util.EntryChangedKind.CREATE && FileType.isImage(entry)) {
       // Preload a thumbnail if the new copied entry an image.
       var metadata = entry.getMetadata(function(metadata) {
         var url = entry.toURL();

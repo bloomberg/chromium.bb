@@ -711,10 +711,10 @@ DirectoryModel.prototype.replaceDirectoryContents_ = function(dirContents) {
 
 /**
  * Callback when an entry is changed.
- * @param {util.EntryChangedType} type How the entry is changed.
+ * @param {util.EntryChangedKind} kind How the entry is changed.
  * @param {Entry} entry The changed entry.
  */
-DirectoryModel.prototype.onEntryChanged = function(type, entry) {
+DirectoryModel.prototype.onEntryChanged = function(kind, entry) {
   // TODO(hidehiko): We should update directory model even the search result
   // is shown.
   var rootType = this.getCurrentRootType();
@@ -725,7 +725,7 @@ DirectoryModel.prototype.onEntryChanged = function(type, entry) {
       this.isSearching())
     return;
 
-  if (type == util.EntryChangedType.CREATED) {
+  if (kind == util.EntryChangedKind.CREATED) {
     entry.getParent(function(parentEntry) {
       if (this.getCurrentDirEntry().fullPath != parentEntry.fullPath) {
         // Do nothing if current directory changed during async operations.
@@ -739,9 +739,9 @@ DirectoryModel.prototype.onEntryChanged = function(type, entry) {
 
         var index = this.findIndexByEntry_(entry);
         if (index >= 0)
-          fileList.splice(index, 1, entry);
+          this.getFileList().splice(index, 1, entry);
         else
-          fileList.push(entry);
+          this.getFileList().push(entry);
       }.bind(this));
     }.bind(this));
   } else {
