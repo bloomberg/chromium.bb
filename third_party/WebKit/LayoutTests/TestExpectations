@@ -311,13 +311,8 @@ crbug.com/258896 virtual/web-animations-css/animations/cross-fade-border-image-s
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-list-style-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-box-image.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/cross-fade-webkit-mask-image.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/dynamic-stylesheet-loading.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/empty-keyframe-animation.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/keyframe-timing-functions-transform.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/keyframe-timing-functions.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/keyframe-timing-functions2.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/lineheight-animation.html [ Crash ]
-crbug.com/258896 virtual/web-animations-css/animations/missing-keyframe-properties-timing-function.html [ Crash ]
 crbug.com/258896 virtual/web-animations-css/animations/wrong-keyframe-name.html [ Crash ]
 # These can't be rebaselined because the failure involves flaky output.
 crbug.com/258896 virtual/web-animations-css/animations/3d/matrix-transform-type-animation.html [ ImageOnlyFailure ]
