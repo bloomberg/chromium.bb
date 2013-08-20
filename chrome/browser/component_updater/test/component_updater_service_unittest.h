@@ -59,6 +59,8 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   virtual int StepDelay() OVERRIDE;
 
+  virtual int StepDelayMedium() OVERRIDE;
+
   virtual int MinimumReCheckWait() OVERRIDE;
 
   virtual int OnDemandDelay() OVERRIDE;

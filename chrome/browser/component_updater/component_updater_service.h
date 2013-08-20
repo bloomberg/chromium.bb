@@ -125,6 +125,9 @@ class ComponentUpdateService {
     virtual int NextCheckDelay() = 0;
     // Delay in seconds from each task step. Used to smooth out CPU/IO usage.
     virtual int StepDelay() = 0;
+    // Delay in seconds between applying updates for different components, if
+    // several updates are available at a given time.
+    virtual int StepDelayMedium() = 0;
     // Minimum delta time in seconds before checking again the same component.
     virtual int MinimumReCheckWait() = 0;
     // Minimum delta time in seconds before an on-demand check is allowed

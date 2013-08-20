@@ -70,6 +70,10 @@ int TestConfigurator::StepDelay() {
   return 0;
 }
 
+int TestConfigurator::StepDelayMedium() {
+  return NextCheckDelay();
+}
+
 int TestConfigurator::MinimumReCheckWait() {
   return recheck_time_;
 }

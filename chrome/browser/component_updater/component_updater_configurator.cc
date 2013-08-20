@@ -92,6 +92,7 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   virtual int InitialDelay() OVERRIDE;
   virtual int NextCheckDelay() OVERRIDE;
   virtual int StepDelay() OVERRIDE;
+  virtual int StepDelayMedium() OVERRIDE;
   virtual int MinimumReCheckWait() OVERRIDE;
   virtual int OnDemandDelay() OVERRIDE;
   virtual GURL UpdateUrl() OVERRIDE;
@@ -157,6 +158,10 @@ int ChromeConfigurator::InitialDelay() {
 
 int ChromeConfigurator::NextCheckDelay() {
   return fast_update_ ? 3 : (2 * kDelayOneHour);
+}
+
+int ChromeConfigurator::StepDelayMedium() {
+  return fast_update_ ? 3 : (15 * kDelayOneMinute);
 }
 
 int ChromeConfigurator::StepDelay() {
