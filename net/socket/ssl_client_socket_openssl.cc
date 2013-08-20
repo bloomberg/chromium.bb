@@ -532,9 +532,11 @@ bool SSLClientSocketOpenSSL::Init() {
   STACK_OF(SSL_CIPHER)* ciphers = SSL_get_ciphers(ssl_);
   DCHECK(ciphers);
   // See SSLConfig::disabled_cipher_suites for description of the suites
-  // disabled by default. Note that !SHA384 only removes HMAC-SHA384 cipher
-  // suites, not GCM cipher suites with SHA384 as the handshake hash.
-  std::string command("DEFAULT:!NULL:!aNULL:!IDEA:!FZA:!SRP:!SHA384:!aECDH");
+  // disabled by default. Note that !SHA256 and !SHA384 only remove HMAC-SHA256
+  // and HMAC-SHA384 cipher suites, not GCM cipher suites with SHA256 or SHA384
+  // as the handshake hash.
+  std::string command("DEFAULT:!NULL:!aNULL:!IDEA:!FZA:!SRP:!SHA256:!SHA384:"
+                      "!aECDH:!AESGCM+AES256");
   // Walk through all the installed ciphers, seeing if any need to be
   // appended to the cipher removal |command|.
   for (int i = 0; i < sk_SSL_CIPHER_num(ciphers); ++i) {
