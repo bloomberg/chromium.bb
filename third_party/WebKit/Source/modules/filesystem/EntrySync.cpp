@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/EntrySync.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DOMFilePath.h"
@@ -54,7 +55,7 @@ PassRefPtr<Metadata> EntrySync::getMetadata(ExceptionState& es)
 {
     MetadataSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getMetadata(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getMetadata", "EntrySync"));
         return 0;
     }
     return helper.getResult(es);
@@ -64,7 +65,7 @@ PassRefPtr<EntrySync> EntrySync::moveTo(PassRefPtr<DirectoryEntrySync> parent, c
 {
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->move(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("moveTo", "EntrySync"));
         return 0;
     }
     return helper.getResult(es);
@@ -74,7 +75,7 @@ PassRefPtr<EntrySync> EntrySync::copyTo(PassRefPtr<DirectoryEntrySync> parent, c
 {
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->copy(this, parent.get(), name, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("copyTo", "EntrySync"));
         return 0;
     }
     return helper.getResult(es);
@@ -84,7 +85,7 @@ void EntrySync::remove(ExceptionState& es) const
 {
     VoidSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->remove(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("remove", "EntrySync"));
         return;
     }
     helper.getResult(es);

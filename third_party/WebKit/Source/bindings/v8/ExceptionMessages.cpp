@@ -35,7 +35,7 @@ namespace WebCore {
 
 String ExceptionMessages::failedToExecute(const String& method, const String& type, const String& detail)
 {
-    return "Failed to execute '" + method + "' on '" + type + "': " + detail;
+    return "Failed to execute '" + method + "' on '" + type + (!detail.isEmpty() ? String("': " + detail) : String("'"));
 }
 
 String ExceptionMessages::failedToGet(const String& property, const String& type, const String& detail)

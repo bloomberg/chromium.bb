@@ -28,6 +28,7 @@
 #include "config.h"
 #include "modules/filesystem/WorkerGlobalScopeFileSystem.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/FileError.h"
@@ -68,13 +69,13 @@ PassRefPtr<DOMFileSystemSync> WorkerGlobalScopeFileSystem::webkitRequestFileSyst
 {
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem()) {
-        es.throwDOMException(SecurityError, FileError::securityErrorMessage);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("webkitRequestFileSystemSync", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
         return 0;
     }
 
     FileSystemType fileSystemType = static_cast<FileSystemType>(type);
     if (!DOMFileSystemBase::isValidType(fileSystemType)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("webkitRequestFileSystemSync", "WorkerGlobalScopeFileSystem", "the type must be TEMPORARY or PERSISTENT."));
         return 0;
     }
 
@@ -110,14 +111,14 @@ PassRefPtr<EntrySync> WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemS
     KURL completedURL = worker->completeURL(url);
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
     if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
-        es.throwDOMException(SecurityError, FileError::securityErrorMessage);
+        es.throwSecurityError(ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", FileError::securityErrorMessage));
         return 0;
     }
 
     FileSystemType type;
     String filePath;
     if (!completedURL.isValid() || !DOMFileSystemBase::crackFileSystemURL(completedURL, type, filePath)) {
-        es.throwDOMException(EncodingError);
+        es.throwDOMException(EncodingError, ExceptionMessages::failedToExecute("webkitResolveLocalFileSystemSyncURL", "WorkerGlobalScopeFileSystem", "the URL '" + url + "' is invalid."));
         return 0;
     }
 

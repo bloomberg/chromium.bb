@@ -31,6 +31,7 @@
 #include "config.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
 
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DirectoryReaderSync.h"
@@ -56,7 +57,7 @@ PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const 
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getFile(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getFile", "DirectoryEntrySync"));
         return 0;
     }
     return static_pointer_cast<FileEntrySync>(helper.getResult(es));
@@ -67,7 +68,7 @@ PassRefPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& pa
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->getDirectory(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getDirectory", "DirectoryEntrySync"));
         return 0;
     }
     return static_pointer_cast<DirectoryEntrySync>(helper.getResult(es));
@@ -77,7 +78,7 @@ void DirectoryEntrySync::removeRecursively(ExceptionState& es)
 {
     VoidSyncCallbackHelper helper(m_fileSystem->asyncFileSystem());
     if (!m_fileSystem->removeRecursively(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError);
+        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("removeRecursively", "DirectoryEntrySync"));
         return;
     }
     helper.getResult(es);
