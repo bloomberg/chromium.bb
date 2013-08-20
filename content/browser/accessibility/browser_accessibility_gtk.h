@@ -68,8 +68,6 @@ class BrowserAccessibilityGtk : public BrowserAccessibility {
   AtkObject* GetAtkObject() const;
 
   AtkRole atk_role() { return atk_role_; }
-  const std::string& atk_acc_name() { return atk_acc_name_; }
-  const std::string& atk_acc_description() { return atk_acc_description_; }
 
   // BrowserAccessibility methods.
   virtual void PreInitialize() OVERRIDE;
@@ -83,8 +81,6 @@ class BrowserAccessibilityGtk : public BrowserAccessibility {
 
   AtkObject* atk_object_;
   AtkRole atk_role_;
-  std::string atk_acc_name_;
-  std::string atk_acc_description_;
   int interface_mask_;
 
  private:

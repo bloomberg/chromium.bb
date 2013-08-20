@@ -178,7 +178,8 @@ static const gchar* browser_accessibility_get_name(AtkObject* atk_object) {
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
   if (!obj)
     return NULL;
-  return obj->atk_acc_name().c_str();
+
+  return obj->GetStringAttribute(AccessibilityNodeData::ATTR_NAME).c_str();
 }
 
 static const gchar* browser_accessibility_get_description(
@@ -186,7 +187,9 @@ static const gchar* browser_accessibility_get_description(
   BrowserAccessibilityGtk* obj = ToBrowserAccessibilityGtk(atk_object);
   if (!obj)
     return NULL;
-  return obj->atk_acc_description().c_str();
+
+  return obj->GetStringAttribute(
+      AccessibilityNodeData::ATTR_DESCRIPTION).c_str();
 }
 
 static AtkObject* browser_accessibility_get_parent(AtkObject* atk_object) {
@@ -467,12 +470,6 @@ bool BrowserAccessibilityGtk::IsNative() const {
 }
 
 void BrowserAccessibilityGtk::InitRoleAndState() {
-  atk_acc_name_ = UTF16ToUTF8(name());
-
-  string16 description;
-  GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION, &description);
-  atk_acc_description_ = UTF16ToUTF8(description);
-
   switch(role_) {
     case AccessibilityNodeData::ROLE_DOCUMENT:
     case AccessibilityNodeData::ROLE_ROOT_WEB_AREA:

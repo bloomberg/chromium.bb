@@ -338,11 +338,13 @@ bool BrowserAccessibilityManager::UpdateNode(const AccessibilityNodeData& src) {
     instance = CreateNode(NULL, src.id, 0);
   }
 
-  if (src.bool_attributes.find(
-          AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY) !=
-              src.bool_attributes.end()) {
-    instance->SetLocation(src.location);
-    return true;
+  // TODO(dmazzoni): avoid a linear scan here.
+  for (size_t i = 0; i < src.bool_attributes.size(); i++) {
+    if (src.bool_attributes[i].first ==
+        AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY) {
+      instance->SetLocation(src.location);
+      return true;
+    }
   }
 
   // Update all of the node-specific data, like its role, state, name, etc.

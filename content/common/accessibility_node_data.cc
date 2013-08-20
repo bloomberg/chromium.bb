@@ -41,6 +41,35 @@ AccessibilityNodeData::AccessibilityNodeData()
 AccessibilityNodeData::~AccessibilityNodeData() {
 }
 
+void AccessibilityNodeData::AddStringAttribute(
+    StringAttribute attribute, const std::string& value) {
+  string_attributes.push_back(std::make_pair(attribute, value));
+}
+
+void AccessibilityNodeData::AddIntAttribute(
+    IntAttribute attribute, int value) {
+  int_attributes.push_back(std::make_pair(attribute, value));
+}
+
+void AccessibilityNodeData::AddFloatAttribute(
+    FloatAttribute attribute, float value) {
+  float_attributes.push_back(std::make_pair(attribute, value));
+}
+
+void AccessibilityNodeData::AddBoolAttribute(
+    BoolAttribute attribute, bool value) {
+  bool_attributes.push_back(std::make_pair(attribute, value));
+}
+
+void AccessibilityNodeData::AddIntListAttribute(
+    IntListAttribute attribute, const std::vector<int32>& value) {
+  intlist_attributes.push_back(std::make_pair(attribute, value));
+}
+
+void AccessibilityNodeData::SetName(std::string name) {
+  string_attributes.push_back(std::make_pair(ATTR_NAME, name));
+}
+
 AccessibilityNodeDataTreeNode::AccessibilityNodeDataTreeNode()
   : AccessibilityNodeData() {
 }
@@ -270,27 +299,14 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
   if (state & (1 << STATE_VISITED))
     result += " VISITED";
 
-  std::string tmp = UTF16ToUTF8(name);
-  RemoveChars(tmp, "\n", &tmp);
-  if (!tmp.empty())
-    result += " name=" + tmp;
-
-  tmp = UTF16ToUTF8(value);
-  RemoveChars(tmp, "\n", &tmp);
-  if (!tmp.empty())
-    result += " value=" + tmp;
-
   result += " (" + IntToString(location.x()) + ", " +
                    IntToString(location.y()) + ")-(" +
                    IntToString(location.width()) + ", " +
                    IntToString(location.height()) + ")";
 
-  for (std::map<IntAttribute, int32>::const_iterator iter =
-           int_attributes.begin();
-       iter != int_attributes.end();
-       ++iter) {
-    std::string value = IntToString(iter->second);
-    switch (iter->first) {
+  for (size_t i = 0; i < int_attributes.size(); ++i) {
+    std::string value = IntToString(int_attributes[i].second);
+    switch (int_attributes[i].first) {
       case ATTR_SCROLL_X:
         result += " scroll_x=" + value;
         break;
@@ -366,12 +382,9 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     }
   }
 
-  for (std::map<StringAttribute, string16>::const_iterator iter =
-           string_attributes.begin();
-       iter != string_attributes.end();
-       ++iter) {
-    std::string value = UTF16ToUTF8(iter->second);
-    switch (iter->first) {
+  for (size_t i = 0; i < string_attributes.size(); ++i) {
+    std::string value = string_attributes[i].second;
+    switch (string_attributes[i].first) {
       case ATTR_DOC_URL:
         result += " doc_url=" + value;
         break;
@@ -423,15 +436,18 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
       case ATTR_URL:
         result += " url=" + value;
         break;
+      case ATTR_NAME:
+        result += " name=" + value;
+        break;
+      case ATTR_VALUE:
+        result += " value=" + value;
+        break;
     }
   }
 
-  for (std::map<FloatAttribute, float>::const_iterator iter =
-           float_attributes.begin();
-       iter != float_attributes.end();
-       ++iter) {
-    std::string value = DoubleToString(iter->second);
-    switch (iter->first) {
+  for (size_t i = 0; i < float_attributes.size(); ++i) {
+    std::string value = DoubleToString(float_attributes[i].second);
+    switch (float_attributes[i].first) {
       case ATTR_DOC_LOADING_PROGRESS:
         result += " doc_progress=" + value;
         break;
@@ -447,12 +463,9 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     }
   }
 
-  for (std::map<BoolAttribute, bool>::const_iterator iter =
-           bool_attributes.begin();
-       iter != bool_attributes.end();
-       ++iter) {
-    std::string value = iter->second ? "true" : "false";
-    switch (iter->first) {
+  for (size_t i = 0; i < bool_attributes.size(); ++i) {
+    std::string value = bool_attributes[i].second ? "true" : "false";
+    switch (bool_attributes[i].first) {
       case ATTR_DOC_LOADED:
         result += " doc_loaded=" + value;
         break;
@@ -483,17 +496,26 @@ std::string AccessibilityNodeData::DebugString(bool recursive) const {
     }
   }
 
+  for (size_t i = 0; i < intlist_attributes.size(); ++i) {
+    const std::vector<int32>& values = intlist_attributes[i].second;
+    switch (intlist_attributes[i].first) {
+      case ATTR_INDIRECT_CHILD_IDS:
+        result += " indirect_child_ids=" + IntVectorToString(values);
+        break;
+      case ATTR_LINE_BREAKS:
+        result += " line_breaks=" + IntVectorToString(values);
+        break;
+      case ATTR_CELL_IDS:
+        result += " cell_ids=" + IntVectorToString(values);
+        break;
+      case ATTR_UNIQUE_CELL_IDS:
+        result += " unique_cell_ids=" + IntVectorToString(values);
+        break;
+    }
+  }
+
   if (!child_ids.empty())
     result += " child_ids=" + IntVectorToString(child_ids);
-
-  if (!indirect_child_ids.empty())
-    result += " indirect_child_ids=" + IntVectorToString(indirect_child_ids);
-
-  if (!line_breaks.empty())
-    result += " line_breaks=" + IntVectorToString(line_breaks);
-
-  if (!cell_ids.empty())
-    result += " cell_ids=" + IntVectorToString(cell_ids);
 
   return result;
 }

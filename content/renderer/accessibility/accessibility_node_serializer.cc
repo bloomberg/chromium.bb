@@ -46,6 +46,10 @@ bool IsParentUnignoredOf(const WebAccessibilityObject& ancestor,
   return parent.equals(ancestor);
 }
 
+  bool IsTrue(std::string html_value) {
+  return LowerCaseEqualsASCII(html_value, "true");
+}
+
 // Provides a conversion between the WebKit::WebAccessibilityRole and a role
 // supported on the Browser side. Listed alphabetically by the
 // WebKit::WebAccessibilityRole (except for default role).
@@ -351,56 +355,64 @@ uint32 ConvertState(const WebAccessibilityObject& o) {
 void SerializeAccessibilityNode(
     const WebAccessibilityObject& src,
     AccessibilityNodeData* dst) {
-  dst->name = src.title();
   dst->role = ConvertRole(src.roleValue());
   dst->state = ConvertState(src);
   dst->location = src.boundingBoxRect();
   dst->id = src.axID();
+  std::string name = UTF16ToUTF8(src.title());
 
-  if (src.valueDescription().length())
-    dst->value = src.valueDescription();
-  else
-    dst->value = src.stringValue();
+  std::string value;
+  if (src.valueDescription().length()) {
+    dst->AddStringAttribute(dst->ATTR_VALUE,
+                            UTF16ToUTF8(src.valueDescription()));
+  } else {
+    dst->AddStringAttribute(dst->ATTR_VALUE, UTF16ToUTF8(src.stringValue()));
+  }
 
   if (dst->role == AccessibilityNodeData::ROLE_COLOR_WELL) {
     int r, g, b;
     src.colorValue(r, g, b);
-    dst->int_attributes[dst->ATTR_COLOR_VALUE_RED] = r;
-    dst->int_attributes[dst->ATTR_COLOR_VALUE_GREEN] = g;
-    dst->int_attributes[dst->ATTR_COLOR_VALUE_BLUE] = b;
+    dst->AddIntAttribute(dst->ATTR_COLOR_VALUE_RED, r);
+    dst->AddIntAttribute(dst->ATTR_COLOR_VALUE_GREEN, g);
+    dst->AddIntAttribute(dst->ATTR_COLOR_VALUE_BLUE, b);
   }
 
   if (src.accessKey().length())
-    dst->string_attributes[dst->ATTR_ACCESS_KEY] = src.accessKey();
+    dst->AddStringAttribute(dst->ATTR_ACCESS_KEY, UTF16ToUTF8(src.accessKey()));
   if (src.actionVerb().length())
-    dst->string_attributes[dst->ATTR_ACTION] = src.actionVerb();
+    dst->AddStringAttribute(dst->ATTR_ACTION, UTF16ToUTF8(src.actionVerb()));
   if (src.isAriaReadOnly())
-    dst->bool_attributes[dst->ATTR_ARIA_READONLY] = true;
+    dst->AddBoolAttribute(dst->ATTR_ARIA_READONLY, true);
   if (src.isButtonStateMixed())
-    dst->bool_attributes[dst->ATTR_BUTTON_MIXED] = true;
+    dst->AddBoolAttribute(dst->ATTR_BUTTON_MIXED, true);
   if (src.canSetValueAttribute())
-    dst->bool_attributes[dst->ATTR_CAN_SET_VALUE] = true;
-  if (src.accessibilityDescription().length())
-    dst->string_attributes[dst->ATTR_DESCRIPTION] =
-        src.accessibilityDescription();
-  if (src.hasComputedStyle())
-    dst->string_attributes[dst->ATTR_DISPLAY] = src.computedStyleDisplay();
+    dst->AddBoolAttribute(dst->ATTR_CAN_SET_VALUE, true);
+  if (src.accessibilityDescription().length()) {
+    dst->AddStringAttribute(dst->ATTR_DESCRIPTION,
+                            UTF16ToUTF8(src.accessibilityDescription()));
+  }
+  if (src.hasComputedStyle()) {
+    dst->AddStringAttribute(dst->ATTR_DISPLAY,
+                            UTF16ToUTF8(src.computedStyleDisplay()));
+  }
   if (src.helpText().length())
-    dst->string_attributes[dst->ATTR_HELP] = src.helpText();
-  if (src.keyboardShortcut().length())
-    dst->string_attributes[dst->ATTR_SHORTCUT] = src.keyboardShortcut();
+    dst->AddStringAttribute(dst->ATTR_HELP, UTF16ToUTF8(src.helpText()));
+  if (src.keyboardShortcut().length()) {
+    dst->AddStringAttribute(dst->ATTR_SHORTCUT,
+                            UTF16ToUTF8(src.keyboardShortcut()));
+  }
   if (!src.titleUIElement().isDetached()) {
-    dst->int_attributes[dst->ATTR_TITLE_UI_ELEMENT] =
-        src.titleUIElement().axID();
+    dst->AddIntAttribute(dst->ATTR_TITLE_UI_ELEMENT,
+                         src.titleUIElement().axID());
   }
   if (!src.url().isEmpty())
-    dst->string_attributes[dst->ATTR_URL] = src.url().spec().utf16();
+    dst->AddStringAttribute(dst->ATTR_URL, src.url().spec());
 
   if (dst->role == dst->ROLE_HEADING)
-    dst->int_attributes[dst->ATTR_HIERARCHICAL_LEVEL] = src.headingLevel();
+    dst->AddIntAttribute(dst->ATTR_HIERARCHICAL_LEVEL, src.headingLevel());
   else if ((dst->role == dst->ROLE_TREE_ITEM || dst->role == dst->ROLE_ROW) &&
            src.hierarchicalLevel() > 0) {
-    dst->int_attributes[dst->ATTR_HIERARCHICAL_LEVEL] = src.hierarchicalLevel();
+    dst->AddIntAttribute(dst->ATTR_HIERARCHICAL_LEVEL, src.hierarchicalLevel());
   }
 
   // Treat the active list box item as focused.
@@ -412,6 +424,10 @@ void SerializeAccessibilityNode(
 
   WebNode node = src.node();
   bool is_iframe = false;
+  std::string live_atomic;
+  std::string live_busy;
+  std::string live_status;
+  std::string live_relevant;
 
   if (!node.isNull() && node.isElementNode()) {
     WebElement element = node.to<WebElement>();
@@ -423,143 +439,163 @@ void SerializeAccessibilityNode(
     // TODO(ctguil): The tagName in WebKit is lower cased but
     // HTMLElement::nodeName calls localNameUpper. Consider adding
     // a WebElement method that returns the original lower cased tagName.
-    dst->string_attributes[dst->ATTR_HTML_TAG] =
-        StringToLowerASCII(string16(element.tagName()));
+    dst->AddStringAttribute(
+        dst->ATTR_HTML_TAG,
+        StringToLowerASCII(UTF16ToUTF8(element.tagName())));
     for (unsigned i = 0; i < element.attributeCount(); ++i) {
-      string16 name = StringToLowerASCII(string16(
+      std::string name = StringToLowerASCII(UTF16ToUTF8(
           element.attributeLocalName(i)));
-      string16 value = element.attributeValue(i);
-      dst->html_attributes.push_back(
-          std::pair<string16, string16>(name, value));
+      std::string value = UTF16ToUTF8(element.attributeValue(i));
+      dst->html_attributes.push_back(std::make_pair(name, value));
     }
 
     if (dst->role == dst->ROLE_EDITABLE_TEXT ||
         dst->role == dst->ROLE_TEXTAREA ||
         dst->role == dst->ROLE_TEXT_FIELD) {
-      dst->int_attributes[dst->ATTR_TEXT_SEL_START] = src.selectionStart();
-      dst->int_attributes[dst->ATTR_TEXT_SEL_END] = src.selectionEnd();
+      dst->AddIntAttribute(dst->ATTR_TEXT_SEL_START, src.selectionStart());
+      dst->AddIntAttribute(dst->ATTR_TEXT_SEL_END, src.selectionEnd());
 
       WebVector<int> src_line_breaks;
       src.lineBreaks(src_line_breaks);
-      dst->line_breaks.reserve(src_line_breaks.size());
-      for (size_t i = 0; i < src_line_breaks.size(); ++i)
-        dst->line_breaks.push_back(src_line_breaks[i]);
+      if (src_line_breaks.size() > 0) {
+        std::vector<int32> line_breaks;
+        line_breaks.reserve(src_line_breaks.size());
+        for (size_t i = 0; i < src_line_breaks.size(); ++i)
+          line_breaks.push_back(src_line_breaks[i]);
+        dst->AddIntListAttribute(dst->ATTR_LINE_BREAKS, line_breaks);
+      }
     }
 
     // ARIA role.
     if (element.hasAttribute("role")) {
-      dst->string_attributes[dst->ATTR_ROLE] = element.getAttribute("role");
+      dst->AddStringAttribute(dst->ATTR_ROLE,
+                              UTF16ToUTF8(element.getAttribute("role")));
     }
 
     // Live region attributes
-    if (element.hasAttribute("aria-atomic")) {
-      dst->bool_attributes[dst->ATTR_LIVE_ATOMIC] =
-          LowerCaseEqualsASCII(element.getAttribute("aria-atomic"), "true");
-    }
-    if (element.hasAttribute("aria-busy")) {
-      dst->bool_attributes[dst->ATTR_LIVE_BUSY] =
-          LowerCaseEqualsASCII(element.getAttribute("aria-busy"), "true");
-    }
-    if (element.hasAttribute("aria-live")) {
-      dst->string_attributes[dst->ATTR_LIVE_STATUS] =
-          element.getAttribute("aria-live");
-    }
-    if (element.hasAttribute("aria-relevant")) {
-      dst->string_attributes[dst->ATTR_LIVE_RELEVANT] =
-          element.getAttribute("aria-relevant");
-    }
+    live_atomic = UTF16ToUTF8(element.getAttribute("aria-atomic"));
+    live_busy = UTF16ToUTF8(element.getAttribute("aria-busy"));
+    live_status = UTF16ToUTF8(element.getAttribute("aria-live"));
+    live_relevant = UTF16ToUTF8(element.getAttribute("aria-relevant"));
   }
 
   // Walk up the parent chain to set live region attributes of containers
-
+  std::string container_live_atomic;
+  std::string container_live_busy;
+  std::string container_live_status;
+  std::string container_live_relevant;
   WebAccessibilityObject container_accessible = src;
   while (!container_accessible.isDetached()) {
     WebNode container_node = container_accessible.node();
     if (!container_node.isNull() && container_node.isElementNode()) {
-      WebElement container_elem =
-          container_node.to<WebElement>();
+      WebElement container_elem = container_node.to<WebElement>();
       if (container_elem.hasAttribute("aria-atomic") &&
-          dst->bool_attributes.find(dst->ATTR_CONTAINER_LIVE_ATOMIC) ==
-          dst->bool_attributes.end()) {
-        dst->bool_attributes[dst->ATTR_CONTAINER_LIVE_ATOMIC] =
-            LowerCaseEqualsASCII(container_elem.getAttribute("aria-atomic"),
-                                 "true");
+          container_live_atomic.empty()) {
+        container_live_atomic =
+            UTF16ToUTF8(container_elem.getAttribute("aria-atomic"));
       }
       if (container_elem.hasAttribute("aria-busy") &&
-          dst->bool_attributes.find(dst->ATTR_CONTAINER_LIVE_BUSY) ==
-          dst->bool_attributes.end()) {
-        dst->bool_attributes[dst->ATTR_CONTAINER_LIVE_BUSY] =
-            LowerCaseEqualsASCII(container_elem.getAttribute("aria-busy"),
-                                 "true");
+          container_live_busy.empty()) {
+        container_live_busy =
+            UTF16ToUTF8(container_elem.getAttribute("aria-busy"));
       }
       if (container_elem.hasAttribute("aria-live") &&
-          dst->string_attributes.find(dst->ATTR_CONTAINER_LIVE_STATUS) ==
-          dst->string_attributes.end()) {
-        dst->string_attributes[dst->ATTR_CONTAINER_LIVE_STATUS] =
-            container_elem.getAttribute("aria-live");
+          container_live_status.empty()) {
+        container_live_status =
+            UTF16ToUTF8(container_elem.getAttribute("aria-live"));
       }
       if (container_elem.hasAttribute("aria-relevant") &&
-          dst->string_attributes.find(dst->ATTR_CONTAINER_LIVE_RELEVANT) ==
-          dst->string_attributes.end()) {
-        dst->string_attributes[dst->ATTR_CONTAINER_LIVE_RELEVANT] =
-            container_elem.getAttribute("aria-relevant");
+          container_live_relevant.empty()) {
+        container_live_relevant =
+            UTF16ToUTF8(container_elem.getAttribute("aria-relevant"));
       }
     }
     container_accessible = container_accessible.parentObject();
+  }
+
+  if (!live_atomic.empty())
+    dst->AddBoolAttribute(dst->ATTR_LIVE_ATOMIC, IsTrue(live_atomic));
+  if (!live_busy.empty())
+    dst->AddBoolAttribute(dst->ATTR_LIVE_BUSY, IsTrue(live_busy));
+  if (!live_status.empty())
+    dst->AddStringAttribute(dst->ATTR_LIVE_STATUS, live_status);
+  if (!live_relevant.empty())
+    dst->AddStringAttribute(dst->ATTR_LIVE_RELEVANT, live_relevant);
+
+  if (!container_live_atomic.empty()) {
+    dst->AddBoolAttribute(dst->ATTR_CONTAINER_LIVE_ATOMIC,
+                          IsTrue(container_live_atomic));
+  }
+  if (!container_live_busy.empty()) {
+    dst->AddBoolAttribute(dst->ATTR_CONTAINER_LIVE_BUSY,
+                          IsTrue(container_live_busy));
+  }
+  if (!container_live_status.empty()) {
+    dst->AddStringAttribute(dst->ATTR_CONTAINER_LIVE_STATUS,
+                            container_live_status);
+  }
+  if (!container_live_relevant.empty()) {
+    dst->AddStringAttribute(dst->ATTR_CONTAINER_LIVE_RELEVANT,
+                            container_live_relevant);
   }
 
   if (dst->role == dst->ROLE_PROGRESS_INDICATOR ||
       dst->role == dst->ROLE_SCROLLBAR ||
       dst->role == dst->ROLE_SLIDER ||
       dst->role == dst->ROLE_SPIN_BUTTON) {
-    dst->float_attributes[dst->ATTR_VALUE_FOR_RANGE] = src.valueForRange();
-    dst->float_attributes[dst->ATTR_MAX_VALUE_FOR_RANGE] =
-        src.maxValueForRange();
-    dst->float_attributes[dst->ATTR_MIN_VALUE_FOR_RANGE] =
-        src.minValueForRange();
+    dst->AddFloatAttribute(dst->ATTR_VALUE_FOR_RANGE, src.valueForRange());
+    dst->AddFloatAttribute(dst->ATTR_MAX_VALUE_FOR_RANGE,
+                           src.maxValueForRange());
+    dst->AddFloatAttribute(dst->ATTR_MIN_VALUE_FOR_RANGE,
+                           src.minValueForRange());
   }
 
   if (dst->role == dst->ROLE_DOCUMENT ||
       dst->role == dst->ROLE_WEB_AREA) {
-    dst->string_attributes[dst->ATTR_HTML_TAG] = ASCIIToUTF16("#document");
+    dst->AddStringAttribute(dst->ATTR_HTML_TAG, "#document");
     const WebDocument& document = src.document();
-    if (dst->name.empty())
-      dst->name = document.title();
-    dst->string_attributes[dst->ATTR_DOC_TITLE] = document.title();
-    dst->string_attributes[dst->ATTR_DOC_URL] = document.url().spec().utf16();
-    dst->string_attributes[dst->ATTR_DOC_MIMETYPE] =
-        ASCIIToUTF16(document.isXHTMLDocument() ? "text/xhtml" : "text/html");
-    dst->bool_attributes[dst->ATTR_DOC_LOADED] = src.isLoaded();
-    dst->float_attributes[dst->ATTR_DOC_LOADING_PROGRESS] =
-        src.estimatedLoadingProgress();
+    if (name.empty())
+      name = UTF16ToUTF8(document.title());
+    dst->AddStringAttribute(dst->ATTR_DOC_TITLE, UTF16ToUTF8(document.title()));
+    dst->AddStringAttribute(dst->ATTR_DOC_URL, document.url().spec());
+    dst->AddStringAttribute(
+        dst->ATTR_DOC_MIMETYPE,
+        document.isXHTMLDocument() ? "text/xhtml" : "text/html");
+    dst->AddBoolAttribute(dst->ATTR_DOC_LOADED, src.isLoaded());
+    dst->AddFloatAttribute(dst->ATTR_DOC_LOADING_PROGRESS,
+                           src.estimatedLoadingProgress());
 
     const WebDocumentType& doctype = document.doctype();
-    if (!doctype.isNull())
-      dst->string_attributes[dst->ATTR_DOC_DOCTYPE] = doctype.name();
+    if (!doctype.isNull()) {
+      dst->AddStringAttribute(dst->ATTR_DOC_DOCTYPE,
+                              UTF16ToUTF8(doctype.name()));
+    }
 
     const gfx::Size& scroll_offset = document.frame()->scrollOffset();
-    dst->int_attributes[dst->ATTR_SCROLL_X] = scroll_offset.width();
-    dst->int_attributes[dst->ATTR_SCROLL_Y] = scroll_offset.height();
+    dst->AddIntAttribute(dst->ATTR_SCROLL_X, scroll_offset.width());
+    dst->AddIntAttribute(dst->ATTR_SCROLL_Y, scroll_offset.height());
 
     const gfx::Size& min_offset = document.frame()->minimumScrollOffset();
-    dst->int_attributes[dst->ATTR_SCROLL_X_MIN] = min_offset.width();
-    dst->int_attributes[dst->ATTR_SCROLL_Y_MIN] = min_offset.height();
+    dst->AddIntAttribute(dst->ATTR_SCROLL_X_MIN, min_offset.width());
+    dst->AddIntAttribute(dst->ATTR_SCROLL_Y_MIN, min_offset.height());
 
     const gfx::Size& max_offset = document.frame()->maximumScrollOffset();
-    dst->int_attributes[dst->ATTR_SCROLL_X_MAX] = max_offset.width();
-    dst->int_attributes[dst->ATTR_SCROLL_Y_MAX] = max_offset.height();
+    dst->AddIntAttribute(dst->ATTR_SCROLL_X_MAX, max_offset.width());
+    dst->AddIntAttribute(dst->ATTR_SCROLL_Y_MAX, max_offset.height());
   }
 
   if (dst->role == dst->ROLE_TABLE) {
     int column_count = src.columnCount();
     int row_count = src.rowCount();
     if (column_count > 0 && row_count > 0) {
-      std::set<int> unique_cell_id_set;
-      dst->int_attributes[dst->ATTR_TABLE_COLUMN_COUNT] = column_count;
-      dst->int_attributes[dst->ATTR_TABLE_ROW_COUNT] = row_count;
+      std::set<int32> unique_cell_id_set;
+      std::vector<int32> cell_ids;
+      std::vector<int32> unique_cell_ids;
+      dst->AddIntAttribute(dst->ATTR_TABLE_COLUMN_COUNT, column_count);
+      dst->AddIntAttribute(dst->ATTR_TABLE_ROW_COUNT, row_count);
       WebAccessibilityObject header = src.headerContainerObject();
       if (!header.isDetached())
-        dst->int_attributes[dst->ATTR_TABLE_HEADER_ID] = header.axID();
+        dst->AddIntAttribute(dst->ATTR_TABLE_HEADER_ID, header.axID());
       for (int i = 0; i < column_count * row_count; ++i) {
         WebAccessibilityObject cell = src.cellForColumnAndRow(
             i % column_count, i / column_count);
@@ -568,38 +604,42 @@ void SerializeAccessibilityNode(
           cell_id = cell.axID();
           if (unique_cell_id_set.find(cell_id) == unique_cell_id_set.end()) {
             unique_cell_id_set.insert(cell_id);
-            dst->unique_cell_ids.push_back(cell_id);
+            unique_cell_ids.push_back(cell_id);
           }
         }
-        dst->cell_ids.push_back(cell_id);
+        cell_ids.push_back(cell_id);
       }
+      dst->AddIntListAttribute(dst->ATTR_CELL_IDS, cell_ids);
+      dst->AddIntListAttribute(dst->ATTR_UNIQUE_CELL_IDS, unique_cell_ids);
     }
   }
 
   if (dst->role == dst->ROLE_ROW) {
-    dst->int_attributes[dst->ATTR_TABLE_ROW_INDEX] = src.rowIndex();
+    dst->AddIntAttribute(dst->ATTR_TABLE_ROW_INDEX, src.rowIndex());
     WebAccessibilityObject header = src.rowHeader();
     if (!header.isDetached())
-      dst->int_attributes[dst->ATTR_TABLE_ROW_HEADER_ID] = header.axID();
+      dst->AddIntAttribute(dst->ATTR_TABLE_ROW_HEADER_ID, header.axID());
   }
 
   if (dst->role == dst->ROLE_COLUMN) {
-    dst->int_attributes[dst->ATTR_TABLE_COLUMN_INDEX] = src.columnIndex();
+    dst->AddIntAttribute(dst->ATTR_TABLE_COLUMN_INDEX, src.columnIndex());
     WebAccessibilityObject header = src.columnHeader();
     if (!header.isDetached())
-      dst->int_attributes[dst->ATTR_TABLE_COLUMN_HEADER_ID] = header.axID();
+      dst->AddIntAttribute(dst->ATTR_TABLE_COLUMN_HEADER_ID, header.axID());
   }
 
   if (dst->role == dst->ROLE_CELL ||
       dst->role == dst->ROLE_ROW_HEADER ||
       dst->role == dst->ROLE_COLUMN_HEADER) {
-    dst->int_attributes[dst->ATTR_TABLE_CELL_COLUMN_INDEX] =
-        src.cellColumnIndex();
-    dst->int_attributes[dst->ATTR_TABLE_CELL_COLUMN_SPAN] =
-        src.cellColumnSpan();
-    dst->int_attributes[dst->ATTR_TABLE_CELL_ROW_INDEX] = src.cellRowIndex();
-    dst->int_attributes[dst->ATTR_TABLE_CELL_ROW_SPAN] = src.cellRowSpan();
+    dst->AddIntAttribute(dst->ATTR_TABLE_CELL_COLUMN_INDEX,
+                         src.cellColumnIndex());
+    dst->AddIntAttribute(dst->ATTR_TABLE_CELL_COLUMN_SPAN,
+                         src.cellColumnSpan());
+    dst->AddIntAttribute(dst->ATTR_TABLE_CELL_ROW_INDEX, src.cellRowIndex());
+    dst->AddIntAttribute(dst->ATTR_TABLE_CELL_ROW_SPAN, src.cellRowSpan());
   }
+
+  dst->AddStringAttribute(dst->ATTR_NAME, name);
 
   // Add the ids of *indirect* children - those who are children of this node,
   // but whose parent is *not* this node. One example is a table
@@ -609,8 +649,13 @@ void SerializeAccessibilityNode(
   int child_count = src.childCount();
   for (int i = 0; i < child_count; ++i) {
     WebAccessibilityObject child = src.childAt(i);
+    std::vector<int32> indirect_child_ids;
     if (!is_iframe && !child.isDetached() && !IsParentUnignoredOf(src, child))
-      dst->indirect_child_ids.push_back(child.axID());
+      indirect_child_ids.push_back(child.axID());
+    if (indirect_child_ids.size() > 0) {
+      dst->AddIntListAttribute(
+          dst->ATTR_INDIRECT_CHILD_IDS, indirect_child_ids);
+    }
   }
 }
 

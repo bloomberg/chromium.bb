@@ -771,6 +771,7 @@ BrowserAccessibilityWin
   // Accessors.
   int32 ia_role() const { return ia_role_; }
   int32 ia_state() const { return ia_state_; }
+  const string16& role_name() const { return role_name_; }
   int32 ia2_role() const { return ia2_role_; }
   int32 ia2_state() const { return ia2_state_; }
   const std::vector<string16>& ia2_attributes() const {
@@ -816,9 +817,13 @@ BrowserAccessibilityWin
   void IntAttributeToIA2(AccessibilityNodeData::IntAttribute attribute,
                          const char* ia2_attr);
 
+  // Get the value text, which might come from the floating-point
+  // value for some roles.
+  string16 GetValueText();
+
   // Get the text of this node for the purposes of IAccessibleText - it may
   // be the name, it may be the value, etc. depending on the role.
-  const string16& TextForIAccessibleText();
+  string16 TextForIAccessibleText();
 
   // If offset is a member of IA2TextSpecialOffsets this function updates the
   // value of offset and returns, otherwise offset remains unchanged.
@@ -847,6 +852,7 @@ BrowserAccessibilityWin
   // IAccessible role and state.
   int32 ia_role_;
   int32 ia_state_;
+  string16 role_name_;
 
   // IAccessible2 role and state.
   int32 ia2_role_;

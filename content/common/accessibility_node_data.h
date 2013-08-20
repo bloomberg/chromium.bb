@@ -191,11 +191,13 @@ struct CONTENT_EXPORT AccessibilityNodeData {
     ATTR_DISPLAY,
     ATTR_HELP,
     ATTR_HTML_TAG,
+    ATTR_NAME,
     ATTR_LIVE_RELEVANT,
     ATTR_LIVE_STATUS,
     ATTR_ROLE,
     ATTR_SHORTCUT,
     ATTR_URL,
+    ATTR_VALUE,
   };
 
   enum IntAttribute {
@@ -276,8 +278,40 @@ struct CONTENT_EXPORT AccessibilityNodeData {
     ATTR_UPDATE_LOCATION_ONLY,
   };
 
+  enum IntListAttribute {
+    // Ids of nodes that are children of this node logically, but are
+    // not children of this node in the tree structure. As an example,
+    // a table cell is a child of a row, and an 'indirect' child of a
+    // column.
+    ATTR_INDIRECT_CHILD_IDS,
+
+    // Character indices where line breaks occur.
+    ATTR_LINE_BREAKS,
+
+    // For a table, the cell ids in row-major order, with duplicate entries
+    // when there's a rowspan or colspan, and with -1 for missing cells.
+    // There are always exactly rows * columns entries.
+    ATTR_CELL_IDS,
+
+    // For a table, the unique cell ids in row-major order of their first
+    // occurrence.
+    ATTR_UNIQUE_CELL_IDS
+  };
+
   AccessibilityNodeData();
   virtual ~AccessibilityNodeData();
+
+  void AddStringAttribute(StringAttribute attribute,
+                          const std::string& value);
+  void AddIntAttribute(IntAttribute attribute, int value);
+  void AddFloatAttribute(FloatAttribute attribute, float value);
+  void AddBoolAttribute(BoolAttribute attribute, bool value);
+  void AddIntListAttribute(IntListAttribute attribute,
+                           const std::vector<int32>& value);
+
+  // Convenience function, mainly for writing unit tests.
+  // Equivalent to AddStringAttribute(ATTR_NAME, name).
+  void SetName(std::string name);
 
   #ifndef NDEBUG
   virtual std::string DebugString(bool recursive) const;
@@ -286,28 +320,17 @@ struct CONTENT_EXPORT AccessibilityNodeData {
   // This is a simple serializable struct. All member variables should be
   // public and copyable.
   int32 id;
-  string16 name;
-  string16 value;
   Role role;
   uint32 state;
   gfx::Rect location;
-  std::map<StringAttribute, string16> string_attributes;
-  std::map<IntAttribute, int32> int_attributes;
-  std::map<FloatAttribute, float> float_attributes;
-  std::map<BoolAttribute, bool> bool_attributes;
+  std::vector<std::pair<StringAttribute, std::string> > string_attributes;
+  std::vector<std::pair<IntAttribute, int32> > int_attributes;
+  std::vector<std::pair<FloatAttribute, float> > float_attributes;
+  std::vector<std::pair<BoolAttribute, bool> > bool_attributes;
+  std::vector<std::pair<IntListAttribute, std::vector<int32> > >
+      intlist_attributes;
+  std::vector<std::pair<std::string, std::string> > html_attributes;
   std::vector<int32> child_ids;
-  std::vector<int32> indirect_child_ids;
-  std::vector<std::pair<string16, string16> > html_attributes;
-  std::vector<int32> line_breaks;
-
-  // For a table, the cell ids in row-major order, with duplicate entries
-  // when there's a rowspan or colspan, and with -1 for missing cells.
-  // There are always exactly rows * columns entries.
-  std::vector<int32> cell_ids;
-
-  // For a table, the unique cell ids in row-major order of their first
-  // occurrence.
-  std::vector<int32> unique_cell_ids;
 };
 
 // For testing and debugging only: this subclass of AccessibilityNodeData

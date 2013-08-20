@@ -405,8 +405,8 @@ void RendererAccessibilityComplete::AppendLocationChangeNotifications(
     AccessibilityNodeData& serialized_node = notification_msg.nodes[i];
     serialized_node.id = location_changes[i]->id;
     serialized_node.location = location_changes[i]->location;
-    serialized_node.bool_attributes[
-        AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY] = true;
+    serialized_node.AddBoolAttribute(
+        AccessibilityNodeData::ATTR_UPDATE_LOCATION_ONLY, true);
   }
 
   notification_msgs->push_back(notification_msg);

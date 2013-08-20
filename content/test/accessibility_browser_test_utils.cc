@@ -57,13 +57,11 @@ bool AccessibilityNotificationWaiter::IsAboutBlank() {
   // to avoid a possible race condition between the test beginning
   // listening for accessibility events and "about:blank" loading.
   const AccessibilityNodeDataTreeNode& root = GetAccessibilityNodeDataTree();
-  typedef AccessibilityNodeData::StringAttribute StringAttribute;
-  std::map<StringAttribute, string16>::const_iterator iter;
-  iter = root.string_attributes.find(AccessibilityNodeData::ATTR_DOC_URL);
-  if (iter != root.string_attributes.end()) {
-    string16 doc_url = iter->second;
-    if (doc_url == ASCIIToUTF16(kAboutBlankURL))
-      return true;
+  for (size_t i = 0; i < root.string_attributes.size(); ++i) {
+    if (root.string_attributes[i].first != AccessibilityNodeData::ATTR_DOC_URL)
+      continue;
+    const std::string& doc_url = root.string_attributes[i].second;
+    return doc_url == kAboutBlankURL;
   }
   return false;
 }

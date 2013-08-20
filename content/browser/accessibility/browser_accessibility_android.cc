@@ -174,16 +174,15 @@ string16 BrowserAccessibilityAndroid::GetText() const {
     return string16();
   }
 
-  string16 description;
-  GetStringAttribute(AccessibilityNodeData::ATTR_DESCRIPTION, &description);
-
+  string16 description = GetString16Attribute(
+      AccessibilityNodeData::ATTR_DESCRIPTION);
   string16 text;
   if (!name().empty())
-    text = name();
+    text = base::UTF8ToUTF16(name());
   else if (!description.empty())
     text = description;
   else if (!value().empty())
-    text = value();
+    text = base::UTF8ToUTF16(value());
 
   if (text.empty() && HasOnlyStaticTextChildren()) {
     for (uint32 i = 0; i < child_count(); i++) {
@@ -361,8 +360,8 @@ bool BrowserAccessibilityAndroid::HasOnlyStaticTextChildren() const {
 }
 
 bool BrowserAccessibilityAndroid::IsIframe() const {
-  string16 html_tag;
-  GetStringAttribute(AccessibilityNodeData::ATTR_HTML_TAG, &html_tag);
+  string16 html_tag = GetString16Attribute(
+      AccessibilityNodeData::ATTR_HTML_TAG);
   return html_tag == ASCIIToUTF16("iframe");
 }
 
@@ -370,9 +369,9 @@ void BrowserAccessibilityAndroid::PostInitialize() {
   BrowserAccessibility::PostInitialize();
 
   if (IsEditableText()) {
-    if (value_ != new_value_) {
+    if (base::UTF8ToUTF16(value_) != new_value_) {
       old_value_ = new_value_;
-      new_value_ = value_;
+      new_value_ = base::UTF8ToUTF16(value_);
     }
   }
 
@@ -380,8 +379,8 @@ void BrowserAccessibilityAndroid::PostInitialize() {
     manager_->NotifyAccessibilityEvent(AccessibilityNotificationAlert, this);
 
   string16 live;
-  if (GetStringAttribute(AccessibilityNodeData::ATTR_CONTAINER_LIVE_STATUS,
-                         &live)) {
+  if (GetString16Attribute(
+      AccessibilityNodeData::ATTR_CONTAINER_LIVE_STATUS, &live)) {
     NotifyLiveRegionUpdate(live);
   }
 

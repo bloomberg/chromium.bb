@@ -68,14 +68,13 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
     root.location.set_width(500);
     root.location.set_height(100);
     root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
-    root.string_attributes[AccessibilityNodeData::ATTR_HELP] =
-        ASCIIToUTF16("HelpText");
+    root.AddStringAttribute(AccessibilityNodeData::ATTR_HELP, "HelpText");
     root.child_ids.push_back(1001);
     root.child_ids.push_back(1002);
 
     AccessibilityNodeData child1;
     child1.id = 1001;
-    child1.name = ASCIIToUTF16("Child1");
+    child1.SetName("Child1");
     child1.location.set_width(250);
     child1.location.set_height(100);
     child1.role = AccessibilityNodeData::ROLE_BUTTON;

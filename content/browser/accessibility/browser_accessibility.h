@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_node_data.h"
 #include "content/common/content_export.h"
@@ -25,12 +26,6 @@ class BrowserAccessibilityWin;
 #elif defined(TOOLKIT_GTK)
 class BrowserAccessibilityGtk;
 #endif
-
-typedef std::map<AccessibilityNodeData::BoolAttribute, bool> BoolAttrMap;
-typedef std::map<AccessibilityNodeData::FloatAttribute, float> FloatAttrMap;
-typedef std::map<AccessibilityNodeData::IntAttribute, int> IntAttrMap;
-typedef std::map<AccessibilityNodeData::StringAttribute, string16>
-    StringAttrMap;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -136,49 +131,21 @@ class CONTENT_EXPORT BrowserAccessibility {
   // Accessors
   //
 
-  const BoolAttrMap& bool_attributes() const {
-    return bool_attributes_;
-  }
-
-  const FloatAttrMap& float_attributes() const {
-    return float_attributes_;
-  }
-
-  const IntAttrMap& int_attributes() const {
-    return int_attributes_;
-  }
-
-  const StringAttrMap& string_attributes() const {
-    return string_attributes_;
-  }
-
   const std::vector<BrowserAccessibility*>& children() const {
     return children_;
   }
-  const std::vector<std::pair<string16, string16> >& html_attributes() const {
+  const std::vector<std::pair<std::string, std::string> >&
+  html_attributes() const {
     return html_attributes_;
   }
   int32 index_in_parent() const { return index_in_parent_; }
-  const std::vector<int32>& indirect_child_ids() const {
-    return indirect_child_ids_;
-  }
-  const std::vector<int32>& line_breaks() const {
-    return line_breaks_;
-  }
-  const std::vector<int32>& cell_ids() const {
-    return cell_ids_;
-  }
-  const std::vector<int32>& unique_cell_ids() const {
-    return unique_cell_ids_;
-  }
   gfx::Rect location() const { return location_; }
   BrowserAccessibilityManager* manager() const { return manager_; }
-  const string16& name() const { return name_; }
+  const std::string& name() const { return name_; }
   int32 renderer_id() const { return renderer_id_; }
   int32 role() const { return role_; }
-  const string16& role_name() const { return role_name_; }
   int32 state() const { return state_; }
-  const string16& value() const { return value_; }
+  const std::string& value() const { return value_; }
   bool instance_active() const { return instance_active_; }
 
 #if defined(OS_MACOSX) && __OBJC__
@@ -189,29 +156,63 @@ class CONTENT_EXPORT BrowserAccessibility {
   BrowserAccessibilityGtk* ToBrowserAccessibilityGtk();
 #endif
 
-  // Retrieve the value of a bool attribute from the bool attribute
-  // map and returns true if found.
-  bool GetBoolAttribute(
-      AccessibilityNodeData::BoolAttribute attr, bool* value) const;
+  // Accessing accessibility attributes:
+  //
+  // There are dozens of possible attributes for an accessibility node,
+  // but only a few tend to apply to any one object, so we store them
+  // in sparse arrays of <attribute id, attribute value> pairs, organized
+  // by type (bool, int, float, string, int list).
+  //
+  // There are three accessors for each type of attribute: one that returns
+  // true if the attribute is present and false if not, one that takes a
+  // pointer argument and returns true if the attribute is present (if you
+  // need to distinguish between the default value and a missing attribute),
+  // and another that returns the default value for that type if the
+  // attribute is not present. In addition, strings can be returned as
+  // either std::string or string16, for convenience.
 
-  // Retrieve the value of a float attribute from the float attribute
-  // map and returns true if found.
+  bool HasBoolAttribute(AccessibilityNodeData::BoolAttribute attr) const;
+  bool GetBoolAttribute(AccessibilityNodeData::BoolAttribute attr) const;
+  bool GetBoolAttribute(AccessibilityNodeData::BoolAttribute attr,
+                        bool* value) const;
+
+  bool HasFloatAttribute(AccessibilityNodeData::FloatAttribute attr) const;
+  float GetFloatAttribute(AccessibilityNodeData::FloatAttribute attr) const;
   bool GetFloatAttribute(AccessibilityNodeData::FloatAttribute attr,
                          float* value) const;
 
-  // Retrieve the value of an integer attribute from the integer attribute
-  // map and returns true if found.
+  bool HasIntAttribute(AccessibilityNodeData::IntAttribute attribute) const;
+  int GetIntAttribute(AccessibilityNodeData::IntAttribute attribute) const;
   bool GetIntAttribute(AccessibilityNodeData::IntAttribute attribute,
                        int* value) const;
 
-  // Retrieve the value of a string attribute from the attribute map and
-  // returns true if found.
-  bool GetStringAttribute(
-      AccessibilityNodeData::StringAttribute attribute, string16* value) const;
+  bool HasStringAttribute(
+      AccessibilityNodeData::StringAttribute attribute) const;
+  const std::string& GetStringAttribute(
+      AccessibilityNodeData::StringAttribute attribute) const;
+  bool GetStringAttribute(AccessibilityNodeData::StringAttribute attribute,
+                          std::string* value) const;
+
+  bool GetString16Attribute(AccessibilityNodeData::StringAttribute attribute,
+                            string16* value) const;
+  string16 GetString16Attribute(
+      AccessibilityNodeData::StringAttribute attribute) const;
+
+  bool HasIntListAttribute(
+      AccessibilityNodeData::IntListAttribute attribute) const;
+  const std::vector<int32>& GetIntListAttribute(
+      AccessibilityNodeData::IntListAttribute attribute) const;
+  bool GetIntListAttribute(AccessibilityNodeData::IntListAttribute attribute,
+                           std::vector<int32>* value) const;
+
+  void SetStringAttribute(
+      AccessibilityNodeData::StringAttribute attribute,
+      const std::string& value);
 
   // Retrieve the value of a html attribute from the attribute map and
   // returns true if found.
   bool GetHtmlAttribute(const char* attr, string16* value) const;
+  bool GetHtmlAttribute(const char* attr, std::string* value) const;
 
   // Utility method to handle special cases for ARIA booleans, tristates and
   // booleans which have a "mixed" state.
@@ -236,7 +237,7 @@ class CONTENT_EXPORT BrowserAccessibility {
   bool IsEditableText() const;
 
   // Append the text from this node and its children.
-  string16 GetTextRecursive() const;
+  std::string GetTextRecursive() const;
 
  protected:
   // Perform platform specific initialization. This can be called multiple times
@@ -264,21 +265,23 @@ class CONTENT_EXPORT BrowserAccessibility {
   std::vector<BrowserAccessibility*> children_;
 
   // Accessibility metadata from the renderer
-  string16 name_;
-  string16 value_;
-  BoolAttrMap bool_attributes_;
-  IntAttrMap int_attributes_;
-  FloatAttrMap float_attributes_;
-  StringAttrMap string_attributes_;
-  std::vector<std::pair<string16, string16> > html_attributes_;
+  std::string name_;
+  std::string value_;
+  std::vector<std::pair<
+      AccessibilityNodeData::BoolAttribute, bool> > bool_attributes_;
+  std::vector<std::pair<
+      AccessibilityNodeData::FloatAttribute, float> > float_attributes_;
+  std::vector<std::pair<
+      AccessibilityNodeData::IntAttribute, int> > int_attributes_;
+  std::vector<std::pair<
+      AccessibilityNodeData::StringAttribute, std::string> > string_attributes_;
+  std::vector<std::pair<
+      AccessibilityNodeData::IntListAttribute, std::vector<int32> > >
+          intlist_attributes_;
+  std::vector<std::pair<std::string, std::string> > html_attributes_;
   int32 role_;
   int32 state_;
-  string16 role_name_;
   gfx::Rect location_;
-  std::vector<int32> indirect_child_ids_;
-  std::vector<int32> line_breaks_;
-  std::vector<int32> cell_ids_;
-  std::vector<int32> unique_cell_ids_;
 
   // BrowserAccessibility objects are reference-counted on some platforms.
   // When we're done with this object and it's removed from our accessibility

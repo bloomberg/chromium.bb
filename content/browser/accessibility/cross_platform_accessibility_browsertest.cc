@@ -89,16 +89,15 @@ CrossPlatformAccessibilityBrowserTest::TearDownInProcessBrowserTestFixture() {
 }
 
 // Convenience method to get the value of a particular AccessibilityNodeData
-// node attribute as a UTF-8 const char*.
+// node attribute as a UTF-8 string.
 std::string CrossPlatformAccessibilityBrowserTest::GetAttr(
     const AccessibilityNodeData& node,
     const AccessibilityNodeData::StringAttribute attr) {
-  std::map<AccessibilityNodeData::StringAttribute, string16>::const_iterator
-      iter = node.string_attributes.find(attr);
-  if (iter != node.string_attributes.end())
-    return UTF16ToUTF8(iter->second);
-  else
-    return std::string();
+  for (size_t i = 0; i < node.string_attributes.size(); ++i) {
+    if (node.string_attributes[i].first == attr)
+      return node.string_attributes[i].second;
+  }
+  return std::string();
 }
 
 // Convenience method to get the value of a particular AccessibilityNodeData
@@ -106,12 +105,11 @@ std::string CrossPlatformAccessibilityBrowserTest::GetAttr(
 int CrossPlatformAccessibilityBrowserTest::GetIntAttr(
     const AccessibilityNodeData& node,
     const AccessibilityNodeData::IntAttribute attr) {
-  std::map<AccessibilityNodeData::IntAttribute, int32>::const_iterator iter =
-      node.int_attributes.find(attr);
-  if (iter != node.int_attributes.end())
-    return iter->second;
-  else
-    return -1;
+  for (size_t i = 0; i < node.int_attributes.size(); ++i) {
+    if (node.int_attributes[i].first == attr)
+      return node.int_attributes[i].second;
+  }
+  return -1;
 }
 
 // Convenience method to get the value of a particular AccessibilityNodeData
@@ -119,12 +117,11 @@ int CrossPlatformAccessibilityBrowserTest::GetIntAttr(
 bool CrossPlatformAccessibilityBrowserTest::GetBoolAttr(
     const AccessibilityNodeData& node,
     const AccessibilityNodeData::BoolAttribute attr) {
-  std::map<AccessibilityNodeData::BoolAttribute, bool>::const_iterator iter =
-      node.bool_attributes.find(attr);
-  if (iter != node.bool_attributes.end())
-    return iter->second;
-  else
-    return false;
+  for (size_t i = 0; i < node.bool_attributes.size(); ++i) {
+    if (node.bool_attributes[i].first == attr)
+      return node.bool_attributes[i].second;
+  }
+  return false;
 }
 
 // Marked flaky per http://crbug.com/101984
@@ -152,7 +149,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_STREQ(
       "text/html",
       GetAttr(tree, AccessibilityNodeData::ATTR_DOC_MIMETYPE).c_str());
-  EXPECT_STREQ("Accessibility Test", UTF16ToUTF8(tree.name).c_str());
+  EXPECT_STREQ(
+      "Accessibility Test",
+      GetAttr(tree, AccessibilityNodeData::ATTR_NAME).c_str());
   EXPECT_EQ(AccessibilityNodeData::ROLE_ROOT_WEB_AREA, tree.role);
 
   // Check properites of the BODY element.
@@ -171,15 +170,17 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   EXPECT_EQ(AccessibilityNodeData::ROLE_BUTTON, button.role);
   EXPECT_STREQ(
       "input", GetAttr(button, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
-  EXPECT_STREQ("push", UTF16ToUTF8(button.name).c_str());
+  EXPECT_STREQ(
+      "push",
+      GetAttr(button, AccessibilityNodeData::ATTR_NAME).c_str());
   EXPECT_STREQ(
       "inline-block",
       GetAttr(button, AccessibilityNodeData::ATTR_DISPLAY).c_str());
   ASSERT_EQ(2U, button.html_attributes.size());
-  EXPECT_STREQ("type", UTF16ToUTF8(button.html_attributes[0].first).c_str());
-  EXPECT_STREQ("button", UTF16ToUTF8(button.html_attributes[0].second).c_str());
-  EXPECT_STREQ("value", UTF16ToUTF8(button.html_attributes[1].first).c_str());
-  EXPECT_STREQ("push", UTF16ToUTF8(button.html_attributes[1].second).c_str());
+  EXPECT_STREQ("type", button.html_attributes[0].first.c_str());
+  EXPECT_STREQ("button", button.html_attributes[0].second.c_str());
+  EXPECT_STREQ("value", button.html_attributes[1].first.c_str());
+  EXPECT_STREQ("push", button.html_attributes[1].second.c_str());
 
   const AccessibilityNodeDataTreeNode& checkbox = body.children[1];
   EXPECT_EQ(AccessibilityNodeData::ROLE_CHECKBOX, checkbox.role);
@@ -189,10 +190,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "inline-block",
       GetAttr(checkbox, AccessibilityNodeData::ATTR_DISPLAY).c_str());
   ASSERT_EQ(1U, checkbox.html_attributes.size());
-  EXPECT_STREQ(
-      "type", UTF16ToUTF8(checkbox.html_attributes[0].first).c_str());
-  EXPECT_STREQ(
-    "checkbox", UTF16ToUTF8(checkbox.html_attributes[0].second).c_str());
+  EXPECT_STREQ("type", checkbox.html_attributes[0].first.c_str());
+  EXPECT_STREQ("checkbox", checkbox.html_attributes[0].second.c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
@@ -217,7 +216,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "input", GetAttr(text, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
   EXPECT_EQ(0, GetIntAttr(text, AccessibilityNodeData::ATTR_TEXT_SEL_START));
   EXPECT_EQ(0, GetIntAttr(text, AccessibilityNodeData::ATTR_TEXT_SEL_END));
-  EXPECT_STREQ("Hello, world.", UTF16ToUTF8(text.value).c_str());
+  EXPECT_STREQ(
+      "Hello, world.",
+      GetAttr(text, AccessibilityNodeData::ATTR_VALUE).c_str());
 
   // TODO(dmazzoni): as soon as more accessibility code is cross-platform,
   // this code should test that the accessible info is dynamically updated
@@ -246,7 +247,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
       "input", GetAttr(text, AccessibilityNodeData::ATTR_HTML_TAG).c_str());
   EXPECT_EQ(0, GetIntAttr(text, AccessibilityNodeData::ATTR_TEXT_SEL_START));
   EXPECT_EQ(13, GetIntAttr(text, AccessibilityNodeData::ATTR_TEXT_SEL_END));
-  EXPECT_STREQ("Hello, world.", UTF16ToUTF8(text.value).c_str());
+  EXPECT_STREQ(
+      "Hello, world.",
+      GetAttr(text, AccessibilityNodeData::ATTR_VALUE).c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
@@ -276,13 +279,22 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const AccessibilityNodeDataTreeNode& column1 = table.children[1];
   EXPECT_EQ(AccessibilityNodeData::ROLE_COLUMN, column1.role);
   EXPECT_EQ(0U, column1.children.size());
-  EXPECT_EQ(1U, column1.indirect_child_ids.size());
-  EXPECT_EQ(cell1.id, column1.indirect_child_ids[0]);
+  EXPECT_EQ(1U, column1.intlist_attributes.size());
+  EXPECT_EQ(AccessibilityNodeData::ATTR_INDIRECT_CHILD_IDS,
+            column1.intlist_attributes[0].first);
+  const std::vector<int32> column1_indirect_child_ids =
+      column1.intlist_attributes[0].second;
+  EXPECT_EQ(1U, column1_indirect_child_ids.size());
+  EXPECT_EQ(cell1.id, column1_indirect_child_ids[0]);
   const AccessibilityNodeDataTreeNode& column2 = table.children[2];
   EXPECT_EQ(AccessibilityNodeData::ROLE_COLUMN, column2.role);
   EXPECT_EQ(0U, column2.children.size());
-  EXPECT_EQ(1U, column2.indirect_child_ids.size());
-  EXPECT_EQ(cell2.id, column2.indirect_child_ids[0]);
+  EXPECT_EQ(AccessibilityNodeData::ATTR_INDIRECT_CHILD_IDS,
+            column2.intlist_attributes[0].first);
+  const std::vector<int32> column2_indirect_child_ids =
+      column2.intlist_attributes[0].second;
+  EXPECT_EQ(1U, column2_indirect_child_ids.size());
+  EXPECT_EQ(cell2.id, column2_indirect_child_ids[0]);
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
@@ -329,7 +341,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const AccessibilityNodeDataTreeNode& button1 = body.children[0];
   EXPECT_EQ(AccessibilityNodeData::ROLE_BUTTON, button1.role);
-  EXPECT_STREQ("Button 1", UTF16ToUTF8(button1.name).c_str());
+  EXPECT_STREQ(
+      "Button 1",
+      GetAttr(button1, AccessibilityNodeData::ATTR_NAME).c_str());
 
   const AccessibilityNodeDataTreeNode& iframe = body.children[1];
   EXPECT_STREQ("iframe",
@@ -349,11 +363,13 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 
   const AccessibilityNodeDataTreeNode& button2 = sub_body.children[0];
   EXPECT_EQ(AccessibilityNodeData::ROLE_BUTTON, button2.role);
-  EXPECT_STREQ("Button 2", UTF16ToUTF8(button2.name).c_str());
+  EXPECT_STREQ("Button 2",
+               GetAttr(button2, AccessibilityNodeData::ATTR_NAME).c_str());
 
   const AccessibilityNodeDataTreeNode& button3 = body.children[2];
   EXPECT_EQ(AccessibilityNodeData::ROLE_BUTTON, button3.role);
-  EXPECT_STREQ("Button 3", UTF16ToUTF8(button3.name).c_str());
+  EXPECT_STREQ("Button 3",
+               GetAttr(button3, AccessibilityNodeData::ATTR_NAME).c_str());
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
@@ -413,13 +429,17 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const AccessibilityNodeDataTreeNode& cell3 = table.children[1].children[0];
   const AccessibilityNodeDataTreeNode& cell4 = table.children[1].children[1];
 
-  ASSERT_EQ(6U, table.cell_ids.size());
-  EXPECT_EQ(cell1.id, table.cell_ids[0]);
-  EXPECT_EQ(cell1.id, table.cell_ids[1]);
-  EXPECT_EQ(cell2.id, table.cell_ids[2]);
-  EXPECT_EQ(cell3.id, table.cell_ids[3]);
-  EXPECT_EQ(cell4.id, table.cell_ids[4]);
-  EXPECT_EQ(cell4.id, table.cell_ids[5]);
+  ASSERT_EQ(AccessibilityNodeData::ATTR_CELL_IDS,
+            table.intlist_attributes[0].first);
+  const std::vector<int32>& table_cell_ids =
+      table.intlist_attributes[0].second;
+  ASSERT_EQ(6U, table_cell_ids.size());
+  EXPECT_EQ(cell1.id, table_cell_ids[0]);
+  EXPECT_EQ(cell1.id, table_cell_ids[1]);
+  EXPECT_EQ(cell2.id, table_cell_ids[2]);
+  EXPECT_EQ(cell3.id, table_cell_ids[3]);
+  EXPECT_EQ(cell4.id, table_cell_ids[4]);
+  EXPECT_EQ(cell4.id, table_cell_ids[5]);
 
   EXPECT_EQ(0, GetIntAttr(cell1,
                           AccessibilityNodeData::ATTR_TABLE_CELL_COLUMN_INDEX));

@@ -92,19 +92,19 @@ TEST(BrowserAccessibilityManagerTest, TestNoLeaks) {
   // BrowserAccessibilityManager.
   AccessibilityNodeData button;
   button.id = 2;
-  button.name = UTF8ToUTF16("Button");
+  button.SetName("Button");
   button.role = AccessibilityNodeData::ROLE_BUTTON;
   button.state = 0;
 
   AccessibilityNodeData checkbox;
   checkbox.id = 3;
-  checkbox.name = UTF8ToUTF16("Checkbox");
+  checkbox.SetName("Checkbox");
   checkbox.role = AccessibilityNodeData::ROLE_CHECKBOX;
   checkbox.state = 0;
 
   AccessibilityNodeData root;
   root.id = 1;
-  root.name = UTF8ToUTF16("Document");
+  root.SetName("Document");
   root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
   root.state = 0;
   root.child_ids.push_back(2);
@@ -170,25 +170,25 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
 
   AccessibilityNodeData tree1_child1;
   tree1_child1.id = 2;
-  tree1_child1.name = UTF8ToUTF16("Child1");
+  tree1_child1.SetName("Child1");
   tree1_child1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child1.state = 0;
 
   AccessibilityNodeData tree1_child2;
   tree1_child2.id = 3;
-  tree1_child2.name = UTF8ToUTF16("Child2");
+  tree1_child2.SetName("Child2");
   tree1_child2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child2.state = 0;
 
   AccessibilityNodeData tree1_child3;
   tree1_child3.id = 4;
-  tree1_child3.name = UTF8ToUTF16("Child3");
+  tree1_child3.SetName("Child3");
   tree1_child3.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child3.state = 0;
 
   AccessibilityNodeData tree1_root;
   tree1_root.id = 1;
-  tree1_root.name = UTF8ToUTF16("Document");
+  tree1_root.SetName("Document");
   tree1_root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
   tree1_root.state = 0;
   tree1_root.child_ids.push_back(2);
@@ -205,13 +205,13 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects) {
 
   AccessibilityNodeData tree2_child0;
   tree2_child0.id = 5;
-  tree2_child0.name = UTF8ToUTF16("Child0");
+  tree2_child0.SetName("Child0");
   tree2_child0.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child0.state = 0;
 
   AccessibilityNodeData tree2_root;
   tree2_root.id = 1;
-  tree2_root.name = UTF8ToUTF16("DocumentChanged");
+  tree2_root.SetName("DocumentChanged");
   tree2_root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
   tree2_root.state = 0;
   tree2_root.child_ids.push_back(5);
@@ -302,46 +302,46 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   AccessibilityNodeData tree1_grandchild1;
   tree1_grandchild1.id = 4;
-  tree1_grandchild1.name = UTF8ToUTF16("GrandChild1");
+  tree1_grandchild1.SetName("GrandChild1");
   tree1_grandchild1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_grandchild1.state = 0;
 
   AccessibilityNodeData tree1_child1;
   tree1_child1.id = 3;
-  tree1_child1.name = UTF8ToUTF16("Child1");
+  tree1_child1.SetName("Child1");
   tree1_child1.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child1.state = 0;
   tree1_child1.child_ids.push_back(4);
 
   AccessibilityNodeData tree1_grandchild2;
   tree1_grandchild2.id = 6;
-  tree1_grandchild2.name = UTF8ToUTF16("GrandChild1");
+  tree1_grandchild2.SetName("GrandChild1");
   tree1_grandchild2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_grandchild2.state = 0;
 
   AccessibilityNodeData tree1_child2;
   tree1_child2.id = 5;
-  tree1_child2.name = UTF8ToUTF16("Child2");
+  tree1_child2.SetName("Child2");
   tree1_child2.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child2.state = 0;
   tree1_child2.child_ids.push_back(6);
 
   AccessibilityNodeData tree1_grandchild3;
   tree1_grandchild3.id = 8;
-  tree1_grandchild3.name = UTF8ToUTF16("GrandChild3");
+  tree1_grandchild3.SetName("GrandChild3");
   tree1_grandchild3.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_grandchild3.state = 0;
 
   AccessibilityNodeData tree1_child3;
   tree1_child3.id = 7;
-  tree1_child3.name = UTF8ToUTF16("Child3");
+  tree1_child3.SetName("Child3");
   tree1_child3.role = AccessibilityNodeData::ROLE_BUTTON;
   tree1_child3.state = 0;
   tree1_child3.child_ids.push_back(8);
 
   AccessibilityNodeData tree1_container;
   tree1_container.id = 2;
-  tree1_container.name = UTF8ToUTF16("Container");
+  tree1_container.SetName("Container");
   tree1_container.role = AccessibilityNodeData::ROLE_GROUP;
   tree1_container.state = 0;
   tree1_container.child_ids.push_back(3);
@@ -350,7 +350,7 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   AccessibilityNodeData tree1_root;
   tree1_root.id = 1;
-  tree1_root.name = UTF8ToUTF16("Document");
+  tree1_root.SetName("Document");
   tree1_root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
   tree1_root.state = 0;
   tree1_root.child_ids.push_back(2);
@@ -369,20 +369,20 @@ TEST(BrowserAccessibilityManagerTest, TestReuseBrowserAccessibilityObjects2) {
 
   AccessibilityNodeData tree2_grandchild0;
   tree2_grandchild0.id = 9;
-  tree2_grandchild0.name = UTF8ToUTF16("GrandChild0");
+  tree2_grandchild0.SetName("GrandChild0");
   tree2_grandchild0.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_grandchild0.state = 0;
 
   AccessibilityNodeData tree2_child0;
   tree2_child0.id = 10;
-  tree2_child0.name = UTF8ToUTF16("Child0");
+  tree2_child0.SetName("Child0");
   tree2_child0.role = AccessibilityNodeData::ROLE_BUTTON;
   tree2_child0.state = 0;
   tree2_child0.child_ids.push_back(9);
 
   AccessibilityNodeData tree2_container;
   tree2_container.id = 2;
-  tree2_container.name = UTF8ToUTF16("Container");
+  tree2_container.SetName("Container");
   tree2_container.role = AccessibilityNodeData::ROLE_GROUP;
   tree2_container.state = 0;
   tree2_container.child_ids.push_back(10);
