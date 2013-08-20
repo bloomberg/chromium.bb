@@ -10,12 +10,12 @@
 #include <map>
 #include <string>
 
+#include "gtest/gtest.h"
+
 #include "nacl_io/kernel_handle.h"
 #include "nacl_io/kernel_object.h"
 #include "nacl_io/mount.h"
 #include "nacl_io/path.h"
-
-#include "gtest/gtest.h"
 
 using namespace nacl_io;
 

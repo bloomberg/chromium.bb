@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include "gtest/gtest.h"
+
 #include "nacl_io/error.h"
 #include "nacl_io/ioctl.h"
 #include "nacl_io/kernel_proxy.h"
@@ -13,8 +15,6 @@
 #include "nacl_io/mount_node_dir.h"
 #include "nacl_io/mount_node_mem.h"
 #include "nacl_io/osdirent.h"
-
-#include "gtest/gtest.h"
 
 #define NULL_NODE ((MountNode*) NULL)
 

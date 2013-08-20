@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include <fcntl.h>
-#include "nacl_io/kernel_proxy.h"
-#include "nacl_io/path.h"
 
 #include "gtest/gtest.h"
+
+#include "nacl_io/kernel_proxy.h"
+#include "nacl_io/path.h"
 
 using namespace nacl_io;
 
