@@ -95,7 +95,38 @@ while read name id comment ; do
       else
 	mkdir "$name"
 	cd "$name"
-	cat >.gclient <<-END
+	if [[ "$name" == ppapi17 ]]; then
+	  cat >.gclient <<-END
+	solutions = [
+	  { "name"        : "native_client",
+	    "url"         : "http://src.chromium.org/native_client/trunk/src/native_client@$id",
+	    "deps_file"   : "DEPS",
+	    "managed"     : True,
+	    "custom_deps" : {
+	      "third_party/jsoncpp/source/include": "http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp/include@246",
+	      "third_party/jsoncpp/source/src/lib_json": "http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp/src/lib_json@246",
+	    },
+	    "safesync_url": "",
+	  },
+	]
+	END
+	elif [[ "$name" == ppapi1[89] ]] || [[ "$name" == ppapi2[0-6] ]]; then
+	  cat >.gclient <<-END
+	solutions = [
+	  { "name"        : "native_client",
+	    "url"         : "http://src.chromium.org/native_client/trunk/src/native_client@$id",
+	    "deps_file"   : "DEPS",
+	    "managed"     : True,
+	    "custom_deps" : {
+	      "third_party/jsoncpp/source/include": "http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp/include@248",
+	      "third_party/jsoncpp/source/src/lib_json": "http://svn.code.sf.net/p/jsoncpp/code/trunk/jsoncpp/src/lib_json@248",
+	    },
+	    "safesync_url": "",
+	  },
+	]
+	END
+	else
+	  cat >.gclient <<-END
 	solutions = [
 	  { "name"        : "native_client",
 	    "url"         : "http://src.chromium.org/native_client/trunk/src/native_client@$id",
@@ -107,6 +138,7 @@ while read name id comment ; do
 	  },
 	]
 	END
+	fi
 	if [[ "$2" = "win" ]]; then
 	  # "gclient.bat revert" automatically calls "runhooks"… ⇒ it fails…
 	  # "gclient runhooks" downloads toolchain then calls gyp… ⇒ it fails…
@@ -143,7 +175,7 @@ while read name id comment ; do
 	-echo "\$REVISION"
 	+echo "\$REVISION~$name"
 	END
-      if [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[0123456] ]]; then
+      if [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[0-6] ]]; then
 	patch -p0 <<-END
 	--- native_client/tools/Makefile
 	+++ native_client/tools/Makefile
@@ -164,7 +196,7 @@ while read name id comment ; do
 	+endif
 	END
       fi
-      if [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[01234567] ]]; then
+      if [[ "$name" = ppapi1? ]] || [[ "$name" = ppapi2[0-7] ]]; then
 	patch -p0 <<-END
 	--- native_client/tools/glibc_download.sh
 	+++ native_client/tools/glibc_download.sh
@@ -346,7 +378,7 @@ while read name id comment ; do
 	-      \${GS_BASE}/latest/naclsdk_\${PLATFORM}_x86.tgz
 	+      \${GS_BASE}/latest~"$name"/naclsdk_\${PLATFORM}_x86.tgz
 	END
-      elif [[ "$name" = ppapi1[567] ]]; then
+      elif [[ "$name" = ppapi1[5-7] ]]; then
 	patch -p0 <<-END
 	--- native_client/buildbot/buildbot_toolchain.sh
 	+++ native_client/buildbot/buildbot_toolchain.sh
@@ -376,11 +408,11 @@ while read name id comment ; do
 	END
       fi
       # Patch sources and build the toolchains.
-      if [[ "$name" != "ppapi14" || "$3" != glibc ]]; then
+      if [[ "$name" != "ppapi14" ]] || [[ "$3" != glibc ]]; then
 	make -C native_client/tools clean
 	rm -rf native_client/tools/SRC/*
 	for i in binutils gcc gdb glibc linux-headers-for-nacl newlib ; do (
-	  if [[ "$name" != "ppapi14" || "$i" != glibc ]]; then
+	  if [[ "$name" != "ppapi14" ]] || [[ "$i" != glibc ]]; then
 	    rm -rf native_client/tools/SRC/"$i"
 	    git clone ../"$i" native_client/tools/SRC/"$i"
 	    cd native_client/tools/SRC/"$i"
@@ -399,7 +431,7 @@ while read name id comment ; do
 	      cd "$name/native_client/tools/SRC/$i"
 	      while read tag id comment ; do
 		if [[ "$i" = "$tag" ]]; then
-		  if [[ "$name" = ppapi1[45678] ]] && [[ "$i" = "newlib" ]] &&
+		  if [[ "$name" = ppapi1[4-8] ]] && [[ "$i" = "newlib" ]] &&
 		     [[ "$id" = "4353bc00936874bb78aa3ba21c648b4f4c3f946b" ]]; then
 		    # Ignore error
 		    git diff "$id"{^..,} | patch -p1 ||
@@ -419,7 +451,7 @@ while read name id comment ; do
 	    ) < "$1"
 	  fi
 	) done
-	if [[ "$name" != ppapi1[456789] ]]; then
+	if [[ "$name" != ppapi1[4-9] ]]; then
 	  patch -p0 <<-END
 	--- native_client/tools/SRC/gdb/gdb/doc/Makefile.in
 	+++ native_client/tools/SRC/gdb/gdb/doc/Makefile.in
