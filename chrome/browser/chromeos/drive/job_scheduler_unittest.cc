@@ -367,6 +367,23 @@ TEST_F(JobSchedulerTest, CopyHostedDocument) {
   ASSERT_TRUE(entry);
 }
 
+TEST_F(JobSchedulerTest, MoveResource) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+
+  scheduler_->MoveResource(
+      "file:2_file_resource_id",  // resource ID
+      "folder:1_folder_resource_id",  // parent resource ID
+      "New Document",  // new title
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(entry);
+}
+
 TEST_F(JobSchedulerTest, RenameResource) {
   ConnectToWifi();
 

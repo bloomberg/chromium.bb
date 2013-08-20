@@ -125,6 +125,13 @@ class JobScheduler
       const std::string& new_title,
       const google_apis::GetResourceEntryCallback& callback);
 
+  // Adds a MoveResource operation to the queue.
+  void MoveResource(
+      const std::string& resource_id,
+      const std::string& parent_resource_id,
+      const std::string& new_title,
+      const google_apis::GetResourceEntryCallback& callback);
+
   // Adds a RenameResource operation to the queue.
   void RenameResource(const std::string& resource_id,
                       const std::string& new_title,
