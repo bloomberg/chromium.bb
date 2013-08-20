@@ -57,6 +57,7 @@ Starting worker: resources/global-context-constructors-listing.js
 [Worker] WebSocket
 [Worker] WorkerGlobalScope
 [Worker] WorkerLocation
+[Worker] WorkerNavigator
 [Worker] XMLHttpRequest
 [Worker] webkitIDBCursor
 [Worker] webkitIDBDatabase

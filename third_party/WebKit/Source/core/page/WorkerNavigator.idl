@@ -27,7 +27,7 @@
  */
 
 [
-    NoInterfaceObject
+    GlobalContext=WorkerGlobalScope
 ] interface WorkerNavigator {
     readonly attribute DOMString appName;
     readonly attribute DOMString appVersion;
