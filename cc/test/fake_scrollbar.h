@@ -30,12 +30,20 @@ class FakeScrollbar : public Scrollbar {
                          gfx::Rect content_rect) OVERRIDE;
 
   void set_location(gfx::Point location) { location_ = location; }
+  void set_track_rect(gfx::Rect track_rect) { track_rect_ = track_rect; }
+  void set_thumb_thickness(int thumb_thickness) {
+      thumb_thickness_ = thumb_thickness;
+  }
+  void set_thumb_length(int thumb_length) { thumb_length_ = thumb_length; }
 
  private:
   bool paint_;
   bool has_thumb_;
   bool is_overlay_;
+  int thumb_thickness_;
+  int thumb_length_;
   gfx::Point location_;
+  gfx::Rect track_rect_;
   SkColor fill_color_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeScrollbar);

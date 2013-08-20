@@ -57,6 +57,7 @@ class CC_EXPORT ScrollbarLayer : public ContentsScalingLayer {
   UIResourceId thumb_resource_id() {
     return thumb_resource_.get() ? thumb_resource_->id() : 0;
   }
+  void UpdateThumbAndTrackGeometry();
 
  private:
   gfx::Rect ScrollbarLayerRectToContentRect(gfx::Rect layer_rect) const;

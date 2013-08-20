@@ -122,10 +122,12 @@ void ScrollbarLayer::PushPropertiesTo(LayerImpl* layer) {
   }
   scrollbar_layer->SetThumbLength(thumb_length_);
   if (Orientation() == HORIZONTAL) {
-    scrollbar_layer->SetTrackStart(track_rect_.x());
+    scrollbar_layer->SetTrackStart(
+        track_rect_.x() - scrollbar_->Location().x());
     scrollbar_layer->SetTrackLength(track_rect_.width());
   } else {
-    scrollbar_layer->SetTrackStart(track_rect_.y());
+    scrollbar_layer->SetTrackStart(
+        track_rect_.y() - scrollbar_->Location().y());
     scrollbar_layer->SetTrackLength(track_rect_.height());
   }
 
@@ -180,9 +182,18 @@ gfx::Rect ScrollbarLayer::OriginThumbRect() const {
   return ScrollbarLayerRectToContentRect(gfx::Rect(thumb_size));
 }
 
+void ScrollbarLayer::UpdateThumbAndTrackGeometry() {
+  track_rect_ = scrollbar_->TrackRect();
+  if (scrollbar_->HasThumb()) {
+    thumb_thickness_ = scrollbar_->ThumbThickness();
+    thumb_length_ = scrollbar_->ThumbLength();
+  }
+}
+
 bool ScrollbarLayer::Update(ResourceUpdateQueue* queue,
                             const OcclusionTracker* occlusion) {
-  track_rect_ = scrollbar_->TrackRect();
+  UpdateThumbAndTrackGeometry();
+
   gfx::Rect scaled_track_rect = ScrollbarLayerRectToContentRect(
       gfx::Rect(scrollbar_->Location(), bounds()));
 
@@ -201,8 +212,6 @@ bool ScrollbarLayer::Update(ResourceUpdateQueue* queue,
   gfx::Rect thumb_rect = OriginThumbRect();
 
   if (scrollbar_->HasThumb() && !thumb_rect.IsEmpty()) {
-    thumb_thickness_ = scrollbar_->ThumbThickness();
-    thumb_length_ = scrollbar_->ThumbLength();
     thumb_resource_ = ScopedUIResource::Create(
         layer_tree_host(), RasterizeScrollbarPart(thumb_rect, THUMB));
   }

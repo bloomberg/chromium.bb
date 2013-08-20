@@ -156,6 +156,98 @@ TEST(ScrollbarLayerTest, ScrollOffsetSynchronization) {
   EXPECT_EQ(300, cc_scrollbar_layer->Maximum());
 }
 
+TEST(ScrollbarLayerTest, ThumbRect) {
+  scoped_ptr<FakeLayerTreeHost> host = FakeLayerTreeHost::Create();
+  scoped_refptr<Layer> root_layer = Layer::Create();
+  scoped_refptr<Layer> content_layer = Layer::Create();
+  scoped_refptr<FakeScrollbarLayer> scrollbar_layer =
+      FakeScrollbarLayer::Create(false, true, root_layer->id());
+
+  root_layer->SetScrollable(true);
+  root_layer->SetMaxScrollOffset(gfx::Vector2d(80, 0));
+  root_layer->SetBounds(gfx::Size(100, 50));
+  content_layer->SetBounds(gfx::Size(100, 50));
+
+  host->SetRootLayer(root_layer);
+  root_layer->AddChild(content_layer);
+  root_layer->AddChild(scrollbar_layer);
+
+  root_layer->SetScrollOffset(gfx::Vector2d(0, 0));
+  scrollbar_layer->SetBounds(gfx::Size(70, 10));
+  scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(20, 10));
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
+  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(10);
+  scrollbar_layer->fake_scrollbar()->set_thumb_length(4);
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  LayerImpl* root_layer_impl = NULL;
+  ScrollbarLayerImpl* scrollbar_layer_impl = NULL;
+
+  // Thumb is at the edge of the scrollbar (should be inset to
+  // the start of the track within the scrollbar layer's
+  // position).
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  root_layer_impl = host->CommitAndCreateLayerImplTree();
+  scrollbar_layer_impl = static_cast<ScrollbarLayerImpl*>(
+      root_layer_impl->children()[1]);
+  EXPECT_EQ(gfx::Rect(10, 0, 4, 10).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  // Under-scroll (thumb position should clamp and be unchanged).
+  root_layer->SetScrollOffset(gfx::Vector2d(-5, 0));
+
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  root_layer_impl = host->CommitAndCreateLayerImplTree();
+  scrollbar_layer_impl = static_cast<ScrollbarLayerImpl*>(
+      root_layer_impl->children()[1]);
+  EXPECT_EQ(gfx::Rect(10, 0, 4, 10).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  // Over-scroll (thumb position should clamp on the far side).
+  root_layer->SetScrollOffset(gfx::Vector2d(85, 0));
+
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  root_layer_impl = host->CommitAndCreateLayerImplTree();
+  scrollbar_layer_impl = static_cast<ScrollbarLayerImpl*>(
+      root_layer_impl->children()[1]);
+  EXPECT_EQ(gfx::Rect(56, 0, 4, 10).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  // Change thumb thickness and length.
+  scrollbar_layer->fake_scrollbar()->set_thumb_thickness(4);
+  scrollbar_layer->fake_scrollbar()->set_thumb_length(6);
+
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  root_layer_impl = host->CommitAndCreateLayerImplTree();
+  scrollbar_layer_impl = static_cast<ScrollbarLayerImpl*>(
+      root_layer_impl->children()[1]);
+  EXPECT_EQ(gfx::Rect(54, 0, 6, 4).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  // Shrink the scrollbar layer to cover only the track.
+  scrollbar_layer->SetBounds(gfx::Size(50, 10));
+  scrollbar_layer->fake_scrollbar()->set_location(gfx::Point(30, 10));
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 10, 50, 10));
+
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  root_layer_impl = host->CommitAndCreateLayerImplTree();
+  scrollbar_layer_impl = static_cast<ScrollbarLayerImpl*>(
+      root_layer_impl->children()[1]);
+  EXPECT_EQ(gfx::Rect(44, 0, 6, 4).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+
+  // Shrink the track in the non-scrolling dimension so that it only covers the
+  // middle third of the scrollbar layer (this does not affect the thumb
+  // position).
+  scrollbar_layer->fake_scrollbar()->set_track_rect(gfx::Rect(30, 12, 50, 6));
+
+  scrollbar_layer->UpdateThumbAndTrackGeometry();
+  root_layer_impl = host->CommitAndCreateLayerImplTree();
+  scrollbar_layer_impl = static_cast<ScrollbarLayerImpl*>(
+      root_layer_impl->children()[1]);
+  EXPECT_EQ(gfx::Rect(44, 0, 6, 4).ToString(),
+            scrollbar_layer_impl->ComputeThumbQuadRect().ToString());
+}
+
 TEST(ScrollbarLayerTest, SolidColorDrawQuads) {
   LayerTreeSettings layer_tree_settings;
   layer_tree_settings.solid_color_scrollbars = true;

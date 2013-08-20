@@ -12,12 +12,18 @@ FakeScrollbar::FakeScrollbar()
     : paint_(false),
       has_thumb_(false),
       is_overlay_(false),
+      thumb_thickness_(10),
+      thumb_length_(5),
+      track_rect_(0, 0, 100, 10),
       fill_color_(SK_ColorGREEN) {}
 
 FakeScrollbar::FakeScrollbar(bool paint, bool has_thumb, bool is_overlay)
     : paint_(paint),
       has_thumb_(has_thumb),
       is_overlay_(is_overlay),
+      thumb_thickness_(10),
+      thumb_length_(5),
+      track_rect_(0, 0, 100, 10),
       fill_color_(SK_ColorGREEN) {}
 
 FakeScrollbar::~FakeScrollbar() {}
@@ -33,15 +39,15 @@ bool FakeScrollbar::IsOverlay() const { return is_overlay_; }
 bool FakeScrollbar::HasThumb() const { return has_thumb_; }
 
 int FakeScrollbar::ThumbThickness() const {
-  return 10;
+  return thumb_thickness_;
 }
 
 int FakeScrollbar::ThumbLength() const {
-  return 10;
+  return thumb_length_;
 }
 
 gfx::Rect FakeScrollbar::TrackRect() const {
-  return gfx::Rect(0, 0, 100, 10);
+  return track_rect_;
 }
 
 void FakeScrollbar::PaintPart(SkCanvas* canvas,

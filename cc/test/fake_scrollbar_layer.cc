@@ -10,15 +10,24 @@
 
 namespace cc {
 
-FakeScrollbarLayer::FakeScrollbarLayer(bool paint_during_update,
-                                       bool has_thumb,
+scoped_refptr<FakeScrollbarLayer> FakeScrollbarLayer::Create(
+    bool paint_during_update,
+    bool has_thumb,
+    int scrolling_layer_id) {
+  FakeScrollbar* fake_scrollbar = new FakeScrollbar(
+      paint_during_update, has_thumb, false);
+  return make_scoped_refptr(new FakeScrollbarLayer(
+      fake_scrollbar, scrolling_layer_id));
+}
+
+FakeScrollbarLayer::FakeScrollbarLayer(FakeScrollbar* fake_scrollbar,
                                        int scrolling_layer_id)
     : ScrollbarLayer(
-          scoped_ptr<Scrollbar>(
-              new FakeScrollbar(paint_during_update, has_thumb, false)).Pass(),
+          scoped_ptr<Scrollbar>(fake_scrollbar).Pass(),
           scrolling_layer_id),
       update_count_(0),
-      push_properties_count_(0) {
+      push_properties_count_(0),
+      fake_scrollbar_(fake_scrollbar) {
   SetAnchorPoint(gfx::PointF(0.f, 0.f));
   SetBounds(gfx::Size(1, 1));
   SetIsDrawable(true);
