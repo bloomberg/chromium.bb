@@ -9,6 +9,7 @@ used by the bisection scripts."""
 import errno
 import os
 import shutil
+import stat
 import subprocess
 import sys
 
@@ -225,6 +226,30 @@ def RemoveThirdPartyWebkitDirectory():
   return True
 
 
+def OnAccessError(func, path, exc_info):
+  """
+  Source: http://stackoverflow.com/questions/2656322/python-shutil-rmtree-fails-on-windows-with-access-is-denied
+
+  Error handler for ``shutil.rmtree``.
+
+  If the error is due to an access error (read only file)
+  it attempts to add write permission and then retries.
+
+  If the error is for another reason it re-raises the error.
+
+  Args:
+    func: The function that raised the error.
+    path: The path name passed to func.
+    exc_info: Exception information returned by sys.exc_info().
+  """
+  if not os.access(path, os.W_OK):
+    # Is the error an access error ?
+    os.chmod(path, stat.S_IWUSR)
+    func(path)
+  else:
+    raise
+
+
 def RemoveThirdPartyLibjingleDirectory():
   """Removes third_party/libjingle. At some point, libjingle was causing issues
   syncing when using the git workflow (crbug.com/266324).
@@ -232,11 +257,13 @@ def RemoveThirdPartyLibjingleDirectory():
   Returns:
     True on success.
   """
+  path_to_dir = os.path.join(os.getcwd(), 'third_party', 'libjingle')
   try:
-    path_to_dir = os.path.join(os.getcwd(), 'third_party', 'libjingle')
     if os.path.exists(path_to_dir):
-      shutil.rmtree(path_to_dir)
+      shutil.rmtree(path_to_dir, onerror=OnAccessError)
   except OSError, e:
+    print 'Error #%d while running shutil.rmtree(%s): %s' % (
+        e.errno, path_to_dir, str(e))
     if e.errno != errno.ENOENT:
       return False
   return True
