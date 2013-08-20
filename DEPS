@@ -339,7 +339,6 @@ deps_os = {
     "src/chrome/test/data/perf/frame_rate/content": None,
     "src/native_client": None,
     "src/native_client/src/third_party/ppapi": None,
-    "src/third_party/angle": None,
     "src/third_party/angle_dx11": None,
     "src/third_party/cld2": None,
     "src/third_party/bidichecker": None,
