@@ -10,7 +10,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/result_codes.h"
-#include "content/shell/shell.h"
+#include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"

@@ -15,8 +15,8 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
-#include "content/shell/shell.h"
-#include "content/shell/shell_javascript_dialog_manager.h"
+#include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_javascript_dialog_manager.h"
 #include "net/base/net_util.h"
 
 namespace content {

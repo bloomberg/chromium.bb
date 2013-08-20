@@ -12,7 +12,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/content_switches.h"
-#include "content/shell/shell_browser_context.h"
+#include "content/shell/browser/shell_browser_context.h"
 #include "ui/views/examples/examples_window_with_content.h"
 #include "ui/views/focus/accelerator_handler.h"
 #include "ui/views/test/desktop_test_views_delegate.h"

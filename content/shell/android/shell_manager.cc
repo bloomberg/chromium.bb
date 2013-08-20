@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/shell/shell.h"
-#include "content/shell/shell_browser_context.h"
-#include "content/shell/shell_content_browser_client.h"
+#include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_browser_context.h"
+#include "content/shell/browser/shell_content_browser_client.h"
 #include "jni/ShellManager_jni.h"
 #include "url/gurl.h"
 

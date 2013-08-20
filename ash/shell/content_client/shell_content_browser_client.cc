@@ -5,7 +5,7 @@
 #include "ash/shell/content_client/shell_content_browser_client.h"
 
 #include "ash/shell/content_client/shell_browser_main_parts.h"
-#include "content/shell/shell_browser_context.h"
+#include "content/shell/browser/shell_browser_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace ash {
