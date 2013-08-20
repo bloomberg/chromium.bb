@@ -160,7 +160,7 @@ class ASH_EXPORT DisplayInfo {
   // UI scale of the display.
   float ui_scale_;
 
-  // True if this comes from native platform (DisplayChangeObserverX11).
+  // True if this comes from native platform (DisplayChangeObserver).
   bool native_;
 
   // The list of resolutions supported by this display.

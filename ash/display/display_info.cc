@@ -179,7 +179,7 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
 
   // Rotation_ and ui_scale_ are given by preference, or unit
   // tests. Don't copy if this native_info came from
-  // DisplayChangeObserverX11.
+  // DisplayChangeObserver.
   if (!native_info.native()) {
     rotation_ = native_info.rotation_;
     ui_scale_ = native_info.ui_scale_;

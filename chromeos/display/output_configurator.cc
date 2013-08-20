@@ -103,6 +103,11 @@ OutputConfigurator::ModeInfo::ModeInfo()
       height(0),
       interlaced(false) {}
 
+OutputConfigurator::ModeInfo::ModeInfo(int width, int height, bool interlaced)
+    : width(width),
+      height(height),
+      interlaced(interlaced) {}
+
 OutputConfigurator::CoordinateTransformation::CoordinateTransformation()
     : x_scale(1.0),
       x_offset(0.0),
@@ -124,7 +129,8 @@ OutputConfigurator::OutputSnapshot::OutputSnapshot()
       is_aspect_preserving_scaling(false),
       touch_device_id(0),
       display_id(0),
-      has_display_id(false) {}
+      has_display_id(false),
+      index(0) {}
 
 OutputConfigurator::OutputSnapshot::~OutputSnapshot() {}
 

@@ -83,12 +83,12 @@
         'desktop_background/wallpaper_resizer.cc',
         'desktop_background/wallpaper_resizer.h',
         'desktop_background/wallpaper_resizer_observer.h',
-        'display/display_change_observer_x11.cc',
-        'display/display_change_observer_x11.h',
+        'display/display_change_observer_chromeos.cc',
+        'display/display_change_observer_chromeos.h',
         'display/display_controller.cc',
         'display/display_controller.h',
-        'display/display_error_observer.cc',
-        'display/display_error_observer.h',
+        'display/display_error_observer_chromeos.cc',
+        'display/display_error_observer_chromeos.h',
         'display/display_info.h',
         'display/display_info.cc',
         'display/display_layout.h',
@@ -98,8 +98,6 @@
         'display/display_manager.cc',
         'display/display_manager.h',
         'display/display_pref_util.h',
-        'display/display_util_x11.cc',
-        'display/display_util_x11.h',
         'display/event_transformation_handler.cc',
         'display/event_transformation_handler.h',
         'display/mirror_window_controller.cc',
@@ -555,6 +553,14 @@
             ['exclude', 'system/monitor/tray_monitor.h'],
           ],
         }],
+        ['use_x11!=1', {
+          'sources/': [
+            ['exclude', 'display/display_change_observer_chromeos.cc'],
+            ['exclude', 'display/display_change_observer_chromeos.h'],
+            ['exclude', 'display/display_error_observer_chromeos.cc'],
+            ['exclude', 'display/display_error_observer_chromeos.h'],
+          ],
+        }],
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
@@ -564,8 +570,6 @@
         }, { # else: chromeos!=1
           'sources/': [
             ['exclude', '/chromeos/'],
-            ['exclude', 'display/display_error_observer.cc'],
-            ['exclude', 'display/display_error_observer.h'],
             ['exclude', 'display/output_configurator_animation.cc'],
             ['exclude', 'display/output_configurator_animation.h'],
           ],
@@ -674,7 +678,8 @@
         'desktop_background/wallpaper_resizer_unittest.cc',
         'dip_unittest.cc',
         'display/display_controller_unittest.cc',
-        'display/display_error_observer_unittest.cc',
+        'display/display_change_observer_chromeos_unittest.cc',
+        'display/display_error_observer_chromeos_unittest.cc',
         'display/display_info_unittest.cc',
         'display/display_manager_unittest.cc',
         'display/mirror_window_controller_unittest.cc',
@@ -804,16 +809,13 @@
           # are not referenced in code, but are referenced in nibs.
           'xcode_settings': {'OTHER_LDFLAGS': ['-Wl,-ObjC']},
         }],
-        ['use_x11==1', {
-          'sources': [
-            'display/display_util_x11_unittest.cc'
+        ['use_x11!=1', {
+          'sources/': [
+            ['exclude', 'display/display_change_observer_chromeos_unittest.cc'],
+            ['exclude', 'display/display_error_observer_chromeos_unittest.cc'],
           ],
         }],
-        ['chromeos!=1', {
-          'sources/': [
-            ['exclude', 'display/display_error_observer_unittest.cc'],
-          ],
-        }, {  # chromeos==1
+        ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:power_manager_proto',
           ],

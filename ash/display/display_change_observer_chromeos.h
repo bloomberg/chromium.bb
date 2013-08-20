@@ -1,14 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_X11_H
-#define ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_X11_H
-
-#include <X11/Xlib.h>
-
-// Xlib.h defines RootWindow.
-#undef RootWindow
+#ifndef ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H
+#define ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H
 
 #include "ash/ash_export.h"
 #include "ash/shell_observer.h"
@@ -18,15 +13,27 @@
 namespace ash {
 namespace internal {
 
+struct Resolution;
+
 // An object that observes changes in display configuration and
 // update DisplayManagers.
-class DisplayChangeObserverX11
+class DisplayChangeObserver
     : public chromeos::OutputConfigurator::StateController,
       public chromeos::OutputConfigurator::Observer,
       public ShellObserver {
  public:
-  DisplayChangeObserverX11();
-  virtual ~DisplayChangeObserverX11();
+  // Returns true if the size info in the output_info isn't valid
+  // and should be ignored. This is exposed for testing.
+  // |mm_width| and |mm_height| are given in millimeters.
+  ASH_EXPORT static bool ShouldIgnoreSize(unsigned long mm_width,
+                                          unsigned long mm_height);
+
+  // Returns the resolution list.
+  ASH_EXPORT static std::vector<Resolution> GetResolutionList(
+      const chromeos::OutputConfigurator::OutputSnapshot& output);
+
+  DisplayChangeObserver();
+  virtual ~DisplayChangeObserver();
 
   // chromeos::OutputConfigurator::StateController overrides:
   virtual chromeos::OutputState GetStateForDisplayIds(
@@ -44,16 +51,10 @@ class DisplayChangeObserverX11
   virtual void OnAppTerminating() OVERRIDE;
 
  private:
-  Display* xdisplay_;
-
-  ::Window x_root_window_;
-
-  int xrandr_event_base_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserverX11);
+  DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserver);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_AURA_DISPLAY_CHANGE_OBSERVER_X11_H
+#endif  // ASH_DISPLAY_AURA_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H

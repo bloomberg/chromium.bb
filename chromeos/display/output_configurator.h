@@ -44,6 +44,7 @@ class CHROMEOS_EXPORT OutputConfigurator
  public:
   struct ModeInfo {
     ModeInfo();
+    ModeInfo(int width, int height, bool interlaced);
 
     int width;
     int height;
@@ -106,6 +107,10 @@ class CHROMEOS_EXPORT OutputConfigurator
     int64 display_id;
 
     bool has_display_id;
+
+    // This output's index in the array returned by XRandR. Stable even as
+    // outputs are connected or disconnected.
+    int index;
   };
 
   class Observer {

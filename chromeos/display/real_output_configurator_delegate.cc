@@ -327,6 +327,7 @@ RealOutputConfiguratorDelegate::InitOutputSnapshot(
   output.height_mm = info->mm_height;
   output.has_display_id = GetDisplayId(id, index, &output.display_id);
   output.is_internal = IsInternalOutput(info);
+  output.index = index;
 
   // Use the index as a valid display ID even if the internal
   // display doesn't have valid EDID because the index

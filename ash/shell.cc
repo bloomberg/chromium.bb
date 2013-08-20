@@ -112,8 +112,8 @@
 #if defined(OS_CHROMEOS)
 #if defined(USE_X11)
 #include "ash/ash_constants.h"
-#include "ash/display/display_change_observer_x11.h"
-#include "ash/display/display_error_observer.h"
+#include "ash/display/display_change_observer_chromeos.h"
+#include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/output_configurator_animation.h"
 #include "base/chromeos/chromeos_version.h"
 #include "base/message_loop/message_pump_aurax11.h"
@@ -454,7 +454,7 @@ void Shell::Init() {
       new internal::OutputConfiguratorAnimation());
   output_configurator_->AddObserver(output_configurator_animation_.get());
   if (base::chromeos::IsRunningOnChromeOS()) {
-    display_change_observer_.reset(new internal::DisplayChangeObserverX11);
+    display_change_observer_.reset(new internal::DisplayChangeObserver);
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
     output_configurator_->AddObserver(display_change_observer_.get());
@@ -467,7 +467,7 @@ void Shell::Init() {
         delegate_->IsFirstRunAfterBoot() ? kChromeOsBootColor : 0);
     display_initialized = true;
   }
-#endif
+#endif  // defined(OS_CHROMEOS) && defined(USE_X11)
   if (!display_initialized)
     display_manager_->InitFromCommandLine();
 

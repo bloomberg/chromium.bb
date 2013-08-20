@@ -154,7 +154,7 @@
    bug_119677
    Heapcheck:Leak
    ...
-   fun:DisplayChangeObserverX11
+   fun:DisplayChangeObserver
    fun:aura::Env::Init
    fun:aura::Env::GetInstance
 }
