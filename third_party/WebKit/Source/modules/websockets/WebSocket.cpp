@@ -496,6 +496,7 @@ void WebSocket::stop()
         return;
     }
     if (m_channel) {
+        m_channel->close(WebSocketChannel::CloseEventCodeGoingAway, String());
         m_channel->disconnect();
         m_channel = 0;
     }

@@ -48,7 +48,7 @@ def web_socket_transfer_data(request):
         # notify to client that socketName is received by server.
         msgutil.send_message(request, socketName)
         msgutil.receive_message(request)  # wait, and exception by close.
-        socketName = socketName + ': receive next message'
+        socketName = socketName + ': ' + request.ws_close_code
     finally:
         # request is closed. notify this socketName to other web sockets.
         del connections[request]
