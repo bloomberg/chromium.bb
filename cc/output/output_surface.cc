@@ -324,14 +324,12 @@ void OutputSurface::ResetContext3d() {
 }
 
 void OutputSurface::EnsureBackbuffer() {
-  DCHECK(context_provider_);
-  if (has_gl_discard_backbuffer_)
+  if (context_provider_ && has_gl_discard_backbuffer_)
     context_provider_->Context3d()->ensureBackbufferCHROMIUM();
 }
 
 void OutputSurface::DiscardBackbuffer() {
-  DCHECK(context_provider_);
-  if (has_gl_discard_backbuffer_)
+  if (context_provider_ && has_gl_discard_backbuffer_)
     context_provider_->Context3d()->discardBackbufferCHROMIUM();
 }
 

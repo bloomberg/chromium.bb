@@ -116,6 +116,21 @@ void CompositorSoftwareOutputDevice::Resize(gfx::Size viewport_size) {
   viewport_size_ = viewport_size;
 }
 
+void CompositorSoftwareOutputDevice::DiscardBackbuffer() {
+  // Keep non-ACKed buffers in awaiting_ack_ until they get acknowledged.
+  for (size_t i = 0; i < buffers_.size(); ++i) {
+    if (!buffers_[i]->free()) {
+      awaiting_ack_.push_back(buffers_[i]);
+      buffers_[i] = NULL;
+    }
+  }
+  buffers_.clear();
+  current_index_ = -1;
+}
+
+void CompositorSoftwareOutputDevice::EnsureBackbuffer() {
+}
+
 SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
   DCHECK(CalledOnValidThread());
 

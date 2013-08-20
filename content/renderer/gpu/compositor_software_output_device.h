@@ -30,6 +30,8 @@ public:
 
   virtual SkCanvas* BeginPaint(gfx::Rect damage_rect) OVERRIDE;
   virtual void EndPaint(cc::SoftwareFrameData* frame_data) OVERRIDE;
+  virtual void EnsureBackbuffer() OVERRIDE;
+  virtual void DiscardBackbuffer() OVERRIDE;
 
   virtual void ReclaimSoftwareFrame(unsigned id) OVERRIDE;
 

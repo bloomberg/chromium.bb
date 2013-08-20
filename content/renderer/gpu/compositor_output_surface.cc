@@ -100,6 +100,18 @@ bool CompositorOutputSurface::BindToClient(
   return true;
 }
 
+void CompositorOutputSurface::EnsureBackbuffer() {
+  if (software_device())
+    software_device()->EnsureBackbuffer();
+  OutputSurface::EnsureBackbuffer();
+}
+
+void CompositorOutputSurface::DiscardBackbuffer() {
+  if (software_device())
+    software_device()->DiscardBackbuffer();
+  OutputSurface::DiscardBackbuffer();
+}
+
 void CompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
   if (use_swap_compositor_frame_message_) {
     Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,

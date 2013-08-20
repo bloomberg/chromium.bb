@@ -37,6 +37,9 @@ class CC_EXPORT SoftwareOutputDevice {
   virtual void Scroll(gfx::Vector2d delta,
                       gfx::Rect clip_rect);
 
+  virtual void DiscardBackbuffer() {}
+  virtual void EnsureBackbuffer() {}
+
   // TODO(skaslev) Remove this after UberCompositor lands.
   virtual void ReclaimSoftwareFrame(unsigned id);
 

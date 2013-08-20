@@ -45,6 +45,8 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   virtual void ReceiveSwapBuffersAck(
       const CompositorFrameAck& ack) OVERRIDE;
   virtual void SetDiscardBackBufferWhenNotVisible(bool discard) OVERRIDE;
+  virtual void DiscardBackbuffer() OVERRIDE;
+  virtual void EnsureBackbuffer() OVERRIDE;
 
  protected:
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) OVERRIDE;
@@ -95,6 +97,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   RendererCapabilities capabilities_;
   bool visible_;
   bool is_scissor_enabled_;
+  bool is_backbuffer_discarded_;
   gfx::Rect scissor_rect_;
 
   SoftwareOutputDevice* output_device_;

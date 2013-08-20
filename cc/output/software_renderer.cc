@@ -63,6 +63,7 @@ SoftwareRenderer::SoftwareRenderer(RendererClient* client,
   : DirectRenderer(client, output_surface, resource_provider),
     visible_(true),
     is_scissor_enabled_(false),
+    is_backbuffer_discarded_(false),
     output_device_(output_surface->software_device()),
     current_canvas_(NULL) {
   if (resource_provider_) {
@@ -497,6 +498,26 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
   request->SendBitmapResult(bitmap.Pass());
 }
 
+void SoftwareRenderer::DiscardBackbuffer() {
+  if (is_backbuffer_discarded_)
+    return;
+
+  output_surface_->DiscardBackbuffer();
+
+  is_backbuffer_discarded_ = true;
+
+  // Damage tracker needs a full reset every time framebuffer is discarded.
+  client_->SetFullRootLayerDamage();
+}
+
+void SoftwareRenderer::EnsureBackbuffer() {
+  if (!is_backbuffer_discarded_)
+    return;
+
+  output_surface_->EnsureBackbuffer();
+  is_backbuffer_discarded_ = false;
+}
+
 void SoftwareRenderer::GetFramebufferPixels(void* pixels, gfx::Rect rect) {
   TRACE_EVENT0("cc", "SoftwareRenderer::GetFramebufferPixels");
   SkBitmap subset_bitmap;
@@ -511,12 +532,15 @@ void SoftwareRenderer::SetVisible(bool visible) {
   if (visible_ == visible)
     return;
   visible_ = visible;
+
+  if (visible_)
+    EnsureBackbuffer();
+  else
+    DiscardBackbuffer();
 }
 
 void SoftwareRenderer::SetDiscardBackBufferWhenNotVisible(bool discard) {
-  // TODO(piman, skaslev): Can we release the backbuffer? We don't currently
-  // receive memory policy yet anyway.
-  NOTIMPLEMENTED();
+  // The software renderer always discards the backbuffer when not visible.
 }
 
 }  // namespace cc
