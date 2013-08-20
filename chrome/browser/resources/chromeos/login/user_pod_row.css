@@ -282,7 +282,11 @@ html[dir=rtl] .action-box-area {
 
 .action-box-menu-title-name {
   display: -webkit-box;
-  min-height: 23px;
+  height: 23px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 180px;
 }
 
 .action-box-menu-title-email {

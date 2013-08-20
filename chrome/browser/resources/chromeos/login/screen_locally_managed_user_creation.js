@@ -8,6 +8,7 @@
 
 login.createScreen('LocallyManagedUserCreationScreen',
                    'managed-user-creation', function() {
+  var MAX_NAME_LENGTH = 50;
   var UserImagesGrid = options.UserImagesGrid;
 
   var ManagerPod = cr.ui.define(function() {
@@ -866,16 +867,25 @@ login.createScreen('LocallyManagedUserCreationScreen',
       this.updateElementText_('created-1-text-1',
                               'createManagedUserCreated1Text1',
                               this.context_.managedName);
+      // TODO(antrim): Move wrapping with strong in grd file, and eliminate this
+      //call.
       this.updateElementText_('created-1-text-2',
                               'createManagedUserCreated1Text2',
-                              loadTimeData.getString('managementURL'),
-                              this.context_.managedName);
+                              this.wrapStrong(
+                                  loadTimeData.getString('managementURL')),
+                                  this.context_.managedName);
       this.updateElementText_('created-1-text-3',
                               'createManagedUserCreated1Text3',
                               managerDisplayId);
       this.updateElementText_('name-explanation',
                               'createManagedUserNameExplanation',
                               managerDisplayId);
+    },
+
+    wrapStrong: function(original) {
+      if (original == undefined)
+        return original;
+      return '<strong>' + original + '</strong>';
     },
 
     updateElementText_: function(localId, templateName) {
