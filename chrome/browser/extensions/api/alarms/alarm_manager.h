@@ -44,6 +44,9 @@ struct Alarm {
   // time.  This will always be at least as large as the min_granularity
   // constructor argument.
   base::TimeDelta granularity;
+  // The minimum granularity is the minimum allowed polling rate. This stops
+  // alarms from polling too often.
+  base::TimeDelta minimum_granularity;
 };
 
 // Manages the currently pending alarms for every extension in a profile.
@@ -118,6 +121,7 @@ class AlarmManager
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest,
                            ReleasedExtensionPollsInfrequently);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, TimerRunning);
+  FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, MinimumGranularity);
   friend class ProfileKeyedAPIFactory<AlarmManager>;
 
   typedef std::string ExtensionId;

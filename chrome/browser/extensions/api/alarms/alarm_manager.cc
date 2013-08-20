@@ -301,7 +301,7 @@ void AlarmManager::ReadFromStorage(const std::string& extension_id,
 }
 
 void AlarmManager::ScheduleNextPoll() {
-  // 0. If there are no alarms, stop the timer.
+  // If there are no alarms, stop the timer.
   if (alarms_.empty()) {
     timer_.Stop();
     return;
@@ -326,6 +326,11 @@ void AlarmManager::ScheduleNextPoll() {
         soonest_alarm_time = cur_alarm_time;
       if (l_it->granularity < min_granularity)
         min_granularity = l_it->granularity;
+      base::TimeDelta cur_alarm_delta = cur_alarm_time - clock_->Now();
+      if (cur_alarm_delta < min_granularity)
+        min_granularity = cur_alarm_delta;
+      if (min_granularity < l_it->minimum_granularity)
+        min_granularity = l_it->minimum_granularity;
     }
   }
 
@@ -428,6 +433,7 @@ Alarm::Alarm(const std::string& name,
              base::Time now)
     : js_alarm(new api::alarms::Alarm()) {
   js_alarm->name = name;
+  minimum_granularity = min_granularity;
 
   if (create_info.when.get()) {
     // Absolute scheduling.

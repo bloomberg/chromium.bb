@@ -575,13 +575,13 @@ TEST_F(ExtensionAlarmsSchedulingTest, ReleasedExtensionPollsInfrequently) {
   EXPECT_DOUBLE_EQ(300010, alarm_manager_->test_next_poll_time_.ToJsTime());
 
   alarm_manager_->last_poll_time_ = base::Time::FromJsTime(290000);
-  // In released extensions, we set the granularity to at least 5
-  // minutes, which makes AddAlarm schedule the next poll after the
+  // In released extensions, we set the granularity to at least 1
+  // minute, which makes AddAlarm schedule the next poll after the
   // extension requested.
   alarm_manager_->ScheduleNextPoll();
   EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
                     base::TimeDelta::FromMinutes(1)).ToJsTime(),
-                   alarm_manager_->test_next_poll_time_.ToJsTime());
+                    alarm_manager_->test_next_poll_time_.ToJsTime());
 }
 
 TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {
@@ -595,6 +595,25 @@ TEST_F(ExtensionAlarmsSchedulingTest, TimerRunning) {
   EXPECT_TRUE(alarm_manager_->timer_.IsRunning());
   RemoveAllAlarms();
   EXPECT_FALSE(alarm_manager_->timer_.IsRunning());
+}
+
+TEST_F(ExtensionAlarmsSchedulingTest, MinimumGranularity) {
+  extension_ = utils::CreateEmptyExtensionWithLocation(
+      extensions::Manifest::INTERNAL);
+  test_clock_->SetNow(base::Time::FromJsTime(0));
+  CreateAlarm("[\"a\", {\"periodInMinutes\": 2}]");
+  test_clock_->Advance(base::TimeDelta::FromSeconds(1));
+  CreateAlarm("[\"b\", {\"periodInMinutes\": 2}]");
+  test_clock_->Advance(base::TimeDelta::FromMinutes(2));
+
+  alarm_manager_->last_poll_time_ = base::Time::FromJsTime(2 * 60000);
+  // In released extensions, we set the granularity to at least 1
+  // minute, which makes scheduler set it to 1 minute, rather than
+  // 1 second later (when b is supposed to go off).
+  alarm_manager_->ScheduleNextPoll();
+  EXPECT_DOUBLE_EQ((alarm_manager_->last_poll_time_ +
+                    base::TimeDelta::FromMinutes(1)).ToJsTime(),
+                    alarm_manager_->test_next_poll_time_.ToJsTime());
 }
 
 }  // namespace extensions
