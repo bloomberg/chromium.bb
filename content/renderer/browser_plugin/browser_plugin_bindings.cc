@@ -284,27 +284,6 @@ class BrowserPluginBindingAttachWindowTo : public BrowserPluginMethodBinding {
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingAttachWindowTo);
 };
 
-// Note: This is a method that is used internally by the <webview> shim only.
-// This should not be exposed to developers.
-class BrowserPluginBindingTrackObjectLifetime
-    : public BrowserPluginMethodBinding {
- public:
-  BrowserPluginBindingTrackObjectLifetime()
-      : BrowserPluginMethodBinding(
-          browser_plugin::kMethodInternalTrackObjectLifetime, 2) {
-  }
-
-  virtual bool Invoke(BrowserPluginBindings* bindings,
-                      const NPVariant* args,
-                      NPVariant* result) OVERRIDE {
-    bindings->instance()->TrackObjectLifetime(args, IntFromNPVariant(args[1]));
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BrowserPluginBindingTrackObjectLifetime);
-};
-
 // BrowserPluginPropertyBinding ------------------------------------------------
 
 class BrowserPluginPropertyBinding {
@@ -668,7 +647,6 @@ BrowserPluginBindings::BrowserPluginBindings(BrowserPlugin* instance)
 
   method_bindings_.push_back(new BrowserPluginBindingAttach);
   method_bindings_.push_back(new BrowserPluginBindingAttachWindowTo);
-  method_bindings_.push_back(new BrowserPluginBindingTrackObjectLifetime);
 
   property_bindings_.push_back(new BrowserPluginPropertyBindingAutoSize);
   property_bindings_.push_back(new BrowserPluginPropertyBindingContentWindow);

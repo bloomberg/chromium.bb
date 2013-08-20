@@ -798,62 +798,6 @@ void BrowserPlugin::TriggerEvent(const std::string& event_name,
   container()->element().dispatchEvent(event);
 }
 
-void BrowserPlugin::OnTrackedObjectGarbageCollected(int id) {
-  // Remove from alive objects.
-  std::map<int, TrackedV8ObjectID*>::iterator iter =
-      tracked_v8_objects_.find(id);
-  if (iter != tracked_v8_objects_.end())
-    tracked_v8_objects_.erase(iter);
-
-  std::map<std::string, base::Value*> props;
-  props[browser_plugin::kId] = new base::FundamentalValue(id);
-  TriggerEvent(browser_plugin::kEventInternalTrackedObjectGone, &props);
-}
-
-void BrowserPlugin::TrackObjectLifetime(const NPVariant* request, int id) {
-  // An object of a given ID can only be tracked once.
-  if (tracked_v8_objects_.find(id) != tracked_v8_objects_.end())
-    return;
-
-  v8::Isolate* isolate = v8::Isolate::GetCurrent();
-  v8::Persistent<v8::Value> weak_request(
-      isolate, WebKit::WebBindings::toV8Value(request));
-
-  TrackedV8ObjectID* new_item =
-      new std::pair<int, base::WeakPtr<BrowserPlugin> >(
-          id, weak_ptr_factory_.GetWeakPtr());
-
-  std::pair<std::map<int, TrackedV8ObjectID*>::iterator, bool>
-      result = tracked_v8_objects_.insert(
-          std::make_pair(id, new_item));
-  CHECK(result.second);  // Inserted in the map.
-  TrackedV8ObjectID* request_item = result.first->second;
-  weak_request.MakeWeak(static_cast<void*>(request_item),
-                        WeakCallbackForTrackedObject);
-}
-
-// static
-void BrowserPlugin::WeakCallbackForTrackedObject(
-    v8::Isolate* isolate, v8::Persistent<v8::Value>* object, void* param) {
-
-  TrackedV8ObjectID* item_ptr = static_cast<TrackedV8ObjectID*>(param);
-  int object_id = item_ptr->first;
-  base::WeakPtr<BrowserPlugin> plugin = item_ptr->second;
-  delete item_ptr;
-
-  object->Dispose();
-  if (plugin.get()) {
-    // Asynchronously remove item from |tracked_v8_objects_|.
-    // Note that we are using weak pointer for the following PostTask, so we
-    // don't need to worry about BrowserPlugin going away.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&BrowserPlugin::OnTrackedObjectGarbageCollected,
-                   plugin,
-                   object_id));
-  }
-}
-
 void BrowserPlugin::UpdateGuestFocusState() {
   if (!HasGuestInstanceID())
     return;

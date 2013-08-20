@@ -116,10 +116,6 @@ class CONTENT_EXPORT BrowserPlugin :
 
   // A request to enable hardware compositing.
   void EnableCompositing(bool enable);
-  // A request from content client to track lifetime of a JavaScript object.
-  // This is used to track permission request objects, and new window API
-  // window objects.
-  void TrackObjectLifetime(const NPVariant* request, int id);
 
   // Returns true if |point| lies within the bounds of the plugin rectangle.
   // Not OK to use this function for making security-sensitive decision since it
@@ -280,14 +276,6 @@ class CONTENT_EXPORT BrowserPlugin :
   // given the provided |params|.
   bool UsesPendingDamageBuffer(
       const BrowserPluginMsg_UpdateRect_Params& params);
-
-  // Called when the tracked object of |id| ID becomes unreachable in
-  // JavaScript.
-  void OnTrackedObjectGarbageCollected(int id);
-  // V8 garbage collection callback for |object|.
-  static void WeakCallbackForTrackedObject(v8::Isolate* isolate,
-                                           v8::Persistent<v8::Value>* object,
-                                           void* param);
 
   // IPC message handlers.
   // Please keep in alphabetical order.

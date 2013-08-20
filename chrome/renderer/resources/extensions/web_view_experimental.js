@@ -12,6 +12,7 @@
 // CHANNEL_CANARY.
 
 var createEvent = require('webView').CreateEvent;
+var messagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
@@ -64,21 +65,6 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
   var requestId = event.requestId;
   var actionTaken = false;
 
-  var onTrackedObjectGone = function(requestId, dialogType, e) {
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-    if (detail.id != requestId) {
-      return;
-    }
-
-    // Avoid showing a warning message if the decision has already been made.
-    if (actionTaken) {
-      return;
-    }
-
-    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
-    showWarningMessage(dialogType);
-  }
-
   var validateCall = function() {
     var ERROR_MSG_DIALOG_ACTION_ALREADY_TAKEN = '<webview>: ' +
         'An action has already been taken for this "dialog" event.';
@@ -111,12 +97,14 @@ WebViewInternal.prototype.maybeSetupExtDialogEvent_ =
   if (defaultPrevented) {
     // Tell the JavaScript garbage collector to track lifetime of |dialog| and
     // call back when the dialog object has been collected.
-    var onTrackedObjectGoneWithRequestId =
-        $Function.bind(
-            onTrackedObjectGone, self, requestId, event.messageType);
-    browserPluginNode.addEventListener('-internal-trackedobjectgone',
-        onTrackedObjectGoneWithRequestId);
-    browserPluginNode['-internal-trackObjectLifetime'](dialog, requestId);
+    messagingNatives.BindToGC(dialog, function() {
+      // Avoid showing a warning message if the decision has already been made.
+      if (actionTaken) {
+        return;
+      }
+      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      showWarningMessage(event.messageType);
+    });
   } else {
     actionTaken = true;
     // The default action is equivalent to canceling the dialog.

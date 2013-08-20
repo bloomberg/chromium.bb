@@ -10,6 +10,7 @@
 'use strict';
 
 var eventBindings = require('event_bindings');
+var messagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
@@ -503,22 +504,6 @@ WebViewInternal.prototype.setupExtNewWindowEvent_ =
   var requestId = event.requestId;
   var actionTaken = false;
 
-  var onTrackedObjectGone = function(requestId, e) {
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-    if (detail.id != requestId) {
-      return;
-    }
-
-    // Avoid showing a warning message if the decision has already been made.
-    if (actionTaken) {
-      return;
-    }
-
-    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
-    showWarningMessage();
-  };
-
-
   var validateCall = function () {
     if (actionTaken) {
       throw new Error(ERROR_MSG_NEWWINDOW_ACTION_ALREADY_TAKEN);
@@ -564,11 +549,14 @@ WebViewInternal.prototype.setupExtNewWindowEvent_ =
 
   if (defaultPrevented) {
     // Make browser plugin track lifetime of |window|.
-    var onTrackedObjectGoneWithRequestId =
-        $Function.bind(onTrackedObjectGone, self, requestId);
-    browserPluginNode.addEventListener('-internal-trackedobjectgone',
-        onTrackedObjectGoneWithRequestId);
-    browserPluginNode['-internal-trackObjectLifetime'](window, requestId);
+    messagingNatives.BindToGC(window, function() {
+      // Avoid showing a warning message if the decision has already been made.
+      if (actionTaken) {
+        return;
+      }
+      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      showWarningMessage();
+    });
   } else {
     actionTaken = true;
     // The default action is to discard the window.
@@ -601,21 +589,6 @@ WebViewInternal.prototype.setupExtPermissionEvent_ =
   var requestId = event.requestId;
   var decisionMade = false;
 
-  var onTrackedObjectGone = function(requestId, permission, e) {
-    var detail = e.detail ? JSON.parse(e.detail) : {};
-    if (detail.id != requestId) {
-      return;
-    }
-
-    // Avoid showing a warning message if the decision has already been made.
-    if (decisionMade) {
-      return;
-    }
-
-    chrome.webview.setPermission(self.instanceId_, requestId, false, '');
-    showWarningMessage(permission);
-  };
-
   var validateCall = function() {
     if (decisionMade) {
       throw new Error(ERROR_MSG_PERMISSION_ALREADY_DECIDED);
@@ -643,12 +616,14 @@ WebViewInternal.prototype.setupExtPermissionEvent_ =
 
   if (defaultPrevented) {
     // Make browser plugin track lifetime of |request|.
-    var onTrackedObjectGoneWithRequestId =
-        $Function.bind(
-            onTrackedObjectGone, self, requestId, event.permission);
-    browserPluginNode.addEventListener('-internal-trackedobjectgone',
-        onTrackedObjectGoneWithRequestId);
-    browserPluginNode['-internal-trackObjectLifetime'](request, requestId);
+    messagingNatives.BindToGC(request, function() {
+      // Avoid showing a warning message if the decision has already been made.
+      if (decisionMade) {
+        return;
+      }
+      chrome.webview.setPermission(self.instanceId_, requestId, false, '');
+      showWarningMessage(event.permission);
+    });
   } else {
     decisionMade = true;
     chrome.webview.setPermission(self.instanceId_, requestId, false, '');

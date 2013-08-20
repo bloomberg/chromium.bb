@@ -85,6 +85,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
         base::Bind(&ExtensionImpl::PortRelease, base::Unretained(this)));
     RouteFunction("PostMessage",
         base::Bind(&ExtensionImpl::PostMessage, base::Unretained(this)));
+    // TODO(fsamuel, kalman): Move BindToGC out of messaging natives.
     RouteFunction("BindToGC",
         base::Bind(&ExtensionImpl::BindToGC, base::Unretained(this)));
   }
