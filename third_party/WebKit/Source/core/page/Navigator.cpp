@@ -28,6 +28,7 @@
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
+#include "core/page/NavigatorID.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/Language.h"
@@ -67,7 +68,7 @@ String Navigator::appVersion() const
 {
     if (!m_frame)
         return String();
-    String appVersion = NavigatorBase::appVersion();
+    String appVersion = NavigatorID::appVersion(this);
     if (shouldHideFourDot(m_frame))
         appVersion.replace("4.", "4_");
     return appVersion;

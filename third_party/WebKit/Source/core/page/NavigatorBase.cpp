@@ -27,25 +27,7 @@
 #include "config.h"
 #include "core/page/NavigatorBase.h"
 
-#include "wtf/CPU.h"
 #include "wtf/text/WTFString.h"
-
-#if OS(LINUX)
-#include "sys/utsname.h"
-#include "wtf/StdLibExtras.h"
-#endif
-
-#ifndef WEBCORE_NAVIGATOR_PLATFORM
-#if OS(DARWIN) && (CPU(PPC) || CPU(PPC64))
-#define WEBCORE_NAVIGATOR_PLATFORM "MacPPC"
-#elif OS(DARWIN) && (CPU(X86) || CPU(X86_64))
-#define WEBCORE_NAVIGATOR_PLATFORM "MacIntel"
-#elif OS(WINDOWS)
-#define WEBCORE_NAVIGATOR_PLATFORM "Win32"
-#else
-#define WEBCORE_NAVIGATOR_PLATFORM ""
-#endif
-#endif // ifndef WEBCORE_NAVIGATOR_PLATFORM
 
 #ifndef WEBCORE_NAVIGATOR_PRODUCT
 #define WEBCORE_NAVIGATOR_PRODUCT "Gecko"
@@ -68,31 +50,6 @@ namespace WebCore {
 
 NavigatorBase::~NavigatorBase()
 {
-}
-
-String NavigatorBase::appName() const
-{
-    return "Netscape";
-}
-
-String NavigatorBase::appVersion() const
-{
-    // Version is everything in the user agent string past the "Mozilla/" prefix.
-    const String& agent = userAgent();
-    return agent.substring(agent.find('/') + 1);
-}
-
-String NavigatorBase::platform() const
-{
-#if OS(LINUX)
-    if (!String(WEBCORE_NAVIGATOR_PLATFORM).isEmpty())
-        return WEBCORE_NAVIGATOR_PLATFORM;
-    struct utsname osname;
-    DEFINE_STATIC_LOCAL(String, platformName, (uname(&osname) >= 0 ? String(osname.sysname) + String(" ") + String(osname.machine) : emptyString()));
-    return platformName;
-#else
-    return WEBCORE_NAVIGATOR_PLATFORM;
-#endif
 }
 
 String NavigatorBase::appCodeName() const

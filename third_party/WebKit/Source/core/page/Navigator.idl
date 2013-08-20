@@ -19,11 +19,7 @@
 
 interface Navigator {
     readonly attribute DOMString appCodeName;
-    readonly attribute DOMString appName;
-    readonly attribute DOMString appVersion;
     readonly attribute DOMString language;
-    readonly attribute DOMString userAgent;
-    readonly attribute DOMString platform;
     readonly attribute PluginArray plugins;
     readonly attribute MimeTypeArray mimeTypes;
     readonly attribute DOMString product;
@@ -36,4 +32,5 @@ interface Navigator {
     void getStorageUpdates(); // FIXME: Remove this method or rename to yieldForStorageUpdates.
 };
 
+Navigator implements NavigatorID;
 Navigator implements NavigatorOnLine;

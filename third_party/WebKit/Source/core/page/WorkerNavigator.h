@@ -40,7 +40,7 @@ public:
     static PassRefPtr<WorkerNavigator> create(const String& userAgent) { return adoptRef(new WorkerNavigator(userAgent)); }
     virtual ~WorkerNavigator();
 
-    virtual String userAgent() const;
+    virtual String userAgent() const OVERRIDE;
 
 private:
     explicit WorkerNavigator(const String&);
