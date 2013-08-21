@@ -10,6 +10,7 @@
 'use strict';
 
 var eventBindings = require('event_bindings');
+var DocumentNatives = requireNative('document_natives');
 var messagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var webRequestSchema =
@@ -679,10 +680,6 @@ WebViewInternal.prototype.setupWebRequestEvents_ = function() {
   );
 };
 
-// Save document.register in a variable in case the developer attempts to
-// override it at some point.
-var register = document.register;
-
 // Registers browser plugin <object> custom element.
 function registerBrowserPluginElement() {
   var proto = Object.create(HTMLObjectElement.prototype);
@@ -703,7 +700,7 @@ function registerBrowserPluginElement() {
   };
 
   WebViewInternal.BrowserPlugin =
-      register.call(document, 'browser-plugin', {prototype: proto});
+      DocumentNatives.RegisterElement('browser-plugin', {prototype: proto});
 
   delete proto.createdCallback;
   delete proto.enteredDocumentCallback;
@@ -771,7 +768,8 @@ function registerWebViewElement() {
   };
   WebViewInternal.maybeRegisterExperimentalAPIs(proto, secret);
 
-  window.WebView = register.call(document, 'webview', {prototype: proto});
+  window.WebView =
+      DocumentNatives.RegisterElement('webview', {prototype: proto});
 
   // Delete the callbacks so developers cannot call them and produce unexpected
   // behavior.
