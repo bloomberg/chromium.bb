@@ -15,8 +15,9 @@ which the test method will run against. The test runner runs the test method
 itself, collecting the result, and calls TearDown.
 
 Tests can perform arbitrary Python commands and asserts in test methods. Tests
-that run instrumentation tests can make use of the _RunJavaTests helper function
-to trigger Java tests and convert results into a single host-driven test result.
+that run instrumentation tests can make use of the _RunJavaTestFilters helper
+function to trigger Java tests and convert results into a single host-driven
+test result.
 """
 
 import logging
@@ -95,11 +96,6 @@ class HostDrivenTestCase(object):
       return java_test_runner.RunTest(test)[0]
     finally:
       java_test_runner.TearDown()
-
-  # TODO(gkanwar): Remove old method once downstream tests are updated
-  def _RunJavaTests(self, package_name, tests):
-    """Calls a list of tests and stops at the first test failure."""
-    return self._RunJavaTestFilters(tests)
 
   def _RunJavaTestFilters(self, test_filters):
     """Calls a list of tests and stops at the first test failure.
