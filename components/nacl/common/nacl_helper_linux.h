@@ -9,10 +9,15 @@
 // constants used to implement communication between the nacl_helper
 // process and the Chrome zygote.
 
+#define kNaClMaxIPCMessageLength 2048
+
 // Used by Helper to tell Zygote it has started successfully.
 #define kNaClHelperStartupAck "NACLHELPER_OK"
-// Used by Zygote to ask Helper to fork a new NaCl loader.
-#define kNaClForkRequest "NACLFORK"
+
+enum NaClZygoteIPCCommand {
+  kNaClForkRequest,
+  kNaClGetTerminationStatusRequest,
+};
 
 // The next set of constants define global Linux file descriptors.
 // For communications between NaCl loader and browser.

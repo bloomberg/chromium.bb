@@ -31,6 +31,9 @@ class NaClForkDelegate : public content::ZygoteForkDelegate {
   virtual pid_t Fork(const std::vector<int>& fds) OVERRIDE;
   virtual bool AckChild(int fd,
                         const std::string& channel_switch) OVERRIDE;
+  virtual bool GetTerminationStatus(pid_t pid, bool known_dead,
+                                    base::TerminationStatus* status,
+                                    int* exit_code) OVERRIDE;
 
  private:
   // These values are reported via UMA and hence they become permanent
