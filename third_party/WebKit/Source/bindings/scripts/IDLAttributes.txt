@@ -1,9 +1,9 @@
 #
 # This file describes all IDL attributes.
-# If any IDL file uses an IDL attribute not listed below, the WebKit build will fail.
+# If any IDL file uses an IDL attribute not listed below, the build will fail.
 # If you want to add a new IDL attribute, you need to
 #     (1) add the IDL attribute to this file
-#     (2) add the explanation to the WebKit IDL document (https://trac.webkit.org/wiki/WebKitIDL)
+#     (2) add the explanation to the Blink IDL document: http://www.chromium.org/blink/webidl
 #     (3) add test cases to run-bindings-tests
 #
 # The syntax of this file is as follows:
@@ -20,7 +20,7 @@
 
 ActiveDOMObject
 ActivityLog=Access|Setter|Getter|AccessForIsolatedWorlds|SetterForIsolatedWorlds|GetterForIsolatedWorlds
-CachedAttribute
+CachedAttribute=*
 KeepAttributeAliveForGC
 CallWith=ScriptExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow|ThisValue
 CheckSecurity

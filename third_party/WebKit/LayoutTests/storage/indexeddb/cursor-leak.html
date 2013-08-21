@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<script src="../../fast/js/resources/js-test-pre.js"></script>
+<script src="resources/shared.js"></script>
+<script>
+
+description("Verify that that cursors weakly hold script value properties");
+
+indexedDBTest(prepareDatabase, onOpen);
+function prepareDatabase(evt)
+{
+    db = event.target.result;
+    store = db.createObjectStore('store');
+    store.put({value: 'value'}, ['key']);
+}
+
+function onOpen(evt)
+{
+    // evalAndLog() is not used as that generates new DOM nodes.
+
+    db = evt.target.result;
+    tx = db.transaction('store');
+    store = tx.objectStore('store');
+    cursorRequest = store.openCursor();
+    cursorRequest.onsuccess = function() {
+        cursor = cursorRequest.result;
+    };
+    tx.oncomplete = function() {
+        db.close();
+
+        // Try and induce a leak by a reference cycle from DOM to V8 and back.
+        // If the v8 value of cursor.key (etc) is only held by the cursor's
+        // V8 wrapper then there will be no leak.
+        cursor.key.cursor = cursor;
+        cursor.primaryKey.cursor = cursor;
+
+        // FIXME: Make this reference V8-only as well: crbug.com/273211
+        //cursor.value.cursor = cursor;
+
+        // IDB objects are not exposed, so hang a canary node off the cursor.
+        cursor.node = document.createElement('span');
+
+        gc();
+        gc(); // FIXME: Calling twice should not be necessary.
+        numberOfNodesBefore = window.internals && window.internals.numberOfLiveNodes();
+
+        cursorRequest = null;
+        cursor = null;
+
+        gc();
+        gc(); // FIXME: Calling twice should not be necessary.
+        numberOfNodesAfter = window.internals && window.internals.numberOfLiveNodes();
+
+        shouldBe("numberOfNodesAfter", "numberOfNodesBefore - 1");
+        finishJSTest();
+    };
+}
+
+
+</script>
+<script src="../../fast/js/resources/js-test-post.js"></script>
