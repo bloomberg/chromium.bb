@@ -105,6 +105,20 @@ __asm__(".pushsection .text, \"ax\", %progbits\n"
 #endif
 
 
+void return_from_exception_handler(void) {
+  /*
+   * Clear the exception flag so that future faults will invoke the
+   * exception handler.
+   */
+  int rc = NACL_SYSCALL(exception_clear_flag)();
+  assert(rc == 0);
+  longjmp(g_jmp_buf, 1);
+}
+
+void simple_exception_handler(struct NaClExceptionContext *regs) {
+  return_from_exception_handler();
+}
+
 void exception_handler(struct NaClExceptionContext *context);
 REGS_SAVER_FUNC_NOPROTO(exception_handler, exception_handler_wrapped);
 
@@ -178,15 +192,7 @@ void exception_handler_wrapped(struct NaClSignalContext *entry_regs) {
   assert(entry_regs->rbp >> 32 == entry_regs->r15 >> 32);
 #endif
 
-  /*
-   * Clear the exception flag so that future faults will invoke the
-   * exception handler.
-   */
-  if (0 != NACL_SYSCALL(exception_clear_flag)()) {
-    printf("failed to clear exception flag\n");
-    exit(6);
-  }
-  longjmp(g_jmp_buf, 1);
+  return_from_exception_handler();
 }
 
 void test_exception_stack_with_size(char *stack, size_t stack_size) {
@@ -293,6 +299,20 @@ void test_exceptions_on_non_main_thread(void) {
   assert(rc == 0);
 }
 
+void test_catching_hlt(void) {
+  int rc = NACL_SYSCALL(exception_handler)(simple_exception_handler, NULL);
+  assert(rc == 0);
+
+#if defined(__i386__) || defined(__x86_64__)
+  if (!setjmp(g_jmp_buf)) {
+    __asm__("hlt");
+  }
+#endif
+
+  /* Clear the jmp_buf to prevent it from being reused accidentally. */
+  memset(g_jmp_buf, 0, sizeof(g_jmp_buf));
+}
+
 
 #if defined(__i386__) || defined(__x86_64__)
 
@@ -313,10 +333,7 @@ void test_get_x86_direction_flag(void) {
 
 void direction_flag_exception_handler(struct NaClExceptionContext *context) {
   assert(get_x86_direction_flag() == 0);
-  /* Return from exception handler. */
-  int rc = NACL_SYSCALL(exception_clear_flag)();
-  assert(rc == 0);
-  longjmp(g_jmp_buf, 1);
+  return_from_exception_handler();
 }
 
 /*
@@ -360,6 +377,7 @@ int TestMain(void) {
   /* pthread_join() is broken under qemu-arm. */
   if (getenv("UNDER_QEMU_ARM") == NULL)
     RUN_TEST(test_exceptions_on_non_main_thread);
+  RUN_TEST(test_catching_hlt);
 
 #if defined(__i386__) || defined(__x86_64__)
   RUN_TEST(test_get_x86_direction_flag);
