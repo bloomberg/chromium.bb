@@ -1483,6 +1483,16 @@ def GetDefaultConcurrentLinks():
     ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(stat))
 
     return max(1, stat.ullTotalPhys / (4 * (2 ** 30)))  # total / 4GB
+  elif sys.platform.startswith('linux'):
+    with open("/proc/meminfo") as meminfo:
+      memtotal_re = re.compile(r'^MemTotal:\s*(\d*)\s*kB')
+      for line in meminfo:
+        match = memtotal_re.match(line)
+        if not match:
+          continue
+        # Allow 8Gb per link on Linux because Gold is quite memory hungry
+        return max(1, int(match.group(1)) / (8 * (2 ** 20)))
+    return 1
   else:
     # TODO(scottmg): Implement this for other platforms.
     return 1
