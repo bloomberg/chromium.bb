@@ -44,11 +44,8 @@
     }],
     ['OS=="linux" or OS=="mac" or OS=="win"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '../tools/swarm_client/run_isolated.py',
-          '../tools/swarm_client/googletest/run_test_cases.py',
-        ],
         'isolate_dependency_untracked': [
+          '../tools/swarm_client/',
           '<(PRODUCT_DIR)/pyproto/',
         ],
       },

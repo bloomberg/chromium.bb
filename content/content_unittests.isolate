@@ -40,6 +40,9 @@
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/content_unittests<(EXECUTABLE_SUFFIX)',
         ],
+        'isolate_dependency_untracked': [
+          '../tools/swarm_client/',
+        ],
       },
     }],
     ['OS=="mac"', {
