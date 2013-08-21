@@ -117,6 +117,9 @@ AppListServiceImpl::AppListServiceImpl()
 
 AppListServiceImpl::~AppListServiceImpl() {}
 
+void AppListServiceImpl::SetAppListNextPaintCallback(
+    const base::Closure& callback) {}
+
 void AppListServiceImpl::HandleFirstRun() {}
 
 void AppListServiceImpl::Init(Profile* initial_profile) {}

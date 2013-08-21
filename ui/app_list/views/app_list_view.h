@@ -5,6 +5,7 @@
 #ifndef UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 #define UI_APP_LIST_VIEWS_APP_LIST_VIEW_H_
 
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
@@ -67,6 +68,7 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
+  virtual void Paint(gfx::Canvas* canvas) OVERRIDE;
 
   // WidgetDelegate overrides:
   virtual bool ShouldHandleSystemCommands() const OVERRIDE;
@@ -78,6 +80,9 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Set a callback to be called the next time any app list paints.
+  static void SetNextPaintCallback(const base::Closure& callback);
 
 #if defined(OS_WIN)
   HWND GetHWND() const;

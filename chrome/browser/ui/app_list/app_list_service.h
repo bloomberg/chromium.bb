@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -35,6 +36,10 @@ class AppListService {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   static void RecordShowTimings(const CommandLine& command_line);
+
+  // Indicates that |callback| should be called next time the app list is
+  // painted.
+  virtual void SetAppListNextPaintCallback(const base::Closure& callback) = 0;
 
   // Perform Chrome first run logic. This is executed before Chrome's threads
   // have been created.

@@ -795,6 +795,8 @@ class AppListController : public AppListServiceImpl {
   void OnAppListClosing();
 
   // AppListService overrides:
+  virtual void SetAppListNextPaintCallback(
+      const base::Closure& callback) OVERRIDE;
   virtual void HandleFirstRun() OVERRIDE;
   virtual void Init(Profile* initial_profile) OVERRIDE;
   virtual void CreateForProfile(Profile* requested_profile) OVERRIDE;
@@ -968,6 +970,11 @@ void AppListController::OnLoadProfileForWarmup(Profile* initial_profile) {
     return;
 
   shower_->WarmupForProfile(initial_profile);
+}
+
+void AppListController::SetAppListNextPaintCallback(
+    const base::Closure& callback) {
+  app_list::AppListView::SetNextPaintCallback(callback);
 }
 
 void AppListController::HandleFirstRun() {
