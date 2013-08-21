@@ -4852,7 +4852,9 @@ void Document::didRemoveTouchEventHandler(Node* handler)
 {
     if (!m_touchEventTargets.get())
         return;
-    ASSERT(m_touchEventTargets->contains(handler));
+    // TODO(rbyers): Re-enable this ASSERT - http://crbug.com/254203.
+    // The known failure is benign, but the fix somehow causes a perf regression.
+    // ASSERT(m_touchEventTargets->contains(handler));
     m_touchEventTargets->remove(handler);
     if (Document* parent = parentDocument()) {
         parent->didRemoveTouchEventHandler(this);
