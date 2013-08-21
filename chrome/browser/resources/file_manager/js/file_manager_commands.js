@@ -595,7 +595,8 @@ Commands.createFolderShortcutCommand = {
     var onlyOneFolderSelected = true;
     // Only on list, user can select multiple files. The command is enabled only
     // when a single file is selected.
-    if (event.target instanceof cr.ui.List) {
+    if (event.target instanceof cr.ui.List &&
+        !(event.target instanceof NavigationList)) {
       var items = event.target.selectedItems;
       onlyOneFolderSelected = (items.length == 1 && items[0].isDirectory);
     }
