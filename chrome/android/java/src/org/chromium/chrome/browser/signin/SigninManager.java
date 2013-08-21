@@ -142,6 +142,12 @@ public class SigninManager {
             return;
         }
 
+        if (mSignInActivity.isDestroyed()) {
+            // The activity is no longer running, cancel sign in.
+            cancelSignIn();
+            return;
+        }
+
         Log.d(TAG, "Account has policy management");
         AlertDialog.Builder builder = new AlertDialog.Builder(mSignInActivity);
         builder.setTitle(R.string.policy_dialog_title);
