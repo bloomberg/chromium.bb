@@ -132,7 +132,7 @@ bool IsValidCommandLine(const wchar_t* command_line) {
   // doesn't get passed through to Chrome.
   for (int i = 1; i < num_args; ++i) {
     std::wstring trimmed_arg = TrimWhiteSpace(args[i]);
-    if (!IsValidArgument(trimmed_arg.c_str())) {
+    if (!IsValidArgument(trimmed_arg)) {
       success = false;
       break;
     }
