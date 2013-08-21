@@ -226,18 +226,6 @@ void GetBookmarksContainingText(BookmarkModel* model,
   }
 }
 
-bool DoesBookmarkContainText(const BookmarkNode* node,
-                             const string16& text,
-                             const std::string& languages) {
-  std::vector<string16> words;
-  QueryParser parser;
-  parser.ParseQueryWords(base::i18n::ToLower(text), &words);
-  if (words.empty())
-    return false;
-
-  return (node->is_url() && DoesBookmarkContainWords(node, words, languages));
-}
-
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kShowBookmarkBar,

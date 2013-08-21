@@ -69,12 +69,6 @@ void GetBookmarksContainingText(BookmarkModel* model,
                                 const std::string& languages,
                                 std::vector<const BookmarkNode*>* nodes);
 
-// Returns true if |node|'s url or title contains the string |text|.
-// |languages| is user's accept-language setting to decode IDN.
-bool DoesBookmarkContainText(const BookmarkNode* node,
-                             const string16& text,
-                             const std::string& languages);
-
 // Register user preferences for Bookmarks Bar.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
