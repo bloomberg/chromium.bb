@@ -39,7 +39,7 @@ inline int blend(int from, int to, double progress)
 
 inline unsigned blend(unsigned from, unsigned to, double progress)
 {
-    return lround(to > from ? from + (to - from) * progress : from - (from - to) * progress);
+    return clampTo<unsigned>(round(to > from ? from + (to - from) * progress : from - (from - to) * progress));
 }
 
 inline double blend(double from, double to, double progress)
