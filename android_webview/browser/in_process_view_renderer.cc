@@ -171,6 +171,21 @@ bool ScopedAllowGL::allow_gl = false;
 
 base::LazyInstance<GLViewRendererManager>::Leaky g_view_renderer_manager;
 
+void RequestProcessGLOnUIThread() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE, base::Bind(&RequestProcessGLOnUIThread));
+    return;
+  }
+
+  InProcessViewRenderer* renderer = static_cast<InProcessViewRenderer*>(
+      g_view_renderer_manager.Get().GetMostRecentlyDrawn());
+  if (!renderer || !renderer->RequestProcessGL()) {
+    LOG(ERROR) << "Failed to request GL process. Deadlock likely: "
+               << !!renderer;
+  }
+}
+
 }  // namespace
 
 // Called from different threads!
@@ -178,11 +193,7 @@ static void ScheduleGpuWork() {
   if (ScopedAllowGL::IsAllowed()) {
     gpu::InProcessCommandBuffer::ProcessGpuWorkOnCurrentThread();
   } else {
-    InProcessViewRenderer* renderer = static_cast<InProcessViewRenderer*>(
-        g_view_renderer_manager.Get().GetMostRecentlyDrawn());
-    if (!renderer || !renderer->RequestProcessGL()) {
-      LOG(ERROR) << "Failed to request DrawGL. Probably going to deadlock.";
-    }
+    RequestProcessGLOnUIThread();
   }
 }
 
@@ -772,7 +783,8 @@ void InProcessViewRenderer::EnsureContinuousInvalidation(
   // ticked. This can happen if this is reached because
   // invalidate_ignore_compositor is true.
   if (compositor_needs_continuous_invalidate_) {
-    base::MessageLoop::current()->PostDelayedTask(
+    BrowserThread::PostDelayedTask(
+        BrowserThread::UI,
         FROM_HERE,
         fallback_tick_.callback(),
         base::TimeDelta::FromMilliseconds(
