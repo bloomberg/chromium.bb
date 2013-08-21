@@ -109,13 +109,13 @@ static bool verifyProtocolHandlerScheme(const String& scheme, ExceptionState& es
         // The specification requires that the length of scheme is at least five characteres (including 'web+' prefix).
         if (scheme.length() >= 5 && isValidProtocol(scheme))
             return true;
-        es.throwDOMException(SecurityError);
+        es.throwSecurityError("Failed to verify '" + scheme + "' scheme. '" + scheme + "' is not valid protocol or length isn't at least five characters.");
         return false;
     }
 
     if (isProtocolWhitelisted(scheme))
         return true;
-    es.throwDOMException(SecurityError);
+    es.throwSecurityError("Failed to verify '" + scheme + "' scheme. '" + scheme + "' doesn't belong to the protocol whitelist.");
     return false;
 }
 

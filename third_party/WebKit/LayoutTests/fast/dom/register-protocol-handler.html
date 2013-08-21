@@ -20,15 +20,17 @@ else
 var invalid_protocols = ['http', 'https', 'file', 'web+'];
 invalid_protocols.forEach(function (protocol) {
     var succeeded = false;
+    var errorMessage;
     try {
         window.navigator.registerProtocolHandler(protocol, "invalid protocol %s", "title");
     } catch (e) {
         succeeded = 'SecurityError' == e.name;
+        errorMessage = e.message;
     }
 
-    if (succeeded)
-        debug('Pass: Invalid protocol "' + protocol + '" threw SecurityError exception.');
-    else
+    if (succeeded) {
+        debug('Pass: Invalid protocol "' + protocol + '" threw SecurityError exception: "' + errorMessage + '".');
+    }else
         debug('Fail: Invalid protocol "' + protocol + '" allowed.');
 });
 
