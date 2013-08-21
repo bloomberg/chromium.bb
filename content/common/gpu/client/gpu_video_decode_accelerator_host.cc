@@ -37,11 +37,13 @@ GpuVideoDecodeAcceleratorHost::GpuVideoDecodeAcceleratorHost(
 
 void GpuVideoDecodeAcceleratorHost::OnChannelError() {
   DLOG(ERROR) << "GpuVideoDecodeAcceleratorHost::OnChannelError()";
-  OnErrorNotification(PLATFORM_FAILURE);
   if (channel_) {
     channel_->RemoveRoute(decoder_route_id_);
     channel_ = NULL;
   }
+  // See OnErrorNotification for why this needs to be the last thing in this
+  // function.
+  OnErrorNotification(PLATFORM_FAILURE);
 }
 
 bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
@@ -65,6 +67,8 @@ bool GpuVideoDecodeAcceleratorHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
+  // See OnErrorNotification for why |this| mustn't be used after
+  // OnErrorNotification might have been called above.
   return handled;
 }
 
@@ -165,6 +169,8 @@ void GpuVideoDecodeAcceleratorHost::Send(IPC::Message* message) {
     DLOG(ERROR) << "Send(" << message_type << ") failed";
     error = true;
   }
+  // See OnErrorNotification for why this needs to be the last thing in this
+  // function.
   if (error)
     OnErrorNotification(PLATFORM_FAILURE);
 }
@@ -219,9 +225,13 @@ void GpuVideoDecodeAcceleratorHost::OnErrorNotification(uint32 error) {
   DCHECK(CalledOnValidThread());
   if (!client_)
     return;
-  client_->NotifyError(
+
+  // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
+  // last thing done on this stack!
+  media::VideoDecodeAccelerator::Client* client = NULL;
+  std::swap(client, client_);
+  client->NotifyError(
       static_cast<media::VideoDecodeAccelerator::Error>(error));
-  client_ = NULL;
 }
 
 }  // namespace content

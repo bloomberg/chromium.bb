@@ -53,16 +53,20 @@ bool GpuVideoEncodeAcceleratorHost::OnMessageReceived(
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
+  // See OnNotifyError for why |this| mustn't be used after OnNotifyError might
+  // have been called above.
   return handled;
 }
 
 void GpuVideoEncodeAcceleratorHost::OnChannelError() {
   DLOG(ERROR) << "OnChannelError()";
-  OnNotifyError(kPlatformFailureError);
   if (channel_) {
     channel_->RemoveRoute(route_id_);
     channel_ = NULL;
   }
+  // See OnNotifyError for why this needs to be the last thing in this
+  // function.
+  OnNotifyError(kPlatformFailureError);
 }
 
 void GpuVideoEncodeAcceleratorHost::Initialize(
@@ -176,6 +180,8 @@ void GpuVideoEncodeAcceleratorHost::OnNotifyInputDone(int32 frame_id) {
   if (!frame_map_.erase(frame_id)) {
     DLOG(ERROR) << "OnNotifyInputDone(): "
                    "invalid frame_id=" << frame_id;
+    // See OnNotifyError for why this needs to be the last thing in this
+    // function.
     OnNotifyError(kPlatformFailureError);
     return;
   }
@@ -195,11 +201,15 @@ void GpuVideoEncodeAcceleratorHost::OnBitstreamBufferReady(
 
 void GpuVideoEncodeAcceleratorHost::OnNotifyError(Error error) {
   DVLOG(2) << "OnNotifyError(): error=" << error;
-  if (client_) {
-    client_->NotifyError(error);
-    client_ = NULL;
-    client_ptr_factory_.InvalidateWeakPtrs();
-  }
+  if (!client_)
+    return;
+  client_ptr_factory_.InvalidateWeakPtrs();
+
+  // Client::NotifyError() may Destroy() |this|, so calling it needs to be the
+  // last thing done on this stack!
+  media::VideoEncodeAccelerator::Client* client = NULL;
+  std::swap(client_, client);
+  client->NotifyError(error);
 }
 
 void GpuVideoEncodeAcceleratorHost::Send(IPC::Message* message) {
