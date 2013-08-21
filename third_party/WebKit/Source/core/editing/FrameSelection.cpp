@@ -1807,7 +1807,7 @@ static HTMLFormElement* scanForForm(Node* start)
         if (element->isHTMLElement() && toHTMLElement(element)->isFormControlElement())
             return toHTMLFormControlElement(element)->form();
         if (element->hasTagName(frameTag) || element->hasTagName(iframeTag)) {
-            Node* childDocument = static_cast<HTMLFrameElementBase*>(element)->contentDocument();
+            Node* childDocument = toHTMLFrameElementBase(element)->contentDocument();
             if (HTMLFormElement* frameResult = scanForForm(childDocument))
                 return frameResult;
         }
