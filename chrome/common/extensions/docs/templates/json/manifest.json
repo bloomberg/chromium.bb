@@ -44,7 +44,7 @@
     "level": "recommended"
   },
   "externally_connectable": {
-    "documentation": "messaging.html#external-webpage",
+    "documentation": "manifest/externally_connectable.html",
     "example": {
       "matches": ["*://*.example.com/*"]
     }

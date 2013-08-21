@@ -95,7 +95,7 @@
   "properties": [],
   "name": "tester",
   "description": "a test api",
-  "intro_list": [
+  "introList": [
     {
       "content": [
         {

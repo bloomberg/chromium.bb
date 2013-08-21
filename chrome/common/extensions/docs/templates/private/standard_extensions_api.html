@@ -2,7 +2,6 @@
 <html>
   <head>
     {{+partials.header_head}}
-    <link href="{{static}}/css/api.css" rel="stylesheet" type="text/css">
     {{+partials.title}}
   </head>
   <body>
@@ -11,9 +10,9 @@
       {{+partials.sidenav items:sidenavs.extensions}}
       <div id="gc-pagecontent">
         <h1 class="page_title">chrome.{{api.name}}</h1>
-        {{?api.channel_warning.trunk}}{{+partials.warning_trunk}}{{/}}
-        {{?api.channel_warning.dev}}{{+partials.warning_dev}}{{/}}
-        {{?api.channel_warning.beta}}{{+partials.warning_beta}}{{/}}
+        {{?api.channelWarning.trunk}}{{+partials.warning_trunk}}{{/}}
+        {{?api.channelWarning.dev}}{{+partials.warning_dev}}{{/}}
+        {{?api.channelWarning.beta}}{{+partials.warning_beta}}{{/}}
         {{?intro.extensions_toc}}
         {{+partials.table_of_contents toc_items:intro.extensions_toc
                                       has_toc:true

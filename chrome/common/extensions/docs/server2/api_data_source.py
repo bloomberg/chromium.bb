@@ -165,15 +165,23 @@ class _JSCModel(object):
   def ToDict(self):
     if self._namespace is None:
       return {}
-    return {
+    as_dict = {
       'name': self._namespace.name,
       'types': self._GenerateTypes(self._namespace.types.values()),
       'functions': self._GenerateFunctions(self._namespace.functions),
       'events': self._GenerateEvents(self._namespace.events),
       'properties': self._GenerateProperties(self._namespace.properties),
-      'intro_list': self._GetIntroTableList(),
-      'channel_warning': self._GetChannelWarning()
+      'introList': self._GetIntroTableList(),
+      'channelWarning': self._GetChannelWarning(),
+      'byName': {},
     }
+    # Make every type/function/event/property also accessible by name for
+    # rendering specific API entities rather than the whole thing at once, for
+    # example {{apis.manifestTypes.byName.ExternallyConnectable}}.
+    for item_type in ('types', 'functions', 'events', 'properties'):
+      as_dict['byName'].update(
+          (item['name'], item) for item in as_dict[item_type])
+    return as_dict
 
   def _GetIntroTableList(self):
     """Create a generic data structure that can be traversed by the templates

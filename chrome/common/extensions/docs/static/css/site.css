@@ -3,26 +3,30 @@
  * found in the LICENSE file.
  */
 
+/*
+ * Site-wide styles.
+ */
+
 .hidden {
   display: none;
 }
 
 body {
+  background-color: white;
   font: 14px/22px 'Open Sans',arial,sans-serif;
   margin: auto;
   padding: 0;
-  background-color: white;
 }
 
 p.note,
 p.caution,
 p.warning {
-  margin: 1em 0 0 0;
-  padding: .2em .5em .2em .9em;
   background-color: #F5F5F5;
-  border-top: 1px solid;
   border-bottom: 1px solid;
+  border-top: 1px solid;
+  margin: 1em 0 0 0;
   overflow: hidden;
+  padding: .2em .5em .2em .9em;
 }
 
 p.note {
@@ -41,9 +45,9 @@ p.warning strong {
 }
 
 a, a:link {
-  text-decoration: none;
   color: #4787ed;
   font-weight: 600;
+  text-decoration: none;
 }
 
 a:active,
@@ -77,8 +81,8 @@ p img {
 .code,
 code,
 pre {
-  font-family: monospace;
   color: #080;
+  font-family: monospace;
 }
 
 .code,
@@ -87,13 +91,13 @@ code{
 }
 
 pre {
-  font-size: 10pt;
   background-color: #F5F5F5;
+  font-size: 10pt;
   margin: 1em 0 0 0;
-  padding: .99em;
   overflow: auto;
-  word-wrap: break-word;
+  padding: .99em;
   position: relative;
+  word-wrap: break-word;
 }
 
 pre a {
@@ -105,15 +109,15 @@ pre b {
 }
 
 pre[data-filename]::after {
-  content: attr(data-filename);
   background-color: darkGray;
-  right: 0;
-  top: 0;
-  position: absolute;
-  font-size: 16px;
   color: #FFF;
+  content: attr(data-filename);
+  font-size: 16px;
   padding: 2px 25px;
+  position: absolute;
+  right: 0;
   text-transform: uppercase;
+  top: 0;
 }
 
 dt {
@@ -126,28 +130,28 @@ dl {
 }
 
 dd {
+  font-weight: normal;
   margin: .4em 0 0 2em;
   padding: 0;
-  font-weight: normal;
 }
 
 #gc-container {
-  margin: auto;
+  height: auto;
   margin-top: 2em;
+  margin: auto;
   max-width: 1160px;
   padding: 0 50px;
-  height: auto;
 }
 
 #gc-topnav {
-  font-size: 1em;
-  margin: auto;
-  max-width: 1160px;
-  white-space: nowrap;
   background-color: white;
   border-bottom: 1px solid #F5F5F5;
+  font-size: 1em;
   line-height: 50px;
+  margin: auto;
+  max-width: 1160px;
   padding: 0 7px;
+  white-space: nowrap;
 }
 
 #gc-topnav * {
@@ -159,11 +163,11 @@ dd {
 }
 
 #gc-topnav li {
+  display: inline-block;
   font-weight: 600;
+  margin: 0 0 0 25px;
   text-transform: uppercase;
   white-space: nowrap;
-  display: inline-block;
-  margin: 0 0 0 25px;
 }
 #gc-topnav li:first-child {
   margin-left: 0;
@@ -187,8 +191,8 @@ dd {
 }
 
 #gc-topnav #chrome-logo a {
-  font-weight: 400;
   color: #77787a;
+  font-weight: 400;
   margin: 0;
 }
 
@@ -221,12 +225,12 @@ dd {
 #platform-chooser-popup {
   /* Make it appear to be an extension of the header. */
   background-color: white;
-  border: 1px solid #F5F5F5;
   border-top: none;
+  border: 1px solid #F5F5F5;
   z-index: 4;
   /* Ready to be shown by popup.js. */
-  position: absolute;
   display: none;
+  position: absolute;
   /* Align with the button, which have padding:6px. */
   left: -6px;
 }
@@ -234,8 +238,8 @@ dd {
 #platform-chooser-popup button {
   display: block;
   padding: 6px;
-  width: 100%;
   text-align: left;
+  width: 100%;
 }
 #platform-chooser-popup button:hover {
   color: #4787ed;
@@ -243,16 +247,16 @@ dd {
 
 button.google-button {
   background-color: #f5f5f5;
-  border: 1px solid rgba(0,0,0,0.1);
-  text-transform: uppercase;
   border-radius: 2px 0 0 0;
-    -webkit-border-radius: 2px 0 0 0;
     -moz-border-radius: 2px 0 0 0;
-  white-space: nowrap;
-  text-align: center;
+    -webkit-border-radius: 2px 0 0 0;
+  border: 1px solid rgba(0,0,0,0.1);
   height: 27px;
-  padding: 5px 12px;
   margin: 0;
+  padding: 5px 12px;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 button.google-button:hover {
   border-color: #c6c6c6;
@@ -270,17 +274,17 @@ button.google-button:active {
 #scroll-to-top,
 #send-feedback {
   border-bottom: none;
-  position: fixed;
   bottom: 0;
+  position: fixed;
   z-index: 5;
 }
 #scroll-to-top {
-  left: 0;
   border-left: 0;
+  left: 0;
 }
 #send-feedback {
-  right: 0;
   border-right: 0;
+  right: 0;
 }
 
 #gc-pagecontent {
@@ -288,9 +292,9 @@ button.google-button:active {
 }
 
 #gc-pagecontent h1 {
-  line-height: 130%;
   font-size: 320%;
   font-weight: normal;
+  line-height: 130%;
 }
 
 #gc-pagecontent h2 {
@@ -318,8 +322,8 @@ button.google-button:active {
   padding: 6px 12px;
 }
 #gc-pagecontent td {
-  padding: 6px 12px;
   border: 1px solid #36C;
+  padding: 6px 12px;
   vertical-align: top;
 }
 
@@ -392,10 +396,10 @@ button.google-button:active {
 }
 
 #gc-footer .text {
-  text-align: center;
   color: #666;
-  padding: 30px 0;
   margin: 0;
+  padding: 30px 0;
+  text-align: center;
 }
 
 #gc-sidebar {
@@ -406,9 +410,9 @@ button.google-button:active {
 /* scroll.js adds and removes the floating class depending on the scroll
  * position. */
 #gc-sidebar.floating {
+  overflow: auto;
   position: fixed;
   top: 0; bottom: 0;
-  overflow: auto;
 }
 
 /* Sidebar link/button styling. */
@@ -416,8 +420,8 @@ button.google-button:active {
 #gc-sidebar a {
   color: black;
   display: block;
-  position: relative;
   font-weight: normal;
+  position: relative;
 }
 #gc-sidebar a:hover,
 #gc-sidebar a.selected {
@@ -434,11 +438,11 @@ button.google-button:active {
 }
 
 #gc-sidebar .toggleIndicator {
+  background: url(../images/toggle_sprite.png) no-repeat 0 0;
+  height: 8px;
   position: absolute;
   right: 0;
   top: 3px;
-  background: url(../images/toggle_sprite.png) no-repeat 0 0;
-  height: 8px;
   width: 8px;
 }
 #gc-sidebar .toggleIndicator.toggled {
@@ -448,23 +452,23 @@ button.google-button:active {
 /* Sidebar list styling. */
 #gc-sidebar ul {
   list-style: none;
-  padding: 0;
   margin: 0;
+  padding: 0;
 }
 #gc-sidebar ul.level2 {
   margin-left: 10px;
   padding-top: 10px;
 }
 #gc-sidebar ul.level3 {
+  list-style: url(../images/sidearrow.png);
   margin-left: 20px;
   padding-top: 10px;
-  list-style: url(../images/sidearrow.png);
 }
 
 #gc-sidebar li {
+  line-height: 120%;
   margin: 0;
   padding: 8px 0;
-  line-height: 120%;
 }
 
 #gc-sidebar li.level2 {
@@ -476,33 +480,33 @@ button.google-button:active {
 
 #toc {
   background-color: #F5F5F5;
-  float: right;
-  margin: 5px 0px 0px 0px;
-  padding: 5px;
-  width: 250px;
-  word-break: break-word;
+  border-bottom: 20px solid white;
   /* We want this element to have a visual left-margin of 20px, but margins on
      floated elements don't affect the borders and background of the elements
      they float over. So we add this border to force the issue. */
   border-left: 20px solid white;
-  border-bottom: 20px solid white;
-  z-index: 3;
+  float: right;
+  margin: 5px 0px 0px 0px;
+  padding: 5px;
   position: relative;
+  width: 250px;
+  word-break: break-word;
+  z-index: 3;
 }
 
 #toc * {
-  padding: 0;
   list-style: none;
-  white-space: nowrap;
   overflow: hidden;
+  padding: 0;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #toc h2 {
-  font-weight: bold;
-  font-size: 100%;
-  margin: 0;
   border: none;
+  font-size: 100%;
+  font-weight: bold;
+  margin: 0;
   padding: 0;
 }
 
@@ -511,8 +515,8 @@ button.google-button:active {
 }
 
 #toc ol li {
-  margin: .5em 0 .5em 1em;
   line-height: 1.2em;
+  margin: .5em 0 .5em 1em;
 }
 
 #toc ol li ol {
@@ -561,28 +565,28 @@ button.google-button:active {
 
 /* Tabbed pane with header (tabs) and content */
 tabs {
-  margin: 25px 0;
   display: block;
+  margin: 25px 0;
 }
 tabs header {
-  display: inline-block;
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin-bottom: 0;
   background: inherit;
   border-bottom: 1px solid white;
+  border: 1px solid #ccc;
   cursor: auto;
+  display: inline-block;
+  margin-bottom: 0;
+  padding: 10px;
 }
 tabs header.unselected {
-  border-bottom: 1px solid #ccc;
   background: #eee;
+  border-bottom: 1px solid #ccc;
   cursor: pointer;
 }
 tabs content {
-  display: block;
-  padding: 20px;
   border: 1px solid #ccc;
+  display: block;
   margin-top: -1px;
+  padding: 20px;
 }
 tabs content.unselected {
   display: none;
@@ -590,4 +594,45 @@ tabs content.unselected {
 tabs content pre {
   margin: 0;
   padding: 10px;
+}
+
+/*
+ * API references.
+ */
+
+.type_name,
+.variable,
+.property {
+  font-style: italic;
+}
+
+.api_reference div.summary {
+  background-color: #CADEF4;
+  border: 1px solid #93B4D9;
+  font-family: "Courier New", courier, monospace;
+  margin-top: 1em;
+  padding: 0.5em 0.5em 0.5em 2em;
+  text-indent: -1.5em;
+}
+
+/* This style is used because types with functions prefix the function with the
+ * type name, using a lowercase first letter. */
+.api_reference .uncapitalize:first-letter {
+  text-transform: lowercase;
+}
+
+.api_reference .capitalize:first-letter {
+  text-transform: uppercase;
+}
+
+.api_reference div.description {
+  margin-left: 2em;
+}
+
+div.summary .subdued {
+  color: #7594B8;
+}
+
+.optional {
+  color: #7D7D7D;
 }

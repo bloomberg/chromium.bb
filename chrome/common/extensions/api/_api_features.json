@@ -327,6 +327,13 @@
     "channel": "stable",
     "extension_types": ["extension", "packaged_app", "platform_app"]
   },
+  // This is not a real API, only here for documentation purposes.
+  // See http://crbug.com/275944 for background.
+  "manifestTypes": {
+    "internal": true,
+    "channel": "stable",
+    "contexts": "all"
+  },
   "mediaGalleries": {
     "dependencies": ["permission:mediaGalleries"],
     "contexts": ["blessed_extension"]
