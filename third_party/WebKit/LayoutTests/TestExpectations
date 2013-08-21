@@ -1164,8 +1164,6 @@ crbug.com/248121 fast/events/overflow-scroll-fake-mouse-move.html [ Pass Failure
 crbug.com/248128 inspector/console/console-url-and-line.html [ Pass Failure ]
 crbug.com/260655 [ Linux Debug ] inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Crash Pass ]
 
-crbug.com/271747 [ Mac Win ] fast/events/touch/compositor-touch-hit-rects.html [ NeedsRebaseline ]
-
 crbug.com/250970 [ Debug ] fast/events/simulated-key-state.html [ Crash Timeout ]
 # Assertion failure in try bots.
 crbug.com/250970 [ Release ] fast/events/simulated-key-state.html [ Crash Pass ]
