@@ -9,6 +9,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "wtf/RefPtr.h"
@@ -77,6 +78,10 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
     IntSize canvasSize = canvas->size();
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), canvasSize));
     IntRect dstRect(IntPoint(), srcRect.size());
+
+    CanvasRenderingContext* sourceContext = canvas->renderingContext();
+    if (sourceContext && sourceContext->is3d())
+        sourceContext->paintRenderingResultsToCanvas();
 
     m_buffer = ImageBuffer::create(canvasSize);
     m_buffer->context()->drawImageBuffer(canvas->buffer(), dstRect, srcRect);

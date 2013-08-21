@@ -1,0 +1,42 @@
+<html>
+<head>
+<script src="../js/resources/js-test-pre.js"></script>
+</head>
+<body onload="start();">
+<script>
+    window.jsTestIsAsync = true;
+
+    var canvas = document.createElement("canvas");
+    canvas.width = 200;
+    canvas.height = 200;
+    var ctx = canvas.getContext("2d");
+    function shouldBeGreen(x, y) {
+        d = ctx.getImageData(x, y, 1, 1).data;
+        shouldBeTrue("d[0] == 0");
+        shouldBeTrue("d[1] == 255");
+        shouldBeTrue("d[2] == 0");
+        shouldBeTrue("d[3] == 255");
+    }
+
+    function start() {
+        var aCanvas = document.createElement("canvas");
+        aCanvas.width = 200;
+        aCanvas.height = 200;
+        var gl = aCanvas.getContext("webgl");
+        gl.clearColor(0.0, 1.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        createImageBitmap(aCanvas).then(function (imageBitmap) {
+            ctx.drawImage(imageBitmap, 0, 0);
+            shouldBeGreen(50, 50);
+            shouldBeGreen(150, 150);
+            finishJSTest();
+        }, function() {
+            testFailed("Promise was rejected.");
+            finishJSTest();
+        });
+    }
+</script>
+<script src="../js/resources/js-test-post.js"></script>
+</body>
+</html>
