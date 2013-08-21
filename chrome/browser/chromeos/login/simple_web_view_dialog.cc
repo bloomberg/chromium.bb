@@ -135,6 +135,10 @@ SimpleWebViewDialog::SimpleWebViewDialog(Profile* profile)
 }
 
 SimpleWebViewDialog::~SimpleWebViewDialog() {
+  FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
+                    observer_list_,
+                    OnHostDestroying());
+
   if (web_view_container_.get()) {
     // WebView can't be deleted immediately, because it could be on the stack.
     web_view_->web_contents()->SetDelegate(NULL);

@@ -18,6 +18,7 @@ class WebContentsModalDialogHostObserver {
   virtual ~WebContentsModalDialogHostObserver();
 
   virtual void OnPositionRequiresUpdate() = 0;
+  virtual void OnHostDestroying() = 0;
 
  protected:
   WebContentsModalDialogHostObserver();

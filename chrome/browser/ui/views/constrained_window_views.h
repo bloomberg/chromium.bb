@@ -22,6 +22,12 @@ namespace web_modal {
 class WebContentsModalDialogHost;
 }
 
+// Update the position of dialog |widget| against |dialog_host|. This is used to
+// reposition widgets e.g. when the host dimensions change.
+void UpdateWebContentsModalDialogPosition(
+    views::Widget* widget,
+    web_modal::WebContentsModalDialogHost* dialog_host);
+
 views::Widget* CreateWebContentsModalDialogViews(
     views::WidgetDelegate* widget_delegate,
     gfx::NativeView parent,

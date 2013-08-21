@@ -8,12 +8,17 @@
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "components/web_modal/native_web_contents_modal_dialog_manager.h"
+#include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/web_contents_view.h"
+#include "ui/gfx/point.h"
+#include "ui/gfx/size.h"
+#include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
+#include "ui/views/window/non_client_view.h"
 
 #if defined(USE_AURA)
 #include "ui/aura/client/aura_constants.h"
@@ -33,11 +38,14 @@
 using web_modal::NativeWebContentsModalDialog;
 using web_modal::NativeWebContentsModalDialogManager;
 using web_modal::NativeWebContentsModalDialogManagerDelegate;
+using web_modal::WebContentsModalDialogHost;
+using web_modal::WebContentsModalDialogHostObserver;
 
 namespace {
 
 class NativeWebContentsModalDialogManagerViews
     : public NativeWebContentsModalDialogManager,
+      public WebContentsModalDialogHostObserver,
       public views::WidgetObserver
 #if defined(USE_AURA)
       , public aura::WindowObserver
@@ -46,7 +54,8 @@ class NativeWebContentsModalDialogManagerViews
  public:
   NativeWebContentsModalDialogManagerViews(
       NativeWebContentsModalDialogManagerDelegate* native_delegate)
-      : native_delegate_(native_delegate) {
+      : native_delegate_(native_delegate),
+        host_(NULL) {
 #if defined(USE_AURA)
     native_delegate_->GetWebContents()->GetView()->GetNativeView()->
         AddObserver(this);
@@ -54,6 +63,9 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   virtual ~NativeWebContentsModalDialogManagerViews() {
+    if (host_)
+      host_->RemoveObserver(this);
+
     for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
          it != observed_widgets_.end();
          ++it) {
@@ -107,6 +119,9 @@ class NativeWebContentsModalDialogManagerViews
           widget->GetNativeWindow()->parent()));
     }
 #endif
+    // Host may be NULL during tab drag on Views/Win32.
+    if (host_)
+      UpdateWebContentsModalDialogPosition(widget, host_);
     widget->Show();
     FocusDialog(dialog);
 
@@ -149,6 +164,22 @@ class NativeWebContentsModalDialogManagerViews
   virtual void PulseDialog(NativeWebContentsModalDialog dialog) OVERRIDE {
   }
 
+  // WebContentsModalDialogHostObserver overrides
+  virtual void OnPositionRequiresUpdate() OVERRIDE {
+    DCHECK(host_);
+
+    for (std::set<views::Widget*>::iterator it = observed_widgets_.begin();
+         it != observed_widgets_.end();
+         ++it) {
+      UpdateWebContentsModalDialogPosition(*it, host_);
+    }
+  }
+
+  virtual void OnHostDestroying() OVERRIDE {
+    host_->RemoveObserver(this);
+    host_ = NULL;
+  }
+
   // views::WidgetObserver overrides
 
   // NOTE(wittman): OnWidgetClosing is overriden to ensure that, when the widget
@@ -169,6 +200,14 @@ class NativeWebContentsModalDialogManagerViews
 
   virtual void HostChanged(
       web_modal::WebContentsModalDialogHost* new_host) OVERRIDE {
+    if (host_)
+      host_->RemoveObserver(this);
+
+    host_ = new_host;
+
+    if (host_) {
+      host_->AddObserver(this);
+    }
   }
 
  private:
@@ -192,6 +231,10 @@ class NativeWebContentsModalDialogManagerViews
           (*it)->GetFocusManager()->ViewRemoved((*it)->GetRootView());
         params.new_parent->AddChild((*it)->GetNativeWindow());
       }
+
+      // Host may be null when destroying the WebContents.
+      if (host_)
+        OnPositionRequiresUpdate();
     }
   }
 #endif
@@ -218,6 +261,7 @@ class NativeWebContentsModalDialogManagerViews
   }
 
   NativeWebContentsModalDialogManagerDelegate* native_delegate_;
+  WebContentsModalDialogHost* host_;
   std::set<views::Widget*> observed_widgets_;
   std::set<views::Widget*> shown_widgets_;
 

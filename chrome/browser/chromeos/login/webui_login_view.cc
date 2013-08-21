@@ -194,6 +194,10 @@ WebUILoginView::WebUILoginView()
 }
 
 WebUILoginView::~WebUILoginView() {
+  FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
+                    observer_list_,
+                    OnHostDestroying());
+
   if (ash::Shell::GetInstance()->HasPrimaryStatusArea()) {
     ash::Shell::GetInstance()->GetPrimarySystemTray()->
         SetNextFocusableView(NULL);

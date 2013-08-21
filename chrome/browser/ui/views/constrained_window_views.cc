@@ -68,7 +68,8 @@ class WebContentsModalDialogHostObserverViews
   }
 
   virtual ~WebContentsModalDialogHostObserverViews() {
-    host_->RemoveObserver(this);
+    if (host_)
+      host_->RemoveObserver(this);
     target_widget_->RemoveObserver(this);
     target_widget_->SetNativeWindowProperty(native_window_property_,
                                             NULL);
@@ -81,22 +82,12 @@ class WebContentsModalDialogHostObserverViews
 
   // WebContentsModalDialogHostObserver overrides
   virtual void OnPositionRequiresUpdate() OVERRIDE {
-    gfx::Size size = target_widget_->GetWindowBoundsInScreen().size();
-    gfx::Point position = host_->GetDialogPosition(size);
-    views::Border* border =
-        target_widget_->non_client_view()->frame_view()->border();
-    // Border may be null during widget initialization.
-    if (border) {
-      // Align the first row of pixels inside the border. This is the apparent
-      // top of the dialog.
-      position.set_y(position.y() - border->GetInsets().top());
-    }
+    UpdateWebContentsModalDialogPosition(target_widget_, host_);
+  }
 
-    if (target_widget_->is_top_level())
-      position += views::Widget::GetWidgetForNativeView(host_->GetHostView())->
-          GetClientAreaBoundsInScreen().OffsetFromOrigin();
-
-    target_widget_->SetBounds(gfx::Rect(position, size));
+  virtual void OnHostDestroying() OVERRIDE {
+    host_->RemoveObserver(this);
+    host_ = NULL;
   }
 
  private:
@@ -576,6 +567,29 @@ void ConstrainedWindowFrameView::InitClass() {
   }
 }
 
+void UpdateWebContentsModalDialogPosition(
+    views::Widget* widget,
+    web_modal::WebContentsModalDialogHost* dialog_host) {
+  gfx::Size size = widget->GetWindowBoundsInScreen().size();
+  gfx::Point position = dialog_host->GetDialogPosition(size);
+  views::Border* border =
+      widget->non_client_view()->frame_view()->border();
+  // Border may be null during widget initialization.
+  if (border) {
+    // Align the first row of pixels inside the border. This is the apparent
+    // top of the dialog.
+    position.set_y(position.y() - border->GetInsets().top());
+  }
+
+  if (widget->is_top_level()) {
+    position +=
+        views::Widget::GetWidgetForNativeView(dialog_host->GetHostView())->
+            GetClientAreaBoundsInScreen().OffsetFromOrigin();
+  }
+
+  widget->SetBounds(gfx::Rect(position, size));
+}
+
 views::Widget* CreateWebContentsModalDialogViews(
     views::WidgetDelegate* widget_delegate,
     gfx::NativeView parent,
@@ -585,15 +599,9 @@ views::Widget* CreateWebContentsModalDialogViews(
   views::Widget::InitParams params;
   params.delegate = widget_delegate;
   params.child = true;
-  WebContentsModalDialogHostObserver* dialog_host_observer = NULL;
   if (views::DialogDelegate::UseNewStyle()) {
     params.parent = dialog_host->GetHostView();
     params.remove_standard_frame = true;
-    dialog_host_observer =
-        new WebContentsModalDialogHostObserverViews(
-            dialog_host,
-            dialog,
-            kWebContentsModalDialogHostObserverViewsKey);
 #if defined(USE_AURA)
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
 #endif
@@ -602,12 +610,6 @@ views::Widget* CreateWebContentsModalDialogViews(
   }
 
   dialog->Init(params);
-
-  if (dialog_host_observer) {
-    dialog_host_observer->OnPositionRequiresUpdate();
-    dialog->SetNativeWindowProperty(kWebContentsModalDialogHostObserverViewsKey,
-                                    dialog_host_observer);
-  }
 
   return dialog;
 }

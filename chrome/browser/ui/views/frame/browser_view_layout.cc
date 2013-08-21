@@ -69,6 +69,12 @@ class BrowserViewLayout::WebContentsModalDialogHostViews
           : browser_view_layout_(browser_view_layout) {
   }
 
+  virtual ~WebContentsModalDialogHostViews() {
+    FOR_EACH_OBSERVER(web_modal::WebContentsModalDialogHostObserver,
+                      observer_list_,
+                      OnHostDestroying());
+  }
+
   void NotifyPositionRequiresUpdate() {
     FOR_EACH_OBSERVER(WebContentsModalDialogHostObserver,
                       observer_list_,
