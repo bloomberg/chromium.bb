@@ -35,6 +35,7 @@
 #include "core/dom/UserTypingGestureIndicator.h"
 #include "core/editing/Editor.h"
 #include "core/editing/TypingCommand.h"
+#include "core/html/HTMLTextAreaElement.h"
 #include "core/page/EditorClient.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
@@ -280,6 +281,13 @@ void InputMethodController::setComposition(const String& text, const Vector<Comp
 
 void InputMethodController::setCompositionFromExistingText(const Vector<CompositionUnderline>& underlines, unsigned compositionStart, unsigned compositionEnd)
 {
+    // FIXME: Once crbug.com/276776 is fixed, following special handling for
+    // TEXTAREA should be removed.
+    Node* editable = m_frame->selection()->rootEditableElement();
+    Node* ancestor = editable ? editable->document()->ancestorInThisScope(editable) : 0;
+    if (ancestor && isHTMLTextAreaElement(ancestor))
+        toHTMLTextAreaElement(ancestor)->normalizeInnerText();
+
     m_compositionNode = 0;
     m_customCompositionUnderlines.clear();
 

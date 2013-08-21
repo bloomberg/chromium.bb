@@ -647,6 +647,42 @@ TEST_F(WebViewTest, SetCompositionFromExistingText)
     webView->close();
 }
 
+TEST_F(WebViewTest, SetCompositionFromExistingTextInTextArea)
+{
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("text_area_populated.html"));
+    WebView* webView = FrameTestHelpers::createWebViewAndLoad(m_baseURL + "text_area_populated.html");
+    webView->setInitialFocus(false);
+    WebVector<WebCompositionUnderline> underlines(static_cast<size_t>(1));
+    underlines[0] = WebKit::WebCompositionUnderline(0, 4, 0, false);
+    webView->setEditableSelectionOffsets(27, 27);
+    std::string newLineText("\n");
+    webView->confirmComposition(WebString::fromUTF8(newLineText.c_str()));
+    WebTextInputInfo info = webView->textInputInfo();
+    EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", std::string(info.value.utf8().data()));
+
+    webView->setEditableSelectionOffsets(31, 31);
+    webView->setCompositionFromExistingText(30, 34, underlines);
+    WebVector<WebCompositionUnderline> underlineResults = static_cast<WebViewImpl*>(webView)->compositionUnderlines();
+    EXPECT_EQ(30u, underlineResults[0].startOffset);
+    EXPECT_EQ(34u, underlineResults[0].endOffset);
+    info = webView->textInputInfo();
+    EXPECT_EQ("0123456789abcdefghijklmnopq\nrstuvwxyz", std::string(info.value.utf8().data()));
+    EXPECT_EQ(31, info.selectionStart);
+    EXPECT_EQ(31, info.selectionEnd);
+    EXPECT_EQ(30, info.compositionStart);
+    EXPECT_EQ(34, info.compositionEnd);
+
+    std::string compositionText("yolo");
+    webView->confirmComposition(WebString::fromUTF8(compositionText.c_str()));
+    info = webView->textInputInfo();
+    EXPECT_EQ("0123456789abcdefghijklmnopq\nrsyoloxyz", std::string(info.value.utf8().data()));
+    EXPECT_EQ(34, info.selectionStart);
+    EXPECT_EQ(34, info.selectionEnd);
+    EXPECT_EQ(-1, info.compositionStart);
+    EXPECT_EQ(-1, info.compositionEnd);
+    webView->close();
+}
+
 TEST_F(WebViewTest, IsSelectionAnchorFirst)
 {
     URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(m_baseURL.c_str()), WebString::fromUTF8("input_field_populated.html"));

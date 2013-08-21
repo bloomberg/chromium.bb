@@ -662,4 +662,15 @@ String HTMLTextFormControlElement::directionForFormData() const
     return "ltr";
 }
 
+
+// FIXME: Once crbug.com/276776 is fixed, HTMLTextFormControlElement::normalizeInnerText() should be removed.
+void HTMLTextFormControlElement::normalizeInnerText()
+{
+    int start = selectionStart();
+    int end = selectionEnd();
+    const AtomicString& direction = selectionDirection();
+    innerTextElement()->normalize();
+    setSelectionRange(start, end, direction);
+}
+
 } // namespace Webcore

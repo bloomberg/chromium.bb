@@ -89,6 +89,10 @@ public:
 
     void setTextAsOfLastFormControlChangeEvent(const String& text) { m_textAsOfLastFormControlChangeEvent = text; }
 
+    // FIXME: Once crbug.com/276776 is fixed, normalizeInnerText() should be removed.
+    // This function is for workaround of crbug.com/275457. You should not use.
+    void normalizeInnerText();
+
 protected:
     HTMLTextFormControlElement(const QualifiedName&, Document*, HTMLFormElement*);
     bool isPlaceholderEmpty() const;
