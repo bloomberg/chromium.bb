@@ -500,8 +500,10 @@ uint64 GpuMemoryManager::ComputeClientAllocationWhenVisible(
 
 uint64 GpuMemoryManager::ComputeClientAllocationWhenNonvisible(
     GpuMemoryManagerClientState* client_state) {
-
   if (!client_state->managed_memory_stats_received_)
+    return 0;
+
+  if (!allow_nonvisible_memory_)
     return 0;
 
   return 9 * client_state->managed_memory_stats_.bytes_required / 8;
@@ -647,10 +649,6 @@ void GpuMemoryManager::ComputeNonvisibleSurfacesAllocations() {
         bytes_available_total / 4,
         bytes_available_total - bytes_allocated_visible);
   }
-
-  // Clamp the amount of memory available to non-visible clients.
-  if (!allow_nonvisible_memory_)
-    bytes_available_nonvisible = 0;
 
   // Determine which now-visible clients should keep their contents when
   // they are made nonvisible.

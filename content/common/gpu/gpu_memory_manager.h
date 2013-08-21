@@ -92,6 +92,8 @@ class CONTENT_EXPORT GpuMemoryManager :
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            BackgroundMru);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
+                           AllowNonvisibleMemory);
+  FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            BackgroundDiscardPersistent);
   FRIEND_TEST_ALL_PREFIXES(GpuMemoryManagerTest,
                            UnmanagedTracking);

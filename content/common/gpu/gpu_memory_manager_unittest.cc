@@ -160,6 +160,7 @@ class GpuMemoryManagerTest : public testing::Test {
   GpuMemoryManagerTest()
       : memmgr_(0, kFrontbufferLimitForTest) {
     memmgr_.TestingDisableScheduleManage();
+    memmgr_.allow_nonvisible_memory_ = true;
   }
 
   virtual void SetUp() {
@@ -674,8 +675,6 @@ TEST_F(GpuMemoryManagerTest, BackgroundMru) {
   memmgr_.TestingSetMinimumClientAllocation(8);
 
   uint64 bytes_when_not_visible_expected = 6u;
-  if (!memmgr_.allow_nonvisible_memory_)
-    bytes_when_not_visible_expected = 0;
 
   FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
   FakeClient stub2(&memmgr_, GenerateUniqueSurfaceId(), true);
@@ -718,6 +717,31 @@ TEST_F(GpuMemoryManagerTest, BackgroundMru) {
   EXPECT_GE(stub1.BytesWhenNotVisible(), bytes_when_not_visible_expected);
   EXPECT_EQ(stub2.BytesWhenNotVisible(), 0u);
   EXPECT_GE(stub3.BytesWhenNotVisible(), bytes_when_not_visible_expected);
+}
+
+TEST_F(GpuMemoryManagerTest, AllowNonvisibleMemory) {
+  memmgr_.TestingSetAvailableGpuMemory(512);
+  memmgr_.TestingSetMinimumClientAllocation(16);
+
+  FakeClient stub1(&memmgr_, GenerateUniqueSurfaceId(), true);
+  FakeClient stub2(&memmgr_, GenerateUniqueSurfaceId(), true);
+  FakeClient stub3(&memmgr_, GenerateUniqueSurfaceId(), true);
+
+  memmgr_.allow_nonvisible_memory_ = true;
+  stub1.SetVisible(true);
+  SetClientStats(&stub1, 20, 80);
+  SetClientStats(&stub2, 20, 80);
+  SetClientStats(&stub3, 20, 80);
+  Manage();
+  EXPECT_GT(stub1.BytesWhenNotVisible(), 0u);
+  EXPECT_GT(stub2.BytesWhenNotVisible(), 0u);
+  EXPECT_GT(stub3.BytesWhenNotVisible(), 0u);
+
+  memmgr_.allow_nonvisible_memory_ = false;
+  Manage();
+  EXPECT_EQ(stub1.BytesWhenNotVisible(), 0u);
+  EXPECT_EQ(stub2.BytesWhenNotVisible(), 0u);
+  EXPECT_EQ(stub3.BytesWhenNotVisible(), 0u);
 }
 
 // Test that once a backgrounded client has dropped its resources, it
