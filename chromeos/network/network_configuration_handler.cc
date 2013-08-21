@@ -99,7 +99,6 @@ bool IsPassphrase(const std::string& key) {
       key == flimflam::kPassphraseProperty ||
       key == flimflam::kOpenVPNOTPProperty ||
       key == flimflam::kEapPrivateKeyProperty ||
-      key == flimflam::kEapPrivateKeyPasswordProperty ||
       key == flimflam::kEapPinProperty ||
       key == flimflam::kApnPasswordProperty;
 }
