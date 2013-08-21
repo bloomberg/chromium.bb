@@ -66,7 +66,7 @@ class LinuxPort(chromium.ChromiumPort):
     @staticmethod
     def _determine_architecture(filesystem, executive, driver_path):
         file_output = ''
-        if filesystem.exists(driver_path):
+        if filesystem.isfile(driver_path):
             # The --dereference flag tells file to follow symlinks
             file_output = executive.run_command(['file', '--brief', '--dereference', driver_path], return_stderr=True)
 
