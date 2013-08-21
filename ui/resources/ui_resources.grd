@@ -240,6 +240,7 @@
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ARROW_HOVER" file="common/notification_arrow_hover.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_ARROW_PRESSED" file="common/notification_arrow_pressed.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL" file="common/notification_clear_all.png"/>
+      <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_DISABLED" file="common/notification_clear_all_disabled.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_HOVER" file="common/notification_clear_all_hover.png"/>
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_CLEAR_ALL_PRESSED" file="common/notification_clear_all_pressed.png"/>
       <if expr="is_win">

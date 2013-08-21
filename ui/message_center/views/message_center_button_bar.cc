@@ -158,7 +158,11 @@ MessageCenterButtonBar::MessageCenterButtonBar(
                                    IDR_NOTIFICATION_CLEAR_ALL_HOVER,
                                    IDR_NOTIFICATION_CLEAR_ALL_PRESSED,
                                    IDS_MESSAGE_CENTER_CLEAR_ALL);
+  close_all_button_->SetImage(
+      views::Button::STATE_DISABLED,
+      resource_bundle.GetImageSkiaNamed(IDR_NOTIFICATION_CLEAR_ALL_DISABLED));
   button_container_->AddChildView(close_all_button_);
+
   settings_button_ =
       new NotificationCenterButton(this,
                                    IDR_NOTIFICATION_SETTINGS,

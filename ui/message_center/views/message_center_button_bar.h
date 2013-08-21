@@ -67,7 +67,7 @@ class MessageCenterButtonBar : public views::View,
   NotificationCenterButton* title_arrow_;
   views::Label* notification_label_;
   views::View* button_container_;
-  views::Button* close_all_button_;
+  NotificationCenterButton* close_all_button_;
   NotificationCenterButton* settings_button_;
   NotificationCenterButton* quiet_mode_button_;
 
