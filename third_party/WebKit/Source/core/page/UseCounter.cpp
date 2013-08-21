@@ -567,8 +567,8 @@ void UseCounter::count(Document* document, Feature feature)
     if (!page)
         return;
 
-    ASSERT(page->useCounter()->deprecationMessage(feature).isEmpty());
-    page->useCounter()->recordMeasurement(feature);
+    ASSERT(page->useCounter().deprecationMessage(feature).isEmpty());
+    page->useCounter().recordMeasurement(feature);
 }
 
 void UseCounter::count(DOMWindow* domWindow, Feature feature)
@@ -600,9 +600,9 @@ void UseCounter::countDeprecation(Document* document, Feature feature)
     if (!page)
         return;
 
-    if (page->useCounter()->recordMeasurement(feature)) {
-        ASSERT(!page->useCounter()->deprecationMessage(feature).isEmpty());
-        page->console()->addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter()->deprecationMessage(feature));
+    if (page->useCounter().recordMeasurement(feature)) {
+        ASSERT(!page->useCounter().deprecationMessage(feature).isEmpty());
+        page->console()->addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter().deprecationMessage(feature));
     }
 }
 
@@ -683,7 +683,7 @@ void UseCounter::count(Feature feature)
 UseCounter* UseCounter::getFrom(const Document* document)
 {
     if (document && document->page())
-        return document->page()->useCounter();
+        return &document->page()->useCounter();
     return 0;
 }
 

@@ -730,7 +730,7 @@ void Page::didCommitLoad(Frame* frame)
 {
     lifecycleNotifier()->notifyDidCommitLoad(frame);
     if (m_mainFrame == frame)
-        useCounter()->didCommitLoad();
+        useCounter().didCommitLoad();
 }
 
 PageLifecycleNotifier* Page::lifecycleNotifier()

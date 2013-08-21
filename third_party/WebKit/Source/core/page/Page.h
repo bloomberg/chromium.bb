@@ -173,7 +173,7 @@ public:
     ProgressTracker& progress() const { return *m_progress; }
     BackForwardController& backForward() const { return *m_backForwardController; }
 
-    UseCounter* useCounter() { return &m_UseCounter; }
+    UseCounter& useCounter() { return m_useCounter; }
 
     void setTabKeyCyclesThroughElements(bool b) { m_tabKeyCyclesThroughElements = b; }
     bool tabKeyCyclesThroughElements() const { return m_tabKeyCyclesThroughElements; }
@@ -286,7 +286,7 @@ private:
     EditorClient* const m_editorClient;
     ValidationMessageClient* m_validationMessageClient;
 
-    UseCounter m_UseCounter;
+    UseCounter m_useCounter;
 
     int m_subframeCount;
     bool m_openedByDOM;
