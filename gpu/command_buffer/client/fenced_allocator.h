@@ -83,6 +83,9 @@ class GPU_EXPORT FencedAllocator {
   // True if any memory is allocated.
   bool InUse();
 
+  // Return bytes of memory that is IN_USE
+  size_t bytes_in_use() const { return bytes_in_use_; }
+
  private:
   // Status of a block of memory, for book-keeping.
   enum State {
@@ -134,6 +137,7 @@ class GPU_EXPORT FencedAllocator {
 
   CommandBufferHelper *helper_;
   Container blocks_;
+  size_t bytes_in_use_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(FencedAllocator);
 };
@@ -242,6 +246,8 @@ class FencedAllocatorWrapper {
   }
 
   FencedAllocator &allocator() { return allocator_; }
+
+  size_t bytes_in_use() const { return allocator_.bytes_in_use(); }
 
  private:
   FencedAllocator allocator_;

@@ -260,7 +260,8 @@ bool GLInProcessContextImpl::Initialize(
   if (!gles2_implementation_->Initialize(
       kStartTransferBufferSize,
       kMinTransferBufferSize,
-      kMaxTransferBufferSize)) {
+      kMaxTransferBufferSize,
+      gles2::GLES2Implementation::kNoLimit)) {
     return false;
   }
 

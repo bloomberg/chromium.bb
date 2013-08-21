@@ -76,6 +76,10 @@ class WebGraphicsContext3DCommandBufferImpl
     : public WebKit::WebGraphicsContext3D,
       public base::SupportsWeakPtr<WebGraphicsContext3DCommandBufferImpl> {
  public:
+  enum MappedMemoryReclaimLimit {
+    kNoLimit = 0,
+  };
+
   WebGraphicsContext3DCommandBufferImpl(
       int surface_id,
       const GURL& active_url,
@@ -90,7 +94,8 @@ class WebGraphicsContext3DCommandBufferImpl
                   size_t command_buffer_size,
                   size_t start_transfer_buffer_size,
                   size_t min_transfer_buffer_size,
-                  size_t max_transfer_buffer_size);
+                  size_t max_transfer_buffer_size,
+                  size_t mapped_memory_reclaim_limit);
 
   bool InitializeWithDefaultBufferSizes(const Attributes& attributes,
                                         bool bind_generates_resources,
@@ -757,6 +762,7 @@ class WebGraphicsContext3DCommandBufferImpl
   size_t start_transfer_buffer_size_;
   size_t min_transfer_buffer_size_;
   size_t max_transfer_buffer_size_;
+  size_t mapped_memory_limit_;
 };
 
 }  // namespace content

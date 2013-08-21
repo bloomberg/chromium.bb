@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <functional>
 
+#include "base/debug/trace_event.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
@@ -18,9 +19,12 @@ MemoryChunk::MemoryChunk(
       allocator_(shm.size, helper, shm.ptr) {
 }
 
-MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper)
+MappedMemoryManager::MappedMemoryManager(CommandBufferHelper* helper,
+                                         size_t unused_memory_reclaim_limit)
     : chunk_size_multiple_(1),
-      helper_(helper) {
+      helper_(helper),
+      allocated_memory_(0),
+      max_free_bytes_(unused_memory_reclaim_limit) {
 }
 
 MappedMemoryManager::~MappedMemoryManager() {
@@ -36,16 +40,38 @@ void* MappedMemoryManager::Alloc(
     unsigned int size, int32* shm_id, unsigned int* shm_offset) {
   GPU_DCHECK(shm_id);
   GPU_DCHECK(shm_offset);
-  // See if any of the chucks can satisfy this request.
-  for (size_t ii = 0; ii < chunks_.size(); ++ii) {
-    MemoryChunk* chunk = chunks_[ii];
-    chunk->FreeUnused();
-    if (chunk->GetLargestFreeSizeWithoutWaiting() >= size) {
-      void* mem = chunk->Alloc(size);
-      GPU_DCHECK(mem);
-      *shm_id = chunk->shm_id();
-      *shm_offset = chunk->GetOffset(mem);
-      return mem;
+  if (size <= allocated_memory_) {
+    size_t total_bytes_in_use = 0;
+    // See if any of the chunks can satisfy this request.
+    for (size_t ii = 0; ii < chunks_.size(); ++ii) {
+      MemoryChunk* chunk = chunks_[ii];
+      chunk->FreeUnused();
+      total_bytes_in_use += chunk->bytes_in_use();
+      if (chunk->GetLargestFreeSizeWithoutWaiting() >= size) {
+        void* mem = chunk->Alloc(size);
+        GPU_DCHECK(mem);
+        *shm_id = chunk->shm_id();
+        *shm_offset = chunk->GetOffset(mem);
+        return mem;
+      }
+    }
+
+    // If there is a memory limit being enforced and total free
+    // memory (allocated_memory_ - total_bytes_in_use) is larger than
+    // the limit try waiting.
+    if (max_free_bytes_ != kNoLimit &&
+        (allocated_memory_ - total_bytes_in_use) >= max_free_bytes_) {
+      TRACE_EVENT0("gpu", "MappedMemoryManager::Alloc::wait");
+      for (size_t ii = 0; ii < chunks_.size(); ++ii) {
+        MemoryChunk* chunk = chunks_[ii];
+        if (chunk->GetLargestFreeSizeWithWaiting() >= size) {
+          void* mem = chunk->Alloc(size);
+          GPU_DCHECK(mem);
+          *shm_id = chunk->shm_id();
+          *shm_offset = chunk->GetOffset(mem);
+          return mem;
+        }
+      }
     }
   }
 
@@ -59,6 +85,7 @@ void* MappedMemoryManager::Alloc(
   if (id  < 0)
     return NULL;
   MemoryChunk* mc = new MemoryChunk(id, shm, helper_);
+  allocated_memory_ += mc->GetSize();
   chunks_.push_back(mc);
   void* mem = mc->Alloc(size);
   GPU_DCHECK(mem);
@@ -97,6 +124,7 @@ void MappedMemoryManager::FreeUnused() {
     chunk->FreeUnused();
     if (!chunk->InUse()) {
       cmd_buf->DestroyTransferBuffer(chunk->shm_id());
+      allocated_memory_ -= chunk->GetSize();
       iter = chunks_.erase(iter);
     } else {
       ++iter;
@@ -105,6 +133,3 @@ void MappedMemoryManager::FreeUnused() {
 }
 
 }  // namespace gpu
-
-
-

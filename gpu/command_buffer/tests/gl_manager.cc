@@ -198,7 +198,9 @@ void GLManager::Initialize(const GLManager::Options& options) {
   ASSERT_TRUE(gles2_implementation_->Initialize(
       kStartTransferBufferSize,
       kMinTransferBufferSize,
-      kMaxTransferBufferSize)) << "Could not init GLES2Implementation";
+      kMaxTransferBufferSize,
+      gpu::gles2::GLES2Implementation::kNoLimit))
+          << "Could not init GLES2Implementation";
 
   MakeCurrent();
 }

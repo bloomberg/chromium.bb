@@ -407,7 +407,8 @@ class GLES2ImplementationTest : public testing::Test {
       ASSERT_TRUE(gl_->Initialize(
           kTransferBufferSize,
           kTransferBufferSize,
-          kTransferBufferSize));
+          kTransferBufferSize,
+          GLES2Implementation::kNoLimit));
     }
 
     EXPECT_CALL(*command_buffer(), OnFlush())

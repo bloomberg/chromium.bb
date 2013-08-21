@@ -17,7 +17,6 @@
 #include <GLES2/gl2extchromium.h>
 #include "gpu/command_buffer/client/buffer_tracker.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_tracker.h"
-#include "gpu/command_buffer/client/mapped_memory.h"
 #include "gpu/command_buffer/client/program_info_manager.h"
 #include "gpu/command_buffer/client/query_tracker.h"
 #include "gpu/command_buffer/client/transfer_buffer.h"
@@ -133,7 +132,8 @@ GLES2Implementation::GLES2Implementation(
 bool GLES2Implementation::Initialize(
     unsigned int starting_transfer_buffer_size,
     unsigned int min_transfer_buffer_size,
-    unsigned int max_transfer_buffer_size) {
+    unsigned int max_transfer_buffer_size,
+    unsigned int mapped_memory_limit) {
   GPU_DCHECK_GE(starting_transfer_buffer_size, min_transfer_buffer_size);
   GPU_DCHECK_LE(starting_transfer_buffer_size, max_transfer_buffer_size);
   GPU_DCHECK_GE(min_transfer_buffer_size, kStartingOffset);
@@ -148,8 +148,8 @@ bool GLES2Implementation::Initialize(
     return false;
   }
 
-  mapped_memory_.reset(new MappedMemoryManager(helper_));
-  SetSharedMemoryChunkSizeMultiple(1024 * 1024 * 2);
+  mapped_memory_.reset(new MappedMemoryManager(helper_, mapped_memory_limit));
+  mapped_memory_->set_chunk_size_multiple(2 * 1024 * 1024);
 
   if (!QueryAndCacheStaticState())
     return false;
@@ -287,11 +287,6 @@ int32 GLES2Implementation::GetResultShmId() {
 
 uint32 GLES2Implementation::GetResultShmOffset() {
   return transfer_buffer_->GetResultOffset();
-}
-
-void GLES2Implementation::SetSharedMemoryChunkSizeMultiple(
-    unsigned int multiple) {
-  mapped_memory_->set_chunk_size_multiple(multiple);
 }
 
 void GLES2Implementation::FreeUnusedSharedMemory() {

@@ -234,7 +234,8 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       command_buffer_size_(0),
       start_transfer_buffer_size_(0),
       min_transfer_buffer_size_(0),
-      max_transfer_buffer_size_(0) {
+      max_transfer_buffer_size_(0),
+      mapped_memory_limit_(gpu::gles2::GLES2Implementation::kNoLimit) {
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
   // Get ViewMsg_SwapBuffers_ACK from browser for single-threaded path.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -266,7 +267,8 @@ bool WebGraphicsContext3DCommandBufferImpl::InitializeWithDefaultBufferSizes(
                     kDefaultCommandBufferSize,
                     kDefaultStartTransferBufferSize,
                     kDefaultMinTransferBufferSize,
-                    kDefaultMaxTransferBufferSize);
+                    kDefaultMaxTransferBufferSize,
+                    gpu::gles2::GLES2Implementation::kNoLimit);
 }
 
 bool WebGraphicsContext3DCommandBufferImpl::Initialize(
@@ -276,7 +278,8 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
     size_t command_buffer_size,
     size_t start_transfer_buffer_size,
     size_t min_transfer_buffer_size,
-    size_t max_transfer_buffer_size) {
+    size_t max_transfer_buffer_size,
+    size_t mapped_memory_limit) {
   TRACE_EVENT0("gpu", "WebGfxCtx3DCmdBfrImpl::initialize");
 
   attributes_ = attributes;
@@ -297,6 +300,7 @@ bool WebGraphicsContext3DCommandBufferImpl::Initialize(
   start_transfer_buffer_size_ = start_transfer_buffer_size;
   min_transfer_buffer_size_ = min_transfer_buffer_size;
   max_transfer_buffer_size_ = max_transfer_buffer_size;
+  mapped_memory_limit_ = mapped_memory_limit;
 
   return true;
 }
@@ -480,7 +484,8 @@ bool WebGraphicsContext3DCommandBufferImpl::CreateContext(
   if (!real_gl_->Initialize(
       start_transfer_buffer_size_,
       min_transfer_buffer_size_,
-      max_transfer_buffer_size_)) {
+      max_transfer_buffer_size_,
+      mapped_memory_limit_)) {
     return false;
   }
 

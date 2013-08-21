@@ -149,7 +149,8 @@ class MappedMemoryManagerTest : public MappedMemoryTestBase {
  protected:
   virtual void SetUp() {
     MappedMemoryTestBase::SetUp();
-    manager_.reset(new MappedMemoryManager(helper_.get()));
+    manager_.reset(new MappedMemoryManager(
+        helper_.get(), MappedMemoryManager::kNoLimit));
   }
 
   virtual void TearDown() {
@@ -304,6 +305,83 @@ TEST_F(MappedMemoryManagerTest, ChunkSizeMultiple) {
   EXPECT_EQ(0u, offset1);
   EXPECT_EQ(kSize, offset2);
   EXPECT_EQ(0u, offset3);
+}
+
+TEST_F(MappedMemoryManagerTest, UnusedMemoryLimit) {
+  const unsigned int kChunkSize = 2048;
+  // Reset the manager with a memory limit.
+  manager_.reset(new MappedMemoryManager(helper_.get(), kChunkSize));
+  manager_->set_chunk_size_multiple(kChunkSize);
+
+  // Allocate one chunk worth of memory.
+  int32 id1 = -1;
+  unsigned int offset1 = 0xFFFFFFFFU;
+  void* mem1 = manager_->Alloc(kChunkSize, &id1, &offset1);
+  ASSERT_TRUE(mem1);
+  EXPECT_NE(-1, id1);
+  EXPECT_EQ(0u, offset1);
+
+  // Allocate half a chunk worth of memory again.
+  // The same chunk will be used.
+  int32 id2 = -1;
+  unsigned int offset2 = 0xFFFFFFFFU;
+  void* mem2 = manager_->Alloc(kChunkSize, &id2, &offset2);
+  ASSERT_TRUE(mem2);
+  EXPECT_NE(-1, id2);
+  EXPECT_EQ(0u, offset2);
+
+  // Expect two chunks to be allocated, exceeding the limit,
+  // since all memory is in use.
+  EXPECT_EQ(2 * kChunkSize, manager_->allocated_memory());
+}
+
+TEST_F(MappedMemoryManagerTest, MemoryLimitWithReuse) {
+  const unsigned int kSize = 1024;
+  // Reset the manager with a memory limit.
+  manager_.reset(new MappedMemoryManager(helper_.get(), kSize));
+  const unsigned int kChunkSize = 2 * 1024;
+  manager_->set_chunk_size_multiple(kChunkSize);
+
+  // Allocate half a chunk worth of memory.
+  int32 id1 = -1;
+  unsigned int offset1 = 0xFFFFFFFFU;
+  void* mem1 = manager_->Alloc(kSize, &id1, &offset1);
+  ASSERT_TRUE(mem1);
+  EXPECT_NE(-1, id1);
+  EXPECT_EQ(0u, offset1);
+
+  // Allocate half a chunk worth of memory again.
+  // The same chunk will be used.
+  int32 id2 = -1;
+  unsigned int offset2 = 0xFFFFFFFFU;
+  void* mem2 = manager_->Alloc(kSize, &id2, &offset2);
+  ASSERT_TRUE(mem2);
+  EXPECT_NE(-1, id2);
+  EXPECT_EQ(kSize, offset2);
+
+  // Free one successful allocation, pending fence.
+  int32 token = helper_.get()->InsertToken();
+  manager_->FreePendingToken(mem2, token);
+
+  // The way we hooked up the helper and engine, it won't process commands
+  // until it has to wait for something. Which means the token shouldn't have
+  // passed yet at this point.
+  EXPECT_GT(token, GetToken());
+
+  // Since we didn't call helper_.finish() the token did not pass.
+  // We won't be able to claim the free memory without waiting and
+  // as we've already met the memory limit we'll have to wait
+  // on the token.
+  int32 id3 = -1;
+  unsigned int offset3 = 0xFFFFFFFFU;
+  void* mem3 = manager_->Alloc(kSize, &id3, &offset3);
+  ASSERT_TRUE(mem3);
+  EXPECT_NE(-1, id3);
+  // It will reuse the space from the second allocation just freed.
+  EXPECT_EQ(kSize, offset3);
+
+  // Expect one chunk to be allocated
+  EXPECT_EQ(1 * kChunkSize, manager_->allocated_memory());
 }
 
 }  // namespace gpu

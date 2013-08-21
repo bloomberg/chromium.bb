@@ -135,7 +135,8 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
   if (!gles2_impl_->Initialize(
       transfer_buffer_size,
       kMinTransferBufferSize,
-      std::max(kMaxTransferBufferSize, transfer_buffer_size))) {
+      std::max(kMaxTransferBufferSize, transfer_buffer_size),
+      gpu::gles2::GLES2Implementation::kNoLimit)) {
     return false;
   }
 

@@ -79,7 +79,7 @@ class GPU_EXPORT MemoryChunk {
     allocator_.FreePendingToken(pointer, token);
   }
 
-  // Frees any blocks who's tokens have passed.
+  // Frees any blocks whose tokens have passed.
   void FreeUnused() {
     allocator_.FreeUnused();
   }
@@ -90,9 +90,13 @@ class GPU_EXPORT MemoryChunk {
            pointer < reinterpret_cast<const int8*>(shm_.ptr) + shm_.size;
   }
 
-  // Returns true of any memory in this chuck is in use.
+  // Returns true of any memory in this chunk is in use.
   bool InUse() {
     return allocator_.InUse();
+  }
+
+  size_t bytes_in_use() const {
+    return allocator_.bytes_in_use();
   }
 
  private:
@@ -103,10 +107,17 @@ class GPU_EXPORT MemoryChunk {
   DISALLOW_COPY_AND_ASSIGN(MemoryChunk);
 };
 
-// Manages MemoryChucks.
+// Manages MemoryChunks.
 class GPU_EXPORT MappedMemoryManager {
  public:
-  explicit MappedMemoryManager(CommandBufferHelper* helper);
+  enum MemoryLimit {
+    kNoLimit = 0,
+  };
+
+  // |unused_memory_reclaim_limit|: When exceeded this causes pending memory
+  // to be reclaimed before allocating more memory.
+  MappedMemoryManager(CommandBufferHelper* helper,
+                      size_t unused_memory_reclaim_limit);
 
   ~MappedMemoryManager();
 
@@ -146,8 +157,13 @@ class GPU_EXPORT MappedMemoryManager {
   void FreeUnused();
 
   // Used for testing
-  size_t num_chunks() {
+  size_t num_chunks() const {
     return chunks_.size();
+  }
+
+  // Used for testing
+  size_t allocated_memory() const {
+    return allocated_memory_;
   }
 
  private:
@@ -157,6 +173,8 @@ class GPU_EXPORT MappedMemoryManager {
   unsigned int chunk_size_multiple_;
   CommandBufferHelper* helper_;
   MemoryChunkVector chunks_;
+  size_t allocated_memory_;
+  size_t max_free_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(MappedMemoryManager);
 };

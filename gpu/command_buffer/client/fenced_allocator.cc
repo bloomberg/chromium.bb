@@ -5,7 +5,9 @@
 // This file contains the implementation of the FencedAllocator class.
 
 #include "gpu/command_buffer/client/fenced_allocator.h"
+
 #include <algorithm>
+
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 
 namespace gpu {
@@ -33,7 +35,8 @@ const FencedAllocator::Offset FencedAllocator::kInvalidOffset;
 
 FencedAllocator::FencedAllocator(unsigned int size,
                                  CommandBufferHelper *helper)
-    : helper_(helper) {
+    : helper_(helper),
+      bytes_in_use_(0) {
   Block block = { FREE, 0, RoundDown(size), kUnusedToken };
   blocks_.push_back(block);
 }
@@ -90,7 +93,12 @@ FencedAllocator::Offset FencedAllocator::Alloc(unsigned int size) {
 void FencedAllocator::Free(FencedAllocator::Offset offset) {
   BlockIndex index = GetBlockByOffset(offset);
   GPU_DCHECK_NE(blocks_[index].state, FREE);
-  blocks_[index].state = FREE;
+  Block &block = blocks_[index];
+
+  if (block.state == IN_USE)
+    bytes_in_use_ -= block.size;
+
+  block.state = FREE;
   CollapseFreeBlock(index);
 }
 
@@ -99,6 +107,8 @@ void FencedAllocator::FreePendingToken(
     FencedAllocator::Offset offset, int32 token) {
   BlockIndex index = GetBlockByOffset(offset);
   Block &block = blocks_[index];
+  if (block.state == IN_USE)
+    bytes_in_use_ -= block.size;
   block.state = FREE_PENDING_TOKEN;
   block.token = token;
 }
@@ -153,6 +163,8 @@ bool FencedAllocator::CheckConsistency() {
   return true;
 }
 
+// Returns false if all blocks are actually FREE, in which
+// case they would be coalesced into one block, true otherwise.
 bool FencedAllocator::InUse() {
   return blocks_.size() != 1 || blocks_[0].state != FREE;
 }
@@ -211,6 +223,7 @@ FencedAllocator::Offset FencedAllocator::AllocInBlock(BlockIndex index,
   GPU_DCHECK_GE(block.size, size);
   GPU_DCHECK_EQ(block.state, FREE);
   Offset offset = block.offset;
+  bytes_in_use_ += size;
   if (block.size == size) {
     block.state = IN_USE;
     return offset;

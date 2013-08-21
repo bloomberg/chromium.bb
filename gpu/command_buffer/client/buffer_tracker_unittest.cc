@@ -51,7 +51,8 @@ class BufferTrackerTest : public testing::Test {
     command_buffer_.reset(new MockClientCommandBufferImpl());
     helper_.reset(new GLES2CmdHelper(command_buffer_.get()));
     helper_->Initialize(kCommandBufferSizeBytes);
-    mapped_memory_.reset(new MappedMemoryManager(helper_.get()));
+    mapped_memory_.reset(new MappedMemoryManager(
+        helper_.get(), MappedMemoryManager::kNoLimit));
     buffer_tracker_.reset(new BufferTracker(mapped_memory_.get()));
   }
 

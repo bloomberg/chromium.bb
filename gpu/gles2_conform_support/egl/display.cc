@@ -234,7 +234,8 @@ EGLContext Display::CreateContext(EGLConfig config,
   if (!context_->Initialize(
       kTransferBufferSize,
       kTransferBufferSize / 2,
-      kTransferBufferSize * 2)) {
+      kTransferBufferSize * 2,
+      gpu::gles2::GLES2Implementation::kNoLimit)) {
     return EGL_NO_CONTEXT;
   }
 
