@@ -15,7 +15,7 @@
     "channel": "dev",
     "extension_types": ["extension"],
     "whitelist": [
-      "acldcpdepobcjbdanifkmfndkjoilgba",  // Activity Log
+      "acldcpdepobcjbdanifkmfndkjoilgba",  // Activity Log (Watchdog)
       "ajabfgledjhbabeoojlabelaifmakodf"   // For testing
     ]
   },
@@ -360,7 +360,8 @@
       "extension_types": ["platform_app"],
       "whitelist": [
           "gonnpeheodhmhdjiimoiheniambmdcco",  // Apps Editor old.
-          "cbelnpbjogfbjamhpbofhlnklecjpido"  // Apps Editor published.
+          "cbelnpbjogfbjamhpbofhlnklecjpido",  // Apps Editor published.
+          "acldcpdepobcjbdanifkmfndkjoilgba"   // Activity Log (Watchdog)
       ]
     }
   ],
