@@ -26,12 +26,7 @@ PP_ImageDataFormat PPB_ImageData_Shared::GetNativeImageDataFormat() {
   NOTIMPLEMENTED();
   return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
 #else
-  return PP_IMAGEDATAFORMAT_BGRA_PREMUL;  if (SK_B32_SHIFT == 0)
-    return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
-  else if (SK_R32_SHIFT == 0)
-    return PP_IMAGEDATAFORMAT_RGBA_PREMUL;
-  else
-    return PP_IMAGEDATAFORMAT_BGRA_PREMUL;  // Default to something on failure.
+  return PP_IMAGEDATAFORMAT_BGRA_PREMUL;
 #endif
 }
 
