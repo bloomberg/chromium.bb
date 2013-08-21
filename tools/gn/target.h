@@ -78,7 +78,8 @@ class Target : public Item {
   void swap_in_configs(std::vector<const Config*>* c) { configs_.swap(*c); }
 
   // List of configs that all dependencies (direct and indirect) of this
-  // target get. These configs are not added to this target.
+  // target get. These configs are not added to this target. Note that due
+  // to the way this is computed, there may be duplicates in this list.
   const std::vector<const Config*>& all_dependent_configs() const {
     return all_dependent_configs_;
   }
@@ -93,6 +94,15 @@ class Target : public Item {
   }
   void swap_in_direct_dependent_configs(std::vector<const Config*>* c) {
     direct_dependent_configs_.swap(*c);
+  }
+
+  // A list of a subset of deps where we'll re-export direct_dependent_configs
+  // as direct_dependent_configs of this target.
+  const std::vector<const Target*>& forward_dependent_configs() const {
+    return forward_dependent_configs_;
+  }
+  void swap_in_forward_dependent_configs(std::vector<const Target*>* t) {
+    forward_dependent_configs_.swap(*t);
   }
 
   const std::set<const Target*>& inherited_libraries() const {
@@ -120,6 +130,7 @@ class Target : public Item {
   std::vector<const Config*> configs_;
   std::vector<const Config*> all_dependent_configs_;
   std::vector<const Config*> direct_dependent_configs_;
+  std::vector<const Target*> forward_dependent_configs_;
 
   // Libraries from transitive deps. Libraries need to be linked only
   // with the end target (executable, shared library). These do not get

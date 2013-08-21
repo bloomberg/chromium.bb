@@ -76,6 +76,8 @@ class TargetGenerator {
   void FillGenericDeps(const char* var_name,
                        void (Target::*setter)(std::vector<const Target*>*));
 
+  void FillForwardDependentConfigs();
+
   DISALLOW_COPY_AND_ASSIGN(TargetGenerator);
 };
 

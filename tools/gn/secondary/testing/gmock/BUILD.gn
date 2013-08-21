@@ -34,7 +34,6 @@ static_library("gmock") {
   # This project includes some stuff form gtest's guts.
   includes = [ "../gtest/include" ]
 
-  configs += [ ":gmock_config" ]
   direct_dependent_configs = [
     ":gmock_config",
     "//testing/gtest:gtest_config",

@@ -39,7 +39,6 @@ static_library("sdch") {
     "open-vcdiff/vsprojects/stdint.h",
   ]
 
-  configs += [ ":sdch_config" ]
   direct_dependent_configs = [ ":sdch_config" ]
 
   if (is_linux || is_android) {

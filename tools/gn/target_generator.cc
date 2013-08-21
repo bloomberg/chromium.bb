@@ -155,6 +155,10 @@ void TargetGenerator::FillData() {
 void TargetGenerator::FillDependencies() {
   FillGenericDeps(variables::kDeps, &Target::swap_in_deps);
   FillGenericDeps(variables::kDatadeps, &Target::swap_in_datadeps);
+
+  // This is a list of dependent targets to have their configs fowarded, so
+  // it goes here rather than in FillConfigs.
+  FillForwardDependentConfigs();
 }
 
 void TargetGenerator::SetToolchainDependency() {
@@ -217,11 +221,43 @@ void TargetGenerator::FillGenericDeps(
   (target_->*setter)(&dest_deps);
 }
 
+void TargetGenerator::FillForwardDependentConfigs() {
+  const Value* value = scope_->GetValue(
+      variables::kForwardDependentConfigsFrom, true);
+  if (!value)
+    return;
 
+  std::vector<Label> labels;
+  if (!ExtractListOfLabels(*value, input_directory_,
+                           ToolchainLabelForScope(scope_), &labels, err_))
+    return;
 
+  const std::vector<const Target*>& deps = target_->deps();
 
+  // We currently assume that the list is very small and do a brute-force
+  // search in the deps for the labeled target. This could be optimized.
+  std::vector<const Target*> forward_from_list;
+  for (size_t label_index = 0; label_index < labels.size(); label_index++) {
+    const Target* forward_from = NULL;
+    for (size_t dep_index = 0; dep_index < deps.size(); dep_index++) {
+      if (deps[dep_index]->label() == labels[label_index]) {
+        forward_from = deps[dep_index];
+        break;
+      }
+    }
+    if (!forward_from) {
+      *err_ = Err(value->list_value()[label_index],
+          "Can't forward from this target.",
+          "forward_dependent_configs_from must contain a list of labels that\n"
+          "must all appear in the deps of the same target.");
+      return;
+    }
 
+    forward_from_list.push_back(forward_from);
+  }
 
+  target_->swap_in_forward_dependent_configs(&forward_from_list);
+}
 
 
 

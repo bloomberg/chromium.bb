@@ -207,7 +207,7 @@ const char kAllDependentConfigs_Help[] =
     "\n"
     "  All targets depending on this one, and recursively, all targets\n"
     "  depending on those, will have the configs listed in this variable\n"
-    "  added to them.\n"
+    "  added to them. These configs will also apply to the current target.\n"
     "\n"
     "  This addition happens in a second phase once a target and all of its\n"
     "  dependencies have been resolved. Therefore, a target will not see\n"
@@ -343,7 +343,8 @@ const char kDirectDependentConfigs_Help[] =
     "  A list of config labels.\n"
     "\n"
     "  Targets directly referencing this one will have the configs listed in\n"
-    "  this variable added to them.\n"
+    "  this variable added to them. These configs will also apply to the\n"
+    "  current target.\n"
     "\n"
     "  This addition happens in a second phase once a target and all of its\n"
     "  dependencies have been resolved. Therefore, a target will not see\n"
@@ -353,6 +354,45 @@ const char kDirectDependentConfigs_Help[] =
     "  directories necessary to compile a target's headers.\n"
     "\n"
     "  See also \"all_dependent_configs\".\n";
+
+const char kForwardDependentConfigsFrom[] = "forward_dependent_configs_from";
+const char kForwardDependentConfigsFrom_HelpShort[] =
+    "forward_dependent_configs_from: [label list] Forward dependent's configs.";
+const char kForwardDependentConfigsFrom_Help[] =
+    "forward_dependent_configs_from\n"
+    "\n"
+    "  A list of target labels.\n"
+    "\n"
+    "  Exposes the direct_dependent_configs from a dependent target as\n"
+    "  direct_dependent_configs of the current one. Each label in this list\n"
+    "  must also be in the deps.\n"
+    "\n"
+    "  Sometimes you depend on a child library that exports some necessary\n"
+    "  configuration via direct_dependent_configs. If your target in turn\n"
+    "  exposes the child library's headers in its public headers, it might\n"
+    "  mean that targets that depend on you won't work: they'll be seeing the\n"
+    "  child library's code but not the necessary configuration. This list\n"
+    "  specifies which of your deps' direct dependent configs to expose as\n"
+    "  your own.\n"
+    "\n"
+    "Examples:\n"
+    "\n"
+    "  If we use a given library \"a\" from our public headers:\n"
+    "\n"
+    "    deps = [ \":a\", \":b\", ... ]\n"
+    "    forward_dependent_configs_from = [ \":a\" ]\n"
+    "\n"
+    "  This example makes a \"transparent\" target that forwards a dependency\n"
+    "  to another:\n"
+    "\n"
+    "    group(\"frob\") {\n"
+    "      if (use_system_frob) {\n"
+    "        deps = \":system_frob\"\n"
+    "      } else {\n"
+    "        deps = \"//third_party/fallback_frob\"\n"
+    "      }\n"
+    "      forward_dependent_configs_from = deps\n"
+    "    }\n";
 
 const char kLdflags[] = "ldflags";
 const char kLdflags_HelpShort[] =
@@ -421,6 +461,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Datadeps)
     INSERT_VARIABLE(Deps)
     INSERT_VARIABLE(DirectDependentConfigs)
+    INSERT_VARIABLE(ForwardDependentConfigsFrom)
     INSERT_VARIABLE(Ldflags)
     INSERT_VARIABLE(Sources)
   }

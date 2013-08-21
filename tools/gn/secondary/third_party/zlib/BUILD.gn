@@ -37,7 +37,6 @@ static_library("zlib") {
     "zutil.h",
   ]
 
-  configs += ":zlib_config"
   direct_dependent_configs = [ ":zlib_config" ]
 }
 
@@ -71,7 +70,6 @@ static_library("minizip") {
 
   deps = [ ":zlib" ]
 
-  configs += ":zlib_config"
   direct_dependent_configs = [ ":zlib_config" ]
 }
 

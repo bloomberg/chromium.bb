@@ -73,7 +73,6 @@ component("crssl") {
 
   if (is_linux) {
     includes = [ "bodge" ]
-    configs += "//net/third_party/nss:nss_linux_config"
     direct_dependent_configs = [ "//net/third_party/nss:nss_linux_config" ]
   }
   if (is_mac) {

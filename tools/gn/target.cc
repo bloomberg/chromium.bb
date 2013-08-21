@@ -4,14 +4,57 @@
 
 #include "tools/gn/target.h"
 
+#include <set>
+
 #include "base/bind.h"
 #include "tools/gn/scheduler.h"
 
 namespace {
 
+typedef std::set<const Config*> ConfigSet;
+
 void TargetResolvedThunk(const base::Callback<void(const Target*)>& cb,
                          const Target* t) {
   cb.Run(t);
+}
+
+// Merges the dependent configs from the given target to the given config list.
+// The unique_configs list is used for de-duping so values already added will
+// not be added again.
+void MergeDirectDependentConfigsFrom(const Target* from_target,
+                                     ConfigSet* unique_configs,
+                                     std::vector<const Config*>* dest) {
+  const std::vector<const Config*>& direct =
+      from_target->direct_dependent_configs();
+  for (size_t i = 0; i < direct.size(); i++) {
+    if (unique_configs->find(direct[i]) == unique_configs->end()) {
+      unique_configs->insert(direct[i]);
+      dest->push_back(direct[i]);
+    }
+  }
+}
+
+// Like MergeDirectDependentConfigsFrom above except does the "all dependent"
+// ones. This additionally adds all configs to the all_dependent_configs_ of
+// the dest target given in *all_dest.
+void MergeAllDependentConfigsFrom(const Target* from_target,
+                                  ConfigSet* unique_configs,
+                                  std::vector<const Config*>* dest,
+                                  std::vector<const Config*>* all_dest) {
+  const std::vector<const Config*>& all =
+      from_target->all_dependent_configs();
+  for (size_t i = 0; i < all.size(); i++) {
+    // Always add it to all_dependent_configs_ since it might not be in that
+    // list even if we've seen it applied to this target before. This may
+    // introduce some duplicates in all_dependent_configs_, but those will
+    // we removed when they're actually applied to a target.
+    all_dest->push_back(all[i]);
+    if (unique_configs->find(all[i]) == unique_configs->end()) {
+      // One we haven't seen yet, also apply it to ourselves.
+      dest->push_back(all[i]);
+      unique_configs->insert(all[i]);
+    }
+  }
 }
 
 }  // namespace
@@ -36,21 +79,32 @@ const Target* Target::AsTarget() const {
 }
 
 void Target::OnResolved() {
+  // Only add each config once. First remember the target's configs.
+  std::set<const Config*> unique_configs;
+  for (size_t i = 0; i < configs_.size(); i++)
+    unique_configs.insert(configs_[i]);
+
+  // Copy our own dependent configs to the list of configs applying to us.
+  for (size_t i = 0; i < all_dependent_configs_.size(); i++) {
+    const Config* cur = all_dependent_configs_[i];
+    if (unique_configs.find(cur) == unique_configs.end()) {
+      unique_configs.insert(cur);
+      configs_.push_back(cur);
+    }
+  }
+  for (size_t i = 0; i < direct_dependent_configs_.size(); i++) {
+    const Config* cur = direct_dependent_configs_[i];
+    if (unique_configs.find(cur) == unique_configs.end()) {
+      unique_configs.insert(cur);
+      configs_.push_back(cur);
+    }
+  }
+
   // Gather info from our dependents we need.
   for (size_t dep = 0; dep < deps_.size(); dep++) {
-    // All dependent configs get pulled to us, and to our dependents.
-    const std::vector<const Config*>& all =
-        deps_[dep]->all_dependent_configs();
-    for (size_t i = 0; i < all.size(); i++) {
-      configs_.push_back(all[i]);
-      all_dependent_configs_.push_back(all[i]);
-    }
-
-    // Direct dependent configs get pulled only to us.
-    const std::vector<const Config*>& direct =
-        deps_[dep]->direct_dependent_configs();
-    for (size_t i = 0; i < direct.size(); i++)
-      configs_.push_back(direct[i]);
+    MergeAllDependentConfigsFrom(deps_[dep], &unique_configs, &configs_,
+                                 &all_dependent_configs_);
+    MergeDirectDependentConfigsFrom(deps_[dep], &unique_configs, &configs_);
 
     // Direct dependent libraries.
     if (deps_[dep]->output_type() == STATIC_LIBRARY ||
@@ -70,6 +124,21 @@ void Target::OnResolved() {
     }
   }
 
+  // Forward direct dependent configs if requested.
+  for (size_t dep = 0; dep < forward_dependent_configs_.size(); dep++) {
+    const Target* from_target = forward_dependent_configs_[dep];
+
+    // The forward_dependent_configs_ must be in the deps already, so we
+    // don't need to bother copying to our configs, only forwarding.
+    DCHECK(std::find(deps_.begin(), deps_.end(), from_target) !=
+           deps_.end());
+    const std::vector<const Config*>& direct =
+        from_target->direct_dependent_configs();
+    for (size_t i = 0; i < direct.size(); i++)
+      direct_dependent_configs_.push_back(direct[i]);
+  }
+
+  // Mark as resolved.
   if (!settings_->build_settings()->target_resolved_callback().is_null()) {
     g_scheduler->ScheduleWork(base::Bind(&TargetResolvedThunk,
         settings_->build_settings()->target_resolved_callback(),

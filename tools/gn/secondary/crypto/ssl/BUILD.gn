@@ -18,9 +18,10 @@ config("ssl_preprocessor_flags") {
 group("metassl") {
   direct_dependent_configs = [ ":ssl_preprocessor_flags" ]
 
+  deps = []
   if (is_linux) {
     # TODO(brettw) figure this out.
-    deps = [ "//net/third_party/nss/ssl:crssl" ]
-    direct_dependent_configs += [ "//net/third_party/nss:nss_linux_config" ]
+    deps += [ "//net/third_party/nss/ssl:crssl" ]
   }
+  forward_dependent_configs_from = deps
 }

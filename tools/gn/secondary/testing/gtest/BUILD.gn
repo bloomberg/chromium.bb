@@ -43,6 +43,5 @@ static_library("gtest") {
   ]
 
   includes = [ "." ]
-  configs += [ ":gtest_config" ]
   direct_dependent_configs = [ ":gtest_config" ]
 }

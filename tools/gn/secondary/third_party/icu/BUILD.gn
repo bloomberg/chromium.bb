@@ -212,10 +212,7 @@ component("icui18n") {
     "//build/config/compiler:no_chromium_code",
   ]
 
-  configs += [
-    ":icu_config",
-    ":icu_code",
-  ]
+  configs += [ ":icu_code" ]
   direct_dependent_configs = [ ":icu_config" ]
 }
 
@@ -382,10 +379,7 @@ component("icuuc") {
   deps = [
     ":icudata",
   ]
-  configs += [
-    ":icu_config",
-    ":icu_code",
-  ]
+  configs += [ ":icu_code" ]
 
   configs -= [
     "//build/config/compiler:no_rtti",  # ICU uses RTTI.

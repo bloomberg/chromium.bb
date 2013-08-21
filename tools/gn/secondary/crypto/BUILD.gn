@@ -90,6 +90,7 @@ component("crypto") {
     "//base/third_party/dynamic_annotations",
     "//crypto/ssl:metassl",
   ]
+  forward_dependent_configs_from = [ "//crypto/ssl:metassl" ]
 
   if (!is_mac && !is_ios) {
     sources -= [
@@ -160,14 +161,6 @@ component("crypto") {
   }
 
   defines = [ "CRYPTO_IMPLEMENTATION" ]
-
-  # TODO(brettw) we probably need an equivalent of GYP's
-  # export_dependent_settings to forward direct_dependent_configs from a
-  # sub project to our children. For now, we copy these from ssl:metassl.
-  direct_dependent_configs = [ "ssl:ssl_preprocessor_flags" ]
-  if (is_linux) {
-    direct_dependent_configs += "//net/third_party/nss:nss_linux_config"
-  }
 }
 
 # A minimal crypto subset for core features that small standalone targets can
