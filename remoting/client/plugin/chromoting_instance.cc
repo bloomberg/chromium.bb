@@ -55,7 +55,7 @@ namespace {
 // 32-bit BGRA is 4 bytes per pixel.
 const int kBytesPerPixel = 4;
 
-// Default DPI to assume for old clients that use notifyClientDimensions.
+// Default DPI to assume for old clients that use notifyClientResolution.
 const int kDefaultDPI = 96;
 
 // Interval at which to sample performance statistics.
@@ -143,8 +143,8 @@ logging::LogMessageHandlerFunction g_logging_old_handler = NULL;
 // String sent in the "hello" message to the webapp to describe features.
 const char ChromotingInstance::kApiFeatures[] =
     "highQualityScaling injectKeyEvent sendClipboardItem remapKey trapKey "
-    "notifyClientDimensions notifyClientResolution pauseVideo pauseAudio "
-    "asyncPin thirdPartyAuth pinlessAuth extensionMessage";
+    "notifyClientResolution pauseVideo pauseAudio asyncPin thirdPartyAuth "
+    "pinlessAuth extensionMessage";
 
 const char ChromotingInstance::kRequestedCapabilities[] = "";
 const char ChromotingInstance::kSupportedCapabilities[] = "desktopShape";
@@ -272,168 +272,37 @@ void ChromotingInstance::HandleMessage(const pp::Var& message) {
   }
 
   if (method == "connect") {
-    ClientConfig config;
-    std::string auth_methods;
-    if (!data->GetString("hostJid", &config.host_jid) ||
-        !data->GetString("hostPublicKey", &config.host_public_key) ||
-        !data->GetString("localJid", &config.local_jid) ||
-        !data->GetString("authenticationMethods", &auth_methods) ||
-        !ParseAuthMethods(auth_methods, &config) ||
-        !data->GetString("authenticationTag", &config.authentication_tag)) {
-      LOG(ERROR) << "Invalid connect() data.";
-      return;
-    }
-    data->GetString("clientPairingId", &config.client_pairing_id);
-    data->GetString("clientPairedSecret", &config.client_paired_secret);
-    if (use_async_pin_dialog_) {
-      config.fetch_secret_callback =
-          base::Bind(&ChromotingInstance::FetchSecretFromDialog,
-                     weak_factory_.GetWeakPtr());
-    } else {
-      std::string shared_secret;
-      if (!data->GetString("sharedSecret", &shared_secret)) {
-        LOG(ERROR) << "sharedSecret not specified in connect().";
-        return;
-      }
-      config.fetch_secret_callback =
-          base::Bind(&ChromotingInstance::FetchSecretFromString, shared_secret);
-    }
-
-    // Read the list of capabilities, if any.
-    if (data->HasKey("capabilities")) {
-      if (!data->GetString("capabilities", &config.capabilities)) {
-        LOG(ERROR) << "Invalid connect() data.";
-        return;
-      }
-    }
-
-    Connect(config);
+    HandleConnect(*data);
   } else if (method == "disconnect") {
-    Disconnect();
+    HandleDisconnect(*data);
   } else if (method == "incomingIq") {
-    std::string iq;
-    if (!data->GetString("iq", &iq)) {
-      LOG(ERROR) << "Invalid onIq() data.";
-      return;
-    }
-    OnIncomingIq(iq);
+    HandleOnIncomingIq(*data);
   } else if (method == "releaseAllKeys") {
-    ReleaseAllKeys();
+    HandleReleaseAllKeys(*data);
   } else if (method == "injectKeyEvent") {
-    int usb_keycode = 0;
-    bool is_pressed = false;
-    if (!data->GetInteger("usbKeycode", &usb_keycode) ||
-        !data->GetBoolean("pressed", &is_pressed)) {
-      LOG(ERROR) << "Invalid injectKeyEvent.";
-      return;
-    }
-
-    protocol::KeyEvent event;
-    event.set_usb_keycode(usb_keycode);
-    event.set_pressed(is_pressed);
-    InjectKeyEvent(event);
+    HandleInjectKeyEvent(*data);
   } else if (method == "remapKey") {
-    int from_keycode = 0;
-    int to_keycode = 0;
-    if (!data->GetInteger("fromKeycode", &from_keycode) ||
-        !data->GetInteger("toKeycode", &to_keycode)) {
-      LOG(ERROR) << "Invalid remapKey.";
-      return;
-    }
-
-    RemapKey(from_keycode, to_keycode);
+    HandleRemapKey(*data);
   } else if (method == "trapKey") {
-    int keycode = 0;
-    bool trap = false;
-    if (!data->GetInteger("keycode", &keycode) ||
-        !data->GetBoolean("trap", &trap)) {
-      LOG(ERROR) << "Invalid trapKey.";
-      return;
-    }
-
-    TrapKey(keycode, trap);
+    HandleTrapKey(*data);
   } else if (method == "sendClipboardItem") {
-    std::string mime_type;
-    std::string item;
-    if (!data->GetString("mimeType", &mime_type) ||
-        !data->GetString("item", &item)) {
-      LOG(ERROR) << "Invalid sendClipboardItem() data.";
-      return;
-    }
-    SendClipboardItem(mime_type, item);
-  } else if (method == "notifyClientDimensions" ||
-             method == "notifyClientResolution") {
-    // notifyClientResolution's width and height are in pixels,
-    // notifyClientDimension's in DIPs, but since for the latter
-    // we assume 96dpi, DIPs and pixels are equivalent.
-    int width = 0;
-    int height = 0;
-    if (!data->GetInteger("width", &width) ||
-        !data->GetInteger("height", &height) ||
-        width <= 0 || height <= 0) {
-      LOG(ERROR) << "Invalid " << method << ".";
-      return;
-    }
-
-    // notifyClientResolution requires that DPI be specified.
-    // For notifyClientDimensions we assume 96dpi.
-    int x_dpi = kDefaultDPI;
-    int y_dpi = kDefaultDPI;
-    if (method == "notifyClientResolution" &&
-        (!data->GetInteger("x_dpi", &x_dpi) ||
-         !data->GetInteger("y_dpi", &y_dpi) ||
-         x_dpi <= 0 || y_dpi <= 0)) {
-      LOG(ERROR) << "Invalid notifyClientResolution.";
-      return;
-    }
-
-    NotifyClientResolution(width, height, x_dpi, y_dpi);
+    HandleSendClipboardItem(*data);
+  } else if (method == "notifyClientResolution") {
+    HandleNotifyClientResolution(*data);
   } else if (method == "pauseVideo") {
-    bool pause = false;
-    if (!data->GetBoolean("pause", &pause)) {
-      LOG(ERROR) << "Invalid pauseVideo.";
-      return;
-    }
-    PauseVideo(pause);
+    HandlePauseVideo(*data);
   } else if (method == "pauseAudio") {
-    bool pause = false;
-    if (!data->GetBoolean("pause", &pause)) {
-      LOG(ERROR) << "Invalid pauseAudio.";
-      return;
-    }
-    PauseAudio(pause);
+    HandlePauseAudio(*data);
   } else if (method == "useAsyncPinDialog") {
     use_async_pin_dialog_ = true;
   } else if (method == "onPinFetched") {
-    std::string pin;
-    if (!data->GetString("pin", &pin)) {
-      LOG(ERROR) << "Invalid onPinFetched.";
-      return;
-    }
-    OnPinFetched(pin);
+    HandleOnPinFetched(*data);
   } else if (method == "onThirdPartyTokenFetched") {
-    std::string token;
-    std::string shared_secret;
-    if (!data->GetString("token", &token) ||
-        !data->GetString("sharedSecret", &shared_secret)) {
-      LOG(ERROR) << "Invalid onThirdPartyTokenFetched data.";
-      return;
-    }
-    OnThirdPartyTokenFetched(token, shared_secret);
+    HandleOnThirdPartyTokenFetched(*data);
   } else if (method == "requestPairing") {
-    std::string client_name;
-    if (!data->GetString("clientName", &client_name)) {
-      LOG(ERROR) << "Invalid requestPairing";
-      return;
-    }
-    RequestPairing(client_name);
+    HandleRequestPairing(*data);
   } else if (method == "extensionMessage") {
-    std::string type, message;
-    if (!data->GetString("type", &type) || !data->GetString("data", &message)) {
-      LOG(ERROR) << "Invalid extensionMessage.";
-      return;
-    }
-    SendClientMessage(type, message);
+    HandleExtensionMessage(*data);
   }
 }
 
@@ -678,7 +547,46 @@ void ChromotingInstance::OnFirstFrameReceived() {
   PostChromotingMessage("onFirstFrameReceived", data.Pass());
 }
 
-void ChromotingInstance::Connect(const ClientConfig& config) {
+void ChromotingInstance::HandleConnect(const base::DictionaryValue& data) {
+  ClientConfig config;
+  std::string auth_methods;
+  if (!data.GetString("hostJid", &config.host_jid) ||
+      !data.GetString("hostPublicKey", &config.host_public_key) ||
+      !data.GetString("localJid", &config.local_jid) ||
+      !data.GetString("authenticationMethods", &auth_methods) ||
+      !ParseAuthMethods(auth_methods, &config) ||
+      !data.GetString("authenticationTag", &config.authentication_tag)) {
+    LOG(ERROR) << "Invalid connect() data.";
+    return;
+  }
+  data.GetString("clientPairingId", &config.client_pairing_id);
+  data.GetString("clientPairedSecret", &config.client_paired_secret);
+  if (use_async_pin_dialog_) {
+    config.fetch_secret_callback =
+        base::Bind(&ChromotingInstance::FetchSecretFromDialog,
+                   weak_factory_.GetWeakPtr());
+  } else {
+    std::string shared_secret;
+    if (!data.GetString("sharedSecret", &shared_secret)) {
+      LOG(ERROR) << "sharedSecret not specified in connect().";
+      return;
+    }
+    config.fetch_secret_callback =
+        base::Bind(&ChromotingInstance::FetchSecretFromString, shared_secret);
+  }
+
+  // Read the list of capabilities, if any.
+  if (data.HasKey("capabilities")) {
+    if (!data.GetString("capabilities", &config.capabilities)) {
+      LOG(ERROR) << "Invalid connect() data.";
+      return;
+    }
+  }
+
+  ConnectWithConfig(config);
+}
+
+void ChromotingInstance::ConnectWithConfig(const ClientConfig& config) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -728,7 +636,7 @@ void ChromotingInstance::Connect(const ClientConfig& config) {
       base::TimeDelta::FromMilliseconds(kPerfStatsIntervalMs));
 }
 
-void ChromotingInstance::Disconnect() {
+void ChromotingInstance::HandleDisconnect(const base::DictionaryValue& data) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
 
   // PepperView must be destroyed before the client.
@@ -743,35 +651,77 @@ void ChromotingInstance::Disconnect() {
   host_connection_.reset();
 }
 
-void ChromotingInstance::OnIncomingIq(const std::string& iq) {
+void ChromotingInstance::HandleOnIncomingIq(const base::DictionaryValue& data) {
+  std::string iq;
+  if (!data.GetString("iq", &iq)) {
+    LOG(ERROR) << "Invalid incomingIq() data.";
+    return;
+  }
+
   // Just ignore the message if it's received before Connect() is called. It's
   // likely to be a leftover from a previous session, so it's safe to ignore it.
   if (signal_strategy_)
     signal_strategy_->OnIncomingMessage(iq);
 }
 
-void ChromotingInstance::ReleaseAllKeys() {
+void ChromotingInstance::HandleReleaseAllKeys(
+    const base::DictionaryValue& data) {
   if (IsConnected())
     input_tracker_.ReleaseAll();
 }
 
-void ChromotingInstance::InjectKeyEvent(const protocol::KeyEvent& event) {
+void ChromotingInstance::HandleInjectKeyEvent(
+      const base::DictionaryValue& data) {
+  int usb_keycode = 0;
+  bool is_pressed = false;
+  if (!data.GetInteger("usbKeycode", &usb_keycode) ||
+      !data.GetBoolean("pressed", &is_pressed)) {
+    LOG(ERROR) << "Invalid injectKeyEvent.";
+    return;
+  }
+
+  protocol::KeyEvent event;
+  event.set_usb_keycode(usb_keycode);
+  event.set_pressed(is_pressed);
+
   // Inject after the KeyEventMapper, so the event won't get mapped or trapped.
   if (IsConnected())
     input_tracker_.InjectKeyEvent(event);
 }
 
-void ChromotingInstance::RemapKey(uint32 in_usb_keycode,
-                                  uint32 out_usb_keycode) {
-  key_mapper_.RemapKey(in_usb_keycode, out_usb_keycode);
+void ChromotingInstance::HandleRemapKey(const base::DictionaryValue& data) {
+  int from_keycode = 0;
+  int to_keycode = 0;
+  if (!data.GetInteger("fromKeycode", &from_keycode) ||
+      !data.GetInteger("toKeycode", &to_keycode)) {
+    LOG(ERROR) << "Invalid remapKey.";
+    return;
+  }
+
+  key_mapper_.RemapKey(from_keycode, to_keycode);
 }
 
-void ChromotingInstance::TrapKey(uint32 usb_keycode, bool trap) {
-  key_mapper_.TrapKey(usb_keycode, trap);
+void ChromotingInstance::HandleTrapKey(const base::DictionaryValue& data) {
+  int keycode = 0;
+  bool trap = false;
+  if (!data.GetInteger("keycode", &keycode) ||
+      !data.GetBoolean("trap", &trap)) {
+    LOG(ERROR) << "Invalid trapKey.";
+    return;
+  }
+
+  key_mapper_.TrapKey(keycode, trap);
 }
 
-void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
-                                           const std::string& item) {
+void ChromotingInstance::HandleSendClipboardItem(
+    const base::DictionaryValue& data) {
+  std::string mime_type;
+  std::string item;
+  if (!data.GetString("mimeType", &mime_type) ||
+      !data.GetString("item", &item)) {
+    LOG(ERROR) << "Invalid sendClipboardItem data.";
+    return;
+  }
   if (!IsConnected()) {
     return;
   }
@@ -781,10 +731,22 @@ void ChromotingInstance::SendClipboardItem(const std::string& mime_type,
   host_connection_->clipboard_stub()->InjectClipboardEvent(event);
 }
 
-void ChromotingInstance::NotifyClientResolution(int width,
-                                                int height,
-                                                int x_dpi,
-                                                int y_dpi) {
+void ChromotingInstance::HandleNotifyClientResolution(
+    const base::DictionaryValue& data) {
+  int width = 0;
+  int height = 0;
+  int x_dpi = kDefaultDPI;
+  int y_dpi = kDefaultDPI;
+  if (!data.GetInteger("width", &width) ||
+      !data.GetInteger("height", &height) ||
+      !data.GetInteger("x_dpi", &x_dpi) ||
+      !data.GetInteger("y_dpi", &y_dpi) ||
+      width <= 0 || height <= 0 ||
+      x_dpi <= 0 || y_dpi <= 0) {
+    LOG(ERROR) << "Invalid notifyClientResolution.";
+    return;
+  }
+
   if (!IsConnected()) {
     return;
   }
@@ -802,7 +764,12 @@ void ChromotingInstance::NotifyClientResolution(int width,
   host_connection_->host_stub()->NotifyClientResolution(client_resolution);
 }
 
-void ChromotingInstance::PauseVideo(bool pause) {
+void ChromotingInstance::HandlePauseVideo(const base::DictionaryValue& data) {
+  bool pause = false;
+  if (!data.GetBoolean("pause", &pause)) {
+    LOG(ERROR) << "Invalid pauseVideo.";
+    return;
+  }
   if (!IsConnected()) {
     return;
   }
@@ -811,7 +778,12 @@ void ChromotingInstance::PauseVideo(bool pause) {
   host_connection_->host_stub()->ControlVideo(video_control);
 }
 
-void ChromotingInstance::PauseAudio(bool pause) {
+void ChromotingInstance::HandlePauseAudio(const base::DictionaryValue& data) {
+  bool pause = false;
+  if (!data.GetBoolean("pause", &pause)) {
+    LOG(ERROR) << "Invalid pauseAudio.";
+    return;
+  }
   if (!IsConnected()) {
     return;
   }
@@ -819,7 +791,12 @@ void ChromotingInstance::PauseAudio(bool pause) {
   audio_control.set_enable(!pause);
   host_connection_->host_stub()->ControlAudio(audio_control);
 }
-void ChromotingInstance::OnPinFetched(const std::string& pin) {
+void ChromotingInstance::HandleOnPinFetched(const base::DictionaryValue& data) {
+  std::string pin;
+  if (!data.GetString("pin", &pin)) {
+    LOG(ERROR) << "Invalid onPinFetched.";
+    return;
+  }
   if (!secret_fetched_callback_.is_null()) {
     secret_fetched_callback_.Run(pin);
     secret_fetched_callback_.Reset();
@@ -828,9 +805,15 @@ void ChromotingInstance::OnPinFetched(const std::string& pin) {
   }
 }
 
-void ChromotingInstance::OnThirdPartyTokenFetched(
-    const std::string& token,
-    const std::string& shared_secret) {
+void ChromotingInstance::HandleOnThirdPartyTokenFetched(
+    const base::DictionaryValue& data) {
+  std::string token;
+  std::string shared_secret;
+  if (!data.GetString("token", &token) ||
+      !data.GetString("sharedSecret", &shared_secret)) {
+    LOG(ERROR) << "Invalid onThirdPartyTokenFetched data.";
+    return;
+  }
   if (pepper_token_fetcher_.get()) {
     pepper_token_fetcher_->OnTokenFetched(token, shared_secret);
     pepper_token_fetcher_.reset();
@@ -839,7 +822,13 @@ void ChromotingInstance::OnThirdPartyTokenFetched(
   }
 }
 
-void ChromotingInstance::RequestPairing(const std::string& client_name) {
+void ChromotingInstance::HandleRequestPairing(
+    const base::DictionaryValue& data) {
+  std::string client_name;
+  if (!data.GetString("clientName", &client_name)) {
+    LOG(ERROR) << "Invalid requestPairing";
+    return;
+  }
   if (!IsConnected()) {
     return;
   }
@@ -848,14 +837,21 @@ void ChromotingInstance::RequestPairing(const std::string& client_name) {
   host_connection_->host_stub()->RequestPairing(pairing_request);
 }
 
-void ChromotingInstance::SendClientMessage(const std::string& type,
-                                           const std::string& data) {
+void ChromotingInstance::HandleExtensionMessage(
+    const base::DictionaryValue& data) {
+  std::string type;
+  std::string message_data;
+  if (!data.GetString("type", &type) ||
+      !data.GetString("data", &message_data)) {
+    LOG(ERROR) << "Invalid extensionMessage.";
+    return;
+  }
   if (!IsConnected()) {
     return;
   }
   protocol::ExtensionMessage message;
   message.set_type(type);
-  message.set_data(data);
+  message.set_data(message_data);
   host_connection_->host_stub()->DeliverClientMessage(message);
 }
 

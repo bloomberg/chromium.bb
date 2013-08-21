@@ -185,22 +185,24 @@ class ChromotingInstance :
 
   // Message handlers for messages that come from JavaScript. Called
   // from HandleMessage().
-  void Connect(const ClientConfig& config);
-  void Disconnect();
-  void OnIncomingIq(const std::string& iq);
-  void ReleaseAllKeys();
-  void InjectKeyEvent(const protocol::KeyEvent& event);
-  void RemapKey(uint32 in_usb_keycode, uint32 out_usb_keycode);
-  void TrapKey(uint32 usb_keycode, bool trap);
-  void SendClipboardItem(const std::string& mime_type, const std::string& item);
-  void NotifyClientResolution(int width, int height, int x_dpi, int y_dpi);
-  void PauseVideo(bool pause);
-  void PauseAudio(bool pause);
-  void OnPinFetched(const std::string& pin);
-  void OnThirdPartyTokenFetched(const std::string& token,
-                                const std::string& shared_secret);
-  void RequestPairing(const std::string& client_name);
-  void SendClientMessage(const std::string& type, const std::string& data);
+  void HandleConnect(const base::DictionaryValue& data);
+  void HandleDisconnect(const base::DictionaryValue& data);
+  void HandleOnIncomingIq(const base::DictionaryValue& data);
+  void HandleReleaseAllKeys(const base::DictionaryValue& data);
+  void HandleInjectKeyEvent(const base::DictionaryValue& data);
+  void HandleRemapKey(const base::DictionaryValue& data);
+  void HandleTrapKey(const base::DictionaryValue& data);
+  void HandleSendClipboardItem(const base::DictionaryValue& data);
+  void HandleNotifyClientResolution(const base::DictionaryValue& data);
+  void HandlePauseVideo(const base::DictionaryValue& data);
+  void HandlePauseAudio(const base::DictionaryValue& data);
+  void HandleOnPinFetched(const base::DictionaryValue& data);
+  void HandleOnThirdPartyTokenFetched(const base::DictionaryValue& data);
+  void HandleRequestPairing(const base::DictionaryValue& data);
+  void HandleExtensionMessage(const base::DictionaryValue& data);
+
+  // Helper method called from Connect() to connect with parsed config.
+  void ConnectWithConfig(const ClientConfig& config);
 
   // Helper method to post messages to the webapp.
   void PostChromotingMessage(const std::string& method,

@@ -58,7 +58,6 @@ remoting.ClientPlugin.prototype.isSupportedVersion = function() {};
  */
 remoting.ClientPlugin.Feature = {
   INJECT_KEY_EVENT: 'injectKeyEvent',
-  NOTIFY_CLIENT_DIMENSIONS: 'notifyClientDimensions',
   NOTIFY_CLIENT_RESOLUTION: 'notifyClientResolution',
   ASYNC_PIN: 'asyncPin',
   PAUSE_VIDEO: 'pauseVideo',
