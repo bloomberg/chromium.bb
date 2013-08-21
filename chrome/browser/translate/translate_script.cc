@@ -14,7 +14,6 @@
 #include "chrome/browser/translate/translate_url_fetcher.h"
 #include "chrome/browser/translate/translate_url_util.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/translate/translate_util.h"
 #include "google_apis/google_api_keys.h"
 #include "grit/browser_resources.h"
 #include "net/base/escape.h"
@@ -25,23 +24,30 @@ namespace {
 
 const int kExpirationDelayDays = 1;
 
-}  // namespace
-
-const char TranslateScript::kScriptURL[] =
+const char kScriptURL[] =
     "https://translate.google.com/translate_a/element.js";
-const char TranslateScript::kRequestHeader[] =
-    "Google-Translate-Element-Mode: library";
-const char TranslateScript::kAlwaysUseSslQueryName[] = "aus";
-const char TranslateScript::kAlwaysUseSslQueryValue[] = "true";
-const char TranslateScript::kCallbackQueryName[] = "cb";
-const char TranslateScript::kCallbackQueryValue[] =
+const char kRequestHeader[] = "Google-Translate-Element-Mode: library";
+
+// Used in kTranslateScriptURL to specify a callback function name.
+const char kCallbackQueryName[] = "cb";
+const char kCallbackQueryValue[] =
     "cr.googleTranslate.onTranslateElementLoad";
-const char TranslateScript::kCssLoaderCallbackQueryName[] = "clc";
-const char TranslateScript::kCssLoaderCallbackQueryValue[] =
-    "cr.googleTranslate.onLoadCSS";
-const char TranslateScript::kJavascriptLoaderCallbackQueryName[] = "jlc";
-const char TranslateScript::kJavascriptLoaderCallbackQueryValue[] =
+
+// Used in kTranslateScriptURL to specify using always ssl to load resources.
+const char kAlwaysUseSslQueryName[] = "aus";
+const char kAlwaysUseSslQueryValue[] = "true";
+
+// Used in kTranslateScriptURL to specify a CSS loader callback function name.
+const char kCssLoaderCallbackQueryName[] = "clc";
+const char kCssLoaderCallbackQueryValue[] = "cr.googleTranslate.onLoadCSS";
+
+// Used in kTranslateScriptURL to specify a JavaScript loader callback function
+// name.
+const char kJavascriptLoaderCallbackQueryName[] = "jlc";
+const char kJavascriptLoaderCallbackQueryValue[] =
     "cr.googleTranslate.onLoadJavascript";
+
+}  // namespace
 
 TranslateScript::TranslateScript()
     : weak_method_factory_(this),
@@ -119,15 +125,8 @@ void TranslateScript::OnScriptFetchComplete(
 
   if (success) {
     DCHECK(data_.empty());
-    // Insert variable definitions on API Key and security origin.
     data_ = base::StringPrintf("var translateApiKey = '%s';\n",
                                google_apis::GetAPIKey().c_str());
-
-    GURL security_origin = TranslateUtil::GetTranslateSecurityOrigin();
-    base::StringAppendF(
-        &data_, "var securityOrigin = '%s';", security_origin.spec().c_str());
-
-    // Append embedded translate.js and a remote element library.
     base::StringPiece str = ResourceBundle::GetSharedInstance().
         GetRawDataResource(IDR_TRANSLATE_JS);
     str.AppendToString(&data_);

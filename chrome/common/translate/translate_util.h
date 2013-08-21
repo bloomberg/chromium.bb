@@ -7,12 +7,7 @@
 
 #include <string>
 
-class GURL;
-
 namespace TranslateUtil {
-
-// Isolated world sets following security-origin by default.
-extern const char kSecurityOrigin[];
 
 // Converts language code synonym to use at Translate server.
 void ToTranslateLanguageSynonym(std::string* language);
@@ -20,9 +15,6 @@ void ToTranslateLanguageSynonym(std::string* language);
 // Converts language code synonym to use at Chrome internal.
 void ToChromeLanguageSynonym(std::string* language);
 
-// Get Security origin with which Translate runs.
-GURL GetTranslateSecurityOrigin();
-
-}  // namespace TranslateUtil
+}  // namapace TranslateUtil
 
 #endif  // CHROME_COMMON_TRANSLATE_TRANSLATE_UTIL_H_

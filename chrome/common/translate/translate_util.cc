@@ -5,9 +5,6 @@
 #include "chrome/common/translate/translate_util.h"
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-#include "url/gurl.h"
 
 namespace TranslateUtil {
 
@@ -30,8 +27,6 @@ const LanguageCodeSynonym kLanguageCodeSynonyms[] = {
   {"tl", "fil"},
 };
 
-const char kSecurityOrigin[] = "https://translate.googleapis.com/";
-
 void ToTranslateLanguageSynonym(std::string* language) {
   // Apply liner search here because number of items in the list is just four.
   for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
@@ -50,16 +45,6 @@ void ToChromeLanguageSynonym(std::string* language) {
       break;
     }
   }
-}
-
-GURL GetTranslateSecurityOrigin() {
-  std::string security_origin(kSecurityOrigin);
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kTranslateSecurityOrigin)) {
-    security_origin =
-        command_line->GetSwitchValueASCII(switches::kTranslateSecurityOrigin);
-  }
-  return GURL(security_origin);
 }
 
 }  // namespace TranslateUtil

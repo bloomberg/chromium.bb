@@ -8,12 +8,10 @@
 #include <string>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 
-class TranslateScriptTest;
 class TranslateURLFetcher;
 
 class TranslateScript {
@@ -46,30 +44,6 @@ class TranslateScript {
   bool HasPendingRequest() const { return fetcher_.get() != NULL; }
 
  private:
-  friend class TranslateScriptTest;
-  FRIEND_TEST_ALL_PREFIXES(TranslateScriptTest, CheckScriptParameters);
-  FRIEND_TEST_ALL_PREFIXES(TranslateScriptTest, CheckScriptURL);
-
-  static const char kScriptURL[];
-  static const char kRequestHeader[];
-
-  // Used in kTranslateScriptURL to specify using always ssl to load resources.
-  static const char kAlwaysUseSslQueryName[];
-  static const char kAlwaysUseSslQueryValue[];
-
-  // Used in kTranslateScriptURL to specify a callback function name.
-  static const char kCallbackQueryName[];
-  static const char kCallbackQueryValue[];
-
-  // Used in kTranslateScriptURL to specify a CSS loader callback function name.
-  static const char kCssLoaderCallbackQueryName[];
-  static const char kCssLoaderCallbackQueryValue[];
-
-  // Used in kTranslateScriptURL to specify a JavaScript loader callback
-  // function name.
-  static const char kJavascriptLoaderCallbackQueryName[];
-  static const char kJavascriptLoaderCallbackQueryValue[];
-
   // The callback when the script is fetched or a server error occured.
   void OnScriptFetchComplete(int id, bool success, const std::string& data);
 
